@@ -41,14 +41,10 @@
     'idl_files': [
       '<@(core_idl_files)',
       '<@(modules_idl_files)',
+      '<@(svg_idl_files)',
     ],
 
     'conditions': [
-      ['enable_svg!=0', {
-        'idl_files': [
-          '<@(svg_idl_files)',
-        ],
-      }],
       ['OS=="win" and buildtype=="Official"', {
         # On windows official release builds, we try to preserve symbol space.
         'derived_sources_aggregate_files': [

@@ -193,6 +193,7 @@
           'variables': {
             'in_files': [
               '../css/CSSPropertyNames.in',
+              '../css/SVGCSSPropertyNames.in',
             ],
           },
           'inputs': [
@@ -212,16 +213,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
             '--defines', '<(feature_defines)',
           ],
-          'conditions': [
-            # TODO(maruel): Move it in its own project or generate it anyway?
-            ['enable_svg!=0', {
-              'variables': {
-                'in_files': [
-                  '../css/SVGCSSPropertyNames.in',
-                ],
-              }
-            }],
-          ],
           'msvs_cygwin_shell': 1,
         },
         {
@@ -229,6 +220,7 @@
           'inputs': [
             '../css/makevalues.pl',
             '../css/CSSValueKeywords.in',
+            '../css/SVGCSSValueKeywords.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.cpp',
@@ -242,14 +234,6 @@
             '--defines', '<(feature_defines)',
             '--',
             '<@(_inputs)',
-          ],
-          'conditions': [
-            # TODO(maruel): Move it in its own project or generate it anyway?
-            ['enable_svg!=0', {
-              'inputs': [
-                '../css/SVGCSSValueKeywords.in',
-              ],
-            }],
           ],
           'msvs_cygwin_shell': 1,
         },

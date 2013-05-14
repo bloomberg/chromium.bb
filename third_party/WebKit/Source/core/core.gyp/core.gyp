@@ -38,10 +38,6 @@
   ],
 
   'variables': {
-    # If set to 0, doesn't build SVG support, reducing the size of the
-    # binary and increasing the speed of gdb.
-    'enable_svg%': 1,
-
     'enable_wexit_time_destructors': 1,
 
     'webcore_include_dirs': [
@@ -221,7 +217,7 @@
         '../html/shadow',
         '../inspector',
         '../page',
-        '../svg', # FIXME: make_names.pl doesn't qualify conditional includes yet.
+        '../svg',
       ],
       'sources': [
         # These files include all the .cpp files generated from the .idl files
@@ -271,19 +267,16 @@
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorFrontend.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendDispatcher.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorTypeBuilder.cpp',
+
+        # Additional .cpp files for SVG.
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGElementFactory.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/V8SVGElementWrapperFactory.cpp',
       ],
       'conditions': [
         ['OS=="win" and component=="shared_library"', {
           'defines': [
             'USING_V8_SHARED',
           ],
-        }],
-        # TODO(maruel): Move it in its own project or generate it anyway?
-        ['enable_svg!=0', {
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGElementFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8SVGElementWrapperFactory.cpp',
-         ],
         }],
         ['OS=="win"', {
           'defines': [
@@ -983,6 +976,7 @@
         'webcore_platform_geometry',
         'webcore_remaining',
         'webcore_rendering',
+        'webcore_svg',
         # Exported.
         'webcore_derived',
         '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
@@ -1039,11 +1033,6 @@
                '<!@(pkg-config --libs ipp|sed s/-L//)/libippcore_l.a',
             ]
           },
-        }],
-        ['enable_svg!=0', {
-          'dependencies': [
-            'webcore_svg',
-          ],
         }],
       ],
     },
