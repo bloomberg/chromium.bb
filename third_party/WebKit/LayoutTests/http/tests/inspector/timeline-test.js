@@ -23,6 +23,7 @@ InspectorTest.timelinePropertyFormatters = {
     clip: "formatAsTypeName",
     root: "formatAsTypeName",
     rootNode: "formatAsTypeName",
+    layerRootNode: "formatAsTypeName",
     networkTime: "formatAsTypeName",
 };
 
