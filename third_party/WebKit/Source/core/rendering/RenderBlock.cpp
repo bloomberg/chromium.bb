@@ -5096,6 +5096,9 @@ void RenderBlock::adjustForColumnRect(LayoutSize& offset, const LayoutPoint& loc
 
 bool RenderBlock::hitTestContents(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
+    if (isRenderRegion())
+        return toRenderRegion(this)->hitTestFlowThreadContents(request, result, locationInContainer, accumulatedOffset, hitTestAction);
+
     if (childrenInline() && !isTable()) {
         // We have to hit-test our line boxes.
         if (m_lineBoxes.hitTest(this, request, result, locationInContainer, accumulatedOffset, hitTestAction))
