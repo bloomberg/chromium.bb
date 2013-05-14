@@ -238,33 +238,32 @@ TEST_F(SpdyStreamSpdy2Test, PushedStream) {
   BoundNetLog net_log;
 
   // Conjure up a stream.
-  scoped_refptr<SpdyStream> stream =
-      new SpdyStream(spdy_session,
-                     std::string(),
-                     DEFAULT_PRIORITY,
-                     kSpdyStreamInitialWindowSize,
-                     kSpdyStreamInitialWindowSize,
-                     true,
-                     net_log);
-  stream->set_stream_id(2);
-  EXPECT_FALSE(stream->response_received());
-  EXPECT_FALSE(stream->HasUrl());
+  SpdyStream stream(spdy_session,
+                    std::string(),
+                    DEFAULT_PRIORITY,
+                    kSpdyStreamInitialWindowSize,
+                    kSpdyStreamInitialWindowSize,
+                    true,
+                    net_log);
+  stream.set_stream_id(2);
+  EXPECT_FALSE(stream.response_received());
+  EXPECT_FALSE(stream.HasUrl());
 
   // Set a couple of headers.
   SpdyHeaderBlock response;
   response["url"] = kStreamUrl;
-  stream->OnResponseReceived(response);
+  stream.OnResponseReceived(response);
 
   // Send some basic headers.
   SpdyHeaderBlock headers;
   response["status"] = "200";
   response["version"] = "OK";
-  stream->OnHeaders(headers);
+  stream.OnHeaders(headers);
 
-  stream->set_response_received();
-  EXPECT_TRUE(stream->response_received());
-  EXPECT_TRUE(stream->HasUrl());
-  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
+  stream.set_response_received();
+  EXPECT_TRUE(stream.response_received());
+  EXPECT_TRUE(stream.HasUrl());
+  EXPECT_EQ(kStreamUrl, stream.GetUrl().spec());
 }
 
 TEST_F(SpdyStreamSpdy2Test, StreamError) {

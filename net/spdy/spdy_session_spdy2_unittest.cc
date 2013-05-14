@@ -331,14 +331,16 @@ TEST_F(SpdySessionSpdy2Test, DeleteExpiredPushStreams) {
   (*request_headers)["host"] = "www.google.com";
   (*request_headers)["url"] = "/";
 
-  scoped_refptr<SpdyStream> stream(
+  scoped_ptr<SpdyStream> stream(
       new SpdyStream(session, std::string(), DEFAULT_PRIORITY,
                      kSpdyStreamInitialWindowSize,
                      kSpdyStreamInitialWindowSize,
                      false, session->net_log_));
   stream->set_spdy_headers(request_headers.Pass());
-  session->ActivateStream(stream);
-  stream = NULL;
+  SpdyStream* stream_ptr = stream.get();
+  session->InsertCreatedStream(stream.Pass());
+  stream = session->ActivateCreatedStream(stream_ptr);
+  session->InsertActivatedStream(stream.Pass());
 
   SpdyHeaderBlock headers;
   headers["url"] = "http://www.google.com/a.dat";

@@ -413,14 +413,16 @@ TEST_F(SpdySessionSpdy3Test, DeleteExpiredPushStreams) {
   (*request_headers)[":host"] = "www.google.com";
   (*request_headers)[":path"] = "/";
 
-  scoped_refptr<SpdyStream> stream(
+  scoped_ptr<SpdyStream> stream(
       new SpdyStream(session, std::string(), DEFAULT_PRIORITY,
                      kSpdyStreamInitialWindowSize,
                      kSpdyStreamInitialWindowSize,
                      false, session->net_log_));
   stream->set_spdy_headers(request_headers.Pass());
-  session->ActivateStream(stream);
-  stream = NULL;
+  SpdyStream* stream_ptr = stream.get();
+  session->InsertCreatedStream(stream.Pass());
+  stream = session->ActivateCreatedStream(stream_ptr);
+  session->InsertActivatedStream(stream.Pass());
 
   SpdyHeaderBlock headers;
   headers[":scheme"] = "http";
@@ -3340,7 +3342,7 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedStreams31) {
   SpdyStreamId stream_id3 = stream3->stream_id();
 
   // Close stream1 preemptively.
-  session->CloseStream(stream_id1, ERR_CONNECTION_CLOSED);
+  session->CloseActiveStream(stream_id1, ERR_CONNECTION_CLOSED);
   EXPECT_EQ(NULL, stream1.get());
 
   EXPECT_FALSE(session->IsStreamActive(stream_id1));

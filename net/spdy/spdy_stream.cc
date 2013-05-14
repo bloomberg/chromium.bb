@@ -160,6 +160,8 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
 }
 
 void SpdyStream::PushedStreamReplayData() {
+  DCHECK_NE(stream_id_, 0u);
+
   if (!delegate_)
     return;
 
@@ -173,7 +175,7 @@ void SpdyStream::PushedStreamReplayData() {
     if (pending_buffers_.size() != 0U) {
       LogStreamError(ERR_SPDY_PROTOCOL_ERROR,
                      "HEADERS incomplete headers, but pending data frames.");
-      session_->CloseStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR);
+      session_->CloseActiveStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR);
     }
     return;
   }
@@ -189,8 +191,8 @@ void SpdyStream::PushedStreamReplayData() {
       delegate_->OnDataReceived(scoped_ptr<SpdyBuffer>(buffers[i]));
     } else {
       delegate_->OnDataReceived(scoped_ptr<SpdyBuffer>());
-      session_->CloseStream(stream_id_, OK);
-      // Note: |this| may be deleted after calling CloseStream.
+      session_->CloseActiveStream(stream_id_, OK);
+      // Note: |this| may be deleted after calling CloseActiveStream.
       DCHECK_EQ(buffers.size() - 1, i);
     }
   }
@@ -502,7 +504,7 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   // received.
   if (!response_received()) {
     LogStreamError(ERR_SYN_REPLY_NOT_RECEIVED, "Didn't receive a response.");
-    session_->CloseStream(stream_id_, ERR_SYN_REPLY_NOT_RECEIVED);
+    session_->CloseActiveStream(stream_id_, ERR_SYN_REPLY_NOT_RECEIVED);
     return;
   }
 
@@ -524,8 +526,8 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 
   if (!buffer) {
     metrics_.StopStream();
-    session_->CloseStream(stream_id_, OK);
-    // Note: |this| may be deleted after calling CloseStream.
+    session_->CloseActiveStream(stream_id_, OK);
+    // Note: |this| may be deleted after calling CloseActiveStream.
     return;
   }
 
@@ -545,7 +547,7 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   if (delegate_->OnDataReceived(buffer.Pass()) != OK) {
     // |delegate_| rejected the data.
     LogStreamError(ERR_SPDY_PROTOCOL_ERROR, "Delegate rejected the data");
-    session_->CloseStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR);
+    session_->CloseActiveStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR);
     return;
   }
 }
@@ -594,7 +596,7 @@ void SpdyStream::Cancel() {
 
 void SpdyStream::Close() {
   if (stream_id_ != 0) {
-    session_->CloseStream(stream_id_, OK);
+    session_->CloseActiveStream(stream_id_, OK);
   } else {
     session_->CloseCreatedStream(GetWeakPtr(), OK);
   }

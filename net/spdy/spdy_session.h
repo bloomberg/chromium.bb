@@ -287,12 +287,14 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                                           int len,
                                           SpdyDataFlags flags);
 
-  // If there is an active stream with the given ID, close it. There
-  // must be no external references to that active stream.
-  void CloseStream(SpdyStreamId stream_id, int status);
+  // Close the active stream with the given ID (if it's not already
+  // deleted). Note that that stream may hold the last reference to
+  // the session.
+  void CloseActiveStream(SpdyStreamId stream_id, int status);
 
-  // Close a stream that has been created but is not yet active.
-  // There must be no external references to that active stream.
+  // Close the given created stream, which must not yet be
+  // active. Note that |stream| may hold the last reference to the
+  // session.
   void CloseCreatedStream(const base::WeakPtr<SpdyStream>& stream, int status);
 
   // If there is an active stream with the given ID, reset it by by
@@ -491,11 +493,11 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   typedef std::deque<SpdyStreamRequest*> PendingStreamRequestQueue;
   typedef std::set<SpdyStreamRequest*> PendingStreamRequestCompletionSet;
 
-  typedef std::map<SpdyStreamId, scoped_refptr<SpdyStream> > ActiveStreamMap;
-  typedef std::map<std::string,
-      std::pair<scoped_refptr<SpdyStream>, base::TimeTicks> > PushedStreamMap;
+  typedef std::map<SpdyStreamId, SpdyStream*> ActiveStreamMap;
+  typedef std::map<std::string, std::pair<SpdyStream*, base::TimeTicks> >
+      PushedStreamMap;
 
-  typedef std::set<scoped_refptr<SpdyStream> > CreatedStreamSet;
+  typedef std::set<SpdyStream*> CreatedStreamSet;
 
   enum State {
     STATE_IDLE,
@@ -603,20 +605,20 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                     scoped_ptr<SpdyBufferProducer> producer,
                     const base::WeakPtr<SpdyStream>& stream);
 
-  // Track active streams in the active stream list.
-  void ActivateStream(const scoped_refptr<SpdyStream>& stream);
+  // Inserts a newly-created stream into |created_streams_|.
+  void InsertCreatedStream(scoped_ptr<SpdyStream> stream);
 
-  // If there is an active stream with the given ID, delete it. There
-  // must be no external references to that active stream. Also note
-  // that that active stream may hold the last reference to this
-  // object.
-  void DeleteStream(SpdyStreamId id, int status);
+  // Activates |stream| (which must be in |created_streams_|) by
+  // assigning it an ID and returns it.
+  scoped_ptr<SpdyStream> ActivateCreatedStream(SpdyStream* stream);
 
-  // Remove all internal references to the stream pointed to by
-  // |last_ref|, which must be the last reference to that stream and
-  // is set to NULL. Also note that the given stream may hold the last
-  // reference to this object.
-  void DeleteStreamRefs(scoped_refptr<SpdyStream>* last_ref, int status);
+  // Inserts a newly-activated stream into |active_streams_|.
+  void InsertActivatedStream(scoped_ptr<SpdyStream> stream);
+
+  // Remove all internal references to |stream|, call OnClose() on it,
+  // and process any pending stream requests before deleting it.  Note
+  // that |stream| may hold the last reference to the session.
+  void DeleteStream(scoped_ptr<SpdyStream> stream, int status);
 
   // Removes this session from the session pool.
   void RemoveFromPool();
@@ -628,8 +630,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // Calls OnResponseReceived().
   // Returns true if successful.
-  bool Respond(const SpdyHeaderBlock& headers,
-               const scoped_refptr<SpdyStream>& stream);
+  bool Respond(const SpdyHeaderBlock& headers, SpdyStream* stream);
 
   void RecordPingRTTHistogram(base::TimeDelta duration);
   void RecordHistograms();
@@ -645,8 +646,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // shutdown.
   void CloseAllStreams(Error status);
 
-  void LogAbandonedStream(const scoped_refptr<SpdyStream>& stream,
-                          Error status);
+  void LogAbandonedStream(SpdyStream* stream, Error status);
 
   // Invokes a user callback for stream creation.  We provide this method so it
   // can be deferred to the MessageLoop, so we avoid re-entrancy problems.
@@ -747,7 +747,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // Queue a send-stalled stream for possibly resuming once we're not
   // send-stalled anymore.
-  void QueueSendStalledStream(const scoped_refptr<SpdyStream>& stream);
+  void QueueSendStalledStream(const SpdyStream& stream);
 
   // Go through the queue of send-stalled streams and try to resume as
   // many as possible.
@@ -824,6 +824,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // of whether or not there is currently any ongoing IO [might be waiting for
   // the server to start pushing the stream]) or there are still network events
   // incoming even though the consumer has already gone away (cancellation).
+  //
+  // |active_streams_| owns all its SpdyStream objects.
+  //
   // TODO(willchan): Perhaps we should separate out cancelled streams and move
   // them into a separate ActiveStreamMap, and not deliver network events to
   // them?
@@ -831,9 +834,14 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // Map of all the streams that have already started to be pushed by the
   // server, but do not have consumers yet.
+  //
+  // |unclaimed_pushed_streams_| does not own any of its SpdyStream
+  // objects.
   PushedStreamMap unclaimed_pushed_streams_;
 
   // Set of all created streams but that have not yet sent any frames.
+  //
+  // |created_streams_| owns all its SpdyStream objects.
   CreatedStreamSet created_streams_;
 
   // The write queue.
@@ -850,7 +858,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   size_t in_flight_write_frame_size_;
   // The stream to notify when |in_flight_write_| has been written to
   // the socket completely.
-  scoped_refptr<SpdyStream> in_flight_write_stream_;
+  base::WeakPtr<SpdyStream> in_flight_write_stream_;
 
   // Flag if we have a pending message scheduled for WriteSocket.
   bool delayed_write_pending_;

@@ -236,17 +236,16 @@ TEST_F(SpdyStreamSpdy3Test, PushedStream) {
   BoundNetLog net_log;
 
   // Conjure up a stream.
-  scoped_refptr<SpdyStream> stream =
-      new SpdyStream(spdy_session,
-                     std::string(),
-                     DEFAULT_PRIORITY,
-                     kSpdyStreamInitialWindowSize,
-                     kSpdyStreamInitialWindowSize,
-                     true,
-                     net_log);
-  stream->set_stream_id(2);
-  EXPECT_FALSE(stream->response_received());
-  EXPECT_FALSE(stream->HasUrl());
+  SpdyStream stream(spdy_session,
+                    std::string(),
+                    DEFAULT_PRIORITY,
+                    kSpdyStreamInitialWindowSize,
+                    kSpdyStreamInitialWindowSize,
+                    true,
+                    net_log);
+  stream.set_stream_id(2);
+  EXPECT_FALSE(stream.response_received());
+  EXPECT_FALSE(stream.HasUrl());
 
   // Set a couple of headers.
   SpdyHeaderBlock response;
@@ -254,18 +253,18 @@ TEST_F(SpdyStreamSpdy3Test, PushedStream) {
   response[":host"] = url.host();
   response[":scheme"] = url.scheme();
   response[":path"] = url.path();
-  stream->OnResponseReceived(response);
+  stream.OnResponseReceived(response);
 
   // Send some basic headers.
   SpdyHeaderBlock headers;
   response[":status"] = "200";
   response[":version"] = "OK";
-  stream->OnHeaders(headers);
+  stream.OnHeaders(headers);
 
-  stream->set_response_received();
-  EXPECT_TRUE(stream->response_received());
-  EXPECT_TRUE(stream->HasUrl());
-  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
+  stream.set_response_received();
+  EXPECT_TRUE(stream.response_received());
+  EXPECT_TRUE(stream.HasUrl());
+  EXPECT_EQ(kStreamUrl, stream.GetUrl().spec());
 }
 
 TEST_F(SpdyStreamSpdy3Test, StreamError) {
@@ -357,28 +356,32 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
 // to overflow an int32. The SpdyStream should handle that case
 // gracefully.
 TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
-  session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
 
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 1),  // EOF
+    MockRead(ASYNC, 0, 2),  // EOF
   };
 
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   // Triggered by the overflowing call to IncreaseSendWindowSize
   // below.
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(0, RST_STREAM_FLOW_CONTROL_ERROR));
+      ConstructSpdyRstStream(1, RST_STREAM_FLOW_CONTROL_ERROR));
   MockWrite writes[] = {
-    CreateMockWrite(*rst),
+    CreateMockWrite(*req, 0),
+    CreateMockWrite(*rst, 1),
   };
-  writes[0].sequence_number = 0;
 
   CapturingBoundNetLog log;
 
-  OrderedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  DeterministicSocketData data(
+      reads, arraysize(reads), writes, arraysize(writes));
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
 
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
   scoped_refptr<SpdySession> session(CreateSpdySession());
   GURL url(kStreamUrl);
@@ -388,22 +391,28 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, log.bound());
   ASSERT_TRUE(stream.get() != NULL);
-
   StreamDelegateSendImmediate delegate(
       stream, scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
-  EXPECT_FALSE(stream->HasUrl());
-  EXPECT_EQ(0u, stream->stream_id());
-  EXPECT_FALSE(stream->closed());
+  stream->set_spdy_headers(
+      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
+
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
+
+  data.RunFor(1);
 
   int32 old_send_window_size = stream->send_window_size();
   ASSERT_GT(old_send_window_size, 0);
   int32 delta_window_size = kint32max - old_send_window_size + 1;
   stream->IncreaseSendWindowSize(delta_window_size);
-  EXPECT_EQ(old_send_window_size, stream->send_window_size());
+  EXPECT_EQ(NULL, stream.get());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  data.RunFor(2);
+
+  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, delegate.WaitForClose());
 }
 
 // Cause a send stall by reducing the flow control send window to

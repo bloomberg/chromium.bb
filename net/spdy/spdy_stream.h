@@ -49,8 +49,7 @@ enum SpdySendStatus {
 // a SpdyNetworkTransaction) will maintain a reference to the stream.  When
 // initiated by the server, only the SpdySession will maintain any reference,
 // until such a time as a client object requests a stream for the path.
-class NET_EXPORT_PRIVATE SpdyStream
-    : public base::RefCounted<SpdyStream> {
+class NET_EXPORT_PRIVATE SpdyStream {
  public:
   // Delegate handles protocol specific behavior of spdy stream.
   class NET_EXPORT_PRIVATE Delegate {
@@ -113,6 +112,8 @@ class NET_EXPORT_PRIVATE SpdyStream
              bool pushed,
              const BoundNetLog& net_log);
 
+  ~SpdyStream();
+
   // Set new |delegate|. |delegate| must not be NULL.
   // If it already received SYN_REPLY or data, OnResponseReceived() or
   // OnDataReceived() will be called.
@@ -141,7 +142,9 @@ class NET_EXPORT_PRIVATE SpdyStream
 
   int32 recv_window_size() const { return recv_window_size_; }
 
-  bool send_stalled_by_flow_control() { return send_stalled_by_flow_control_; }
+  bool send_stalled_by_flow_control() const {
+    return send_stalled_by_flow_control_;
+  }
 
   void set_send_stalled_by_flow_control(bool stalled) {
     send_stalled_by_flow_control_ = stalled;
@@ -347,10 +350,6 @@ class NET_EXPORT_PRIVATE SpdyStream
     STATE_OPEN,
     STATE_DONE
   };
-
-  friend class base::RefCounted<SpdyStream>;
-
-  virtual ~SpdyStream();
 
   void OnGetDomainBoundCertComplete(int result);
 
