@@ -668,6 +668,7 @@ bool IsAllowedAddressSpaceAccess(int sysno) {
     case __NR_munlock:
     case __NR_munmap:
       return true;
+    case __NR_madvise:
     case __NR_mincore:
     case __NR_mlockall:
 #if defined(__i386__) || defined(__x86_64__)
