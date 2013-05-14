@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-#@                 Untrusted Toolchain Manager
+#@                 PNaCl toolchain build script
 #@-------------------------------------------------------------------
 #@ This script builds the ARM and PNaCl untrusted toolchains.
 #@ It MUST be run from the native_client/ directory.
