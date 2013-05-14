@@ -100,7 +100,7 @@ public:
         const WTF::String& sourceID);
     virtual bool canRunBeforeUnloadConfirmPanel();
     virtual bool runBeforeUnloadConfirmPanel(
-        const WTF::String& message, bool isReload, WebCore::Frame*);
+        const WTF::String& message, WebCore::Frame*);
     virtual void closeWindowSoon();
     virtual void runJavaScriptAlert(WebCore::Frame*, const WTF::String&);
     virtual bool runJavaScriptConfirm(WebCore::Frame*, const WTF::String&);

@@ -128,12 +128,7 @@ namespace WebCore {
 #endif
         void cancelPendingSubstituteLoad(ResourceLoader*);
 
-        enum DocumentLoaderForNavigationPolicy {
-            UseDocumentLoader,
-            IgnoreDocumentLoader
-        };
-
-        bool shouldContinueForNavigationPolicy(const ResourceRequest&, DocumentLoaderForNavigationPolicy = UseDocumentLoader);
+        bool shouldContinueForNavigationPolicy(const ResourceRequest&);
         const NavigationAction& triggeringAction() const { return m_triggeringAction; }
         void setTriggeringAction(const NavigationAction& action) { m_triggeringAction = action; }
 

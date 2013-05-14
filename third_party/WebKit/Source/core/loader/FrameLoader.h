@@ -139,6 +139,7 @@ public:
 
     DocumentLoader* activeDocumentLoader() const;
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
+    DocumentLoader* policyDocumentLoader() const { return m_policyDocumentLoader.get(); }
     DocumentLoader* provisionalDocumentLoader() const { return m_provisionalDocumentLoader.get(); }
     FrameState state() const { return m_state; }
 
@@ -244,7 +245,7 @@ public:
 
     bool suppressOpenerInNewFrame() const { return m_suppressOpenerInNewFrame; }
 
-    bool shouldClose(bool isReload = false);
+    bool shouldClose();
     
     void started();
 
@@ -277,9 +278,9 @@ private:
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);
     
-    bool fireBeforeUnloadEvent(Chrome*, bool isReload);
+    bool fireBeforeUnloadEvent(Chrome*);
 
-    void checkNavigationPolicyAndContinueLoad(DocumentLoader*, PassRefPtr<FormState>);
+    void checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState>);
     void checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction&);
     void checkNewWindowPolicyAndContinue(PassRefPtr<FormState>, const String& frameName, const NavigationAction&);
 
@@ -289,6 +290,7 @@ private:
     void checkLoadCompleteForThisFrame();
 
     void setDocumentLoader(DocumentLoader*);
+    void setPolicyDocumentLoader(DocumentLoader*);
     void setProvisionalDocumentLoader(DocumentLoader*);
 
     void setState(FrameState);
@@ -344,14 +346,13 @@ private:
     FrameState m_state;
     FrameLoadType m_loadType;
 
-    // Document loaders for the different phases of frame loading. Note that while
+    // Document loaders for the three phases of frame loading. Note that while 
     // a new request is being loaded, the old document loader may still be referenced.
-    // E.g. while a new request is in the "provisional" state, the old document loader may
-    // be consulted as it makes sense to imply certain settings on the new loader.
-    // Note that a new DocumentLoader will exist briefly at the beginning of its life as neither
-    // of these, while we perform policy checks to determine whether we want to actually send a request.
+    // E.g. while a new request is in the "policy" state, the old document loader may
+    // be consulted in particular as it makes sense to imply certain settings on the new loader.
     RefPtr<DocumentLoader> m_documentLoader;
     RefPtr<DocumentLoader> m_provisionalDocumentLoader;
+    RefPtr<DocumentLoader> m_policyDocumentLoader;
 
     bool m_delegateIsHandlingProvisionalLoadError;
 

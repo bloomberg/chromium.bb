@@ -133,7 +133,7 @@ public:
     }
 
     virtual bool canRunBeforeUnloadConfirmPanel() = 0;
-    virtual bool runBeforeUnloadConfirmPanel(const String& message, bool isReload, Frame*) = 0;
+    virtual bool runBeforeUnloadConfirmPanel(const String& message, Frame*) = 0;
 
     virtual void closeWindowSoon() = 0;
 

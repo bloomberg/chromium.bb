@@ -246,7 +246,7 @@ public:
     // to proceed with closing the view.  Returns true if the user selects
     // 'OK' or false otherwise.
     virtual bool runModalBeforeUnloadDialog(
-        WebFrame*, bool isReload, const WebString& message) { return true; }
+        WebFrame*, const WebString& message) { return true; }
 
 
     // UI ------------------------------------------------------------------

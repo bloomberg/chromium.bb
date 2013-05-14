@@ -117,7 +117,7 @@ namespace WebCore {
         virtual void dispatchShow() = 0;
 
         virtual PolicyAction policyForNewWindowAction(const NavigationAction&, const String& frameName) = 0;
-        virtual PolicyAction decidePolicyForNavigationAction(DocumentLoader*, const NavigationAction&, const ResourceRequest&) = 0;
+        virtual PolicyAction decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&) = 0;
 
         virtual void dispatchUnableToImplementPolicy(const ResourceError&) = 0;
 
