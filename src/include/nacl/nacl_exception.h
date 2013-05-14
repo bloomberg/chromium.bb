@@ -11,10 +11,16 @@
 #ifndef __NATIVE_CLIENT_SRC_SERVICE_RUNTIME_INCLUDE_SYS_NACL_EXCEPTION_H__
 #define __NATIVE_CLIENT_SRC_SERVICE_RUNTIME_INCLUDE_SYS_NACL_EXCEPTION_H__ 1
 
+#include <stdlib.h>
+
 #if defined(__native_client__)
 # include <stdint.h>
 #else
 # include "native_client/src/include/portability.h"
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 /*
@@ -230,6 +236,46 @@ static inline struct NaClExceptionPortableContext *
 nacl_exception_context_get_portable(struct NaClExceptionContext *context) {
   return (struct NaClExceptionPortableContext *)
          ((uintptr_t) context + context->portable_context_offset);
+}
+#endif
+
+typedef void (*nacl_exception_handler_t)(struct NaClExceptionContext *context);
+
+/*
+ * The following functions return 0 on success or an errno value on
+ * failure.
+ */
+
+/*
+ * Set the exception handler function.  This applies to all threads in
+ * the process.  In this regard, this API is similar to signal() or
+ * sigaction() in POSIX.
+ */
+int nacl_exception_set_handler(nacl_exception_handler_t handler);
+
+/*
+ * Set the stack that the exception handler will run on.  This applies
+ * to the current thread only.  This API is similar to sigaltstack()
+ * in POSIX.
+ */
+int nacl_exception_set_stack(void *stack, size_t size);
+
+/*
+ * Clear the current thread's exception flag.
+ *
+ * The purpose of the exception flag is to prevent the exception
+ * handler from being re-entered if an exception occurs while handling
+ * an exception.  If an exception occurs on a thread while the
+ * thread's exception flag is set, the process is terminated.  The
+ * exception flag is set when an exception occurs and the exception
+ * handler is invoked.
+ *
+ * The exception flag is similar to signal masks in POSIX.
+ * nacl_exception_clear_flag() is similar to sigprocmask() in POSIX.
+ */
+int nacl_exception_clear_flag(void);
+
+#if defined(__cplusplus)
 }
 #endif
 

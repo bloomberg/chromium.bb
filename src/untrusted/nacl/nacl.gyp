@@ -143,6 +143,21 @@
       ],
     },
     {
+      'target_name': 'nacl_exception_lib',
+      'type': 'none',
+      'variables': {
+        'nlib_target': 'libnacl_exception.a',
+        'nso_target': 'libnacl_exception.so',
+        'build_glibc': 1,
+        'build_newlib': 1,
+        'build_pnacl_newlib': 1,
+      },
+      'sources': ['nacl_exception.c'],
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ],
+    },
+    {
       'target_name': 'nacl_list_mappings_lib',
       'type': 'none',
       'variables': {

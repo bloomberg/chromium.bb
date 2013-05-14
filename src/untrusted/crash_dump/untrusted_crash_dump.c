@@ -21,7 +21,6 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
-#include "native_client/src/untrusted/irt/irt.h"
 
 
 #define CRASH_PAGE_CHUNK (64 * 1024)
@@ -31,7 +30,6 @@
 
 
 static pthread_key_t g_CrashStackKey;
-static struct nacl_irt_exception_handling g_ExceptionHandling;
 static int g_ExceptionHandlingEnabled = 0;
 
 
@@ -240,14 +238,9 @@ int NaClCrashDumpInit(void) {
   int result;
 
   assert(g_ExceptionHandlingEnabled == 0);
-  if (nacl_interface_query(NACL_IRT_EXCEPTION_HANDLING_v0_1,
-                           &g_ExceptionHandling,
-                           sizeof(g_ExceptionHandling)) == 0) {
-    return 0;
-  }
   result = pthread_key_create(&g_CrashStackKey, NaClCrashDumpThreadDestructor);
   assert(result == 0);
-  if (g_ExceptionHandling.exception_handler(CrashHandler, NULL) != 0) {
+  if (nacl_exception_set_handler(CrashHandler) != 0) {
     return 0;
   }
   g_ExceptionHandlingEnabled = 1;
@@ -278,7 +271,6 @@ int NaClCrashDumpInitThread(void) {
                PROT_NONE, MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   assert(guard == stack);
   pthread_setspecific(g_CrashStackKey, stack);
-  result = g_ExceptionHandling.exception_stack(
-      stack, CRASH_STACK_COMPLETE_SIZE);
+  result = nacl_exception_set_stack(stack, CRASH_STACK_COMPLETE_SIZE);
   return result == 0;
 }

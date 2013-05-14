@@ -21,8 +21,6 @@
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
 
-typedef void (*handler_func_t)(struct NaClExceptionContext *context);
-
 /*
  * This is used for calculating the size of the exception stack frame
  * when alignment is taken into account.
@@ -240,7 +238,7 @@ void test_exception_stack_alignments(void) {
 
 void test_getting_previous_handler(void) {
   int rc;
-  handler_func_t prev_handler;
+  nacl_exception_handler_t prev_handler;
 
   rc = NACL_SYSCALL(exception_handler)(exception_handler, NULL);
   assert(rc == 0);
@@ -256,8 +254,8 @@ void test_getting_previous_handler(void) {
 
 void test_invalid_handlers(void) {
   int rc;
-  handler_func_t unaligned_func_ptr =
-    (handler_func_t) ((uintptr_t) exception_handler + 1);
+  nacl_exception_handler_t unaligned_func_ptr =
+    (nacl_exception_handler_t) ((uintptr_t) exception_handler + 1);
   const char *ptr_in_rodata_segment = "";
 
   /* An alignment check is required for safety in all NaCl sandboxes. */
@@ -266,7 +264,7 @@ void test_invalid_handlers(void) {
 
   /* A range check is required for safety in the NaCl ARM sandbox. */
   rc = NACL_SYSCALL(exception_handler)(
-      (handler_func_t) (uintptr_t) ptr_in_rodata_segment, NULL);
+      (nacl_exception_handler_t) (uintptr_t) ptr_in_rodata_segment, NULL);
   assert(rc == -EFAULT);
 }
 

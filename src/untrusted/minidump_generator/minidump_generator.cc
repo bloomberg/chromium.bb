@@ -5,12 +5,14 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -19,7 +21,6 @@
 #include "native_client/src/include/elf_constants.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/include/nacl/nacl_minidump.h"
-#include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/minidump_generator/build_id.c"
 
 
@@ -65,7 +66,7 @@ class MinidumpFileWriter {
     void *mapping = mmap(NULL, kMinidumpBufferSize, PROT_READ | PROT_WRITE,
                          MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (mapping == MAP_FAILED) {
-      fprintf(stderr, "minidump: Failed to preallocate memory\n");
+      perror("minidump: Failed to preallocate memory");
       return;
     }
     buf_ = (char *) mapping;
@@ -418,16 +419,9 @@ static void CrashHandler(struct NaClExceptionContext *context) {
 }
 
 void nacl_minidump_register_crash_handler(void) {
-  struct nacl_irt_exception_handling irt_exception_handling;
-  if (nacl_interface_query(NACL_IRT_EXCEPTION_HANDLING_v0_1,
-                           &irt_exception_handling,
-                           sizeof(irt_exception_handling))
-      != sizeof(irt_exception_handling)) {
-    fprintf(stderr, "minidump: Exception handling IRT interface not present\n");
-    return;
-  }
-  if (irt_exception_handling.exception_handler(CrashHandler, NULL) != 0) {
-    fprintf(stderr, "minidump: Failed to register an exception handler\n");
+  errno = nacl_exception_set_handler(CrashHandler);
+  if (errno != 0) {
+    perror("minidump: Failed to register an exception handler");
     return;
   }
 

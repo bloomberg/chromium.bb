@@ -76,7 +76,11 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         # For CHECK(...)
         'platform',
         ],
+    'untrusted_crash_dump': [
+        'nacl_exception',
+        ],
     'minidump_generator': [
+        'nacl_exception',
         'pthread',
         ],
     }

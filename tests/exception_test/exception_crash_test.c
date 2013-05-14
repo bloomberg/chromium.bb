@@ -15,8 +15,6 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 
-typedef void (*handler_func_t)(struct NaClExceptionContext *context);
-
 char stack_in_rwdata[0x1000];
 
 /*
@@ -33,7 +31,7 @@ void test_bad_handler(void) {
    * the code segment range and is well-aligned.  The bottom 64k of
    * address space is never mapped.
    */
-  handler_func_t handler = (handler_func_t) 0x1000;
+  nacl_exception_handler_t handler = (nacl_exception_handler_t) 0x1000;
   int rc = NACL_SYSCALL(exception_handler)(handler, NULL);
   assert(rc == 0);
   fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
