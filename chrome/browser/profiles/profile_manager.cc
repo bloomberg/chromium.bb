@@ -108,49 +108,50 @@ int64 ComputeFilesSize(const base::FilePath& directory,
 // Simple task to log the size of the current profile.
 void ProfileSizeTask(const base::FilePath& path, int extension_count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  const int64 kBytesInOneMB = 1024 * 1024;
 
   int64 size = ComputeFilesSize(path, FILE_PATH_LITERAL("*"));
-  int size_MB = static_cast<int>(size  / (1024 * 1024));
+  int size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.TotalSize", size_MB);
 
   size = ComputeFilesSize(path, FILE_PATH_LITERAL("History"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
+  size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.HistorySize", size_MB);
 
   size = ComputeFilesSize(path, FILE_PATH_LITERAL("History*"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
+  size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.TotalHistorySize", size_MB);
 
   size = ComputeFilesSize(path, FILE_PATH_LITERAL("Cookies"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
+  size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.CookiesSize", size_MB);
 
   size = ComputeFilesSize(path, FILE_PATH_LITERAL("Bookmarks"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
+  size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.BookmarksSize", size_MB);
 
   size = ComputeFilesSize(path, FILE_PATH_LITERAL("Favicons"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
+  size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.FaviconsSize", size_MB);
 
   size = ComputeFilesSize(path, FILE_PATH_LITERAL("Top Sites"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
+  size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.TopSitesSize", size_MB);
 
   size = ComputeFilesSize(path, FILE_PATH_LITERAL("Visited Links"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
+  size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.VisitedLinksSize", size_MB);
 
   size = ComputeFilesSize(path, FILE_PATH_LITERAL("Web Data"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
+  size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.WebDataSize", size_MB);
 
   size = ComputeFilesSize(path, FILE_PATH_LITERAL("Extension*"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
+  size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.ExtensionSize", size_MB);
 
   size = ComputeFilesSize(path, FILE_PATH_LITERAL("Policy"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
+  size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.PolicySize", size_MB);
 
   // Count number of extensions in this profile, if we know.
