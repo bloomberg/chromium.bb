@@ -10,6 +10,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Browser;
+class Profile;
 
 // A delegate for the InfoBar shown when the previous session has crashed.
 class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
@@ -39,7 +40,7 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
   content::NotificationRegistrar registrar_;
   bool accepted_;
   bool removed_notification_received_;
-  Browser* browser_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionCrashedInfoBarDelegate);
 };
