@@ -114,7 +114,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_masksToBounds(false)
     , m_drawsContent(false)
     , m_contentsVisible(true)
-    , m_maintainsPixelAlignment(false)
     , m_showDebugBorder(false)
     , m_showRepaintCounter(false)
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
@@ -325,22 +324,6 @@ void GraphicsLayer::removeFromParent()
     }
 
     platformLayer()->removeFromParent();
-}
-
-void GraphicsLayer::noteDeviceOrPageScaleFactorChangedIncludingDescendants()
-{
-    deviceOrPageScaleFactorChanged();
-
-    if (m_maskLayer)
-        m_maskLayer->deviceOrPageScaleFactorChanged();
-
-    if (m_replicaLayer)
-        m_replicaLayer->noteDeviceOrPageScaleFactorChangedIncludingDescendants();
-
-    const Vector<GraphicsLayer*>& childLayers = children();
-    size_t numChildren = childLayers.size();
-    for (size_t i = 0; i < numChildren; ++i)
-        childLayers[i]->noteDeviceOrPageScaleFactorChangedIncludingDescendants();
 }
 
 void GraphicsLayer::setReplicatedByLayer(GraphicsLayer* layer)

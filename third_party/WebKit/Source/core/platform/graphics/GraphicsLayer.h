@@ -406,15 +406,6 @@ public:
     void distributeOpacity(float);
     float accumulatedOpacity() const;
 
-    void setMaintainsPixelAlignment(bool maintainsAlignment) { m_maintainsPixelAlignment = maintainsAlignment; }
-    bool maintainsPixelAlignment() const { return m_maintainsPixelAlignment; }
-    
-    float pageScaleFactor() const { return m_client ? m_client->pageScaleFactor() : 1; }
-    float deviceScaleFactor() const { return m_client ? m_client->deviceScaleFactor() : 1; }
-
-    void deviceOrPageScaleFactorChanged() { }
-    void noteDeviceOrPageScaleFactorChangedIncludingDescendants();
-
     // If the exposed rect of this layer changes, returns true if this or descendant layers need a flush,
     // for example to allocate new tiles.
     bool visibleRectChangeRequiresFlush(const FloatRect& /* clipRect */) const { return false; }
@@ -535,7 +526,6 @@ protected:
     bool m_masksToBounds : 1;
     bool m_drawsContent : 1;
     bool m_contentsVisible : 1;
-    bool m_maintainsPixelAlignment : 1;
     bool m_showDebugBorder : 1;
     bool m_showRepaintCounter : 1;
     

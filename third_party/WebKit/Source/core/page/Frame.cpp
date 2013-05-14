@@ -656,10 +656,6 @@ void Frame::deviceOrPageScaleFactorChanged()
     for (RefPtr<Frame> child = tree()->firstChild(); child; child = child->tree()->nextSibling())
         child->deviceOrPageScaleFactorChanged();
 
-    RenderView* root = contentRenderer();
-    if (root && root->compositor())
-        root->compositor()->deviceOrPageScaleFactorChanged();
-
     m_page->chrome()->client()->deviceOrPageScaleFactorChanged();
 }
 

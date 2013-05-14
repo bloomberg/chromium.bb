@@ -67,11 +67,6 @@ public:
     // initialized to identity already. Returns false if the layer has no transform.
     virtual bool getCurrentTransform(const GraphicsLayer*, TransformationMatrix&) const { return false; }
 
-    // Multiplier for backing store size, related to high DPI.
-    virtual float deviceScaleFactor() const { return 1; }
-    // Page scale factor.
-    virtual float pageScaleFactor() const { return 1; }
-
     virtual bool isTrackingRepaints() const { return false; }
 
 #ifndef NDEBUG

@@ -50,7 +50,6 @@ class MockGraphicsLayerClient : public GraphicsLayerClient {
   public:
     virtual void notifyAnimationStarted(const GraphicsLayer*, double time) OVERRIDE { }
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) OVERRIDE { }
-    virtual float deviceScaleFactor() const OVERRIDE { return 2; }
 };
 
 class GraphicsLayerChromiumTest : public testing::Test {

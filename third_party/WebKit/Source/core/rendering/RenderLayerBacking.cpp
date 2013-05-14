@@ -135,7 +135,6 @@ PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(const String& 
 #else
     UNUSED_PARAM(name);
 #endif
-    graphicsLayer->setMaintainsPixelAlignment(compositor()->keepLayersPixelAligned());
     
     return graphicsLayer.release();
 }
@@ -1681,16 +1680,6 @@ void RenderLayerBacking::paintContents(const GraphicsLayer* graphicsLayer, Graph
     if (Page* page = renderer()->frame()->page())
         page->setIsPainting(false);
 #endif
-}
-
-float RenderLayerBacking::pageScaleFactor() const
-{
-    return compositor()->pageScaleFactor();
-}
-
-float RenderLayerBacking::deviceScaleFactor() const
-{
-    return compositor()->deviceScaleFactor();
 }
 
 void RenderLayerBacking::didCommitChangesForLayer(const GraphicsLayer* layer) const

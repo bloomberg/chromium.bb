@@ -2135,27 +2135,9 @@ bool RenderLayerCompositor::isTrackingRepaints() const
     return m_isTrackingRepaints;
 }
 
-float RenderLayerCompositor::deviceScaleFactor() const
-{
-    Page* page = this->page();
-    return page ? page->deviceScaleFactor() : 1;
-}
-
-float RenderLayerCompositor::pageScaleFactor() const
-{
-    Page* page = this->page();
-    return page ? page->pageScaleFactor() : 1;
-}
-
 void RenderLayerCompositor::didCommitChangesForLayer(const GraphicsLayer*) const
 {
     // Nothing to do here yet.
-}
-
-bool RenderLayerCompositor::keepLayersPixelAligned() const
-{
-    // When scaling, attempt to align compositing layers to pixel boundaries.
-    return true;
 }
 
 static bool shouldCompositeOverflowControls(FrameView* view)
@@ -2631,17 +2613,6 @@ bool RenderLayerCompositor::layerHas3DContent(const RenderLayer* layer) const
         }
     }
     return false;
-}
-
-void RenderLayerCompositor::deviceOrPageScaleFactorChanged()
-{
-    // Start at the RenderView's layer, since that's where the scale is applied.
-    RenderLayer* viewLayer = m_renderView->layer();
-    if (!viewLayer->isComposited())
-        return;
-
-    if (GraphicsLayer* rootLayer = viewLayer->backing()->childForSuperlayers())
-        rootLayer->noteDeviceOrPageScaleFactorChangedIncludingDescendants();
 }
 
 static bool isRootmostFixedOrStickyLayer(RenderLayer* layer)

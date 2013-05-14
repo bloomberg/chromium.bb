@@ -204,13 +204,7 @@ public:
 
     String layerTreeAsText(LayerTreeFlags);
 
-    virtual float deviceScaleFactor() const OVERRIDE;
-    virtual float pageScaleFactor() const OVERRIDE;
     virtual void didCommitChangesForLayer(const GraphicsLayer*) const OVERRIDE;
-
-    bool keepLayersPixelAligned() const;
-
-    void deviceOrPageScaleFactorChanged();
 
     GraphicsLayer* layerForHorizontalScrollbar() const { return m_layerForHorizontalScrollbar.get(); }
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
