@@ -31,14 +31,14 @@ TEST_F(InputMethodConfigurationTest, TestInitialize) {
           content::BrowserThread::UI),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::FILE));
-  InputMethodManager* manager = GetInputMethodManager();
+  InputMethodManager* manager = InputMethodManager::Get();
   EXPECT_TRUE(manager);
   Shutdown();
 }
 
 TEST_F(InputMethodConfigurationTest, TestInitializeForTesting) {
   InitializeForTesting(new MockInputMethodManager);
-  InputMethodManager* manager = GetInputMethodManager();
+  InputMethodManager* manager = InputMethodManager::Get();
   EXPECT_TRUE(manager);
   Shutdown();
 }

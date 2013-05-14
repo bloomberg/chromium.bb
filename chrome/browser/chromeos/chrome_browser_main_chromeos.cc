@@ -354,7 +354,7 @@ class DBusServices {
 
     if (base::chromeos::IsRunningOnChromeOS()) {
       // Disable Num Lock on X start up for http://crosbug.com/29169.
-      input_method::GetInputMethodManager()->GetXKeyboard()->
+      input_method::InputMethodManager::Get()->GetXKeyboard()->
           SetNumLockEnabled(false);
     }
 

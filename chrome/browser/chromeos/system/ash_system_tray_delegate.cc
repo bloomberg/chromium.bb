@@ -50,7 +50,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
@@ -311,7 +310,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     crosnet->AddNetworkManagerObserver(this);
     OnNetworkManagerChanged(crosnet);
 
-    input_method::GetInputMethodManager()->AddObserver(this);
+    input_method::InputMethodManager::Get()->AddObserver(this);
 
     system::TimezoneSettings::GetInstance()->AddObserver(this);
     DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(this);
@@ -372,7 +371,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     if (crosnet)
       crosnet->RemoveNetworkManagerObserver(this);
-    input_method::GetInputMethodManager()->RemoveObserver(this);
+    input_method::InputMethodManager::Get()->RemoveObserver(this);
     system::TimezoneSettings::GetInstance()->RemoveObserver(this);
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
@@ -702,7 +701,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void GetCurrentIME(ash::IMEInfo* info) OVERRIDE {
     input_method::InputMethodManager* manager =
-        input_method::GetInputMethodManager();
+        input_method::InputMethodManager::Get();
     input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
     input_method::InputMethodDescriptor ime = manager->GetCurrentInputMethod();
     ExtractIMEInfo(ime, *util, info);
@@ -711,7 +710,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void GetAvailableIMEList(ash::IMEInfoList* list) OVERRIDE {
     input_method::InputMethodManager* manager =
-        input_method::GetInputMethodManager();
+        input_method::InputMethodManager::Get();
     input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
     scoped_ptr<input_method::InputMethodDescriptors> ime_descriptors(
         manager->GetActiveInputMethods());
@@ -728,7 +727,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void GetCurrentIMEProperties(
       ash::IMEPropertyInfoList* list) OVERRIDE {
     input_method::InputMethodManager* manager =
-        input_method::GetInputMethodManager();
+        input_method::InputMethodManager::Get();
     input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
     input_method::InputMethodPropertyList properties =
         manager->GetCurrentInputMethodProperties();
@@ -742,11 +741,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void SwitchIME(const std::string& ime_id) OVERRIDE {
-    input_method::GetInputMethodManager()->ChangeInputMethod(ime_id);
+    input_method::InputMethodManager::Get()->ChangeInputMethod(ime_id);
   }
 
   virtual void ActivateIMEProperty(const std::string& key) OVERRIDE {
-    input_method::GetInputMethodManager()->
+    input_method::InputMethodManager::Get()->
         ActivateInputMethodProperty(key);
   }
 

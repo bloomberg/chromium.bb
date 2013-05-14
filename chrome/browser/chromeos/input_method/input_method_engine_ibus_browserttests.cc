@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind_helpers.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -140,10 +139,10 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   extension_ime_ids.push_back(kIdentityIMEID);
   extension_ime_ids.push_back(kToUpperIMEID);
   extension_ime_ids.push_back(kEchoBackIMEID);
-  GetInputMethodManager()->SetEnabledExtensionImes(&extension_ime_ids);
+  InputMethodManager::Get()->SetEnabledExtensionImes(&extension_ime_ids);
 
   InputMethodDescriptors extension_imes;
-  GetInputMethodManager()->GetInputMethodExtensions(&extension_imes);
+  InputMethodManager::Get()->GetInputMethodExtensions(&extension_imes);
 
   // Test IME has two input methods, thus InputMethodManager should have two
   // extension IME.

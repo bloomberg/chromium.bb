@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_component.h"
@@ -60,7 +59,7 @@ InputMethodEngineIBus::InputMethodEngineIBus()
 }
 
 InputMethodEngineIBus::~InputMethodEngineIBus() {
-  input_method::GetInputMethodManager()->RemoveInputMethodExtension(ibus_id_);
+  input_method::InputMethodManager::Get()->RemoveInputMethodExtension(ibus_id_);
 
   // Do not unset engine before removing input method extension, above function
   // may call reset function of engine object.
@@ -84,7 +83,7 @@ void InputMethodEngineIBus::Initialize(
   engine_id_ = engine_id;
 
   input_method::InputMethodManager* manager =
-      input_method::GetInputMethodManager();
+      input_method::InputMethodManager::Get();
   ComponentExtensionIMEManager* comp_ext_ime_manager
       = manager->GetComponentExtensionIMEManager();
 

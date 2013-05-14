@@ -9,7 +9,6 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -20,11 +19,11 @@
 namespace chromeos {
 
 ExtensionInputMethodEventRouter::ExtensionInputMethodEventRouter() {
-  input_method::GetInputMethodManager()->AddObserver(this);
+  input_method::InputMethodManager::Get()->AddObserver(this);
 }
 
 ExtensionInputMethodEventRouter::~ExtensionInputMethodEventRouter() {
-  input_method::GetInputMethodManager()->RemoveObserver(this);
+  input_method::InputMethodManager::Get()->RemoveObserver(this);
 }
 
 void ExtensionInputMethodEventRouter::InputMethodChanged(

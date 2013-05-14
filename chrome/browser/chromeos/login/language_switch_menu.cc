@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/language_list.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
@@ -158,7 +157,7 @@ void LanguageSwitchMenu::SwitchLanguageAndEnableKeyboardLayouts(
     // to the hardware keyboard layout since the input method currently in
     // use may not be supported by the new locale (3rd parameter).
     input_method::InputMethodManager* manager =
-        input_method::GetInputMethodManager();
+        input_method::InputMethodManager::Get();
     manager->EnableLayouts(
         locale,
         manager->GetInputMethodUtil()->GetHardwareInputMethodId());

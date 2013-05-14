@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
@@ -189,7 +188,7 @@ double ChromeShellDelegate::GetSavedScreenMagnifierScale() {
 
 ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
   chromeos::input_method::XKeyboard* xkeyboard =
-      chromeos::input_method::GetInputMethodManager()->GetXKeyboard();
+      chromeos::input_method::InputMethodManager::Get()->GetXKeyboard();
   return new CapsLockDelegate(xkeyboard);
 }
 

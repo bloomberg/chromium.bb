@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -46,7 +45,7 @@ static const char kFallbackInputMethodLocale[] = "en-US";
 
 Preferences::Preferences()
     : prefs_(NULL),
-      input_method_manager_(input_method::GetInputMethodManager()) {
+      input_method_manager_(input_method::InputMethodManager::Get()) {
 }
 
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
@@ -73,7 +72,7 @@ void Preferences::RegisterUserPrefs(
   // TODO(yusukes): Remove the runtime hack.
   if (base::chromeos::IsRunningOnChromeOS()) {
     input_method::InputMethodManager* manager =
-        input_method::GetInputMethodManager();
+        input_method::InputMethodManager::Get();
     if (manager) {
       hardware_keyboard_id =
           manager->GetInputMethodUtil()->GetHardwareInputMethodId();

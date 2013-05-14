@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,12 +57,12 @@ namespace options {
 CrosLanguageOptionsHandler::CrosLanguageOptionsHandler()
     : composition_extension_appended_(false),
       is_page_initialized_(false) {
-  input_method::GetInputMethodManager()->GetComponentExtensionIMEManager()->
+  input_method::InputMethodManager::Get()->GetComponentExtensionIMEManager()->
       AddObserver(this);
 }
 
 CrosLanguageOptionsHandler::~CrosLanguageOptionsHandler() {
-  input_method::GetInputMethodManager()->GetComponentExtensionIMEManager()->
+  input_method::InputMethodManager::Get()->GetComponentExtensionIMEManager()->
       RemoveObserver(this);
 }
 
@@ -105,7 +104,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_SETTINGS_LANGUAGES_NO_INPUT_METHODS));
 
   input_method::InputMethodManager* manager =
-      input_method::GetInputMethodManager();
+      input_method::InputMethodManager::Get();
   // GetSupportedInputMethods() never return NULL.
   scoped_ptr<input_method::InputMethodDescriptors> descriptors(
       manager->GetSupportedInputMethods());
@@ -114,7 +113,8 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   localized_strings->Set("extensionImeList", GetExtensionImeList());
 
   ComponentExtensionIMEManager* component_extension_manager =
-      input_method::GetInputMethodManager()->GetComponentExtensionIMEManager();
+      input_method::InputMethodManager::Get()
+          ->GetComponentExtensionIMEManager();
   if (component_extension_manager->IsInitialized()) {
     localized_strings->Set("componentExtensionImeList",
                            GetComponentExtensionImeList());
@@ -147,7 +147,7 @@ void CrosLanguageOptionsHandler::RegisterMessages() {
 ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     const input_method::InputMethodDescriptors& descriptors) {
   input_method::InputMethodManager* manager =
-      input_method::GetInputMethodManager();
+      input_method::InputMethodManager::Get();
 
   ListValue* input_method_list = new ListValue();
 
@@ -196,7 +196,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
   }
   // Collect the language codes from extra languages.
   const std::vector<std::string> extra_language_codes =
-      input_method::GetInputMethodManager()->GetInputMethodUtil()
+      input_method::InputMethodManager::Get()->GetInputMethodUtil()
           ->GetExtraLanguageCodeList();
   for (size_t i = 0; i < extra_language_codes.size(); ++i)
     language_codes.insert(extra_language_codes[i]);
@@ -300,7 +300,7 @@ base::ListValue* CrosLanguageOptionsHandler::GetUILanguageList(
 
 base::ListValue* CrosLanguageOptionsHandler::GetExtensionImeList() {
   input_method::InputMethodManager* manager =
-      input_method::GetInputMethodManager();
+      input_method::InputMethodManager::Get();
 
   input_method::InputMethodDescriptors descriptors;
   manager->GetInputMethodExtensions(&descriptors);
@@ -320,7 +320,8 @@ base::ListValue* CrosLanguageOptionsHandler::GetExtensionImeList() {
 
 base::ListValue* CrosLanguageOptionsHandler::GetComponentExtensionImeList() {
   ComponentExtensionIMEManager* component_extension_manager =
-      input_method::GetInputMethodManager()->GetComponentExtensionIMEManager();
+      input_method::InputMethodManager::Get()
+          ->GetComponentExtensionIMEManager();
   DCHECK(component_extension_manager->IsInitialized());
 
   scoped_ptr<ListValue> extension_ime_ids_list(new ListValue());
@@ -387,7 +388,7 @@ void CrosLanguageOptionsHandler::OnInitialized() {
     return;
   }
 
-  DCHECK(input_method::GetInputMethodManager()->
+  DCHECK(input_method::InputMethodManager::Get()->
          GetComponentExtensionIMEManager()->IsInitialized());
   scoped_ptr<ListValue> ime_list(GetComponentExtensionImeList());
   web_ui()->CallJavascriptFunction(
@@ -402,7 +403,8 @@ void CrosLanguageOptionsHandler::InitializePage() {
     return;
 
   ComponentExtensionIMEManager* component_extension_manager =
-      input_method::GetInputMethodManager()->GetComponentExtensionIMEManager();
+      input_method::InputMethodManager::Get()
+          ->GetComponentExtensionIMEManager();
   if (!component_extension_manager->IsInitialized()) {
     // If the component extension IME manager is not available yet, append the
     // component extension list in |OnInitialized()|.

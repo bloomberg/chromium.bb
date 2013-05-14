@@ -13,7 +13,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -325,7 +324,7 @@ void KeyboardOverlayHandler::RegisterMessages() {
 
 void KeyboardOverlayHandler::GetInputMethodId(const ListValue* args) {
   chromeos::input_method::InputMethodManager* manager =
-      chromeos::input_method::GetInputMethodManager();
+      chromeos::input_method::InputMethodManager::Get();
   const chromeos::input_method::InputMethodDescriptor& descriptor =
       manager->GetCurrentInputMethod();
   StringValue param(descriptor.id());

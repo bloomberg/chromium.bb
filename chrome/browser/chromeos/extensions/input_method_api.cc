@@ -7,7 +7,6 @@
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -35,7 +34,7 @@ bool GetInputMethodFunction::RunImpl() {
   return false;
 #else
   chromeos::input_method::InputMethodManager* manager =
-      chromeos::input_method::GetInputMethodManager();
+      chromeos::input_method::InputMethodManager::Get();
   const std::string input_method = InputMethodAPI::GetInputMethodForXkb(
       manager->GetCurrentInputMethod().id());
   SetResult(Value::CreateStringValue(input_method));
