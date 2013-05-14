@@ -27,6 +27,7 @@
 #ifndef DOMWindow_h
 #define DOMWindow_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/EventTarget.h"
 #include "core/page/FrameDestructionObserver.h"
@@ -81,11 +82,7 @@ namespace WebCore {
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
     // FIXME: DOMWindow shouldn't subclass FrameDestructionObserver and instead should get to Frame via its Document.
-    class DOMWindow : public RefCounted<DOMWindow>
-                    , public EventTarget
-                    , public ContextDestructionObserver
-                    , public FrameDestructionObserver
-                    , public Supplementable<DOMWindow> {
+    class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTarget, public ContextDestructionObserver, public FrameDestructionObserver, public Supplementable<DOMWindow> {
     public:
         static PassRefPtr<DOMWindow> create(Document* document) { return adoptRef(new DOMWindow(document)); }
         virtual ~DOMWindow();

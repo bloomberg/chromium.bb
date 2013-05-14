@@ -84,6 +84,7 @@ bool isAllowed(ScriptExecutionContext* context)
 DOMSecurityPolicy::DOMSecurityPolicy(ScriptExecutionContext* context)
     : ContextDestructionObserver(context)
 {
+    ScriptWrappable::init(this);
 }
 
 DOMSecurityPolicy::~DOMSecurityPolicy()

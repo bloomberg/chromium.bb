@@ -29,6 +29,7 @@
 #ifndef DOMNamedFlowCollection_h
 #define DOMNamedFlowCollection_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/NamedFlowCollection.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/PassRefPtr.h>
@@ -40,7 +41,7 @@ namespace WebCore {
 class Document;
 class NamedFlow;
 
-class DOMNamedFlowCollection : public RefCounted<DOMNamedFlowCollection> {
+class DOMNamedFlowCollection : public ScriptWrappable, public RefCounted<DOMNamedFlowCollection> {
 public:
     static PassRefPtr<DOMNamedFlowCollection> create(const Vector<NamedFlow*>& namedFlows)
     {

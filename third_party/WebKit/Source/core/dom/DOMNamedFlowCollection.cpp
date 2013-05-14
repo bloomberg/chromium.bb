@@ -38,6 +38,7 @@ namespace WebCore {
 DOMNamedFlowCollection::DOMNamedFlowCollection(const Vector<NamedFlow*>& namedFlows)
 {
     ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
+    ScriptWrappable::init(this);
     for (Vector<NamedFlow*>::const_iterator it = namedFlows.begin(); it != namedFlows.end(); ++it)
         m_namedFlows.add(*it);
 }

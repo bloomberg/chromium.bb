@@ -31,6 +31,7 @@ DOMSettableTokenList::DOMSettableTokenList()
     : m_value()
     , m_tokens()
 {
+    ScriptWrappable::init(this);
 }
 
 DOMSettableTokenList::~DOMSettableTokenList()

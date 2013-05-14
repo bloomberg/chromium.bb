@@ -42,11 +42,13 @@ namespace WebCore {
 DOMFormData::DOMFormData(const WTF::TextEncoding& encoding)
     : FormDataList(encoding)
 {
+    ScriptWrappable::init(this);
 }
 
 DOMFormData::DOMFormData(HTMLFormElement* form)
     : FormDataList(UTF8Encoding())
 {
+    ScriptWrappable::init(this);
     if (!form)
         return;
 

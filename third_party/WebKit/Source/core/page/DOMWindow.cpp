@@ -398,6 +398,7 @@ DOMWindow::DOMWindow(Document* document)
 {
     ASSERT(frame());
     ASSERT(DOMWindow::document());
+    ScriptWrappable::init(this);
 }
 
 void DOMWindow::didSecureTransitionTo(Document* document)

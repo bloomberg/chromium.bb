@@ -45,7 +45,7 @@ namespace WebCore {
 class Blob;
 class HTMLFormElement;
 
-class DOMFormData : public FormDataList, public RefCounted<DOMFormData> {
+class DOMFormData : public FormDataList, public ScriptWrappable, public RefCounted<DOMFormData> {
 public:
     static PassRefPtr<DOMFormData> create(HTMLFormElement* form) { return adoptRef(new DOMFormData(form)); }
     static PassRefPtr<DOMFormData> create(const WTF::TextEncoding& encoding) { return adoptRef(new DOMFormData(encoding)); }
