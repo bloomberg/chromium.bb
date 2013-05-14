@@ -44,7 +44,7 @@ public:
     void expandRangeToNextEnd();
 
     int textLength() const { return text().length(); }
-    String textSubstring(unsigned pos, unsigned len = UINT_MAX) const { return text().substring(pos, len); }
+    String textSubstring(unsigned pos, unsigned len = INT_MAX) const { return text().substring(pos, len); }
     const UChar* textCharacters() const { return text().characters(); }
     UChar textCharAt(int index) const { return text()[static_cast<unsigned>(index)]; }
 

@@ -317,7 +317,8 @@ inline void InlineIterator::fastIncrementInTextNode()
     ASSERT(m_obj);
     ASSERT(m_obj->isText());
     ASSERT(m_pos <= toRenderText(m_obj)->textLength());
-    m_pos++;
+    if (m_pos < INT_MAX)
+        m_pos++;
 }
 
 // FIXME: This is used by RenderBlock for simplified layout, and has nothing to do with bidi
@@ -523,7 +524,7 @@ inline void InlineBidiResolver::appendRun()
             obj = bidiNextSkippingEmptyInlines(m_sor.root(), obj, &isolateTracker);
         }
         if (obj) {
-            unsigned pos = obj == m_eor.m_obj ? m_eor.m_pos : UINT_MAX;
+            unsigned pos = obj == m_eor.m_obj ? m_eor.m_pos : INT_MAX;
             if (obj == endOfLine.m_obj && endOfLine.m_pos <= pos) {
                 m_reachedEndOfLine = true;
                 pos = endOfLine.m_pos;
