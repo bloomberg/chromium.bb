@@ -186,10 +186,6 @@ bool DownloadFileImpl::InProgress() const {
   return file_.in_progress();
 }
 
-int64 DownloadFileImpl::BytesSoFar() const {
-  return file_.bytes_so_far();
-}
-
 int64 DownloadFileImpl::CurrentSpeed() const {
   return file_.CurrentSpeed();
 }
@@ -306,7 +302,8 @@ void DownloadFileImpl::SendUpdate() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadDestinationObserver::DestinationUpdate,
-                 observer_, BytesSoFar(), CurrentSpeed(), GetHashState()));
+                 observer_, file_.bytes_so_far(), CurrentSpeed(),
+                 GetHashState()));
 }
 
 // static

@@ -161,8 +161,6 @@ class DownloadFileTest : public testing::Test {
 
   virtual void DestroyDownloadFile(int offset) {
     EXPECT_FALSE(download_file_->InProgress());
-    EXPECT_EQ(static_cast<int64>(expected_data_.size()),
-              download_file_->BytesSoFar());
 
     // Make sure the data has been properly written to disk.
     std::string disk_data;

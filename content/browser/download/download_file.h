@@ -64,7 +64,6 @@ class CONTENT_EXPORT DownloadFile {
 
   virtual base::FilePath FullPath() const = 0;
   virtual bool InProgress() const = 0;
-  virtual int64 BytesSoFar() const = 0;
   virtual int64 CurrentSpeed() const = 0;
 
   // Set |hash| with sha256 digest for the file.

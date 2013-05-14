@@ -59,7 +59,6 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
   virtual void Cancel() OVERRIDE;
   virtual base::FilePath FullPath() const OVERRIDE;
   virtual bool InProgress() const OVERRIDE;
-  virtual int64 BytesSoFar() const OVERRIDE;
   virtual int64 CurrentSpeed() const OVERRIDE;
   virtual bool GetHash(std::string* hash) OVERRIDE;
   virtual std::string GetHashState() OVERRIDE;
