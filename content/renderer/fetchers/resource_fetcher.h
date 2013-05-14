@@ -9,8 +9,8 @@
 // ResourceFetcher::Delegate::OnURLFetchComplete will be called async after
 // the ResourceFetcher object is created.
 
-#ifndef WEBKIT_GLUE_RESOURCE_FETCHER_H_
-#define WEBKIT_GLUE_RESOURCE_FETCHER_H_
+#ifndef CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_H_
+#define CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_H_
 
 #include <string>
 
@@ -19,11 +19,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLLoaderClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
-#include "webkit/glue/webkit_glue_export.h"
 
 class GURL;
 
@@ -33,10 +33,10 @@ class WebURLLoader;
 struct WebURLError;
 }
 
-namespace webkit_glue {
+namespace content {
 
-class WEBKIT_GLUE_EXPORT ResourceFetcher :
-    NON_EXPORTED_BASE(public WebKit::WebURLLoaderClient) {
+class CONTENT_EXPORT ResourceFetcher
+    : NON_EXPORTED_BASE(public WebKit::WebURLLoaderClient) {
  public:
   // This will be called when the URL has been fetched, successfully or not.
   // If there is a failure, response and data will both be empty.  |response|
@@ -110,7 +110,8 @@ class WEBKIT_GLUE_EXPORT ResourceFetcher :
 
 /////////////////////////////////////////////////////////////////////////////
 // A resource fetcher with a timeout
-class WEBKIT_GLUE_EXPORT ResourceFetcherWithTimeout : public ResourceFetcher {
+class CONTENT_EXPORT ResourceFetcherWithTimeout
+    : NON_EXPORTED_BASE(public ResourceFetcher) {
  public:
   ResourceFetcherWithTimeout(const GURL& url,
                              WebKit::WebFrame* frame,
@@ -129,6 +130,6 @@ class WEBKIT_GLUE_EXPORT ResourceFetcherWithTimeout : public ResourceFetcher {
   base::OneShotTimer<ResourceFetcherWithTimeout> timeout_timer_;
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_GLUE_RESOURCE_FETCHER_H_
+#endif  // CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_H_

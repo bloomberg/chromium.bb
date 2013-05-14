@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/resource_fetcher.h"
+#include "content/renderer/fetchers/resource_fetcher.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -22,8 +22,6 @@
 using WebKit::WebFrame;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
-using webkit_glue::ResourceFetcher;
-using webkit_glue::ResourceFetcherWithTimeout;
 
 namespace content {
 

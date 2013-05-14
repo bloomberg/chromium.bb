@@ -27,11 +27,6 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace webkit_glue {
-class ResourceFetcher;
-class ImageResourceFetcher;
-}
-
 namespace extensions {
 class Dispatcher;
 
@@ -104,14 +99,6 @@ class ExtensionHelper
   // via application definition. The in-progress web app is stored here while
   // its manifest and icons are downloaded.
   scoped_ptr<WebApplicationInfo> pending_app_info_;
-
-  // Used to download the application definition file.
-  scoped_ptr<webkit_glue::ResourceFetcher> app_definition_fetcher_;
-
-  // Used to download the icons for an application.
-  typedef std::vector<linked_ptr<webkit_glue::ImageResourceFetcher> >
-      ImageResourceFetcherList;
-  ImageResourceFetcherList app_icon_fetchers_;
 
   // The number of app icon requests outstanding. When this reaches zero, we're
   // done processing an app definition file.

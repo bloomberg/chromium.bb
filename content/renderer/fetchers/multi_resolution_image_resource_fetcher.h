@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_MULTI_RESOLUTION_IMAGE_RESOURCE_FETCHER_H_
-#define WEBKIT_GLUE_MULTI_RESOLUTION_IMAGE_RESOURCE_FETCHER_H_
+#ifndef CONTENT_RENDERER_FETCHERS_MULTI_RESOLUTION_IMAGE_RESOURCE_FETCHER_H_
+#define CONTENT_RENDERER_FETCHERS_MULTI_RESOLUTION_IMAGE_RESOURCE_FETCHER_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "webkit/glue/resource_fetcher.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "content/renderer/fetchers/resource_fetcher.h"
 
 class SkBitmap;
 
-namespace webkit_glue {
+namespace content {
 
 // A resource fetcher that returns all (differently-sized) frames in
 // an image. Useful for favicons.
@@ -23,14 +22,14 @@ class MultiResolutionImageResourceFetcher{
   typedef base::Callback<void(MultiResolutionImageResourceFetcher*,
                               const std::vector<SkBitmap>&)> Callback;
 
-  WEBKIT_GLUE_EXPORT MultiResolutionImageResourceFetcher(
+  MultiResolutionImageResourceFetcher(
       const GURL& image_url,
       WebKit::WebFrame* frame,
       int id,
       WebKit::WebURLRequest::TargetType target_type,
       const Callback& callback);
 
-  WEBKIT_GLUE_EXPORT virtual ~MultiResolutionImageResourceFetcher();
+  virtual ~MultiResolutionImageResourceFetcher();
 
   // URL of the image we're downloading.
   const GURL& image_url() const { return image_url_; }
@@ -57,6 +56,6 @@ class MultiResolutionImageResourceFetcher{
   DISALLOW_COPY_AND_ASSIGN(MultiResolutionImageResourceFetcher);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_GLUE_MULTI_RESOLUTION_IMAGE_RESOURCE_FETCHER_H_
+#endif  // CONTENT_RENDERER_FETCHERS_MULTI_RESOLUTION_IMAGE_RESOURCE_FETCHER_H_

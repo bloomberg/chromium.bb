@@ -49,7 +49,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "v8/include/v8-testing.h"
 #include "webkit/glue/image_decoder.h"
-#include "webkit/glue/multi_resolution_image_resource_fetcher.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebAccessibilityObject;
@@ -69,7 +68,6 @@ using WebKit::WebURLRequest;
 using WebKit::WebView;
 using WebKit::WebVector;
 using extensions::APIPermission;
-using webkit_glue::MultiResolutionImageResourceFetcher;
 
 // Delay in milliseconds that we'll wait before capturing the page contents
 // and thumbnail.

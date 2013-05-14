@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_ALT_ERROR_PAGE_RESOURCE_FETCHER_H_
-#define WEBKIT_GLUE_ALT_ERROR_PAGE_RESOURCE_FETCHER_H_
+#ifndef CONTENT_RENDERER_FETCHERS_ALT_ERROR_PAGE_RESOURCE_FETCHER_H_
+#define CONTENT_RENDERER_FETCHERS_ALT_ERROR_PAGE_RESOURCE_FETCHER_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
-#include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
 class WebFrame;
 class WebURLResponse;
 }
 
-namespace webkit_glue {
+namespace content {
 class ResourceFetcherWithTimeout;
 
 // Used for downloading alternate dns error pages. Once downloading is done
@@ -32,13 +31,13 @@ class AltErrorPageResourceFetcher {
                               const WebKit::WebURLError&,
                               const std::string&)> Callback;
 
-  WEBKIT_GLUE_EXPORT AltErrorPageResourceFetcher(
+  AltErrorPageResourceFetcher(
       const GURL& url,
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& original_request,
       const WebKit::WebURLError& original_error,
       const Callback& callback);
-  WEBKIT_GLUE_EXPORT ~AltErrorPageResourceFetcher();
+  ~AltErrorPageResourceFetcher();
 
   // Stop any pending loads.
   void Cancel();
@@ -64,6 +63,6 @@ class AltErrorPageResourceFetcher {
   DISALLOW_COPY_AND_ASSIGN(AltErrorPageResourceFetcher);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_GLUE_ALT_ERROR_PAGE_RESOURCE_FETCHER_H_
+#endif  // CONTENT_RENDERER_FETCHERS_ALT_ERROR_PAGE_RESOURCE_FETCHER_H_

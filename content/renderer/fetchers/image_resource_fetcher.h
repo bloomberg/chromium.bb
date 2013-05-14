@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_IMAGE_RESOURCE_FETCHER_H_
-#define WEBKIT_GLUE_IMAGE_RESOURCE_FETCHER_H_
+#ifndef CONTENT_RENDERER_FETCHERS_IMAGE_RESOURCE_FETCHER_H_
+#define CONTENT_RENDERER_FETCHERS_IMAGE_RESOURCE_FETCHER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "webkit/glue/resource_fetcher.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "content/renderer/fetchers/resource_fetcher.h"
 
 class SkBitmap;
 
-namespace webkit_glue {
+namespace content {
 
 // ImageResourceFetcher handles downloading an image for a webview. Once
 // downloading is done the supplied callback is notified. ImageResourceFetcher
@@ -21,7 +20,7 @@ class ImageResourceFetcher {
  public:
   typedef base::Callback<void(ImageResourceFetcher*, const SkBitmap&)> Callback;
 
-  WEBKIT_GLUE_EXPORT ImageResourceFetcher(
+  ImageResourceFetcher(
       const GURL& image_url,
       WebKit::WebFrame* frame,
       int id,
@@ -29,7 +28,7 @@ class ImageResourceFetcher {
       WebKit::WebURLRequest::TargetType target_type,
       const Callback& callback);
 
-  WEBKIT_GLUE_EXPORT virtual ~ImageResourceFetcher();
+  virtual ~ImageResourceFetcher();
 
   // URL of the image we're downloading.
   const GURL& image_url() const { return image_url_; }
@@ -61,6 +60,6 @@ class ImageResourceFetcher {
   DISALLOW_COPY_AND_ASSIGN(ImageResourceFetcher);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_GLUE_IMAGE_RESOURCE_FETCHER_H_
+#endif  // CONTENT_RENDERER_FETCHERS_IMAGE_RESOURCE_FETCHER_H_

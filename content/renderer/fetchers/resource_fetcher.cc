@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/resource_fetcher.h"
+#include "content/renderer/fetchers/resource_fetcher.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
@@ -21,7 +21,7 @@ using WebKit::WebURLLoader;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 
-namespace webkit_glue {
+namespace content {
 
 ResourceFetcher::ResourceFetcher(const GURL& url, WebFrame* frame,
                                  WebURLRequest::TargetType target_type,
@@ -142,4 +142,4 @@ void ResourceFetcherWithTimeout::TimeoutFired() {
   }
 }
 
-}  // namespace webkit_glue
+}  // namespace content

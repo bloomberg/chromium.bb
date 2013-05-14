@@ -13,16 +13,13 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 
-namespace webkit_glue {
-class AltErrorPageResourceFetcher;
-}
-
 namespace WebKit {
 class WebDataSource;
 }
 
 namespace content {
 
+class AltErrorPageResourceFetcher;
 class DocumentState;
 
 // Stores internal state per WebDataSource.
@@ -123,10 +120,10 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   }
   bool is_referrer_policy_set() const { return referrer_policy_set_; }
 
-  webkit_glue::AltErrorPageResourceFetcher* alt_error_page_fetcher() const {
+  AltErrorPageResourceFetcher* alt_error_page_fetcher() const {
     return alt_error_page_fetcher_.get();
   }
-  void set_alt_error_page_fetcher(webkit_glue::AltErrorPageResourceFetcher* f);
+  void set_alt_error_page_fetcher(AltErrorPageResourceFetcher* f);
 
  protected:
   virtual ~InternalDocumentStateData();
@@ -144,7 +141,7 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   WebKit::WebURLRequest::CachePolicy cache_policy_override_;
   bool referrer_policy_set_;
   WebKit::WebReferrerPolicy referrer_policy_;
-  scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_error_page_fetcher_;
+  scoped_ptr<AltErrorPageResourceFetcher> alt_error_page_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalDocumentStateData);
 };

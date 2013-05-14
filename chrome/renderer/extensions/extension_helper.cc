@@ -31,8 +31,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/image_resource_fetcher.h"
-#include "webkit/glue/resource_fetcher.h"
 
 using content::ConsoleMessageLevel;
 using WebKit::WebConsoleMessage;
@@ -41,8 +39,6 @@ using WebKit::WebFrame;
 using WebKit::WebURLRequest;
 using WebKit::WebScopedUserGesture;
 using WebKit::WebView;
-using webkit_glue::ImageResourceFetcher;
-using webkit_glue::ResourceFetcher;
 
 namespace extensions {
 
@@ -235,13 +231,6 @@ void ExtensionHelper::FrameDetached(WebFrame* frame) {
 }
 
 void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
-  // If there are any app-related fetches in progress, they can be cancelled now
-  // since we have navigated away from the page that created them.
-  if (!frame->parent()) {
-    app_icon_fetchers_.clear();
-    app_definition_fetcher_.reset(NULL);
-  }
-
   // Check first if we created a scheduler for the frame, since this function
   // gets called for navigations within the document.
   if (g_schedulers.Get().count(frame))

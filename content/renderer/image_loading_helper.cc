@@ -9,6 +9,7 @@
 #include "content/common/image_messages.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
+#include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 #include "net/base/data_url.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
@@ -18,14 +19,12 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "webkit/glue/image_decoder.h"
-#include "webkit/glue/multi_resolution_image_resource_fetcher.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
 using WebKit::WebVector;
 using WebKit::WebURL;
 using WebKit::WebURLRequest;
-using webkit_glue::MultiResolutionImageResourceFetcher;
 
 namespace content {
 

@@ -90,11 +90,6 @@ class PluginInstance;
 
 }  // namespace webkit
 
-namespace webkit_glue {
-class ImageResourceFetcher;
-class ResourceFetcher;
-}
-
 #if defined(OS_ANDROID)
 namespace webkit_media {
 class WebMediaPlayerManagerAndroid;
@@ -150,6 +145,7 @@ class DomAutomationController;
 class ExternalPopupMenu;
 class FaviconHelper;
 class GeolocationDispatcher;
+class ImageResourceFetcher;
 class InputTagSpeechDispatcher;
 class JavaBridgeDispatcher;
 class LoadProgressTracker;
@@ -758,7 +754,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Cannot use std::set unfortunately since linked_ptr<> does not support
   // operator<.
-  typedef std::vector<linked_ptr<webkit_glue::ImageResourceFetcher> >
+  typedef std::vector<linked_ptr<ImageResourceFetcher> >
       ImageResourceFetcherList;
 
  protected:
@@ -1085,7 +1081,7 @@ class CONTENT_EXPORT RenderViewImpl
   // This callback is triggered when DownloadFavicon completes, either
   // succesfully or with a failure. See DownloadFavicon for more
   // details.
-  void DidDownloadFavicon(webkit_glue::ImageResourceFetcher* fetcher,
+  void DidDownloadFavicon(ImageResourceFetcher* fetcher,
                           const SkBitmap& image);
 
   // Requests to download a favicon image. When done, the RenderView is notified

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/alt_error_page_resource_fetcher.h"
+#include "content/renderer/fetchers/alt_error_page_resource_fetcher.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "webkit/glue/resource_fetcher.h"
+#include "content/renderer/fetchers/resource_fetcher.h"
 
 using WebKit::WebFrame;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 
-namespace webkit_glue {
+namespace content {
 
 // Number of seconds to wait for the alternate error page server.  If it takes
 // too long, just use the local error page.
@@ -53,4 +53,4 @@ void AltErrorPageResourceFetcher::OnURLFetchComplete(
   }
 }
 
-}  // namespace webkit_glue
+}  // namespace content
