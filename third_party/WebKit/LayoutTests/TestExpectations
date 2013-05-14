@@ -1172,8 +1172,6 @@ crbug.com/128057 [ Win ] http/tests/websocket/tests/hybi/workers/connect-error-b
 
 webkit.org/b/89702 virtual/softwarecompositing/scaling/tiled-layer-recursion.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/89812 [ Debug ] fast/parser/parser-yield-timing.html [ Failure Pass ]
-
 webkit.org/b/89820 [ Linux Win ] fast/text/hyphen-min-preferred-width.html [ ImageOnlyFailure ]
 
 # webkitIsFullScreen does not have the correct value after an iframe exits fullscreen
