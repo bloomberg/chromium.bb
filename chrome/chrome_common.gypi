@@ -401,6 +401,7 @@
         'common/service_process_util_win.cc',
         'common/spellcheck_common.cc',
         'common/spellcheck_common.h',
+        'common/spellcheck_marker.h',
         'common/spellcheck_messages.h',
         'common/spellcheck_result.h',
         'common/startup_metric_utils.cc',
