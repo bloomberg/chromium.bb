@@ -483,35 +483,6 @@ TEST_F('HistoryWebUITest', 'bulkDeletion', function() {
 });
 
 /**
- * Test individual deletion of history entries.
- */
-TEST_F('HistoryWebUITest', 'singleDeletion', function() {
-  var dropDownButton = document.querySelector('.entry-box .drop-down');
-  assertNotEquals(dropDownButton, null);
-  expectFalse(dropDownButton.disabled);
-
-  var removeMenuItem = document.getElementById('remove-visit');
-  assertNotEquals(removeMenuItem, null);
-  expectFalse(removeMenuItem.disabled);
-
-  var secondEntry = document.querySelectorAll('.title a')[1];
-
-  // Delete the first entry.
-  cr.dispatchSimpleEvent(dropDownButton, 'mousedown');
-  expectEquals(window.activeVisit.textContent,
-               historyModel.visits_[0].textContent);
-  cr.dispatchSimpleEvent(removeMenuItem, 'activate');
-
-  // Removing the item triggers a fade-out transition followed by node removal.
-  waitForCallback('removeNodeWithoutTransition', function() {
-    // The original second entry should now be the first.
-    expectEquals(document.querySelector('.title a').textContent,
-                 secondEntry.textContent);
-    testDone();
-  });
-});
-
-/**
  * Test selecting multiple entries using shift click.
  */
 TEST_F('HistoryWebUITest', 'multipleSelect', function() {
@@ -800,6 +771,46 @@ TEST_F('HistoryWebUIRealBackendTest', 'basic', function() {
   assertEquals(3, document.querySelectorAll('.entry').length);
 
   testDone();
+});
+
+/**
+ * Test individual deletion of history entries.
+ */
+TEST_F('HistoryWebUIRealBackendTest', 'singleDeletion', function() {
+  // Deletes the history entry represented by |entryElement|, and calls callback
+  // when the deletion is complete.
+  var removeEntry = function(entryElement, callback) {
+    var dropDownButton = entryElement.querySelector('.drop-down');
+    var removeMenuItem = $('remove-visit');
+
+    assertFalse(dropDownButton.disabled);
+    assertFalse(removeMenuItem.disabled);
+
+    waitForCallback('removeNodeWithoutTransition', callback);
+
+    cr.dispatchSimpleEvent(dropDownButton, 'mousedown');
+    cr.dispatchSimpleEvent(removeMenuItem, 'activate');
+  };
+
+  var secondTitle = document.querySelectorAll('.entry a')[1].textContent;
+  var thirdTitle = document.querySelectorAll('.entry a')[2].textContent;
+
+  // historyDeleted() should not be called when deleting individual entries
+  // using the drop down.
+  waitForCallback('historyDeleted', function() {
+    testDone([false, 'historyDeleted() called when deleting single entry']);
+  });
+
+  // Delete the first entry. The previous second entry should now be the first.
+  removeEntry(document.querySelector('.entry'), function() {
+    expectEquals(document.querySelector('.entry a').textContent, secondTitle);
+
+    // Delete another entry. The original third entry should now be the first.
+    removeEntry(document.querySelector('.entry'), function() {
+      expectEquals(document.querySelector('.entry a').textContent, thirdTitle);
+      testDone();
+    });
+  });
 });
 
 /**

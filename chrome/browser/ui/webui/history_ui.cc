@@ -583,6 +583,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
   std::vector<history::ExpireHistoryArgs> expire_list;
   expire_list.reserve(args->GetSize());
 
+  DCHECK(urls_to_be_deleted_.empty());
   for (ListValue::const_iterator it = args->begin(); it != args->end(); ++it) {
     DictionaryValue* deletion = NULL;
     string16 url;
@@ -614,10 +615,12 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
       }
       base::Time visit_time = base::Time::FromJsTime(timestamp);
       if (!expire_args) {
+        GURL gurl(url);
         expire_list.resize(expire_list.size() + 1);
         expire_args = &expire_list.back();
         expire_args->SetTimeRangeForOneDay(visit_time);
-        expire_args->urls.insert(GURL(url));
+        expire_args->urls.insert(gurl);
+        urls_to_be_deleted_.insert(gurl);
       }
       // The local visit time is treated as a global ID for the visit.
       global_id_directive->add_global_id(visit_time.ToInternalValue());
@@ -1077,8 +1080,10 @@ void BrowsingHistoryHandler::RemoveComplete() {
 
   // Notify the page that the deletion request is complete, but only if a web
   // history delete request is not still pending.
-  if (!(web_history_request_.get() && web_history_request_->is_pending()))
+  if (!(web_history_delete_request_.get() &&
+        web_history_delete_request_->is_pending())) {
     web_ui()->CallJavascriptFunction("deleteComplete");
+  }
 }
 
 void BrowsingHistoryHandler::RemoveWebHistoryComplete(
