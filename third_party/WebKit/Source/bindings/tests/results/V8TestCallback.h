@@ -45,8 +45,8 @@ public:
 
     // Functions
     virtual bool callbackWithNoParam();
-    virtual bool callbackWithTestObjParam(TestObj* class1Param);
-    virtual bool callbackWithTestObjParam(TestObj* class2Param, const String& strArg);
+    virtual bool callbackWithTestObjectParam(TestObj* class1Param);
+    virtual bool callbackWithTestObjectParam(TestObj* class2Param, const String& strArg);
     COMPILE_ASSERT(false)    virtual int callbackWithNonBoolReturnType(TestObj* class3Param);
     virtual int customCallback(TestObj* testObjParam, TestObj* testObjParam);
     virtual bool callbackWithStringList(RefPtr<DOMStringList> listParam);

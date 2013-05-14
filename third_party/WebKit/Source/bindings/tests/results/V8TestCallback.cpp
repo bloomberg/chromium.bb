@@ -22,7 +22,7 @@
 #include "V8TestCallback.h"
 
 #include "V8DOMStringList.h"
-#include "V8TestObj.h"
+#include "V8TestObject.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Callback.h"
 #include "core/dom/ScriptExecutionContext.h"
@@ -65,7 +65,7 @@ bool V8TestCallback::callbackWithNoParam()
     return !invokeCallback(m_callback.get(), 0, argv, callbackReturnValue, scriptExecutionContext());
 }
 
-bool V8TestCallback::callbackWithTestObjParam(TestObj* class1Param)
+bool V8TestCallback::callbackWithTestObjectParam(TestObj* class1Param)
 {
     if (!canInvokeCallback())
         return true;
@@ -93,7 +93,7 @@ bool V8TestCallback::callbackWithTestObjParam(TestObj* class1Param)
     return !invokeCallback(m_callback.get(), 1, argv, callbackReturnValue, scriptExecutionContext());
 }
 
-bool V8TestCallback::callbackWithTestObjParam(TestObj* class2Param, const String& strArg)
+bool V8TestCallback::callbackWithTestObjectParam(TestObj* class2Param, const String& strArg)
 {
     if (!canInvokeCallback())
         return true;

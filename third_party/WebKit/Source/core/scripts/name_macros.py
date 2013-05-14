@@ -72,7 +72,6 @@ def _name_for_entry(entry):
         return entry['interfaceName']
     return os.path.basename(entry['name'])
 
-
 class Writer(in_generator.Writer):
     def __init__(self, in_file_path):
         super(Writer, self).__init__(in_file_path)

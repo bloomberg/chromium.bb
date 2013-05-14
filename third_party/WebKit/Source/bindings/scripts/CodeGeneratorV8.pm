@@ -1557,7 +1557,8 @@ END
         AddToImplIncludes("bindings/v8/V8HiddenPropertyName.h");
         # Check for a wrapper in the wrapper cache. If there is one, we know that a hidden reference has already
         # been created. If we don't find a wrapper, we create both a wrapper and a hidden reference.
-        $code .= "    RefPtr<$returnType> result = ${getterString};\n";
+        my $nativeReturnType = GetNativeType($returnType);
+        $code .= "    $nativeReturnType result = ${getterString};\n";
         if ($forMainWorldSuffix) {
           $code .= "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper${forMainWorldSuffix}(result.get())) : v8Undefined();\n";
         } else {
@@ -2385,10 +2386,12 @@ sub GenerateParametersCheck
         # Optional arguments with [Optional=...] should not generate the early call.
         # Optional Dictionary arguments always considered to have default of empty dictionary.
         if ($parameter->isOptional && !$parameter->extendedAttributes->{"Default"} && $nativeType ne "Dictionary" && !IsCallbackInterface($parameter->type)) {
-            $parameterCheckString .= "    if (args.Length() <= $paramIndex) {\n";
+            $parameterCheckString .= "    if (args.Length() <= $paramIndex)";
             my $functionCall = GenerateFunctionCallString($function, $paramIndex, "    " x 2, $interface, $forMainWorldSuffix, %replacements);
+            my $multiLine = ($functionCall =~ tr/\n//) > 1;
+            $parameterCheckString .= $multiLine ? " {\n" : "\n";
             $parameterCheckString .= $functionCall;
-            $parameterCheckString .= "    }\n";
+            $parameterCheckString .= $multiLine ? "    }\n" : "\n";
         }
 
         my $parameterDefaultPolicy = "DefaultIsUndefined";
@@ -3969,12 +3972,11 @@ END
             my $functionLength = GetFunctionLength($runtimeFunc);
             my $conditionalString = GenerateConditionalString($runtimeFunc->signature);
             $code .= "\n#if ${conditionalString}\n" if $conditionalString;
-            $code .= "    if (context && context->isDocument() && ${enableFunction}(toDocument(context))) {\n";
+            $code .= "    if (context && context->isDocument() && ${enableFunction}(toDocument(context)))\n";
             my $name = $runtimeFunc->signature->name;
             $code .= <<END;
         proto->Set(v8::String::NewSymbol("${name}"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $functionLength)->GetFunction());
 END
-            $code .= "    }\n";
             $code .= "#endif // ${conditionalString}\n" if $conditionalString;
         }
 

@@ -34,8 +34,8 @@
 #include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
 #include "V8Blob.h"
-#include "V8DOMFormData.h"
 #include "V8Document.h"
+#include "V8FormData.h"
 #include "V8HTMLDocument.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
@@ -193,9 +193,9 @@ v8::Handle<v8::Value> V8XMLHttpRequest::sendMethodCustom(const v8::Arguments& ar
             Blob* blob = V8Blob::toNative(object);
             ASSERT(blob);
             xmlHttpRequest->send(blob, ec);
-        } else if (V8DOMFormData::HasInstance(arg, args.GetIsolate(), currentWorldType)) {
+        } else if (V8FormData::HasInstance(arg, args.GetIsolate(), currentWorldType)) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
-            DOMFormData* domFormData = V8DOMFormData::toNative(object);
+            DOMFormData* domFormData = V8FormData::toNative(object);
             ASSERT(domFormData);
             xmlHttpRequest->send(domFormData, ec);
         } else if (V8ArrayBuffer::HasInstance(arg, args.GetIsolate(), currentWorldType)) {

@@ -150,7 +150,7 @@
                                            [Default=Undefined] optional long y);
 
     // Mozilla extensions
-    DOMSelection       getSelection();
+    Selection          getSelection();
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString characterSet;
 
     // WebKit extensions
@@ -286,7 +286,7 @@
     readonly attribute boolean webkitHidden;
 
     // Security Policy API: http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html#script-interfaces
-    [EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] readonly attribute DOMSecurityPolicy securityPolicy;
+    [EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] readonly attribute SecurityPolicy securityPolicy;
 
     // ParentNode interface API
     readonly attribute HTMLCollection children;

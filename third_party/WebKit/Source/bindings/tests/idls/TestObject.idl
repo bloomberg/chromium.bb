@@ -34,12 +34,12 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
 [
     Constructor(TestCallback testCallback),
-    InterfaceName=TestObject
-] interface TestObj {
+    ImplementedAs=TestObj
+] interface TestObject {
     // Attributes
     readonly attribute long            readOnlyLongAttr;
     readonly attribute DOMString       readOnlyStringAttr;
-    readonly attribute TestObj         readOnlyTestObjAttr;
+    readonly attribute TestObject         readOnlyTestObjectAttr;
     static readonly attribute long     staticReadOnlyLongAttr;
     static attribute DOMString         staticStringAttr;
     static readonly attribute TestSubObjConstructor TestSubObj;
@@ -51,10 +51,10 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     attribute long long                longLongAttr;
     attribute unsigned long long       unsignedLongLongAttr;
     attribute DOMString                stringAttr;
-    [MeasureAs=TestFeature] attribute TestObj testObjAttr;
+    [MeasureAs=TestFeature] attribute TestObject testObjAttr;
 
     // WK_ucfirst, WK_lcfirst exceptional cases.
-    attribute TestObj                  XMLObjAttr;
+    attribute TestObject                  XMLObjAttr;
     attribute boolean                  create;
 
     // Reflected DOM attributes
@@ -73,17 +73,17 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
     // Methods
     void    voidMethod();
-    void    voidMethodWithArgs(long longArg, DOMString strArg, TestObj objArg);
+    void    voidMethodWithArgs(long longArg, DOMString strArg, TestObject objArg);
     long    longMethod();
-    long    longMethodWithArgs(long longArg, DOMString strArg, TestObj objArg);
-    [MeasureAs=TestFeature] TestObj objMethod();
-    TestObj objMethodWithArgs(long longArg, DOMString strArg, TestObj objArg);
+    long    longMethodWithArgs(long longArg, DOMString strArg, TestObject objArg);
+    [MeasureAs=TestFeature] TestObject objMethod();
+    TestObject objMethodWithArgs(long longArg, DOMString strArg, TestObject objArg);
 
     void methodWithSequenceArg(sequence<ScriptProfile> sequenceArg);
     sequence<ScriptProfile> methodReturningSequence(long longArg);
 
     void methodWithEnumArg(TestEnumType enumArg);
-    [RaisesException] TestObj methodThatRequiresAllArgsAndThrows(DOMString strArg, TestObj objArg);
+    [RaisesException] TestObject methodThatRequiresAllArgsAndThrows(DOMString strArg, TestObject objArg);
 
     void serializedValue(SerializedScriptValue serializedArg);
     void optionsObject(Dictionary oo, optional Dictionary ooo);
@@ -102,7 +102,7 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     // 'Custom' extended attribute
     [Custom] attribute long            customAttr;
     [Custom, MeasureAs=CustomTestFeature] void customMethod();
-    [Custom] void customMethodWithArgs(long longArg, DOMString strArg, TestObj objArg);
+    [Custom] void customMethodWithArgs(long longArg, DOMString strArg, TestObject objArg);
 
     void addEventListener(DOMString type, 
                           EventListener listener, 
@@ -113,21 +113,21 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
     // 'CallWith' extended attribute
     [CallWith=ScriptState] void withScriptStateVoid();
-    [CallWith=ScriptState] TestObj withScriptStateObj();
+    [CallWith=ScriptState] TestObject withScriptStateObj();
     [CallWith=ScriptState, RaisesException] void withScriptStateVoidException();
-    [CallWith=ScriptState, RaisesException] TestObj withScriptStateObjException();
+    [CallWith=ScriptState, RaisesException] TestObject withScriptStateObjException();
     [CallWith=ScriptExecutionContext] void withScriptExecutionContext();
     [CallWith=ScriptExecutionContext|ScriptState] void withScriptExecutionContextAndScriptState();
-    [CallWith=ScriptExecutionContext|ScriptState, RaisesException] TestObj withScriptExecutionContextAndScriptStateObjException();
-    [CallWith=  ScriptExecutionContext  |  ScriptState  ] TestObj withScriptExecutionContextAndScriptStateWithSpaces();
+    [CallWith=ScriptExecutionContext|ScriptState, RaisesException] TestObject withScriptExecutionContextAndScriptStateObjException();
+    [CallWith=  ScriptExecutionContext  |  ScriptState  ] TestObject withScriptExecutionContextAndScriptStateWithSpaces();
 
     [CallWith=ScriptState] attribute long withScriptStateAttribute;
-    [CallWith=ScriptExecutionContext] attribute TestObj withScriptExecutionContextAttribute;
-    [CallWith=ScriptState, GetterRaisesException] attribute TestObj withScriptStateAttributeRaises;
-    [CallWith=ScriptExecutionContext, GetterRaisesException] attribute TestObj withScriptExecutionContextAttributeRaises;
-    [CallWith=ScriptExecutionContext|ScriptState] attribute TestObj withScriptExecutionContextAndScriptStateAttribute;
-    [CallWith=ScriptExecutionContext|ScriptState, GetterRaisesException] attribute TestObj withScriptExecutionContextAndScriptStateAttributeRaises;
-    [CallWith=  ScriptExecutionContext  |  ScriptState  ] attribute TestObj withScriptExecutionContextAndScriptStateWithSpacesAttribute;
+    [CallWith=ScriptExecutionContext] attribute TestObject withScriptExecutionContextAttribute;
+    [CallWith=ScriptState, GetterRaisesException] attribute TestObject withScriptStateAttributeRaises;
+    [CallWith=ScriptExecutionContext, GetterRaisesException] attribute TestObject withScriptExecutionContextAttributeRaises;
+    [CallWith=ScriptExecutionContext|ScriptState] attribute TestObject withScriptExecutionContextAndScriptStateAttribute;
+    [CallWith=ScriptExecutionContext|ScriptState, GetterRaisesException] attribute TestObject withScriptExecutionContextAndScriptStateAttributeRaises;
+    [CallWith=  ScriptExecutionContext  |  ScriptState  ] attribute TestObject withScriptExecutionContextAndScriptStateWithSpacesAttribute;
 
     // optional parameters
     void    methodWithOptionalArg(optional long opt);
@@ -166,9 +166,9 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [Conditional=Condition1&Condition2] void conditionalMethod2();
     [Conditional=Condition1|Condition2] void conditionalMethod3();
 
-    [Conditional=Condition1] attribute TestObjectAConstructor conditionalAttr4;
-    [Conditional=Condition1&Condition2] attribute TestObjectBConstructor conditionalAttr5;
-    [Conditional=Condition1|Condition2] attribute TestObjectCConstructor conditionalAttr6;
+    [Conditional=Condition1] attribute TestObjectectAConstructor conditionalAttr4;
+    [Conditional=Condition1&Condition2] attribute TestObjectectBConstructor conditionalAttr5;
+    [Conditional=Condition1|Condition2] attribute TestObjectectCConstructor conditionalAttr6;
 
     [Conditional=Condition1] const unsigned short CONDITIONAL_CONST = 0;
 
@@ -178,14 +178,14 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     attribute any anyAttribute;
 
     // Overloads
-    void    overloadedMethod(TestObj? objArg, [StrictTypeChecking] DOMString strArg);
-    void    overloadedMethod(TestObj? objArg, optional long longArg);
+    void    overloadedMethod(TestObject? objArg, [StrictTypeChecking] DOMString strArg);
+    void    overloadedMethod(TestObject? objArg, optional long longArg);
     void    overloadedMethod([StrictTypeChecking] DOMString strArg);
     void    overloadedMethod(long longArg);
     void    overloadedMethod(TestCallback callback);
     void    overloadedMethod(DOMStringList? listArg);
     void    overloadedMethod(DOMString[]? arrayArg);
-    void    overloadedMethod(TestObj objArg);
+    void    overloadedMethod(TestObject objArg);
     void    overloadedMethod(DOMString[] arrayArg);
     void    overloadedMethod(sequence<unsigned long> arrayArg);
     void    overloadedMethod(DOMString strArg);
@@ -273,8 +273,8 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
     [GetterRaisesException] attribute long? nullableStringValue;
 
-    [PerWorldBindings] readonly attribute TestObj perWorldReadOnlyAttribute;
-    [PerWorldBindings] attribute TestObj perWorldAttribute;
+    [PerWorldBindings] readonly attribute TestObject perWorldReadOnlyAttribute;
+    [PerWorldBindings] attribute TestObject perWorldAttribute;
     [PerWorldBindings] void perWorldMethod();
     [PerWorldBindings] void overloadedPerWorldMethod(long longArg);
     [PerWorldBindings] void overloadedPerWorldMethod(DOMString strArg, long longArg);

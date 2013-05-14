@@ -30,10 +30,10 @@
 // interface for tracking changes in its ouput.
 callback interface TestCallback {
   boolean callbackWithNoParam();
-  boolean callbackWithTestObjParam(TestObj class1Param);
-  boolean callbackWithTestObjParam(TestObj class2Param, DOMString strArg);
-  long callbackWithNonBoolReturnType(TestObj class3Param);
-  [Custom] long customCallback(TestObj testObjParam, TestObj testObjParam);
+  boolean callbackWithTestObjectParam(TestObject class1Param);
+  boolean callbackWithTestObjectParam(TestObject class2Param, DOMString strArg);
+  long callbackWithNonBoolReturnType(TestObject class3Param);
+  [Custom] long customCallback(TestObject testObjParam, TestObject testObjParam);
   boolean callbackWithStringList(DOMStringList listParam);
   boolean callbackWithBoolean(boolean boolParam);
 };

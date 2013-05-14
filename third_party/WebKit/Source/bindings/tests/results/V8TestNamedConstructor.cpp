@@ -141,7 +141,7 @@ v8::Persistent<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTempl
     result->SetClassName(v8::String::NewSymbol("TestNamedConstructor"));
     result->Inherit(V8TestNamedConstructor::GetTemplate(isolate, currentWorldType));
 
-    cachedTemplate = v8::Persistent<v8::FunctionTemplate>::New(isolate, result);
+    cachedTemplate.Reset(isolate, result);
     return cachedTemplate;
 }
 

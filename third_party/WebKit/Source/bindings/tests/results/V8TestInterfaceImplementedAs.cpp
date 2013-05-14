@@ -87,7 +87,7 @@ namespace WebCore {
 #endif
 WrapperTypeInfo V8TestInterfaceImplementedAs::info = { V8TestInterfaceImplementedAs::GetTemplate, V8TestInterfaceImplementedAs::derefObject, 0, 0, 0, V8TestInterfaceImplementedAs::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
-namespace TestInterfaceImplementedAsV8Internal {
+namespace RealClassV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
@@ -167,7 +167,7 @@ static v8::Handle<v8::Value> funcTestInterfaceImplementedAsParamMethodCallback(c
     return RealClassV8Internal::funcTestInterfaceImplementedAsParamMethod(args);
 }
 
-} // namespace TestInterfaceImplementedAsV8Internal
+} // namespace RealClassV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestInterfaceImplementedAsAttrs[] = {
     // Attribute 'a' (Type: 'attribute' ExtAttr: '')

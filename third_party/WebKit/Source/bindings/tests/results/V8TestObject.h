@@ -18,8 +18,8 @@
     Boston, MA 02111-1307, USA.
 */
 
-#ifndef V8TestObj_h
-#define V8TestObj_h
+#ifndef V8TestObject_h
+#define V8TestObject_h
 
 #include "bindings/bindings/tests/idls/TestObj.h"
 #include "bindings/v8/V8Binding.h"
@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class V8TestObj {
+class V8TestObject {
 public:
     static const bool hasDependentLifetime = false;
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
@@ -62,7 +62,7 @@ private:
 template<>
 class WrapperTypeTraits<TestObj > {
 public:
-    static WrapperTypeInfo* info() { return &V8TestObj::info; }
+    static WrapperTypeInfo* info() { return &V8TestObject::info; }
 };
 
 
@@ -74,9 +74,9 @@ inline v8::Handle<v8::Object> wrap(TestObj* impl, v8::Handle<v8::Object> creatio
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
         // Might be a XXXConstructor::info instead of an XXX::info. These will both have
         // the same object de-ref functions, though, so use that as the basis of the check.
-        RELEASE_ASSERT(actualInfo->derefObjectFunction == V8TestObj::info.derefObjectFunction);
+        RELEASE_ASSERT(actualInfo->derefObjectFunction == V8TestObject::info.derefObjectFunction);
     }
-    return V8TestObj::createWrapper(impl, creationContext, isolate);
+    return V8TestObject::createWrapper(impl, creationContext, isolate);
 }
 
 inline v8::Handle<v8::Value> toV8(TestObj* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -143,4 +143,4 @@ inline v8::Handle<v8::Value> toV8(PassRefPtr< TestObj > impl, v8::Handle<v8::Obj
 
 }
 
-#endif // V8TestObj_h
+#endif // V8TestObject_h

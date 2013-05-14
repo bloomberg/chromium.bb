@@ -48,7 +48,7 @@
     [DoNotCheckSecurity, CustomSetter, Unforgeable, Replaceable] readonly attribute Location location;
     [MeasureAs=WindowEvent, NotEnumerable, Replaceable, CustomGetter, CustomSetter] readonly attribute Event event;
 
-    DOMSelection getSelection();
+    Selection getSelection();
 
     [CheckSecurityForNode] readonly attribute Element frameElement;
 
@@ -182,7 +182,7 @@
     [RaisesException] DOMString atob([TreatNullAs=NullString,Default=Undefined] optional DOMString string);
     [RaisesException] DOMString btoa([TreatNullAs=NullString,Default=Undefined] optional DOMString string);
 
-    [Replaceable] readonly attribute DOMWindowCSS CSS;
+    [Replaceable] readonly attribute CSS CSS;
 
     // Events
     attribute EventListener onabort;
@@ -289,7 +289,7 @@
     // Mozilla has a separate XMLDocument object for XML documents.
     // We just use Document for this.
     attribute DocumentConstructor XMLDocument;
-    attribute DOMURLConstructor webkitURL; // FIXME: deprecate this.
+    attribute URLConstructor webkitURL; // FIXME: deprecate this.
     attribute MutationObserverConstructor WebKitMutationObserver; // FIXME: Add metrics to determine when we can remove this.
     attribute IDBCursorConstructor webkitIDBCursor;
     attribute IDBDatabaseConstructor webkitIDBDatabase;

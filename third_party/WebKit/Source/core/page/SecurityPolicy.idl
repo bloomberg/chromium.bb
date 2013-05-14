@@ -23,8 +23,8 @@
  */
 
 [
-    InterfaceName=SecurityPolicy
-] interface DOMSecurityPolicy {
+    ImplementedAs=DOMSecurityPolicy
+] interface SecurityPolicy {
     readonly attribute boolean allowsEval;
     readonly attribute boolean allowsInlineScript;
     readonly attribute boolean allowsInlineStyle;

@@ -69,8 +69,8 @@
     attribute FileReaderConstructor FileReader;
     attribute FileReaderSyncConstructor FileReaderSync;
 
-    attribute DOMURLConstructor URL;
-    attribute DOMURLConstructor webkitURL; // FIXME: deprecate this.
+    attribute URLConstructor URL;
+    attribute URLConstructor webkitURL; // FIXME: deprecate this.
 
     attribute ArrayBufferConstructor ArrayBuffer; // Usable with new operator
     attribute Int8ArrayConstructor Int8Array; // Usable with new operator
