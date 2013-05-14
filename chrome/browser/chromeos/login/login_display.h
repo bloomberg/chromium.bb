@@ -44,6 +44,9 @@ class LoginDisplay : public RemoveUserDelegate {
     // Returns name of the currently connected network.
     virtual string16 GetConnectedNetworkName() = 0;
 
+    // Returns true if sign in is in progress.
+    virtual bool IsSigninInProgress() const = 0;
+
     // Sign in using |username| and |password| specified.
     // Used for known users only.
     virtual void Login(const UserContext& user_context) = 0;
@@ -162,6 +165,9 @@ class LoginDisplay : public RemoveUserDelegate {
   gfx::NativeWindow parent_window() const { return parent_window_; }
   void set_parent_window(gfx::NativeWindow window) { parent_window_ = window; }
 
+  bool is_signin_completed() const { return is_signin_completed_; }
+  void set_signin_completed(bool value) { is_signin_completed_ = value; }
+
   int width() const { return background_bounds_.width(); }
 
  protected:
@@ -173,6 +179,12 @@ class LoginDisplay : public RemoveUserDelegate {
 
   // Bounds of the login UI background.
   gfx::Rect background_bounds_;
+
+  // True if signin for user has completed.
+  // TODO(nkostylev): Find a better place to store this state
+  // in redesigned login stack.
+  // Login stack (and this object) will be recreated for next user sign in.
+  bool is_signin_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplay);
 };

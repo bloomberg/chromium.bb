@@ -78,6 +78,8 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual bool IsShowGuest() const OVERRIDE;
   virtual bool IsShowUsers() const OVERRIDE;
   virtual bool IsShowNewUser() const OVERRIDE;
+  virtual bool IsSigninInProgress() const OVERRIDE;
+  virtual bool IsUserSigninCompleted() const OVERRIDE;
   virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
   virtual void Signout() OVERRIDE;
 

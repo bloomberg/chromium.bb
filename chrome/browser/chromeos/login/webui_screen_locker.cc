@@ -204,6 +204,11 @@ string16 WebUIScreenLocker::GetConnectedNetworkName() {
   return GetCurrentNetworkName();
 }
 
+bool WebUIScreenLocker::IsSigninInProgress() const {
+  NOTREACHED();
+  return false;
+}
+
 void WebUIScreenLocker::Login(const UserContext& user_context) {
   chromeos::ScreenLocker::default_screen_locker()->Authenticate(
       ASCIIToUTF16(user_context.password));

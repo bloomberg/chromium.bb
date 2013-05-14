@@ -334,6 +334,14 @@ bool WebUILoginDisplay::IsShowNewUser() const {
   return show_new_user_;
 }
 
+bool WebUILoginDisplay::IsSigninInProgress() const {
+  return delegate_->IsSigninInProgress();
+}
+
+bool WebUILoginDisplay::IsUserSigninCompleted() const {
+  return is_signin_completed();
+}
+
 void WebUILoginDisplay::SetDisplayEmail(const std::string& email) {
   if (delegate_)
     delegate_->SetDisplayEmail(email);

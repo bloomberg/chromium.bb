@@ -326,6 +326,7 @@ void ExistingUserController::CreateAccount() {
 }
 
 void ExistingUserController::CompleteLogin(const UserContext& user_context) {
+  login_display_->set_signin_completed(true);
   if (!host_) {
     // Complete login event was generated already from UI. Ignore notification.
     return;
@@ -383,6 +384,10 @@ void ExistingUserController::CompleteLoginInternal(
 
 string16 ExistingUserController::GetConnectedNetworkName() {
   return GetCurrentNetworkName();
+}
+
+bool ExistingUserController::IsSigninInProgress() const {
+  return is_login_in_progress_;
 }
 
 void ExistingUserController::Login(const UserContext& user_context) {
@@ -730,6 +735,7 @@ void ExistingUserController::OnLoginSuccess(
     bool using_oauth) {
   is_login_in_progress_ = false;
   offline_failed_ = false;
+  login_display_->set_signin_completed(true);
 
   StopPublicSessionAutoLoginTimer();
 

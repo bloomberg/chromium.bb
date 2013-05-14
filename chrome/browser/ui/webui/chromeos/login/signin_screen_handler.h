@@ -134,6 +134,12 @@ class SigninScreenHandlerDelegate {
   // Whether new user pod is available.
   virtual bool IsShowNewUser() const = 0;
 
+  // Returns true if sign in is in progress.
+  virtual bool IsSigninInProgress() const = 0;
+
+  // Whether user sign in has completed.
+  virtual bool IsUserSigninCompleted() const = 0;
+
   // Sets the displayed email for the next login attempt. If it succeeds,
   // user's displayed email value will be updated to |email|.
   virtual void SetDisplayEmail(const std::string& email) = 0;
