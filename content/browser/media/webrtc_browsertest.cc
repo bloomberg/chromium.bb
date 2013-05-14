@@ -91,7 +91,14 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupVideoCall) {
   ExpectTitle("OK");
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CanSetupAudioAndVideoCall) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux, see http://crbug.com/240376
+#define MAYBE_CanSetupAudioAndVideoCall DISABLED_CanSetupAudioAndVideoCall
+#else
+#define MAYBE_CanSetupAudioAndVideoCall CanSetupAudioAndVideoCall
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupAudioAndVideoCall) {
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -124,8 +131,12 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 // MSID and bundle attribute from the initial offer to verify that
 // video is playing for the call even if the initiating client don't support
 // MSID. http://tools.ietf.org/html/draft-alvestrand-rtcweb-msid-02
-// Disabled for win7_aura, see http://crbug.com/235089.
 #if defined(OS_WIN) && defined(USE_AURA)
+// Disabled for win7_aura, see http://crbug.com/235089.
+#define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle\
+        DISABLED_CanSetupAudioAndVideoCallWithoutMsidAndBundle
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux, see http://crbug.com/240373
 #define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle\
         DISABLED_CanSetupAudioAndVideoCallWithoutMsidAndBundle
 #else
@@ -188,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataAndLaterAddMedia) {
 // This test will make a PeerConnection-based call and send a new Video
 // MediaStream that has been created based on a MediaStream created with
 // getUserMedia.
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithNewVideoMediaStream) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithNewVideoMediaStream) {
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
