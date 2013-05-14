@@ -109,16 +109,8 @@ void LinkLoader::didSendDOMContentLoadedForPrerender()
     m_client->didSendDOMContentLoadedForLinkPrerender();
 }
 
-bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& type,
-                          const String& sizes, const KURL& href, Document* document)
+bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& type, const KURL& href, Document* document)
 {
-    // We'll record this URL per document, even if we later only use it in top level frames
-    if (relAttribute.iconType() != InvalidIcon && href.isValid() && !href.isEmpty()) {
-        if (!m_client->shouldLoadLink()) 
-            return false;
-        document->addIconURL(href.string(), type, sizes, relAttribute.iconType());
-    }
-
     if (relAttribute.isDNSPrefetch()) {
         Settings* settings = document->settings();
         // FIXME: The href attribute of the link element can be in "//hostname" form, and we shouldn't attempt

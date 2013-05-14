@@ -193,7 +193,14 @@ void HTMLLinkElement::process()
     String type = m_type.lower();
     KURL url = getNonEmptyURLAttribute(hrefAttr);
 
-    if (!m_linkLoader.loadLink(m_relAttribute, type, m_sizes->toString(), url, document()))
+    if (m_relAttribute.iconType() != InvalidIcon && url.isValid() && !url.isEmpty()) {
+        if (!shouldLoadLink())
+            return;
+        if (document()->frame())
+            document()->frame()->loader()->didChangeIcons(m_relAttribute.iconType());
+    }
+
+    if (!m_linkLoader.loadLink(m_relAttribute, type, url, document()))
         return;
 
     if ((m_disabledState != Disabled) && m_relAttribute.isStyleSheet()

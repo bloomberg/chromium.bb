@@ -893,7 +893,6 @@ public:
 
     const Vector<IconURL>& shortcutIconURLs();
     const Vector<IconURL>& iconURLs(int iconTypesMask);
-    void addIconURL(const String& url, const String& mimeType, const String& size, IconType);
 
     void setUseSecureKeyboardEntryWhenActive(bool);
     bool useSecureKeyboardEntryWhenActive() const;

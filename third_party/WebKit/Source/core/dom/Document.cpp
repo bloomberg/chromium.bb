@@ -4203,18 +4203,6 @@ const Vector<IconURL>& Document::iconURLs(int iconTypesMask)
     return m_iconURLs;
 }
 
-void Document::addIconURL(const String& url, const String&, const String&, IconType iconType)
-{
-    if (url.isEmpty())
-        return;
-
-    Frame* f = frame();
-    if (!f)
-        return;
-
-    f->loader()->didChangeIcons(iconType);
-}
-
 void Document::setUseSecureKeyboardEntryWhenActive(bool usesSecureKeyboard)
 {
     if (m_useSecureKeyboardEntryWhenActive == usesSecureKeyboard)
