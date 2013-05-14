@@ -1243,6 +1243,7 @@ webkit.org/b/93488 fast/notifications/notifications-permission.html [ Failure Im
 webkit.org/b/93801 [ Mac ] fast/speech/input-appearance-searchandspeech.html [ ImageOnlyFailure Pass ]
 
 crbug.com/238046 [ Win7 Debug ] inspector/debugger [ Pass Timeout ]
+crbug.com/238046 crbug.com/238363 [ Mac Debug ] inspector/debugger/file-system-project-mapping.html [ Pass Timeout Crash ]
 webkit.org/b/94002 [ Win7 Debug ] inspector/debugger/event-listener-breakpoints.html [ Timeout ]
 webkit.org/b/110963 [ Win7 Debug ] inspector/debugger/debugger-scripts-reload.html [ Pass Timeout ]
 webkit.org/b/110963 [ Win7 Debug ] inspector/debugger/debugger-autocontinue-on-syntax-error.html [ Pass Timeout ]
@@ -1652,7 +1653,7 @@ crbug.com/238363 compositing/overflow/overflow-hidden-canvas-layer.html [ Crash 
 crbug.com/238363 fast/dom/node-move-to-new-document-crash-main.html [ Crash ]
 crbug.com/238363 fast/history/saves-state-after-fragment-nav.html [ Crash ]
 crbug.com/238363 fast/speech/change-focus.html [ Crash ]
-crbug.com/238363 inspector/debugger/file-system-project-mapping.html [ Crash ]
+crbug.com/238363 [ Win Linux Debug ] inspector/debugger/file-system-project-mapping.html [ Crash ]
 crbug.com/238363 inspector/timeline/timeline-load.html [ Crash ]
 crbug.com/238363 virtual/softwarecompositing/overflow/overflow-hidden-canvas-layer.html [ Crash ]
 crbug.com/238363 [ Debug ] compositing/geometry/clipping-foreground.html [ Crash ]
