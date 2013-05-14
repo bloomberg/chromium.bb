@@ -607,8 +607,6 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   bool composite_to_mailbox =
       command_line.HasSwitch(cc::switches::kCompositeToMailbox) &&
       !command_line.HasSwitch(switches::kEnableDelegatedRenderer);
-  DCHECK(!composite_to_mailbox || command_line.HasSwitch(
-      cc::switches::kEnableCompositorFrameMessage));
   // No swap throttling yet when compositing on the main thread.
   DCHECK(!composite_to_mailbox || is_threaded_compositing_enabled_);
   return scoped_ptr<cc::OutputSurface>(composite_to_mailbox ?

@@ -152,7 +152,9 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   }
 
   settings.compositor_frame_message =
-      cmd->HasSwitch(cc::switches::kEnableCompositorFrameMessage);
+      cmd->HasSwitch(cc::switches::kEnableCompositorFrameMessage) ||
+      cmd->HasSwitch(cc::switches::kCompositeToMailbox) ||
+      cmd->HasSwitch(switches::kEnableSoftwareCompositingGLAdapter);
 
   if (settings.calculate_top_controls_position &&
       (settings.top_controls_height <= 0 ||
