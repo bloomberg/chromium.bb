@@ -41,6 +41,7 @@ namespace WebCore {
 DynamicsCompressorNode::DynamicsCompressorNode(AudioContext* context, float sampleRate)
     : AudioNode(context, sampleRate)
 {
+    ScriptWrappable::init(this);
     addInput(adoptPtr(new AudioNodeInput(this)));
     addOutput(adoptPtr(new AudioNodeOutput(this, defaultNumberOfOutputChannels)));
 

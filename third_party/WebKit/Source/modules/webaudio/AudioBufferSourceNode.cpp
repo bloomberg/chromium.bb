@@ -66,6 +66,7 @@ AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sample
     , m_lastGain(1.0)
     , m_pannerNode(0)
 {
+    ScriptWrappable::init(this);
     setNodeType(NodeTypeAudioBufferSource);
 
     m_gain = AudioParam::create(context, "gain", 1.0, 0.0, 1.0);

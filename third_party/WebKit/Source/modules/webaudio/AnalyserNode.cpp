@@ -37,8 +37,8 @@ namespace WebCore {
 AnalyserNode::AnalyserNode(AudioContext* context, float sampleRate)
     : AudioBasicInspectorNode(context, sampleRate, 2)
 {
+    ScriptWrappable::init(this);
     setNodeType(NodeTypeAnalyser);
-    
     initialize();
 }
 

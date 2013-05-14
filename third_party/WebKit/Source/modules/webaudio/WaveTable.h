@@ -29,6 +29,7 @@
 #ifndef WaveTable_h
 #define WaveTable_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/audio/AudioArray.h"
 #include "wtf/Float32Array.h"
 #include "wtf/OwnPtr.h"
@@ -39,7 +40,7 @@
 
 namespace WebCore {
 
-class WaveTable : public RefCounted<WaveTable> {
+class WaveTable : public ScriptWrappable, public RefCounted<WaveTable> {
 public:
     static PassRefPtr<WaveTable> createSine(float sampleRate);
     static PassRefPtr<WaveTable> createSquare(float sampleRate);

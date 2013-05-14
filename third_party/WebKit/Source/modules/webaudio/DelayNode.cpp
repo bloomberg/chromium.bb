@@ -35,6 +35,7 @@ const double maximumAllowedDelayTime = 180;
 DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionCode& ec)
     : AudioBasicProcessorNode(context, sampleRate)
 {
+    ScriptWrappable::init(this);
     if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
         ec = NOT_SUPPORTED_ERR;
         return;

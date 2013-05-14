@@ -52,14 +52,13 @@ ChannelMergerNode::ChannelMergerNode(AudioContext* context, float sampleRate, un
     : AudioNode(context, sampleRate)
     , m_desiredNumberOfOutputChannels(DefaultNumberOfOutputChannels)
 {
+    ScriptWrappable::init(this);
     // Create the requested number of inputs.
     for (unsigned i = 0; i < numberOfInputs; ++i)
         addInput(adoptPtr(new AudioNodeInput(this)));
 
     addOutput(adoptPtr(new AudioNodeOutput(this, 1)));
-    
     setNodeType(NodeTypeChannelMerger);
-    
     initialize();
 }
 

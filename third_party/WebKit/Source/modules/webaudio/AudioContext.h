@@ -25,6 +25,7 @@
 #ifndef AudioContext_h
 #define AudioContext_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventTarget.h"
@@ -70,9 +71,9 @@ class OscillatorNode;
 class WaveTable;
 
 // AudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
-// For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism. 
+// For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
 
-class AudioContext : public ActiveDOMObject, public ThreadSafeRefCounted<AudioContext>, public EventTarget {
+class AudioContext : public ActiveDOMObject, public ScriptWrappable, public ThreadSafeRefCounted<AudioContext>, public EventTarget {
 public:
     // Create an AudioContext for rendering to the audio hardware.
     static PassRefPtr<AudioContext> create(Document*);
@@ -83,7 +84,7 @@ public:
     virtual ~AudioContext();
 
     bool isInitialized() const;
-    
+
     bool isOfflineContext() { return m_isOfflineContext; }
 
     // Returns true when initialize() was called AND all asynchronous initialization has completed.
@@ -105,7 +106,7 @@ public:
 
     void incrementActiveSourceCount();
     void decrementActiveSourceCount();
-    
+
     PassRefPtr<AudioBuffer> createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionCode&);
     PassRefPtr<AudioBuffer> createBuffer(ArrayBuffer*, bool mixToMono, ExceptionCode&);
 

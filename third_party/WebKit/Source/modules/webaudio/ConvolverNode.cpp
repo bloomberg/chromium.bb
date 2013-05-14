@@ -49,6 +49,7 @@ ConvolverNode::ConvolverNode(AudioContext* context, float sampleRate)
     : AudioNode(context, sampleRate)
     , m_normalize(true)
 {
+    ScriptWrappable::init(this);
     addInput(adoptPtr(new AudioNodeInput(this)));
     addOutput(adoptPtr(new AudioNodeOutput(this, 2)));
 
@@ -58,7 +59,6 @@ ConvolverNode::ConvolverNode(AudioContext* context, float sampleRate)
     m_channelInterpretation = AudioBus::Speakers;
 
     setNodeType(NodeTypeConvolver);
-    
     initialize();
 }
 

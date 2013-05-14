@@ -54,6 +54,7 @@ PannerNode::PannerNode(AudioContext* context, float sampleRate)
     , m_lastGain(-1.0)
     , m_connectionCount(0)
 {
+    ScriptWrappable::init(this);
     addInput(adoptPtr(new AudioNodeInput(this)));
     addOutput(adoptPtr(new AudioNodeOutput(this, 2)));
 

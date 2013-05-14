@@ -160,12 +160,13 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
 
 void AudioContext::constructCommon()
 {
+    ScriptWrappable::init(this);
     // According to spec AudioContext must die only after page navigate.
     // Lets mark it as ActiveDOMObject with pending activity and unmark it in clear method.
     setPendingActivity(this);
 
     FFTFrame::initialize();
-    
+
     m_listener = AudioListener::create();
 }
 

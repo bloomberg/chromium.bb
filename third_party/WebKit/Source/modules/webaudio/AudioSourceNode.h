@@ -38,6 +38,7 @@ public:
     AudioSourceNode(AudioContext* context, float sampleRate)
         : AudioNode(context, sampleRate)
     {
+        ScriptWrappable::init(this);
     }
 protected:
     virtual double tailTime() const OVERRIDE { return 0; }

@@ -34,13 +34,14 @@ namespace WebCore {
 WaveShaperNode::WaveShaperNode(AudioContext* context)
     : AudioBasicProcessorNode(context, context->sampleRate())
 {
+    ScriptWrappable::init(this);
     m_processor = adoptPtr(new WaveShaperProcessor(context->sampleRate(), 1));
     setNodeType(NodeTypeWaveShaper);
 }
 
 void WaveShaperNode::setCurve(Float32Array* curve)
 {
-    ASSERT(isMainThread()); 
+    ASSERT(isMainThread());
     waveShaperProcessor()->setCurve(curve);
 }
 

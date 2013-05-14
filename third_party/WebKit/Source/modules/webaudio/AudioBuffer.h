@@ -29,6 +29,7 @@
 #ifndef AudioBuffer_h
 #define AudioBuffer_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "wtf/Float32Array.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -41,8 +42,8 @@ class AudioBus;
 
 typedef int ExceptionCode;
 
-class AudioBuffer : public RefCounted<AudioBuffer> {
-public:   
+class AudioBuffer : public ScriptWrappable, public RefCounted<AudioBuffer> {
+public:
     static PassRefPtr<AudioBuffer> create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
 
     // Returns 0 if data is not a valid audio file.

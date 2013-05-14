@@ -25,6 +25,7 @@
 #ifndef AudioNode_h
 #define AudioNode_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/audio/AudioBus.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -49,7 +50,7 @@ typedef int ExceptionCode;
 // An AudioDestinationNode has one input and no outputs and represents the final destination to the audio hardware.
 // Most processing nodes such as filters will have one input and one output, although multiple inputs and outputs are possible.
 
-class AudioNode {
+class AudioNode : public ScriptWrappable {
 public:
     enum { ProcessingSizeInFrames = 128 };
 

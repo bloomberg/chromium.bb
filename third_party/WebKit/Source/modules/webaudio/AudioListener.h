@@ -29,6 +29,7 @@
 #ifndef AudioListener_h
 #define AudioListener_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/graphics/FloatPoint3D.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -37,7 +38,7 @@ namespace WebCore {
 
 // AudioListener maintains the state of the listener in the audio scene as defined in the OpenAL specification.
 
-class AudioListener : public RefCounted<AudioListener> {
+class AudioListener : public ScriptWrappable, public RefCounted<AudioListener> {
 public:
     static PassRefPtr<AudioListener> create()
     {

@@ -93,6 +93,7 @@ WaveTable::WaveTable(float sampleRate)
     , m_numberOfRanges(NumberOfRanges)
     , m_centsPerRange(CentsPerRange)
 {
+    ScriptWrappable::init(this);
     float nyquist = 0.5 * m_sampleRate;
     m_lowestFundamentalFrequency = nyquist / maxNumberOfPartials();
     m_rateScale = m_waveTableSize / m_sampleRate;

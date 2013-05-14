@@ -57,6 +57,7 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ScriptExecutionConte
 OfflineAudioContext::OfflineAudioContext(Document* document, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
     : AudioContext(document, numberOfChannels, numberOfFrames, sampleRate)
 {
+    ScriptWrappable::init(this);
 }
 
 OfflineAudioContext::~OfflineAudioContext()
