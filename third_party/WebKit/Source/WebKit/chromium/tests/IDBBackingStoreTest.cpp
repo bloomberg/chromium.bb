@@ -30,6 +30,7 @@
 #include "core/platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBFactoryBackendImpl.h"
 #include "modules/indexeddb/IDBLevelDBCoding.h"
+#include "weborigin/DatabaseIdentifier.h"
 #include "weborigin/SecurityOrigin.h"
 
 #include <gtest/gtest.h>
@@ -267,7 +268,7 @@ public:
 
     PassRefPtr<IDBBackingStore> testOpenBackingStore(PassRefPtr<SecurityOrigin> origin, const String& dataDirectory)
     {
-        return openBackingStore(origin->databaseIdentifier(), dataDirectory);
+        return openBackingStore(createDatabaseIdentifierFromSecurityOrigin(origin.get()), dataDirectory);
     }
 };
 

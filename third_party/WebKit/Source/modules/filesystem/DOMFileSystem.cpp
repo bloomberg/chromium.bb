@@ -45,6 +45,7 @@
 #include "modules/filesystem/FileWriterBaseCallback.h"
 #include "modules/filesystem/FileWriterCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
+#include "weborigin/DatabaseIdentifier.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/StringBuilder.h"
@@ -66,7 +67,7 @@ PassRefPtr<DOMFileSystem> DOMFileSystem::createIsolatedFileSystem(ScriptExecutio
         return 0;
 
     StringBuilder filesystemName;
-    filesystemName.append(context->securityOrigin()->databaseIdentifier());
+    filesystemName.append(createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin()));
     filesystemName.append(":Isolated_");
     filesystemName.append(filesystemId);
 

@@ -48,7 +48,6 @@ public:
     static PassRefPtr<SecurityOrigin> create(const KURL&);
     static PassRefPtr<SecurityOrigin> createUnique();
 
-    static PassRefPtr<SecurityOrigin> createFromDatabaseIdentifier(const String&);
     static PassRefPtr<SecurityOrigin> createFromString(const String&);
     static PassRefPtr<SecurityOrigin> create(const String& protocol, const String& host, int port);
 
@@ -185,10 +184,6 @@ public:
     // could make the string return "null".
     String toRawString() const;
 
-    // Serialize the security origin to a string that could be used as part of
-    // file names. This format should be used in storage APIs only.
-    String databaseIdentifier() const;
-
     // This method checks for equality between SecurityOrigins, not whether
     // one origin can access another. It is used for hash table keys.
     // For access checks, use canAccess().
@@ -199,6 +194,8 @@ public:
     // This method checks for equality, ignoring the value of document.domain
     // (and whether it was set) but considering the host. It is used for postMessage.
     bool isSameSchemeHostPort(const SecurityOrigin*) const;
+
+    bool needsDatabaseIdentifierQuirkForFiles() const { return m_needsDatabaseIdentifierQuirkForFiles; }
 
     static const String& urlWithUniqueSecurityOrigin();
 
@@ -214,7 +211,6 @@ private:
 
     String m_protocol;
     String m_host;
-    mutable String m_encodedHost;
     String m_domain;
     String m_filePath;
     unsigned short m_port;

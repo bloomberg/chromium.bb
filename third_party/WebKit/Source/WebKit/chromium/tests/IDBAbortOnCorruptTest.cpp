@@ -35,6 +35,7 @@
 #include "modules/indexeddb/IDBFactoryBackendImpl.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IndexedDB.h"
+#include "weborigin/DatabaseIdentifier.h"
 #include "weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
@@ -123,7 +124,7 @@ TEST(IDBAbortTest, TheTest)
     RefPtr<FakeIDBDatabaseCallbacks> databaseCallbacks = FakeIDBDatabaseCallbacks::create();
     RefPtr<SecurityOrigin> origin = SecurityOrigin::create("http", "localhost", 81);
     const int64_t DummyVersion = 2;
-    factory->open(name, DummyVersion, 1, callbacks.get(), databaseCallbacks, origin->databaseIdentifier(), 0, String() /*path*/);
+    factory->open(name, DummyVersion, 1, callbacks.get(), databaseCallbacks, createDatabaseIdentifierFromSecurityOrigin(origin.get()), 0, String() /*path*/);
 }
 
 } // namespace

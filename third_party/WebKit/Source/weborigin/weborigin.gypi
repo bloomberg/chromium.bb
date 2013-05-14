@@ -1,6 +1,8 @@
 {
   'variables': {
     'weborigin_files': [
+      'DatabaseIdentifier.cpp',
+      'DatabaseIdentifier.h',
       'KURL.cpp',
       'KURL.h',
       'KURLPrivate.cpp',

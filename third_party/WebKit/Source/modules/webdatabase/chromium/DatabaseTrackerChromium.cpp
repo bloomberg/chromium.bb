@@ -37,6 +37,7 @@
 #include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/chromium/DatabaseObserver.h"
 #include "modules/webdatabase/chromium/QuotaTracker.h"
+#include "weborigin/DatabaseIdentifier.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityOriginHash.h"
 #include "wtf/Assertions.h"
@@ -67,7 +68,7 @@ bool DatabaseTracker::canEstablishDatabase(DatabaseBackendContext* databaseConte
 
 String DatabaseTracker::fullPathForDatabase(SecurityOrigin* origin, const String& name, bool)
 {
-    return origin->databaseIdentifier() + "/" + name + "#";
+    return createDatabaseIdentifierFromSecurityOrigin(origin) + "/" + name + "#";
 }
 
 void DatabaseTracker::addOpenDatabase(DatabaseBackendBase* database)
@@ -76,7 +77,7 @@ void DatabaseTracker::addOpenDatabase(DatabaseBackendBase* database)
     if (!m_openDatabaseMap)
         m_openDatabaseMap = adoptPtr(new DatabaseOriginMap);
 
-    String originIdentifier = database->securityOrigin()->databaseIdentifier();
+    String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin());
     DatabaseNameMap* nameMap = m_openDatabaseMap->get(originIdentifier);
     if (!nameMap) {
         nameMap = new DatabaseNameMap();
@@ -121,7 +122,7 @@ private:
 
 void DatabaseTracker::removeOpenDatabase(DatabaseBackendBase* database)
 {
-    String originIdentifier = database->securityOrigin()->databaseIdentifier();
+    String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin());
     MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
     ASSERT(m_openDatabaseMap);
     DatabaseNameMap* nameMap = m_openDatabaseMap->get(originIdentifier);
@@ -174,7 +175,7 @@ unsigned long long DatabaseTracker::getMaxSizeForDatabase(const DatabaseBackendB
     unsigned long long spaceAvailable = 0;
     unsigned long long databaseSize = 0;
     QuotaTracker::instance().getDatabaseSizeAndSpaceAvailableToOrigin(
-        database->securityOrigin()->databaseIdentifier(),
+        createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
         database->stringIdentifier(), &databaseSize, &spaceAvailable);
     return databaseSize + spaceAvailable;
 }
@@ -186,7 +187,7 @@ void DatabaseTracker::interruptAllDatabasesForContext(const DatabaseBackendConte
     if (!m_openDatabaseMap)
         return;
 
-    DatabaseNameMap* nameMap = m_openDatabaseMap->get(context->securityOrigin()->databaseIdentifier());
+    DatabaseNameMap* nameMap = m_openDatabaseMap->get(createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin()));
     if (!nameMap)
         return;
 
