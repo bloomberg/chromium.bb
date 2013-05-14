@@ -425,6 +425,7 @@ Error SpdySession::InitializeWithSocket(
 
   state_ = STATE_DO_READ;
   connection_.reset(connection);
+  connection_->AddLayeredPool(this);
   is_secure_ = is_secure;
   certificate_error_code_ = certificate_error_code;
 
@@ -673,6 +674,17 @@ void SpdySession::AddPooledAlias(const HostPortProxyPair& alias) {
 int SpdySession::GetProtocolVersion() const {
   DCHECK(buffered_spdy_framer_.get());
   return buffered_spdy_framer_->protocol_version();
+}
+
+bool SpdySession::CloseOneIdleConnection() {
+  if (!spdy_session_pool_ || num_active_streams() > 0)
+    return false;
+  bool ret = HasOneRef();
+  // Will remove a reference to this.
+  RemoveFromPool();
+  // Since the underlying socket is only returned when |this| is destroyed
+  // we should only return true if RemoveFromPool() removed the last ref.
+  return ret;
 }
 
 void SpdySession::EnqueueStreamWrite(

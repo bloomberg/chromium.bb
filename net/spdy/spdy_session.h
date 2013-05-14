@@ -22,6 +22,7 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/client_socket_pool.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
@@ -174,7 +175,8 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
 };
 
 class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
-                               public BufferedSpdyFramerVisitorInterface {
+                               public BufferedSpdyFramerVisitorInterface,
+                               public LayeredPool {
  public:
   // TODO(akalin): Use base::TickClock when it becomes available.
   typedef base::TimeTicks (*TimeFunc)(void);
@@ -452,6 +454,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   size_t GetDataFrameMaximumPayload() const {
     return buffered_spdy_framer_->GetDataFrameMaximumPayload();
   }
+
+  // LayeredPool implementation:
+  virtual bool CloseOneIdleConnection() OVERRIDE;
 
  private:
   friend class base::RefCounted<SpdySession>;
