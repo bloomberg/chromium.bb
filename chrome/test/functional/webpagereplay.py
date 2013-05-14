@@ -127,7 +127,7 @@ class ReplayServer(object):
 
   def IsStarted(self):
     """Checks to see if the server is up and running."""
-    for _ in range(5):
+    for _ in range(10):
       if self.replay_process.poll() is not None:
         # The process has exited.
         break
