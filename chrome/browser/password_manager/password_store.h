@@ -213,7 +213,7 @@ class PasswordStore
   // observers that the password store may have been modified via
   // NotifyLoginsChanged(). Note that there is no guarantee that the called
   // method will actually modify the password store data.
-  void WrapModificationTask(base::Closure task);
+  virtual void WrapModificationTask(base::Closure task);
 
   // Post a message to the UI thread to run NotifyLoginsChanged(). Called by
   // WrapModificationTask() above, and split out as a separate method so that

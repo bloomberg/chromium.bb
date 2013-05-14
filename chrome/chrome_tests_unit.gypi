@@ -138,6 +138,8 @@
         'browser/password_manager/mock_password_store.h',
         'browser/password_manager/password_form_data.cc',
         'browser/password_manager/password_form_data.h',
+        'browser/password_manager/test_password_store.cc',
+        'browser/password_manager/test_password_store.h',
         'browser/policy/cloud/mock_cloud_policy_client.cc',
         'browser/policy/cloud/mock_cloud_policy_client.h',
         'browser/policy/cloud/mock_cloud_policy_store.cc',

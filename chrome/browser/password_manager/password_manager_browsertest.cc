@@ -6,6 +6,8 @@
 
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/test_password_store.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -78,6 +80,17 @@ class NavigationObserver : public content::NotificationObserver,
 }  // namespace
 
 class PasswordManagerBrowserTest : public InProcessBrowserTest {
+ public:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    // Use TestPasswordStore to remove a possible race. Normally the
+    // PasswordStore does it's database manipulation on the DB thread, which
+    // creates a possible race during navigation. Specifically the
+    // PasswordManager will ignore any forms in a page if the load from the
+    // PasswordStore has not completed.
+    PasswordStoreFactory::GetInstance()->SetTestingFactory(
+        browser()->profile(), &TestPasswordStore::Create);
+  }
+
  protected:
   content::WebContents* WebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
