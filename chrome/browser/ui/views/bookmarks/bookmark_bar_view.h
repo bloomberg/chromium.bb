@@ -75,6 +75,9 @@ class BookmarkBarView : public DetachableToolbarView,
   // Maximum size of buttons on the bookmark bar.
   static const int kMaxButtonWidth;
 
+  // Number of pixels the attached bookmark bar overlaps with the toolbar.
+  static const int kToolbarAttachedBookmarkBarOverlap;
+
   // |browser_view| can be NULL during tests.
   BookmarkBarView(Browser* browser, BrowserView* browser_view);
   virtual ~BookmarkBarView();

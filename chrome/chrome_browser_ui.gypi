@@ -1645,6 +1645,8 @@
         'browser/ui/views/frame/native_browser_frame.h',
         'browser/ui/views/frame/opaque_browser_frame_view.cc',
         'browser/ui/views/frame/opaque_browser_frame_view.h',
+        'browser/ui/views/frame/overlay_container.cc',
+        'browser/ui/views/frame/overlay_container.h',
         'browser/ui/views/frame/popup_non_client_frame_view.cc',
         'browser/ui/views/frame/popup_non_client_frame_view.h',
         'browser/ui/views/frame/system_menu_insertion_delegate_win.cc',

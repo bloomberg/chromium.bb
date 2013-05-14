@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/search/instant_overlay_controller.h"
 
 class Browser;
-class ContentsContainer;
+class OverlayContainer;
 
 namespace views {
 class WebView;
@@ -22,7 +22,8 @@ class WebView;
 // reflect this in the visibility and layout of the overlay.
 class InstantOverlayControllerViews : public InstantOverlayController {
  public:
-  InstantOverlayControllerViews(Browser* browser, ContentsContainer* contents);
+  InstantOverlayControllerViews(Browser* browser,
+                                OverlayContainer* overlay_container);
   virtual ~InstantOverlayControllerViews();
 
   views::WebView* overlay() { return overlay_.get(); }
@@ -35,7 +36,7 @@ class InstantOverlayControllerViews : public InstantOverlayController {
   // Overridden from InstantOverlayController:
   virtual void OverlayStateChanged(const InstantOverlayModel& model) OVERRIDE;
 
-  ContentsContainer* const contents_;
+  OverlayContainer* const overlay_container_;
 
   // The view that contains the Instant overlay web contents.
   scoped_ptr<views::WebView> overlay_;

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/overlay_container.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -112,6 +113,7 @@ BrowserViewLayout::BrowserViewLayout()
       infobar_container_(NULL),
       contents_split_(NULL),
       contents_container_(NULL),
+      overlay_container_(NULL),
       download_shelf_(NULL),
       dialog_host_(new WebContentsModalDialogHostViews(this)),
       web_contents_modal_dialog_top_y_(-1) {
@@ -124,12 +126,14 @@ void BrowserViewLayout::Init(Browser* browser,
                              BrowserView* browser_view,
                              InfoBarContainerView* infobar_container,
                              views::SingleSplitView* contents_split,
-                             ContentsContainer* contents_container) {
+                             ContentsContainer* contents_container,
+                             OverlayContainer* overlay_container) {
   browser_ = browser;
   browser_view_ = browser_view;
   infobar_container_ = infobar_container;
   contents_split_ = contents_split;
   contents_container_ = contents_container;
+  overlay_container_ = overlay_container;
 }
 
 WebContentsModalDialogHost*
@@ -303,6 +307,16 @@ void BrowserViewLayout::Layout(views::View* host) {
         browser_view_->frame()->GetTabStripInsets(false).top));
   }
   top = LayoutToolbar(top);
+
+  // Overlay container requires updated toolbar bounds to determine its
+  // position, and needs to be laid out before:
+  // - GetTopMarginForActiveContent(), which calls GetInstantUIState() to check
+  //   if overlay container is visible
+  // - LayoutInfoBar(): children of infobar container will layout and call
+  //   BrowserView::DrawInfoBarArrows(), which checks if overlay container is
+  //   visible.
+  LayoutOverlayContainer();
+
   top = LayoutBookmarkAndInfoBars(top);
 
   // Top container requires updated toolbar and bookmark bar to compute size.
@@ -319,11 +333,7 @@ void BrowserViewLayout::Layout(views::View* host) {
   // offset to align with the omnibox. This offset must be recomputed after
   // split view layout to account for infobar heights.
   int active_top_margin = GetTopMarginForActiveContent();
-  bool needs_layout =
-      contents_container_->SetActiveTopMargin(active_top_margin);
-  needs_layout |=
-      contents_container_->SetOverlayTopMargin(GetTopMarginForOverlayContent());
-  if (needs_layout)
+  if (contents_container_->SetActiveTopMargin(active_top_margin))
     contents_container_->Layout();
 
   // This must be done _after_ we lay out the WebContents since this
@@ -483,6 +493,30 @@ void BrowserViewLayout::LayoutContentsSplitView(int top, int bottom) {
   contents_split_->SetBoundsRect(contents_split_bounds);
 }
 
+void BrowserViewLayout::LayoutOverlayContainer() {
+  bool full_height = overlay_container_->IsOverlayFullHeight();
+  int preferred_height = 0;
+  if (!full_height)
+    preferred_height = overlay_container_->GetPreferredSize().height();
+  overlay_container_->SetVisible(full_height || preferred_height > 0);
+  if (!overlay_container_->visible())
+    return;
+  ToolbarView* toolbar = browser_view_->toolbar_;
+  gfx::Point bottom_edge(0, toolbar->bounds().bottom());
+  views::View::ConvertPointToTarget(
+      toolbar->parent(), browser_view_, &bottom_edge);
+  // Overlaps with the toolbar like the attached bookmark bar would, so as to
+  // completely obscure the attached bookmark bar if it were visible.
+  bottom_edge.Offset(0,
+                     -(views::NonClientFrameView::kClientEdgeThickness +
+                       BookmarkBarView::kToolbarAttachedBookmarkBarOverlap));
+  gfx::Rect rect(vertical_layout_rect_);
+  rect.Inset(0, bottom_edge.y(), 0, 0);
+  if (!full_height && preferred_height < rect.height())
+    rect.set_height(preferred_height);
+  overlay_container_->SetBoundsRect(rect);
+}
+
 int BrowserViewLayout::GetContentsOffsetForBookmarkBar() {
   // If the bookmark bar is hidden or attached to the omnibox the web contents
   // will appear directly underneath it and does not need an offset.
@@ -514,19 +548,6 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
   return GetContentsOffsetForBookmarkBar();
 }
 
-int BrowserViewLayout::GetTopMarginForOverlayContent() {
-  // During an immersive reveal, if instant extended is showing suggestions
-  // in an overlay web view, ensure that overlay web view appears aligned
-  // with the bottom of the omnibox.
-  InstantUIState instant_ui_state = GetInstantUIState();
-  if (instant_ui_state == kInstantUIOverlay &&
-      browser_view_->immersive_mode_controller()->IsRevealed())
-    return GetTopMarginForImmersiveInstant();
-
-  // Usually the overlay content is aligned with the active web content.
-  return 0;
-}
-
 int BrowserViewLayout::GetTopMarginForImmersiveInstant() {
   // Compute the position of the bottom edge of the top container views,
   // expressed as an offset in the coordinates of |contents_container_|,
@@ -546,7 +567,7 @@ BrowserViewLayout::InstantUIState BrowserViewLayout::GetInstantUIState() {
 
   // If the search suggestions are already being displayed in the overlay
   // contents then return kInstantUIOverlay.
-  if (contents_container_->overlay_height() > 0)
+  if (overlay_container_->visible())
     return kInstantUIOverlay;
 
   // Top bars stay visible until the results page notifies Chrome it is ready.

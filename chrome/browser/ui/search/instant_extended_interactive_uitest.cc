@@ -1770,79 +1770,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AutocompleteProvidersDone) {
   EXPECT_EQ(1, on_native_suggestions_calls_);
 }
 
-// Verify top bars visibility when searching on |DEFAULT| pages and switching
-// between tabs.  Only implemented in Views and Mac currently.
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
-#define MAYBE_TopBarsVisibilityWhenSwitchingTabs \
-    TopBarsVisibilityWhenSwitchingTabs
-#else
-#define MAYBE_TopBarsVisibilityWhenSwitchingTabs \
-    DISABLED_TopBarsVisibilityWhenSwitchingTabs
-#endif
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       MAYBE_TopBarsVisibilityWhenSwitchingTabs) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-
-  // Open 2 tabs of |DFEAULT| mode.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.example.com"),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.example.com"),
-      NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-
-  // Verify there are two tabs, and their top bars are visible.
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  SearchTabHelper* tab0_helper = SearchTabHelper::FromWebContents(
-      browser()->tab_strip_model()->GetWebContentsAt(0));
-  SearchTabHelper* tab1_helper = SearchTabHelper::FromWebContents(
-      browser()->tab_strip_model()->GetWebContentsAt(1));
-  EXPECT_TRUE(tab0_helper->model()->top_bars_visible());
-  EXPECT_TRUE(tab1_helper->model()->top_bars_visible());
-
-  // Select 1st tab and type in omnibox.  We really want a partial-height
-  // overlay, so that it doesn't get committed when switching away from this
-  // tab.  However, the instant_extended.html used for tests always shows at
-  // full height, though it doesn't commit the overlay when the omnibox text is
-  // a URL and not a search.  So we specifically set a URL as the omnibox text.
-  // The overlay showing will trigger top bars in 1st tab to be hidden, but keep
-  // 2nd tab's visible.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
-  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("http://www.example.com/"));
-  EXPECT_FALSE(tab0_helper->model()->top_bars_visible());
-  EXPECT_TRUE(tab1_helper->model()->top_bars_visible());
-
-  // Select 2nd tab, top bars of 1st tab should become visible, because its
-  // overlay has been hidden.
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
-  EXPECT_TRUE(tab0_helper->model()->top_bars_visible());
-  EXPECT_TRUE(tab1_helper->model()->top_bars_visible());
-
-  // Select back 1st tab, top bars visibility of both tabs should be the same
-  // as before.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
-  EXPECT_TRUE(tab0_helper->model()->top_bars_visible());
-  EXPECT_TRUE(tab1_helper->model()->top_bars_visible());
-
-  // Type in omnibox to trigger full-height overlay, which will trigger its top
-  // bars to be hidden, but keep 2nd tab's visible.
-  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
-  EXPECT_FALSE(tab0_helper->model()->top_bars_visible());
-  EXPECT_TRUE(tab1_helper->model()->top_bars_visible());
-
-  // Select 2nd tab, its top bars should show, but top bars for 1st tab should
-  // remain hidden, because the committed full-height overlay is still showing
-  // suggestions.
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
-  EXPECT_FALSE(tab0_helper->model()->top_bars_visible());
-  EXPECT_TRUE(tab1_helper->model()->top_bars_visible());
-}
-
 // Test that the Bookmark provider is enabled, and returns results.
 // TODO(sreeram): Convert this to a unit test.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_HasBookmarkProvider) {
@@ -2413,4 +2340,28 @@ IN_PROC_BROWSER_TEST_F(
   // Instant tab contents should be preloaded.
   ASSERT_NE(static_cast<InstantTab*>(NULL), instant()->instant_tab());
   EXPECT_TRUE(instant()->instant_tab()->IsLocal());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       PageVisibilityEventOnCommit) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // Set the text, and wait for suggestions to show up.
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("search"));
+
+  content::WebContents* overlay = instant()->GetOverlayContents();
+
+  // Before commiting, verify visibility calls.
+  int on_visibility_calls = -1;
+  EXPECT_TRUE(GetIntFromJS(overlay, "onvisibilitycalls", &on_visibility_calls));
+  EXPECT_EQ(1, on_visibility_calls);
+
+  // Commit the search by pressing Enter.
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  // After commiting, verify visibility calls.
+  on_visibility_calls = -1;
+  EXPECT_TRUE(GetIntFromJS(overlay, "onvisibilitycalls", &on_visibility_calls));
+  EXPECT_EQ(1, on_visibility_calls);
 }

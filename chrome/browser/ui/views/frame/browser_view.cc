@@ -65,6 +65,7 @@
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/instant_overlay_controller_views.h"
+#include "chrome/browser/ui/views/frame/overlay_container.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
@@ -396,6 +397,7 @@ BrowserView::BrowserView()
       contents_web_view_(NULL),
       devtools_container_(NULL),
       contents_container_(NULL),
+      overlay_container_(NULL),
       contents_split_(NULL),
       devtools_dock_side_(DEVTOOLS_DOCK_SIDE_BOTTOM),
       devtools_window_(NULL),
@@ -922,24 +924,9 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   // changed.  We have to do this after the block above so that the toolbars are
   // laid out correctly for calculating the maximum arrow height below.
   {
-    int top_arrow_height = 0;
-    // Hide the arrows in fullscreen and on the instant extended NTP.
-    if (!IsFullscreen() &&
-        (!chrome::IsInstantExtendedAPIEnabled() ||
-         !browser()->search_model()->mode().is_ntp())) {
-      const LocationIconView* location_icon_view =
-          toolbar_->location_bar()->location_icon_view();
-      // The +1 in the next line creates a 1-px gap between icon and arrow tip.
-      gfx::Point icon_bottom(0, location_icon_view->GetImageBounds().bottom() -
-          LocationBarView::kIconInternalPadding + 1);
-      ConvertPointToTarget(location_icon_view, this, &icon_bottom);
-      gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(NULL));
-      ConvertPointToTarget(infobar_container_, this, &infobar_top);
-      top_arrow_height = infobar_top.y() - icon_bottom.y();
-    }
     base::AutoReset<CallState> resetter(&call_state,
         is_animating ? REENTRANT_FORCE_FAST_RESIZE : REENTRANT);
-    infobar_container_->SetMaxTopArrowHeight(top_arrow_height);
+    infobar_container_->SetMaxTopArrowHeight(GetMaxTopInfoBarArrowHeight());
   }
 
   // When transitioning from animating to not animating we need to make sure the
@@ -956,6 +943,22 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
 
 void BrowserView::MaybeStackImmersiveRevealAtTop() {
   immersive_mode_controller_->MaybeStackViewAtTop();
+}
+
+void BrowserView::OnOverlayStateChanged(bool repaint_infobars) {
+  Layout();
+
+  overlay_container_->MaybeStackAtTop(immersive_mode_controller_->IsRevealed());
+
+  // When immersive mode is not reveal and infobar container is visible, set top
+  // infobar arrow as per overlay state.  Layout() needs to happen before
+  // GetMaxTopInfoBarArrowHeight() because the latter checks for visibility of
+  // overlay_container_| which is determined in Layout().
+  if (repaint_infobars &&
+      infobar_container_->visible() &&
+      !immersive_mode_controller_->IsRevealed()) {
+    infobar_container_->SetMaxTopArrowHeight(GetMaxTopInfoBarArrowHeight());
+  }
 }
 
 LocationBar* BrowserView::GetLocationBar() const {
@@ -1206,7 +1209,7 @@ int BrowserView::GetExtraRenderViewHeight() const {
 void BrowserView::WebContentsFocused(WebContents* contents) {
   if (contents_web_view_->GetWebContents() == contents)
     contents_web_view_->OnWebContentsFocused(contents);
-  else if (contents_container_->overlay_web_contents() == contents)
+  else if (overlay_container_->overlay_web_contents() == contents)
     overlay_controller_->overlay()->OnWebContentsFocused(contents);
   else
     devtools_container_->OnWebContentsFocused(contents);
@@ -1355,7 +1358,7 @@ void BrowserView::Paste() {
 }
 
 gfx::Rect BrowserView::GetInstantBounds() {
-  return contents_container_->GetOverlayBounds();
+  return overlay_container_->GetOverlayBounds();
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
@@ -1427,8 +1430,8 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   DCHECK(new_contents);
 
   // See if the Instant overlay is being activated (committed).
-  if (contents_container_->overlay_web_contents() == new_contents) {
-    contents_container_->MakeOverlayContentsActiveContents();
+  if (overlay_container_->overlay_web_contents() == new_contents) {
+    MakeOverlayContentsActiveContents();
     views::WebView* old_container = contents_web_view_;
     contents_web_view_ = overlay_controller_->release_overlay();
     old_container->SetWebContents(NULL);
@@ -1463,10 +1466,8 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   // toggling the size of the main WebContents.
   UpdateDevToolsForContents(new_contents);
 
-  if (change_tab_contents) {
+  if (change_tab_contents)
     contents_web_view_->SetWebContents(new_contents);
-    contents_container_->MaybeStackOverlayAtTop();
-  }
 
   if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
       GetWidget()->IsVisible()) {
@@ -1948,10 +1949,7 @@ void BrowserView::InitViews() {
 
   contents_web_view_ = new views::WebView(browser_->profile());
   contents_web_view_->set_id(VIEW_ID_TAB_CONTAINER);
-  contents_container_ = new ContentsContainer(contents_web_view_, this);
-
-  overlay_controller_.reset(
-      new InstantOverlayControllerViews(browser(), contents_container_));
+  contents_container_ = new ContentsContainer(contents_web_view_);
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(ThemeProperties::COLOR_TOOLBAR);
@@ -1994,12 +1992,20 @@ void BrowserView::InitViews() {
   top_container_->AddChildView(toolbar_);
   toolbar_->Init();
 
+  overlay_container_ = new OverlayContainer(this);
+  overlay_container_->SetVisible(false);
+  AddChildView(overlay_container_);
+
+  overlay_controller_.reset(
+      new InstantOverlayControllerViews(browser(), overlay_container_));
+
   BrowserViewLayout* browser_view_layout = new BrowserViewLayout;
   browser_view_layout->Init(browser(),
                             this,
                             infobar_container_,
                             contents_split_,
-                            contents_container_);
+                            contents_container_,
+                            overlay_container_);
   SetLayoutManager(browser_view_layout);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -2077,7 +2083,8 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
     bookmark_bar_view_.reset(new BookmarkBarView(browser_.get(), this));
     bookmark_bar_view_->set_owned_by_client();
     bookmark_bar_view_->set_background(
-        new BookmarkExtensionBackground(this, bookmark_bar_view_.get(),
+        new BookmarkExtensionBackground(this,
+                                        bookmark_bar_view_.get(),
                                         browser_.get()));
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
@@ -2639,4 +2646,49 @@ void BrowserView::ActivateAppModalDialog() const {
   }
 
   AppModalDialogQueue::GetInstance()->ActivateModalDialog();
+}
+
+void BrowserView::MakeOverlayContentsActiveContents() {
+  views::WebView* overlay = overlay_controller_->overlay();
+  DCHECK_EQ(overlay_container_, overlay->parent());
+  overlay_container_->ResetOverlayAndContents();
+
+  // |overlay|'s current parent is |OverlayContainer|, and will be reparented
+  // to |ContentsContainer|.  |overlay|'s height is either same as
+  // |contents_web_view_| or taller when it appears over the attached bookmark
+  // and/or info bars.  The latter means it's also taller than the parent's
+  // height since |contents_web_view_|'s max height is the parent's height.
+  // Reparenting this taller overlay will force a clip to be installed on it;
+  // on ChromeOS, this results in a call into not-implemented
+  // views::NativeViewHostAura::InstallClip().  So set the bounds of |overlay|
+  // to same as |contents_web_view_| before reparenting.
+  // Note:
+  // - |overlay|'s origin is not (0,0), so just resizing it without changing the
+  //   origin may still result in the undesired clipping
+  // - there won't be extra repositioning or resizing of |overlay| since its new
+  //   bounds will be unchanged in ContentsContainer::Layout().
+  if (overlay->bounds().bottom() > contents_container_->height())
+    overlay->SetBoundsRect(contents_web_view_->bounds());
+  contents_container_->AddChildView(overlay);
+  contents_container_->SetActive(overlay);
+
+  // Overlay is gone, force re-layout of |BrowserView| and infobars.
+  OnOverlayStateChanged(true);
+}
+
+int BrowserView::GetMaxTopInfoBarArrowHeight() {
+  int top_arrow_height = 0;
+  // Only show the arrows when not in fullscreen and when there's no overlay.
+  if (!IsFullscreen() && !overlay_container_->visible()) {
+    const LocationIconView* location_icon_view =
+        toolbar_->location_bar()->location_icon_view();
+    // The +1 in the next line creates a 1-px gap between icon and arrow tip.
+    gfx::Point icon_bottom(0, location_icon_view->GetImageBounds().bottom() -
+        LocationBarView::kIconInternalPadding + 1);
+    ConvertPointToTarget(location_icon_view, this, &icon_bottom);
+    gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(NULL));
+    ConvertPointToTarget(infobar_container_, this, &infobar_top);
+    top_arrow_height = infobar_top.y() - icon_bottom.y();
+  }
+  return top_arrow_height;
 }

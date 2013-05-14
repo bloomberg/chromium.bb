@@ -89,10 +89,6 @@ using views::MenuButton;
 using views::MenuItemView;
 using views::View;
 
-// How much we want the bookmark bar to overlap the toolbar when in its
-// 'always shown' mode.
-static const int kToolbarOverlap = 3;
-
 // Margins around the content.
 static const int kDetachedTopMargin = 1;  // When attached, we use 0 and let the
                                           // toolbar above serve as the margin.
@@ -446,6 +442,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
 const int BookmarkBarView::kMaxButtonWidth = 150;
 const int BookmarkBarView::kNewtabHorizontalPadding = 8;
 const int BookmarkBarView::kNewtabVerticalPadding = 12;
+const int BookmarkBarView::kToolbarAttachedBookmarkBarOverlap = 3;
 
 static const gfx::ImageSkia& GetDefaultFavicon() {
   if (!kDefaultFavicon) {
@@ -535,7 +532,7 @@ void BookmarkBarView::SetBookmarkBarState(
 int BookmarkBarView::GetToolbarOverlap(bool return_max) const {
   // When not detached, always overlap by the full amount.
   if (return_max || bookmark_bar_state_ != BookmarkBar::DETACHED)
-    return kToolbarOverlap;
+    return kToolbarAttachedBookmarkBarOverlap;
   // When detached with an infobar, overlap by 0 whenever the infobar
   // is above us (i.e. when we're detached), since drawing over the infobar
   // looks weird.
@@ -543,7 +540,8 @@ int BookmarkBarView::GetToolbarOverlap(bool return_max) const {
     return 0;
   // When detached with no infobar, animate the overlap between the attached and
   // detached states.
-  return static_cast<int>(kToolbarOverlap * size_animation_->GetCurrentValue());
+  return static_cast<int>(
+      kToolbarAttachedBookmarkBarOverlap * size_animation_->GetCurrentValue());
 }
 
 bool BookmarkBarView::is_animating() {

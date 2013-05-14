@@ -26,6 +26,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
                   NULL,
                   infobar_container_.get(),
                   NULL,
+                  NULL,
                   NULL);
   }
 
@@ -52,6 +53,5 @@ TEST_F(BrowserViewLayoutTest, Layout) {
   // We don't have a bookmark bar yet, so no contents offset is required.
   EXPECT_EQ(0, layout()->GetContentsOffsetForBookmarkBar());
   EXPECT_EQ(0, layout()->GetTopMarginForActiveContent());
-  EXPECT_EQ(0, layout()->GetTopMarginForOverlayContent());
   // TODO(jamescook): Add more as we break dependencies.
 }

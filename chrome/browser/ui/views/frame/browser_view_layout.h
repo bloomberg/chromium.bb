@@ -18,6 +18,7 @@ class BrowserView;
 class ContentsContainer;
 class DownloadShelfView;
 class InfoBarContainerView;
+class OverlayContainer;
 class TabContentsContainer;
 class TabStrip;
 class ToolbarView;
@@ -46,7 +47,8 @@ class BrowserViewLayout : public views::LayoutManager {
             BrowserView* browser_view,
             InfoBarContainerView* infobar_container,
             views::SingleSplitView* contents_split,
-            ContentsContainer* contents_container);
+            ContentsContainer* contents_container,
+            OverlayContainer* overlay_container);
 
   // Sets or updates views that are not available when |this| is initialized.
   void set_bookmark_bar(BookmarkBarView* bookmark_bar) {
@@ -111,6 +113,9 @@ class BrowserViewLayout : public views::LayoutManager {
   // |contents_split_| and other views.
   void LayoutContentsSplitView(int top, int bottom);
 
+  // Layout the |overlay_container_| view below the toolbar.
+  void LayoutOverlayContainer();
+
   // Returns the vertical offset for the web contents to account for a
   // detached bookmarks bar.
   int GetContentsOffsetForBookmarkBar();
@@ -119,11 +124,6 @@ class BrowserViewLayout : public views::LayoutManager {
   // to make the bookmark bar and contents_container_ overlap so that the
   // preview contents hides the bookmark bar.
   int GetTopMarginForActiveContent();
-
-  // Returns the top margin by which to adjust the instant overlay web
-  // contents. Used to make instant extended suggestions align with the
-  // omnibox in immersive fullscreen.
-  int GetTopMarginForOverlayContent();
 
   // Returns the top margin for the active or overlay web view in
   // |contents_container_| for an immersive fullscreen reveal while instant
@@ -151,6 +151,7 @@ class BrowserViewLayout : public views::LayoutManager {
   InfoBarContainerView* infobar_container_;
   views::SingleSplitView* contents_split_;
   ContentsContainer* contents_container_;
+  OverlayContainer* overlay_container_;
   DownloadShelfView* download_shelf_;
 
   // The bounds within which the vertically-stacked contents of the BrowserView
