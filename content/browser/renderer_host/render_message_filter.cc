@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
-#include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread.h"
@@ -734,7 +733,7 @@ void RenderMessageFilter::OnDidCreateOutOfProcessPepperInstance(
   // mapping to decide how to handle messages received from the (untrusted)
   // plugin, so an exploited renderer must not be able to insert fake mappings
   // that may allow it access to other render processes.
-  DCHECK(instance_data.render_process_id == 0);
+  DCHECK_EQ(0, instance_data.render_process_id);
   instance_data.render_process_id = render_process_id_;
   if (is_external) {
     // We provide the BrowserPpapiHost to the embedder, so it's safe to cast.

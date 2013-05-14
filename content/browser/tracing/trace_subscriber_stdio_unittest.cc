@@ -4,6 +4,7 @@
 
 #include "content/browser/tracing/trace_subscriber_stdio.h"
 
+#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"

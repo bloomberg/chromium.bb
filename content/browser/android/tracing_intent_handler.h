@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef  CONTENT_BROWSER_ANDROID_TRACING_INTENT_HANDLER_H
-#define  CONTENT_BROWSER_ANDROID_TRACING_INTENT_HANDLER_H
+#ifndef  CONTENT_BROWSER_ANDROID_TRACING_INTENT_HANDLER_H_
+#define  CONTENT_BROWSER_ANDROID_TRACING_INTENT_HANDLER_H_
 
 #include <jni.h>
 #include <string>
 
-#include "base/file_util.h"
 #include "content/browser/tracing/trace_subscriber_stdio.h"
 
 namespace content {
@@ -29,4 +28,4 @@ class TracingIntentHandler : public TraceSubscriberStdio {
 };
 
 }  // namespace content
-#endif  // CONTENT_BROWSER_ANDROID_TRACING_INTENT_HANDLER_H
+#endif  // CONTENT_BROWSER_ANDROID_TRACING_INTENT_HANDLER_H_

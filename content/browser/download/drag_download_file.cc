@@ -5,7 +5,6 @@
 #include "content/browser/download/drag_download_file.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -68,7 +67,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     params->set_callback(base::Bind(&DragDownloadFileUI::OnDownloadStarted,
                                     weak_ptr_factory_.GetWeakPtr()));
     params->set_file_path(file_path);
-    params->set_file_stream(file_stream.Pass()); // Nulls file_stream.
+    params->set_file_stream(file_stream.Pass());  // Nulls file_stream.
     download_manager->DownloadUrl(params.Pass());
   }
 

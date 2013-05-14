@@ -5,7 +5,6 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"  // Temporary
 #include "base/string_util.h"
@@ -145,7 +144,7 @@ const size_t kMaxEntryCountForTestingNotSet = -1;
 size_t NavigationControllerImpl::max_entry_count_for_testing_ =
     kMaxEntryCountForTestingNotSet;
 
- // Should Reload check for post data? The default is true, but is set to false
+// Should Reload check for post data? The default is true, but is set to false
 // when testing.
 static bool g_check_for_repost = true;
 
@@ -948,7 +947,7 @@ bool NavigationControllerImpl::IsRedirect(
 }
 
 void NavigationControllerImpl::RendererDidNavigateToNewPage(
-   const ViewHostMsg_FrameNavigate_Params& params, bool replace_entry) {
+    const ViewHostMsg_FrameNavigate_Params& params, bool replace_entry) {
   NavigationEntryImpl* new_entry;
   bool update_virtual_url;
   // Only make a copy of the pending entry if it is appropriate for the new page
@@ -1310,7 +1309,7 @@ void NavigationControllerImpl::PruneAllButActiveInternal() {
     if (!GetEntryCount())
       return;
 
-    DCHECK(last_committed_entry_index_ >= 0);
+    DCHECK_GE(last_committed_entry_index_, 0);
     entries_.erase(entries_.begin(),
                    entries_.begin() + last_committed_entry_index_);
     entries_.erase(entries_.begin() + 1, entries_.end());
@@ -1488,7 +1487,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(NavigationEntryImpl* entry,
 void NavigationControllerImpl::PruneOldestEntryIfFull() {
   if (entries_.size() >= max_entry_count()) {
     DCHECK_EQ(max_entry_count(), entries_.size());
-    DCHECK(last_committed_entry_index_ > 0);
+    DCHECK_GT(last_committed_entry_index_, 0);
     RemoveEntryAtIndex(0);
     NotifyPrunedEntries(this, true, 1);
   }

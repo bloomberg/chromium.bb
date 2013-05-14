@@ -4,7 +4,6 @@
 
 #include "content/renderer/browser_plugin/browser_plugin_browsertest.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"

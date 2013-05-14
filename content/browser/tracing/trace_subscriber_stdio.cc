@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"

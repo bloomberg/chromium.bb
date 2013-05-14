@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"

@@ -4,7 +4,6 @@
 
 #include "content/common/fileapi/file_system_dispatcher.h"
 
-#include "base/file_util.h"
 #include "base/process.h"
 #include "content/common/child_thread.h"
 #include "content/common/fileapi/file_system_messages.h"

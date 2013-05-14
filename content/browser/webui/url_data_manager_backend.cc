@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
-#include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"

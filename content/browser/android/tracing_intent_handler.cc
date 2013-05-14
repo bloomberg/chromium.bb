@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "content/public/browser/trace_controller.h"
 #include "jni/TracingIntentHandler_jni.h"

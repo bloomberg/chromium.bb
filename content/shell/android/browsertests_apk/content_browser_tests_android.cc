@@ -6,6 +6,7 @@
 // inside an android application.
 
 #include <android/log.h>
+#include <unistd.h>
 
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
@@ -13,7 +14,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -53,7 +53,6 @@ static void RunTests(JNIEnv* env,
                      jobject obj,
                      jstring jfiles_dir,
                      jobject app_context) {
-
   // Command line basic initialization, will be fully initialized later.
   static const char* const kInitialArgv[] = { "ContentBrowserTestsActivity" };
   CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);

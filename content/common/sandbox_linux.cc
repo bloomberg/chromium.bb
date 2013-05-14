@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
@@ -95,7 +94,7 @@ void LinuxSandbox::PreinitializeSandbox() {
   // Open proc_fd_ only in Debug mode so that forgetting to close it doesn't
   // produce a sandbox escape in Release mode.
   proc_fd_ = open("/proc", O_DIRECTORY | O_RDONLY);
-  CHECK(proc_fd_ >= 0);
+  CHECK_GE(proc_fd_, 0);
 #endif  // !defined(NDEBUG)
   // We "pre-warm" the code that detects supports for seccomp BPF.
   if (SandboxSeccompBpf::IsSeccompBpfDesired()) {

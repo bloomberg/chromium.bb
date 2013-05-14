@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -1050,6 +1049,7 @@ class RenderViewHostObserverArray {
   size_t GetNumObservers() const {
     return observers_.size();
   }
+
  private:
   friend class RVHObserver;
   class RVHObserver : public RenderViewHostObserver {

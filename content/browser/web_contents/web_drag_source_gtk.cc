@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/file_util.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"

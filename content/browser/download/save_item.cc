@@ -4,7 +4,6 @@
 
 #include "content/browser/download/save_item.h"
 
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "content/browser/download/save_file.h"
@@ -122,12 +121,12 @@ void SaveItem::Rename(const base::FilePath& full_path) {
 }
 
 void SaveItem::SetSaveId(int32 save_id) {
-  DCHECK(save_id_ == -1);
+  DCHECK_EQ(-1, save_id_);
   save_id_ = save_id;
 }
 
 void SaveItem::SetTotalBytes(int64 total_bytes) {
-  DCHECK(total_bytes_ == 0);
+  DCHECK_EQ(0, total_bytes_);
   total_bytes_ = total_bytes;
 }
 

@@ -8,9 +8,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "content/public/browser/trace_subscriber.h"
 #include "content/common/content_export.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 

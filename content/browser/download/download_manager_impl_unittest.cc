@@ -6,7 +6,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -64,7 +63,7 @@ MATCHER_P2(DownloadCreateInfoWithDefaultPath, info, download_directory, "") {
 class MockDownloadItemImpl : public DownloadItemImpl {
  public:
   // Use history constructor for minimal base object.
-  MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
+  explicit MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
       : DownloadItemImpl(
           delegate,
           content::DownloadId(),
@@ -426,7 +425,7 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
         DownloadManager*, int32));
 };
 
-} // namespace
+}  // namespace
 
 class DownloadManagerTest : public testing::Test {
  public:
