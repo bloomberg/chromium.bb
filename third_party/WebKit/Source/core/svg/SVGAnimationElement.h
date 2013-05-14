@@ -74,7 +74,7 @@ public:
     // SVGAnimationElement
     float getStartTime() const;
     float getCurrentTime() const;
-    float getSimpleDuration(ExceptionCode&) const;
+    float getSimpleDuration() const;
 
     // ElementTimeControl
     virtual void beginElement();
