@@ -443,7 +443,9 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandAllToFitWithinScreen) {
+// Disabled, http://crbug.com/240745 .
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       DISABLED_ExpandAllToFitWithinScreen) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   gfx::Rect work_area =
       panel_manager->display_settings_provider()->GetPrimaryWorkArea();
