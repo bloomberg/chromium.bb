@@ -66,6 +66,28 @@ public:
     LayoutUnit m_maxBreadth;
 };
 
+struct GridTrackForNormalization {
+    GridTrackForNormalization(const GridTrack& track, double flex)
+        : m_track(&track)
+        , m_flex(flex)
+        , m_normalizedFlexValue(track.m_usedBreadth / flex)
+    {
+    }
+
+    // Required by std::sort.
+    GridTrackForNormalization operator=(const GridTrackForNormalization& o)
+    {
+        m_track = o.m_track;
+        m_flex = o.m_flex;
+        m_normalizedFlexValue = o.m_normalizedFlexValue;
+        return *this;
+    }
+
+    const GridTrack* m_track;
+    double m_flex;
+    LayoutUnit m_normalizedFlexValue;
+};
+
 class RenderGrid::GridIterator {
     WTF_MAKE_NONCOPYABLE(GridIterator);
 public:
@@ -231,7 +253,6 @@ void RenderGrid::computePreferredLogicalWidths()
 
 LayoutUnit RenderGrid::computePreferredTrackWidth(const GridLength& gridLength, size_t trackIndex) const
 {
-    // FIXME: Implement support for <flex> (crbug.com/235258)
     if (gridLength.isFlex())
         return 0;
 
@@ -278,7 +299,7 @@ void RenderGrid::computedUsedBreadthOfGridTracks(TrackSizingDirection direction,
         const GridLength& maxTrackBreadth = trackSize.maxTrackBreadth();
 
         track.m_usedBreadth = computeUsedBreadthOfMinLength(direction, minTrackBreadth);
-        track.m_maxBreadth = computeUsedBreadthOfMaxLength(direction, maxTrackBreadth);
+        track.m_maxBreadth = computeUsedBreadthOfMaxLength(direction, maxTrackBreadth, track.m_usedBreadth);
 
         track.m_maxBreadth = std::max(track.m_maxBreadth, track.m_usedBreadth);
     }
@@ -295,6 +316,18 @@ void RenderGrid::computedUsedBreadthOfGridTracks(TrackSizingDirection direction,
         tracksForDistribution[i] = tracks.data() + i;
 
     distributeSpaceToTracks(tracksForDistribution, 0, &GridTrack::usedBreadth, &GridTrack::growUsedBreadth, availableLogicalSpace);
+
+    // 4. Grow all Grid tracks having a fraction as the MaxTrackSizingFunction.
+
+    // FIXME: Handle the case where RemainingSpace is not defined.
+    double normalizedFractionBreadth = computeNormalizedFractionBreadth(tracks, direction, availableLogicalSpace);
+    for (size_t i = 0; i < tracksSize; ++i) {
+        const GridTrackSize& trackSize = gridTrackSize(direction, i);
+        if (!trackSize.maxTrackBreadth().isFlex())
+            continue;
+
+        tracks[i].m_usedBreadth = std::max<LayoutUnit>(tracks[i].m_usedBreadth, normalizedFractionBreadth * trackSize.maxTrackBreadth().flex());
+    }
 }
 
 LayoutUnit RenderGrid::computeUsedBreadthOfMinLength(TrackSizingDirection direction, const GridLength& gridLength) const
@@ -311,12 +344,10 @@ LayoutUnit RenderGrid::computeUsedBreadthOfMinLength(TrackSizingDirection direct
     return 0;
 }
 
-LayoutUnit RenderGrid::computeUsedBreadthOfMaxLength(TrackSizingDirection direction, const GridLength& gridLength) const
+LayoutUnit RenderGrid::computeUsedBreadthOfMaxLength(TrackSizingDirection direction, const GridLength& gridLength, LayoutUnit usedBreadth) const
 {
-    if (gridLength.isFlex()) {
-        // FIXME: We should return the UsedBreadth per the specification.
-        return 0;
-    }
+    if (gridLength.isFlex())
+        return usedBreadth;
 
     const Length& trackLength = gridLength.length();
     ASSERT(!trackLength.isAuto());
@@ -337,6 +368,56 @@ LayoutUnit RenderGrid::computeUsedBreadthOfSpecifiedLength(TrackSizingDirection 
     ASSERT(trackLength.isFixed() || trackLength.isPercent() || trackLength.isViewportPercentage());
     // FIXME: The -1 here should be replaced by whatever the intrinsic height of the grid is.
     return valueForLength(trackLength, direction == ForColumns ? logicalWidth() : computeContentLogicalHeight(style()->logicalHeight(), -1), view());
+}
+
+static bool sortByGridNormalizedFlexValue(const GridTrackForNormalization& track1, const GridTrackForNormalization& track2)
+{
+    return track1.m_normalizedFlexValue < track2.m_normalizedFlexValue;
+}
+
+double RenderGrid::computeNormalizedFractionBreadth(Vector<GridTrack>& tracks, TrackSizingDirection direction, LayoutUnit availableLogicalSpace) const
+{
+    // |availableLogicalSpace| already accounts for the used breadths so no need to remove it here.
+
+    Vector<GridTrackForNormalization> tracksForNormalization;
+    for (size_t i = 0; i < tracks.size(); ++i) {
+        const GridTrackSize& trackSize = gridTrackSize(direction, i);
+        if (!trackSize.maxTrackBreadth().isFlex())
+            continue;
+
+        tracksForNormalization.append(GridTrackForNormalization(tracks[i], trackSize.maxTrackBreadth().flex()));
+    }
+
+    // FIXME: Ideally we shouldn't come here without any <flex> grid track.
+    if (tracksForNormalization.isEmpty())
+        return LayoutUnit();
+
+    std::sort(tracksForNormalization.begin(), tracksForNormalization.end(), sortByGridNormalizedFlexValue);
+
+    // These values work together: as we walk over our grid tracks, we increase fractionValueBasedOnGridItemsRatio
+    // to match a grid track's usedBreadth to <flex> ratio until the total fractions sized grid tracks wouldn't
+    // fit into availableLogicalSpaceIgnoringFractionTracks.
+    double accumulatedFractions = 0;
+    LayoutUnit fractionValueBasedOnGridItemsRatio = 0;
+    LayoutUnit availableLogicalSpaceIgnoringFractionTracks = availableLogicalSpace;
+
+    for (size_t i = 0; i < tracksForNormalization.size(); ++i) {
+        const GridTrackForNormalization& track = tracksForNormalization[i];
+        if (track.m_normalizedFlexValue > fractionValueBasedOnGridItemsRatio) {
+            // If the normalized flex value (we ordered |tracksForNormalization| by increasing normalized flex value)
+            // will make us overflow our container, then stop. We have the previous step's ratio is the best fit.
+            if (track.m_normalizedFlexValue * accumulatedFractions > availableLogicalSpaceIgnoringFractionTracks)
+                break;
+
+            fractionValueBasedOnGridItemsRatio = track.m_normalizedFlexValue;
+        }
+
+        accumulatedFractions += track.m_flex;
+        // This item was processed so we re-add its used breadth to the available space to accurately count the remaining space.
+        availableLogicalSpaceIgnoringFractionTracks += track.m_track->m_usedBreadth;
+    }
+
+    return availableLogicalSpaceIgnoringFractionTracks / accumulatedFractions;
 }
 
 const GridTrackSize& RenderGrid::gridTrackSize(TrackSizingDirection direction, size_t i) const
@@ -428,7 +509,7 @@ LayoutUnit RenderGrid::maxContentForChild(RenderBox* child, TrackSizingDirection
 
 void RenderGrid::resolveContentBasedTrackSizingFunctions(TrackSizingDirection direction, Vector<GridTrack>& columnTracks, Vector<GridTrack>& rowTracks, LayoutUnit& availableLogicalSpace)
 {
-    // FIXME: Split the grid tracks once we support fractions (step 1 of the algorithm).
+    // FIXME: Split the grid tracks into groups that doesn't overlap a <flex> grid track (crbug.com/235258).
 
     Vector<GridTrack>& tracks = (direction == ForColumns) ? columnTracks : rowTracks;
 
@@ -491,7 +572,8 @@ void RenderGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, Vector<Grid
         GridTrack& track = *tracks[i];
         LayoutUnit availableLogicalSpaceShare = availableLogicalSpace / (tracksSize - i);
         LayoutUnit trackBreadth = (tracks[i]->*trackGetter)();
-        LayoutUnit growthShare = std::min(availableLogicalSpaceShare, track.m_maxBreadth - trackBreadth);
+        LayoutUnit growthShare = std::max(LayoutUnit(), std::min(availableLogicalSpaceShare, track.m_maxBreadth - trackBreadth));
+        // We should never shrink any grid track or else we can't guarantee we abide by our min-sizing function.
         updatedTrackBreadths[i] = trackBreadth + growthShare;
         availableLogicalSpace -= growthShare;
     }
