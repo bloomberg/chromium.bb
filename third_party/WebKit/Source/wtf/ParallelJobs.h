@@ -49,11 +49,14 @@
 //     parallelJobs.execute();
 //
 
+#if !defined(ENABLE_THREADING_LIBDISPATCH) && HAVE(DISPATCH_H)
+#define ENABLE_THREADING_LIBDISPATCH 1
+#elif !defined(THREADING_GENERIC)
+#define ENABLE_THREADING_GENERIC 1
+#endif
+
 #if ENABLE(THREADING_GENERIC)
 #include <wtf/ParallelJobsGeneric.h>
-
-#elif ENABLE(THREADING_OPENMP)
-#include <wtf/ParallelJobsOpenMP.h>
 
 #elif ENABLE(THREADING_LIBDISPATCH)
 #include <wtf/ParallelJobsLibdispatch.h>

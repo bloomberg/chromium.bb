@@ -418,12 +418,4 @@
 #define HAVE_VIRTUALALLOC 1
 #endif
 
-#if !defined(ENABLE_THREADING_LIBDISPATCH) && HAVE(DISPATCH_H)
-#define ENABLE_THREADING_LIBDISPATCH 1
-#elif !defined(ENABLE_THREADING_OPENMP) && defined(_OPENMP)
-#define ENABLE_THREADING_OPENMP 1
-#elif !defined(THREADING_GENERIC)
-#define ENABLE_THREADING_GENERIC 1
-#endif
-
 #endif /* WTF_Platform_h */
