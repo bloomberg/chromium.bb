@@ -199,6 +199,7 @@
             'text/StringImpl.h',
             'text/StringOperators.h',
             'text/StringStatics.cpp',
+            'text/StringUTF8Adaptor.h',
             'text/TextCodec.cpp',
             'text/TextCodecASCIIFastPath.h',
             'text/TextCodecICU.cpp',

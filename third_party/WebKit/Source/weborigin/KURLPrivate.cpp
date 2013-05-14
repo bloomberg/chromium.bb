@@ -33,11 +33,14 @@
 #include "wtf/MemoryInstrumentationString.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/TextEncoding.h"
 #include <algorithm>
 #include <googleurl/src/url_util.h>
 
 namespace WebCore {
+
+namespace {
 
 static bool isUnicodeEncoding(const WTF::TextEncoding* encoding)
 {
@@ -62,21 +65,22 @@ private:
     const WTF::TextEncoding* m_encoding;
 };
 
+} // namespace
+
 KURLPrivate::KURLPrivate()
     : m_isValid(false)
     , m_protocolIsInHTTPFamily(false)
-    , m_utf8IsASCII(true)
-    , m_stringIsValid(false)
 {
 }
 
-KURLPrivate::KURLPrivate(const url_parse::Parsed& parsed, bool isValid)
+KURLPrivate::KURLPrivate(const CString& canonicalSpec, const url_parse::Parsed& parsed, bool isValid)
     : m_isValid(isValid)
     , m_protocolIsInHTTPFamily(false)
     , m_parsed(parsed)
-    , m_utf8IsASCII(true)
-    , m_stringIsValid(false)
+    , m_string(String::fromUTF8(canonicalSpec))
 {
+    initProtocolIsInHTTPFamily();
+    initInnerURL();
 }
 
 KURLPrivate::KURLPrivate(WTF::HashTableDeletedValueType)
@@ -88,9 +92,6 @@ KURLPrivate::KURLPrivate(const KURLPrivate& o)
     : m_isValid(o.m_isValid)
     , m_protocolIsInHTTPFamily(o.m_protocolIsInHTTPFamily)
     , m_parsed(o.m_parsed)
-    , m_utf8(o.m_utf8)
-    , m_utf8IsASCII(o.m_utf8IsASCII)
-    , m_stringIsValid(o.m_stringIsValid)
     , m_string(o.m_string)
 {
     if (o.m_innerURL.get())
@@ -102,9 +103,6 @@ KURLPrivate& KURLPrivate::operator=(const KURLPrivate& o)
     m_isValid = o.m_isValid;
     m_protocolIsInHTTPFamily = o.m_protocolIsInHTTPFamily;
     m_parsed = o.m_parsed;
-    m_utf8 = o.m_utf8;
-    m_utf8IsASCII = o.m_utf8IsASCII;
-    m_stringIsValid = o.m_stringIsValid;
     m_string = o.m_string;
     if (o.m_innerURL.get())
         m_innerURL = adoptPtr(new KURL(o.m_innerURL->copy()));
@@ -113,44 +111,15 @@ KURLPrivate& KURLPrivate::operator=(const KURLPrivate& o)
     return *this;
 }
 
-// Setters for the data. Using the ASCII version when you know the
-// data is ASCII will be slightly more efficient. The UTF-8 version
-// will always be correct if the caller is unsure.
-void KURLPrivate::setUTF8(const CString& string)
-{
-    const char* data = string.data();
-    unsigned dataLength = string.length();
-
-    // The m_utf8IsASCII must always be correct since the DeprecatedString
-    // getter must create it with the proper constructor. This test can be
-    // removed when DeprecatedString is gone, but it still might be a
-    // performance win.
-    m_utf8IsASCII = true;
-    for (unsigned i = 0; i < dataLength; i++) {
-        if (static_cast<unsigned char>(data[i]) >= 0x80) {
-            m_utf8IsASCII = false;
-            break;
-        }
-    }
-
-    m_utf8 = string;
-    m_stringIsValid = false;
-    initProtocolIsInHTTPFamily();
-    initInnerURL();
-}
-
-void KURLPrivate::setASCII(const CString& string)
-{
-    m_utf8 = string;
-    m_utf8IsASCII = true;
-    m_stringIsValid = false;
-    initProtocolIsInHTTPFamily();
-    initInnerURL();
-}
-
 void KURLPrivate::init(const KURL& base, const String& relative, const WTF::TextEncoding* queryEncoding)
 {
-    init(base, relative.characters(), relative.length(), queryEncoding);
+    if (!relative.isNull() && relative.is8Bit()) {
+        StringUTF8Adaptor relativeUTF8(relative);
+        init(base, relativeUTF8.data(), relativeUTF8.length(), queryEncoding);
+    } else
+        init(base, relative.characters16(), relative.length(), queryEncoding);
+    initProtocolIsInHTTPFamily();
+    initInnerURL();
 }
 
 template <typename CHAR>
@@ -167,28 +136,14 @@ void KURLPrivate::init(const KURL& base, const CHAR* relative, int relativeLengt
     KURLCharsetConverter charsetConverterObject(queryEncoding);
     KURLCharsetConverter* charsetConverter = (!queryEncoding || isUnicodeEncoding(queryEncoding)) ? 0 : &charsetConverterObject;
 
+    StringUTF8Adaptor baseUTF8(base.m_url.string());
+
     url_canon::RawCanonOutputT<char> output;
-    const CString& baseStr = base.m_url.utf8String();
-    m_isValid = url_util::ResolveRelative(baseStr.data(), baseStr.length(), base.m_url.m_parsed, relative, relativeLength, charsetConverter, &output, &m_parsed);
+    m_isValid = url_util::ResolveRelative(baseUTF8.data(), baseUTF8.length(), base.m_url.m_parsed, relative, relativeLength, charsetConverter, &output, &m_parsed);
 
     // See FIXME in KURLPrivate in the header. If canonicalization has not
     // changed the string, we can avoid an extra allocation by using assignment.
-    //
-    // When KURL encounters an error such that the URL is invalid and empty
-    // (for example, resolving a relative URL on a non-hierarchical base), it
-    // will produce an isNull URL, and calling setUTF8 will produce an empty
-    // non-null URL. This is unlikely to affect anything, but we preserve this
-    // just in case.
-    if (m_isValid || output.length()) {
-        // Without ref, the whole url is guaranteed to be ASCII-only.
-        if (m_parsed.ref.is_nonempty())
-            setUTF8(CString(output.data(), output.length()));
-        else
-            setASCII(CString(output.data(), output.length()));
-    } else {
-        // WebCore expects resolved URLs to be empty rather than null.
-        setUTF8(CString("", 0));
-    }
+    m_string = String::fromUTF8(output.data(), output.length());
 }
 
 void KURLPrivate::initInnerURL()
@@ -199,9 +154,36 @@ void KURLPrivate::initInnerURL()
     }
     url_parse::Parsed* innerParsed = m_parsed.inner_parsed();
     if (innerParsed)
-        m_innerURL = adoptPtr(new KURL(ParsedURLString, String(m_utf8.data() + innerParsed->scheme.begin, innerParsed->Length() - innerParsed->scheme.begin)));
+        m_innerURL = adoptPtr(new KURL(ParsedURLString, m_string.substring(innerParsed->scheme.begin, innerParsed->Length() - innerParsed->scheme.begin)));
     else
         m_innerURL.clear();
+}
+
+template<typename CHAR>
+bool internalProtocolIs(const url_parse::Component& scheme, const CHAR* spec, const char* protocol)
+{
+    const CHAR* begin = spec + scheme.begin;
+    const CHAR* end = begin + scheme.len;
+
+    while (begin != end && *protocol) {
+        ASSERT(toASCIILower(*protocol) == *protocol);
+        if (toASCIILower(*begin++) != *protocol++)
+            return false;
+    }
+
+    // Both strings are equal (ignoring case) if and only if all of the characters were equal,
+    // and the end of both has been reached.
+    return begin == end && !*protocol;
+}
+
+template<typename CHAR>
+bool protocolIsInHTTPFamily(const url_parse::Component& scheme, const CHAR* spec)
+{
+    if (scheme.len == 4)
+        return internalProtocolIs(scheme, spec, "http");
+    if (scheme.len == 5)
+        return internalProtocolIs(scheme, spec, "https");
+    return false;
 }
 
 void KURLPrivate::initProtocolIsInHTTPFamily()
@@ -211,13 +193,17 @@ void KURLPrivate::initProtocolIsInHTTPFamily()
         return;
     }
 
-    const char* scheme = m_utf8.data() + m_parsed.scheme.begin;
-    if (m_parsed.scheme.len == 4)
-        m_protocolIsInHTTPFamily = lowerCaseEqualsASCII(scheme, scheme + 4, "http");
-    else if (m_parsed.scheme.len == 5)
-        m_protocolIsInHTTPFamily = lowerCaseEqualsASCII(scheme, scheme + 5, "https");
+    if (!m_string.isNull() && m_string.is8Bit())
+        m_protocolIsInHTTPFamily = protocolIsInHTTPFamily(m_parsed.scheme, m_string.characters8());
     else
-        m_protocolIsInHTTPFamily = false;
+        m_protocolIsInHTTPFamily = protocolIsInHTTPFamily(m_parsed.scheme, m_string.characters16());
+}
+
+bool KURLPrivate::protocolIs(const char* protocol) const
+{
+    if (!m_string.isNull() && m_string.is8Bit())
+        return internalProtocolIs(m_parsed.scheme, m_string.characters8(), protocol);
+    return internalProtocolIs(m_parsed.scheme, m_string.characters16(), protocol);
 }
 
 void KURLPrivate::copyTo(KURLPrivate* dest) const
@@ -225,12 +211,7 @@ void KURLPrivate::copyTo(KURLPrivate* dest) const
     dest->m_isValid = m_isValid;
     dest->m_protocolIsInHTTPFamily = m_protocolIsInHTTPFamily;
     dest->m_parsed = m_parsed;
-
-    // Don't copy the 16-bit string since that will be regenerated as needed.
-    dest->m_utf8 = CString(m_utf8.data(), m_utf8.length());
-    dest->m_utf8IsASCII = m_utf8IsASCII;
-    dest->m_stringIsValid = false;
-    dest->m_string = String(); // Clear the invalid string to avoid cross thread ref counting.
+    dest->m_string = m_string.isolatedCopy();
     if (m_innerURL)
         dest->m_innerURL = adoptPtr(new KURL(m_innerURL->copy()));
     else
@@ -242,9 +223,9 @@ String KURLPrivate::componentString(const url_parse::Component& component) const
     if (!m_isValid || component.len <= 0) {
         // KURL returns a null string if the URL is itself a null string, and an
         // empty string for other nonexistent entities.
-        if (utf8String().isNull())
+        if (m_string.isNull())
             return String();
-        return String("", 0);
+        return emptyString();
     }
     // begin and len are in terms of bytes which do not match
     // if string() is UTF-16 and input contains non-ASCII characters.
@@ -253,7 +234,7 @@ String KURLPrivate::componentString(const url_parse::Component& component) const
     // begin will always match the actual value and len (in terms of
     // byte) will be longer than what's needed by 'mid'. However, mid
     // truncates len to avoid go past the end of a string so that we can
-    // get away withtout doing anything here.
+    // get away without doing anything here.
     return string().substring(component.begin, component.len);
 }
 
@@ -262,36 +243,21 @@ void KURLPrivate::replaceComponents(const Replacements& replacements)
     url_canon::RawCanonOutputT<char> output;
     url_parse::Parsed newParsed;
 
-    m_isValid = url_util::ReplaceComponents(utf8String().data(), utf8String().length(), m_parsed, replacements, 0, &output, &newParsed);
+    StringUTF8Adaptor utf8(m_string);
+    m_isValid = url_util::ReplaceComponents(utf8.data(), utf8.length(), m_parsed, replacements, 0, &output, &newParsed);
 
     m_parsed = newParsed;
-    if (m_parsed.ref.is_nonempty())
-        setUTF8(CString(output.data(), output.length()));
-    else
-        setASCII(CString(output.data(), output.length()));
+    m_string = String::fromUTF8(output.data(), output.length());
 }
 
 const String& KURLPrivate::string() const
 {
-    if (!m_stringIsValid) {
-        // Handle the null case separately. Otherwise, constructing
-        // the string like we do below would generate the empty string,
-        // not the null string.
-        if (m_utf8.isNull())
-            m_string = String();
-        else if (m_utf8IsASCII)
-            m_string = String(m_utf8.data(), m_utf8.length());
-        else
-            m_string = String::fromUTF8(m_utf8.data(), m_utf8.length());
-        m_stringIsValid = true;
-    }
     return m_string;
 }
 
 void KURLPrivate::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     WTF::MemoryClassInfo info(memoryObjectInfo, this);
-    info.addMember(m_utf8, "utf8");
     info.addMember(m_string, "string");
     info.addMember(m_innerURL, "innerURL");
     info.addMember(m_parsed, "parsed");
@@ -300,7 +266,6 @@ void KURLPrivate::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 bool KURLPrivate::isSafeToSendToAnotherThread() const
 {
     return m_string.isSafeToSendToAnotherThread()
-        && m_utf8.isSafeToSendToAnotherThread()
         && (!m_innerURL || m_innerURL->isSafeToSendToAnotherThread());
 }
 

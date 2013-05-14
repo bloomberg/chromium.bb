@@ -46,7 +46,7 @@ class KURL;
 class KURLPrivate {
 public:
     KURLPrivate();
-    KURLPrivate(const url_parse::Parsed&, bool isValid);
+    KURLPrivate(const CString& canonicalSpec, const url_parse::Parsed&, bool isValid);
     explicit KURLPrivate(WTF::HashTableDeletedValueType);
     explicit KURLPrivate(const KURLPrivate&);
 
@@ -54,12 +54,7 @@ public:
 
     void init(const KURL& base, const String& relative, const WTF::TextEncoding* queryEncoding);
 
-    // Backend initializer. The query encoding parameters are optional and can
-    // be 0 (this implies UTF-8). This initializer requires that the object
-    // has just been created and the strings are null. Do not call on an
-    // already-constructed object.
-    template <typename CHAR>
-    void init(const KURL& base, const CHAR* relative, int relativeLength, const WTF::TextEncoding* queryEncoding);
+    bool protocolIs(const char*) const;
 
     // Does a deep copy to the given output object.
     void copyTo(KURLPrivate* dest) const;
@@ -69,18 +64,11 @@ public:
     typedef url_canon::Replacements<url_parse::UTF16Char> Replacements;
     void replaceComponents(const Replacements&);
 
-    // Setters for the data. Using the ASCII version when you know the
-    // data is ASCII will be slightly more efficient. The UTF-8 version
-    // will always be correct if the caller is unsure.
-    void setUTF8(const CString&);
-    void setASCII(const CString&);
-
-    const CString& utf8String() const { return m_utf8; }
     const String& string() const;
 
     bool m_isValid;
     bool m_protocolIsInHTTPFamily;
-    url_parse::Parsed m_parsed; // Indexes into the UTF-8 version of the string.
+    url_parse::Parsed m_parsed;
 
     KURL* innerURL() const { return m_innerURL.get(); }
 
@@ -88,18 +76,17 @@ public:
     bool isSafeToSendToAnotherThread() const;
 
 private:
+    // Backend initializer. The query encoding parameters are optional and can
+    // be 0 (this implies UTF-8). This initializer requires that the object
+    // has just been created and the strings are null. Do not call on an
+    // already-constructed object.
+    template <typename CHAR>
+    void init(const KURL& base, const CHAR* relative, int relativeLength, const WTF::TextEncoding* queryEncoding);
+
     void initInnerURL();
     void initProtocolIsInHTTPFamily();
 
-    CString m_utf8; // FIXME: This is redundant with WTFString's 8 bit string support.
-
-    // Set to true when the caller set us using the ASCII setter. We can
-    // be more efficient when we know there is no UTF-8 to worry about.
-    // This flag is currently always correct, but should be changed to be a
-    // hint (see setUTF8).
-    bool m_utf8IsASCII;
-    mutable bool m_stringIsValid;
-    mutable String m_string;
+    String m_string;
     OwnPtr<KURL> m_innerURL;
 };
 

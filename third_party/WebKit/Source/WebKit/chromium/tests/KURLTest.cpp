@@ -614,7 +614,6 @@ TEST(KURLTest, DeepCopy)
 
     // The pointers should be different for both UTF-8 and UTF-16.
     EXPECT_NE(dest.string().characters(), src.string().characters());
-    EXPECT_NE(dest.utf8String().data(), src.utf8String().data());
 }
 
 TEST(KURLTest, ProtocolIs)

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/KURL.h"
 #include "core/platform/LinkHash.h"
-
+#include "wtf/text/StringUTF8Adaptor.h"
 #include <googleurl/src/url_util.h>
 #include <public/Platform.h>
 
@@ -62,15 +62,19 @@ LinkHash visitedLinkHash(const KURL& base, const AtomicString& attributeURL)
     url_canon::RawCanonOutput<2048> buffer;
     url_parse::Parsed parsed;
 
-    const CString& cstr = base.utf8String();
-    const char* data = cstr.data();
-    int length = cstr.length();
-    const url_parse::Parsed& srcParsed = base.parsed();
+    StringUTF8Adaptor baseUTF8(base.string());
+    const url_parse::Parsed& baseParsed = base.parsed();
 
-    if (!url_util::ResolveRelative(data, length, srcParsed, attributeURL.characters(),
-                                   attributeURL.length(), 0, &buffer, &parsed))
-        return 0; // Invalid resolved URL.
+    bool isValid = false;
+    const String& relative = attributeURL.string();
+    if (relative.is8Bit()) {
+        StringUTF8Adaptor relativeUTF8(relative);
+        isValid = url_util::ResolveRelative(baseUTF8.data(), baseUTF8.length(), baseParsed, relativeUTF8.data(), relativeUTF8.length(), 0, &buffer, &parsed);
+    } else
+        isValid = url_util::ResolveRelative(baseUTF8.data(), baseUTF8.length(), baseParsed, relative.characters16(), relative.length(), 0, &buffer, &parsed);
 
+    if (!isValid)
+        return 0;
     return WebKit::Platform::current()->visitedLinkHash(buffer.data(), buffer.length());
 }
 

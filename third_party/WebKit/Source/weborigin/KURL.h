@@ -157,9 +157,7 @@ public:
 
     operator const String&() const { return string(); }
 
-    // Getters for the parsed structure and its corresponding 8-bit string.
     const url_parse::Parsed& parsed() const { return m_url.m_parsed; }
-    const CString& utf8String() const { return m_url.utf8String(); }
 
     const KURL* innerURL() const { return m_url.innerURL(); }
 
@@ -206,9 +204,6 @@ String decodeURLEscapeSequences(const String&);
 String decodeURLEscapeSequences(const String&, const WTF::TextEncoding&);
 
 String encodeWithURLEscapeSequences(const String&);
-
-// FIXME: This function should move to WTF.
-bool lowerCaseEqualsASCII(const char* begin, const char* end, const char* str);
 
 // Inlines.
 

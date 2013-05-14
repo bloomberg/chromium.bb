@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ * Copyright (C) 2013 Google Inc. All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -28,31 +28,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include <public/WebURL.h>
+#ifndef StringUTF8Adaptor_h
+#define StringUTF8Adaptor_h
 
-#include "core/platform/KURL.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace WTF {
 
-WebURL::WebURL(const WebCore::KURL& url)
-    : m_spec(url.string().utf8())
-    , m_parsed(url.parsed())
-    , m_isValid(url.isValid())
-{
-}
+// This class lets you get UTF-8 data out of a String without mallocing a
+// separate buffer to hold the data if the String happens to be 8 bit and
+// contain only ASCII characters.
+class StringUTF8Adaptor {
+public:
+    explicit StringUTF8Adaptor(const String& string)
+        : m_data(0)
+        , m_length(0)
+    {
+        if (string.isEmpty())
+            return;
+        // Unfortunately, 8 bit WTFStrings are encoded in Latin-1 and GURL uses UTF-8
+        // when processing 8 bit strings. If |relative| is entirely ASCII, we luck out
+        // and can avoid mallocing a new buffer to hold the UTF-8 data because UTF-8
+        // and Latin-1 use the same code units for ASCII code points.
+        if (string.is8Bit() && string.containsOnlyASCII()) {
+            m_data = reinterpret_cast<const char*>(string.characters8());
+            m_length = string.length();
+        } else {
+            m_utf8Buffer = string.utf8();
+            m_data = m_utf8Buffer.data();
+            m_length = m_utf8Buffer.length();
+        }
+    }
 
-WebURL& WebURL::operator=(const WebCore::KURL& url)
-{
-    m_spec = url.string().utf8();
-    m_parsed = url.parsed();
-    m_isValid = url.isValid();
-    return *this;
-}
+    const char* data() const { return m_data; }
+    size_t length() const { return m_length; }
 
-WebURL::operator WebCore::KURL() const
-{
-    return WebCore::KURL(m_spec, m_parsed, m_isValid);
-}
+private:
+    CString m_utf8Buffer;
+    const char* m_data;
+    size_t m_length;
+};
 
-} // namespace WebKit
+} // namespace WTF
+
+using WTF::StringUTF8Adaptor;
+
+#endif // StringUTF8Adaptor_h
