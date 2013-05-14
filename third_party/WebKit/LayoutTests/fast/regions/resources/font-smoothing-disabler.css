@@ -1,0 +1,4 @@
+/* Temporarily disable font smoothing for regions until overflow issues are fixed */
+body {
+    -webkit-font-smoothing: none;
+}
