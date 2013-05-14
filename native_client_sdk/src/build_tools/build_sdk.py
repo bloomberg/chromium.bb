@@ -53,7 +53,7 @@ import oshelpers
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
-NACLPORTS_REV = 712
+NACLPORTS_REV = 757
 
 options = None
 
@@ -764,15 +764,13 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
   env = dict(os.environ)
   env['NACL_SDK_ROOT'] = pepperdir
   env['NACLPORTS_NO_ANNOTATE'] = "1"
+  env['NACLPORTS_NO_UPLOAD'] = "1"
 
-  build_script = 'build_tools/bots/linux/nacl-linux-sdk-bundle.sh'
+  build_script = 'build_tools/bots/linux/naclports-linux-sdk-bundle.sh'
   buildbot_common.BuildStep('Build naclports')
   buildbot_common.Run([build_script], env=env, cwd=NACLPORTS_DIR)
 
-  out_dir = os.path.join(bundle_dir, 'pepper_XX')
-  out_dir_final = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
-  buildbot_common.RemoveDir(out_dir_final)
-  buildbot_common.Move(out_dir, out_dir_final)
+  out_dir = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
 
   # Some naclports do not include a standalone LICENSE/COPYING file
   # so we explicitly list those here for inclusion.
@@ -780,9 +778,9 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
                     'jpeg-8d/README',
                     'zlib-1.2.3/README')
   src_root = os.path.join(NACLPORTS_DIR, 'out', 'repository-i686')
-  output_license = os.path.join(out_dir_final, 'ports', 'LICENSE')
+  output_license = os.path.join(out_dir, 'ports', 'LICENSE')
   GenerateNotice(src_root , output_license, extra_licenses)
-  readme = os.path.join(out_dir_final, 'ports', 'README')
+  readme = os.path.join(out_dir, 'ports', 'README')
   oshelpers.Copy(['-v', os.path.join(SDK_SRC_DIR, 'README.naclports'), readme])
 
 
