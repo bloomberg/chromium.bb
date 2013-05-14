@@ -43,9 +43,8 @@ static const char* kComplexTests[] = {
 
 static const char* kIndexTests[] = {
   "deleteIndex.html",
-  // Flaky: http://crbug.com/123685
-  // Flaky: http://crbug.com/127244
-  // "index-basics-workers.html",
+  // Flaky?: http://crbug.com/123685
+  "index-basics-workers.html",
   "index-count.html",
   "index-cursor.html",
   "index-get-key-argument-required.html",
