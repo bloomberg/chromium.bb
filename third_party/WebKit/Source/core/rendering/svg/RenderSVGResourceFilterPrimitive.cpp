@@ -74,11 +74,11 @@ FloatRect RenderSVGResourceFilterPrimitive::determineFilterPrimitiveSubregion(Fi
         for (unsigned i = 1; i < numberOfInputEffects; ++i)
             subregion.unite(determineFilterPrimitiveSubregion(effect->inputEffect(i)));
     } else
-        subregion = filter->filterRegionInUserSpace();
+        subregion = filter->filterRegion();
 
     // After calling determineFilterPrimitiveSubregion on the target effect, reset the subregion again for <feTile>.
     if (effect->filterEffectType() == FilterEffectTypeTile)
-        subregion = filter->filterRegionInUserSpace();
+        subregion = filter->filterRegion();
 
     FloatRect effectBoundaries = effect->effectBoundaries();
     if (effect->hasX())
@@ -97,7 +97,7 @@ FloatRect RenderSVGResourceFilterPrimitive::determineFilterPrimitiveSubregion(Fi
     absoluteSubregion.scale(filterResolution.width(), filterResolution.height());
 
     // Clip every filter effect to the filter region.
-    FloatRect absoluteScaledFilterRegion = filter->filterRegion();
+    FloatRect absoluteScaledFilterRegion = filter->absoluteFilterRegion();
     absoluteScaledFilterRegion.scale(filterResolution.width(), filterResolution.height());
     absoluteSubregion.intersect(absoluteScaledFilterRegion);
 

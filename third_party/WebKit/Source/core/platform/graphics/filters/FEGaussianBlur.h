@@ -41,6 +41,7 @@ public:
     static float calculateStdDeviation(float);
 
     virtual void determineAbsolutePaintRect();
+    virtual FloatRect mapRect(const FloatRect&, bool forward = true) OVERRIDE FINAL;
     static void calculateKernelSize(Filter*, unsigned& kernelSizeX, unsigned& kernelSizeY, float stdX, float stdY);
     static void calculateUnscaledKernelSize(unsigned& kernelSizeX, unsigned& kernelSizeY, float stdX, float stdY);
 

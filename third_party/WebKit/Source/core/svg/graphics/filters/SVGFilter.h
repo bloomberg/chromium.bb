@@ -38,9 +38,6 @@ class SVGFilter : public Filter {
 public:
     static PassRefPtr<SVGFilter> create(const AffineTransform&, const FloatRect&, const FloatRect&, const FloatRect&, bool);
 
-    FloatRect filterRegionInUserSpace() const { return m_filterRegion; }
-    virtual FloatRect filterRegion() const { return m_absoluteFilterRegion; }
-
     virtual float applyHorizontalScale(float value) const;
     virtual float applyVerticalScale(float value) const;
 
@@ -52,8 +49,6 @@ private:
 
     FloatRect m_absoluteSourceDrawingRegion;
     FloatRect m_targetBoundingBox;
-    FloatRect m_absoluteFilterRegion;
-    FloatRect m_filterRegion;
     bool m_effectBBoxMode;
 };
 

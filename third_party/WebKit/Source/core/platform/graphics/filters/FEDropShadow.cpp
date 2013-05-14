@@ -57,18 +57,7 @@ void FEDropShadow::determineAbsolutePaintRect()
     Filter* filter = this->filter();
     ASSERT(filter);
 
-    FloatRect absolutePaintRect = inputEffect(0)->absolutePaintRect();
-    FloatRect absoluteOffsetPaintRect(absolutePaintRect);
-    absoluteOffsetPaintRect.move(filter->applyHorizontalScale(m_dx), filter->applyVerticalScale(m_dy));
-    absolutePaintRect.unite(absoluteOffsetPaintRect);
-    
-    unsigned kernelSizeX = 0;
-    unsigned kernelSizeY = 0;
-    FEGaussianBlur::calculateKernelSize(filter, kernelSizeX, kernelSizeY, m_stdX, m_stdY);
-    
-    // We take the half kernel size and multiply it with three, because we run box blur three times.
-    absolutePaintRect.inflateX(3 * kernelSizeX * 0.5f);
-    absolutePaintRect.inflateY(3 * kernelSizeY * 0.5f);
+    FloatRect absolutePaintRect = mapRect(inputEffect(0)->absolutePaintRect());
 
     if (clipsToBounds())
         absolutePaintRect.intersect(maxEffectRect());
@@ -76,6 +65,29 @@ void FEDropShadow::determineAbsolutePaintRect()
         absolutePaintRect.unite(maxEffectRect());
 
     setAbsolutePaintRect(enclosingIntRect(absolutePaintRect));
+}
+
+FloatRect FEDropShadow::mapRect(const FloatRect& rect, bool forward)
+{
+    FloatRect result = rect;
+    Filter* filter = this->filter();
+    ASSERT(filter);
+
+    FloatRect offsetRect = rect;
+    if (forward)
+        offsetRect.move(filter->applyHorizontalScale(m_dx), filter->applyVerticalScale(m_dy));
+    else
+        offsetRect.move(-filter->applyHorizontalScale(m_dx), -filter->applyVerticalScale(m_dy));
+    result.unite(offsetRect);
+
+    unsigned kernelSizeX = 0;
+    unsigned kernelSizeY = 0;
+    FEGaussianBlur::calculateKernelSize(filter, kernelSizeX, kernelSizeY, m_stdX, m_stdY);
+
+    // We take the half kernel size and multiply it with three, because we run box blur three times.
+    result.inflateX(3 * kernelSizeX * 0.5f);
+    result.inflateY(3 * kernelSizeY * 0.5f);
+    return result;
 }
 
 void FEDropShadow::applySoftware()
