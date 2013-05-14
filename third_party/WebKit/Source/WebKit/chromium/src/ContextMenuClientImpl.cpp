@@ -106,7 +106,7 @@ static bool isASingleWord(const String& text)
 // is to be invoked. This function also sets the word on which context menu
 // has been invoked to be the selected word, as required. This function changes
 // the selection only when there were no selected characters on OS X.
-static String selectMisspelledWord(const ContextMenu* defaultMenu, Frame* selectedFrame)
+static String selectMisspelledWord(Frame* selectedFrame)
 {
     // First select from selectedText to check for multiple word selection.
     String misspelledWord = selectedFrame->editor()->selectedText().stripWhiteSpace();
@@ -178,7 +178,7 @@ static String selectMisspellingAsync(Frame* selectedFrame, DocumentMarker& marke
     return markerRange->text();
 }
 
-PassOwnPtr<WebCore::ContextMenu> ContextMenuClientImpl::customizeMenu(PassOwnPtr<WebCore::ContextMenu> defaultMenu)
+void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultMenu)
 {
     // Displaying the context menu in this function is a big hack as we don't
     // have context, i.e. whether this is being invoked via a script or in
@@ -186,7 +186,7 @@ PassOwnPtr<WebCore::ContextMenu> ContextMenuClientImpl::customizeMenu(PassOwnPtr
     // Keyboard events KeyVK_APPS, Shift+F10). Check if this is being invoked
     // in response to the above input events before popping up the context menu.
     if (!m_webView->contextMenuAllowed())
-        return defaultMenu;
+        return;
 
     HitTestResult r = m_webView->page()->contextMenuController()->hitTestResult();
     Frame* selectedFrame = r.innerNodeFrame();
@@ -326,7 +326,7 @@ PassOwnPtr<WebCore::ContextMenu> ContextMenuClientImpl::customizeMenu(PassOwnPtr
                 m_webView->focusedWebCoreFrame()->editor()->isContinuousSpellCheckingEnabled();
             // Spellchecking might be enabled for the field, but could be disabled on the node.
             if (m_webView->focusedWebCoreFrame()->editor()->isSpellCheckingEnabledInFocusedNode()) {
-                data.misspelledWord = selectMisspelledWord(defaultMenu.get(), selectedFrame);
+                data.misspelledWord = selectMisspelledWord(selectedFrame);
                 if (m_webView->spellCheckClient()) {
                     int misspelledOffset, misspelledLength;
                     m_webView->spellCheckClient()->spellCheck(
@@ -364,15 +364,13 @@ PassOwnPtr<WebCore::ContextMenu> ContextMenuClientImpl::customizeMenu(PassOwnPtr
     data.referrerPolicy = static_cast<WebReferrerPolicy>(selectedFrame->document()->referrerPolicy());
 
     // Filter out custom menu elements and add them into the data.
-    populateCustomMenuItems(defaultMenu.get(), &data);
+    populateCustomMenuItems(defaultMenu, &data);
 
     data.node = r.innerNonSharedNode();
 
     WebFrame* selected_web_frame = WebFrameImpl::fromFrame(selectedFrame);
     if (m_webView->client())
         m_webView->client()->showContextMenu(selected_web_frame, data);
-
-    return defaultMenu;
 }
 
 static void populateSubMenuItems(const Vector<ContextMenuItem>& inputMenu, WebVector<WebMenuItemInfo>& subMenuItems)
@@ -412,7 +410,7 @@ static void populateSubMenuItems(const Vector<ContextMenuItem>& inputMenu, WebVe
     subMenuItems.swap(outputItems);
 }
 
-void ContextMenuClientImpl::populateCustomMenuItems(WebCore::ContextMenu* defaultMenu, WebContextMenuData* data)
+void ContextMenuClientImpl::populateCustomMenuItems(const WebCore::ContextMenu* defaultMenu, WebContextMenuData* data)
 {
     populateSubMenuItems(defaultMenu->items(), data->customItems);
 }

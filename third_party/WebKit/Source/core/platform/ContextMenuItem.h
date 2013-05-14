@@ -34,86 +34,10 @@ namespace WebCore {
 
     class ContextMenu;
 
-    typedef void* PlatformContextMenuItem;
-
-    // This enum needs to be in sync with the WebMenuItemTag enum in WebUIDelegate.h and the
-    // extra values in WebUIDelegatePrivate.h
     enum ContextMenuAction {
-        ContextMenuItemTagNoAction=0, // This item is not actually in WebUIDelegate.h
-        ContextMenuItemTagOpenLinkInNewWindow=1,
-        ContextMenuItemTagDownloadLinkToDisk,
-        ContextMenuItemTagCopyLinkToClipboard,
-        ContextMenuItemTagOpenImageInNewWindow,
-        ContextMenuItemTagDownloadImageToDisk,
-        ContextMenuItemTagCopyImageToClipboard,
-        ContextMenuItemTagOpenFrameInNewWindow,
-        ContextMenuItemTagCopy,
-        ContextMenuItemTagGoBack,
-        ContextMenuItemTagGoForward,
-        ContextMenuItemTagStop,
-        ContextMenuItemTagReload,
-        ContextMenuItemTagCut,
-        ContextMenuItemTagPaste,
-        ContextMenuItemTagSpellingGuess,
-        ContextMenuItemTagNoGuessesFound,
-        ContextMenuItemTagIgnoreSpelling,
-        ContextMenuItemTagLearnSpelling,
-        ContextMenuItemTagOther,
-        ContextMenuItemTagSearchInSpotlight,
-        ContextMenuItemTagSearchWeb,
-        ContextMenuItemTagLookUpInDictionary,
-        ContextMenuItemTagOpenWithDefaultApplication,
-        ContextMenuItemPDFActualSize,
-        ContextMenuItemPDFZoomIn,
-        ContextMenuItemPDFZoomOut,
-        ContextMenuItemPDFAutoSize,
-        ContextMenuItemPDFSinglePage,
-        ContextMenuItemPDFFacingPages,
-        ContextMenuItemPDFContinuous,
-        ContextMenuItemPDFNextPage,
-        ContextMenuItemPDFPreviousPage,
-        // These are new tags! Not a part of API!!!!
-        ContextMenuItemTagOpenLink = 2000,
-        ContextMenuItemTagIgnoreGrammar,
-        ContextMenuItemTagSpellingMenu, // Spelling or Spelling/Grammar sub-menu
-        ContextMenuItemTagShowSpellingPanel,
-        ContextMenuItemTagCheckSpelling,
-        ContextMenuItemTagCheckSpellingWhileTyping,
-        ContextMenuItemTagCheckGrammarWithSpelling,
-        ContextMenuItemTagFontMenu, // Font sub-menu
-        ContextMenuItemTagShowFonts,
-        ContextMenuItemTagBold,
-        ContextMenuItemTagItalic,
-        ContextMenuItemTagUnderline,
-        ContextMenuItemTagOutline,
-        ContextMenuItemTagStyles,
-        ContextMenuItemTagShowColors,
-        ContextMenuItemTagSpeechMenu, // Speech sub-menu
-        ContextMenuItemTagStartSpeaking,
-        ContextMenuItemTagStopSpeaking,
-        ContextMenuItemTagWritingDirectionMenu, // Writing Direction sub-menu
-        ContextMenuItemTagDefaultDirection,
-        ContextMenuItemTagLeftToRight,
-        ContextMenuItemTagRightToLeft,
-        ContextMenuItemTagPDFSinglePageScrolling,
-        ContextMenuItemTagPDFFacingPagesScrolling,
-        ContextMenuItemTagInspectElement,
-        ContextMenuItemTagTextDirectionMenu, // Text Direction sub-menu
-        ContextMenuItemTagTextDirectionDefault,
-        ContextMenuItemTagTextDirectionLeftToRight,
-        ContextMenuItemTagTextDirectionRightToLeft,
-        ContextMenuItemTagOpenMediaInNewWindow,
-        ContextMenuItemTagCopyMediaLinkToClipboard,
-        ContextMenuItemTagToggleMediaControls,
-        ContextMenuItemTagToggleMediaLoop,
-        ContextMenuItemTagEnterVideoFullscreen,
-        ContextMenuItemTagMediaPlayPause,
-        ContextMenuItemTagMediaMute,
-        ContextMenuItemTagOpenLinkInThisWindow,
         ContextMenuItemBaseCustomTag = 5000,
         ContextMenuItemCustomTagNoAction = 5998,
-        ContextMenuItemLastCustomTag = 5999,
-        ContextMenuItemBaseApplicationTag = 10000
+        ContextMenuItemLastCustomTag = 5999
     };
 
     enum ContextMenuItemType {
@@ -146,9 +70,6 @@ namespace WebCore {
         void setSubMenu(ContextMenu*);
 
         ContextMenuItem(ContextMenuAction, const String&, bool enabled, bool checked, const Vector<ContextMenuItem>& subMenuItems);
-        explicit ContextMenuItem(const PlatformContextMenuItem&);
-
-        PlatformContextMenuItem platformContextMenuItem() const;
 
         void setTitle(const String& title) { m_title = title; }
         const String& title() const { return m_title; }

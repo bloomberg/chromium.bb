@@ -362,57 +362,8 @@ String imageTitle(const String& filename, const IntSize& size)
     return result.toString();
 }
 
-// We don't use these strings, so they return an empty String. We can't just
-// make them asserts because webcore still calls them.
-String contextMenuItemTagOpenLinkInNewWindow() { return String(); }
-String contextMenuItemTagDownloadLinkToDisk() { return String(); }
-String contextMenuItemTagCopyLinkToClipboard() { return String(); }
-String contextMenuItemTagOpenImageInNewWindow() { return String(); }
-String contextMenuItemTagDownloadImageToDisk() { return String(); }
-String contextMenuItemTagCopyImageToClipboard() { return String(); }
-String contextMenuItemTagOpenFrameInNewWindow() { return String(); }
-String contextMenuItemTagCopy() { return String(); }
-String contextMenuItemTagGoBack() { return String(); }
-String contextMenuItemTagGoForward() { return String(); }
-String contextMenuItemTagStop() { return String(); }
-String contextMenuItemTagReload() { return String(); }
-String contextMenuItemTagCut() { return String(); }
-String contextMenuItemTagPaste() { return String(); }
-String contextMenuItemTagNoGuessesFound() { return String(); }
-String contextMenuItemTagIgnoreSpelling() { return String(); }
-String contextMenuItemTagLearnSpelling() { return String(); }
-String contextMenuItemTagSearchWeb() { return String(); }
-String contextMenuItemTagLookUpInDictionary(const String&) { return String(); }
-String contextMenuItemTagOpenLink() { return String(); }
-String contextMenuItemTagIgnoreGrammar() { return String(); }
-String contextMenuItemTagSpellingMenu() { return String(); }
-String contextMenuItemTagCheckSpelling() { return String(); }
-String contextMenuItemTagCheckSpellingWhileTyping() { return String(); }
-String contextMenuItemTagCheckGrammarWithSpelling() { return String(); }
-String contextMenuItemTagFontMenu() { return String(); }
-String contextMenuItemTagBold() { return String(); }
-String contextMenuItemTagItalic() { return String(); }
-String contextMenuItemTagUnderline() { return String(); }
-String contextMenuItemTagOutline() { return String(); }
-String contextMenuItemTagWritingDirectionMenu() { return String(); }
-String contextMenuItemTagTextDirectionMenu() { return String(); }
-String contextMenuItemTagDefaultDirection() { return String(); }
-String contextMenuItemTagLeftToRight() { return String(); }
-String contextMenuItemTagRightToLeft() { return String(); }
-String contextMenuItemTagInspectElement() { return String(); }
-String contextMenuItemTagShowSpellingPanel(bool show) { return String(); }
 String mediaElementLiveBroadcastStateText() { return String(); }
 String mediaElementLoadingStateText() { return String(); }
-String contextMenuItemTagOpenVideoInNewWindow() { return String(); }
-String contextMenuItemTagOpenAudioInNewWindow() { return String(); }
-String contextMenuItemTagCopyVideoLinkToClipboard() { return String(); }
-String contextMenuItemTagCopyAudioLinkToClipboard() { return String(); }
-String contextMenuItemTagToggleMediaControls() { return String(); }
-String contextMenuItemTagToggleMediaLoop() { return String(); }
-String contextMenuItemTagEnterVideoFullscreen() { return String(); }
-String contextMenuItemTagMediaPlay() { return String(); }
-String contextMenuItemTagMediaPause() { return String(); }
-String contextMenuItemTagMediaMute() { return String(); }
 
 String textTrackClosedCaptionsText() { return String(); }
 String textTrackSubtitlesText() { return String(); }

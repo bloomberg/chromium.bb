@@ -147,11 +147,6 @@ void EmptyEditorClient::registerRedoStep(PassRefPtr<UndoStep>)
 {
 }
 
-PassOwnPtr<ContextMenu> EmptyContextMenuClient::customizeMenu(PassOwnPtr<ContextMenu>)
-{
-    return nullptr;
-}
-
 void EmptyFrameLoaderClient::didRequestAutocomplete(PassRefPtr<FormState>)
 {
 }

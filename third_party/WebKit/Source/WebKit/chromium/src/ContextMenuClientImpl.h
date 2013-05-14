@@ -42,9 +42,9 @@ class ContextMenuClientImpl : public  WebCore::ContextMenuClient {
 public:
     ContextMenuClientImpl(WebViewImpl* webView) : m_webView(webView) {}
     virtual ~ContextMenuClientImpl() {}
-    virtual PassOwnPtr<WebCore::ContextMenu> customizeMenu(PassOwnPtr<WebCore::ContextMenu>);
+    virtual void showContextMenu(const WebCore::ContextMenu*);
 private:
-    void populateCustomMenuItems(WebCore::ContextMenu*, WebContextMenuData*);
+    void populateCustomMenuItems(const WebCore::ContextMenu*, WebContextMenuData*);
     WebViewImpl* m_webView;
 };
 

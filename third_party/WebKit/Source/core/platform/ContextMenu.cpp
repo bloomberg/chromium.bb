@@ -28,10 +28,6 @@
 
 namespace WebCore {
 
-ContextMenu::ContextMenu()
-{
-}
-
 static const ContextMenuItem* findItemWithAction(unsigned action, const Vector<ContextMenuItem>& items)
 {
     for (size_t i = 0; i < items.size(); ++i) {
@@ -47,7 +43,7 @@ static const ContextMenuItem* findItemWithAction(unsigned action, const Vector<C
     return 0;
 }
 
-const ContextMenuItem* ContextMenu::itemWithAction(unsigned action)
+const ContextMenuItem* ContextMenu::itemWithAction(unsigned action) const
 {
     return findItemWithAction(action, m_items);
 }

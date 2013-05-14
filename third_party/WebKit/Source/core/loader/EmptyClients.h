@@ -355,7 +355,7 @@ class EmptyContextMenuClient : public ContextMenuClient {
 public:
     EmptyContextMenuClient() { }
     virtual ~EmptyContextMenuClient() {  }
-    virtual PassOwnPtr<ContextMenu> customizeMenu(PassOwnPtr<ContextMenu>) OVERRIDE;
+    virtual void showContextMenu(const ContextMenu*) OVERRIDE { }
 };
 
 class EmptyDragClient : public DragClient {

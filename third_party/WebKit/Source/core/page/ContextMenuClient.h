@@ -34,7 +34,7 @@ namespace WebCore {
 class ContextMenuClient {
 public:
     virtual ~ContextMenuClient() {  }
-    virtual PassOwnPtr<ContextMenu> customizeMenu(PassOwnPtr<ContextMenu>) = 0;
+    virtual void showContextMenu(const ContextMenu*) = 0;
 };
 
 }

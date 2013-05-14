@@ -26,36 +26,18 @@
 #ifndef ContextMenu_h
 #define ContextMenu_h
 
-#include <wtf/Noncopyable.h>
-
 #include "core/platform/ContextMenuItem.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
-
-    class ContextMenuController;
-
-    typedef void* PlatformContextMenu;
 
     class ContextMenu {
         WTF_MAKE_NONCOPYABLE(ContextMenu); WTF_MAKE_FAST_ALLOCATED;
     public:
-        ContextMenu();
-
-        const ContextMenuItem* itemWithAction(unsigned);
-
-        explicit ContextMenu(PlatformContextMenu);
-
-        PlatformContextMenu platformContextMenu() const;
-
-        static PlatformContextMenu createPlatformContextMenuFromItems(const Vector<ContextMenuItem>&);
-        static void getContextMenuItems(PlatformContextMenu, Vector<ContextMenuItem>&);
-
-        const ContextMenuItem* itemAtIndex(unsigned index) { return &m_items[index]; }
-
-        void setItems(const Vector<ContextMenuItem>& items) { m_items = items; }
+        ContextMenu() { }
+        const ContextMenuItem* itemWithAction(unsigned) const;
         const Vector<ContextMenuItem>& items() const { return m_items; }
-
         void appendItem(const ContextMenuItem& item) { m_items.append(item); }
 
     private:

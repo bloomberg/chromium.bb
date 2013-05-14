@@ -48,21 +48,14 @@ namespace WebCore {
 
         static PassOwnPtr<ContextMenuController> create(Page*, ContextMenuClient*);
 
-        ContextMenuClient* client() const { return m_client; }
-
         ContextMenu* contextMenu() const { return m_contextMenu.get(); }
         void clearContextMenu();
 
         void handleContextMenuEvent(Event*);
         void showContextMenu(Event*, PassRefPtr<ContextMenuProvider>);
 
-        void populate();
         void contextMenuItemSelected(const ContextMenuItem*);
-        void addInspectElementItem();
 
-        void checkOrEnableIfNeeded(ContextMenuItem&) const;
-
-        void setHitTestResult(const HitTestResult& result) { m_hitTestResult = result; }
         const HitTestResult& hitTestResult() { return m_hitTestResult; }
 
     private:
@@ -70,17 +63,6 @@ namespace WebCore {
 
         PassOwnPtr<ContextMenu> createContextMenu(Event*);
         void showContextMenu(Event*);
-
-        void appendItem(ContextMenuItem&, ContextMenu* parentMenu);
-
-        void createAndAppendFontSubMenu(ContextMenuItem&);
-        void createAndAppendSpellingAndGrammarSubMenu(ContextMenuItem&);
-        void createAndAppendSpellingSubMenu(ContextMenuItem&);
-        void createAndAppendSpeechSubMenu(ContextMenuItem& );
-        void createAndAppendWritingDirectionSubMenu(ContextMenuItem&);
-        void createAndAppendTextDirectionSubMenu(ContextMenuItem&);
-        void createAndAppendSubstitutionsSubMenu(ContextMenuItem&);
-        void createAndAppendTransformationsSubMenu(ContextMenuItem&);
 
         Page* m_page;
         ContextMenuClient* m_client;

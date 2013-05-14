@@ -2591,8 +2591,6 @@
             'platform/chromium/ClipboardMimeTypes.h',
             'platform/chromium/ClipboardUtilitiesChromium.cpp',
             'platform/chromium/ClipboardUtilitiesChromium.h',
-            'platform/chromium/ContextMenuChromium.cpp',
-            'platform/chromium/ContextMenuItemChromium.cpp',
             'platform/chromium/CursorChromium.cpp',
             'platform/chromium/DragDataChromium.cpp',
             'platform/chromium/DragDataRef.h',
