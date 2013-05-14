@@ -52,9 +52,68 @@ class FakeCrosDisksClient : public CrosDisksClient {
                                MountType mount_type,
                                const std::string& mount_path);
 
+  // Returns how many times Unmount() was called.
+  int unmount_call_count() const {
+    return unmount_call_count_;
+  }
+
+  // Returns the |device_path| parameter from the last invocation of Unmount().
+  const std::string& last_unmount_device_path() const {
+    return last_unmount_device_path_;
+  }
+
+  // Returns the |options| parameter from the last invocation of Unmount().
+  UnmountOptions last_unmount_options() const {
+    return last_unmount_options_;
+  }
+
+  // Makes the subsequent Unmount() calls fail. Unmount() succeeds by default.
+  void MakeUnmountFail() {
+    unmount_success_ = false;
+  }
+
+  // Sets a listener callbackif the following Unmount() call is success or not.
+  // Unmount() calls the corresponding callback given as a parameter.
+  void set_unmount_listener(base::Closure listener) {
+    unmount_listener_ = listener;
+  }
+
+  // Returns how many times FormatDevice() was called.
+  int format_device_call_count() const {
+    return format_device_call_count_;
+  }
+
+  // Returns the |device_path| parameter from the last invocation of
+  // FormatDevice().
+  const std::string& last_format_device_device_path() const {
+    return last_format_device_device_path_;
+  }
+
+  // Returns the |filesystem| parameter from the last invocation of
+  // FormatDevice().
+  const std::string& last_format_device_filesystem() const {
+    return last_format_device_filesystem_;
+  }
+
+  // Makes the subsequent FormatDevice() calls fail. FormatDevice() succeeds by
+  // default.
+  void MakeFormatDeviceFail() {
+    format_device_success_ = false;
+  }
+
  private:
   MountEventHandler mount_event_handler_;
   MountCompletedHandler mount_completed_handler_;
+
+  int unmount_call_count_;
+  std::string last_unmount_device_path_;
+  UnmountOptions last_unmount_options_;
+  bool unmount_success_;
+  base::Closure unmount_listener_;
+  int format_device_call_count_;
+  std::string last_format_device_device_path_;
+  std::string last_format_device_filesystem_;
+  bool format_device_success_;
 };
 
 }  // namespace chromeos
