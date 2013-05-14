@@ -134,7 +134,9 @@ class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
 
 }  // namespace
 
-class KioskTest : public chromeos::CrosInProcessBrowserTest {
+class KioskTest : public chromeos::CrosInProcessBrowserTest,
+                  // Param defining is multi-profiles enabled.
+                  public testing::WithParamInterface<bool> {
  public:
   KioskTest() : chromeos::CrosInProcessBrowserTest() {
     SetExitWhenLastBrowserCloses(false);
@@ -143,6 +145,9 @@ class KioskTest : public chromeos::CrosInProcessBrowserTest {
  protected:
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    if (GetParam()) {
+      command_line->AppendSwitch(::switches::kMultiProfiles);
+    }
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitch(
@@ -186,7 +191,7 @@ class KioskTest : public chromeos::CrosInProcessBrowserTest {
   std::string service_login_response_;
 };
 
-IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
+IN_PROC_BROWSER_TEST_P(KioskTest, InstallAndLaunchApp) {
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
@@ -223,5 +228,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
       runner2->QuitClosure());
   runner2->Run();
 }
+
+INSTANTIATE_TEST_CASE_P(KioskTestInstantiation, KioskTest, testing::Bool());
 
 }  // namespace chromeos

@@ -114,18 +114,33 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
   }
 
   void Start() {
-    // TODO(nkostylev): Pass real username_hash here. crbug.com/238985
+    cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
+        GetAppUserNameFromAppId(launcher_->app_id_),
+        base::Bind(&ProfileLoader::OnUsernameHashRetrieved,
+                   base::Unretained(this)));
+  }
+
+ private:
+  void OnUsernameHashRetrieved(bool success,
+                               const std::string& username_hash) {
+    if (!success) {
+      LOG(ERROR) << "Unable to retrieve username hash for user '" <<
+          GetAppUserNameFromAppId(launcher_->app_id_) << "'";
+      launcher_->ReportLaunchResult(
+          KioskAppLaunchError::UNABLE_TO_RETRIEVE_HASH);
+      return;
+    }
     LoginUtils::Get()->PrepareProfile(
         UserContext(GetAppUserNameFromAppId(launcher_->app_id_),
                     std::string(),   // password
-                    std::string()),  // auth_code
+                    std::string(),   // auth_code
+                    username_hash),
         std::string(),  // display email
         false,  // using_oauth
         false,  // has_cookies
         this);
   }
 
- private:
   // LoginUtils::Delegate overrides:
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
     launcher_->OnProfilePrepared(profile);
