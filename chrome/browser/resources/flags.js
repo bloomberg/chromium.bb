@@ -62,13 +62,16 @@ function renderTemplate(flagsExperimentsData) {
  * therefore doesn't work.
  */
 function highlightReferencedFlag() {
-  if (document.querySelector('.referenced'))
-    document.querySelector('.referenced').classList.remove('referenced');
-
-  if (window.location.hash && document.querySelector(window.location.hash)) {
+  if (window.location.hash) {
     var el = document.querySelector(window.location.hash);
-    el.classList.add('referenced');
-    el.scrollIntoView();
+    if (el && !el.classList.contains('referenced')) {
+      // Unhighlight whatever's highlighted.
+      if (document.querySelector('.referenced'))
+        document.querySelector('.referenced').classList.remove('referenced');
+      // Highlight the referenced element.
+      el.classList.add('referenced');
+      el.scrollIntoView();
+    }
   }
 }
 
