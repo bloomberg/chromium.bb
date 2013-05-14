@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/debug/trace_event.h"
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/hash_pair.h"
 #include "skia/ext/lazy_pixel_ref.h"
@@ -128,6 +130,9 @@ class CC_EXPORT Picture
   gfx::Point min_pixel_cell_;
   gfx::Point max_pixel_cell_;
   gfx::Size cell_size_;
+
+  scoped_ptr<base::debug::ConvertableToTraceFormat>
+    AsTraceableRasterData(gfx::Rect rect, float scale);
 
   friend class base::RefCountedThreadSafe<Picture>;
   friend class PixelRefIterator;

@@ -10,8 +10,11 @@
 
 #include "base/base64.h"
 #include "base/debug/trace_event.h"
+#include "base/values.h"
 #include "cc/base/util.h"
 #include "cc/debug/rendering_stats.h"
+#include "cc/debug/traced_picture.h"
+#include "cc/debug/traced_value.h"
 #include "cc/layers/content_layer_client.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -95,6 +98,8 @@ scoped_refptr<Picture> Picture::CreateFromBase64String(
 
 Picture::Picture(gfx::Rect layer_rect)
     : layer_rect_(layer_rect) {
+  // Instead of recording a trace event for object creation here, we wait for
+  // the picture to be recorded in Picture::Record.
 }
 
 Picture::Picture(const std::string& encoded_string, bool* success) {
@@ -147,6 +152,8 @@ Picture::Picture(const skia::RefPtr<SkPicture>& picture,
 }
 
 Picture::~Picture() {
+  TRACE_EVENT_OBJECT_DELETED_WITH_ID(
+    TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::Picture", this);
 }
 
 scoped_refptr<Picture> Picture::GetCloneForDrawingOnThread(
@@ -172,6 +179,9 @@ void Picture::CloneForDrawing(int num_threads) {
                     opaque_rect_,
                     pixel_refs_));
     clones_.push_back(clone);
+
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+      "cc::Picture", clone.get(), TracedPicture::AsTraceablePicture(clone));
   }
 }
 
@@ -223,6 +233,9 @@ void Picture::Record(ContentLayerClient* painter,
   picture_->endRecording();
 
   opaque_rect_ = gfx::ToEnclosedRect(opaque_layer_rect);
+
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+      "cc::Picture", this, TracedPicture::AsTraceablePicture(this));
 }
 
 void Picture::GatherPixelRefs(
@@ -290,9 +303,9 @@ void Picture::Raster(
     gfx::Rect content_rect,
     float contents_scale,
     bool enable_lcd_text) {
-  TRACE_EVENT2("cc", "Picture::Raster",
-               "layer width", layer_rect_.width(),
-               "layer height", layer_rect_.height());
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "Picture::Raster",
+    "data", AsTraceableRasterData(content_rect, contents_scale));
+
   DCHECK(picture_);
 
   DisableLCDTextFilter disable_lcd_text_filter;
@@ -431,6 +444,18 @@ Picture::PixelRefIterator& Picture::PixelRefIterator::operator++() {
     break;
   }
   return *this;
+}
+
+scoped_ptr<base::debug::ConvertableToTraceFormat>
+    Picture::AsTraceableRasterData(gfx::Rect rect, float scale) {
+  scoped_ptr<base::DictionaryValue> raster_data(new base::DictionaryValue());
+  raster_data->Set("picture_id", TracedValue::CreateIDRef(this).release());
+  raster_data->SetDouble("scale", scale);
+  raster_data->SetDouble("rect_x", rect.x());
+  raster_data->SetDouble("rect_y", rect.y());
+  raster_data->SetDouble("rect_width", rect.width());
+  raster_data->SetDouble("rect_height", rect.height());
+  return TracedValue::FromValue(raster_data.release());
 }
 
 }  // namespace cc
