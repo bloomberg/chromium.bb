@@ -182,7 +182,7 @@ static void Fallback() {
 
 static unsigned char* SlurpFile(const wchar_t* path, size_t* length) {
   HANDLE file = CreateFile(
-      path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, NULL);
+      path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
   if (file == INVALID_HANDLE_VALUE)
     Fallback(L"couldn't open file");
   LARGE_INTEGER file_size;
@@ -190,7 +190,8 @@ static unsigned char* SlurpFile(const wchar_t* path, size_t* length) {
     Fallback(L"couldn't get file size");
   *length = static_cast<size_t>(file_size.QuadPart);
   unsigned char* buffer = static_cast<unsigned char*>(malloc(*length));
-  if (!ReadFile(file, buffer, *length, NULL, NULL))
+  DWORD bytes_read = 0;
+  if (!ReadFile(file, buffer, *length, &bytes_read, NULL))
     Fallback(L"couldn't read file");
   return buffer;
 }
