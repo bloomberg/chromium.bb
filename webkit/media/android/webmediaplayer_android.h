@@ -103,6 +103,7 @@ class WebMediaPlayerAndroid
       unsigned int texture,
       unsigned int level,
       unsigned int internal_format,
+      unsigned int type,
       bool premultiply_alpha,
       bool flip_y);
 

@@ -473,10 +473,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessImpl :
 
   virtual void copyTextureCHROMIUM(WGC3Denum target, WGC3Duint source_id,
                                    WGC3Duint dest_id, WGC3Dint level,
-                                   WGC3Denum internal_format);
-
-  virtual void copyTextureCHROMIUM(WGC3Denum target, WGC3Duint source_id,
-                                   WGC3Duint dest_id, WGC3Dint level,
                                    WGC3Denum internal_format,
                                    WGC3Denum dest_type);
 

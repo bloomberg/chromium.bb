@@ -1578,19 +1578,6 @@ DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivEXT,
 DELEGATE_TO_GL_6(copyTextureCHROMIUM, CopyTextureCHROMIUM,  WGC3Denum,
                  WebGLId, WebGLId, WGC3Dint, WGC3Denum, WGC3Denum);
 
-// This copyTextureCHROMIUM(...) has five parameters and delegates the call to
-// CopyTextureCHROMIUM(...) with the sixth parameter set to GL_UNSIGNED_BYTE
-// to bridge the parameter differences.
-// TODO(jun.a.jiang@intel.com): once all clients switch to call
-// the newer copyTextureCHROMIUM(...) with six parameters, this
-// function will be removed.
-void WebGraphicsContext3DCommandBufferImpl::copyTextureCHROMIUM(
-    WGC3Denum target, WebGLId source_id, WebGLId dest_id, WGC3Dint level,
-    WGC3Denum internal_format) {
-  gl_->CopyTextureCHROMIUM(target, source_id, dest_id, level, internal_format,
-                           GL_UNSIGNED_BYTE);
-}
-
 DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)
 

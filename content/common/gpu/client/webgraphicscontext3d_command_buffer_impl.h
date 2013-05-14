@@ -546,10 +546,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void copyTextureCHROMIUM(WGC3Denum target, WebGLId source_id,
                                    WebGLId dest_id, WGC3Dint level,
-                                   WGC3Denum internal_format);
-
-  virtual void copyTextureCHROMIUM(WGC3Denum target, WebGLId source_id,
-                                   WebGLId dest_id, WGC3Dint level,
                                    WGC3Denum internal_format,
                                    WGC3Denum dest_type);
 

@@ -204,7 +204,7 @@ void RendererGpuVideoDecoderFactories::AsyncReadPixels(
   gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   context_->copyTextureCHROMIUM(
-      texture_target, texture_id, tmp_texture, 0, GL_RGBA);
+      texture_target, texture_id, tmp_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 
   GLuint fb;
   gles2->GenFramebuffers(1, &fb);
