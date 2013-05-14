@@ -16,11 +16,12 @@ def _MakeKey(path, version):
   return '%s@%s' % (path, version)
 
 def _ToObjectStoreValue(raw_value, version):
-  return {_MakeKey(key, version): raw_value[key] for key in raw_value}
+  return dict((_MakeKey(key, version), raw_value[key])
+              for key in raw_value)
 
 def _FromObjectStoreValue(raw_value, binary):
-  return {key[0:key.rfind('@')]: _HandleBinary(raw_value[key], binary)
-          for key in raw_value}
+  return dict((key[0:key.rfind('@')], _HandleBinary(raw_value[key], binary))
+              for key in raw_value)
 
 def _HandleBinary(data, binary):
   return data if binary else ToUnicode(data)

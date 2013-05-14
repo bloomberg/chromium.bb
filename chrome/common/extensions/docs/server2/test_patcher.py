@@ -29,6 +29,7 @@ class TestPatcher(Patcher):
       assert binary
     self.apply_count += 1
     try:
-      return Future(value={path: self._patch_data[path] for path in paths})
+      return Future(value=dict((path, self._patch_data[path])
+                               for path in paths))
     except KeyError:
       raise FileNotFoundError('One of %s is deleted in the patch.' % paths)

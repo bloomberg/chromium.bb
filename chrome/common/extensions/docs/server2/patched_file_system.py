@@ -21,9 +21,9 @@ class _AsyncFetchFuture(object):
   def Get(self):
     files = self._unpatched_files_future.Get()
     files.update(self._patched_files_future.Get())
-    files.update({path: self._PatchDirectoryListing(path,
-                                                    self._dirs_value[path])
-                  for path in self._dirs_value})
+    files.update(
+        dict((path, self._PatchDirectoryListing(path, self._dirs_value[path]))
+             for path in self._dirs_value))
     return files
 
   def _PatchDirectoryListing(self, path, original_listing):
