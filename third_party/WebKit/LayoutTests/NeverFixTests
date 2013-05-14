@@ -85,3 +85,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ImageOnlyFailure ]
 [ Mac Win ] fast/text/international/complex-joining-using-gpos.html [ WontFix ]
 [ Mac Win ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
 [ Mac Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
+
+# These tests are not intended to be run in the virtual suite.
+virtual/softwarecompositing/gestures [ WontFix ]
