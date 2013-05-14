@@ -20,6 +20,8 @@ v8::Extension* GCExtension::Get() {
       "   GCController = new Object();"
       "   GCController.collect ="
       "     function() {if (v8_gc) v8_gc(); };"
+      "   GCController.minorCollect ="
+      "     function() {if (v8_gc) v8_gc(true); };"
       " })();");
   return extension;
 }
