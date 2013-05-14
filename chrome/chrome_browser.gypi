@@ -253,6 +253,8 @@
         'browser/bookmarks/bookmark_model_observer.h',
         'browser/bookmarks/bookmark_node_data.cc',
         'browser/bookmarks/bookmark_node_data.h',
+        'browser/bookmarks/bookmark_node_data_mac.cc',
+        'browser/bookmarks/bookmark_node_data_views.cc',
         'browser/bookmarks/bookmark_pasteboard_helper_mac.h',
         'browser/bookmarks/bookmark_pasteboard_helper_mac.mm',
         'browser/bookmarks/bookmark_prompt_prefs.cc',

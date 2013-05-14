@@ -13,13 +13,8 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
-#endif
 
 const char* BookmarkNodeData::kClipboardFormatString =
     "chromium/x-bookmark-entries";
@@ -78,20 +73,7 @@ bool BookmarkNodeData::Element::ReadFromPickle(Pickle* pickle,
   return true;
 }
 
-#if defined(TOOLKIT_VIEWS)
-// static
-ui::OSExchangeData::CustomFormat BookmarkNodeData::GetBookmarkCustomFormat() {
-  CR_DEFINE_STATIC_LOCAL(ui::OSExchangeData::CustomFormat, format, ());
-  static bool format_valid = false;
-
-  if (!format_valid) {
-    format_valid = true;
-    format = ui::OSExchangeData::RegisterCustomFormat(
-        BookmarkNodeData::kClipboardFormatString);
-  }
-  return format;
-}
-#endif
+// BookmarkNodeData -----------------------------------------------------------
 
 BookmarkNodeData::BookmarkNodeData() {
 }
@@ -107,6 +89,15 @@ BookmarkNodeData::BookmarkNodeData(
 
 BookmarkNodeData::~BookmarkNodeData() {
 }
+
+#if !defined(OS_MACOSX)
+// static
+bool BookmarkNodeData::ClipboardContainsBookmarks() {
+  return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
+      ui::Clipboard::GetFormatType(kClipboardFormatString),
+      ui::Clipboard::BUFFER_STANDARD);
+}
+#endif
 
 bool BookmarkNodeData::ReadFromVector(
     const std::vector<const BookmarkNode*>& nodes) {
@@ -194,95 +185,6 @@ bool BookmarkNodeData::ReadFromClipboard() {
   }
 
   return false;
-}
-
-bool BookmarkNodeData::ClipboardContainsBookmarks() {
-  return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
-      ui::Clipboard::GetFormatType(kClipboardFormatString),
-      ui::Clipboard::BUFFER_STANDARD);
-}
-#else
-void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
-  bookmark_pasteboard_helper_mac::WriteToPasteboard(
-      bookmark_pasteboard_helper_mac::kCopyPastePasteboard,
-      elements,
-      profile_path_,
-      content::BrowserContext::GetMarkerForOffTheRecordContext(profile));
-}
-
-bool BookmarkNodeData::ReadFromClipboard() {
-  base::FilePath file_path;
-  if (!bookmark_pasteboard_helper_mac::ReadFromPasteboard(
-      bookmark_pasteboard_helper_mac::kCopyPastePasteboard,
-      elements,
-      &file_path)) {
-    return false;
-  }
-
-  profile_path_ = file_path;
-  return true;
-}
-
-bool BookmarkNodeData::ReadFromDragClipboard() {
-  base::FilePath file_path;
-  if (!bookmark_pasteboard_helper_mac::ReadFromPasteboard(
-      bookmark_pasteboard_helper_mac::kDragPasteboard,
-      elements,
-      &file_path)) {
-    return false;
-  }
-
-  profile_path_ = file_path;
-  return true;
-}
-
-bool BookmarkNodeData::ClipboardContainsBookmarks() {
-  return bookmark_pasteboard_helper_mac::PasteboardContainsBookmarks(
-      bookmark_pasteboard_helper_mac::kCopyPastePasteboard);
-}
-#endif  // !defined(OS_MACOSX)
-
-#if defined(TOOLKIT_VIEWS)
-void BookmarkNodeData::Write(Profile* profile, ui::OSExchangeData* data) const {
-  DCHECK(data);
-
-  // If there is only one element and it is a URL, write the URL to the
-  // clipboard.
-  if (elements.size() == 1 && elements[0].is_url) {
-    if (elements[0].url.SchemeIs(chrome::kJavaScriptScheme)) {
-      data->SetString(UTF8ToUTF16(elements[0].url.spec()));
-    } else {
-      data->SetURL(elements[0].url, elements[0].title);
-    }
-  }
-
-  Pickle data_pickle;
-  WriteToPickle(profile, &data_pickle);
-
-  data->SetPickledData(GetBookmarkCustomFormat(), data_pickle);
-}
-
-bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
-  elements.clear();
-
-  profile_path_.clear();
-
-  if (data.HasCustomFormat(GetBookmarkCustomFormat())) {
-    Pickle drag_data_pickle;
-    if (data.GetPickledData(GetBookmarkCustomFormat(), &drag_data_pickle)) {
-      if (!ReadFromPickle(&drag_data_pickle))
-        return false;
-    }
-  } else {
-    // See if there is a URL on the clipboard.
-    Element element;
-    GURL url;
-    string16 title;
-    if (data.GetURLAndTitle(&url, &title))
-      ReadFromTuple(url, title);
-  }
-
-  return is_valid();
 }
 #endif
 
