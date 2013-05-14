@@ -1540,6 +1540,8 @@ WindowManagerName GuessWindowManager() {
       return WM_METACITY;
     if (name == "Mutter (Muffin)")
       return WM_MUFFIN;
+    if (name == "GNOME Shell")
+      return WM_MUTTER; // GNOME Shell uses Mutter
     if (name == "Mutter")
       return WM_MUTTER;
     if (name == "Openbox")
