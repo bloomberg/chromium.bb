@@ -31,6 +31,7 @@
 #ifndef EntryArraySync_h
 #define EntryArraySync_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/filesystem/EntrySync.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -39,7 +40,7 @@ namespace WebCore {
 
 class EntryArray;
 
-class EntryArraySync : public RefCounted<EntryArraySync> {
+class EntryArraySync : public RefCounted<EntryArraySync>, public ScriptWrappable {
 public:
     static PassRefPtr<EntryArraySync> create()
     {

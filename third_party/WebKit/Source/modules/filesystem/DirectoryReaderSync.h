@@ -31,6 +31,7 @@
 #ifndef DirectoryReaderSync_h
 #define DirectoryReaderSync_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -42,7 +43,7 @@ class EntryArraySync;
 
 typedef int ExceptionCode;
 
-class DirectoryReaderSync : public DirectoryReaderBase {
+class DirectoryReaderSync : public DirectoryReaderBase, public ScriptWrappable {
 public:
     static PassRefPtr<DirectoryReaderSync> create(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     {

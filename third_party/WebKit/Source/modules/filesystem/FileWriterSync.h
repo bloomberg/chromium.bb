@@ -31,6 +31,7 @@
 #ifndef FileWriterSync_h
 #define FileWriterSync_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/AsyncFileWriterClient.h"
 #include "modules/filesystem/FileWriterBase.h"
@@ -42,7 +43,7 @@ class Blob;
 
 typedef int ExceptionCode;
 
-class FileWriterSync : public FileWriterBase, public AsyncFileWriterClient {
+class FileWriterSync : public ScriptWrappable, public FileWriterBase, public AsyncFileWriterClient {
 public:
     static PassRefPtr<FileWriterSync> create()
     {

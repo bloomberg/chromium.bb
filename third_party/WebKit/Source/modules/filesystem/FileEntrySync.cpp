@@ -39,6 +39,7 @@ namespace WebCore {
 FileEntrySync::FileEntrySync(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : EntrySync(fileSystem, fullPath)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<File> FileEntrySync::file(ExceptionCode& ec)

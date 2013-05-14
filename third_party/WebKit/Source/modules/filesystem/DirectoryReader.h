@@ -31,6 +31,7 @@
 #ifndef DirectoryReader_h
 #define DirectoryReader_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
 #include "wtf/PassRefPtr.h"
@@ -43,7 +44,7 @@ class EntriesCallback;
 class EntriesCallbacks;
 class ErrorCallback;
 
-class DirectoryReader : public DirectoryReaderBase {
+class DirectoryReader : public DirectoryReaderBase, public ScriptWrappable {
 public:
     static PassRefPtr<DirectoryReader> create(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     {

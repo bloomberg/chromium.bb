@@ -64,6 +64,7 @@ FileWriter::FileWriter(ScriptExecutionContext* context)
     , m_recursionDepth(0)
     , m_lastProgressNotificationTimeMS(0)
 {
+    ScriptWrappable::init(this);
 }
 
 FileWriter::~FileWriter()

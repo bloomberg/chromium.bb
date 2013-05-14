@@ -125,6 +125,7 @@ FileWriterSync::FileWriterSync()
     , m_complete(true)
 #endif
 {
+    ScriptWrappable::init(this);
 }
 
 void FileWriterSync::prepareForWrite()

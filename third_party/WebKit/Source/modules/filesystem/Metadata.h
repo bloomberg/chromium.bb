@@ -31,12 +31,13 @@
 #ifndef Metadata_h
 #define Metadata_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/FileMetadata.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class Metadata : public RefCounted<Metadata> {
+class Metadata : public RefCounted<Metadata>, public ScriptWrappable {
 public:
     static PassRefPtr<Metadata> create(const FileMetadata& platformMetadata)
     {
@@ -56,6 +57,7 @@ private:
     explicit Metadata(const FileMetadata& platformMetadata)
         : m_platformMetadata(platformMetadata)
     {
+        ScriptWrappable::init(this);
     }
 
     FileMetadata m_platformMetadata;

@@ -35,6 +35,7 @@ namespace WebCore {
 
 EntryArray::EntryArray()
 {
+    ScriptWrappable::init(this);
 }
 
 Entry* EntryArray::item(unsigned index) const

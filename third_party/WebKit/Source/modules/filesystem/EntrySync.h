@@ -31,6 +31,7 @@
 #ifndef EntrySync_h
 #define EntrySync_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/filesystem/DOMFileSystemSync.h"
 #include "modules/filesystem/EntryBase.h"
 #include "wtf/Forward.h"
@@ -44,7 +45,7 @@ class Metadata;
 
 typedef int ExceptionCode;
 
-class EntrySync : public EntryBase {
+class EntrySync : public ScriptWrappable, public EntryBase {
 public:
     static PassRefPtr<EntrySync> create(EntryBase*);
 

@@ -41,6 +41,7 @@ namespace WebCore {
 DirectoryReader::DirectoryReader(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : DirectoryReaderBase(fileSystem, fullPath)
 {
+    ScriptWrappable::init(this);
 }
 
 void DirectoryReader::readEntries(PassRefPtr<EntriesCallback> entriesCallback, PassRefPtr<ErrorCallback> errorCallback)

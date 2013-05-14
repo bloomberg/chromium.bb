@@ -89,6 +89,7 @@ DOMFileSystem::DOMFileSystem(ScriptExecutionContext* context, const String& name
     : DOMFileSystemBase(context, name, type, rootURL, asyncFileSystem)
     , ActiveDOMObject(context)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<DirectoryEntry> DOMFileSystem::root()

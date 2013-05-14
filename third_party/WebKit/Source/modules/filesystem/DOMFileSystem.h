@@ -31,6 +31,7 @@
 #ifndef DOMFileSystem_h
 #define DOMFileSystem_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
@@ -43,7 +44,7 @@ class FileCallback;
 class FileEntry;
 class FileWriterCallback;
 
-class DOMFileSystem : public DOMFileSystemBase, public ActiveDOMObject {
+class DOMFileSystem : public DOMFileSystemBase, public ScriptWrappable, public ActiveDOMObject {
 public:
     static PassRefPtr<DOMFileSystem> create(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL, PassOwnPtr<AsyncFileSystem>);
 

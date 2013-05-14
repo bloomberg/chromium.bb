@@ -42,6 +42,7 @@ namespace WebCore {
 DirectoryEntry::DirectoryEntry(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : Entry(fileSystem, fullPath)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<DirectoryReader> DirectoryEntry::createReader()

@@ -31,6 +31,7 @@
 #ifndef Entry_h
 #define Entry_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/EntryBase.h"
 #include "wtf/PassRefPtr.h"
@@ -45,7 +46,7 @@ class ErrorCallback;
 class MetadataCallback;
 class VoidCallback;
 
-class Entry : public EntryBase {
+class Entry : public EntryBase, public ScriptWrappable {
 public:
     DOMFileSystem* filesystem() const { return static_cast<DOMFileSystem*>(m_fileSystem.get()); }
 

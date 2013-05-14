@@ -31,13 +31,14 @@
 #ifndef EntryArray_h
 #define EntryArray_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/filesystem/Entry.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class EntryArray : public RefCounted<EntryArray> {
+class EntryArray : public RefCounted<EntryArray>, public ScriptWrappable {
 public:
     static PassRefPtr<EntryArray> create()
     {

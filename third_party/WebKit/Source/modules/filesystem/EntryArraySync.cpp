@@ -47,6 +47,7 @@ PassRefPtr<EntryArraySync> EntryArraySync::create(EntryArray* entries)
 
 EntryArraySync::EntryArraySync()
 {
+    ScriptWrappable::init(this);
 }
 
 EntrySync* EntryArraySync::item(unsigned index) const

@@ -57,6 +57,7 @@ PassRefPtr<DOMFileSystemSync> DOMFileSystemSync::create(DOMFileSystemBase* fileS
 DOMFileSystemSync::DOMFileSystemSync(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL, PassOwnPtr<AsyncFileSystem> asyncFileSystem)
     : DOMFileSystemBase(context, name, type, rootURL, asyncFileSystem)
 {
+    ScriptWrappable::init(this);
 }
 
 DOMFileSystemSync::~DOMFileSystemSync()

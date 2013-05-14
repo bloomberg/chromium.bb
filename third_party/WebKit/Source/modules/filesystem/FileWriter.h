@@ -31,6 +31,7 @@
 #ifndef FileWriter_h
 #define FileWriter_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ScriptExecutionContext.h"
@@ -44,7 +45,7 @@ namespace WebCore {
 class Blob;
 class ScriptExecutionContext;
 
-class FileWriter : public FileWriterBase, public ActiveDOMObject, public EventTarget, public AsyncFileWriterClient {
+class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTarget, public AsyncFileWriterClient {
 public:
     static PassRefPtr<FileWriter> create(ScriptExecutionContext*);
 

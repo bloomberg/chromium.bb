@@ -38,7 +38,6 @@ class FileSystemCallback;
 
 class DOMWindowFileSystem {
 public:
-
     static void webkitRequestFileSystem(DOMWindow*, int type, long long size, PassRefPtr<FileSystemCallback>, PassRefPtr<ErrorCallback>);
     static void webkitResolveLocalFileSystemURL(DOMWindow*, const String&, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>);
 

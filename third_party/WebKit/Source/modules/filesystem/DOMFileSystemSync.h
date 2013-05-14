@@ -31,6 +31,7 @@
 #ifndef DOMFileSystemSync_h
 #define DOMFileSystemSync_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 
 namespace WebCore {
@@ -42,7 +43,7 @@ class FileWriterSync;
 
 typedef int ExceptionCode;
 
-class DOMFileSystemSync : public DOMFileSystemBase {
+class DOMFileSystemSync : public DOMFileSystemBase, public ScriptWrappable {
 public:
     static PassRefPtr<DOMFileSystemSync> create(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL, PassOwnPtr<AsyncFileSystem> asyncFileSystem)
     {

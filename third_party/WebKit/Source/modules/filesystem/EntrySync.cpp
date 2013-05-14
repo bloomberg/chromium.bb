@@ -103,6 +103,7 @@ PassRefPtr<EntrySync> EntrySync::getParent() const
 EntrySync::EntrySync(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : EntryBase(fileSystem, fullPath)
 {
+    ScriptWrappable::init(this);
 }
 
 }

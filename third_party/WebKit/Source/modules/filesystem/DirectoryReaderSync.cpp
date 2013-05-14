@@ -44,6 +44,7 @@ namespace WebCore {
 DirectoryReaderSync::DirectoryReaderSync(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : DirectoryReaderBase(fileSystem, fullPath)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<EntryArraySync> DirectoryReaderSync::readEntries(ExceptionCode& ec)
