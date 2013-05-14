@@ -40,8 +40,9 @@
 #endif
 #include "WebAudioSourceProviderClient.h"
 #include "WebMediaPlayerClient.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Threading.h"
 
 namespace WebCore { class AudioSourceProviderClient; }
 
