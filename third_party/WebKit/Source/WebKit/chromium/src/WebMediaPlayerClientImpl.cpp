@@ -30,6 +30,7 @@
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
+#include "modules/mediastream/MediaStreamRegistry.h"
 #include <public/Platform.h>
 #include <public/WebCanvas.h>
 #include <public/WebCompositorSupport.h>
@@ -335,6 +336,8 @@ void WebMediaPlayerClientImpl::loadRequested()
 
 void WebMediaPlayerClientImpl::loadInternal()
 {
+    m_isMediaStream = WebCore::MediaStreamRegistry::registry().lookupMediaStreamDescriptor(m_url.string());
+
 #if ENABLE(WEB_AUDIO)
     m_audioSourceProvider.wrap(0); // Clear weak reference to m_webMediaPlayer's WebAudioSourceProvider.
 #endif
@@ -612,12 +615,14 @@ void WebMediaPlayerClientImpl::paintCurrentFrameInContext(GraphicsContext* conte
         // On Android, video frame is emitted as GL_TEXTURE_EXTERNAL_OES texture. We use a different path to
         // paint the video frame into the context.
 #if defined(OS_ANDROID)
-        RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
-        paintOnAndroid(context, context3D.get(), rect, context->getNormalizedAlpha());
-#else
+        if (!m_isMediaStream) {
+            RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
+            paintOnAndroid(context, context3D.get(), rect, context->getNormalizedAlpha());
+            return;
+        }
+#endif
         WebCanvas* canvas = context->canvas();
         m_webMediaPlayer->paint(canvas, rect, context->getNormalizedAlpha());
-#endif
     }
 }
 
@@ -822,6 +827,7 @@ void WebMediaPlayerClientImpl::startDelayedLoad()
 
 WebMediaPlayerClientImpl::WebMediaPlayerClientImpl()
     : m_mediaPlayer(0)
+    , m_isMediaStream(false)
     , m_delayingLoad(false)
     , m_preload(MediaPlayer::MetaData)
     , m_videoLayer(0)

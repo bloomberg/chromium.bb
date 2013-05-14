@@ -181,6 +181,7 @@ private:
     WebCore::MediaPlayer* m_mediaPlayer;
     OwnPtr<WebMediaPlayer> m_webMediaPlayer;
     WebCore::KURL m_url;
+    bool m_isMediaStream;
     bool m_delayingLoad;
     WebCore::MediaPlayer::Preload m_preload;
     RefPtr<WebHelperPluginImpl> m_helperPlugin;
