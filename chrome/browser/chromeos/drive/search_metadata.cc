@@ -140,13 +140,14 @@ scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
     int at_most_num_matches) {
   ScopedPriorityQueue<MetadataSearchResult,
                       MetadataSearchResultComparator> result_candidates;
+
   // Iterate over entries.
-  resource_metadata->IterateEntries(base::Bind(&MaybeAddEntryToResult,
-                                               resource_metadata,
-                                               query,
-                                               options,
-                                               at_most_num_matches,
-                                               &result_candidates));
+  scoped_ptr<internal::ResourceMetadata::Iterator> it =
+      resource_metadata->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    MaybeAddEntryToResult(resource_metadata, query, options,
+                          at_most_num_matches, &result_candidates, it->Get());
+  }
 
   // Prepare the result.
   scoped_ptr<MetadataSearchResultVector> results(

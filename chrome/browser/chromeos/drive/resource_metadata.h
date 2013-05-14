@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -124,6 +125,8 @@ namespace internal {
 // All methods must be run with |blocking_task_runner| unless otherwise noted.
 class ResourceMetadata {
  public:
+  typedef ResourceMetadataStorage::Iterator Iterator;
+
   // |root_resource_id| is the resource id for the root directory.
   // Must be called on the UI thread.
   ResourceMetadata(
@@ -273,8 +276,8 @@ class ResourceMetadata {
   scoped_ptr<std::set<base::FilePath> > GetChildDirectories(
       const std::string& resource_id);
 
-  // Iterates over entries and runs |callback| for each entry.
-  void IterateEntries(const IterateCallback& callback);
+  // Returns an object to iterate over entries.
+  scoped_ptr<Iterator> GetIterator();
 
   // Returns virtual file path of the entry.
   base::FilePath GetFilePath(const std::string& resource_id);

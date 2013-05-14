@@ -66,6 +66,7 @@ DBInitStatus LevelDBStatusToDBInitStatus(const leveldb::Status status) {
 
 ResourceMetadataStorage::Iterator::Iterator(scoped_ptr<leveldb::Iterator> it)
   : it_(it.Pass()) {
+  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(it_);
 
   // Skip the header entry.
@@ -77,18 +78,22 @@ ResourceMetadataStorage::Iterator::Iterator(scoped_ptr<leveldb::Iterator> it)
 }
 
 ResourceMetadataStorage::Iterator::~Iterator() {
+  base::ThreadRestrictions::AssertIOAllowed();
 }
 
 bool ResourceMetadataStorage::Iterator::IsAtEnd() const {
+  base::ThreadRestrictions::AssertIOAllowed();
   return !it_->Valid();
 }
 
 const ResourceEntry& ResourceMetadataStorage::Iterator::Get() const {
+  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsAtEnd());
   return entry_;
 }
 
 void ResourceMetadataStorage::Iterator::Advance() {
+  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsAtEnd());
 
   for (it_->Next() ; it_->Valid(); it_->Next()) {
@@ -99,6 +104,7 @@ void ResourceMetadataStorage::Iterator::Advance() {
 }
 
 bool ResourceMetadataStorage::Iterator::HasError() const {
+  base::ThreadRestrictions::AssertIOAllowed();
   return !it_->status().ok();
 }
 

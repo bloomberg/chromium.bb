@@ -585,14 +585,10 @@ scoped_ptr<std::set<base::FilePath> > ResourceMetadata::GetChildDirectories(
   return changed_directories.Pass();
 }
 
-void ResourceMetadata::IterateEntries(const IterateCallback& callback) {
+scoped_ptr<ResourceMetadata::Iterator> ResourceMetadata::GetIterator() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!callback.is_null());
 
-  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
-  for (; !it->IsAtEnd(); it->Advance())
-    callback.Run(it->Get());
-  DCHECK(!it->HasError());  // TODO(hashimoto): Report error correctly.
+  return storage_->GetIterator();
 }
 
 base::FilePath ResourceMetadata::GetFilePath(

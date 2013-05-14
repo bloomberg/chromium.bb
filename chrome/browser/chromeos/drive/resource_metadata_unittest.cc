@@ -45,44 +45,98 @@ std::vector<std::string> GetSortedBaseNames(
   return base_names;
 }
 
-// Increments |count| if |entry| is a file.
-void CountFile(int* count, const ResourceEntry& entry) {
-  if (!entry.file_info().is_directory())
-    ++*count;
+// Creates a ResourceEntry.
+ResourceEntry CreateResourceEntry(int sequence_id,
+                                  bool is_directory,
+                                  const std::string& parent_resource_id) {
+  ResourceEntry entry;
+  const std::string title =
+      (is_directory ? "dir" : "file") + base::IntToString(sequence_id);
+  const std::string resource_id = "resource_id:" + title;
+  entry.set_title(title);
+  entry.set_resource_id(resource_id);
+  entry.set_parent_resource_id(parent_resource_id);
+
+  PlatformFileInfoProto* file_info = entry.mutable_file_info();
+  file_info->set_is_directory(is_directory);
+
+  if (!is_directory) {
+    DriveFileSpecificInfo* file_specific_info =
+        entry.mutable_file_specific_info();
+    file_info->set_size(sequence_id * 1024);
+    file_specific_info->set_file_md5(std::string("md5:") + title);
+  } else {
+    DriveDirectorySpecificInfo* directory_specific_info =
+        entry.mutable_directory_specific_info();
+    directory_specific_info->set_changestamp(kTestChangestamp);
+  }
+  return entry;
+}
+
+// Adds a ResourceEntry to the metadata tree. Returns true on success.
+bool AddResourceEntry(ResourceMetadata* resource_metadata,
+                      int sequence_id,
+                      bool is_directory,
+                      const std::string& parent_resource_id) {
+  ResourceEntry entry = CreateResourceEntry(sequence_id,
+                                            is_directory,
+                                            parent_resource_id);
+  return resource_metadata->AddEntry(entry, NULL) == FILE_ERROR_OK;
+}
+
+// Creates the following files/directories
+// drive/root/dir1/
+// drive/root/dir2/
+// drive/root/dir1/dir3/
+// drive/root/dir1/file4
+// drive/root/dir1/file5
+// drive/root/dir2/file6
+// drive/root/dir2/file7
+// drive/root/dir2/file8
+// drive/root/dir1/dir3/file9
+// drive/root/dir1/dir3/file10
+void SetUpEntries(ResourceMetadata* resource_metadata) {
+  // Create mydrive root directory.
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
+      util::CreateMyDriveRootEntry(kTestRootResourceId), NULL));
+
+  int sequence_id = 1;
+  ASSERT_TRUE(AddResourceEntry(
+      resource_metadata, sequence_id++, true, kTestRootResourceId));
+  ASSERT_TRUE(AddResourceEntry(
+      resource_metadata, sequence_id++, true, kTestRootResourceId));
+  ASSERT_TRUE(AddResourceEntry(
+      resource_metadata, sequence_id++, true, "resource_id:dir1"));
+
+  ASSERT_TRUE(AddResourceEntry(
+      resource_metadata, sequence_id++, false, "resource_id:dir1"));
+  ASSERT_TRUE(AddResourceEntry(
+      resource_metadata, sequence_id++, false, "resource_id:dir1"));
+
+  ASSERT_TRUE(AddResourceEntry(
+      resource_metadata, sequence_id++, false, "resource_id:dir2"));
+  ASSERT_TRUE(AddResourceEntry(
+      resource_metadata, sequence_id++, false, "resource_id:dir2"));
+  ASSERT_TRUE(AddResourceEntry(
+      resource_metadata, sequence_id++, false, "resource_id:dir2"));
+
+  ASSERT_TRUE(AddResourceEntry(
+      resource_metadata, sequence_id++, false, "resource_id:dir3"));
+  ASSERT_TRUE(AddResourceEntry(
+      resource_metadata, sequence_id++, false, "resource_id:dir3"));
+
+  ASSERT_EQ(FILE_ERROR_OK,
+            resource_metadata->SetLargestChangestamp(kTestChangestamp));
 }
 
 }  // namespace
 
-class ResourceMetadataTest : public testing::Test {
+// Tests for methods invoked from the UI thread.
+class ResourceMetadataTestOnUIThread : public testing::Test {
  protected:
-  ResourceMetadataTest()
+  ResourceMetadataTestOnUIThread()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
-
-  // Creates the following files/directories
-  // drive/root/dir1/
-  // drive/root/dir2/
-  // drive/root/dir1/dir3/
-  // drive/root/dir1/file4
-  // drive/root/dir1/file5
-  // drive/root/dir2/file6
-  // drive/root/dir2/file7
-  // drive/root/dir2/file8
-  // drive/root/dir1/dir3/file9
-  // drive/root/dir1/dir3/file10
-  static void Init(ResourceMetadata* resource_metadata);
-
-  // Creates a ResourceEntry.
-  static ResourceEntry CreateResourceEntry(
-      int sequence_id,
-      bool is_directory,
-      const std::string& parent_resource_id);
-
-  // Adds a ResourceEntry to the metadata tree. Returns true on success.
-  static bool AddResourceEntry(ResourceMetadata* resource_metadata,
-                               int sequence_id,
-                               bool is_directory,
-                               const std::string& parent_resource_id);
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -94,7 +148,18 @@ class ResourceMetadataTest : public testing::Test {
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
     resource_metadata_.reset(new ResourceMetadata(temp_dir_.path(),
                                                   blocking_task_runner_));
-    Init(resource_metadata_.get());
+
+    FileError error = FILE_ERROR_FAILED;
+    resource_metadata_->Initialize(
+        google_apis::test_util::CreateCopyResultCallback(&error));
+    google_apis::test_util::RunBlockingPoolTask();
+    ASSERT_EQ(FILE_ERROR_OK, error);
+
+    blocking_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&SetUpEntries,
+                   base::Unretained(resource_metadata_.get())));
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -129,6 +194,23 @@ class ResourceMetadataTest : public testing::Test {
     return entries.Pass();
   }
 
+  bool AddResourceEntryOnUIThread(int sequence_id,
+                                  bool is_directory,
+                                  const std::string& parent_resource_id) {
+    bool result = false;
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&AddResourceEntry,
+                   base::Unretained(resource_metadata_.get()),
+                   sequence_id,
+                   is_directory,
+                   parent_resource_id),
+        base::Bind(google_apis::test_util::CreateCopyResultCallback(&result)));
+    google_apis::test_util::RunBlockingPoolTask();
+    return result;
+  }
+
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
@@ -139,105 +221,7 @@ class ResourceMetadataTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
 };
 
-// static
-void ResourceMetadataTest::Init(ResourceMetadata* resource_metadata) {
-  FileError error = FILE_ERROR_FAILED;
-  resource_metadata->Initialize(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(FILE_ERROR_OK, error);
-
-  // Create mydrive root directory.
-  {
-    error = FILE_ERROR_FAILED;
-    base::FilePath drive_path;
-    resource_metadata->AddEntryOnUIThread(
-        util::CreateMyDriveRootEntry(kTestRootResourceId),
-        google_apis::test_util::CreateCopyResultCallback(&error, &drive_path));
-    google_apis::test_util::RunBlockingPoolTask();
-    ASSERT_EQ(FILE_ERROR_OK, error);
-  }
-
-  int sequence_id = 1;
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata, sequence_id++, true, kTestRootResourceId));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata, sequence_id++, true, kTestRootResourceId));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata, sequence_id++, true, "resource_id:dir1"));
-
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata, sequence_id++, false, "resource_id:dir1"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata, sequence_id++, false, "resource_id:dir1"));
-
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata, sequence_id++, false, "resource_id:dir2"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata, sequence_id++, false, "resource_id:dir2"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata, sequence_id++, false, "resource_id:dir2"));
-
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata, sequence_id++, false, "resource_id:dir3"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata, sequence_id++, false, "resource_id:dir3"));
-
-  resource_metadata->SetLargestChangestampOnUIThread(
-      kTestChangestamp,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-}
-
-// static
-ResourceEntry ResourceMetadataTest::CreateResourceEntry(
-    int sequence_id,
-    bool is_directory,
-    const std::string& parent_resource_id) {
-  ResourceEntry entry;
-  const std::string sequence_id_str = base::IntToString(sequence_id);
-  const std::string title = (is_directory ? "dir" : "file") + sequence_id_str;
-  const std::string resource_id = "resource_id:" + title;
-  entry.set_title(title);
-  entry.set_resource_id(resource_id);
-  entry.set_parent_resource_id(parent_resource_id);
-
-  PlatformFileInfoProto* file_info = entry.mutable_file_info();
-  file_info->set_is_directory(is_directory);
-
-  if (!is_directory) {
-    DriveFileSpecificInfo* file_specific_info =
-        entry.mutable_file_specific_info();
-    file_info->set_size(sequence_id * 1024);
-    file_specific_info->set_file_md5(std::string("md5:") + title);
-  } else {
-    DriveDirectorySpecificInfo* directory_specific_info =
-        entry.mutable_directory_specific_info();
-    directory_specific_info->set_changestamp(kTestChangestamp);
-  }
-  return entry;
-}
-
-bool ResourceMetadataTest::AddResourceEntry(
-    ResourceMetadata* resource_metadata,
-    int sequence_id,
-    bool is_directory,
-    const std::string& parent_resource_id) {
-  ResourceEntry entry = CreateResourceEntry(sequence_id,
-                                                      is_directory,
-                                                      parent_resource_id);
-  FileError error = FILE_ERROR_FAILED;
-  base::FilePath drive_path;
-
-  resource_metadata->AddEntryOnUIThread(
-      entry,
-      google_apis::test_util::CreateCopyResultCallback(&error, &drive_path));
-  google_apis::test_util::RunBlockingPoolTask();
-  return FILE_ERROR_OK == error;
-}
-
-TEST_F(ResourceMetadataTest, LargestChangestamp) {
+TEST_F(ResourceMetadataTestOnUIThread, LargestChangestamp) {
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata(new ResourceMetadata(temp_dir_.path(),
                                              blocking_task_runner_));
@@ -261,7 +245,7 @@ TEST_F(ResourceMetadataTest, LargestChangestamp) {
   DCHECK_EQ(in_changestamp, out_changestamp);
 }
 
-TEST_F(ResourceMetadataTest, GetResourceEntryById_RootDirectory) {
+TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById_RootDirectory) {
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata(new ResourceMetadata(temp_dir_.path(),
                                              blocking_task_runner_));
@@ -286,7 +270,7 @@ TEST_F(ResourceMetadataTest, GetResourceEntryById_RootDirectory) {
   EXPECT_EQ("drive", entry->base_name());
 }
 
-TEST_F(ResourceMetadataTest, GetResourceEntryById) {
+TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById) {
   // Confirm that an existing file is found.
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
@@ -314,7 +298,7 @@ TEST_F(ResourceMetadataTest, GetResourceEntryById) {
   EXPECT_FALSE(entry.get());
 }
 
-TEST_F(ResourceMetadataTest, GetResourceEntryByPath) {
+TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryByPath) {
   // Confirm that an existing file is found.
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<ResourceEntry> entry;
@@ -367,7 +351,7 @@ TEST_F(ResourceMetadataTest, GetResourceEntryByPath) {
   EXPECT_FALSE(entry.get());
 }
 
-TEST_F(ResourceMetadataTest, ReadDirectoryByPath) {
+TEST_F(ResourceMetadataTestOnUIThread, ReadDirectoryByPath) {
   // Confirm that an existing directory is found.
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<ResourceEntryVector> entries;
@@ -405,7 +389,7 @@ TEST_F(ResourceMetadataTest, ReadDirectoryByPath) {
   EXPECT_FALSE(entries.get());
 }
 
-TEST_F(ResourceMetadataTest, GetResourceEntryPairByPaths) {
+TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryPairByPaths) {
   // Confirm that existing two files are found.
   scoped_ptr<EntryInfoPairResult> pair_result;
   resource_metadata_->GetResourceEntryPairByPathsOnUIThread(
@@ -463,7 +447,7 @@ TEST_F(ResourceMetadataTest, GetResourceEntryPairByPaths) {
   ASSERT_FALSE(pair_result->second.entry.get());
 }
 
-TEST_F(ResourceMetadataTest, RemoveEntry) {
+TEST_F(ResourceMetadataTestOnUIThread, RemoveEntry) {
   // Make sure file9 is found.
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
@@ -547,7 +531,7 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
   EXPECT_EQ(FILE_ERROR_ACCESS_DENIED, error);
 }
 
-TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
+TEST_F(ResourceMetadataTestOnUIThread, MoveEntryToDirectory) {
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
   scoped_ptr<ResourceEntry> entry;
@@ -636,7 +620,7 @@ TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
             drive_file_path);
 }
 
-TEST_F(ResourceMetadataTest, RenameEntry) {
+TEST_F(ResourceMetadataTestOnUIThread, RenameEntry) {
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
   scoped_ptr<ResourceEntry> entry;
@@ -694,7 +678,7 @@ TEST_F(ResourceMetadataTest, RenameEntry) {
   EXPECT_EQ(base::FilePath(), drive_file_path);
 }
 
-TEST_F(ResourceMetadataTest, RefreshEntry) {
+TEST_F(ResourceMetadataTestOnUIThread, RefreshEntry) {
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
   scoped_ptr<ResourceEntry> entry;
@@ -800,7 +784,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   EXPECT_EQ(FILE_ERROR_INVALID_OPERATION, error);
 }
 
-TEST_F(ResourceMetadataTest, RefreshDirectory_EmtpyMap) {
+TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_EmtpyMap) {
   base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/root/dir1"));
   const int64 kNewChangestamp = kTestChangestamp + 1;
 
@@ -850,7 +834,7 @@ TEST_F(ResourceMetadataTest, RefreshDirectory_EmtpyMap) {
   ASSERT_TRUE(entries->empty());
 }
 
-TEST_F(ResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
+TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_NonEmptyMap) {
   base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/root/dir1"));
   const int64 kNewChangestamp = kTestChangestamp + 1;
 
@@ -991,7 +975,7 @@ TEST_F(ResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   ASSERT_EQ(3U, entries->size());
 }
 
-TEST_F(ResourceMetadataTest, RefreshDirectory_WrongParentResourceId) {
+TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_WrongParentResourceId) {
   base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/root/dir1"));
   const int64 kNewChangestamp = kTestChangestamp + 1;
 
@@ -1028,7 +1012,7 @@ TEST_F(ResourceMetadataTest, RefreshDirectory_WrongParentResourceId) {
   ASSERT_TRUE(entries->empty());
 }
 
-TEST_F(ResourceMetadataTest, AddEntry) {
+TEST_F(ResourceMetadataTestOnUIThread, AddEntry) {
   int sequence_id = 100;
   ResourceEntry file_entry = CreateResourceEntry(
       sequence_id++, false, "resource_id:dir3");
@@ -1079,7 +1063,7 @@ TEST_F(ResourceMetadataTest, AddEntry) {
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
 }
 
-TEST_F(ResourceMetadataTest, GetChildDirectories) {
+TEST_F(ResourceMetadataTestOnUIThread, GetChildDirectories) {
   std::set<base::FilePath> child_directories;
 
   // file9: not a directory, so no children.
@@ -1115,22 +1099,22 @@ TEST_F(ResourceMetadataTest, GetChildDirectories) {
   // dir2/dir101/dir102/dir105/dir106
   // dir2/dir101/dir102/dir105/dir106/dir107
   int sequence_id = 100;
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata_.get(), sequence_id++, true, "resource_id:dir2"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata_.get(), sequence_id++, true, "resource_id:dir2"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata_.get(), sequence_id++, true, "resource_id:dir101"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata_.get(), sequence_id++, true, "resource_id:dir101"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata_.get(), sequence_id++, true, "resource_id:dir101"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata_.get(), sequence_id++, true, "resource_id:dir102"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata_.get(), sequence_id++, true, "resource_id:dir105"));
-  ASSERT_TRUE(AddResourceEntry(
-      resource_metadata_.get(), sequence_id++, true, "resource_id:dir106"));
+  ASSERT_TRUE(AddResourceEntryOnUIThread(
+      sequence_id++, true, "resource_id:dir2"));
+  ASSERT_TRUE(AddResourceEntryOnUIThread(
+      sequence_id++, true, "resource_id:dir2"));
+  ASSERT_TRUE(AddResourceEntryOnUIThread(
+      sequence_id++, true, "resource_id:dir101"));
+  ASSERT_TRUE(AddResourceEntryOnUIThread(
+      sequence_id++, true, "resource_id:dir101"));
+  ASSERT_TRUE(AddResourceEntryOnUIThread(
+      sequence_id++, true, "resource_id:dir101"));
+  ASSERT_TRUE(AddResourceEntryOnUIThread(
+      sequence_id++, true, "resource_id:dir102"));
+  ASSERT_TRUE(AddResourceEntryOnUIThread(
+      sequence_id++, true, "resource_id:dir105"));
+  ASSERT_TRUE(AddResourceEntryOnUIThread(
+      sequence_id++, true, "resource_id:dir106"));
 
   resource_metadata_->GetChildDirectoriesOnUIThread(
       "resource_id:dir2",
@@ -1145,7 +1129,7 @@ TEST_F(ResourceMetadataTest, GetChildDirectories) {
       "drive/root/dir2/dir101/dir102/dir105/dir106/dir107")));
 }
 
-TEST_F(ResourceMetadataTest, Reset) {
+TEST_F(ResourceMetadataTestOnUIThread, Reset) {
   // The grand root has "root" which is not empty.
   scoped_ptr<ResourceEntryVector> entries;
   entries = ReadDirectoryByPathSync(
@@ -1188,16 +1172,53 @@ TEST_F(ResourceMetadataTest, Reset) {
   EXPECT_TRUE(entries_in_other->empty());
 }
 
-TEST_F(ResourceMetadataTest, IterateEntries) {
-  int count = 0;
-  blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::IterateEntries,
-                 base::Unretained(resource_metadata_.get()),
-                 base::Bind(&CountFile, &count)));
-  google_apis::test_util::RunBlockingPoolTask();
+// Tests for methods running on the blocking task runner.
+class ResourceMetadataTest : public testing::Test {
+ protected:
+  ResourceMetadataTest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        resource_metadata_(NULL) {}
 
-  EXPECT_EQ(7, count);
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    // Use the main thread as the blocking task runner.
+    resource_metadata_.reset(new ResourceMetadata(
+        temp_dir_.path(), message_loop_.message_loop_proxy()));
+
+    FileError error = FILE_ERROR_FAILED;
+    resource_metadata_->Initialize(
+        google_apis::test_util::CreateCopyResultCallback(&error));
+    message_loop_.RunUntilIdle();
+    ASSERT_EQ(FILE_ERROR_OK, error);
+
+    SetUpEntries(resource_metadata_.get());
+  }
+
+  virtual void TearDown() OVERRIDE {
+  }
+
+  base::ScopedTempDir temp_dir_;
+  MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
+      resource_metadata_;
+};
+
+TEST_F(ResourceMetadataTest, Iterate) {
+  scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata_->GetIterator();
+  ASSERT_TRUE(it);
+
+  int file_count = 0, directory_count = 0;
+  for (; !it->IsAtEnd(); it->Advance()) {
+    if (!it->Get().file_info().is_directory())
+      ++file_count;
+    else
+      ++directory_count;
+  }
+
+  EXPECT_EQ(7, file_count);
+  EXPECT_EQ(6, directory_count);
 }
 
 }  // namespace internal
