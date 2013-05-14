@@ -473,7 +473,7 @@ void RenderLayerCompositor::logLayerInfo(const RenderLayer* layer, int depth)
         return;
         
     RenderLayerBacking* backing = layer->backing();
-    if (requiresCompositing(directReasonsCompositingLayer(layer)) || layer->isRootLayer()) {
+    if (requiresCompositing(directReasonsForCompositingLayer(layer)) || layer->isRootLayer()) {
         ++m_obligateCompositedLayerCount;
         m_obligatoryBackingStoreBytes += backing->backingStoreMemoryEstimate();
     } else {
