@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 
+#include "base/file_util.h"
 #include "base/memory/scoped_generic_obj.h"
 #include "base/string_util.h"
 #include "chrome/browser/media_galleries/fileapi/filtering_file_enumerator.h"

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
-#include "base/file_util.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

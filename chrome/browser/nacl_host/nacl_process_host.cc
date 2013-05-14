@@ -10,6 +10,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -60,7 +61,6 @@
 #elif defined(OS_WIN)
 #include <windows.h>
 
-#include "base/process_util.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"

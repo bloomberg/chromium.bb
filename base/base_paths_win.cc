@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include <windows.h>
 #include <shlobj.h>
 
 #include "base/base_paths.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/win/scoped_co_mem.h"
@@ -53,7 +51,6 @@ bool GetQuickLaunchPath(bool default_user, FilePath* result) {
 namespace base {
 
 bool PathProviderWin(int key, FilePath* result) {
-
   // We need to go compute the value. It would be nice to support paths with
   // names longer than MAX_PATH, but the system functions don't seem to be
   // designed for it either, with the exception of GetTempPath (but other

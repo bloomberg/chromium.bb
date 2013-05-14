@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/platform_file.h"
@@ -106,7 +107,7 @@ TEST_F(NativeFileUtilTest, CreateAndDeleteDirectory) {
                                             false /* recursive */));
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            NativeFileUtil::DeleteDirectory (dir_name));
+            NativeFileUtil::DeleteDirectory(dir_name));
   EXPECT_FALSE(file_util::DirectoryExists(dir_name));
   EXPECT_FALSE(NativeFileUtil::DirectoryExists(dir_name));
 }

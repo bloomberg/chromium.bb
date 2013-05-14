@@ -18,7 +18,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
@@ -211,7 +210,6 @@ size_t ProcessMetrics::GetPagefileUsage() const {
 }
 
 size_t ProcessMetrics::GetPeakPagefileUsage() const {
-
   return 0;
 }
 
@@ -233,7 +231,6 @@ size_t ProcessMetrics::GetWorkingSetSize() const {
 }
 
 size_t ProcessMetrics::GetPeakWorkingSetSize() const {
-
   return 0;
 }
 

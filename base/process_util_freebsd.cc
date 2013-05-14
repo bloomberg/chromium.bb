@@ -17,7 +17,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
@@ -65,7 +64,7 @@ ProcessIterator::ProcessIterator(const ProcessFilter* filter)
 
   do {
     size_t len = 0;
-    if (sysctl(mib, arraysize(mib), NULL, &len, NULL, 0) <0 ){
+    if (sysctl(mib, arraysize(mib), NULL, &len, NULL, 0) < 0) {
       LOG(ERROR) << "failed to get the size needed for the process list";
       kinfo_procs_.resize(0);
       done = true;
@@ -105,7 +104,7 @@ ProcessIterator::~ProcessIterator() {
 bool ProcessIterator::CheckForNextProcess() {
   std::string data;
 
-  for (; index_of_kinfo_proc_ < kinfo_procs_.size(); ++ index_of_kinfo_proc_) {
+  for (; index_of_kinfo_proc_ < kinfo_procs_.size(); ++index_of_kinfo_proc_) {
     size_t length;
     struct kinfo_proc kinfo = kinfo_procs_[index_of_kinfo_proc_];
     int mib[] = { CTL_KERN, KERN_PROC_ARGS, kinfo.ki_pid };
@@ -157,7 +156,7 @@ bool ProcessIterator::CheckForNextProcess() {
 }
 
 bool NamedProcessIterator::IncludeEntry() {
-  if(executable_name_ != entry().exe_file())
+  if (executable_name_ != entry().exe_file())
     return false;
 
   return ProcessIterator::IncludeEntry();

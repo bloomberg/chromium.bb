@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/local_file_util.h"
 
+#include "base/file_util.h"
 #include "base/files/file_util_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"

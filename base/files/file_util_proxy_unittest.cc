@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -194,17 +195,17 @@ TEST_F(FileUtilProxyTest, CreateTemporary) {
 
   // The file should be writable.
 #if defined(OS_WIN)
-   HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-   OVERLAPPED overlapped = {0};
-   overlapped.hEvent = hEvent;
-   DWORD bytes_written;
-   if (!::WriteFile(file_, "test", 4, &bytes_written, &overlapped)) {
-     // Temporary file is created with ASYNC flag, so WriteFile may return 0
-     // with ERROR_IO_PENDING.
-     EXPECT_EQ(ERROR_IO_PENDING, GetLastError());
-     GetOverlappedResult(file_, &overlapped, &bytes_written, TRUE);
-   }
-   EXPECT_EQ(4, bytes_written);
+  HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+  OVERLAPPED overlapped = {0};
+  overlapped.hEvent = hEvent;
+  DWORD bytes_written;
+  if (!::WriteFile(file_, "test", 4, &bytes_written, &overlapped)) {
+    // Temporary file is created with ASYNC flag, so WriteFile may return 0
+    // with ERROR_IO_PENDING.
+    EXPECT_EQ(ERROR_IO_PENDING, GetLastError());
+    GetOverlappedResult(file_, &overlapped, &bytes_written, TRUE);
+  }
+  EXPECT_EQ(4, bytes_written);
 #else
   // On POSIX ASYNC flag does not affect synchronous read/write behavior.
   EXPECT_EQ(4, WritePlatformFile(file_, 0, "test", 4));

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
+#include "base/file_version_info.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/file_version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -27,7 +27,7 @@ FilePath GetTestDataPath() {
 }
 #endif
 
-}
+}  // namespace
 
 #if defined(OS_WIN)
 TEST(FileVersionInfoTest, HardCodedProperties) {

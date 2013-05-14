@@ -171,7 +171,7 @@ int FilePathWatcherImpl::EventsForPath(FilePath path, EventVector* events) {
   int last_existing_entry = 0;
   FilePath built_path;
   bool path_still_exists = true;
-  for(std::vector<FilePath::StringType>::iterator i = components.begin();
+  for (std::vector<FilePath::StringType>::iterator i = components.begin();
       i != components.end(); ++i) {
     if (i == components.begin()) {
       built_path = FilePath(*i);
