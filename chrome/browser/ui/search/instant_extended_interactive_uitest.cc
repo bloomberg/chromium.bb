@@ -6,6 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -127,6 +130,17 @@ class InstantExtendedTest : public InProcessBrowserTest,
 
   virtual void SetUpOnMainThread() OVERRIDE {
     browser()->toolbar_model()->SetSupportsExtractionOfURLLikeSearchTerms(true);
+  }
+
+  int64 GetHistogramCount(const char* name) {
+    base::HistogramBase* histogram =
+        base::StatisticsRecorder::FindHistogram(name);
+    if (!histogram) {
+      // If no histogram is found, it's possible that no values have been
+      // recorded yet. Assume that the value is zero.
+      return 0;
+    }
+    return histogram->SnapshotSamples()->TotalCount();
   }
 
   std::string GetOmniboxText() {
@@ -2364,4 +2378,14 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   on_visibility_calls = -1;
   EXPECT_TRUE(GetIntFromJS(overlay, "onvisibilitycalls", &on_visibility_calls));
   EXPECT_EQ(1, on_visibility_calls);
+}
+
+// Test that if the LogDropdownShown() call records a histogram value.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, LogDropdownShown) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+  int64 histogramValue = GetHistogramCount("Instant.TimeToFirstShowFromWeb");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("a"));
+  EXPECT_EQ(histogramValue + 1,
+            GetHistogramCount("Instant.TimeToFirstShowFromWeb"));
 }

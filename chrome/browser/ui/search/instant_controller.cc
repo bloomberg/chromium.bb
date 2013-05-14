@@ -495,8 +495,6 @@ bool InstantController::Update(const AutocompleteMatch& match,
   if (UseTabForSuggestions()) {
     instant_tab_->Update(user_text, selection_start, selection_end, verbatim);
   } else {
-    if (first_interaction_time_.is_null())
-      first_interaction_time_ = base::Time::Now();
     allow_overlay_to_show_search_suggestions_ = true;
 
     overlay_->Update(extended_enabled_ ? user_text : full_text,
@@ -511,6 +509,10 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // We don't have new suggestions yet, but we can either reuse the existing
   // suggestion or reset the existing "gray text".
   browser_->SetInstantSuggestion(last_suggestion_);
+
+  // Record the time of the first keypress for logging histograms.
+  if (!first_interaction_time_recorded_ && first_interaction_time_.is_null())
+    first_interaction_time_ = base::Time::Now();
 
   return true;
 }
@@ -1339,6 +1341,31 @@ void InstantController::ShowInstantOverlay(const content::WebContents* contents,
     ShowOverlay(height, units);
 }
 
+void InstantController::LogDropdownShown() {
+  // If suggestions are being shown for the first time since the user started
+  // typing, record a histogram value.
+  if (!first_interaction_time_.is_null() && !first_interaction_time_recorded_) {
+    base::TimeDelta delta = base::Time::Now() - first_interaction_time_;
+    first_interaction_time_recorded_ = true;
+    if (search_mode_.is_origin_ntp()) {
+      UMA_HISTOGRAM_TIMES("Instant.TimeToFirstShowFromNTP", delta);
+      LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+          "LogShowInstantOverlay: TimeToFirstShowFromNTP=%d",
+          static_cast<int>(delta.InMilliseconds())));
+    } else if (search_mode_.is_origin_search()) {
+      UMA_HISTOGRAM_TIMES("Instant.TimeToFirstShowFromSERP", delta);
+      LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+          "LogShowInstantOverlay: TimeToFirstShowFromSERP=%d",
+          static_cast<int>(delta.InMilliseconds())));
+    } else {
+      UMA_HISTOGRAM_TIMES("Instant.TimeToFirstShowFromWeb", delta);
+      LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+          "LogShowInstantOverlay: TimeToFirstShowFromWeb=%d",
+          static_cast<int>(delta.InMilliseconds())));
+    }
+  }
+}
+
 void InstantController::FocusOmnibox(const content::WebContents* contents,
                                      OmniboxFocusState state) {
   if (!extended_enabled_)
@@ -1572,6 +1599,7 @@ void InstantController::HideInternal() {
 
   // Clear the first interaction timestamp for later use.
   first_interaction_time_ = base::Time();
+  first_interaction_time_recorded_ = false;
 
   if (instant_tab_)
     use_tab_for_suggestions_ = true;
@@ -1596,13 +1624,6 @@ void InstantController::ShowOverlay(int height, InstantSizeUnits units) {
     if (instant_tab_)
       use_tab_for_suggestions_ = true;
     return;
-  }
-
-  // If the overlay is being shown for the first time since the user started
-  // typing, record a histogram value.
-  if (!first_interaction_time_.is_null() && model_.mode().is_default()) {
-    base::TimeDelta delta = base::Time::Now() - first_interaction_time_;
-    UMA_HISTOGRAM_TIMES("Instant.TimeToFirstShow", delta);
   }
 
   // Show at 100% height except in the following cases:

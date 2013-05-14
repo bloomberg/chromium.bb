@@ -260,6 +260,7 @@ void InstantPage::OnShowInstantOverlay(int page_id,
                                        InstantSizeUnits units) {
   if (contents()->IsActiveEntry(page_id)) {
     OnInstantSupportDetermined(page_id, true);
+    delegate_->LogDropdownShown();
     if (ShouldProcessShowInstantOverlay())
       delegate_->ShowInstantOverlay(contents(), height, units);
   }

@@ -39,6 +39,7 @@ class FakePageDelegate : public InstantPage::Delegate {
                void(const content::WebContents* contents,
                     int height,
                     InstantSizeUnits units));
+  MOCK_METHOD0(LogDropdownShown, void());
   MOCK_METHOD2(FocusOmnibox,
                void(const content::WebContents* contents,
                     OmniboxFocusState state));

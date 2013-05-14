@@ -68,6 +68,10 @@ class InstantPage : public content::WebContentsObserver {
                                     int height,
                                     InstantSizeUnits units) = 0;
 
+    // Called when the page shows suggestions for logging purposes, regardless
+    // of whether the page is processing the call.
+    virtual void LogDropdownShown() = 0;
+
     // Called when the page wants the omnibox to be focused. |state| specifies
     // the omnibox focus state.
     virtual void FocusOmnibox(const content::WebContents* contents,
