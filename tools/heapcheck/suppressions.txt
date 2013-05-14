@@ -890,11 +890,6 @@
    fun:ProfileManagerTest_CreateProfileAsyncMultipleRequests_Test::TestBody
 }
 {
-   bug_91174
-   Heapcheck:Leak
-   fun:DownloadManager::OnPathExistenceAvailable
-}
-{
    bug_90013_a
    Heapcheck:Leak
    fun:??

@@ -1304,27 +1304,6 @@
    fun:-[NSTrackableOutlineView dealloc]
 }
 {
-   bug_77388_e
-   Memcheck:Uninitialized
-   fun:TestAndSetClear
-   fun:TestAndSet
-   fun:_ZN5TNode17HandleSyncStartedEv
-   fun:_ZN5TNode24GetNetworkSidebarBrowserEv
-   fun:_ZN5TNode14GetNetworkNodeEm
-   fun:_ZN5TNode24GetSpecialNodeWithStatusEmRKP17OpaqueNodeRequestmR8TNodePtr
-   fun:NodeCopySpecialFolder
-   fun:+[NSNavFBENode _virtualNodeOfType:]
-   fun:+[NSNavFBENode copyStandardSidebarNodes]
-   fun:-[NSNavSidebarController load]
-   fun:-[NSNavView loadSidebar]
-   fun:-[NSSavePanel _initSidebarAndPopups]
-   fun:-[NSSavePanel _initPanelCommon]
-   fun:-[NSSavePanel initWithContentRect:styleMask:backing:defer:]
-   fun:+[NSSavePanel _crunchyRawUnbonedPanel]
-   fun:_ZN20SelectFileDialogImpl10SelectFileEN16SelectFileDialog4TypeERKSbItN4base20string16_char_traitsESaItEE*
-   fun:_ZN15DownloadManager24OnPathExistenceAvailableEP18DownloadCreateInfo
-}
-{
    bug_79655a
    Memcheck:Unaddressable
    ...
