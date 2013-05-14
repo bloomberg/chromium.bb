@@ -48,6 +48,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/message_center/message_center.gyp:message_center',
         '../ui/native_theme/native_theme.gyp:native_theme',
         '../ui/snapshot/snapshot.gyp:snapshot',
         '../ui/ui.gyp:ui',
@@ -2931,11 +2932,6 @@
             ['exclude', '^browser/ui/app_list/'],
             ['include', '^browser/ui/app_list/app_list_service.h'],
             ['include', '^browser/ui/app_list/app_list_service_disabled.cc'],
-          ],
-        }],
-        ['enable_message_center==1', {
-          'dependencies': [
-            '../ui/message_center/message_center.gyp:message_center',
           ],
         }],
       ],

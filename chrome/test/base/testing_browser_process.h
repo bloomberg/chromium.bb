@@ -71,9 +71,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual extensions::EventRouterForwarder*
       extension_event_router_forwarder() OVERRIDE;
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
-#if defined(ENABLE_MESSAGE_CENTER)
   virtual message_center::MessageCenter* message_center() OVERRIDE;
-#endif
   virtual IntranetRedirectDetector* intranet_redirect_detector() OVERRIDE;
   virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
   virtual void CreateDevToolsHttpProtocolHandler(

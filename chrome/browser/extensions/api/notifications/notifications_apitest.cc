@@ -274,12 +274,15 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestCSP) {
   ASSERT_TRUE(RunExtensionTest("notifications/api/csp")) << message_;
 }
 
-#ifdef ENABLE_MESSAGE_CENTER
-#if !defined(OS_WIN) || !defined(USE_ASH)
+// MessaceCenter-specific test.
+#if defined(RUN_MESSAGE_CENTER_TESTS)
+#define MAYBE_TestByUser TestByUser
+#else
+#define MAYBE_TestByUser DISABLED_TestByUser
+#endif
 
-IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestByUser) {
-  if (!message_center::IsRichNotificationEnabled())
-    return;
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestByUser) {
+  ASSERT_TRUE(message_center::IsRichNotificationEnabled());
 
   const extensions::Extension* extension =
       LoadExtensionAndWait("notifications/api/by_user");
@@ -301,6 +304,3 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestByUser) {
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
 }
-
-#endif
-#endif

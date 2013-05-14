@@ -11,7 +11,8 @@ namespace message_center {
 // Square image sizes in pixels.
 const int kNotificationButtonIconSize = 16;
 const int kNotificationIconSize = 80;
-const int kNotificationPreferredImageSize = kNotificationWidth;
+// Same as kNotificationWidth.
+const int kNotificationPreferredImageSize = 360;
 const int kSettingsIconSize = 16;
 
 // Limits.
@@ -39,7 +40,8 @@ const SkColor kRegularTextColor = SkColorSetRGB(34, 34, 34);
 const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 
 // Limits.
-const int kNotificationMaximumImageHeight = kNotificationWidth * 1.5;
+// kNotificationWidth * 1.5
+const int kNotificationMaximumImageHeight = 540;
 const size_t kNotificationMaximumItems = 8;
 
 // Timing.

@@ -25,13 +25,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
-
-#if defined(ENABLE_MESSAGE_CENTER)
-#include "base/command_line.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_switches.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_list.h"
-#endif
 
 using content::NavigationController;
 using content::WebContents;
@@ -117,90 +114,63 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
 
 };
 
-// TODO(rsesek): Implement and enable these tests. http://crbug.com/179904
-#if defined(ENABLE_MESSAGE_CENTER) && !defined(OS_MACOSX)
-
-class MessageCenterExtensionCrashRecoveryTest
+class MAYBE_ExtensionCrashRecoveryTest
     : public ExtensionCrashRecoveryTestBase {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionCrashRecoveryTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        message_center::switches::kEnableRichNotifications);
-  }
-
   virtual void AcceptNotification(size_t index) OVERRIDE {
-    message_center::MessageCenter* message_center =
-        message_center::MessageCenter::Get();
-    ASSERT_GT(message_center->NotificationCount(), index);
-    message_center::NotificationList::Notifications::reverse_iterator it =
-        message_center->GetNotifications().rbegin();
-    for (size_t i=0; i < index; ++i)
-      it++;
-    std::string id = (*it)->id();
-    message_center->ClickOnNotification(id);
+    if (message_center::IsRichNotificationEnabled()) {
+      message_center::MessageCenter* message_center =
+          message_center::MessageCenter::Get();
+      ASSERT_GT(message_center->NotificationCount(), index);
+      message_center::NotificationList::Notifications::reverse_iterator it =
+          message_center->GetNotifications().rbegin();
+      for (size_t i=0; i < index; ++i)
+        it++;
+      std::string id = (*it)->id();
+      message_center->ClickOnNotification(id);
+    } else {
+      Balloon* balloon = GetNotificationDelegate(index);
+      ASSERT_TRUE(balloon);
+      balloon->OnClick();
+    }
     WaitForExtensionLoad();
   }
 
   virtual void CancelNotification(size_t index) OVERRIDE {
-    message_center::MessageCenter* message_center =
-        message_center::MessageCenter::Get();
-    ASSERT_GT(message_center->NotificationCount(), index);
-    message_center::NotificationList::Notifications::reverse_iterator it =
-        message_center->GetNotifications().rbegin();
-    for (size_t i=0; i < index; i++) { it++; }
-    ASSERT_TRUE(
-        g_browser_process->notification_ui_manager()->CancelById((*it)->id()));
+    if (message_center::IsRichNotificationEnabled()) {
+      message_center::MessageCenter* message_center =
+          message_center::MessageCenter::Get();
+      ASSERT_GT(message_center->NotificationCount(), index);
+      message_center::NotificationList::Notifications::reverse_iterator it =
+          message_center->GetNotifications().rbegin();
+      for (size_t i=0; i < index; i++) { it++; }
+      ASSERT_TRUE(g_browser_process->notification_ui_manager()->
+          CancelById((*it)->id()));
+    } else {
+      Balloon* balloon = GetNotificationDelegate(index);
+      ASSERT_TRUE(balloon);
+      std::string id = balloon->notification().notification_id();
+      ASSERT_TRUE(g_browser_process->notification_ui_manager()->CancelById(id));
+    }
   }
 
   virtual size_t CountBalloons() OVERRIDE {
-    message_center::MessageCenter* message_center =
-        message_center::MessageCenter::Get();
-    return message_center->NotificationCount();
+    if (message_center::IsRichNotificationEnabled())
+      return message_center::MessageCenter::Get()->NotificationCount();
+
+    return BalloonNotificationUIManager::GetInstanceForTesting()->
+        balloon_collection()->GetActiveBalloons().size();
   }
+
+private:
+     Balloon* GetNotificationDelegate(size_t index) {
+       BalloonNotificationUIManager* manager =
+           BalloonNotificationUIManager::GetInstanceForTesting();
+       BalloonCollection::Balloons balloons =
+           manager->balloon_collection()->GetActiveBalloons();
+       return index < balloons.size() ? balloons.at(index) : NULL;
+     }
 };
-
-typedef MessageCenterExtensionCrashRecoveryTest
-    MAYBE_ExtensionCrashRecoveryTest;
-
-#else  // defined(ENABLED_MESSAGE_CENTER)
-
-class BalloonExtensionCrashRecoveryTest
-    : public ExtensionCrashRecoveryTestBase {
- protected:
-  virtual void AcceptNotification(size_t index) OVERRIDE {
-    Balloon* balloon = GetNotificationDelegate(index);
-    ASSERT_TRUE(balloon);
-    balloon->OnClick();
-    WaitForExtensionLoad();
-  }
-
-  virtual void CancelNotification(size_t index) OVERRIDE {
-    Balloon* balloon = GetNotificationDelegate(index);
-    ASSERT_TRUE(balloon);
-    std::string id = balloon->notification().notification_id();
-    ASSERT_TRUE(g_browser_process->notification_ui_manager()->CancelById(id));
-  }
-
-  virtual size_t CountBalloons() OVERRIDE {
-    BalloonNotificationUIManager* manager =
-        BalloonNotificationUIManager::GetInstanceForTesting();
-    BalloonCollection::Balloons balloons =
-        manager->balloon_collection()->GetActiveBalloons();
-    return balloons.size();
-  }
- private:
-  Balloon* GetNotificationDelegate(size_t index) {
-    BalloonNotificationUIManager* manager =
-        BalloonNotificationUIManager::GetInstanceForTesting();
-    BalloonCollection::Balloons balloons =
-        manager->balloon_collection()->GetActiveBalloons();
-    return index < balloons.size() ? balloons.at(index) : NULL;
-  }
-};
-
-typedef BalloonExtensionCrashRecoveryTest MAYBE_ExtensionCrashRecoveryTest;
-#endif  // defined(ENABLE_MESSAGE_CENTER)
 
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest, Basic) {
   const size_t size_before = GetExtensionService()->extensions()->size();

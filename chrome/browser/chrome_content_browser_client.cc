@@ -127,6 +127,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center_util.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/plugin_switches.h"
 
@@ -159,10 +160,6 @@
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
-#endif
-
-#if defined(ENABLE_MESSAGE_CENTER)
-#include "ui/message_center/message_center_util.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -1254,10 +1251,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     if (content::IsThreadedCompositingEnabled())
       command_line->AppendSwitch(switches::kEnableThreadedCompositing);
 
-#if defined(ENABLE_MESSAGE_CENTER)
     if (message_center::IsRichNotificationEnabled())
       command_line->AppendSwitch(switches::kDisableHTMLNotifications);
-#endif
 
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {

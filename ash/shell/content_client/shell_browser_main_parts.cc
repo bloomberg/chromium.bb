@@ -29,12 +29,9 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/compositor_test_support.h"
 #include "ui/gfx/screen.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/test/test_views_delegate.h"
-
-#if defined(ENABLE_MESSAGE_CENTER)
-#include "ui/message_center/message_center.h"
-#endif
 
 #if defined(USE_X11)
 #include "ui/base/touch/touch_factory_x11.h"
@@ -112,11 +109,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     views::ViewsDelegate::views_delegate = new ShellViewsDelegate;
 
   delegate_ = new ash::shell::ShellDelegateImpl;
-#if defined(ENABLE_MESSAGE_CENTER)
   // The global message center state must be initialized absent
   // g_browser_process.
   message_center::MessageCenter::Initialize();
-#endif
 
 #if defined(OS_CHROMEOS)
   if (ash::switches::UseNewAudioHandler()) {
@@ -154,11 +149,9 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   delegate_->SetWatcher(NULL);
   delegate_ = NULL;
   ash::Shell::DeleteInstance();
-#if defined(ENABLE_MESSAGE_CENTER)
   // The global message center state must be shutdown absent
   // g_browser_process.
   message_center::MessageCenter::Shutdown();
-#endif
 
 #if defined(OS_CHROMEOS)
   if (ash::switches::UseNewAudioHandler())

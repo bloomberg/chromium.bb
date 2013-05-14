@@ -11,6 +11,12 @@ namespace message_center {
 
 MESSAGE_CENTER_EXPORT bool IsRichNotificationEnabled();
 
+// If Rich Notificaitons are enabled by default on a platform, run the
+// corresponding tests on that platform.
+#if defined(OS_WIN) || defined(USE_ASH)
+#define RUN_MESSAGE_CENTER_TESTS 1
+#endif
+
 }  // namespace message_center
 
 #endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_UTIL_H_

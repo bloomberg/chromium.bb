@@ -18,6 +18,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/message_center_util.h"
 
 using sync_pb::SyncedNotificationSpecifics;
 using sync_pb::EntitySpecifics;
@@ -94,12 +95,8 @@ const char kContainedMessage3[] = "Let's play starcraft tonight on the LAN.";
 const int64 kFakeCreationTime = 42;
 const int kProtobufPriority = static_cast<int>(
     sync_pb::CoalescedSyncedNotification_Priority_LOW);
-#if defined (ENABLE_MESSAGE_CENTER)
 const int kNotificationPriority = static_cast<int>(
     message_center::LOW_PRIORITY);
-#else  // ENABLE_MESSAGE_CENTER
-const int kNotificationPriority = 1;
-#endif  // ENABLE_MESSAGE_CENTER
 const sync_pb::CoalescedSyncedNotification_ReadState kDismissed =
     sync_pb::CoalescedSyncedNotification_ReadState_DISMISSED;
 const sync_pb::CoalescedSyncedNotification_ReadState kUnread =

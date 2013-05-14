@@ -19,10 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if !defined(ENABLE_MESSAGE_CENTER)
-// These tests do not apply with Message Center platforms
-// where notifications do not instantiate a new renderer.
+#include "ui/message_center/message_center_util.h"
 
 class TaskManagerNotificationBrowserTest : public ExtensionBrowserTest {
  public:
@@ -48,6 +45,11 @@ class TaskManagerNotificationBrowserTest : public ExtensionBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
                        MAYBE_NoticeNotificationChanges) {
+  // These tests do not apply with Message Center platforms
+  // where notifications do not instantiate a new renderer.
+  if (message_center::IsRichNotificationEnabled())
+    return;
+
   EXPECT_EQ(0, model()->ResourceCount());
 
   // Show the task manager.
@@ -79,5 +81,3 @@ IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
   notifications->CancelById(n2.notification_id());
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 }
-
-#endif  // !ENABLE_MESSAGE_CENTER

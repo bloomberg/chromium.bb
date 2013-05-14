@@ -7,14 +7,11 @@
 #include "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
-
-#if defined(ENABLE_MESSAGE_CENTER)
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "ui/message_center/message_center_util.h"
-#endif
 
 @class NSUserNotificationCenter;
 
@@ -100,14 +97,12 @@ NotificationUIManagerMac::ControllerNotification::~ControllerNotification() {
 
 // static
 NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
-#if defined(ENABLE_MESSAGE_CENTER)
   // TODO(rsesek): Remove this function and merge it with the one in
   // notification_ui_manager.cc.
   if (DelegatesToMessageCenter()) {
     return new MessageCenterNotificationManager(
         g_browser_process->message_center());
   }
-#endif
 
   BalloonNotificationUIManager* balloon_manager = NULL;
   if (base::mac::IsOSMountainLionOrLater())
