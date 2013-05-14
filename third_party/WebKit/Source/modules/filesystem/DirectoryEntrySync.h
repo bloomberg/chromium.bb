@@ -50,7 +50,7 @@ public:
     }
     virtual bool isDirectory() const { return true; }
 
-    PassRefPtr<DirectoryReaderSync> createReader(ExceptionCode&);
+    PassRefPtr<DirectoryReaderSync> createReader();
     PassRefPtr<FileEntrySync> getFile(const String& path, const Dictionary&, ExceptionCode&);
     PassRefPtr<DirectoryEntrySync> getDirectory(const String& path, const Dictionary&, ExceptionCode&);
     void removeRecursively(ExceptionCode&);
