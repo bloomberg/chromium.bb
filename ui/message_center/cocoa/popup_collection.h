@@ -43,6 +43,8 @@ MESSAGE_CENTER_EXPORT
 @end
 
 @interface MCPopupCollection (ExposedForTesting)
+- (NSArray*)popups;
+
 // Setter for the testingScreenFrame_.
 - (void)setScreenFrame:(NSRect)frame;
 @end

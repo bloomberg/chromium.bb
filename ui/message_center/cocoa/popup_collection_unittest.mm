@@ -15,13 +15,6 @@
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
 
-@implementation MCPopupCollection (TestingAPI)
-- (NSArray*)popups {
-  return popups_.get();
-}
-@end
-
-
 @implementation MCNotificationController (TestingInterface)
 - (NSImageView*)iconView {
   return icon_.get();

@@ -95,6 +95,10 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 
 // Testing API /////////////////////////////////////////////////////////////////
 
+- (NSArray*)popups {
+  return popups_.get();
+}
+
 - (void)setScreenFrame:(NSRect)frame {
   testingScreenFrame_ = frame;
 }
