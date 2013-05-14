@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -414,6 +415,8 @@ DesktopSessionWin::DesktopSessionWin(
       monitor_(monitor),
       monitoring_notifications_(false) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  ReportElapsedTime("created");
 }
 
 DesktopSessionWin::~DesktopSessionWin() {
@@ -436,6 +439,8 @@ void DesktopSessionWin::StartMonitoring(
   DCHECK(!monitoring_notifications_);
   DCHECK(!session_attach_timer_.IsRunning());
 
+  ReportElapsedTime("started monitoring");
+
   session_attach_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kSessionAttachTimeoutSeconds),
       this, &DesktopSessionWin::OnSessionAttachTimeout);
@@ -448,6 +453,8 @@ void DesktopSessionWin::StopMonitoring() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   if (monitoring_notifications_) {
+    ReportElapsedTime("stopped monitoring");
+
     monitoring_notifications_ = false;
     monitor_->RemoveWtsTerminalObserver(this);
   }
@@ -458,6 +465,8 @@ void DesktopSessionWin::StopMonitoring() {
 
 void DesktopSessionWin::OnChannelConnected(int32 peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  ReportElapsedTime("channel connected");
 
   // Obtain the handle of the desktop process. It will be passed to the network
   // process to use to duplicate handles of shared memory objects from
@@ -505,6 +514,8 @@ void DesktopSessionWin::OnSessionAttached(uint32 session_id) {
   DCHECK(!launcher_);
   DCHECK(monitoring_notifications_);
 
+  ReportElapsedTime("attached");
+
   // Get the name of the executable the desktop process will run.
   base::FilePath desktop_binary;
   if (!GetInstalledBinaryPath(kDesktopBinaryName, &desktop_binary)) {
@@ -538,6 +549,8 @@ void DesktopSessionWin::OnSessionDetached() {
   launcher_.reset();
 
   if (monitoring_notifications_) {
+    ReportElapsedTime("detached");
+
     session_attach_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kSessionAttachTimeoutSeconds),
         this, &DesktopSessionWin::OnSessionAttachTimeout);
@@ -558,6 +571,29 @@ void DesktopSessionWin::CrashDesktopProcess(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   launcher_->Crash(location);
+}
+
+void DesktopSessionWin::ReportElapsedTime(const std::string& event) {
+  base::Time now = base::Time::Now();
+
+  std::string passed;
+  if (!last_timestamp_.is_null()) {
+    passed = base::StringPrintf(", %.2fs passed",
+                                (now - last_timestamp_).InSecondsF());
+  }
+
+  base::Time::Exploded exploded;
+  now.LocalExplode(&exploded);
+  VLOG(1) << base::StringPrintf("session(%d): %s at %02d:%02d:%02d.%03d%s",
+                                id(),
+                                event.c_str(),
+                                exploded.hour,
+                                exploded.minute,
+                                exploded.second,
+                                exploded.millisecond,
+                                passed.c_str());
+
+  last_timestamp_ = now;
 }
 
 }  // namespace remoting

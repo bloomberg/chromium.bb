@@ -246,6 +246,7 @@ bool WtsSessionProcessDelegate::Core::LaunchProcess(
   if (launch_elevated_) {
     // The job object is not ready. Retry starting the host process later.
     if (!job_.IsValid()) {
+      LOG(ERROR) << "The job object is not ready yet.";
       return false;
     }
 

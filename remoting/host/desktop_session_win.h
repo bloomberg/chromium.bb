@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_platform_file.h"
@@ -100,6 +101,9 @@ class DesktopSessionWin
   // Requests the desktop process to crash.
   void CrashDesktopProcess(const tracked_objects::Location& location);
 
+  // Reports time elapsed since previous event to the debug log.
+  void ReportElapsedTime(const std::string& event);
+
   // Task runner on which public methods of this class should be called.
   scoped_refptr<AutoThreadTaskRunner> caller_task_runner_;
 
@@ -121,6 +125,8 @@ class DesktopSessionWin
   // Used to report an error if the session attach notification does not arrives
   // for too long.
   base::OneShotTimer<DesktopSessionWin> session_attach_timer_;
+
+  base::Time last_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionWin);
 };
