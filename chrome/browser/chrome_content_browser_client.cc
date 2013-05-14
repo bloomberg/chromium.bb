@@ -886,6 +886,33 @@ bool ChromeContentBrowserClient::IsHandledURL(const GURL& url) {
   return ProfileIOData::IsHandledURL(url);
 }
 
+bool ChromeContentBrowserClient::CanCommitURL(
+    content::RenderProcessHost* process_host,
+    const GURL& url) {
+  // We need to let most extension URLs commit in any process, since this can
+  // be allowed due to web_accessible_resources.  Most hosted app URLs may also
+  // load in any process (e.g., in an iframe).  However, the Chrome Web Store
+  // cannot be loaded in iframes and should never be requested outside its
+  // process.
+  Profile* profile =
+      Profile::FromBrowserContext(process_host->GetBrowserContext());
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!service)
+    return true;
+  const Extension* new_extension =
+      service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
+  if (new_extension &&
+      new_extension->is_hosted_app() &&
+      new_extension->id() == extension_misc::kWebStoreAppId &&
+      !service->process_map()->Contains(new_extension->id(),
+                                        process_host->GetID())) {
+    return false;
+  }
+
+  return true;
+}
+
 bool ChromeContentBrowserClient::IsSuitableHost(
     content::RenderProcessHost* process_host,
     const GURL& site_url) {

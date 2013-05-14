@@ -84,8 +84,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool in_memory,
       content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
   virtual bool IsHandledURL(const GURL& url) OVERRIDE;
+  virtual bool CanCommitURL(content::RenderProcessHost* process_host,
+                            const GURL& url) OVERRIDE;
   virtual bool IsSuitableHost(content::RenderProcessHost* process_host,
-                              const GURL& url) OVERRIDE;
+                              const GURL& site_url) OVERRIDE;
   virtual bool ShouldTryToUseExistingProcessHost(
       content::BrowserContext* browser_context, const GURL& url) OVERRIDE;
   virtual void SiteInstanceGotProcess(

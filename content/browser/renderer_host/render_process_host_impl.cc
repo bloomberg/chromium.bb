@@ -720,7 +720,8 @@ void RenderProcessHostImpl::ReceivedBadMessage() {
     // crash.
     CHECK(false);
   }
-  NOTREACHED();
+  // We kill the renderer but don't include a NOTREACHED, because we want the
+  // browser to try to survive when it gets illegal messages from the renderer.
   base::KillProcess(GetHandle(), RESULT_CODE_KILLED_BAD_MESSAGE,
                     false);
 }

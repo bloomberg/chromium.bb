@@ -422,6 +422,11 @@ class CONTENT_EXPORT RenderViewHostImpl
     return is_waiting_for_unload_ack_;
   }
 
+  // Returns whether the given URL is allowed to commit in the current process.
+  // This is a more conservative check than FilterURL, since it will be used to
+  // kill processes that commit unauthorized URLs.
+  bool CanCommitURL(const GURL& url);
+
   // Checks that the given renderer can request |url|, if not it sets it to
   // about:blank.
   // empty_allowed must be set to false for navigations for security reasons.

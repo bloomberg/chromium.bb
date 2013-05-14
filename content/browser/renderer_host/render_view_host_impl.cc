@@ -1202,22 +1202,15 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
   }
   RenderProcessHost* process = GetProcess();
 
-  // If the --site-per-process flag is passed, then the renderer process is
-  // not allowed to request web pages from other sites than the one it is
-  // dedicated to.
-  // Kill the renderer process if it violates this policy.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSitePerProcess) &&
-      static_cast<SiteInstanceImpl*>(GetSiteInstance())->HasSite() &&
-      validated_params.url != GURL(chrome::kAboutBlankURL)) {
-    if (!SiteInstance::IsSameWebSite(GetSiteInstance()->GetBrowserContext(),
-                                     GetSiteInstance()->GetSiteURL(),
-                                     validated_params.url) ||
-        static_cast<SiteInstanceImpl*>(GetSiteInstance())->
-            HasWrongProcessForURL(validated_params.url)) {
-      // TODO(nasko): Removed the actual kill process call until out-of-process
-      // iframes is ready to go.
-    }
+  // Attempts to commit certain off-limits URL should be caught more strictly
+  // than our FilterURL checks below.  If a renderer violates this policy, it
+  // should be killed.
+  if (!CanCommitURL(validated_params.url)) {
+    VLOG(1) << "Blocked URL " << validated_params.url.spec();
+    validated_params.url = GURL(chrome::kAboutBlankURL);
+    RecordAction(UserMetricsAction("CanCommitURL_BlockedAndKilled"));
+    // Kills the process.
+    process->ReceivedBadMessage();
   }
 
   ChildProcessSecurityPolicyImpl* policy =
@@ -1704,6 +1697,15 @@ void RenderViewHostImpl::SendOrientationChangeEvent(int orientation) {
 
 void RenderViewHostImpl::ToggleSpeechInput() {
   Send(new InputTagSpeechMsg_ToggleSpeechInput(GetRoutingID()));
+}
+
+bool RenderViewHostImpl::CanCommitURL(const GURL& url) {
+  // TODO(creis): We should also check for WebUI pages here.  Also, when the
+  // out-of-process iframes implementation is ready, we should check for
+  // cross-site URLs that are not allowed to commit in this process.
+
+  // Give the client a chance to disallow URLs from committing.
+  return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
 }
 
 void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,

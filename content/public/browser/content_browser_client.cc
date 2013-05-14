@@ -63,6 +63,11 @@ bool ContentBrowserClient::IsHandledURL(const GURL& url) {
   return false;
 }
 
+bool ContentBrowserClient::CanCommitURL(RenderProcessHost* process_host,
+                                        const GURL& site_url) {
+  return true;
+}
+
 bool ContentBrowserClient::IsSuitableHost(RenderProcessHost* process_host,
                                           const GURL& site_url) {
   return true;

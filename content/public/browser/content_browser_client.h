@@ -192,6 +192,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // protocol handlers.
   virtual bool IsHandledURL(const GURL& url);
 
+  // Returns whether the given process is allowed to commit |url|.  This is a
+  // more conservative check than IsSuitableHost, since it is used after a
+  // navigation has committed to ensure that the process did not exceed its
+  // authority.
+  virtual bool CanCommitURL(RenderProcessHost* process_host, const GURL& url);
+
   // Returns whether a new view for a given |site_url| can be launched in a
   // given |process_host|.
   virtual bool IsSuitableHost(RenderProcessHost* process_host,
