@@ -532,7 +532,6 @@ void SigninScreenHandler::UpdateStateInternal(
   // TODO(ygorshenin): We will end up here when processing network state
   // notification but no ShowSigninScreen() was called so delegate_ will be
   // NULL. Network state processing logic does not belong here.
-  LOG(ERROR) << "delegate_ is " << delegate_;
   if (delegate_ &&
       (delegate_->IsUserSigninCompleted() || delegate_->IsSigninInProgress())) {
     return;
