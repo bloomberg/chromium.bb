@@ -220,6 +220,8 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return "Syncable";
     case kFileSystemTypeNativeForPlatformApp:
       return "NativeForPlatformApp";
+    case kFileSystemTypeForTransientFile:
+      return "TransientFile";
     case kFileSystemInternalTypeEnumStart:
     case kFileSystemInternalTypeEnumEnd:
       NOTREACHED();

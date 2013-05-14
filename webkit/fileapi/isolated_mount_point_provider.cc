@@ -27,12 +27,14 @@
 #include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/native_file_util.h"
+#include "webkit/fileapi/transient_file_util.h"
 
 namespace fileapi {
 
 IsolatedMountPointProvider::IsolatedMountPointProvider()
     : isolated_file_util_(new AsyncFileUtilAdapter(new IsolatedFileUtil())),
-      dragged_file_util_(new AsyncFileUtilAdapter(new DraggedFileUtil())) {
+      dragged_file_util_(new AsyncFileUtilAdapter(new DraggedFileUtil())),
+      transient_file_util_(new AsyncFileUtilAdapter(new TransientFileUtil())) {
 }
 
 IsolatedMountPointProvider::~IsolatedMountPointProvider() {
@@ -42,6 +44,7 @@ bool IsolatedMountPointProvider::CanHandleType(FileSystemType type) const {
   switch (type) {
     case kFileSystemTypeIsolated:
     case kFileSystemTypeDragged:
+    case kFileSystemTypeForTransientFile:
       return true;
 #if !defined(OS_CHROMEOS)
     case kFileSystemTypeNativeLocal:
@@ -79,6 +82,8 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
       return isolated_file_util_->sync_file_util();
     case kFileSystemTypeDragged:
       return dragged_file_util_->sync_file_util();
+    case kFileSystemTypeForTransientFile:
+      return transient_file_util_->sync_file_util();
     default:
       NOTREACHED();
   }
@@ -92,6 +97,8 @@ AsyncFileUtil* IsolatedMountPointProvider::GetAsyncFileUtil(
       return isolated_file_util_.get();
     case kFileSystemTypeDragged:
       return dragged_file_util_.get();
+    case kFileSystemTypeForTransientFile:
+      return transient_file_util_.get();
     default:
       NOTREACHED();
   }
