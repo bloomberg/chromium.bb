@@ -688,10 +688,10 @@ const Experiment kExperiments[] = {
   },
   {
     "disable-media-source",
-    IDS_FLAGS_DISABLE_MEDIA_SOURCE_NAME,
-    IDS_FLAGS_DISABLE_MEDIA_SOURCE_DESCRIPTION,
+    IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_NAME,
+    IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableMediaSource)
+    SINGLE_VALUE_TYPE(switches::kDisableWebKitMediaSource)
   },
   {
     "disable-encrypted-media",

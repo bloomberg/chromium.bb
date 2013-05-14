@@ -6701,11 +6701,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ASYNC_DNS_DESCRIPTION" desc="Description for the flag to enable asynchronous DNS client.">
         Enable experimental asynchronous DNS client.
       </message>
-      <message name="IDS_FLAGS_DISABLE_MEDIA_SOURCE_NAME" desc="Title for the flag to disable the Media Source API on &lt;video&gt; elements.">
-        Disable Media Source API on <ph name="VIDEO_HTML">&lt;video&gt;<ex>&lt;video&gt;</ex></ph> elements.
+      <message name="IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_NAME" desc="Title for the flag to disable the prefixed Media Source API.">
+        Disable prefixed Media Source API.
       </message>
-      <message name="IDS_FLAGS_DISABLE_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to disable the Media Source API on &lt;video&gt; elements.">
-        Disable experimental Media Source API on the video elements. This API allows JavaScript to send media data directly to a video element.
+      <message name="IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to disable the prefixed Media Source API.">
+        Disable the experimental WebKitMediaSource object. This object allows JavaScript to send media data directly to a video element.
       </message>
       <message name="IDS_FLAGS_DISABLE_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to disable the Encrypted Media Extensions on &lt;video&gt; elements.">
         Disable Encrypted Media Extensions on <ph name="VIDEO_HTML">&lt;video&gt;<ex>&lt;video&gt;</ex></ph> elements.

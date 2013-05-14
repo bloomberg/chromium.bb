@@ -864,7 +864,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableTouchEditing,
     switches::kEnableVsyncNotification,
     switches::kEnableWebPInAcceptHeader,
-    switches::kDisableMediaSource,
+    switches::kDisableWebKitMediaSource,
     switches::kEnableStrictSiteIsolation,
     switches::kDisableFullScreen,
     switches::kEnableNewDialogStyle,

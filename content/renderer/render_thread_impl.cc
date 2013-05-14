@@ -637,7 +637,7 @@ void RenderThreadImpl::WidgetRestored() {
 
 static void AdjustRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_ANDROID) && !defined(GOOGLE_TV)
-  WebRuntimeFeatures::enableMediaSource(false);
+  WebRuntimeFeatures::enableWebKitMediaSource(false);
 #endif
 
 #if defined(OS_ANDROID)
@@ -671,8 +671,8 @@ static void AdjustRuntimeFeaturesFromArgs(const CommandLine& command_line) {
     WebRuntimeFeatures::enableGeolocation(false);
 
 #if !defined(OS_ANDROID) || defined(GOOGLE_TV)
-  if (command_line.HasSwitch(switches::kDisableMediaSource))
-    WebRuntimeFeatures::enableMediaSource(false);
+  if (command_line.HasSwitch(switches::kDisableWebKitMediaSource))
+    WebRuntimeFeatures::enableWebKitMediaSource(false);
 #endif
 
 #if defined(OS_ANDROID)
