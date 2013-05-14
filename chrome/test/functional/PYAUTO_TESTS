@@ -372,6 +372,7 @@
       # ==================================================
       '-perf.NetflixPerfTest',  # crosbug.com/32320.
       '-perf.PageCyclerNetSimTest',  # Investigate Web Page Replay on ChromeOS.
+      '-perf.YoutubePerfTest',  # crbug.com/233706
 
       # ===========================
       # Permanently-disabled tests.
