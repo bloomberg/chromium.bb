@@ -509,6 +509,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                         policy.variations_parameter().parameter()));
     }
   }
+
+  if (policy.has_attestation_settings()) {
+    if (policy.attestation_settings().has_attestation_enabled()) {
+      policies->Set(key::kAttestationEnabledForDevice,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(
+                        policy.attestation_settings().attestation_enabled()));
+    }
+  }
 }
 
 }  // namespace

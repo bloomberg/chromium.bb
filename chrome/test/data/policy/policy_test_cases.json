@@ -1884,6 +1884,9 @@
   "RebootAfterUpdate": {
   },
 
+  "AttestationEnabledForDevice": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

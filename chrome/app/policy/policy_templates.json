@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 206
+#   For your editing convenience: highest ID currently used: 207
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4566,6 +4566,23 @@
       'caption': 'Remote Attestation',
       'desc': 'Configure the remote attestation with TPM mechanism.',
       'policies': [
+        {
+          'name': 'AttestationEnabledForDevice',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:28-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'device_only': True,
+          'example_value': True,
+          'id': 207,
+          'caption': '''Enable remote attestation for the device.''',
+          'desc': '''If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
+
+          If it is set to false, or if it is not set, no certificate will be generated and calls to the enterprise.platformKeysPrivate extension API will fail.''',
+        },
         {
           'name': 'AttestationEnabledForUser',
           'type': 'main',
