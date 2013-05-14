@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_CLIENT_INTERFACE_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_CLIENT_INTERFACE_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_API_UTIL_INTERFACE_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_API_UTIL_INTERFACE_H_
 
 #include <string>
 
@@ -23,22 +23,23 @@ class DriveUploaderInterface;
 }
 
 namespace sync_file_system {
+namespace drive {
 
-class DriveFileSyncClientObserver {
+class APIUtilObserver {
  public:
-  DriveFileSyncClientObserver() {}
-  virtual ~DriveFileSyncClientObserver() {}
+  APIUtilObserver() {}
+  virtual ~APIUtilObserver() {}
   virtual void OnAuthenticated() = 0;
   virtual void OnNetworkConnected() = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DriveFileSyncClientObserver);
+  DISALLOW_COPY_AND_ASSIGN(APIUtilObserver);
 };
 
 // The implementation of this class is responsible for talking to the Drive
 // service to get and put Drive directories, files and metadata.
 // This class is owned by DriveFileSyncService.
-class DriveFileSyncClientInterface {
+class APIUtilInterface {
  public:
   typedef base::Callback<void(google_apis::GDataErrorCode error)>
       GDataErrorCallback;
@@ -49,10 +50,9 @@ class DriveFileSyncClientInterface {
       DownloadFileCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,
                               const std::string& resource_id,
-                              const std::string& file_md5)>
-      UploadFileCallback;
-  typedef base::Callback<void(google_apis::GDataErrorCode error,
-                              const std::string& resource_id)>
+                              const std::string& file_md5)> UploadFileCallback;
+  typedef base::Callback<
+      void(google_apis::GDataErrorCode error, const std::string& resource_id)>
       ResourceIdCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,
                               int64 changestamp)> ChangeStampCallback;
@@ -63,11 +63,11 @@ class DriveFileSyncClientInterface {
                               scoped_ptr<google_apis::ResourceEntry> entry)>
       ResourceEntryCallback;
 
-  DriveFileSyncClientInterface() {}
-  virtual ~DriveFileSyncClientInterface() {}
+  APIUtilInterface() {}
+  virtual ~APIUtilInterface() {}
 
-  virtual void AddObserver(DriveFileSyncClientObserver* observer) = 0;
-  virtual void RemoveObserver(DriveFileSyncClientObserver* observer) = 0;
+  virtual void AddObserver(APIUtilObserver* observer) = 0;
+  virtual void RemoveObserver(APIUtilObserver* observer) = 0;
 
   // Fetches Resource ID of the directory where we should place all files to
   // sync.  Upon completion, invokes |callback|.
@@ -188,9 +188,10 @@ class DriveFileSyncClientInterface {
       const std::string& sync_root_resource_id) const = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DriveFileSyncClientInterface);
+  DISALLOW_COPY_AND_ASSIGN(APIUtilInterface);
 };
 
+}  // namespace drive
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_CLIENT_INTERFACE_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_API_UTIL_INTERFACE_H_

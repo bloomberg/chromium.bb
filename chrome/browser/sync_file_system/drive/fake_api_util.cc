@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/fake_drive_file_sync_client.h"
+#include "chrome/browser/sync_file_system/drive/fake_api_util.h"
 
 #include <algorithm>
 
@@ -12,8 +12,9 @@
 #include "chrome/browser/google_apis/drive_entry_kinds.h"
 
 namespace sync_file_system {
+namespace drive {
 
-bool FakeDriveFileSyncClient::RemoteResourceComparator::operator()(
+bool FakeAPIUtil::RemoteResourceComparator::operator()(
     const RemoteResource& left,
     const RemoteResource& right) {
   if (left.parent_resource_id != right.parent_resource_id)
@@ -31,20 +32,17 @@ bool FakeDriveFileSyncClient::RemoteResourceComparator::operator()(
   return left.changestamp < right.changestamp;
 }
 
-struct FakeDriveFileSyncClient::ChangeStampComparator {
+struct FakeAPIUtil::ChangeStampComparator {
   bool operator()(const google_apis::ResourceEntry* left,
                   const google_apis::ResourceEntry* right) {
     return left->changestamp() < right->changestamp();
   }
 };
 
-FakeDriveFileSyncClient::RemoteResource::RemoteResource()
-    : type(SYNC_FILE_TYPE_UNKNOWN),
-      deleted(false),
-      changestamp(0) {
-}
+FakeAPIUtil::RemoteResource::RemoteResource()
+    : type(SYNC_FILE_TYPE_UNKNOWN), deleted(false), changestamp(0) {}
 
-FakeDriveFileSyncClient::RemoteResource::RemoteResource(
+FakeAPIUtil::RemoteResource::RemoteResource(
     const std::string& parent_resource_id,
     const std::string& parent_title,
     const std::string& title,
@@ -60,69 +58,59 @@ FakeDriveFileSyncClient::RemoteResource::RemoteResource(
       md5_checksum(md5_checksum),
       type(type),
       deleted(deleted),
-      changestamp(changestamp) {
-}
+      changestamp(changestamp) {}
 
-FakeDriveFileSyncClient::RemoteResource::~RemoteResource() {
-}
+FakeAPIUtil::RemoteResource::~RemoteResource() {}
 
-FakeDriveFileSyncClient::FakeDriveFileSyncClient()
+FakeAPIUtil::FakeAPIUtil()
     : largest_changestamp_(0),
-      url_generator_(GURL(
-          google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction)) {
-}
+      url_generator_(
+          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction)) {}
 
-FakeDriveFileSyncClient::~FakeDriveFileSyncClient() {
-}
+FakeAPIUtil::~FakeAPIUtil() {}
 
-void FakeDriveFileSyncClient::AddObserver(
-    DriveFileSyncClientObserver* observer) {
-}
+void FakeAPIUtil::AddObserver(APIUtilObserver* observer) {}
 
-void FakeDriveFileSyncClient::RemoveObserver(
-    DriveFileSyncClientObserver* observer) {
-}
+void FakeAPIUtil::RemoveObserver(APIUtilObserver* observer) {}
 
-void FakeDriveFileSyncClient::GetDriveDirectoryForSyncRoot(
+void FakeAPIUtil::GetDriveDirectoryForSyncRoot(
     const ResourceIdCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, google_apis::HTTP_SUCCESS,
+      base::Bind(callback,
+                 google_apis::HTTP_SUCCESS,
                  "folder: sync_root_resource_id"));
 }
 
-void FakeDriveFileSyncClient::GetDriveDirectoryForOrigin(
+void FakeAPIUtil::GetDriveDirectoryForOrigin(
     const std::string& sync_root_resource_id,
     const GURL& origin,
     const ResourceIdCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, google_apis::HTTP_SUCCESS,
+      base::Bind(callback,
+                 google_apis::HTTP_SUCCESS,
                  "folder resource_id for " + origin.host()));
 }
 
-void FakeDriveFileSyncClient::GetLargestChangeStamp(
-    const ChangeStampCallback& callback) {
+void FakeAPIUtil::GetLargestChangeStamp(const ChangeStampCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, google_apis::HTTP_SUCCESS, largest_changestamp_));
 }
 
-void FakeDriveFileSyncClient::GetResourceEntry(
-    const std::string& resource_id,
-    const ResourceEntryCallback& callback) {
+void FakeAPIUtil::GetResourceEntry(const std::string& resource_id,
+                                   const ResourceEntryCallback& callback) {
   NOTREACHED();
 }
 
-void FakeDriveFileSyncClient::ListFiles(
-    const std::string& directory_resource_id,
-    const ResourceListCallback& callback) {
+void FakeAPIUtil::ListFiles(const std::string& directory_resource_id,
+                            const ResourceListCallback& callback) {
   ListChanges(0, callback);
 }
 
-void FakeDriveFileSyncClient::ListChanges(
-    int64 start_changestamp,
-    const ResourceListCallback& callback) {
+void FakeAPIUtil::ListChanges(int64 start_changestamp,
+                              const ResourceListCallback& callback) {
   scoped_ptr<google_apis::ResourceList> change_feed(
       new google_apis::ResourceList());
 
@@ -137,29 +125,26 @@ void FakeDriveFileSyncClient::ListChanges(
     entries.push_back(entry.release());
   }
 
-  std::sort(entries.begin(), entries.end(),
-            ChangeStampComparator());
+  std::sort(entries.begin(), entries.end(), ChangeStampComparator());
 
   change_feed->set_entries(&entries);
   change_feed->set_largest_changestamp(largest_changestamp_);
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, google_apis::HTTP_SUCCESS,
-                 base::Passed(&change_feed)));
+      base::Bind(
+          callback, google_apis::HTTP_SUCCESS, base::Passed(&change_feed)));
 }
 
-void FakeDriveFileSyncClient::ContinueListing(
-    const GURL& feed_url,
-    const ResourceListCallback& callback) {
+void FakeAPIUtil::ContinueListing(const GURL& feed_url,
+                                  const ResourceListCallback& callback) {
   NOTREACHED();
 }
 
-void FakeDriveFileSyncClient::DownloadFile(
-    const std::string& resource_id,
-    const std::string& local_file_md5,
-    const base::FilePath& local_file_path,
-    const DownloadFileCallback& callback) {
+void FakeAPIUtil::DownloadFile(const std::string& resource_id,
+                               const std::string& local_file_md5,
+                               const base::FilePath& local_file_path,
+                               const DownloadFileCallback& callback) {
   RemoteResourceByResourceId::iterator found =
       remote_resources_.find(resource_id);
   std::string file_md5;
@@ -181,37 +166,31 @@ void FakeDriveFileSyncClient::DownloadFile(
       base::Bind(callback, error, file_md5, file_size, updated_time));
 }
 
-void FakeDriveFileSyncClient::UploadNewFile(
-    const std::string& directory_resource_id,
-    const base::FilePath& local_file_path,
-    const std::string& title,
-    const UploadFileCallback& callback) {
+void FakeAPIUtil::UploadNewFile(const std::string& directory_resource_id,
+                                const base::FilePath& local_file_path,
+                                const std::string& title,
+                                const UploadFileCallback& callback) {
   NOTREACHED();
 }
 
-void FakeDriveFileSyncClient::UploadExistingFile(
-    const std::string& resource_id,
-    const std::string& remote_file_md5,
-    const base::FilePath& local_file_path,
-    const UploadFileCallback& callback) {
+void FakeAPIUtil::UploadExistingFile(const std::string& resource_id,
+                                     const std::string& remote_file_md5,
+                                     const base::FilePath& local_file_path,
+                                     const UploadFileCallback& callback) {
   NOTREACHED();
 }
 
-void FakeDriveFileSyncClient::CreateDirectory(
-    const std::string& parent_resource_id,
-    const std::string& title,
-    const ResourceIdCallback& callback) {
+void FakeAPIUtil::CreateDirectory(const std::string& parent_resource_id,
+                                  const std::string& title,
+                                  const ResourceIdCallback& callback) {
   NOTREACHED();
 }
 
-bool FakeDriveFileSyncClient::IsAuthenticated() const {
-  return true;
-}
+bool FakeAPIUtil::IsAuthenticated() const { return true; }
 
-void FakeDriveFileSyncClient::DeleteFile(
-    const std::string& resource_id,
-    const std::string& remote_file_md5,
-    const GDataErrorCallback& callback) {
+void FakeAPIUtil::DeleteFile(const std::string& resource_id,
+                             const std::string& remote_file_md5,
+                             const GDataErrorCallback& callback) {
   google_apis::GDataErrorCode error = google_apis::HTTP_NOT_FOUND;
   DCHECK(ContainsKey(remote_resources_, resource_id));
 
@@ -225,36 +204,33 @@ void FakeDriveFileSyncClient::DeleteFile(
                    true /* deleted */);
 
   error = google_apis::HTTP_SUCCESS;
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, error));
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                              base::Bind(callback, error));
 }
 
-GURL FakeDriveFileSyncClient::ResourceIdToResourceLink(
+GURL FakeAPIUtil::ResourceIdToResourceLink(
     const std::string& resource_id) const {
   return url_generator_.GenerateContentUrl(resource_id);
 }
 
-void FakeDriveFileSyncClient::EnsureSyncRootIsNotInMyDrive(
+void FakeAPIUtil::EnsureSyncRootIsNotInMyDrive(
     const std::string& sync_root_resource_id) const {
   // Nothing to do.
 }
 
-void FakeDriveFileSyncClient::PushRemoteChange(
-    const std::string& parent_resource_id,
-    const std::string& parent_title,
-    const std::string& title,
-    const std::string& resource_id,
-    const std::string& md5,
-    SyncFileType type,
-    bool deleted) {
+void FakeAPIUtil::PushRemoteChange(const std::string& parent_resource_id,
+                                   const std::string& parent_title,
+                                   const std::string& title,
+                                   const std::string& resource_id,
+                                   const std::string& md5,
+                                   SyncFileType type,
+                                   bool deleted) {
   remote_resources_[resource_id] = RemoteResource(
       parent_resource_id, parent_title, title, resource_id,
       md5, type, deleted, ++largest_changestamp_);
 }
 
-scoped_ptr<google_apis::ResourceEntry>
-FakeDriveFileSyncClient::CreateResourceEntry(
+scoped_ptr<google_apis::ResourceEntry> FakeAPIUtil::CreateResourceEntry(
     const RemoteResource& resource) const {
   scoped_ptr<google_apis::ResourceEntry> entry(
       new google_apis::ResourceEntry());
@@ -262,8 +238,8 @@ FakeDriveFileSyncClient::CreateResourceEntry(
   scoped_ptr<google_apis::Link> link(new google_apis::Link());
 
   link->set_type(google_apis::Link::LINK_PARENT);
-  link->set_href(url_generator_.GenerateContentUrl(
-      resource.parent_resource_id));
+  link->set_href(
+      url_generator_.GenerateContentUrl(resource.parent_resource_id));
   link->set_title(resource.parent_title);
   parent_links.push_back(link.release());
 
@@ -289,4 +265,5 @@ FakeDriveFileSyncClient::CreateResourceEntry(
   return entry.Pass();
 }
 
+}  // namespace drive
 }  // namespace sync_file_system

@@ -11,8 +11,8 @@
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/sync_file_system/drive/fake_api_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
-#include "chrome/browser/sync_file_system/fake_drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/test/base/testing_profile.h"
@@ -49,11 +49,10 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
   DriveFileSyncServiceSyncTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
-        fake_sync_client_(NULL),
+        fake_api_util_(NULL),
         fake_remote_processor_(NULL),
         metadata_store_(NULL),
-        resource_count_(0) {
-  }
+        resource_count_(0) {}
 
   virtual ~DriveFileSyncServiceSyncTest() {
   }
@@ -161,7 +160,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
  private:
   void SetUpForTestCase() {
-    fake_sync_client_ = new FakeDriveFileSyncClient;
+    fake_api_util_ = new drive::FakeAPIUtil;
     fake_remote_processor_.reset(new FakeRemoteChangeProcessor);
 
     metadata_store_ = new DriveMetadataStore(
@@ -180,14 +179,14 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     sync_service_ = DriveFileSyncService::CreateForTesting(
         &profile_,
         base_dir_,
-        scoped_ptr<DriveFileSyncClientInterface>(fake_sync_client_),
+        scoped_ptr<drive::APIUtilInterface>(fake_api_util_),
         scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
     sync_service_->SetRemoteChangeProcessor(fake_remote_processor_.get());
   }
 
   void TearDownForTestCase() {
     metadata_store_ = NULL;
-    fake_sync_client_ = NULL;
+    fake_api_util_ = NULL;
     sync_service_.reset();
     fake_remote_processor_.reset();
     message_loop_.RunUntilIdle();
@@ -207,9 +206,13 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     if (type == SYNC_FILE_TYPE_FILE)
       md5_checksum = base::StringPrintf("%" PRIx64, base::RandUint64());
 
-    fake_sync_client_->PushRemoteChange(
-        kParentResourceId, kAppId, title, resource_id, md5_checksum,
-        type, false /* deleted */);
+    fake_api_util_->PushRemoteChange(kParentResourceId,
+                                     kAppId,
+                                     title,
+                                     resource_id,
+                                     md5_checksum,
+                                     type,
+                                     false /* deleted */);
     message_loop_.RunUntilIdle();
   }
 
@@ -219,17 +222,20 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
       return;
     std::string resource_id = found->second;
     resources_.erase(found);
-    fake_sync_client_->PushRemoteChange(
-        kParentResourceId, kAppId,
-        title, resource_id, std::string(),
-        SYNC_FILE_TYPE_UNKNOWN, true /* deleted */);
+    fake_api_util_->PushRemoteChange(kParentResourceId,
+                                     kAppId,
+                                     title,
+                                     resource_id,
+                                     std::string(),
+                                     SYNC_FILE_TYPE_UNKNOWN,
+                                     true /* deleted */);
     message_loop_.RunUntilIdle();
   }
 
   void RelaunchService() {
     metadata_store_ = NULL;
-    scoped_ptr<DriveFileSyncClientInterface> sync_client =
-        DriveFileSyncService::DestroyAndPassSyncClientForTesting(
+    scoped_ptr<drive::APIUtilInterface> api_util =
+        DriveFileSyncService::DestroyAndPassAPIUtilForTesting(
             sync_service_.Pass());
     message_loop_.RunUntilIdle();
 
@@ -245,7 +251,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     sync_service_ = DriveFileSyncService::CreateForTesting(
         &profile_,
         base_dir_,
-        sync_client.Pass(),
+        api_util.Pass(),
         scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
     sync_service_->SetRemoteChangeProcessor(fake_remote_processor_.get());
   }
@@ -268,14 +274,13 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
 
   void VerifyResult() {
-    typedef FakeDriveFileSyncClient::RemoteResourceByResourceId
-        RemoteResourceMap;
-    typedef FakeDriveFileSyncClient::RemoteResource RemoteResource;
+    typedef drive::FakeAPIUtil::RemoteResourceByResourceId RemoteResourceMap;
+    typedef drive::FakeAPIUtil::RemoteResource RemoteResource;
     typedef FakeRemoteChangeProcessor::URLToFileChangesMap
         AppliedRemoteChangeMap;
 
     const RemoteResourceMap& remote_resources =
-        fake_sync_client_->remote_resources();
+        fake_api_util_->remote_resources();
     const AppliedRemoteChangeMap applied_changes =
         fake_remote_processor_->GetAppliedRemoteChanges();
 
@@ -328,7 +333,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
   TestingProfile profile_;
   base::FilePath base_dir_;
 
-  FakeDriveFileSyncClient* fake_sync_client_;  // Owned by |sync_service_|.
+  drive::FakeAPIUtil* fake_api_util_;  // Owned by |sync_service_|.
   scoped_ptr<FakeRemoteChangeProcessor> fake_remote_processor_;
   DriveMetadataStore* metadata_store_;  // Owned by |sync_service_|.
 

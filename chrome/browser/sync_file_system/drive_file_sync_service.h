@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/google_apis/drive_notification_observer.h"
-#include "chrome/browser/sync_file_system/drive_file_sync_client_interface.h"
+#include "chrome/browser/sync_file_system/drive/api_util_interface.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/local_sync_operation_resolver.h"
@@ -45,13 +45,12 @@ class DriveFileSyncTaskManager;
 
 // Maintains remote file changes.
 // Owned by SyncFileSystemService (which is a per-profile object).
-class DriveFileSyncService
-    : public RemoteFileSyncService,
-      public LocalChangeProcessor,
-      public DriveFileSyncClientObserver,
-      public base::NonThreadSafe,
-      public base::SupportsWeakPtr<DriveFileSyncService>,
-      public google_apis::DriveNotificationObserver {
+class DriveFileSyncService : public RemoteFileSyncService,
+                             public LocalChangeProcessor,
+                             public drive::APIUtilObserver,
+                             public base::NonThreadSafe,
+                             public base::SupportsWeakPtr<DriveFileSyncService>,
+                             public google_apis::DriveNotificationObserver {
  public:
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
 
@@ -68,13 +67,12 @@ class DriveFileSyncService
   static scoped_ptr<DriveFileSyncService> CreateForTesting(
       Profile* profile,
       const base::FilePath& base_dir,
-      scoped_ptr<DriveFileSyncClientInterface> sync_client,
+      scoped_ptr<drive::APIUtilInterface> api_util,
       scoped_ptr<DriveMetadataStore> metadata_store);
 
   // Destroys |sync_service| and passes the ownership of |sync_client| to caller
   // for testing.
-  static scoped_ptr<DriveFileSyncClientInterface>
-  DestroyAndPassSyncClientForTesting(
+  static scoped_ptr<drive::APIUtilInterface> DestroyAndPassAPIUtilForTesting(
       scoped_ptr<DriveFileSyncService> sync_service);
 
   // RemoteFileSyncService overrides.
@@ -147,12 +145,11 @@ class DriveFileSyncService
 
   void Initialize(scoped_ptr<DriveFileSyncTaskManager> task_manager,
                   const SyncStatusCallback& callback);
-  void InitializeForTesting(
-      scoped_ptr<DriveFileSyncTaskManager> task_manager,
-      const base::FilePath& base_dir,
-      scoped_ptr<DriveFileSyncClientInterface> sync_client,
-      scoped_ptr<DriveMetadataStore> metadata_store,
-      const SyncStatusCallback& callback);
+  void InitializeForTesting(scoped_ptr<DriveFileSyncTaskManager> task_manager,
+                            const base::FilePath& base_dir,
+                            scoped_ptr<drive::APIUtilInterface> sync_client,
+                            scoped_ptr<DriveMetadataStore> metadata_store,
+                            const SyncStatusCallback& callback);
 
   void DidInitializeMetadataStore(const SyncStatusCallback& callback,
                                   SyncStatusCode status,
@@ -407,7 +404,7 @@ class DriveFileSyncService
   std::string sync_root_resource_id();
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
-  scoped_ptr<DriveFileSyncClientInterface> sync_client_;
+  scoped_ptr<drive::APIUtilInterface> api_util_;
 
   Profile* profile_;
 

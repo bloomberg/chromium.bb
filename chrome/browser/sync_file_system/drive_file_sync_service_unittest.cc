@@ -5,8 +5,8 @@
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 
 #include "base/message_loop.h"
+#include "chrome/browser/sync_file_system/drive/fake_api_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
-#include "chrome/browser/sync_file_system/fake_drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -40,14 +40,13 @@ class DriveFileSyncServiceTest : public testing::Test {
   DriveFileSyncServiceTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
-        fake_sync_client_(NULL),
+        fake_api_util_(NULL),
         metadata_store_(NULL),
-        sync_service_(NULL) {
-  }
+        sync_service_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(RegisterSyncableFileSystem(kServiceName));
-    fake_sync_client_ = new FakeDriveFileSyncClient;
+    fake_api_util_ = new drive::FakeAPIUtil;
 
     ASSERT_TRUE(scoped_base_dir_.CreateUniqueTempDir());
     base_dir_ = scoped_base_dir_.path();
@@ -63,13 +62,13 @@ class DriveFileSyncServiceTest : public testing::Test {
     sync_service_ = DriveFileSyncService::CreateForTesting(
         &profile_,
         base_dir_,
-        scoped_ptr<DriveFileSyncClientInterface>(fake_sync_client_),
+        scoped_ptr<drive::APIUtilInterface>(fake_api_util_),
         scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
   }
 
   virtual void TearDown() OVERRIDE {
     metadata_store_ = NULL;
-    fake_sync_client_ = NULL;
+    fake_api_util_ = NULL;
     sync_service_.reset();
     message_loop_.RunUntilIdle();
 
@@ -82,7 +81,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
  protected:
   MessageLoop* message_loop() { return &message_loop_; }
-  FakeDriveFileSyncClient* fake_sync_client() { return fake_sync_client_; }
+  drive::FakeAPIUtil* fake_api_util() { return fake_api_util_; }
   DriveMetadataStore* metadata_store() { return metadata_store_; }
   DriveFileSyncService* sync_service() { return sync_service_.get(); }
 
@@ -95,7 +94,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   TestingProfile profile_;
   base::FilePath base_dir_;
 
-  FakeDriveFileSyncClient* fake_sync_client_;  // Owned by |sync_service_|.
+  drive::FakeAPIUtil* fake_api_util_;   // Owned by |sync_service_|.
   DriveMetadataStore* metadata_store_;  // Owned by |sync_service_|.
 
   scoped_ptr<DriveFileSyncService> sync_service_;
@@ -106,10 +105,13 @@ class DriveFileSyncServiceTest : public testing::Test {
 TEST_F(DriveFileSyncServiceTest, DeleteOriginDirectory) {
   // Add fake app origin directory using fake drive_sync_client.
   std::string origin_dir_resource_id = "uninstalledappresourceid";
-  fake_sync_client()->PushRemoteChange(
-      "parent_id", "parent_title",
-      "uninstall_me_folder", origin_dir_resource_id, "resource_md5",
-      SYNC_FILE_TYPE_FILE, false);
+  fake_api_util()->PushRemoteChange("parent_id",
+                                    "parent_title",
+                                    "uninstall_me_folder",
+                                    origin_dir_resource_id,
+                                    "resource_md5",
+                                    SYNC_FILE_TYPE_FILE,
+                                    false);
 
   // Add meta_data entry so GURL->resourse_id mapping is there.
   const GURL origin_gurl("chrome-extension://uninstallme");
@@ -124,8 +126,8 @@ TEST_F(DriveFileSyncServiceTest, DeleteOriginDirectory) {
   EXPECT_TRUE(done);
 
   // Assert the App's origin folder was marked as deleted.
-  EXPECT_TRUE(fake_sync_client()->remote_resources()
-      .find(origin_dir_resource_id)->second.deleted);
+  EXPECT_TRUE(fake_api_util()->remote_resources().find(origin_dir_resource_id)
+                  ->second.deleted);
 }
 
 }  // namespace sync_file_system
