@@ -1648,10 +1648,6 @@ crbug.com/237751 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ImageOnlyFailu
 
 crbug.com/239913 [ Win7 Debug ] media/track/track-cue-rendering-horizontal.html [ Crash ]
 
-# An exception is being thrown, causing tests to generate PNG output when they should not.
-crbug.com/239470 [ Mac ] fast/canvas/webgl [ Pass Missing ]
-crbug.com/239470 [ Mac ] fast/dom [ Pass Missing ]
-
 # Webgl tests are flaky crashing on windows.
 crbug.com/239839 [ Win ] fast/canvas/webgl/ [ Pass Crash ]
 
@@ -1683,5 +1679,13 @@ crbug.com/240515 [ Mac ] fast/dom/HTMLMeterElement/meter-styles.html [ Pass Imag
 
 crbug.com/240632 fast/loader/javascript-url-iframe-remove-on-navigate.html [ Skip ]
 
+# An exception is being thrown, causing tests to generate PNG output when they should not.
+crbug.com/239470 [ Mac ] fast/canvas/webgl [ Pass Missing ]
+crbug.com/239470 [ Mac ] fast/dom [ Pass Missing ]
+crbug.com/240700 [ Mac ] fast/css/getComputedStyle/computed-style-select-overflow.html [ Pass Missing ]
+crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-outline-offset.html [ Pass Missing ]
+crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-padding-shorthand.html [ Pass Missing ]
+
+# Something else went wrong causing MISSING in many http/tests/ tests.
 crbug.com/240700 [ Win ] http/tests [ Pass Missing ]
 crbug.com/240700 [ Mac Linux ] http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Missing ]
