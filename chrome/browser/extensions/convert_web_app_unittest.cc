@@ -26,7 +26,6 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "webkit/glue/image_decoder.h"
 
 namespace extensions {
 
@@ -56,11 +55,12 @@ WebApplicationInfo::IconInfo GetIconInfo(const GURL& url, int size) {
     return result;
   }
 
-  webkit_glue::ImageDecoder decoder;
-  result.data = decoder.Decode(
-      reinterpret_cast<const unsigned char*>(icon_data.c_str()),
-      icon_data.size());
-  EXPECT_FALSE(result.data.isNull()) << "Could not decode test icon.";
+  if (!gfx::PNGCodec::Decode(
+        reinterpret_cast<const unsigned char*>(icon_data.c_str()),
+        icon_data.size(), &result.data)) {
+    ADD_FAILURE() << "Could not decode test icon.";
+    return result;
+  }
 
   return result;
 }

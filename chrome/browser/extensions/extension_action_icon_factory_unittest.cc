@@ -21,9 +21,9 @@
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
-#include "webkit/glue/image_decoder.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -75,8 +75,7 @@ gfx::Image LoadIcon(const std::string& filename) {
       reinterpret_cast<const unsigned char*>(file_contents.data());
 
   SkBitmap bitmap;
-  webkit_glue::ImageDecoder decoder;
-  bitmap = decoder.Decode(data, file_contents.length());
+  gfx::PNGCodec::Decode(data, file_contents.length(), &bitmap);
 
   return gfx::Image::CreateFrom1xBitmap(bitmap);
 }
