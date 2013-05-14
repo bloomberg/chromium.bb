@@ -858,7 +858,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
       const StringDBusMethodCallback& callback) OVERRIDE {
     // Even for stub implementation we have to return different values
     // so that multi-profiles would work.
-    std::string sanitized_username = username + kUserIdStubHashSuffix;
+    std::string sanitized_username = GetStubSanitizedUsername(username);
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, sanitized_username));
@@ -1196,6 +1196,12 @@ CryptohomeClient* CryptohomeClient::Create(DBusClientImplementationType type,
     return new CryptohomeClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new CryptohomeClientStubImpl();
+}
+
+// static
+std::string CryptohomeClient::GetStubSanitizedUsername(
+    const std::string& username) {
+  return username + kUserIdStubHashSuffix;
 }
 
 }  // namespace chromeos

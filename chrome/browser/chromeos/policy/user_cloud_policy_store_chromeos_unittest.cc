@@ -102,8 +102,9 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   void PerformPolicyLoad(const std::string& response) {
     // Issue a load command.
     chromeos::SessionManagerClient::RetrievePolicyCallback retrieve_callback;
-    EXPECT_CALL(session_manager_client_, RetrieveUserPolicy(_))
-        .WillOnce(SaveArg<0>(&retrieve_callback));
+    EXPECT_CALL(session_manager_client_,
+                RetrievePolicyForUser(PolicyBuilder::kFakeUsername, _))
+        .WillOnce(SaveArg<1>(&retrieve_callback));
     store_->Load();
     RunUntilIdle();
     Mock::VerifyAndClearExpectations(&session_manager_client_);
@@ -143,8 +144,10 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
                           const char* previous_value,
                           const char* new_value) {
     chromeos::SessionManagerClient::StorePolicyCallback store_callback;
-    EXPECT_CALL(session_manager_client_, StoreUserPolicy(policy_.GetBlob(), _))
-        .WillOnce(SaveArg<1>(&store_callback));
+    EXPECT_CALL(session_manager_client_,
+                StorePolicyForUser(PolicyBuilder::kFakeUsername,
+                                   policy_.GetBlob(), _, _))
+        .WillOnce(SaveArg<3>(&store_callback));
     store_->Store(policy_.policy());
     RunUntilIdle();
     Mock::VerifyAndClearExpectations(&session_manager_client_);
@@ -169,8 +172,9 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
 
     // Let the store operation complete.
     chromeos::SessionManagerClient::RetrievePolicyCallback retrieve_callback;
-    EXPECT_CALL(session_manager_client_, RetrieveUserPolicy(_))
-        .WillOnce(SaveArg<0>(&retrieve_callback));
+    EXPECT_CALL(session_manager_client_,
+                RetrievePolicyForUser(PolicyBuilder::kFakeUsername, _))
+        .WillOnce(SaveArg<1>(&retrieve_callback));
     store_callback.Run(true);
     RunUntilIdle();
     EXPECT_TRUE(previous_policy.Equals(store_->policy_map()));
@@ -263,8 +267,10 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithRotation) {
 TEST_F(UserCloudPolicyStoreChromeOSTest, StoreFail) {
   // Store policy.
   chromeos::SessionManagerClient::StorePolicyCallback store_callback;
-  EXPECT_CALL(session_manager_client_, StoreUserPolicy(policy_.GetBlob(), _))
-      .WillOnce(SaveArg<1>(&store_callback));
+  EXPECT_CALL(session_manager_client_,
+              StorePolicyForUser(PolicyBuilder::kFakeUsername,
+                                 policy_.GetBlob(), _, _))
+      .WillOnce(SaveArg<3>(&store_callback));
   store_->Store(policy_.policy());
   RunUntilIdle();
   Mock::VerifyAndClearExpectations(&session_manager_client_);
@@ -286,7 +292,9 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreValidationError) {
   // Store policy.
   chromeos::SessionManagerClient::StorePolicyCallback store_callback;
   ExpectError(CloudPolicyStore::STATUS_VALIDATION_ERROR);
-  EXPECT_CALL(session_manager_client_, StoreUserPolicy(policy_.GetBlob(), _))
+  EXPECT_CALL(session_manager_client_,
+              StorePolicyForUser(PolicyBuilder::kFakeUsername,
+                                 policy_.GetBlob(), _, _))
       .Times(0);
   store_->Store(policy_.policy());
   RunUntilIdle();
@@ -305,7 +313,9 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithoutPolicyKey) {
   // Store policy.
   chromeos::SessionManagerClient::StorePolicyCallback store_callback;
   ExpectError(CloudPolicyStore::STATUS_VALIDATION_ERROR);
-  EXPECT_CALL(session_manager_client_, StoreUserPolicy(policy_.GetBlob(), _))
+  EXPECT_CALL(session_manager_client_,
+              StorePolicyForUser(PolicyBuilder::kFakeUsername,
+                                 policy_.GetBlob(), _, _))
       .Times(0);
   store_->Store(policy_.policy());
   RunUntilIdle();
@@ -319,7 +329,9 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithInvalidSignature) {
   // Store policy.
   chromeos::SessionManagerClient::StorePolicyCallback store_callback;
   ExpectError(CloudPolicyStore::STATUS_VALIDATION_ERROR);
-  EXPECT_CALL(session_manager_client_, StoreUserPolicy(policy_.GetBlob(), _))
+  EXPECT_CALL(session_manager_client_,
+              StorePolicyForUser(PolicyBuilder::kFakeUsername,
+                                 policy_.GetBlob(), _, _))
       .Times(0);
   store_->Store(policy_.policy());
   RunUntilIdle();

@@ -39,15 +39,18 @@ class FakeSessionManagerClient : public chromeos::SessionManagerClient {
   virtual void NotifyLockScreenDismissed() OVERRIDE;
   virtual void RetrieveDevicePolicy(
       const RetrievePolicyCallback& callback) OVERRIDE;
-  virtual void RetrieveUserPolicy(
+  virtual void RetrievePolicyForUser(
+      const std::string& username,
       const RetrievePolicyCallback& callback) OVERRIDE;
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       const RetrievePolicyCallback& callback) OVERRIDE;
   virtual void StoreDevicePolicy(const std::string& policy_blob,
                                  const StorePolicyCallback& callback) OVERRIDE;
-  virtual void StoreUserPolicy(const std::string& policy_blob,
-                               const StorePolicyCallback& callback) OVERRIDE;
+  virtual void StorePolicyForUser(const std::string& username,
+                                  const std::string& policy_blob,
+                                  const std::string& policy_key,
+                                  const StorePolicyCallback& callback) OVERRIDE;
   virtual void StoreDeviceLocalAccountPolicy(
       const std::string& account_id,
       const std::string& policy_blob,
@@ -56,8 +59,9 @@ class FakeSessionManagerClient : public chromeos::SessionManagerClient {
   const std::string& device_policy() const;
   void set_device_policy(const std::string& policy_blob);
 
-  const std::string& user_policy() const;
-  void set_user_policy(const std::string& policy_blob);
+  const std::string& user_policy(const std::string& username) const;
+  void set_user_policy(const std::string& username,
+                       const std::string& policy_blob);
 
   const std::string& device_local_account_policy(
       const std::string& account_id) const;
@@ -84,7 +88,7 @@ class FakeSessionManagerClient : public chromeos::SessionManagerClient {
 
  private:
   std::string device_policy_;
-  std::string user_policy_;
+  std::map<std::string, std::string> user_policies_;
   std::map<std::string, std::string> device_local_account_policy_;
   ObserverList<Observer> observers_;
 

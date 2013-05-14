@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/profiles/profile.h"
@@ -98,12 +97,6 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   chromeos::User* user = user_manager->GetActiveUser();
   CHECK(user);
 
-  // TODO(joaodasilva): Initialize user policy for all accounts once the session
-  // manager is ready for multi-profile policy. Note that there can still be
-  // only one delegate for the global user policy provider.
-  // http://crbug.com/230349
-  const bool is_primary_user =
-      chromeos::UserManager::Get()->GetLoggedInUsers().size() == 1;
   // Only USER_TYPE_REGULAR users have user cloud policy.
   // USER_TYPE_RETAIL_MODE, USER_TYPE_KIOSK_APP and USER_TYPE_GUEST are not
   // signed in and can't authenticate the policy registration.
@@ -112,8 +105,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   // USER_TYPE_LOCALLY_MANAGED gets its policy from the
   // ManagedModePolicyProvider.
   const std::string& username = user->email();
-  if (!is_primary_user ||
-      user->GetType() != chromeos::User::USER_TYPE_REGULAR ||
+  if (user->GetType() != chromeos::User::USER_TYPE_REGULAR ||
       BrowserPolicyConnector::IsNonEnterpriseUser(username)) {
     return scoped_ptr<UserCloudPolicyManagerChromeOS>();
   }

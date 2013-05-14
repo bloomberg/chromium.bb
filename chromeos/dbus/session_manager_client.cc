@@ -4,9 +4,18 @@
 
 #include "chromeos/dbus/session_manager_client.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "base/location.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/threading/worker_pool.h"
+#include "chromeos/chromeos_paths.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -179,66 +188,72 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   virtual void RetrieveDevicePolicy(
       const RetrievePolicyCallback& callback) OVERRIDE {
-    CallRetrievePolicy(login_manager::kSessionManagerRetrievePolicy,
-                       callback);
+    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
+                                 login_manager::kSessionManagerRetrievePolicy);
+    session_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnRetrievePolicy,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   login_manager::kSessionManagerRetrievePolicy,
+                   callback));
   }
 
-  virtual void RetrieveUserPolicy(
+  virtual void RetrievePolicyForUser(
+      const std::string& username,
       const RetrievePolicyCallback& callback) OVERRIDE {
-    CallRetrievePolicy(login_manager::kSessionManagerRetrieveUserPolicy,
-                       callback);
+    CallRetrievePolicyByUsername(
+        login_manager::kSessionManagerRetrievePolicyForUser,
+        username,
+        callback);
   }
 
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,
       const RetrievePolicyCallback& callback) OVERRIDE {
-    dbus::MethodCall method_call(
-        login_manager::kSessionManagerInterface,
-        login_manager::kSessionManagerRetrieveDeviceLocalAccountPolicy);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(account_name);
-    session_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(
-            &SessionManagerClientImpl::OnRetrievePolicy,
-            weak_ptr_factory_.GetWeakPtr(),
-            login_manager::kSessionManagerRetrieveDeviceLocalAccountPolicy,
-            callback));
+    CallRetrievePolicyByUsername(
+        login_manager::kSessionManagerRetrieveDeviceLocalAccountPolicy,
+        account_name,
+        callback);
   }
 
   virtual void StoreDevicePolicy(const std::string& policy_blob,
                                  const StorePolicyCallback& callback) OVERRIDE {
-    CallStorePolicy(login_manager::kSessionManagerStorePolicy,
-                    policy_blob, callback);
-  }
-
-  virtual void StoreUserPolicy(const std::string& policy_blob,
-                               const StorePolicyCallback& callback) OVERRIDE {
-    CallStorePolicy(login_manager::kSessionManagerStoreUserPolicy,
-                    policy_blob, callback);
-  }
-
-  virtual void StoreDeviceLocalAccountPolicy(
-      const std::string& account_name,
-      const std::string& policy_blob,
-      const StorePolicyCallback& callback) OVERRIDE {
-    dbus::MethodCall method_call(
-        login_manager::kSessionManagerInterface,
-        login_manager::kSessionManagerStoreDeviceLocalAccountPolicy);
+    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
+                                 login_manager::kSessionManagerStorePolicy);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(account_name);
     // static_cast does not work due to signedness.
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8*>(policy_blob.data()), policy_blob.size());
     session_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(
-            &SessionManagerClientImpl::OnStorePolicy,
-            weak_ptr_factory_.GetWeakPtr(),
-            login_manager::kSessionManagerStoreDeviceLocalAccountPolicy,
-            callback));
+        base::Bind(&SessionManagerClientImpl::OnStorePolicy,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   login_manager::kSessionManagerStorePolicy,
+                   callback));
+  }
+
+  virtual void StorePolicyForUser(
+      const std::string& username,
+      const std::string& policy_blob,
+      const std::string& ignored_policy_key,
+      const StorePolicyCallback& callback) OVERRIDE {
+    CallStorePolicyByUsername(login_manager::kSessionManagerStorePolicyForUser,
+                              username,
+                              policy_blob,
+                              callback);
+  }
+
+  virtual void StoreDeviceLocalAccountPolicy(
+      const std::string& account_name,
+      const std::string& policy_blob,
+      const StorePolicyCallback& callback) OVERRIDE {
+    CallStorePolicyByUsername(
+        login_manager::kSessionManagerStoreDeviceLocalAccountPolicy,
+        account_name,
+        policy_blob,
+        callback);
   }
 
  private:
@@ -253,37 +268,43 @@ class SessionManagerClientImpl : public SessionManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  // Helper for Retrieve{User,Device}Policy.
-  virtual void CallRetrievePolicy(const std::string& method_name,
-                                  const RetrievePolicyCallback& callback) {
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 method_name);
-    session_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&SessionManagerClientImpl::OnRetrievePolicy,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   method_name,
-                   callback));
-  }
-
-  // Helper for Store{User,Device}Policy.
-  virtual void CallStorePolicy(const std::string& method_name,
-                               const std::string& policy_blob,
-                               const StorePolicyCallback& callback) {
+  // Helper for RetrieveDeviceLocalAccountPolicy and RetrievePolicyForUser.
+  void CallRetrievePolicyByUsername(const std::string& method_name,
+                                    const std::string& username,
+                                    const RetrievePolicyCallback& callback) {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  method_name);
     dbus::MessageWriter writer(&method_call);
+    writer.AppendString(username);
+    session_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(
+            &SessionManagerClientImpl::OnRetrievePolicy,
+            weak_ptr_factory_.GetWeakPtr(),
+            method_name,
+            callback));
+  }
+
+  void CallStorePolicyByUsername(const std::string& method_name,
+                                 const std::string& username,
+                                 const std::string& policy_blob,
+                                 const StorePolicyCallback& callback) {
+    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
+                                 method_name);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(username);
     // static_cast does not work due to signedness.
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8*>(policy_blob.data()), policy_blob.size());
     session_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&SessionManagerClientImpl::OnStorePolicy,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   method_name,
-                   callback));
+        base::Bind(
+            &SessionManagerClientImpl::OnStorePolicy,
+            weak_ptr_factory_.GetWeakPtr(),
+            method_name,
+            callback));
   }
 
   // Called when kSessionManagerRestartJob method is complete.
@@ -315,7 +336,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   // Called when kSessionManagerRetrievePolicy or
-  // kSessionManagerRetrieveUserPolicy  method is complete.
+  // kSessionManagerRetrievePolicyForUser method is complete.
   void OnRetrievePolicy(const std::string& method_name,
                         const RetrievePolicyCallback& callback,
                         dbus::Response* response) {
@@ -337,7 +358,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     callback.Run(serialized_proto);
   }
 
-  // Called when kSessionManagerStorePolicy or kSessionManagerStoreUserPolicy
+  // Called when kSessionManagerStorePolicy or kSessionManagerStorePolicyForUser
   // method is complete.
   void OnStorePolicy(const std::string& method_name,
                      const StorePolicyCallback& callback,
@@ -419,7 +440,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
 // which does nothing.
 class SessionManagerClientStubImpl : public SessionManagerClient {
  public:
-  SessionManagerClientStubImpl() {}
+  SessionManagerClientStubImpl() {
+    // Make sure that there are no keys left over from a previous browser run.
+    base::FilePath user_policy_key_dir;
+    if (PathService::Get(chromeos::DIR_USER_POLICY_KEYS,
+                         &user_policy_key_dir)) {
+      base::WorkerPool::PostTask(
+          FROM_HERE,
+          base::Bind(base::IgnoreResult(&file_util::Delete),
+                     user_policy_key_dir, true),
+          false);
+    }
+  }
   virtual ~SessionManagerClientStubImpl() {}
 
   // SessionManagerClient overrides.
@@ -455,36 +487,76 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
       const RetrievePolicyCallback& callback) OVERRIDE {
     callback.Run(device_policy_);
   }
-  virtual void RetrieveUserPolicy(
+  virtual void RetrievePolicyForUser(
+      const std::string& username,
       const RetrievePolicyCallback& callback) OVERRIDE {
-    callback.Run(user_policy_);
+    callback.Run(user_policies_[username]);
   }
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,
       const RetrievePolicyCallback& callback) OVERRIDE {
-    callback.Run("");
+    callback.Run(user_policies_[account_name]);
   }
   virtual void StoreDevicePolicy(const std::string& policy_blob,
                                  const StorePolicyCallback& callback) OVERRIDE {
     device_policy_ = policy_blob;
     callback.Run(true);
   }
-  virtual void StoreUserPolicy(const std::string& policy_blob,
-                               const StorePolicyCallback& callback) OVERRIDE {
-    user_policy_ = policy_blob;
-    callback.Run(true);
+  virtual void StorePolicyForUser(
+      const std::string& username,
+      const std::string& policy_blob,
+      const std::string& policy_key,
+      const StorePolicyCallback& callback) OVERRIDE {
+    if (policy_key.empty()) {
+      user_policies_[username] = policy_blob;
+      callback.Run(true);
+      return;
+    }
+    // The session manager writes the user policy key to a well-known
+    // location. Do the same with the stub impl, so that user policy works and
+    // can be tested on desktop builds.
+    // TODO(joaodasilva): parse the PolicyFetchResponse in |policy_blob| to get
+    // the policy key directly, after moving the policy protobufs to a top-level
+    // directory. The |policy_key| argument to this method can then be removed.
+    // http://crbug.com/240269
+    base::FilePath key_path;
+    if (!PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &key_path)) {
+      callback.Run(false);
+      return;
+    }
+    const std::string sanitized =
+        CryptohomeClient::GetStubSanitizedUsername(username);
+    key_path = key_path.AppendASCII(sanitized).AppendASCII("policy.pub");
+    // Assume that the key write is successful.
+    user_policies_[username] = policy_blob;
+    base::WorkerPool::PostTaskAndReply(
+        FROM_HERE,
+        base::Bind(&SessionManagerClientStubImpl::StoreFileInBackground,
+                   key_path, policy_key),
+        base::Bind(callback, true),
+        false);
   }
   virtual void StoreDeviceLocalAccountPolicy(
       const std::string& account_name,
       const std::string& policy_blob,
       const StorePolicyCallback& callback) OVERRIDE {
+    user_policies_[account_name] = policy_blob;
     callback.Run(true);
+  }
+
+  static void StoreFileInBackground(const base::FilePath& path,
+                                    const std::string& data) {
+    const int size = static_cast<int>(data.size());
+    if (!file_util::CreateDirectory(path.DirName()) ||
+        file_util::WriteFile(path, data.data(), size) != size) {
+      LOG(WARNING) << "Failed to write policy key to " << path.value();
+    }
   }
 
  private:
   ObserverList<Observer> observers_;
   std::string device_policy_;
-  std::string user_policy_;
+  std::map<std::string, std::string> user_policies_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManagerClientStubImpl);
 };

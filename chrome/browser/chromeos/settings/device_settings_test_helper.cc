@@ -130,7 +130,8 @@ void DeviceSettingsTestHelper::RetrieveDevicePolicy(
   device_policy_.retrieve_callbacks_.push_back(callback);
 }
 
-void DeviceSettingsTestHelper::RetrieveUserPolicy(
+void DeviceSettingsTestHelper::RetrievePolicyForUser(
+    const std::string& username,
     const RetrievePolicyCallback& callback) {
 }
 
@@ -148,8 +149,10 @@ void DeviceSettingsTestHelper::StoreDevicePolicy(
   device_policy_.store_callbacks_.push_back(callback);
 }
 
-void DeviceSettingsTestHelper::StoreUserPolicy(
+void DeviceSettingsTestHelper::StorePolicyForUser(
+    const std::string& username,
     const std::string& policy_blob,
+    const std::string& policy_key,
     const StorePolicyCallback& callback) {
 }
 

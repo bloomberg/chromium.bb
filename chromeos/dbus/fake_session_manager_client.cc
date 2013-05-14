@@ -75,10 +75,11 @@ void FakeSessionManagerClient::RetrieveDevicePolicy(
                                    base::Bind(callback, device_policy_));
 }
 
-void FakeSessionManagerClient::RetrieveUserPolicy(
+void FakeSessionManagerClient::RetrievePolicyForUser(
+    const std::string& username,
     const RetrievePolicyCallback& callback) {
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   base::Bind(callback, user_policy_));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, user_policies_[username]));
 }
 
 void FakeSessionManagerClient::RetrieveDeviceLocalAccountPolicy(
@@ -97,10 +98,12 @@ void FakeSessionManagerClient::StoreDevicePolicy(
   FOR_EACH_OBSERVER(Observer, observers_, PropertyChangeComplete(true));
 }
 
-void FakeSessionManagerClient::StoreUserPolicy(
+void FakeSessionManagerClient::StorePolicyForUser(
+    const std::string& username,
     const std::string& policy_blob,
+    const std::string& policy_key,
     const StorePolicyCallback& callback) {
-  user_policy_ = policy_blob;
+  user_policies_[username] = policy_blob;
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
 }
 
@@ -121,12 +124,16 @@ void FakeSessionManagerClient::set_device_policy(
   device_policy_ = policy_blob;
 }
 
-const std::string& FakeSessionManagerClient::user_policy() const {
-  return user_policy_;
+const std::string& FakeSessionManagerClient::user_policy(
+    const std::string& username) const {
+  std::map<std::string, std::string>::const_iterator it =
+      user_policies_.find(username);
+  return it == user_policies_.end() ? EmptyString() : it->second;
 }
 
-void FakeSessionManagerClient::set_user_policy(const std::string& policy_blob) {
-  user_policy_ = policy_blob;
+void FakeSessionManagerClient::set_user_policy(const std::string& username,
+                                               const std::string& policy_blob) {
+  user_policies_[username] = policy_blob;
 }
 
 const std::string& FakeSessionManagerClient::device_local_account_policy(

@@ -4,13 +4,9 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
@@ -34,16 +30,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/mock_cryptohome_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
-#include "chromeos/dbus/mock_session_manager_client.h"
-#include "chromeos/dbus/mock_update_engine_client.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -91,45 +81,6 @@ const char kTestPolicy2[] =
 
 const char kTestPolicy2JSON[] = "{\"Another\":\"turn_it_off\"}";
 
-#if defined(OS_CHROMEOS)
-
-const char kSanitizedUsername[] = "0123456789ABCDEF0123456789ABCDEF01234567";
-
-ACTION(GetSanitizedUsername) {
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(arg1, chromeos::DBUS_METHOD_CALL_SUCCESS, kSanitizedUsername));
-}
-
-ACTION_P(RetrieveUserPolicy, storage) {
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(arg0, *storage));
-}
-
-ACTION_P2(StoreUserPolicy, storage, user_policy_key_file) {
-  // The session_manager stores a copy of the policy key at
-  // /var/run/user_policy/$hash/policy.pub. Simulate that behavior here, so
-  // that the policy signature can be validated.
-  em::PolicyFetchResponse policy;
-  ASSERT_TRUE(policy.ParseFromString(arg0));
-  if (policy.has_new_public_key()) {
-    ASSERT_TRUE(file_util::CreateDirectory(user_policy_key_file.DirName()));
-    int result = file_util::WriteFile(
-        user_policy_key_file,
-        policy.new_public_key().data(),
-        policy.new_public_key().size());
-    ASSERT_EQ(static_cast<int>(policy.new_public_key().size()), result);
-  }
-
-  *storage = arg0;
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(arg1, true));
-}
-
-#else
-
-const char kTestUser[] = "user@example.com";
-
-#endif  // OS_CHROMEOS
-
 }  // namespace
 
 class ComponentCloudPolicyTest : public ExtensionBrowserTest {
@@ -158,29 +109,6 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
     command_line->AppendSwitch(switches::kEnableComponentCloudPolicy);
-
-#if defined(OS_CHROMEOS)
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath user_key_path =
-        temp_dir_.path().AppendASCII(kSanitizedUsername)
-                        .AppendASCII("policy.pub");
-    ASSERT_TRUE(PathService::Override(chromeos::DIR_USER_POLICY_KEYS,
-                                      temp_dir_.path()));
-
-    mock_dbus_thread_manager_ = new chromeos::MockDBusThreadManager();
-    chromeos::DBusThreadManager::InitializeForTesting(
-        mock_dbus_thread_manager_);
-    EXPECT_CALL(*mock_dbus_thread_manager_->mock_cryptohome_client(),
-                GetSanitizedUsername(_, _))
-        .WillRepeatedly(GetSanitizedUsername());
-    EXPECT_CALL(*mock_dbus_thread_manager_->mock_session_manager_client(),
-                StoreUserPolicy(_, _))
-        .WillRepeatedly(StoreUserPolicy(&session_manager_user_policy_,
-                                        user_key_path));
-    EXPECT_CALL(*mock_dbus_thread_manager_->mock_session_manager_client(),
-                RetrieveUserPolicy(_))
-        .WillRepeatedly(RetrieveUserPolicy(&session_manager_user_policy_));
-#endif  // OS_CHROMEOS
 
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
   }
@@ -212,7 +140,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     SigninManager* signin_manager =
         SigninManagerFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(signin_manager);
-    signin_manager->SetAuthenticatedUsername(kTestUser);
+    signin_manager->SetAuthenticatedUsername("user@example.com");
 
     UserCloudPolicyManager* policy_manager =
         UserCloudPolicyManagerFactory::GetForProfile(browser()->profile());
@@ -268,12 +196,6 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
   LocalPolicyTestServer test_server_;
   scoped_refptr<const extensions::Extension> extension_;
   scoped_ptr<ExtensionTestMessageListener> event_listener_;
-
-#if defined(OS_CHROMEOS)
-  base::ScopedTempDir temp_dir_;
-  std::string session_manager_user_policy_;
-  chromeos::MockDBusThreadManager* mock_dbus_thread_manager_;
-#endif
 };
 
 // TODO(joaodasilva): enable these for other platforms once ready.

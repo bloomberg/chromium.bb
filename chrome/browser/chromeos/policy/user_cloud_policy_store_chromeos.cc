@@ -197,7 +197,8 @@ void UserCloudPolicyStoreChromeOS::Store(
 void UserCloudPolicyStoreChromeOS::Load() {
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
-  session_manager_client_->RetrieveUserPolicy(
+  session_manager_client_->RetrievePolicyForUser(
+      username_,
       base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyRetrieved,
                  weak_factory_.GetWeakPtr()));
 }
@@ -244,8 +245,10 @@ void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
     return;
   }
 
-  session_manager_client_->StoreUserPolicy(
+  session_manager_client_->StorePolicyForUser(
+      username_,
       policy_blob,
+      validator->policy()->new_public_key(),
       base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyStored,
                  weak_factory_.GetWeakPtr()));
 }

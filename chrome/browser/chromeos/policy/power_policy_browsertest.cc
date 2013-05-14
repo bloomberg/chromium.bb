@@ -78,7 +78,7 @@ void PowerPolicyBrowserTest::SetUpInProcessBrowserTestFixture() {
 
   chromeos::DBusThreadManager::InitializeForTesting(dbus_thread_manager);
   EXPECT_CALL(*dbus_thread_manager->mock_session_manager_client(),
-              RetrieveUserPolicy(_));
+              RetrievePolicyForUser(_, _));
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(provider_, RegisterPolicyDomain(_, _)).Times(AnyNumber());

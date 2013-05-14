@@ -55,6 +55,9 @@ class CHROMEOS_EXPORT CryptohomeClient {
   static CryptohomeClient* Create(DBusClientImplementationType type,
                                   dbus::Bus* bus);
 
+  // Returns the sanitized |username| that the stub implementation would return.
+  static std::string GetStubSanitizedUsername(const std::string& username);
+
   // Sets AsyncCallStatus signal handlers.
   // |handler| is called when results for AsyncXXX methods are returned.
   // Cryptohome service will process the calls in a first-in-first-out manner

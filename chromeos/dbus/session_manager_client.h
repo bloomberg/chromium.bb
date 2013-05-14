@@ -89,7 +89,7 @@ class CHROMEOS_EXPORT SessionManagerClient {
   // Notifies that the lock screen is dismissed.
   virtual void NotifyLockScreenDismissed() = 0;
 
-  // Used for RetrieveDevicePolicy, RetrieveUserPolicy and
+  // Used for RetrieveDevicePolicy, RetrievePolicyForUser and
   // RetrieveDeviceLocalAccountPolicy. Takes a serialized protocol buffer as
   // string.  Upon success, we will pass a protobuf to the callback.  On
   // failure, we will pass "".
@@ -99,10 +99,12 @@ class CHROMEOS_EXPORT SessionManagerClient {
   // completion of the retrieve attempt, we will call the provided callback.
   virtual void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) = 0;
 
-  // Fetches the user policy blob stored by the session manager for the
-  // currently signed-in user.  Upon completion of the retrieve attempt, we will
-  // call the provided callback.
-  virtual void RetrieveUserPolicy(const RetrievePolicyCallback& callback) = 0;
+  // Fetches the user policy blob stored by the session manager for the given
+  // |username|. Upon completion of the retrieve attempt, we will call the
+  // provided callback.
+  virtual void RetrievePolicyForUser(
+      const std::string& username,
+      const RetrievePolicyCallback& callback) = 0;
 
   // Fetches the policy blob associated with the specified device-local account
   // from session manager.  |callback| is invoked up on completion.
@@ -110,7 +112,7 @@ class CHROMEOS_EXPORT SessionManagerClient {
       const std::string& account_id,
       const RetrievePolicyCallback& callback) = 0;
 
-  // Used for StoreDevicePolicy, StoreUserPolicy and
+  // Used for StoreDevicePolicy, StorePolicyForUser and
   // StoreDeviceLocalAccountPolicy. Takes a boolean indicating whether the
   // operation was successful or not.
   typedef base::Callback<void(bool)> StorePolicyCallback;
@@ -120,11 +122,14 @@ class CHROMEOS_EXPORT SessionManagerClient {
   virtual void StoreDevicePolicy(const std::string& policy_blob,
                                  const StorePolicyCallback& callback) = 0;
 
-  // Attempts to asynchronously store |policy_blob| as user policy for the
-  // currently signed-in user.  Upon completion of the store attempt, we will
-  // call callback.
-  virtual void StoreUserPolicy(const std::string& policy_blob,
-                               const StorePolicyCallback& callback) = 0;
+  // Attempts to asynchronously store |policy_blob| as user policy for the given
+  // |username|. Upon completion of the store attempt, we will call callback.
+  // The |policy_key| argument is not sent to the session manager, but is used
+  // by the stub implementation to enable policy validation on desktop builds.
+  virtual void StorePolicyForUser(const std::string& username,
+                                  const std::string& policy_blob,
+                                  const std::string& policy_key,
+                                  const StorePolicyCallback& callback) = 0;
 
   // Sends a request to store a policy blob for the specified device-local
   // account. The result of the operation is reported through |callback|.

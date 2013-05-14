@@ -94,15 +94,18 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   virtual void NotifyLockScreenDismissed() OVERRIDE;
   virtual void RetrieveDevicePolicy(
       const RetrievePolicyCallback& callback) OVERRIDE;
-  virtual void RetrieveUserPolicy(
+  virtual void RetrievePolicyForUser(
+      const std::string& username,
       const RetrievePolicyCallback& callback) OVERRIDE;
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       const RetrievePolicyCallback& callback) OVERRIDE;
   virtual void StoreDevicePolicy(const std::string& policy_blob,
                                  const StorePolicyCallback& callback) OVERRIDE;
-  virtual void StoreUserPolicy(const std::string& policy_blob,
-                               const StorePolicyCallback& callback) OVERRIDE;
+  virtual void StorePolicyForUser(const std::string& username,
+                                  const std::string& policy_blob,
+                                  const std::string& policy_key,
+                                  const StorePolicyCallback& callback) OVERRIDE;
   virtual void StoreDeviceLocalAccountPolicy(
       const std::string& account_id,
       const std::string& policy_blob,

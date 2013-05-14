@@ -95,6 +95,7 @@
 #include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/audio_pref_handler.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
@@ -293,6 +294,16 @@ class DBusServices {
       const bool use_stub = !base::chromeos::IsRunningOnChromeOS();
       CrosLibrary::Initialize(use_stub);
       cros_initialized_ = true;
+    }
+
+    if (!base::chromeos::IsRunningOnChromeOS()) {
+      // Override this path on the desktop, so that the user policy key can be
+      // stored by the stub SessionManagerClient.
+      base::FilePath user_data_dir;
+      if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+        PathService::Override(chromeos::DIR_USER_POLICY_KEYS,
+                              user_data_dir.AppendASCII("stub_user_policy"));
+      }
     }
 
     // Initialize DBusThreadManager for the browser. This must be done after
