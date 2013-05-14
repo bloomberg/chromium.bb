@@ -359,6 +359,7 @@ void TestRunner::reset()
         m_webView->setSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
 #endif
         m_webView->removeAllUserContent();
+        m_webView->disableAutoResizeMode();
     }
     m_topLoadingFrame = 0;
     m_waitUntilDone = false;
@@ -377,8 +378,6 @@ void TestRunner::reset()
         m_delegate->setDeviceScaleFactor(1);
         m_delegate->setAcceptAllCookies(false);
         m_delegate->setLocale("");
-        if (m_webView)
-            m_delegate->disableAutoResizeMode(m_webView->size());
     }
 
     m_dumpEditingCallbacks = false;
@@ -1470,7 +1469,7 @@ void TestRunner::enableAutoResizeMode(const CppArgumentList& arguments, CppVaria
     int maxHeight = cppVariantToInt32(arguments[3]);
     WebKit::WebSize maxSize(maxWidth, maxHeight);
 
-    m_delegate->enableAutoResizeMode(minSize, maxSize);
+    m_webView->enableAutoResizeMode(minSize, maxSize);
     result->set(true);
 }
 
@@ -1484,7 +1483,9 @@ void TestRunner::disableAutoResizeMode(const CppArgumentList& arguments, CppVari
     int newHeight = cppVariantToInt32(arguments[1]);
     WebKit::WebSize newSize(newWidth, newHeight);
 
-    m_delegate->disableAutoResizeMode(newSize);
+    m_delegate->setClientWindowRect(WebRect(0, 0, newSize.width, newSize.height));
+    m_webView->disableAutoResizeMode();
+    m_webView->resize(newSize);
     result->set(true);
 }
 

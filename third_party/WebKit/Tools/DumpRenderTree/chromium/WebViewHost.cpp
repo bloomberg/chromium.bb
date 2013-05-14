@@ -844,18 +844,6 @@ void WebViewHost::setClientWindowRect(const WebKit::WebRect& rect)
     setWindowRect(rect);
 }
 
-void WebViewHost::enableAutoResizeMode(const WebSize& minSize, const WebSize& maxSize)
-{
-    webView()->enableAutoResizeMode(minSize, maxSize);
-}
-
-void WebViewHost::disableAutoResizeMode(const WebKit::WebSize& newSize)
-{
-    setWindowRect(WebRect(0, 0, newSize.width, newSize.height));
-    webView()->disableAutoResizeMode();
-    webView()->resize(newSize);
-}
-
 bool WebViewHost::navigate(const TestNavigationEntry& entry, bool reload)
 {
     // Get the right target frame for the entry.
