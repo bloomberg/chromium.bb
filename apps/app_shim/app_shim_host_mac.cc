@@ -4,6 +4,7 @@
 
 #include "apps/app_shim/app_shim_host_mac.h"
 
+#include "apps/app_shim/app_shim_handler_mac.h"
 #include "apps/app_shim/app_shim_messages.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -26,6 +27,9 @@ AppShimHost::AppShimHost()
 
 AppShimHost::~AppShimHost() {
   DCHECK(CalledOnValidThread());
+  apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
+  if (handler)
+    handler->OnShimClose(this);
 }
 
 void AppShimHost::ServeChannel(const IPC::ChannelHandle& handle) {
@@ -47,6 +51,10 @@ bool AppShimHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void AppShimHost::OnChannelError() {
+  Close();
+}
+
 bool AppShimHost::Send(IPC::Message* message) {
   DCHECK(channel_.get());
   return channel_->Send(message);
@@ -54,12 +62,21 @@ bool AppShimHost::Send(IPC::Message* message) {
 
 void AppShimHost::OnLaunchApp(std::string profile_dir, std::string app_id) {
   DCHECK(CalledOnValidThread());
-  bool success = LaunchAppImpl(profile_dir, app_id);
+  app_id_ = app_id;
+  apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
+  bool success =
+      handler ? handler->OnShimLaunch(this) : LaunchAppImpl(profile_dir);
   Send(new AppShimMsg_LaunchApp_Done(success));
 }
 
 void AppShimHost::OnFocus() {
   DCHECK(CalledOnValidThread());
+  apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
+  if (handler) {
+    handler->OnShimFocus(this);
+    return;
+  }
+
   if (!profile_)
     return;
   extensions::ShellWindowRegistry* registry =
@@ -75,14 +92,13 @@ void AppShimHost::OnFocus() {
   ui::FocusWindowSet(native_windows);
 }
 
-bool AppShimHost::LaunchAppImpl(const std::string& profile_dir,
-                                const std::string& app_id) {
+bool AppShimHost::LaunchAppImpl(const std::string& profile_dir) {
   DCHECK(CalledOnValidThread());
   if (profile_) {
     // Only one app launch message per channel.
     return false;
   }
-  if (!extensions::Extension::IdIsValid(app_id)) {
+  if (!extensions::Extension::IdIsValid(app_id_)) {
     LOG(ERROR) << "Bad app ID from app shim launch message.";
     return false;
   }
@@ -90,12 +106,10 @@ bool AppShimHost::LaunchAppImpl(const std::string& profile_dir,
   if (!profile)
     return false;
 
-  if (!LaunchApp(profile, app_id))
+  if (!LaunchApp(profile))
     return false;
 
   profile_ = profile;
-  app_id_ = app_id;
-
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::Source<Profile>(profile_));
   return true;
@@ -112,7 +126,8 @@ Profile* AppShimHost::FetchProfileForDirectory(const std::string& profile_dir) {
   // This ensures that the given profile path is acutally a profile that we
   // already know about.
   if (cache.GetIndexOfProfileWithPath(path) == std::string::npos) {
-    LOG(ERROR) << "Requested directory is not a known profile.";
+    LOG(ERROR) << "Requested directory is not a known profile '"
+               << profile_dir << "'.";
     return NULL;
   }
   Profile* profile = profileManager->GetProfile(path);
@@ -123,17 +138,17 @@ Profile* AppShimHost::FetchProfileForDirectory(const std::string& profile_dir) {
   return profile;
 }
 
-bool AppShimHost::LaunchApp(Profile* profile, const std::string& app_id) {
+bool AppShimHost::LaunchApp(Profile* profile) {
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   ExtensionServiceInterface* extension_service =
       extension_system->extension_service();
   const extensions::Extension* extension =
       extension_service->GetExtensionById(
-          app_id, false);
+          app_id_, false);
   if (!extension) {
     LOG(ERROR) << "Attempted to launch nonexistent app with id '"
-               << app_id << "'.";
+               << app_id_ << "'.";
     return false;
   }
   // TODO(jeremya): Handle the case that launching the app fails. Probably we
@@ -165,6 +180,10 @@ void AppShimHost::Observe(int type,
       NOTREACHED() << "Unexpected notification sent.";
       break;
   }
+}
+
+void AppShimHost::OnAppClosed() {
+  Close();
 }
 
 void AppShimHost::Close() {

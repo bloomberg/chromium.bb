@@ -26,6 +26,9 @@ const AEEventID kAEChromeAppPing = 'ping';
 // created under the user data directory with this name.
 extern const char kAppShimSocketName[];
 
+// Special app mode id used for the App Launcher.
+extern const char kAppListModeId[];
+
 // The key under which the browser's bundle ID will be stored in the
 // app mode launcher bundle's Info.plist.
 extern NSString* const kBrowserBundleIDKey;

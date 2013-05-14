@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/observer_list.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/common/mac/app_mode_common.h"
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/app_list_window_controller.h"
 
@@ -23,7 +26,8 @@ namespace {
 
 // AppListServiceMac manages global resources needed for the app list to
 // operate, and controls when the app list is opened and closed.
-class AppListServiceMac : public AppListServiceImpl {
+class AppListServiceMac : public AppListServiceImpl,
+                          public apps::AppShimHandler {
  public:
   virtual ~AppListServiceMac() {}
 
@@ -36,10 +40,16 @@ class AppListServiceMac : public AppListServiceImpl {
   NSWindow* GetNativeWindow();
 
   // AppListService overrides:
+  virtual void Init(Profile* initial_profile) OVERRIDE;
   virtual void ShowAppList(Profile* requested_profile) OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual void EnableAppList() OVERRIDE;
+
+  // AppShimHandler overrides:
+  virtual bool OnShimLaunch(apps::AppShimHandler::Host* host) OVERRIDE;
+  virtual void OnShimClose(apps::AppShimHandler::Host* host) OVERRIDE;
+  virtual void OnShimFocus(apps::AppShimHandler::Host* host) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AppListServiceMac>;
@@ -47,6 +57,11 @@ class AppListServiceMac : public AppListServiceImpl {
   AppListServiceMac() {}
 
   scoped_nsobject<AppListWindowController> window_controller_;
+
+  // App shim hosts observing when the app list is dismissed. In normal user
+  // usage there should only be one. However, it can't be guaranteed, so use
+  // an ObserverList rather than handling corner cases.
+  ObserverList<apps::AppShimHandler::Host> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceMac);
 };
@@ -120,6 +135,16 @@ void AppListServiceMac::CreateAppList(Profile* requested_profile) {
   [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
 }
 
+void AppListServiceMac::Init(Profile* initial_profile) {
+  static bool init_called = false;
+  if (init_called)
+    return;
+
+  init_called = true;
+  apps::AppShimHandler::RegisterHandler(app_mode::kAppListModeId,
+                                        AppListServiceMac::GetInstance());
+}
+
 void AppListServiceMac::ShowAppList(Profile* requested_profile) {
   InvalidatePendingProfileLoads();
 
@@ -141,10 +166,14 @@ void AppListServiceMac::ShowAppList(Profile* requested_profile) {
 }
 
 void AppListServiceMac::DismissAppList() {
-  if (!window_controller_)
+  if (!IsAppListVisible())
     return;
 
   [[window_controller_ window] close];
+
+  FOR_EACH_OBSERVER(apps::AppShimHandler::Host,
+                    observers_,
+                    OnAppClosed());
 }
 
 bool AppListServiceMac::IsAppListVisible() const {
@@ -157,6 +186,21 @@ void AppListServiceMac::EnableAppList() {
 
 NSWindow* AppListServiceMac::GetNativeWindow() {
   return [window_controller_ window];
+}
+
+bool AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host) {
+  ShowForSavedProfile();
+  observers_.AddObserver(host);
+  return true;
+}
+
+void AppListServiceMac::OnShimClose(apps::AppShimHandler::Host* host) {
+  observers_.RemoveObserver(host);
+  DismissAppList();
+}
+
+void AppListServiceMac::OnShimFocus(apps::AppShimHandler::Host* host) {
+  DismissAppList();
 }
 
 }  // namespace

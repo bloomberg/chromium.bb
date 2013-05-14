@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/public/browser/notification_observer.h"
@@ -28,6 +29,7 @@ class Message;
 // connected to the app shim is closed.
 class AppShimHost : public IPC::Listener,
                     public IPC::Sender,
+                    public apps::AppShimHandler::Host,
                     public content::NotificationObserver,
                     public base::NonThreadSafe {
  public:
@@ -39,16 +41,17 @@ class AppShimHost : public IPC::Listener,
   // listening for messages on it.
   void ServeChannel(const IPC::ChannelHandle& handle);
 
+ protected:
   const std::string& app_id() const { return app_id_; }
   const Profile* profile() const { return profile_; }
 
- protected:
   // Used internally; virtual so they can be mocked for testing.
   virtual Profile* FetchProfileForDirectory(const std::string& profile_dir);
-  virtual bool LaunchApp(Profile* profile, const std::string& app_id);
+  virtual bool LaunchApp(Profile* profile);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
@@ -65,7 +68,7 @@ class AppShimHost : public IPC::Listener,
   // Cmd+Tabbed to it.)
   void OnFocus();
 
-  bool LaunchAppImpl(const std::string& profile_dir, const std::string& app_id);
+  bool LaunchAppImpl(const std::string& profile_dir);
 
   // The AppShimHost listens to the NOTIFICATION_EXTENSION_HOST_DESTROYED
   // message to detect when the app closes. When that happens, the AppShimHost
@@ -73,6 +76,9 @@ class AppShimHost : public IPC::Listener,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // apps::AppShimHandler::Host override:
+  virtual void OnAppClosed() OVERRIDE;
 
   // Closes the channel and destroys the AppShimHost.
   void Close();

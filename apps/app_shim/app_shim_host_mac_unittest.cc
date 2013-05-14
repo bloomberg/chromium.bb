@@ -10,6 +10,8 @@
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
 class TestingAppShimHost : public AppShimHost {
  public:
   explicit TestingAppShimHost(Profile* profile);
@@ -29,13 +31,21 @@ class TestingAppShimHost : public AppShimHost {
     fails_launch_ = fails_launch;
   }
 
+  const std::string& GetAppId() const {
+    return app_id();
+  }
+
+  const Profile* GetProfile() const {
+    return profile();
+  }
+
  protected:
   virtual Profile* FetchProfileForDirectory(const std::string& profile_dir)
       OVERRIDE;
-  virtual bool LaunchApp(Profile* profile, const std::string& app_id) OVERRIDE;
-
+  virtual bool LaunchApp(Profile* profile) OVERRIDE;
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
+ private:
   Profile* test_profile_;
   bool fails_profile_;
   bool fails_launch_;
@@ -67,13 +77,15 @@ Profile* TestingAppShimHost::FetchProfileForDirectory(
   return fails_profile_ ? NULL : test_profile_;
 }
 
-bool TestingAppShimHost::LaunchApp(
-    Profile* profile, const std::string& app_id) {
+bool TestingAppShimHost::LaunchApp(Profile* profile) {
   return !fails_launch_;
 }
 
-class AppShimHostTest : public testing::Test {
+class AppShimHostTest : public testing::Test,
+                        public apps::AppShimHandler {
  public:
+  AppShimHostTest() : launch_count_(0), close_count_(0), focus_count_(0) {}
+
   TestingAppShimHost* host() { return host_.get(); }
   TestingProfile* profile() { return profile_.get(); }
 
@@ -86,6 +98,23 @@ class AppShimHostTest : public testing::Test {
     return param.a;
   }
 
+  void SimulateDisconnect() {
+    implicit_cast<IPC::Listener*>(host_.release())->OnChannelError();
+  }
+
+ protected:
+  virtual bool OnShimLaunch(Host* host) OVERRIDE {
+    ++launch_count_;
+    return true;
+  }
+
+  virtual void OnShimClose(Host* host) OVERRIDE { ++close_count_; }
+  virtual void OnShimFocus(Host* host) OVERRIDE { ++focus_count_; }
+
+  int launch_count_;
+  int close_count_;
+  int focus_count_;
+
  private:
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
@@ -94,24 +123,45 @@ class AppShimHostTest : public testing::Test {
 
   scoped_ptr<TestingAppShimHost> host_;
   scoped_ptr<TestingProfile> profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);
 };
 
-static const std::string kTestAppId = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-static const std::string kTestProfileDir = "Default";
+const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const char kTestProfileDir[] = "Default";
+
+}  // namespace
 
 TEST_F(AppShimHostTest, TestLaunchApp) {
   host()->ReceiveMessage(
       new AppShimHostMsg_LaunchApp(kTestProfileDir, kTestAppId));
-  ASSERT_EQ(kTestAppId, host()->app_id());
-  ASSERT_EQ(profile(), host()->profile());
+  ASSERT_EQ(kTestAppId, host()->GetAppId());
+  ASSERT_EQ(profile(), host()->GetProfile());
   ASSERT_TRUE(LaunchWasSuccessful());
+}
+
+TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
+  apps::AppShimHandler::RegisterHandler(kTestAppId, this);
+  EXPECT_TRUE(host()->ReceiveMessage(
+      new AppShimHostMsg_LaunchApp(kTestProfileDir, kTestAppId)));
+  EXPECT_EQ(kTestAppId, host()->GetAppId());
+  EXPECT_TRUE(LaunchWasSuccessful());
+  EXPECT_EQ(1, launch_count_);
+  EXPECT_EQ(0, focus_count_);
+  EXPECT_EQ(0, close_count_);
+
+  EXPECT_TRUE(host()->ReceiveMessage(new AppShimHostMsg_FocusApp()));
+  EXPECT_EQ(1, focus_count_);
+
+  SimulateDisconnect();
+  EXPECT_EQ(1, close_count_);
+  apps::AppShimHandler::RemoveHandler(kTestAppId);
 }
 
 TEST_F(AppShimHostTest, TestFailProfile) {
   host()->set_fails_profile(true);
   host()->ReceiveMessage(
       new AppShimHostMsg_LaunchApp(kTestProfileDir, kTestAppId));
-  ASSERT_TRUE(host()->app_id().empty());
   ASSERT_FALSE(LaunchWasSuccessful());
 }
 
@@ -119,6 +169,5 @@ TEST_F(AppShimHostTest, TestFailLaunch) {
   host()->set_fails_launch(true);
   host()->ReceiveMessage(
       new AppShimHostMsg_LaunchApp(kTestProfileDir, kTestAppId));
-  ASSERT_TRUE(host()->app_id().empty());
   ASSERT_FALSE(LaunchWasSuccessful());
 }

@@ -43,6 +43,10 @@ class AppListService {
 
   virtual void SetAppListProfile(const base::FilePath& profile_file_path) = 0;
 
+  // Show the app list for the profile configured in the user data dir for the
+  // current browser process.
+  virtual void ShowForSavedProfile() = 0;
+
   // Get the profile the app list is currently showing.
   virtual Profile* GetCurrentAppListProfile() = 0;
 

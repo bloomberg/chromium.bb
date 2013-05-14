@@ -8,6 +8,8 @@ namespace app_mode {
 
 const char kAppShimSocketName[] = "App Shim Socket";
 
+const char kAppListModeId[] = "app_list";
+
 NSString* const kBrowserBundleIDKey = @"CrBundleIdentifier";
 NSString* const kCrAppModeShortcutIDKey = @"CrAppModeShortcutID";
 NSString* const kCrAppModeShortcutNameKey = @"CrAppModeShortcutName";

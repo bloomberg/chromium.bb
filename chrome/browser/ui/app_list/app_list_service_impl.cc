@@ -186,6 +186,11 @@ void AppListServiceImpl::SetAppListProfile(
   ShowAppList(profile);
 }
 
+void AppListServiceImpl::ShowForSavedProfile() {
+  SetAppListProfile(GetAppListProfilePath(
+      g_browser_process->profile_manager()->user_data_dir()));
+}
+
 Profile* AppListServiceImpl::GetCurrentAppListProfile() {
   return profile();
 }

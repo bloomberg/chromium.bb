@@ -30,6 +30,8 @@
         'app_restore_service.h',
         'app_restore_service_factory.cc',
         'app_restore_service_factory.h',
+        'app_shim/app_shim_handler_mac.cc',
+        'app_shim/app_shim_handler_mac.h',
         'app_shim/app_shim_host_mac.cc',
         'app_shim/app_shim_host_mac.h',
         'app_shim/app_shim_host_manager_mac.h',

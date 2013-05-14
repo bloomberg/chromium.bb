@@ -64,6 +64,7 @@ class AppListServiceImpl : public AppListService,
   virtual base::FilePath GetAppListProfilePath(
       const base::FilePath& user_data_dir) OVERRIDE;
 
+  virtual void ShowForSavedProfile() OVERRIDE;
   virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
  private:

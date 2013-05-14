@@ -28,6 +28,7 @@ class AppListServiceDisabled : public AppListService {
     return base::FilePath();
   }
 
+  virtual void ShowForSavedProfile() OVERRIDE {}
   virtual void ShowAppList(Profile* profile) OVERRIDE {}
   virtual void DismissAppList() OVERRIDE {}
 
