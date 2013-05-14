@@ -56,12 +56,8 @@ bool WebSocket::Send(const std::string& message) {
   if (state_ != OPEN)
     return false;
 
-  net::WebSocketFrameHeader header;
+  net::WebSocketFrameHeader header(net::WebSocketFrameHeader::kOpCodeText);
   header.final = true;
-  header.reserved1 = false;
-  header.reserved2 = false;
-  header.reserved3 = false;
-  header.opcode = net::WebSocketFrameHeader::kOpCodeText;
   header.masked = true;
   header.payload_length = message.length();
   int header_size = net::GetWebSocketFrameHeaderSize(header);
