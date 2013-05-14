@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -295,7 +296,7 @@ void UnpackedInstaller::ConfirmInstall() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   string16 error = installer_.CheckManagementPolicy();
   if (!error.empty()) {
-    ReportExtensionLoadError(UTF16ToASCII(error));
+    ReportExtensionLoadError(UTF16ToUTF8(error));
     return;
   }
 
