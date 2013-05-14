@@ -124,5 +124,5 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
     // Dialog is top level if we don't have a web_contents associated with us.
     parent_window = NULL;
   }
-  views::Widget::CreateWindowWithParent(this, parent_window)->Show();
+  views::DialogDelegate::CreateDialogWidget(this, NULL, parent_window)->Show();
 }

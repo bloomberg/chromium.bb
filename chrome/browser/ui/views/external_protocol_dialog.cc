@@ -154,16 +154,14 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
   message_box_view_->SetCheckBoxLabel(
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
 
-  HWND root_hwnd;
+  // Dialog is top level if we don't have a web_contents associated with us.
+  HWND root_hwnd = NULL;
   if (web_contents_) {
     root_hwnd = GetAncestor(web_contents_->GetView()->GetContentNativeView(),
                             GA_ROOT);
-  } else {
-    // Dialog is top level if we don't have a web_contents associated with us.
-    root_hwnd = NULL;
   }
 
-  views::Widget::CreateWindowWithParent(this, root_hwnd)->Show();
+  views::DialogDelegate::CreateDialogWidget(this, NULL, root_hwnd)->Show();
 }
 
 // static
