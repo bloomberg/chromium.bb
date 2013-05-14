@@ -437,7 +437,7 @@ HRESULT UIAutomationClient::Context::InvokeDesiredItem(
 
   // If the item was found, invoke it.
   if (!target.get()) {
-    LOG(ERROR) << "Failed to find desired item to invoke.";
+    LOG(WARNING) << "Failed to find desired item to invoke.";
     return E_FAIL;
   }
 
