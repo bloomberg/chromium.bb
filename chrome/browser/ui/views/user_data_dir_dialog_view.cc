@@ -106,7 +106,7 @@ base::FilePath ShowUserDataDirDialog(const base::FilePath& user_data_dir) {
   DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
   // When the window closes, it will delete itself.
   UserDataDirDialogView* dialog = new UserDataDirDialogView(user_data_dir);
-  views::Widget::CreateWindow(dialog)->Show();
+  views::DialogDelegate::CreateDialogWidget(dialog, NULL, NULL)->Show();
   base::RunLoop run_loop(dialog);
   run_loop.Run();
   return dialog->user_data_dir();
