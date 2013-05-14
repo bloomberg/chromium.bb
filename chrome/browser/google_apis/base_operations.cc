@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -236,10 +237,14 @@ void UrlFetchOperationBase::DoCancel() {
 // static
 GDataErrorCode UrlFetchOperationBase::GetErrorCode(const URLFetcher* source) {
   GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
-  if (code == HTTP_SUCCESS && !source->GetStatus().is_success()) {
-    // If the HTTP response code is SUCCESS yet the URL request failed, it is
-    // likely that the failure is due to loss of connection.
-    code = GDATA_NO_CONNECTION;
+  if (!source->GetStatus().is_success()) {
+    switch (source->GetStatus().error()) {
+      case net::ERR_NETWORK_CHANGED:
+        code = GDATA_NO_CONNECTION;
+        break;
+      default:
+        code = GDATA_OTHER_ERROR;
+    }
   }
   return code;
 }
