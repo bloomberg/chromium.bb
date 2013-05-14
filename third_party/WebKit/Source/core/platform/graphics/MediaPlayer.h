@@ -38,11 +38,6 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringHash.h>
 
-
-#if USE(PLATFORM_TEXT_TRACK_MENU)
-#include "core/platform/graphics/PlatformTextTrackMenu.h"
-#endif
-
 namespace WebCore {
 
 class AudioSourceProvider;
@@ -356,11 +351,6 @@ public:
 
     bool requiresTextTrackRepresentation() const;
     void setTextTrackRepresentation(TextTrackRepresentation*);
-
-#if USE(PLATFORM_TEXT_TRACK_MENU)
-    bool implementsTextTrackControls() const;
-    PassRefPtr<PlatformTextTrackMenuInterface> textTrackMenu();
-#endif
 
 private:
     MediaPlayer(MediaPlayerClient*);

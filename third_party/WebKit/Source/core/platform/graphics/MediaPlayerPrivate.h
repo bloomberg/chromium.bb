@@ -34,7 +34,6 @@ namespace WebCore {
 
 class IntRect;
 class IntSize;
-class PlatformTextTrack;
 
 class MediaPlayerPrivateInterface {
     WTF_MAKE_NONCOPYABLE(MediaPlayerPrivateInterface); WTF_MAKE_FAST_ALLOCATED;
@@ -159,12 +158,6 @@ public:
 
     virtual bool requiresTextTrackRepresentation() const { return false; }
     virtual void setTextTrackRepresentation(TextTrackRepresentation*) { }
-
-#if USE(PLATFORM_TEXT_TRACK_MENU)
-    virtual bool implementsTextTrackControls() const { return false; }
-    virtual PassRefPtr<PlatformTextTrackMenuInterface> textTrackMenu() { return 0; }
-#endif
-
 };
 
 }

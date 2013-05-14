@@ -854,16 +854,4 @@ void MediaPlayer::setTextTrackRepresentation(TextTrackRepresentation* representa
     m_private->setTextTrackRepresentation(representation);
 }
 
-#if USE(PLATFORM_TEXT_TRACK_MENU)
-bool MediaPlayer::implementsTextTrackControls() const
-{
-    return m_private->implementsTextTrackControls();
-}
-
-PassRefPtr<PlatformTextTrackMenuInterface> MediaPlayer::textTrackMenu()
-{
-    return m_private->textTrackMenu();
-}
-#endif // USE(PLATFORM_TEXT_TRACK_MENU)
-
 }
