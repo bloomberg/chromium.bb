@@ -58,23 +58,23 @@ HEADER_MAP = {
           'src/untrusted/nacl/nacl_startup.h',
       'arm-nacl/include/nacl/nacl_thread.h':
           'src/untrusted/nacl/nacl_thread.h',
-      'arm-nacl/include/include/irt.h': 'src/untrusted/irt/irt.h',
-      'arm-nacl/include/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
+      'arm-nacl/include/irt.h': 'src/untrusted/irt/irt.h',
+      'arm-nacl/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
       'arm-nacl/lib/crt1.o': 'src/untrusted/stubs/crt1.x',
   },
   'x86_pnacl': {
-      'newlib/sdk/include/include/pthread.h': 'src/untrusted/pthread/pthread.h',
-      'newlib/sdk/include/include/semaphore.h': 'src/untrusted/pthread/semaphore.h',
-      'newlib/sdk/include/include/nacl/dynamic_annotations.h':
+      'newlib/sdk/include/pthread.h': 'src/untrusted/pthread/pthread.h',
+      'newlib/sdk/include/semaphore.h': 'src/untrusted/pthread/semaphore.h',
+      'newlib/sdk/include/nacl/dynamic_annotations.h':
           'src/untrusted/valgrind/dynamic_annotations.h',
-      'newlib/sdk/include/include/nacl/nacl_dyncode.h':
+      'newlib/sdk/include/nacl/nacl_dyncode.h':
           'src/untrusted/nacl/nacl_dyncode.h',
-      'newlib/sdk/include/include/nacl/nacl_startup.h':
+      'newlib/sdk/include/nacl/nacl_startup.h':
           'src/untrusted/nacl/nacl_startup.h',
-      'newlib/sdk/include/include/nacl/nacl_thread.h':
+      'newlib/sdk/include/nacl/nacl_thread.h':
           'src/untrusted/nacl/nacl_thread.h',
-      'newlib/sdk/include/include/irt.h': 'src/untrusted/irt/irt.h',
-      'newlib/sdk/include/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
+      'newlib/sdk/include/irt.h': 'src/untrusted/irt/irt.h',
+      'newlib/sdk/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
   }
 }
 
