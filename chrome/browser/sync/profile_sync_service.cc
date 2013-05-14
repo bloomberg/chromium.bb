@@ -930,21 +930,24 @@ void ProfileSyncService::OnBackendInitialized(
   if (last_synced_time_.is_null()) {
     UpdateLastSyncedTime();
   }
-  NotifyObservers();
 
   if (auto_start_enabled_ && !FirstSetupInProgress()) {
     // Backend is initialized but we're not in sync setup, so this must be an
     // autostart - mark our sync setup as completed and we'll start syncing
     // below.
     SetSyncSetupCompleted();
-    NotifyObservers();
   }
 
+  // Check HasSyncSetupCompleted() before NotifyObservers() to avoid spurious
+  // data type configuration because observer may flag setup as complete and
+  // trigger data type configuration.
   if (HasSyncSetupCompleted()) {
     ConfigureDataTypeManager();
   } else {
     DCHECK(FirstSetupInProgress());
   }
+
+  NotifyObservers();
 }
 
 void ProfileSyncService::OnSyncCycleCompleted() {
