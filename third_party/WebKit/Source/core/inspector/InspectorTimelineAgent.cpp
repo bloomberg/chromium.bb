@@ -370,7 +370,7 @@ void InspectorTimelineAgent::didPaint(RenderObject* renderer, GraphicsContext*, 
     ASSERT(entry.type == TimelineRecordType::Paint);
     FloatQuad quad;
     localToPageQuad(*renderer, clipRect, &quad);
-    entry.data = TimelineRecordFactory::createPaintData(quad);
+    entry.data = TimelineRecordFactory::createPaintData(quad, idForNode(renderer->generatingNode()));
     didCompleteCurrentRecord(TimelineRecordType::Paint);
 }
 
