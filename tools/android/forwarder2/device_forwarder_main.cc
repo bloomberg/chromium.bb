@@ -29,7 +29,6 @@ forwarder2::PipeNotifier* g_notifier = NULL;
 
 const int kBufSize = 256;
 
-const char kPIDFilePath[] = "/data/local/tmp/chrome_device_forwarder_pid";
 const char kDaemonIdentifier[] = "chrome_device_forwarder_daemon";
 
 const char kKillServerCommand[] = "kill-server";
@@ -161,7 +160,7 @@ int RunDeviceForwarder(int argc, char** argv) {
   ClientDelegate client_delegate(argv[1]);
   ServerDelegate daemon_delegate;
   const char kLogFilePath[] = "";  // Log to logcat.
-  Daemon daemon(kLogFilePath, kPIDFilePath, kDaemonIdentifier, &client_delegate,
+  Daemon daemon(kLogFilePath, kDaemonIdentifier, &client_delegate,
                 &daemon_delegate, &GetExitNotifierFD);
 
   if (command == kKillServerCommand)

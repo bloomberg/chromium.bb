@@ -18,14 +18,15 @@ namespace forwarder2 {
 
 // Wrapper class around unix socket api.  Can be used to create, bind or
 // connect to both Unix domain sockets and TCP sockets.
+// TODO(pliard): Split this class into TCPSocket and UnixDomainSocket.
 class Socket {
  public:
   Socket();
   ~Socket();
 
-  bool BindUnix(const std::string& path, bool abstract);
+  bool BindUnix(const std::string& path);
   bool BindTcp(const std::string& host, int port);
-  bool ConnectUnix(const std::string& path, bool abstract);
+  bool ConnectUnix(const std::string& path);
   bool ConnectTcp(const std::string& host, int port);
 
   // Just a wrapper around unix socket shutdown(), see man 2 shutdown.
@@ -84,6 +85,8 @@ class Socket {
 
   static int GetHighestFileDescriptor(const Socket& s1, const Socket& s2);
 
+  static pid_t GetUnixDomainSocketProcessOwner(const std::string& path);
+
  private:
   union SockAddr {
     // IPv4 sockaddr
@@ -96,7 +99,7 @@ class Socket {
 
   // If |host| is empty, use localhost.
   bool InitTcpSocket(const std::string& host, int port);
-  bool InitUnixSocket(const std::string& path, bool abstract);
+  bool InitUnixSocket(const std::string& path);
   bool BindAndListen();
   bool Connect();
 
@@ -119,9 +122,6 @@ class Socket {
 
   // Family of the socket (PF_INET, PF_INET6 or PF_UNIX).
   int family_;
-
-  // True if this is an abstract unix domain socket.
-  bool abstract_;
 
   SockAddr addr_;
 

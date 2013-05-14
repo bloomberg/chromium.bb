@@ -34,7 +34,6 @@ namespace forwarder2 {
 namespace {
 
 const char kLogFilePath[] = "/tmp/host_forwarder_log";
-const char kPIDFilePath[] = "/tmp/host_forwarder_pid";
 const char kDaemonIdentifier[] = "chrome_host_forwarder_daemon";
 
 const char kKillServerCommand[] = "kill-server";
@@ -243,8 +242,8 @@ int RunHostForwarder(int argc, char** argv) {
   ClientDelegate client_delegate(argv[1]);
   ServerDelegate daemon_delegate;
   Daemon daemon(
-      kLogFilePath, kPIDFilePath, kDaemonIdentifier, &client_delegate,
-      &daemon_delegate, &GetExitNotifierFD);
+      kLogFilePath, kDaemonIdentifier, &client_delegate, &daemon_delegate,
+      &GetExitNotifierFD);
 
   if (command == kKillServerCommand)
     return !daemon.Kill();

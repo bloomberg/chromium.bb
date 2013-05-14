@@ -46,8 +46,7 @@ void DeviceController::KillAllListeners() {
 }
 
 bool DeviceController::Init(const std::string& adb_unix_socket) {
-  if (!kickstart_adb_socket_.BindUnix(adb_unix_socket,
-                                      true /* abstract */)) {
+  if (!kickstart_adb_socket_.BindUnix(adb_unix_socket)) {
     LOG(ERROR) << "Could not BindAndListen DeviceController socket on port "
                << adb_unix_socket << ": " << safe_strerror(errno);
     return false;

@@ -42,13 +42,11 @@ class Daemon {
     virtual void OnServerExited() = 0;
   };
 
-  // |pid_file_path| is the file path to which the daemon's PID will be written.
   // |identifier| should be a unique string identifier. It is used to
   // bind/connect the underlying Unix Domain Socket.
   // Note that this class does not take ownership of |client_delegate| and
   // |server_delegate|.
   Daemon(const std::string& log_file_path,
-         const std::string& pid_file_path,
          const std::string& identifier,
          ClientDelegate* client_delegate,
          ServerDelegate* server_delegate,
@@ -65,15 +63,11 @@ class Daemon {
   bool Kill();
 
  private:
-  class PIDFile;
-
   const std::string log_file_path_;
-  const std::string pid_file_path_;
   const std::string identifier_;
   ClientDelegate* const client_delegate_;
   ServerDelegate* const server_delegate_;
   const GetExitNotifierFDCallback get_exit_fd_callback_;
-  scoped_ptr<PIDFile> pid_file_;
 
   DISALLOW_COPY_AND_ASSIGN(Daemon);
 };

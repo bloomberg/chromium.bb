@@ -31,9 +31,9 @@ bool FamilyIsTCP(int family) {
 
 namespace forwarder2 {
 
-bool Socket::BindUnix(const std::string& path, bool abstract) {
+bool Socket::BindUnix(const std::string& path) {
   errno = 0;
-  if (!InitUnixSocket(path, abstract) || !BindAndListen()) {
+  if (!InitUnixSocket(path) || !BindAndListen()) {
     Close();
     return false;
   }
@@ -49,9 +49,9 @@ bool Socket::BindTcp(const std::string& host, int port) {
   return true;
 }
 
-bool Socket::ConnectUnix(const std::string& path, bool abstract) {
+bool Socket::ConnectUnix(const std::string& path) {
   errno = 0;
-  if (!InitUnixSocket(path, abstract) || !Connect()) {
+  if (!InitUnixSocket(path) || !Connect()) {
     Close();
     return false;
   }
@@ -72,7 +72,6 @@ Socket::Socket()
       port_(0),
       socket_error_(false),
       family_(AF_INET),
-      abstract_(false),
       addr_ptr_(reinterpret_cast<sockaddr*>(&addr_.addr4)),
       addr_len_(sizeof(sockaddr)),
       exit_notifier_fd_(-1),
@@ -109,31 +108,24 @@ bool Socket::InitSocketInternal() {
   return true;
 }
 
-bool Socket::InitUnixSocket(const std::string& path, bool abstract) {
+bool Socket::InitUnixSocket(const std::string& path) {
   static const size_t kPathMax = sizeof(addr_.addr_un.sun_path);
   // For abstract sockets we need one extra byte for the leading zero.
-  if ((abstract && path.size() + 2 /* '\0' */ > kPathMax) ||
-      (!abstract && path.size() + 1 /* '\0' */ > kPathMax)) {
+  if (path.size() + 2 /* '\0' */ > kPathMax) {
     LOG(ERROR) << "The provided path is too big to create a unix "
                << "domain socket: " << path;
     return false;
   }
-  abstract_ = abstract;
   family_ = PF_UNIX;
   addr_.addr_un.sun_family = family_;
-  if (abstract) {
-    // Copied from net/socket/unix_domain_socket_posix.cc
-    // Convert the path given into abstract socket name. It must start with
-    // the '\0' character, so we are adding it. |addr_len| must specify the
-    // length of the structure exactly, as potentially the socket name may
-    // have '\0' characters embedded (although we don't support this).
-    // Note that addr_.addr_un.sun_path is already zero initialized.
-    memcpy(addr_.addr_un.sun_path + 1, path.c_str(), path.size());
-    addr_len_ = path.size() + offsetof(struct sockaddr_un, sun_path) + 1;
-  } else {
-    memcpy(addr_.addr_un.sun_path, path.c_str(), path.size());
-    addr_len_ = sizeof(sockaddr_un);
-  }
+  // Copied from net/socket/unix_domain_socket_posix.cc
+  // Convert the path given into abstract socket name. It must start with
+  // the '\0' character, so we are adding it. |addr_len| must specify the
+  // length of the structure exactly, as potentially the socket name may
+  // have '\0' characters embedded (although we don't support this).
+  // Note that addr_.addr_un.sun_path is already zero initialized.
+  memcpy(addr_.addr_un.sun_path + 1, path.c_str(), path.size());
+  addr_len_ = path.size() + offsetof(struct sockaddr_un, sun_path) + 1;
   addr_ptr_ = reinterpret_cast<sockaddr*>(&addr_.addr_un);
   return InitSocketInternal();
 }
@@ -381,9 +373,22 @@ bool Socket::WaitForEvent(EventType type, int timeout_secs) {
 }
 
 // static
-int Socket::GetHighestFileDescriptor(
-    const Socket& s1, const Socket& s2) {
+int Socket::GetHighestFileDescriptor(const Socket& s1, const Socket& s2) {
   return std::max(s1.socket_, s2.socket_);
 }
 
-}  // namespace forwarder
+// static
+pid_t Socket::GetUnixDomainSocketProcessOwner(const std::string& path) {
+  Socket socket;
+  if (!socket.ConnectUnix(path))
+    return -1;
+  ucred ucred;
+  socklen_t len = sizeof(ucred);
+  if (getsockopt(socket.socket_, SOL_SOCKET, SO_PEERCRED, &ucred, &len) == -1) {
+    CHECK_NE(ENOPROTOOPT, errno);
+    return -1;
+  }
+  return ucred.pid;
+}
+
+}  // namespace forwarder2

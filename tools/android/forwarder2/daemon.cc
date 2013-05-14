@@ -131,7 +131,7 @@ scoped_ptr<Socket> ConnectToUnixDomainSocket(
     const std::string& expected_welcome_message) {
   for (int i = 0; i < tries_count; ++i) {
     scoped_ptr<Socket> socket(new Socket());
-    if (!socket->ConnectUnix(socket_name, true)) {
+    if (!socket->ConnectUnix(socket_name)) {
       if (idle_time_msec)
         usleep(idle_time_msec * 1000);
       continue;
@@ -154,62 +154,12 @@ scoped_ptr<Socket> ConnectToUnixDomainSocket(
 
 }  // namespace
 
-// Handles creation and destruction of the PID file.
-class Daemon::PIDFile {
- public:
-  static bool Create(const std::string& path, scoped_ptr<PIDFile>* pid_file) {
-    int pid_file_fd = HANDLE_EINTR(
-        open(path.c_str(), O_CREAT | O_WRONLY, 0666));
-    if (pid_file_fd < 0) {
-      PError("open()");
-      return false;
-    }
-    file_util::ScopedFD fd_closer(&pid_file_fd);
-    struct flock lock_info = {};
-    lock_info.l_type = F_WRLCK;
-    lock_info.l_whence = SEEK_CUR;
-    if (HANDLE_EINTR(fcntl(pid_file_fd, F_SETLK, &lock_info)) < 0) {
-      if (errno == EAGAIN || errno == EACCES) {
-        LOG(INFO) << "Daemon already running (PID file already locked)";
-        // Don't consider this case as a failure. This can happen when trying to
-        // spawn multiple daemons concurrently.
-        return true;
-      }
-      PError("lockf()");
-      return false;
-    }
-    const std::string pid_string = base::StringPrintf("%d\n", getpid());
-    CHECK(HANDLE_EINTR(write(pid_file_fd, pid_string.c_str(),
-                             pid_string.length())));
-    pid_file->reset(new PIDFile(*fd_closer.release(), path));
-    return true;
-  }
-
-  ~PIDFile() {
-    CloseFD(fd_);  // This also releases the lock.
-    if (remove(path_.c_str()) < 0)
-      PError("remove");
-  }
-
- private:
-  PIDFile(int fd, const std::string& path) : fd_(fd), path_(path) {
-    DCHECK(fd_ >= 0);
-  }
-
-  const int fd_;
-  const std::string path_;
-
-  DISALLOW_COPY_AND_ASSIGN(PIDFile);
-};
-
 Daemon::Daemon(const std::string& log_file_path,
-               const std::string& pid_file_path,
                const std::string& identifier,
                ClientDelegate* client_delegate,
                ServerDelegate* server_delegate,
                GetExitNotifierFDCallback get_exit_fd_callback)
   : log_file_path_(log_file_path),
-    pid_file_path_(pid_file_path),
     identifier_(identifier),
     client_delegate_(client_delegate),
     server_delegate_(server_delegate),
@@ -233,11 +183,6 @@ bool Daemon::SpawnIfNeeded() {
         return false;
       // Child.
       case 0: {
-        DCHECK(!pid_file_);
-        if (!PIDFile::Create(pid_file_path_, &pid_file_))
-          exit(1);
-        if (!pid_file_.get())  // Another daemon was spawn concurrently.
-          exit(0);
         if (setsid() < 0) {  // Detach the child process from its parent.
           PError("setsid()");
           exit(1);
@@ -251,7 +196,13 @@ bool Daemon::SpawnIfNeeded() {
         CHECK_EQ(dup(null_fd), STDOUT_FILENO);
         CHECK_EQ(dup(null_fd), STDERR_FILENO);
         Socket command_socket;
-        if (!command_socket.BindUnix(identifier_, true)) {
+        if (!command_socket.BindUnix(identifier_)) {
+          scoped_ptr<Socket> client_socket = ConnectToUnixDomainSocket(
+              identifier_, kSingleTry, kNoIdleTime, identifier_);
+          if (client_socket.get()) {
+            // The daemon was spawned by a concurrent process.
+            exit(0);
+          }
           PError("bind()");
           exit(1);
         }
@@ -302,22 +253,10 @@ bool Daemon::SpawnIfNeeded() {
 }
 
 bool Daemon::Kill() {
-  int pid_file_fd = HANDLE_EINTR(open(pid_file_path_.c_str(), O_WRONLY));
-  if (pid_file_fd < 0) {
-    if (errno == ENOENT)
-      return true;
-    LOG(ERROR) << "Could not open " << pid_file_path_ << " in write mode: "
-               << safe_strerror(errno);
-    return false;
-  }
-  const file_util::ScopedFD fd_closer(&pid_file_fd);
-  pid_t lock_owner_pid;
-  if (!GetFileLockOwnerPid(pid_file_fd, &lock_owner_pid))
-    return false;
-  if (lock_owner_pid == 0)
-    // No daemon running.
-    return true;
-  if (kill(lock_owner_pid, SIGTERM) < 0) {
+  pid_t daemon_pid = Socket::GetUnixDomainSocketProcessOwner(identifier_);
+  if (daemon_pid < 0)
+    return true;  // No daemon running.
+  if (kill(daemon_pid, SIGTERM) < 0) {
     if (errno == ESRCH /* invalid PID */)
       // The daemon exited for some reason (e.g. kill by a process other than
       // us) right before the call to kill() above.
@@ -325,23 +264,17 @@ bool Daemon::Kill() {
     PError("kill");
     return false;
   }
-  // Wait until the daemon exits. Rely on the fact that the daemon releases the
-  // lock on the PID file when it exits.
-  // TODO(pliard): Consider using a mutex + condition in shared memory to avoid
-  // polling.
   for (int i = 0; i < kNumTries; ++i) {
-    pid_t current_lock_owner_pid;
-    if (!GetFileLockOwnerPid(pid_file_fd, &current_lock_owner_pid))
-      return false;
-    if (current_lock_owner_pid == 0)
-      // The daemon released the PID file's lock.
+    const pid_t previous_pid = daemon_pid;
+    daemon_pid = Socket::GetUnixDomainSocketProcessOwner(identifier_);
+    if (daemon_pid < 0)
       return true;
     // Since we are polling we might not see the 'daemon exited' event if
     // another daemon was spawned during our idle period.
-    if (current_lock_owner_pid != lock_owner_pid) {
-      LOG(WARNING) << "Daemon (pid=" << lock_owner_pid
+    if (daemon_pid != previous_pid) {
+      LOG(WARNING) << "Daemon (pid=" << previous_pid
                    << ") was successfully killed but a new daemon (pid="
-                   << current_lock_owner_pid << ") seems to be running now.";
+                   << daemon_pid << ") seems to be running now.";
       return true;
     }
     usleep(kIdleTimeMSec * 1000);
