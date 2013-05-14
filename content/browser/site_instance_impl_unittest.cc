@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/stl_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/browsing_instance.h"
@@ -561,7 +561,7 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
 
   // Make a bunch of mock renderers so that we hit the limit.
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
-  std::vector<MockRenderProcessHost*> hosts;
+  ScopedVector<MockRenderProcessHost> hosts;
   for (size_t i = 0; i < kMaxRendererProcessCount; ++i)
     hosts.push_back(new MockRenderProcessHost(browser_context.get()));
 
@@ -600,8 +600,6 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
     EXPECT_NE(extension1_instance->GetProcess(), hosts[i]);
     EXPECT_NE(webui1_instance->GetProcess(), hosts[i]);
   }
-
-  STLDeleteContainerPointers(hosts.begin(), hosts.end());
 
   DrainMessageLoops();
 }

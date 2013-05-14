@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui.h"
 #include "ipc/ipc_listener.h"
@@ -91,7 +92,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
                   // this page.
 
   // The WebUIMessageHandlers we own.
-  std::vector<WebUIMessageHandler*> handlers_;
+  ScopedVector<WebUIMessageHandler> handlers_;
 
   // Non-owning pointer to the WebContents this WebUI is associated with.
   WebContents* web_contents_;
