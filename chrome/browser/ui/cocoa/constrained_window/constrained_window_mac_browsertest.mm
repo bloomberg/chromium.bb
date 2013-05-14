@@ -47,6 +47,7 @@ class ConstrainedWindowMacTest : public InProcessBrowserTest {
     [sheet_window_ setReleasedWhenClosed:NO];
     sheet_.reset([[CustomConstrainedWindowSheet alloc]
         initWithCustomWindow:sheet_window_]);
+    [sheet_ hideSheet];
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

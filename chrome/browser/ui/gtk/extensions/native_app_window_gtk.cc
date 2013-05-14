@@ -293,6 +293,11 @@ gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
       rect_with_decorations.width - current_width - left_inset);
 }
 
+gfx::NativeView NativeAppWindowGtk::GetHostView() const {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 gfx::Point NativeAppWindowGtk::GetDialogPosition(const gfx::Size& size) {
   gint current_width = 0;
   gint current_height = 0;

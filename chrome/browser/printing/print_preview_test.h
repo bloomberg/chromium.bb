@@ -16,6 +16,9 @@ class PrintPreviewTest : public BrowserWithTestWindowTest {
  protected:
   virtual void SetUp() OVERRIDE;
 
+  // Create a browser window to provide parenting for web contents modal dialog.
+  virtual BrowserWindow* CreateBrowserWindow() OVERRIDE;
+
  private:
   webkit::npapi::MockPluginList plugin_list_;
 

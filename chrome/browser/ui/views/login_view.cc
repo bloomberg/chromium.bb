@@ -111,3 +111,8 @@ void LoginView::OnAutofillDataAvailable(const string16& username,
     username_field_->SelectAll(true);
   }
 }
+
+void LoginView::OnLoginModelDestroying() {
+  login_model_->SetObserver(NULL);
+  login_model_ = NULL;
+}

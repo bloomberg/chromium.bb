@@ -6,7 +6,9 @@
 
 #include "base/observer_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -73,6 +75,13 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   }
 
  private:
+  virtual gfx::NativeView GetHostView() const OVERRIDE {
+    gfx::NativeWindow native_window =
+        browser_view_layout_->browser()->window()->GetNativeWindow();
+    return views::Widget::GetWidgetForNativeWindow(native_window)->
+        GetNativeView();
+  }
+
   // Center horizontally over the content area, with the top overlapping the
   // browser chrome.
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE {
@@ -93,7 +102,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
     observer_list_.RemoveObserver(observer);
   }
 
-  const BrowserViewLayout* browser_view_layout_;
+  BrowserViewLayout* const browser_view_layout_;
 
   ObserverList<WebContentsModalDialogHostObserver> observer_list_;
 

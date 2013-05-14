@@ -50,6 +50,7 @@ class LoginHandlerMac : public LoginHandler,
     [sheet_controller_ autofillLogin:base::SysUTF16ToNSString(username)
                             password:base::SysUTF16ToNSString(password)];
   }
+  virtual void OnLoginModelDestroying() OVERRIDE {}
 
   // LoginHandler:
   virtual void BuildViewForPasswordManager(

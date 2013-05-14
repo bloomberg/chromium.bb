@@ -645,8 +645,7 @@ views::Widget* CreateWebContentsModalDialogViews(
   params.child = true;
   WebContentsModalDialogHostObserver* dialog_host_observer = NULL;
   if (views::DialogDelegate::UseNewStyle()) {
-    params.parent =
-        views::Widget::GetTopLevelWidgetForNativeView(parent)->GetNativeView();
+    params.parent = dialog_host->GetHostView();
     params.remove_standard_frame = true;
     dialog_host_observer =
         new WebContentsModalDialogHostObserverViews(

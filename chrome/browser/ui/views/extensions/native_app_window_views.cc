@@ -406,6 +406,10 @@ gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
   return window_bounds.InsetsFrom(client_bounds);
 }
 
+gfx::NativeView NativeAppWindowViews::GetHostView() const {
+  return window_->GetNativeView();
+}
+
 gfx::Point NativeAppWindowViews::GetDialogPosition(const gfx::Size& size) {
   gfx::Size shell_window_size = window_->GetWindowBoundsInScreen().size();
   return gfx::Point(shell_window_size.width() / 2 - size.width() / 2,

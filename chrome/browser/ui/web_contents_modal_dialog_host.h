@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_HOST_H_
 #define CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_HOST_H_
 
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
@@ -29,6 +30,10 @@ class WebContentsModalDialogHost {
  public:
   virtual ~WebContentsModalDialogHost();
 
+  // Returns the view against which the dialog is positioned and parented.
+  virtual gfx::NativeView GetHostView() const = 0;
+  // Gets the position for the dialog in coordinates relative to the host
+  // view.
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) = 0;
 
   // Add/remove observer.

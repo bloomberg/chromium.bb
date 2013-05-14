@@ -71,6 +71,7 @@ class NativeAppWindowGtk : public NativeAppWindow,
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
 
   // WebContentsModalDialogHost implementation.
+  virtual gfx::NativeView GetHostView() const OVERRIDE;
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
   virtual void AddObserver(
       WebContentsModalDialogHostObserver* observer) OVERRIDE;

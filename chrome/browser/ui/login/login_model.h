@@ -16,6 +16,8 @@ class LoginModelObserver {
   virtual void OnAutofillDataAvailable(const string16& username,
                                        const string16& password) = 0;
 
+  virtual void OnLoginModelDestroying() = 0;
+
  protected:
   virtual ~LoginModelObserver() {}
 };

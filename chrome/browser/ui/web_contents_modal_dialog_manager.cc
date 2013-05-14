@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_details.h"
@@ -13,6 +14,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 using content::WebContents;
@@ -30,9 +32,70 @@ void WebContentsModalDialogManager::ShowDialog(
   native_manager_->ManageDialog(dialog);
 
   if (child_dialogs_.size() == 1) {
-    native_manager_->ShowDialog(dialog);
+    if (IsWebContentsVisible())
+      native_manager_->ShowDialog(dialog);
     BlockWebContentsInteraction(true);
   }
+}
+
+bool WebContentsModalDialogManager::IsShowingDialog() const {
+  return !child_dialogs_.empty();
+}
+
+void WebContentsModalDialogManager::FocusTopmostDialog() {
+  DCHECK(!child_dialogs_.empty());
+  native_manager_->FocusDialog(child_dialogs_.front());
+}
+
+content::WebContents* WebContentsModalDialogManager::GetWebContents() const {
+  return web_contents();
+}
+
+void WebContentsModalDialogManager::WillClose(
+    NativeWebContentsModalDialog dialog) {
+  WebContentsModalDialogList::iterator i(
+      std::find(child_dialogs_.begin(), child_dialogs_.end(), dialog));
+
+  // The Views tab contents modal dialog calls WillClose twice.  Ignore the
+  // second invocation.
+  if (i == child_dialogs_.end())
+    return;
+
+  bool removed_topmost_dialog = i == child_dialogs_.begin();
+  child_dialogs_.erase(i);
+  if (!child_dialogs_.empty() && removed_topmost_dialog &&
+      !closing_all_dialogs_)
+    native_manager_->ShowDialog(child_dialogs_.front());
+
+  BlockWebContentsInteraction(!child_dialogs_.empty());
+}
+
+void WebContentsModalDialogManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED);
+
+  if (child_dialogs_.empty())
+    return;
+
+  bool visible = *content::Details<bool>(details).ptr();
+  if (visible)
+    native_manager_->ShowDialog(child_dialogs_.front());
+  else
+    native_manager_->HideDialog(child_dialogs_.front());
+}
+
+WebContentsModalDialogManager::WebContentsModalDialogManager(
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      delegate_(NULL),
+      native_manager_(CreateNativeManager(this)),
+      closing_all_dialogs_(false) {
+  DCHECK(native_manager_);
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+                 content::Source<content::WebContents>(web_contents));
 }
 
 void WebContentsModalDialogManager::BlockWebContentsInteraction(bool blocked) {
@@ -53,78 +116,16 @@ void WebContentsModalDialogManager::BlockWebContentsInteraction(bool blocked) {
     delegate_->SetWebContentsBlocked(contents, blocked);
 }
 
-bool WebContentsModalDialogManager::IsShowingDialog() const {
-  return dialog_count() > 0;
-}
-
-void WebContentsModalDialogManager::FocusTopmostDialog() {
-  DCHECK(dialog_count());
-  native_manager_->FocusDialog(*dialog_begin());
-}
-
-content::WebContents* WebContentsModalDialogManager::GetWebContents() const {
-  return web_contents();
-}
-
-void WebContentsModalDialogManager::WillClose(
-    NativeWebContentsModalDialog dialog) {
-  WebContentsModalDialogList::iterator i(
-      std::find(child_dialogs_.begin(),
-                child_dialogs_.end(),
-                dialog));
-  bool removed_topmost_dialog = i == child_dialogs_.begin();
-  if (i != child_dialogs_.end())
-    child_dialogs_.erase(i);
-  if (child_dialogs_.empty()) {
-    BlockWebContentsInteraction(false);
-  } else {
-    if (removed_topmost_dialog && !closing_all_dialogs_)
-      native_manager_->ShowDialog(child_dialogs_[0]);
-    BlockWebContentsInteraction(true);
-  }
-}
-
-void WebContentsModalDialogManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED);
-
-  if (child_dialogs_.empty())
-    return;
-
-  bool visible = *content::Details<bool>(details).ptr();
-  if (visible)
-    native_manager_->ShowDialog(child_dialogs_[0]);
-  else
-    native_manager_->HideDialog(child_dialogs_[0]);
-}
-
-WebContentsModalDialogManager::WebContentsModalDialogManager(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      delegate_(NULL),
-      native_manager_(CreateNativeManager(this)),
-      closing_all_dialogs_(false) {
-  DCHECK(native_manager_);
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                 content::Source<content::WebContents>(web_contents));
+bool WebContentsModalDialogManager::IsWebContentsVisible() const {
+  return platform_util::IsVisible(web_contents()->GetView()->GetNativeView());
 }
 
 void WebContentsModalDialogManager::CloseAllDialogs() {
   closing_all_dialogs_ = true;
 
-  // Clear out any dialogs since we are leaving this page entirely.  To ensure
-  // that we iterate over every element in child_dialogs_ we need to use a copy
-  // of child_dialogs_. Otherwise if closing a dialog causes child_dialogs_ to
-  // be modified, we could end up skipping some elements.
-  WebContentsModalDialogList child_dialogs_copy(child_dialogs_);
-  for (WebContentsModalDialogList::iterator it = child_dialogs_copy.begin();
-       it != child_dialogs_copy.end(); ++it) {
-    native_manager_->CloseDialog(*it);
-    BlockWebContentsInteraction(false);
-  }
+  // Clear out any dialogs since we are leaving this page entirely.
+  while (!child_dialogs_.empty())
+    native_manager_->CloseDialog(child_dialogs_.front());
 
   closing_all_dialogs_ = false;
 }
@@ -140,8 +141,8 @@ void WebContentsModalDialogManager::DidNavigateMainFrame(
 }
 
 void WebContentsModalDialogManager::DidGetIgnoredUIEvent() {
-  if (dialog_count())
-    native_manager_->FocusDialog(*dialog_begin());
+  if (!child_dialogs_.empty())
+    native_manager_->FocusDialog(child_dialogs_.front());
 }
 
 void WebContentsModalDialogManager::WebContentsDestroyed(WebContents* tab) {

@@ -61,6 +61,7 @@ class LoginHandlerGtk : public LoginHandler {
       gtk_editable_select_region(GTK_EDITABLE(username_entry_), 0, -1);
     }
   }
+  virtual void OnLoginModelDestroying() OVERRIDE {}
 
   // LoginHandler:
   virtual void BuildViewForPasswordManager(

@@ -48,6 +48,7 @@ class LoginHandlerViews : public LoginHandler,
                                        const string16& password) OVERRIDE {
     // Nothing to do here since LoginView takes care of autofill for win.
   }
+  virtual void OnLoginModelDestroying() OVERRIDE {}
 
   // views::DialogDelegate methods:
   virtual string16 GetDialogButtonLabel(
@@ -136,11 +137,11 @@ class LoginHandlerViews : public LoginHandler,
       const string16& explanation) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    // Create a new LoginView and set the model for it.  The model
-    // (password manager) is owned by the view's parent WebContents,
-    // so natural destruction order means we don't have to worry about
-    // disassociating the model from the view, because the view will
-    // be deleted before the password manager.
+    // Create a new LoginView and set the model for it.  The model (password
+    // manager) is owned by the WebContents, but the view is parented to the
+    // browser window, so the view may be destroyed after the password
+    // manager. The view listens for model destruction and unobserves
+    // accordingly.
     login_view_ = new LoginView(explanation, manager);
 
     // Scary thread safety note: This can potentially be called *after* SetAuth

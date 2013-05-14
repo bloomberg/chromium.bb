@@ -97,6 +97,8 @@ PasswordManager::PasswordManager(WebContents* web_contents,
 }
 
 PasswordManager::~PasswordManager() {
+  if (observer_)
+    observer_->OnLoginModelDestroying();
 }
 
 void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {

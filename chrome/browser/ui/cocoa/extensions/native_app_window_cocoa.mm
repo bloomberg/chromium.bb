@@ -703,6 +703,11 @@ gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {
   return frame_rect.InsetsFrom(content_rect);
 }
 
+gfx::NativeView NativeAppWindowCocoa::GetHostView() const {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 gfx::Point NativeAppWindowCocoa::GetDialogPosition(const gfx::Size& size) {
   NOTIMPLEMENTED();
   return gfx::Point();

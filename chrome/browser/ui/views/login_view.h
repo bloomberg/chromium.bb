@@ -32,6 +32,7 @@ class LoginView : public views::View, public LoginModelObserver {
   // LoginModelObserver implementation.
   virtual void OnAutofillDataAvailable(const string16& username,
                                        const string16& password) OVERRIDE;
+  virtual void OnLoginModelDestroying() OVERRIDE;
 
   // Used by LoginHandlerWin to set the initial focus.
   views::View* GetInitiallyFocusedView();

@@ -35,6 +35,7 @@ class LoginHandlerAndroid : public LoginHandler {
     chrome_http_auth_handler_->OnAutofillDataAvailable(
         username, password);
   }
+  virtual void OnLoginModelDestroying() OVERRIDE {}
 
   virtual void BuildViewForPasswordManager(
       PasswordManager* manager,

@@ -36,9 +36,6 @@ class WebContentsModalDialogManager
   // WillClose() when it is being destroyed.
   void ShowDialog(NativeWebContentsModalDialog dialog);
 
-  // Blocks/unblocks interaction with renderer process.
-  void BlockWebContentsInteraction(bool blocked);
-
   // Returns true if a dialog is currently being shown.
   bool IsShowingDialog() const;
 
@@ -79,18 +76,10 @@ class WebContentsModalDialogManager
 
   typedef std::deque<NativeWebContentsModalDialog> WebContentsModalDialogList;
 
-  // Returns the number of dialogs in this tab.
-  size_t dialog_count() const { return child_dialogs_.size(); }
+  // Blocks/unblocks interaction with renderer process.
+  void BlockWebContentsInteraction(bool blocked);
 
-  // Return an iterator for the first dialog in this web contents.
-  WebContentsModalDialogList::iterator dialog_begin() {
-    return child_dialogs_.begin();
-  }
-
-  // Return an iterator for the last dialog in this web contents.
-  WebContentsModalDialogList::iterator dialog_end() {
-    return child_dialogs_.end();
-  }
+  bool IsWebContentsVisible() const;
 
   // Closes all WebContentsModalDialogs.
   void CloseAllDialogs();
