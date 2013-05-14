@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/autofill/browser/credit_card.h"
 
 namespace {
 
@@ -136,10 +137,39 @@ base::string16 FullWallet::GetInfo(AutofillFieldType type) {
       return UTF8ToUTF16(GetCvn());
 
     case CREDIT_CARD_EXP_MONTH:
+      if (expiration_month() == 0)
+        return base::string16();
       return base::IntToString16(expiration_month());
 
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      if (expiration_year() == 0)
+        return base::string16();
       return base::IntToString16(expiration_year());
+
+    case CREDIT_CARD_EXP_2_DIGIT_YEAR:
+      if (expiration_year() == 0)
+        return base::string16();
+      return base::IntToString16(expiration_year() % 100);
+
+    case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+      if (expiration_month() == 0 || expiration_year() == 0)
+            return base::string16();
+      return base::IntToString16(expiration_month()) + ASCIIToUTF16("/") +
+             base::IntToString16(expiration_year() % 100);
+
+    case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
+      if (expiration_month() == 0 || expiration_year() == 0)
+            return base::string16();
+      return base::IntToString16(expiration_month()) + ASCIIToUTF16("/") +
+             base::IntToString16(expiration_year());
+
+    case CREDIT_CARD_TYPE: {
+      std::string internal_type =
+          CreditCard::GetCreditCardType(UTF8ToUTF16(GetPan()));
+      if (internal_type == kGenericCard)
+        return base::string16();
+      return CreditCard::TypeForDisplay(internal_type);
+    }
 
     default:
       NOTREACHED();

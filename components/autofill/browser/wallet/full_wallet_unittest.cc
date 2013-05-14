@@ -475,5 +475,31 @@ TEST_F(FullWalletTest, OddRestDecryptionTest) {
             full_wallet.GetInfo(CREDIT_CARD_VERIFICATION_CODE));
 }
 
+TEST_F(FullWalletTest, GetCreditCardInfo) {
+  std::vector<RequiredAction> required_actions;
+  FullWallet full_wallet(12,
+                         2015,
+                         "528512",
+                         "1a068673eb0",
+                         GetTestAddress(),
+                         GetTestShippingAddress(),
+                         required_actions);
+
+  EXPECT_EQ(ASCIIToUTF16("15"),
+            full_wallet.GetInfo(CREDIT_CARD_EXP_2_DIGIT_YEAR));
+
+  EXPECT_EQ(ASCIIToUTF16("12/15"),
+            full_wallet.GetInfo(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR));
+
+  EXPECT_EQ(ASCIIToUTF16("12/2015"),
+            full_wallet.GetInfo(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR));
+
+  std::vector<uint8> one_time_pad;
+  EXPECT_TRUE(base::HexStringToBytes("075DA779F98B", &one_time_pad));
+  full_wallet.set_one_time_pad(one_time_pad);
+  EXPECT_EQ(ASCIIToUTF16("MasterCard"),
+            full_wallet.GetInfo(CREDIT_CARD_TYPE));
+}
+
 }  // namespace wallet
 }  // namespace autofill

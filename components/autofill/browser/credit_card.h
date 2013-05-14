@@ -34,6 +34,9 @@ class CreditCard : public AutofillDataModel {
   // The user-visible type of the card, e.g. 'Mastercard'.
   static base::string16 TypeForDisplay(const std::string& type);
 
+  // The internal representation of credit card type.
+  static std::string GetCreditCardType(const base::string16& number);
+
   // FormGroup:
   virtual void GetMatchingTypes(const base::string16& text,
                                 const std::string& app_locale,

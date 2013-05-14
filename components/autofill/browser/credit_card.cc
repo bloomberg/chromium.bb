@@ -40,90 +40,6 @@ const char16 kCreditCardObfuscationSymbol = '*';
 // too large and fills the screen.
 const size_t kMaxObfuscationSize = 20;
 
-std::string GetCreditCardType(const base::string16& number) {
-  // Don't check for a specific type if this is not a credit card number.
-  if (!autofill::IsValidCreditCardNumber(number))
-    return kGenericCard;
-
-  // Credit card number specifications taken from:
-  // http://en.wikipedia.org/wiki/Credit_card_numbers and
-  // http://www.beachnet.com/~hstiles/cardtype.html
-  // Card Type              Prefix(es)                      Length
-  // ---------------------------------------------------------------
-  // Visa                   4                               13,16
-  // American Express       34,37                           15
-  // Diners Club            300-305,2014,2149,36,           14,15
-  // Discover Card          6011,65                         16
-  // JCB                    3                               16
-  // JCB                    2131,1800                       15
-  // MasterCard             51-55                           16
-  // Solo (debit card)      6334,6767                       16,18,19
-
-  // We need at least 4 digits to work with.
-  if (number.length() < 4)
-    return kGenericCard;
-
-  int first_four_digits = 0;
-  if (!base::StringToInt(number.substr(0, 4), &first_four_digits))
-    return kGenericCard;
-
-  int first_three_digits = first_four_digits / 10;
-  int first_two_digits = first_three_digits / 10;
-  int first_digit = first_two_digits / 10;
-
-  switch (number.length()) {
-    case 13:
-      if (first_digit == 4)
-        return kVisaCard;
-
-      break;
-    case 14:
-      if (first_three_digits >= 300 && first_three_digits <= 305)
-        return kDinersCard;
-
-      if (first_digit == 36)
-        return kDinersCard;
-
-      break;
-    case 15:
-      if (first_two_digits == 34 || first_two_digits == 37)
-        return kAmericanExpressCard;
-
-      if (first_four_digits == 2131 || first_four_digits == 1800)
-        return kJCBCard;
-
-      if (first_four_digits == 2014 || first_four_digits == 2149)
-        return kDinersCard;
-
-      break;
-    case 16:
-      if (first_four_digits == 6011 || first_two_digits == 65)
-        return kDiscoverCard;
-
-      if (first_four_digits == 6334 || first_four_digits == 6767)
-        return kSoloCard;
-
-      if (first_two_digits >= 51 && first_two_digits <= 55)
-        return kMasterCard;
-
-      if (first_digit == 3)
-        return kJCBCard;
-
-      if (first_digit == 4)
-        return kVisaCard;
-
-      break;
-    case 18:
-    case 19:
-      if (first_four_digits == 6334 || first_four_digits == 6767)
-        return kSoloCard;
-
-      break;
-  }
-
-  return kGenericCard;
-}
-
 bool ConvertYear(const base::string16& year, int* num) {
   // If the |year| is empty, clear the stored value.
   if (year.empty()) {
@@ -243,6 +159,91 @@ base::string16 CreditCard::TypeForDisplay(const std::string& type) {
   // include a new card.
   DCHECK_EQ(kGenericCard, type);
   return base::string16();
+}
+
+// static
+std::string CreditCard::GetCreditCardType(const base::string16& number) {
+  // Don't check for a specific type if this is not a credit card number.
+  if (!autofill::IsValidCreditCardNumber(number))
+    return kGenericCard;
+
+  // Credit card number specifications taken from:
+  // http://en.wikipedia.org/wiki/Credit_card_numbers and
+  // http://www.beachnet.com/~hstiles/cardtype.html
+  // Card Type              Prefix(es)                      Length
+  // ---------------------------------------------------------------
+  // Visa                   4                               13,16
+  // American Express       34,37                           15
+  // Diners Club            300-305,2014,2149,36,           14,15
+  // Discover Card          6011,65                         16
+  // JCB                    3                               16
+  // JCB                    2131,1800                       15
+  // MasterCard             51-55                           16
+  // Solo (debit card)      6334,6767                       16,18,19
+
+  // We need at least 4 digits to work with.
+  if (number.length() < 4)
+    return kGenericCard;
+
+  int first_four_digits = 0;
+  if (!base::StringToInt(number.substr(0, 4), &first_four_digits))
+    return kGenericCard;
+
+  int first_three_digits = first_four_digits / 10;
+  int first_two_digits = first_three_digits / 10;
+  int first_digit = first_two_digits / 10;
+
+  switch (number.length()) {
+    case 13:
+      if (first_digit == 4)
+        return kVisaCard;
+
+      break;
+    case 14:
+      if (first_three_digits >= 300 && first_three_digits <= 305)
+        return kDinersCard;
+
+      if (first_digit == 36)
+        return kDinersCard;
+
+      break;
+    case 15:
+      if (first_two_digits == 34 || first_two_digits == 37)
+        return kAmericanExpressCard;
+
+      if (first_four_digits == 2131 || first_four_digits == 1800)
+        return kJCBCard;
+
+      if (first_four_digits == 2014 || first_four_digits == 2149)
+        return kDinersCard;
+
+      break;
+    case 16:
+      if (first_four_digits == 6011 || first_two_digits == 65)
+        return kDiscoverCard;
+
+      if (first_four_digits == 6334 || first_four_digits == 6767)
+        return kSoloCard;
+
+      if (first_two_digits >= 51 && first_two_digits <= 55)
+        return kMasterCard;
+
+      if (first_digit == 3)
+        return kJCBCard;
+
+      if (first_digit == 4)
+        return kVisaCard;
+
+      break;
+    case 18:
+    case 19:
+      if (first_four_digits == 6334 || first_four_digits == 6767)
+        return kSoloCard;
+
+      break;
+  }
+
+  return kGenericCard;
 }
 
 base::string16 CreditCard::GetRawInfo(AutofillFieldType type) const {
