@@ -33,8 +33,6 @@ webkit.org/b/24182 [ Debug ] fast/dom/css-delete-doc.html [ Slow ]
 webkit.org/b/102463 [ Debug ] fast/forms/validation-message-appearance.html [ Pass ImageOnlyFailure ]
 webkit.org/b/103744 [ Debug ] svg/dom/viewspec-parser-7.html [ Timeout ]
 webkit.org/b/103744 [ Debug ] svg/dom/viewspec-parser-6.html [ Timeout ]
-crbug.com/24182 [ Debug ] inspector/styles/device-metrics-fit-window.html [ Slow ]
-crbug.com/24182 [ Debug ] http/tests/inspector/styles/stylesheet-tracking.html [ Slow ]
 webkit.org/b/106606 [ Debug ] fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
 webkit.org/b/106606 [ Debug ] virtual/gpu/fast/canvas/webgl/context-release-upon-reload.html [ Pass Timeout ]
 webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Pass Timeout ]
@@ -49,7 +47,6 @@ webkit.org/b/86909 [ Win ] virtual/gpu/fast/canvas/webgl/webgl-composite-modes-r
 webkit.org/b/90488 [ Win ] inspector/extensions/extensions-reload.html [ Slow ]
 webkit.org/b/111649 [ Mac Win Linux ] fast/events/intercept-postmessage.html [ Slow ]
 webkit.org/b/111640 [ Mac Win ] fast/dom/Window/window-special-properties.html [ Slow ]
-webkit.org/b/113129 [ Win7 Debug ] inspector/styles/edit-inspector-stylesheet.html [ Slow ]
 webkit.org/b/82954 svg/hixie/perf/007.xml [ Slow ]	
 crbug.com/239465 [ Mac ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Crash Timeout ]
@@ -60,6 +57,8 @@ crbug.com/239794 [ Win Debug ] inspector/debugger/pause-in-internal-script.html 
 crbug.com/239874   http/tests/xmlhttprequest/send-data-view.html [ Pass Failure ]
 
 # These tests started being slow when we switched to DRT.
+# Note: when adding flaky expectations for specific inspector tests in Debug,
+# you'll almost certainly want to keep [ Slow ]!
 webkit.org/b/90488 [ Debug ] inspector [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled [ Slow ]
@@ -1027,9 +1026,6 @@ crbug.com/240353 virtual/softwarecompositing/tiled-layers-hidpi.html [ Failure ]
 webkit.org/b/48454 compositing/tiling/huge-layer-img.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 webkit.org/b/48454 virtual/softwarecompositing/tiling/huge-layer-img.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
-code.google.com/p/v8/issues/detail?id=1900 [ Debug ] inspector/debugger/watch-expressions-panel-switch.html [ Slow ]
-code.google.com/p/v8/issues/detail?id=1900 [ Debug ] inspector/debugger/debugger-breakpoints-not-activated-on-reload.html [ Slow ]
-
 # New reftest failing on Win7.
 webkit.org/b/76050 [ Win7 ] fast/text/font-kerning.html [ ImageOnlyFailure ]
 
@@ -1653,8 +1649,8 @@ crbug.com/238363 compositing/overflow/overflow-hidden-canvas-layer.html [ Crash 
 crbug.com/238363 fast/dom/node-move-to-new-document-crash-main.html [ Crash ]
 crbug.com/238363 fast/history/saves-state-after-fragment-nav.html [ Crash ]
 crbug.com/238363 fast/speech/change-focus.html [ Crash ]
-crbug.com/238363 [ Win Linux Debug ] inspector/debugger/file-system-project-mapping.html [ Crash ]
-crbug.com/238363 inspector/timeline/timeline-load.html [ Crash ]
+crbug.com/238363 [ Win Linux Debug ] inspector/debugger/file-system-project-mapping.html [ Pass Crash Slow ]
+crbug.com/238363 [ Debug ] inspector/timeline/timeline-load.html [ Pass Crash Slow ]
 crbug.com/238363 virtual/softwarecompositing/overflow/overflow-hidden-canvas-layer.html [ Crash ]
 crbug.com/238363 [ Debug ] compositing/geometry/clipping-foreground.html [ Crash ]
 crbug.com/238363 [ Debug ] fast/forms/calendar-picker/calendar-picker-key-operations.html [ Crash ]
@@ -1667,9 +1663,9 @@ crbug.com/238363 [ Debug ] fast/forms/suggestion-picker/week-suggestion-picker-k
 crbug.com/238363 [ Debug ] virtual/gpu/compositedscrolling/overflow/overflow-hidden-canvas-layer.html [ Crash ]
 crbug.com/238363 [ Debug ] virtual/softwarecompositing/geometry/clipping-foreground.html [ Crash ]
 crbug.com/238363 [ Debug ] media/video-timeupdate-during-playback.html [ Crash ]
-crbug.com/238363 crbug.com/239472 [ Debug ] inspector/debugger/source-frame-count.html [ Crash Timeout ]
+crbug.com/238363 crbug.com/239472 [ Debug ] inspector/debugger/source-frame-count.html [ Crash Slow ]
 crbug.com/238363 [ Debug ] fast/loader/javascript-url-in-embed.html [ Crash ]
-crbug.com/238363 crbug.com/239794 [ Mac Debug ] inspector/debugger/pause-in-internal-script.html [ Crash Timeout ]
+crbug.com/238363 crbug.com/239794 [ Mac Debug ] inspector/debugger/pause-in-internal-script.html [ Crash Slow ]
 crbug.com/238363 [ Debug ] svg/as-image/drag-svg-as-image.html [ Crash ]
 crbug.com/238363 [ Debug ] media/W3C/audio/networkState/networkState_initial.html [ Crash ]
 crbug.com/238363 [ Debug ] media/W3C/audio/preload/preload_property_exists.html [ Crash ]
