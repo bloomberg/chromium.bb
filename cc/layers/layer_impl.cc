@@ -1004,7 +1004,7 @@ void LayerImpl::SetVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbar_layer) {
 }
 
 void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
-  TracedValue::MakeDictIntoImplicitSnapshot(state, "cc::LayerImpl", this);
+  TracedValue::MakeDictIntoImplicitSnapshot(state, LayerTypeAsString(), this);
   state->SetInteger("layer_id", id());
   state->Set("bounds", MathUtil::AsValue(bounds()).release());
   state->SetInteger("draws_content", DrawsContent());

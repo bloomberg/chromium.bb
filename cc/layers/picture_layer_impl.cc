@@ -952,8 +952,6 @@ void PictureLayerImpl::GetDebugBorderProperties(
 
 void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   LayerImpl::AsValueInto(state);
-  TracedValue::MakeDictIntoImplicitSnapshot(
-      state, "cc::PictureLayerImpl", this);
   state->SetDouble("ideal_contents_scale", ideal_contents_scale_);
   state->Set("tilings", tilings_->AsValue().release());
   state->Set("invalidation", invalidation_.AsValue().release());
