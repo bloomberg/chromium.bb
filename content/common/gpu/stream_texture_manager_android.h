@@ -55,6 +55,7 @@ class StreamTextureManagerAndroid : public gpu::StreamTextureManager {
     virtual ~StreamTextureAndroid();
 
     virtual void Update() OVERRIDE;
+    virtual gfx::Size GetSize() OVERRIDE;
 
     scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge() {
         return surface_texture_bridge_;
@@ -62,6 +63,9 @@ class StreamTextureManagerAndroid : public gpu::StreamTextureManager {
 
     // Called when a new frame is available.
     void OnFrameAvailable(int route_id);
+
+    // Set surface texture size.
+    void SetSize(const gfx::Size& size) { size_ = size; }
 
     // Callback function when transform matrix of the surface texture
     // has changed.
@@ -78,6 +82,9 @@ class StreamTextureManagerAndroid : public gpu::StreamTextureManager {
 
     // Current transform matrix of the surface texture.
     float current_matrix_[16];
+
+    // Current size of the surface texture.
+    gfx::Size size_;
 
     // Whether the surface texture has been updated.
     bool has_updated_;

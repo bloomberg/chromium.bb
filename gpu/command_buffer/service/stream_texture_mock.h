@@ -17,6 +17,7 @@ class MockStreamTexture : public StreamTexture {
   virtual ~MockStreamTexture();
 
   MOCK_METHOD0(Update, void());
+  MOCK_METHOD0(GetSize, gfx::Size(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockStreamTexture);

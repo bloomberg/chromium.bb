@@ -16,6 +16,7 @@ namespace content {
 StreamTextureManagerAndroid::StreamTextureAndroid::StreamTextureAndroid(
     GpuChannel* channel, int service_id)
     : surface_texture_bridge_(new gfx::SurfaceTextureBridge(service_id)),
+      size_(0, 0),
       has_updated_(false),
       channel_(channel) {
   memset(current_matrix_, 0, sizeof(current_matrix_));
@@ -46,6 +47,10 @@ void StreamTextureManagerAndroid::StreamTextureAndroid::OnFrameAvailable(
     int route_id) {
   has_updated_ = true;
   channel_->Send(new GpuStreamTextureMsg_FrameAvailable(route_id));
+}
+
+gfx::Size StreamTextureManagerAndroid::StreamTextureAndroid::GetSize() {
+  return size_;
 }
 
 StreamTextureManagerAndroid::StreamTextureManagerAndroid(
@@ -115,6 +120,7 @@ void StreamTextureManagerAndroid::RegisterStreamTextureProxy(
         frame_cb);
     stream_texture->surface_texture_bridge()->SetDefaultBufferSize(
         initial_size.width(), initial_size.height());
+    stream_texture->SetSize(initial_size);
   }
 }
 

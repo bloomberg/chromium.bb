@@ -9578,15 +9578,6 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
 
   int source_width, source_height, dest_width, dest_height;
 
-  // When the source texture is GL_TEXTURE_EXTERNAL_OES, we assume width
-  // and height are the same as destination texture. The caller needs to
-  // make sure they allocate a destination texture which is the same size
-  // as the source. This is due to the limitation of the StreamTexture.
-  // There is no way to find out the size of the texture from the GL consumer
-  // side. But StreamTextures are unique per video stream and should never
-  // change, so we could find out the size of the video stream and allocate
-  // a equal size RGBA texture for copy. TODO(hkuang): Add support to get
-  // width/height of StreamTexture crbug.com/225781.
   if (source_texture->target() == GL_TEXTURE_2D) {
     if (!source_texture->GetLevelSize(GL_TEXTURE_2D, 0, &source_width,
                                       &source_height)) {
@@ -9602,6 +9593,28 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       LOCAL_SET_GL_ERROR(
           GL_INVALID_VALUE,
           "glCopyTextureCHROMIUM", "Bad dimensions");
+      return;
+    }
+  }
+
+  if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
+    DCHECK(stream_texture_manager_);
+    StreamTexture* stream_tex =
+        stream_texture_manager_->LookupStreamTexture(
+            source_texture->service_id());
+    if (!stream_tex) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE,
+          "glCopyTextureChromium", "Stream texture lookup failed");
+      return;
+    }
+    gfx::Size size = stream_tex->GetSize();
+    source_width = size.width();
+    source_height = size.height();
+    if (source_width <= 0 || source_height <= 0) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE,
+          "glCopyTextureChromium", "invalid streamtexture size");
       return;
     }
   }
@@ -9625,21 +9638,6 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   if (dest_level_defined) {
     dest_texture->GetLevelType(GL_TEXTURE_2D, level, &dest_type_previous,
                                &dest_internal_format);
-  }
-
-  // Set source texture's width and height to be the same as
-  // destination texture when source is GL_TEXTURE_EXTERNAL_OES.
-  // TODO(hkuang): Add support to get width/height of StreamTexture
-  // crbug.com/225781.
-  if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
-    if (!dest_level_defined) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_VALUE,
-          "glCopyTextureCHROMIUM", "destination level not defined");
-      return;
-    }
-    source_width = dest_width;
-    source_height = dest_height;
   }
 
   // Resize the destination texture to the dimensions of the source texture.
