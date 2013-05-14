@@ -122,20 +122,26 @@ class PageCycler(page_measurement.PageMeasurement):
       return
 
     def AddSummariesForProcessType(process_type_io, process_type_trace):
-      results.AddSummary('read_operations_' + process_type_trace, '',
-                         io_stats[process_type_io]
-                         ['ReadOperationCount'],
-                         data_type='unimportant')
-      results.AddSummary('write_operations_' + process_type_trace, '',
-                         io_stats[process_type_io]
-                         ['WriteOperationCount'],
-                         data_type='unimportant')
-      results.AddSummary('read_bytes_' + process_type_trace, 'kb',
-                         io_stats[process_type_io]['ReadTransferCount'] / 1024,
-                         data_type='unimportant')
-      results.AddSummary('write_bytes_' + process_type_trace, 'kb',
-                         io_stats[process_type_io]['WriteTransferCount'] / 1024,
-                         data_type='unimportant')
+      if 'ReadOperationCount' in io_stats[process_type_io]:
+        results.AddSummary('read_operations_' + process_type_trace, '',
+                           io_stats[process_type_io]
+                           ['ReadOperationCount'],
+                           data_type='unimportant')
+      if 'WriteOperationCount' in io_stats[process_type_io]:
+        results.AddSummary('write_operations_' + process_type_trace, '',
+                           io_stats[process_type_io]
+                           ['WriteOperationCount'],
+                           data_type='unimportant')
+      if 'ReadTransferCount' in io_stats[process_type_io]:
+        results.AddSummary('read_bytes_' + process_type_trace, 'kb',
+                           io_stats[process_type_io]
+                           ['ReadTransferCount'] / 1024,
+                           data_type='unimportant')
+      if 'WriteTransferCount' in io_stats[process_type_io]:
+        results.AddSummary('write_bytes_' + process_type_trace, 'kb',
+                           io_stats[process_type_io]
+                           ['WriteTransferCount'] / 1024,
+                           data_type='unimportant')
     AddSummariesForProcessType('Browser', 'browser')
     AddSummariesForProcessType('Renderer', 'renderer')
     AddSummariesForProcessType('Gpu', 'gpu')
