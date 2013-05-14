@@ -19,7 +19,6 @@
  */
 
 [
-    CustomIndexedGetter,
     CustomNamedGetter
 ] interface HTMLFormElement : HTMLElement {
     [Reflect=accept_charset] attribute DOMString acceptCharset;
@@ -34,6 +33,7 @@
 
     readonly attribute HTMLCollection elements;
     readonly attribute long length;
+    [ImplementedAs=item] getter Node(unsigned long index);
 
     [ImplementedAs=submitFromJavaScript] void submit();
     void reset();

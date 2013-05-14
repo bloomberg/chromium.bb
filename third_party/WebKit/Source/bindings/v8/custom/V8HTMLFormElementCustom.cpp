@@ -40,16 +40,6 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8HTMLFormElement::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
-{
-    HTMLFormElement* form = V8HTMLFormElement::toNative(info.Holder());
-
-    RefPtr<Node> formElement = form->elements()->item(index);
-    if (!formElement)
-        return v8Undefined();
-    return toV8Fast(formElement.release(), info, form);
-}
-
 v8::Handle<v8::Value> V8HTMLFormElement::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     HTMLFormElement* imp = V8HTMLFormElement::toNative(info.Holder());
