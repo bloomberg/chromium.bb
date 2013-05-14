@@ -70,22 +70,22 @@ struct SerializeObject {
 // 11: Adds support for pageScaleFactor
 // 12: Adds support for hasPasswordData in HTTP body
 // 13: Adds support for URL (FileSystem URL)
+// 14: Adds list of referenced files, version written only for first item.
 // Should be const, but unit tests may modify it.
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See CreateHistoryStateForURL.
 //
-int kVersion = 13;
+int kVersion = 14;
 
 // A bunch of convenience functions to read/write to SerializeObjects.
 // The serializers assume the input data is in the correct format and so does
 // no error checking.
-inline void WriteData(const void* data, int length, SerializeObject* obj) {
+void WriteData(const void* data, int length, SerializeObject* obj) {
   obj->pickle.WriteData(static_cast<const char*>(data), length);
 }
 
-inline void ReadData(const SerializeObject* obj, const void** data,
-                     int* length) {
+void ReadData(const SerializeObject* obj, const void** data, int* length) {
   const char* tmp;
   if (obj->pickle.ReadData(&obj->iter, &tmp, length)) {
     *data = tmp;
@@ -95,8 +95,7 @@ inline void ReadData(const SerializeObject* obj, const void** data,
   }
 }
 
-inline bool ReadBytes(const SerializeObject* obj, const void** data,
-                     int length) {
+bool ReadBytes(const SerializeObject* obj, const void** data, int length) {
   const char *tmp;
   if (!obj->pickle.ReadBytes(&obj->iter, &tmp, length))
     return false;
@@ -104,32 +103,36 @@ inline bool ReadBytes(const SerializeObject* obj, const void** data,
   return true;
 }
 
-inline void WriteInteger(int data, SerializeObject* obj) {
+void WriteInteger(int data, SerializeObject* obj) {
   obj->pickle.WriteInt(data);
 }
 
-inline int ReadInteger(const SerializeObject* obj) {
+int ReadInteger(const SerializeObject* obj) {
   int tmp;
   if (obj->pickle.ReadInt(&obj->iter, &tmp))
     return tmp;
   return 0;
 }
 
-inline void WriteInteger64(int64 data, SerializeObject* obj) {
+void ConsumeInteger(const SerializeObject* obj) {
+  int unused ALLOW_UNUSED = ReadInteger(obj);
+}
+
+void WriteInteger64(int64 data, SerializeObject* obj) {
   obj->pickle.WriteInt64(data);
 }
 
-inline int64 ReadInteger64(const SerializeObject* obj) {
+int64 ReadInteger64(const SerializeObject* obj) {
   int64 tmp = 0;
   obj->pickle.ReadInt64(&obj->iter, &tmp);
   return tmp;
 }
 
-inline void WriteReal(double data, SerializeObject* obj) {
+void WriteReal(double data, SerializeObject* obj) {
   WriteData(&data, sizeof(double), obj);
 }
 
-inline double ReadReal(const SerializeObject* obj) {
+double ReadReal(const SerializeObject* obj) {
   const void* tmp = NULL;
   int length = 0;
   double value = 0.0;
@@ -141,22 +144,22 @@ inline double ReadReal(const SerializeObject* obj) {
   return value;
 }
 
-inline void WriteBoolean(bool data, SerializeObject* obj) {
+void WriteBoolean(bool data, SerializeObject* obj) {
   obj->pickle.WriteInt(data ? 1 : 0);
 }
 
-inline bool ReadBoolean(const SerializeObject* obj) {
+bool ReadBoolean(const SerializeObject* obj) {
   bool tmp;
   if (obj->pickle.ReadBool(&obj->iter, &tmp))
     return tmp;
   return false;
 }
 
-inline void WriteGURL(const GURL& url, SerializeObject* obj) {
+void WriteGURL(const GURL& url, SerializeObject* obj) {
   obj->pickle.WriteString(url.possibly_invalid_spec());
 }
 
-inline GURL ReadGURL(const SerializeObject* obj) {
+GURL ReadGURL(const SerializeObject* obj) {
   std::string spec;
   if (obj->pickle.ReadString(&obj->iter, &spec))
     return GURL(spec);
@@ -166,7 +169,7 @@ inline GURL ReadGURL(const SerializeObject* obj) {
 // Read/WriteString pickle the WebString as <int length><WebUChar* data>.
 // If length == -1, then the WebString itself is NULL (WebString()).
 // Otherwise the length is the number of WebUChars (not bytes) in the WebString.
-inline void WriteString(const WebString& str, SerializeObject* obj) {
+void WriteString(const WebString& str, SerializeObject* obj) {
   switch (kVersion) {
     case 1:
       // Version 1 writes <length in bytes><string data>.
@@ -201,16 +204,16 @@ inline void WriteString(const WebString& str, SerializeObject* obj) {
 
 // This reads a serialized WebString from obj. If a string can't be read,
 // WebString() is returned.
-inline WebString ReadString(const SerializeObject* obj) {
+const WebUChar* ReadStringNoCopy(const SerializeObject* obj, int* num_chars) {
   int length;
 
   // Versions 1, 2, and 3 all start with an integer.
   if (!obj->pickle.ReadInt(&obj->iter, &length))
-    return WebString();
+    return NULL;
 
   // Starting with version 2, -1 means WebString().
   if (length == -1)
-    return WebString();
+    return NULL;
 
   // In version 2, the length field was the length in WebUChars.
   // In version 1 and 3 it is the length in bytes.
@@ -220,9 +223,21 @@ inline WebString ReadString(const SerializeObject* obj) {
 
   const void* data;
   if (!ReadBytes(obj, &data, bytes))
-    return WebString();
-  return WebString(static_cast<const WebUChar*>(data),
-                   bytes / sizeof(WebUChar));
+    return NULL;
+
+  if (num_chars)
+    *num_chars = bytes / sizeof(WebUChar);
+  return static_cast<const WebUChar*>(data);
+}
+
+WebString ReadString(const SerializeObject* obj) {
+  int num_chars;
+  const WebUChar* chars = ReadStringNoCopy(obj, &num_chars);
+  return chars ? WebString(chars, num_chars) : WebString();
+}
+
+void ConsumeString(const SerializeObject* obj) {
+  const WebUChar* unused ALLOW_UNUSED = ReadStringNoCopy(obj, NULL);
 }
 
 // Writes a Vector of Strings into a SerializeObject for serialization.
@@ -241,6 +256,12 @@ WebVector<WebString> ReadStringVector(const SerializeObject* obj) {
   for (int i = 0; i < num_elements; ++i)
     result[i] = ReadString(obj);
   return result;
+}
+
+void ConsumeStringVector(const SerializeObject* obj) {
+  int num_elements = ReadInteger(obj);
+  for (int i = 0; i < num_elements; ++i)
+    ConsumeString(obj);
 }
 
 // Writes a FormData object into a SerializeObject for serialization.
@@ -335,13 +356,25 @@ WebHTTPBody ReadFormData(const SerializeObject* obj) {
 // Writes the HistoryItem data into the SerializeObject object for
 // serialization.
 void WriteHistoryItem(
-    const WebHistoryItem& item, SerializeObject* obj) {
+    const WebHistoryItem& item, SerializeObject* obj, bool is_top) {
   // WARNING: This data may be persisted for later use. As such, care must be
   // taken when changing the serialized format. If a new field needs to be
   // written, only adding at the end will make it easier to deal with loading
   // older versions. Similarly, this should NOT save fields with sensitive
   // data, such as password fields.
-  WriteInteger(kVersion, obj);
+
+  if (kVersion >= 14) {
+    if (is_top) {
+      WriteInteger(kVersion, obj);
+
+      // Insert the list of referenced files, so they can be extracted easily
+      // from the serialized data (avoiding the need to call into Blink again).
+      WriteStringVector(item.getReferencedFilePaths(), obj);
+    }
+  } else {
+    WriteInteger(kVersion, obj);
+  }
+
   WriteString(item.urlString(), obj);
   WriteString(item.originalURLString(), obj);
   WriteString(item.target(), obj);
@@ -370,17 +403,16 @@ void WriteHistoryItem(
       WriteString(item.stateObject().toString(), obj);
   }
 
-  // Yes, the referrer is written twice.  This is for backwards
-  // compatibility with the format.
   WriteFormData(item.httpBody(), obj);
   WriteString(item.httpContentType(), obj);
-  WriteString(item.referrer(), obj);
+  if (kVersion < 14)
+    WriteString(item.referrer(), obj);
 
   // Subitems
   const WebVector<WebHistoryItem>& children = item.children();
   WriteInteger(static_cast<int>(children.size()), obj);
   for (size_t i = 0, c = children.size(); i < c; ++i)
-    WriteHistoryItem(children[i], obj);
+    WriteHistoryItem(children[i], obj, false);
 }
 
 // Creates a new HistoryItem tree based on the serialized string.
@@ -388,20 +420,27 @@ void WriteHistoryItem(
 WebHistoryItem ReadHistoryItem(
     const SerializeObject* obj,
     IncludeFormData include_form_data,
-    bool include_scroll_offset) {
-  // See note in WriteHistoryItem. on this.
-  obj->version = ReadInteger(obj);
+    bool include_scroll_offset,
+    bool is_top) {
+  if (is_top) {
+    obj->version = ReadInteger(obj);
 
-  if (obj->version == -1) {
-    GURL url = ReadGURL(obj);
-    WebHistoryItem item;
-    item.initialize();
-    item.setURLString(WebString::fromUTF8(url.possibly_invalid_spec()));
-    return item;
+    if (obj->version == -1) {
+      GURL url = ReadGURL(obj);
+      WebHistoryItem item;
+      item.initialize();
+      item.setURLString(WebString::fromUTF8(url.possibly_invalid_spec()));
+      return item;
+    }
+
+    if (obj->version > kVersion || obj->version < 1)
+      return WebHistoryItem();
+
+    if (obj->version >= 14)
+      ConsumeStringVector(obj);  // Skip over list of referenced files.
+  } else if (obj->version < 14) {
+    ConsumeInteger(obj);  // Skip over redundant version field.
   }
-
-  if (obj->version > kVersion || obj->version < 1)
-    return WebHistoryItem();
 
   WebHistoryItem item;
   item.initialize();
@@ -442,7 +481,10 @@ WebHistoryItem ReadHistoryItem(
   // The extra referrer string is read for backwards compat.
   const WebHTTPBody& http_body = ReadFormData(obj);
   const WebString& http_content_type = ReadString(obj);
-  ALLOW_UNUSED const WebString& unused_referrer = ReadString(obj);
+
+  if (obj->version < 14)
+    ConsumeString(obj);  // Skip unused referrer string.
+
   if (include_form_data == ALWAYS_INCLUDE_FORM_DATA ||
       (include_form_data == INCLUDE_FORM_DATA_WITHOUT_PASSWORDS &&
        !http_body.isNull() && !http_body.containsPasswordData())) {
@@ -484,7 +526,8 @@ WebHistoryItem ReadHistoryItem(
   for (int i = 0; i < num_children; ++i)
     item.appendToChildren(ReadHistoryItem(obj,
                                           include_form_data,
-                                          include_scroll_offset));
+                                          include_scroll_offset,
+                                          false));
 
   return item;
 }
@@ -505,7 +548,13 @@ WebHistoryItem HistoryItemFromString(
 
   SerializeObject obj(serialized_item.data(),
                       static_cast<int>(serialized_item.length()));
-  return ReadHistoryItem(&obj, include_form_data, include_scroll_offset);
+  return ReadHistoryItem(&obj, include_form_data, include_scroll_offset, true);
+}
+
+void ToFilePathVector(const WebVector<WebString>& input,
+                      std::vector<base::FilePath>* output) {
+  for (size_t i = 0; i < input.size(); ++i)
+    output->push_back(webkit_base::WebStringToFilePath(input[i]));
 }
 
 }  // namespace
@@ -516,7 +565,7 @@ std::string HistoryItemToString(const WebHistoryItem& item) {
     return std::string();
 
   SerializeObject obj;
-  WriteHistoryItem(item, &obj);
+  WriteHistoryItem(item, &obj, true);
   return obj.GetAsString();
 }
 
@@ -526,19 +575,30 @@ WebHistoryItem HistoryItemFromString(const std::string& serialized_item) {
 
 std::vector<base::FilePath> FilePathsFromHistoryState(
     const std::string& content_state) {
-  std::vector<base::FilePath> to_return;
   // TODO(darin): We should avoid using the WebKit API here, so that we do not
   // need to have WebKit initialized before calling this method.
-  const WebHistoryItem& item =
-      HistoryItemFromString(content_state, ALWAYS_INCLUDE_FORM_DATA, true);
-  if (item.isNull()) {
-    // Couldn't parse the string.
-    return to_return;
+
+  std::vector<base::FilePath> result;
+
+  // In newer versions of the format, the set of referenced files is computed
+  // at serialization time.
+  SerializeObject obj(content_state.data(),
+                      static_cast<int>(content_state.length()));
+  obj.version = ReadInteger(&obj);
+
+  if (obj.version > kVersion || obj.version < 1)
+    return result;
+
+  if (obj.version >= 14) {
+    ToFilePathVector(ReadStringVector(&obj), &result);
+  } else {
+    // TODO(darin): Delete this code path after we branch for M29.
+    const WebHistoryItem& item =
+        HistoryItemFromString(content_state, ALWAYS_INCLUDE_FORM_DATA, true);
+    if (!item.isNull())
+      ToFilePathVector(item.getReferencedFilePaths(), &result);
   }
-  const WebVector<WebString> file_paths = item.getReferencedFilePaths();
-  for (size_t i = 0; i < file_paths.size(); ++i)
-    to_return.push_back(webkit_base::WebStringToFilePath(file_paths[i]));
-  return to_return;
+  return result;
 }
 
 // For testing purposes only.
@@ -554,7 +614,7 @@ void HistoryItemToVersionedString(const WebHistoryItem& item, int version,
   kVersion = version;
 
   SerializeObject obj;
-  WriteHistoryItem(item, &obj);
+  WriteHistoryItem(item, &obj, true);
   *serialized_item = obj.GetAsString();
 
   kVersion = real_version;
