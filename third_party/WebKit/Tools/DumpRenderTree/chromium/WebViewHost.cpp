@@ -83,7 +83,8 @@ using namespace std;
 
 static const int screenWidth = 1920;
 static const int screenHeight = 1080;
-static const int screenUnavailableBorder = 8;
+
+const int WebViewHost::screenUnavailableBorder = 8;
 
 static int nextPageID = 1;
 

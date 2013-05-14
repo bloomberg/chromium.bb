@@ -265,7 +265,7 @@ void TestShell::resizeWindowForTest(WebViewHost* window, const WebURL& url)
         width = testWindowWidth;
         height = testWindowHeight;
     }
-    window->setWindowRect(WebRect(0, 0, width + virtualWindowBorder * 2, height + virtualWindowBorder * 2));
+    window->setWindowRect(WebRect(WebViewHost::screenUnavailableBorder, WebViewHost::screenUnavailableBorder, width + virtualWindowBorder * 2, height + virtualWindowBorder * 2));
 }
 
 void TestShell::resetTestController()

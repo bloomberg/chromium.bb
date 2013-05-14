@@ -204,6 +204,8 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     // Exposed for WebTestProxy.
     void scheduleComposite() { }
 
+    static const int screenUnavailableBorder;
+
 private:
 
     class HostMethodTask : public WebTestRunner::WebMethodTask<WebViewHost> {
