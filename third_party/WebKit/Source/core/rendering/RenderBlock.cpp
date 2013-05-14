@@ -1440,8 +1440,10 @@ void RenderBlock::updateExclusionShapeInsideInfoAfterStyleChange(const Exclusion
     if (shapeInside) {
         ExclusionShapeInsideInfo* exclusionShapeInsideInfo = ensureExclusionShapeInsideInfo();
         exclusionShapeInsideInfo->dirtyShapeSize();
-    } else
+    } else {
         setExclusionShapeInsideInfo(nullptr);
+        markShapeInsideDescendantsForLayout();
+    }
 }
 
 static inline bool exclusionInfoRequiresRelayout(const RenderBlock* block)
@@ -4766,6 +4768,22 @@ bool RenderBlock::avoidsFloats() const
 bool RenderBlock::containsFloat(RenderBox* renderer) const
 {
     return m_floatingObjects && m_floatingObjects->set().contains<RenderBox*, FloatingObjectHashTranslator>(renderer);
+}
+
+void RenderBlock::markShapeInsideDescendantsForLayout()
+{
+    if (!everHadLayout())
+        return;
+    if (childrenInline()) {
+        setNeedsLayout(true);
+        return;
+    }
+    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+        if (!child->isRenderBlock())
+            continue;
+        RenderBlock* childBlock = toRenderBlock(child);
+        childBlock->markShapeInsideDescendantsForLayout();
+    }
 }
 
 void RenderBlock::markAllDescendantsWithFloatsForLayout(RenderBox* floatToRemove, bool inLayout)

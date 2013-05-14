@@ -150,6 +150,7 @@ public:
 
     bool generatesLineBoxesForInlineChild(RenderObject*);
 
+    void markShapeInsideDescendantsForLayout();
     void markAllDescendantsWithFloatsForLayout(RenderBox* floatToRemove = 0, bool inLayout = true);
     void markSiblingsWithFloatsForLayout(RenderBox* floatToRemove = 0);
     void markPositionedObjectsForLayout();
