@@ -3237,6 +3237,13 @@
           ['linux_use_heapchecker==1', {
             'variables': {'linux_use_tcmalloc%': 1},
             'defines': ['USE_HEAPCHECKER'],
+            'conditions': [
+              ['component=="shared_library"', {
+                # See crbug.com/112389
+                # TODO(glider): replace with --dynamic-list or something
+                'ldflags': ['-rdynamic'],
+              }],
+            ],
           }],
           ['linux_use_tcmalloc==0', {
             'defines': ['NO_TCMALLOC'],
