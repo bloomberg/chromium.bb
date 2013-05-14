@@ -8,6 +8,8 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/json/json_reader.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
@@ -86,6 +88,17 @@ TEST(ProcessExtensions, MultipleExtensions) {
   ASSERT_TRUE(file_util::PathExists(base::FilePath(ext_path_list[1])));
 }
 
+namespace {
+
+void AssertEQ(const base::DictionaryValue& dict, const std::string& key,
+              const char* expected_value) {
+  std::string value;
+  ASSERT_TRUE(dict.GetString(key, &value));
+  ASSERT_STREQ(value.c_str(), expected_value);
+}
+
+}  // namespace
+
 TEST(PrepareUserDataDir, CustomPrefs) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -93,8 +106,10 @@ TEST(PrepareUserDataDir, CustomPrefs) {
   CommandLine command(CommandLine::NO_PROGRAM);
   base::DictionaryValue prefs;
   prefs.SetString("myPrefsKey", "ok");
+  prefs.SetStringWithoutPathExpansion("pref.sub", "1");
   base::DictionaryValue local_state;
   local_state.SetString("myLocalKey", "ok");
+  local_state.SetStringWithoutPathExpansion("local.state.sub", "2");
   Status status = internal::PrepareUserDataDir(
       temp_dir.path(), &prefs, &local_state);
   ASSERT_EQ(kOk, status.code());
@@ -103,10 +118,19 @@ TEST(PrepareUserDataDir, CustomPrefs) {
       temp_dir.path().AppendASCII("Default").AppendASCII("Preferences");
   std::string prefs_str;
   ASSERT_TRUE(file_util::ReadFileToString(prefs_file, &prefs_str));
-  ASSERT_TRUE(prefs_str.find("myPrefsKey") != std::string::npos);
+  scoped_ptr<base::Value> prefs_value(base::JSONReader::Read(prefs_str));
+  const base::DictionaryValue* prefs_dict = NULL;
+  ASSERT_TRUE(prefs_value->GetAsDictionary(&prefs_dict));
+  AssertEQ(*prefs_dict, "myPrefsKey", "ok");
+  AssertEQ(*prefs_dict, "pref.sub", "1");
 
   base::FilePath local_state_file = temp_dir.path().AppendASCII("Local State");
   std::string local_state_str;
   ASSERT_TRUE(file_util::ReadFileToString(local_state_file, &local_state_str));
-  ASSERT_TRUE(local_state_str.find("myLocalKey") != std::string::npos);
+  scoped_ptr<base::Value> local_state_value(
+      base::JSONReader::Read(local_state_str));
+  const base::DictionaryValue* local_state_dict = NULL;
+  ASSERT_TRUE(local_state_value->GetAsDictionary(&local_state_dict));
+  AssertEQ(*local_state_dict, "myLocalKey", "ok");
+  AssertEQ(*local_state_dict, "local.state.sub", "2");
 }

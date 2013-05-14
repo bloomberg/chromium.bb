@@ -383,8 +383,12 @@ Status WritePrefsFile(
                   "cannot parse internal JSON template: " + error_msg);
   }
 
-  if (custom_prefs)
-    prefs->MergeDictionary(custom_prefs);
+  if (custom_prefs) {
+    for (base::DictionaryValue::Iterator it(*custom_prefs); !it.IsAtEnd();
+         it.Advance()) {
+      prefs->Set(it.key(), it.value().DeepCopy());
+    }
+  }
 
   std::string prefs_str;
   base::JSONWriter::Write(prefs, &prefs_str);
