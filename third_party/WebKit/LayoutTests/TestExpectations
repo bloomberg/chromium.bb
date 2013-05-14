@@ -87,6 +87,8 @@ crbug.com/229435 [ Debug ] editing/selection/caret-at-bidi-boundary.html [ Slow 
 
 crbug.com/239554 http/tests/security/frameNavigation/opener.html [ Pass Timeout ]
 
+crbug.com/240821 inspector/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.html [ Slow Pass Failure ]
+
 # -----------------------------------------------------------------
 # TEMPORARILY SKIPPED TESTS
 # -----------------------------------------------------------------
