@@ -473,7 +473,7 @@ void RenderLayerCompositor::logLayerInfo(const RenderLayer* layer, int depth)
         return;
         
     RenderLayerBacking* backing = layer->backing();
-    if (requiresCompositing(directReasonsForCompositingLayer(layer)) || layer->isRootLayer()) {
+    if (requiresCompositing(directReasonsForCompositing(layer)) || layer->isRootLayer()) {
         ++m_obligateCompositedLayerCount;
         m_obligatoryBackingStoreBytes += backing->backingStoreMemoryEstimate();
     } else {
@@ -1641,7 +1641,7 @@ const char* RenderLayerCompositor::logReasonsForCompositing(const RenderLayer* l
     if (reasons & CompositingReasonOverflowScrollingTouch)
         return "-webkit-overflow-scrolling: touch";
 
-    if (reasons & CompositingReasonStacking)
+    if (reasons & CompositingReasonAssumedOverlap)
         return "stacking";
 
     if (reasons & CompositingReasonOverlap)
