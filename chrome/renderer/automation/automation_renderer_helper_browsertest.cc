@@ -66,7 +66,7 @@ TEST_F(AutomationRendererHelperTest, ScrollingSnapshot) {
   CompareSnapshot(png_data, kThreeBoxesMD5);
 }
 
-TEST_F(AutomationRendererHelperTest, RTLSnapshot) {
+TEST_F(AutomationRendererHelperTest, DISABLED_RTLSnapshot) {
   GetWebWidget()->resize(WebKit::WebSize(40, 90));
   const char kThreeBoxesRTLHTML[] =
       "<style> * { margin:0px; padding:0px } </style>"
