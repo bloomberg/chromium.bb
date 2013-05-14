@@ -30,6 +30,7 @@ import os.path
 import shutil
 
 from in_file import InFile
+import template_expander
 
 
 class Writer(object):
@@ -84,6 +85,8 @@ class Writer(object):
 
     def _write_file(self, output_dir, generator, file_name):
         contents = generator()
+        if type(contents) is dict:
+            contents = template_expander.apply_template(file_name + ".tmpl", contents)
         if not contents:
             return
         path = os.path.join(output_dir, file_name)

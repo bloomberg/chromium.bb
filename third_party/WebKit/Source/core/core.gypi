@@ -3658,6 +3658,8 @@
             'scripts/in_generator.py',
             'scripts/license.py',
             'scripts/name_macros.py',
+            'scripts/template_expander.py',
+            'scripts/templates/macros.tmpl',
         ],
         'conditions': [
             ['OS=="win"', {

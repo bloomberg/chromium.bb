@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (C) 2013 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,32 +26,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os.path
+import os
 import sys
 
-import in_generator
-import make_runtime_features
+_current_dir = os.path.dirname(os.path.realpath(__file__))
+# jinja2 is in chromium's third_party directory
+sys.path.append(os.path.join(_current_dir, *([os.pardir] * 4)))
+import jinja2
 
 
-# We want exactly the same parsing as RuntimeFeatureWriter
-# but generate different files.
-class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
-    class_name = "InternalRuntimeFlags"
-
-    def generate_idl(self):
-        return {
-            'features': self._features,
-        }
-
-    def generate_header(self):
-        return {
-            'features': self._features,
-            'feature_sets': self._feature_sets(),
-        }
-
-    def generate_implementation(self):
-        return None
-
-
-if __name__ == "__main__":
-    in_generator.Maker(InternalRuntimeFlagsWriter).main(sys.argv)
+def apply_template(path_to_template, params):
+    dirname, basename = os.path.split(path_to_template)
+    path_to_templates = os.path.join(_current_dir, "templates")
+    jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader([dirname, path_to_templates]))
+    template = jinja_env.get_template(basename)
+    return template.render(params)
