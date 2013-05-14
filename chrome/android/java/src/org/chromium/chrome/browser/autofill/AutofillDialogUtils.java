@@ -24,8 +24,7 @@ public class AutofillDialogUtils {
     }
 
     /**
-     * Returns the {@link Spinner} ID for the given section in the AutofillDialog
-     * layout
+     * Returns the {@link Spinner} ID for the given section in the AutofillDialog layout.
      * @param section The section to return the spinner ID for.
      * @return The Android ID for the spinner dropdown for the given section.
      */
@@ -41,6 +40,29 @@ public class AutofillDialogUtils {
                 return R.id.billing_spinner;
             case AutofillDialogConstants.SECTION_EMAIL :
                 return R.id.email_spinner;
+            default:
+                assert(false);
+                return INVALID_ID;
+        }
+    }
+
+    /**
+     * Returns the autofill menu item layout ID for the given section in the AutofillDialog layout.
+     * @param section The section to return the item layout ID for.
+     * @return The Android ID for the autofill menu item layout for the given section.
+     */
+    public static int getItemLayoutIDForSection(int section) {
+        switch (section) {
+            case AutofillDialogConstants.SECTION_CC :
+                return R.layout.autofill_menu_item;
+            case AutofillDialogConstants.SECTION_CC_BILLING :
+                return R.layout.autofill_menu_item;
+            case AutofillDialogConstants.SECTION_SHIPPING :
+                return R.layout.autofill_simple_menu_item;
+            case AutofillDialogConstants.SECTION_BILLING :
+                return R.layout.autofill_simple_menu_item;
+            case AutofillDialogConstants.SECTION_EMAIL :
+                return R.layout.autofill_simple_menu_item;
             default:
                 assert(false);
                 return INVALID_ID;

@@ -4,13 +4,33 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.NUM_SECTIONS;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_BILLING;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC_BILLING;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_EMAIL;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_SHIPPING;
+
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Property;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,21 +38,14 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemSelectedListener;
-
-import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.NUM_SECTIONS;
-import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_EMAIL;
-import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC;
-import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC_BILLING;
-import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_BILLING;
-import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_SHIPPING;
 
 import org.chromium.chrome.R;
 
@@ -46,8 +59,8 @@ import java.util.List;
  * actual workflow, but rather respond to any UI update messages coming to it
  * from the AutofillDialog.
  */
-public class AutofillDialogContentView extends LinearLayout {
-    private static final int ANIMATION_DURATION_MS = 1000;
+public class AutofillDialogView extends FrameLayout {
+    private static final int ANIMATION_DURATION_MS = 600;
     static final int INVALID_LAYOUT = -1;
     static final int LAYOUT_EDITING_EMAIL = 0;
     static final int LAYOUT_EDITING_SHIPPING = 1;
@@ -62,16 +75,38 @@ public class AutofillDialogContentView extends LinearLayout {
             mSteadyLayout.setVisibility(GONE);
         }
     };
+    private final Property<AutofillDialogView, Float> mContentPropertyHeight =
+            new Property<AutofillDialogView, Float>(Float.class, "") {
+        @Override
+        public Float get(AutofillDialogView view) {
+            return view.getVisibleContentHeight();
+        }
+
+        @Override
+        public void set(AutofillDialogView view, Float height) {
+            view.setVisibleContentHeight(height);
+        }
+    };
     private AutofillDialog mDialog;
     private Spinner[] mSpinners = new Spinner[NUM_SECTIONS];
     private AutofillDialogMenuAdapter[] mAdapters = new AutofillDialogMenuAdapter[NUM_SECTIONS];
     private ViewGroup mSteadyLayout;
     private ViewGroup[] mEditLayouts = new ViewGroup[NUM_SECTIONS];
     private int mCurrentLayout = -1;
-    private String mCVCHint;
-    private Bitmap mCVCIcon;
     private OnItemSelectedListener mOnItemSelectedListener;
     private OnItemEditButtonClickedListener mOnItemEditButtonClickedListener;
+    private View mTitle;
+    private View mContent;
+    private View mFooter;
+    private boolean mTransitionAnimationPlaying;
+    private float mVisibleContentHeight;
+    private ObjectAnimator mCurrentHeightAnimator;
+    private AnimationSet mCurrentLayoutAnimation;
+    private Drawable mBackground = new ColorDrawable(Color.LTGRAY);
+    private boolean mAnimateOnNextLayoutChange = false;
+    private int mCurrentOrientation;
+    private int mFrameHeight;
+    private int mFrameWidth;
 
     /**
      * Interface definition for a callback to be invoked when an "Edit" button
@@ -86,13 +121,17 @@ public class AutofillDialogContentView extends LinearLayout {
         void onItemEditButtonClicked(int section, int position);
     }
 
-    public AutofillDialogContentView(Context context, AttributeSet attrs) {
+    public AutofillDialogView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setWillNotDraw(false);
     }
 
     @Override
     protected void onFinishInflate () {
         mSteadyLayout = (ViewGroup) findViewById(R.id.general_layout);
+        mTitle = findViewById(R.id.title);
+        mContent = findViewById(R.id.content);
+        mFooter = findViewById(R.id.footer);
 
         for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
             mEditLayouts[i] = (ViewGroup) findViewById(
@@ -101,15 +140,96 @@ public class AutofillDialogContentView extends LinearLayout {
             mSpinners[i] = (Spinner) findViewById(id);
         }
 
+        int spec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+        for (int i = 0; i < NUM_SECTIONS; i++) {
+            (mEditLayouts[i]).measure(spec, spec);
+        }
+        findViewById(R.id.loading_icon).measure(spec, spec);
+
+        mContent.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                if (mAnimateOnNextLayoutChange && mCurrentHeightAnimator != null
+                        && !mCurrentHeightAnimator.isStarted()) {
+                    mCurrentHeightAnimator.start();
+                    mAnimateOnNextLayoutChange = false;
+                    if (mCurrentLayoutAnimation != null && !mCurrentLayoutAnimation.hasStarted()) {
+                        mCurrentLayoutAnimation.start();
+                    }
+                }
+            }
+        });
+
+        mVisibleContentHeight = getAdjustedContentLayoutHeight(LAYOUT_FETCHING, null);
         changeLayoutTo(LAYOUT_FETCHING);
     }
 
     /**
-     * Sets the controller dialog for this content view.
+     * Sets the controller dialog for this content view and initializes the view.
      * @param dialog The autofill Dialog that should be set as the controller.
      */
-    public void setAutofillDialog(AutofillDialog dialog) {
+    public void initialize(AutofillDialog dialog) {
         mDialog = dialog;
+
+        mDialog.getWindow().getDecorView().setBackground(null);
+
+        FrameLayout.LayoutParams layoutParams =
+                (android.widget.FrameLayout.LayoutParams) getLayoutParams();
+
+        mCurrentOrientation = getResources().getConfiguration().orientation;
+        mFrameHeight = getResources().getDimensionPixelSize(R.dimen.autofill_dialog_max_height);
+        layoutParams.height = mFrameHeight;
+        mFrameWidth = getResources().getDimensionPixelSize(R.dimen.autofill_dialog_width);
+        layoutParams.width = mFrameWidth;
+        requestLayout();
+    }
+
+    @Override
+    protected void onConfigurationChanged (Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (mCurrentOrientation == newConfig.orientation) return;
+
+        mCurrentOrientation = newConfig.orientation;
+        FrameLayout.LayoutParams layoutParams =
+                (android.widget.FrameLayout.LayoutParams) getLayoutParams();
+        mFrameHeight = getResources().getDimensionPixelSize(R.dimen.autofill_dialog_max_height);
+        layoutParams.height = mFrameHeight;
+        requestLayout();
+
+    }
+
+    @Override
+    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+        if (!mTransitionAnimationPlaying || child.getId() != R.id.content) {
+            return super.drawChild(canvas, child, drawingTime);
+        }
+
+        float top = mContent.getTop() + getTranslationForHiddenContentHeight();
+        float bottom = mContent.getBottom() - getTranslationForHiddenContentHeight();
+
+        canvas.save();
+        canvas.clipRect(getLeft(), top, getRight(), bottom);
+        boolean result = super.drawChild(canvas, child, drawingTime);
+        canvas.restore();
+        return result;
+    }
+
+    @Override
+    public void onDraw(Canvas canvas) {
+        if (mTransitionAnimationPlaying) {
+            mTitle.setTranslationY(getTranslationForHiddenContentHeight());
+            mContent.setTranslationY(getTranslationForHiddenContentHeight());
+            mFooter.setTranslationY(-getTranslationForHiddenContentHeight());
+        }
+
+        canvas.save();
+        mBackground.setBounds(getLeft() ,(int) (mTitle.getTop() + mTitle.getTranslationY()),
+                getRight(),(int) (mFooter.getBottom() + mFooter.getTranslationY()));
+        mBackground.draw(canvas);
+        canvas.restore();
+
+        super.onDraw(canvas);
     }
 
     /**
@@ -152,15 +272,84 @@ public class AutofillDialogContentView extends LinearLayout {
         }
     }
 
+    private int getMeasuredTitleHeight() {
+        return mTitle.getMeasuredHeight();
+    }
+
+    private int getMeasuredFooterHeight() {
+        return mFooter.getMeasuredHeight();
+    }
+
+    private float getTranslationForHiddenContentHeight() {
+        return (mContent.getMeasuredHeight() - mVisibleContentHeight) / 2;
+    }
+
+    private int getAdjustedContentLayoutHeight(int mode, View layout) {
+        assert mode != INVALID_LAYOUT;
+        int measuredContentHeight;
+        if (mode == LAYOUT_STEADY) {
+            measuredContentHeight = mSteadyLayout.getMeasuredHeight();
+        } else if (mode == LAYOUT_FETCHING) {
+            measuredContentHeight = findViewById(R.id.loading_icon).getMeasuredHeight();
+        } else {
+            if (mode == LAYOUT_EDITING_CC_BILLING) {
+                // For CC_BILLING we have to measure again since it contains both CC and
+                // BILLING also. The last measure may be for just one of them.
+                // TODO(yusufo): Do this if the mode that was measured before is wrong.
+                int widthSpec = MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.EXACTLY);
+                int heightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+                layout.measure(widthSpec, heightSpec);
+            }
+            measuredContentHeight = layout.getMeasuredHeight();
+        }
+        return Math.min(measuredContentHeight,
+                getMeasuredHeight() - getMeasuredTitleHeight() - getMeasuredFooterHeight());
+    }
+
     @Override
-    protected void onMeasure (int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        // When the new layout height is higher than the old one in a transition, we end up with a
+        // a nonzero translation value at the end of the animation, since we set translations only
+        // while we are animating we set them back to zero here on a measure.
+        mTitle.setTranslationY(0);
+        mContent.setTranslationY(0);
+        mFooter.setTranslationY(0);
+
+        Rect outRect = new Rect();
+        mDialog.getWindow().getDecorView().getWindowVisibleDisplayFrame(outRect);
+        Resources resources = getResources();
+        mFrameHeight = Math.min(
+                resources.getDimensionPixelSize(R.dimen.autofill_dialog_max_height),
+                        outRect.height() - 2 * resources.getDimensionPixelSize(
+                                R.dimen.autofill_dialog_vertical_margin));
+
+        int widthSpec = MeasureSpec.makeMeasureSpec(mFrameWidth, MeasureSpec.EXACTLY);
+        int heightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+        measureChild(mTitle, widthSpec, heightSpec);
+        measureChild(mFooter, widthSpec, heightSpec);
+        heightSpec = MeasureSpec.makeMeasureSpec(
+                mFrameHeight - getMeasuredTitleHeight() - getMeasuredFooterHeight(),
+                MeasureSpec.AT_MOST);
+        mContent.measure(widthSpec, heightSpec);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             for (int i = 0; i < NUM_SECTIONS; i++) {
                 mSpinners[i].setDropDownWidth(mSpinners[i].getMeasuredWidth());
                 mSpinners[i].setDropDownVerticalOffset(-mSpinners[i].getMeasuredHeight());
             }
         }
+        setMeasuredDimension(mFrameWidth, mFrameHeight);
+    }
+
+    @Override
+    protected void onLayout (boolean changed, int left, int top, int right, int bottom) {
+        int totalHeight = getMeasuredTitleHeight()
+                + getMeasuredFooterHeight() + mContent.getMeasuredHeight();
+        int verticalSpacing = (getMeasuredHeight() - totalHeight) / 2 ;
+        mTitle.layout(left, verticalSpacing, right, getMeasuredTitleHeight() + verticalSpacing);
+        mContent.layout(left, mTitle.getBottom(), right,
+                mTitle.getBottom() + mContent.getMeasuredHeight());
+        mFooter.layout(left, mContent.getBottom(), right, bottom - verticalSpacing);
     }
 
     /**
@@ -241,10 +430,10 @@ public class AutofillDialogContentView extends LinearLayout {
         adapter.setSuggestionExtra(suggestionTextExtra,
                 createFieldIconDrawable(suggestionIconExtra));
         adapter.addAll(items);
+        spinner.setSelection(selectedMenuItem);
         spinner.post(new Runnable() {
             @Override
             public void run() {
-                spinner.setSelection(selectedMenuItem);
                 spinner.setOnItemSelectedListener(mOnItemSelectedListener);
             }
         });
@@ -280,21 +469,45 @@ public class AutofillDialogContentView extends LinearLayout {
         mSteadyLayout.setVisibility(VISIBLE);
         if (mode == LAYOUT_STEADY) return;
 
-        addTranslateAnimations(mode);
-        addDisappearAnimationForSteadyLayout();
         View centeredLayout = mEditLayouts[getSectionForLayoutMode(mode)];
-        addAppearAnimationForEditLayout(mode, centeredLayout);
 
-        centeredLayout.setVisibility(VISIBLE);
         if (mode == LAYOUT_EDITING_CC_BILLING) {
             mEditLayouts[SECTION_CC].setVisibility(VISIBLE);
             mEditLayouts[SECTION_BILLING].setVisibility(VISIBLE);
+        } else if (mode == LAYOUT_EDITING_CC || mode == LAYOUT_EDITING_BILLING) {
+            mEditLayouts[SECTION_CC_BILLING].setVisibility(VISIBLE);
         }
-        ((View) centeredLayout.getParent()).setVisibility(VISIBLE);
-        centeredLayout.animate();
-        mSteadyLayout.animate();
-        postDelayed(mDismissSteadyLayoutRunnable, ANIMATION_DURATION_MS);
+        centeredLayout.setVisibility(VISIBLE);
+        final float fromHeight = mSteadyLayout.getMeasuredHeight();
+        final float toHeight = getAdjustedContentLayoutHeight(mode, centeredLayout);
+        PropertyValuesHolder pvhVisibleHeight = PropertyValuesHolder.ofFloat(
+                mContentPropertyHeight, fromHeight, toHeight);
+        mCurrentHeightAnimator =
+                ObjectAnimator.ofPropertyValuesHolder(this, pvhVisibleHeight);
+        mCurrentHeightAnimator.setDuration(ANIMATION_DURATION_MS);
+        mCurrentHeightAnimator.addUpdateListener(new AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animator) {
+                invalidate();
+            }
+        });
+        mCurrentHeightAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+                mTransitionAnimationPlaying = true;
+            }
 
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                mTransitionAnimationPlaying = false;
+                mVisibleContentHeight = toHeight;
+            }
+        });
+        mCurrentLayoutAnimation = addTranslateAnimations(mode);
+        mCurrentLayoutAnimation.addAnimation(addAppearAnimationForEditLayout(mode, centeredLayout));
+        mAnimateOnNextLayoutChange = true;
+
+        postDelayed(mDismissSteadyLayoutRunnable, ANIMATION_DURATION_MS);
         mCurrentLayout = mode;
     }
 
@@ -332,7 +545,7 @@ public class AutofillDialogContentView extends LinearLayout {
         return drawable;
     }
 
-    private void addAppearAnimationForEditLayout(int mode, View layout) {
+    private AnimationSet addAppearAnimationForEditLayout(int mode, View layout) {
         View centerView = mSpinners[getSectionForLayoutMode(mode)];
         float yOffset = centerView.getY() - (float) centerView.getHeight() / 2;
 
@@ -341,25 +554,16 @@ public class AutofillDialogContentView extends LinearLayout {
         ScaleAnimation scaleAnimation = new ScaleAnimation(1, 1, 0, 1,
                 Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0.5f);
         scaleAnimation.setDuration(ANIMATION_DURATION_MS);
-        scaleAnimation.setStartOffset(ANIMATION_DURATION_MS / 4);
 
         AnimationSet appearAnimation = new AnimationSet(true);
         appearAnimation.addAnimation(toLocationAnimation);
         appearAnimation.addAnimation(scaleAnimation);
 
         layout.setAnimation(appearAnimation);
+        return appearAnimation;
     }
 
-    private void addDisappearAnimationForSteadyLayout() {
-        ScaleAnimation scaleDownAnimation = new ScaleAnimation(1, 1, 1, 0,
-                Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0.5f);
-        scaleDownAnimation.setDuration(ANIMATION_DURATION_MS / 2);
-        scaleDownAnimation.setStartOffset(ANIMATION_DURATION_MS / 2);
-
-        mSteadyLayout.setAnimation(scaleDownAnimation);
-    }
-
-    private void addTranslateAnimations(int mode) {
+    private AnimationSet addTranslateAnimations(int mode) {
         float distance = getResources().
                 getDimensionPixelSize(R.dimen.autofill_translation_anim_distance);
         TranslateAnimation toTopAnimation = new TranslateAnimation(0, 0, 0, -distance);
@@ -373,13 +577,14 @@ public class AutofillDialogContentView extends LinearLayout {
             if (currentChild.getTop() <=
                     mSpinners[getSectionForLayoutMode(mode)].getTop()) {
                 currentChild.setAnimation(toTopAnimation);
-                currentChild.animate();
-            } else if (currentChild.getTop() >
-                    mSpinners[getSectionForLayoutMode(mode)].getTop()) {
+            } else {
                 currentChild.setAnimation(toBottomAnimation);
-                currentChild.animate();
             }
         }
+        AnimationSet combined = new AnimationSet(true);
+        combined.addAnimation(toBottomAnimation);
+        combined.addAnimation(toTopAnimation);
+        return combined;
     }
 
     private static int getSectionForLayoutMode(int mode) {
@@ -414,6 +619,22 @@ public class AutofillDialogContentView extends LinearLayout {
         return INVALID_LAYOUT;
     }
 
+    /**
+     * @return The current visible content height.
+     */
+    public float getVisibleContentHeight() {
+        return mVisibleContentHeight;
+    }
+
+    /**
+     * Sets the visible content height. This value is used for setting the clipRect for the canvas
+     * in layout transitions.
+     * @param height The value to use for the visible content height.
+     */
+    public void setVisibleContentHeight(float height) {
+        mVisibleContentHeight = height;
+    }
+
     private static class AutofillDialogMenuAdapter extends ArrayAdapter<AutofillDialogMenuItem> {
         private int mSection;
         private OnItemEditButtonClickedListener mOnItemEditButtonClickedListener;
@@ -440,18 +661,20 @@ public class AutofillDialogContentView extends LinearLayout {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            return initView(position, convertView, parent, false);
+            return initView(position, convertView, parent, false,
+                    AutofillDialogUtils.getItemLayoutIDForSection(mSection));
         }
 
         @Override
         public View getDropDownView(int position, View convertView, ViewGroup parent) {
-            return initView(position, convertView, parent, true);
+            return initView(position, convertView, parent, true, R.layout.autofill_menu_item);
         }
 
         private View initView(
-                final int position, View convertView, final ViewGroup parent, boolean isDropDown) {
+                final int position, View convertView, final ViewGroup parent, boolean isDropDown,
+                        int layoutId) {
             if (convertView == null) {
-                convertView = View.inflate(getContext(), R.layout.autofill_menu_item, null);
+                convertView = View.inflate(getContext(), layoutId, null);
             }
 
             AutofillDialogMenuItem item = getItem(position);

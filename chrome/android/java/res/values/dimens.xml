@@ -37,4 +37,9 @@
     <dimen name="autofill_steady_margin">5dp</dimen>
     <dimen name="autofill_steady_text_size">14sp</dimen>
     <dimen name="autofill_translation_anim_distance">300dp</dimen>
+    <dimen name="autofill_dialog_width">325dp</dimen>
+    <dimen name="autofill_dialog_max_height">500dp</dimen>
+    <dimen name="autofill_dialog_vertical_margin">15dp</dimen>
+    <dimen name="autofill_dialog_title_height">60dp</dimen>
+    <dimen name="autofill_dialog_footer_height">50dp</dimen>
 </resources>

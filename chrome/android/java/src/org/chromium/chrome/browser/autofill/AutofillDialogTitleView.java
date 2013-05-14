@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.autofill;
 import java.util.List;
 
 import android.content.Context;
-import android.view.LayoutInflater;
+import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
@@ -26,17 +26,16 @@ import org.chromium.chrome.R;
 public class AutofillDialogTitleView extends FrameLayout {
     private ArrayAdapter<String> mAdapter;
 
-    /**
-     * Creates a title using the given context with only the default dropdown items.
-     * @param context The context to create the title within.
-     */
-    public AutofillDialogTitleView(Context context) {
-        super(context);
+    public AutofillDialogTitleView(Context context, AttributeSet attrs) {
+        super(context, attrs);
 
-        LayoutInflater.from(context).inflate(R.layout.autofill_dialog_title, this, true);
-        Spinner accountsSpinner = (Spinner) findViewById(R.id.accounts_spinner);
         mAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item);
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    }
+
+    @Override
+    protected void onFinishInflate () {
+        Spinner accountsSpinner = (Spinner) findViewById(R.id.accounts_spinner);
         accountsSpinner.setAdapter(mAdapter);
         accountsSpinner.setEnabled(false);
     }
