@@ -544,6 +544,10 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         return mCanSeekForward;
     }
 
+    public int getAudioSessionId() {
+        return 0;
+    }
+
     @CalledByNative
     public static ContentVideoView createContentVideoView(int nativeContentVideoView) {
         if (sContentVideoView != null)
