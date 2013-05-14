@@ -707,6 +707,25 @@ class TestInput(cros_test_lib.MoxOutputTestCase):
     self.assertFalse(cros_build_lib.BooleanPrompt())
     self.mox.VerifyAll()
 
+  def testBooleanShellValue(self):
+    """Verify BooleanShellValue() inputs work as expected"""
+    for v in (None,):
+      self.assertTrue(cros_build_lib.BooleanShellValue(v, True))
+      self.assertFalse(cros_build_lib.BooleanShellValue(v, False))
+
+    for v in (1234, '', 'akldjsf', '"'):
+      self.assertRaises(ValueError, cros_build_lib.BooleanShellValue, v, True)
+      self.assertTrue(cros_build_lib.BooleanShellValue(v, True, msg=''))
+      self.assertFalse(cros_build_lib.BooleanShellValue(v, False, msg=''))
+
+    for v in ('yes', 'YES', 'YeS', 'y', 'Y', '1', 'true', 'True', 'TRUE',):
+      self.assertTrue(cros_build_lib.BooleanShellValue(v, True))
+      self.assertTrue(cros_build_lib.BooleanShellValue(v, False))
+
+    for v in ('no', 'NO', 'nO', 'n', 'N', '0', 'false', 'False', 'FALSE',):
+      self.assertFalse(cros_build_lib.BooleanShellValue(v, True))
+      self.assertFalse(cros_build_lib.BooleanShellValue(v, False))
+
 
 class TestTimeouts(cros_test_lib.TestCase):
 

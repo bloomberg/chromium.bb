@@ -882,6 +882,46 @@ def BooleanPrompt(prompt="Do you want to continue?", default=True,
       return False
 
 
+def BooleanShellValue(sval, default, msg=None):
+  """See if the string value is a value users typically consider as boolean
+
+  Often times people set shell variables to different values to mean "true"
+  or "false".  For example, they can do:
+    export FOO=yes
+    export BLAH=1
+    export MOO=true
+  Handle all that user ugliness here.
+
+  If the user picks an invalid value, you can use |msg| to display a non-fatal
+  warning rather than raising an exception.
+
+  Args:
+    sval: The string value we got from the user.
+    default: If we can't figure out if the value is true or false, use this.
+    msg: If |sval| is an unknown value, use |msg| to warn the user that we
+         could not decode the input.  Otherwise, raise ValueError().
+  Raises:
+    ValueError() if |sval| is an unknown value and |msg| is not set.
+  Return:
+    The interpreted boolean value of |sval|.
+  """
+  if sval is None:
+    return default
+
+  if isinstance(sval, basestring):
+    s = sval.lower()
+    if s in ('yes', 'y', '1', 'true'):
+      return True
+    elif s in ('no', 'n', '0', 'false'):
+      return False
+
+  if msg is not None:
+    Warning('%s: %r' % (msg, sval))
+    return default
+  else:
+    raise ValueError('could not decode as a boolean value: %r' % sval)
+
+
 # Suppress whacked complaints about abstract class being unused.
 #pylint: disable=R0921
 class MasterPidContextManager(object):
