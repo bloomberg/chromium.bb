@@ -31,6 +31,7 @@ namespace WebCore {
 DeviceRotationRate::DeviceRotationRate(PassRefPtr<DeviceMotionData::RotationRate> rotationRate)
     : m_rotationRate(rotationRate)
 {
+    ScriptWrappable::init(this);
 }
 
 double DeviceRotationRate::alpha(bool& isNull) const

@@ -26,12 +26,13 @@
 #ifndef DeviceAcceleration_h
 #define DeviceAcceleration_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
 
-class DeviceAcceleration : public RefCounted<DeviceAcceleration> {
+class DeviceAcceleration : public ScriptWrappable, public RefCounted<DeviceAcceleration> {
 public:
     static PassRefPtr<DeviceAcceleration> create(PassRefPtr<DeviceMotionData::Acceleration> acceleration)
     {

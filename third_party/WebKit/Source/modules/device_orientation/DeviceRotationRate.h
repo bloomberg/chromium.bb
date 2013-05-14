@@ -26,12 +26,13 @@
 #ifndef DeviceRotationRate_h
 #define DeviceRotationRate_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
 
-class DeviceRotationRate : public RefCounted<DeviceRotationRate> {
+class DeviceRotationRate : public ScriptWrappable, public RefCounted<DeviceRotationRate> {
 public:
     static PassRefPtr<DeviceRotationRate> create(PassRefPtr<DeviceMotionData::RotationRate> rotationRate)
     {

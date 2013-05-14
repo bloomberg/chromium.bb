@@ -31,6 +31,7 @@ namespace WebCore {
 DeviceAcceleration::DeviceAcceleration(PassRefPtr<DeviceMotionData::Acceleration> acceleration)
     : m_acceleration(acceleration)
 {
+    ScriptWrappable::init(this);
 }
 
 double DeviceAcceleration::x(bool& isNull) const
