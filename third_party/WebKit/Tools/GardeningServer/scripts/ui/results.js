@@ -241,6 +241,7 @@ ui.results.TestSelector = base.extends('div', {
             var linkTitle = document.createElement('a');
             linkTitle.classList.add('link-title');
             linkTitle.setAttribute('href', ui.urlForFlakinessDashboard([testName]))
+            linkTitle.target = '_blank';
             linkTitle.textContent = testName;
 
             var header = document.createElement('h3');
