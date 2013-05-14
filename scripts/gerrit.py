@@ -21,7 +21,7 @@ from chromite.lib import gerrit
 from chromite.lib import terminal
 
 
-COLOR = terminal.Color()
+COLOR = None
 
 # Map the internal names to the ones we normally show on the web ui.
 GERRIT_APPROVAL_MAP = {
@@ -273,6 +273,10 @@ Actions:"""
   opts, args = parser.parse_args(argv)
   if not args:
     parser.error('missing action')
+
+  # pylint: disable=W0603
+  global COLOR
+  COLOR = terminal.Color(enabled=opts.color)
 
   # TODO: This sucks.  We assume that all actions which take an argument are
   # a CL #.  Or at least, there's no other reason for it to start with a *.

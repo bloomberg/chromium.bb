@@ -201,6 +201,10 @@ class BaseParser(object):
           self.debug_group, "--debug", action="store_const", const="debug",
           dest="log_level", help="Alias for `--log-level=debug`. "
           "Useful for debugging bugs/failures.")
+      self.add_option_to_group(
+        self.debug_group, '--nocolor', action='store_false', dest='color',
+        default=None,
+        help='Do not use colorized output (or `export NOCOLOR=true`)')
 
     if self.caching:
       self.caching_group = self.add_option_group("Caching Options")

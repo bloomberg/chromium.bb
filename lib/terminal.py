@@ -7,6 +7,11 @@
 This module handles terminal interaction including ANSI color codes.
 """
 
+import os
+
+from chromite.lib import cros_build_lib
+
+
 class Color(object):
   """Conditionally wraps text in ANSI color escape sequences."""
   BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
@@ -15,14 +20,14 @@ class Color(object):
   BOLD_START = '\033[1m'
   RESET = '\033[0m'
 
-  def __init__(self, enabled=True):
+  def __init__(self, enabled=None):
     """Create a new Color object, optionally disabling color output.
 
     Args:
       enabled: True if color output should be enabled. If False then this
         class will not add color codes at all.
     """
-    self._enabled = enabled
+    self._enabled = self.UserEnabled() if enabled is None else enabled
 
   def Start(self, color):
     """Returns a start color code.
@@ -68,3 +73,8 @@ class Color(object):
       start = self.COLOR_START % (color + 30)
     return start + text + self.RESET
 
+  @staticmethod
+  def UserEnabled():
+    """See if the global colorization preference is enabled ($NOCOLOR env)"""
+    return not cros_build_lib.BooleanShellValue(
+        os.environ.get('NOCOLOR'), False, msg='$NOCOLOR env var is invalid')
