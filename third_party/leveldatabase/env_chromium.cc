@@ -622,6 +622,20 @@ class ChromiumEnv : public Env, public UMALogger {
     } while (error_code != ::base::PLATFORM_FILE_OK &&
              retrier.ShouldKeepTrying());
 
+    if (error_code == ::base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+      ::base::FilePath parent = CreateFilePath(fname).DirName();
+      ::base::FilePath last_parent;
+      int num_missing_ancestors = 0;
+      do {
+        if (file_util::DirectoryExists(parent))
+          break;
+        ++num_missing_ancestors;
+        last_parent = parent;
+        parent = parent.DirName();
+      } while (parent != last_parent);
+      RecordLockFileAncestors(num_missing_ancestors);
+    }
+
     if (error_code != ::base::PLATFORM_FILE_OK) {
       result = Status::IOError(fname, PlatformFileErrorString(error_code));
       RecordOSError(kLockFile, error_code);
@@ -693,6 +707,10 @@ class ChromiumEnv : public Env, public UMALogger {
     GetMethodIOErrorHistogram()->Add(method);
   }
 
+  void RecordLockFileAncestors(int num_missing_ancestors) const {
+    GetLockFileAncestorHistogram()->Add(num_missing_ancestors);
+  }
+
   void RecordOSError(MethodID method, base::PlatformFileError error) const {
     DCHECK(error < 0);
     RecordErrorAt(method);
@@ -720,7 +738,8 @@ class ChromiumEnv : public Env, public UMALogger {
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
   base::HistogramBase* GetRetryTimeHistogram(MethodID method) const;
   base::HistogramBase* GetMethodIOErrorHistogram() const;
-  base::HistogramBase* GetMaxFDHistogram(const std::string& type);
+  base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
+  base::HistogramBase* GetLockFileAncestorHistogram() const;
   base::FilePath test_directory_;
 
   ::base::Lock mu_;
@@ -772,7 +791,7 @@ base::HistogramBase* ChromiumEnv::GetMethodIOErrorHistogram() const {
 }
 
 base::HistogramBase* ChromiumEnv::GetMaxFDHistogram(
-    const std::string& type) {
+    const std::string& type) const {
   std::string uma_name(name_);
   uma_name.append(".MaxFDs.").append(type);
   // These numbers make each bucket twice as large as the previous bucket.
@@ -781,6 +800,17 @@ base::HistogramBase* ChromiumEnv::GetMaxFDHistogram(
   const int kNumBuckets = 18;
   return base::Histogram::FactoryGet(
       uma_name, kFirstEntry, kLastEntry, kNumBuckets,
+      base::Histogram::kUmaTargetedHistogramFlag);
+}
+
+base::HistogramBase* ChromiumEnv::GetLockFileAncestorHistogram() const {
+  std::string uma_name(name_);
+  uma_name.append(".LockFileAncestorsNotFound");
+  const int kMin = 1;
+  const int kMax = 10;
+  const int kNumBuckets = 11;
+  return base::LinearHistogram::FactoryGet(
+      uma_name, kMin, kMax, kNumBuckets,
       base::Histogram::kUmaTargetedHistogramFlag);
 }
 
