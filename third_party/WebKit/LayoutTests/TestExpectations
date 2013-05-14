@@ -1685,7 +1685,3 @@ crbug.com/239470 [ Mac ] fast/dom [ Pass Missing ]
 crbug.com/240700 [ Mac ] fast/css/getComputedStyle/computed-style-select-overflow.html [ Pass Missing ]
 crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-outline-offset.html [ Pass Missing ]
 crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-padding-shorthand.html [ Pass Missing ]
-
-# Something else went wrong causing MISSING in many http/tests/ tests.
-crbug.com/240700 [ Win ] http/tests [ Pass Missing ]
-crbug.com/240700 [ Mac Linux ] http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Missing ]
