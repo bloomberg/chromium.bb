@@ -201,6 +201,7 @@ v8::Handle<v8::Value> V8TestEventTarget::indexedPropertyGetter(uint32_t index, c
         return v8Undefined();
     return toV8Fast(element.release(), info, collection);
 }
+
 v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
@@ -208,16 +209,12 @@ v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::Strin
     if (info.Holder()->HasRealNamedCallbackProperty(name))
         return v8Undefined();
 
-    v8::Local<v8::Object> object = info.Holder();
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
-    TestEventTarget* collection = toNative(object);
-
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
+    TestEventTarget* collection = toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
     RefPtr<Node> element = collection->namedItem(propertyName);
-
     if (!element)
         return v8Undefined();
-
     return toV8Fast(element.release(), info, collection);
 }
 

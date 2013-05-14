@@ -3223,6 +3223,7 @@ v8::Handle<v8::Value> ${v8ClassName}::indexedPropertyGetter(uint32_t index, cons
         return v8Undefined();
     return $jsValue;
 }
+
 END
     }
     return $code;
@@ -3243,13 +3244,25 @@ sub GenerateImplementationNamedPropertyGetter
     if ($namedGetterFunction && !$hasCustomNamedGetter) {
         my $returnType = $namedGetterFunction->signature->type;
         my $methodName = $namedGetterFunction->signature->name;
+        $methodName ||= $namedGetterFunction->signature->extendedAttributes->{"ImplementedAs"};
         AddToImplIncludes("bindings/v8/V8Collection.h");
-        AddToImplIncludes("V8$returnType.h");
         $subCode .= <<END;
     desc->InstanceTemplate()->SetNamedPropertyHandler(${v8ClassName}::namedPropertyGetter, 0, 0, 0, 0);
 END
+        my $jsValue = "";
+        my $nativeType = GetNativeType($returnType);
+        my $isNull = "";
 
-        my $code .= <<END;
+        if (IsRefPtrType($returnType)) {
+            AddToImplIncludes("V8$returnType.h");
+            $isNull = "!element";
+            $jsValue = NativeToJSValue($namedGetterFunction->signature, "element.release()", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "");
+        } else {
+            $isNull = "element.isNull()";
+            $jsValue = NativeToJSValue($namedGetterFunction->signature, "element", "info.Holder()", "info.GetIsolate()");
+        }
+
+        $implementation{nameSpaceWebCore}->add(<<END);
 v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
@@ -3257,21 +3270,16 @@ v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> 
     if (info.Holder()->HasRealNamedCallbackProperty(name))
         return v8Undefined();
 
-    v8::Local<v8::Object> object = info.Holder();
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
-    $implClassName* collection = toNative(object);
-
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
+    ${implClassName}* collection = toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
-    RefPtr<$returnType> element = collection->$methodName(propertyName);
-
-    if (!element)
+    ${nativeType} element = collection->${methodName}(propertyName);
+    if (${isNull})
         return v8Undefined();
-
-    return toV8Fast(element.release(), info, collection);
+    return ${jsValue};
 }
 
 END
-        $implementation{nameSpaceWebCore}->add($code);
     }
 
     if ($hasCustomNamedGetter) {

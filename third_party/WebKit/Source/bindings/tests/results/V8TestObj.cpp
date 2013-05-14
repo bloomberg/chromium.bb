@@ -2547,6 +2547,20 @@ static v8::Handle<v8::Value> optionsObjectMethodCallback(const v8::Arguments& ar
     return TestObjV8Internal::optionsObjectMethod(args);
 }
 
+static v8::Handle<v8::Value> namedItemMethod(const v8::Arguments& args)
+{
+    if (args.Length() < 1)
+        return throwNotEnoughArgumentsError(args.GetIsolate());
+    TestObj* imp = V8TestObj::toNative(args.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, name, args[0]);
+    return v8String(imp->namedItem(name), args.GetIsolate(), ReturnUnsafeHandle);
+}
+
+static v8::Handle<v8::Value> namedItemMethodCallback(const v8::Arguments& args)
+{
+    return TestObjV8Internal::namedItemMethod(args);
+}
+
 static v8::Handle<v8::Value> methodWithExceptionMethod(const v8::Arguments& args)
 {
     TestObj* imp = V8TestObj::toNative(args.Holder());
@@ -4179,6 +4193,7 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjMethods[] = {
     {"methodWithEnumArg", TestObjV8Internal::methodWithEnumArgMethodCallback, 0, 1},
     {"serializedValue", TestObjV8Internal::serializedValueMethodCallback, 0, 1},
     {"optionsObject", TestObjV8Internal::optionsObjectMethodCallback, 0, 1},
+    {"namedItem", TestObjV8Internal::namedItemMethodCallback, 0, 1},
     {"methodWithException", TestObjV8Internal::methodWithExceptionMethodCallback, 0, 0},
     {"customMethod", TestObjV8Internal::customMethodMethodCallback, 0, 0},
     {"customMethodWithArgs", TestObjV8Internal::customMethodWithArgsMethodCallback, 0, 3},
@@ -4291,6 +4306,23 @@ v8::Handle<v8::Value> V8TestObj::indexedPropertyGetter(uint32_t index, const v8:
         return v8Undefined();
     return toV8Fast(element.release(), info, collection);
 }
+
+v8::Handle<v8::Value> V8TestObj::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
+        return v8Undefined();
+    if (info.Holder()->HasRealNamedCallbackProperty(name))
+        return v8Undefined();
+
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
+    TestObj* collection = toNative(info.Holder());
+    AtomicString propertyName = toWebCoreAtomicString(name);
+    String element = collection->namedItem(propertyName);
+    if (element.isNull())
+        return v8Undefined();
+    return v8String(element, info.GetIsolate());
+}
+
 static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -4319,6 +4351,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
         V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
     }
     desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestObj::indexedPropertyGetter, 0, 0, 0, nodeCollectionIndexedPropertyEnumerator<TestObj>);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestObj::namedPropertyGetter, 0, 0, 0, 0);
 
     // Custom Signature 'voidMethodWithArgs'
     const int voidMethodWithArgsArgc = 3;

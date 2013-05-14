@@ -89,7 +89,8 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     void optionsObject(Dictionary oo, optional Dictionary ooo);
 
     // Indexed/named properties
-    [ImplementedAs=item] getter Node(unsigned long index);
+    [ImplementedAs=item] getter Node (unsigned long index);
+    getter DOMString namedItem(DOMString name);
 
     // Exceptions
     [RaisesException] void methodWithException();
