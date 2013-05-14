@@ -26,13 +26,14 @@
 #ifndef SpeechRecognitionResultList_h
 #define SpeechRecognitionResultList_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class SpeechRecognitionResultList : public RefCounted<SpeechRecognitionResultList> {
+class SpeechRecognitionResultList : public ScriptWrappable, public RefCounted<SpeechRecognitionResultList> {
 public:
     static PassRefPtr<SpeechRecognitionResultList> create(const Vector<RefPtr<SpeechRecognitionResult> >&);
 

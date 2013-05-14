@@ -45,6 +45,7 @@ SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned long index)
 SpeechRecognitionResultList::SpeechRecognitionResultList(const Vector<RefPtr<SpeechRecognitionResult> >& results)
     : m_results(results)
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

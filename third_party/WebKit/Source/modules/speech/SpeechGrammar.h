@@ -26,6 +26,7 @@
 #ifndef SpeechGrammar_h
 #define SpeechGrammar_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -34,7 +35,7 @@ namespace WebCore {
 
 class ScriptExecutionContext;
 
-class SpeechGrammar : public RefCounted<SpeechGrammar> {
+class SpeechGrammar : public ScriptWrappable, public RefCounted<SpeechGrammar> {
 public:
     static PassRefPtr<SpeechGrammar> create(); // FIXME: The spec is not clear on what the constructor should look like.
     static PassRefPtr<SpeechGrammar> create(const KURL& src, double weight);

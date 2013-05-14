@@ -172,6 +172,7 @@ SpeechRecognition::SpeechRecognition(ScriptExecutionContext* context)
     , m_started(false)
     , m_stopping(false)
 {
+    ScriptWrappable::init(this);
     Document* document = toDocument(scriptExecutionContext());
 
     Page* page = document->page();

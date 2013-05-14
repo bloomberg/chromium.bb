@@ -58,6 +58,7 @@ void SpeechGrammarList::addFromString(const String& string, double weight)
 
 SpeechGrammarList::SpeechGrammarList()
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

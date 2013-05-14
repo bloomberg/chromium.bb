@@ -50,6 +50,7 @@ SpeechRecognitionResult::SpeechRecognitionResult(const Vector<RefPtr<SpeechRecog
     : m_alternatives(alternatives)
     , m_final(final)
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

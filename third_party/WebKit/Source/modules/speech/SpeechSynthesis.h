@@ -26,6 +26,7 @@
 #ifndef SpeechSynthesis_h
 #define SpeechSynthesis_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
 #include "core/platform/PlatformSpeechSynthesizer.h"
 #include "modules/speech/SpeechSynthesisUtterance.h"
@@ -40,7 +41,7 @@ namespace WebCore {
 class PlatformSpeechSynthesizerClient;
 class SpeechSynthesisVoice;
     
-class SpeechSynthesis : public PlatformSpeechSynthesizerClient, public RefCounted<SpeechSynthesis> {
+class SpeechSynthesis : public PlatformSpeechSynthesizerClient, public ScriptWrappable, public RefCounted<SpeechSynthesis> {
 public:
     static PassRefPtr<SpeechSynthesis> create();
     

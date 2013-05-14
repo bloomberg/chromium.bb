@@ -26,6 +26,7 @@
 #ifndef SpeechRecognition_h
 #define SpeechRecognition_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
 #include "modules/speech/SpeechGrammarList.h"
@@ -42,7 +43,7 @@ class SpeechRecognitionError;
 class SpeechRecognitionResult;
 class SpeechRecognitionResultList;
 
-class SpeechRecognition : public RefCounted<SpeechRecognition>, public ActiveDOMObject, public EventTarget {
+class SpeechRecognition : public RefCounted<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
 public:
     static PassRefPtr<SpeechRecognition> create(ScriptExecutionContext*);
     ~SpeechRecognition();

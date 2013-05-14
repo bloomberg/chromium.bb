@@ -37,6 +37,7 @@ SpeechSynthesisUtterance::SpeechSynthesisUtterance(ScriptExecutionContext* conte
     : ContextDestructionObserver(context)
     , m_platformUtterance(PlatformSpeechSynthesisUtterance::create(this))
 {
+    ScriptWrappable::init(this);
     m_platformUtterance->setText(text);
 }
 

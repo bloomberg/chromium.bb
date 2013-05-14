@@ -33,29 +33,30 @@
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
-    
+
 PassRefPtr<SpeechSynthesis> SpeechSynthesis::create()
 {
     return adoptRef(new SpeechSynthesis());
 }
-    
+
 SpeechSynthesis::SpeechSynthesis()
     : m_platformSpeechSynthesizer(PlatformSpeechSynthesizer::create(this))
     , m_currentSpeechUtterance(0)
     , m_isPaused(false)
 {
+    ScriptWrappable::init(this);
 }
-    
+
 void SpeechSynthesis::setPlatformSynthesizer(PassOwnPtr<PlatformSpeechSynthesizer> synthesizer)
 {
     m_platformSpeechSynthesizer = synthesizer;
 }
-    
+
 void SpeechSynthesis::voicesDidChange()
 {
     m_voiceList.clear();
 }
-    
+
 const Vector<RefPtr<SpeechSynthesisVoice> >& SpeechSynthesis::getVoices()
 {
     if (m_voiceList.size())

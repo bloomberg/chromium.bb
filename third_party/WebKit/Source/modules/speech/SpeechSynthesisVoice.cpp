@@ -27,7 +27,7 @@
 #include "modules/speech/SpeechSynthesisVoice.h"
 
 namespace WebCore {
-    
+
 PassRefPtr<SpeechSynthesisVoice> SpeechSynthesisVoice::create(PassRefPtr<PlatformSpeechSynthesisVoice> voice)
 {
     return adoptRef(new SpeechSynthesisVoice(voice));
@@ -36,6 +36,7 @@ PassRefPtr<SpeechSynthesisVoice> SpeechSynthesisVoice::create(PassRefPtr<Platfor
 SpeechSynthesisVoice::SpeechSynthesisVoice(PassRefPtr<PlatformSpeechSynthesisVoice> voice)
     : m_platformVoice(voice)
 {
+    ScriptWrappable::init(this);
 }
-    
+
 } // namespace WebCore

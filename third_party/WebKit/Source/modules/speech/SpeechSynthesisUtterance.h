@@ -26,6 +26,7 @@
 #ifndef SpeechSynthesisUtterance_h
 #define SpeechSynthesisUtterance_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/EventTarget.h"
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
@@ -34,11 +35,11 @@
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
-    
-class SpeechSynthesisUtterance : public PlatformSpeechSynthesisUtteranceClient, public RefCounted<SpeechSynthesisUtterance>, public ContextDestructionObserver, public EventTarget {
+
+class SpeechSynthesisUtterance : public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public RefCounted<SpeechSynthesisUtterance>, public ContextDestructionObserver, public EventTarget {
 public:
     static PassRefPtr<SpeechSynthesisUtterance> create(ScriptExecutionContext*, const String&);
-    
+
     ~SpeechSynthesisUtterance();
 
     const String& text() const { return m_platformUtterance->text(); }
@@ -61,7 +62,7 @@ public:
 
     double startTime() const { return m_platformUtterance->startTime(); }
     void setStartTime(double startTime) { m_platformUtterance->setStartTime(startTime); }
-    
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
@@ -81,7 +82,7 @@ private:
     SpeechSynthesisUtterance(ScriptExecutionContext*, const String&);
     RefPtr<PlatformSpeechSynthesisUtterance> m_platformUtterance;
     RefPtr<SpeechSynthesisVoice> m_voice;
-    
+
     // EventTarget
     EventTargetData m_eventTargetData;
 
@@ -91,7 +92,7 @@ private:
     virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
     virtual EventTargetData* ensureEventTargetData() OVERRIDE { return &m_eventTargetData; }
 };
-    
+
 } // namespace WebCore
 
 #endif // SpeechSynthesisUtterance_h

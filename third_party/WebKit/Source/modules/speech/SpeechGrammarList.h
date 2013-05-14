@@ -26,6 +26,7 @@
 #ifndef SpeechGrammarList_h
 #define SpeechGrammarList_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/speech/SpeechGrammar.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -34,7 +35,7 @@ namespace WebCore {
 
 class ScriptExecutionContext;
 
-class SpeechGrammarList : public RefCounted<SpeechGrammarList> {
+class SpeechGrammarList : public ScriptWrappable, public RefCounted<SpeechGrammarList> {
 public:
     static PassRefPtr<SpeechGrammarList> create();
 
