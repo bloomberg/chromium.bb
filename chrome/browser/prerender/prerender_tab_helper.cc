@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
+#include "chrome/browser/prerender/prerender_local_predictor.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,6 +29,23 @@ using content::WebContents;
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(prerender::PrerenderTabHelper);
 
 namespace prerender {
+
+namespace {
+
+void ReportTabHelperURLSeenToLocalPredictor(
+    PrerenderManager* prerender_manager,
+    const GURL& url,
+    WebContents* web_contents) {
+  if (!prerender_manager)
+    return;
+  PrerenderLocalPredictor* local_predictor =
+      prerender_manager->local_predictor();
+  if (!local_predictor)
+    return;
+  local_predictor->OnTabHelperURLSeen(url, web_contents);
+}
+
+}  // namespace
 
 // Helper class to compute pixel-based stats on the paint progress
 // between when a prerendered page is swapped in and when the onload event
@@ -152,6 +170,8 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
   if (prerender_manager->IsWebContentsPrerendering(web_contents(), NULL))
     return;
   prerender_manager->MarkWebContentsAsNotPrerendered(web_contents());
+  ReportTabHelperURLSeenToLocalPredictor(prerender_manager, url,
+                                         web_contents());
 }
 
 void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
@@ -172,6 +192,8 @@ void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
   if (prerender_manager->IsWebContentsPrerendering(web_contents(), NULL))
     return;
   prerender_manager->RecordNavigation(validated_url);
+  ReportTabHelperURLSeenToLocalPredictor(prerender_manager, validated_url,
+                                         web_contents());
 }
 
 void PrerenderTabHelper::DidStopLoading(

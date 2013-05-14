@@ -306,7 +306,8 @@ PrerenderLocalPredictor::PrerenderLocalPredictor(
     PrerenderManager* prerender_manager)
     : prerender_manager_(prerender_manager),
       is_visit_database_observer_(false),
-      weak_factory_(this) {
+      weak_factory_(this),
+      current_prerender_would_have_matched_(false) {
   RecordEvent(EVENT_CONSTRUCTED);
   if (MessageLoop::current()) {
     timer_.Start(FROM_HERE,
@@ -473,6 +474,7 @@ void PrerenderLocalPredictor::OnLookupURL(
   LogCandidateURLStats(info->candidate_urls_[0].url);
 
   WebContents* source_web_contents = NULL;
+  bool multiple_source_web_contents_candidates = false;
 
 #if !defined(OS_ANDROID)
   // We need to figure out what tab launched the prerender. We do this by
@@ -484,8 +486,10 @@ void PrerenderLocalPredictor::OnLookupURL(
   // in the future.
   for (TabContentsIterator it; !it.done(); it.Next()) {
     if (it->GetURL() == info->source_url_.url) {
-      source_web_contents = *it;
-      break;
+      if (!source_web_contents)
+        source_web_contents = *it;
+      else
+        multiple_source_web_contents_candidates = true;
     }
   }
 #endif
@@ -494,6 +498,10 @@ void PrerenderLocalPredictor::OnLookupURL(
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_NO_SOURCE_WEBCONTENTS_FOUND);
     return;
   }
+
+  if (multiple_source_web_contents_candidates)
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_MULTIPLE_SOURCE_WEBCONTENTS_FOUND);
+
 
   scoped_refptr<SessionStorageNamespace> session_storage_namespace =
       source_web_contents->GetController().GetDefaultSessionStorageNamespace();
@@ -731,6 +739,7 @@ void PrerenderLocalPredictor::IssuePrerender(
       prerender_handle_.release());
   prerender_handle_.reset(prerender_manager_->AddPrerenderFromLocalPredictor(
       url, session_storage_namespace.get(), *size));
+  current_prerender_would_have_matched_ = false;
   if (old_prerender_handle)
     old_prerender_handle->OnCancel();
 
@@ -755,6 +764,29 @@ void PrerenderLocalPredictor::IssuePrerender(
         new PrerenderProperties(url_id, url, priority, current_time));
   }
   current_prerender_->actual_start_time = current_time;
+}
+
+void PrerenderLocalPredictor::OnTabHelperURLSeen(
+    const GURL& url, WebContents* web_contents) {
+  RecordEvent(EVENT_TAB_HELPER_URL_SEEN);
+  if (current_prerender_would_have_matched_ ||
+      !prerender_handle_.get() ||
+      !prerender_handle_->Matches(url, NULL)) {
+    return;
+  }
+  RecordEvent(EVENT_TAB_HELPER_URL_SEEN_MATCH);
+  if (prerender_handle_->Matches(
+          url,
+          web_contents->GetController().GetDefaultSessionStorageNamespace())) {
+    RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH);
+  }
+  // If the namespace matches and the URL matches, we might be able to swap
+  // in. However, the actual code initating the swapin is in the renderer
+  // and is checking for other criteria (such as POSTs). There may
+  // also be conditions when a swapin should happen but does not. By recording
+  // the two previous events, we can keep an eye on the magnitude of the
+  // discrepancy.
+  current_prerender_would_have_matched_ = true;
 }
 
 }  // namespace prerender

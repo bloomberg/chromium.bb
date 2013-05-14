@@ -310,6 +310,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     return logged_in_predictor_table_;
   }
 
+  PrerenderLocalPredictor* local_predictor() {
+    return local_predictor_.get();
+  }
+
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
    public:

@@ -74,6 +74,11 @@ class PrerenderHandle : public base::NonThreadSafe,
   // True if we started a prerender, and it has finished loading.
   bool IsFinishedLoading() const;
 
+  // Returns whether the prerender matches the URL provided.
+  bool Matches(
+      const GURL& url,
+      const content::SessionStorageNamespace* session_storage_namespace) const;
+
  private:
   friend class PrerenderManager;
 

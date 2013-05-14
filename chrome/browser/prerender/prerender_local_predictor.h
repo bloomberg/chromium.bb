@@ -18,6 +18,7 @@ class HistoryService;
 
 namespace content {
 class SessionStorageNamespace;
+class WebContents;
 }
 
 namespace gfx {
@@ -84,6 +85,10 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
     EVENT_ISSUING_PRERENDER = 43,
     EVENT_NO_PRERENDER_CANDIDATES = 44,
     EVENT_GOT_HISTORY_ISSUING_LOOKUP = 45,
+    EVENT_TAB_HELPER_URL_SEEN = 46,
+    EVENT_TAB_HELPER_URL_SEEN_MATCH = 47,
+    EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH = 48,
+    EVENT_PRERENDER_URL_LOOKUP_MULTIPLE_SOURCE_WEBCONTENTS_FOUND = 49,
     EVENT_MAX_VALUE
   };
 
@@ -102,6 +107,8 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
       scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history);
 
   void OnPLTEventForURL(const GURL& url, base::TimeDelta page_load_time);
+
+  void OnTabHelperURLSeen(const GURL& url, content::WebContents* web_contents);
 
  private:
   struct PrerenderProperties;
@@ -154,6 +161,12 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
   base::hash_set<int64> url_whitelist_;
 
   base::WeakPtrFactory<PrerenderLocalPredictor> weak_factory_;
+
+  // Indicates whether the current prerender represented by prerender_handle_
+  // matched a load in some tab contents, to shed light on how many prerenders
+  // that could have possibily been swapped in were not swapped in. For
+  // measurement purposes only.
+  bool current_prerender_would_have_matched_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLocalPredictor);
 };

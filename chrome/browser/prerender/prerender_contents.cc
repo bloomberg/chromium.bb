@@ -538,7 +538,6 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
 bool PrerenderContents::Matches(
     const GURL& url,
     const SessionStorageNamespace* session_storage_namespace) const {
-  DCHECK(child_id_ == -1 || session_storage_namespace);
   if (session_storage_namespace &&
       session_storage_namespace_id_ != session_storage_namespace->id()) {
     return false;

@@ -52,6 +52,15 @@ bool PrerenderHandle::IsFinishedLoading() const {
   return prerender_data_->contents()->has_finished_loading();
 }
 
+bool PrerenderHandle::Matches(
+    const GURL& url,
+    const content::SessionStorageNamespace* session_storage_namespace) const {
+  DCHECK(CalledOnValidThread());
+  if (!prerender_data_)
+    return false;
+  return prerender_data_->contents()->Matches(url, session_storage_namespace);
+}
+
 PrerenderHandle::PrerenderHandle(
     PrerenderManager::PrerenderData* prerender_data)
     : observer_(NULL),
