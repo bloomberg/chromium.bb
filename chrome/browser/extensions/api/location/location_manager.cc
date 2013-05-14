@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/location/location_manager.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/location.h"
@@ -114,8 +115,6 @@ void LocationRequest::OnLocationUpdate(const content::Geoposition& position) {
 
 LocationManager::LocationManager(Profile* profile)
     : profile_(profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -151,7 +150,6 @@ void LocationManager::RemoveLocationRequest(const std::string& extension_id,
 }
 
 LocationManager::~LocationManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 LocationManager::LocationRequestIterator
@@ -264,6 +262,19 @@ void LocationManager::Observe(int type,
       NOTREACHED();
       break;
   }
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<LocationManager> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<LocationManager>* LocationManager::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+ // static
+LocationManager* LocationManager::Get(Profile* profile) {
+  return ProfileKeyedAPIFactory<LocationManager>::GetForProfile(profile);
 }
 
 }  // namespace extensions

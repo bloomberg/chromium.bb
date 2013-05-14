@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -34,7 +35,8 @@ struct Coordinates;
 // Profile's manager of all location watch requests created by chrome.location
 // API. Lives in the UI thread.
 class LocationManager
-    : public content::NotificationObserver,
+    : public ProfileKeyedAPI,
+      public content::NotificationObserver,
       public base::SupportsWeakPtr<LocationManager> {
  public:
   explicit LocationManager(Profile* profile);
@@ -50,8 +52,15 @@ class LocationManager
   void RemoveLocationRequest(const std::string& extension_id,
                              const std::string& name);
 
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<LocationManager>* GetFactoryInstance();
+
+  // Convenience method to get the LocationManager for a profile.
+  static LocationManager* Get(Profile* profile);
+
  private:
   friend class LocationRequest;
+  friend class ProfileKeyedAPIFactory<LocationManager>;
 
   typedef scoped_refptr<LocationRequest> LocationRequestPointer;
   typedef std::vector<LocationRequestPointer> LocationRequestList;
@@ -91,6 +100,9 @@ class LocationManager
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() { return "LocationManager"; }
 
   // Profile for this location manager.
   Profile* const profile_;

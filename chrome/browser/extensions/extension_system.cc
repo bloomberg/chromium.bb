@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
-#include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -336,7 +335,6 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   shared_->info_map();
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
-  location_manager_.reset(new LocationManager(profile_));
 
   serial_connection_manager_.reset(new ApiResourceManager<SerialConnection>(
       BrowserThread::FILE));
@@ -375,11 +373,6 @@ UserScriptMaster* ExtensionSystemImpl::user_script_master() {
 
 ExtensionProcessManager* ExtensionSystemImpl::process_manager() {
   return extension_process_manager_.get();
-}
-
-
-LocationManager* ExtensionSystemImpl::location_manager() {
-  return location_manager_.get();
 }
 
 StateStore* ExtensionSystemImpl::state_store() {

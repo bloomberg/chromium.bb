@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -119,10 +118,6 @@ UserScriptMaster* TestExtensionSystem::user_script_master() {
 
 ExtensionProcessManager* TestExtensionSystem::process_manager() {
   return extension_process_manager_.get();
-}
-
-LocationManager* TestExtensionSystem::location_manager() {
-  return location_manager_.get();
 }
 
 StateStore* TestExtensionSystem::state_store() {
