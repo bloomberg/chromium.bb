@@ -75,6 +75,12 @@ function test()
     addUISourceCode(rootURL2 + "foo/baz/script.js", false);
     dumpNavigator();
 
+    var rootURL3 = "http://localhost:8080/LayoutTests/inspector/debugger3/";
+    addUISourceCode(rootURL3 + "hasOwnProperty/__proto__/constructor/foo.js", false);
+    addUISourceCode(rootURL3 + "hasOwnProperty/__proto__/foo.js", false);
+    addUISourceCode(rootURL3 + "hasOwnProperty/foo.js", false);
+    dumpNavigator();
+
     InspectorTest.addResult("Revealing all resources:");
     for (var i = 0; i < uiSourceCodes.length; ++i)
         navigator.revealUISourceCode(uiSourceCodes[i]);

@@ -94,6 +94,22 @@ Others:
   Dumping ScriptsNavigator 'Content scripts' tab:
     localhost:8080
 
+  Dumping ScriptsNavigator 'Scripts' tab:
+    (no domain)
+    example.com
+    localhost:8080
+      LayoutTests/inspector
+        debugger/foo
+          bar
+            script.js
+            script.js?a=1
+            script.js?a=2
+          baz
+        debugger2/foo
+        debugger3/hasOwnProperty
+  Dumping ScriptsNavigator 'Content scripts' tab:
+    localhost:8080
+
 Revealing all resources:
   Dumping ScriptsNavigator 'Scripts' tab:
     (no domain)
@@ -118,6 +134,12 @@ Revealing all resources:
             script.js?a=2
           baz
             script.js
+        debugger3/hasOwnProperty
+          __proto__
+            constructor
+              foo.js
+            foo.js
+          foo.js
   Dumping ScriptsNavigator 'Content scripts' tab:
     localhost:8080
       LayoutTests/inspector/debugger/foo/bar
