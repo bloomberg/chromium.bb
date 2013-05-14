@@ -17,6 +17,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
@@ -29,6 +31,8 @@
 using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFrame;
+using WebKit::WebNode;
+using WebKit::WebNodeList;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebView;
@@ -63,6 +67,33 @@ const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
   {"jw", "jv"},
   {"tl", "fil"},
 };
+
+void GetMetaElementsWithAttribute(WebDocument* document,
+                                  const WebString& attribute_name,
+                                  const WebString& attribute_value,
+                                  std::vector<WebElement>* meta_elements) {
+  DCHECK(document);
+  DCHECK(meta_elements);
+
+  meta_elements->clear();
+  WebElement head = document->head();
+  if (head.isNull() || !head.hasChildNodes())
+    return;
+
+  WebNodeList children = head.childNodes();
+  for (size_t i = 0; i < children.length(); ++i) {
+    WebNode node = children.item(i);
+    if (!node.isElementNode())
+      continue;
+    WebElement element = node.to<WebElement>();
+    if (!element.hasTagName("meta"))
+      continue;
+    WebString value = element.getAttribute(attribute_name);
+    if (value.isNull() || value != attribute_value)
+      continue;
+    meta_elements->push_back(element);
+  }
+}
 
 }  // namespace
 
@@ -356,10 +387,10 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
 // static
 bool TranslateHelper::IsPageTranslatable(WebDocument* document) {
   std::vector<WebElement> meta_elements;
-  webkit_glue::GetMetaElementsWithAttribute(document,
-                                            ASCIIToUTF16("name"),
-                                            ASCIIToUTF16("google"),
-                                            &meta_elements);
+  GetMetaElementsWithAttribute(document,
+                               WebString::fromUTF8("name"),
+                               WebString::fromUTF8("google"),
+                               &meta_elements);
   std::vector<WebElement>::const_iterator iter;
   for (iter = meta_elements.begin(); iter != meta_elements.end(); ++iter) {
     WebString attribute = iter->getAttribute("value");

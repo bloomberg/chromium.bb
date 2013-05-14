@@ -13,7 +13,6 @@
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
-class WebDocument;
 class WebElement;
 class WebString;
 class WebView;
@@ -61,11 +60,6 @@ WEBKIT_GLUE_EXPORT bool GetAllSavableResourceLinksForCurrentPage(
     const GURL& page_url, SavableResourcesResult* savable_resources_result,
     const char** savable_schemes);
 
-// Returns true if the element with |element_id| as its id has autocomplete
-// on.
-bool ElementDoesAutoCompleteForElementWithId(WebKit::WebView* view,
-                                             const std::string& element_id);
-
 // Returns the value in an elements resource url attribute. For IMG, SCRIPT or
 // INPUT TYPE=image, returns the value in "src". For LINK TYPE=text/css, returns
 // the value in "href". For BODY, TABLE, TR, TD, returns the value in
@@ -73,14 +67,6 @@ bool ElementDoesAutoCompleteForElementWithId(WebKit::WebView* view,
 // attribute. Otherwise returns a null WebString.
 WEBKIT_GLUE_EXPORT WebKit::WebString GetSubResourceLinkFromElement(
     const WebKit::WebElement& element);
-
-// Puts the meta-elements of |document| that have the attribute |attribute_name|
-// with a value of |attribute_value| in |meta_elements|.
-WEBKIT_GLUE_EXPORT void GetMetaElementsWithAttribute(
-    WebKit::WebDocument* document,
-    const base::string16& attribute_name,
-    const base::string16& atribute_value,
-    std::vector<WebKit::WebElement>* meta_elements);
 
 }  // namespace webkit_glue
 

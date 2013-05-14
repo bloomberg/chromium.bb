@@ -237,45 +237,4 @@ bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
   return true;
 }
 
-bool ElementDoesAutoCompleteForElementWithId(WebView* view,
-                                             const std::string& element_id) {
-  WebFrame* web_frame = view->mainFrame();
-  if (!web_frame)
-    return false;
-
-  WebElement element = web_frame->document().getElementById(
-      WebString::fromUTF8(element_id));
-  if (element.isNull() || !element.hasHTMLTagName("input"))
-    return false;
-
-  WebInputElement input_element = element.to<WebInputElement>();
-  return input_element.autoComplete();
-}
-
-void GetMetaElementsWithAttribute(WebDocument* document,
-                                  const base::string16& attribute_name,
-                                  const base::string16& attribute_value,
-                                  std::vector<WebElement>* meta_elements) {
-  DCHECK(document);
-  DCHECK(meta_elements);
-  meta_elements->clear();
-  WebElement head = document->head();
-  if (head.isNull() || !head.hasChildNodes())
-    return;
-
-  WebNodeList children = head.childNodes();
-  for (size_t i = 0; i < children.length(); ++i) {
-    WebNode node = children.item(i);
-    if (!node.isElementNode())
-      continue;
-    WebElement element = node.to<WebElement>();
-    if (!element.hasTagName("meta"))
-      continue;
-    WebString value = element.getAttribute(attribute_name);
-    if (value.isNull() || value != attribute_value)
-      continue;
-    meta_elements->push_back(element);
-  }
-}
-
 }  // webkit_glue
