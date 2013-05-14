@@ -195,12 +195,13 @@ class Copier(object):
                               'Aborting copy...' % (src,))
     paths = glob.glob(src)
     if not paths:
-      if strict or (not path.optional and not sloppy):
+      if ((strict and not path.optional) or
+          (not strict and not (path.optional or path.cond) and not sloppy)):
         msg = ('%s does not exist and is required.\n'
                'You can bypass this error with --sloppy.\n'
                'Aborting copy...' % src)
         raise MissingPathError(msg)
-      elif path.optional:
+      elif path.optional or (not strict and path.cond):
         logging.debug('%s does not exist and is optional.  Skipping.', src)
       else:
         logging.warn('%s does not exist and is required.  Skipping anyway.',
@@ -264,9 +265,8 @@ class Path(object):
       mode: The mode to set for the matched files, and the contents of matched
             directories.
       optional: Whether to enforce the existence of the artifact.  If unset, the
-                script errors out if the artifact does not exist.  In 'strict'
-                mode, the Copier class ignores this flag.  In 'sloppy' mode, the
-                Copier class treats all artifacts as optional.
+                script errors out if the artifact does not exist.  In 'sloppy'
+                mode, the Copier class treats all artifacts as optional.
       strip: If |exe| is set, whether to strip the executable.
     """
     self.src = src
@@ -274,7 +274,7 @@ class Path(object):
     self.cond = cond
     self.dest = dest
     self.mode = mode
-    self.optional = optional or cond
+    self.optional = optional
     self.strip = strip
 
   def ShouldProcess(self, gyp_defines, staging_flags):
@@ -324,9 +324,11 @@ _COPY_PATHS = (
   Path('lib/*.so',
        exe=True,
        cond=C.GypSet('component', value='shared_library')),
+  # Set as optional for backwards compatibility.
   Path('lib/libpeerconnection.so',
        exe=True,
-       cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG)),
+       cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG),
+       optional=True),
   Path('libffmpegsumo.so',
        exe=True),
   Path('libpdf.so',

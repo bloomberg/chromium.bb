@@ -164,12 +164,27 @@ class FileCopyTest(CopyTest):
     self._CopyAndVerify(path, src_struct, dest_struct,
                         error=chrome_util.MustNotBeDirError)
 
-  def testElementOptional(self):
+  def testElementOptional(self, cond=None, strict=False, error=None,
+                          optional=True):
     """A path cannot be found but is optional."""
     src_struct = self.BAD_ELEMENTS
     dest_struct = []
-    path = chrome_util.Path(self.ELEMENT_SRC_NAME, optional=True)
-    self._CopyAndVerify(path, src_struct, dest_struct)
+    path = chrome_util.Path(self.ELEMENT_SRC_NAME, cond=cond, optional=optional)
+    self._CopyAndVerify(path, src_struct, dest_struct, error=error,
+                        strict=strict)
+
+  def testElementOptionalStrict(self):
+    """A path cannot be found but is optional, with --strict."""
+    self.testElementOptional(strict=True)
+
+  def testElementConditionalOK(self):
+    """A path cannot be found but has a condition, no --strict."""
+    self.testElementOptional(cond=lambda *args: True, optional=False)
+
+  def testElementConditionalFail(self):
+    """A path cannot be found but has a condition, with --strict."""
+    self.testElementOptional(cond=lambda *args: True, strict=True,
+                             optional=False, error=chrome_util.MissingPathError)
 
   def testOptionalGlob(self):
     """A glob matches nothing but is optional."""
@@ -182,12 +197,14 @@ class FileCopyTest(CopyTest):
 class SloppyFileCopyTest(FileCopyTest):
   """Test file copies with sloppy=True"""
 
-  def _CopyAndVerify(self, path, src_struct, dest_struct, error=None,
-                     strict=False, sloppy=True):
-    if error is chrome_util.MissingPathError:
-      error = None
-    CopyTest._CopyAndVerify(self, path, src_struct, dest_struct, error=error,
-                            strict=strict, sloppy=sloppy)
+  def _CopyAndVerify(self, path, src_struct, dest_struct, **kwargs):
+    if not kwargs.get('sloppy'):
+      kwargs['strict'] = False
+      kwargs['sloppy'] = True
+
+    if kwargs.get('error') is chrome_util.MissingPathError:
+      kwargs['error'] = None
+    CopyTest._CopyAndVerify(self, path, src_struct, dest_struct, **kwargs)
 
 
 class DirCopyTest(FileCopyTest):
