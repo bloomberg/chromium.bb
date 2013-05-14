@@ -70,6 +70,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/renderer/skia_benchmarking_extension.h"
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_forwarding_message_filter.h"
@@ -391,6 +392,11 @@ void RenderThreadImpl::Init() {
 
   if (command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
     RegisterExtension(MemoryBenchmarkingExtension::Get());
+
+  if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking)) {
+    LOG(WARNING) << "Enabling unsafe Skia benchmarking extension.";
+    RegisterExtension(SkiaBenchmarkingExtension::Get());
+  }
 
   context_lost_cb_.reset(new GpuVDAContextLostCallback());
 

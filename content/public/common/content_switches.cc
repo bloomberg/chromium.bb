@@ -334,6 +334,9 @@ const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
+// Enables the Skia benchmarking extension
+const char kEnableSkiaBenchmarking[]         = "enable-skia-benchmarking";
+
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
 const char kEnableLogging[]                 = "enable-logging";

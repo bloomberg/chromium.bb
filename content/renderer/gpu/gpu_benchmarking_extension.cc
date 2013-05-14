@@ -17,6 +17,7 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/rendering_benchmark.h"
+#include "content/renderer/skia_benchmarking_extension.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -48,16 +49,6 @@ static bool PNGEncodeBitmapToStream(SkWStream* stream, const SkBitmap& bm) {
 
 namespace {
 
-// Always called on the main render thread.
-// Does not need to be thread-safe.
-void InitSkGraphics() {
-  static bool init = false;
-  if (!init) {
-    SkGraphics::Init();
-    init = true;
-  }
-}
-
 class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
  public:
   explicit SkPictureRecorder(const base::FilePath& dirpath)
@@ -65,7 +56,7 @@ class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
         layer_id_(0) {
     // Let skia register known effect subclasses. This basically enables
     // reflection on those subclasses required for picture serialization.
-    InitSkGraphics();
+    content::SkiaBenchmarkingExtension::InitSkGraphics();
   }
 
   virtual WebCanvas* willPaint(const WebSize& size) {

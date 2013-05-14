@@ -850,6 +850,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGpuClientTracing,
     switches::kEnableGpuBenchmarking,
     switches::kEnableMemoryBenchmarking,
+    switches::kEnableSkiaBenchmarking,
     switches::kEnableLogging,
     switches::kEnableSpeechSynthesis,
     switches::kEnableTouchDragDrop,

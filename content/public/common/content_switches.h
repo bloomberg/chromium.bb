@@ -113,6 +113,7 @@ extern const char kDisableGestureTapHighlight[];
 extern const char kEnableGpuBenchmarking[];
 extern const char kEnableGpuClientTracing[];
 extern const char kEnableMemoryBenchmarking[];
+extern const char kEnableSkiaBenchmarking[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kDisableMediaSource[];
 CONTENT_EXPORT extern const char kUseFakeDeviceForMediaStream[];
