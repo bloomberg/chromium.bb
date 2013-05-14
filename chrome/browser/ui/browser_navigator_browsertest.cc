@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -1285,6 +1286,23 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
       GetGoogleURL(), content::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params_incognito);
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, ViewSourceIsntSingleton) {
+  const std::string viewsource_ntp_url =
+      std::string(chrome::kViewSourceScheme) + ":" +
+      chrome::kChromeUIVersionURL;
+
+  chrome::NavigateParams viewsource_params(browser(),
+                                           GURL(viewsource_ntp_url),
+                                           content::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&viewsource_params);
+
+  chrome::NavigateParams singleton_params(browser(),
+                                          GURL(chrome::kChromeUIVersionURL),
+                                          content::PAGE_TRANSITION_LINK);
+  singleton_params.disposition = SINGLETON_TAB;
+  EXPECT_EQ(-1, chrome::GetIndexOfSingletonTab(&singleton_params));
 }
 
 } // namespace

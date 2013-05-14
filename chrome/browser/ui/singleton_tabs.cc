@@ -93,6 +93,19 @@ int GetIndexOfSingletonTab(NavigateParams* params) {
     content::WebContents* tab =
         params->browser->tab_strip_model()->GetWebContentsAt(tab_index);
 
+    GURL tab_url = tab->GetURL();
+
+    // Skip view-source tabs. This is needed because RewriteURLIfNecessary
+    // removes the "view-source:" scheme which leads to incorrect matching.
+    if (tab_url.SchemeIs(chrome::kViewSourceScheme))
+      continue;
+
+    GURL rewritten_tab_url = tab_url;
+    content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
+      &rewritten_tab_url,
+      params->browser->profile(),
+      &reverse_on_redirect);
+
     url_canon::Replacements<char> replacements;
     if (params->ref_behavior == NavigateParams::IGNORE_REF)
       replacements.ClearRef();
@@ -101,13 +114,6 @@ int GetIndexOfSingletonTab(NavigateParams* params) {
       replacements.ClearPath();
       replacements.ClearQuery();
     }
-
-    GURL tab_url = tab->GetURL();
-    GURL rewritten_tab_url = tab_url;
-    content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-        &rewritten_tab_url,
-        params->browser->profile(),
-        &reverse_on_redirect);
 
     if (CompareURLsWithReplacements(tab_url, params->url, replacements) ||
         CompareURLsWithReplacements(rewritten_tab_url,
