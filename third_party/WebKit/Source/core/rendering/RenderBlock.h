@@ -591,6 +591,7 @@ private:
     virtual void removeLeftoverAnonymousBlock(RenderBlock* child);
 
     static void collapseAnonymousBoxChild(RenderBlock* parent, RenderObject* child);
+    void moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, bool fullRemoveInsert);
 
     virtual void dirtyLinesFromChangedChild(RenderObject* child) OVERRIDE FINAL { m_lineBoxes.dirtyLinesFromChangedChild(this, child); }
 
@@ -674,6 +675,18 @@ private:
             , m_isInPlacedTree(false)
 #endif
         {
+        }
+
+        FloatingObject* clone() const
+        {
+            FloatingObject* cloneObject = new FloatingObject(type(), m_frameRect);
+            cloneObject->m_renderer = m_renderer;
+            cloneObject->m_originatingLine = m_originatingLine;
+            cloneObject->m_paginationStrut = m_paginationStrut;
+            cloneObject->m_shouldPaint = m_shouldPaint;
+            cloneObject->m_isDescendant = m_isDescendant;
+            cloneObject->m_isPlaced = m_isPlaced;
+            return cloneObject;
         }
 
         Type type() const { return static_cast<Type>(m_type); }
