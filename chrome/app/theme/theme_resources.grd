@@ -474,12 +474,6 @@
         <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="login_password_capslock.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_MANAGED" file="managed_small.png" />
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_MANAGED_MODE_AVATAR" file="managed_mode_avatar_mac.png" />
-      </if>
-      <if expr="not is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_MANAGED_MODE_AVATAR" file="managed_mode_avatar.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_BUTTON_MASK" file="maximize_button_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_MINIMIZE_BUTTON_MASK" file="minimize_button_mask.png" />
       <if expr="pp_ifdef('chromeos')">

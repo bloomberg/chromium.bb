@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -47,8 +46,6 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   bool is_gaia_picture = false;
   if (browser_view_->IsOffTheRecord()) {
     avatar = rb.GetImageNamed(browser_view_->GetOTRIconResourceID());
-  } else if (ManagedMode::IsInManagedMode()) {
-    avatar = rb.GetImageNamed(IDR_MANAGED_MODE_AVATAR);
   } else if (AvatarMenuModel::ShouldShowAvatarMenu()) {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -70,12 +67,9 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
 
   // For popups and panels which don't have the avatar button, we still
   // need to draw the taskbar decoration.
-  if (AvatarMenuModel::ShouldShowAvatarMenu() ||
-      ManagedMode::IsInManagedMode()) {
-    chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), &avatar);
-  } else {
-    chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), NULL);
-  }
+  chrome::DrawTaskbarDecoration(
+      frame_->GetNativeWindow(),
+      AvatarMenuModel::ShouldShowAvatarMenu() ? &avatar : NULL);
 }
 
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,

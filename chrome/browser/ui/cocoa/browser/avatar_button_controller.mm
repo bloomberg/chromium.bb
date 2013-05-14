@@ -8,7 +8,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
@@ -197,11 +196,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 
 - (IBAction)buttonClicked:(id)sender {
   DCHECK_EQ(self.buttonView, sender);
-  if (ManagedMode::IsInManagedMode()) {
-    ManagedMode::LeaveManagedMode();
-  } else {
-    [self showAvatarBubble];
-  }
+  [self showAvatarBubble];
 }
 
 - (void)bubbleWillClose:(NSNotification*)notif {
@@ -247,13 +242,6 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 
 // Updates the avatar information from the profile cache.
 - (void)updateAvatar {
-  if (ManagedMode::IsInManagedMode()) {
-    gfx::Image icon =
-        ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-            IDR_MANAGED_MODE_AVATAR);
-    [self setImage:icon.ToNSImage()];
-    return;
-  }
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index =

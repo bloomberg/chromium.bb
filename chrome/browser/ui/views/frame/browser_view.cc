@@ -20,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
@@ -559,8 +558,6 @@ bool BrowserView::ShouldShowAvatar() const {
   if (!IsBrowserTypeNormal())
     return false;
   if (IsOffTheRecord() && !IsGuestSession())
-    return true;
-  if (ManagedMode::IsInManagedMode())
     return true;
   // Tests may not have a profile manager.
   if (!g_browser_process->profile_manager())

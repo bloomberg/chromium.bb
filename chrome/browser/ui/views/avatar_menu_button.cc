@@ -7,7 +7,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -88,10 +87,7 @@ void AvatarMenuButton::OnMenuButtonClicked(views::View* source,
   if (incognito_)
     return;
 
-  if (ManagedMode::IsInManagedMode())
-    ManagedMode::LeaveManagedMode();
-  else
-    ShowAvatarBubble();
+  ShowAvatarBubble();
 }
 
 void AvatarMenuButton::ShowAvatarBubble() {

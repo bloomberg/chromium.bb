@@ -7,7 +7,6 @@
 #include "base/i18n/rtl.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -50,11 +49,6 @@ gboolean AvatarMenuButtonGtk::OnButtonPressed(GtkWidget* widget,
                                               GdkEventButton* event) {
   if (event->button != 1)
     return FALSE;
-
-  if (ManagedMode::IsInManagedMode()) {
-    ManagedMode::LeaveManagedMode();
-    return TRUE;
-  }
 
   ShowAvatarBubble();
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);

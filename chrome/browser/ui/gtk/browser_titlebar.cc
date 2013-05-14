@@ -19,7 +19,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -794,23 +793,17 @@ void BrowserTitlebar::UpdateAvatar() {
 
   bool is_gaia_picture = false;
   gfx::Image avatar;
-  if (ManagedMode::IsInManagedMode()) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    avatar = rb.GetNativeImageNamed(IDR_MANAGED_MODE_AVATAR,
-                                    ui::ResourceBundle::RTL_ENABLED);
-  } else {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    Profile* profile = browser_window_->browser()->profile();
-    size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-    if (index == std::string::npos)
-      return;
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  Profile* profile = browser_window_->browser()->profile();
+  size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (index == std::string::npos)
+    return;
 
-    is_gaia_picture =
-        cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
-        cache.GetGAIAPictureOfProfileAtIndex(index);
-    avatar = cache.GetAvatarIconOfProfileAtIndex(index);
-  }
+  is_gaia_picture =
+      cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
+      cache.GetGAIAPictureOfProfileAtIndex(index);
+  avatar = cache.GetAvatarIconOfProfileAtIndex(index);
   avatar_button_->SetIcon(avatar, is_gaia_picture);
   avatar_button_->set_menu_frame_style(display_avatar_on_left_ ?
       BubbleGtk::ANCHOR_TOP_LEFT : BubbleGtk::ANCHOR_TOP_RIGHT);
@@ -1013,7 +1006,7 @@ void BrowserTitlebar::ActiveWindowChanged(GdkWindow* active_window) {
 }
 
 bool BrowserTitlebar::ShouldDisplayAvatar() {
-  if (IsOffTheRecord() || ManagedMode::IsInManagedMode())
+  if (IsOffTheRecord())
     return true;
 
   if (!browser_window_->browser()->is_type_tabbed())
