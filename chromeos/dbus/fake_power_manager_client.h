@@ -47,8 +47,15 @@ class FakePowerManagerClient : public PowerManagerClient {
 
   power_manager::PowerManagementPolicy& get_policy() { return policy_; }
 
+  // Returns how many times RequestRestart() was called.
+  int request_restart_call_count() const {
+    return request_restart_call_count_;
+  }
+
  private:
   power_manager::PowerManagementPolicy policy_;
+
+  int request_restart_call_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePowerManagerClient);
 };

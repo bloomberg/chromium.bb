@@ -33,9 +33,9 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
-#include "chromeos/dbus/mock_power_manager_client.h"
-#include "chromeos/dbus/mock_update_engine_client.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/fake_update_engine_client.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -45,10 +45,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/message_center.h"
 
-using ::testing::AnyNumber;
-using ::testing::Mock;
 using ::testing::ReturnPointee;
-using ::testing::_;
 
 namespace chromeos {
 namespace system {
@@ -149,7 +146,6 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
   void VerifyGracePeriod(const base::TimeDelta& start_uptime) const;
 
   bool is_user_logged_in_;
-  UpdateEngineClient::Status update_engine_client_status_;
   // The uptime is read in the blocking thread pool and then processed on the
   // UI thread. This causes the UI thread to start processing the uptime when it
   // has increased by a small offset already. The offset is calculated and
@@ -163,13 +159,18 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
 
   scoped_ptr<AutomaticRebootManager> automatic_reboot_manager_;
 
+ protected:
+  FakePowerManagerClient* power_manager_client_;  // Not owned.
+  FakeUpdateEngineClient* update_engine_client_;  // Not owned.
+
+  // Sets the status of |update_engine_client_| to NEED_REBOOT for tests.
+  void SetUpdateStatusNeedReboot();
+
  private:
   void VerifyTimerIsStopped(const Timer* timer) const;
   void VerifyTimerIsRunning(const Timer* timer,
                             const base::TimeDelta& delay) const;
   void VerifyLoginScreenIdleTimerIsRunning() const;
-
-  void VerifyAndResetPowerManagerExpectations();
 
   base::ScopedTempDir temp_dir_;
   base::FilePath update_reboot_needed_uptime_file_;
@@ -177,9 +178,6 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
   bool reboot_after_update_;
 
   base::ThreadTaskRunnerHandle ui_thread_task_runner_handle_;
-
-  MockPowerManagerClient* power_manager_client_;  // Not owned.
-  MockUpdateEngineClient* update_engine_client_;  // Not owned.
 
   TestingPrefServiceSimple local_state_;
   MockUserManager* mock_user_manager_;  // Not owned.
@@ -320,10 +318,10 @@ base::TimeTicks MockTimeTickClock::NowTicks() {
 AutomaticRebootManagerBasicTest::AutomaticRebootManagerBasicTest()
     : is_user_logged_in_(false),
       task_runner_(new MockTimeSingleThreadTaskRunner),
-      reboot_after_update_(false),
-      ui_thread_task_runner_handle_(task_runner_),
       power_manager_client_(NULL),
       update_engine_client_(NULL),
+      reboot_after_update_(false),
+      ui_thread_task_runner_handle_(task_runner_),
       mock_user_manager_(new MockUserManager),
       user_manager_enabler_(mock_user_manager_) {
 }
@@ -347,20 +345,17 @@ void AutomaticRebootManagerBasicTest::SetUp() {
 
   TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
   AutomaticRebootManager::RegisterPrefs(local_state_.registry());
-  MockDBusThreadManager* dbus_manager = new MockDBusThreadManager;
+  MockDBusThreadManagerWithoutGMock* dbus_manager =
+      new MockDBusThreadManagerWithoutGMock;
   DBusThreadManager::InitializeForTesting(dbus_manager);
-  power_manager_client_ = dbus_manager->mock_power_manager_client();
-  update_engine_client_ = dbus_manager->mock_update_engine_client();
+  power_manager_client_ = dbus_manager->fake_power_manager_client();
+  update_engine_client_ = dbus_manager->fake_update_engine_client();
 
   EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
      .WillRepeatedly(ReturnPointee(&is_user_logged_in_));
-  EXPECT_CALL(*update_engine_client_, GetLastStatus())
-      .WillRepeatedly(ReturnPointee(&update_engine_client_status_));
 }
 
 void AutomaticRebootManagerBasicTest::TearDown() {
-  VerifyAndResetPowerManagerExpectations();
-
   // Let the AutomaticRebootManager, if any, unregister itself as an observer of
   // several subsystems.
   automatic_reboot_manager_.reset();
@@ -380,19 +375,18 @@ void AutomaticRebootManagerBasicTest::SetUpdateRebootNeededUptime(
 void AutomaticRebootManagerBasicTest::SetRebootAfterUpdate(
     bool reboot_after_update,
     bool expect_reboot) {
-  EXPECT_CALL(*power_manager_client_, RequestRestart()).Times(expect_reboot);
   reboot_after_update_ = reboot_after_update;
   local_state_.SetManagedPref(
       prefs::kRebootAfterUpdate,
       base::Value::CreateBooleanValue(reboot_after_update));
   task_runner_->RunUntilIdle();
-  VerifyAndResetPowerManagerExpectations();
+  EXPECT_EQ(expect_reboot ? 1 : 0,
+            power_manager_client_->request_restart_call_count());
 }
 
 void AutomaticRebootManagerBasicTest::SetUptimeLimit(
     const base::TimeDelta& limit,
     bool expect_reboot) {
-  EXPECT_CALL(*power_manager_client_, RequestRestart()).Times(expect_reboot);
   uptime_limit_ = limit;
   if (limit == base::TimeDelta()) {
     local_state_.RemoveManagedPref(prefs::kUptimeLimit);
@@ -402,47 +396,47 @@ void AutomaticRebootManagerBasicTest::SetUptimeLimit(
         base::Value::CreateIntegerValue(limit.InSeconds()));
   }
   task_runner_->RunUntilIdle();
-  VerifyAndResetPowerManagerExpectations();
+  EXPECT_EQ(expect_reboot ? 1 : 0,
+            power_manager_client_->request_restart_call_count());
 }
 
 void AutomaticRebootManagerBasicTest::NotifyUpdateRebootNeeded() {
-  EXPECT_CALL(*power_manager_client_, RequestRestart()).Times(0);
-  update_engine_client_status_.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
-  automatic_reboot_manager_->UpdateStatusChanged(update_engine_client_status_);
+  SetUpdateStatusNeedReboot();
+  automatic_reboot_manager_->UpdateStatusChanged(
+      update_engine_client_->GetLastStatus());
   task_runner_->RunUntilIdle();
-  VerifyAndResetPowerManagerExpectations();
+  EXPECT_EQ(0, power_manager_client_->request_restart_call_count());
 }
 
 void AutomaticRebootManagerBasicTest::NotifyResumed(bool expect_reboot) {
-  EXPECT_CALL(*power_manager_client_, RequestRestart()).Times(expect_reboot);
   automatic_reboot_manager_->SystemResumed(base::TimeDelta::FromHours(1));
   task_runner_->RunUntilIdle();
-  VerifyAndResetPowerManagerExpectations();
+  EXPECT_EQ(expect_reboot ? 1 : 0,
+            power_manager_client_->request_restart_call_count());
 }
 
 void AutomaticRebootManagerBasicTest::FastForwardBy(
     const base::TimeDelta& delta,
     bool expect_reboot) {
-  EXPECT_CALL(*power_manager_client_, RequestRestart()).Times(expect_reboot);
   task_runner_->FastForwardBy(delta);
-  VerifyAndResetPowerManagerExpectations();
+  EXPECT_EQ(expect_reboot ? 1 : 0,
+            power_manager_client_->request_restart_call_count());
 }
 
 void AutomaticRebootManagerBasicTest::FastForwardUntilNoTasksRemain(
     bool expect_reboot) {
-  EXPECT_CALL(*power_manager_client_, RequestRestart()).Times(expect_reboot);
   task_runner_->FastForwardUntilNoTasksRemain();
-  VerifyAndResetPowerManagerExpectations();
+  EXPECT_EQ(expect_reboot ? 1 : 0,
+            power_manager_client_->request_restart_call_count());
 }
 
 void AutomaticRebootManagerBasicTest::CreateAutomaticRebootManager(
     bool expect_reboot) {
-  EXPECT_CALL(*power_manager_client_, RequestRestart()).Times(expect_reboot);
   automatic_reboot_manager_.reset(new AutomaticRebootManager(
       scoped_ptr<base::TickClock>(new MockTimeTickClock(task_runner_))));
   task_runner_->RunUntilIdle();
-  VerifyAndResetPowerManagerExpectations();
+  EXPECT_EQ(expect_reboot ? 1 : 0,
+            power_manager_client_->request_restart_call_count());
 
   uptime_processing_delay_ =
       base::TimeTicks() - automatic_reboot_manager_->boot_time_ -
@@ -525,11 +519,10 @@ void AutomaticRebootManagerBasicTest::
       base::TimeDelta::FromSeconds(60));
 }
 
-void AutomaticRebootManagerBasicTest::VerifyAndResetPowerManagerExpectations() {
-  Mock::VerifyAndClearExpectations(power_manager_client_);
-  EXPECT_CALL(*power_manager_client_, AddObserver(_)).Times(AnyNumber());
-  EXPECT_CALL(*power_manager_client_, RemoveObserver(_)).Times(AnyNumber());
-  EXPECT_CALL(*power_manager_client_, SetPolicy(_)).Times(AnyNumber());
+void AutomaticRebootManagerBasicTest::SetUpdateStatusNeedReboot() {
+  UpdateEngineClient::Status client_status;
+  client_status.status = UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  update_engine_client_->set_update_engine_client_status(client_status);
 }
 
 AutomaticRebootManagerTest::AutomaticRebootManagerTest() {
@@ -1524,8 +1517,7 @@ TEST_P(AutomaticRebootManagerTest, StartInUptimeLimitGracePeriod) {
 // enabled, the device reboots immediately because the grace period ended after
 // 6 + 24 hours of uptime.
 TEST_P(AutomaticRebootManagerTest, StartAfterUpdateGracePeriod) {
-  update_engine_client_status_.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  SetUpdateStatusNeedReboot();
   SetUpdateRebootNeededUptime(base::TimeDelta::FromHours(6));
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
   SetRebootAfterUpdate(true, false);
@@ -1541,8 +1533,7 @@ TEST_P(AutomaticRebootManagerTest, StartAfterUpdateGracePeriod) {
 // enabled, a reboot is requested and a grace period is started that will end
 // after 6 + 24 hours of uptime.
 TEST_P(AutomaticRebootManagerTest, StartInUpdateGracePeriod) {
-  update_engine_client_status_.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  SetUpdateStatusNeedReboot();
   SetUpdateRebootNeededUptime(base::TimeDelta::FromHours(6));
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
@@ -1564,8 +1555,7 @@ TEST_P(AutomaticRebootManagerTest, StartInUpdateGracePeriod) {
 // enabled, no reboot occurs and a grace period is scheduled to begin after the
 // minimum of 1 hour of uptime.
 TEST_P(AutomaticRebootManagerTest, StartBeforeUpdateGracePeriod) {
-  update_engine_client_status_.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  SetUpdateStatusNeedReboot();
   SetUpdateRebootNeededUptime(base::TimeDelta::FromMinutes(10));
   task_runner_->SetUptime(base::TimeDelta::FromMinutes(20));
   SetRebootAfterUpdate(true, false);
@@ -1586,8 +1576,7 @@ TEST_P(AutomaticRebootManagerTest, StartBeforeUpdateGracePeriod) {
 // Verifies that when the policy to automatically reboot after an update is not
 // enabled, no reboot occurs and no grace period is scheduled.
 TEST_P(AutomaticRebootManagerTest, StartUpdateNoPolicy) {
-  update_engine_client_status_.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  SetUpdateStatusNeedReboot();
   SetUpdateRebootNeededUptime(base::TimeDelta::FromHours(6));
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
 
@@ -1609,8 +1598,7 @@ TEST_P(AutomaticRebootManagerTest, StartUpdateNoPolicy) {
 // reboot after an update is enabled, a reboot is requested and a grace period
 // is started that will end 24 hours from now.
 TEST_P(AutomaticRebootManagerTest, StartUpdateTimeLost) {
-  update_engine_client_status_.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  SetUpdateStatusNeedReboot();
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
   SetRebootAfterUpdate(true, false);
 
@@ -1638,8 +1626,7 @@ TEST_P(AutomaticRebootManagerTest, StartUpdateTimeLost) {
 // reboot after an update is not enabled, no reboot occurs and no grace period
 // is scheduled.
 TEST_P(AutomaticRebootManagerTest, StartUpdateNoPolicyTimeLost) {
-  update_engine_client_status_.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  SetUpdateStatusNeedReboot();
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
 
   // Verify that the device does not reboot immediately.
@@ -1690,8 +1677,7 @@ TEST_P(AutomaticRebootManagerTest, StartNoUpdate) {
 // after 6 + 24 hours of uptime.
 TEST_P(AutomaticRebootManagerTest, StartUptimeLimitBeforeUpdate) {
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
-  update_engine_client_status_.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  SetUpdateStatusNeedReboot();
   SetUpdateRebootNeededUptime(base::TimeDelta::FromHours(8));
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
@@ -1714,8 +1700,7 @@ TEST_P(AutomaticRebootManagerTest, StartUptimeLimitBeforeUpdate) {
 // after 6 + 24 hours of uptime.
 TEST_P(AutomaticRebootManagerTest, StartUpdateBeforeUptimeLimit) {
   SetUptimeLimit(base::TimeDelta::FromHours(8), false);
-  update_engine_client_status_.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  SetUpdateStatusNeedReboot();
   SetUpdateRebootNeededUptime(base::TimeDelta::FromHours(6));
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
@@ -1737,8 +1722,7 @@ TEST_P(AutomaticRebootManagerTest, StartUpdateBeforeUptimeLimit) {
 // enabled, no reboot occurs and no grace period is scheduled.
 TEST_P(AutomaticRebootManagerTest, StartNoUptime) {
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
-  update_engine_client_status_.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  SetUpdateStatusNeedReboot();
   SetUpdateRebootNeededUptime(base::TimeDelta::FromHours(6));
   SetRebootAfterUpdate(true, false);
 
