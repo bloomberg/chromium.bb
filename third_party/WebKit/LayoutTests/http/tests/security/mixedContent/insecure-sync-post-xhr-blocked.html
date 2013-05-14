@@ -6,7 +6,7 @@ if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.setCanOpenWindows();
     testRunner.setCloseRemainingWindowsWhenComplete(true);
-    testRunner.overridePreference("WebKitAllowRunningInsecureContent", false);
+    testRunner.overridePreference("WebKitAllowDisplayingInsecureContent", false);
 }
 
 window.addEventListener("message", function (e) {

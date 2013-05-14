@@ -411,7 +411,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
     unsigned long identifier = std::numeric_limits<unsigned long>::max();
     if (Frame* frame = m_document->frame()) {
         Frame* top = frame->tree()->top();
-        if (!top->loader()->mixedContentChecker()->canRunInsecureContent(top->document()->securityOrigin(), requestURL)) {
+        if (!top->loader()->mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), requestURL)) {
             m_client->didFail(error);
             return;
         }
