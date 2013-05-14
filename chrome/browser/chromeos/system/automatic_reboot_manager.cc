@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include <algorithm>
 #include <string>
 
@@ -18,12 +22,14 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -42,14 +48,24 @@ namespace system {
 
 namespace {
 
-const int kMinRebootUptimeMs = 60 * 60 * 1000;  // 1 hour.
+const int kMinRebootUptimeMs = 60 * 60 * 1000;     // 1 hour.
 const int kLoginManagerIdleTimeoutMs = 60 * 1000;  // 60 seconds.
-const int kGracePeriodMs = 24 * 60 * 60 * 1000;  // 24 hours.
+const int kGracePeriodMs = 24 * 60 * 60 * 1000;    // 24 hours.
+const int kOneKilobyte = 1 << 10;                  // 1 kB in bytes.
 
 base::TimeDelta ReadTimeDeltaFromFile(const base::FilePath& path) {
-  std::string contents;
-  if (!file_util::ReadFileToString(path, &contents))
+  base::ThreadRestrictions::AssertIOAllowed();
+  int fd = HANDLE_EINTR(open(path.value().c_str(), O_RDONLY | O_NOFOLLOW));
+  if (fd < 0)
     return base::TimeDelta();
+  file_util::ScopedFD fd_closer(&fd);
+
+  std::string contents;
+  char buffer[kOneKilobyte];
+  ssize_t length;
+  while ((length = read(fd, buffer, sizeof(buffer))) > 0)
+    contents.append(buffer, length);
+
   double seconds;
   if (!base::StringToDouble(contents.substr(0, contents.find(' ')), &seconds) ||
       seconds < 0.0) {
@@ -74,6 +90,7 @@ void GetSystemEventTimes(
 }
 
 void SaveUpdateRebootNeededUptime() {
+  base::ThreadRestrictions::AssertIOAllowed();
   const base::TimeDelta kZeroTimeDelta;
 
   base::FilePath update_reboot_needed_uptime_file;
@@ -90,11 +107,18 @@ void SaveUpdateRebootNeededUptime() {
   if (uptime == kZeroTimeDelta)
     return;
 
+  int fd = HANDLE_EINTR(open(update_reboot_needed_uptime_file.value().c_str(),
+                             O_CREAT | O_WRONLY | O_TRUNC | O_NOFOLLOW,
+                             0666));
+  if (fd < 0)
+    return;
+  file_util::ScopedFD fd_closer(&fd);
+
   std::string update_reboot_needed_uptime =
       base::DoubleToString(uptime.InSecondsF());
-  file_util::WriteFile(update_reboot_needed_uptime_file,
-                       update_reboot_needed_uptime.c_str(),
-                       update_reboot_needed_uptime.size());
+  file_util::WriteFileDescriptor(fd,
+                                 update_reboot_needed_uptime.c_str(),
+                                 update_reboot_needed_uptime.size());
 }
 
 }  // namespace
