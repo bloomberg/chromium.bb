@@ -49,10 +49,7 @@ v8::Handle<v8::Value> V8AudioContext::constructorCustom(const v8::Arguments& arg
     
     if (!args.Length()) {
         // Constructor for default AudioContext which talks to audio hardware.
-        ExceptionCode ec = 0;
-        audioContext = AudioContext::create(document, ec);
-        if (ec)
-            return setDOMException(ec, args.GetIsolate());
+        audioContext = AudioContext::create(document);
         if (!audioContext.get())
             return throwError(v8SyntaxError, "audio resources unavailable for AudioContext construction", args.GetIsolate());
     } else {

@@ -96,10 +96,8 @@ bool AudioContext::isSampleRateRangeGood(float sampleRate)
 const unsigned MaxHardwareContexts = 4;
 unsigned AudioContext::s_hardwareContextCount = 0;
     
-PassRefPtr<AudioContext> AudioContext::create(Document* document, ExceptionCode& ec)
+PassRefPtr<AudioContext> AudioContext::create(Document* document)
 {
-    UNUSED_PARAM(ec);
-
     ASSERT(document);
     ASSERT(isMainThread());
     if (s_hardwareContextCount >= MaxHardwareContexts)
