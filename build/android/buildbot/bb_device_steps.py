@@ -62,7 +62,6 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
 VALID_TESTS = set(['chromedriver', 'ui', 'unit', 'webkit', 'webkit_layout'])
 
 
-
 def SpawnCmd(command):
   """Spawn a process without waiting for termination."""
   print '>', ' '.join(map(pipes.quote, command))
@@ -76,7 +75,7 @@ def SpawnCmd(command):
 
   return subprocess.Popen(command, cwd=CHROME_SRC)
 
-def RunCmd(command, flunk_on_failure=True):
+def RunCmd(command, flunk_on_failure=True, halt_on_failure=False):
   """Run a command relative to the chrome source root."""
   code = SpawnCmd(command).wait()
   print '<', ' '.join(map(pipes.quote, command))
@@ -86,6 +85,9 @@ def RunCmd(command, flunk_on_failure=True):
       buildbot_report.PrintError()
     else:
       buildbot_report.PrintWarning()
+    # Allow steps to have both halting (i.e. 1) and non-halting exit codes.
+    if code != 0 and code != 88 and halt_on_failure:
+      raise OSError()
   return code
 
 
@@ -161,6 +163,14 @@ def RunChromeDriverTests():
           '--android-package=%s' % constants.CHROMIUM_TEST_SHELL_PACKAGE])
 
 
+def CheckInstall():
+  """Build bot step to see if adb install works on attached devices. """
+  buildbot_report.PrintNamedStep('Check device install')
+  # This step checks if apks can be installed on the devices.
+  args = ['--apk', 'build/android/CheckInstallApk-debug.apk']
+  RunCmd(['build/android/adb_install_apk.py'] + args, halt_on_failure=True)
+
+
 def InstallApk(options, test, print_step=False):
   """Install an apk to all phones.
 
@@ -175,7 +185,7 @@ def InstallApk(options, test, print_step=False):
   if options.target == 'Release':
     args.append('--release')
 
-  RunCmd(['build/android/adb_install_apk.py'] + args)
+  RunCmd(['build/android/adb_install_apk.py'] + args, halt_on_failure=True)
 
 
 def RunInstrumentationSuite(options, test):
@@ -269,12 +279,15 @@ def MainTestWrapper(options):
 
   # Device check and alert emails
   buildbot_report.PrintNamedStep('device_status_check')
-  RunCmd(['build/android/device_status_check.py'])
+  RunCmd(['build/android/device_status_check.py'], halt_on_failure=True)
 
   # Provision devices
   buildbot_report.PrintNamedStep('provision_devices')
   target = options.factory_properties.get('target', 'Debug')
   RunCmd(['build/android/provision_devices.py', '-t', target])
+
+  # Check to see if devices can install apks.
+  CheckInstall()
 
   if options.install:
     test_obj = INSTRUMENTATION_TESTS[options.install]
