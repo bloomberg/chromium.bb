@@ -98,13 +98,19 @@ WebView.prototype.maybeSetupPermissionEvent_ = function() {
 /**
  * @private
  */
-WebView.prototype.maybeSetupExecuteScript_ = function() {
+WebView.prototype.maybeSetupExecuteCodeAPI_ = function() {
   var self = this;
   this.node_['executeScript'] = function(var_args) {
     var args = [self.objectNode_.getProcessId(),
                 self.objectNode_.getRouteId()].concat(
                     Array.prototype.slice.call(arguments));
     chrome.webview.executeScript.apply(null, args);
+  }
+  this.node_['insertCSS'] = function(var_args) {
+    var args = [self.objectNode_.getProcessId(),
+                self.objectNode_.getRouteId()].concat(
+                    Array.prototype.slice.call(arguments));
+    chrome.webview.insertCSS.apply(null, args);
   }
 };
 

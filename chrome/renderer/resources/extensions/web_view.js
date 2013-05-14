@@ -149,7 +149,7 @@ function WebView(node) {
   }
   this.maybeSetupNewWindowEvent_();
   this.maybeSetupPermissionEvent_();
-  this.maybeSetupExecuteScript_();
+  this.maybeSetupExecuteCodeAPI_();
 }
 
 /**

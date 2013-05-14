@@ -79,7 +79,6 @@ void WebviewExecuteScriptFunction::OnExecuteCodeFinished(
                                                     result);
 }
 
-
 bool WebviewInsertCSSFunction::ShouldInsertCSS() const {
   return true;
 }

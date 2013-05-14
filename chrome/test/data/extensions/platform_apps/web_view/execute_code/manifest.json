@@ -1,0 +1,13 @@
+{
+  "name": "Platform App Test: <webview> New Window",
+  "description": "Loads a guest which opens a new window",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
