@@ -126,6 +126,21 @@ int32_t ReadToArrayEntireFile(PP_Instance instance,
   return PP_OK;
 }
 
+bool ReadEntireFileFromFileHandle(int fd, std::string* data) {
+  if (lseek(fd, 0, SEEK_SET) < 0)
+    return false;
+  data->clear();
+
+  int ret;
+  do {
+    char buf[8192];
+    ret = read(fd, buf, sizeof(buf));
+    if (ret > 0)
+      data->append(buf, ret);
+  } while (ret > 0);
+  return ret == 0;
+}
+
 int32_t WriteEntireBuffer(PP_Instance instance,
                           pp::FileIO* file_io,
                           int32_t offset,
@@ -169,6 +184,7 @@ void TestFileIO::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestFileIO, NotAllowMixedReadWrite, filter);
   RUN_CALLBACK_TEST(TestFileIO, WillWriteWillSetLength, filter);
   RUN_CALLBACK_TEST(TestFileIO, RequestOSFileHandle, filter);
+  RUN_CALLBACK_TEST(TestFileIO, Mmap, filter);
 
   // TODO(viettrungluu): add tests:
   //  - that PP_ERROR_PENDING is correctly returned
@@ -1089,45 +1105,172 @@ std::string TestFileIO::TestRequestOSFileHandle() {
     return ReportError("read for native FD count mismatch", cnt);
   if (msg != buf)
     return ReportMismatch("read for native FD", buf, msg);
+  PASS();
+}
 
-  // TODO(hamaji): Test CreateFileMapping for windows.
+std::string TestFileIO::TestMmap() {
 #if !defined(PPAPI_OS_WIN)
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::FileRef file_ref(file_system, "/file_os_fd");
+
+  callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
+  ASSERT_EQ(PP_OK, callback.result());
+
+  pp::FileIO_Private file_io(instance_);
+  callback.WaitForResult(file_io.Open(file_ref,
+                                      PP_FILEOPENFLAG_CREATE |
+                                      PP_FILEOPENFLAG_TRUNCATE |
+                                      PP_FILEOPENFLAG_READ |
+                                      PP_FILEOPENFLAG_WRITE,
+                                      callback.GetCallback()));
+  ASSERT_EQ(PP_OK, callback.result());
+
+  TestCompletionCallbackWithOutput<pp::PassFileHandle> output_callback(
+      instance_->pp_instance(), callback_type());
+  output_callback.WaitForResult(
+      file_io.RequestOSFileHandle(output_callback.GetCallback()));
+  PP_FileHandle handle = output_callback.output().Release();
+  ASSERT_EQ(PP_OK, output_callback.result());
+
+  if (handle == PP_kInvalidFileHandle)
+    return "FileIO::RequestOSFileHandle() returned a bad file handle.";
+  int fd = handle;
+  if (fd < 0)
+    return "FileIO::RequestOSFileHandle() returned a bad file descriptor.";
+
+  // Check write(2) for the native FD.
+  const std::string msg = "foobar";
+  ssize_t cnt = write(fd, msg.data(), msg.size());
+  if (cnt < 0)
+    return ReportError("write for native FD returned error", errno);
+  if (cnt != static_cast<ssize_t>(msg.size()))
+    return ReportError("write for native FD count mismatch", cnt);
+
+  // BEGIN mmap(2) test with a file handle opened in READ-WRITE mode.
   // Check mmap(2) for read.
-  char* mapped = reinterpret_cast<char*>(
-      mmap(NULL, msg.size(), PROT_READ, MAP_PRIVATE, fd, 0));
-  if (mapped == MAP_FAILED)
-    return ReportError("mmap(r) for native FD returned errno", errno);
-  // Make sure the buffer is cleared.
-  buf = std::string(msg.size(), '\0');
-  memcpy(&buf[0], mapped, msg.size());
-  if (msg != buf)
-    return ReportMismatch("mmap(r) for native FD", buf, msg);
-  int r = munmap(mapped, msg.size());
-  if (r < 0)
-    return ReportError("munmap for native FD returned error", errno);
+  {
+    char* mapped = reinterpret_cast<char*>(
+        mmap(NULL, msg.size(), PROT_READ, MAP_PRIVATE, fd, 0));
+    if (mapped == MAP_FAILED)
+      return ReportError("mmap(r) for native FD returned errno", errno);
+    // Make sure the buffer is cleared.
+    std::string buf = std::string(msg.size(), '\0');
+    memcpy(&buf[0], mapped, msg.size());
+    if (msg != buf)
+      return ReportMismatch("mmap(r) for native FD", buf, msg);
+    int r = munmap(mapped, msg.size());
+    if (r < 0)
+      return ReportError("munmap for native FD returned error", errno);
+  }
 
-  // Check mmap(2) for write.
-  mapped = reinterpret_cast<char*>(
-      mmap(NULL, msg.size(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
-  if (mapped == MAP_FAILED)
-    return ReportError("mmap(w) for native FD returned errno", errno);
-  // s/foo/baz/
-  strcpy(mapped, "baz");
+  // Check mmap(2) for write with MAP_PRIVATE
+  {
+    char* mapped = reinterpret_cast<char*>(
+        mmap(NULL, msg.size(), PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0));
+    if (mapped == MAP_FAILED)
+      return ReportError("mmap(r) for native FD returned errno", errno);
+    // Make sure the file is not polluted by writing to privage mmap.
+    strncpy(mapped, "baz", 3);
+    std::string read_buffer;
+    ASSERT_TRUE(ReadEntireFileFromFileHandle(fd, &read_buffer));
+    if (msg != read_buffer)
+      return ReportMismatch("file content != msg", read_buffer, msg);
+    int r = munmap(mapped, msg.size());
+    if (r < 0)
+      return ReportError("munmap for native FD returned error", errno);
+  }
 
-  r = munmap(mapped, msg.size());
-  if (r < 0)
-    return ReportError("munmap for native FD returned error", errno);
-#endif
+  // Check mmap(2) for write with MAP_SHARED.
+  {
+    char* mapped = reinterpret_cast<char*>(
+        mmap(NULL, msg.size(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+    if (mapped == MAP_FAILED)
+      return ReportError("mmap(w) for native FD returned errno", errno);
+    // s/foo/baz/
+    strncpy(mapped, "baz", 3);
+    std::string read_buffer;
+    ASSERT_TRUE(ReadEntireFileFromFileHandle(fd, &read_buffer));
+    if (read_buffer != "bazbar")
+      return ReportMismatch("file content != msg", read_buffer, "bazbar");
+    int r = munmap(mapped, msg.size());
+    if (r < 0)
+      return ReportError("munmap for native FD returned error", errno);
+  }
+  // END mmap(2) test with a file handle opened in READ-WRITE mode.
 
-#if defined(PPAPI_OS_WIN)
-  int r = _close(fd);
-#else
-  r = close(handle);
-#endif
-  if (r < 0)
+  if (close(fd) < 0)
     return ReportError("close for native FD returned error", errno);
 
-  // TODO(hamaji): Check if the file is actually updated?
+  // BEGIN mmap(2) test with a file handle opened in READONLY mode.
+  file_io = pp::FileIO_Private(instance_);
+  callback.WaitForResult(file_io.Open(file_ref,
+                                      PP_FILEOPENFLAG_READ,
+                                      callback.GetCallback()));
+  ASSERT_EQ(PP_OK, callback.result());
+
+  output_callback = TestCompletionCallbackWithOutput<pp::PassFileHandle>(
+      instance_->pp_instance(), callback_type());
+  output_callback.WaitForResult(
+      file_io.RequestOSFileHandle(output_callback.GetCallback()));
+  handle = output_callback.output().Release();
+  ASSERT_EQ(PP_OK, output_callback.result());
+
+  if (handle == PP_kInvalidFileHandle)
+    return "FileIO::RequestOSFileHandle() returned a bad file handle.";
+  fd = handle;
+  if (fd < 0)
+    return "FileIO::RequestOSFileHandle() returned a bad file descriptor.";
+
+  const std::string msg2 = "bazbar";
+
+  // Check mmap(2) for read.
+  {
+    char* mapped = reinterpret_cast<char*>(
+        mmap(NULL, msg2.size(), PROT_READ, MAP_PRIVATE, fd, 0));
+    if (mapped == MAP_FAILED)
+      return ReportError("mmap(r) for native FD returned errno", errno);
+    // Make sure the buffer is cleared.
+    std::string buf = std::string(msg2.size(), '\0');
+    memcpy(&buf[0], mapped, msg2.size());
+    if (msg2 != buf)
+      return ReportMismatch("mmap(r) for native FD", buf, msg2);
+    int r = munmap(mapped, msg2.size());
+    if (r < 0)
+      return ReportError("munmap for native FD returned error", errno);
+  }
+
+  // Check mmap(2) for write with MAP_PRIVATE
+  {
+    char* mapped = reinterpret_cast<char*>(
+        mmap(NULL, msg2.size(), PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0));
+    if (mapped == MAP_FAILED)
+      return ReportError("mmap(r) for native FD returned errno", errno);
+    // Make sure the file is not polluted by writing to privage mmap.
+    strncpy(mapped, "baz", 3);
+    std::string read_buffer;
+    ASSERT_TRUE(ReadEntireFileFromFileHandle(fd, &read_buffer));
+    if (msg2 != read_buffer)
+      return ReportMismatch("file content != msg2", read_buffer, msg2);
+    int r = munmap(mapped, msg2.size());
+    if (r < 0)
+      return ReportError("munmap for native FD returned error", errno);
+  }
+
+  // Check mmap(2) for write with MAP_SHARED.
+  {
+    char* mapped = reinterpret_cast<char*>(
+        mmap(NULL, msg2.size(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+    if (mapped != MAP_FAILED)
+      return ReportError("mmap(w) for native FD must fail when opened readonly",
+                         -1);
+  }
+  // END mmap(2) test with a file handle opened in READONLY mode.
+
+  if (close(fd) < 0)
+    return ReportError("close for native FD returned error", errno);
+#endif  // !defined(PPAPI_OS_WIN)
 
   PASS();
 }

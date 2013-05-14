@@ -97,12 +97,16 @@ bool SerializedHandle::WriteHeader(const Header& hdr, Pickle* pickle) {
     if (!pickle->WriteUInt32(hdr.size))
       return false;
   }
+  if (hdr.type == FILE) {
+    if (!pickle->WriteInt(hdr.open_flag))
+      return false;
+  }
   return true;
 }
 
 // static
 bool SerializedHandle::ReadHeader(PickleIterator* iter, Header* hdr) {
-  *hdr = Header(INVALID, 0);
+  *hdr = Header(INVALID, 0, 0);
   int type = 0;
   if (!iter->ReadInt(&type))
     return false;
@@ -116,9 +120,15 @@ bool SerializedHandle::ReadHeader(PickleIterator* iter, Header* hdr) {
       valid_type = true;
       break;
     }
+    case FILE: {
+      int open_flag = 0;
+      if (!iter->ReadInt(&open_flag))
+        return false;
+      hdr->open_flag = open_flag;
+      valid_type = true;
+    }
     case SOCKET:
     case CHANNEL_HANDLE:
-    case FILE:
     case INVALID:
       valid_type = true;
       break;

@@ -48,6 +48,7 @@ class TestFileIO : public TestCase {
   std::string TestNotAllowMixedReadWrite();
   std::string TestWillWriteWillSetLength();
   std::string TestRequestOSFileHandle();
+  std::string TestMmap();
 
   // Helper method used by TestOpen().
   // |expectations| is a combination of OpenExpectation values. The followings

@@ -21,6 +21,8 @@
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "ppapi/c/ppb_file_io.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_handle.h"
 
@@ -92,6 +94,34 @@ NaClDesc* MakeNaClDescCustom(NaClIPCAdapter* adapter) {
 
 void DeleteChannel(IPC::Channel* channel) {
   delete channel;
+}
+
+int TranslatePepperFileOpenFlags(int32_t pp_open_flags) {
+  int nacl_open_flag;
+  switch (pp_open_flags & (PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE)) {
+    case PP_FILEOPENFLAG_READ:
+      nacl_open_flag = NACL_ABI_O_RDONLY;
+      break;
+    case PP_FILEOPENFLAG_WRITE:
+      nacl_open_flag = NACL_ABI_O_WRONLY;
+      break;
+    case PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE:
+      nacl_open_flag = NACL_ABI_O_RDWR;
+      break;
+    default:
+      // NACL_ABI_O_RDONLY == 0, so make this ambiguous case readonly as a safe
+      // fallback.
+      nacl_open_flag = NACL_ABI_O_RDONLY;
+      break;
+  }
+
+  if (pp_open_flags & PP_FILEOPENFLAG_CREATE)
+    nacl_open_flag |= NACL_ABI_O_CREAT;
+  if (pp_open_flags & PP_FILEOPENFLAG_TRUNCATE)
+    nacl_open_flag |= NACL_ABI_O_TRUNC;
+  if (pp_open_flags & PP_FILEOPENFLAG_EXCLUSIVE)
+    nacl_open_flag |= NACL_ABI_O_EXCL;
+  return nacl_open_flag;
 }
 
 class NaClDescWrapper {
@@ -409,13 +439,13 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
           break;
         }
         case ppapi::proxy::SerializedHandle::FILE:
-          nacl_desc.reset(new NaClDescWrapper(NaClDescIoDescMakeFromHandle(
+          nacl_desc.reset(new NaClDescWrapper(NaClDescIoDescFromHandleAllocCtor(
 #if defined(OS_WIN)
-              iter->descriptor()
+              iter->descriptor(),
 #else
-              iter->descriptor().fd
+              iter->descriptor().fd,
 #endif
-          )));
+              TranslatePepperFileOpenFlags(iter->open_flag()))));
           break;
         case ppapi::proxy::SerializedHandle::INVALID: {
           // Nothing to do. TODO(dmichael): Should we log this? Or is it

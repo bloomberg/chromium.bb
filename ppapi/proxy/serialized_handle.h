@@ -28,12 +28,13 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
  public:
   enum Type { INVALID, SHARED_MEMORY, SOCKET, CHANNEL_HANDLE, FILE };
   struct Header {
-    Header() : type(INVALID), size(0) {}
-    Header(Type type_arg, uint32 size_arg)
-        : type(type_arg), size(size_arg) {
+    Header() : type(INVALID), size(0), open_flag(0) {}
+    Header(Type type_arg, uint32 size_arg, int32 open_flag_arg)
+        : type(type_arg), size(size_arg), open_flag(open_flag_arg) {
     }
     Type type;
     uint32 size;
+    int32 open_flag;
   };
 
   SerializedHandle();
@@ -64,6 +65,9 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     DCHECK(is_socket() || is_channel_handle() || is_file());
     return descriptor_;
   }
+  int32 open_flag() const {
+    return open_flag_;
+  }
   void set_shmem(const base::SharedMemoryHandle& handle, uint32 size) {
     type_ = SHARED_MEMORY;
     shm_handle_ = handle;
@@ -85,12 +89,14 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     shm_handle_ = base::SharedMemory::NULLHandle();
     size_ = 0;
   }
-  void set_file_handle(const IPC::PlatformFileForTransit& descriptor) {
+  void set_file_handle(const IPC::PlatformFileForTransit& descriptor,
+                       int32 open_flag) {
     type_ = FILE;
 
     descriptor_ = descriptor;
     shm_handle_ = base::SharedMemory::NULLHandle();
     size_ = 0;
+    open_flag_ = open_flag;
   }
   void set_null_shmem() {
     set_shmem(base::SharedMemory::NULLHandle(), 0);
@@ -102,12 +108,12 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     set_channel_handle(IPC::InvalidPlatformFileForTransit());
   }
   void set_null_file_handle() {
-    set_file_handle(IPC::InvalidPlatformFileForTransit());
+    set_file_handle(IPC::InvalidPlatformFileForTransit(), 0);
   }
   bool IsHandleValid() const;
 
   Header header() const {
-    return Header(type_, size_);
+    return Header(type_, size_, open_flag_);
   }
 
   // Closes the handle and sets it to invalid.
@@ -131,8 +137,11 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   base::SharedMemoryHandle shm_handle_;
   uint32 size_;
 
-  // This is valid if type == SOCKET || type == CHANNEL_HANDLE.
+  // This is valid if type == SOCKET || type == CHANNEL_HANDLE || type == FILE.
   IPC::PlatformFileForTransit descriptor_;
+
+  // This is valid if type == FILE.
+  int32 open_flag_;
 };
 
 }  // namespace proxy

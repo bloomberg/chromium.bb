@@ -121,6 +121,8 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
 
   bool is_running_in_process_;
 
+  int32_t open_flags_;
+
   base::WeakPtrFactory<PepperFileIOHost> weak_factory_;
 
   ppapi::FileIOStateManager state_manager_;

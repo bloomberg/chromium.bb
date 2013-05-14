@@ -85,6 +85,7 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       quota_policy_(quota::kQuotaLimitTypeUnknown),
       is_running_in_process_(host->IsRunningInProcess()),
+      open_flags_(0),
       weak_factory_(this) {
   // TODO(victorhsieh): eliminate plugin_delegate_ as it's no longer needed.
   webkit::ppapi::PluginInstance* plugin_instance =
@@ -138,6 +139,7 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
     return rv;
 
   int flags = 0;
+  open_flags_ = open_flags;
   if (!::ppapi::PepperFileOpenFlagsToPlatformFileFlags(open_flags, &flags))
     return PP_ERROR_BADARGUMENT;
 
@@ -439,8 +441,9 @@ int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
     return PP_ERROR_FAILED;
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
-  reply_context.params.AppendHandle(ppapi::proxy::SerializedHandle(
-      ppapi::proxy::SerializedHandle::FILE, file));
+  ppapi::proxy::SerializedHandle file_handle;
+  file_handle.set_file_handle(file, open_flags_);
+  reply_context.params.AppendHandle(file_handle);
   host()->SendReply(reply_context,
                     PpapiPluginMsg_FileIO_RequestOSFileHandleReply());
   return PP_OK_COMPLETIONPENDING;
