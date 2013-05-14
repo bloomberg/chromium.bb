@@ -218,5 +218,8 @@
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
     "includes": [29000],
   },
+  "components/component_resources.grd": {
+    "messages": [30000],
+  },
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
 }

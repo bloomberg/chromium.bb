@@ -1819,6 +1819,7 @@
         ['OS!="ios"', {
           'dependencies': [
             'common/extensions/api/api.gyp:api',
+            '../components/component_resources.gyp:component_resources',
             '../device/device.gyp:device_bluetooth_mocks',
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',

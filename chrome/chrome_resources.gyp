@@ -346,6 +346,7 @@
           'dependencies': [
             # TODO(zork): Protect this with if use_aura==1
             '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
+            '<(DEPTH)/components/component_resources.gyp:component_resources',
             '<(DEPTH)/content/content_resources.gyp:content_resources',
             '<(DEPTH)/device/device_bluetooth_strings.gyp:device_bluetooth_strings',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
