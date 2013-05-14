@@ -44,7 +44,7 @@ public:
     // DOM Level 3: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-1312295772
 
     String wholeText() const;
-    PassRefPtr<Text> replaceWholeText(const String&, ExceptionCode&);
+    PassRefPtr<Text> replaceWholeText(const String&);
     
     void recalcTextStyle(StyleChange);
     void createTextRendererIfNeeded();

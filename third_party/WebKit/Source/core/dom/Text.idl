@@ -29,7 +29,7 @@
 
     // Introduced in DOM Level 3:
     readonly attribute DOMString       wholeText;
-    [RaisesException] Text               replaceWholeText([Default=Undefined] optional DOMString content);
+    Text                               replaceWholeText([Default=Undefined] optional DOMString content);
     // ShadowAware API
     [ImplementedAs=insertionParentForBinding, PerWorldBindings] readonly attribute Node webkitInsertionParent;
 

@@ -224,7 +224,7 @@ void DateTimeFieldElement::updateVisibleValue(EventBehavior eventBehavior)
     if (textNode->wholeText() == newVisibleValue)
         return;
 
-    textNode->replaceWholeText(newVisibleValue, ASSERT_NO_EXCEPTION);
+    textNode->replaceWholeText(newVisibleValue);
     if (hasValue()) {
         setAttribute(aria_valuetextAttr, newVisibleValue);
         setAttribute(aria_valuenowAttr, String::number(valueForARIAValueNow()));

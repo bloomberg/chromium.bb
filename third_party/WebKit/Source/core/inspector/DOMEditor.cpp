@@ -265,15 +265,15 @@ public:
         return redo(ec);
     }
 
-    virtual bool undo(ExceptionCode& ec)
+    virtual bool undo(ExceptionCode&)
     {
-        m_textNode->replaceWholeText(m_oldText, ec);
+        m_textNode->replaceWholeText(m_oldText);
         return true;
     }
 
-    virtual bool redo(ExceptionCode& ec)
+    virtual bool redo(ExceptionCode&)
     {
-        m_textNode->replaceWholeText(m_text, ec);
+        m_textNode->replaceWholeText(m_text);
         return true;
     }
 
