@@ -26,6 +26,7 @@
 #define HRTFPanner_h
 
 #include "core/platform/audio/FFTConvolver.h"
+#include "core/platform/audio/HRTFDatabaseLoader.h"
 #include "core/platform/audio/Panner.h"
 #include "modules/webaudio/DelayDSPKernel.h"
 
@@ -33,7 +34,7 @@ namespace WebCore {
 
 class HRTFPanner : public Panner {
 public:
-    explicit HRTFPanner(float sampleRate);
+    HRTFPanner(float sampleRate, HRTFDatabaseLoader*);
     virtual ~HRTFPanner();
 
     // Panner
@@ -52,6 +53,8 @@ private:
     // Given an azimuth angle in the range -180 -> +180, returns the corresponding azimuth index for the database,
     // and azimuthBlend which is an interpolation value from 0 -> 1.
     int calculateDesiredAzimuthIndexAndBlend(double azimuth, double& azimuthBlend);
+
+    RefPtr<HRTFDatabaseLoader> m_databaseLoader;
 
     float m_sampleRate;
 

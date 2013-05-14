@@ -32,7 +32,6 @@
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/FFTConvolver.h"
 #include "core/platform/audio/HRTFDatabase.h"
-#include "core/platform/audio/HRTFDatabaseLoader.h"
 #include <wtf/MathExtras.h>
 #include <wtf/RefPtr.h>
 
@@ -47,8 +46,9 @@ const double MaxDelayTimeSeconds = 0.002;
 const int UninitializedAzimuth = -1;
 const unsigned RenderingQuantum = 128;
 
-HRTFPanner::HRTFPanner(float sampleRate)
+HRTFPanner::HRTFPanner(float sampleRate, HRTFDatabaseLoader* databaseLoader)
     : Panner(PanningModelHRTF)
+    , m_databaseLoader(databaseLoader)
     , m_sampleRate(sampleRate)
     , m_crossfadeSelection(CrossfadeSelection1)
     , m_azimuthIndex1(UninitializedAzimuth)
@@ -68,6 +68,7 @@ HRTFPanner::HRTFPanner(float sampleRate)
     , m_tempL2(RenderingQuantum)
     , m_tempR2(RenderingQuantum)
 {
+    ASSERT(databaseLoader);
 }
 
 HRTFPanner::~HRTFPanner()
@@ -100,7 +101,7 @@ int HRTFPanner::calculateDesiredAzimuthIndexAndBlend(double azimuth, double& azi
     if (azimuth < 0)
         azimuth += 360.0;
 
-    HRTFDatabase* database = HRTFDatabaseLoader::defaultHRTFDatabase();
+    HRTFDatabase* database = m_databaseLoader->database();
     ASSERT(database);
 
     int numberOfAzimuths = database->numberOfAzimuths();
@@ -134,8 +135,7 @@ void HRTFPanner::pan(double desiredAzimuth, double elevation, const AudioBus* in
         return;
     }
 
-    // This code only runs as long as the context is alive and after database has been loaded.
-    HRTFDatabase* database = HRTFDatabaseLoader::defaultHRTFDatabase();
+    HRTFDatabase* database = m_databaseLoader->database();
     ASSERT(database);
     if (!database) {
         outputBus->zero();

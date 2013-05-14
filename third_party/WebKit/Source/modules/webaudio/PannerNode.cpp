@@ -144,8 +144,8 @@ void PannerNode::initialize()
 {
     if (isInitialized())
         return;
-        
-    m_panner = Panner::create(m_panningModel, sampleRate());
+
+    m_panner = Panner::create(m_panningModel, sampleRate(), context()->hrtfDatabaseLoader());
 
     AudioNode::initialize();
 }
@@ -199,8 +199,8 @@ bool PannerNode::setPanningModel(unsigned model)
         if (!m_panner.get() || model != m_panningModel) {
             // This synchronizes with process().
             MutexLocker processLocker(m_pannerLock);
-            
-            OwnPtr<Panner> newPanner = Panner::create(model, sampleRate());
+
+            OwnPtr<Panner> newPanner = Panner::create(model, sampleRate(), context()->hrtfDatabaseLoader());
             m_panner = newPanner.release();
             m_panningModel = model;
         }

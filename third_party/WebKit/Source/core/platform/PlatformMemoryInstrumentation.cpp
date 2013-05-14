@@ -48,7 +48,7 @@ MemoryObjectType PlatformMemoryTypes::AudioSharedData = "Audio";
 void PlatformMemoryInstrumentation::reportStaticMembersMemoryUsage(WTF::MemoryInstrumentation* memoryInstrumentation)
 {
 #if ENABLE(WEB_AUDIO)
-    memoryInstrumentation->addRootObject(HRTFDatabaseLoader::loader());
+    memoryInstrumentation->addRootObject(HRTFDatabaseLoader::loaderMap());
 #else
     UNUSED_PARAM(memoryInstrumentation);
 #endif
