@@ -50,7 +50,7 @@ public:
     bool isOutermostSVGSVGElement() const;
 
     String xmlbase() const;
-    void setXmlbase(const String&, ExceptionCode&);
+    void setXmlbase(const String&);
 
     SVGSVGElement* ownerSVGElement() const;
     SVGElement* viewportElement() const;

@@ -172,7 +172,7 @@ String SVGElement::xmlbase() const
     return fastGetAttribute(XMLNames::baseAttr);
 }
 
-void SVGElement::setXmlbase(const String& value, ExceptionCode&)
+void SVGElement::setXmlbase(const String& value)
 {
     setAttribute(XMLNames::baseAttr, value);
 }
