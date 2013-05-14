@@ -1715,12 +1715,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
       browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
   ASSERT_EQ(1u, downloads_in_database->size());
 
-  // Confirm history storage is what you expect for a completed
-  // slow download job.
+  // Confirm history storage is what you expect for an interrupted slow download
+  // job. The download isn't continuable, so there's no intermediate file.
   history::DownloadRow& row1(downloads_in_database->at(0));
   EXPECT_EQ(DestinationFile(browser(), file), row1.target_path);
-  EXPECT_EQ(download_util::GetCrDownloadPath(DestinationFile(browser(), file)),
-            row1.current_path);
+  EXPECT_TRUE(row1.current_path.empty());
   ASSERT_EQ(2u, row1.url_chain.size());
   EXPECT_EQ(redirect_url.spec(), row1.url_chain[0].spec());
   EXPECT_EQ(download_url.spec(), row1.url_chain[1].spec());
