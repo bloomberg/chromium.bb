@@ -193,7 +193,7 @@
     'dom': [ 'adamk+blink@chromium.org', 'eae+blinkwatch@chromium.org', 'dglazkov+blink@chromium.org' ],
     'events': [ 'eae+blinkwatch@chromium.org' ],
     'html': [ 'adamk+blink@chromium.org' ],
-    'public_api': [ 'abarth@chromum.org', 'jamesr@chromium.org' ],
+    'public_api': [ 'abarth@chromium.org', 'jamesr@chromium.org' ],
     'wtf': [ 'abarth@chromium.org',
              'adamk+blink@chromium.org',
              'forgerbr@gmail.com',
