@@ -66,18 +66,23 @@ TestTrueTypeFont::TestTrueTypeFont(TestingInstance* instance)
 bool TestTrueTypeFont::Init() {
   ppb_truetype_font_interface_ = static_cast<const PPB_TrueTypeFont_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_TRUETYPEFONT_DEV_INTERFACE));
-  ppb_core_interface_ = static_cast<const PPB_Core*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
-  ppb_var_interface_ = static_cast<const PPB_Var*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
   if (!ppb_truetype_font_interface_)
     instance_->AppendError("PPB_TrueTypeFont_Dev interface not available");
+
+  ppb_core_interface_ = static_cast<const PPB_Core*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
   if (!ppb_core_interface_)
     instance_->AppendError("PPB_Core interface not available");
+
+  ppb_var_interface_ = static_cast<const PPB_Var*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
   if (!ppb_var_interface_)
     instance_->AppendError("PPB_Var interface not available");
 
-  return true;
+  return
+      ppb_truetype_font_interface_ &&
+      ppb_core_interface_ &&
+      ppb_var_interface_;
 }
 
 TestTrueTypeFont::~TestTrueTypeFont() {
