@@ -5102,11 +5102,11 @@ sub WriteData
         $implementation{includes}->add("#endif\n");
     }
     $implementation{includes}->add("\n") unless $interface->isCallback;
-    UpdateFile($implFileName, $implementation{root}->toString());
+    UpdateFileIfNeeded($implFileName, $implementation{root}->toString());
 
     %implIncludes = ();
 
-    UpdateFile($headerFileName, $header{root}->toString());
+    UpdateFileIfNeeded($headerFileName, $header{root}->toString());
 }
 
 sub ConvertToV8StringResource
@@ -5160,14 +5160,20 @@ sub GetPassRefPtrType
     return "PassRefPtr<${v8ClassName}${angleBracketSpace}>";
 }
 
-sub UpdateFile
+sub UpdateFileIfNeeded
 {
     my $fileName = shift;
     my $contents = shift;
 
-    open FH, "> $fileName" or die "Couldn't open $fileName: $!\n";
-    print FH $contents;
+    open FH, "<", $fileName or die "Couldn't open $fileName: $!\n";
+    my @lines = <FH>;
+    my $oldContents = join "", @lines;
     close FH;
+    if ($oldContents ne $contents) {
+        open FH, ">", $fileName or die "Couldn't open $fileName: $!\n";
+        print FH $contents;
+        close FH;
+    }
 }
 
 sub ForAllParents
