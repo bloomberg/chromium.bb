@@ -209,6 +209,8 @@ class Shell : public WebContentsDelegate,
                      GObject*, guint, GdkModifierType);
   CHROMEG_CALLBACK_3(Shell, gboolean, OnHighlightURLView, GtkAccelGroup*,
                      GObject*, guint, GdkModifierType);
+  CHROMEG_CALLBACK_3(Shell, gboolean, OnReloadKeyPressed, GtkAccelGroup*,
+                     GObject*, guint, GdkModifierType);
 #endif
 
   scoped_ptr<ShellJavaScriptDialogManager> dialog_manager_;

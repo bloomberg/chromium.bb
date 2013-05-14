@@ -134,6 +134,12 @@ void Shell::PlatformCreateWindow(int width, int height) {
       g_cclosure_new(G_CALLBACK(OnNewWindowKeyPressedThunk),
                     this, NULL));
 
+  gtk_accel_group_connect(
+    accel_group, GDK_F5, (GdkModifierType)0,
+      GTK_ACCEL_VISIBLE,
+      g_cclosure_new(G_CALLBACK(OnReloadKeyPressedThunk),
+                    this, NULL));
+
   GtkWidget* toolbar = gtk_toolbar_new();
   // Turn off the labels on the toolbar buttons.
   gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
@@ -285,6 +291,14 @@ gboolean Shell::OnHighlightURLView(GtkAccelGroup* accel_group,
                                    guint keyval,
                                    GdkModifierType modifier) {
   gtk_widget_grab_focus(GTK_WIDGET(url_edit_view_));
+  return TRUE;
+}
+
+gboolean Shell::OnReloadKeyPressed(GtkAccelGroup* accel_group,
+                                   GObject* acceleratable,
+                                   guint keyval,
+                                   GdkModifierType modifier) {
+  Reload();
   return TRUE;
 }
 
