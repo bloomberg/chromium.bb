@@ -155,7 +155,12 @@ extern "C" {
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#if defined(__ANDROID__)
+#include <sys/syscall.h>
+#include <sys/linux-syscalls.h>
+#else
 #include <syscall.h>
+#endif
 #include <unistd.h>
 #include <linux/unistd.h>
 #include <endian.h>
@@ -469,6 +474,11 @@ struct kernel_stat {
   int                st_blocks;
   int                st_pad4[14];
 };
+#endif
+
+// ulong is not defined in Android while used to define __llseek.
+#if defined(__ANDROID__)
+typedef unsigned long int ulong;
 #endif
 
 
@@ -1961,7 +1971,8 @@ struct kernel_stat {
       return LSS_NAME(wait4)(pid, status, options, 0);
     }
    #endif
-  #if defined(__i386__) || defined(__x86_64__) || defined(__arm__)
+  #if (defined(__i386__) || defined(__x86_64__) || defined(__arm__)) && \
+      !defined(__ANDROID__)
     LSS_INLINE _syscall4(int, openat, int, d, const char *, p, int, f, int, m)
   #endif
   LSS_INLINE int LSS_NAME(sigemptyset)(struct kernel_sigset_t *set) {

@@ -40,10 +40,29 @@
 #endif
 
 #include <unistd.h>
+#if defined(__ANDROID__)
+#include <sys/syscall.h>
+#include <sys/linux-syscalls.h>
+#else
 #include <syscall.h>
+#endif
 #include <sys/mman.h>
 #include <errno.h>
 #include "base/linux_syscall_support.h"
+
+// SYS_mmap2, SYS_munmap, SYS_mremap and __off64_t are not defined in Android.
+#if defined(__ANDROID__)
+#ifndef SYS_mmap2
+#define SYS_mmap2 __NR_mmap2
+#endif
+#ifndef SYS_munmap
+#define SYS_munmap __NR_munmap
+#endif
+#ifndef SYS_mremap
+#define SYS_mremap __NR_mremap
+#endif
+typedef off64_t __off64_t;
+#endif  // defined(__ANDROID__)
 
 // The x86-32 case and the x86-64 case differ:
 // 32b has a mmap2() syscall, 64b does not.
@@ -149,8 +168,10 @@ extern "C" {
   void* mremap(void* old_addr, size_t old_size, size_t new_size,
                int flags, ...) __THROW
     ATTRIBUTE_SECTION(malloc_hook);
+#if !defined(__ANDROID__)
   void* sbrk(ptrdiff_t increment) __THROW
     ATTRIBUTE_SECTION(malloc_hook);
+#endif
 }
 
 extern "C" void* mmap64(void *start, size_t length, int prot, int flags,
@@ -208,6 +229,8 @@ extern "C" void* mremap(void* old_addr, size_t old_size, size_t new_size,
   return result;
 }
 
+// Don't hook sbrk() in Android, since it doesn't expose __sbrk.
+#if !defined(__ANDROID__)
 // libc's version:
 extern "C" void* __sbrk(ptrdiff_t increment);
 
@@ -217,6 +240,7 @@ extern "C" void* sbrk(ptrdiff_t increment) __THROW {
   MallocHook::InvokeSbrkHook(result, increment);
   return result;
 }
+#endif  // !defined(__ANDROID__)
 
 /*static*/void* MallocHook::UnhookedMMap(void *start, size_t length, int prot,
                                          int flags, int fd, off_t offset) {
