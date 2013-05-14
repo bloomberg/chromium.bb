@@ -281,17 +281,13 @@ void DriveUploader::UploadNextChunk(
   DCHECK_GE(start_position, 0);
   DCHECK_LE(start_position, upload_file_info->content_length);
 
-  // Determine number of bytes to read for this upload iteration.
-  int64 end_position = std::min(start_position + kUploadChunkSize,
-                                upload_file_info->content_length);
-
   UploadFileInfo* info_ptr = upload_file_info.get();
   drive_service_->ResumeUpload(
       info_ptr->upload_mode,
       info_ptr->drive_path,
       info_ptr->upload_location,
       start_position,
-      end_position,
+      info_ptr->content_length,
       info_ptr->content_length,
       info_ptr->content_type,
       info_ptr->file_path,
