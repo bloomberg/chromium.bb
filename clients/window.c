@@ -1094,17 +1094,20 @@ shm_surface_create(struct display *display, struct wl_surface *wl_surface,
 
 static const char *bottom_left_corners[] = {
 	"bottom_left_corner",
-	"sw-resize"
+	"sw-resize",
+	"size_bdiag"
 };
 
 static const char *bottom_right_corners[] = {
 	"bottom_right_corner",
-	"se-resize"
+	"se-resize",
+	"size_fdiag"
 };
 
 static const char *bottom_sides[] = {
 	"bottom_side",
-	"s-resize"
+	"s-resize",
+	"size_ver"
 };
 
 static const char *grabbings[] = {
@@ -1122,27 +1125,32 @@ static const char *left_ptrs[] = {
 
 static const char *left_sides[] = {
 	"left_side",
-	"w-resize"
+	"w-resize",
+	"size_hor"
 };
 
 static const char *right_sides[] = {
 	"right_side",
-	"e-resize"
+	"e-resize",
+	"size_hor"
 };
 
 static const char *top_left_corners[] = {
 	"top_left_corner",
-	"nw-resize"
+	"nw-resize",
+	"size_fdiag"
 };
 
 static const char *top_right_corners[] = {
 	"top_right_corner",
-	"ne-resize"
+	"ne-resize",
+	"size_bdiag"
 };
 
 static const char *top_sides[] = {
 	"top_side",
-	"n-resize"
+	"n-resize",
+	"size_ver"
 };
 
 static const char *xterms[] = {
