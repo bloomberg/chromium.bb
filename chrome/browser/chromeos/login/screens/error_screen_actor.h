@@ -17,18 +17,20 @@ namespace chromeos {
 
 class ErrorScreenActor {
  public:
-  // Possible error reasons.
-  static const char kErrorReasonProxyAuthCancelled[];
-  static const char kErrorReasonProxyAuthSupplied[];
-  static const char kErrorReasonProxyConnectionFailed[];
-  static const char kErrorReasonProxyConfigChanged[];
-  static const char kErrorReasonLoadingTimeout[];
-  static const char kErrorReasonPortalDetected[];
-  // Reason for a case when network manager notifies about network
-  // change.
-  static const char kErrorReasonNetworkChanged[];
-  // Reason for a case when JS side requires error screen update.
-  static const char kErrorReasonUpdate[];
+  // Possible network error reasons.
+  enum ErrorReason {
+    ERROR_REASON_PROXY_AUTH_CANCELLED = 0,
+    ERROR_REASON_PROXY_AUTH_SUPPLIED,
+    ERROR_REASON_PROXY_CONNECTION_FAILED,
+    ERROR_REASON_PROXY_CONFIG_CHANGED,
+    ERROR_REASON_LOADING_TIMEOUT,
+    ERROR_REASON_PORTAL_DETECTED,
+    // Reason for a case when default network has changed.
+    ERROR_REASON_NETWORK_STATE_CHANGED,
+    // Reason for a case when JS side requires error screen update.
+    ERROR_REASON_UPDATE,
+    ERROR_REASON_FRAME_ERROR
+  };
 
   ErrorScreenActor();
   virtual ~ErrorScreenActor();

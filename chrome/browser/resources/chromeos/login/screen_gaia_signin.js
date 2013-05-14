@@ -16,17 +16,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // Maximum Gaia loading time in seconds.
   /** @const */ var MAX_GAIA_LOADING_TIME_SEC = 60;
 
-  // Frame loading errors.
-  /** @const */ var NET_ERROR = {
-    ABORTED_BY_USER: 3
-  };
-
   return {
     EXTERNAL_API: [
       'loadAuthExtension',
       'updateAuthExtension',
       'doReload',
-      'onFrameError',
+      'onFrameError'
     ],
 
     /**
@@ -285,7 +280,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onAuthReady_: function() {
       this.loading = false;
-      chrome.send('loginScreenUpdate');
       this.clearLoadingTimer_();
 
       // Show deferred error bubble.
@@ -433,16 +427,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onFrameError: function(error) {
       console.error('Gaia frame error = ' + error);
-      if (error == NET_ERROR.ABORTED_BY_USER) {
-        // Gaia frame was reloaded. Nothing to do here.
-        return;
-      }
       this.error_ = error;
-      // Check current network state if currentScreen is a Gaia signin.
-      var currentScreen = Oobe.getInstance().currentScreen;
-      if (currentScreen.id == SCREEN_GAIA_SIGNIN)
-        chrome.send('showGaiaFrameError', [error]);
-    }
+      chrome.send('frameLoadingCompleted', [this.error_]);
+    },
   };
 });
-

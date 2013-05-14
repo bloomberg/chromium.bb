@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
+#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -54,9 +55,7 @@ class NetworkStateInformer
     virtual ~NetworkStateInformerObserver() {}
 
     virtual void UpdateState(State state,
-                             const std::string& service_path,
-                             ConnectionType connection_type,
-                             const std::string& reason) = 0;
+                             ErrorScreenActor::ErrorReason reason) = 0;
   };
 
   NetworkStateInformer();
@@ -124,7 +123,7 @@ class NetworkStateInformer
 
   void UpdateStateAndNotify();
 
-  void SendStateToObservers(const std::string& reason);
+  void SendStateToObservers(ErrorScreenActor::ErrorReason reason);
 
   State GetNetworkState(const Network* network);
   bool IsProxyConfigured(const Network* network);

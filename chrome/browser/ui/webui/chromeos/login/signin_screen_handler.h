@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display.h"
+#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
+#include "net/base/net_errors.h"
 
 namespace base {
 class DictionaryValue;
@@ -32,7 +34,6 @@ class ListValue;
 namespace chromeos {
 
 class CaptivePortalWindowProxy;
-class ErrorScreenActor;
 class LocallyManagedUserCreationScreenHandler;
 class NativeWindowDelegate;
 class User;
@@ -184,9 +185,7 @@ class SigninScreenHandler
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
   virtual void UpdateState(NetworkStateInformer::State state,
-                           const std::string& service_path,
-                           ConnectionType connection_type,
-                           const std::string& reason) OVERRIDE;
+                           ErrorScreenActor::ErrorReason reason) OVERRIDE;
 
  private:
   enum UIState {
@@ -194,6 +193,13 @@ class SigninScreenHandler
     UI_STATE_GAIA_SIGNIN,
     UI_STATE_ACCOUNT_PICKER,
     UI_STATE_LOCALLY_MANAGED_USER_CREATION
+  };
+
+  enum FrameState {
+    FRAME_STATE_UNKNOWN = 0,
+    FRAME_STATE_LOADING,
+    FRAME_STATE_LOADED,
+    FRAME_STATE_ERROR
   };
 
   typedef base::hash_set<std::string> WebUIObservers;
@@ -207,22 +213,12 @@ class SigninScreenHandler
   void UpdateUIState(UIState ui_state, DictionaryValue* params);
 
   void UpdateStateInternal(NetworkStateInformer::State state,
-                           const std::string service_path,
-                           ConnectionType connection_type,
-                           std::string reason,
+                           ErrorScreenActor::ErrorReason reason,
                            bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
-                                  const std::string& service_path,
-                                  ConnectionType connection_type,
-                                  const std::string& reason,
-                                  bool is_proxy_error,
-                                  bool is_under_captive_portal,
-                                  bool is_gaia_loading_timeout);
+                                  ErrorScreenActor::ErrorReason reason);
   void HideOfflineMessage(NetworkStateInformer::State state,
-                          const std::string& service_path,
-                          const std::string& reason,
-                          bool is_gaia_signin,
-                          bool is_gaia_reloaded);
+                          ErrorScreenActor::ErrorReason reason);
   void ReloadGaiaScreen();
 
   // BaseScreenHandler implementation:
@@ -313,7 +309,7 @@ class SigninScreenHandler
   void HandleLoginUIStateChanged(const std::string& source, bool new_value);
   void HandleUnlockOnLoginSuccess();
   void HandleLoginScreenUpdate();
-  void HandleShowGaiaFrameError(int error);
+  void HandleFrameLoadingCompleted(int status);
   void HandleShowLoadingTimeoutError();
   void HandleUpdateOfflineLogin(bool offline_login_active);
   void HandleShowLocallyManagedUserCreationScreen();
@@ -351,7 +347,11 @@ class SigninScreenHandler
   OobeUI::Screen GetCurrentScreen() const;
 
   // Returns true if current visible screen is the Gaia sign-in page.
-  bool IsGaiaLogin() const;
+  bool IsGaiaVisible() const;
+
+  // Returns true if current visible screen is the error screen over
+  // Gaia sign-in page.
+  bool IsGaiaHiddenByError() const;
 
   // Returns true if current screen is the error screen over signin
   // screen.
@@ -363,7 +363,14 @@ class SigninScreenHandler
   // Returns true if offline login is allowed.
   bool IsOfflineLoginAllowed() const;
 
+  // Current UI state of the signin screen.
   UIState ui_state_;
+
+  // Current state of Gaia frame.
+  FrameState frame_state_;
+
+  // Latest Gaia frame error.
+  net::Error frame_error_;
 
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
