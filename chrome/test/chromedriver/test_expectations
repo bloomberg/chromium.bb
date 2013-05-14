@@ -104,14 +104,12 @@ _OS_NEGATIVE_FILTER['win'] = [
 _OS_NEGATIVE_FILTER['linux'] = []
 _OS_NEGATIVE_FILTER['mac'] = []
 _OS_NEGATIVE_FILTER['android'] = [
-    'BasicKeyboardInterfaceTest.*',
-    'BasicMouseInterfaceTest.*',
     'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
     'ClickTest.testCanClickOnAnElementWithTopSetToANegativeNumber',
     'ClickTest.testShouldOnlyFollowHrefOnce',
-    'CombinedInputActionsTest.*',
+    'CombinedInputActionsTest.testCombiningShiftAndClickResultsInANewWindow',
     'CoordinatesTest.testShouldGetCoordinatesInViewPortOfAnElementInAFrame',
     'CoordinatesTest.testShouldGetCoordinatesInViewPortOfAnElementInANestedFrame',
     'CoordinatesTest.testShouldGetCoordinatesOfAHiddenElement',
@@ -163,10 +161,10 @@ _OS_NEGATIVE_FILTER['android'] = [
     'TouchFlickTest.*',
     'TouchScrollTest.*',
     'TouchSingleTapTest.*',
-    'TypingTest.*',
-    'UploadTest.*',
+    # Test is written using local files; doesn't work on Android.
+    'UploadTest.testFileUploading',
+    # Not applicable on Android.
     'WindowSwitchingTest.*',
-    'XPathElementFindingTest.*',
 ]
 
 def GetPassedJavaTestFilter(operating_system, chrome_version):
