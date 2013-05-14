@@ -559,6 +559,7 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
       searchResults: fm.directoryModel_.isSearching(),
       metadataCache: fm.metadataCache_,
       pageState: this.params_,
+      appWindow: util.platform.v2() ? chrome.app.window.current() : null,
       onBack: onBack,
       onClose: onClose,
       onMaximize: onMaximize,

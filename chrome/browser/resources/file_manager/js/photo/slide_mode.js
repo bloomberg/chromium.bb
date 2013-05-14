@@ -381,8 +381,8 @@ SlideMode.prototype.getSelectedItem = function() {
  * @private
  */
 SlideMode.prototype.toggleFullScreen_ = function() {
-  util.toggleFullScreen(this.document_,
-                        !util.isFullScreen());
+  util.toggleFullScreen(this.context_.appWindow,
+                        !util.isFullScreen(this.context_.appWindow));
 };
 
 /**
@@ -1049,7 +1049,7 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
   if (opt_event)  // Caused by user action, notify the Gallery.
     cr.dispatchSimpleEvent(this, 'useraction');
 
-  this.fullscreenBeforeSlideshow_ = util.isFullScreen();
+  this.fullscreenBeforeSlideshow_ = util.isFullScreen(this.context_.appWindow);
   if (!this.fullscreenBeforeSlideshow_) {
     // Wait until the zoom animation from the mosaic mode is done.
     setTimeout(this.toggleFullScreen_.bind(this),
@@ -1077,7 +1077,7 @@ SlideMode.prototype.stopSlideshow_ = function(opt_event) {
   this.container_.removeAttribute('slideshow');
 
   // Do not restore fullscreen if we exited fullscreen while in slideshow.
-  var fullscreen = util.isFullScreen();
+  var fullscreen = util.isFullScreen(this.context_.appWindow);
   var toggleModeDelay = 0;
   if (!this.fullscreenBeforeSlideshow_ && fullscreen) {
     this.toggleFullScreen_();

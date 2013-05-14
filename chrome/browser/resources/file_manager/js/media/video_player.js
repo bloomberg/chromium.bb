@@ -65,8 +65,9 @@ function FullWindowVideoControls(
       e.preventDefault();
     }
     if (e.keyIdentifier == 'U+001B') {  // Escape
-      util.toggleFullScreen(this.playerContainer_.ownerDocument,
-                            false);  // Leave the full screen mode.
+      util.toggleFullScreen(
+          util.platform.v2() ? chrome.app.window.current() : null,
+          false);  // Leave the full screen mode.
       e.preventDefault();
     }
   }.bind(this));
@@ -110,8 +111,8 @@ FullWindowVideoControls.prototype.restorePlayState = function() {
  * @private
  */
 FullWindowVideoControls.prototype.toggleFullScreen_ = function() {
-  util.toggleFullScreen(this.playerContainer_.ownerDocument,
-                        !util.isFullScreen());
+  var appWindow = util.platform.v2() ? chrome.app.window.current() : null;
+  util.toggleFullScreen(appWindow, !util.isFullScreen(appWindow));
 };
 
 // TODO(mtomasz): Convert it to class members: crbug.com/171191.

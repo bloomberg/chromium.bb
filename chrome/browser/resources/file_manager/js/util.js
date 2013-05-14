@@ -1256,14 +1256,14 @@ util.addIsFocusedMethod = function() {
 
 /**
  * Enables the new full screen mode handler. This works only for Apps v1.
- * TODO(mtomasz): Remove after porting to Apps v2.
+ * TODO(mtomasz): Remove after dropping support for Files.app V1.
  *
  * @param {Document} doc Document element.
  */
 util.enableNewFullScreenHandler = function(doc) {
   doc.addEventListener('keydown', function(e) {
     if (util.getKeyModifiers(e) + e.keyCode == '122' /* F11 */) {
-      util.toggleFullScreen(doc, !util.isFullScreen());
+      util.toggleFullScreen(null, !util.isFullScreen(null));
       e.preventDefault();
     }
   });
@@ -1286,9 +1286,24 @@ util.redirectMainWindow = function(id, url) {
 
 /**
  * Checks, if the Files.app's window is in a full screen mode.
+ * TODO(mtomasz): Clean up after dropping support for Files.app V1.
+ *
+ * @param {AppWindow} appWindow App window to be maximized. (V2 only).
+ *     For V1 pass NULL.
  * @return {boolean} True if the full screen mode is enabled.
  */
-util.isFullScreen = function() {
+util.isFullScreen = function(appWindow) {
+  if (util.platform.v2()) {
+    if (appWindow) {
+      return appWindow.isFullscreen();
+    } else {
+      console.error('App window not passed. Unable to check status of ' +
+                    'the full screen mode.');
+      return false;
+    }
+  }
+
+  // TODO(mtomasz): Remove after dropping support for V1.
   if (document.webkitIsFullScreen)
     return true;
 
@@ -1302,13 +1317,28 @@ util.isFullScreen = function() {
 };
 
 /**
- * Toggles the full screen mode. It must be called from a mouse or keyboard
- * event handler.
+ * Toggles the full screen mode.
+ * TODO(mtomasz): Clean up after dropping support for Files.app V1.
  *
- * @param {Document} document Document to be toggled.
+ * @param {AppWindow} appWindow App window to be maximized. (V2 only).
+ *     For V1 pass NULL.
  * @param {boolean} enabled True for enabling, false for disabling.
  */
-util.toggleFullScreen = function(document, enabled) {
+util.toggleFullScreen = function(appWindow, enabled) {
+  if (util.platform.v2()) {
+    if (appWindow) {
+      if (enabled)
+        appWindow.fullscreen();
+      else
+        appWindow.restore();
+      return;
+    }
+
+    console.error(
+        'App window not passed. Unable to toggle the full screen mode.');
+    return;
+  }
+
   if (!enabled)
     document.webkitCancelFullScreen();
   else

@@ -35,6 +35,7 @@ function unload(opt_exiting) { Gallery.instance.onUnload(opt_exiting) }
  * @param {Object} context Object containing the following:
  *     {function(string)} onNameChange Called every time a selected
  *         item name changes (on rename and on selection change).
+ *     {AppWindow} appWindow
  *     {function(string)} onBack
  *     {function()} onClose
  *     {function()} onMaximize
@@ -98,6 +99,7 @@ Gallery.openStandalone = function(path, pageState, opt_callback) {
   var currentDir;
   var urls = [];
   var selectedUrls = [];
+  var appWindow = util.platform.v2() ? chrome.app.window.current() : null;
 
   Gallery.getFileBrowserPrivate().requestLocalFileSystem(function(filesystem) {
     // If the path points to the directory scan it.
@@ -154,6 +156,7 @@ Gallery.openStandalone = function(path, pageState, opt_callback) {
         saveDirEntry: null,
         metadataCache: MetadataCache.createFull(),
         pageState: pageState,
+        appWindow: appWindow,
         onBack: onBack,
         onClose: onClose,
         onMaximize: onMaximize,
@@ -427,8 +430,8 @@ Gallery.prototype.load = function(urls, selectedUrls) {
  * @private
  */
 Gallery.prototype.back_ = function() {
-  if (util.isFullScreen()) {
-    util.toggleFullScreen(this.document_,
+  if (util.isFullScreen(this.context_.appWindow)) {
+    util.toggleFullScreen(this.context_.appWindow,
                           false);  // Leave the full screen mode.
   }
   this.context_.onBack(this.getSelectedUrls());
@@ -705,7 +708,6 @@ Gallery.prototype.onKeyDown_ = function(event) {
     case 'U+004D':  // 'm' switches between Slide and Mosaic mode.
       this.toggleMode_(null, event);
       break;
-
 
     case 'U+0056':  // 'v'
       this.slideMode_.startSlideshow(SlideMode.SLIDESHOW_INTERVAL_FIRST, event);
