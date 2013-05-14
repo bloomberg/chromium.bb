@@ -700,38 +700,39 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
     if (!element)
         return;
 
-    RefPtr<HTMLElement> parsedElement = createHTMLElement(element->document(), spanTag);
-    ExceptionCode ec = 0;
-    parsedElement.get()->setInnerHTML("<span " + text + "></span>", ec);
-    if (ec) {
-        *errorString = InspectorDOMAgent::toErrorString(ec);
-        return;
-    }
+    String markup = "<span " + text + "></span>";
+    RefPtr<DocumentFragment> fragment = element->document()->createDocumentFragment();
+    fragment->parseXML(markup, 0, DisallowScriptingContent);
 
-    Node* child = parsedElement->firstChild();
-    if (!child) {
+    Element* parsedElement = fragment->firstChild() && fragment->firstChild()->isElementNode() ? toElement(fragment->firstChild()) : 0;
+    if (!parsedElement) {
         *errorString = "Could not parse value as attributes";
         return;
     }
 
-    Element* childElement = toElement(child);
-    if (!childElement->hasAttributes() && name) {
-        m_domEditor->removeAttribute(element, *name, errorString);
+    bool shouldIgnoreCase = element->document()->isHTMLDocument() && element->isHTMLElement();
+    String caseAdjustedName = name ? (shouldIgnoreCase ? name->lower() : *name) : String();
+
+    if (!parsedElement->hasAttributes() && name) {
+        m_domEditor->removeAttribute(element, caseAdjustedName, errorString);
         return;
     }
 
     bool foundOriginalAttribute = false;
-    unsigned numAttrs = childElement->attributeCount();
+    unsigned numAttrs = parsedElement->attributeCount();
     for (unsigned i = 0; i < numAttrs; ++i) {
         // Add attribute pair
-        const Attribute* attribute = childElement->attributeItem(i);
-        foundOriginalAttribute = foundOriginalAttribute || (name && attribute->name().toString() == *name);
-        if (!m_domEditor->setAttribute(element, attribute->name().toString(), attribute->value(), errorString))
+        const Attribute* attribute = parsedElement->attributeItem(i);
+        String attributeName = attribute->name().toString();
+        if (shouldIgnoreCase)
+            attributeName = attributeName.lower();
+        foundOriginalAttribute |= name && attributeName == caseAdjustedName;
+        if (!m_domEditor->setAttribute(element, attributeName, attribute->value(), errorString))
             return;
     }
 
     if (!foundOriginalAttribute && name && !name->stripWhiteSpace().isEmpty())
-        m_domEditor->removeAttribute(element, *name, errorString);
+        m_domEditor->removeAttribute(element, caseAdjustedName, errorString);
 }
 
 void InspectorDOMAgent::removeAttribute(ErrorString* errorString, int elementId, const String& name)
