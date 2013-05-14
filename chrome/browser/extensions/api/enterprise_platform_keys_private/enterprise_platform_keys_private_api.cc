@@ -43,6 +43,8 @@ const char EPKPChallengeKeyBase::kChallengeBadBase64Error[] =
     "Challenge is not base64 encoded.";
 const char EPKPChallengeKeyBase::kDevicePolicyDisabledError[] =
     "Remote attestation is not enabled for your device.";
+const char EPKPChallengeKeyBase::kDomainsDontMatchError[] =
+    "User domain %s and Enterprise domain %s don't match.";
 const char EPKPChallengeKeyBase::kResponseBadBase64Error[] =
     "Response cannot be encoded in base64.";
 const char EPKPChallengeKeyBase::kSignChallengeFailedError[] =
@@ -109,6 +111,16 @@ bool EPKPChallengeKeyBase::IsEnterpriseDevice() const {
 
 std::string EPKPChallengeKeyBase::GetEnterpriseDomain() const {
   return install_attributes_->GetDomain();
+}
+
+std::string EPKPChallengeKeyBase::GetUserDomain() const {
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
+  if (!signin_manager)
+    return std::string();
+
+  return gaia::ExtractDomainName(
+      gaia::CanonicalizeEmail(signin_manager->GetAuthenticatedUsername()));
 }
 
 std::string EPKPChallengeKeyBase::GetDeviceId() const {
@@ -236,6 +248,14 @@ bool EPKPChallengeMachineKey::RunImpl() {
     return false;
   }
 
+  std::string user_domain = GetUserDomain();
+  std::string enterprise_domain = GetEnterpriseDomain();
+  if (user_domain != enterprise_domain) {
+    SetError(base::StringPrintf(kDomainsDontMatchError, user_domain.c_str(),
+                                enterprise_domain.c_str()));
+    return false;
+  }
+
   // Check if RA is enabled in the device policy.
   GetDeviceAttestationEnabled(
       base::Bind(&EPKPChallengeMachineKey::GetDeviceAttestationEnabledCallback,
@@ -300,8 +320,6 @@ void EPKPChallengeMachineKey::SignChallengeCallback(
 
 // Implementation of ChallengeUserKey()
 
-const char EPKPChallengeUserKey::kDomainsDontMatchError[] =
-    "User domain %s and Enterprise domain %s don't match.";
 const char EPKPChallengeUserKey::kExtensionNotWhitelistedError[] =
     "The extension does not have permission to call this function.";
 const char EPKPChallengeUserKey::kGetCertificateFailedError[] =
@@ -489,16 +507,6 @@ bool EPKPChallengeUserKey::IsExtensionWhitelisted() const {
 
 bool EPKPChallengeUserKey::IsRemoteAttestationEnabledForUser() const {
   return profile()->GetPrefs()->GetBoolean(prefs::kAttestationEnabled);
-}
-
-std::string EPKPChallengeUserKey::GetUserDomain() const {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile());
-  if (!signin_manager)
-    return std::string();
-
-  return gaia::ExtractDomainName(
-      gaia::CanonicalizeEmail(signin_manager->GetAuthenticatedUsername()));
 }
 
 }  // namespace extensions

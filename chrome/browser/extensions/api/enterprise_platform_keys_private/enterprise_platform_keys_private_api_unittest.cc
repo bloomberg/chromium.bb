@@ -151,6 +151,14 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
         AddSettingsProvider(device_settings_provider_);
   }
 
+  virtual void SetUp() OVERRIDE {
+    BrowserWithTestWindowTest::SetUp();
+
+    // Set the user preferences.
+    prefs_ = browser()->profile()->GetPrefs();
+    prefs_->SetString(prefs::kGoogleServicesUsername, "test@google.com");
+  }
+
   NiceMock<chromeos::MockCryptohomeClient> mock_cryptohome_client_;
   NiceMock<cryptohome::MockAsyncMethodCaller> mock_async_method_caller_;
   NiceMock<chromeos::attestation::MockAttestationFlow> mock_attestation_flow_;
@@ -158,6 +166,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
   policy::StubEnterpriseInstallAttributes stub_install_attributes_;
   chromeos::CrosSettingsProvider* device_settings_provider_;
   chromeos::StubCrosSettingsProvider stub_settings_provider_;
+  PrefService* prefs_;
 };
 
 class EPKPChallengeMachineKeyTest : public EPKPChallengeKeyTestBase {
@@ -188,6 +197,14 @@ TEST_F(EPKPChallengeMachineKeyTest, NonEnterpriseDevice) {
   stub_install_attributes_.SetRegistrationUser("");
 
   EXPECT_EQ(EPKPChallengeMachineKey::kNonEnterpriseDeviceError,
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+TEST_F(EPKPChallengeMachineKeyTest, DomainsDontMatch) {
+  prefs_->SetString(prefs::kGoogleServicesUsername, "test@chromium.org");
+
+  EXPECT_EQ(base::StringPrintf(EPKPChallengeKeyBase::kDomainsDontMatchError,
+                               "chromium.org", "google.com"),
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -274,16 +291,13 @@ class EPKPChallengeUserKeyTest : public EPKPChallengeKeyTestBase {
     EPKPChallengeKeyTestBase::SetUp();
 
     // Set the user preferences.
-    prefs_ = browser()->profile()->GetPrefs();
     prefs_->SetBoolean(prefs::kAttestationEnabled, true);
     base::ListValue whitelist;
     whitelist.AppendString(extension_->id());
     prefs_->Set(prefs::kAttestationExtensionWhitelist, whitelist);
-    prefs_->SetString(prefs::kGoogleServicesUsername, "test@google.com");
   }
 
   scoped_refptr<EPKPChallengeUserKey> func_;
-  PrefService* prefs_;
 };
 
 // Base 64 encoding of 'challenge'
@@ -313,7 +327,7 @@ TEST_F(EPKPChallengeUserKeyTest, ExtensionNotWhitelisted) {
 TEST_F(EPKPChallengeUserKeyTest, DomainsDontMatch) {
   prefs_->SetString(prefs::kGoogleServicesUsername, "test@chromium.org");
 
-  EXPECT_EQ(base::StringPrintf(EPKPChallengeUserKey::kDomainsDontMatchError,
+  EXPECT_EQ(base::StringPrintf(EPKPChallengeKeyBase::kDomainsDontMatchError,
                                "chromium.org", "google.com"),
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }

@@ -42,6 +42,7 @@ class EPKPChallengeKeyBase : public AsyncExtensionFunction {
  public:
   static const char kChallengeBadBase64Error[];
   static const char kDevicePolicyDisabledError[];
+  static const char kDomainsDontMatchError[];
   static const char kResponseBadBase64Error[];
   static const char kSignChallengeFailedError[];
 
@@ -71,6 +72,9 @@ class EPKPChallengeKeyBase : public AsyncExtensionFunction {
 
   // Returns the enterprise domain the device is enrolled to.
   std::string GetEnterpriseDomain() const;
+
+  // Returns the user domain.
+  std::string GetUserDomain() const;
 
   // Returns the enterprise virtual device ID.
   std::string GetDeviceId() const;
@@ -113,7 +117,6 @@ class EPKPChallengeKeyBase : public AsyncExtensionFunction {
 
 class EPKPChallengeMachineKey : public EPKPChallengeKeyBase {
  public:
-  static const char kDomainsDontMatch[];
   static const char kGetCertificateFailedError[];
   static const char kNonEnterpriseDeviceError[];
 
@@ -148,7 +151,6 @@ typedef EPKPChallengeMachineKey
 
 class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
  public:
-  static const char kDomainsDontMatchError[];
   static const char kExtensionNotWhitelistedError[];
   static const char kGetCertificateFailedError[];
   static const char kKeyRegistrationFailedError[];
@@ -189,7 +191,6 @@ class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
 
   bool IsExtensionWhitelisted() const;
   bool IsRemoteAttestationEnabledForUser() const;
-  std::string GetUserDomain() const;
 
   DECLARE_EXTENSION_FUNCTION(
       "enterprise.platformKeysPrivate.challengeUserKey",
