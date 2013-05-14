@@ -245,7 +245,7 @@ void CreateDirectoryOperation::FindFirstMissingParentDirectoryInternal(
   // Need a reference to current_path before we call base::Passed because the
   // order of evaluation of arguments is indeterminate.
   const base::FilePath& current_path = params->current_path;
-  metadata_->GetEntryInfoByPathOnUIThread(
+  metadata_->GetResourceEntryByPathOnUIThread(
       current_path,
       base::Bind(
           &CreateDirectoryOperation::ContinueFindFirstMissingParentDirectory,

@@ -67,7 +67,7 @@ class FileSystem : public FileSystemInterface,
   virtual void CheckForUpdates() OVERRIDE;
   virtual void GetEntryInfoByResourceId(
       const std::string& resource_id,
-      const GetEntryInfoWithFilePathCallback& callback) OVERRIDE;
+      const GetResourceEntryWithFilePathCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
                       const GURL& next_feed,
                       const SearchCallback& callback) OVERRIDE;
@@ -125,7 +125,7 @@ class FileSystem : public FileSystemInterface,
       const FileOperationCallback& callback) OVERRIDE;
   virtual void GetEntryInfoByPath(
       const base::FilePath& file_path,
-      const GetEntryInfoCallback& callback) OVERRIDE;
+      const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
       const base::FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback) OVERRIDE;
@@ -296,14 +296,14 @@ class FileSystem : public FileSystemInterface,
   // 3) Called when ResourceMetadata::GetEntryInfoByPath() is complete.
   void GetEntryInfoByPathAfterGetEntry1(
       const base::FilePath& file_path,
-      const GetEntryInfoCallback& callback,
+      const GetResourceEntryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
   void GetEntryInfoByPathAfterLoad(const base::FilePath& file_path,
-                                   const GetEntryInfoCallback& callback,
+                                   const GetResourceEntryCallback& callback,
                                    FileError error);
   void GetEntryInfoByPathAfterGetEntry2(
-      const GetEntryInfoCallback& callback,
+      const GetResourceEntryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
 
@@ -383,7 +383,7 @@ class FileSystem : public FileSystemInterface,
   // ResourceMetadata::GetEntryInfoByResourceId() is complete.
   // |callback| must not be null.
   void GetEntryInfoByResourceIdAfterGetEntry(
-      const GetEntryInfoWithFilePathCallback& callback,
+      const GetResourceEntryWithFilePathCallback& callback,
       FileError error,
       const base::FilePath& file_path,
       scoped_ptr<ResourceEntry> entry);
@@ -425,20 +425,20 @@ class FileSystem : public FileSystemInterface,
   // PlatformFileInfo part of the |entry| with the locally modified info.
   // |callback| must not be null.
   void CheckLocalModificationAndRun(scoped_ptr<ResourceEntry> entry,
-                                    const GetEntryInfoCallback& callback);
+                                    const GetResourceEntryCallback& callback);
   void CheckLocalModificationAndRunAfterGetCacheEntry(
       scoped_ptr<ResourceEntry> entry,
-      const GetEntryInfoCallback& callback,
+      const GetResourceEntryCallback& callback,
       bool success,
       const FileCacheEntry& cache_entry);
   void CheckLocalModificationAndRunAfterGetCacheFile(
       scoped_ptr<ResourceEntry> entry,
-      const GetEntryInfoCallback& callback,
+      const GetResourceEntryCallback& callback,
       FileError error,
       const base::FilePath& local_cache_path);
   void CheckLocalModificationAndRunAfterGetFileInfo(
       scoped_ptr<ResourceEntry> entry,
-      const GetEntryInfoCallback& callback,
+      const GetResourceEntryCallback& callback,
       base::PlatformFileInfo* file_info,
       bool get_file_info_result);
 

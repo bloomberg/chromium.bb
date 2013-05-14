@@ -541,7 +541,7 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
     // <other> directory should always exist, but mydrive root should be
     // created by root resource id retrieved from the server.
     // Here, we check if mydrive root exists, and if not, create it.
-    resource_metadata_->GetEntryInfoByPathOnUIThread(
+    resource_metadata_->GetResourceEntryByPathOnUIThread(
         base::FilePath(util::kDriveMyDriveRootPath),
         base::Bind(
             &ChangeListLoader

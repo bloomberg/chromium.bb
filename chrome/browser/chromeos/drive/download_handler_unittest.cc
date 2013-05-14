@@ -77,7 +77,7 @@ class DownloadHandlerTest : public testing::Test {
   content::MockDownloadItem download_item_;
 
   // Argument callbacks passed to the file system.
-  GetEntryInfoCallback get_entry_info_callback_;
+  GetResourceEntryCallback get_entry_info_callback_;
   FileOperationCallback create_directory_callback_;
 };
 

@@ -52,9 +52,9 @@ bool EnoughDiskSpaceIsAvailableForDBOperation(const base::FilePath& path) {
 }
 
 // Runs |callback| with arguments.
-void RunGetEntryInfoCallback(const GetEntryInfoCallback& callback,
-                             scoped_ptr<ResourceEntry> entry,
-                             FileError error) {
+void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
+                                 scoped_ptr<ResourceEntry> entry,
+                                 FileError error) {
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK)
@@ -63,8 +63,8 @@ void RunGetEntryInfoCallback(const GetEntryInfoCallback& callback,
 }
 
 // Runs |callback| with arguments.
-void RunGetEntryInfoWithFilePathCallback(
-    const GetEntryInfoWithFilePathCallback& callback,
+void RunGetResourceEntryWithFilePathCallback(
+    const GetResourceEntryWithFilePathCallback& callback,
     base::FilePath* path,
     scoped_ptr<ResourceEntry> entry,
     FileError error) {
@@ -382,9 +382,9 @@ FileError ResourceMetadata::RemoveEntry(const std::string& resource_id,
   return FILE_ERROR_OK;
 }
 
-void ResourceMetadata::GetEntryInfoByResourceIdOnUIThread(
+void ResourceMetadata::GetResourceEntryByIdOnUIThread(
     const std::string& resource_id,
-    const GetEntryInfoWithFilePathCallback& callback) {
+    const GetResourceEntryWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -394,18 +394,18 @@ void ResourceMetadata::GetEntryInfoByResourceIdOnUIThread(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&ResourceMetadata::GetEntryInfoByResourceId,
+      base::Bind(&ResourceMetadata::GetResourceEntryById,
                  base::Unretained(this),
                  resource_id,
                  file_path,
                  entry_ptr),
-      base::Bind(&RunGetEntryInfoWithFilePathCallback,
+      base::Bind(&RunGetResourceEntryWithFilePathCallback,
                  callback,
                  base::Owned(file_path),
                  base::Passed(&entry)));
 }
 
-FileError ResourceMetadata::GetEntryInfoByResourceId(
+FileError ResourceMetadata::GetResourceEntryById(
     const std::string& resource_id,
     base::FilePath* out_file_path,
     ResourceEntry* out_entry) {
@@ -424,9 +424,9 @@ FileError ResourceMetadata::GetEntryInfoByResourceId(
   return FILE_ERROR_OK;
 }
 
-void ResourceMetadata::GetEntryInfoByPathOnUIThread(
+void ResourceMetadata::GetResourceEntryByPathOnUIThread(
     const base::FilePath& file_path,
-    const GetEntryInfoCallback& callback) {
+    const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -435,17 +435,17 @@ void ResourceMetadata::GetEntryInfoByPathOnUIThread(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&ResourceMetadata::GetEntryInfoByPath,
+      base::Bind(&ResourceMetadata::GetResourceEntryByPath,
                  base::Unretained(this),
                  file_path,
                  entry_ptr),
-      base::Bind(&RunGetEntryInfoCallback,
+      base::Bind(&RunGetResourceEntryCallback,
                  callback,
                  base::Passed(&entry)));
 }
 
-FileError ResourceMetadata::GetEntryInfoByPath(const base::FilePath& path,
-                                               ResourceEntry* out_entry) {
+FileError ResourceMetadata::GetResourceEntryByPath(const base::FilePath& path,
+                                                   ResourceEntry* out_entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(out_entry);
 
@@ -479,7 +479,7 @@ void ResourceMetadata::ReadDirectoryByPathOnUIThread(
 
 void ResourceMetadata::RefreshEntryOnUIThread(
     const ResourceEntry& in_entry,
-    const GetEntryInfoWithFilePathCallback& callback) {
+    const GetResourceEntryWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -494,7 +494,7 @@ void ResourceMetadata::RefreshEntryOnUIThread(
                  in_entry,
                  file_path,
                  entry_ptr),
-      base::Bind(&RunGetEntryInfoWithFilePathCallback,
+      base::Bind(&RunGetResourceEntryWithFilePathCallback,
                  callback,
                  base::Owned(file_path),
                  base::Passed(&entry)));
@@ -705,18 +705,18 @@ FileError ResourceMetadata::ReadDirectoryByPath(
   return FILE_ERROR_OK;
 }
 
-void ResourceMetadata::GetEntryInfoPairByPathsOnUIThread(
+void ResourceMetadata::GetResourceEntryPairByPathsOnUIThread(
     const base::FilePath& first_path,
     const base::FilePath& second_path,
-    const GetEntryInfoPairCallback& callback) {
+    const GetResourceEntryPairCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   // Get the first entry.
-  GetEntryInfoByPathOnUIThread(
+  GetResourceEntryByPathOnUIThread(
       first_path,
       base::Bind(
-          &ResourceMetadata::GetEntryInfoPairByPathsOnUIThreadAfterGetFirst,
+          &ResourceMetadata::GetResourceEntryPairByPathsOnUIThreadAfterGetFirst,
           weak_ptr_factory_.GetWeakPtr(),
           first_path,
           second_path,
@@ -818,10 +818,10 @@ void ResourceMetadata::GetDescendantDirectoryPaths(
   }
 }
 
-void ResourceMetadata::GetEntryInfoPairByPathsOnUIThreadAfterGetFirst(
+void ResourceMetadata::GetResourceEntryPairByPathsOnUIThreadAfterGetFirst(
     const base::FilePath& first_path,
     const base::FilePath& second_path,
-    const GetEntryInfoPairCallback& callback,
+    const GetResourceEntryPairCallback& callback,
     FileError error,
     scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -839,19 +839,20 @@ void ResourceMetadata::GetEntryInfoPairByPathsOnUIThreadAfterGetFirst(
   }
 
   // Get the second entry.
-  GetEntryInfoByPathOnUIThread(
+  GetResourceEntryByPathOnUIThread(
       second_path,
       base::Bind(
-          &ResourceMetadata::GetEntryInfoPairByPathsOnUIThreadAfterGetSecond,
+          &ResourceMetadata::
+          GetResourceEntryPairByPathsOnUIThreadAfterGetSecond,
           weak_ptr_factory_.GetWeakPtr(),
           second_path,
           callback,
           base::Passed(&result)));
 }
 
-void ResourceMetadata::GetEntryInfoPairByPathsOnUIThreadAfterGetSecond(
+void ResourceMetadata::GetResourceEntryPairByPathsOnUIThreadAfterGetSecond(
     const base::FilePath& second_path,
-    const GetEntryInfoPairCallback& callback,
+    const GetResourceEntryPairCallback& callback,
     scoped_ptr<EntryInfoPairResult> result,
     FileError error,
     scoped_ptr<ResourceEntry> entry) {

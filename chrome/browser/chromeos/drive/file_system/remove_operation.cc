@@ -47,7 +47,7 @@ void RemoveOperation::Remove(
   DCHECK(!callback.is_null());
 
   // Get the edit URL of an entry at |file_path|.
-  metadata_->GetEntryInfoByPathOnUIThread(
+  metadata_->GetResourceEntryByPathOnUIThread(
       file_path,
       base::Bind(
           &RemoveOperation::RemoveAfterGetEntryInfo,

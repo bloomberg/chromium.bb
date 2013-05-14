@@ -169,7 +169,7 @@ class FileSystemInterface {
   // |callback| must not be null.
   virtual void GetEntryInfoByResourceId(
       const std::string& resource_id,
-      const GetEntryInfoWithFilePathCallback& callback) = 0;
+      const GetResourceEntryWithFilePathCallback& callback) = 0;
 
   // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
   // |remote_src_file_path| is the virtual source path on the Drive file system.
@@ -353,8 +353,9 @@ class FileSystemInterface {
   // retrieve and refresh file system content from server and disk cache.
   //
   // |callback| must not be null.
-  virtual void GetEntryInfoByPath(const base::FilePath& file_path,
-                                  const GetEntryInfoCallback& callback) = 0;
+  virtual void GetEntryInfoByPath(
+      const base::FilePath& file_path,
+      const GetResourceEntryCallback& callback) = 0;
 
   // Finds and reads a directory by |file_path|. This call will also retrieve
   // and refresh file system content from server and disk cache.

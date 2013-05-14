@@ -28,7 +28,7 @@ class MockFileSystem : public FileSystemInterface {
   MOCK_METHOD0(CheckForUpdates, void());
   MOCK_METHOD2(GetEntryInfoByResourceId,
                void(const std::string& resource_id,
-                    const GetEntryInfoWithFilePathCallback& callback));
+                    const GetResourceEntryWithFilePathCallback& callback));
   MOCK_METHOD3(Search, void(const std::string& search_query,
                             const GURL& next_feed,
                             const SearchCallback& callback));
@@ -89,8 +89,9 @@ class MockFileSystem : public FileSystemInterface {
                void(const std::string& resource_id,
                     const DriveClientContext& context,
                     const FileOperationCallback& callback));
-  MOCK_METHOD2(GetEntryInfoByPath, void(const base::FilePath& file_path,
-                                        const GetEntryInfoCallback& callback));
+  MOCK_METHOD2(GetEntryInfoByPath,
+               void(const base::FilePath& file_path,
+                    const GetResourceEntryCallback& callback));
   MOCK_METHOD2(ReadDirectoryByPath,
                void(const base::FilePath& file_path,
                     const ReadDirectoryWithSettingCallback& callback));

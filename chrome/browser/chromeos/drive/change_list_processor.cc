@@ -214,7 +214,7 @@ void ChangeListProcessor::ApplyEntryProto(const ResourceEntry& entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Lookup the entry.
-  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
+  resource_metadata_->GetResourceEntryByIdOnUIThread(
       entry.resource_id(),
       base::Bind(&ChangeListProcessor::ContinueApplyEntryProto,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -425,7 +425,7 @@ void ChangeListProcessor::UpdateRootEntry(const base::Closure& closure) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!closure.is_null());
 
-  resource_metadata_->GetEntryInfoByPathOnUIThread(
+  resource_metadata_->GetResourceEntryByPathOnUIThread(
       util::GetDriveMyDriveRootPath(),
       base::Bind(&ChangeListProcessor::UpdateRootEntryAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),

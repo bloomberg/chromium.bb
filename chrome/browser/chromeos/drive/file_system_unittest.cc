@@ -463,7 +463,7 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   int counter = 0;
-  const GetEntryInfoCallback& callback = base::Bind(
+  const GetResourceEntryCallback& callback = base::Bind(
       &AsyncInitializationCallback, &counter, 2, &message_loop_);
 
   file_system_->GetEntryInfoByPath(

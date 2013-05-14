@@ -36,7 +36,7 @@ void MoveOperation::Move(const base::FilePath& src_file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  metadata_->GetEntryInfoPairByPathsOnUIThread(
+  metadata_->GetResourceEntryPairByPathsOnUIThread(
       src_file_path,
       dest_file_path.DirName(),
       base::Bind(&MoveOperation::MoveAfterGetEntryInfoPair,

@@ -53,7 +53,7 @@ class FakeFileSystem : public FileSystemInterface {
   virtual void CheckForUpdates() OVERRIDE;
   virtual void GetEntryInfoByResourceId(
       const std::string& resource_id,
-      const GetEntryInfoWithFilePathCallback& callback) OVERRIDE;
+      const GetResourceEntryWithFilePathCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
       const base::FilePath& remote_src_file_path,
       const base::FilePath& local_dest_file_path,
@@ -104,7 +104,7 @@ class FakeFileSystem : public FileSystemInterface {
       const FileOperationCallback& callback) OVERRIDE;
   virtual void GetEntryInfoByPath(
       const base::FilePath& file_path,
-      const GetEntryInfoCallback& callback) OVERRIDE;
+      const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
       const base::FilePath& file_path,
       const ReadDirectoryWithSettingCallback& callback) OVERRIDE;
@@ -173,11 +173,11 @@ class FakeFileSystem : public FileSystemInterface {
   // 2) Gets the file path of the resource.
   // 3) Runs the |callback|.
   void GetEntryInfoByResourceIdAfterGetResourceEntry(
-      const GetEntryInfoWithFilePathCallback& callback,
+      const GetResourceEntryWithFilePathCallback& callback,
       google_apis::GDataErrorCode error_in,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
   void GetEntryInfoByResourceIdAfterGetFilePath(
-      const GetEntryInfoWithFilePathCallback& callback,
+      const GetResourceEntryWithFilePathCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry,
       const base::FilePath& parent_file_path);
@@ -219,17 +219,17 @@ class FakeFileSystem : public FileSystemInterface {
   // files sharing the same name under a directory, the second (or later)
   // file cannot be taken with the suffixed name.
   void GetEntryInfoByPathAfterGetAboutResource(
-      const GetEntryInfoCallback& callback,
+      const GetResourceEntryCallback& callback,
       google_apis::GDataErrorCode gdata_error,
       scoped_ptr<google_apis::AboutResource> about_resource);
   void GetEntryInfoByPathAfterGetParentEntryInfo(
       const base::FilePath& base_name,
-      const GetEntryInfoCallback& callback,
+      const GetResourceEntryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> parent_entry);
   void GetEntryInfoByPathAfterGetResourceList(
       const base::FilePath& base_name,
-      const GetEntryInfoCallback& callback,
+      const GetResourceEntryCallback& callback,
       google_apis::GDataErrorCode gdata_error,
       scoped_ptr<google_apis::ResourceList> resource_list);
 

@@ -48,7 +48,7 @@ void CreateFileOperation::CreateFile(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
 
   // First, checks the existence of a file at |file_path|.
-  metadata_->GetEntryInfoPairByPathsOnUIThread(
+  metadata_->GetResourceEntryPairByPathsOnUIThread(
       file_path.DirName(),
       file_path,
       base::Bind(&CreateFileOperation::CreateFileAfterGetEntryInfo,

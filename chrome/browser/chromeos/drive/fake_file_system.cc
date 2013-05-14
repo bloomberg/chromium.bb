@@ -56,7 +56,7 @@ void FakeFileSystem::CheckForUpdates() {
 
 void FakeFileSystem::GetEntryInfoByResourceId(
     const std::string& resource_id,
-    const GetEntryInfoWithFilePathCallback& callback) {
+    const GetResourceEntryWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drive_service_->GetResourceEntry(
@@ -169,7 +169,7 @@ void FakeFileSystem::UpdateFileByResourceId(
 
 void FakeFileSystem::GetEntryInfoByPath(
     const base::FilePath& file_path,
-    const GetEntryInfoCallback& callback) {
+    const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Now, we only support files under my drive.
@@ -326,7 +326,7 @@ void FakeFileSystem::GetFilePathAfterGetResourceEntry(
 
 // Implementation of GetEntryInfoByResourceId.
 void FakeFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry(
-    const GetEntryInfoWithFilePathCallback& callback,
+    const GetResourceEntryWithFilePathCallback& callback,
     google_apis::GDataErrorCode error_in,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -351,7 +351,7 @@ void FakeFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry(
 }
 
 void FakeFileSystem::GetEntryInfoByResourceIdAfterGetFilePath(
-    const GetEntryInfoWithFilePathCallback& callback,
+    const GetResourceEntryWithFilePathCallback& callback,
     FileError error,
     scoped_ptr<ResourceEntry> entry,
     const base::FilePath& parent_file_path) {
@@ -446,7 +446,7 @@ void FakeFileSystem::GetFileContentByPathAfterDownloadFile(
 
 // Implementation of GetEntryInfoByPath.
 void FakeFileSystem::GetEntryInfoByPathAfterGetAboutResource(
-    const GetEntryInfoCallback& callback,
+    const GetResourceEntryCallback& callback,
     google_apis::GDataErrorCode gdata_error,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -467,7 +467,7 @@ void FakeFileSystem::GetEntryInfoByPathAfterGetAboutResource(
 
 void FakeFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo(
     const base::FilePath& base_name,
-    const GetEntryInfoCallback& callback,
+    const GetResourceEntryCallback& callback,
     FileError error,
     scoped_ptr<ResourceEntry> parent_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -487,7 +487,7 @@ void FakeFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo(
 
 void FakeFileSystem::GetEntryInfoByPathAfterGetResourceList(
     const base::FilePath& base_name,
-    const GetEntryInfoCallback& callback,
+    const GetResourceEntryCallback& callback,
     google_apis::GDataErrorCode gdata_error,
     scoped_ptr<google_apis::ResourceList> resource_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
