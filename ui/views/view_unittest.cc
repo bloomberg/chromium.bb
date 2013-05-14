@@ -1580,11 +1580,10 @@ class MockMenuModel : public ui::MenuModel {
       MenuModel** model, int* index));
 };
 
-class TestDialog : public DialogDelegate, public ButtonListener {
+class TestDialog : public DialogDelegateView, public ButtonListener {
  public:
   explicit TestDialog(MockMenuModel* mock_menu_model)
-      : contents_(NULL),
-        button1_(NULL),
+      : button1_(NULL),
         button2_(NULL),
         checkbox_(NULL),
         button_drop_(NULL),
@@ -1592,37 +1591,23 @@ class TestDialog : public DialogDelegate, public ButtonListener {
         mock_menu_model_(mock_menu_model),
         canceled_(false),
         oked_(false),
-        closeable_(false),
-        widget_(NULL) {
+        closeable_(false) {
+    button1_ = new LabelButton(this, ASCIIToUTF16("Button1"));
+    button2_ = new LabelButton(this, ASCIIToUTF16("Button2"));
+    checkbox_ = new Checkbox(ASCIIToUTF16("My checkbox"));
+    button_drop_ = new ButtonDropDown(this, mock_menu_model_);
+    AddChildView(button1_);
+    AddChildView(button2_);
+    AddChildView(checkbox_);
+    AddChildView(button_drop_);
   }
+
+  virtual ~TestDialog() {}
 
   void TearDown() {
     // Now we can close safely.
     closeable_ = true;
-    widget_->Close();
-    widget_ = NULL;
-    // delegate has to be alive while shutting down.
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-  }
-
-  // DialogDelegate implementation:
-  virtual int GetDefaultDialogButton() const OVERRIDE {
-    return ui::DIALOG_BUTTON_OK;
-  }
-
-  virtual View* GetContentsView() OVERRIDE {
-    if (!contents_) {
-      contents_ = new View;
-      button1_ = new LabelButton(this, ASCIIToUTF16("Button1"));
-      button2_ = new LabelButton(this, ASCIIToUTF16("Button2"));
-      checkbox_ = new Checkbox(ASCIIToUTF16("My checkbox"));
-      button_drop_ = new ButtonDropDown(this, mock_menu_model_);
-      contents_->AddChildView(button1_);
-      contents_->AddChildView(button2_);
-      contents_->AddChildView(checkbox_);
-      contents_->AddChildView(button_drop_);
-    }
-    return contents_;
+    GetWidget()->Close();
   }
 
   // Prevent the dialog from really closing (so we can click the OK/Cancel
@@ -1634,13 +1619,6 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   virtual bool Accept() OVERRIDE {
     oked_ = true;
     return closeable_;
-  }
-
-  virtual Widget* GetWidget() OVERRIDE {
-    return widget_;
-  }
-  virtual const Widget* GetWidget() const OVERRIDE {
-    return widget_;
   }
 
   // ButtonListener implementation.
@@ -1664,7 +1642,6 @@ class TestDialog : public DialogDelegate, public ButtonListener {
     }
   }
 
-  View* contents_;
   LabelButton* button1_;
   LabelButton* button2_;
   Checkbox* checkbox_;
@@ -1675,167 +1652,135 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   bool canceled_;
   bool oked_;
   bool closeable_;
-  Widget* widget_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestDialog);
 };
 
 class DefaultButtonTest : public ViewTest {
  public:
-  enum ButtonID {
-    OK,
-    CANCEL,
-    BUTTON1,
-    BUTTON2
-  };
+  enum ButtonID { OK, CANCEL, BUTTON1, BUTTON2, };
 
-  DefaultButtonTest()
-      : focus_manager_(NULL),
-        test_dialog_(NULL),
-        client_view_(NULL),
-        ok_button_(NULL),
-        cancel_button_(NULL) {
-  }
+  DefaultButtonTest() : dialog_(NULL) {}
+  virtual ~DefaultButtonTest() {}
 
   virtual void SetUp() OVERRIDE {
     ViewTest::SetUp();
-    test_dialog_ = new TestDialog(NULL);
-
-    Widget* window = new Widget;
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-    params.delegate = test_dialog_;
-    params.bounds = gfx::Rect(0, 0, 100, 100);
-    window->Init(params);
-
-    test_dialog_->widget_ = window;
-    window->Show();
-    focus_manager_ = test_dialog_->contents_->GetFocusManager();
-    ASSERT_TRUE(focus_manager_ != NULL);
-    client_view_ =
-        static_cast<DialogClientView*>(window->client_view());
-    ok_button_ = client_view_->ok_button();
-    cancel_button_ = client_view_->cancel_button();
+    dialog_ = new TestDialog(NULL);
+    DialogDelegate::CreateDialogWidget(dialog_, GetContext(), NULL)->Show();
   }
 
   virtual void TearDown() OVERRIDE {
-    test_dialog_->TearDown();
+    dialog_->TearDown();
     ViewTest::TearDown();
   }
 
+ protected:
   void SimulatePressingEnterAndCheckDefaultButton(ButtonID button_id) {
     ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, false);
-    focus_manager_->OnKeyEvent(event);
+    dialog_->GetFocusManager()->OnKeyEvent(event);
     switch (button_id) {
       case OK:
-        EXPECT_TRUE(test_dialog_->oked_);
-        EXPECT_FALSE(test_dialog_->canceled_);
-        EXPECT_FALSE(test_dialog_->last_pressed_button_);
+        EXPECT_TRUE(dialog_->oked_);
+        EXPECT_FALSE(dialog_->canceled_);
+        EXPECT_FALSE(dialog_->last_pressed_button_);
         break;
       case CANCEL:
-        EXPECT_FALSE(test_dialog_->oked_);
-        EXPECT_TRUE(test_dialog_->canceled_);
-        EXPECT_FALSE(test_dialog_->last_pressed_button_);
+        EXPECT_FALSE(dialog_->oked_);
+        EXPECT_TRUE(dialog_->canceled_);
+        EXPECT_FALSE(dialog_->last_pressed_button_);
         break;
       case BUTTON1:
-        EXPECT_FALSE(test_dialog_->oked_);
-        EXPECT_FALSE(test_dialog_->canceled_);
-        EXPECT_TRUE(test_dialog_->last_pressed_button_ ==
-            test_dialog_->button1_);
+        EXPECT_FALSE(dialog_->oked_);
+        EXPECT_FALSE(dialog_->canceled_);
+        EXPECT_TRUE(dialog_->last_pressed_button_ == dialog_->button1_);
         break;
       case BUTTON2:
-        EXPECT_FALSE(test_dialog_->oked_);
-        EXPECT_FALSE(test_dialog_->canceled_);
-        EXPECT_TRUE(test_dialog_->last_pressed_button_ ==
-            test_dialog_->button2_);
+        EXPECT_FALSE(dialog_->oked_);
+        EXPECT_FALSE(dialog_->canceled_);
+        EXPECT_TRUE(dialog_->last_pressed_button_ == dialog_->button2_);
         break;
     }
-    test_dialog_->ResetStates();
+    dialog_->ResetStates();
   }
 
-  FocusManager* focus_manager_;
-  TestDialog* test_dialog_;
-  DialogClientView* client_view_;
-  LabelButton* ok_button_;
-  LabelButton* cancel_button_;
+  TestDialog* dialog_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultButtonTest);
 };
 
 TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
+  DialogClientView* client_view = dialog_->GetDialogClientView();
+  LabelButton* ok_button = client_view->ok_button();
+  LabelButton* cancel_button = client_view->cancel_button();
+
   // Window has just been shown, we expect the default button specified in the
   // DialogDelegate.
-  EXPECT_TRUE(ok_button_->is_default());
+  EXPECT_TRUE(ok_button->is_default());
 
   // Simulate pressing enter, that should trigger the OK button.
   SimulatePressingEnterAndCheckDefaultButton(OK);
 
   // Simulate focusing another button, it should become the default button.
-  client_view_->OnWillChangeFocus(ok_button_, test_dialog_->button1_);
-  EXPECT_FALSE(ok_button_->is_default());
-  EXPECT_TRUE(test_dialog_->button1_->is_default());
+  client_view->OnWillChangeFocus(ok_button, dialog_->button1_);
+  EXPECT_FALSE(ok_button->is_default());
+  EXPECT_TRUE(dialog_->button1_->is_default());
   // Simulate pressing enter, that should trigger button1.
   SimulatePressingEnterAndCheckDefaultButton(BUTTON1);
 
   // Now select something that is not a button, the OK should become the default
   // button again.
-  client_view_->OnWillChangeFocus(test_dialog_->button1_,
-                                  test_dialog_->checkbox_);
-  EXPECT_TRUE(ok_button_->is_default());
-  EXPECT_FALSE(test_dialog_->button1_->is_default());
+  client_view->OnWillChangeFocus(dialog_->button1_, dialog_->checkbox_);
+  EXPECT_TRUE(ok_button->is_default());
+  EXPECT_FALSE(dialog_->button1_->is_default());
   SimulatePressingEnterAndCheckDefaultButton(OK);
 
   // Select yet another button.
-  client_view_->OnWillChangeFocus(test_dialog_->checkbox_,
-                                  test_dialog_->button2_);
-  EXPECT_FALSE(ok_button_->is_default());
-  EXPECT_FALSE(test_dialog_->button1_->is_default());
-  EXPECT_TRUE(test_dialog_->button2_->is_default());
+  client_view->OnWillChangeFocus(dialog_->checkbox_, dialog_->button2_);
+  EXPECT_FALSE(ok_button->is_default());
+  EXPECT_FALSE(dialog_->button1_->is_default());
+  EXPECT_TRUE(dialog_->button2_->is_default());
   SimulatePressingEnterAndCheckDefaultButton(BUTTON2);
 
   // Focus nothing.
-  client_view_->OnWillChangeFocus(test_dialog_->button2_, NULL);
-  EXPECT_TRUE(ok_button_->is_default());
-  EXPECT_FALSE(test_dialog_->button1_->is_default());
-  EXPECT_FALSE(test_dialog_->button2_->is_default());
+  client_view->OnWillChangeFocus(dialog_->button2_, NULL);
+  EXPECT_TRUE(ok_button->is_default());
+  EXPECT_FALSE(dialog_->button1_->is_default());
+  EXPECT_FALSE(dialog_->button2_->is_default());
   SimulatePressingEnterAndCheckDefaultButton(OK);
 
   // Focus the cancel button.
-  client_view_->OnWillChangeFocus(NULL, cancel_button_);
-  EXPECT_FALSE(ok_button_->is_default());
-  EXPECT_TRUE(cancel_button_->is_default());
-  EXPECT_FALSE(test_dialog_->button1_->is_default());
-  EXPECT_FALSE(test_dialog_->button2_->is_default());
+  client_view->OnWillChangeFocus(NULL, cancel_button);
+  EXPECT_FALSE(ok_button->is_default());
+  EXPECT_TRUE(cancel_button->is_default());
+  EXPECT_FALSE(dialog_->button1_->is_default());
+  EXPECT_FALSE(dialog_->button2_->is_default());
   SimulatePressingEnterAndCheckDefaultButton(CANCEL);
 }
 
 class ButtonDropDownTest : public ViewTest {
  public:
-  ButtonDropDownTest()
-      : test_dialog_(NULL),
-        button_as_view_(NULL) {
-  }
+  ButtonDropDownTest() : dialog_(NULL), button_as_view_(NULL) {}
+  virtual ~ButtonDropDownTest() {}
 
   virtual void SetUp() OVERRIDE {
     ViewTest::SetUp();
-    test_dialog_ = new TestDialog(new MockMenuModel());
-
-    Widget* window = new Widget;
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-    params.delegate = test_dialog_;
-    params.bounds = gfx::Rect(0, 0, 100, 100);
-    window->Init(params);
-
-    test_dialog_->widget_ = window;
-    window->Show();
-    test_dialog_->button_drop_->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+    dialog_ = new TestDialog(new MockMenuModel());
+    DialogDelegate::CreateDialogWidget(dialog_, GetContext(), NULL)->Show();
+    dialog_->button_drop_->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
     // We have to cast the button back into a View in order to invoke it's
     // OnMouseReleased method.
-    button_as_view_ = static_cast<View*>(test_dialog_->button_drop_);
+    button_as_view_ = static_cast<View*>(dialog_->button_drop_);
   }
 
   virtual void TearDown() OVERRIDE {
-    test_dialog_->TearDown();
+    dialog_->TearDown();
     ViewTest::TearDown();
   }
 
-  TestDialog* test_dialog_;
-  // This is owned by test_dialog_.
+  TestDialog* dialog_;
+  // This is owned by dialog_.
   View* button_as_view_;
 
  private:
@@ -1852,7 +1797,7 @@ TEST_F(ButtonDropDownTest, RegularClickTest) {
                                ui::EF_LEFT_MOUSE_BUTTON);
   button_as_view_->OnMousePressed(press_event);
   button_as_view_->OnMouseReleased(release_event);
-  EXPECT_EQ(test_dialog_->last_pressed_button_, test_dialog_->button_drop_);
+  EXPECT_EQ(dialog_->last_pressed_button_, dialog_->button_drop_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
