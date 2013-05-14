@@ -1084,6 +1084,22 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
+  // Swipe up outside the hit area. This should not change anything.
+  gfx::Point outside_start = gfx::Point(
+      (GetShelfWidget()->GetWindowBoundsInScreen().x() +
+       GetShelfWidget()->GetWindowBoundsInScreen().right())/2,
+      GetShelfWidget()->GetWindowBoundsInScreen().y() - 50);
+  end.set_y(outside_start.y() - 100);
+  generator.GestureScrollSequence(outside_start,
+                                  end,
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  kNumScrollSteps);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(shelf_hidden.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+
   // Make the window fullscreen.
   widget->SetFullscreen(true);
   gfx::Rect bounds_fullscreen = window->bounds();
