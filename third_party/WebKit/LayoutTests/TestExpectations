@@ -1649,6 +1649,7 @@ crbug.com/239913 [ Win7 Debug ] media/track/track-cue-rendering-horizontal.html 
 
 # An exception is being thrown, causing tests to generate PNG output when they should not.
 crbug.com/239470 [ Mac ] fast/canvas/webgl [ Pass Missing ]
+crbug.com/239470 [ Mac ] fast/dom [ Pass Missing ]
 
 # Webgl tests are flaky crashing on windows.
 crbug.com/239839 [ Win ] fast/canvas/webgl/ [ Pass Crash ]
