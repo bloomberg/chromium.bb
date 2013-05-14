@@ -30,8 +30,8 @@ class AppsGridControllerTestHelper : public ui::CocoaTest {
   // Send a click to the test window in the centre of |view|.
   void SimulateClick(NSView* view);
 
-  // Send a key press to the first responder.
-  void SimulateKeyPress(unichar c);
+  // Send a key action using handleCommandBySelector.
+  void SimulateKeyAction(SEL c);
 
   void SimulateMouseEnterItemAt(size_t index);
   void SimulateMouseExitItemAt(size_t index);

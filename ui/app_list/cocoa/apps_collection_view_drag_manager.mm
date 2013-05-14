@@ -233,4 +233,8 @@ const CGFloat kDragThreshold = 5;
   [factory_ onMouseUp:theEvent];
 }
 
+- (BOOL)acceptsFirstResponder {
+  return NO;
+}
+
 @end

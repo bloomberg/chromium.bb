@@ -40,26 +40,12 @@
     [[self window] setFrame:[[appListViewController_ view] bounds]
                     display:NO];
     [[self window] setContentView:[appListViewController_ view]];
-    [[self window] setDelegate:self];
-    [[self window] makeFirstResponder:
-        [[appListViewController_ appsGridController]
-            collectionViewAtPageIndex:0]];
   }
   return self;
 }
 
 - (AppListViewController*)appListViewController {
   return appListViewController_;
-}
-
-- (void)doCommandBySelector:(SEL)command {
-  if (command == @selector(cancel:)) {
-    if ([appListViewController_ delegate])
-      [appListViewController_ delegate]->Dismiss();
-  } else if (command == @selector(insertNewline:) ||
-             command == @selector(insertLineBreak:)) {
-    [[appListViewController_ appsGridController] activateSelection];
-  }
 }
 
 @end

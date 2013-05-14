@@ -59,7 +59,7 @@ NSTimeInterval g_scroll_duration = 0.18;
 // Update the model in full, and rebuild subviews.
 - (void)modelUpdated;
 
-// Return the button selected in first page with a selection.
+// Return the button of the selected item.
 - (NSButton*)selectedButton;
 
 // The scroll view holding the grid pages.
@@ -82,6 +82,9 @@ NSTimeInterval g_scroll_duration = 0.18;
 
 - (void)listItemMovedFromIndex:(size_t)fromIndex
                   toModelIndex:(size_t)toIndex;
+
+// Moves the selection by |indexDelta| items.
+- (BOOL)moveSelectionByDelta:(int)indexDelta;
 
 @end
 
@@ -217,6 +220,12 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
     return;
   }
 
+  // Clear any selection on the current page (unless it has been removed).
+  if (visiblePage_ < [pages_ count]) {
+    [[self collectionViewAtPageIndex:visiblePage_]
+        setSelectionIndexes:[NSIndexSet indexSet]];
+  }
+
   newOrigin.x = pageIndex * kViewWidth;
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext] setDuration:g_scroll_duration];
@@ -272,18 +281,14 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 }
 
 - (void)boundsDidChange:(NSNotification*)notification {
-  if ([self nearestPageIndex] == visiblePage_) {
+  size_t newPage = [self nearestPageIndex];
+  if (newPage == visiblePage_) {
     [paginationObserver_ pageVisibilityChanged];
     return;
   }
 
-  // Clear any selection on the previous page (unless it has been removed).
-  if (visiblePage_ < [pages_ count]) {
-    [[self collectionViewAtPageIndex:visiblePage_]
-        setSelectionIndexes:[NSIndexSet indexSet]];
-  }
-  visiblePage_ = [self nearestPageIndex];
-  [paginationObserver_ selectedPageChanged:visiblePage_];
+  visiblePage_ = newPage;
+  [paginationObserver_ selectedPageChanged:newPage];
   [paginationObserver_ pageVisibilityChanged];
 }
 
@@ -315,22 +320,24 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   } else {
     [self updatePages:0];
   }
+  [self scrollToPage:0];
+}
+
+- (NSUInteger)selectedItemIndex {
+  NSCollectionView* page = [self collectionViewAtPageIndex:visiblePage_];
+  NSUInteger indexOnPage = [[page selectionIndexes] firstIndex];
+  if (indexOnPage == NSNotFound)
+    return NSNotFound;
+
+  return indexOnPage + visiblePage_ * kItemsPerPage;
 }
 
 - (NSButton*)selectedButton {
-  NSIndexSet* selection = nil;
-  size_t pageIndex = 0;
-  for (; pageIndex < [self pageCount]; ++pageIndex) {
-    selection = [[self collectionViewAtPageIndex:pageIndex] selectionIndexes];
-    if ([selection count] > 0)
-      break;
-  }
-
-  if (pageIndex == [self pageCount])
+  NSUInteger index = [self selectedItemIndex];
+  if (index == NSNotFound)
     return nil;
 
-  return [[self itemAtPageIndex:pageIndex
-                    indexInPage:[selection firstIndex]] button];
+  return [[self itemAtIndex:index] button];
 }
 
 - (NSScrollView*)gridScrollView {
@@ -500,6 +507,67 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   int pageIndex = [[sender cell] tagForSegment:selectedSegment];
   if (pageIndex >= 0)
     [self scrollToPage:pageIndex];
+}
+
+- (BOOL)moveSelectionByDelta:(int)indexDelta {
+  if (indexDelta == 0)
+    return NO;
+
+  NSUInteger oldIndex = [self selectedItemIndex];
+
+  // If nothing is currently selected, select the first item on the page.
+  if (oldIndex == NSNotFound) {
+    [self selectItemAtIndex:visiblePage_ * kItemsPerPage];
+    return YES;
+  }
+
+  if ((indexDelta < 0 && static_cast<NSUInteger>(-indexDelta) > oldIndex) ||
+      oldIndex + indexDelta >= [items_ count]) {
+    return NO;
+  }
+
+  [self selectItemAtIndex:oldIndex + indexDelta];
+  return YES;
+}
+
+- (void)selectItemAtIndex:(NSUInteger)index {
+  if (index >= [items_ count])
+    return;
+
+  if (index / kItemsPerPage != visiblePage_)
+    [self scrollToPage:index / kItemsPerPage];
+
+  [[self itemAtIndex:index] setSelected:YES];
+}
+
+- (BOOL)handleCommandBySelector:(SEL)command {
+  if (command == @selector(insertNewline:) ||
+      command == @selector(insertLineBreak:)) {
+    [self activateSelection];
+    return YES;
+  }
+
+  if (command == @selector(moveLeft:))
+    return [self moveSelectionByDelta:-1];
+
+  if (command == @selector(moveRight:))
+    return [self moveSelectionByDelta:1];
+
+  if (command == @selector(moveUp:))
+    return [self moveSelectionByDelta:-kFixedColumns];
+
+  if (command == @selector(moveDown:))
+    return [self moveSelectionByDelta:kFixedColumns];
+
+  if (command == @selector(pageUp:) ||
+      command == @selector(scrollPageUp:))
+    return [self moveSelectionByDelta:-kItemsPerPage];
+
+  if (command == @selector(pageDown:) ||
+      command == @selector(scrollPageDown:))
+    return [self moveSelectionByDelta:kItemsPerPage];
+
+  return NO;
 }
 
 @end

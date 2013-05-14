@@ -84,6 +84,18 @@ APP_LIST_EXPORT
 - (void)moveItemWithIndex:(size_t)itemIndex
              toModelIndex:(size_t)modelIndex;
 
+// Return the index of the selected item.
+- (NSUInteger)selectedItemIndex;
+
+// Moves the selection to the given index.
+- (void)selectItemAtIndex:(NSUInteger)index;
+
+// Handle key actions. Similar to doCommandBySelector from NSResponder but that
+// requires this class to be in the responder chain. Instead this method is
+// invoked by the AppListViewController.
+// Returns YES if this handled navigation or launched an app.
+- (BOOL)handleCommandBySelector:(SEL)command;
+
 @end
 
 @interface AppsGridController(TestingAPI)

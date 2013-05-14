@@ -27,6 +27,8 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper {
   }
 
   virtual void TearDown() OVERRIDE {
+    [app_list_view_controller_
+        setDelegate:scoped_ptr<app_list::AppListViewDelegate>(NULL)];
     app_list_view_controller_.reset();
     AppsGridControllerTestHelper::TearDown();
   }

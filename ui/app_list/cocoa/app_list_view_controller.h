@@ -23,7 +23,7 @@ class AppListViewDelegate;
 // navigating between pages in the grid.
 APP_LIST_EXPORT
 @interface AppListViewController :
-    NSViewController<AppsPaginationModelObserver> {
+    NSViewController<AppsPaginationModelObserver, NSTextFieldDelegate> {
  @private
   scoped_nsobject<AppsGridController> appsGridController_;
   scoped_nsobject<NSSegmentedControl> pagerControl_;

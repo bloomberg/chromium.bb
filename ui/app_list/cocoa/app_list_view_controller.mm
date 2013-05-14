@@ -21,6 +21,10 @@ const CGFloat kPagerPreferredHeight = 57;
 // Padding between the bottom of the grid and the bottom of the view.
 const CGFloat kViewGridOffsetY = 38;
 
+// Height of the search input. TODO(tapted): Make this visible when the search
+// input UI is written.
+const CGFloat kSearchInputHeight = 0;
+
 // Minimum margin on either side of the pager. If the pager grows beyond this,
 // the segment size is reduced.
 const CGFloat kMinPagerMargin = 40;
@@ -104,8 +108,16 @@ const CGFloat kMaxSegmentWidth = 80;
   scoped_nsobject<BackgroundView> backgroundView(
       [[BackgroundView alloc] initWithFrame:backgroundRect]);
 
+  NSRect searchInputRect =
+      NSMakeRect(0, NSMaxY(backgroundRect) - kSearchInputHeight,
+                 backgroundRect.size.width, kSearchInputHeight);
+  scoped_nsobject<NSTextField> searchInput(
+      [[NSTextField alloc] initWithFrame:searchInputRect]);
+  [searchInput setDelegate:self];
+
   [backgroundView addSubview:[appsGridController_ view]];
   [backgroundView addSubview:pagerControl_];
+  [backgroundView addSubview:searchInput];
   [self setView:backgroundView];
 }
 
@@ -140,6 +152,26 @@ const CGFloat kMaxSegmentWidth = 80;
 
 - (void)pageVisibilityChanged {
   [pagerControl_ setNeedsDisplay:YES];
+}
+
+- (BOOL)control:(NSControl*)control
+               textView:(NSTextView*)textView
+    doCommandBySelector:(SEL)command {
+  // If anything has been written, let the search view handle it.
+  if ([[control stringValue] length] > 0)
+    return NO;
+
+  // Handle escape.
+  if (command == @selector(complete:) ||
+      command == @selector(cancel:) ||
+      command == @selector(cancelOperation:)) {
+    if (delegate_)
+      delegate_->Dismiss();
+    return YES;
+  }
+
+  // Possibly handle grid navigation.
+  return [appsGridController_ handleCommandBySelector:command];
 }
 
 @end

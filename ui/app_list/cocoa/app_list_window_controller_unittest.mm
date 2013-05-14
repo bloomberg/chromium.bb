@@ -41,6 +41,8 @@ AppListWindowControllerTest::AppListWindowControllerTest() {
 void AppListWindowControllerTest::TearDown() {
   EXPECT_TRUE(controller_.get());
   [[controller_ window] close];
+  [[controller_ appListViewController]
+     setDelegate:scoped_ptr<app_list::AppListViewDelegate>(NULL)];
   controller_.reset();
   ui::CocoaTest::TearDown();
 }

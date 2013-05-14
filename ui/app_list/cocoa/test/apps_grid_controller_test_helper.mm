@@ -40,8 +40,8 @@ void AppsGridControllerTestHelper::SimulateClick(NSView* view) {
   [NSApp postEvent:events.second atStart:NO];
 }
 
-void AppsGridControllerTestHelper::SimulateKeyPress(unichar c) {
-  [test_window() keyDown:cocoa_test_event_utils::KeyEventWithCharacter(c)];
+void AppsGridControllerTestHelper::SimulateKeyAction(SEL c) {
+  [apps_grid_controller_ handleCommandBySelector:c];
 }
 
 void AppsGridControllerTestHelper::SimulateMouseEnterItemAt(size_t index) {
@@ -111,6 +111,9 @@ void AppsGridControllerTestHelper::SinkEvents() {
 }
 
 NSButton* AppsGridControllerTestHelper::GetItemViewAt(size_t index) {
+  if (index == NSNotFound)
+    return nil;
+
   return [[apps_grid_controller_ itemAtIndex:index] button];
 }
 
@@ -119,16 +122,7 @@ NSCollectionView* AppsGridControllerTestHelper::GetPageAt(size_t index) {
 }
 
 NSView* AppsGridControllerTestHelper::GetSelectedView() {
-  // TODO(tapted): Update this to work for selections on other than the first
-  // page.
-  NSIndexSet* selection = [GetPageAt(0) selectionIndexes];
-  if ([selection count]) {
-    AppsGridViewItem* item = base::mac::ObjCCastStrict<AppsGridViewItem>(
-        [GetPageAt(0) itemAtIndex:[selection firstIndex]]);
-    return [item button];
-  }
-
-  return nil;
+  return GetItemViewAt([apps_grid_controller_ selectedItemIndex]);
 }
 
 AppListTestViewDelegate* AppsGridControllerTestHelper::delegate() {
