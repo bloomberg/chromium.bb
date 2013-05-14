@@ -578,6 +578,33 @@ void NotificationView::ScrollRectToVisible(const gfx::Rect& rect) {
   views::View::ScrollRectToVisible(GetLocalBounds());
 }
 
+views::View* NotificationView::GetEventHandlerForPoint(
+    const gfx::Point& point) {
+  // Want to return this for underlying views, otherwise GetCursor is not
+  // called. But buttons are exceptions, they'll have their own event handlings.
+  std::vector<views::View*> buttons(action_buttons_);
+  buttons.push_back(close_button());
+  buttons.push_back(expand_button());
+
+  for (size_t i = 0; i < buttons.size(); ++i) {
+    gfx::Point point_in_child = point;
+    ConvertPointToTarget(this, buttons[i], &point_in_child);
+    if (buttons[i]->HitTestPoint(point_in_child))
+      return buttons[i]->GetEventHandlerForPoint(point_in_child);
+  }
+
+  return this;
+}
+
+gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
+#if defined(USE_AURA)
+  return ui::kCursorHand;
+#elif defined(OS_WIN)
+  static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
+  return g_hand_cursor;
+#endif
+}
+
 void NotificationView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   // See if the button pressed was an action button.
