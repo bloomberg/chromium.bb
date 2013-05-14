@@ -71,22 +71,24 @@ using base::TimeTicks;
 // In steady state, most cookie requests can be satisfied by the in memory
 // cookie monster store.  However, if a request comes in during the initial
 // cookie load, it must be delayed until that load completes. That is done by
-// queueing it on CookieMonster::queue_ and running it when notification of
-// cookie load completion is received via CookieMonster::OnLoaded. This callback
-// is passed to the persistent store from CookieMonster::InitStore(), which is
-// called on the first operation invoked on the CookieMonster.
+// queueing it on CookieMonster::tasks_pending_ and running it when notification
+// of cookie load completion is received via CookieMonster::OnLoaded. This
+// callback is passed to the persistent store from CookieMonster::InitStore(),
+// which is called on the first operation invoked on the CookieMonster.
 //
 // On the browser critical paths (e.g. for loading initial web pages in a
 // session restore) it may take too long to wait for the full load. If a cookie
 // request is for a specific URL, DoCookieTaskForURL is called, which triggers a
 // priority load if the key is not loaded yet by calling PersistentCookieStore
-// :: LoadCookiesForKey. The request is queued in CookieMonster::tasks_queued
-// and executed upon receiving notification of key load completion via
-// CookieMonster::OnKeyLoaded(). If multiple requests for the same eTLD+1 are
-// received before key load completion, only the first request calls
+// :: LoadCookiesForKey. The request is queued in
+// CookieMonster::tasks_pending_for_key_ and executed upon receiving
+// notification of key load completion via CookieMonster::OnKeyLoaded(). If
+// multiple requests for the same eTLD+1 are received before key load
+// completion, only the first request calls
 // PersistentCookieStore::LoadCookiesForKey, all subsequent requests are queued
-// in CookieMonster::tasks_queued and executed upon receiving notification of
-// key load completion triggered by the first request for the same eTLD+1.
+// in CookieMonster::tasks_pending_for_key_ and executed upon receiving
+// notification of key load completion triggered by the first request for the
+// same eTLD+1.
 
 static const int kMinutesInTenYears = 10 * 365 * 24 * 60;
 
@@ -971,7 +973,7 @@ void CookieMonster::DoCookieTask(
     base::AutoLock autolock(lock_);
     InitIfNecessary();
     if (!loaded_) {
-      queue_.push(task_item);
+      tasks_pending_.push(task_item);
       return;
     }
   }
@@ -993,11 +995,11 @@ void CookieMonster::DoCookieTaskForURL(
                                                        url.host()));
       if (keys_loaded_.find(key) == keys_loaded_.end()) {
         std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
-          ::iterator it = tasks_queued_.find(key);
-        if (it == tasks_queued_.end()) {
+          ::iterator it = tasks_pending_for_key_.find(key);
+        if (it == tasks_pending_for_key_.end()) {
           store_->LoadCookiesForKey(key,
             base::Bind(&CookieMonster::OnKeyLoaded, this, key));
-          it = tasks_queued_.insert(std::make_pair(key,
+          it = tasks_pending_for_key_.insert(std::make_pair(key,
             std::deque<scoped_refptr<CookieMonsterTask> >())).first;
         }
         it->second.push_back(task_item);
@@ -1385,22 +1387,22 @@ void CookieMonster::OnKeyLoaded(const std::string& key,
   // This function does its own separate locking.
   StoreLoadedCookies(cookies);
 
-  std::deque<scoped_refptr<CookieMonsterTask> > tasks_queued;
+  std::deque<scoped_refptr<CookieMonsterTask> > tasks_pending_for_key;
   {
     base::AutoLock autolock(lock_);
     keys_loaded_.insert(key);
     std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
-      ::iterator it = tasks_queued_.find(key);
-    if (it == tasks_queued_.end())
+      ::iterator it = tasks_pending_for_key_.find(key);
+    if (it == tasks_pending_for_key_.end())
       return;
-    it->second.swap(tasks_queued);
-    tasks_queued_.erase(it);
+    it->second.swap(tasks_pending_for_key);
+    tasks_pending_for_key_.erase(it);
   }
 
-  while (!tasks_queued.empty()) {
-    scoped_refptr<CookieMonsterTask> task = tasks_queued.front();
+  while (!tasks_pending_for_key.empty()) {
+    scoped_refptr<CookieMonsterTask> task = tasks_pending_for_key.front();
     task->Run();
-    tasks_queued.pop_front();
+    tasks_pending_for_key.pop_front();
   }
 }
 
@@ -1449,14 +1451,14 @@ void CookieMonster::InvokeQueue() {
     scoped_refptr<CookieMonsterTask> request_task;
     {
       base::AutoLock autolock(lock_);
-      if (queue_.empty()) {
+      if (tasks_pending_.empty()) {
         loaded_ = true;
         creation_times_.clear();
         keys_loaded_.clear();
         break;
       }
-      request_task = queue_.front();
-      queue_.pop();
+      request_task = tasks_pending_.front();
+      tasks_pending_.pop();
     }
     request_task->Run();
   }

@@ -54,10 +54,10 @@ class ParsedCookie;
 //
 // A cookie task is either pending loading of the entire cookie store, or
 // loading of cookies for a specfic domain key(eTLD+1). In the former case, the
-// cookie task will be queued in queue_ while PersistentCookieStore chain loads
-// the cookie store on DB thread. In the latter case, the cookie task will be
-// queued in tasks_queued_ while PermanentCookieStore loads cookies for the
-// specified domain key(eTLD+1) on DB thread.
+// cookie task will be queued in tasks_pending_ while PersistentCookieStore
+// chain loads the cookie store on DB thread. In the latter case, the cookie
+// task will be queued in tasks_pending_for_key_ while PermanentCookieStore
+// loads cookies for the specified domain key(eTLD+1) on DB thread.
 //
 // Callbacks are guaranteed to be invoked on the calling thread.
 //
@@ -614,11 +614,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // until all cookies for the associated domain key eTLD+1 are loaded from the
   // backend store.
   std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
-    tasks_queued_;
+      tasks_pending_for_key_;
 
   // Queues tasks that are blocked until all cookies are loaded from the backend
   // store.
-  std::queue<scoped_refptr<CookieMonsterTask> > queue_;
+  std::queue<scoped_refptr<CookieMonsterTask> > tasks_pending_;
 
   scoped_refptr<PersistentCookieStore> store_;
 
