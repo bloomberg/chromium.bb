@@ -100,12 +100,6 @@ void GetFileCallbackToFileOperationCallbackAdapter(
   callback.Run(error);
 }
 
-// Wraps |callback| and always passes FILE_ERROR_OK when invoked.
-// This is used for adopting |callback| to wait for a non-fatal operation.
-void IgnoreError(const FileOperationCallback& callback, FileError error) {
-  callback.Run(FILE_ERROR_OK);
-}
-
 // Creates a file with unique name in |dir| and stores the path to |temp_file|.
 // Additionally, sets the permission of the file to allow read access from
 // others and group member users (i.e, "-rw-r--r--").
@@ -205,27 +199,6 @@ struct FileSystem::GetResolvedFileParams {
   const GetFileCallback get_file_callback;
   const google_apis::GetContentCallback get_content_callback;
 };
-
-// FileSystem::AddUploadedFileParams implementation.
-struct FileSystem::AddUploadedFileParams {
-  AddUploadedFileParams(const base::FilePath& file_content_path,
-                        const FileOperationCallback& callback,
-                        const std::string& resource_id,
-                        const std::string& md5)
-      : file_content_path(file_content_path),
-        callback(callback),
-        resource_id(resource_id),
-        md5(md5) {
-  }
-
-  base::FilePath file_content_path;
-  FileOperationCallback callback;
-  std::string resource_id;
-  std::string md5;
-};
-
-
-// FileSystem class implementation.
 
 FileSystem::FileSystem(
     Profile* profile,
@@ -1284,55 +1257,6 @@ void FileSystem::OnInitialFeedLoaded() {
   FOR_EACH_OBSERVER(FileSystemObserver,
                     observers_,
                     OnInitialLoadFinished());
-}
-
-void FileSystem::AddUploadedFile(
-    scoped_ptr<google_apis::ResourceEntry> entry,
-    const base::FilePath& file_content_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(entry.get());
-  DCHECK(!entry->resource_id().empty());
-  DCHECK(!entry->file_md5().empty());
-  DCHECK(!callback.is_null());
-
-  AddUploadedFileParams params(file_content_path,
-                               callback,
-                               entry->resource_id(),
-                               entry->file_md5());
-
-  resource_metadata_->AddEntryOnUIThread(
-      ConvertToResourceEntry(*entry),
-      base::Bind(&FileSystem::AddUploadedFileToCache,
-                 weak_ptr_factory_.GetWeakPtr(), params));
-}
-
-void FileSystem::AddUploadedFileToCache(
-    const AddUploadedFileParams& params,
-    FileError error,
-    const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.resource_id.empty());
-  DCHECK(!params.md5.empty());
-  DCHECK(!params.callback.is_null());
-
-  // Depending on timing, a metadata may have inserted via delta feed already.
-  // So, FILE_ERROR_EXISTS is not an error.
-  if (error != FILE_ERROR_OK && error != FILE_ERROR_EXISTS) {
-    params.callback.Run(error);
-    return;
-  }
-
-  OnDirectoryChanged(file_path.DirName());
-
-  // At this point, upload to the server is fully succeeded. Failure to store to
-  // cache is not a fatal error, so we wrap the callback with IgnoreError, and
-  // always return success to the caller.
-  cache_->StoreOnUIThread(params.resource_id,
-                          params.md5,
-                          params.file_content_path,
-                          internal::FileCache::FILE_OPERATION_COPY,
-                          base::Bind(&IgnoreError, params.callback));
 }
 
 void FileSystem::GetMetadata(

@@ -46,11 +46,11 @@ void DriveOperations::Init(
       new CreateDirectoryOperation(job_scheduler,
                                    metadata,
                                    observer));
-  create_file_operation_.reset(
-      new CreateFileOperation(job_scheduler,
-                              file_system,
-                              metadata,
-                              blocking_task_runner));
+  create_file_operation_.reset(new CreateFileOperation(job_scheduler,
+                                                       cache,
+                                                       metadata,
+                                                       blocking_task_runner,
+                                                       observer));
   move_operation_.reset(new MoveOperation(job_scheduler,
                                           metadata,
                                           observer));

@@ -134,9 +134,6 @@ class FileSystem : public FileSystemInterface,
       const FileOperationCallback& callback) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
-  virtual void AddUploadedFile(scoped_ptr<google_apis::ResourceEntry> doc_entry,
-                               const base::FilePath& file_content_path,
-                               const FileOperationCallback& callback) OVERRIDE;
   virtual void GetMetadata(
       const GetFilesystemMetadataCallback& callback) OVERRIDE;
   virtual void MarkCacheFileAsMounted(
@@ -175,9 +172,6 @@ class FileSystem : public FileSystemInterface,
 
   // Defines set of parameters for GetResolvedFileByPath().
   struct GetResolvedFileParams;
-
-  // Struct used for AddUploadedFile.
-  struct AddUploadedFileParams;
 
   // Used to implement Reload().
   void ReloadAfterReset(FileError error);
@@ -272,11 +266,6 @@ class FileSystem : public FileSystemInterface,
       const GetAvailableSpaceCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
-
-  // Adds the uploaded file to the cache.
-  void AddUploadedFileToCache(const AddUploadedFileParams& params,
-                              FileError error,
-                              const base::FilePath& file_path);
 
   // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
   // from CheckForUpdates().

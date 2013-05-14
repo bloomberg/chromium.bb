@@ -410,16 +410,6 @@ class FileSystemInterface {
   // and returns it to the callback.
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
 
-  // Adds a file entry from |doc_entry|, and modifies the cache state.
-  // Adds a new file entry, and store its content from |file_content_path| into
-  // the cache.
-  //
-  // |callback| must not be null.
-  // TODO(kinaba): move to an internal operation class. http://crbug.com/236771.
-  virtual void AddUploadedFile(scoped_ptr<google_apis::ResourceEntry> doc_entry,
-                               const base::FilePath& file_content_path,
-                               const FileOperationCallback& callback) = 0;
-
   // Returns miscellaneous metadata of the file system like the largest
   // timestamp. Used in chrome:drive-internals. |callback| must not be null.
   virtual void GetMetadata(

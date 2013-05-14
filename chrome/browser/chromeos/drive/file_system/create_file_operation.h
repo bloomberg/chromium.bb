@@ -21,24 +21,28 @@ class ResourceEntry;
 
 namespace drive {
 
-class FileSystemInterface;
+namespace internal {
+class FileCache;
+}  // namespace internal
+
 class JobScheduler;
 class ResourceEntry;
 
 namespace file_system {
 
+class OperationObserver;
+
 // This class encapsulates the drive CreateFile function.  It is responsible for
 // sending the request to the drive API, then updating the local state and
 // metadata to reflect the new state.
-//
-// TODO(kinaba): crbug.com/236771 remove dependency to FileSystemInterface.
 class CreateFileOperation {
  public:
   CreateFileOperation(
       JobScheduler* job_scheduler,
-      FileSystemInterface* file_system,
+      internal::FileCache* cache,
       internal::ResourceMetadata* metadata,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      OperationObserver* observer);
   ~CreateFileOperation();
 
   // Creates an empty file at |file_path| in the remote server. When the file
@@ -70,10 +74,17 @@ class CreateFileOperation {
       const base::FilePath& local_path,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
+  void CreateFileAfterAddToMetadata(const ResourceEntry& entry,
+                                    const base::FilePath& local_path,
+                                    const FileOperationCallback& callback,
+                                    FileError error,
+                                    const base::FilePath& drive_path);
+
   JobScheduler* job_scheduler_;
-  FileSystemInterface* file_system_;
+  internal::FileCache* cache_;
   internal::ResourceMetadata* metadata_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  OperationObserver* observer_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

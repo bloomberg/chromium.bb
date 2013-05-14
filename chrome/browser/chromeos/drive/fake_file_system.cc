@@ -222,13 +222,6 @@ void FakeFileSystem::GetAvailableSpace(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::AddUploadedFile(
-    scoped_ptr<google_apis::ResourceEntry> doc_entry,
-    const base::FilePath& file_content_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void FakeFileSystem::GetMetadata(
     const GetFilesystemMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

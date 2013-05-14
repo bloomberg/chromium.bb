@@ -7,9 +7,12 @@
 #include <string>
 
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
 
@@ -22,17 +25,25 @@ namespace {
 
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
+// Wraps |callback| and always passes FILE_ERROR_OK when invoked.
+// This is used for adopting |callback| to wait for a non-fatal operation.
+void IgnoreError(const FileOperationCallback& callback, FileError error) {
+  callback.Run(FILE_ERROR_OK);
+}
+
 }  // namespace
 
 CreateFileOperation::CreateFileOperation(
     JobScheduler* job_scheduler,
-    FileSystemInterface* file_system,
+    internal::FileCache* cache,
     internal::ResourceMetadata* metadata,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+    OperationObserver* observer)
     : job_scheduler_(job_scheduler),
-      file_system_(file_system),
+      cache_(cache),
       metadata_(metadata),
       blocking_task_runner_(blocking_task_runner),
+      observer_(observer),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -139,12 +150,48 @@ void CreateFileOperation::CreateFileAfterUpload(
   DCHECK(!callback.is_null());
 
   if (error == google_apis::HTTP_SUCCESS && resource_entry) {
-    file_system_->AddUploadedFile(resource_entry.Pass(),
-                                  local_path,
-                                  callback);
+    // Add the entry to the local resource metadata.
+    ResourceEntry entry = ConvertToResourceEntry(*resource_entry);
+    metadata_->AddEntryOnUIThread(
+        entry,
+        base::Bind(&CreateFileOperation::CreateFileAfterAddToMetadata,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   entry,
+                   local_path,
+                   callback));
   } else {
     callback.Run(util::GDataToFileError(error));
   }
+}
+
+void CreateFileOperation::CreateFileAfterAddToMetadata(
+    const ResourceEntry& entry,
+    const base::FilePath& local_path,
+    const FileOperationCallback& callback,
+    FileError error,
+    const base::FilePath& drive_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Depending on timing, the metadata may have inserted via change list feed
+  // already. So, FILE_ERROR_EXISTS is not an error.
+  if (error == FILE_ERROR_EXISTS)
+    error = FILE_ERROR_OK;
+
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  observer_->OnDirectoryChangedByOperation(drive_path.DirName());
+
+  // At this point, upload to the server is fully succeeded. Failure to store to
+  // cache is not a fatal error, so we wrap the callback with IgnoreError, and
+  // always return success to the caller.
+  cache_->StoreOnUIThread(entry.resource_id(),
+                          entry.file_specific_info().file_md5(),
+                          local_path,
+                          internal::FileCache::FILE_OPERATION_COPY,
+                          base::Bind(&IgnoreError, callback));
 }
 
 }  // namespace file_system
