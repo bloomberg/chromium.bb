@@ -65,7 +65,12 @@ _DESKTOP_NEGATIVE_FILTER['HEAD'] = (
         # This test is flaky since it uses setTimeout.
         # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
         'ChromeDriverTest.testAlert',
+        # Desktop doesn't support TAP.
+        'ChromeDriverTest.testSingleTapElement',
     ]
+)
+_DESKTOP_NEGATIVE_FILTER['28'] = (
+    _DESKTOP_NEGATIVE_FILTER['HEAD'] + []
 )
 _DESKTOP_NEGATIVE_FILTER['27'] = (
     _DESKTOP_NEGATIVE_FILTER['HEAD'] + []

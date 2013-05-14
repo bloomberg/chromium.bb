@@ -86,6 +86,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'VisibilityTest.tooSmallAWindowWithOverflowHiddenIsNotAProblem',
     'WindowTest.*',
 ]
+_REVISION_NEGATIVE_FILTER['28'] = [] + _REVISION_NEGATIVE_FILTER['HEAD']
 _REVISION_NEGATIVE_FILTER['27'] = [] + _REVISION_NEGATIVE_FILTER['HEAD']
 _REVISION_NEGATIVE_FILTER['26'] = [
     'UploadTest.testFileUploading',
