@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
-#include "chromeos/dbus/mock_image_burner_client.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

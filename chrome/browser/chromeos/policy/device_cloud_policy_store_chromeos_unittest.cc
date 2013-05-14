@@ -13,8 +13,8 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
-#include "chromeos/cryptohome/mock_cryptohome_library.h"
-#include "chromeos/dbus/mock_cryptohome_client.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
