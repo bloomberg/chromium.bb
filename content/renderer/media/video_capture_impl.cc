@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "content/common/child_process.h"
 #include "content/common/media/video_capture_messages.h"
+#include "media/base/limits.h"
 
 namespace content {
 
@@ -204,6 +205,8 @@ void VideoCaptureImpl::DoStartCaptureOnCaptureThread(
       current_params_.width = capability.width;
       current_params_.height = capability.height;
       current_params_.frame_per_second = capability.frame_rate;
+      if (current_params_.frame_per_second > media::limits::kMaxFramesPerSecond)
+        current_params_.frame_per_second = media::limits::kMaxFramesPerSecond;
       DVLOG(1) << "StartCapture: starting with first resolution ("
                << current_params_.width << "," << current_params_.height << ")";
 
