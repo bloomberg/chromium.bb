@@ -253,7 +253,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Pushes the given producer into the write queue for
   // |stream|. |stream| is guaranteed to be activated before the
   // producer is used to produce its frame.
-  void EnqueueStreamWrite(SpdyStream* stream,
+  void EnqueueStreamWrite(const base::WeakPtr<SpdyStream>& stream,
                           SpdyFrameType frame_type,
                           scoped_ptr<SpdyBufferProducer> producer);
 
@@ -601,10 +601,10 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   void EnqueueWrite(RequestPriority priority,
                     SpdyFrameType frame_type,
                     scoped_ptr<SpdyBufferProducer> producer,
-                    const scoped_refptr<SpdyStream>& stream);
+                    const base::WeakPtr<SpdyStream>& stream);
 
   // Track active streams in the active stream list.
-  void ActivateStream(SpdyStream* stream);
+  void ActivateStream(const scoped_refptr<SpdyStream>& stream);
 
   // If there is an active stream with the given ID, delete it. There
   // must be no external references to that active stream. Also note

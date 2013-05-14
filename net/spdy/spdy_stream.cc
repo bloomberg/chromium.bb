@@ -153,8 +153,7 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
     CHECK(response_received());
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&SpdyStream::PushedStreamReplayData,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&SpdyStream::PushedStreamReplayData, GetWeakPtr()));
   } else {
     continue_buffering_data_ = false;
   }
@@ -535,8 +534,7 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
     DecreaseRecvWindowSize(static_cast<int32>(length));
     buffer->AddConsumeCallback(
-        base::Bind(&SpdyStream::OnReadBufferConsumed,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&SpdyStream::OnReadBufferConsumed, GetWeakPtr()));
   }
 
   // Track our bandwidth.
@@ -626,10 +624,9 @@ void SpdyStream::QueueHeaders(scoped_ptr<SpdyHeaderBlock> headers) {
   CHECK_GT(stream_id_, 0u);
 
   session_->EnqueueStreamWrite(
-      this, HEADERS,
+      GetWeakPtr(), HEADERS,
       scoped_ptr<SpdyBufferProducer>(
-          new HeaderBufferProducer(
-              weak_ptr_factory_.GetWeakPtr(), headers.Pass())));
+          new HeaderBufferProducer(GetWeakPtr(), headers.Pass())));
 }
 
 void SpdyStream::QueueStreamData(IOBuffer* data,
@@ -658,12 +655,11 @@ void SpdyStream::QueueStreamData(IOBuffer* data,
     // here anyway just in case this changes.
     data_buffer->AddConsumeCallback(
         base::Bind(&SpdyStream::OnWriteBufferConsumed,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   payload_size));
+                   GetWeakPtr(), payload_size));
   }
 
   session_->EnqueueStreamWrite(
-      this, DATA,
+      GetWeakPtr(), DATA,
       scoped_ptr<SpdyBufferProducer>(
           new SimpleBufferProducer(data_buffer.Pass())));
 }
@@ -814,8 +810,7 @@ int SpdyStream::DoGetDomainBoundCert() {
   int rv = sbc_service->GetDomainBoundCert(
       url.GetOrigin().host(), requested_cert_types,
       &domain_bound_cert_type_, &domain_bound_private_key_, &domain_bound_cert_,
-      base::Bind(&SpdyStream::OnGetDomainBoundCertComplete,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&SpdyStream::OnGetDomainBoundCertComplete, GetWeakPtr()),
       &domain_bound_cert_request_handle_);
   return rv;
 }
@@ -854,7 +849,7 @@ int SpdyStream::DoSendDomainBoundCert() {
   // immediately enqueueing the SYN_STREAM frame here and adjusting
   // the state machine appropriately.
   session_->EnqueueStreamWrite(
-      this, CREDENTIAL,
+      GetWeakPtr(), CREDENTIAL,
       scoped_ptr<SpdyBufferProducer>(
           new SimpleBufferProducer(
               scoped_ptr<SpdyBuffer>(new SpdyBuffer(frame.Pass())))));
@@ -871,9 +866,9 @@ int SpdyStream::DoSendHeaders() {
   io_state_ = STATE_SEND_HEADERS_COMPLETE;
 
   session_->EnqueueStreamWrite(
-      this, SYN_STREAM,
+      GetWeakPtr(), SYN_STREAM,
       scoped_ptr<SpdyBufferProducer>(
-          new SynStreamBufferProducer(weak_ptr_factory_.GetWeakPtr())));
+          new SynStreamBufferProducer(GetWeakPtr())));
   return ERR_IO_PENDING;
 }
 

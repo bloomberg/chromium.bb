@@ -688,7 +688,7 @@ bool SpdySession::CloseOneIdleConnection() {
 }
 
 void SpdySession::EnqueueStreamWrite(
-    SpdyStream* stream,
+    const base::WeakPtr<SpdyStream>& stream,
     SpdyFrameType frame_type,
     scoped_ptr<SpdyBufferProducer> producer) {
   DCHECK(frame_type == HEADERS ||
@@ -1161,7 +1161,7 @@ void SpdySession::WriteSocket() {
       // Grab the next frame to send.
       SpdyFrameType frame_type = DATA;
       scoped_ptr<SpdyBufferProducer> producer;
-      scoped_refptr<SpdyStream> stream;
+      base::WeakPtr<SpdyStream> stream;
       if (!write_queue_.Dequeue(&frame_type, &producer, &stream))
         break;
 
@@ -1172,7 +1172,7 @@ void SpdySession::WriteSocket() {
       // guarantee monotonically-increasing stream IDs.
       if (frame_type == SYN_STREAM) {
         if (stream && stream->stream_id() == 0) {
-          ActivateStream(stream.get());
+          ActivateStream(scoped_refptr<SpdyStream>(stream.get()));
         } else {
           NOTREACHED();
           continue;
@@ -1403,26 +1403,26 @@ void SpdySession::EnqueueSessionWrite(RequestPriority priority,
       scoped_ptr<SpdyBufferProducer>(
           new SimpleBufferProducer(
               scoped_ptr<SpdyBuffer>(new SpdyBuffer(frame.Pass())))),
-      NULL);
+      base::WeakPtr<SpdyStream>());
 }
 
 void SpdySession::EnqueueWrite(RequestPriority priority,
                                SpdyFrameType frame_type,
                                scoped_ptr<SpdyBufferProducer> producer,
-                               const scoped_refptr<SpdyStream>& stream) {
+                               const base::WeakPtr<SpdyStream>& stream) {
   write_queue_.Enqueue(priority, frame_type, producer.Pass(), stream);
   WriteSocketLater();
 }
 
-void SpdySession::ActivateStream(SpdyStream* stream) {
+void SpdySession::ActivateStream(const scoped_refptr<SpdyStream>& stream) {
   if (stream->stream_id() == 0) {
     stream->set_stream_id(GetNewStreamId());
-    created_streams_.erase(scoped_refptr<SpdyStream>(stream));
+    created_streams_.erase(stream);
   }
-  const SpdyStreamId id = stream->stream_id();
-  DCHECK(!IsStreamActive(id));
-
-  active_streams_[id] = stream;
+  ActiveStreamMap::value_type entry(stream->stream_id(), stream);
+  ActiveStreamMap::iterator it = active_streams_.lower_bound(entry.first);
+  DCHECK(it == active_streams_.end() || it->second->stream_id() != entry.first);
+  ignore_result(active_streams_.insert(it, entry));
 }
 
 void SpdySession::DeleteStream(SpdyStreamId id, int status) {
@@ -1462,7 +1462,7 @@ void SpdySession::DeleteStreamRefs(scoped_refptr<SpdyStream>* last_ref,
     in_flight_write_stream_ = NULL;
   }
 
-  write_queue_.RemovePendingWritesForStream(*last_ref);
+  write_queue_.RemovePendingWritesForStream((*last_ref)->GetWeakPtr());
 
   (*last_ref)->OnClose(status);
 
@@ -1730,7 +1730,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
       std::pair<scoped_refptr<SpdyStream>, base::TimeTicks> (
           stream, time_func_());
 
-  ActivateStream(stream.get());
+  ActivateStream(stream);
   stream->set_response_received();
   stream = NULL;
 

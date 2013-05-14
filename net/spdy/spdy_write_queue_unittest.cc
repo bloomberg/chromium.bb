@@ -75,21 +75,21 @@ TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
   scoped_ptr<SpdyBufferProducer> producer_medium = StringToProducer("MEDIUM");
   scoped_ptr<SpdyBufferProducer> producer_highest = StringToProducer("HIGHEST");
 
-  // A NULL stream should still work.
-  scoped_refptr<SpdyStream> stream_low(NULL);
   scoped_refptr<SpdyStream> stream_medium(MakeTestStream(MEDIUM));
   scoped_refptr<SpdyStream> stream_highest(MakeTestStream(HIGHEST));
 
+  // A NULL stream should still work.
   write_queue.Enqueue(
-      LOW, SYN_STREAM, producer_low.Pass(), stream_low);
+      LOW, SYN_STREAM, producer_low.Pass(), base::WeakPtr<SpdyStream>());
   write_queue.Enqueue(
-      MEDIUM, SYN_REPLY, producer_medium.Pass(), stream_medium);
+      MEDIUM, SYN_REPLY, producer_medium.Pass(), stream_medium->GetWeakPtr());
   write_queue.Enqueue(
-      HIGHEST, RST_STREAM, producer_highest.Pass(), stream_highest);
+      HIGHEST, RST_STREAM, producer_highest.Pass(),
+      stream_highest->GetWeakPtr());
 
   SpdyFrameType frame_type = DATA;
   scoped_ptr<SpdyBufferProducer> frame_producer;
-  scoped_refptr<SpdyStream> stream;
+  base::WeakPtr<SpdyStream> stream;
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(RST_STREAM, frame_type);
   EXPECT_EQ("HIGHEST", ProducerToString(frame_producer.Pass()));
@@ -103,7 +103,7 @@ TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(SYN_STREAM, frame_type);
   EXPECT_EQ("LOW", ProducerToString(frame_producer.Pass()));
-  EXPECT_EQ(stream_low, stream);
+  EXPECT_EQ(NULL, stream.get());
 
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
@@ -121,13 +121,16 @@ TEST_F(SpdyWriteQueueTest, DequeuesFIFO) {
   scoped_refptr<SpdyStream> stream2(MakeTestStream(DEFAULT_PRIORITY));
   scoped_refptr<SpdyStream> stream3(MakeTestStream(DEFAULT_PRIORITY));
 
-  write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, producer1.Pass(), stream1);
-  write_queue.Enqueue(DEFAULT_PRIORITY, SYN_REPLY, producer2.Pass(), stream2);
-  write_queue.Enqueue(DEFAULT_PRIORITY, RST_STREAM, producer3.Pass(), stream3);
+  write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, producer1.Pass(),
+                      stream1->GetWeakPtr());
+  write_queue.Enqueue(DEFAULT_PRIORITY, SYN_REPLY, producer2.Pass(),
+                      stream2->GetWeakPtr());
+  write_queue.Enqueue(DEFAULT_PRIORITY, RST_STREAM, producer3.Pass(),
+                      stream3->GetWeakPtr());
 
   SpdyFrameType frame_type = DATA;
   scoped_ptr<SpdyBufferProducer> frame_producer;
-  scoped_refptr<SpdyStream> stream;
+  base::WeakPtr<SpdyStream> stream;
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(SYN_STREAM, frame_type);
   EXPECT_EQ(1, ProducerToInt(frame_producer.Pass()));
@@ -157,15 +160,16 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
 
   for (int i = 0; i < 100; ++i) {
     scoped_refptr<SpdyStream> stream = ((i % 3) == 0) ? stream1 : stream2;
-    write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, IntToProducer(i), stream);
+    write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, IntToProducer(i),
+                        stream->GetWeakPtr());
   }
 
-  write_queue.RemovePendingWritesForStream(stream2);
+  write_queue.RemovePendingWritesForStream(stream2->GetWeakPtr());
 
   for (int i = 0; i < 100; i += 3) {
     SpdyFrameType frame_type = DATA;
     scoped_ptr<SpdyBufferProducer> frame_producer;
-    scoped_refptr<SpdyStream> stream;
+    base::WeakPtr<SpdyStream> stream;
     ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
     EXPECT_EQ(SYN_STREAM, frame_type);
     EXPECT_EQ(i, ProducerToInt(frame_producer.Pass()));
@@ -174,7 +178,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
 
   SpdyFrameType frame_type = DATA;
   scoped_ptr<SpdyBufferProducer> frame_producer;
-  scoped_refptr<SpdyStream> stream;
+  base::WeakPtr<SpdyStream> stream;
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
 
@@ -199,7 +203,8 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
 
   for (int i = 0; i < 100; ++i) {
     scoped_refptr<SpdyStream> stream = streams[i % arraysize(streams)];
-    write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, IntToProducer(i), stream);
+    write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, IntToProducer(i),
+                        stream->GetWeakPtr());
   }
 
   write_queue.RemovePendingWritesForStreamsAfter(stream1->stream_id());
@@ -207,7 +212,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
   for (int i = 0; i < 100; i += arraysize(streams)) {
     SpdyFrameType frame_type = DATA;
     scoped_ptr<SpdyBufferProducer> frame_producer;
-    scoped_refptr<SpdyStream> stream;
+    base::WeakPtr<SpdyStream> stream;
     ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream))
         << "Unable to Dequeue i: " << i;
     EXPECT_EQ(SYN_STREAM, frame_type);
@@ -217,7 +222,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
 
   SpdyFrameType frame_type = DATA;
   scoped_ptr<SpdyBufferProducer> frame_producer;
-  scoped_refptr<SpdyStream> stream;
+  base::WeakPtr<SpdyStream> stream;
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
 
@@ -228,14 +233,15 @@ TEST_F(SpdyWriteQueueTest, Clear) {
   SpdyWriteQueue write_queue;
 
   for (int i = 0; i < 100; ++i) {
-    write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, IntToProducer(i), NULL);
+    write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, IntToProducer(i),
+                        base::WeakPtr<SpdyStream>());
   }
 
   write_queue.Clear();
 
   SpdyFrameType frame_type = DATA;
   scoped_ptr<SpdyBufferProducer> frame_producer;
-  scoped_refptr<SpdyStream> stream;
+  base::WeakPtr<SpdyStream> stream;
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
 

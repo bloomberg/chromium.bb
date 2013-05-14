@@ -8,8 +8,8 @@
 #include <deque>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/spdy/spdy_protocol.h"
@@ -30,11 +30,12 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   // Enqueues the given frame producer of the given type at the given
   // priority associated with the given stream, which may be NULL if
   // the frame producer is not associated with a stream. If |stream|
-  // is non-NULL, its priority must be equal to |priority|.
+  // is non-NULL, its priority must be equal to |priority|, and it
+  // must remain non-NULL until the write is dequeued or removed.
   void Enqueue(RequestPriority priority,
                SpdyFrameType frame_type,
                scoped_ptr<SpdyBufferProducer> frame_producer,
-               const scoped_refptr<SpdyStream>& stream);
+               const base::WeakPtr<SpdyStream>& stream);
 
   // Dequeues the frame producer with the highest priority that was
   // enqueued the earliest and its associated stream. Returns true and
@@ -42,11 +43,11 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   // successful -- otherwise, just returns false.
   bool Dequeue(SpdyFrameType* frame_type,
                scoped_ptr<SpdyBufferProducer>* frame_producer,
-               scoped_refptr<SpdyStream>* stream);
+               base::WeakPtr<SpdyStream>* stream);
 
   // Removes all pending writes for the given stream, which must be
   // non-NULL.
-  void RemovePendingWritesForStream(const scoped_refptr<SpdyStream>& stream);
+  void RemovePendingWritesForStream(const base::WeakPtr<SpdyStream>& stream);
 
   // Removes all pending writes for streams after |last_good_stream_id|
   // and streams with no stream id.
@@ -62,12 +63,14 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
     // This has to be a raw pointer since we store this in an STL
     // container.
     SpdyBufferProducer* frame_producer;
-    scoped_refptr<SpdyStream> stream;
+    base::WeakPtr<SpdyStream> stream;
+    // Whether |stream| was non-NULL when enqueued.
+    bool has_stream;
 
     PendingWrite();
     PendingWrite(SpdyFrameType frame_type,
                  SpdyBufferProducer* frame_producer,
-                 const scoped_refptr<SpdyStream>& stream);
+                 const base::WeakPtr<SpdyStream>& stream);
     ~PendingWrite();
   };
 

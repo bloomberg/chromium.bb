@@ -18,10 +18,11 @@ SpdyWriteQueue::PendingWrite::PendingWrite() : frame_producer(NULL) {}
 SpdyWriteQueue::PendingWrite::PendingWrite(
     SpdyFrameType frame_type,
     SpdyBufferProducer* frame_producer,
-    const scoped_refptr<SpdyStream>& stream)
+    const base::WeakPtr<SpdyStream>& stream)
     : frame_type(frame_type),
       frame_producer(frame_producer),
-      stream(stream) {}
+      stream(stream),
+      has_stream(stream != NULL) {}
 
 SpdyWriteQueue::PendingWrite::~PendingWrite() {}
 
@@ -34,17 +35,16 @@ SpdyWriteQueue::~SpdyWriteQueue() {
 void SpdyWriteQueue::Enqueue(RequestPriority priority,
                              SpdyFrameType frame_type,
                              scoped_ptr<SpdyBufferProducer> frame_producer,
-                             const scoped_refptr<SpdyStream>& stream) {
-  if (stream.get()) {
+                             const base::WeakPtr<SpdyStream>& stream) {
+  if (stream)
     DCHECK_EQ(stream->priority(), priority);
-  }
   queue_[priority].push_back(
       PendingWrite(frame_type, frame_producer.release(), stream));
 }
 
 bool SpdyWriteQueue::Dequeue(SpdyFrameType* frame_type,
                              scoped_ptr<SpdyBufferProducer>* frame_producer,
-                             scoped_refptr<SpdyStream>* stream) {
+                             base::WeakPtr<SpdyStream>* stream) {
   for (int i = NUM_PRIORITIES - 1; i >= 0; --i) {
     if (!queue_[i].empty()) {
       PendingWrite pending_write = queue_[i].front();
@@ -52,6 +52,8 @@ bool SpdyWriteQueue::Dequeue(SpdyFrameType* frame_type,
       *frame_type = pending_write.frame_type;
       frame_producer->reset(pending_write.frame_producer);
       *stream = pending_write.stream;
+      if (pending_write.has_stream)
+        DCHECK(*stream);
       return true;
     }
   }
@@ -59,8 +61,8 @@ bool SpdyWriteQueue::Dequeue(SpdyFrameType* frame_type,
 }
 
 void SpdyWriteQueue::RemovePendingWritesForStream(
-    const scoped_refptr<SpdyStream>& stream) {
-  DCHECK(stream.get());
+    const base::WeakPtr<SpdyStream>& stream) {
+  DCHECK(stream);
   if (DCHECK_IS_ON()) {
     // |stream| should not have pending writes in a queue not matching
     // its priority.
