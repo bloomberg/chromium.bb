@@ -456,7 +456,7 @@ int main(int argc, char *argv[])
 {
 	struct tablet tablet = { 0 };
 	struct display *display;
-	char *config_file;
+	int config_fd;
 	struct output *output;
 
 	display = display_create(&argc, argv);
@@ -478,11 +478,11 @@ int main(int argc, char *argv[])
 
 	wl_list_init(&tablet.homescreen->launcher_list);
 
-	config_file = config_file_path("weston.ini");
-	parse_config_file(config_file,
+	config_fd = open_config_file("weston.ini");
+	parse_config_file(config_fd,
 			  config_sections, ARRAY_LENGTH(config_sections),
 			  &tablet);
-	free(config_file);
+	close(config_fd);
 
 	signal(SIGCHLD, sigchild_handler);
 

@@ -1090,7 +1090,7 @@ add_default_launcher(struct desktop *desktop)
 int main(int argc, char *argv[])
 {
 	struct desktop desktop = { 0 };
-	char *config_file;
+	int config_fd;
 	struct output *output;
 	int ret;
 
@@ -1122,11 +1122,11 @@ int main(int argc, char *argv[])
 
 	grab_surface_create(&desktop);
 
-	config_file = config_file_path("weston.ini");
-	ret = parse_config_file(config_file,
+	config_fd = open_config_file("weston.ini");
+	ret = parse_config_file(config_fd,
 				config_sections, ARRAY_LENGTH(config_sections),
 				&desktop);
-	free(config_file);
+	close(config_fd);
 	if (ret < 0)
 		add_default_launcher(&desktop);
 

@@ -928,7 +928,7 @@ rdp_incoming_peer(freerdp_listener *instance, freerdp_peer *client)
 static struct weston_compositor *
 rdp_compositor_create(struct wl_display *display,
 		struct rdp_compositor_config *config,
-		int *argc, char *argv[], const char *config_file)
+		int *argc, char *argv[], int config_fd)
 {
 	struct rdp_compositor *c;
 	char *fd_str;
@@ -941,7 +941,7 @@ rdp_compositor_create(struct wl_display *display,
 	memset(c, 0, sizeof *c);
 
 	if (weston_compositor_init(&c->base, display, argc, argv,
-				   config_file) < 0)
+				   config_fd) < 0)
 		goto err_free;
 
 	weston_seat_init(&c->main_seat, &c->base);

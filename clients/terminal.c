@@ -2671,17 +2671,17 @@ int main(int argc, char *argv[])
 {
 	struct display *d;
 	struct terminal *terminal;
-	char *config_file;
+	int config_fd;
 
 	option_shell = getenv("SHELL");
 	if (!option_shell)
 		option_shell = "/bin/bash";
 
-	config_file = config_file_path("weston.ini");
-	parse_config_file(config_file,
+	config_fd = open_config_file("weston.ini");
+	parse_config_file(config_fd,
 			  config_sections, ARRAY_LENGTH(config_sections),
 			  NULL);
-	free(config_file);
+	close(config_fd);
 
 	parse_options(terminal_options,
 		      ARRAY_LENGTH(terminal_options), &argc, argv);

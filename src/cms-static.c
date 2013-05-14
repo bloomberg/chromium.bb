@@ -131,7 +131,7 @@ output_section_done(void *data)
 
 WL_EXPORT int
 module_init(struct weston_compositor *ec,
-	    int *argc, char *argv[], const char *config_file)
+	    int *argc, char *argv[])
 {
 	struct cms_static *cms;
 	struct weston_output *output;
@@ -157,7 +157,7 @@ module_init(struct weston_compositor *ec,
 		ARRAY_LENGTH(drm_config_keys), output_section_done },
 	};
 
-	parse_config_file(config_file, config_section,
+	parse_config_file(ec->config_fd, config_section,
 			  ARRAY_LENGTH(config_section), cms);
 
 	cms->destroy_listener.notify = cms_notifier_destroy;

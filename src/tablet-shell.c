@@ -527,7 +527,7 @@ tablet_shell_destroy(struct wl_listener *listener, void *data)
 
 WL_EXPORT int
 module_init(struct weston_compositor *compositor,
-	    int *argc, char *argv[], const char *config_file)
+	    int *argc, char *argv[])
 {
 	struct tablet_shell *shell;
 	struct wl_event_loop *loop;

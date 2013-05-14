@@ -24,7 +24,10 @@ server is started:
 .nf
 .BR "$XDG_CONFIG_HOME/weston.ini   " "(if $XDG_CONFIG_HOME is set)"
 .BR "$HOME/.config/weston.ini      " "(if $HOME is set)"
-.BR "<current dir>/weston.ini      " "(if both variables were not set)"
+.B  "weston/weston.ini in each"
+.BR "\ \ \ \ $XDG_CONFIG_DIR           " "(if $XDG_CONFIG_DIRS is set)"
+.BR "/etc/xdg/weston/weston.ini    " "(if $XDG_CONFIG_DIRS is not set)"
+.BR "<current dir>/weston.ini      " "(if no variables were set)"
 .fi
 .RE
 .PP
@@ -32,7 +35,12 @@ where environment variable
 .B $HOME
 is the user's home directory, and
 .B $XDG_CONFIG_HOME
-is the user specific configuration directory.
+is the user specific configuration directory, and
+.B $XDG_CONFIG_DIRS
+is a colon
+.B ':'
+delimited listed of configuration base directories, such as
+.BR /etc/xdg-foo:/etc/xdg .
 .PP
 The
 .I weston.ini

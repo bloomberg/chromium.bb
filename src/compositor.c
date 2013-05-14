@@ -2686,7 +2686,7 @@ WL_EXPORT int
 weston_compositor_init(struct weston_compositor *ec,
 		       struct wl_display *display,
 		       int *argc, char *argv[],
-		       const char *config_file)
+		       int config_fd)
 {
 	struct wl_event_loop *loop;
 	struct xkb_rule_names xkb_names;
@@ -2703,7 +2703,9 @@ weston_compositor_init(struct weston_compositor *ec,
 	};
 
 	memset(&xkb_names, 0, sizeof(xkb_names));
-	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), ec);
+
+	ec->config_fd = config_fd;
+	parse_config_file(config_fd, cs, ARRAY_LENGTH(cs), ec);
 
 	ec->wl_display = display;
 	wl_signal_init(&ec->destroy_signal);
@@ -2789,6 +2791,8 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	weston_plane_release(&ec->primary_plane);
 
 	wl_event_loop_destroy(ec->input_loop);
+
+	close(ec->config_fd);
 }
 
 WL_EXPORT void
@@ -2945,12 +2949,12 @@ load_module(const char *name, const char *entrypoint)
 
 static int
 load_modules(struct weston_compositor *ec, const char *modules,
-	     int *argc, char *argv[], const char *config_file)
+	     int *argc, char *argv[])
 {
 	const char *p, *end;
 	char buffer[256];
 	int (*module_init)(struct weston_compositor *ec,
-			   int *argc, char *argv[], const char *config_file);
+			   int *argc, char *argv[]);
 
 	if (modules == NULL)
 		return 0;
@@ -2961,7 +2965,7 @@ load_modules(struct weston_compositor *ec, const char *modules,
 		snprintf(buffer, sizeof buffer, "%.*s", (int) (end - p), p);
 		module_init = load_module(buffer, "module_init");
 		if (module_init)
-			module_init(ec, argc, argv, config_file);
+			module_init(ec, argc, argv);
 		p = end;
 		while (*p == ',')
 			p++;
@@ -3087,8 +3091,8 @@ int main(int argc, char *argv[])
 	struct wl_event_loop *loop;
 	struct weston_compositor
 		*(*backend_init)(struct wl_display *display,
-				 int *argc, char *argv[], const char *config_file);
-	int i;
+				 int *argc, char *argv[], int config_fd);
+	int i, config_fd;
 	char *backend = NULL;
 	const char *modules = "desktop-shell.so", *option_modules = NULL;
 	char *log = NULL;
@@ -3096,7 +3100,6 @@ int main(int argc, char *argv[])
 	int32_t help = 0;
 	char *socket_name = "wayland-0";
 	int32_t version = 0;
-	char *config_file;
 
 	const struct config_key core_config_keys[] = {
 		{ "modules", CONFIG_KEY_STRING, &modules },
@@ -3162,14 +3165,14 @@ int main(int argc, char *argv[])
 			backend = WESTON_NATIVE_BACKEND;
 	}
 
-	config_file = config_file_path("weston.ini");
-	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), NULL);
+	config_fd = open_config_file("weston.ini");
+	parse_config_file(config_fd, cs, ARRAY_LENGTH(cs), NULL);
 
 	backend_init = load_module(backend, "backend_init");
 	if (!backend_init)
 		exit(EXIT_FAILURE);
 
-	ec = backend_init(display, &argc, argv, config_file);
+	ec = backend_init(display, &argc, argv, config_fd);
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
 		exit(EXIT_FAILURE);
@@ -3182,12 +3185,10 @@ int main(int argc, char *argv[])
 
 	setenv("WAYLAND_DISPLAY", socket_name, 1);
 
-	if (load_modules(ec, modules, &argc, argv, config_file) < 0)
+	if (load_modules(ec, modules, &argc, argv) < 0)
 		goto out;
-	if (load_modules(ec, option_modules, &argc, argv, config_file) < 0)
+	if (load_modules(ec, option_modules, &argc, argv) < 0)
 		goto out;
-
-	free(config_file);
 
 	for (i = 1; i < argc; i++)
 		weston_log("fatal: unhandled option: %s\n", argv[i]);

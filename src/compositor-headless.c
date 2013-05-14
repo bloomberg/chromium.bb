@@ -158,7 +158,7 @@ headless_destroy(struct weston_compositor *ec)
 static struct weston_compositor *
 headless_compositor_create(struct wl_display *display,
 			  int width, int height, const char *display_name,
-			  int *argc, char *argv[], const char *config_file)
+			  int *argc, char *argv[], int config_fd)
 {
 	struct headless_compositor *c;
 
@@ -169,7 +169,7 @@ headless_compositor_create(struct wl_display *display,
 	memset(c, 0, sizeof *c);
 
 	if (weston_compositor_init(&c->base, display, argc, argv,
-				   config_file) < 0)
+				   config_fd) < 0)
 		goto err_free;
 
 	weston_seat_init(&c->fake_seat, &c->base);
@@ -194,7 +194,7 @@ err_free:
 
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
-	     const char *config_file)
+	     int config_fd)
 {
 	int width = 1024, height = 640;
 	char *display_name = NULL;
@@ -208,5 +208,5 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		      ARRAY_LENGTH(headless_options), argc, argv);
 
 	return headless_compositor_create(display, width, height, display_name,
-					 argc, argv, config_file);
+					  argc, argv, config_fd);
 }

@@ -2362,7 +2362,7 @@ planes_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
 		      int connector, const char *seat, int tty, int pixman,
-		      int *argc, char *argv[], const char *config_file)
+		      int *argc, char *argv[], int config_fd)
 {
 	struct drm_compositor *ec;
 	struct udev_device *drm_device;
@@ -2385,7 +2385,7 @@ drm_compositor_create(struct wl_display *display,
 	ec->use_pixman = pixman;
 
 	if (weston_compositor_init(&ec->base, display, argc, argv,
-				   config_file) < 0) {
+				   config_fd) < 0) {
 		weston_log("%s failed\n", __func__);
 		goto err_base;
 	}
@@ -2666,7 +2666,7 @@ output_section_done(void *data)
 
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
-	     const char *config_file)
+	     int config_fd)
 {
 	int connector = 0, tty = 0, use_pixman = 0;
 	const char *seat = default_seat;
@@ -2694,9 +2694,9 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		ARRAY_LENGTH(drm_config_keys), output_section_done },
 	};
 
-	parse_config_file(config_file, config_section,
+	parse_config_file(config_fd, config_section,
 				ARRAY_LENGTH(config_section), NULL);
 
 	return drm_compositor_create(display, connector, seat, tty, use_pixman,
-				     argc, argv, config_file);
+				     argc, argv, config_fd);
 }

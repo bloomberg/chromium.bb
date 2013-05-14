@@ -48,12 +48,12 @@ struct config_section {
 };
 
 int
-parse_config_file(const char *path,
+parse_config_file(int config_fd,
 		  const struct config_section *sections, int num_sections,
 		  void *data);
 
-char *
-config_file_path(const char *name);
+int
+open_config_file(const char *name);
 
 enum weston_option_type {
 	WESTON_OPTION_INTEGER,

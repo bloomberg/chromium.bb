@@ -20,11 +20,17 @@
  * OF THIS SOFTWARE.
  */
 
+#define _GNU_SOURCE   /* for stchrnul() */
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
+#include <limits.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "config-parser.h"
 
@@ -86,7 +92,7 @@ handle_key(const struct config_key *key, const char *value)
 }
 
 int
-parse_config_file(const char *path,
+parse_config_file(int fd,
 		  const struct config_section *sections, int num_sections,
 		  void *data)
 {
@@ -95,11 +101,16 @@ parse_config_file(const char *path,
 	const struct config_section *current = NULL;
 	int i;
 
-	fp = fopen(path, "r");
+	if (fd == -1)
+		return -1;
+
+	fp = fdopen(dup(fd), "r");
 	if (fp == NULL) {
-		fprintf(stderr, "couldn't open %s\n", path);
+            perror("couldn't open config file");
 		return -1;
 	}
+
+	rewind(fp);
 
 	while (fgets(line, sizeof line, fp)) {
 		if (line[0] == '#' || line[0] == '\n') {
@@ -151,37 +162,62 @@ parse_config_file(const char *path,
 	return 0;
 }
 
-char *
-config_file_path(const char *name)
+int
+open_config_file(const char *name)
 {
-	const char dotconf[] = "/.config/";
-	const char *config_dir;
-	const char *home_dir;
-	char *path;
-	size_t size;
+	const char *config_dir  = getenv("XDG_CONFIG_HOME");
+	const char *home_dir	= getenv("HOME");
+	const char *config_dirs = getenv("XDG_CONFIG_DIRS");
+	char path[PATH_MAX];
+	const char *p, *next;
+	int fd;
 
-	config_dir = getenv("XDG_CONFIG_HOME");
-	if (!config_dir) {
-		home_dir = getenv("HOME");
-		if (!home_dir) {
-			fprintf(stderr, "HOME is not set, using cwd.\n");
-			return strdup(name);
-		}
+	/* Precedence is given to config files in the home directory,
+	 * and then to directories listed in XDG_CONFIG_DIRS and
+	 * finally to the current working directory. */
 
-		size = strlen(home_dir) + sizeof dotconf + strlen(name);
-		path = malloc(size);
-		if (!path)
-			return NULL;
-
-		snprintf(path, size, "%s%s%s", home_dir, dotconf, name);
-		return path;
+	/* $XDG_CONFIG_HOME */
+	if (config_dir) {
+		snprintf(path, sizeof path, "%s/%s", config_dir, name);
+		fd = open(path, O_RDONLY | O_CLOEXEC);
+		if (fd >= 0)
+			return fd;
 	}
 
-	size = strlen(config_dir) + 1 + strlen(name) + 1;
-	path = malloc(size);
-	if (!path)
-		return NULL;
+	/* $HOME/.config */
+	if (home_dir) {
+		snprintf(path, sizeof path, "%s/.config/%s", home_dir, name);
+		fd = open(path, O_RDONLY | O_CLOEXEC);
+		if (fd >= 0)
+			return fd;
+	}
 
-	snprintf(path, size, "%s/%s", config_dir, name);
-	return path;
+	/* For each $XDG_CONFIG_DIRS: weston/<config_file> */
+	if (!config_dirs)
+		config_dirs = "/etc/xdg";  /* See XDG base dir spec. */
+
+	for (p = config_dirs; *p != '\0'; p = next) {
+		next = strchrnul(p, ':');
+		snprintf(path, sizeof path,
+			 "%.*s/weston/%s", (int)(next - p), p, name);
+		fd = open(path, O_RDONLY | O_CLOEXEC);
+		if (fd >= 0)
+			return fd;
+
+		if (*next == ':')
+			next++;
+	}
+
+	/* Current working directory. */
+	snprintf(path, sizeof path, "./%s", name);
+	fd = open(path, O_RDONLY | O_CLOEXEC);
+
+	if (fd >= 0)
+		fprintf(stderr,
+			"using config in current working directory: %s\n",
+			path);
+	else
+		fprintf(stderr, "config file \"%s\" not found.\n", name);
+
+	return fd;
 }

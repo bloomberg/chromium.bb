@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "compositor.h"
 #include "text-server-protocol.h"
@@ -885,7 +886,7 @@ handle_seat_created(struct wl_listener *listener,
 static void
 text_backend_configuration(struct text_backend *text_backend)
 {
-	char *config_file;
+	int config_fd;
 	char *path = NULL;
 
 	struct config_key input_method_keys[] = {
@@ -896,9 +897,9 @@ text_backend_configuration(struct text_backend *text_backend)
 		{ "input-method", input_method_keys, ARRAY_LENGTH(input_method_keys), NULL }
 	};
 
-	config_file = config_file_path("weston.ini");
-	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), text_backend);
-	free(config_file);
+	config_fd = open_config_file("weston.ini");
+	parse_config_file(config_fd, cs, ARRAY_LENGTH(cs), text_backend);
+        close(config_fd);
 
 	if (path)
 		text_backend->input_method.path = path;

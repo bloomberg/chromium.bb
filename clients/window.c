@@ -1188,7 +1188,7 @@ static const struct cursor_alternatives cursors[] = {
 static void
 create_cursors(struct display *display)
 {
-	char *config_file;
+	int config_fd;
 	char *theme = NULL;
 	unsigned int size = 32;
 	unsigned int i, j;
@@ -1201,9 +1201,9 @@ create_cursors(struct display *display)
 		{ "shell", shell_keys, ARRAY_LENGTH(shell_keys), NULL },
 	};
 
-	config_file = config_file_path("weston.ini");
-	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), NULL);
-	free(config_file);
+	config_fd = open_config_file("weston.ini");
+	parse_config_file(config_fd, cs, ARRAY_LENGTH(cs), NULL);
+	close(config_fd);
 
 	display->cursor_theme = wl_cursor_theme_load(theme, size, display->shm);
 	display->cursors =

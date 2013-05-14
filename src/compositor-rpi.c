@@ -1441,7 +1441,7 @@ struct rpi_parameters {
 
 static struct weston_compositor *
 rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
-		      const char *config_file, struct rpi_parameters *param)
+		      int config_fd, struct rpi_parameters *param)
 {
 	struct rpi_compositor *compositor;
 	const char *seat = default_seat;
@@ -1464,7 +1464,7 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 		return NULL;
 
 	if (weston_compositor_init(&compositor->base, display, argc, argv,
-				   config_file) < 0)
+				   config_fd) < 0)
 		goto out_free;
 
 	compositor->udev = udev_new();
@@ -1554,7 +1554,7 @@ out_free:
 
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
-	     const char *config_file)
+	     int config_fd)
 {
 	struct rpi_parameters param = {
 		.tty = 0, /* default to current tty */
@@ -1571,5 +1571,5 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 
 	parse_options(rpi_options, ARRAY_LENGTH(rpi_options), argc, argv);
 
-	return rpi_compositor_create(display, argc, argv, config_file, &param);
+	return rpi_compositor_create(display, argc, argv, config_fd, &param);
 }

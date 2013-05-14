@@ -545,6 +545,8 @@ struct weston_compositor {
 	struct xkb_rule_names xkb_names;
 	struct xkb_context *xkb_context;
 	struct weston_xkb_info xkb_info;
+
+	int config_fd;
 };
 
 struct weston_buffer_reference {
@@ -987,7 +989,7 @@ weston_compositor_get_time(void);
 
 int
 weston_compositor_init(struct weston_compositor *ec, struct wl_display *display,
-		       int *argc, char *argv[], const char *config_file);
+		       int *argc, char *argv[], int config_fd);
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
 void
@@ -1125,11 +1127,11 @@ noop_renderer_init(struct weston_compositor *ec);
 
 struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
-	     const char *config_file);
+	     int config_fd);
 
 int
 module_init(struct weston_compositor *compositor,
-	    int *argc, char *argv[], const char *config_file);
+	    int *argc, char *argv[]);
 
 void
 weston_transformed_coord(int width, int height,
