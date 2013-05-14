@@ -2,75 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'variables': {
-    'browser_dll_sources': [
-      'app/chrome_command_ids.h',
-      'app/chrome_dll.rc',
-      'app/chrome_dll_resource.h',
-      'app/chrome_main.cc',
-      'app/chrome_main_delegate.cc',
-      'app/chrome_main_delegate.h',
-      'app/delay_load_hook_win.cc',
-      'app/delay_load_hook_win.h',
-
-      '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
-      '../base/win/dllmain.cc',
-
-      '../ui/resources/cursors/aliasb.cur',
-      '../ui/resources/cursors/cell.cur',
-      '../ui/resources/cursors/col_resize.cur',
-      '../ui/resources/cursors/copy.cur',
-      '../ui/resources/cursors/none.cur',
-      '../ui/resources/cursors/row_resize.cur',
-      '../ui/resources/cursors/vertical_text.cur',
-      '../ui/resources/cursors/zoom_in.cur',
-      '../ui/resources/cursors/zoom_out.cur',
-
-      # TODO:  It would be nice to have these pulled in
-      # automatically from direct_dependent_settings in
-      # their various targets (net.gyp:net_resources, etc.),
-      # but that causes errors in other targets when
-      # resulting .res files get referenced multiple times.
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.rc',
-      '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
-      '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-      '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
-      '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
-    ],
-    'delay_load_dlls_win': [
-      'comdlg32.dll',
-      'crypt32.dll',
-      'cryptui.dll',
-      'dhcpcsvc.dll',
-      'imagehlp.dll',
-      'imm32.dll',
-      'iphlpapi.dll',
-      'setupapi.dll',
-      'urlmon.dll',
-      'winhttp.dll',
-      'wininet.dll',
-      'winspool.drv',
-      'ws2_32.dll',
-      'wsock32.dll',
-    ],
-    'browser_dependencies_win': [
-      # On Windows, link the dependencies (libraries) that make
-      # up actual Chromium functionality into this .dll.
-      'chrome_resources.gyp:chrome_resources',
-      'chrome_version_resources',
-      '../chrome/chrome_resources.gyp:chrome_unscaled_resources',
-      '../crypto/crypto.gyp:crypto',
-      '../printing/printing.gyp:printing',
-      '../net/net.gyp:net_resources',
-      '../third_party/cld/cld.gyp:cld',
-      '../ui/views/views.gyp:views',
-      '../webkit/support/webkit_support.gyp:webkit_resources',
-    ],
-    'manifest_files_win': '$(ProjectDir)\\app\\chrome.dll.manifest',
-  },
   'conditions': [
     ['OS=="mac" or OS=="win"', {
       'targets': [
@@ -169,11 +100,55 @@
             ['OS=="win"', {
               'product_name': 'chrome',
               'dependencies': [
-                '<@(browser_dependencies_win)',
+                # On Windows, link the dependencies (libraries) that make
+                # up actual Chromium functionality into this .dll.
                 'chrome_dll_pdb_workaround',
+                'chrome_resources.gyp:chrome_resources',
+                'chrome_version_resources',
+                '../chrome/chrome_resources.gyp:chrome_unscaled_resources',
+                '../crypto/crypto.gyp:crypto',
+                '../printing/printing.gyp:printing',
+                '../net/net.gyp:net_resources',
+                '../third_party/cld/cld.gyp:cld',
+                '../ui/views/views.gyp:views',
+                '../webkit/support/webkit_support.gyp:webkit_resources',
               ],
               'sources': [
-                '<@(browser_dll_sources)',
+                'app/chrome_command_ids.h',
+                'app/chrome_dll.rc',
+                'app/chrome_dll_resource.h',
+                'app/chrome_main.cc',
+                'app/chrome_main_delegate.cc',
+                'app/chrome_main_delegate.h',
+                'app/delay_load_hook_win.cc',
+                'app/delay_load_hook_win.h',
+
+                '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
+                '../base/win/dllmain.cc',
+
+                '../ui/resources/cursors/aliasb.cur',
+                '../ui/resources/cursors/cell.cur',
+                '../ui/resources/cursors/col_resize.cur',
+                '../ui/resources/cursors/copy.cur',
+                '../ui/resources/cursors/none.cur',
+                '../ui/resources/cursors/row_resize.cur',
+                '../ui/resources/cursors/vertical_text.cur',
+                '../ui/resources/cursors/zoom_in.cur',
+                '../ui/resources/cursors/zoom_out.cur',
+
+                # TODO:  It would be nice to have these pulled in
+                # automatically from direct_dependent_settings in
+                # their various targets (net.gyp:net_resources, etc.),
+                # but that causes errors in other targets when
+                # resulting .res files get referenced multiple times.
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
               ],
               'include_dirs': [
                 '<(DEPTH)/third_party/wtl/include',
@@ -230,11 +205,24 @@
                     }],
                   ],
                   'DelayLoadDLLs': [
-                    '<@(delay_load_dlls_win)',
+                    'comdlg32.dll',
+                    'crypt32.dll',
+                    'cryptui.dll',
+                    'dhcpcsvc.dll',
+                    'imagehlp.dll',
+                    'imm32.dll',
+                    'iphlpapi.dll',
+                    'setupapi.dll',
+                    'urlmon.dll',
+                    'winhttp.dll',
+                    'wininet.dll',
+                    'winspool.drv',
+                    'ws2_32.dll',
+                    'wsock32.dll',
                   ],
                 },
                 'VCManifestTool': {
-                  'AdditionalManifestFiles': '<(manifest_files_win)',
+                  'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
                 },
               },
             }],  # OS=="win"
@@ -243,6 +231,17 @@
             }],
             ['OS=="mac" and component=="shared_library"', {
               'xcode_settings': { 'OTHER_LDFLAGS': [ '-Wl,-ObjC' ], },
+            }],
+            ['chrome_split_dll', {
+              'sources': [
+                # See comment in .cc for explanation.
+                'split_dll_fake_entry.cc',
+              ],
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'AdditionalOptions': ['/splitlink'],
+                },
+              }
             }],
             ['OS=="mac"', {
               'xcode_settings': {
@@ -307,67 +306,6 @@
         },  # target chrome_main_dll
       ],  # targets
     }],  # OS=="mac" or OS=="win"
-    ['OS=="win" and chrome_split_dll', {
-      'targets': [
-        {
-          'target_name': 'chrome_browser_dll',
-          'type': 'shared_library',
-          'variables': {
-            'enable_wexit_time_destructors': 1,
-          },
-          'dependencies': [
-            '<@(chromium_browser_dependencies)',
-            'app/policy/cloud_policy_codegen.gyp:policy',
-            # TODO(scottmg): http://crbug.com/237249 Probably should be
-            # renderer.
-            '../ppapi/ppapi_internal.gyp:ppapi_host',
-          ],
-          'conditions': [
-            ['use_aura==1', {
-              'dependencies': [
-                '../ui/compositor/compositor.gyp:compositor',
-              ],
-            }],
-            ['use_ash==1', {
-              'sources': [
-                '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_wallpaper_resources.rc',
-              ],
-            }],
-            ['OS=="win"', {
-              'product_name': 'chrome_browser',
-              'dependencies': [
-                '<@(browser_dependencies_win)',
-              ],
-              'sources': [
-                '<@(browser_dll_sources)',
-              ],
-              'include_dirs': [
-                '<(DEPTH)/third_party/wtl/include',
-              ],
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'BaseAddress': '0x01c30000',
-                  'ImportLibrary': '$(OutDir)\\lib\\chrome_browser_dll.lib',
-                  # Set /SUBSYSTEM:WINDOWS for chrome_browser.dll (for consistency).
-                  'SubSystem': '2',
-                  'DelayLoadDLLs': [
-                    '<@(delay_load_dlls_win)',
-                  ],
-                },
-                'VCManifestTool': {
-                  'AdditionalManifestFiles': '<(manifest_files_win)',
-                },
-              },
-            }],  # OS=="win"
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],  # conditions
-        },  # target chrome_browser_dll
-      ],  # targets
-    }],
     ['OS=="win"', {
       'targets': [
         {

@@ -894,8 +894,8 @@
     # to get incremental linking to be faster in debug builds.
     'incremental_chrome_dll%': '0',
 
-    # Experimental setting to break chrome.dll in to chrome_browser.dll and
-    # chrome_child.dll.
+    # Experimental setting to break chrome.dll in to multiple parts (currently
+    # two, split primarily along browser/render lines).
     'chrome_split_dll%': '0',
 
     # The default settings for third party code for treating
@@ -1829,6 +1829,9 @@
         ],
       }],
       ['chrome_split_dll', {
+        'variables': {
+          'chrome_split_dll': '<!(python <(DEPTH)/tools/win/split_link/check_installed.py)',
+        },
         'defines': ['CHROME_SPLIT_DLL'],
       }],
       ['OS=="linux" and clang==1 and host_arch=="ia32"', {
