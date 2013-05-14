@@ -833,6 +833,11 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl()
 #if ENABLE(WEB_AUDIO)
 void WebMediaPlayerClientImpl::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)
 {
+    MutexLocker locker(provideInputLock);
+
+    if (m_webAudioSourceProvider && provider != m_webAudioSourceProvider)
+        m_webAudioSourceProvider->setClient(0);
+
     m_webAudioSourceProvider = provider;
     if (m_webAudioSourceProvider)
         m_webAudioSourceProvider->setClient(m_client.get());
@@ -840,6 +845,8 @@ void WebMediaPlayerClientImpl::AudioSourceProviderImpl::wrap(WebAudioSourceProvi
 
 void WebMediaPlayerClientImpl::AudioSourceProviderImpl::setClient(AudioSourceProviderClient* client)
 {
+    MutexLocker locker(provideInputLock);
+
     if (client)
         m_client = adoptPtr(new WebMediaPlayerClientImpl::AudioClientImpl(client));
     else
@@ -855,7 +862,8 @@ void WebMediaPlayerClientImpl::AudioSourceProviderImpl::provideInput(AudioBus* b
     if (!bus)
         return;
 
-    if (!m_webAudioSourceProvider) {
+    MutexTryLocker tryLocker(provideInputLock);
+    if (!tryLocker.locked() || !m_webAudioSourceProvider || !m_client.get()) {
         bus->zero();
         return;
     }

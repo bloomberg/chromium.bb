@@ -230,6 +230,7 @@ private:
     private:
         WebAudioSourceProvider* m_webAudioSourceProvider;
         OwnPtr<AudioClientImpl> m_client;
+        Mutex provideInputLock;
     };
 
     AudioSourceProviderImpl m_audioSourceProvider;
