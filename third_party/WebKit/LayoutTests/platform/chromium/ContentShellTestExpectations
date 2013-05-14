@@ -180,6 +180,7 @@ crbug.com/239769 [ Win ] svg/zoom/page/zoom-background-images.html [ ImageOnlyFa
 crbug.com/239769 [ Win ] svg/zoom/page/zoom-svg-through-object-with-absolute-size-2.xhtml [ ImageOnlyFailure ]
 crbug.com/239769 [ Win ] svg/zoom/page/zoom-svg-through-object-with-absolute-size.xhtml [ ImageOnlyFailure ]
 crbug.com/239769 [ Win ] svg/zoom/page/zoom-svg-through-object-with-percentage-size.xhtml [ ImageOnlyFailure ]
+crbug.com/240673 http/tests/security/filesystem-iframe-from-remote.html [ Failure Pass ]
 
 # -----------------------------------------------------------------
 # To be rebaselined
