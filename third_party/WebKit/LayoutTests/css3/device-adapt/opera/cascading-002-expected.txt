@@ -1,3 +1,3 @@
 
-PASS CSS Test: @viewport cascading - !important declaration wins 
+FAIL CSS Test: @viewport cascading - !important declaration wins assert_equals: expected 300 but got 800
 

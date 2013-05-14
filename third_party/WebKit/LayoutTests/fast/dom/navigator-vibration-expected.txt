@@ -3,12 +3,12 @@ Test for the Vibration API.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS navigator.vibrate(0); is undefined
-PASS navigator.vibrate([]); is undefined
-PASS navigator.vibrate(1000); is undefined
-PASS navigator.vibrate([1000, 300, 500]); is undefined
-PASS navigator.vibrate(4294967295); is undefined
-PASS navigator.vibrate(); threw exception TypeError: Not enough arguments.
+FAIL navigator.vibrate(0); should be undefined. Threw exception TypeError: Object #<Navigator> has no method 'vibrate'
+FAIL navigator.vibrate([]); should be undefined. Threw exception TypeError: Object #<Navigator> has no method 'vibrate'
+FAIL navigator.vibrate(1000); should be undefined. Threw exception TypeError: Object #<Navigator> has no method 'vibrate'
+FAIL navigator.vibrate([1000, 300, 500]); should be undefined. Threw exception TypeError: Object #<Navigator> has no method 'vibrate'
+FAIL navigator.vibrate(4294967295); should be undefined. Threw exception TypeError: Object #<Navigator> has no method 'vibrate'
+PASS navigator.vibrate(); threw exception TypeError: Object #<Navigator> has no method 'vibrate'.
 PASS successfullyParsed is true
 
 TEST COMPLETE

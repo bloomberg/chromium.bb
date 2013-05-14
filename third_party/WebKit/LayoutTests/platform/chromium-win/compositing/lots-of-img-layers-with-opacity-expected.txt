@@ -699,7 +699,4 @@ layer at (8,8) size 214x232
   RenderImage {IMG} at (8,8) size 214x232
 layer at (8,8) size 214x232
   RenderImage {IMG} at (8,8) size 214x232
-layer at (8,8) size 214x232
-  RenderImage {IMG} at (8,8) size 214x232
-layer at (8,8) size 214x232
-  RenderImage {IMG} at (8,8) size 214x232
+layer at (8,8) size

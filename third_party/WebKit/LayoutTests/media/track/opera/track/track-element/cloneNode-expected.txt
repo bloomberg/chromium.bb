@@ -1,0 +1,5 @@
+
+FAIL track element cloneNode, not loaded assert_equals: elm.readyState after setting mode expected 1 but got 0
+FAIL track element cloneNode, loading assert_equals: elm.readyState after setting mode expected 1 but got 0
+FAIL track element cloneNode, loaded assert_equals: elm.readyState after setting mode expected 1 but got 0
+

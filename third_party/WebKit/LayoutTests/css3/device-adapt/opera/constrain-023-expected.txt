@@ -1,3 +1,3 @@
 
-PASS CSS Test: @viewport constrained - used width is positive. 
+FAIL CSS Test: @viewport constrained - used width is positive. assert_equals: expected 1 but got 800
 

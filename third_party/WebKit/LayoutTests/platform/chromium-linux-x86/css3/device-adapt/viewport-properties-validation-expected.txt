@@ -1,0 +1,48 @@
+
+FAIL Rule with no attributes assert_equals: expected "@-webkit-viewport { }" but got ".foo { }"
+FAIL Shorthands with double value Cannot read property 'cssText' of null(stack: TypeError: Cannot read property 'cssText' of null
+    at Object. (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:116:40)
+    at Object.Test.step (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:876:18)
+    at test (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:338:18)
+    at file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:115:9)
+FAIL Shorthands with single value Cannot read property 'cssText' of null(stack: TypeError: Cannot read property 'cssText' of null
+    at Object. (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:125:40)
+    at Object.Test.step (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:876:18)
+    at test (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:338:18)
+    at file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:124:9)
+FAIL Shorthands should override properties if defined later Cannot read property 'cssText' of null(stack: TypeError: Cannot read property 'cssText' of null
+    at Object. (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:134:40)
+    at Object.Test.step (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:876:18)
+    at test (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:338:18)
+    at file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:133:9)
+FAIL All valid properties with valid intial values Cannot read property 'cssText' of null(stack: TypeError: Cannot read property 'cssText' of null
+    at Object. (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:143:40)
+    at Object.Test.step (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:876:18)
+    at test (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:338:18)
+    at file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:142:9)
+FAIL All valid properties with valid values Cannot read property 'cssText' of null(stack: TypeError: Cannot read property 'cssText' of null
+    at Object. (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:157:40)
+    at Object.Test.step (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:876:18)
+    at test (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:338:18)
+    at file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:156:9)
+FAIL All valid properties with invalid intial values Cannot read property 'cssText' of null(stack: TypeError: Cannot read property 'cssText' of null
+    at Object. (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:171:40)
+    at Object.Test.step (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:876:18)
+    at test (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:338:18)
+    at file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:170:9)
+FAIL Negative numbers should be dropped on zoom attribute Cannot read property 'cssText' of null(stack: TypeError: Cannot read property 'cssText' of null
+    at Object. (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:175:40)
+    at Object.Test.step (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:876:18)
+    at test (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:338:18)
+    at file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:174:9)
+FAIL Viewport attributes inside selectors should be dropped Cannot read property 'cssText' of null(stack: TypeError: Cannot read property 'cssText' of null
+    at Object. (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:179:40)
+    at Object.Test.step (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:876:18)
+    at test (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:338:18)
+    at file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:178:9)
+FAIL Invalid attributes among valid should be dropped Cannot read property 'cssText' of null(stack: TypeError: Cannot read property 'cssText' of null
+    at Object. (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:183:40)
+    at Object.Test.step (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:876:18)
+    at test (file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/resources/testharness.js:338:18)
+    at file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/third_party/WebKit/LayoutTests/css3/device-adapt/viewport-properties-validation.html:182:9)
+

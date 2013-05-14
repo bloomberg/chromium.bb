@@ -1,0 +1,32 @@
+Test that captions and subtitles are sorted in the menu according to user preferences.
+
+EVENT(canplaythrough)
+
+*** Set the user language preference.
+RUN(internals.setUserPreferredLanguages(['en']))
+
+** Test with preferred language set to English, track type set to captions
+RUN(internals.settings.setShouldDisplayTrackKind('Captions', true))
+TypeError: Cannot read property '0' of undefined
+TypeError: Cannot read property '1' of undefined
+TypeError: Cannot read property '2' of undefined
+TypeError: Cannot read property '3' of undefined
+TypeError: Cannot read property '4' of undefined
+TypeError: Cannot read property '5' of undefined
+TypeError: Cannot read property '6' of undefined
+EXPECTED (video.textTracks.length == '6') OK
+TypeError: Cannot read property 'length' of undefined
+
+** Change preferred language to Japanese, change preference to subtitles
+RUN(internals.setUserPreferredLanguages(['ja']))
+RUN(internals.settings.setShouldDisplayTrackKind('Captions', false))
+RUN(internals.settings.setShouldDisplayTrackKind('Subtitles', true))
+TypeError: Cannot read property '0' of undefined
+TypeError: Cannot read property '1' of undefined
+TypeError: Cannot read property '2' of undefined
+TypeError: Cannot read property '3' of undefined
+EXPECTED (video.textTracks.length == '6') OK
+TypeError: Cannot read property 'length' of undefined
+
+END OF TEST
+

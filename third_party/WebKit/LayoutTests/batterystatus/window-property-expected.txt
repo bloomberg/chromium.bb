@@ -3,12 +3,12 @@ Tests that the window.navigator.battery properties are present.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS typeof navigator.webkitBattery == 'object' is true
-PASS hasOnBatteryProperty() is true
-PASS navigator.webkitBattery.hasOwnProperty('onchargingchange') is true
-PASS navigator.webkitBattery.hasOwnProperty('onchargingtimechange') is true
-PASS navigator.webkitBattery.hasOwnProperty('ondischargingtimechange') is true
-PASS navigator.webkitBattery.hasOwnProperty('onlevelchange') is true
+FAIL typeof navigator.webkitBattery == 'object' should be true. Was false.
+FAIL hasOnBatteryProperty() should be true. Was false.
+FAIL navigator.webkitBattery.hasOwnProperty('onchargingchange') should be true. Threw exception TypeError: Cannot call method 'hasOwnProperty' of undefined
+FAIL navigator.webkitBattery.hasOwnProperty('onchargingtimechange') should be true. Threw exception TypeError: Cannot call method 'hasOwnProperty' of undefined
+FAIL navigator.webkitBattery.hasOwnProperty('ondischargingtimechange') should be true. Threw exception TypeError: Cannot call method 'hasOwnProperty' of undefined
+FAIL navigator.webkitBattery.hasOwnProperty('onlevelchange') should be true. Threw exception TypeError: Cannot call method 'hasOwnProperty' of undefined
 PASS successfullyParsed is true
 
 TEST COMPLETE

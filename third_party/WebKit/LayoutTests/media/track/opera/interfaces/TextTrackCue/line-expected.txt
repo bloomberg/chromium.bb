@@ -1,0 +1,4 @@
+ 
+FAIL TextTrackCue.line, script-created cue assert_equals: expected -2 but got -1
+PASS TextTrackCue.line, parsed cue 
+

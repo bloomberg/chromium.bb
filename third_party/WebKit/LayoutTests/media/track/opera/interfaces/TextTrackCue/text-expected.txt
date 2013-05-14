@@ -1,0 +1,4 @@
+ 
+PASS TextTrackCue.text, script-created cue 
+FAIL TextTrackCue.text, parsed cue assert_equals: expected "" but got "test"
+

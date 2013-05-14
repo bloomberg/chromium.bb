@@ -1,0 +1,13 @@
+
+FAIL HTMLMediaElement.crossOrigin assert_true: expected true got false
+FAIL HTMLMediaElement.crossOrigin, content attribute missing assert_equals: expected "" but got undefined
+FAIL HTMLMediaElement.crossOrigin, content attribute invalid value assert_equals: expected "foo" but got undefined
+FAIL HTMLMediaElement.crossOrigin, content attribute empty string assert_equals: expected "" but got undefined
+FAIL HTMLMediaElement.crossOrigin, content attribute uppercase ANONYMOUS assert_equals: expected "ANONYMOUS" but got undefined
+FAIL HTMLMediaElement.crossOrigin, content attribute use-credentials assert_equals: expected "use-credentials" but got undefined
+FAIL HTMLMediaElement.crossOrigin, setting to empty string assert_equals: expected "" but got null
+FAIL HTMLMediaElement.crossOrigin, setting to null assert_equals: expected "null" but got null
+FAIL HTMLMediaElement.crossOrigin, setting to invalid value assert_equals: expected "foo" but got null
+FAIL HTMLMediaElement.crossOrigin, setting to uppercase ANONYMOUS assert_equals: expected "ANONYMOUS" but got null
+FAIL HTMLMediaElement.crossOrigin, setting to use-credentials assert_equals: expected "use-credentials" but got null
+

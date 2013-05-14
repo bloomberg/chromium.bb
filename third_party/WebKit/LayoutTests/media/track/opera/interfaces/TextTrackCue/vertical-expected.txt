@@ -1,0 +1,4 @@
+ 
+PASS TextTrackCue.vertical, script-created cue 
+FAIL TextTrackCue.vertical, parsed cue assert_equals: expected "rl" but got "lr"
+

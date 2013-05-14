@@ -1,0 +1,5 @@
+ 
+PASS TextTrackCueList getter 
+FAIL TextTrackCueList getter, no indexed set/create assert_equals: expected undefined but got "foo"
+FAIL TextTrackCueList getter, no indexed set/create (strict) assert_equals: expected undefined but got "foo"
+

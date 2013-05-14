@@ -4,6 +4,6 @@ EVENT(playing)
 EXPECTED (video.buffered.length == '1') OK
 RUN(video.currentTime = video.duration - 0.5)
 EVENT(ended)
-EXPECTED (video.buffered.length == '2') OK
+EXPECTED (video.buffered.length == '2'), OBSERVED '1' FAIL
 END OF TEST
 

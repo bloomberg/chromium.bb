@@ -1,0 +1,102 @@
+Test to make sure -webkit-text-decoration-color property returns CSSPrimitiveValue properly.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Ancestor should not inherit 'green' value from parent (fallback to initial value):
+PASS e.style.getPropertyCSSValue('-webkit-text-decoration-color') is null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 0, 0). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgb(0, 0, 0) (of type string). Was undefined (of type undefined).
+
+Parent should contain 'green':
+FAIL e.style.webkitTextDecorationColor should be green (of type string). Was undefined (of type undefined).
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be green. Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 128, 0). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgb(0, 128, 0) (of type string). Was undefined (of type undefined).
+
+JavaScript setter tests for valid, initial, invalid and blank values:
+PASS e.style.getPropertyCSSValue('-webkit-text-decoration-color') is null
+
+Valid value 'blue':
+PASS e.style.webkitTextDecorationColor is 'blue'
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be blue. Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 0, 255). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgb(0, 0, 255) (of type string). Was undefined (of type undefined).
+
+Valid value '#FFFFFF':
+FAIL e.style.webkitTextDecorationColor should be rgb(255, 255, 255). Was #FFFFFF.
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(255, 255, 255). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(255, 255, 255). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgb(255, 255, 255) (of type string). Was undefined (of type undefined).
+
+Valid value 'rgb(0, 255, 0)':
+PASS e.style.webkitTextDecorationColor is 'rgb(0, 255, 0)'
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 255, 0). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 255, 0). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgb(0, 255, 0) (of type string). Was undefined (of type undefined).
+
+Valid value 'rgba(100, 100, 100, 0.5)':
+FAIL e.style.webkitTextDecorationColor should be rgba(100, 100, 100, 0.498039). Was rgba(100, 100, 100, 0.5).
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgba(100, 100, 100, 0.498039). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgba(100, 100, 100, 0.498039). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgba(100, 100, 100, 0.498039) (of type string). Was undefined (of type undefined).
+
+Valid value 'hsl(240, 100%, 50%)':
+FAIL e.style.webkitTextDecorationColor should be rgb(0, 0, 255). Was hsl(240, 100%, 50%).
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 0, 255). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 0, 255). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgb(0, 0, 255) (of type string). Was undefined (of type undefined).
+
+Valid value 'hsla(240, 100%, 50%, 0.5)':
+FAIL e.style.webkitTextDecorationColor should be rgba(0, 0, 255, 0.498039). Was hsla(240, 100%, 50%, 0.5).
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgba(0, 0, 255, 0.498039). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgba(0, 0, 255, 0.498039). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgba(0, 0, 255, 0.498039) (of type string). Was undefined (of type undefined).
+
+Initial value:
+PASS e.style.webkitTextDecorationColor is 'initial'
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be initial. Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 0, 0). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgb(0, 0, 0) (of type string). Was undefined (of type undefined).
+
+Invalid value (ie. 'unknown'):
+FAIL e.style.webkitTextDecorationColor should be initial. Was unknown.
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL e.style.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be initial. Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 0, 0). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgb(0, 0, 0) (of type string). Was undefined (of type undefined).
+
+Empty value (resets the property):
+PASS e.style.getPropertyCSSValue('-webkit-text-decoration-color') is null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 0, 0). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgb(0, 0, 0) (of type string). Was undefined (of type undefined).
+
+Empty value with different 'currentColor' initial value (green):
+PASS e.style.getPropertyCSSValue('-webkit-text-decoration-color') is null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString() should be [object CSSPrimitiveValue]. Threw exception TypeError: Cannot call method 'toString' of null
+FAIL computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText should be rgb(0, 128, 0). Threw exception TypeError: Cannot read property 'cssText' of null
+FAIL computedStyle.webkitTextDecorationColor should be rgb(0, 128, 0) (of type string). Was undefined (of type undefined).
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
