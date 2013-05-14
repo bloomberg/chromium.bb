@@ -259,14 +259,14 @@ const char* CSSFontFaceSource::FontLoadHistograms::histogramName(const CachedFon
 
     unsigned size = font->encodedSize();
     if (size < 10 * 1024)
-        return "WebFont.LoadTime.Under10KB";
+        return "WebFont.LoadTime.0.Under10KB";
     if (size < 50 * 1024)
-        return "WebFont.LoadTime.10KBTo50KB";
+        return "WebFont.LoadTime.1.10KBTo50KB";
     if (size < 100 * 1024)
-        return "WebFont.LoadTime.50KBTo100KB";
+        return "WebFont.LoadTime.2.50KBTo100KB";
     if (size < 1024 * 1024)
-        return "WebFont.LoadTime.100KBTo1MB";
-    return "WebFont.LoadTime.Over1MB";
+        return "WebFont.LoadTime.3.100KBTo1MB";
+    return "WebFont.LoadTime.4.Over1MB";
 }
 
 }
