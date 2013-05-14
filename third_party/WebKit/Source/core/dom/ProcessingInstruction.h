@@ -38,7 +38,7 @@ public:
 
     const String& target() const { return m_target; }
     const String& data() const { return m_data; }
-    void setData(const String&, ExceptionCode&);
+    void setData(const String&);
 
     void setCreatedByParser(bool createdByParser) { m_createdByParser = createdByParser; }
 

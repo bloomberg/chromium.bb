@@ -69,7 +69,7 @@ ProcessingInstruction::~ProcessingInstruction()
         document()->styleSheetCollection()->removeStyleSheetCandidateNode(this);
 }
 
-void ProcessingInstruction::setData(const String& data, ExceptionCode&)
+void ProcessingInstruction::setData(const String& data)
 {
     int oldLength = m_data.length();
     m_data = data;
@@ -94,8 +94,7 @@ String ProcessingInstruction::nodeValue() const
 
 void ProcessingInstruction::setNodeValue(const String& nodeValue, ExceptionCode& ec)
 {
-    // NO_MODIFICATION_ALLOWED_ERR: taken care of by setData()
-    setData(nodeValue, ec);
+    setData(nodeValue);
 }
 
 PassRefPtr<Node> ProcessingInstruction::cloneNode(bool /*deep*/)

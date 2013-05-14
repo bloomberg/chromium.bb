@@ -804,7 +804,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
         ASSERT(endOffset <= static_cast<ProcessingInstruction*>(container)->data().length());
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
             RefPtr<ProcessingInstruction> c = static_pointer_cast<ProcessingInstruction>(container->cloneNode(true));
-            c->setData(c->data().substring(startOffset, endOffset - startOffset), ec);
+            c->setData(c->data().substring(startOffset, endOffset - startOffset));
             if (fragment) {
                 result = fragment;
                 result->appendChild(c.release(), ec);
@@ -815,7 +815,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
             ProcessingInstruction* pi = static_cast<ProcessingInstruction*>(container);
             String data(pi->data());
             data.remove(startOffset, endOffset - startOffset);
-            pi->setData(data, ec);
+            pi->setData(data);
         }
         break;
     case Node::ELEMENT_NODE:
