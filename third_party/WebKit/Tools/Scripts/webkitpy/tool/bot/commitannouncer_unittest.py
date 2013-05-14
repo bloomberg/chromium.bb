@@ -32,7 +32,7 @@ from webkitpy.tool.mocktool import MockTool
 class CommitAnnouncerTest(unittest.TestCase):
     def test_format_commit(self):
         tool = MockTool()
-        bot = CommitAnnouncer(tool)
+        bot = CommitAnnouncer(tool, "test_password")
         self.assertEqual(
            'authorABC@chromium.org committed "Commit test subject line" http://crrev.com/123456 https://src.chromium.org/viewvc/blink?view=revision&revision=456789',
             bot._format_commit_detail("""\
