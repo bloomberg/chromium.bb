@@ -386,7 +386,13 @@ IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, FileWatch) {
       FLAGS_NONE)) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, FileBrowserHandlers) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_FileBrowserHandlers DISABLED_FileBrowserHandlers
+#else
+#define MAYBE_FileBrowserHandlers FileBrowserHandlers
+#endif
+IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest,
+                       MAYBE_FileBrowserHandlers) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
       FILE_PATH_LITERAL("manifest_v1.json"),
@@ -394,8 +400,13 @@ IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, FileBrowserHandlers) {
       FLAGS_USE_FILE_HANDLER)) << message_;
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_FileBrowserHandlers_Packaged DISABLED_FileBrowserHandlers_Packaged
+#else
+#define MAYBE_FileBrowserHandlers_Packaged FileBrowserHandlers_Packaged
+#endif
 IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest,
-                       FileBrowserHandlers_Packaged) {
+                       MAYBE_FileBrowserHandlers_Packaged) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
       FILE_PATH_LITERAL("manifest_v2.json"),
@@ -403,8 +414,13 @@ IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest,
       FLAGS_USE_FILE_HANDLER)) << message_;
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_FileBrowserHandlersLazy DISABLED_FileBrowserHandlersLazy
+#else
+#define MAYBE_FileBrowserHandlersLazy FileBrowserHandlersLazy
+#endif
 IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest,
-                       FileBrowserHandlersLazy) {
+                       MAYBE_FileBrowserHandlersLazy) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
       FILE_PATH_LITERAL("manifest_v1.json"),
@@ -412,8 +428,14 @@ IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest,
       FLAGS_USE_FILE_HANDLER | FLAGS_LAZY_FILE_HANDLER)) << message_;
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_FileBrowserHandlersLazy_Packaged \
+    DISABLED_FileBrowserHandlersLazy_Packaged
+#else
+#define MAYBE_FileBrowserHandlersLazy_Packaged FileBrowserHandlersLazy_Packaged
+#endif
 IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest,
-                       FileBrowserHandlersLazy_Packaged) {
+                       MAYBE_FileBrowserHandlersLazy_Packaged) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
       FILE_PATH_LITERAL("manifest_v2.json"),
@@ -421,7 +443,12 @@ IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest,
       FLAGS_USE_FILE_HANDLER | FLAGS_LAZY_FILE_HANDLER)) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, AppFileHanlder) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_AppFileHanlder DISABLED_AppFileHanlder
+#else
+#define MAYBE_AppFileHanlder AppFileHanlder
+#endif
+IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, MAYBE_AppFileHanlder) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
       FILE_PATH_LITERAL("manifest_v2.json"),
@@ -478,7 +505,8 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, FileWatch) {
       FLAGS_NONE)) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, FileBrowserHandlers) {
+IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest,
+                       MAYBE_FileBrowserHandlers) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
       FILE_PATH_LITERAL("manifest_v1.json"),
@@ -487,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, FileBrowserHandlers) {
 }
 
 IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest,
-                       FileBrowserHandlers_Packaged) {
+                       MAYBE_FileBrowserHandlers_Packaged) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
       FILE_PATH_LITERAL("manifest_v2.json"),
@@ -496,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest,
-                       FileBrowserHandlersLazy) {
+                       MAYBE_FileBrowserHandlersLazy) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
       FILE_PATH_LITERAL("manifest_v1.json"),
@@ -515,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, Search) {
       FLAGS_NONE)) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, AppFileHandler) {
+IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, MAYBE_AppFileHandler) {
   fake_drive_service_->set_default_max_results(1);
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
