@@ -629,7 +629,7 @@ class BisectPerformanceMetrics(object):
       A list of floating point numbers found.
     """
     # Format is: RESULT <graph>: <trace>= <value> <units>
-    metric_formatted = 'RESULT %s: %s=' % (metric[0], metric[1])
+    metric_formatted = re.escape('RESULT %s: %s=' % (metric[0], metric[1]))
 
     text_lines = text.split('\n')
     values_list = []
