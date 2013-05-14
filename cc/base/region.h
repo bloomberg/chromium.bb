@@ -8,10 +8,15 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
+
+namespace base {
+class Value;
+}
 
 namespace cc {
 
@@ -52,6 +57,7 @@ class CC_EXPORT Region {
   }
 
   std::string ToString() const;
+  scoped_ptr<base::Value> AsValue() const;
 
   class CC_EXPORT Iterator {
    public:

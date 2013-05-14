@@ -88,6 +88,15 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->raster_contents_scale_ = raster_contents_scale_;
   layer_impl->low_res_raster_contents_scale_ = low_res_raster_contents_scale_;
   layer_impl->is_using_lcd_text_ = is_using_lcd_text_;
+
+  // As an optimization, don't make a copy of this potentially complex region,
+  // and swap it directly from the pending to the active layer.  In general, any
+  // property pushed to a LayerImpl continues to live on that LayerImpl.
+  // However, invalidation is the difference between two main thread frames, so
+  // it no longer makes sense once the pending tree gets recycled.  It will
+  // always get pushed during PictureLayer::PushPropertiesTo.
+  layer_impl->invalidation_.Swap(&invalidation_);
+  invalidation_.Clear();
 }
 
 void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
@@ -947,6 +956,7 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
       state, "cc::PictureLayerImpl", this);
   state->SetDouble("ideal_contents_scale", ideal_contents_scale_);
   state->Set("tilings", tilings_->AsValue().release());
+  state->Set("invalidation", invalidation_.AsValue().release());
 }
 
 }  // namespace cc

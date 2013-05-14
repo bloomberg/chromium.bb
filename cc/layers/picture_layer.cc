@@ -39,6 +39,8 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
   layer_impl->SetIsMask(is_mask_);
   layer_impl->CreateTilingSet();
+  // Unlike other properties, invalidation must always be set on layer_impl.
+  // See PictureLayerImpl::PushPropertiesTo for more details.
   layer_impl->invalidation_.Clear();
   layer_impl->invalidation_.Swap(&pile_invalidation_);
   layer_impl->pile_ =

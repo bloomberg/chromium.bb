@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/base/region.h"
+#include "base/values.h"
 
 namespace cc {
 
@@ -101,6 +102,18 @@ std::string Region::ToString() const {
     result += it.rect().ToString();
   }
   return result;
+}
+
+scoped_ptr<base::Value> Region::AsValue() const {
+  scoped_ptr<base::ListValue> result(new base::ListValue());
+  for (Iterator it(*this); it.has_rect(); it.next()) {
+    gfx::Rect rect(it.rect());
+    result->AppendInteger(rect.x());
+    result->AppendInteger(rect.y());
+    result->AppendInteger(rect.width());
+    result->AppendInteger(rect.height());
+  }
+  return result.PassAs<base::Value>();
 }
 
 Region::Iterator::Iterator() {
