@@ -41,11 +41,11 @@ class PmpColumnReader {
  private:
   bool ParseData(const PmpFieldType expected_type, uint32* rows_read);
   // Returns the number of bytes parsed in the body, or, -1 on failure.
-  long IndexStrings();
+  int64 IndexStrings();
 
   // Source data
   scoped_ptr<uint8[]> data_;
-  size_t length_;
+  int64 length_;
 
   // Header data
   PmpFieldType field_type_;

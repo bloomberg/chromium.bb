@@ -16,7 +16,7 @@ namespace picasa {
 
 const char* const kPmpExtension = "pmp";
 
-const size_t kPmpHeaderSize = 20;
+const int64 kPmpHeaderSize = 20;
 
 const int kPmpMagic1Offset = 0;
 const int kPmpMagic2Offset = 6;
