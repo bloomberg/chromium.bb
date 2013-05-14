@@ -31,6 +31,7 @@
 #ifndef RTCSessionDescription_h
 #define RTCSessionDescription_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionBase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -41,7 +42,7 @@ namespace WebCore {
 class Dictionary;
 class RTCSessionDescriptionDescriptor;
 
-class RTCSessionDescription : public RefCounted<RTCSessionDescription> {
+class RTCSessionDescription : public RefCounted<RTCSessionDescription>, public ScriptWrappable {
 public:
     static PassRefPtr<RTCSessionDescription> create(const Dictionary&, ExceptionCode&);
     static PassRefPtr<RTCSessionDescription> create(PassRefPtr<RTCSessionDescriptionDescriptor>);

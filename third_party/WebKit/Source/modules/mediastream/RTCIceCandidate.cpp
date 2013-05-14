@@ -65,6 +65,7 @@ PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(PassRefPtr<RTCIceCandidateDe
 RTCIceCandidate::RTCIceCandidate(PassRefPtr<RTCIceCandidateDescriptor> descriptor)
     : m_descriptor(descriptor)
 {
+    ScriptWrappable::init(this);
 }
 
 RTCIceCandidate::~RTCIceCandidate()

@@ -35,6 +35,7 @@ PassRefPtr<RTCStatsResponse> RTCStatsResponse::create()
 
 RTCStatsResponse::RTCStatsResponse()
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<RTCStatsReport> RTCStatsResponse::namedItem(const AtomicString& name)

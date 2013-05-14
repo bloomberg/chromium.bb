@@ -26,6 +26,7 @@
 #ifndef RTCDTMFSender_h
 #define RTCDTMFSender_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
 #include "core/platform/Timer.h"
@@ -38,7 +39,7 @@ class MediaStreamTrack;
 class RTCPeerConnectionHandler;
 class RTCDTMFSenderHandler;
 
-class RTCDTMFSender : public RefCounted<RTCDTMFSender>, public EventTarget, public RTCDTMFSenderHandlerClient, public ActiveDOMObject {
+class RTCDTMFSender : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTarget, public RTCDTMFSenderHandlerClient, public ActiveDOMObject {
 public:
     static PassRefPtr<RTCDTMFSender> create(ScriptExecutionContext*, RTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionCode&);
     ~RTCDTMFSender();

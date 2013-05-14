@@ -71,6 +71,7 @@ PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(PassRefPtr<RTCSe
 RTCSessionDescription::RTCSessionDescription(PassRefPtr<RTCSessionDescriptionDescriptor> descriptor)
     : m_descriptor(descriptor)
 {
+    ScriptWrappable::init(this);
 }
 
 RTCSessionDescription::~RTCSessionDescription()

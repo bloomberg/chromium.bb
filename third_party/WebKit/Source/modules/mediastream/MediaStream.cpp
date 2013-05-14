@@ -107,6 +107,7 @@ MediaStream::MediaStream(ScriptExecutionContext* context, PassRefPtr<MediaStream
     , m_descriptor(streamDescriptor)
     , m_scheduledEventTimer(this, &MediaStream::scheduledEventTimerFired)
 {
+    ScriptWrappable::init(this);
     m_descriptor->setClient(this);
 
     size_t numberOfAudioTracks = m_descriptor->numberOfAudioComponents();

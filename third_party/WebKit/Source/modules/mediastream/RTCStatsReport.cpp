@@ -41,6 +41,7 @@ RTCStatsReport::RTCStatsReport(const String& id, const String& type, double time
     , m_type(type)
     , m_timestamp(timestamp)
 {
+    ScriptWrappable::init(this);
 }
 
 Vector<String> RTCStatsReport::names() const

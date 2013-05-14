@@ -62,6 +62,7 @@ RTCDataChannel::RTCDataChannel(ScriptExecutionContext* context, PassOwnPtr<RTCDa
     , m_binaryType(BinaryTypeArrayBuffer)
     , m_scheduledEventTimer(this, &RTCDataChannel::scheduledEventTimerFired)
 {
+    ScriptWrappable::init(this);
     m_handler->setClient(this);
 }
 

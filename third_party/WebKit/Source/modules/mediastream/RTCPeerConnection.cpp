@@ -138,6 +138,7 @@ RTCPeerConnection::RTCPeerConnection(ScriptExecutionContext* context, PassRefPtr
     , m_scheduledEventTimer(this, &RTCPeerConnection::scheduledEventTimerFired)
     , m_stopped(false)
 {
+    ScriptWrappable::init(this);
     Document* document = toDocument(m_scriptExecutionContext);
 
     if (!document->frame()) {
