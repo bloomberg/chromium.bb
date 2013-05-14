@@ -831,6 +831,10 @@ void TraceLog::EnableIncludedCategoryGroup(int category_index) {
       g_category_groups[category_index]);
   g_category_group_enabled[category_index] =
       is_enabled ? TraceLog::CATEGORY_ENABLED : 0;
+
+#if defined(OS_ANDROID)
+  ApplyATraceEnabledFlag(&g_category_group_enabled[category_index]);
+#endif
 }
 
 void TraceLog::EnableIncludedCategoryGroups() {
@@ -880,9 +884,6 @@ const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
           &g_category_group_enabled[g_category_categories_exhausted];
     }
   }
-#if defined(OS_ANDROID)
-  ApplyATraceEnabledFlag(category_group_enabled);
-#endif
   return category_group_enabled;
 }
 

@@ -67,8 +67,11 @@ void TraceLog::StartATrace() {
   AutoLock lock(lock_);
   if (g_atrace_fd == -1) {
     g_atrace_fd = open(kATraceMarkerFile, O_WRONLY);
-    if (g_atrace_fd == -1)
+    if (g_atrace_fd == -1) {
       LOG(WARNING) << "Couldn't open " << kATraceMarkerFile;
+    } else {
+      EnableIncludedCategoryGroups();
+    }
   }
 }
 
@@ -77,6 +80,7 @@ void TraceLog::StopATrace() {
   if (g_atrace_fd != -1) {
     close(g_atrace_fd);
     g_atrace_fd = -1;
+    EnableIncludedCategoryGroups();
   }
 }
 
