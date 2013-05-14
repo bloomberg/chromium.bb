@@ -205,9 +205,9 @@ void ShillPropertyHandler::OnPropertyChanged(const std::string& key,
                                              const base::Value& value) {
   if (ManagerPropertyChanged(key, value))
     listener_->ManagerPropertyChanged();
-  // If the service watch or device list changed and there are no pending
+  // If the service or device list changed and there are no pending
   // updates, signal the state list changed callback.
-  if ((key == flimflam::kServiceWatchListProperty) &&
+  if ((key == flimflam::kServicesProperty) &&
       pending_updates_[ManagedState::MANAGED_TYPE_NETWORK].size() == 0) {
     listener_->ManagedStateListChanged(ManagedState::MANAGED_TYPE_NETWORK);
   }
@@ -258,11 +258,12 @@ bool ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
   bool notify_manager_changed = false;
   if (key == flimflam::kServicesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
-    if (vlist)
-      listener_->UpdateManagedList(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
-  } else if (key == flimflam::kServiceWatchListProperty) {
-    const base::ListValue* vlist = GetListValue(key, value);
     if (vlist) {
+      listener_->UpdateManagedList(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
+      // UpdateObserved used to use kServiceWatchListProperty for TYPE_NETWORK,
+      // however that prevents us from receiving Strength updates from inactive
+      // networks. The overhead for observing all services is not unreasonable
+      // (and we limit the max number of observed services to kMaxObserved).
       UpdateObserved(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
     }
   } else if (key == flimflam::kDevicesProperty) {
