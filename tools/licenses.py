@@ -71,9 +71,10 @@ PRUNE_PATHS = set([
 ])
 
 # Directories we don't scan through.
-PRUNE_DIRS = ('.svn', '.git',             # VCS metadata
-              'out', 'Debug', 'Release',  # build files
-              'layout_tests')             # lots of subdirs
+VCS_METADATA_DIRS = ('.svn', '.git')
+PRUNE_DIRS = (VCS_METADATA_DIRS +
+              ('out', 'Debug', 'Release',  # build files
+               'layout_tests'))            # lots of subdirs
 
 ADDITIONAL_PATHS = (
     os.path.join('breakpad'),
@@ -328,9 +329,12 @@ def ParseDir(path, root, require_license_file=True):
 def ContainsFiles(path, root):
     """Determines whether any files exist in a directory or in any of its
     subdirectories."""
-    for _, _, files in os.walk(os.path.join(root, path)):
+    for _, dirs, files in os.walk(os.path.join(root, path)):
         if files:
             return True
+        for vcs_metadata in VCS_METADATA_DIRS:
+            if vcs_metadata in dirs:
+                dirs.remove(vcs_metadata)
     return False
 
 
