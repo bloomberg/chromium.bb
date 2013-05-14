@@ -41,6 +41,14 @@ std::string GetCorrespondingSpellCheckLanguage(const std::string& language);
 // Get SpellChecker supported languages.
 void SpellCheckLanguages(std::vector<std::string>* languages);
 
+// Gets the ISO codes for the language and country of this |locale|. The
+// |locale| is an ISO locale ID that may not include a country ID, e.g., "fr" or
+// "de". This method converts the UI locale to a full locale ID and converts the
+// full locale ID to an ISO language code and an ISO3 country code.
+void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
+                                         std::string* language_code,
+                                         std::string* country_code);
+
 }  // namespace spellcheck_common
 }  // namespace chrome
 

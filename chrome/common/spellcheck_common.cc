@@ -5,6 +5,8 @@
 #include "chrome/common/spellcheck_common.h"
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
 
 namespace chrome {
 namespace spellcheck_common {
@@ -145,6 +147,25 @@ void SpellCheckLanguages(std::vector<std::string>* languages) {
        ++i) {
     languages->push_back(g_supported_spellchecker_languages[i].language);
   }
+}
+
+void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
+                                         std::string* language_code,
+                                         std::string* country_code) {
+  DCHECK(language_code);
+  DCHECK(country_code);
+  char language[ULOC_LANG_CAPACITY] = ULOC_ENGLISH;
+  const char* country = "USA";
+  if (!locale.empty()) {
+    UErrorCode error = U_ZERO_ERROR;
+    char id[ULOC_LANG_CAPACITY + ULOC_SCRIPT_CAPACITY + ULOC_COUNTRY_CAPACITY];
+    uloc_addLikelySubtags(locale.c_str(), id, arraysize(id), &error);
+    error = U_ZERO_ERROR;
+    uloc_getLanguage(id, language, arraysize(language), &error);
+    country = uloc_getISO3Country(id);
+  }
+  *language_code = std::string(language);
+  *country_code = std::string(country);
 }
 
 }  // namespace spellcheck_common

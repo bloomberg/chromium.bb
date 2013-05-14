@@ -17,40 +17,16 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_result.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
-#include "third_party/icu/public/common/unicode/uloc.h"
 
 namespace {
 
 // The URL for requesting spell checking and sending user feedback.
 const char kSpellingServiceURL[] = "https://www.googleapis.com/rpc";
-
-// Gets the ISO codes for the language and country of this |locale|. The
-// |locale| is an ISO locale ID that may not include a country ID, e.g., "fr" or
-// "de". This method converts the UI locale to a full locale ID and converts the
-// full locale ID to an ISO language code and an ISO3 country code.
-void GetISOLanguageCountryCodeFromLocale(
-    const std::string& locale,
-    std::string* language_code,
-    std::string* country_code) {
-  DCHECK(language_code);
-  DCHECK(country_code);
-  char language[ULOC_LANG_CAPACITY] = ULOC_ENGLISH;
-  const char* country = "USA";
-  if (!locale.empty()) {
-    UErrorCode error = U_ZERO_ERROR;
-    char id[ULOC_LANG_CAPACITY + ULOC_SCRIPT_CAPACITY + ULOC_COUNTRY_CAPACITY];
-    uloc_addLikelySubtags(locale.c_str(), id, arraysize(id), &error);
-    error = U_ZERO_ERROR;
-    uloc_getLanguage(id, language, arraysize(language), &error);
-    country = uloc_getISO3Country(id);
-  }
-  *language_code = std::string(language);
-  *country_code = std::string(country);
-}
 
 }  // namespace
 
@@ -75,7 +51,7 @@ bool SpellingServiceClient::RequestTextCheck(
 
   std::string language_code;
   std::string country_code;
-  GetISOLanguageCountryCodeFromLocale(
+  chrome::spellcheck_common::GetISOLanguageCountryCodeFromLocale(
       profile->GetPrefs()->GetString(prefs::kSpellCheckDictionary),
       &language_code,
       &country_code);
