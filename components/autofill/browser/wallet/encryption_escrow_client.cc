@@ -109,6 +109,10 @@ void EncryptionEscrowClient::CancelRequest() {
   request_type_ = NO_PENDING_REQUEST;
 }
 
+bool EncryptionEscrowClient::HasRequestInProgress() const {
+  return request_;
+}
+
 void EncryptionEscrowClient::MakeRequest(const GURL& url,
                                          const std::string& post_body) {
   DCHECK(!request_.get());

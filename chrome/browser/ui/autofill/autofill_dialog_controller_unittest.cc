@@ -37,6 +37,7 @@ namespace autofill {
 namespace {
 
 const char kFakeEmail[] = "user@example.com";
+const char kEditedBillingAddress[] = "123 edited billing address";
 const char* kFieldsFromPage[] = { "email", "cc-number", "billing region",
   "shipping region" };
 const char kSettingsOrigin[] = "Chrome settings";
@@ -116,7 +117,22 @@ class TestWalletClient : public wallet::WalletClient {
            const std::string& obfuscated_gaia_id,
            const GURL& source_url));
 
+  MOCK_METHOD2(UpdateAddress,
+      void(const wallet::Address& address, const GURL& source_url));
+
+  virtual void UpdateInstrument(
+      const wallet::WalletClient::UpdateInstrumentRequest& update_request,
+      scoped_ptr<wallet::Address> billing_address) {
+    updated_billing_address_ = billing_address.Pass();
+  }
+
+  const wallet::Address* updated_billing_address() {
+    return updated_billing_address_.get();
+  }
+
  private:
+  scoped_ptr<wallet::Address> updated_billing_address_;
+
   DISALLOW_COPY_AND_ASSIGN(TestWalletClient);
 };
 
@@ -561,6 +577,100 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
   controller()->OnAccept();
 }
 
+// Tests that editing an address (in wallet mode0 and submitting the dialog
+// should update the existing address on the server via WalletClient.
+TEST_F(AutofillDialogControllerTest, UpdateAddress) {
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              UpdateAddress(_, _)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  controller()->EditClickedForSection(SECTION_SHIPPING);
+  controller()->OnAccept();
+}
+
+// Tests that editing an instrument (CC + address) in wallet mode updates an
+// existing instrument on the server via WalletClient.
+TEST_F(AutofillDialogControllerTest, UpdateInstrument) {
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  controller()->EditClickedForSection(SECTION_CC_BILLING);
+  controller()->OnAccept();
+
+  EXPECT_TRUE(
+      controller()->GetTestingWalletClient()->updated_billing_address());
+}
+
+// Test that a user is able to edit their instrument and add a new address in
+// the same submission.
+TEST_F(AutofillDialogControllerTest, UpdateInstrumentSaveAddress) {
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveAddress(_, _)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  controller()->EditClickedForSection(SECTION_CC_BILLING);
+  controller()->OnAccept();
+
+  EXPECT_TRUE(
+      controller()->GetTestingWalletClient()->updated_billing_address());
+}
+
+// Test that saving a new instrument and editing an address works.
+TEST_F(AutofillDialogControllerTest, SaveInstrumentUpdateAddress) {
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveInstrument(_, _, _)).Times(1);
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              UpdateAddress(_, _)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  controller()->EditClickedForSection(SECTION_SHIPPING);
+  controller()->OnAccept();
+}
+
+MATCHER(UsesLocalBillingAddress, "uses the local billing address") {
+  return arg.address_line_1() == ASCIIToUTF16(kEditedBillingAddress);
+}
+
+// Test that the local view contents is used when saving a new instrument and
+// the user has selected "Same as billing".
+TEST_F(AutofillDialogControllerTest, SaveInstrumentSameAsBilling) {
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  controller()->EditClickedForSection(SECTION_CC_BILLING);
+  controller()->OnAccept();
+
+  DetailOutputMap outputs;
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    const DetailInput& input = inputs[i];
+    outputs[&input] = input.type == ADDRESS_BILLING_LINE1 ?
+        ASCIIToUTF16(kEditedBillingAddress) : input.initial_value;
+  }
+  controller()->GetView()->SetUserInput(SECTION_CC_BILLING, outputs);
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveAddress(UsesLocalBillingAddress(), _)).Times(1);
+  controller()->OnAccept();
+
+  EXPECT_TRUE(
+      controller()->GetTestingWalletClient()->updated_billing_address());
+}
+
 TEST_F(AutofillDialogControllerTest, CancelNoSave) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveInstrumentAndAddress(_, _, _, _)).Times(0);
@@ -852,6 +962,23 @@ TEST_F(AutofillDialogControllerTest, WalletErrorNotification) {
       DialogNotification::WALLET_USAGE_CONFIRMATION).empty());
   EXPECT_TRUE(NotificationsOfType(
       DialogNotification::EXPLANATORY_MESSAGE).empty());
+}
+
+// Simulates receiving an INVALID_FORM_FIELD required action while processing a
+// |WalletClientDelegate::OnDid{Save,Update}*()| call. This can happen if Online
+// Wallet's server validation differs from Chrome's local validation.
+TEST_F(AutofillDialogControllerTest, WalletServerSideValidationNotification) {
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+
+  std::vector<wallet::RequiredAction> required_actions;
+  required_actions.push_back(wallet::INVALID_FORM_FIELD);
+  controller()->OnDidSaveAddress(std::string(), required_actions);
+
+  EXPECT_EQ(1U, NotificationsOfType(
+      DialogNotification::REQUIRED_ACTION).size());
 }
 
 // Test that only on first run an explanation of where Chrome got the user's

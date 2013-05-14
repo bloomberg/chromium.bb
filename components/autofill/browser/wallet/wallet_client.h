@@ -214,16 +214,14 @@ class WalletClient
                               const std::string& google_transaction_id);
 
   // UpdateAddress updates Online Wallet with the data in |address|.
-  void UpdateAddress(const Address& address,
-                     const GURL& source_url);
+  virtual void UpdateAddress(const Address& address, const GURL& source_url);
 
   // Updates Online Wallet with the data in |update_instrument_request| and, if
   // it's provided, |billing_address|.
-  void UpdateInstrument(
+  virtual void UpdateInstrument(
       const UpdateInstrumentRequest& update_instrument_request,
       scoped_ptr<Address> billing_address);
 
-  // Whether there is a currently running request (i.e. |request_| != NULL).
   bool HasRequestInProgress() const;
 
   // Cancels and clears the current |request_| and |pending_requests_| (if any).

@@ -188,6 +188,7 @@ const char kInstrumentKey[] = "instrument";
 const char kInstrumentEscrowHandleKey[] = "instrument_escrow_handle";
 const char kInstrumentExpMonthKey[] = "instrument.credit_card.exp_month";
 const char kInstrumentExpYearKey[] = "instrument.credit_card.exp_year";
+const char kInstrumentType[] = "instrument.type";
 const char kInstrumentPhoneNumberKey[] = "instrument_phone_number";
 const char kMerchantDomainKey[] = "merchant_domain";
 const char kReasonKey[] = "reason";
@@ -559,6 +560,9 @@ void WalletClient::UpdateInstrument(
                                     update_instrument_request.expiration_year);
   }
 
+  if (active_request_body->HasKey(kInstrumentKey))
+    active_request_body->SetString(kInstrumentType, "CREDIT_CARD");
+
   if (update_instrument_request.card_verification_number.empty()) {
     std::string post_body;
     base::JSONWriter::Write(active_request_body, &post_body);
@@ -571,7 +575,10 @@ void WalletClient::UpdateInstrument(
 }
 
 bool WalletClient::HasRequestInProgress() const {
-  return request_.get() != NULL;
+  // |SaveInstrument*()| and |UpdateInstrument()| methods don't set |request_|
+  // until sensitive info has been escrowed, so this class is considered to have
+  // a request in progress if |encryption_escrow_client_| is working as well.
+  return request_ || encryption_escrow_client_.HasRequestInProgress();
 }
 
 void WalletClient::CancelRequests() {

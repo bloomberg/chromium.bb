@@ -52,6 +52,8 @@ class EncryptionEscrowClient : public net::URLFetcherDelegate {
   // Cancels |request_| (if it exists).
   void CancelRequest();
 
+  bool HasRequestInProgress() const;
+
  protected:
   // Exposed for testing.
   const net::URLFetcher* request() const { return request_.get(); }
