@@ -14,5 +14,9 @@ function test(magnitude)
 }
 
 Magnitude.description("Tests that Array reverse is linear.");
+Magnitude.initialExponent = 12;
+Magnitude.numPoints = 5;
+Magnitude.tolerance = 0.10;
+Magnitude.trim = 1; // first run often slow, so first ratio unexpectedly low
 Magnitude.run(setupFunction, test, Magnitude.LINEAR);
 </script>

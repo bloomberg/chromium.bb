@@ -1,192 +1,202 @@
-// Magnitude gives a best guess estimate of the runtime of a function.
-// Magnitude.run can be called multiple times in a single test if desired.
+// Magnitude verifies time complexity of a function.
+// Magnitude.run can be called multiple times in a single script if desired,
+// optionally with different parameters each time.
 //
 // Usage:
 // <script src="../resources/magnitude-perf.js"></script>
 // <script>
+// function setup(magnitude)
+// {
+//     ...
+// }
+//
+// function test(magnitude)
+// {
+//     ...
+// }
 // ...
-// Magnitude.run(setup, test, expected)
+// Magnitude.description('Test that foo is linear in number of nodes.');
+// Magnitude.run(setup, test, expected);
 // </script>
 //
-// -setup is the function to run once before the test-loop. It takes a magnitude argument
-// that is the value of "n".
-// -test is the code whose runtime is being tests. It also takes a magnitude argument.
-// -expected is one of the run-time constants listed below (e.g. Magnitude.CONSTANT).
+// setup: function to run once before the test-loop. Takes a magnitude
+//        argument that is the value of 'n'.
+// test: function whose runtime is being tested. Also takes a magnitude
+//       argument.
+// expected: one of the run-time constants listed below, e.g.:
+//           Magnitude.CONSTANT, Magnitude.LINEAR, etc.
 
 if (window.testRunner)
     testRunner.dumpAsText();
 
-// Namespace.
+// Namespace
 var Magnitude = {};
 
-// The description of what this test is testing. Gets prepended to the dumped markup.
+// Description of test; prepended to the dumped markup
 Magnitude.description = function(description)
 {
     Magnitude._log(description);
-}
+};
 
+// Parameters (customize per test)
+// See "Time Complexity Tests" document for details:
+// http://dev.chromium.org/developers/testing/time-complexity-tests
+// Specify over which range the growth rate should hold:
+//   2^n ... 2^(n+k-1)  where n = initialExponent, k = numPoints
+Magnitude.initialExponent = 0;
 Magnitude.numPoints = 8;
-Magnitude.millisecondsPerIteration = 25;
-Magnitude.initialMagnitude = 1;
+// Number of trials to run
+// (Trial = compute times for all magnitudes, compute statistical test,
+//  decide if for this dataset, the data fits the model)
+Magnitude.numTrials = 3;
+// Fraction of trials that must succeed for test overall to PASS
+// (Default 50% means 2 out of 3 must succeed)
+Magnitude.successThreshold = 0.50;
+// Run = for each magnitude, run test function until pass this time limit,
+// then stop and compute average time
+Magnitude.millisecondsPerRun = 25;
+// Strict tolerance, so noisy tests explicitly state noisiness
+// Ok to relax for noisy tests;
+// try tolerance = 0.10 or 0.20, and/or trim = 1 or 2 to relax slightly
+// tolerance is "max (trimmed) deviation from expected",
+// where "expected" is:
+// * expected slope (linear, polynomial),
+// * median value (constant),
+// * predicted value in linear regression (logarithmic).
+// For log this often needs to be very large (due to scaling), and 1.00 is ok.
+Magnitude.trim = 0; // trim = 1 useful if unusual value on initial run
+Magnitude.tolerance = 0.05;
 
-Magnitude.CONSTANT = "O(1)";
-Magnitude.LINEAR = "O(n)";
-Magnitude.LOGARITHMIC = "O(log n)";
-Magnitude.POLYNOMIAL = ">=O(n^2)";
-Magnitude.INDETERMINATE = "indeterminate result";
+Magnitude.CONSTANT = 'O(1)';
+Magnitude.LINEAR = 'O(n)';
+Magnitude.POLYNOMIAL = '>=O(n^2)';
 
-Magnitude._order = {}
-Magnitude._order[Magnitude.CONSTANT] = 1;
-Magnitude._order[Magnitude.LINEAR] = 2;
-Magnitude._order[Magnitude.LOGARITHMIC] = 3;
-Magnitude._order[Magnitude.POLYNOMIAL] = 4;
-Magnitude._order[Magnitude.INDETERMINATE] = 5;
+// Utility functions
+Magnitude._max = function(array) {
+    return Math.max.apply(null, array);
+};
 
+Magnitude._min = function(array) {
+    return Math.min.apply(null, array);
+};
+
+Magnitude._trimArray = function(array, trim) {
+    // trim both ends of an array
+    // used for computing trimmed maximum absolute deviation
+    if (!trim)
+        return array;
+    else
+        return array.slice(trim, -trim);
+};
+
+Magnitude._relativeDeviations = function(array, ref)
+{
+    return array.map(function(x) { return (x - ref) / ref; });
+};
+
+Magnitude._absSortDownTrimTop = function(array, trim) {
+    // only trim the top of array
+    // used for computing trimmed maximum absolute deviation
+    if (trim === undefined)
+        trim = 0;
+    return array.map(Math.abs).sort(
+        function(a, b) { return b - a; }).slice(trim);
+};
+
+Magnitude._median = function(array) {
+    array.sort(function(a, b) { return a - b; });
+    var len = array.length;
+    if (!len)
+        return;
+    var half = Math.floor(len / 2);
+    if (len % 2)
+        return array[half];
+    return (array[half - 1] + array[half]) / 2;
+};
+
+// Logging functions
 Magnitude._log = function(msg)
 {
     if (!Magnitude._container)
         Magnitude._container = document.createElement('pre');
     Magnitude._container.appendChild(document.createTextNode(msg + '\n'));
-}
+};
 
 Magnitude._debug = function(msg)
 {
     Magnitude._debugLog += msg + '\n';
-}
+};
 
+Magnitude._logRunTimes = function()
+{
+    // Print out the magnitudes and times in CSV
+    // to afford easy copy-paste to a charting application.
+    Magnitude._debug('magnitudes: ' + Magnitude._magnitudes.join(','));
+    Magnitude._debug('times: ' + Magnitude._times.join(','));
+};
+
+// Main
 Magnitude.run = function(setup, test, expected)
 {
-    Magnitude._debugLog = "\nDEBUG LOG:\n";
+    Magnitude._debugLog = '\nDEBUG LOG:\n';
+    Magnitude._debug('Expected complexity: ' + expected);
 
+    Magnitude._exponents = [];
     Magnitude._magnitudes = [];
-    for (var i = Magnitude.initialMagnitude; i < Magnitude.numPoints + Magnitude.initialMagnitude; i++)
+    var maxExponent = Magnitude.initialExponent + Magnitude.numPoints;
+    for (var i = Magnitude.initialExponent; i < maxExponent; i++) {
+        Magnitude._exponents.push(i);
         Magnitude._magnitudes.push(Math.pow(2, i));
-
-    var numTries = 3;
-    Magnitude._run(setup, test, expected, numTries);
-}
-
-Magnitude._run = function(setup, test, expected, numTriesLeft)
-{
-    Magnitude._iterations = {};
-    for (var i = 0; i < Magnitude._magnitudes.length; i++) {
-        var magnitude = Magnitude._magnitudes[i];
-        Magnitude._iterations[magnitude] = Magnitude._runIteration(setup, test, magnitude);
     }
 
-    Magnitude._logIterationInfo();
-
-    numTriesLeft--;
-    var bigO = Magnitude._bigOGuess();
-    var passed = Magnitude._order[bigO] <= Magnitude._order[expected];
-    if (passed || numTriesLeft < 1) {
-        Magnitude._log(passed ? "PASS" : "FAIL: got " + bigO + " expected " + expected);
-
-        // By default don't log detailed information to layout test results to keep expected results
-        // consistent from run to run.
-        if (!window.testRunner || !passed)
-            Magnitude._log(Magnitude._debugLog);
-    } else {
-        Magnitude._debug("numTriesLeft: " + numTriesLeft);
-        arguments.callee(setup, test, expected, numTriesLeft);
+    var numSuccesses = 0;
+    for (var trialNumber = 0; trialNumber < Magnitude.numTrials; trialNumber++) {
+        Magnitude._debug('\nTrial #' + trialNumber);
+        Magnitude._times = [];
+        for (var i = 0; i < Magnitude.numPoints; i++)
+            Magnitude._times.push(Magnitude._runTime(setup, test, Magnitude._magnitudes[i]));
+        Magnitude._logRunTimes();
+        switch (expected) {
+            case Magnitude.CONSTANT:
+                passed = Magnitude._isConstant();
+                break;
+            case Magnitude.LINEAR:
+                passed = Magnitude._isLinear();
+                break;
+            case Magnitude.POLYNOMIAL:
+                passed = Magnitude._isPolynomial();
+                break;
+            default:
+                Magnitude._log('FAIL: unrecognized order of growth: ' + expected);
+                passed = false;
+                break;
+        }
+        Magnitude._debug('Trial #' + trialNumber + ': ' +
+            (passed ? 'SUCCESS' : 'FAILURE'));
+        if (passed)
+          numSuccesses++;
     }
-}
+    var neededToPass = Magnitude.numTrials * Magnitude.successThreshold;
+    Magnitude._debug('Succeeded ' + numSuccesses + ' times, need ' +
+        neededToPass + ' (' + (100 * Magnitude.successThreshold) + '%) ' +
+        'to pass');
+    var passedOverall = (numSuccesses >= neededToPass);
+    Magnitude._log(passedOverall ? 'PASS' : 'FAIL');
 
-Magnitude._rSquared = function(opt_xTransform, opt_yTransform)
-{
-    // Implement http://www.easycalculation.com/statistics/learn-correlation.php.
-    // x = magnitude
-    // y = iterations
-    var sumX = 0;
-    var sumY = 0;
-    var sumXSquared = 0;
-    var sumYSquared = 0;
-    var sumXTimesY = 0;
+    // By default don't log detailed information to layout test results,
+    // in order to keep expected results consistent from run to run.
+    if (!window.testRunner || !passedOverall)
+        Magnitude._log(Magnitude._debugLog);
+};
 
-    var numPoints = Magnitude._magnitudes.length;
-
-    for (var i = 0; i < numPoints; i++) {
-        var x = Magnitude._magnitudes[i];
-        if (opt_xTransform)
-            x = opt_xTransform(x);
-
-        var y = Magnitude.millisecondsPerIteration / Magnitude._iterations[Magnitude._magnitudes[i]];
-        if (opt_yTransform)
-            y = opt_yTransform(y);
-
-        sumX += x;
-        sumY += y;
-        sumXSquared += x * x;
-        sumYSquared += y * y;
-        sumXTimesY += x * y;
-    }
-
-    var r = (numPoints * sumXTimesY - sumX * sumY) /
-        Math.sqrt((numPoints * sumXSquared - sumX * sumX) *
-                  (numPoints * sumYSquared - sumY * sumY));
-
-    if (isNaN(r) || r == Math.Infinity)
-        r = 0;
-
-    rSquared = r * r;
-
-    var slope = (numPoints * sumXTimesY - sumX * sumY) /
-        (numPoints * sumXSquared - sumX * sumX);
-    var intercept = sumY / numPoints - slope * sumX / numPoints;
-    Magnitude._debug("numPoints " + numPoints + " slope " + slope + " intercept " + intercept + " rSquared " + rSquared);
-
-    return rSquared;
-}
-
-Magnitude._logIterationInfo = function()
-{
-    var iterationsArray = [];
-    for (var i = 0; i < Magnitude._magnitudes.length; i++) {
-        var magnitude = Magnitude._magnitudes[i];
-        var iterations = Magnitude._iterations[magnitude];
-        iterationsArray.push(iterations);
-    }
-
-    // Print out the magnitudes/arrays in CSV to afford easy copy-paste to a charting application.
-    Magnitude._debug("magnitudes: " + Magnitude._magnitudes.join(','));
-    Magnitude._debug("iterations: " + iterationsArray.join(','));
-}
-
-Magnitude._bigOGuess = function()
-{
-    var rSquared = Magnitude._rSquared();
-    var rSquaredXLog = Magnitude._rSquared(Math.log);
-    var rSquaredXYLog = Magnitude._rSquared(Math.log, Math.log);
-    Magnitude._debug("rSquared " + rSquared + " rSquaredXLog " + rSquaredXLog + " rSquaredXYLog " + rSquaredXYLog);
-
-    var rSquaredMax = Math.max(rSquared, rSquaredXLog, rSquaredXYLog);
-
-    var bigO = Magnitude.INDETERMINATE;
-
-    // FIXME: These numbers were chosen arbitrarily.
-    // Are there a better value to check against? Do we need to check rSquaredMax?
-    if (rSquared < 0.8 && rSquaredMax < 0.9)
-        bigO = Magnitude.CONSTANT;
-    else if (rSquaredMax > 0.9) {
-        if (rSquared == rSquaredMax)
-            bigO = Magnitude.LINEAR;
-        else if (rSquaredXLog == rSquaredMax)
-            bigO = Magnitude.LOGARITHMIC;
-        else if (rSquaredXYLog == rSquaredMax)
-            bigO = Magnitude.POLYNOMIAL;
-    }
-
-    return bigO;
-}
-
-Magnitude._runIteration = function(setup, test, magnitude)
+Magnitude._runTime = function(setup, test, magnitude)
 {
     setup(magnitude);
 
-    var debugStr = 'run iteration. magnitude ' + magnitude;
+    var debugStr = 'run for magnitude ' + magnitude;
     if (window.GCController) {
         if (GCController.getJSObjectCount)
-            debugStr += " jsObjectCountBefore " + GCController.getJSObjectCount();
+            debugStr += ' jsObjectCountBefore ' + GCController.getJSObjectCount();
 
         // Do a gc to reduce likelihood of gc during the test run.
         // Do multiple gc's for V8 to clear DOM wrappers.
@@ -195,23 +205,154 @@ Magnitude._runIteration = function(setup, test, magnitude)
         GCController.collect();
 
         if (GCController.getJSObjectCount)
-            debugStr += " jsObjectCountAfter " + GCController.getJSObjectCount();
+            debugStr += ' jsObjectCountAfter ' + GCController.getJSObjectCount();
     }
 
     Magnitude._debug(debugStr);
 
-    var iterations = 0;
-    var nowFunction = window.performance && window.performance.now ? window.performance.now.bind(window.performance) : Date.now;
-    var start = nowFunction();
-    while (nowFunction() - start < Magnitude.millisecondsPerIteration) {
-        test(magnitude);
-        iterations++;
-    }
-    return iterations;
-}
+    var nowFunction = window.performance && window.performance.now ?
+        window.performance.now.bind(window.performance) : Date.now;
 
+    // Possibly run multiple times, to deal with delays at end
+    var runOk = false;
+    var attempt = 0;
+    var maxAttempts = 5;
+    while (!runOk) {
+        var start = nowFunction();
+        var iterations = 0;
+        var totalTimeMilliseconds = 0;
+        while (totalTimeMilliseconds < Magnitude.millisecondsPerRun) {
+             test(magnitude);
+             iterations++;
+             totalTimeMilliseconds = nowFunction() - start;
+        }
+        var millisecondsPerIteration = totalTimeMilliseconds / iterations;
+        Magnitude._debug(iterations + ' iterations in ' +
+            totalTimeMilliseconds + ' milliseconds, ' +
+            'average ' + millisecondsPerIteration +
+            ' milliseconds per iteration');
+
+        var overTime = totalTimeMilliseconds - Magnitude.millisecondsPerRun;
+        var relativeOverTimeTolerance = 0.001;
+        var overTimeTolerance = Magnitude.millisecondsPerRun *
+            relativeOverTimeTolerance;
+        // If overTime is more than the duration of a run,
+        // there was some delay, which introduces noise.
+        // Allow a small amount of tolerance.
+        if (overTime < (millisecondsPerIteration + overTimeTolerance))
+            runOk = true;
+        else {
+            Magnitude._debug('over-time: ' + overTime +
+                ' exceeds average run-time ' + millisecondsPerIteration +
+                ' by more than tolerance of ' + overTimeTolerance +
+                ' assuming delay');
+            attempt++;
+            if (attempt < maxAttempts)
+                Magnitude._debug('Retrying to reduce delay noise');
+            else {
+                Magnitude._debug('Failed to reduce delay noise after ' +
+                    maxAttempts + ' attempts, proceeding with noisy data');
+                runOk = true;
+            }
+        }
+    }
+
+    return millisecondsPerIteration;
+};
+
+// Auxiliary computations
+Magnitude._log2Ratios = function()
+{
+    // Compute base-2 logarithm of ratios of times,
+    // equivalently the difference of the base-2 logarithms:
+    // log_2(t[i+1]/t[i]) = log_2(t[i+1]) - log_2(t[i])
+    // Since times are exponentially spaced (base 2),
+    // this is the slope of the step on the log-log scale,
+    // and hence for O(n^k) growth should be k (the exponent).
+    var ratioArray = [];
+    var log2RatioArray = [];
+    for (var i = 0; i < Magnitude.numPoints - 1; i++) {
+        var ratio = Magnitude._times[i + 1] / Magnitude._times[i];
+        var log2Ratio = Math.log(ratio) / Math.log(2);
+        ratioArray.push(ratio);
+        log2RatioArray.push(log2Ratio);
+    }
+    Magnitude._debug('ratios: ' + ratioArray.join(','));
+    Magnitude._debug('log-ratios (base 2): ' + log2RatioArray.join(','));
+    return log2RatioArray;
+};
+
+// Statistical tests
+Magnitude._isConstant = function()
+{
+    // Time should be approximately constant.
+    // To deal with noise, instead of constant, check that
+    // (trimmed) abs relative deviation from median is within tolerance of 0.
+    var times = Magnitude._times;
+    var median = Magnitude._median(times);
+    var relativeDeviations = Magnitude._relativeDeviations(times, median);
+    Magnitude._debug('Median time: ' + median);
+    Magnitude._debug('Relative deviations: ' + relativeDeviations.join(','));
+    var trimmedAbsRelativeDeviations = Magnitude._absSortDownTrimTop(relativeDeviations, Magnitude.trim);
+    Magnitude._debug('Trimmed sorted absolute relative deviations: ' +
+        trimmedAbsRelativeDeviations.join(','));
+    var maxAbsDeviation = trimmedAbsRelativeDeviations[0];
+    Magnitude._debug('Maximum Absolute Relative Deviation: ' + maxAbsDeviation);
+    return maxAbsDeviation <= Magnitude.tolerance;
+};
+
+Magnitude._isLinear = function()
+{
+    // Exponent of a monomial is the slope on the log-log scale.
+    // Magnitudes are exponentially stepped, so log ratio is slope
+    // of secant on log-log scale.
+    // In linear growth, (trimmed) log2Ratio should equal 1, to within tolerance
+    // (Special case of polynomial; see below for why this is separate.)
+    //
+    // Can do better by removing outlying points (and then computing the
+    // slope between the neighboring points) instead of trimming ratios,
+    // so we retain the data of the slope of that double step, but since we are
+    // only looking at the Maximum (Absolute) Deviation, in practice these
+    // generally amount to the same: given an outlier, the slope coming into
+    // the point and the slope going out will generally be high/low or low/high,
+    // and thus both be trimmed, while the slope of the double step will
+    // generally not be extreme, so not informative.
+    var logRatios = Magnitude._log2Ratios();
+    var trimmedLogRatios = Magnitude._trimArray(logRatios, Magnitude.trim);
+    var minLogRatio = Magnitude._min(trimmedLogRatios);
+    var maxLogRatio = Magnitude._max(trimmedLogRatios);
+    var maxAbsDeviation = Math.max(Math.abs(1 - minLogRatio),
+                                   Math.abs(maxLogRatio - 1));
+    Magnitude._debug('Maximum Absolute Deviation: ' + maxAbsDeviation);
+    Magnitude._debug('Tolerance: ' + Magnitude.tolerance);
+    return maxAbsDeviation <= Magnitude.tolerance;
+};
+
+Magnitude._isPolynomial = function()
+{
+    // Exponent of a monomial is the slope on the log-log scale.
+    // Magnitudes are exponentially stepped, so log ratio is slope
+    // of secant on log-log scale.
+    // Polynomial growth is expected to be O(n^2) or greater,
+    // so logRatio should be at least 2: check (trimmed) min with tolerance
+    //
+    // Linear is fundamentally a special case of polynomial,
+    // but here not specifying a specific exponent, and instead testing
+    // that it grows *at least* quadratically (>= 2, rather than = 2 or = 3).
+    // Thus we have separate functions.
+    var logRatios = Magnitude._log2Ratios();
+    var trimmedLogRatios = Magnitude._trimArray(logRatios, Magnitude.trim);
+    var minLogRatio = Magnitude._min(trimmedLogRatios);
+    var absDeviationMin = Math.abs(2 - minLogRatio);
+    Magnitude._debug('Absolute Deviation of Minimum: ' + absDeviationMin);
+    Magnitude._debug('Tolerance: ' + Magnitude.tolerance);
+    return absDeviationMin <= Magnitude.tolerance;
+};
+
+// Register listener
 window.addEventListener('load', function() {
-    // FIXME: Add Magnitude.waitUntilDone/notifyDone for tests that need to operate after the load event has fired.
+    // FIXME: Add Magnitude.waitUntilDone/notifyDone for tests that need to
+    // operate after the load event has fired.
     if (window.testRunner)
         document.body.innerHTML = '';
     document.body.appendChild(Magnitude._container);

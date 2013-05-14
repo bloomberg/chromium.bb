@@ -56,6 +56,8 @@ function testStackStyling(magnitude)
 }
 
 Magnitude.description('Tests styling multiple combinators have linear performance');
+Magnitude.initialExponent = 5;
+Magnitude.numPoints = 7;
 Magnitude.run(setupStack, testStackStyling, Magnitude.LINEAR);
 sandbox.removeChild(sandbox.firstChild);
 Magnitude.run(setupList, testListStyling, Magnitude.LINEAR);

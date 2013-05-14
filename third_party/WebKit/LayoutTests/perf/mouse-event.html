@@ -48,6 +48,8 @@ function test(magnitude)
 }
 
 Magnitude.description("Tests that mouse event dispatch is linear with respect to the number of parent elements.");
+Magnitude.initialExponent = 6;
+Magnitude.numPoints = 6;
 Magnitude.run(setupFunction, test, Magnitude.LINEAR);
 </script>
 </body>

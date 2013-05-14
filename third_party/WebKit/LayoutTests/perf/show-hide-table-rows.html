@@ -33,7 +33,8 @@ function test(magnitude)
 }
 
 Magnitude.description("Tests that hiding/showing of table rows is linear.");
-Magnitude.millisecondsPerIteration = 100;
+Magnitude.initialExponent = 7;
+Magnitude.numPoints = 6; // slow in absolute terms, so gets Slow around here
 Magnitude.run(setupFunction, test, Magnitude.LINEAR);
 document.querySelector('div').textContent = '';
 </script>

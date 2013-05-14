@@ -18,6 +18,8 @@
     }
 
     Magnitude.description("Tests that SVG path.appendItem() is constant with respect to the length of the path.");
+    Magnitude.tolerance = 0.10;
+    Magnitude.trim = 1; // occasionally noisy
     Magnitude.run(setup, test, Magnitude.CONSTANT);
 </script>
 </body>

@@ -5,6 +5,10 @@
 <script>
 var parentForm = null;
 
+// FIXME(nbarth): this is O(n^2)
+// Adding a radio button is O(n), which is what this test is testing,
+// so building a group 1 button at a time is O(n^2)
+// Set innerHTML directly instead
 function setup(magnitude) {
     if (parentForm)
         document.body.removeChild(parentForm);
@@ -31,6 +35,10 @@ function test(magnitude) {
 }
 
 Magnitude.description("Tests that adding a radio button to a radio button group is linear in the number of radio buttons.");
+Magnitude.initialExponent = 12;
+  // dominated by constant and log term for small n
+Magnitude.numPoints = 3;
+Magnitude.tolerance = 0.30;
 Magnitude.run(setup, test, Magnitude.LINEAR);
 </script>
 </body>

@@ -27,8 +27,18 @@ function test(magnitude)
     element.classList.remove(classToRemove);
 }
 
-Magnitude.description('Tests that classList remove is linear.');
+Magnitude.description('Tests that classList remove is linear, ' +
+                      'both in number of class names ' +
+                      'and in length of class name.');
+Magnitude.initialExponent = 9;
+Magnitude.numPoints = 5;
+Magnitude.tolerance = 0.20;
+Magnitude.trim = 1;
 Magnitude.run(setupFunction1, test, Magnitude.LINEAR);
+Magnitude.initialExponent = 12;
+Magnitude.numPoints = 5;
+Magnitude.tolerance = 0.20;
+Magnitude.trim = 1;
 Magnitude.run(setupFunction2, test, Magnitude.LINEAR);
 
 </script>

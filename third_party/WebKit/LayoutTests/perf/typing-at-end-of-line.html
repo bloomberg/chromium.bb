@@ -16,6 +16,7 @@ function placeSelectionAfterFirstBr()
 
 function setupFunction(magnitude)
 {
+    window.getSelection().collapse(); // else setting slow: crbug.com/139552
     document.body.innerHTML = new Array(magnitude + 1).join('a<br>');
     placeSelectionAfterFirstBr();
 }
@@ -26,7 +27,11 @@ function test(magnitude)
         eventSender.keyDown('z');
 }
 
-Magnitude.description("Tests that typing at the end of a line where the line-breaks are all BRs is linear in the number of lines.");
+Magnitude.description("Tests that typing at the end of a line in innerHTML where the line-breaks are all BRs is linear in the number of lines.");
+Magnitude.numTrials = 5; // a bit noisy
+Magnitude.initialExponent = 10;
+Magnitude.numPoints = 4;
+Magnitude.tolerance = 0.30;
 Magnitude.run(setupFunction, test, Magnitude.LINEAR);
 </script>
 </body>

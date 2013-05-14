@@ -18,5 +18,8 @@ function test(magnitude)
 }
 
 Magnitude.description("Tests that doing a nested loop over an array is quadratic.");
+Magnitude.initialExponent = 9;
+Magnitude.numPoints = 3;
+Magnitude.tolerance = 0.20;
 Magnitude.run(setupFunction, test, Magnitude.POLYNOMIAL);
 </script>

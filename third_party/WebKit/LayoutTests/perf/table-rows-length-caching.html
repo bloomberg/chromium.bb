@@ -36,6 +36,8 @@ function testTableRows(magnitude)
 }
 
 Magnitude.description('Tests that check that table.row.length is properly cached');
+Magnitude.tolerance = 0.20;
+Magnitude.trim = 1;
 Magnitude.run(setupTableRows, testTableRows, Magnitude.CONSTANT);
 sandbox.removeChild(sandbox.firstChild);
 </script>
