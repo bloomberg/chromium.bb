@@ -206,16 +206,15 @@ PassRefPtr<NodeList> Event::path() const
 {
     if (!m_currentTarget || !m_currentTarget->toNode())
         return StaticNodeList::createEmpty();
-    TreeScope* currentScope = m_currentTarget->toNode()->treeScope();
-    Vector<RefPtr<Node> > nodes;
+    Node* node = m_currentTarget->toNode();
     size_t eventPathSize = m_eventPath.size();
     for (size_t i = 0; i < eventPathSize; ++i) {
-        Node* node = m_eventPath[i]->node();
-        ASSERT(node);
-        if (node->treeScope()->isInclusiveAncestorOf(currentScope))
-            nodes.append(node);
+        if (node == m_eventPath[i]->node()) {
+            ASSERT(m_eventPath[i]->eventPath());
+            return m_eventPath[i]->eventPath();
+        }
     }
-    return StaticNodeList::adopt(nodes);
+    return StaticNodeList::createEmpty();
 }
 
 } // namespace WebCore

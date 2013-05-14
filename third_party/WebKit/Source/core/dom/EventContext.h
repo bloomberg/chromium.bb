@@ -29,6 +29,7 @@
 
 #include "core/dom/EventTarget.h"
 #include "core/dom/Node.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/dom/TreeScope.h"
 #include <wtf/RefPtr.h>
 
@@ -45,6 +46,10 @@ public:
 
     Node* node() const { return m_node.get(); }
     EventTarget* target() const { return m_target.get(); }
+    PassRefPtr<NodeList> eventPath() { return m_eventPath; }
+    void adoptEventPath(Vector<RefPtr<Node> >&);
+    void setEventPath(PassRefPtr<NodeList> nodeList) { m_eventPath = nodeList; }
+
     bool currentTargetSameAsTarget() const { return m_currentTarget.get() == m_target.get(); }
     virtual void handleLocalEvents(Event*) const;
     virtual bool isMouseOrFocusEventContext() const;
@@ -57,6 +62,7 @@ protected:
     RefPtr<Node> m_node;
     RefPtr<EventTarget> m_currentTarget;
     RefPtr<EventTarget> m_target;
+    RefPtr<NodeList> m_eventPath;
 };
 
 typedef Vector<OwnPtr<EventContext>, 32> EventPath;

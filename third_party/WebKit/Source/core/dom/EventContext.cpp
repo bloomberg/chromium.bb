@@ -32,6 +32,7 @@
 #include "core/dom/FocusEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/Node.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/dom/TouchEvent.h"
 #include "core/dom/TouchList.h"
 #include "core/page/DOMWindow.h"
@@ -49,6 +50,11 @@ EventContext::EventContext(PassRefPtr<Node> node, PassRefPtr<EventTarget> curren
 
 EventContext::~EventContext()
 {
+}
+
+void EventContext::adoptEventPath(Vector<RefPtr<Node> >& nodes)
+{
+    m_eventPath = StaticNodeList::adopt(nodes);
 }
 
 void EventContext::handleLocalEvents(Event* event) const
