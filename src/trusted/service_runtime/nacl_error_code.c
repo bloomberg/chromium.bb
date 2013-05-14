@@ -142,6 +142,10 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "ELFCLASS64 program header has fields that overflow 32 bits";
     case LOAD_UNSUPPORTED_CPU:
       return "CPU model is not supported";
+    case LOAD_NO_MEMORY_FOR_DYNAMIC_TEXT:
+      return "Insufficient memory to allocate dynamic text region";
+    case LOAD_NO_MEMORY_FOR_ADDRESS_SPACE:
+      return "Insufficient memory to allocate untrusted address space";
     case NACL_ERROR_CODE_MAX:
       /* A bad error code, but part of the enum so we need to list it here. */
       break;

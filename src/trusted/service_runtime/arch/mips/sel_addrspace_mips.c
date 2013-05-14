@@ -45,7 +45,7 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
             " Could not find correct amount of prereserved memory"
             " (looked for 0x%016"NACL_PRIxS" bytes).\n",
             addrsp_size);
-    return LOAD_NO_MEMORY;
+    return LOAD_NO_MEMORY_FOR_ADDRESS_SPACE;
   }
 
   /*
@@ -63,7 +63,7 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
             "NaClAllocateSpace: NaClPageAllocAtAddr 0x%08"NACL_PRIxPTR
             " failed\n",
             (uintptr_t) tmp_mem);
-    return LOAD_NO_MEMORY;
+    return LOAD_NO_MEMORY_FOR_ADDRESS_SPACE;
   }
   NaClLog(4, "NaClAllocateSpace: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
           (uintptr_t) *mem,

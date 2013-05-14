@@ -66,7 +66,7 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
         "NaClAllocateSpace: NaClPageAlloc 0x%08"NACL_PRIxPTR
         " failed\n",
         (uintptr_t) *mem);
-    return LOAD_NO_MEMORY;
+    return LOAD_NO_MEMORY_FOR_ADDRESS_SPACE;
   }
   NaClLog(4, "NaClAllocateSpace: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
           (uintptr_t) *mem,

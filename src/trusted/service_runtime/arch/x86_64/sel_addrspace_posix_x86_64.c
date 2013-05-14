@@ -169,7 +169,7 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
                 "NaClAllocateSpace: NaClPageAlloc 0x%08"NACL_PRIxPTR
                 " failed\n",
                 (uintptr_t) *mem);
-        return LOAD_NO_MEMORY;
+        return LOAD_NO_MEMORY_FOR_ADDRESS_SPACE;
       }
       NaClLog(4, "NaClAllocateSpace: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
               (uintptr_t) *mem,
@@ -177,7 +177,7 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
       return LOAD_OK;
     }
     NaClLog(LOG_ERROR, "Failed to find prereserved memory\n");
-    return LOAD_NO_MEMORY;
+    return LOAD_NO_MEMORY_FOR_ADDRESS_SPACE;
   }
 
   NaClAddrSpaceBeforeAlloc(mem_sz);
@@ -231,7 +231,7 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
      */
 #endif
 
-    return LOAD_NO_MEMORY;
+    return LOAD_NO_MEMORY_FOR_ADDRESS_SPACE;
   }
   /*
    * The module lives in the middle FOURGIG of the allocated region --

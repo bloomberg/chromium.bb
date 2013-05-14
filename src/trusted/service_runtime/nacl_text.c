@@ -120,7 +120,7 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
     free(shm);
     shm = NULL;
     NaClLog(4, "NaClMakeDynamicTextShared: shm alloc ctor for text failed\n");
-    retval = LOAD_NO_MEMORY;
+    retval = LOAD_NO_MEMORY_FOR_DYNAMIC_TEXT;
     goto cleanup;
   }
 

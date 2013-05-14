@@ -94,6 +94,8 @@ typedef enum NaClErrorCode {
   LOAD_PHDR_OVERFLOW = 62,
   /* CPU blacklist or whitelist error */
   LOAD_UNSUPPORTED_CPU = 63,
+  LOAD_NO_MEMORY_FOR_DYNAMIC_TEXT = 64,
+  LOAD_NO_MEMORY_FOR_ADDRESS_SPACE = 65,
   NACL_ERROR_CODE_MAX
 } NaClErrorCode;
 
