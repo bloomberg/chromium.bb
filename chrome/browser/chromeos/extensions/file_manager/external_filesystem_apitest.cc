@@ -444,11 +444,11 @@ IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest,
 }
 
 #if defined(OS_CHROMEOS)
-#define MAYBE_AppFileHanlder DISABLED_AppFileHanlder
+#define MAYBE_AppFileHandler DISABLED_AppFileHandler
 #else
-#define MAYBE_AppFileHanlder AppFileHanlder
+#define MAYBE_AppFileHandler AppFileHandler
 #endif
-IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, MAYBE_AppFileHanlder) {
+IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, MAYBE_AppFileHandler) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
       FILE_PATH_LITERAL("manifest_v2.json"),
