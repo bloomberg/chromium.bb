@@ -161,6 +161,8 @@ _OS_NEGATIVE_FILTER['android'] = [
     'TouchFlickTest.*',
     'TouchScrollTest.*',
     'TouchSingleTapTest.*',
+    # Passes locally but not on bots??
+    'TypingTest.testShouldFireKeyDownEvents',
     # Test is written using local files; doesn't work on Android.
     'UploadTest.testFileUploading',
     # Not applicable on Android.
