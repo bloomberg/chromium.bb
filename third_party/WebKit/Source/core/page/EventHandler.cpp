@@ -949,7 +949,7 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
         m_frame->document()->updateHoverActiveState(request, result.innerElement());
 
     if (request.disallowsShadowContent())
-        result.setToNonShadowAncestor();
+        result.setToNodesInDocumentTreeScope();
 
     return result;
 }
@@ -1465,7 +1465,7 @@ bool EventHandler::mouseMoved(const PlatformMouseEvent& event)
     if (FrameView* frameView = m_frame->view())
         frameView->mouseMovedInContentArea();  
 
-    hoveredNode.setToNonShadowAncestor();
+    hoveredNode.setToShadowHostIfInUserAgentShadowRoot();
     page->chrome()->mouseDidMoveOverElement(hoveredNode, event.modifierFlags());
     page->chrome()->setToolTip(hoveredNode);
 
