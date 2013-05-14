@@ -564,7 +564,7 @@ void DownloadItemView::AnimationProgressed(const ui::Animation* animation) {
 // | [   ] [destroy your computer..]  [      ] [         ] |
 // `-------------------------------------------------------'
 //  |  |    |                          |                 \_ No drop down button.
-//  |  |    |                           \_ Buttons are views::TextButtons.
+//  |  |    |                           \_ Buttons are views::LabelButtons.
 //  |  |     \_ Text is in a label (dangerous_download_label_)
 //  |   \_ Warning icon.  No progress animation.
 //   \_ Body is static.  Doesn't respond to mouse hover or press. (NORMAL only)
@@ -576,7 +576,7 @@ void DownloadItemView::AnimationProgressed(const ui::Animation* animation) {
 // `---------------------------------------------+-' |
 //  |  |    |                         |            Drop down button. Responds to
 //  |  |    |                         |            mouse.(NORMAL, HOT or PUSHED)
-//  |  |    |                          \_ Button is a views::TextButton.
+//  |  |    |                          \_ Button is a views::LabelButton.
 //  |  |     \_ Text is in a label (dangerous_download_label_)
 //  |   \_ Warning icon.  No progress animation.
 //   \_ Body is static.  Doesn't respond to mouse hover or press. (NORMAL only)
