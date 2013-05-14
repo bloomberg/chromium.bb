@@ -315,6 +315,10 @@ void WebKitTestController::TestFinishedInSecondaryWindow() {
       new ShellViewMsg_NotifyDone(render_view_host->GetRoutingID()));
 }
 
+bool WebKitTestController::IsMainWindow(WebContents* web_contents) const {
+  return main_window_ && web_contents == main_window_->web_contents();
+}
+
 bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   bool handled = true;

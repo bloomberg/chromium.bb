@@ -96,6 +96,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OverrideWebkitPrefs(WebPreferences* prefs);
   void OpenURL(const GURL& url);
   void TestFinishedInSecondaryWindow();
+  bool IsMainWindow(WebContents* web_contents) const;
 
   WebKitTestResultPrinter* printer() { return printer_.get(); }
   void set_printer(WebKitTestResultPrinter* printer) {

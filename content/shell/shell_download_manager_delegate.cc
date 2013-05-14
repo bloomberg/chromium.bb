@@ -90,7 +90,8 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
 bool ShellDownloadManagerDelegate::ShouldOpenDownload(
       DownloadItem* item,
       const DownloadOpenDelayedCallback& callback) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree) &&
+      WebKitTestController::Get()->IsMainWindow(item->GetWebContents())) {
     WebKitTestController::Get()->OpenURL(
         net::FilePathToFileURL(item->GetFullPath()));
   }
