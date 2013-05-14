@@ -91,6 +91,10 @@ WebDatabase* WebDatabaseService::GetDatabaseOnDB() const {
   return wds_backend_->database();
 }
 
+scoped_refptr<WebDataServiceBackend> WebDatabaseService::GetBackend() const {
+  return wds_backend_;
+}
+
 void WebDatabaseService::ScheduleDBTask(
     const tracked_objects::Location& from_here,
     const WriteTask& task) {

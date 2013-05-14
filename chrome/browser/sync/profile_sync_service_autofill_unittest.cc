@@ -192,8 +192,7 @@ class TokenWebDataServiceFake : public WebDataService {
 class WebDataServiceFake : public AutofillWebDataService {
  public:
   WebDataServiceFake()
-      : AutofillWebDataService(NULL,
-                               WebDataServiceBase::ProfileErrorCallback()),
+      : AutofillWebDataService(),
         web_database_(NULL),
         autocomplete_syncable_service_(NULL),
         autofill_profile_syncable_service_(NULL),
@@ -333,7 +332,7 @@ ACTION(MakeSharedChangeProcessor) {
 ACTION_P(MakeAutofillProfileSyncComponents, wds) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
-    return base::WeakPtr<syncer::SyncableService>();;
+    return base::WeakPtr<syncer::SyncableService>();
   return AutofillProfileSyncableService::FromWebDataService(wds)->AsWeakPtr();
 }
 

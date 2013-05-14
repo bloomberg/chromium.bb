@@ -71,9 +71,12 @@ class WEBDATA_EXPORT WebDatabaseService
   // Unloads database and will not reload.
   virtual void ShutdownDatabase();
 
-  // Gets a ptr to the WebDatabase (owned by WebDatabaseService).
+  // Gets a pointer to the WebDatabase (owned by WebDatabaseService).
   // TODO(caitkp): remove this method once SyncServices no longer depend on it.
   virtual WebDatabase* GetDatabaseOnDB() const;
+
+  // Returns a pointer to the WebDataServiceBackend.
+  scoped_refptr<WebDataServiceBackend> GetBackend() const;
 
   // Schedule an update/write task on the DB thread.
   virtual void ScheduleDBTask(

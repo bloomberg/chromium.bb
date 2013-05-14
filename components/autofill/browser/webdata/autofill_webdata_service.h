@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
 #include "components/autofill/browser/webdata/autofill_webdata.h"
@@ -28,6 +29,7 @@ namespace autofill {
 class AutofillChange;
 class AutofillProfile;
 class AutofillWebDataBackend;
+class AutofillWebDataBackendImpl;
 class AutofillWebDataServiceObserverOnDBThread;
 class AutofillWebDataServiceObserverOnUIThread;
 class CreditCard;
@@ -99,6 +101,12 @@ class AutofillWebDataService : public AutofillWebData,
   // |ShutdownOnUIThread()| is called.
   base::SupportsUserData* GetDBUserData();
 
+  // Takes a callback which will be called on the DB thread with a pointer to an
+  // |AutofillWebdataBackend|. This backend can be used to access or update the
+  // WebDatabase directly on the DB thread.
+  void GetAutofillBackend(
+      const base::Callback<void(AutofillWebDataBackend*)>& callback);
+
  protected:
   virtual ~AutofillWebDataService();
 
@@ -126,7 +134,11 @@ class AutofillWebDataService : public AutofillWebData,
 
   ObserverList<AutofillWebDataServiceObserverOnUIThread> ui_observer_list_;
 
-  scoped_refptr<AutofillWebDataBackend> autofill_backend_;
+  // This factory is used on the UI thread. All vended weak pointers are
+  // invalidated in ShutdownOnUIThread().
+  base::WeakPtrFactory<AutofillWebDataService> weak_ptr_factory_;
+
+  scoped_refptr<AutofillWebDataBackendImpl> autofill_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataService);
 };

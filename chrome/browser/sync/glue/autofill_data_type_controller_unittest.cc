@@ -45,8 +45,7 @@ using testing::Return;
 class FakeWebDataService : public AutofillWebDataService {
  public:
   FakeWebDataService()
-      : AutofillWebDataService(
-            NULL, WebDataServiceBase::ProfileErrorCallback()),
+      : AutofillWebDataService(),
         is_database_loaded_(false),
         observer_(NULL) {}
 

@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/webdata/common/web_database_service.h"
+#include "components/webdata/common/webdata_export.h"
 #include "content/public/browser/browser_thread.h"
 
 
@@ -29,7 +30,9 @@ class Location;
 // WebDatabaseService. It is refcounted to allow asynchronous destruction on the
 // DB thread.
 
-class WebDataServiceBackend
+// TODO(caitkp): Rename this class to WebDatabaseBackend.
+
+class WEBDATA_EXPORT WebDataServiceBackend
     : public base::RefCountedThreadSafe<
           WebDataServiceBackend,
           content::BrowserThread::DeleteOnDBThread> {
@@ -62,7 +65,10 @@ class WebDataServiceBackend
   // possible to re-initialize the DB after the shutdown.
   void ShutdownDatabase(bool should_reinit);
 
-  // Task wrappers to run database tasks.
+  // Task wrappers to update requests and and notify |request_manager_|. These
+  // are used in cases where the request is being made from the UI thread and an
+  // asyncronous callback is required to notify the client of |request|'s
+  // completion.
   void DBWriteTaskWrapper(
       const WebDatabaseService::WriteTask& task,
       scoped_ptr<WebDataRequest> request);
@@ -70,18 +76,28 @@ class WebDataServiceBackend
       const WebDatabaseService::ReadTask& task,
       scoped_ptr<WebDataRequest> request);
 
+  // Task runners to run database tasks.
+  void ExecuteWriteTask(const WebDatabaseService::WriteTask& task);
+  scoped_ptr<WDTypedResult> ExecuteReadTask(
+      const WebDatabaseService::ReadTask& task);
+
   const scoped_refptr<WebDataRequestManager>& request_manager() {
     return request_manager_;
   }
 
   WebDatabase* database() { return db_.get(); }
 
+ protected:
+  virtual ~WebDataServiceBackend();
+
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::DB>;
   friend class base::DeleteHelper<WebDataServiceBackend>;
-
-  virtual ~WebDataServiceBackend();
+  // We have to friend RCTS<> so WIN shared-lib build is happy
+  // (http://crbug/112250).
+  friend class base::RefCountedThreadSafe<WebDataServiceBackend,
+      content::BrowserThread::DeleteOnDBThread>;
 
   // Commit the current transaction.
   void Commit();
