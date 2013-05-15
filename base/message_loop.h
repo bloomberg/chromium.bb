@@ -609,8 +609,8 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
 #if defined(USE_AURA) && defined(USE_X11) && !defined(OS_NACL)
   friend class base::MessagePumpAuraX11;
 #endif
-#if defined(USE_MESSAGEPUMP_LINUX) && !defined(OS_NACL)
-  friend class base::MessagePumpLinux;
+#if defined(USE_OZONE) && !defined(OS_NACL)
+  friend class base::MessagePumpOzone;
 #endif
 
   // TODO(rvargas): Make this platform independent.
