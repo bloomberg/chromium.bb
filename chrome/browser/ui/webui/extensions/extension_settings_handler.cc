@@ -170,6 +170,17 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("homepageProvided",
       extensions::ManifestURL::GetHomepageURL(extension).is_valid());
 
+  string16 location_text;
+  if (extension->location() == Manifest::INTERNAL &&
+      !extension->UpdatesFromGallery()) {
+    location_text = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_INSTALL_LOCATION_UNKNOWN);
+  } else if (extension->location() == Manifest::EXTERNAL_REGISTRY) {
+    location_text = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_INSTALL_LOCATION_3RD_PARTY);
+  }
+  extension_data->SetString("locationText", location_text);
+
   // Determine the sort order: Extensions loaded through --load-extensions show
   // up at the top. Disabled extensions show up at the bottom.
   if (Manifest::IsUnpackedLocation(extension->location()))

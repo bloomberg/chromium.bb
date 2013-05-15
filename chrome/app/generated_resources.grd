@@ -10909,6 +10909,14 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         These settings are enforced by an extension.
       </message>
 
+      <!-- Extension install location strings -->
+      <message name="IDS_OPTIONS_INSTALL_LOCATION_UNKNOWN" desc="The text explaining the the installation location is unknown.">
+        Not from Chrome Web Store.
+      </message>
+      <message name="IDS_OPTIONS_INSTALL_LOCATION_3RD_PARTY" desc="The text explaining the the installation came from a 3rd party app.">
+        Installed by a third party.
+      </message>
+
       <!-- Options search page strings. -->
       <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="Title of the settings search page.">
         Search results
