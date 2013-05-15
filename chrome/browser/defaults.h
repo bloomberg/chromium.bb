@@ -15,16 +15,16 @@ namespace browser_defaults {
 
 #if defined(USE_X11)
 
+// Can the user toggle the system title bar?
+extern const bool kCanToggleSystemTitleBar;
+
+#endif
+
 // Size of the font used in the autocomplete box for normal windows, in pixels.
 extern const int kAutocompleteEditFontPixelSize;
 
 // Size of the font used in the autocomplete box for popup windows, in pixels.
 extern const int kAutocompleteEditFontPixelSizeInPopup;
-
-// Can the user toggle the system title bar?
-extern const bool kCanToggleSystemTitleBar;
-
-#endif
 
 // Width of mini-tabs.
 extern const int kMiniTabWidth;
@@ -35,15 +35,23 @@ extern const bool kRestorePopups;
 // Can the browser be alive without any browser windows?
 extern const bool kBrowserAliveWithNoWindows;
 
-// Should a link be shown on the bookmark bar allowing the user to import
-// bookmarks?
-extern const bool kShowImportOnBookmarkBar;
-
 // Whether various menu items are shown.
 extern const bool kShowExitMenuItem;
 extern const bool kShowFeedbackMenuItem;
 extern const bool kShowHelpMenuItemIcon;
 extern const bool kShowUpgradeMenuItem;
+
+// Should a link be shown on the bookmark bar allowing the user to import
+// bookmarks?
+extern const bool kShowImportOnBookmarkBar;
+
+// Should always open incognito windows when started with --incognito switch?
+extern const bool kAlwaysOpenIncognitoWindow;
+
+// Indicates whether session restore should always create a new
+// tabbed browser. This is true every where except on ChromeOS
+// where we want the desktop to show through in this situation.
+extern const bool kAlwaysCreateTabbedBrowserOnSessionRestore;
 
 // Does the OS support other browsers? If not, operations such as default
 // browser check are not done.
@@ -64,9 +72,6 @@ extern const bool kSyncAutoStarts;
 // Should other browsers be shown in about:memory page?
 extern const bool kShowOtherBrowsersInAboutMemory;
 
-// Should always open incognito windows when started with --incognito switch?
-extern const bool kAlwaysOpenIncognitoWindow;
-
 // Should the close button be shown in the Task Manager dialog?
 extern const bool kShowCancelButtonInTaskManager;
 
@@ -81,11 +86,6 @@ extern const int kInfoBarBorderPaddingVertical;
 
 // Last character display for passwords.
 extern const bool kPasswordEchoEnabled;
-
-// Indicates whether session restore should always create a new
-// tabbed browser. This is true every where except on ChromeOS
-// where we want the desktop to show through in this situation.
-extern const bool kAlwaysCreateTabbedBrowserOnSessionRestore;
 
 //=============================================================================
 // Runtime "const" - set only once after parsing command line option and should
