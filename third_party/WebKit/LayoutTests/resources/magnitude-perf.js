@@ -80,13 +80,14 @@ Magnitude._min = function(array) {
     return Math.min.apply(null, array);
 };
 
-Magnitude._trimArray = function(array, trim) {
-    // trim both ends of an array
+Magnitude._sortTrimArray = function(array, trim) {
+    // sort array, then trim both ends
     // used for computing trimmed maximum absolute deviation
+    var sorted_array = array.map(Math.abs).sort(function(a, b) { return a - b; });
     if (!trim)
-        return array;
+        return sorted_array;
     else
-        return array.slice(trim, -trim);
+        return sorted_array.slice(trim, -trim);
 };
 
 Magnitude._relativeDeviations = function(array, ref)
@@ -318,7 +319,7 @@ Magnitude._isLinear = function()
     // and thus both be trimmed, while the slope of the double step will
     // generally not be extreme, so not informative.
     var logRatios = Magnitude._log2Ratios();
-    var trimmedLogRatios = Magnitude._trimArray(logRatios, Magnitude.trim);
+    var trimmedLogRatios = Magnitude._sortTrimArray(logRatios, Magnitude.trim);
     var minLogRatio = Magnitude._min(trimmedLogRatios);
     var maxLogRatio = Magnitude._max(trimmedLogRatios);
     var maxAbsDeviation = Math.max(Math.abs(1 - minLogRatio),
@@ -341,7 +342,7 @@ Magnitude._isPolynomial = function()
     // that it grows *at least* quadratically (>= 2, rather than = 2 or = 3).
     // Thus we have separate functions.
     var logRatios = Magnitude._log2Ratios();
-    var trimmedLogRatios = Magnitude._trimArray(logRatios, Magnitude.trim);
+    var trimmedLogRatios = Magnitude._sortTrimArray(logRatios, Magnitude.trim);
     var minLogRatio = Magnitude._min(trimmedLogRatios);
     var absDeviationMin = Math.abs(2 - minLogRatio);
     Magnitude._debug('Absolute Deviation of Minimum: ' + absDeviationMin);
