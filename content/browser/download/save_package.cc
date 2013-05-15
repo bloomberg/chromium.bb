@@ -365,7 +365,7 @@ void SavePackage::OnMHTMLGenerated(const base::FilePath& path, int64 size) {
   // with SavePackage flow.
   if (download_->IsInProgress()) {
     download_->SetTotalBytes(size);
-    download_->UpdateProgress(size, 0, std::string());
+    download_->DestinationUpdate(size, 0, std::string());
     // Must call OnAllDataSaved here in order for
     // GDataDownloadObserver::ShouldUpload() to return true.
     // ShouldCompleteDownload() may depend on the gdata uploader to finish.
@@ -792,7 +792,7 @@ void SavePackage::Finish() {
     // with SavePackage flow.
     if (download_->IsInProgress()) {
       if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
-        download_->UpdateProgress(
+        download_->DestinationUpdate(
             all_save_items_count_, CurrentSpeed(), std::string());
         download_->OnAllDataSaved(DownloadItem::kEmptyFileHash);
       }
@@ -822,8 +822,10 @@ void SavePackage::SaveFinished(int32 save_id, int64 size, bool is_success) {
   // Hack to avoid touching download_ after user cancel.
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
-  if (download_ && download_->IsInProgress())
-    download_->UpdateProgress(completed_count(), CurrentSpeed(), std::string());
+  if (download_ && download_->IsInProgress()) {
+    download_->DestinationUpdate(
+        completed_count(), CurrentSpeed(), std::string());
+  }
 
   if (save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM &&
       save_item->url() == page_url_ && !save_item->received_bytes()) {
@@ -867,8 +869,10 @@ void SavePackage::SaveFailed(const GURL& save_url) {
   // Hack to avoid touching download_ after user cancel.
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
-  if (download_ && download_->IsInProgress())
-    download_->UpdateProgress(completed_count(), CurrentSpeed(), std::string());
+  if (download_ && download_->IsInProgress()) {
+    download_->DestinationUpdate(
+        completed_count(), CurrentSpeed(), std::string());
+  }
 
   if ((save_type_ == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
       (save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ||

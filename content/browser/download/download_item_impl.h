@@ -196,18 +196,18 @@ class CONTENT_EXPORT DownloadItemImpl
   // Called by SavePackage to set the total number of bytes on the item.
   virtual void SetTotalBytes(int64 total_bytes);
 
-  // Indicate progress in saving data to its destination.
-  // |bytes_so_far| is the number of bytes received so far.
-  // |hash_state| is the current hash state.
-  virtual void UpdateProgress(int64 bytes_so_far,
-                              int64 bytes_per_sec,
-                              const std::string& hash_state);
-
   virtual void OnAllDataSaved(const std::string& final_hash);
 
   // Called by SavePackage to display progress when the DownloadItem
   // should be considered complete.
   virtual void MarkAsComplete();
+
+  // DownloadDestinationObserver
+  virtual void DestinationUpdate(int64 bytes_so_far,
+                                 int64 bytes_per_sec,
+                                 const std::string& hash_state) OVERRIDE;
+  virtual void DestinationError(DownloadInterruptReason reason) OVERRIDE;
+  virtual void DestinationCompleted(const std::string& final_hash) OVERRIDE;
 
  private:
   // Fine grained states of a download.
@@ -239,13 +239,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
     MAX_DOWNLOAD_INTERNAL_STATE,
   };
-
-  // DownloadDestinationObserver
-  virtual void DestinationUpdate(int64 bytes_so_far,
-                                 int64 bytes_per_sec,
-                                 const std::string& hash_state) OVERRIDE;
-  virtual void DestinationError(DownloadInterruptReason reason) OVERRIDE;
-  virtual void DestinationCompleted(const std::string& final_hash) OVERRIDE;
 
   // Normal progression of a download ------------------------------------------
 

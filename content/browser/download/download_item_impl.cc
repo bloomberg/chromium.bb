@@ -883,46 +883,6 @@ void DownloadItemImpl::SetTotalBytes(int64 total_bytes) {
   total_bytes_ = total_bytes;
 }
 
-// Updates from the download thread may have been posted while this download
-// was being cancelled in the UI thread, so we'll accept them unless we're
-// complete.
-void DownloadItemImpl::UpdateProgress(int64 bytes_so_far,
-                                      int64 bytes_per_sec,
-                                      const std::string& hash_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(20) << __FUNCTION__ << " so_far=" << bytes_so_far
-           << " per_sec=" << bytes_per_sec << " download=" << DebugString(true);
-
-  if (state_ != IN_PROGRESS_INTERNAL) {
-    // Ignore if we're no longer in-progress.  This can happen if we race a
-    // Cancel on the UI thread with an update on the FILE thread.
-    //
-    // TODO(rdsmith): Arguably we should let this go through, as this means
-    // the download really did get further than we know before it was
-    // cancelled.  But the gain isn't very large, and the code is more
-    // fragile if it has to support in progress updates in a non-in-progress
-    // state.  This issue should be readdressed when we revamp performance
-    // reporting.
-    return;
-  }
-  bytes_per_sec_ = bytes_per_sec;
-  hash_state_ = hash_state;
-  received_bytes_ = bytes_so_far;
-
-  // If we've received more data than we were expecting (bad server info?),
-  // revert to 'unknown size mode'.
-  if (received_bytes_ > total_bytes_)
-    total_bytes_ = 0;
-
-  if (bound_net_log_.IsLoggingAllEvents()) {
-    bound_net_log_.AddEvent(
-        net::NetLog::TYPE_DOWNLOAD_ITEM_UPDATED,
-        net::NetLog::Int64Callback("bytes_so_far", received_bytes_));
-  }
-
-  UpdateObservers();
-}
-
 void DownloadItemImpl::OnAllDataSaved(const std::string& final_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -949,7 +909,8 @@ void DownloadItemImpl::DestinationUpdate(int64 bytes_so_far,
                                          int64 bytes_per_sec,
                                          const std::string& hash_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
+  VLOG(20) << __FUNCTION__ << " so_far=" << bytes_so_far
+           << " per_sec=" << bytes_per_sec << " download=" << DebugString(true);
 
   if (!IsInProgress()) {
     // Ignore if we're no longer in-progress.  This can happen if we race a

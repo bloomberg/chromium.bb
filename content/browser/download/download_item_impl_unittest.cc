@@ -344,7 +344,7 @@ TEST_F(DownloadItemTest, NotificationAfterUpdate) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockObserver observer(item);
 
-  item->UpdateProgress(kDownloadChunkSize, kDownloadSpeed, std::string());
+  item->DestinationUpdate(kDownloadChunkSize, kDownloadSpeed, std::string());
   ASSERT_TRUE(observer.CheckUpdated());
   EXPECT_EQ(kDownloadSpeed, item->CurrentSpeed());
 }
