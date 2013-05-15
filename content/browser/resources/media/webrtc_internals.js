@@ -8,16 +8,84 @@ var ssrcInfoManager = null;
 var peerConnectionUpdateTable = null;
 var statsTable = null;
 var dumpCreator = null;
+/** A map from peer connection id to the PeerConnectionRecord. */
+var peerConnectionDataStore = {};
+
+/** A simple class to store the updates and stats data for a peer connection. */
+var PeerConnectionRecord = (function() {
+  /** @constructor */
+  function PeerConnectionRecord() {
+    /** @private */
+    this.record_ = {
+      constraints: {},
+      servers: [],
+      stats: {},
+      updateLog: [],
+      url: '',
+    };
+  };
+
+  PeerConnectionRecord.prototype = {
+    /** @override */
+    toJSON: function() {
+      return this.record_;
+    },
+
+    /**
+     * Adds the initilization info of the peer connection.
+     * @param {string} url The URL of the web page owning the peer connection.
+     * @param {Array} servers STUN servers used by the peer connection.
+     * @param {!Object} constraints Media constraints.
+     */
+    initialize: function(url, servers, constraints) {
+      this.record_.url = url;
+      this.record_.servers = servers;
+      this.record_.constraints = constraints;
+    },
+
+    /**
+     * @param {string} dataSeriesId The TimelineDataSeries identifier.
+     * @return {!TimelineDataSeries}
+     */
+    getDataSeries: function(dataSeriesId) {
+      return this.record_.stats[dataSeriesId];
+    },
+
+    /**
+     * @param {string} dataSeriesId The TimelineDataSeries identifier.
+     * @param {!TimelineDataSeries} dataSeries The TimelineDataSeries to set to.
+     */
+    setDataSeries: function(dataSeriesId, dataSeries) {
+      this.record_.stats[dataSeriesId] = dataSeries;
+    },
+
+    /**
+     * @param {string} type The type of the update.
+     * @param {string} value The value of the update.
+     */
+    addUpdate: function(type, value) {
+      this.record_.updateLog.push({
+        time: (new Date()).toLocaleString(),
+        type: type,
+        value: value,
+      });
+    },
+  };
+
+  return PeerConnectionRecord;
+})();
 
 // The maximum number of data points bufferred for each stats. Old data points
 // will be shifted out when the buffer is full.
 var MAX_STATS_DATA_POINT_BUFFER_SIZE = 1000;
 
+<include src="data_series.js"/>
 <include src="ssrc_info_manager.js"/>
 <include src="stats_graph_helper.js"/>
 <include src="stats_table.js"/>
 <include src="peer_connection_update_table.js"/>
 <include src="dump_creator.js"/>
+
 
 function initialize() {
   peerConnectionsListElem = $('peer-connections-list');
@@ -63,8 +131,21 @@ function extractSsrcInfo(data) {
 
 
 /**
- * Browser message handlers.
+ * Helper for adding a peer connection update.
+ *
+ * @param {Element} peerConnectionElement
+ * @param {!PeerConnectionUpdateEntry} update The peer connection update data.
  */
+function addPeerConnectionUpdate(peerConnectionElement, update) {
+  peerConnectionUpdateTable.addPeerConnectionUpdate(peerConnectionElement,
+                                                    update);
+  extractSsrcInfo(update);
+  peerConnectionDataStore[peerConnectionElement.id].addUpdate(
+      update.type, update.value);
+}
+
+
+/** Browser message handlers. */
 
 
 /**
@@ -75,8 +156,10 @@ function extractSsrcInfo(data) {
  */
 function removePeerConnection(data) {
   var element = $(getPeerConnectionId(data));
-  if (element)
+  if (element) {
+    delete peerConnectionDataStore[element.id];
     peerConnectionsListElem.removeChild(element);
+  }
 }
 
 
@@ -87,11 +170,19 @@ function removePeerConnection(data) {
  *     constraints of a peer connection.
  */
 function addPeerConnection(data) {
-  var peerConnectionElement = $(getPeerConnectionId(data));
+  var id = getPeerConnectionId(data);
+
+  if (!peerConnectionDataStore[id]) {
+    peerConnectionDataStore[id] = new PeerConnectionRecord();
+  }
+  peerConnectionDataStore[id].initialize(
+      data.url, data.servers, data.constraints);
+
+  var peerConnectionElement = $(id);
   if (!peerConnectionElement) {
     peerConnectionElement = document.createElement('li');
     peerConnectionsListElem.appendChild(peerConnectionElement);
-    peerConnectionElement.id = getPeerConnectionId(data);
+    peerConnectionElement.id = id;
   }
   peerConnectionElement.innerHTML =
       '<h3>PeerConnection ' + peerConnectionElement.id + '</h3>' +
@@ -106,6 +197,7 @@ function addPeerConnection(data) {
     else
       e.target.parentElement.className = '';
   });
+
   return peerConnectionElement;
 }
 
@@ -117,9 +209,7 @@ function addPeerConnection(data) {
  */
 function updatePeerConnection(data) {
   var peerConnectionElement = $(getPeerConnectionId(data));
-  peerConnectionUpdateTable.addPeerConnectionUpdate(
-      peerConnectionElement, data);
-  extractSsrcInfo(data);
+  addPeerConnectionUpdate(peerConnectionElement, data);
 }
 
 
@@ -136,9 +226,7 @@ function updateAllPeerConnections(data) {
 
     var log = data[i].log;
     for (var j = 0; j < log.length; ++j) {
-      peerConnectionUpdateTable.addPeerConnectionUpdate(
-          peerConnection, log[j]);
-      extractSsrcInfo(log[j]);
+      addPeerConnectionUpdate(peerConnection, log[j]);
     }
   }
 }

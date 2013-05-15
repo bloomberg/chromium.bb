@@ -63,7 +63,7 @@ var PeerConnectionUpdateTable = (function() {
      * @const
      * @private
      */
-    this.UPDATE_LOG_TABLE_CLASS_ = 'update-log-table';
+    this.UPDATE_LOG_TABLE_CLASS = 'update-log-table';
   }
 
   PeerConnectionUpdateTable.prototype = {
@@ -113,7 +113,7 @@ var PeerConnectionUpdateTable = (function() {
         peerConnectionElement.appendChild(tableContainer);
 
         tableElement = document.createElement('table');
-        tableElement.className = this.UPDATE_LOG_TABLE_CLASS_;
+        tableElement.className = this.UPDATE_LOG_TABLE_CLASS;
         tableElement.id = tableId;
         tableElement.border = 1;
         tableContainer.appendChild(tableElement);

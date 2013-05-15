@@ -11,7 +11,6 @@
 // Each group has an expand/collapse button and is collapsed initially.
 //
 
-<include src="data_series.js"/>
 <include src="timeline_graph_view.js"/>
 
 var STATS_GRAPH_CONTAINER_HEADING_CLASS = 'stats-graph-container-heading';
@@ -88,7 +87,6 @@ var statsNameBlackList = {
 };
 
 var graphViews = {};
-var dataSeries = {};
 
 // Adds the stats report |report| to the timeline graph for the given
 // |peerConnectionElement|.
@@ -107,8 +105,7 @@ function drawSingleReport(peerConnectionElement, report) {
     if (isNaN(rawValue))
       continue;
 
-    var rawDataSeriesId =
-        peerConnectionElement.id + '-' + reportId + '-' + rawLabel;
+    var rawDataSeriesId = reportId + '-' + rawLabel;
 
     var finalDataSeriesId = rawDataSeriesId;
     var finalLabel = rawLabel;
@@ -116,21 +113,25 @@ function drawSingleReport(peerConnectionElement, report) {
     // We need to convert the value if dataConversionConfig[rawLabel] exists.
     if (dataConversionConfig[rawLabel]) {
       // Updates the original dataSeries before the conversion.
-      addDataSeriesPoint(rawDataSeriesId, stats.timestamp,
+      addDataSeriesPoint(peerConnectionElement,
+                         rawDataSeriesId, stats.timestamp,
                          rawLabel, rawValue);
 
       // Convert to another value to draw on graph, using the original
       // dataSeries as input.
       finalValue = dataConversionConfig[rawLabel].convertFunction(
-          dataSeries[rawDataSeriesId]);
+          peerConnectionDataStore[peerConnectionElement.id].getDataSeries(
+              rawDataSeriesId));
       finalLabel = dataConversionConfig[rawLabel].convertedName;
-      finalDataSeriesId =
-          peerConnectionElement.id + '-' + reportId + '-' + finalLabel;
+      finalDataSeriesId = reportId + '-' + finalLabel;
     }
 
     // Updates the final dataSeries to draw.
-    addDataSeriesPoint(
-        finalDataSeriesId, stats.timestamp, finalLabel, finalValue);
+    addDataSeriesPoint(peerConnectionElement,
+                       finalDataSeriesId,
+                       stats.timestamp,
+                       finalLabel,
+                       finalValue);
 
     // Updates the graph.
     var graphType = bweCompoundGraphConfig[finalLabel] ?
@@ -147,24 +148,31 @@ function drawSingleReport(peerConnectionElement, report) {
     }
     // Adds the new dataSeries to the graphView. We have to do it here to cover
     // both the simple and compound graph cases.
-    if (!graphViews[graphViewId].hasDataSeries(dataSeries[finalDataSeriesId]))
-      graphViews[graphViewId].addDataSeries(dataSeries[finalDataSeriesId]);
-
+    var dataSeries =
+        peerConnectionDataStore[peerConnectionElement.id].getDataSeries(
+            finalDataSeriesId);
+    if (!graphViews[graphViewId].hasDataSeries(dataSeries))
+      graphViews[graphViewId].addDataSeries(dataSeries);
     graphViews[graphViewId].updateEndDate();
   }
 }
 
 // Makes sure the TimelineDataSeries with id |dataSeriesId| is created,
 // and adds the new data point to it.
-function addDataSeriesPoint(dataSeriesId, time, label, value) {
-  if (!dataSeries[dataSeriesId]) {
-    dataSeries[dataSeriesId] = new TimelineDataSeries();
+function addDataSeriesPoint(
+    peerConnectionElement, dataSeriesId, time, label, value) {
+  var dataSeries =
+    peerConnectionDataStore[peerConnectionElement.id].getDataSeries(
+        dataSeriesId);
+  if (!dataSeries) {
+    dataSeries = new TimelineDataSeries();
+    peerConnectionDataStore[peerConnectionElement.id].setDataSeries(
+        dataSeriesId, dataSeries);
     if (bweCompoundGraphConfig[label]) {
-      dataSeries[dataSeriesId].setColor(
-          bweCompoundGraphConfig[label].color);
+      dataSeries.setColor(bweCompoundGraphConfig[label].color);
     }
   }
-  dataSeries[dataSeriesId].addPoint(time, value);
+  dataSeries.addPoint(time, value);
 }
 
 // Ensures a div container to hold all stats graphs for one track is created as
@@ -202,8 +210,8 @@ function createStatsGraphView(
   var topContainer = ensureStatsGraphTopContainer(peerConnectionElement,
                                                   report);
 
-  var graphViewId = peerConnectionElement.id + '-' +
-      report.type + '-' + report.id + '-' + statsName;
+  var graphViewId =
+      peerConnectionElement.id + '-' + report.id + '-' + statsName;
   var divId = graphViewId + '-div';
   var canvasId = graphViewId + '-canvas';
   var container = document.createElement("div");
@@ -214,8 +222,7 @@ function createStatsGraphView(
       '<div id=' + divId + '><canvas id=' + canvasId + '></canvas></div>';
   if (statsName == 'bweCompound') {
       container.insertBefore(
-          createBweCompoundLegend(
-              peerConnectionElement, report.type + '-' + report.id),
+          createBweCompoundLegend(peerConnectionElement, report.id),
           $(divId));
   }
   return new TimelineGraphView(divId, canvasId);
@@ -223,18 +230,20 @@ function createStatsGraphView(
 
 // Creates the legend section for the bweCompound graph.
 // Returns the legend element.
-function createBweCompoundLegend(peerConnectionElement, reportName) {
+function createBweCompoundLegend(peerConnectionElement, reportId) {
   var legend = document.createElement('div');
   for (var prop in bweCompoundGraphConfig) {
     var div = document.createElement('div');
     legend.appendChild(div);
     div.innerHTML = '<input type=checkbox checked></input>' + prop;
     div.style.color = bweCompoundGraphConfig[prop].color;
-    div.dataSeriesId = peerConnectionElement.id + '-' + reportName + '-' + prop;
+    div.dataSeriesId = reportId + '-' + prop;
     div.graphViewId =
-        peerConnectionElement.id + '-' + reportName + '-bweCompound';
+        peerConnectionElement.id + '-' + reportId + '-bweCompound';
     div.firstChild.addEventListener('click', function(event) {
-        var target = dataSeries[event.target.parentNode.dataSeriesId];
+        var target =
+            peerConnectionDataStore[peerConnectionElement.id].getDataSeries(
+                event.target.parentNode.dataSeriesId);
         target.show(event.target.checked);
         graphViews[event.target.parentNode.graphViewId].repaint();
     });

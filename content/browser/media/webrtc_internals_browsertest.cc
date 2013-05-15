@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
@@ -272,34 +274,34 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
       for (stats_iter = stream_iter->second.begin();
            stats_iter != stream_iter->second.end();
            stats_iter++) {
-        string graph_id = pc.getIdString() + "-" +
-            stream_iter->first + "-" + stats_iter->first;
+        string graph_id = stream_iter->first + "-" + stats_iter->first;
         for (size_t i = 0; i < stats_iter->second.size(); ++i) {
           float number;
           std::stringstream stream(stats_iter->second[i]);
           stream >> number;
           if (stream.fail())
             continue;
-          VerifyGraphDataPoint(graph_id, i, stats_iter->second[i]);
+          VerifyGraphDataPoint(
+              pc.getIdString(), graph_id, i, stats_iter->second[i]);
         }
       }
     }
   }
 
   // Verifies that the graph data point at index |index| has value |value|.
-  void VerifyGraphDataPoint(
-      const string& graph_id, int index, const string& value) {
+  void VerifyGraphDataPoint(const string& pc_id, const string& graph_id,
+                            int index, const string& value) {
     bool result = false;
     ASSERT_TRUE(ExecuteScriptAndExtractBool(
         shell()->web_contents(),
         "window.domAutomationController.send("
-           "graphViews['" + graph_id + "'] != null)",
+           "graphViews['" + pc_id + "-" + graph_id + "'] != null)",
         &result));
     EXPECT_TRUE(result);
 
     std::stringstream ss;
-    ss << "var dp = dataSeries['" << graph_id << "']"
-              ".dataPoints_[" << index << "];"
+    ss << "var dp = peerConnectionDataStore['" << pc_id << "']"
+          ".getDataSeries('" << graph_id << "').dataPoints_[" << index << "];"
           "window.domAutomationController.send(dp.value.toString())";
     string actual_value;
     ASSERT_TRUE(ExecuteScriptAndExtractString(
@@ -327,6 +329,65 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
                 "ssrcInfoManager.SSRC_INFO_BLOCK_CLASS).length);",
         &count));
     return count;
+  }
+
+  // Verifies |dump| contains |peer_connection_number| peer connection dumps,
+  // each containing |update_number| updates and |stats_number| stats tables.
+  void VerifyPageDumpStructure(Value* dump,
+                               int peer_connection_number,
+                               int update_number,
+                               int stats_number) {
+    EXPECT_NE((Value*)NULL, dump);
+    EXPECT_EQ(Value::TYPE_DICTIONARY, dump->GetType());
+
+    DictionaryValue* dict_dump = static_cast<DictionaryValue*>(dump);
+    EXPECT_EQ((size_t) peer_connection_number, dict_dump->size());
+
+    DictionaryValue::Iterator it(*dict_dump);
+    for (; !it.IsAtEnd(); it.Advance()) {
+      Value* value = NULL;
+      dict_dump->Get(it.key(), &value);
+      EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
+      DictionaryValue* pc_dump = static_cast<DictionaryValue*>(value);
+      EXPECT_TRUE(pc_dump->HasKey("updateLog"));
+      EXPECT_TRUE(pc_dump->HasKey("stats"));
+
+      // Verifies the number of updates.
+      pc_dump->Get("updateLog", &value);
+      EXPECT_EQ(Value::TYPE_LIST, value->GetType());
+      ListValue* list = static_cast<ListValue*>(value);
+      EXPECT_EQ((size_t) update_number, list->GetSize());
+
+      // Verifies the number of stats tables.
+      pc_dump->Get("stats", &value);
+      EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
+      DictionaryValue* dict = static_cast<DictionaryValue*>(value);
+      EXPECT_EQ((size_t) stats_number, dict->size());
+    }
+  }
+
+  // Verifies |dump| contains the correct statsTable and statsDataSeries for
+  // |pc|.
+  void VerifyStatsDump(Value* dump,
+                       const PeerConnectionEntry& pc,
+                       const string& report_type,
+                       const string& report_id,
+                       const StatsUnit& stats) {
+    EXPECT_NE((Value*)NULL, dump);
+    EXPECT_EQ(Value::TYPE_DICTIONARY, dump->GetType());
+
+    DictionaryValue* dict_dump = static_cast<DictionaryValue*>(dump);
+    Value* value = NULL;
+    dict_dump->Get(pc.getIdString(), &value);
+    DictionaryValue* pc_dump = static_cast<DictionaryValue*>(value);
+
+    // Verifies there is one data series per stats name.
+    value = NULL;
+    pc_dump->Get("stats", &value);
+    EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
+
+    DictionaryValue* dataSeries = static_cast<DictionaryValue*>(value);
+    EXPECT_EQ(stats.values.size(), dataSeries->size());
   }
 };
 
@@ -504,10 +565,9 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, ConvertedGraphs) {
   ExecuteAndVerifyAddStats(pc, stats_type, stats_id, stats);
 
   // Verifies the graph data matches converted_values.
-  string graph_id_prefix = pc.getIdString() + "-" + stats_id;
   for (int i = 0; i < num_converted_stats; ++i) {
-    VerifyGraphDataPoint(
-        graph_id_prefix + "-" + converted_names[i], 1, converted_values[i]);
+    VerifyGraphDataPoint(pc.getIdString(), stats_id + "-" + converted_names[i],
+                         1, converted_values[i]);
   }
 }
 
@@ -599,6 +659,51 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest,
 
   count = GetSsrcInfoBlockCount(shell2);
   EXPECT_GT(count, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, CreatePageDump) {
+  GURL url("chrome://webrtc-internals");
+  NavigateToURL(shell(), url);
+
+  PeerConnectionEntry pc_0(1, 0);
+  pc_0.AddEvent("e1", "v1");
+  pc_0.AddEvent("e2", "v2");
+  PeerConnectionEntry pc_1(1, 1);
+  pc_1.AddEvent("e3", "v3");
+  pc_1.AddEvent("e4", "v4");
+  string pc_array =
+      "[" + pc_0.getAllUpdateString() + ", " + pc_1.getAllUpdateString() + "]";
+  EXPECT_TRUE(ExecuteJavascript("updateAllPeerConnections(" + pc_array + ");"));
+
+  // Verifies the peer connection data store can be created without stats.
+  string dump_json;
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send("
+      "JSON.stringify(peerConnectionDataStore));",
+      &dump_json));
+  scoped_ptr<Value> dump;
+  dump.reset(base::JSONReader::Read(dump_json));
+  VerifyPageDumpStructure(dump.get(),
+                          2 /*peer_connection_number*/,
+                          2 /*update_number*/,
+                          0 /*stats_number*/);
+
+  // Adds a stats report.
+  const string type = "dummy";
+  const string id = "1234";
+  StatsUnit stats = { FAKE_TIME_STAMP };
+  stats.values["bitrate"] = "2000";
+  stats.values["framerate"] = "30";
+  ExecuteAndVerifyAddStats(pc_0, type, id, stats);
+
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send("
+      "JSON.stringify(peerConnectionDataStore));",
+      &dump_json));
+  dump.reset(base::JSONReader::Read(dump_json));
+  VerifyStatsDump(dump.get(), pc_0, type, id, stats);
 }
 
 }  // namespace content

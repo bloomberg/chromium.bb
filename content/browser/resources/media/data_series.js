@@ -31,6 +31,24 @@ var TimelineDataSeries = (function() {
 
   TimelineDataSeries.prototype = {
     /**
+     * @override
+     */
+    toJSON: function() {
+      if (this.dataPoints_.length < 1)
+        return {};
+
+      var values = [];
+      for (var i = 0; i < this.dataPoints_.length; ++i) {
+        values.push(this.dataPoints_[i].value);
+      }
+      return {
+        startTime: this.dataPoints_[0].time,
+        endTime: this.dataPoints_[this.dataPoints_.length - 1].time,
+        values: JSON.stringify(values),
+      };
+    },
+
+    /**
      * Adds a DataPoint to |this| with the specified time and value.
      * DataPoints are assumed to be received in chronological order.
      */

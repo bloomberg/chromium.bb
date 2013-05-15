@@ -5,9 +5,8 @@
 
 /**
  * Provides the UI to start and stop RTP recording, forwards the start/stop
- * commands to Chrome, and updates the UI based on dump updates.
- *
- * @param {Element} containerElement The parent element of the dump creation UI.
+ * commands to Chrome, and updates the UI based on dump updates. Also provides
+ * creating a file containing all PeerConnection updates and stats.
  */
 var DumpCreator = (function() {
   /**
@@ -54,20 +53,40 @@ var DumpCreator = (function() {
     summary.textContent = 'Create Dump';
     var content = document.createElement('pre');
     this.root_.appendChild(content);
-    content.innerHTML = '<button></button> Status: <span></span>';
+
+    content.innerHTML = '<button></button> Status: <span></span>' +
+        '<div><form><button>' +
+        'Download the PeerConnection updates and stats data' +
+        '</button></form></div>';
     content.getElementsByTagName('button')[0].addEventListener(
-        'click', this.onToggled_.bind(this));
+        'click', this.onRtpToggled_.bind(this));
+    content.getElementsByTagName('button')[1].addEventListener(
+        'click', this.onDownloadData_.bind(this));
 
     this.updateDisplay_();
   }
 
   DumpCreator.prototype = {
     /**
-     * Handles the event of toggling the dump recording state.
+     * Downloads the PeerConnection updates and stats data as a file.
      *
      * @private
      */
-    onToggled_: function() {
+    onDownloadData_: function() {
+      var textBlob =
+          new Blob([JSON.stringify(peerConnectionDataStore, null, ' ')],
+                                   {type: 'octet/stream'});
+      var URL = window.webkitURL.createObjectURL(textBlob);
+      this.root_.getElementsByTagName('form')[0].action = URL;
+      // The default action of the button will submit the form.
+    },
+
+    /**
+     * Handles the event of toggling the rtp recording state.
+     *
+     * @private
+     */
+    onRtpToggled_: function() {
       if (this.recording_) {
         this.recording_ = false;
         this.status_ = this.StatusStrings_.NOT_STARTED;
