@@ -154,7 +154,8 @@ cr.define('print_preview', function() {
      */
     requestPreview: function() {
       if (!this.printTicketStore_.isTicketValidForPreview() ||
-          !this.destinationStore_.selectedDestination) {
+          !this.destinationStore_.selectedDestination ||
+          !this.printTicketStore_.isInitialized) {
         return false;
       }
       if (!this.hasPreviewChanged_()) {

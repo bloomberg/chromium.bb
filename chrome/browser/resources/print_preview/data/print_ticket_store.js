@@ -164,6 +164,13 @@ cr.define('print_preview', function() {
      */
     this.tracker_ = new EventTracker();
 
+    /**
+     * Whether the print preview has been initialized.
+     * @type {boolean}
+     * @private
+     */
+    this.isInitialized_ = false;
+
     this.addEventListeners_();
   };
 
@@ -180,6 +187,14 @@ cr.define('print_preview', function() {
 
   PrintTicketStore.prototype = {
     __proto__: cr.EventTarget.prototype,
+
+    /**
+     * Whether the print preview has been initialized.
+     * @type {boolean}
+     */
+    get isInitialized() {
+      return this.isInitialized_;
+    },
 
     get collate() {
       return this.collate_;
@@ -505,6 +520,7 @@ cr.define('print_preview', function() {
       var isFirstUpdate = this.capabilitiesHolder_.get() == null;
       this.capabilitiesHolder_.set(caps);
       if (isFirstUpdate) {
+        this.isInitialized_ = true;
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.INITIALIZE);
       } else {
         // Reset user selection for certain ticket items.
