@@ -1556,10 +1556,10 @@ decl_list_recovery:
     ;
 
 declaration:
-    VAR_DEFINITION ':' maybe_space expr prio {
-        parser->storeVariableDeclaration($1, parser->sinkFloatingValueList($4), $5);
+    VAR_DEFINITION maybe_space ':' maybe_space expr prio {
+        parser->storeVariableDeclaration($1, parser->sinkFloatingValueList($5), $6);
         $$ = true;
-        parser->endProperty($5, true);
+        parser->endProperty($6, true);
     }
     |
     property ':' maybe_space error_location expr prio {
