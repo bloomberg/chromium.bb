@@ -2451,6 +2451,8 @@ lock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy, i
 	if (width == 0)
 		return;
 
+	surface->geometry.width = width;
+	surface->geometry.height = height;
 	center_on_output(surface, get_default_output(shell->compositor));
 
 	if (!weston_surface_is_mapped(surface)) {
