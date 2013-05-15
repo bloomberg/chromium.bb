@@ -333,6 +333,10 @@
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_LEFT" file="common/textbutton_pressed_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_RIGHT" file="common/textbutton_pressed_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER" file="throbber.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_TRAY_ICON_PRESSED" file="mac/tray_icon_pressed.png"/>
+        <structure type="chrome_scaled_image" name="IDR_TRAY_ICON_REGULAR" file="mac/tray_icon_regular.png"/>
+      </if>
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_CENTER" file="common/window_bottom_center.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="common/window_bottom_left_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="common/window_bottom_right_corner.png" />
