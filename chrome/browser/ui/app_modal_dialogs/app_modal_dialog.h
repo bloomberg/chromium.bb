@@ -69,6 +69,13 @@ class AppModalDialog {
   // Overridden by subclasses to create the feature-specific native dialog box.
   virtual NativeAppModalDialog* CreateNativeDialog() = 0;
 
+ private:
+  // Information about the message box is held in the following variables.
+  string16 title_;
+
+  // True if CompleteDialog was called.
+  bool completed_;
+
   // False if the dialog should no longer be shown, e.g. because the underlying
   // tab navigated away while the dialog was queued.
   bool valid_;
@@ -76,14 +83,7 @@ class AppModalDialog {
   // The toolkit-specific implementation of the app modal dialog box.
   NativeAppModalDialog* native_dialog_;
 
- private:
-  // Information about the message box is held in the following variables.
-  string16 title_;
-
   content::WebContents* web_contents_;
-
-  // True if CompleteDialog was called.
-  bool completed_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialog);
 };

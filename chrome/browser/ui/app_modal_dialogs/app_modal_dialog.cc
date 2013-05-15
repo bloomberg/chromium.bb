@@ -15,11 +15,11 @@
 using content::WebContents;
 
 AppModalDialog::AppModalDialog(WebContents* web_contents, const string16& title)
-    : valid_(true),
+    : title_(title),
+      completed_(false),
+      valid_(true),
       native_dialog_(NULL),
-      title_(title),
-      web_contents_(web_contents),
-      completed_(false) {
+      web_contents_(web_contents) {
 }
 
 AppModalDialog::~AppModalDialog() {

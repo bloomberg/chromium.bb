@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_MODAL_DIALOGS_JAVASCRIPT_APP_MODAL_DIALOG_H_
 #define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_JAVASCRIPT_APP_MODAL_DIALOG_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/time.h"
@@ -27,9 +29,11 @@ class ChromeJavaScriptDialogExtraData {
 // onbeforeunload dialog boxes.
 class JavaScriptAppModalDialog : public AppModalDialog {
  public:
+  typedef std::map<void*, ChromeJavaScriptDialogExtraData> ExtraDataMap;
+
   JavaScriptAppModalDialog(
       content::WebContents* web_contents,
-      ChromeJavaScriptDialogExtraData* extra_data,
+      ExtraDataMap* extra_data_map,
       const string16& title,
       content::JavaScriptMessageType javascript_message_type,
       const string16& message_text,
@@ -72,8 +76,9 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   void NotifyDelegate(bool success, const string16& prompt_text,
                       bool suppress_js_messages);
 
-  // The extra Chrome-only data associated with the delegate_.
-  ChromeJavaScriptDialogExtraData* extra_data_;
+  // A map of extra Chrome-only data associated with the delegate_.
+  // Can be inspected via extra_data_map_[web_contents_].
+  ExtraDataMap* extra_data_map_;
 
   // Information about the message box is held in the following variables.
   const content::JavaScriptMessageType javascript_message_type_;
