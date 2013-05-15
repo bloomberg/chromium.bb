@@ -260,15 +260,7 @@ void FEGaussianBlur::calculateKernelSize(Filter* filter, unsigned& kernelSizeX, 
 
 void FEGaussianBlur::determineAbsolutePaintRect()
 {
-    unsigned kernelSizeX = 0;
-    unsigned kernelSizeY = 0;
-    calculateKernelSize(filter(), kernelSizeX, kernelSizeY, m_stdX, m_stdY);
-
-    FloatRect absolutePaintRect = inputEffect(0)->absolutePaintRect();
-
-    // We take the half kernel size and multiply it with three, because we run box blur three times.
-    absolutePaintRect.inflateX(3 * kernelSizeX * 0.5f);
-    absolutePaintRect.inflateY(3 * kernelSizeY * 0.5f);
+    FloatRect absolutePaintRect = mapRect(inputEffect(0)->absolutePaintRect());
 
     if (clipsToBounds())
         absolutePaintRect.intersect(maxEffectRect());
@@ -276,6 +268,19 @@ void FEGaussianBlur::determineAbsolutePaintRect()
         absolutePaintRect.unite(maxEffectRect());
 
     setAbsolutePaintRect(enclosingIntRect(absolutePaintRect));
+}
+
+FloatRect FEGaussianBlur::mapRect(const FloatRect& rect, bool)
+{
+    FloatRect result = rect;
+    unsigned kernelSizeX = 0;
+    unsigned kernelSizeY = 0;
+    calculateKernelSize(filter(), kernelSizeX, kernelSizeY, m_stdX, m_stdY);
+
+    // We take the half kernel size and multiply it with three, because we run box blur three times.
+    result.inflateX(3 * kernelSizeX * 0.5f);
+    result.inflateY(3 * kernelSizeY * 0.5f);
+    return result;
 }
 
 void FEGaussianBlur::applySoftware()

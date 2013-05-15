@@ -24,6 +24,7 @@
 #define SVGFilterElement_h
 
 #if ENABLE(SVG)
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedInteger.h"
@@ -76,6 +77,12 @@ private:
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGFilterElement* toSVGFilterElement(SVGElement* element)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->hasTagName(SVGNames::filterTag));
+    return static_cast<SVGFilterElement*>(element);
+}
 
 }
 

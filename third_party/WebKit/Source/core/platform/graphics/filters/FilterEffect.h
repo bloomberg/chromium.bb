@@ -104,6 +104,19 @@ public:
 
     virtual void determineAbsolutePaintRect();
 
+    // Mapping a rect forwards determines which which destination pixels a
+    // given source rect would affect. Mapping a rect backwards determines
+    // which pixels from the source rect would be required to fill a given
+    // destination rect. Note that these are not necessarily the inverse of
+    // each other. For example, for FEGaussianBlur, they are the same
+    // transformation.
+    virtual FloatRect mapRect(const FloatRect& rect, bool forward = true) { return rect; }
+    FloatRect mapRectRecursive(const FloatRect&);
+
+    // This is a recursive version of a backwards mapRect(), which also takes
+    // into account the filter primitive subregion of each effect.
+    FloatRect getSourceRect(const FloatRect& destRect, const FloatRect& clipRect);
+
     virtual FilterEffectType filterEffectType() const { return FilterEffectTypeUnknown; }
 
     virtual TextStream& externalRepresentation(TextStream&, int indention = 0) const;
@@ -140,6 +153,8 @@ public:
 
     virtual void transformResultColorSpace(FilterEffect* in, const int) { in->transformResultColorSpace(m_operatingColorSpace); }
     void transformResultColorSpace(ColorSpace);
+
+    FloatRect determineFilterPrimitiveSubregion();
 
 protected:
     FilterEffect(Filter*);

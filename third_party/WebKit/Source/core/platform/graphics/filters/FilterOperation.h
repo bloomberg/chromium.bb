@@ -29,6 +29,7 @@
 #include "core/platform/Length.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/LayoutSize.h"
+#include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -167,7 +168,7 @@ public:
 #endif
 
     FilterEffect* filterEffect() const { return m_filterEffect.get(); }
-    void setFilterEffect(PassRefPtr<FilterEffect> filterEffect) { m_filterEffect = filterEffect; }
+    void setFilterEffect(PassRefPtr<FilterEffect> filterEffect, PassRefPtr<Filter> filter) { m_filterEffect = filterEffect; m_filter = filter; }
 
 private:
 
@@ -192,6 +193,7 @@ private:
     OwnPtr<CachedSVGDocumentReference> m_cachedSVGDocumentReference;
 #endif
     RefPtr<FilterEffect> m_filterEffect;
+    RefPtr<Filter> m_filter;
 };
 
 // GRAYSCALE, SEPIA, SATURATE and HUE_ROTATE are variations on a basic color matrix effect.
