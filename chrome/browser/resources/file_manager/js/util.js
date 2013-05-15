@@ -1025,7 +1025,6 @@ util.saveAppState = function() {
     util.platform.setPreference(window.appID, window.appState);
 };
 
-
 /**
  *  AppCache is a persistent timestamped key-value storage backed by
  *  HTML5 local storage.

@@ -22,54 +22,10 @@ window.onerror = function() { window.JSErrorCount++ };
  * dialogs, as well as the full screen file manager application (though the
  * latter is not yet implemented).
  *
- * @param {HTMLElement} dialogDom The DOM node containing the prototypical
- *     dialog UI.
  * @constructor
  */
-function FileManager(dialogDom) {
-  this.dialogDom_ = dialogDom;
-  this.filesystem_ = null;
-
-  if (window.appState) {
-    this.params_ = window.appState.params || {};
-    this.defaultPath = window.appState.defaultPath;
-    util.saveAppState();
-  } else {
-    this.params_ = location.search ?
-                   JSON.parse(decodeURIComponent(location.search.substr(1))) :
-                   {};
-    this.defaultPath = this.params_.defaultPath;
-  }
-  this.listType_ = null;
-  this.showDelayTimeout_ = null;
-
-  this.filesystemObserverId_ = null;
-  this.driveObserverId_ = null;
-
-  this.document_ = dialogDom.ownerDocument;
-  this.dialogType = this.params_.type || DialogType.FULL_PAGE;
-  this.startupPrefName_ = 'file-manager-' + this.dialogType;
-
-  // Used to filter out focusing by mouse.
-  this.suppressFocus_ = false;
-
-  // Optional list of file types.
-  this.fileTypes_ = this.params_.typeList || [];
-  metrics.recordEnum('Create', this.dialogType,
-      [DialogType.SELECT_FOLDER,
-       DialogType.SELECT_SAVEAS_FILE,
-       DialogType.SELECT_OPEN_FILE,
-       DialogType.SELECT_OPEN_MULTI_FILE,
-       DialogType.FULL_PAGE]);
-
-  this.selectionHandler_ = null;
-  this.ctrlKeyPressed_ = false;
-
-  this.metadataCache_ = MetadataCache.createFull();
-  this.volumeManager_ = VolumeManager.getInstance();
-  this.initFileSystem_();
-  this.initDom_();
-  this.initDialogType_();
+function FileManager() {
+  this.initializeQueue_ = new AsyncUtil.Group();
 }
 
 /**
@@ -286,17 +242,6 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * Load translated strings.
-   */
-  FileManager.initStrings = function(callback) {
-    chrome.fileBrowserPrivate.getStrings(function(strings) {
-      loadTimeData.data = strings;
-      if (callback)
-        callback();
-    });
-  };
-
-  /**
    * FileManager initially created hidden to prevent flickering.
    * When DOM is almost constructed it need to be shown. Cancels
    * delayed show.
@@ -331,65 +276,71 @@ DialogType.isModal = function(type) {
     }
   };
 
-  // Instance methods.
-
-  /**
-   * Request local file system, resolve roots and init_ after that.
-   * @private
-   */
-  FileManager.prototype.initFileSystem_ = function() {
-    util.installFileErrorToString();
-
-    metrics.startInterval('Load.FileSystem');
-
-    var downcount = 4;
-    var viewOptions = {};
-    var done = function() {
-      if (--downcount == 0)
-        this.init_(viewOptions);
-    }.bind(this);
-
-    chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
-      metrics.recordInterval('Load.FileSystem');
-      this.filesystem_ = filesystem;
-      done();
-    }.bind(this));
+  FileManager.prototype.initPreferences_ = function(callback) {
+    var group = new AsyncUtil.Group();
 
     // DRIVE preferences should be initialized before creating DirectoryModel
-    // to tot rebuild the roots list.
-    this.getPreferences_(done);
+    // to rebuild the roots list.
+    group.add(this.getPreferences_.bind(this));
 
-    util.platform.getPreference(this.startupPrefName_, function(value) {
-      // Load the global default options.
-      try {
-        viewOptions = JSON.parse(value);
-      } catch (ignore) {}
-      // Override with window-specific options.
-      if (window.appState && window.appState.viewOptions) {
-        for (var key in window.appState.viewOptions) {
-          if (window.appState.viewOptions.hasOwnProperty(key))
-            viewOptions[key] = window.appState.viewOptions[key];
+    // Get startup preferences.
+    this.viewOptions_ = {};
+    group.add(function(done) {
+      util.platform.getPreference(this.startupPrefName_, function(value) {
+        // Load the global default options.
+        try {
+          this.viewOptions_ = JSON.parse(value);
+        } catch (ignore) {}
+        // Override with window-specific options.
+        if (window.appState && window.appState.viewOptions) {
+          for (var key in window.appState.viewOptions) {
+            if (window.appState.viewOptions.hasOwnProperty(key))
+              this.viewOptions_[key] = window.appState.viewOptions[key];
+          }
         }
-      }
-      done();
+        done();
+      }.bind(this));
     }.bind(this));
 
-    // Mount Drive if enabled.
-    this.getPreferences_(function() {
-      if (this.isDriveEnabled())
-        this.volumeManager_.mountDrive(function() {}, function() {});
-      done();
-    }.bind(this));
+    group.run(callback);
   };
 
   /**
-   * Continue initializing the file manager after resolving roots.
+   * Request local file system, resolve roots and init_ after that.
+   * Warning, you can't use DOM nor any external scripts here, since it may not
+   * be loaded yet. Functions in util.* and metrics.* are available and can
+   * be used.
    *
-   * @param {Object} prefs Preferences.
+   * @param {function()} callback Completion callback.
    * @private
    */
-  FileManager.prototype.init_ = function(prefs) {
-    metrics.startInterval('Load.DOM');
+  FileManager.prototype.initFileSystem_ = function(callback) {
+    util.installFileErrorToString();
+
+    metrics.startInterval('Load.FileSystem');
+    chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
+      metrics.recordInterval('Load.FileSystem');
+      this.filesystem_ = filesystem;
+      callback();
+    }.bind(this));
+
+    // Mount Drive if enabled.
+    if (this.isDriveEnabled())
+      this.volumeManager_.mountDrive(function() {}, function() {});
+  };
+
+  /**
+   * One time initialization for the file system and related things.
+   *
+   * @param {function()} callback Completion callback.
+   * @private
+   */
+  FileManager.prototype.initFileSystemUI_ = function(callback) {
+    this.table_.startBatchUpdates();
+    this.grid_.startBatchUpdates();
+
+    this.initFileList_();
+    this.setupCurrentDirectory_(true /* page loading */);
 
     // PyAuto tests monitor this state by polling this variable
     this.__defineGetter__('workerInitialized_', function() {
@@ -397,12 +348,6 @@ DialogType.isModal = function(type) {
     }.bind(this));
 
     this.initDateTimeFormatters_();
-
-    this.table_.startBatchUpdates();
-    this.grid_.startBatchUpdates();
-
-    this.initFileList_(prefs);
-    this.initDialogs_();
 
     var self = this;
 
@@ -443,8 +388,8 @@ DialogType.isModal = function(type) {
                         this.refreshCurrentDirectoryMetadata_.bind(this));
 
     this.directoryModel_.sortFileList(
-        prefs.sortField || 'modificationTime',
-        prefs.sortDirection || 'desc');
+        this.viewOptions_.sortField || 'modificationTime',
+        this.viewOptions_.sortDirection || 'desc');
 
     var stateChangeHandler =
         this.onPreferencesChanged_.bind(this);
@@ -469,16 +414,16 @@ DialogType.isModal = function(type) {
 
     this.selectionHandler_.onFileSelectionChanged();
 
-    this.setupCurrentDirectory_(true /* page loading */);
+    // Show the page now unless it's already delayed.
+    if (!util.platform.newUI())
+      this.delayShow_(0);
 
     this.table_.endBatchUpdates();
     this.grid_.endBatchUpdates();
 
-    // Show the page now unless it's already delayed.
-    this.delayShow_(0);
-
-    metrics.recordInterval('Load.DOM');
     metrics.recordInterval('Load.Total');
+
+    callback();
   };
 
   /**
@@ -719,6 +664,137 @@ DialogType.isModal = function(type) {
     });
   };
 
+  FileManager.prototype.initializeCore = function() {
+    this.initializeQueue_.add(this.initGeneral_.bind(this), [], 'initGeneral');
+    this.initializeQueue_.add(this.initStrings_.bind(this), [], 'initStrings');
+    this.initializeQueue_.add(
+        this.initPreferences_.bind(this), [], 'initPreferences');
+    this.initializeQueue_.add(
+        this.initFileSystem_.bind(this),
+        ['initGeneral', 'initPreferences'], 'initFileSystem');
+
+    this.initializeQueue_.run();
+  };
+
+  FileManager.prototype.initializeUI = function(dialogDom, callback) {
+    this.dialogDom_ = dialogDom;
+
+    this.initializeQueue_.add(
+        this.initEssentialUI_.bind(this),
+        ['initGeneral', 'initStrings'],
+        'initEssentialUI');
+    this.initializeQueue_.add(this.initAdditionalUI_.bind(this),
+        ['initEssentialUI'], 'initAdditionalUI');
+    this.initializeQueue_.add(
+        this.initFileSystemUI_.bind(this),
+        ['initFileSystem', 'initAdditionalUI'],
+        'initFileSystemUI');
+
+    // Run again just in case if all pending closures have completed and the
+    // queue has stopped and monitor the completion.
+    this.initializeQueue_.run(function() {
+      callback();
+      metrics.recordInterval('Load.Total');
+    });
+  };
+
+  /**
+   * Initializes general purpose basic things, which are used by other
+   * initializing methods.
+   *
+   * @param {function()} callback Completion callback.
+   * @private
+   */
+  FileManager.prototype.initGeneral_ = function(callback) {
+    this.volumeManager_ = VolumeManager.getInstance();
+    if (window.appState) {
+      this.params_ = window.appState.params || {};
+      this.defaultPath = window.appState.defaultPath;
+      util.saveAppState();
+    } else {
+      this.params_ = location.search ?
+                     JSON.parse(decodeURIComponent(location.search.substr(1))) :
+                     {};
+      this.defaultPath = this.params_.defaultPath;
+    }
+    callback();
+  };
+
+  /**
+   * One time initialization of strings (mostly i18n).
+   *
+   * @param {function()} callback Completion callback.
+   * @private
+   */
+  FileManager.prototype.initStrings_ = function(callback) {
+    chrome.fileBrowserPrivate.getStrings(function(strings) {
+      loadTimeData.data = strings;
+      this.loadTimeDataAvailable = true;
+      callback();
+    });
+  };
+
+  /**
+   * One time initialization of the Files.app's essential UI elements. These
+   * elements will be shown to the user. Only visible elements should be
+   * initialized here. Any heavy operation should be avoided. Files.app's
+   * window is shown at the end of this routine.
+   *
+   * @param {function()} callback Completion callback.
+   * @private
+   */
+  FileManager.prototype.initEssentialUI_ = function(callback) {
+    this.listType_ = null;
+    this.showDelayTimeout_ = null;
+
+    this.filesystemObserverId_ = null;
+    this.driveObserverId_ = null;
+
+    this.document_ = this.dialogDom_.ownerDocument;
+    this.dialogType = this.params_.type || DialogType.FULL_PAGE;
+    this.startupPrefName_ = 'file-manager-' + this.dialogType;
+
+    // Used to filter out focusing by mouse.
+    this.suppressFocus_ = false;
+
+    // Optional list of file types.
+    this.fileTypes_ = this.params_.typeList || [];
+    metrics.recordEnum('Create', this.dialogType,
+        [DialogType.SELECT_FOLDER,
+         DialogType.SELECT_SAVEAS_FILE,
+         DialogType.SELECT_OPEN_FILE,
+         DialogType.SELECT_OPEN_MULTI_FILE,
+         DialogType.FULL_PAGE]);
+
+    this.selectionHandler_ = null;
+    this.ctrlKeyPressed_ = false;
+
+    this.metadataCache_ = MetadataCache.createFull();
+
+    this.okButton_ = this.dialogDom_.querySelector('.ok');
+    this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
+
+    // Pre-populate the static localized strings.
+    i18nTemplate.process(this.document_, loadTimeData);
+
+    // Initialize the new header.
+    if (util.platform.newUI()) {
+      this.dialogDom_.querySelector('#app-name').innerText =
+          chrome.runtime.getManifest().name;
+    }
+
+    this.initDialogType_();
+
+    // Show the window as soon as the UI pre-initialization is done.
+    // Do not call show() when running via chrome://files in a browser.
+    if (this.dialogType == DialogType.FULL_PAGE && util.platform.v2()) {
+      chrome.app.window.current().show();
+      setTimeout(callback, 100);  // Wait until the animation is finished.
+    } else {
+      callback();
+    }
+  };
+
   /**
    * One-time initialization of dialogs.
    * @private
@@ -735,10 +811,16 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * One-time initialization of various DOM nodes.
+   * One-time initialization of various DOM nodes. Loads the additional DOM
+   * elements visible to the user. Initialize here elements, which are expensive
+   * or hidden in the beginning.
+   *
+   * @param {function()} callback Completion callback.
    * @private
    */
-  FileManager.prototype.initDom_ = function() {
+  FileManager.prototype.initAdditionalUI_ = function(callback) {
+    this.initDialogs_();
+
     this.dialogDom_.addEventListener('drop', function(e) {
       // Prevent opening an URL by dropping it onto the page.
       e.preventDefault();
@@ -751,8 +833,6 @@ DialogType.isModal = function(type) {
 
     this.filenameInput_ = dom.querySelector('#filename-input-box input');
     this.taskItems_ = dom.querySelector('#tasks');
-    this.okButton_ = dom.querySelector('.ok');
-    this.cancelButton_ = dom.querySelector('.cancel');
 
     this.table_ = dom.querySelector('.detail-table');
     this.grid_ = dom.querySelector('.thumbnail-grid');
@@ -947,13 +1027,13 @@ DialogType.isModal = function(type) {
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
 
-    // Initialize the new header and arrange the file list.
+    // Arrange the file list.
     if (util.platform.newUI()) {
-      this.dialogDom_.querySelector('#app-name').innerText =
-          chrome.runtime.getManifest().name;
       this.table_.normalizeColumns();
       this.table_.redraw();
     }
+
+    callback();
   };
 
   /**
@@ -965,11 +1045,9 @@ DialogType.isModal = function(type) {
 
   /**
    * Constructs table and grid (heavy operation).
-   *
-   * @param {Object} prefs Preferences.
    * @private
    **/
-  FileManager.prototype.initFileList_ = function(prefs) {
+  FileManager.prototype.initFileList_ = function() {
     // Always sharing the data model between the detail/thumb views confuses
     // them.  Instead we maintain this bogus data model, and hook it up to the
     // view that is not in use.
@@ -1029,18 +1107,20 @@ DialogType.isModal = function(type) {
     this.table_.list.addEventListener('blur', fileListBlurBound);
     this.grid_.addEventListener('blur', fileListBlurBound);
 
+    // TODO(mtomasz, yoshiki): Create sidebar earlier, and here just attach
+    // the directory model.
     this.initSidebar_();
 
     this.table_.addEventListener('column-resize-end',
                                  this.updateStartupPrefs_.bind(this));
 
-    this.setListType(prefs.listType || FileManager.ListType.DETAIL);
+    this.setListType(this.viewOptions_.listType || FileManager.ListType.DETAIL);
 
-    if (!util.platform.newUI() && prefs.columns) {
+    if (!util.platform.newUI() && this.viewOptions_.columns) {
       var cm = this.table_.columnModel;
       for (var i = 0; i < cm.totalSize; i++) {
-        if (prefs.columns[i] > 0)
-          cm.setWidth(i, prefs.columns[i]);
+        if (this.viewOptions_.columns[i] > 0)
+          cm.setWidth(i, this.viewOptions_.columns[i]);
       }
     }
 
@@ -1437,10 +1517,14 @@ DialogType.isModal = function(type) {
       this.table_.redraw();
     }
 
-    if (!util.platform.newUI())
+    if (!util.platform.newUI()) {
       this.breadcrumbs_.truncate();
-    else
-      this.volumeList_.redraw();
+    } else {
+      // TODO(mtomasz, yoshiki): Initialize volume list earlier, before
+      // file system is available.
+      if (this.volumeList_)
+        this.volumeList_.redraw();
+    }
 
     // Hide the search box if there is not enough space.
     if (util.platform.newUI())

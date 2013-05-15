@@ -6,26 +6,36 @@
 
 /**
  * Global fileManager reference useful for poking at from the console.
+ * @type {FileManager}
  */
 var fileManager;
 
 /**
+ * Indicates if the DOM and scripts have been already loaded.
+ * @type {boolean}
+ */
+var pageLoaded = false;
+
+/**
  * Kick off the file manager dialog.
- *
- * Called by main.html after the dom has been parsed.
+ * Called by main.html after the DOM has been parsed.
  */
 function init() {
-  FileManager.initStrings(function() {
-    metrics.startInterval('Load.Construct');
-    fileManager = new FileManager(document.body);
-    metrics.recordInterval('Load.Construct');
-    // We're ready to run.  Tests can monitor for this state with
-    // ExtensionTestMessageListener listener("ready");
-    // ASSERT_TRUE(listener.WaitUntilSatisfied());
+  // Initializes UI and starts the File Manager dialog.
+  fileManager.initializeUI(document.body, function() {
     chrome.test.sendMessage('ready');
   });
 }
 
+// Create the File Manager object. Note, that the DOM, nor any external
+// scripts may not be ready yet.
+fileManager = new FileManager();
+
+// Initialize the core stuff, which doesn't require access to DOM nor to
+// additional scripts.
+fileManager.initializeCore();
+
+// Final initialization is performed after all scripts and Dom is loaded.
 util.addPageLoadHandler(init);
 
 metrics.recordInterval('Load.Script');  // Must be the last line.

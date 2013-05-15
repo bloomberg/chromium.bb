@@ -130,8 +130,10 @@ AppWindowWrapper.prototype.launch = function(appState, callback) {
                          bounds.top + AppWindowWrapper.SHIFT_DISTANCE);
       }
 
-      // Show after changing bounds is done.
-      appWindow.show();
+      // Show after changing bounds is done. For the new UI, Files.app shows
+      // it's window as soon as the UI is pre-initialized.
+      if (!this.id_.match(FILES_ID_PATTERN))
+        appWindow.show();
 
       appWindows[this.id_] = appWindow;
       var contentWindow = appWindow.contentWindow;
