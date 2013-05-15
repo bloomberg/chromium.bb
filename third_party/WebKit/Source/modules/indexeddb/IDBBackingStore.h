@@ -45,7 +45,7 @@ class SharedBuffer;
 
 class LevelDBFactory {
 public:
-    virtual PassOwnPtr<LevelDBDatabase> openLevelDB(const String& fileName, const LevelDBComparator*) = 0;
+    virtual PassOwnPtr<LevelDBDatabase> openLevelDB(const String& fileName, const LevelDBComparator*, bool* isDiskFull = 0) = 0;
     virtual bool destroyLevelDB(const String& fileName) = 0;
 };
 

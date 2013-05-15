@@ -51,7 +51,7 @@ public:
 class MockLevelDBFactory : public LevelDBFactory {
 public:
     MockLevelDBFactory() : m_destroyCalled(false) { }
-    virtual PassOwnPtr<LevelDBDatabase> openLevelDB(const String& fileName, const LevelDBComparator* comparator)
+    virtual PassOwnPtr<LevelDBDatabase> openLevelDB(const String& fileName, const LevelDBComparator* comparator, bool* isDiskFull = 0)
     {
         return BustedLevelDBDatabase::open(fileName, comparator);
     }

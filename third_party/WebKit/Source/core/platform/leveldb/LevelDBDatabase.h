@@ -60,7 +60,7 @@ private:
 
 class LevelDBDatabase {
 public:
-    static PassOwnPtr<LevelDBDatabase> open(const String& fileName, const LevelDBComparator*);
+    static PassOwnPtr<LevelDBDatabase> open(const String& fileName, const LevelDBComparator*, bool* isDiskFull = 0);
     static PassOwnPtr<LevelDBDatabase> openInMemory(const LevelDBComparator*);
     static bool destroy(const String& fileName);
     virtual ~LevelDBDatabase();

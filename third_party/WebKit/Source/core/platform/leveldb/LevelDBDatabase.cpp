@@ -137,18 +137,19 @@ bool LevelDBDatabase::destroy(const String& fileName)
     return s.ok();
 }
 
-static void histogramFreeSpace(const char* type, String fileName)
+static int checkFreeSpace(const char* type, String fileName)
 {
     String name = "WebCore.IndexedDB.LevelDB.Open" + String(type) + "FreeDiskSpace";
     long long freeDiskSpaceInKBytes = WebKit::Platform::current()->availableDiskSpaceInBytes(fileName) / 1024;
     if (freeDiskSpaceInKBytes < 0) {
         HistogramSupport::histogramEnumeration("WebCore.IndexedDB.LevelDB.FreeDiskSpaceFailure", 1/*sample*/, 2/*boundary*/);
-        return;
+        return -1;
     }
     int clampedDiskSpaceKBytes = freeDiskSpaceInKBytes > INT_MAX ? INT_MAX : freeDiskSpaceInKBytes;
     const uint64_t histogramMax = static_cast<uint64_t>(1e9);
     COMPILE_ASSERT(histogramMax <= INT_MAX, histogramMaxTooBig);
     HistogramSupport::histogramCustomCounts(name.utf8().data(), clampedDiskSpaceKBytes, 1, histogramMax, 11/*buckets*/);
+    return clampedDiskSpaceKBytes;
 }
 
 static void histogramLevelDBError(const char* histogramName, const leveldb::Status& s)
@@ -171,7 +172,7 @@ static void histogramLevelDBError(const char* histogramName, const leveldb::Stat
     HistogramSupport::histogramEnumeration(histogramName, levelDBError, LevelDBMaxError);
 }
 
-PassOwnPtr<LevelDBDatabase> LevelDBDatabase::open(const String& fileName, const LevelDBComparator* comparator)
+PassOwnPtr<LevelDBDatabase> LevelDBDatabase::open(const String& fileName, const LevelDBComparator* comparator, bool* isDiskFull)
 {
     OwnPtr<ComparatorAdapter> comparatorAdapter = adoptPtr(new ComparatorAdapter(comparator));
 
@@ -180,13 +181,17 @@ PassOwnPtr<LevelDBDatabase> LevelDBDatabase::open(const String& fileName, const 
 
     if (!s.ok()) {
         histogramLevelDBError("WebCore.IndexedDB.LevelDBOpenErrors", s);
-        histogramFreeSpace("Failure", fileName);
+        int freeSpaceKBytes = checkFreeSpace("Failure", fileName);
+        // Disks with <100k of free space almost never succeed in opening a
+        // leveldb database.
+        if (isDiskFull)
+            *isDiskFull = freeSpaceKBytes < 100;
 
         LOG_ERROR("Failed to open LevelDB database from %s: %s", fileName.ascii().data(), s.ToString().c_str());
         return nullptr;
     }
 
-    histogramFreeSpace("Success", fileName);
+    checkFreeSpace("Success", fileName);
 
     OwnPtr<LevelDBDatabase> result = adoptPtr(new LevelDBDatabase);
     result->m_db = adoptPtr(db);

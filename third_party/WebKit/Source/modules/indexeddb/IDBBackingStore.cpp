@@ -323,9 +323,9 @@ WARN_UNUSED_RETURN static bool getMaxObjectStoreId(DBOrTransaction* db, const Ve
 
 class DefaultLevelDBFactory : public LevelDBFactory {
 public:
-    virtual PassOwnPtr<LevelDBDatabase> openLevelDB(const String& fileName, const LevelDBComparator* comparator)
+    virtual PassOwnPtr<LevelDBDatabase> openLevelDB(const String& fileName, const LevelDBComparator* comparator, bool* isDiskFull)
     {
-        return LevelDBDatabase::open(fileName, comparator);
+        return LevelDBDatabase::open(fileName, comparator, isDiskFull);
     }
     virtual bool destroyLevelDB(const String& fileName)
     {
@@ -367,6 +367,7 @@ enum IDBLevelDBBackingStoreOpenResult {
     IDBLevelDBBackingStoreOpenFailedUnknownErr,
     IDBLevelDBBackingStoreOpenMemoryFailed,
     IDBLevelDBBackingStoreOpenAttemptNonASCII,
+    IDBLevelDBBackingStoreOpenAttemptDiskFull,
     IDBLevelDBBackingStoreOpenMax,
 };
 
@@ -395,7 +396,8 @@ PassRefPtr<IDBBackingStore> IDBBackingStore::open(const String& databaseIdentifi
 
     String path = pathByAppendingComponent(pathBase, databaseIdentifier + ".indexeddb.leveldb");
 
-    db = levelDBFactory->openLevelDB(path, comparator.get());
+    bool isDiskFull = false;
+    db = levelDBFactory->openLevelDB(path, comparator.get(), &isDiskFull);
     if (db) {
         bool known = false;
         bool ok = isSchemaKnown(db.get(), known);
@@ -408,6 +410,13 @@ PassRefPtr<IDBBackingStore> IDBBackingStore::open(const String& databaseIdentifi
             HistogramSupport::histogramEnumeration("WebCore.IndexedDB.BackingStore.OpenStatus", IDBLevelDBBackingStoreOpenFailedUnknownSchema, IDBLevelDBBackingStoreOpenMax);
             db.clear();
         }
+    }
+
+    if (isDiskFull) {
+        ASSERT(!db);
+        LOG_ERROR("Unable to open backing store - disk is full.");
+        HistogramSupport::histogramEnumeration("WebCore.IndexedDB.BackingStore.OpenStatus", IDBLevelDBBackingStoreOpenAttemptDiskFull, IDBLevelDBBackingStoreOpenMax);
+        return PassRefPtr<IDBBackingStore>();
     }
 
     if (db)
