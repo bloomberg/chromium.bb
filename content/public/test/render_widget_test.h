@@ -42,6 +42,9 @@ class RenderWidgetTest : public RenderViewTest {
   // Test for ResizeAndPaint.
   void TestResizeAndPaint();
 
+  // Test for OnResize and Resize.
+  void TestOnResize();
+
   // Helper function which returns true if the given bitmap contains the given
   // ARGB color and false otherwise.
   bool ImageContainsColor(const SkBitmap& bitmap, uint32 argb_color);

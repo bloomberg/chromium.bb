@@ -335,12 +335,6 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   if (!content_view_core_)
     return gfx::Rect();
 
-  // If the backing hasn't been initialized yet, report empty view bounds
-  // as well. Otherwise, we may end up stuck in a white-screen state because
-  // the resize ack is sent after swapbuffers.
-  if (GetPhysicalBackingSize().IsEmpty())
-    return gfx::Rect();
-
   gfx::Size size = content_view_core_->GetViewportSizeDip();
   gfx::Size offset = content_view_core_->GetViewportSizeOffsetDip();
   size.Enlarge(-offset.width(), -offset.height());

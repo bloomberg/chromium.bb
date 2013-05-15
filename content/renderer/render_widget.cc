@@ -406,12 +406,19 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     // Resize should have caused an invalidation of the entire view.
     DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
            paint_aggregator_.HasPendingUpdate());
-  } else if (!RenderThreadImpl::current()->short_circuit_size_updates()) {
+  } else if (!RenderThreadImpl::current() ||  // Will be NULL during unit tests.
+             !RenderThreadImpl::current()->short_circuit_size_updates()) {
+    resize_ack = NO_RESIZE_ACK;
+  }
+
+  if (new_size.IsEmpty() || physical_backing_size.IsEmpty()) {
+    // For empty size or empty physical_backing_size, there is no next paint
+    // (along with which to send the ack) until they are set to non-empty.
     resize_ack = NO_RESIZE_ACK;
   }
 
   // Send the Resize_ACK flag once we paint again if requested.
-  if (resize_ack == SEND_RESIZE_ACK && !new_size.IsEmpty())
+  if (resize_ack == SEND_RESIZE_ACK)
     set_next_paint_is_resize_ack();
 
   if (fullscreen_change)
@@ -419,8 +426,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
 
   // If a resize ack is requested and it isn't set-up, then no more resizes will
   // come in and in general things will go wrong.
-  DCHECK(resize_ack != SEND_RESIZE_ACK || new_size.IsEmpty() ||
-         next_paint_is_resize_ack());
+  DCHECK(resize_ack != SEND_RESIZE_ACK || next_paint_is_resize_ack());
 }
 
 void RenderWidget::OnClose() {

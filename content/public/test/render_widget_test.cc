@@ -148,4 +148,44 @@ void RenderWidgetTest::OutputBitmapToFile(const SkBitmap& bitmap,
       bitmap_data->size()));
 }
 
+void RenderWidgetTest::TestOnResize() {
+  RenderWidget* widget = static_cast<RenderViewImpl*>(view_);
+
+  // The initial bounds is empty, so setting it to the same thing should do
+  // nothing.
+  widget->OnResize(gfx::Size(), gfx::Size(), 0, gfx::Rect(), false);
+  EXPECT_FALSE(widget->next_paint_is_resize_ack());
+
+  // Setting empty physical backing size should not send the ack.
+  widget->OnResize(gfx::Size(10, 10), gfx::Size(), 0, gfx::Rect(), false);
+  EXPECT_FALSE(widget->next_paint_is_resize_ack());
+
+  // Setting the bounds to a "real" rect should send the ack.
+  render_thread_->sink().ClearMessages();
+  gfx::Size size(100, 100);
+  widget->OnResize(size, size, 0, gfx::Rect(), false);
+  EXPECT_TRUE(widget->next_paint_is_resize_ack());
+  widget->DoDeferredUpdate();
+  ProcessPendingMessages();
+
+  const ViewHostMsg_UpdateRect* msg =
+      static_cast<const ViewHostMsg_UpdateRect*>(
+          render_thread_->sink().GetUniqueMessageMatching(
+              ViewHostMsg_UpdateRect::ID));
+  ASSERT_TRUE(msg);
+  ViewHostMsg_UpdateRect::Schema::Param params;
+  EXPECT_TRUE(ViewHostMsg_UpdateRect::Read(msg, &params));
+  EXPECT_TRUE(ViewHostMsg_UpdateRect_Flags::is_resize_ack(params.a.flags));
+  EXPECT_EQ(size, params.a.view_size);
+  render_thread_->sink().ClearMessages();
+
+  // Setting the same size again should not send the ack.
+  widget->OnResize(size, size, 0, gfx::Rect(), false);
+  EXPECT_FALSE(widget->next_paint_is_resize_ack());
+
+  // Resetting the rect to empty should not send the ack.
+  widget->OnResize(gfx::Size(), gfx::Size(), 0, gfx::Rect(), false);
+  EXPECT_FALSE(widget->next_paint_is_resize_ack());
+}
+
 }  // namespace content

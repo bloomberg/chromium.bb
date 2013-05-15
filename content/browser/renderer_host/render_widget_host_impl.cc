@@ -534,9 +534,9 @@ void RenderWidgetHostImpl::WasResized() {
       !side_payload_changed)
     return;
 
-  // We don't expect to receive an ACK when the requested size is empty or when
-  // the main viewport size didn't change.
-  if (!new_size.IsEmpty() && size_changed)
+  // We don't expect to receive an ACK when the requested size or the physical
+  // backing size is empty, or when the main viewport size didn't change.
+  if (!new_size.IsEmpty() && !physical_backing_size_.IsEmpty() && size_changed)
     resize_ack_pending_ = true;
 
   if (!Send(new ViewMsg_Resize(routing_id_, new_size, physical_backing_size_,

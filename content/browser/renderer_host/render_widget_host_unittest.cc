@@ -492,7 +492,8 @@ class TestView : public TestRenderWidgetHostView {
  public:
   explicit TestView(RenderWidgetHostImpl* rwh)
       : TestRenderWidgetHostView(rwh),
-        acked_event_count_(0) {
+        acked_event_count_(0),
+        use_fake_physical_backing_size_(false) {
   }
 
   // Sets the bounds returned by GetViewBounds.
@@ -511,6 +512,14 @@ class TestView : public TestRenderWidgetHostView {
     return unhandled_wheel_event_;
   }
 
+  void SetMockPhysicalBackingSize(const gfx::Size& mock_physical_backing_size) {
+    use_fake_physical_backing_size_ = true;
+    mock_physical_backing_size_ = mock_physical_backing_size;
+  }
+  void ClearMockPhysicalBackingSize() {
+    use_fake_physical_backing_size_ = false;
+  }
+
   // RenderWidgetHostView override.
   virtual gfx::Rect GetViewBounds() const OVERRIDE {
     return bounds_;
@@ -523,12 +532,19 @@ class TestView : public TestRenderWidgetHostView {
   virtual void UnhandledWheelEvent(const WebMouseWheelEvent& event) OVERRIDE {
     unhandled_wheel_event_ = event;
   }
+  virtual gfx::Size GetPhysicalBackingSize() const OVERRIDE {
+    if (use_fake_physical_backing_size_)
+      return mock_physical_backing_size_;
+    return TestRenderWidgetHostView::GetPhysicalBackingSize();
+  }
 
  protected:
   WebMouseWheelEvent unhandled_wheel_event_;
   WebTouchEvent acked_event_;
   int acked_event_count_;
   gfx::Rect bounds_;
+  bool use_fake_physical_backing_size_;
+  gfx::Size mock_physical_backing_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
@@ -871,10 +887,20 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
-  // Setting the bounds to a "real" rect should send out the notification.
+  // Setting the bounds to a "real" rect should send out the notification,
+  // but should not expect ack for empty physical backing size.
   gfx::Rect original_size(0, 0, 100, 100);
   process_->sink().ClearMessages();
   view_->set_bounds(original_size);
+  view_->SetMockPhysicalBackingSize(gfx::Size());
+  host_->WasResized();
+  EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_EQ(original_size.size(), host_->in_flight_size_);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+
+  // Setting the bounds to a "real" rect should send out the notification.
+  process_->sink().ClearMessages();
+  view_->ClearMockPhysicalBackingSize();
   host_->WasResized();
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->in_flight_size_);
