@@ -334,7 +334,7 @@ void LinkHighlight::updateGeometry()
 
         if (m_currentGraphicsLayer)
             m_currentGraphicsLayer->addRepaintRect(FloatRect(layer()->position().x, layer()->position().y, layer()->bounds().width, layer()->bounds().height));
-    } else {
+    } else if (!m_node || !m_node->renderer()) {
         clearGraphicsLayerLinkHighlightPointer();
         releaseResources();
     }
