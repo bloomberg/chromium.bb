@@ -56,5 +56,10 @@ std::string PairingRegistry::GetSecret(const std::string& client_id) const {
   return result;
 }
 
+void NotImplementedPairingRegistryDelegate::Save(
+    const PairingRegistry::PairedClients& paired_clients) {
+  NOTIMPLEMENTED();
+};
+
 }  // namespace protocol
 }  // namespace remoting
