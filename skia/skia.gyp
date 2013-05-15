@@ -371,6 +371,7 @@
             '-Wno-unused-function',
           ],
           'sources': [
+            '../third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp',
             '../third_party/skia/src/ports/SkFontHost_fontconfig.cpp',
             '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
           ],
