@@ -89,6 +89,7 @@ static inline bool featureWithPositiveInteger(const AtomicString& mediaFeature, 
         || mediaFeature == MediaFeatureNames::colorIndexMediaFeature
         || mediaFeature == MediaFeatureNames::maxColorIndexMediaFeature
         || mediaFeature == MediaFeatureNames::minColorIndexMediaFeature
+        || mediaFeature == MediaFeatureNames::monochromeMediaFeature
         || mediaFeature == MediaFeatureNames::minMonochromeMediaFeature
         || mediaFeature == MediaFeatureNames::maxMonochromeMediaFeature;
 }
