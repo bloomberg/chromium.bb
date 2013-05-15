@@ -409,64 +409,39 @@ sub AddToHeaderIncludes
     $headerIncludeFiles{$header} = 1;
 }
 
-sub AddInterfaceToImplIncludes
+sub SkipIncludeHeader
 {
-    my $interfaceName = shift;
+    my $type = shift;
 
-    my $include = HeaderFileForInterface($interfaceName);
+    return 1 if IsPrimitiveType($type);
+    return 1 if IsEnumType($type);
+    return 1 if $type eq "DOMString";
 
-    AddToImplIncludes($include);
+    # Special case: SVGPoint.h / SVGNumber.h do not exist.
+    return 1 if $type eq "SVGPoint" or $type eq "SVGNumber";
+    return 0;
 }
 
 sub AddIncludesForType
 {
     my $type = shift;
 
-    # When we're finished with the one-file-per-class
-    # reorganization, we won't need these special cases.
-    if (IsTypedArrayType($type)) {
-        AddToImplIncludes("wtf/${type}.h");
-    }
-    if (!IsPrimitiveType($type) and $type ne "DOMString" and !SkipIncludeHeader($type) and $type ne "Date") {
-        # default, include the same named file
-        AddToImplIncludes(GetV8HeaderName(${type}));
+    return if SkipIncludeHeader($type);
 
-        if ($type =~ /SVGPathSeg/) {
-            my $joinedName = $type;
-            $joinedName =~ s/Abs|Rel//;
-            AddToImplIncludes("core/svg/${joinedName}.h");
-        }
+    # Default includes
+    if ($type eq "EventListener") {
+        AddToImplIncludes("core/dom/EventListener.h");
+    } elsif ($type eq "SerializedScriptValue") {
+        AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
+    } elsif ($type eq "any") {
+        AddToImplIncludes("bindings/v8/ScriptValue.h");
+    } else {
+        AddToImplIncludes("V8${type}.h");
     }
 
-    # additional includes (things needed to compile the bindings but not the header)
-    AddExtraIncludesForType($type);
-}
-
-sub AddExtraIncludesForType
-{
-    my $type = shift;
-
-    if ($type eq "CanvasRenderingContext2D") {
-        AddToImplIncludes("core/html/canvas/CanvasGradient.h");
-        AddToImplIncludes("core/html/canvas/CanvasPattern.h");
-        AddToImplIncludes("core/html/canvas/CanvasStyle.h");
-    }
-
-    if ($type eq "CanvasGradient" or $type eq "XPathNSResolver") {
-        AddToImplIncludes("wtf/text/WTFString.h");
-    }
-
-    if ($type eq "CSSStyleSheet" or $type eq "StyleSheet") {
+    # Additional includes
+    if ($type eq "CSSStyleSheet") {
         AddToImplIncludes("core/css/CSSImportRule.h");
-    }
-
-    if ($type eq "CSSStyleDeclaration") {
-        AddToImplIncludes("core/css/StylePropertySet.h");
-    }
-
-    if ($type eq "Plugin" or $type eq "PluginArray" or $type eq "MimeTypeArray") {
-        # So we can get String -> AtomicString conversion for namedItem().
-        AddToImplIncludes("wtf/text/AtomicString.h");
     }
 }
 
@@ -1490,7 +1465,7 @@ END
         push(@arguments, "ec") if $useExceptions;
         if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
             my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
-            AddInterfaceToImplIncludes($implementedBy);
+            AddToImplIncludes(HeaderFileForInterface($implementedBy));
             unshift(@arguments, "imp") if !$attribute->isStatic;
             $functionName = "${implementedBy}::${functionName}";
         } elsif ($attribute->isStatic) {
@@ -1546,10 +1521,7 @@ END
     if (ShouldKeepAttributeAlive($interface, $attribute, $returnType)) {
         my $arrayType = GetArrayType($returnType);
         if ($arrayType) {
-            if (!SkipIncludeHeader($arrayType)) {
-                AddToImplIncludes("V8$arrayType.h");
-                AddToImplIncludes("$arrayType.h");
-            }
+            AddIncludeForType("V8$arrayType.h");
             $code .= "    return v8Array(${getterString}, info.GetIsolate());\n";
             $code .= "}\n\n";
             $implementation{nameSpaceInternal}->add($code);
@@ -1932,7 +1904,7 @@ END
             push(@arguments, "ec") if $useExceptions;
             if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
                 my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
-                AddInterfaceToImplIncludes($implementedBy);
+                AddToImplIncludes(HeaderFileForInterface($implementedBy));
                 unshift(@arguments, "imp") if !$attribute->isStatic;
                 $functionName = "${implementedBy}::${functionName}";
             } elsif ($attribute->isStatic) {
@@ -3343,7 +3315,7 @@ sub GenerateImplementation
     AddToImplIncludes("core/dom/Document.h");
     AddToImplIncludes("RuntimeEnabledFeatures.h");
 
-    AddExtraIncludesForType($interfaceName);
+    AddIncludesForType($interfaceName);
 
     my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8ClassName}::toActiveDOMObject" : "0";
     my $toEventTarget = InheritsExtendedAttribute($interface, "EventTarget") ? "${v8ClassName}::toEventTarget" : "0";
@@ -3647,7 +3619,7 @@ END
         my $attrExt = $constant->extendedAttributes;
         my $implementedBy = $attrExt->{"ImplementedBy"};
         if ($implementedBy) {
-            AddInterfaceToImplIncludes($implementedBy);
+            AddToImplIncludes(HeaderFileForInterface($implementedBy));
         }
         if ($attrExt->{"EnabledAtRuntime"}) {
             push(@constantsEnabledAtRuntime, $constant);
@@ -4462,7 +4434,7 @@ sub GenerateFunctionCallString
     my $functionName;
     my $implementedBy = $function->signature->extendedAttributes->{"ImplementedBy"};
     if ($implementedBy) {
-        AddInterfaceToImplIncludes($implementedBy);
+        AddToImplIncludes(HeaderFileForInterface($implementedBy));
         unshift(@arguments, "imp") if !$function->isStatic;
         $functionName = "${implementedBy}::${name}";
     } elsif ($function->isStatic) {
@@ -4707,11 +4679,7 @@ sub JSValueToNative
     return "toWebCoreDate($value)" if $type eq "Date";
     return "toDOMStringList($value, $getIsolate)" if $type eq "DOMStringList";
 
-    if ($type eq "DOMString") {
-        return $value;
-    }
-
-    if (IsEnumType($type)) {
+    if ($type eq "DOMString" or IsEnumType($type)) {
         return $value;
     }
 
@@ -4765,16 +4733,6 @@ sub JSValueToNative
     return "V8${type}::HasInstance($value, $getIsolate, worldType($getIsolate)) ? V8${type}::toNative(v8::Handle<v8::Object>::Cast($value)) : 0";
 }
 
-sub GetV8HeaderName
-{
-    my $type = shift;
-    return "V8Event.h" if $type eq "DOMTimeStamp";
-    return "core/dom/EventListener.h" if $type eq "EventListener";
-    return "bindings/v8/SerializedScriptValue.h" if $type eq "SerializedScriptValue";
-    return "bindings/v8/ScriptValue.h" if $type eq "any";
-    return "V8${type}.h";
-}
-
 sub CreateCustomSignature
 {
     my $function = shift;
@@ -4799,19 +4757,14 @@ sub CreateCustomSignature
                 my $arrayOrSequenceType = $arrayType || $sequenceType;
 
                 if ($arrayOrSequenceType) {
-                    if ($arrayType eq "DOMString") {
-                        AddToImplIncludes("V8DOMStringList.h");
-                        AddToImplIncludes("core/dom/DOMStringList.h");
-
-                    } elsif (IsRefPtrType($arrayOrSequenceType)) {
-                        AddToImplIncludes(GetV8HeaderName($arrayOrSequenceType));
-                        AddToImplIncludes("${arrayOrSequenceType}.h");
+                    if (IsRefPtrType($arrayOrSequenceType)) {
+                        AddIncludesForType($arrayOrSequenceType);
                     } else {
                         $code .= "v8::Handle<v8::FunctionTemplate>()";
                         next;
                     }
                 } else {
-                    AddToImplIncludes(GetV8HeaderName($type));
+                    AddIncludesForType($type);
                 }
                 $code .= "V8PerIsolateData::from(isolate)->rawTemplate(&V8${type}::info, currentWorldType)";
             }
@@ -5018,13 +4971,8 @@ sub NativeToJSValue
     my $arrayOrSequenceType = $arrayType || $sequenceType;
 
     if ($arrayOrSequenceType) {
-        if ($arrayType eq "DOMString") {
-            AddToImplIncludes("V8DOMStringList.h");
-            AddToImplIncludes("core/dom/DOMStringList.h");
-
-        } elsif (IsRefPtrType($arrayOrSequenceType)) {
-            AddToImplIncludes(GetV8HeaderName($arrayOrSequenceType));
-            AddToImplIncludes("${arrayOrSequenceType}.h");
+        if (IsRefPtrType($arrayOrSequenceType)) {
+            AddIncludesForType($arrayOrSequenceType);
         }
         return "v8Array($value, $getIsolate)";
     }
@@ -5259,18 +5207,6 @@ sub FindSuperMethod
         }
     });
     return $indexer;
-}
-
-sub SkipIncludeHeader
-{
-    my $type = shift;
-
-    return 1 if $primitiveTypeHash{$type};
-    return 1 if $type eq "String";
-
-    # Special case: SVGPoint.h / SVGNumber.h do not exist.
-    return 1 if $type eq "SVGPoint" or $type eq "SVGNumber";
-    return 0;
 }
 
 sub IsConstructorTemplate
