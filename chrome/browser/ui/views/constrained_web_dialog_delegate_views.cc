@@ -17,6 +17,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -134,6 +135,10 @@ class ConstrainedWebDialogDelegateViewViews
         widget,
         GetWebContents()->GetBrowserContext());
   }
+  virtual bool ShouldShowCloseButton() const OVERRIDE {
+    // No close button if the dialog doesn't want a title bar.
+    return impl_->GetWebDialogDelegate()->ShouldShowDialogTitle();
+  }
 
   virtual ui::ModalType GetModalType() const OVERRIDE {
 #if defined(USE_ASH)
@@ -149,8 +154,10 @@ class ConstrainedWebDialogDelegateViewViews
     if (!GetWidget())
       return;
 
-    GetWidget()->CenterWindow(
-        GetWidget()->non_client_view()->GetPreferredSize());
+    if (!views::DialogDelegate::UseNewStyle()) {
+      GetWidget()->CenterWindow(
+          GetWidget()->non_client_view()->GetPreferredSize());
+    }
     views::WidgetDelegate::OnWidgetMove();
   }
 

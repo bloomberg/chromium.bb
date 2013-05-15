@@ -71,6 +71,9 @@ class VIEWS_EXPORT WidgetDelegate {
   // Returns true if the window should show a title in the title bar.
   virtual bool ShouldShowWindowTitle() const;
 
+  // Returns true if the window should show a close button in the title bar.
+  virtual bool ShouldShowCloseButton() const;
+
   // Returns true if the window should handle standard system commands, such as
   // close, minimize, maximize.
   virtual bool ShouldHandleSystemCommands() const;

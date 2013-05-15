@@ -73,6 +73,10 @@ bool WidgetDelegate::ShouldShowWindowTitle() const {
   return true;
 }
 
+bool WidgetDelegate::ShouldShowCloseButton() const {
+  return true;
+}
+
 bool WidgetDelegate::ShouldHandleSystemCommands() const {
   const Widget* widget = GetWidget();
   if (!widget)

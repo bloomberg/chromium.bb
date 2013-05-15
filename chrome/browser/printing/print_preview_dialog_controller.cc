@@ -156,8 +156,6 @@ void PrintPreviewDialogDelegate::OnCloseContents(WebContents* /* source */,
 }
 
 bool PrintPreviewDialogDelegate::ShouldShowDialogTitle() const {
-  // Not used, returning dummy value.
-  NOTREACHED();
   return false;
 }
 
