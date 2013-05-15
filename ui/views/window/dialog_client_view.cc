@@ -20,14 +20,6 @@ namespace {
 // conflict with other groups that could be in the dialog content.
 const int kButtonGroup = 6666;
 
-// Update |button|'s text and enabled state according to |delegate|'s state.
-void UpdateButton(LabelButton* button,
-                  DialogDelegate* dialog,
-                  ui::DialogButton type) {
-  button->SetText(dialog->GetDialogButtonLabel(type));
-  button->SetEnabled(dialog->IsDialogButtonEnabled(type));
-}
-
 // Returns true if the given view should be shown (i.e. exists and is
 // visible).
 bool ShouldShow(View* view) {
@@ -79,9 +71,11 @@ void DialogClientView::CancelWindow() {
 }
 
 void DialogClientView::UpdateDialogButtons() {
-  DialogDelegate* dialog = GetDialogDelegate();
-  const int buttons = dialog->GetDialogButtons();
+  const int buttons = GetDialogDelegate()->GetDialogButtons();
   ui::Accelerator escape(ui::VKEY_ESCAPE, ui::EF_NONE);
+  if (default_button_)
+    default_button_->SetIsDefault(false);
+  default_button_ = NULL;
 
   if (buttons & ui::DIALOG_BUTTON_OK) {
     if (!ok_button_) {
@@ -91,7 +85,7 @@ void DialogClientView::UpdateDialogButtons() {
       AddChildView(ok_button_);
     }
 
-    UpdateButton(ok_button_, dialog, ui::DIALOG_BUTTON_OK);
+    UpdateButton(ok_button_, ui::DIALOG_BUTTON_OK);
   } else if (ok_button_) {
     delete ok_button_;
     ok_button_ = NULL;
@@ -104,7 +98,7 @@ void DialogClientView::UpdateDialogButtons() {
       AddChildView(cancel_button_);
     }
 
-    UpdateButton(cancel_button_, dialog, ui::DIALOG_BUTTON_CANCEL);
+    UpdateButton(cancel_button_, ui::DIALOG_BUTTON_CANCEL);
   } else if (cancel_button_) {
     delete cancel_button_;
     cancel_button_ = NULL;
@@ -353,11 +347,19 @@ LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   const int kDialogMinButtonWidth = 75;
   button->set_min_size(gfx::Size(kDialogMinButtonWidth, 0));
   button->SetGroup(kButtonGroup);
-  if (type == GetDialogDelegate()->GetDefaultDialogButton()) {
+  return button;
+}
+
+void DialogClientView::UpdateButton(LabelButton* button,
+                                    ui::DialogButton type) {
+  DialogDelegate* dialog = GetDialogDelegate();
+  button->SetText(dialog->GetDialogButtonLabel(type));
+  button->SetEnabled(dialog->IsDialogButtonEnabled(type));
+
+  if (type == dialog->GetDefaultDialogButton()) {
     default_button_ = button;
     button->SetIsDefault(true);
   }
-  return button;
 }
 
 int DialogClientView::GetButtonsAndExtraViewRowHeight() const {

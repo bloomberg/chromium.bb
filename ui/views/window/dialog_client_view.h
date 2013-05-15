@@ -89,6 +89,9 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Create a dialog button of the appropriate type.
   LabelButton* CreateDialogButton(ui::DialogButton type);
 
+  // Update |button|'s text and enabled state according to the delegate's state.
+  void UpdateButton(LabelButton* button, ui::DialogButton type);
+
   // Returns the height of the row containing the buttons and the extra view.
   int GetButtonsAndExtraViewRowHeight() const;
 
