@@ -436,8 +436,6 @@ int BrowserViewLayout::LayoutToolbar(int top) {
 }
 
 int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
-  web_contents_modal_dialog_top_y_ =
-      top + browser_view_->y() - kConstrainedWindowOverlap;
   if (bookmark_bar_) {
     // If we're showing the Bookmark bar in detached style, then we
     // need to show any Info bar _above_ the Bookmark bar, since the
@@ -448,6 +446,8 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
     top = std::max(browser_view_->toolbar_->bounds().bottom(),
                    LayoutBookmarkBar(top));
   }
+  web_contents_modal_dialog_top_y_ =
+      top + browser_view_->y() - kConstrainedWindowOverlap;
   return LayoutInfoBar(top);
 }
 
