@@ -1622,20 +1622,6 @@ END
                 $wrappedValue = "WTF::getPtr(${tearOffType}::create($expression))";
         }
         $code .= "    return toV8Fast$forMainWorldSuffix($wrappedValue, info, imp);\n";
-    } elsif ($attribute->signature->type eq "MessagePortArray") {
-        AddToImplIncludes("MessagePort.h");
-        AddToImplIncludes("V8MessagePort.h");
-        my $getterFunc = ToMethodName($attribute->signature->name);
-        $code .= <<END;
-    MessagePortArray* ports = imp->${getterFunc}();
-    if (!ports)
-        return v8::Array::New(0);
-    MessagePortArray portsCopy(*ports);
-    v8::Local<v8::Array> portArray = v8::Array::New(portsCopy.size());
-    for (size_t i = 0; i < portsCopy.size(); ++i)
-        portArray->Set(v8Integer(i, info.GetIsolate()), toV8Fast$forMainWorldSuffix(portsCopy[i].get(), info, imp));
-    return portArray;
-END
     } elsif ($attribute->signature->type eq "SerializedScriptValue" && $attrExt->{"CachedAttribute"}) {
         my $getterFunc = ToMethodName($attribute->signature->name);
         $code .= <<END;
@@ -1681,7 +1667,6 @@ sub ShouldKeepAttributeAlive
     return 0 if $returnType eq "EventTarget";
     return 0 if $returnType eq "SerializedScriptValue";
     return 0 if $returnType eq "DOMWindow";
-    return 0 if $returnType eq "MessagePortArray";
     return 0 if $returnType =~ /SVG/;
     return 0 if $returnType =~ /HTML/;
 
@@ -4886,7 +4871,6 @@ my %non_wrapper_types = (
     'EventTarget' => 1,
     'JSObject' => 1,
     'MediaQueryListListener' => 1,
-    'MessagePortArray' => 1,
     'NodeFilter' => 1,
     'SerializedScriptValue' => 1,
     'any' => 1,
