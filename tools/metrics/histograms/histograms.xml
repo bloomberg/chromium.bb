@@ -5605,6 +5605,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.Events" enum="PrerenderHoverEvent">
+  <obsolete>
+    deprecated May 10 2012
+  </obsolete>
+  <summary>Hover Event counts for prerendering.</summary>
+</histogram>
+
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus">
   <summary>
     Final status for prerender pages - either success, or why it was canceled.
@@ -5627,6 +5634,29 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.HoverStats_TimeUntilClicked" units="milliseconds">
+  <obsolete>
+    deprecated May 10 2012
+  </obsolete>
+  <summary>
+    Duration that a user hovers a link before clicking on it.
+
+    This is recorded for all pages loaded in a session.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.HoverStats_TimeUntilDiscarded" units="milliseconds">
+  <obsolete>
+    deprecated May 10 2012
+  </obsolete>
+  <summary>
+    Duration that the mouse pointer hovers on a link before the mouse pointer
+    moves off of it.
+
+    This is recorded for all pages loaded in a session.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.LocalPredictorEvent"
     enum="PrerenderLocalPredictorEvents">
   <summary>
@@ -5639,6 +5669,166 @@ other types of suffix sets.
     Time from when a prerendered page is started to when it is first used due to
     user navigation. If the page is never used, it is not included in this
     histogram.  This only refers to prerenders based on the local predictor.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.LocalVisitCoreTransition"
+    enum="PrerenderLocalVisitCoreTransition">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
+  <summary>
+    The transition type for each new visit as recorded in the local visits
+    database.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.LocalVisitDatabaseSize">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
+  <summary>Size of the local visits database (number of entries).</summary>
+</histogram>
+
+<histogram name="Prerender.LocalVisitEvents" enum="PrerenderLocalVisitEvents">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
+  <summary>
+    Enumeration of what events related to local visits have occurred
+  </summary>
+</histogram>
+
+<histogram name="Prerender.OmniboxNavigationsCouldPrerender">
+  <summary>
+    A boolean that indicates whether the Omnibox navigation being committed
+    could have been prerendered by the Omnibox Prerender system. This provides
+    an upper bound for Prerender.OmniboxNavigationsUsedPrerenderCount and allows
+    the potential for Omnibox Prerendering coverage to be understood. If Omnibox
+    Prerendering is disabled, this histogram will register a 'false' entry. The
+    total count is the equivalent of the deprecated
+    NetworkActionPredictor.NavigationCount histogram.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.OmniboxNavigationsUsedPrerenderCount">
+  <summary>
+    The number of navigations that use a prerender initiated from the Omnibox.
+    The count is incremented when the Prerendered tab is swapped in if the
+    Prerender was initiated by the Omnibox, which obviously requires
+    Prerendering from the Omnibox to be enabled.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.OmniboxPrerenderCount">
+  <summary>
+    The number of prerenders initiated from the Omnibox. This is incremented
+    when the NetworkActionPredictor suggests Prerendering as an optimal strategy
+    given the text the user has entered and the Autocomplete suggestion
+    currently selected. It is only incremented if Prerendering from the Omnibox
+    is enabled.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PageviewEvents" enum="PrerenderPageviewEvents">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
+  <summary>Types of pages rendered.</summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPageLoadTime_Control" units="milliseconds">
+  <obsolete>
+    Deprecated 03/24/11.  Replaced by
+    Prerender.PerceivedPLT_ContentPrefetchPrerenderControl.
+  </obsolete>
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This particular histogram is for all page loads for users who do not have
+    prerendering enabled.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPageLoadTime_PrerenderMatchControl"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 03/24/11.   Replaced by
+    Prerender.PerceivedPLTMatched_ContentPrefetchPrerenderControl.
+  </obsolete>
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This particular histogram is only for pages that would have been prerendered
+    if the user had prerender enabled.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPageLoadTime_PrerenderMatchTreatment"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 03/24/11.   Replaced by
+    Prerender.PerceivedPLTMatched_ContentPrefetchPrerender.
+  </obsolete>
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This particular histogram is for all prerendered page loads for users who
+    have prerender enabled.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPageLoadTime_Treatment"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 03/24/11.   Replaced by
+    Prerender.PerceivedPLT_ContentPrefetchPrerender.
+  </obsolete>
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This particular histogram is for all page loads for users who have
+    prerendering enabled.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPageLoadTime_WindowControl"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 03/24/11.   Replaced by
+    Prerender.PerceivedPLTWindowed_ContentPrefetchPrerenderControl.
+  </obsolete>
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This particular histogram is for all page loads within 30 seconds after a
+    prefetch tag is seen for users who do not have prerendering enabled.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPageLoadTime_WindowTreatment"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 03/24/11.   Replaced by
+    Prerender.PerceivedPLTWindowed_ContentPrefetchPrerender.
+  </obsolete>
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load pre navigation.
+
+    This particular histogram is for all page loads within 30 seconds after a
+    prefetch tag is seen for users who have prerendering enabled.
   </summary>
 </histogram>
 
@@ -5842,6 +6032,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.Sessions" enum="PrerenderMode">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
+  <summary>Enumeration of how prerender was used per session.</summary>
+</histogram>
+
 <histogram name="Prerender.SimulatedLocalBrowsingBaselinePLT"
     units="milliseconds">
   <summary>
@@ -5857,6 +6054,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.TabContentsDeleterTimeout">
+  <summary>
+    A boolean that indicates how often we fail to delete an old prerendered tab
+    before the timeout.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.TabHelperEvent" enum="PrerenderTabHelperEvents">
+  <summary>
+    Enumeration of what events related to the TabHelper class have occurred.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.TimeBetweenPrerenderRequests" units="milliseconds">
   <summary>Time between subsequent prerender requests.</summary>
 </histogram>
@@ -5866,6 +6076,25 @@ other types of suffix sets.
     The time elapsed between the most recent visit to a URL and when an
     attempted prerender of the same URL is cancelled with
     FINAL_STATUS_RECENTLY_VISITED.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.TimeToClick" units="milliseconds">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
+  <summary>Duration that a user hovers a link before clicking on it.</summary>
+</histogram>
+
+<histogram name="Prerender.TimeUntilUsed" units="milliseconds">
+  <obsolete>
+    deprecated Nov 16 2012.  See Prerender.TimeUntilUsed2, which has a larger
+    range.
+  </obsolete>
+  <summary>
+    Time from when a prerendered page is started to when it is first used due to
+    user navigation. If the page is never used, it is not included in this
+    histogram.
   </summary>
 </histogram>
 
@@ -10841,6 +11070,16 @@ other types of suffix sets.
   <int value="42" label="REGISTER_PROTOCOL_HANDLER"/>
 </enum>
 
+<enum name="PrerenderHoverEvent" type="int">
+  <obsolete>
+    deprecated May 10 2012
+  </obsolete>
+  <int value="0" label="HOVER_EVENT_START"/>
+  <int value="1" label="HOVER_EVENT_TOO_SHORT"/>
+  <int value="2" label="HOVER_EVENT_REPLACED"/>
+  <int value="3" label="HOVER_EVENT_CLICK"/>
+</enum>
+
 <enum name="PrerenderLocalPredictorEvents" type="int">
   <int value="0" label="Constructed"/>
   <int value="1" label="Init scheduled"/>
@@ -10888,6 +11127,68 @@ other types of suffix sets.
   <int value="43" label="Issuing prerender"/>
   <int value="44" label="No prerender candidates"/>
   <int value="45" label="Got history issuing lookup"/>
+</enum>
+
+<enum name="PrerenderLocalVisitCoreTransition" type="int">
+  <int value="0" label="LINK"/>
+  <int value="1" label="TYPED"/>
+  <int value="2" label="AUTO_BOOKMARK"/>
+  <int value="3" label="AUTO_SUBFRAME"/>
+  <int value="4" label="MANUAL_SUBFRAME"/>
+  <int value="5" label="GENERATED"/>
+  <int value="6" label="START_PAGE"/>
+  <int value="7" label="FORM_SUBMIT"/>
+  <int value="8" label="RELOAD"/>
+  <int value="9" label="KEYWORD"/>
+  <int value="10" label="GENERATED"/>
+</enum>
+
+<enum name="PrerenderLocalVisitEvents" type="int">
+  <int value="0" label="V1_VISIT"/>
+  <int value="1" label="V1_PRERENDER_STARTED_1"/>
+  <int value="2" label="V1_PRERENDER_USED_1"/>
+  <int value="3" label="V1_PRERENDER_STARTED_3"/>
+  <int value="4" label="V1_PRERENDER_USED_3"/>
+  <int value="5" label="V1_PRERENDER_STARTED_5"/>
+  <int value="6" label="V1_PRERENDER_USED_5"/>
+  <int value="10" label="VISIT"/>
+  <int value="11" label="VISIT_EXCLUDE_BACK_FORWARD"/>
+  <int value="12" label="VISIT_EXCLUDE_HOME_PAGE"/>
+  <int value="13" label="VISIT_EXCLUDE_REDIRECT_CHAIN"/>
+  <int value="14" label="PRERENDER_STARTED_1"/>
+  <int value="15" label="PRERENDER_USED_1"/>
+  <int value="16" label="PRERENDER_STARTED_3"/>
+  <int value="17" label="PRERENDER_USED_3"/>
+  <int value="18" label="PRERENDER_STARTED_5"/>
+  <int value="19" label="PRERENDER_USED_5"/>
+</enum>
+
+<enum name="PrerenderMode" type="int">
+  <int value="0" label="PRERENDER_MODE_DISABLED"/>
+  <int value="1" label="PRERENDER_MODE_ENABLED"/>
+  <int value="2" label="PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP"/>
+  <int value="3" label="PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP"/>
+  <int value="4" label="PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP"/>
+  <int value="5" label="PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP"/>
+  <int value="6" label="PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP"/>
+  <int value="7" label="PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP"/>
+</enum>
+
+<enum name="PrerenderPageviewEvents" type="int">
+  <int value="0" label="PAGEVIEW_EVENT_NEW_URL"/>
+  <int value="1" label="PAGEVIEW_EVENT_TOP_SITE_NEW_URL"/>
+  <int value="2" label="PAGEVIEW_EVENT_LOAD_START"/>
+  <int value="3" label="PAGEVIEW_EVENT_TOP_SITE_LOAD_START"/>
+</enum>
+
+<enum name="PrerenderTabHelperEvents" type="int">
+  <int value="0" label="Table requested"/>
+  <int value="1" label="Table present"/>
+  <int value="2" label="Mainframe change"/>
+  <int value="3" label="Mainframe change, logged in"/>
+  <int value="4" label="Mainframe commit"/>
+  <int value="5" label="Mainframe commit, logged in"/>
+  <int value="6" label="Login action added"/>
 </enum>
 
 <enum name="ProtocolVersion" type="int">
@@ -12863,6 +13164,30 @@ other types of suffix sets.
   <affected-histogram name="Prerender.RendererTimeUntilDisplay"/>
   <affected-histogram name="Prerender.SimulatedLocalBrowsingBaselinePLT"/>
   <affected-histogram name="Prerender.SimulatedLocalBrowsingPLT"/>
+</fieldtrial>
+
+<fieldtrial name="PrerenderHoverType" ordering="prefix">
+  <obsolete>
+    deprecated May 10 2012
+  </obsolete>
+  <group name="HoverStats_50" label="Hover stats @ threshold 50 ms."/>
+  <group name="HoverStats_75" label="Hover stats @ threshold 75 ms."/>
+  <group name="HoverStats_100" label="Hover stats @ threshold 100 ms."/>
+  <group name="HoverStats_150" label="Hover stats @ threshold 150 ms."/>
+  <group name="HoverStats_200" label="Hover stats @ threshold 200 ms."/>
+  <group name="HoverStats_250" label="Hover stats @ threshold 250 ms."/>
+  <group name="HoverStats_300" label="Hover stats @ threshold 300 ms."/>
+  <group name="HoverStats_400" label="Hover stats @ threshold 400 ms."/>
+  <group name="HoverStats_500" label="Hover stats @ threshold 500 ms."/>
+  <group name="HoverStats_750" label="Hover stats @ threshold 750 ms."/>
+  <group name="HoverStats_1000" label="Hover stats @ threshold 1000 ms."/>
+  <group name="HoverStats_1500" label="Hover stats @ threshold 1500 ms."/>
+  <group name="HoverStats_2000" label="Hover stats @ threshold 2000 ms."/>
+  <group name="HoverStats_3000" label="Hover stats @ threshold 3000 ms."/>
+  <group name="HoverStats_4000" label="Hover stats @ threshold 4000 ms."/>
+  <group name="HoverStats_5000" label="Hover stats @ threshold 5000 ms."/>
+  <affected-histogram name="Prerender.Events"/>
+  <affected-histogram name="Prerender.TimeToClick"/>
 </fieldtrial>
 
 <fieldtrial name="PrerenderSource" ordering="prefix">
