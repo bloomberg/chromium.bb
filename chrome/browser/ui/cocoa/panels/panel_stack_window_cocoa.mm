@@ -84,7 +84,9 @@ void PanelStackWindowCocoa::AddPanel(Panel* panel) {
 void PanelStackWindowCocoa::RemovePanel(Panel* panel) {
   panels_.remove(panel);
 
-  [window_ removeChildWindow:panel->GetNativeWindow()];
+  // If the native panel is closed, the native window should already be gone.
+  if (!static_cast<PanelCocoa*>(panel->native_panel())->IsClosed())
+    [window_ removeChildWindow:panel->GetNativeWindow()];
 
   UpdateStackWindowBounds();
 }
