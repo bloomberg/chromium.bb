@@ -33,7 +33,7 @@ class QuotesData : public RefCounted<QuotesData> {
 public:
     static PassRefPtr<QuotesData> create() { return adoptRef(new QuotesData()); }
     static PassRefPtr<QuotesData> create(const String open, const String close);
-    static PassRefPtr<QuotesData> create(UChar open1, UChar close1, UChar open2, UChar close2);
+    static PassRefPtr<QuotesData> create(const String open1, const String close1, const String open2, const String close2);
 
     // FIXME: this should be an operator==.
     static bool equals(const QuotesData*, const QuotesData*);

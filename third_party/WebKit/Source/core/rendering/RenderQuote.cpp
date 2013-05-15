@@ -23,10 +23,9 @@
 #include "core/rendering/RenderQuote.h"
 
 #include "core/rendering/RenderView.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/AtomicString.h"
+#include <wtf/text/AtomicString.h>
 
-#include <algorithm>
+#define U(x) ((const UChar*)L##x)
 
 namespace WebCore {
 
@@ -64,192 +63,173 @@ void RenderQuote::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
     setText(originalText());
 }
 
-struct Language {
-    const char* lang;
-    UChar open1;
-    UChar close1;
-    UChar open2;
-    UChar close2;
-    QuotesData* data;
+typedef HashMap<AtomicString, const QuotesData*, CaseFoldingHash> QuotesMap;
 
-    bool operator<(const Language& b) { return strcmp(lang, b.lang) < 0; }
-};
-
-// Table of quotes from http://www.whatwg.org/specs/web-apps/current-work/multipage/rendering.html#quote
-Language languages[] = {
-    { "af",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "agq",           0x201e, 0x201d, 0x201a, 0x2019, 0 },
-    { "ak",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "am",            0x00ab, 0x00bb, 0x2039, 0x203a, 0 },
-    { "ar",            0x201d, 0x201c, 0x2019, 0x2018, 0 },
-    { "asa",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "az-cyrl",       0x00ab, 0x00bb, 0x2039, 0x203a, 0 },
-    { "bas",           0x00ab, 0x00bb, 0x201e, 0x201c, 0 },
-    { "bem",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "bez",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "bg",            0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "bm",            0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "bn",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "br",            0x00ab, 0x00bb, 0x2039, 0x203a, 0 },
-    { "brx",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "bs-cyrl" ,      0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "ca",            0x201c, 0x201d, 0x00ab, 0x00bb, 0 },
-    { "cgg",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "chr",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "cs",            0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "da",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "dav",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "de",            0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "de-ch",         0x00ab, 0x00bb, 0x2039, 0x203a, 0 },
-    { "dje",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "dua",           0x00ab, 0x00bb, 0x2018, 0x2019, 0 },
-    { "dyo",           0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "dz",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ebu",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ee",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "el",            0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "en",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "en-gb",         0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "es",            0x201c, 0x201d, 0x00ab, 0x00bb, 0 },
-    { "et",            0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "eu",            0x201c, 0x201d, 0x00ab, 0x00bb, 0 },
-    { "ewo",           0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "fa",            0x00ab, 0x00bb, 0x2039, 0x203a, 0 },
-    { "ff",            0x201e, 0x201d, 0x201a, 0x2019, 0 },
-    { "fi",            0x201d, 0x201d, 0x2019, 0x2019, 0 },
-    { "fr",            0x00ab, 0x00bb, 0x00ab, 0x00bb, 0 },
-    { "fr-ca",         0x00ab, 0x00bb, 0x2039, 0x203a, 0 },
-    { "fr-ch",         0x00ab, 0x00bb, 0x2039, 0x203a, 0 },
-    { "gsw",           0x00ab, 0x00bb, 0x2039, 0x203a, 0 },
-    { "gu",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "guz",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ha",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "he",            0x0022, 0x0022, 0x0027, 0x0027, 0 },
-    { "hi",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "hr",            0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "hu",            0x201e, 0x201d, 0x00bb, 0x00ab, 0 },
-    { "id",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ig",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "it",            0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "ja",            0x300c, 0x300d, 0x300e, 0x300f, 0 },
-    { "jgo",           0x00ab, 0x00bb, 0x2039, 0x203a, 0 },
-    { "jmc",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "kab",           0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "kam",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "kde",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "kea",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "khq",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ki",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "kkj",           0x00ab, 0x00bb, 0x2039, 0x203a, 0 },
-    { "kln",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "km",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "kn",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ko",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ksb",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ksf",           0x00ab, 0x00bb, 0x2018, 0x2019, 0 },
-    { "lag",           0x201d, 0x201d, 0x2019, 0x2019, 0 },
-    { "lg",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ln",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "lo",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "lt",            0x201e, 0x201c, 0x201e, 0x201c, 0 },
-    { "lu",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "luo",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "luy",           0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "lv",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "mas",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "mer",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "mfe",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "mg",            0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "mgo",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "mk",            0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "ml",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "mr",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ms",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "mua",           0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "my",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "naq",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "nb",            0x00ab, 0x00bb, 0x2018, 0x2019, 0 },
-    { "nd",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "nl",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "nmg",           0x201e, 0x201d, 0x00ab, 0x00bb, 0 },
-    { "nn",            0x00ab, 0x00bb, 0x2018, 0x2019, 0 },
-    { "nnh",           0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "nus",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "nyn",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "pl",            0x201e, 0x201d, 0x00ab, 0x00bb, 0 },
-    { "pt",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "pt-pt",         0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "rn",            0x201d, 0x201d, 0x2019, 0x2019, 0 },
-    { "ro",            0x201e, 0x201d, 0x00ab, 0x00bb, 0 },
-    { "rof",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ru",            0x00ab, 0x00bb, 0x201e, 0x201c, 0 },
-    { "rw",            0x00ab, 0x00bb, 0x2018, 0x2019, 0 },
-    { "rwk",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "saq",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "sbp",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "seh",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ses",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "sg",            0x00ab, 0x00bb, 0x201c, 0x201d, 0 },
-    { "shi",           0x00ab, 0x00bb, 0x201e, 0x201d, 0 },
-    { "shi-tfng",      0x00ab, 0x00bb, 0x201e, 0x201d, 0 },
-    { "si",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "sk",            0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "sl",            0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "sn",            0x201d, 0x201d, 0x2019, 0x2019, 0 },
-    { "so",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "sq",            0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "sr",            0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "sr-latn",       0x201e, 0x201c, 0x201a, 0x2018, 0 },
-    { "sv",            0x201d, 0x201d, 0x2019, 0x2019, 0 },
-    { "sw",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "swc",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ta",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "te",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "teo",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "th",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "ti-er",         0x2018, 0x2019, 0x201c, 0x201d, 0 },
-    { "to",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "tr",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "twq",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "tzm",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "uk",            0x00ab, 0x00bb, 0x201e, 0x201c, 0 },
-    { "ur",            0x201d, 0x201c, 0x2019, 0x2018, 0 },
-    { "vai",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "vai-latn",      0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "vi",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "vun",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "xh",            0x2018, 0x2019, 0x201c, 0x201d, 0 },
-    { "xog",           0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "yav",           0x00ab, 0x00bb, 0x00ab, 0x00bb, 0 },
-    { "yo",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "zh",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-    { "zh-hant",       0x300c, 0x300d, 0x300e, 0x300f, 0 },
-    { "zu",            0x201c, 0x201d, 0x2018, 0x2019, 0 },
-};
-
-const QuotesData* quotesDataForLanguage(const AtomicString& lang)
+static const QuotesMap& quotesDataLanguageMap()
 {
-    if (lang.isNull())
-        return 0;
+    DEFINE_STATIC_LOCAL(QuotesMap, staticQuotesMap, ());
+    if (staticQuotesMap.size())
+        return staticQuotesMap;
 
-    // This could be just a hash table, but doing that adds 200k to RenderQuote.o
-    Language* languagesEnd = languages + WTF_ARRAY_LENGTH(languages);
-    CString lowercaseLang = lang.string().lower().utf8();
-    Language key = { lowercaseLang.data(), 0, 0, 0, 0, 0 };
-    Language* match = std::lower_bound(languages, languagesEnd, key);
-    if (match == languagesEnd || strcmp(match->lang, key.lang))
-        return 0;
+    // Table of quotes from http://www.whatwg.org/specs/web-apps/current-work/multipage/rendering.html#quotes
+    #define QUOTES_LANG(lang, o1, c1, o2, c2) staticQuotesMap.set(lang, QuotesData::create(U(o1), U(c1), U(o2), U(c2)).leakRef())
+    QUOTES_LANG("af",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("agq",           "\x201e", "\x201d", "\x201a", "\x2019");
+    QUOTES_LANG("ak",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("am",            "\x00ab", "\x00bb", "\x2039", "\x203a");
+    QUOTES_LANG("ar",            "\x201d", "\x201c", "\x2019", "\x2018");
+    QUOTES_LANG("asa",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("az-Cyrl",       "\x00ab", "\x00bb", "\x2039", "\x203a");
+    QUOTES_LANG("bas",           "\x00ab", "\x00bb", "\x201e", "\x201c");
+    QUOTES_LANG("bem",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("bez",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("bg",            "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("bm",            "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("bn",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("br",            "\x00ab", "\x00bb", "\x2039", "\x203a");
+    QUOTES_LANG("brx",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("bs-Cyrl",       "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("ca",            "\x201c", "\x201d", "\x00ab", "\x00bb");
+    QUOTES_LANG("cgg",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("chr",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("cs",            "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("da",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("dav",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("de",            "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("de-CH",         "\x00ab", "\x00bb", "\x2039", "\x203a");
+    QUOTES_LANG("dje",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("dua",           "\x00ab", "\x00bb", "\x2018", "\x2019");
+    QUOTES_LANG("dyo",           "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("dz",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ebu",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ee",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("el",            "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("en",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("en-GB",         "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("es",            "\x201c", "\x201d", "\x00ab", "\x00bb");
+    QUOTES_LANG("et",            "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("eu",            "\x201c", "\x201d", "\x00ab", "\x00bb");
+    QUOTES_LANG("ewo",           "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("fa",            "\x00ab", "\x00bb", "\x2039", "\x203a");
+    QUOTES_LANG("ff",            "\x201e", "\x201d", "\x201a", "\x2019");
+    QUOTES_LANG("fi",            "\x201d", "\x201d", "\x2019", "\x2019");
+    QUOTES_LANG("fr",            "\x00ab", "\x00bb", "\x00ab", "\x00bb");
+    QUOTES_LANG("fr-CA",         "\x00ab", "\x00bb", "\x2039", "\x203a");
+    QUOTES_LANG("fr-CH",         "\x00ab", "\x00bb", "\x2039", "\x203a");
+    QUOTES_LANG("gsw",           "\x00ab", "\x00bb", "\x2039", "\x203a");
+    QUOTES_LANG("gu",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("guz",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ha",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("he",            "\x0022", "\x0022", "\x0027", "\x0027");
+    QUOTES_LANG("hi",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("hr",            "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("hu",            "\x201e", "\x201d", "\x00bb", "\x00ab");
+    QUOTES_LANG("id",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ig",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("it",            "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("ja",            "\x300c", "\x300d", "\x300e", "\x300f");
+    QUOTES_LANG("jgo",           "\x00ab", "\x00bb", "\x2039", "\x203a");
+    QUOTES_LANG("jmc",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("kab",           "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("kam",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("kde",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("kea",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("khq",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ki",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("kkj",           "\x00ab", "\x00bb", "\x2039", "\x203a");
+    QUOTES_LANG("kln",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("km",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("kn",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ko",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ksb",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ksf",           "\x00ab", "\x00bb", "\x2018", "\x2019");
+    QUOTES_LANG("lag",           "\x201d", "\x201d", "\x2019", "\x2019");
+    QUOTES_LANG("lg",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ln",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("lo",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("lt",            "\x201e", "\x201c", "\x201e", "\x201c");
+    QUOTES_LANG("lu",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("luo",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("luy",           "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("lv",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("mas",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("mer",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("mfe",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("mg",            "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("mgo",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("mk",            "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("ml",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("mr",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ms",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("mua",           "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("my",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("naq",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("nb",            "\x00ab", "\x00bb", "\x2018", "\x2019");
+    QUOTES_LANG("nd",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("nl",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("nmg",           "\x201e", "\x201d", "\x00ab", "\x00bb");
+    QUOTES_LANG("nn",            "\x00ab", "\x00bb", "\x2018", "\x2019");
+    QUOTES_LANG("nnh",           "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("nus",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("nyn",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("pl",            "\x201e", "\x201d", "\x00ab", "\x00bb");
+    QUOTES_LANG("pt",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("pt-PT",         "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("rn",            "\x201d", "\x201d", "\x2019", "\x2019");
+    QUOTES_LANG("ro",            "\x201e", "\x201d", "\x00ab", "\x00bb");
+    QUOTES_LANG("rof",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ru",            "\x00ab", "\x00bb", "\x201e", "\x201c");
+    QUOTES_LANG("rw",            "\x00ab", "\x00bb", "\x2018", "\x2019");
+    QUOTES_LANG("rwk",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("saq",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("sbp",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("seh",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ses",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("sg",            "\x00ab", "\x00bb", "\x201c", "\x201d");
+    QUOTES_LANG("shi",           "\x00ab", "\x00bb", "\x201e", "\x201d");
+    QUOTES_LANG("shi-Tfng",      "\x00ab", "\x00bb", "\x201e", "\x201d");
+    QUOTES_LANG("si",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("sk",            "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("sl",            "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("sn",            "\x201d", "\x201d", "\x2019", "\x2019");
+    QUOTES_LANG("so",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("sq",            "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("sr",            "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("sr-Latn",       "\x201e", "\x201c", "\x201a", "\x2018");
+    QUOTES_LANG("sv",            "\x201d", "\x201d", "\x2019", "\x2019");
+    QUOTES_LANG("sw",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("swc",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ta",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("te",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("teo",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("th",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("ti-ER",         "\x2018", "\x2019", "\x201c", "\x201d");
+    QUOTES_LANG("to",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("tr",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("twq",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("tzm",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("uk",            "\x00ab", "\x00bb", "\x201e", "\x201c");
+    QUOTES_LANG("ur",            "\x201d", "\x201c", "\x2019", "\x2018");
+    QUOTES_LANG("vai",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("vai-Latn",      "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("vi",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("vun",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("xh",            "\x2018", "\x2019", "\x201c", "\x201d");
+    QUOTES_LANG("xog",           "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("yav",           "\x00ab", "\x00bb", "\x00ab", "\x00bb");
+    QUOTES_LANG("yo",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("zh",            "\x201c", "\x201d", "\x2018", "\x2019");
+    QUOTES_LANG("zh-Hant",       "\x300c", "\x300d", "\x300e", "\x300f");
+    QUOTES_LANG("zu",            "\x201c", "\x201d", "\x2018", "\x2019");
+    #undef QUOTES_LANG
 
-    if (!match->data)
-        match->data = QuotesData::create(match->open1, match->close1, match->open2, match->close2).leakRef();
-
-    return match->data;
+    return staticQuotesMap;
 }
 
 static const QuotesData* basicQuotesData()
 {
     // FIXME: The default quotes should be the fancy quotes for "en".
-    static QuotesData* staticBasicQuotes = QuotesData::create('"', '"', '\'', '\'').leakRef();
+    static const QuotesData* staticBasicQuotes = QuotesData::create(U("\""), U("\""), U("'"), U("'")).leakRef();
     return staticBasicQuotes;
 }
 
@@ -270,13 +250,16 @@ PassRefPtr<StringImpl> RenderQuote::originalText() const
 
 const QuotesData* RenderQuote::quotesData() const
 {
-    if (const QuotesData* customQuotes = style()->quotes())
+    if (QuotesData* customQuotes = style()->quotes())
         return customQuotes;
 
-    if (const QuotesData* quotes = quotesDataForLanguage(style()->locale()))
-        return quotes;
-
-    return basicQuotesData();
+    AtomicString language = style()->locale();
+    if (language.isNull())
+        return basicQuotesData();
+    const QuotesData* quotes = quotesDataLanguageMap().get(language);
+    if (!quotes)
+        return basicQuotesData();
+    return quotes;
 }
 
 void RenderQuote::attachQuote()
