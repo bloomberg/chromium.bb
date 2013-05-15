@@ -132,6 +132,7 @@ WebPreferences::WebPreferences()
       smart_insert_delete_enabled(false),
 #endif
       spatial_navigation_enabled(false),
+      experimental_websocket_enabled(false),
       cookie_enabled(true)
 #if defined(OS_ANDROID)
       ,
@@ -490,6 +491,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 #endif
 
   WebNetworkStateNotifier::setOnLine(prefs.is_online);
+  settings->setExperimentalWebSocketEnabled(
+      prefs.experimental_websocket_enabled);
 }
 
 #define COMPILE_ASSERT_MATCHING_ENUMS(webkit_glue_name, webkit_name)         \
@@ -507,4 +510,3 @@ COMPILE_ASSERT_MATCHING_ENUMS(
     webkit_glue::EDITING_BEHAVIOR_ANDROID, WebSettings::EditingBehaviorAndroid);
 
 }  // namespace webkit_glue
-
