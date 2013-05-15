@@ -148,6 +148,9 @@ WebUILoginView::WebUILoginView()
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                  content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+                 content::NotificationService::AllSources());
 
   accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE)] =
       kAccelNameCancel;
@@ -316,7 +319,8 @@ void WebUILoginView::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
+    case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE:
+    case chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN: {
       OnLoginPromptVisible();
       registrar_.RemoveAll();
       break;
