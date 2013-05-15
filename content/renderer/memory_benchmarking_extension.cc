@@ -35,7 +35,7 @@ class MemoryBenchmarkingWrapper : public v8::Extension {
         "};"
         "chrome.memoryBenchmarking.heapProfilerDump = function(reason) {"
         "  native function HeapProfilerDump();"
-        "  return HeapProfilerDump(reason);"
+        "  HeapProfilerDump(reason);"
         "};"
         ) {}
 
@@ -60,14 +60,10 @@ class MemoryBenchmarkingWrapper : public v8::Extension {
 
   static v8::Handle<v8::Value> HeapProfilerDump(const v8::Arguments& args) {
 #if !defined(NO_TCMALLOC) && defined(OS_LINUX)
-    char dumped_filename_buffer[1000];
     std::string reason("benchmarking_extension");
     if (args.Length() && args[0]->IsString())
       reason = *v8::String::AsciiValue(args[0]);
-    ::HeapProfilerDumpWithFileName(reason.c_str(),
-                                   dumped_filename_buffer,
-                                   sizeof(dumped_filename_buffer));
-    return v8::String::New(dumped_filename_buffer);
+    ::HeapProfilerDump(reason.c_str());
 #endif  // !defined(NO_TCMALLOC) && defined(OS_LINUX)
     return v8::Undefined();
   }

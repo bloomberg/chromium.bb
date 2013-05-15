@@ -265,9 +265,7 @@ static void NewHook(const void* ptr, size_t size);
 static void DeleteHook(const void* ptr);
 
 // Helper for HeapProfilerDump.
-static void DumpProfileLocked(const char* reason,
-                              char* filename_buffer,
-                              size_t filename_buffer_length) {
+static void DumpProfileLocked(const char* reason) {
   RAW_DCHECK(heap_lock.IsHeld(), "");
   RAW_DCHECK(is_on, "");
   RAW_DCHECK(!dumping, "");
@@ -277,17 +275,18 @@ static void DumpProfileLocked(const char* reason,
   dumping = true;
 
   // Make file name
+  char file_name[1000];
   dump_count++;
-  snprintf(filename_buffer, filename_buffer_length, "%s.%05d.%04d%s",
+  snprintf(file_name, sizeof(file_name), "%s.%05d.%04d%s",
            filename_prefix, getpid(), dump_count, HeapProfileTable::kFileExt);
 
   // Dump the profile
-  RAW_VLOG(0, "Dumping heap profile to %s (%s)", filename_buffer, reason);
+  RAW_VLOG(0, "Dumping heap profile to %s (%s)", file_name, reason);
   // We must use file routines that don't access memory, since we hold
   // a memory lock now.
-  RawFD fd = RawOpenForWriting(filename_buffer);
+  RawFD fd = RawOpenForWriting(file_name);
   if (fd == kIllegalRawFD) {
-    RAW_LOG(ERROR, "Failed dumping heap profile to %s", filename_buffer);
+    RAW_LOG(ERROR, "Failed dumping heap profile to %s", file_name);
     dumping = false;
     return;
   }
@@ -306,10 +305,10 @@ static void DumpProfileLocked(const char* reason,
 
 #if defined(TYPE_PROFILING)
   if (FLAGS_heap_profile_type_statistics) {
-    snprintf(filename_buffer, filename_buffer_length, "%s.%05d.%04d.type",
+    snprintf(file_name, sizeof(file_name), "%s.%05d.%04d.type",
              filename_prefix, getpid(), dump_count);
-    RAW_VLOG(0, "Dumping type statistics to %s", filename_buffer);
-    heap_profile->DumpTypeStatistics(filename_buffer);
+    RAW_VLOG(0, "Dumping type statistics to %s", file_name);
+    heap_profile->DumpTypeStatistics(file_name);
   }
 #endif  // defined(TYPE_PROFILING)
 
@@ -358,8 +357,7 @@ static void MaybeDumpProfileLocked() {
       last_dump_time = current_time;
     }
     if (need_to_dump) {
-      char filename_buffer[1000];
-      DumpProfileLocked(buf, filename_buffer, sizeof(filename_buffer));
+      DumpProfileLocked(buf);
 
       last_dump_alloc = total.alloc_size;
       last_dump_free = total.free_size;
@@ -612,17 +610,7 @@ extern "C" void HeapProfilerStop() {
 extern "C" void HeapProfilerDump(const char* reason) {
   SpinLockHolder l(&heap_lock);
   if (is_on && !dumping) {
-    char filename_buffer[1000];
-    DumpProfileLocked(reason, filename_buffer, sizeof(filename_buffer));
-  }
-}
-
-extern "C" void HeapProfilerDumpWithFileName(const char* reason,
-                                             char* dumped_filename_buffer,
-                                             int filename_buffer_length) {
-  SpinLockHolder l(&heap_lock);
-  if (is_on && !dumping) {
-    DumpProfileLocked(reason, dumped_filename_buffer, filename_buffer_length);
+    DumpProfileLocked(reason);
   }
 }
 
