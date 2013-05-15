@@ -1025,7 +1025,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ThreeGetsWithMaxConcurrent) {
   const uint32 max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
-  scoped_ptr<SpdyFrame> settings_frame(ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
 
   MockWrite writes[] = {
     CreateMockWrite(*req),
@@ -1159,7 +1160,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FourGetsWithMaxConcurrentPriority) {
   const uint32 max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
-  scoped_ptr<SpdyFrame> settings_frame(ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
 
   MockWrite writes[] = { CreateMockWrite(*req),
     CreateMockWrite(*req2),
@@ -1298,7 +1300,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ThreeGetsWithMaxConcurrentDelete) {
   const uint32 max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
-  scoped_ptr<SpdyFrame> settings_frame(ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
 
   MockWrite writes[] = { CreateMockWrite(*req),
     CreateMockWrite(*req2),
@@ -1429,7 +1432,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ThreeGetsWithMaxConcurrentSocketClose) {
   const uint32 max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
-  scoped_ptr<SpdyFrame> settings_frame(ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
 
   MockWrite writes[] = { CreateMockWrite(*req),
     CreateMockWrite(*req2),
@@ -1969,7 +1973,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, PostWithEarlySynReply) {
 TEST_P(SpdyNetworkTransactionSpdy3Test, SocketWriteReturnsZero) {
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0, SYNCHRONOUS),
     MockWrite(SYNCHRONOUS, 0, 0, 2),
@@ -2104,9 +2108,9 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateReceived) {
   static const int32 kDeltaWindowSize = 0xff;
   static const int kDeltaCount = 4;
   scoped_ptr<SpdyFrame> window_update(
-      ConstructSpdyWindowUpdate(1, kDeltaWindowSize));
+      spdy_util_.ConstructSpdyWindowUpdate(1, kDeltaWindowSize));
   scoped_ptr<SpdyFrame> window_update_dummy(
-      ConstructSpdyWindowUpdate(2, kDeltaWindowSize));
+      spdy_util_.ConstructSpdyWindowUpdate(2, kDeltaWindowSize));
   scoped_ptr<SpdyFrame> resp(ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
     CreateMockRead(*window_update_dummy, 3),
@@ -2177,7 +2181,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateSent) {
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame> window_update(
-      ConstructSpdyWindowUpdate(1, body_data.size()));
+      spdy_util_.ConstructSpdyWindowUpdate(1, body_data.size()));
 
   MockWrite writes[] = {
     CreateMockWrite(*req),
@@ -2264,7 +2268,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateOverflow) {
   scoped_ptr<SpdyFrame> body(
       ConstructSpdyBodyFrame(1, content->c_str(), content->size(), false));
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(1, RST_STREAM_FLOW_CONTROL_ERROR));
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_FLOW_CONTROL_ERROR));
 
   // We're not going to write a data frame with FIN, we'll receive a bad
   // WINDOW_UPDATE while sending a request and will send a RST_STREAM frame.
@@ -2276,7 +2280,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateOverflow) {
 
   static const int32 kDeltaWindowSize = 0x7fffffff;  // cause an overflow
   scoped_ptr<SpdyFrame> window_update(
-      ConstructSpdyWindowUpdate(1, kDeltaWindowSize));
+      spdy_util_.ConstructSpdyWindowUpdate(1, kDeltaWindowSize));
   MockRead reads[] = {
     CreateMockRead(*window_update, 1),
     MockRead(ASYNC, 0, 4)  // EOF
@@ -2371,7 +2375,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlStallResume) {
   // Construct read frame, give enough space to upload the rest of the
   // data.
   scoped_ptr<SpdyFrame> window_update(
-      ConstructSpdyWindowUpdate(1, kUploadDataSize));
+      spdy_util_.ConstructSpdyWindowUpdate(1, kUploadDataSize));
   scoped_ptr<SpdyFrame> reply(ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
     CreateMockRead(*window_update),
@@ -2472,7 +2476,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlStallResumeAfterSettings) {
   settings[SETTINGS_INITIAL_WINDOW_SIZE] =
       SettingsFlagsAndValue(
           SETTINGS_FLAG_NONE, kSpdyStreamInitialWindowSize * 2);
-  scoped_ptr<SpdyFrame> settings_frame_large(ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> settings_frame_large(
+      spdy_util_.ConstructSpdySettings(settings));
   scoped_ptr<SpdyFrame> reply(ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
     CreateMockRead(*settings_frame_large),
@@ -2577,11 +2582,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlNegativeSendWindowSize) {
       SettingsFlagsAndValue(
           SETTINGS_FLAG_NONE, kSpdyStreamInitialWindowSize / 2);
   scoped_ptr<SpdyFrame> settings_frame_small(
-      ConstructSpdySettings(new_settings));
+      spdy_util_.ConstructSpdySettings(new_settings));
   // Construct read frame for WINDOW_UPDATE that makes the send_window_size
   // postive.
   scoped_ptr<SpdyFrame> window_update_init_size(
-      ConstructSpdyWindowUpdate(1, kSpdyStreamInitialWindowSize));
+      spdy_util_.ConstructSpdyWindowUpdate(1, kSpdyStreamInitialWindowSize));
   scoped_ptr<SpdyFrame> reply(ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
     CreateMockRead(*settings_frame_small),
@@ -2642,7 +2647,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ResetReplyWithTransferEncoding) {
   // Construct the request.
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*req),
     CreateMockWrite(*rst),
@@ -2675,7 +2680,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ResetPushWithTransferEncoding) {
   // Construct the request.
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*req),
     CreateMockWrite(*rst),
@@ -2752,7 +2757,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, CancelledTransaction) {
 TEST_P(SpdyNetworkTransactionSpdy3Test, CancelledTransactionSendRst) {
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0, SYNCHRONOUS),
     CreateMockWrite(*rst, 2, SYNCHRONOUS),
@@ -3005,7 +3010,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, UpperCaseHeaders) {
   scoped_ptr<SpdyFrame>
       syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame>
-      rst(ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
+      rst(spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*syn, 0),
     CreateMockWrite(*rst, 2),
@@ -3036,7 +3041,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, UpperCaseHeadersInHeadersFrame) {
   scoped_ptr<SpdyFrame>
       syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame>
-      rst(ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
+      rst(spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*syn, 0),
     CreateMockWrite(*rst, 2),
@@ -3093,7 +3098,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, UpperCaseHeadersOnPush) {
   scoped_ptr<SpdyFrame>
       syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame>
-      rst(ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
+      rst(spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*syn, 0),
     CreateMockWrite(*rst, 2),
@@ -3167,7 +3172,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, RedirectServerPush) {
                         "301 Moved Permanently",
                         "http://www.foo.com/index.php"));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(2, RST_STREAM_CANCEL));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_CANCEL));
   MockWrite writes[] = {
     CreateMockWrite(*req, 1),
     CreateMockWrite(*rst, 6),
@@ -3428,8 +3434,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushServerAborted) {
                                     2,
                                     1,
                                     "http://www.google.com/foo.dat"));
-  scoped_ptr<SpdyFrame>
-    stream2_rst(ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
+  scoped_ptr<SpdyFrame> stream2_rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockRead reads[] = {
     CreateMockRead(*stream1_reply, 2),
     CreateMockRead(*stream2_syn, 3),
@@ -3485,8 +3491,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushDuplicate) {
       stream1_syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame>
       stream1_body(ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdyFrame>
-      stream3_rst(ConstructSpdyRstStream(4, RST_STREAM_PROTOCOL_ERROR));
+  scoped_ptr<SpdyFrame> stream3_rst(
+      spdy_util_.ConstructSpdyRstStream(4, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*stream1_syn, 1),
     CreateMockWrite(*stream3_rst, 5),
@@ -3662,8 +3668,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushInvalidAssociatedStreamID0) {
       stream1_syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame>
       stream1_body(ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdyFrame>
-      stream2_rst(ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
+  scoped_ptr<SpdyFrame> stream2_rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
   MockWrite writes[] = {
     CreateMockWrite(*stream1_syn, 1),
     CreateMockWrite(*stream2_rst, 4),
@@ -3723,8 +3729,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushInvalidAssociatedStreamID9) {
       stream1_syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame>
       stream1_body(ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdyFrame>
-      stream2_rst(ConstructSpdyRstStream(2, RST_STREAM_INVALID_STREAM));
+  scoped_ptr<SpdyFrame> stream2_rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_INVALID_STREAM));
   MockWrite writes[] = {
     CreateMockWrite(*stream1_syn, 1),
     CreateMockWrite(*stream2_rst, 4),
@@ -3784,8 +3790,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushNoURL) {
       stream1_syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame>
       stream1_body(ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdyFrame>
-      stream2_rst(ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
+  scoped_ptr<SpdyFrame> stream2_rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*stream1_syn, 1),
     CreateMockWrite(*stream2_rst, 4),
@@ -4247,7 +4253,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, DecompressFailureOnSynReply) {
   scoped_ptr<SpdyFrame> compressed(
       ConstructSpdyGet(NULL, 0, true, 1, LOWEST));
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*compressed),
   };
@@ -4860,7 +4866,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SettingsSaved) {
     // Next add another persisted setting.
     settings[kSampleId3] =
         SettingsFlagsAndValue(SETTINGS_FLAG_PLEASE_PERSIST, kSampleValue3);
-    settings_frame.reset(ConstructSpdySettings(settings));
+    settings_frame.reset(spdy_util_.ConstructSpdySettings(settings));
   }
 
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
@@ -4962,7 +4968,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SettingsPlayback) {
   const SettingsMap& settings =
       spdy_session_pool->http_server_properties()->GetSpdySettings(
           host_port_pair);
-  scoped_ptr<SpdyFrame> settings_frame(ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
 
   // Construct the request.
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
@@ -5024,7 +5031,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, GoAwayWithActiveStream) {
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };
 
-  scoped_ptr<SpdyFrame> go_away(ConstructSpdyGoAway());
+  scoped_ptr<SpdyFrame> go_away(spdy_util_.ConstructSpdyGoAway());
   MockRead reads[] = {
     CreateMockRead(*go_away),
     MockRead(ASYNC, 0, 0),  // EOF
@@ -6283,7 +6290,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushCrossOriginCorrectness) {
     scoped_ptr<SpdyFrame>
         stream1_body(ConstructSpdyBodyFrame(1, true));
     scoped_ptr<SpdyFrame> push_rst(
-        ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
+        spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
     MockWrite writes[] = {
       CreateMockWrite(*stream1_syn, 1),
       CreateMockWrite(*push_rst, 4),
@@ -6298,7 +6305,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushCrossOriginCorrectness) {
                                       1,
                                       url_to_push));
     scoped_ptr<SpdyFrame> rst(
-        ConstructSpdyRstStream(2, RST_STREAM_CANCEL));
+        spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_CANCEL));
 
     MockRead reads[] = {
       CreateMockRead(*stream1_reply, 2),
@@ -6368,7 +6375,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, RetryAfterRefused) {
   };
 
   scoped_ptr<SpdyFrame> refused(
-      ConstructSpdyRstStream(1, RST_STREAM_REFUSED_STREAM));
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_REFUSED_STREAM));
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 3));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(3, true));
   MockRead reads[] = {

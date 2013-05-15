@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/http_cache.h"
@@ -15,6 +16,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/buffered_spdy_framer.h"
+#include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_stream.h"
@@ -663,6 +665,44 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
   if (tail_headers && tail_header_size)
     AppendToHeaderBlock(tail_headers, tail_header_size / 2, headers.get());
   return ConstructSpdyFrame(header_info, headers.Pass());
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdySettings(
+    const SettingsMap& settings) const {
+  return CreateFramer()->CreateSettings(settings);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyCredential(
+    const SpdyCredential& credential) const {
+  return CreateFramer()->CreateCredentialFrame(credential);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyPing(uint32 ping_id) const {
+  return CreateFramer()->CreatePingFrame(ping_id);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyGoAway() const {
+  return ConstructSpdyGoAway(0);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyGoAway(
+    SpdyStreamId last_good_stream_id) const {
+  return CreateFramer()->CreateGoAway(last_good_stream_id, GOAWAY_OK);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyWindowUpdate(
+    const SpdyStreamId stream_id, uint32 delta_window_size) const {
+  return CreateFramer()->CreateWindowUpdate(stream_id, delta_window_size);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyRstStream(
+    SpdyStreamId stream_id,
+    SpdyRstStreamStatus status) const {
+  return CreateFramer()->CreateRstStream(stream_id, status);
+}
+
+scoped_ptr<SpdyFramer> SpdyTestUtil::CreateFramer() const {
+  return scoped_ptr<SpdyFramer>(new SpdyFramer(spdy_version_));
 }
 
 }  // namespace net

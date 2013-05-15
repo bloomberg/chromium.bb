@@ -2812,7 +2812,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxySpdyConnectHttps) {
   scoped_ptr<SpdyFrame> wrapped_body(
       ConstructSpdyBodyFrame(1, "1234567890", 10, false));
   scoped_ptr<SpdyFrame> window_update(
-      ConstructSpdyWindowUpdate(1, wrapped_get_resp->size()));
+      spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp->size()));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(*connect, 1),
@@ -2893,9 +2893,9 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxySpdyConnectSpdy) {
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   scoped_ptr<SpdyFrame> wrapped_body(ConstructWrappedSpdyFrame(body, 1));
   scoped_ptr<SpdyFrame> window_update_get_resp(
-      ConstructSpdyWindowUpdate(1, wrapped_get_resp->size()));
+      spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp->size()));
   scoped_ptr<SpdyFrame> window_update_body(
-      ConstructSpdyWindowUpdate(1, wrapped_body->size()));
+      spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_body->size()));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(*connect, 1),
@@ -2965,7 +2965,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxySpdyConnectFailure) {
 
   // CONNECT to www.google.com:443 via SPDY
   scoped_ptr<SpdyFrame> connect(ConstructSpdyConnect(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> get(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
+  scoped_ptr<SpdyFrame> get(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(*connect, 1),
@@ -3040,7 +3041,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
       ConstructSpdyBodyFrame(1, resp1, strlen(resp1), false));
   scoped_ptr<SpdyFrame> wrapped_body1(ConstructSpdyBodyFrame(1, "1", 1, false));
   scoped_ptr<SpdyFrame> window_update(
-      ConstructSpdyWindowUpdate(1, wrapped_get_resp1->size()));
+      spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp1->size()));
 
   // CONNECT to news.google.com:443 via SPDY.
   const char* const kConnectHeaders2[] = {
@@ -3195,7 +3196,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
       ConstructSpdyBodyFrame(1, resp1, strlen(resp1), false));
   scoped_ptr<SpdyFrame> wrapped_body1(ConstructSpdyBodyFrame(1, "1", 1, false));
   scoped_ptr<SpdyFrame> window_update(
-      ConstructSpdyWindowUpdate(1, wrapped_get_resp1->size()));
+      spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp1->size()));
 
   // Fetch https://www.google.com/2 via HTTP.
   const char get2[] = "GET /2 HTTP/1.1\r\n"
@@ -5668,7 +5669,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test, RedirectOfHttpsConnectViaSpdyProxy) {
   request.load_flags = 0;
 
   scoped_ptr<SpdyFrame> conn(ConstructSpdyConnect(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> goaway(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
+  scoped_ptr<SpdyFrame> goaway(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite data_writes[] = {
     CreateMockWrite(*conn.get(), 0, SYNCHRONOUS),
   };
@@ -5774,7 +5776,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   request.load_flags = 0;
 
   scoped_ptr<SpdyFrame> conn(ConstructSpdyConnect(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite data_writes[] = {
     CreateMockWrite(*conn.get(), 0, SYNCHRONOUS),
     CreateMockWrite(*rst.get(), 3, SYNCHRONOUS),
@@ -5838,7 +5841,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthSpdyProxy) {
 
   // Since we have proxy, should try to establish tunnel.
   scoped_ptr<SpdyFrame> req(ConstructSpdyConnect(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 
   // After calling trans->RestartWithAuth(), this is the request we should
   // be issuing -- the final header line contains the credentials.
@@ -6111,7 +6115,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, CrossOriginProxyPushCorrectness) {
       stream1_syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST, false));
 
   scoped_ptr<SpdyFrame> push_rst(
-      ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
 
   MockWrite spdy_writes[] = {
     CreateMockWrite(*stream1_syn, 1, ASYNC),

@@ -109,6 +109,7 @@ class SpdyProxyClientSocketSpdy3Test : public PlatformTest {
     data_->Run();
   }
 
+  SpdyTestUtil spdy_util_;
   scoped_ptr<SpdyProxyClientSocket> sock_;
   TestCompletionCallback read_callback_;
   TestCompletionCallback write_callback_;
@@ -116,7 +117,6 @@ class SpdyProxyClientSocketSpdy3Test : public PlatformTest {
   CapturingBoundNetLog net_log_;
 
  private:
-  SpdyTestUtil spdy_util_;
   scoped_refptr<HttpNetworkSession> session_;
   scoped_refptr<IOBuffer> read_buf_;
   SpdySessionDependencies session_deps_;
@@ -136,9 +136,9 @@ class SpdyProxyClientSocketSpdy3Test : public PlatformTest {
 };
 
 SpdyProxyClientSocketSpdy3Test::SpdyProxyClientSocketSpdy3Test()
-    : sock_(NULL),
+    : spdy_util_(kProtoSPDY3),
+      sock_(NULL),
       data_(NULL),
-      spdy_util_(kProtoSPDY3),
       session_(NULL),
       read_buf_(NULL),
       session_deps_(kProtoSPDY3),
@@ -1271,7 +1271,8 @@ TEST_F(SpdyProxyClientSocketSpdy3Test, RstWithReadAndWritePending) {
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockRead reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     CreateMockRead(*rst, 3, ASYNC),
@@ -1392,7 +1393,8 @@ TEST_F(SpdyProxyClientSocketSpdy3Test, RstWithReadAndWritePendingDelete) {
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockRead reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     CreateMockRead(*rst, 3, ASYNC),

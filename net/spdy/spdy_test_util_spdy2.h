@@ -34,37 +34,6 @@ int ConstructSpdyReplyString(const char* const extra_headers[],
                              char* buffer,
                              int buffer_length);
 
-// Construct an expected SPDY SETTINGS frame.
-// |settings| are the settings to set.
-// Returns the constructed frame.  The caller takes ownership of the frame.
-SpdyFrame* ConstructSpdySettings(const SettingsMap& settings);
-
-// Construct an expected SPDY CREDENTIAL frame.
-// |credential| is the credential to send.
-// Returns the constructed frame.  The caller takes ownership of the frame.
-SpdyFrame* ConstructSpdyCredential(const SpdyCredential& credential);
-
-// Construct a SPDY PING frame.
-// Returns the constructed frame.  The caller takes ownership of the frame.
-SpdyFrame* ConstructSpdyPing(uint32 ping_id);
-
-// Construct a SPDY GOAWAY frame with last_good_stream_id = 0.
-// Returns the constructed frame.  The caller takes ownership of the frame.
-SpdyFrame* ConstructSpdyGoAway();
-
-// Construct a SPDY GOAWAY frame with the specified last_good_stream_id.
-// Returns the constructed frame.  The caller takes ownership of the frame.
-SpdyFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id);
-
-// Construct a SPDY WINDOW_UPDATE frame.
-// Returns the constructed frame.  The caller takes ownership of the frame.
-SpdyFrame* ConstructSpdyWindowUpdate(SpdyStreamId, uint32 delta_window_size);
-
-// Construct a SPDY RST_STREAM frame.
-// Returns the constructed frame.  The caller takes ownership of the frame.
-SpdyFrame* ConstructSpdyRstStream(SpdyStreamId stream_id,
-                                  SpdyRstStreamStatus status);
-
 // Construct a single SPDY header entry, for validation.
 // |extra_headers| are the extra header-value pairs.
 // |buffer| is the buffer we're filling in.

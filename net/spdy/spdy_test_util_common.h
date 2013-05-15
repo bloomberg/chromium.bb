@@ -6,6 +6,7 @@
 #define NET_SPDY_SPDY_TEST_UTIL_COMMON_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "net/base/completion_callback.h"
@@ -315,6 +316,43 @@ class SpdyTestUtil {
       const char* const* tail_headers,
       int tail_headers_size,
       SpdyStreamId associated_stream_id) const;
+
+  // Construct an expected SPDY SETTINGS frame.
+  // |settings| are the settings to set.
+  // Returns the constructed frame.  The caller takes ownership of the frame.
+  SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) const;
+
+  // Construct an expected SPDY CREDENTIAL frame.
+  // |credential| is the credential to send.
+  // Returns the constructed frame.  The caller takes ownership of the frame.
+  SpdyFrame* ConstructSpdyCredential(const SpdyCredential& credential) const;
+
+  // Construct a SPDY PING frame.
+  // Returns the constructed frame.  The caller takes ownership of the frame.
+  SpdyFrame* ConstructSpdyPing(uint32 ping_id) const;
+
+  // Construct a SPDY GOAWAY frame with last_good_stream_id = 0.
+  // Returns the constructed frame.  The caller takes ownership of the frame.
+  SpdyFrame* ConstructSpdyGoAway() const;
+
+  // Construct a SPDY GOAWAY frame with the specified last_good_stream_id.
+  // Returns the constructed frame.  The caller takes ownership of the frame.
+  SpdyFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id) const;
+
+  // Construct a SPDY WINDOW_UPDATE frame.
+  // Returns the constructed frame.  The caller takes ownership of the frame.
+  SpdyFrame* ConstructSpdyWindowUpdate(
+      SpdyStreamId stream_id,
+      uint32 delta_window_size) const;
+
+  // Construct a SPDY RST_STREAM frame.
+  // Returns the constructed frame.  The caller takes ownership of the frame.
+  SpdyFrame* ConstructSpdyRstStream(SpdyStreamId stream_id,
+                                    SpdyRstStreamStatus status) const;
+
+  NextProto protocol() const { return protocol_; }
+  int spdy_version() const { return spdy_version_; }
+  scoped_ptr<SpdyFramer> CreateFramer() const;
 
  private:
   const NextProto protocol_;

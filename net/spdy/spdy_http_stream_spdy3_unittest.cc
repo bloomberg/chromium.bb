@@ -66,7 +66,9 @@ void TestLoadTimingNotReused(const HttpStream& stream) {
 
 class SpdyHttpStreamSpdy3Test : public testing::Test {
  public:
-  SpdyHttpStreamSpdy3Test() : session_deps_(kProtoSPDY3) {
+  SpdyHttpStreamSpdy3Test()
+      : spdy_util_(kProtoSPDY3),
+        session_deps_(kProtoSPDY3) {
     session_deps_.net_log = &net_log_;
   }
 
@@ -144,6 +146,7 @@ class SpdyHttpStreamSpdy3Test : public testing::Test {
     const std::string& cert,
     const std::string& proof);
 
+  SpdyTestUtil spdy_util_;
   CapturingNetLog net_log_;
   SpdySessionDependencies session_deps_;
   scoped_ptr<OrderedSocketData> data_;
@@ -517,7 +520,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, DelayedSendChunkedPostWithWindowUpdate) {
   };
   scoped_ptr<SpdyFrame> resp(ConstructSpdyPostSynReply(NULL, 0));
   scoped_ptr<SpdyFrame> window_update(
-      ConstructSpdyWindowUpdate(1, kUploadDataSize));
+      spdy_util_.ConstructSpdyWindowUpdate(1, kUploadDataSize));
   MockRead reads[] = {
     CreateMockRead(*window_update, 2),
     CreateMockRead(*resp, 3),
@@ -780,7 +783,8 @@ void SpdyHttpStreamSpdy3Test::TestSendCredentials(
 
   scoped_ptr<SpdyFrame> req(ConstructCredentialRequestFrame(
       1, GURL(kUrl1), 1));
-  scoped_ptr<SpdyFrame> credential(ConstructSpdyCredential(cred));
+  scoped_ptr<SpdyFrame> credential(
+      spdy_util_.ConstructSpdyCredential(cred));
   scoped_ptr<SpdyFrame> req2(ConstructCredentialRequestFrame(
       2, GURL(kUrl2), 3));
   MockWrite writes[] = {

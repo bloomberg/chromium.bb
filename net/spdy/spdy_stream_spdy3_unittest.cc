@@ -368,7 +368,7 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
   // Triggered by the overflowing call to IncreaseSendWindowSize
   // below.
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(1, RST_STREAM_FLOW_CONTROL_ERROR));
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_FLOW_CONTROL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0),
     CreateMockWrite(*rst, 1),

@@ -68,43 +68,6 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
 
 }  // namespace
 
-SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) {
-  BufferedSpdyFramer framer(2, false);
-  return framer.CreateSettings(settings);
-}
-
-SpdyFrame* ConstructSpdyCredential(
-    const SpdyCredential& credential) {
-  BufferedSpdyFramer framer(2, false);
-  return framer.CreateCredentialFrame(credential);
-}
-
-SpdyFrame* ConstructSpdyPing(uint32 ping_id) {
-  BufferedSpdyFramer framer(2, false);
-  return framer.CreatePingFrame(ping_id);
-}
-
-SpdyFrame* ConstructSpdyGoAway() {
-  return ConstructSpdyGoAway(0);
-}
-
-SpdyFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id) {
-  BufferedSpdyFramer framer(2, false);
-  return framer.CreateGoAway(last_good_stream_id, GOAWAY_OK);
-}
-
-SpdyFrame* ConstructSpdyWindowUpdate(
-    const SpdyStreamId stream_id, uint32 delta_window_size) {
-  BufferedSpdyFramer framer(2, false);
-  return framer.CreateWindowUpdate(stream_id, delta_window_size);
-}
-
-SpdyFrame* ConstructSpdyRstStream(SpdyStreamId stream_id,
-                                  SpdyRstStreamStatus status) {
-  BufferedSpdyFramer framer(2, false);
-  return framer.CreateRstStream(stream_id, status);
-}
-
 int ConstructSpdyHeader(const char* const extra_headers[],
                         int extra_header_count,
                         char* buffer,
@@ -440,7 +403,7 @@ SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
 }
 
 SpdyFrame* ConstructSpdyBodyFrame(int stream_id, bool fin) {
-  BufferedSpdyFramer framer(2, false);
+  SpdyFramer framer(2);
   return framer.CreateDataFrame(
       stream_id, kUploadData, kUploadDataSize,
       fin ? DATA_FLAG_FIN : DATA_FLAG_NONE);
@@ -448,7 +411,7 @@ SpdyFrame* ConstructSpdyBodyFrame(int stream_id, bool fin) {
 
 SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
                                   uint32 len, bool fin) {
-  BufferedSpdyFramer framer(2, false);
+  SpdyFramer framer(2);
   return framer.CreateDataFrame(
       stream_id, data, len, fin ? DATA_FLAG_FIN : DATA_FLAG_NONE);
 }

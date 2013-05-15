@@ -118,43 +118,6 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
 
 }  // namespace
 
-SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) {
-  BufferedSpdyFramer framer(3, false);
-  return framer.CreateSettings(settings);
-}
-
-SpdyFrame* ConstructSpdyCredential(
-    const SpdyCredential& credential) {
-  BufferedSpdyFramer framer(3, false);
-  return framer.CreateCredentialFrame(credential);
-}
-
-SpdyFrame* ConstructSpdyPing(uint32 ping_id) {
-  BufferedSpdyFramer framer(3, false);
-  return framer.CreatePingFrame(ping_id);
-}
-
-SpdyFrame* ConstructSpdyGoAway() {
-  return ConstructSpdyGoAway(0);
-}
-
-SpdyFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id) {
-  BufferedSpdyFramer framer(3, false);
-  return framer.CreateGoAway(last_good_stream_id, GOAWAY_OK);
-}
-
-SpdyFrame* ConstructSpdyWindowUpdate(
-    const SpdyStreamId stream_id, uint32 delta_window_size) {
-  BufferedSpdyFramer framer(3, false);
-  return framer.CreateWindowUpdate(stream_id, delta_window_size);
-}
-
-SpdyFrame* ConstructSpdyRstStream(SpdyStreamId stream_id,
-                                  SpdyRstStreamStatus status) {
-  BufferedSpdyFramer framer(3, false);
-  return framer.CreateRstStream(stream_id, status);
-}
-
 int ConstructSpdyHeader(const char* const extra_headers[],
                         int extra_header_count,
                         char* buffer,

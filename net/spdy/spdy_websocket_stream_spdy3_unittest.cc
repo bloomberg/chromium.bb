@@ -188,7 +188,9 @@ class SpdyWebSocketStreamSpdy3Test : public testing::Test {
   }
 
  protected:
-  SpdyWebSocketStreamSpdy3Test() : session_deps_(kProtoSPDY3) {}
+  SpdyWebSocketStreamSpdy3Test()
+      : spdy_util_(kProtoSPDY3),
+        session_deps_(kProtoSPDY3) {}
   virtual ~SpdyWebSocketStreamSpdy3Test() {}
 
   virtual void SetUp() {
@@ -281,6 +283,7 @@ class SpdyWebSocketStreamSpdy3Test : public testing::Test {
     websocket_stream_->SendRequest(headers.Pass());
   }
 
+  SpdyTestUtil spdy_util_;
   SpdySettingsIds spdy_settings_id_to_set_;
   SpdySettingsFlags spdy_settings_flags_to_set_;
   uint32 spdy_settings_value_to_set_;
@@ -519,7 +522,7 @@ TEST_F(SpdyWebSocketStreamSpdy3Test, DestructionAfterExplicitClose) {
 TEST_F(SpdyWebSocketStreamSpdy3Test, IOPending) {
   Prepare(1);
   scoped_ptr<SpdyFrame> settings_frame(
-      ConstructSpdySettings(spdy_settings_to_send_));
+      spdy_util_.ConstructSpdySettings(spdy_settings_to_send_));
   MockWrite writes[] = {
     // Setting throttling make SpdySession send settings frame automatically.
     CreateMockWrite(*settings_frame.get(), 1),
