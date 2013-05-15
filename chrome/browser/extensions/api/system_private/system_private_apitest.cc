@@ -9,11 +9,10 @@
 #include "chrome/common/pref_names.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
-#include "chromeos/dbus/mock_update_engine_client.h"
+#include "chromeos/dbus/fake_update_engine_client.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 
 using chromeos::UpdateEngineClient;
-using ::testing::Return;
 #endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, GetIncognitoModeAvailability) {
@@ -28,18 +27,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, GetIncognitoModeAvailability) {
 
 class GetUpdateStatusApiTest : public ExtensionApiTest {
  public:
-  GetUpdateStatusApiTest() : mock_update_engine_client_(NULL) {}
+  GetUpdateStatusApiTest() : fake_update_engine_client_(NULL) {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    chromeos::MockDBusThreadManager* mock_dbus_thread_manager =
-        new chromeos::MockDBusThreadManager;
+    chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager =
+        new chromeos::MockDBusThreadManagerWithoutGMock;
     chromeos::DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
-    mock_update_engine_client_ =
-        mock_dbus_thread_manager->mock_update_engine_client();
-    EXPECT_CALL(*mock_update_engine_client_, GetLastStatus())
-        .Times(1)
-        .WillOnce(Return(chromeos::MockUpdateEngineClient::Status()));
+    fake_update_engine_client_ =
+        mock_dbus_thread_manager->fake_update_engine_client();
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
@@ -48,7 +44,7 @@ class GetUpdateStatusApiTest : public ExtensionApiTest {
   }
 
  protected:
-  chromeos::MockUpdateEngineClient* mock_update_engine_client_;
+  chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GetUpdateStatusApiTest);
@@ -64,10 +60,11 @@ IN_PROC_BROWSER_TEST_F(GetUpdateStatusApiTest, Progress) {
   status_boot_needed.status =
       UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
 
-  EXPECT_CALL(*mock_update_engine_client_, GetLastStatus())
-      .WillOnce(Return(status_not_available))
-      .WillOnce(Return(status_updating))
-      .WillOnce(Return(status_boot_needed));
+  // The fake client returns the last status in this order.
+  fake_update_engine_client_->PushLastStatus(status_not_available);
+  fake_update_engine_client_->PushLastStatus(status_updating);
+  fake_update_engine_client_->PushLastStatus(status_boot_needed);
+
   ASSERT_TRUE(RunComponentExtensionTest(
       "system/get_update_status")) << message_;
 }

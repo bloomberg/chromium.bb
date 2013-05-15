@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_FAKE_UPDATE_ENGINE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_UPDATE_ENGINE_CLIENT_H_
 
+#include <queue>
 #include <string>
 
 #include "chromeos/dbus/update_engine_client.h"
@@ -31,8 +32,16 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
       OVERRIDE;
   virtual Status GetLastStatus() OVERRIDE;
 
-  void set_update_engine_client_status(
-      const UpdateEngineClient::Status& status);
+  // Pushes UpdateEngineClient::Status in the queue to test changing status.
+  // GetLastStatus() returns the status set by this method in FIFO order.
+  // See set_default_status().
+  void PushLastStatus(const UpdateEngineClient::Status& status) {
+    status_queue_.push(status);
+  }
+
+  // Sets the default UpdateEngineClient::Status. GetLastStatus() returns the
+  // value set here if |status_queue_| is empty.
+  void set_default_status(const UpdateEngineClient::Status& status);
 
   // Sets a value returned by RequestUpdateCheck().
   void set_update_check_result(
@@ -44,7 +53,8 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
   }
 
  private:
-  UpdateEngineClient::Status update_engine_client_status_;
+  std::queue<UpdateEngineClient::Status> status_queue_;
+  UpdateEngineClient::Status default_status_;
   UpdateEngineClient::UpdateCheckResult update_check_result_;
   int reboot_after_update_call_count_;
 };

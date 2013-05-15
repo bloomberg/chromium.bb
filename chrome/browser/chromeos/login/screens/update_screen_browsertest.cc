@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestNoUpdate) {
   status.status = UpdateEngineClient::UPDATE_STATUS_IDLE;
   // GetLastStatus() will be called via ExitUpdate() called from
   // UpdateStatusChanged().
-  fake_update_engine_client_->set_update_engine_client_status(status);
+  fake_update_engine_client_->set_default_status(status);
 
   EXPECT_CALL(*mock_screen_observer_, OnExit(ScreenObserver::UPDATE_NOUPDATE))
       .Times(1);
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
   status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
   // GetLastStatus() will be called via ExitUpdate() called from
   // UpdateStatusChanged().
-  fake_update_engine_client_->set_update_engine_client_status(status);
+  fake_update_engine_client_->set_default_status(status);
 
   EXPECT_CALL(*mock_screen_observer_,
               OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE))
@@ -236,14 +236,14 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorUpdating) {
   status.new_version = "latest and greatest";
   // GetLastStatus() will be called via ExitUpdate() called from
   // UpdateStatusChanged().
-  fake_update_engine_client_->set_update_engine_client_status(status);
+  fake_update_engine_client_->set_default_status(status);
 
   update_screen_->UpdateStatusChanged(status);
 
   status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
   // GetLastStatus() will be called via ExitUpdate() called from
   // UpdateStatusChanged().
-  fake_update_engine_client_->set_update_engine_client_status(status);
+  fake_update_engine_client_->set_default_status(status);
 
   EXPECT_CALL(*mock_screen_observer_,
               OnExit(ScreenObserver::UPDATE_ERROR_UPDATING))

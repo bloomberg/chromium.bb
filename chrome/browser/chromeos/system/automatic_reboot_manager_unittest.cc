@@ -522,7 +522,7 @@ void AutomaticRebootManagerBasicTest::
 void AutomaticRebootManagerBasicTest::SetUpdateStatusNeedReboot() {
   UpdateEngineClient::Status client_status;
   client_status.status = UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
-  update_engine_client_->set_update_engine_client_status(client_status);
+  update_engine_client_->set_default_status(client_status);
 }
 
 AutomaticRebootManagerTest::AutomaticRebootManagerTest() {

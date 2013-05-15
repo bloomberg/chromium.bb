@@ -40,13 +40,18 @@ void FakeUpdateEngineClient::GetReleaseTrack(
     const GetReleaseTrackCallback& callback) {
 }
 
-FakeUpdateEngineClient::Status FakeUpdateEngineClient::GetLastStatus() {
-  return update_engine_client_status_;
+UpdateEngineClient::Status FakeUpdateEngineClient::GetLastStatus() {
+  if (status_queue_.empty())
+    return default_status_;
+
+  UpdateEngineClient::Status last_status = status_queue_.front();
+  status_queue_.pop();
+  return last_status;
 }
 
-void FakeUpdateEngineClient::set_update_engine_client_status(
+void FakeUpdateEngineClient::set_default_status(
     const UpdateEngineClient::Status& status) {
-  update_engine_client_status_ = status;
+  default_status_ = status;
 }
 
 void FakeUpdateEngineClient::set_update_check_result(
