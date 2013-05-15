@@ -369,7 +369,12 @@ TEST_P(FullTabNavigationTest, DISABLED_JavascriptWindowOpenDifferentDomain) {
 
 // Tests that the parent window can successfully close its popup through
 // the javascript close method.
+#if defined(USE_AURA)
+// Key events don't work after window.open; http://crbug.com/241081.
+TEST_P(FullTabNavigationTest, DISABLED_JavascriptWindowOpenCanClose) {
+#else
 TEST_P(FullTabNavigationTest, JavascriptWindowOpenCanClose) {
+#endif
   // Please see http://code.google.com/p/chromium/issues/detail?id=60987
   // for more information on why this test is disabled for Vista with IE7.
   if (base::win::GetVersion() == base::win::VERSION_VISTA &&
