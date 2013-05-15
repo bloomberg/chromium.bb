@@ -636,11 +636,12 @@ def BuildStepMakeAll(pepperdir, platform, directory, step_name,
   if not deps:
     extra_args += ['IGNORE_DEPS=1']
 
-  buildbot_common.Run([make, '-j8', 'all_versions'] + extra_args,
+  buildbot_common.Run([make, '-j8', 'TOOLCHAIN=all'] + extra_args,
                       cwd=make_dir)
   if clean:
     # Clean to remove temporary files but keep the built libraries.
-    buildbot_common.Run([make, '-j8', 'clean'] + extra_args, cwd=make_dir)
+    buildbot_common.Run([make, '-j8', 'clean', 'TOOLCHAIN=all'] + extra_args,
+                        cwd=make_dir)
 
 
 def BuildStepBuildLibraries(pepperdir, platform, directory, clean=True):

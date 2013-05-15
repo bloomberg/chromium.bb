@@ -147,7 +147,7 @@ def BuildProjectsBranch(pepperdir, platform, branch, deps=True, clean=False,
     extra_args += ['IGNORE_DEPS=1']
 
   try:
-    buildbot_common.Run([make, '-j8', 'all_versions'] + extra_args,
+    buildbot_common.Run([make, '-j8', 'TOOLCHAIN=all'] + extra_args,
                         cwd=make_dir)
   except:
     print 'Failed to build ' + branch
@@ -155,7 +155,7 @@ def BuildProjectsBranch(pepperdir, platform, branch, deps=True, clean=False,
 
   if clean:
     # Clean to remove temporary files but keep the built
-    buildbot_common.Run([make, '-j8', 'clean'] + extra_args,
+    buildbot_common.Run([make, '-j8', 'clean', 'TOOLCHAIN=all'] + extra_args,
                         cwd=make_dir)
 
 
@@ -222,8 +222,7 @@ def main(args):
     filters['NAME'] = options.project
     print 'Filter by name: ' + str(options.project)
 
-  project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, verbose=options.verbose,
-                                           filters=filters)
+  project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
   parse_dsc.PrintProjectTree(project_tree)
 
   UpdateHelpers(pepperdir, platform, clobber=options.clobber)
