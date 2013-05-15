@@ -1368,7 +1368,7 @@ ErrorCode ArmMaliGpuBrokerProcessPolicy(Sandbox *sandbox,
   }
 }
 
-// Allow clone for threads, crash if anything else is attempted.
+// Allow clone(2) for threads, crash if anything else is attempted.
 // Don't restrict on ASAN.
 ErrorCode RestrictCloneToThreads(Sandbox *sandbox) {
   // Glibc's pthread.
@@ -1379,6 +1379,27 @@ ErrorCode RestrictCloneToThreads(Sandbox *sandbox) {
         CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID,
         ErrorCode(ErrorCode::ERR_ALLOWED),
         sandbox->Trap(ReportCloneFailure, NULL));
+  } else {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+}
+
+// Allow clone(2) for threads.
+// Reject fork(2) attempts with EPERM.
+// Crash if anything else is attempted.
+// Don't restrict on ASAN.
+ErrorCode RestrictCloneToThreadsAndEPERMFork(Sandbox* sandbox) {
+  // Glibc's pthread.
+  if (!RunningOnASAN()) {
+    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
+                         CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
+                         CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         CLONE_PARENT_SETTID | SIGCHLD,
+                         ErrorCode(EPERM),
+           sandbox->Trap(ReportCloneFailure, NULL)));
   } else {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
@@ -1460,6 +1481,8 @@ ErrorCode RendererOrWorkerProcessPolicy(Sandbox *sandbox, int sysno, void *) {
 
 ErrorCode FlashProcessPolicy(Sandbox *sandbox, int sysno, void *) {
   switch (sysno) {
+    case __NR_clone:
+      return RestrictCloneToThreadsAndEPERMFork(sandbox);
     case __NR_sched_get_priority_max:
     case __NR_sched_get_priority_min:
     case __NR_sched_getaffinity:
