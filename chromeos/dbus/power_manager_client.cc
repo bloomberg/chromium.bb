@@ -803,12 +803,6 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     status_.line_power_on = !discharging_;
     status_.battery_is_present = true;
     status_.battery_percentage = battery_percentage_;
-    status_.battery_seconds_to_empty =
-        std::max(1, battery_percentage_ * kSecondsToEmptyFullBattery / 100);
-    status_.battery_seconds_to_full =
-        std::max(static_cast<int64>(1),
-                 kSecondsToEmptyFullBattery - status_.battery_seconds_to_empty);
-
     if (cycle_count_ != 2) {
       status_.battery_state = discharging_ ?
           PowerSupplyStatus::DISCHARGING : PowerSupplyStatus::CHARGING;
@@ -818,6 +812,15 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
           PowerSupplyStatus::NEITHER_CHARGING_NOR_DISCHARGING;
     }
 
+    int64 remaining_battery_time =
+        std::max(1, battery_percentage_ * kSecondsToEmptyFullBattery / 100);
+    status_.battery_seconds_to_empty =
+        status_.battery_state == PowerSupplyStatus::DISCHARGING ?
+        remaining_battery_time : 0;
+    status_.battery_seconds_to_full =
+        status_.battery_state == PowerSupplyStatus::DISCHARGING ?
+        0 : std::max(static_cast<int64>(1),
+                     kSecondsToEmptyFullBattery - remaining_battery_time);
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status_));
   }
 

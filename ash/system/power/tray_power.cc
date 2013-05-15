@@ -58,6 +58,10 @@ const int kLowPowerSeconds = 15 * 60;
 const int kNoWarningSeconds = 30 * 60;
 // Minimum battery percentage rendered in UI.
 const int kMinBatteryPercent = 1;
+// Notification in battery percentage.
+const double kCriticalPercentage = 5.0;
+const double kLowPowerPercentage = 10.0;
+const double kNoWarningPercentage = 15.0;
 
 base::string16 GetBatteryTimeAccessibilityString(int hour, int min) {
   DCHECK(hour || min);
@@ -391,12 +395,21 @@ void TrayPower::OnPowerStatusChanged(const PowerSupplyStatus& status) {
 bool TrayPower::UpdateNotificationState(const PowerSupplyStatus& status) {
   if (!status.battery_is_present ||
       status.is_calculating_battery_time ||
-      status.battery_state != PowerSupplyStatus::DISCHARGING) {
+      status.battery_state == PowerSupplyStatus::CHARGING) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
   }
 
-  int remaining_seconds = status.battery_seconds_to_empty;
+  if (TrayPower::IsBatteryChargingUnreliable(status)) {
+    return UpdateNotificationStateForRemainingPercentage(
+        status.battery_percentage);
+  } else {
+    return UpdateNotificationStateForRemainingTime(
+        status.battery_seconds_to_empty);
+  }
+}
+
+bool TrayPower::UpdateNotificationStateForRemainingTime(int remaining_seconds) {
   if (remaining_seconds >= kNoWarningSeconds) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
@@ -414,6 +427,37 @@ bool TrayPower::UpdateNotificationState(const PowerSupplyStatus& status) {
       return false;
     case NOTIFICATION_LOW_POWER:
       if (remaining_seconds <= kCriticalSeconds) {
+        notification_state_ = NOTIFICATION_CRITICAL;
+        return true;
+      }
+      return false;
+    case NOTIFICATION_CRITICAL:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool TrayPower::UpdateNotificationStateForRemainingPercentage(
+    double remaining_percentage) {
+  if (remaining_percentage > kNoWarningPercentage) {
+    notification_state_ = NOTIFICATION_NONE;
+    return false;
+  }
+
+  switch (notification_state_) {
+    case NOTIFICATION_NONE:
+      if (remaining_percentage <= kCriticalPercentage) {
+        notification_state_ = NOTIFICATION_CRITICAL;
+        return true;
+      }
+      if (remaining_percentage <= kLowPowerPercentage) {
+        notification_state_ = NOTIFICATION_LOW_POWER;
+        return true;
+      }
+      return false;
+    case NOTIFICATION_LOW_POWER:
+      if (remaining_percentage <= kCriticalPercentage) {
         notification_state_ = NOTIFICATION_CRITICAL;
         return true;
       }

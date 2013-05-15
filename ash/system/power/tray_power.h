@@ -87,6 +87,9 @@ class TrayPower : public SystemTrayItem,
 
   // Sets |notification_state_|. Returns true if a notification should be shown.
   bool UpdateNotificationState(const PowerSupplyStatus& status);
+  bool UpdateNotificationStateForRemainingTime(int remaining_seconds);
+  bool UpdateNotificationStateForRemainingPercentage(
+      double remaining_percentage);
 
   tray::PowerTrayView* power_tray_;
   tray::PowerNotificationView* notification_view_;
