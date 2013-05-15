@@ -7314,6 +7314,13 @@ other types of suffix sets.
   <summary>The time from starting translation to the completion.</summary>
 </histogram>
 
+<histogram name="Translate.UserActionDuration" units="milliseconds">
+  <summary>
+    The time from a page content language being determined to user requesting
+    Chrome Translate.
+  </summary>
+</histogram>
+
 <histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
   <summary>
     A count of the number of times we hit the code where a field trial is
