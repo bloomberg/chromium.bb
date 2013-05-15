@@ -491,9 +491,6 @@
 
 // Implementation detail: internal macro to create static category and add
 // event if the category is enabled.
-#if COMPILER(MSVC7_OR_LOWER)
-#define INTERNAL_TRACE_EVENT_ADD(ignore) ((void)0)
-#else
 #define INTERNAL_TRACE_EVENT_ADD(phase, category, name, flags, ...) \
     do { \
         INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
@@ -503,14 +500,10 @@
                 WebCore::TraceEvent::noEventId, flags, ##__VA_ARGS__); \
         } \
     } while (0)
-#endif
 
 // Implementation detail: internal macro to create static category and add begin
 // event if the category is enabled. Also adds the end event when the scope
 // ends.
-#if COMPILER(MSVC7_OR_LOWER)
-#define INTERNAL_TRACE_EVENT_ADD_SCOPED(ignore) ((void)0)
-#else
 #define INTERNAL_TRACE_EVENT_ADD_SCOPED(category, name, ...) \
     INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
     WebCore::TraceEvent::TraceEndOnScopeClose \
@@ -524,13 +517,9 @@
       INTERNALTRACEEVENTUID(profileScope).initialize( \
           INTERNALTRACEEVENTUID(catstatic), name); \
     }
-#endif
 
 // Implementation detail: internal macro to create static category and add
 // event if the category is enabled.
-#if COMPILER(MSVC7_OR_LOWER)
-#define INTERNAL_TRACE_EVENT_ADD_WITH_ID(ignore) ((void)0)
-#else
 #define INTERNAL_TRACE_EVENT_ADD_WITH_ID(phase, category, name, id, flags, \
                                          ...) \
     do { \
@@ -545,20 +534,15 @@
                 ##__VA_ARGS__); \
         } \
     } while (0)
-#endif
 
 // Implementation detail: internal macro to update a global state for
 // the sampling profiler.
 // FIXME: The current implementation uses only one global variable,
 // and thus cannot trace states of multiple threads.
-#if COMPILER(MSVC7_OR_LOWER)
-#define INTERNAL_TRACE_EVENT_SAMPLING_STATE(ignore) ((void)0)
-#else
 #define INTERNAL_TRACE_EVENT_SAMPLING_STATE(name, threadBucket) \
     do { \
         *WebCore::traceSamplingState##threadBucket = reinterpret_cast<TraceEventAPIAtomicWord>("WebKit\0" name); \
     } while (0);
-#endif
 
 // Notes regarding the following definitions:
 // New values can be added and propagated to third party libraries, but existing
