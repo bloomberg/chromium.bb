@@ -29,9 +29,6 @@
         <structure name="IDR_DEMO_USER_LOGIN_JS" file="resources\chromeos\login\demo_user_login.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_APP_LAUNCH_SPLASH_HTML" file="resources\chromeos\app_launch\app_launch.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_APP_LAUNCH_SPLASH_JS" file="resources\chromeos\app_launch\app_launch.js" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_APP_LOGIN_HTML" file="resources\chromeos\app_login\app_login.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_APP_LOGIN_CSS" file="resources\chromeos\app_login\app_login.css" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_APP_LOGIN_JS" file="resources\chromeos\app_login\app_login.js" flattenhtml="true" type="chrome_html" />
       </if>
       <structure name="IDR_DOWNLOADS_CSS" file="resources\downloads\downloads.css" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_DOWNLOADS_HTML" file="resources\downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
@@ -133,6 +130,9 @@
       <include name="IDR_HISTORY_HTML" file="resources\history\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HISTORY_JS" file="resources\history\history.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_OTHER_DEVICES_JS" file="resources\history\other_devices.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_INLINE_LOGIN_HTML" file="resources\inline_login\inline_login.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_INLINE_LOGIN_CSS" file="resources\inline_login\inline_login.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_INLINE_LOGIN_JS" file="resources\inline_login\inline_login.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_INSPECT_CSS" file="resources\inspect\inspect.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_INSPECT_HTML" file="resources\inspect\inspect.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_INSPECT_JS" file="resources\inspect\inspect.js" flattenhtml="true" type="BINDATA" />
@@ -272,6 +272,9 @@
         <include name="IDR_TASK_MANAGER_MEASURE_TIME_JS" file="resources\task_manager\measure_time.js" type="BINDATA" />
         <include name="IDR_TASK_MANAGER_MEASURE_TIME_END_JS" file="resources\task_manager\measure_time_end.js" type="BINDATA" />
       </if>
+      <include name="IDR_GAIA_AUTH_MANIFEST" file="resources\gaia_auth\manifest.json" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_KEYBOARD_MANIFEST" file="resources\gaia_auth\manifest_keyboard.json" type="BINDATA" />
+      <include name="IDR_GAIA_TEST_AUTH_MANIFEST" file="resources\gaia_auth\manifest_test.json" type="BINDATA" />
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_SYNC_PROMO_JS" file="resources\sync_promo\sync_promo.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SYNC_PROMO_HTML" file="resources\sync_promo\sync_promo.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
@@ -297,9 +300,6 @@
         <include name="IDR_DRIVE_INTERNALS_CSS" file="resources\chromeos\drive_internals.css" type="BINDATA" />
         <include name="IDR_DRIVE_INTERNALS_HTML" file="resources\chromeos\drive_internals.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_DRIVE_INTERNALS_JS" file="resources\chromeos\drive_internals.js" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_MANIFEST" file="resources\gaia_auth\manifest.json" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_KEYBOARD_MANIFEST" file="resources\gaia_auth\manifest_keyboard.json" type="BINDATA" />
-        <include name="IDR_GAIA_TEST_AUTH_MANIFEST" file="resources\gaia_auth\manifest_test.json" type="BINDATA" />
         <include name="IDR_GUEST_SESSION_TAB_HTML" file="resources\chromeos\guest_session_tab.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_IMAGEBURNER_HTML" file="resources\chromeos\image_burner.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_IMAGEBURNER_JS" file="resources\chromeos\image_burner.js" type="BINDATA" />

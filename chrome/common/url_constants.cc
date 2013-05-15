@@ -44,6 +44,7 @@ const char kChromeUIFlashURL[] = "chrome://flash/";
 const char kChromeUIHelpFrameURL[] = "chrome://help-frame/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUIHistoryFrameURL[] = "chrome://history-frame/";
+const char kChromeUIInlineLoginURL[] = "chrome://inline-login/";
 const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIInstantURL[] = "chrome://instant/";
 const char kChromeUIIPCURL[] = "chrome://ipc/";
@@ -86,7 +87,6 @@ const char kChromeUIWelcomeURL[] = "chrome://welcome/";
 #if defined(OS_CHROMEOS)
 const char kChromeUIActivationMessage[] = "chrome://activationmessage/";
 const char kChromeUIAppLaunchURL[] = "chrome://app-launch/";
-const char kChromeUIAppLoginURL[] = "chrome://app-login/";
 const char kChromeUIBluetoothPairingURL[] = "chrome://bluetooth-pairing/";
 const char kChromeUIChooseMobileNetworkURL[] =
     "chrome://choose-mobile-network/";
@@ -164,6 +164,7 @@ const char kChromeUIHelpFrameHost[] = "help-frame";
 const char kChromeUIHelpHost[] = "help";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistoryFrameHost[] = "history-frame";
+const char kChromeUIInlineLoginHost[] = "inline-login";
 const char kChromeUIInspectHost[] = "inspect";
 const char kChromeUIInstantHost[] = "instant";
 const char kChromeUIIPCHost[] = "ipc";
@@ -227,7 +228,6 @@ const char kChromeUISandboxHost[] = "sandbox";
 #if defined(OS_CHROMEOS)
 const char kChromeUIActivationMessageHost[] = "activationmessage";
 const char kChromeUIAppLaunchHost[] = "app-launch";
-const char kChromeUIAppLoginHost[] = "app-login";
 const char kChromeUIBluetoothPairingHost[] = "bluetooth-pairing";
 const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICryptohomeHost[] = "cryptohome";

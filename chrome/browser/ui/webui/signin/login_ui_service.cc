@@ -10,13 +10,13 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/sync/inline_login_dialog.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/url_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/chromeos/app_mode/app_login_dialog.h"
 #endif
 
 LoginUIService::LoginUIService(Profile* profile)
@@ -50,7 +50,7 @@ void LoginUIService::LoginUIClosed(LoginUI* ui) {
 void LoginUIService::ShowLoginPopup() {
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode())
-    chromeos::AppLoginDialog::Show(profile_);
+    InlineLoginDialog::Show(profile_);
 #else
   Browser* browser = FindOrCreateTabbedBrowser(profile_,
                                                chrome::GetActiveDesktop());

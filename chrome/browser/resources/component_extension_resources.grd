@@ -27,18 +27,19 @@
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_DND_JS" file="bookmark_manager/js/dnd.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_JS" file="bookmark_manager/js/bmm.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_CSS_JS" file="bookmark_manager/css/bmm.css.js" type="BINDATA" />
+      <!-- Gaia auth extension -->
+      <include name="IDR_GAIA_AUTH_KEYBOARD_UI_CSS" file="gaia_auth/keyboard_ui.css" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_MAIN" file="gaia_auth/main.html" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_MAIN_JS" file="gaia_auth/main.js" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_MAIN_CSS" file="gaia_auth/main.css" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_OFFLINE" file="gaia_auth/offline.html" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_OFFLINE_JS" file="gaia_auth/offline.js" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_OFFLINE_CSS" file="gaia_auth/offline.css" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_SUCCESS" file="gaia_auth/success.html" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_SUCCESS_JS" file="gaia_auth/success.js" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_UTIL_JS" file="gaia_auth/util.js" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_TEST_CONTENT_JS" file="gaia_auth/test/content.js" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
-        <include name="IDR_GAIA_AUTH_KEYBOARD_UI_CSS" file="gaia_auth/keyboard_ui.css" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_MAIN" file="gaia_auth/main.html" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_MAIN_JS" file="gaia_auth/main.js" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_MAIN_CSS" file="gaia_auth/main.css" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_OFFLINE" file="gaia_auth/offline.html" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_OFFLINE_JS" file="gaia_auth/offline.js" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_OFFLINE_CSS" file="gaia_auth/offline.css" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_SUCCESS" file="gaia_auth/success.html" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_SUCCESS_JS" file="gaia_auth/success.js" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_UTIL_JS" file="gaia_auth/util.js" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_TEST_CONTENT_JS" file="gaia_auth/test/content.js" type="BINDATA" />
         <!-- Background page loader  -->
         <include name="IDR_BACKLOADER_BACKGROUND_HTML" file="backloader/background.html" type="BINDATA" />
         <include name="IDR_BACKLOADER_BACKGROUND_JS" file="backloader/scripts/background.js" type="BINDATA" />

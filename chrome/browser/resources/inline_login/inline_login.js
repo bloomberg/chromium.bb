@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Login UI for ChromeOS app mode.
+ * @fileoverview Inline login UI.
  */
 
-<include src="../../gaia_auth_host/gaia_auth_host.js"></include>
+<include src="../gaia_auth_host/gaia_auth_host.js"></include>
 
-cr.define('app.login', function() {
+cr.define('inline.login', function() {
   'use strict';
 
   /**
@@ -26,9 +26,10 @@ cr.define('app.login', function() {
 
   /**
    * Handler of auth host 'completed' event.
+   * @param {!Object} credentials Credentials of the completed authentication.
    */
-  function onAuthCompleted() {
-    chrome.send('completeLogin');
+  function onAuthCompleted(credentials) {
+    chrome.send('completeLogin', [credentials]);
     $('contents').classList.toggle('loading', true);
   }
 
@@ -38,7 +39,6 @@ cr.define('app.login', function() {
   function initialize() {
     authExtHost = new cr.login.GaiaAuthHost('signin-frame');
     authExtHost.addEventListener('ready', onAuthReady);
-    authExtHost.addEventListener('completed', onAuthCompleted);
 
     chrome.send('initialize');
   }
@@ -48,12 +48,13 @@ cr.define('app.login', function() {
    * @param {Object} data Parameters for auth extension.
    */
   function loadAuthExtension(data) {
-    authExtHost.load(false /* useOffline */, data);
+    authExtHost.load(
+        false /* useOffline */, data, onAuthCompleted);
     $('contents').classList.toggle('loading', true);
   }
 
   /**
-   * Closes the app login dialog.
+   * Closes the inline login dialog.
    */
   function closeDialog() {
     chrome.send('DialogClose', ['']);
@@ -76,4 +77,4 @@ cr.define('app.login', function() {
   };
 });
 
-document.addEventListener('DOMContentLoaded', app.login.initialize);
+document.addEventListener('DOMContentLoaded', inline.login.initialize);

@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/help/help_ui.h"
 #include "chrome/browser/ui/webui/history_ui.h"
+#include "chrome/browser/ui/webui/inline_login_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_ui.h"
@@ -84,7 +85,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/app_launch_ui.h"
-#include "chrome/browser/ui/webui/chromeos/app_login_ui.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_ui.h"
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
@@ -211,6 +211,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)
     return &NewWebUI<HistoryUI>;
+  if (url.host() == chrome::kChromeUIInlineLoginHost)
+    return &NewWebUI<InlineLoginUI>;
   if (url.host() == chrome::kChromeUIInstantHost)
     return &NewWebUI<InstantUI>;
   if (url.host() == chrome::kChromeUIManagedUserPassphrasePageHost)
@@ -318,8 +320,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIAppLaunchHost)
     return &NewWebUI<chromeos::AppLaunchUI>;
-  if (url.host() == chrome::kChromeUIAppLoginHost)
-    return &NewWebUI<chromeos::AppLoginUI>;
   if (url.host() == chrome::kChromeUIBluetoothPairingHost)
     return &NewWebUI<chromeos::BluetoothPairingUI>;
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)

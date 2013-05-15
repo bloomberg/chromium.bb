@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_APP_LOGIN_DIALOG_H_
-#define CHROME_BROWSER_CHROMEOS_APP_MODE_APP_LOGIN_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_SYNC_INLINE_LOGIN_DIALOG_H_
+#define CHROME_BROWSER_UI_SYNC_INLINE_LOGIN_DIALOG_H_
 
 #include <string>
 #include <vector>
@@ -14,17 +14,15 @@
 
 class Profile;
 
-namespace chromeos {
-
-// A dialog to host the sign-in WebUI for an interactive getAuthToken identity
-// API call. Currently, it loads chrome:://app-login and dismisses itself when
-// the sign-in is finished successfully.
-class AppLoginDialog : public ui::WebDialogDelegate {
+// A dialog to host the inline sign-in WebUI. Currently, it loads
+// chrome:://inline-login and dismisses itself when the sign-in is finished
+// successfully.
+class InlineLoginDialog : public ui::WebDialogDelegate {
  public:
   static void Show(Profile* profile);
 
  private:
-  explicit AppLoginDialog(Profile* profile);
+  explicit InlineLoginDialog(Profile* profile);
 
   // ui::WebDialogDelegate overrides:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
@@ -43,9 +41,7 @@ class AppLoginDialog : public ui::WebDialogDelegate {
 
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppLoginDialog);
+  DISALLOW_COPY_AND_ASSIGN(InlineLoginDialog);
 };
 
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_APP_MODE_APP_LOGIN_DIALOG_H_
+#endif  // CHROME_BROWSER_UI_SYNC_INLINE_LOGIN_DIALOG_H_

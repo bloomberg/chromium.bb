@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/login/scoped_gaia_auth_extension.h"
+#include "chrome/browser/extensions/scoped_gaia_auth_extension.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"

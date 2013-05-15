@@ -114,6 +114,9 @@ const char kAppsNoThrob[]                   = "apps-no-throb";
 // Experimental native frame support for packaged apps.
 const char kAppsUseNativeFrame[]            = "apps-use-native-frame";
 
+// Enables overriding the path for the default authentication extension.
+const char kAuthExtensionPath[]             = "auth-ext-path";
+
 // Whitelist of servers that Negotiate will generate delegated Kerberos tickets
 // for.
 const char kAuthNegotiateDelegateWhitelist[] =

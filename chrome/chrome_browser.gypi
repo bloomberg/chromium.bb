@@ -506,6 +506,8 @@
         'browser/download/save_package_file_picker_chromeos.h',
         'browser/enumerate_modules_model_win.cc',
         'browser/enumerate_modules_model_win.h',
+        'browser/extensions/scoped_gaia_auth_extension.cc',
+        'browser/extensions/scoped_gaia_auth_extension.h',
         'browser/extensions/token_cache/token_cache_service.cc',
         'browser/extensions/token_cache/token_cache_service.h',
         'browser/extensions/token_cache/token_cache_service_factory.cc',
