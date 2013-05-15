@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/values.h"
+#include "cc/base/math_util.h"
+#include "cc/debug/traced_value.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect_conversions.h"
 
@@ -171,6 +174,27 @@ bool PicturePileBase::CanRaster(float contents_scale, gfx::Rect content_rect) {
       gfx::ScaleRect(content_rect, 1.f / contents_scale));
   layer_rect.Intersect(gfx::Rect(tiling_.total_size()));
   return recorded_region_.Contains(layer_rect);
+}
+
+scoped_ptr<base::Value> PicturePileBase::AsValue() const {
+  scoped_ptr<base::ListValue> pictures(new base::ListValue());
+  gfx::Rect layer_rect(tiling_.total_size());
+  for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
+       tile_iter; ++tile_iter) {
+    PictureListMap::const_iterator map_iter =
+        picture_list_map_.find(tile_iter.index());
+    if (map_iter == picture_list_map_.end())
+      continue;
+    const PictureList& pic_list= map_iter->second;
+    if (pic_list.empty())
+      continue;
+    for (PictureList::const_reverse_iterator i = pic_list.rbegin();
+         i != pic_list.rend(); ++i) {
+      Picture* picture = (*i).get();
+      pictures->Append(TracedValue::CreateIDRef(picture).release());
+    }
+  }
+  return pictures.PassAs<base::Value>();
 }
 
 }  // namespace cc

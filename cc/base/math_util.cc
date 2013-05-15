@@ -526,6 +526,15 @@ scoped_ptr<base::Value> MathUtil::AsValue(gfx::Size s) {
   return res.PassAs<base::Value>();
 }
 
+scoped_ptr<base::Value> MathUtil::AsValue(gfx::Rect r) {
+  scoped_ptr<base::ListValue> res(new base::ListValue());
+  res->AppendInteger(r.x());
+  res->AppendInteger(r.y());
+  res->AppendInteger(r.width());
+  res->AppendInteger(r.height());
+  return res.PassAs<base::Value>();
+}
+
 scoped_ptr<base::Value> MathUtil::AsValue(gfx::PointF pt) {
   scoped_ptr<base::ListValue> res(new base::ListValue());
   res->AppendDouble(pt.x());

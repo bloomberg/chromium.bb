@@ -954,6 +954,7 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   LayerImpl::AsValueInto(state);
   state->SetDouble("ideal_contents_scale", ideal_contents_scale_);
   state->Set("tilings", tilings_->AsValue().release());
+  state->Set("pictures", pile_->AsValue().release());
   state->Set("invalidation", invalidation_.AsValue().release());
 }
 

@@ -17,6 +17,10 @@
 #include "cc/resources/picture.h"
 #include "ui/gfx/size.h"
 
+namespace base {
+class Value;
+}
+
 namespace cc {
 
 class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
@@ -40,6 +44,8 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
 
   void SetTileGridSize(gfx::Size tile_grid_size);
   TilingData& tiling() { return tiling_; }
+
+  scoped_ptr<base::Value> AsValue() const;
 
  protected:
   virtual ~PicturePileBase();
