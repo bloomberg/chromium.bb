@@ -25,8 +25,9 @@ IPC_MESSAGE_ROUTED4(ImageMsg_DownloadImage,
 
 // Messages sent from the renderer to the browser.
 
-IPC_MESSAGE_ROUTED4(ImageHostMsg_DidDownloadImage,
+IPC_MESSAGE_ROUTED5(ImageHostMsg_DidDownloadImage,
                     int /* Identifier of the request */,
+                    int /* HTTP response status */,
                     GURL /* URL of the image */,
                     int /* Preferred image size passed to
                            ImageMsg_DownloadImage */,

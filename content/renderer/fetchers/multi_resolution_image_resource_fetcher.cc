@@ -25,6 +25,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
     const Callback& callback)
     : callback_(callback),
       id_(id),
+      http_status_code_(0),
       image_url_(image_url) {
   fetcher_.reset(new ResourceFetcher(
       image_url, frame, target_type,
@@ -41,10 +42,13 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
     const WebURLResponse& response,
     const std::string& data) {
   std::vector<SkBitmap> bitmaps;
-  if (!response.isNull() && response.httpStatusCode() == 200) {
-    // Request succeeded, try to convert it to an image.
-    bitmaps = webkit_glue::ImageDecoder::DecodeAll(
-        reinterpret_cast<const unsigned char*>(data.data()), data.size());
+  if (!response.isNull()) {
+    http_status_code_ = response.httpStatusCode();
+    if (http_status_code_ == 200) {
+      // Request succeeded, try to convert it to an image.
+      bitmaps = webkit_glue::ImageDecoder::DecodeAll(
+          reinterpret_cast<const unsigned char*>(data.data()), data.size());
+    }
   } // else case:
     // If we get here, it means no image from server or couldn't decode the
     // response as an image. The delegate will see an empty vector.

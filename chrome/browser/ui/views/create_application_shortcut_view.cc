@@ -476,6 +476,7 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
 
 void CreateUrlApplicationShortcutView::DidDownloadFavicon(
     int id,
+    int http_status_code,
     const GURL& image_url,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {

@@ -30,7 +30,7 @@ void IconHelper::SetListener(Listener* listener) {
 }
 
 void IconHelper::DownloadFaviconCallback(
-  int id, const GURL& image_url, int requested_size,
+  int id, int http_status_code, const GURL& image_url, int requested_size,
   const std::vector<SkBitmap>& bitmaps) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (bitmaps.size() == 0) {

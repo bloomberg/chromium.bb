@@ -91,6 +91,7 @@ class MessageCenterNotificationManager
     // FaviconHelper callback.
     void DownloadComplete(const SetImageCallback& callback,
                           int download_id,
+                          int http_status_code,
                           const GURL& image_url,
                           int requested_size,
                           const std::vector<SkBitmap>& bitmaps);

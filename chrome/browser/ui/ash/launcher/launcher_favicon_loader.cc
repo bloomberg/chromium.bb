@@ -47,6 +47,7 @@ class FaviconBitmapHandler : public content::WebContentsObserver {
  private:
   void DidDownloadFavicon(
       int id,
+      int http_status_code,
       const GURL& image_url,
       int requested_size,
       const std::vector<SkBitmap>& bitmaps);
@@ -121,6 +122,7 @@ bool FaviconBitmapHandler::HasPendingDownloads() const {
 
 void FaviconBitmapHandler::DidDownloadFavicon(
     int id,
+    int http_status_code,
     const GURL& image_url,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {

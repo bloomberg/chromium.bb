@@ -589,6 +589,7 @@ class CONTENT_EXPORT WebContentsImpl
                                       const base::FilePath& plugin_path);
   void OnBrowserPluginMessage(const IPC::Message& message);
   void OnDidDownloadImage(int id,
+                          int http_status_code,
                           const GURL& image_url,
                           int requested_size,
                           const std::vector<SkBitmap>& bitmaps);

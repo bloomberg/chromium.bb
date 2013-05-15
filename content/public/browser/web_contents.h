@@ -408,6 +408,7 @@ class WebContents : public PageNavigator,
   virtual bool HasOpener() const = 0;
 
   typedef base::Callback<void(int, /* id */
+                              int, /* HTTP status code */
                               const GURL&, /* image_url */
                               int,  /* requested_size */
                               const std::vector<SkBitmap>& /* bitmaps*/)>

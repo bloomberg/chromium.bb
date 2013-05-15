@@ -268,6 +268,7 @@ class ShellWindow : public content::NotificationObserver,
 
   // Callback from web_contents()->DownloadFavicon.
   void DidDownloadFavicon(int id,
+                          int http_status_code,
                           const GURL& image_url,
                           int requested_size,
                           const std::vector<SkBitmap>& bitmaps);

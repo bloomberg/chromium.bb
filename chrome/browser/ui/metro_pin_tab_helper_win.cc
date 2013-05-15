@@ -428,6 +428,7 @@ void MetroPinTabHelper::DidUpdateFaviconURL(
 
 void MetroPinTabHelper::DidDownloadFavicon(
     int id,
+    int http_status_code,
     const GURL& image_url,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {

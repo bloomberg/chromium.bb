@@ -4,6 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/favicon/favicon_handler.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/favicon_status.h"
@@ -350,6 +351,14 @@ class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
     ui::test::SetSupportedScaleFactors(scale_factors);
 
     ChromeRenderViewHostTestHarness::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    Profile* profile = Profile::FromBrowserContext(
+        web_contents()->GetBrowserContext());
+    FaviconServiceFactory::GetInstance()->SetTestingFactory(
+      profile, NULL);
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
  private:
@@ -1018,6 +1027,81 @@ TEST_F(FaviconHandlerTest, FirstFavicon) {
   EXPECT_FALSE(handler.GetEntry()->GetFavicon().image.IsEmpty());
   EXPECT_EQ(gfx::kFaviconSize,
             handler.GetEntry()->GetFavicon().image.ToSkBitmap()->width());
+}
+
+static ProfileKeyedService* BuildFaviconService(
+    content::BrowserContext* profile) {
+  return new FaviconService(NULL);
+}
+
+// Test that Favicon is not requested repeatedly during the same session if
+// server returns HTTP 404 status.
+TEST_F(FaviconHandlerTest, UnableToDownloadFavicon) {
+  const GURL missing_icon_url("http://www.google.com/favicon.ico");
+  const GURL another_icon_url("http://www.youtube.com/favicon.ico");
+
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents()->GetBrowserContext());
+
+  FaviconServiceFactory::GetInstance()->SetTestingFactory(
+      profile, BuildFaviconService);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile, Profile::IMPLICIT_ACCESS);
+
+  FaviconTabHelper::CreateForWebContents(web_contents());
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(web_contents());
+
+  std::vector<SkBitmap> empty_icons;
+  int download_id = 0;
+
+  // Try to download missing icon.
+  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0);
+  EXPECT_NE(0, download_id);
+  EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
+
+  // Report download failure with HTTP 503 status.
+  favicon_tab_helper->DidDownloadFavicon(download_id, 503, missing_icon_url,
+      0, empty_icons);
+  // Icon is not marked as UnableToDownload as HTTP status is not 404.
+  EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
+
+  // Try to download again.
+  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0);
+  EXPECT_NE(0, download_id);
+  EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
+
+  // Report download failure with HTTP 404 status.
+  favicon_tab_helper->DidDownloadFavicon(download_id, 404, missing_icon_url,
+      0, empty_icons);
+  // Icon is marked as UnableToDownload.
+  EXPECT_TRUE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
+
+  // Try to download again.
+  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0);
+  // Download is not started and Icon is still marked as UnableToDownload.
+  EXPECT_EQ(0, download_id);
+  EXPECT_TRUE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
+
+  // Try to download another icon.
+  download_id = favicon_tab_helper->StartDownload(another_icon_url, 0);
+  // Download is started as another icon URL is not same as missing_icon_url.
+  EXPECT_NE(0, download_id);
+  EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(another_icon_url));
+
+  // Clear the list of missing icons.
+  favicon_service->ClearUnableToDownloadFavicons();
+  EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
+  EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(another_icon_url));
+
+  // Try to download again.
+  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0);
+  EXPECT_NE(0, download_id);
+  // Report download success with HTTP 200 status.
+  favicon_tab_helper->DidDownloadFavicon(download_id, 200, missing_icon_url,
+      0, empty_icons);
+  // Icon is not marked as UnableToDownload as HTTP status is not 404.
+  EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
 }
 
 }  // namespace.

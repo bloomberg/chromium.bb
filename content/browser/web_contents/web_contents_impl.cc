@@ -2397,6 +2397,7 @@ void WebContentsImpl::OnBrowserPluginMessage(const IPC::Message& message) {
 
 void WebContentsImpl::OnDidDownloadImage(
     int id,
+    int http_status_code,
     const GURL& image_url,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
@@ -2407,7 +2408,7 @@ void WebContentsImpl::OnDidDownloadImage(
     return;
   }
   if (!iter->second.is_null()) {
-    iter->second.Run(id, image_url, requested_size, bitmaps);
+    iter->second.Run(id, http_status_code, image_url, requested_size, bitmaps);
   }
   image_download_map_.erase(id);
 }

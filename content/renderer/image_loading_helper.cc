@@ -53,6 +53,7 @@ void ImageLoadingHelper::OnDownloadImage(int id,
 
   Send(new ImageHostMsg_DidDownloadImage(routing_id(),
                                          id,
+                                         0,
                                          image_url,
                                          image_size,
                                          result_images));
@@ -84,6 +85,7 @@ void ImageLoadingHelper::DidDownloadImage(
   // Notify requester of image download status.
   Send(new ImageHostMsg_DidDownloadImage(routing_id(),
                                          fetcher->id(),
+                                         fetcher->http_status_code(),
                                          fetcher->image_url(),
                                          requested_size,
                                          images));

@@ -37,8 +37,9 @@ class IconHelper : public content::WebContentsObserver {
   virtual void DidUpdateFaviconURL(int32 page_id,
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
-  void DownloadFaviconCallback(int id, const GURL& image_url,
-      int requested_size, const std::vector<SkBitmap>& bitmaps);
+  void DownloadFaviconCallback(int id, int http_status_code,
+      const GURL& image_url, int requested_size,
+      const std::vector<SkBitmap>& bitmaps);
 
  private:
   Listener* listener_;

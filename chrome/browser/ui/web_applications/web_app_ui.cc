@@ -89,6 +89,7 @@ class UpdateShortcutWorker : public content::NotificationObserver {
   // Favicon download callback.
   void DidDownloadFavicon(
       int id,
+      int http_status_code,
       const GURL& image_url,
       int requested_size,
       const std::vector<SkBitmap>& bitmaps);
@@ -192,6 +193,7 @@ void UpdateShortcutWorker::DownloadIcon() {
 
 void UpdateShortcutWorker::DidDownloadFavicon(
     int id,
+    int http_status_code,
     const GURL& image_url,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {

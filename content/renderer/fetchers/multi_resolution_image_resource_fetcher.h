@@ -37,6 +37,9 @@ class MultiResolutionImageResourceFetcher{
   // Unique identifier for the request.
   int id() const { return id_; }
 
+  // HTTP status code upon fetch completion.
+  int http_status_code() const { return http_status_code_; }
+
  private:
   // ResourceFetcher::Callback. Decodes the image and invokes callback_.
   void OnURLFetchComplete(const WebKit::WebURLResponse& response,
@@ -46,6 +49,9 @@ class MultiResolutionImageResourceFetcher{
 
   // Unique identifier for the request.
   const int id_;
+
+  // HTTP status code upon fetch completion.
+  int http_status_code_;
 
   // URL of the image.
   const GURL image_url_;

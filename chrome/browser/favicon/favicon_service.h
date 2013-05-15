@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
@@ -224,7 +225,14 @@ class FaviconService : public CancelableRequestProvider,
       history::IconType icon_type,
       const gfx::Image& image);
 
+  // Avoid repeated requests to download missing favicon.
+  void UnableToDownloadFavicon(const GURL& icon_url);
+  bool WasUnableToDownloadFavicon(const GURL& icon_url) const;
+  void ClearUnableToDownloadFavicons();
+
  private:
+  typedef uint32 MissingFaviconURLHash;
+  base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
   HistoryService* history_service_;
 
   // Helper function for GetFaviconImageForURL(), GetRawFaviconForURL() and

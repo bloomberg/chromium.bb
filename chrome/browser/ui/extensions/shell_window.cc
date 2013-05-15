@@ -422,6 +422,7 @@ void ShellWindow::OnImageLoaded(const gfx::Image& image) {
 }
 
 void ShellWindow::DidDownloadFavicon(int id,
+                                     int http_status_code,
                                      const GURL& image_url,
                                      int requested_size,
                                      const std::vector<SkBitmap>& bitmaps) {

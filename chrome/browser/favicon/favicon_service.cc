@@ -4,6 +4,7 @@
 
 #include "chrome/browser/favicon/favicon_service.h"
 
+#include "base/hash.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/favicon/imported_favicon_usage.h"
@@ -260,6 +261,20 @@ void FaviconService::SetFavicons(
   history_service_->SetFavicons(page_url, icon_type, favicon_bitmap_data);
 }
 
+void FaviconService::UnableToDownloadFavicon(const GURL& icon_url) {
+  MissingFaviconURLHash url_hash = base::Hash(icon_url.spec());
+  missing_favicon_urls_.insert(url_hash);
+}
+
+bool FaviconService::WasUnableToDownloadFavicon(const GURL& icon_url) const {
+  MissingFaviconURLHash url_hash = base::Hash(icon_url.spec());
+  return missing_favicon_urls_.find(url_hash) != missing_favicon_urls_.end();
+}
+
+void FaviconService::ClearUnableToDownloadFavicons() {
+  missing_favicon_urls_.clear();
+}
+
 FaviconService::~FaviconService() {}
 
 CancelableTaskTracker::TaskId FaviconService::GetFaviconForURLImpl(
@@ -354,3 +369,4 @@ void FaviconService::RunFaviconRawCallbackWithBitmapResults(
       &resized_bitmap_data);
   callback.Run(bitmap_result);
 }
+
