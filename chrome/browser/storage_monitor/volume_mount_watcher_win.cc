@@ -62,15 +62,29 @@ DeviceType GetDeviceType(const string16& mount_point) {
   if (drive_type != DRIVE_REMOVABLE)
     return FLOPPY;
 
+  // Check device strings of the form "X:" and "\\.\X:"
+  // For floppy drives, these will return strings like "/Device/Floppy0"
   string16 device = mount_point;
   if (EndsWith(mount_point, L"\\", false))
-    device = mount_point.substr(0, device.length() - 1);
+    device = mount_point.substr(0, mount_point.length() - 1);
   string16 device_path;
-  if (!QueryDosDevice(device.c_str(), WriteInto(&device_path, kMaxPathBufLen),
-                      kMaxPathBufLen))
-    return REMOVABLE;
-  VLOG(1) << "Got device path " << device_path;
-  return device_path.find(L"Floppy") == string16::npos ? REMOVABLE : FLOPPY;
+  string16 device_path_slash;
+  DWORD dos_device = QueryDosDevice(
+      device.c_str(), WriteInto(&device_path, kMaxPathBufLen), kMaxPathBufLen);
+  string16 device_slash = string16(L"\\\\.\\");
+  device_slash += device;
+  DWORD dos_device_slash = QueryDosDevice(
+      device_slash.c_str(), WriteInto(&device_path_slash, kMaxPathBufLen),
+      kMaxPathBufLen);
+  if (dos_device == 0 && dos_device_slash == 0)
+    return FLOPPY;
+  VLOG(1) << "Got device path " << device_path << " and " << device_path_slash;
+  if (device_path.find(L"Floppy") != string16::npos ||
+      device_path_slash.find(L"Floppy") != string16::npos) {
+    return FLOPPY;
+  }
+
+  return REMOVABLE;
 }
 
 // Returns 0 if the devicetype is not volume.
@@ -111,6 +125,7 @@ bool GetDeviceDetails(const base::FilePath& device_path,
                          kMaxPathBufLen)) {
     return false;
   }
+  mount_point.resize(wcslen(mount_point.c_str()));
 
   // Note: experimentally this code does not spin a floppy drive. It
   // returns a GUID associated with the device, not the volume.
