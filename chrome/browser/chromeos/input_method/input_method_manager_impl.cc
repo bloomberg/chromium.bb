@@ -570,6 +570,11 @@ bool InputMethodManagerImpl::SwitchToNextInputMethod() {
     return false;
   }
 
+  // Do not consume key event if there is only one input method is enabled.
+  // Ctrl+Space or Alt+Shift may be used by other application.
+  if (active_input_method_ids_.size() == 1)
+    return false;
+
   // Find the next input method and switch to it.
   SwitchToNextInputMethodInternal(active_input_method_ids_,
                                   current_input_method_.id());
@@ -582,6 +587,11 @@ bool InputMethodManagerImpl::SwitchToPreviousInputMethod() {
     DVLOG(1) << "active input method is empty";
     return false;
   }
+
+  // Do not consume key event if there is only one input method is enabled.
+  // Ctrl+Space or Alt+Shift may be used by other application.
+  if (active_input_method_ids_.size() == 1)
+    return false;
 
   if (previous_input_method_.id().empty() ||
       previous_input_method_.id() == current_input_method_.id()) {
