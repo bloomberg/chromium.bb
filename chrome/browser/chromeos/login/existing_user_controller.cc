@@ -826,6 +826,9 @@ void ExistingUserController::OnOffTheRecordLoginSuccess() {
 }
 
 void ExistingUserController::OnPasswordChangeDetected() {
+  is_login_in_progress_ = false;
+  offline_failed_ = false;
+
   // Must not proceed without signature verification.
   if (CrosSettingsProvider::TRUSTED != cros_settings_->PrepareTrustedValues(
       base::Bind(&ExistingUserController::OnPasswordChangeDetected,
@@ -858,6 +861,9 @@ void ExistingUserController::OnPasswordChangeDetected() {
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
+  is_login_in_progress_ = false;
+  offline_failed_ = false;
+
   ShowError(IDS_LOGIN_ERROR_WHITELIST, email);
 
   // Reenable clicking on other windows and status area.
@@ -878,6 +884,8 @@ void ExistingUserController::PolicyLoadFailed() {
   ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, "");
 
   // Reenable clicking on other windows and status area.
+  is_login_in_progress_ = false;
+  offline_failed_ = false;
   login_display_->SetUIEnabled(true);
 
   display_email_.clear();
