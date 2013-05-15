@@ -77,6 +77,7 @@ public:
     enum SyntaxErrorType {
         NoSyntaxError,
         PropertyDeclarationError,
+        InvalidPropertyValueError,
         GeneralSyntaxError
     };
 
@@ -102,6 +103,7 @@ public:
     void rollbackLastProperties(int num);
     bool hasProperties() const { return !m_parsedProperties.isEmpty(); }
     void addExpandedPropertyForValue(CSSPropertyID propId, PassRefPtr<CSSValue>, bool);
+    void setCurrentProperty(CSSPropertyID);
 
     bool parseValue(CSSPropertyID, bool important);
     bool parseShorthand(CSSPropertyID, const StylePropertyShorthand&, bool important);

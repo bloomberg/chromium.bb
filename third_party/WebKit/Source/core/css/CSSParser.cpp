@@ -1279,6 +1279,7 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
     cssyyparse(this);
 
     m_rule = 0;
+    m_id = CSSPropertyInvalid;
 
     bool ok = false;
     if (m_hasFontFaceOnlyValues)
@@ -1709,6 +1710,11 @@ void CSSParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRefPtr<CSS
     const CSSPropertyID* longhands = shorthand.properties();
     for (unsigned i = 0; i < shorthandLength; ++i)
         addProperty(longhands[i], value, important);
+}
+
+void CSSParser::setCurrentProperty(CSSPropertyID propId)
+{
+    m_id = propId;
 }
 
 bool CSSParser::parseValue(CSSPropertyID propId, bool important)
@@ -10943,13 +10949,19 @@ void CSSParser::syntaxError(const CSSParserLocation& location, SyntaxErrorType e
 {
     if (!isLoggingErrors())
         return;
-    if (!InspectorInstrumentation::cssErrorFilter(location, error))
+
+    m_ignoreErrorsInDeclaration = true;
+    if (!InspectorInstrumentation::cssErrorFilter(location, m_id, error))
         return;
 
     StringBuilder builder;
     switch (error) {
     case PropertyDeclarationError:
         builder.appendLiteral("Invalid CSS property declaration at: ");
+        break;
+
+    case InvalidPropertyValueError:
+        builder.appendLiteral("Invalid CSS property value starting with: ");
         break;
 
     default:
@@ -10962,8 +10974,6 @@ void CSSParser::syntaxError(const CSSParserLocation& location, SyntaxErrorType e
         builder.append(location.token.characters16(), location.token.length());
 
     logError(builder.toString(), location.lineNumber);
-
-    m_ignoreErrorsInDeclaration = true;
 }
 
 bool CSSParser::isLoggingErrors()
@@ -11335,6 +11345,7 @@ void CSSParser::startProperty()
 
 void CSSParser::endProperty(bool isImportantFound, bool isPropertyParsed, SyntaxErrorType errorType)
 {
+    m_id = CSSPropertyInvalid;
     if (m_sourceDataHandler)
         m_sourceDataHandler->endProperty(isImportantFound, isPropertyParsed, safeUserStringTokenOffset(), errorType);
 }

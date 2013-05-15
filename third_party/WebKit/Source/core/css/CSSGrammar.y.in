@@ -1562,20 +1562,21 @@ declaration:
         parser->endProperty($5, true);
     }
     |
-    property ':' maybe_space expr prio {
+    property ':' maybe_space error_location expr prio {
         $$ = false;
         bool isPropertyParsed = false;
-        if ($1 && $4) {
-            parser->m_valueList = parser->sinkFloatingValueList($4);
+        if ($1 && $5) {
+            parser->m_valueList = parser->sinkFloatingValueList($5);
             int oldParsedProperties = parser->m_parsedProperties.size();
-            $$ = parser->parseValue(static_cast<CSSPropertyID>($1), $5);
-            if (!$$)
+            $$ = parser->parseValue(static_cast<CSSPropertyID>($1), $6);
+            if (!$$) {
                 parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
-            else
+                parser->syntaxError($4, CSSParser::InvalidPropertyValueError);
+            } else
                 isPropertyParsed = true;
             parser->m_valueList = nullptr;
         }
-        parser->endProperty($5, isPropertyParsed);
+        parser->endProperty($6, isPropertyParsed);
     }
     |
     property declaration_recovery {
@@ -1583,7 +1584,7 @@ declaration:
         $$ = false;
     }
     |
-    property ':' maybe_space expr prio declaration_recovery {
+    property ':' maybe_space error_location expr prio declaration_recovery {
         /* When we encounter something like p {color: red !important fail;} we should drop the declaration */
         parser->endProperty(false, false);
         $$ = false;
@@ -1611,6 +1612,7 @@ declaration_recovery:
 property:
     IDENT maybe_space {
         $$ = cssPropertyID($1);
+        parser->setCurrentProperty($$);
     }
   ;
 
@@ -1645,7 +1647,9 @@ valid_expr:
   ;
 
 expr_recovery:
-    error error_location error_recovery
+    error error_location error_recovery {
+        parser->syntaxError($2, CSSParser::PropertyDeclarationError);
+    }
   ;
 
 operator:

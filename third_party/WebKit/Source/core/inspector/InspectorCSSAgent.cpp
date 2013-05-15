@@ -29,6 +29,7 @@
 #include "InspectorTypeBuilder.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSImportRule.h"
+#include "core/css/CSSParser.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSRuleList.h"
@@ -604,6 +605,57 @@ CSSStyleRule* InspectorCSSAgent::asCSSStyleRule(CSSRule* rule)
     if (rule->type() != CSSRule::STYLE_RULE)
         return 0;
     return static_cast<CSSStyleRule*>(rule);
+}
+
+static bool hasPrefix(const CSSParserString& string, const char* prefix)
+{
+    const size_t length = string.length();
+    static const int lowerCaseOffset = 'A' - 'a';
+    size_t index = 0;
+    while (prefix[index] && index < length) {
+        int c = prefix[index];
+        if (c >= 'A' && c <= 'Z')
+            c -= lowerCaseOffset;
+
+        if (c != string[index])
+            return false;
+        ++index;
+    }
+    return true;
+}
+
+static bool hasVendorSpecificPrefix(const CSSParserString& string)
+{
+    const size_t length = string.length();
+    if (length < 4 || string[0] != '-')
+        return false;
+
+    for (size_t i = 1; i < length; ++i) {
+        int c = string[i];
+        if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z'))
+            return i >= 2 && c == '-';
+    }
+    return false;
+}
+
+bool InspectorCSSAgent::cssErrorFilter(const CSSParserLocation& location, int propertyId, int errorType)
+{
+    const size_t tokenLength = location.token.length();
+    // Ignore errors like "*property: value". This trick is used for IE7: http://stackoverflow.com/questions/4563651/what-does-an-asterisk-do-in-a-css-property-name
+    if (errorType == CSSParser::PropertyDeclarationError && tokenLength > 0 && location.token[0] == '*')
+        return false;
+
+    // The "filter" property is commonly used instead of "opacity" for IE9.
+    if (propertyId == CSSPropertyFilter && (errorType == CSSParser::PropertyDeclarationError || errorType == CSSParser::InvalidPropertyValueError))
+        return false;
+
+    if (errorType == CSSParser::InvalidPropertyValueError && hasVendorSpecificPrefix(location.token) && !hasPrefix(location.token, "-webkit-"))
+        return false;
+
+    if (propertyId == CSSPropertyCursor && errorType == CSSParser::InvalidPropertyValueError && hasPrefix(location.token, "hand"))
+        return false;
+
+    return true;
 }
 
 InspectorCSSAgent::InspectorCSSAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent)

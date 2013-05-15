@@ -55,7 +55,7 @@
 
 namespace WebCore {
 
-class CSSParserLocation;
+struct CSSParserLocation;
 class CSSRule;
 class CachedResource;
 class CharacterData;
@@ -194,7 +194,7 @@ inline InstrumentingAgents* instrumentingAgentsForElement(Element* element)
     return instrumentingAgentsForDocument(element->document());
 }
 
-bool cssErrorFilter(const CSSParserLocation&, int errorType);
+bool cssErrorFilter(const CSSParserLocation&, int propertyId, int errorType);
 
 } // namespace InspectorInstrumentation
 
