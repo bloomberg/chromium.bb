@@ -51,8 +51,7 @@
       },
       "theme": {
          "id": "mblmlcbknbnfebdfjnolmcapmdofhmme",
-         "pack": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/Cached Theme.pak",
-         "use_system": false
+         "pack": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/Cached Theme.pak"
       }
    },
    "profile": {

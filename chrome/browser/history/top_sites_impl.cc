@@ -233,41 +233,6 @@ bool TopSitesImpl::SetPageThumbnail(const GURL& url,
   return SetPageThumbnailEncoded(url, thumbnail_data, score);
 }
 
-bool TopSitesImpl::SetPageThumbnailToJPEGBytes(
-    const GURL& url,
-    const base::RefCountedMemory* memory,
-    const ThumbnailScore& score) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!loaded_) {
-    // TODO(sky): I need to cache these and apply them after the load
-    // completes.
-    return false;
-  }
-
-  bool add_temp_thumbnail = false;
-  if (!IsKnownURL(url)) {
-    if (!IsFull()) {
-      add_temp_thumbnail = true;
-    } else {
-      return false;  // This URL is not known to us.
-    }
-  }
-
-  if (!HistoryService::CanAddURL(url))
-    return false;  // It's not a real webpage.
-
-  if (add_temp_thumbnail) {
-    // Always remove the existing entry and then add it back. That way if we end
-    // up with too many temp thumbnails we'll prune the oldest first.
-    RemoveTemporaryThumbnailByURL(url);
-    AddTemporaryThumbnail(url, memory, score);
-    return true;
-  }
-
-  return SetPageThumbnailEncoded(url, memory, score);
-}
-
 // WARNING: this function may be invoked on any thread.
 void TopSitesImpl::GetMostVisitedURLs(
     const GetMostVisitedURLsCallback& callback) {
@@ -554,7 +519,7 @@ TopSitesImpl::~TopSitesImpl() {
 
 bool TopSitesImpl::SetPageThumbnailNoDB(
     const GURL& url,
-    const base::RefCountedMemory* thumbnail_data,
+    const base::RefCountedBytes* thumbnail_data,
     const ThumbnailScore& score) {
   // This should only be invoked when we know about the url.
   DCHECK(cache_->IsKnownURL(url));
@@ -575,7 +540,7 @@ bool TopSitesImpl::SetPageThumbnailNoDB(
       image->thumbnail.get())
     return false;  // The one we already have is better.
 
-  image->thumbnail = const_cast<base::RefCountedMemory*>(thumbnail_data);
+  image->thumbnail = const_cast<base::RefCountedBytes*>(thumbnail_data);
   image->thumbnail_score = new_score_with_redirects;
 
   ResetThreadSafeImageCache();
@@ -584,7 +549,7 @@ bool TopSitesImpl::SetPageThumbnailNoDB(
 
 bool TopSitesImpl::SetPageThumbnailEncoded(
     const GURL& url,
-    const base::RefCountedMemory* thumbnail,
+    const base::RefCountedBytes* thumbnail,
     const ThumbnailScore& score) {
   if (!SetPageThumbnailNoDB(url, thumbnail, score))
     return false;
@@ -628,16 +593,15 @@ void TopSitesImpl::RemoveTemporaryThumbnailByURL(const GURL& url) {
   }
 }
 
-void TopSitesImpl::AddTemporaryThumbnail(
-    const GURL& url,
-    const base::RefCountedMemory* thumbnail,
-    const ThumbnailScore& score) {
+void TopSitesImpl::AddTemporaryThumbnail(const GURL& url,
+                                         const base::RefCountedBytes* thumbnail,
+                                         const ThumbnailScore& score) {
   if (temp_images_.size() == kMaxTempTopImages)
     temp_images_.erase(temp_images_.begin());
 
   TempImage image;
   image.first = url;
-  image.second.thumbnail = const_cast<base::RefCountedMemory*>(thumbnail);
+  image.second.thumbnail = const_cast<base::RefCountedBytes*>(thumbnail);
   image.second.thumbnail_score = score;
   temp_images_.push_back(image);
 }

@@ -601,7 +601,7 @@ struct Images {
   Images();
   ~Images();
 
-  scoped_refptr<base::RefCountedMemory> thumbnail;
+  scoped_refptr<base::RefCountedBytes> thumbnail;
   ThumbnailScore thumbnail_score;
 
   // TODO(brettw): this will eventually store the favicon.
