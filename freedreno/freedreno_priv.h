@@ -37,6 +37,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <pthread.h>
 
 #include "xf86drm.h"
 #include "xf86atomic.h"
@@ -49,6 +50,18 @@
 
 struct fd_device {
 	int fd;
+	atomic_t refcnt;
+
+	/* tables to keep track of bo's, to avoid "evil-twin" fd_bo objects:
+	 *
+	 *   handle_table: maps handle to fd_bo
+	 *   name_table: maps flink name to fd_bo
+	 *
+	 * We end up needing two tables, because DRM_IOCTL_GEM_OPEN always
+	 * returns a new handle.  So we need to figure out if the bo is already
+	 * open in the process first, before calling gem-open.
+	 */
+	void *handle_table, *name_table;
 };
 
 struct fd_pipe {

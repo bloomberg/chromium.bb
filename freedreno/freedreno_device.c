@@ -26,20 +26,77 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "freedreno_drmif.h"
 #include "freedreno_priv.h"
 
-struct fd_device * fd_device_new(int fd)
+static pthread_mutex_t table_lock = PTHREAD_MUTEX_INITIALIZER;
+static void * dev_table;
+
+static struct fd_device * fd_device_new_impl(int fd)
 {
 	struct fd_device *dev = calloc(1, sizeof(*dev));
 	if (!dev)
 		return NULL;
+	atomic_set(&dev->refcnt, 1);
 	dev->fd = fd;
+	dev->handle_table = drmHashCreate();
+	dev->name_table = drmHashCreate();
+	return dev;
+}
+
+/* use inode for key into dev_table, rather than fd, to avoid getting
+ * confused by multiple-opens:
+ */
+static int devkey(int fd)
+{
+	struct stat s;
+	if (fstat(fd, &s)) {
+		ERROR_MSG("stat failed: %s", strerror(errno));
+		return -1;
+	}
+	return s.st_ino;
+}
+
+struct fd_device * fd_device_new(int fd)
+{
+	struct fd_device *dev = NULL;
+	int key = devkey(fd);
+
+	pthread_mutex_lock(&table_lock);
+
+	if (!dev_table)
+		dev_table = drmHashCreate();
+
+	if (drmHashLookup(dev_table, key, (void **)&dev)) {
+		dev = fd_device_new_impl(fd);
+		drmHashInsert(dev_table, key, dev);
+	} else {
+		dev = fd_device_ref(dev);
+	}
+
+	pthread_mutex_unlock(&table_lock);
+
+	return dev;
+}
+
+struct fd_device * fd_device_ref(struct fd_device *dev)
+{
+	atomic_inc(&dev->refcnt);
 	return dev;
 }
 
 void fd_device_del(struct fd_device *dev)
 {
+	if (!atomic_dec_and_test(&dev->refcnt))
+		return;
+	pthread_mutex_lock(&table_lock);
+	drmHashDestroy(dev->handle_table);
+	drmHashDestroy(dev->name_table);
+	drmHashDelete(dev_table, devkey(dev->fd));
+	pthread_mutex_unlock(&table_lock);
 	free(dev);
 }
-

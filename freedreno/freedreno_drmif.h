@@ -68,6 +68,7 @@ enum fd_param_id {
  */
 
 struct fd_device * fd_device_new(int fd);
+struct fd_device * fd_device_ref(struct fd_device *dev);
 void fd_device_del(struct fd_device *dev);
 
 

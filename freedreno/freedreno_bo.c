@@ -31,17 +31,46 @@
 
 #include <linux/fb.h>
 
+static pthread_mutex_t table_lock = PTHREAD_MUTEX_INITIALIZER;
+
+/* set buffer name, and add to table, call w/ table_lock held: */
+static void set_name(struct fd_bo *bo, uint32_t name)
+{
+	bo->name = name;
+	/* add ourself into the handle table: */
+	drmHashInsert(bo->dev->name_table, name, bo);
+}
+
+/* lookup a buffer, call w/ table_lock held: */
+static struct fd_bo * lookup_bo(void *tbl, uint32_t key)
+{
+	struct fd_bo *bo = NULL;
+	if (!drmHashLookup(tbl, key, (void **)&bo)) {
+		/* found, incr refcnt and return: */
+		bo = fd_bo_ref(bo);
+	}
+	return bo;
+}
+
+/* allocate a new buffer object, call w/ table_lock held */
 static struct fd_bo * bo_from_handle(struct fd_device *dev,
 		uint32_t size, uint32_t handle)
 {
 	unsigned i;
 	struct fd_bo *bo = calloc(1, sizeof(*bo));
-	if (!bo)
+	if (!bo) {
+		struct drm_gem_close req = {
+				.handle = handle,
+		};
+		drmIoctl(dev->fd, DRM_IOCTL_GEM_CLOSE, &req);
 		return NULL;
-	bo->dev = dev;
+	}
+	bo->dev = fd_device_ref(dev);
 	bo->size = size;
 	bo->handle = handle;
 	atomic_set(&bo->refcnt, 1);
+	/* add ourself into the handle table: */
+	drmHashInsert(dev->handle_table, handle, bo);
 	for (i = 0; i < ARRAY_SIZE(bo->list); i++)
 		list_inithead(&bo->list[i]);
 	return bo;
@@ -95,7 +124,9 @@ struct fd_bo * fd_bo_new(struct fd_device *dev,
 		return NULL;
 	}
 
+	pthread_mutex_lock(&table_lock);
 	bo = bo_from_handle(dev, size, req.handle);
+	pthread_mutex_unlock(&table_lock);
 	if (!bo) {
 		goto fail;
 	}
@@ -127,6 +158,7 @@ struct fd_bo * fd_bo_from_fbdev(struct fd_pipe *pipe,
 		return NULL;
 	}
 
+	pthread_mutex_lock(&table_lock);
 	bo = bo_from_handle(pipe->dev, size, req.handle);
 
 	/* this is fugly, but works around a bug in the kernel..
@@ -152,9 +184,11 @@ struct fd_bo * fd_bo_from_fbdev(struct fd_pipe *pipe,
 		bo->gpuaddr = req.gpuaddr;
 		bo->map = fbmem;
 	}
+	pthread_mutex_unlock(&table_lock);
 
 	return bo;
 fail:
+	pthread_mutex_unlock(&table_lock);
 	if (bo)
 		fd_bo_del(bo);
 	return NULL;
@@ -167,13 +201,28 @@ struct fd_bo * fd_bo_from_name(struct fd_device *dev, uint32_t name)
 	};
 	struct fd_bo *bo;
 
+	pthread_mutex_lock(&table_lock);
+
+	/* check name table first, to see if bo is already open: */
+	bo = lookup_bo(dev->name_table, name);
+	if (bo)
+		goto out_unlock;
+
 	if (drmIoctl(dev->fd, DRM_IOCTL_GEM_OPEN, &req)) {
-		return NULL;
+		ERROR_MSG("gem-open failed: %s", strerror(errno));
+		goto out_unlock;
 	}
+
+	bo = lookup_bo(dev->handle_table, req.handle);
+	if (bo)
+		goto out_unlock;
 
 	bo = bo_from_handle(dev, req.size, req.handle);
 	if (bo)
-		bo->name = name;
+		set_name(bo, name);
+
+out_unlock:
+	pthread_mutex_unlock(&table_lock);
 
 	return bo;
 }
@@ -196,9 +245,13 @@ void fd_bo_del(struct fd_bo *bo)
 		struct drm_gem_close req = {
 				.handle = bo->handle,
 		};
+		pthread_mutex_lock(&table_lock);
+		drmHashDelete(bo->dev->handle_table, bo->handle);
 		drmIoctl(bo->dev->fd, DRM_IOCTL_GEM_CLOSE, &req);
+		pthread_mutex_unlock(&table_lock);
 	}
 
+	fd_device_del(bo->dev);
 	free(bo);
 }
 
@@ -215,7 +268,9 @@ int fd_bo_get_name(struct fd_bo *bo, uint32_t *name)
 			return ret;
 		}
 
-		bo->name = req.name;
+		pthread_mutex_lock(&table_lock);
+		set_name(bo, req.name);
+		pthread_mutex_unlock(&table_lock);
 	}
 
 	*name = bo->name;
