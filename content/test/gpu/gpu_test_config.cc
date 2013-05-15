@@ -58,7 +58,8 @@ GPUTestConfig::OS GetCurrentOS() {
 }  // namespace anonymous
 
 GPUTestConfig::GPUTestConfig()
-    : os_(kOsUnknown),
+    : validate_gpu_info_(true),
+      os_(kOsUnknown),
       gpu_device_id_(0),
       build_type_(kBuildTypeUnknown) {
 }
@@ -88,6 +89,8 @@ void GPUTestConfig::set_build_type(int32 build_type) {
 }
 
 bool GPUTestConfig::IsValid() const {
+  if (!validate_gpu_info_)
+    return true;
   if (gpu_device_id_ != 0 && (gpu_vendor_.size() != 1 || gpu_vendor_[0] == 0))
     return false;
   return true;
@@ -122,6 +125,10 @@ bool GPUTestConfig::OverlapsWith(const GPUTestConfig& config) const {
   return true;
 }
 
+void GPUTestConfig::DisableGPUInfoValidation() {
+  validate_gpu_info_ = false;
+}
+
 void GPUTestConfig::ClearGPUVendor() {
   gpu_vendor_.clear();
 }
@@ -135,6 +142,7 @@ void GPUTestBotConfig::AddGPUVendor(uint32 gpu_vendor) {
 }
 
 bool GPUTestBotConfig::SetGPUInfo(const content::GPUInfo& gpu_info) {
+  DCHECK(validate_gpu_info_);
   if (gpu_info.gpu.device_id == 0 || gpu_info.gpu.vendor_id == 0)
     return false;
   ClearGPUVendor();
@@ -160,10 +168,12 @@ bool GPUTestBotConfig::IsValid() const {
     default:
       return false;
   }
-  if (gpu_vendor().size() != 1 || gpu_vendor()[0] == 0)
-    return false;
-  if (gpu_device_id() == 0)
-    return false;
+  if (validate_gpu_info_) {
+    if (gpu_vendor().size() != 1 || gpu_vendor()[0] == 0)
+      return false;
+    if (gpu_device_id() == 0)
+      return false;
+  }
   switch (build_type()) {
     case kBuildTypeRelease:
     case kBuildTypeDebug:
@@ -212,9 +222,15 @@ bool GPUTestBotConfig::LoadCurrentConfig(const content::GPUInfo* gpu_info) {
   bool rt;
   if (gpu_info == NULL) {
     content::GPUInfo my_gpu_info;
-    gpu_info_collector::CollectGpuID(&my_gpu_info.gpu.vendor_id,
-                                     &my_gpu_info.gpu.device_id);
-    rt = SetGPUInfo(my_gpu_info);
+    gpu_info_collector::GpuIDResult result;
+    result = gpu_info_collector::CollectGpuID(&my_gpu_info.gpu.vendor_id,
+                                              &my_gpu_info.gpu.device_id);
+    if (result == gpu_info_collector::kGpuIDNotSupported) {
+      DisableGPUInfoValidation();
+      rt = true;
+    } else {
+      rt = SetGPUInfo(my_gpu_info);
+    }
   } else {
     rt = SetGPUInfo(*gpu_info);
   }

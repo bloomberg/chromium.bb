@@ -190,6 +190,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'content/test/data/click-noreferrer-links.html',
         'content/test/data/browser_plugin_focus.html',
         'content/test/data/media',
+        'third_party/webgl_conformance',
     ]
   return []
 

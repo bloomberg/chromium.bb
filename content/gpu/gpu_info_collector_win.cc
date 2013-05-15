@@ -518,7 +518,7 @@ bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
   return true;
 }
 
-bool CollectGpuID(uint32* vendor_id, uint32* device_id) {
+GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   DCHECK(vendor_id && device_id);
   *vendor_id = 0;
   *device_id = 0;
@@ -542,9 +542,9 @@ bool CollectGpuID(uint32* vendor_id, uint32* device_id) {
     base::HexStringToInt(WideToASCII(device_string), &device);
     *vendor_id = vendor;
     *device_id = device;
-    return true;
+    return kGpuIDSuccess;
   }
-  return false;
+  return kGpuIDFailure;
 }
 
 bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {

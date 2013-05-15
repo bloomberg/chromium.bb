@@ -26,6 +26,9 @@ class WebGLConformanceTest : public ContentBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Allow privileged WebGL extensions.
     command_line->AppendSwitch(switches::kEnablePrivilegedWebGLExtensions);
+#if defined(OS_ANDROID)
+    command_line->AppendSwitch(switches::kEnableExperimentalWebGL);
+#endif
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
