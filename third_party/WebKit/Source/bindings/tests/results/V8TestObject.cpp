@@ -2547,20 +2547,6 @@ static v8::Handle<v8::Value> optionsObjectMethodCallback(const v8::Arguments& ar
     return TestObjV8Internal::optionsObjectMethod(args);
 }
 
-static v8::Handle<v8::Value> namedItemMethod(const v8::Arguments& args)
-{
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
-    TestObj* imp = V8TestObject::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, name, args[0]);
-    return v8String(imp->namedItem(name), args.GetIsolate(), ReturnUnsafeHandle);
-}
-
-static v8::Handle<v8::Value> namedItemMethodCallback(const v8::Arguments& args)
-{
-    return TestObjV8Internal::namedItemMethod(args);
-}
-
 static v8::Handle<v8::Value> methodWithExceptionMethod(const v8::Arguments& args)
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4193,7 +4179,6 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjectMethods[] = {
     {"methodWithEnumArg", TestObjV8Internal::methodWithEnumArgMethodCallback, 0, 1},
     {"serializedValue", TestObjV8Internal::serializedValueMethodCallback, 0, 1},
     {"optionsObject", TestObjV8Internal::optionsObjectMethodCallback, 0, 1},
-    {"namedItem", TestObjV8Internal::namedItemMethodCallback, 0, 1},
     {"methodWithException", TestObjV8Internal::methodWithExceptionMethodCallback, 0, 0},
     {"customMethod", TestObjV8Internal::customMethodMethodCallback, 0, 0},
     {"customMethodWithArgs", TestObjV8Internal::customMethodWithArgsMethodCallback, 0, 3},

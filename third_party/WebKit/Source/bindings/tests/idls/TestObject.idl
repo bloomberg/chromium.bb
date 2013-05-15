@@ -90,7 +90,7 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
     // Indexed/named properties
     [ImplementedAs=item] getter Node (unsigned long index);
-    getter DOMString namedItem(DOMString name);
+    [ImplementedAs=namedItem] getter DOMString (DOMString name);
 
     // Exceptions
     [RaisesException] void methodWithException();

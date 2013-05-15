@@ -5466,7 +5466,7 @@ sub LinkOverloadedFunctions
     my %nameToFunctionsMap = ();
     foreach my $function (@{$interface->functions}) {
         my $name = $function->signature->name;
-        $nameToFunctionsMap{$name} = [] if !exists $nameToFunctionsMap{$name};
+        $nameToFunctionsMap{$name} = [] if !exists $nameToFunctionsMap{$name} or !$name;  # Nameless functions cannot be overloaded
         push(@{$nameToFunctionsMap{$name}}, $function);
         $function->{overloads} = $nameToFunctionsMap{$name};
         $function->{overloadIndex} = @{$nameToFunctionsMap{$name}};
