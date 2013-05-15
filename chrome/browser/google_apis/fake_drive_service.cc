@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"

@@ -6,7 +6,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -29,7 +28,7 @@ using testing::WithArg;
 namespace {
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
-public:
+ public:
   MOCK_METHOD2(OnPasswordStoreRequestDone,
                void(CancelableRequestProvider::Handle,
                     const std::vector<content::PasswordForm*>&));

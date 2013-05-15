@@ -9,7 +9,6 @@
 #include <shellapi.h>
 #endif
 
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/app/chrome_command_ids.h"

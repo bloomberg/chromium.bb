@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
@@ -662,15 +661,15 @@ void BrowsingDataRemover::ClearLoggedInPredictor() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!waiting_for_clear_logged_in_predictor_);
 
- predictors::PredictorDatabase* predictor_db =
-        predictors::PredictorDatabaseFactory::GetForProfile(profile_);
- if (!predictor_db)
-   return;
+  predictors::PredictorDatabase* predictor_db =
+      predictors::PredictorDatabaseFactory::GetForProfile(profile_);
+  if (!predictor_db)
+    return;
 
- predictors::LoggedInPredictorTable* logged_in_table =
-     predictor_db->logged_in_table();
- if (!logged_in_table)
-   return;
+  predictors::LoggedInPredictorTable* logged_in_table =
+      predictor_db->logged_in_table();
+  if (!logged_in_table)
+    return;
 
   waiting_for_clear_logged_in_predictor_ = true;
 
@@ -932,7 +931,6 @@ void BrowsingDataRemover::ClearQuotaManagedDataOnIOThread() {
       quota::kStorageTypeSyncable, delete_begin_,
       base::Bind(&BrowsingDataRemover::OnGotQuotaManagedOrigins,
                  base::Unretained(this)));
-
 }
 
 void BrowsingDataRemover::OnGotQuotaManagedOrigins(
@@ -1022,7 +1020,7 @@ void BrowsingDataRemover::OnClearedCookies(int num_deleted) {
     return;
   }
 
-  DCHECK(waiting_for_clear_cookies_count_ > 0);
+  DCHECK_GT(waiting_for_clear_cookies_count_, 0);
   --waiting_for_clear_cookies_count_;
   NotifyAndDeleteIfDone();
 }

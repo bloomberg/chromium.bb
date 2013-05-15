@@ -5,7 +5,6 @@
 #include "chrome/browser/value_store/value_store_unittest.h"
 
 #include "base/json/json_writer.h"
-#include "base/file_util.h"
 #include "base/values.h"
 
 using content::BrowserThread;

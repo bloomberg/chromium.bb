@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 
-#include "base/file_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"

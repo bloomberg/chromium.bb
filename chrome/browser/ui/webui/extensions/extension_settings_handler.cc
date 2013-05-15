@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -601,7 +600,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   Profile* profile = Profile::FromWebUI(web_ui());
 
   // Add the extensions to the results structure.
-  ListValue *extensions_list = new ListValue();
+  ListValue* extensions_list = new ListValue();
 
   extensions::ExtensionWarningService* warnings =
       extensions::ExtensionSystem::Get(profile)->warning_service();

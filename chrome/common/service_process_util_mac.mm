@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"

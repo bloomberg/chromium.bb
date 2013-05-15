@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"

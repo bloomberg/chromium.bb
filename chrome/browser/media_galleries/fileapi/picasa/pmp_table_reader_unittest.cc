@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_constants.h"

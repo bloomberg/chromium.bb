@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
@@ -30,8 +29,8 @@ namespace performance_monitor {
 // and avoid friending all the different test classes.
 class DatabaseTestHelper {
  public:
-  explicit DatabaseTestHelper(Database* database) : database_(database) { };
-  ~DatabaseTestHelper() { };
+  explicit DatabaseTestHelper(Database* database) : database_(database) { }
+  ~DatabaseTestHelper() { }
 
   bool Close() { return database_->Close(); }
 

@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/file_util.h"
 
 //--------------------- Sandbox Tests ---------------------
 // Below is a list of test functions that check the renderer sandbox.

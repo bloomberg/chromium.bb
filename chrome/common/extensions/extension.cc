@@ -7,7 +7,6 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"

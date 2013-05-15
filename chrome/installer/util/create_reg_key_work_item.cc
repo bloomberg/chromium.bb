@@ -4,7 +4,7 @@
 
 #include <shlwapi.h>
 
-#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"

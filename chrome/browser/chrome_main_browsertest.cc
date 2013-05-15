@@ -5,7 +5,6 @@
 #include "chrome/test/ui/ui_test.h"
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "chrome/browser/ui/browser.h"

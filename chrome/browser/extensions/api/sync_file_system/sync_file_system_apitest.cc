@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/event_names.h"

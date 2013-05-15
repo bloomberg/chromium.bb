@@ -4,7 +4,6 @@
 
 #include "chrome/common/net/x509_certificate_model.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "net/base/test_data_directory.h"

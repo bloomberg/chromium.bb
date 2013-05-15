@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
@@ -214,7 +213,7 @@ TEST_F(ThumbnailDatabaseTest, UpdateIconMapping) {
   GURL url("http://google.com");
   FaviconID id = db.AddFavicon(url, TOUCH_ICON, GetDefaultFaviconSizes());
 
-  EXPECT_TRUE(0 < db.AddIconMapping(url, id));
+  EXPECT_LT(0, db.AddIconMapping(url, id));
   std::vector<IconMapping> icon_mapping;
   EXPECT_TRUE(db.GetIconMappingsForPageURL(url, &icon_mapping));
   ASSERT_EQ(1u, icon_mapping.size());
@@ -245,10 +244,10 @@ TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   FaviconID id = db.AddFavicon(url, TOUCH_ICON, GetDefaultFaviconSizes());
   base::Time time = base::Time::Now();
   db.AddFaviconBitmap(id, favicon, time, gfx::Size());
-  EXPECT_TRUE(0 < db.AddIconMapping(url, id));
+  EXPECT_LT(0, db.AddIconMapping(url, id));
 
   FaviconID id2 = db.AddFavicon(url, FAVICON, GetDefaultFaviconSizes());
-  EXPECT_TRUE(0 < db.AddIconMapping(url, id2));
+  EXPECT_LT(0, db.AddIconMapping(url, id2));
   ASSERT_NE(id, id2);
 
   std::vector<IconMapping> icon_mapping;
@@ -278,12 +277,12 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
   base::Time time = base::Time::Now();
   db.AddFaviconBitmap(id1, favicon, time, kSmallSize);
   db.AddFaviconBitmap(id1, favicon, time, kLargeSize);
-  EXPECT_TRUE(0 < db.AddIconMapping(url, id1));
+  EXPECT_LT(0, db.AddIconMapping(url, id1));
 
   FaviconID id2 = db.AddFavicon(url, FAVICON, GetFaviconSizesSmallAndLarge());
   EXPECT_NE(id1, id2);
   db.AddFaviconBitmap(id2, favicon, time, kSmallSize);
-  EXPECT_TRUE(0 < db.AddIconMapping(url, id2));
+  EXPECT_LT(0, db.AddIconMapping(url, id2));
 
   std::vector<IconMapping> icon_mappings;
   EXPECT_TRUE(db.GetIconMappingsForPageURL(url, &icon_mappings));

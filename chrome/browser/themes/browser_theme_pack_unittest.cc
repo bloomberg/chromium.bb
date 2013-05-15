@@ -4,7 +4,6 @@
 
 #include "chrome/browser/themes/browser_theme_pack.h"
 
-#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
@@ -119,7 +118,8 @@ class BrowserThemePackTest : public ::testing::Test {
   void ParseImageNamesDictionary(
       DictionaryValue* value,
       std::map<int, base::FilePath>* out_file_paths) {
-    theme_pack_->ParseImageNamesFromJSON(value, base::FilePath(), out_file_paths);
+    theme_pack_->ParseImageNamesFromJSON(value, base::FilePath(),
+                                         out_file_paths);
 
     // Build the source image list for HasCustomImage().
     theme_pack_->BuildSourceImagesArray(*out_file_paths);

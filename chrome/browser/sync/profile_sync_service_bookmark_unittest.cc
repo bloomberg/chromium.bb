@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -842,7 +841,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, ServerChangeWithNonCanonicalURL) {
 
     adds.ApplyPendingChanges(change_processor_.get());
 
-    EXPECT_TRUE(model_->other_node()->child_count() == 1);
+    EXPECT_EQ(1, model_->other_node()->child_count());
     ExpectModelMatch(&trans);
   }
 
@@ -852,7 +851,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, ServerChangeWithNonCanonicalURL) {
   StartSync();
 
   // There should still be just the one bookmark.
-  EXPECT_TRUE(model_->other_node()->child_count() == 1);
+  EXPECT_EQ(1, model_->other_node()->child_count());
   ExpectModelMatch();
 }
 
@@ -1403,7 +1402,6 @@ void ProfileSyncServiceBookmarkTestWithData::
   CompareWithTestData(f5_node, kF5Children, arraysize(kF5Children), &count);
   const BookmarkNode* f6_node = mobile_bookmarks_node->GetChild(1);
   CompareWithTestData(f6_node, kF6Children, arraysize(kF6Children), &count);
-
 }
 
 // Tests persistence of the profile sync service by unloading the

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"

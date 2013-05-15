@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
-#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -689,7 +688,7 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 #if defined(OS_ANDROID)
   registry->RegisterBooleanPref(
       prefs::kCrashReportingEnabled, false);
-#endif // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 }
 
 DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {

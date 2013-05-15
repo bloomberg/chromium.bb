@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/dns/mock_host_resolver.h"
 

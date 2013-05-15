@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"

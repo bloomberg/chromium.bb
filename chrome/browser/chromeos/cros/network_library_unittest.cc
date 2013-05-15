@@ -10,7 +10,6 @@
 
 #include "base/at_exit.h"
 #include "base/callback.h"
-#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
@@ -72,7 +71,6 @@ void VirtualNetworkConnectCallback(NetworkLibrary* cros, VirtualNetwork* vpn) {
 }  // namespace
 
 TEST(NetworkLibraryTest, DecodeNonAsciiSSID) {
-
   // Sets network name.
   {
     std::string wifi_setname = "SSID TEST";
@@ -199,6 +197,7 @@ class NetworkLibraryStubTest : public ::testing::Test {
 
   ScopedStubCrosEnabler cros_stub_;
   NetworkLibraryImplStub* cros_;
+
  protected:
   scoped_refptr<net::CryptoModule> slot_;
   crypto::ScopedTestNSSDB test_nssdb_;

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 
-#include "base/file_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"

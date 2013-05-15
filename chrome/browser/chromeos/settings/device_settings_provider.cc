@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -144,7 +143,6 @@ void DeviceSettingsProvider::OwnershipStatusChanged() {
   if (new_ownership_status == DeviceSettingsService::OWNERSHIP_TAKEN &&
       ownership_status_ == DeviceSettingsService::OWNERSHIP_NONE &&
       device_settings_service_->HasPrivateOwnerKey()) {
-
     // There shouldn't be any pending writes, since the cache writes are all
     // immediate.
     DCHECK(!store_callback_factory_.HasWeakPtrs());

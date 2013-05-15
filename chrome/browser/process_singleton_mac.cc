@@ -8,7 +8,6 @@
 
 #include "chrome/browser/process_singleton.h"
 
-#include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/posix/eintr_wrapper.h"
 #include "chrome/common/chrome_constants.h"

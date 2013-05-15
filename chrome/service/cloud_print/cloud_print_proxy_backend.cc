@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"

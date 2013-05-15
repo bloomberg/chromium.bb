@@ -4,7 +4,6 @@
 
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 
-#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"

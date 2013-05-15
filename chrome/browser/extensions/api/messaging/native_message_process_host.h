@@ -8,7 +8,6 @@
 #include <queue>
 #include <string>
 
-#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -37,7 +36,7 @@ class NativeMessageProcessHost
 #if defined(OS_POSIX)
     : public MessageLoopForIO::Watcher
 #endif  // !defined(OS_POSIX)
- {
+{
  public:
   // Interface for the object that receives messages from the native process.
   class Client {

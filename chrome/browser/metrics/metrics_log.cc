@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/perftimer.h"
@@ -272,7 +271,7 @@ void ProductDataToProto(const GoogleUpdateSettings::ProductData& product_data,
 #endif
 
 #if defined(OS_WIN)
-struct ScreenDPIInformation{
+struct ScreenDPIInformation {
   double max_dpi_x;
   double max_dpi_y;
 };
@@ -299,7 +298,7 @@ BOOL CALLBACK GetMonitorDPICallback(HMONITOR, HDC hdc, LPRECT, LPARAM dwData) {
 void WriteScreenDPIInformationProto(SystemProfileProto::Hardware* hardware) {
   HDC desktop_dc = GetDC(NULL);
   if (desktop_dc) {
-    ScreenDPIInformation si = {0,0};
+    ScreenDPIInformation si = {0, 0};
     if (EnumDisplayMonitors(desktop_dc, NULL, GetMonitorDPICallback,
             reinterpret_cast<LPARAM>(&si))) {
       hardware->set_max_dpi_x(si.max_dpi_x);

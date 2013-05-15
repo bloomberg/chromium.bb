@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"

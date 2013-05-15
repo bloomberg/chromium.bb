@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
@@ -15,7 +14,7 @@ using extensions::api::file_system::AcceptOption;
 
 namespace {
 
-void CheckExtensions(std::vector<base::FilePath::StringType>& expected,
+void CheckExtensions(const std::vector<base::FilePath::StringType>& expected,
     std::vector<base::FilePath::StringType>& actual) {
   EXPECT_EQ(expected.size(), actual.size());
   if (expected.size() != actual.size())

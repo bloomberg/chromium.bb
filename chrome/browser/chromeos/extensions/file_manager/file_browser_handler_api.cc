@@ -31,7 +31,6 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler_api.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"

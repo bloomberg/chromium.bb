@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"

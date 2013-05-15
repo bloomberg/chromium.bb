@@ -11,7 +11,6 @@
 #include "apps/field_trial_names.h"
 #include "apps/pref_names.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"

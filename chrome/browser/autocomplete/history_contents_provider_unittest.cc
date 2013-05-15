@@ -4,7 +4,6 @@
 
 #include "chrome/browser/autocomplete/history_contents_provider.h"
 
-#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"

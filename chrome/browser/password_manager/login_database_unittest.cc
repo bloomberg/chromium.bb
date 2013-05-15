@@ -5,7 +5,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"

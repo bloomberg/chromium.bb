@@ -4,13 +4,13 @@
 
 #import "chrome/browser/mac/keystone_glue.h"
 
-#include <sys/param.h>
 #include <sys/mount.h>
+#include <sys/param.h>
+#include <sys/stat.h>
 
 #include <vector>
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/authorization_util.h"

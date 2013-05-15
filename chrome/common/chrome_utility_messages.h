@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
 #include "base/values.h"

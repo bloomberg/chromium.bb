@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/policy/network_configuration_updater_impl_cros.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"

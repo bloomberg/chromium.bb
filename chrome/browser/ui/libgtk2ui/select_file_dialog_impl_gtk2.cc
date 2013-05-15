@@ -12,7 +12,6 @@
 // Xlib defines RootWindow
 #undef RootWindow
 
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"

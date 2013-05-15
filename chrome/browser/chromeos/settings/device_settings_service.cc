@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"

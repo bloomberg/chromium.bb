@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/version_ui.h"
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version_handler.h"

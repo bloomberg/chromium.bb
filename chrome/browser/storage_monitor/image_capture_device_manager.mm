@@ -6,7 +6,6 @@
 
 #import <ImageCaptureCore/ImageCaptureCore.h>
 
-#include "base/file_util.h"
 #import "chrome/browser/storage_monitor/image_capture_device.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"

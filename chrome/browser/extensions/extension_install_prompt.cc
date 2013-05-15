@@ -7,7 +7,6 @@
 #include <map>
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"

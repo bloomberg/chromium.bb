@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -114,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   BasicTest(CreateIncognitoBrowser(), GetTestURL());
 }
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, 
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        PopupBlockedFakeClickOnAnchor) {
   GURL url(ui_test_utils::GetTestUrl(
       base::FilePath(kTestDir),

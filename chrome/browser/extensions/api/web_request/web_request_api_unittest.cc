@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
@@ -455,8 +454,7 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
   ipc_sender_.PushTask(
       base::Bind(&MessageLoop::PostTask,
                  base::Unretained(MessageLoop::current()),
-                 FROM_HERE, MessageLoop::QuitClosure()
-                 ));
+                 FROM_HERE, MessageLoop::QuitClosure()));
 
   request.Start();
   // request.Start() will have submitted OnBeforeRequest by the time we cancel.
@@ -765,8 +763,8 @@ struct HeaderModificationTest {
   HeaderModificationTest_Header after[10];
 };
 
-class ExtensionWebRequestHeaderModificationTest :
-    public testing::TestWithParam<HeaderModificationTest> {
+class ExtensionWebRequestHeaderModificationTest
+    : public testing::TestWithParam<HeaderModificationTest> {
  public:
   ExtensionWebRequestHeaderModificationTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
@@ -970,7 +968,8 @@ void TestInitFromValue(const std::string& values, bool expected_return_code,
     EXPECT_EQ(expected_extra_info_spec, actual_info_spec);
 }
 
-}
+}  // namespace
+
 TEST_F(ExtensionWebRequestTest, InitFromValue) {
   TestInitFromValue(std::string(), true, 0);
 
@@ -1104,7 +1103,7 @@ HeaderModificationTest kTests[] = {
          {1, SET, "header2", "value2"},
          {2, SET, "header1", "foo"} },
     // Headers after test.
-    1, { {"header1", "foo"} } // set(header2) is ignored
+    1, { {"header1", "foo"} }  // set(header2) is ignored
   },
   // Check that identical edits do not conflict (set(header2) would be ignored
   // if set(header1) were considered a conflict).
@@ -1151,7 +1150,7 @@ INSTANTIATE_TEST_CASE_P(
     ExtensionWebRequestHeaderModificationTest,
     ::testing::ValuesIn(kTests));
 
-} // namespace
+}  // namespace
 
 
 TEST(ExtensionWebRequestHelpersTest,

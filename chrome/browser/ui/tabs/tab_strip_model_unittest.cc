@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"

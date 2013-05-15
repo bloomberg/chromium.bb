@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -128,7 +127,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
 
   while (!(current = origin_enumerator->Next()).is_empty()) {
     if (!BrowsingDataHelper::HasWebScheme(current))
-      continue; // Non-websafe state is not considered browsing data.
+      continue;  // Non-websafe state is not considered browsing data.
 
     // We can call these synchronous methods as we've already verified that
     // we're running on the FILE thread.
@@ -190,7 +189,7 @@ BrowsingDataFileSystemHelper::FileSystemInfo::FileSystemInfo(
       has_syncable(has_syncable),
       usage_persistent(usage_persistent),
       usage_temporary(usage_temporary),
-      usage_syncable(usage_syncable){
+      usage_syncable(usage_syncable) {
 }
 
 BrowsingDataFileSystemHelper::FileSystemInfo::~FileSystemInfo() {}
@@ -254,7 +253,7 @@ void CannedBrowsingDataFileSystemHelper::AddFileSystem(
     return;
 
   if (!BrowsingDataHelper::HasWebScheme(origin))
-    return; // Non-websafe state is not considered browsing data.
+    return;  // Non-websafe state is not considered browsing data.
 
   file_system_info_.push_back(FileSystemInfo(
       origin,

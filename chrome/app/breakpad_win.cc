@@ -17,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/environment.h"
-#include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"

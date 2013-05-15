@@ -6,7 +6,6 @@
 
 #include "chrome/browser/history/android/urls_sql_handler.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/stringprintf.h"

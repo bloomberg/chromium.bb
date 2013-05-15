@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_util.h"
 #include "base/process.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
@@ -86,9 +85,9 @@ enum TestCaseType {
 
 // Used with DownloadTestCase. Type of intermediate filename to expect.
 enum TestCaseExpectIntermediate {
-  EXPECT_CRDOWNLOAD,  // Expect path/to/target.crdownload.
-  EXPECT_UNCONFIRMED, // Expect path/to/Unconfirmed xxx.crdownload.
-  EXPECT_LOCAL_PATH,  // Expect target path.
+  EXPECT_CRDOWNLOAD,   // Expect path/to/target.crdownload.
+  EXPECT_UNCONFIRMED,  // Expect path/to/Unconfirmed xxx.crdownload.
+  EXPECT_LOCAL_PATH,   // Expect target path.
 };
 
 // Typical download test case. Used with
@@ -125,8 +124,8 @@ struct DownloadTestCase {
   TestCaseExpectIntermediate expected_intermediate;
 };
 
-class MockDownloadTargetDeterminerDelegate :
-      public DownloadTargetDeterminerDelegate {
+class MockDownloadTargetDeterminerDelegate
+    : public DownloadTargetDeterminerDelegate {
  public:
   MOCK_METHOD3(CheckDownloadUrl,
                void(content::DownloadItem*, const base::FilePath&,

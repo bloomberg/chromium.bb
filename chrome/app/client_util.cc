@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/environment.h"
-#include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

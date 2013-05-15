@@ -5,7 +5,6 @@
 #include "chrome/browser/icon_manager.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"

@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_UNITTEST_BASE_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_UNITTEST_BASE_H_
 
-#include "base/file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace history {
 // A base class for a history unit test. It provides the common test methods.
@@ -28,6 +31,6 @@ class HistoryUnitTestBase : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HistoryUnitTestBase);
 };
 
-} // namespace history
+}  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_UNITTEST_BASE_H_

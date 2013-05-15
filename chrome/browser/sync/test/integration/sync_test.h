@@ -5,21 +5,20 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_TEST_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_TEST_H_
 
-#include "chrome/test/base/in_process_browser_test.h"
-
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/process_util.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "sync/test/local_sync_test_server.h"
+
 
 class CommandLine;
 class Profile;
