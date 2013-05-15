@@ -17,4 +17,6 @@ const base::FilePath::CharType kMessagesFilename[] =
 const base::FilePath::CharType kPlatformSpecificFolder[] =
     FILE_PATH_LITERAL("_platform_specific");
 
+const char kInstallDirectoryName[] = "Extensions";
+
 } // namespace extensions

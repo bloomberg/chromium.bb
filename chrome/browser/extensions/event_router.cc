@@ -289,7 +289,7 @@ void EventRouter::AddLazyEventListener(const std::string& event_name,
   bool is_new = listeners_.AddListener(listener.Pass());
 
   if (is_new) {
-    ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
     std::set<std::string> events = prefs->GetRegisteredEvents(extension_id);
     bool prefs_is_new = events.insert(event_name).second;
     if (prefs_is_new)
@@ -304,7 +304,7 @@ void EventRouter::RemoveLazyEventListener(const std::string& event_name,
   bool did_exist = listeners_.RemoveListener(&listener);
 
   if (did_exist) {
-    ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
     std::set<std::string> events = prefs->GetRegisteredEvents(extension_id);
     bool prefs_did_exist = events.erase(event_name) > 0;
     DCHECK(prefs_did_exist);
@@ -327,8 +327,8 @@ void EventRouter::AddFilteredEventListener(const std::string& event_name,
         scoped_ptr<DictionaryValue>(filter.DeepCopy()))));
 
     if (added) {
-      ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
-      prefs->AddFilterToEvent(event_name, extension_id, &filter);
+      ExtensionPrefs::Get(profile_)->AddFilterToEvent(
+          event_name, extension_id, &filter);
     }
   }
 }
@@ -349,8 +349,8 @@ void EventRouter::RemoveFilteredEventListener(
     bool removed = listeners_.RemoveListener(&listener);
 
     if (removed) {
-      ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
-      prefs->RemoveFilterFromEvent(event_name, extension_id, &filter);
+      ExtensionPrefs::Get(profile_)->RemoveFilterFromEvent(
+          event_name, extension_id, &filter);
     }
   }
 }
@@ -625,7 +625,7 @@ void EventRouter::Observe(int type,
       // Add all registered lazy listeners to our cache.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
+      ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
       std::set<std::string> registered_events =
           prefs->GetRegisteredEvents(extension->id());
       listeners_.LoadUnfilteredLazyListeners(extension->id(),

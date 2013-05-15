@@ -585,6 +585,8 @@
         'browser/extensions/extension_pref_value_map_factory.h',
         'browser/extensions/extension_prefs.cc',
         'browser/extensions/extension_prefs.h',
+        'browser/extensions/extension_prefs_factory.cc',
+        'browser/extensions/extension_prefs_factory.h',
         'browser/extensions/extension_prefs_scope.h',
         'browser/extensions/extension_process_manager.cc',
         'browser/extensions/extension_process_manager.h',

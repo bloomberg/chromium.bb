@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -83,13 +82,14 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
       extension->location() != Manifest::INTERNAL)
     return;
 
-  GetExtensionPrefs()->AddGrantedPermissions(extension->id(),
-                                             extension->GetActivePermissions());
+  ExtensionPrefs::Get(profile_)->AddGrantedPermissions(
+      extension->id(), extension->GetActivePermissions());
 }
 
 void PermissionsUpdater::UpdateActivePermissions(
     const Extension* extension, const PermissionSet* permissions) {
-  GetExtensionPrefs()->SetActivePermissions(extension->id(), permissions);
+  ExtensionPrefs::Get(profile_)->SetActivePermissions(
+      extension->id(), permissions);
   extension->SetActivePermissions(permissions);
 }
 
@@ -154,10 +154,6 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
 
   // Trigger the onAdded and onRemoved events in the extension.
   DispatchEvent(extension->id(), event_name, changed);
-}
-
-ExtensionPrefs* PermissionsUpdater::GetExtensionPrefs() {
-  return ExtensionSystem::Get(profile_)->extension_service()->extension_prefs();
 }
 
 }  // namespace extensions

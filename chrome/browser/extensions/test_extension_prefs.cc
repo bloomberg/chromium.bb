@@ -111,7 +111,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
       new ExtensionPrefStore(extension_pref_value_map_.get(), false));
   pref_service_.reset(builder.CreateSyncable(pref_registry_));
 
-  prefs_ = ExtensionPrefs::Create(
+  prefs_.reset(ExtensionPrefs::Create(
       pref_service_.get(),
       temp_dir_.path(),
       extension_pref_value_map_.get(),
@@ -119,7 +119,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
       // Guarantee that no two extensions get the same installation time
       // stamp and we can reliably assert the installation order in the tests.
       scoped_ptr<ExtensionPrefs::TimeProvider>(
-          new IncrementalTimeProvider()));
+          new IncrementalTimeProvider())));
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {

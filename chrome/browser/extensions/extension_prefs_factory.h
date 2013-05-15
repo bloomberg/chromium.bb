@@ -1,0 +1,39 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_FACTORY_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_FACTORY_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
+
+namespace extensions {
+
+class ExtensionPrefs;
+
+class ExtensionPrefsFactory : public ProfileKeyedServiceFactory {
+ public:
+  static ExtensionPrefs* GetForProfile(Profile* profile);
+
+  static ExtensionPrefsFactory* GetInstance();
+
+  void SetInstanceForTesting(
+      content::BrowserContext* context, ExtensionPrefs* prefs);
+
+ private:
+  friend struct DefaultSingletonTraits<ExtensionPrefsFactory>;
+
+  ExtensionPrefsFactory();
+  virtual ~ExtensionPrefsFactory();
+
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* profile) const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
+};
+
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_FACTORY_H_

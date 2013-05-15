@@ -4,8 +4,7 @@
 
 #include "chrome/browser/extensions/extension_system_factory.h"
 
-#include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -34,6 +33,7 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
     : ProfileKeyedServiceFactory(
         "ExtensionSystemShared",
         ProfileDependencyManager::GetInstance()) {
+  DependsOn(ExtensionPrefsFactory::GetInstance());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
 #if defined(ENABLE_THEMES)
   DependsOn(ThemeServiceFactory::GetInstance());
