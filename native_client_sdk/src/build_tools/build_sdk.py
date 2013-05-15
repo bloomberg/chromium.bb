@@ -706,6 +706,13 @@ def GenerateNotice(fileroot, output_filename='NOTICE', extra_files=None):
   generate_notice.Generate(output_filename, fileroot, license_files)
 
 
+def BuildStepVerifyFilelist(pepperdir, platform):
+  buildbot_common.BuildStep('Verify SDK Files')
+  verify_filelist.Verify(platform, os.path.join(SCRIPT_DIR, 'sdk_files.list'),
+                         pepperdir)
+  print 'OK'
+
+
 def BuildStepTarBundle(pepper_ver, tarfile):
   buildbot_common.BuildStep('Tar Pepper Bundle')
   buildbot_common.MakeDir(os.path.dirname(tarfile))
@@ -932,8 +939,7 @@ def main(args):
   GenerateNotice(pepperdir)
 
   # Verify the SDK contains what we expect.
-  verify_filelist.Verify(platform, os.path.join(SCRIPT_DIR, 'sdk_files.list'),
-                         pepperdir)
+  BuildStepVerifyFilelist(pepperdir, platform)
 
   if not options.skip_tar:
     BuildStepTarBundle(pepper_ver, tarfile)
