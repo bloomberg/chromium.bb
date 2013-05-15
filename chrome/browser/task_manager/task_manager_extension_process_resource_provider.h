@@ -8,60 +8,15 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/process_type.h"
-#include "ui/gfx/image/image_skia.h"
+
+class TaskManagerExtensionProcessResource;
 
 namespace content {
 class RenderViewHost;
 }
-
-namespace extensions {
-class Extension;
-}
-
-class TaskManagerExtensionProcessResource : public TaskManager::Resource {
- public:
-  explicit TaskManagerExtensionProcessResource(
-      content::RenderViewHost* render_view_host);
-  virtual ~TaskManagerExtensionProcessResource();
-
-  // TaskManager::Resource methods:
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual base::ProcessHandle GetProcess() const OVERRIDE;
-  virtual int GetUniqueChildProcessId() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
-  virtual bool CanInspect() const OVERRIDE;
-  virtual void Inspect() const OVERRIDE;
-  virtual bool SupportNetworkUsage() const OVERRIDE;
-  virtual void SetSupportNetworkUsage() OVERRIDE;
-  virtual const extensions::Extension* GetExtension() const OVERRIDE;
-
-  // Returns the pid of the extension process.
-  int process_id() const { return pid_; }
-
-  // Returns true if the associated extension has a background page.
-  virtual bool IsBackground() const OVERRIDE;
-
- private:
-  // The icon painted for the extension process.
-  static gfx::ImageSkia* default_icon_;
-
-  content::RenderViewHost* render_view_host_;
-
-  // Cached data about the extension.
-  base::ProcessHandle process_handle_;
-  int pid_;
-  int unique_process_id_;
-  string16 title_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerExtensionProcessResource);
-};
 
 class TaskManagerExtensionProcessResourceProvider
     : public TaskManager::ResourceProvider,

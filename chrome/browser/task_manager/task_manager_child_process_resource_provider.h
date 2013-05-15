@@ -9,55 +9,15 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "content/public/browser/browser_child_process_observer.h"
-#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/process_type.h"
-#include "ui/gfx/image/image_skia.h"
 
-class TaskManagerChildProcessResource : public TaskManager::Resource {
- public:
-  TaskManagerChildProcessResource(int process_type,
-                                  const string16& name,
-                                  base::ProcessHandle handle,
-                                  int unique_process_id);
-  virtual ~TaskManagerChildProcessResource();
+class TaskManagerChildProcessResource;
 
-  // TaskManager::Resource methods:
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual base::ProcessHandle GetProcess() const OVERRIDE;
-  virtual int GetUniqueChildProcessId() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
-  virtual bool SupportNetworkUsage() const OVERRIDE;
-  virtual void SetSupportNetworkUsage() OVERRIDE;
-
-  // Returns the pid of the child process.
-  int process_id() const { return pid_; }
-
- private:
-  // Returns a localized title for the child process.  For example, a plugin
-  // process would be "Plug-in: Flash" when name is "Flash".
-  string16 GetLocalizedTitle() const;
-
-  int process_type_;
-  string16 name_;
-  base::ProcessHandle handle_;
-  int pid_;
-  int unique_process_id_;
-  mutable string16 title_;
-  bool network_usage_support_;
-
-  // The icon painted for the child processs.
-  // TODO(jcampan): we should have plugin specific icons for well-known
-  // plugins.
-  static gfx::ImageSkia* default_icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerChildProcessResource);
-};
+namespace content {
+struct ChildProcessData;
+}
 
 class TaskManagerChildProcessResourceProvider
     : public TaskManager::ResourceProvider,

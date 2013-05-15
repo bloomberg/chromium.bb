@@ -4,9 +4,6 @@
 
 #include "chrome/browser/task_manager/task_manager_extension_process_resource_provider.h"
 
-#include <string>
-
-#include "base/basictypes.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -15,15 +12,14 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/task_manager/task_manager_resource_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -32,54 +28,45 @@
 using content::WebContents;
 using extensions::Extension;
 
-namespace {
+class TaskManagerExtensionProcessResource : public TaskManager::Resource {
+ public:
+  explicit TaskManagerExtensionProcessResource(
+      content::RenderViewHost* render_view_host);
+  virtual ~TaskManagerExtensionProcessResource();
 
-// Returns the appropriate message prefix ID for tabs and extensions,
-// reflecting whether they are apps or in incognito mode.
-int GetMessagePrefixID(bool is_app,
-                       bool is_extension,
-                       bool is_incognito,
-                       bool is_prerender,
-                       bool is_instant_overlay,
-                       bool is_background) {
-  if (is_app) {
-    if (is_background) {
-      return IDS_TASK_MANAGER_BACKGROUND_PREFIX;
-    } else if (is_incognito) {
-      return IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX;
-    } else {
-      return IDS_TASK_MANAGER_APP_PREFIX;
-    }
-  } else if (is_extension) {
-    if (is_incognito)
-      return IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX;
-    else
-      return IDS_TASK_MANAGER_EXTENSION_PREFIX;
-  } else if (is_prerender) {
-    return IDS_TASK_MANAGER_PRERENDER_PREFIX;
-  } else if (is_instant_overlay) {
-    return IDS_TASK_MANAGER_INSTANT_OVERLAY_PREFIX;
-  } else {
-    return IDS_TASK_MANAGER_TAB_PREFIX;
-  }
-}
+  // TaskManager::Resource methods:
+  virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
+  virtual base::ProcessHandle GetProcess() const OVERRIDE;
+  virtual int GetUniqueChildProcessId() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual bool CanInspect() const OVERRIDE;
+  virtual void Inspect() const OVERRIDE;
+  virtual bool SupportNetworkUsage() const OVERRIDE;
+  virtual void SetSupportNetworkUsage() OVERRIDE;
+  virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
-string16 GetProfileNameFromInfoCache(Profile* profile) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(
-      profile->GetOriginalProfile()->GetPath());
-  if (index == std::string::npos)
-    return string16();
-  else
-    return cache.GetNameOfProfileAtIndex(index);
-}
+  // Returns the pid of the extension process.
+  int process_id() const { return pid_; }
 
-}  // namespace
+  // Returns true if the associated extension has a background page.
+  virtual bool IsBackground() const OVERRIDE;
 
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerExtensionProcessResource class
-////////////////////////////////////////////////////////////////////////////////
+ private:
+  // The icon painted for the extension process.
+  static gfx::ImageSkia* default_icon_;
+
+  content::RenderViewHost* render_view_host_;
+
+  // Cached data about the extension.
+  base::ProcessHandle process_handle_;
+  int pid_;
+  int unique_process_id_;
+  string16 title_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerExtensionProcessResource);
+};
 
 gfx::ImageSkia* TaskManagerExtensionProcessResource::default_icon_ = NULL;
 
@@ -98,8 +85,13 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
 
   Profile* profile = Profile::FromBrowserContext(
       render_view_host->GetProcess()->GetBrowserContext());
-  int message_id = GetMessagePrefixID(GetExtension()->is_app(), true,
-      profile->IsOffTheRecord(), false, false, IsBackground());
+  int message_id = TaskManagerResourceUtil::GetMessagePrefixID(
+      GetExtension()->is_app(),
+      true,  // is_extension
+      profile->IsOffTheRecord(),
+      false,  // is_prerender
+      false,  // is_instant_overlay
+      IsBackground());
   title_ = l10n_util::GetStringFUTF16(message_id, extension_name);
 }
 
@@ -111,7 +103,8 @@ string16 TaskManagerExtensionProcessResource::GetTitle() const {
 }
 
 string16 TaskManagerExtensionProcessResource::GetProfileName() const {
-  return GetProfileNameFromInfoCache(Profile::FromBrowserContext(
+  return TaskManagerResourceUtil::GetProfileNameFromInfoCache(
+      Profile::FromBrowserContext(
       render_view_host_->GetProcess()->GetBrowserContext()));
 }
 

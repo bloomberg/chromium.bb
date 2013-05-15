@@ -4,10 +4,6 @@
 
 #include "chrome/browser/task_manager/task_manager_tab_contents_resource_provider.h"
 
-#include <string>
-
-#include "base/i18n/rtl.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -15,21 +11,20 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/task_manager/task_manager_render_resource.h"
+#include "chrome/browser/task_manager/task_manager_resource_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -38,70 +33,8 @@
 using content::WebContents;
 using extensions::Extension;
 
+
 namespace {
-
-// Returns the appropriate message prefix ID for tabs and extensions,
-// reflecting whether they are apps or in incognito mode.
-int GetMessagePrefixID(bool is_app,
-                       bool is_extension,
-                       bool is_incognito,
-                       bool is_prerender,
-                       bool is_instant_overlay,
-                       bool is_background) {
-  if (is_app) {
-    if (is_background) {
-      return IDS_TASK_MANAGER_BACKGROUND_PREFIX;
-    } else if (is_incognito) {
-      return IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX;
-    } else {
-      return IDS_TASK_MANAGER_APP_PREFIX;
-    }
-  } else if (is_extension) {
-    if (is_incognito)
-      return IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX;
-    else
-      return IDS_TASK_MANAGER_EXTENSION_PREFIX;
-  } else if (is_prerender) {
-    return IDS_TASK_MANAGER_PRERENDER_PREFIX;
-  } else if (is_instant_overlay) {
-    return IDS_TASK_MANAGER_INSTANT_OVERLAY_PREFIX;
-  } else {
-    return IDS_TASK_MANAGER_TAB_PREFIX;
-  }
-}
-
-string16 GetProfileNameFromInfoCache(Profile* profile) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(
-      profile->GetOriginalProfile()->GetPath());
-  if (index == std::string::npos)
-    return string16();
-  else
-    return cache.GetNameOfProfileAtIndex(index);
-}
-
-string16 GetTitleFromWebContents(WebContents* web_contents) {
-  string16 title = web_contents->GetTitle();
-  if (title.empty()) {
-    GURL url = web_contents->GetURL();
-    title = UTF8ToUTF16(url.spec());
-    // Force URL to be LTR.
-    title = base::i18n::GetDisplayStringInLTRDirectionality(title);
-  } else {
-    // Since the tab_title will be concatenated with
-    // IDS_TASK_MANAGER_TAB_PREFIX, we need to explicitly set the tab_title to
-    // be LTR format if there is no strong RTL charater in it. Otherwise, if
-    // IDS_TASK_MANAGER_TAB_PREFIX is an RTL word, the concatenated result
-    // might be wrong. For example, http://mail.yahoo.com, whose title is
-    // "Yahoo! Mail: The best web-based Email!", without setting it explicitly
-    // as LTR format, the concatenated result will be "!Yahoo! Mail: The best
-    // web-based Email :BAT", in which the capital letters "BAT" stands for
-    // the Hebrew word for "tab".
-    base::i18n::AdjustStringForLocaleDirection(&title);
-  }
-  return title;
-}
 
 bool IsContentsPrerendering(WebContents* web_contents) {
   Profile* profile =
@@ -132,11 +65,37 @@ bool IsContentsBackgroundPrinted(WebContents* web_contents) {
 
 }  // namespace
 
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerTabContentsResource class
-////////////////////////////////////////////////////////////////////////////////
+// Tracks a single tab contents, prerendered page, Instant page, or background
+// printing page.
+class TaskManagerTabContentsResource : public TaskManagerRendererResource {
+ public:
+  explicit TaskManagerTabContentsResource(content::WebContents* web_contents);
+  virtual ~TaskManagerTabContentsResource();
 
-// static
+  // Called when the underlying web_contents has been committed and is no
+  // longer an Instant overlay.
+  void InstantCommitted();
+
+  // TaskManager::Resource methods:
+  virtual Type GetType() const OVERRIDE;
+  virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual const extensions::Extension* GetExtension() const OVERRIDE;
+
+ private:
+  // Returns true if contains content rendered by an extension.
+  bool HostsExtension() const;
+
+  static gfx::ImageSkia* prerender_icon_;
+  content::WebContents* web_contents_;
+  Profile* profile_;
+  bool is_instant_overlay_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
+};
+
 gfx::ImageSkia* TaskManagerTabContentsResource::prerender_icon_ = NULL;
 
 TaskManagerTabContentsResource::TaskManagerTabContentsResource(
@@ -172,7 +131,8 @@ TaskManager::Resource::Type TaskManagerTabContentsResource::GetType() const {
 string16 TaskManagerTabContentsResource::GetTitle() const {
   // Fall back on the URL if there's no title.
   GURL url = web_contents_->GetURL();
-  string16 tab_title = GetTitleFromWebContents(web_contents_);
+  string16 tab_title =
+      TaskManagerResourceUtil::GetTitleFromWebContents(web_contents_);
 
   // Only classify as an app if the URL is an app and the tab is hosting an
   // extension process.  (It's possible to be showing the URL from before it
@@ -182,18 +142,18 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
   bool is_app = extension_service->IsInstalledApp(url) &&
       process_map->Contains(web_contents_->GetRenderProcessHost()->GetID());
 
-  int message_id = GetMessagePrefixID(
+  int message_id = TaskManagerResourceUtil::GetMessagePrefixID(
       is_app,
       HostsExtension(),
       profile_->IsOffTheRecord(),
       IsContentsPrerendering(web_contents_),
       is_instant_overlay_,
-      false);
+      false);  // is_background
   return l10n_util::GetStringFUTF16(message_id, tab_title);
 }
 
 string16 TaskManagerTabContentsResource::GetProfileName() const {
-  return GetProfileNameFromInfoCache(profile_);
+  return TaskManagerResourceUtil::GetProfileNameFromInfoCache(profile_);
 }
 
 gfx::ImageSkia TaskManagerTabContentsResource::GetIcon() const {

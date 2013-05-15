@@ -4,17 +4,16 @@
 
 #include "chrome/browser/task_manager/task_manager_child_process_resource_provider.h"
 
-#include "base/basictypes.h"
+#include <vector>
+
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_process_type.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,9 +24,48 @@ using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 using content::WebContents;
 
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerChildProcessResource class
-////////////////////////////////////////////////////////////////////////////////
+class TaskManagerChildProcessResource : public TaskManager::Resource {
+ public:
+  TaskManagerChildProcessResource(int process_type,
+                                  const string16& name,
+                                  base::ProcessHandle handle,
+                                  int unique_process_id);
+  virtual ~TaskManagerChildProcessResource();
+
+  // TaskManager::Resource methods:
+  virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
+  virtual base::ProcessHandle GetProcess() const OVERRIDE;
+  virtual int GetUniqueChildProcessId() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual bool SupportNetworkUsage() const OVERRIDE;
+  virtual void SetSupportNetworkUsage() OVERRIDE;
+
+  // Returns the pid of the child process.
+  int process_id() const { return pid_; }
+
+ private:
+  // Returns a localized title for the child process.  For example, a plugin
+  // process would be "Plug-in: Flash" when name is "Flash".
+  string16 GetLocalizedTitle() const;
+
+  int process_type_;
+  string16 name_;
+  base::ProcessHandle handle_;
+  int pid_;
+  int unique_process_id_;
+  mutable string16 title_;
+  bool network_usage_support_;
+
+  // The icon painted for the child processs.
+  // TODO(jcampan): we should have plugin specific icons for well-known
+  // plugins.
+  static gfx::ImageSkia* default_icon_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerChildProcessResource);
+};
+
 gfx::ImageSkia* TaskManagerChildProcessResource::default_icon_ = NULL;
 
 TaskManagerChildProcessResource::TaskManagerChildProcessResource(

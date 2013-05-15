@@ -2160,6 +2160,8 @@
         'browser/task_manager/task_manager_panel_resource_provider.h',
         'browser/task_manager/task_manager_render_resource.cc',
         'browser/task_manager/task_manager_render_resource.h',
+        'browser/task_manager/task_manager_resource_util.cc',
+        'browser/task_manager/task_manager_resource_util.h',
         'browser/task_manager/task_manager_tab_contents_resource_provider.cc',
         'browser/task_manager/task_manager_tab_contents_resource_provider.h',
         'browser/task_manager/task_manager_worker_resource_provider.cc',

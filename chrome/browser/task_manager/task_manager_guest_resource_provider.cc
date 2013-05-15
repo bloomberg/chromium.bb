@@ -4,17 +4,11 @@
 
 #include "chrome/browser/task_manager/task_manager_guest_resource_provider.h"
 
-#include <string>
-
-#include "base/basictypes.h"
-#include "base/i18n/rtl.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/task_manager/task_manager_render_resource.h"
+#include "chrome/browser/task_manager/task_manager_resource_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -23,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_skia.h"
 
 using content::RenderProcessHost;
 using content::RenderViewHost;
@@ -30,46 +25,22 @@ using content::RenderWidgetHost;
 using content::WebContents;
 using extensions::Extension;
 
-namespace {
+class TaskManagerGuestResource : public TaskManagerRendererResource {
+ public:
+  explicit TaskManagerGuestResource(content::RenderViewHost* render_view_host);
+  virtual ~TaskManagerGuestResource();
 
-string16 GetProfileNameFromInfoCache(Profile* profile) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(
-      profile->GetOriginalProfile()->GetPath());
-  if (index == std::string::npos)
-    return string16();
-  else
-    return cache.GetNameOfProfileAtIndex(index);
-}
+  // TaskManager::Resource methods:
+  virtual Type GetType() const OVERRIDE;
+  virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
-string16 GetTitleFromWebContents(WebContents* web_contents) {
-  string16 title = web_contents->GetTitle();
-  if (title.empty()) {
-    GURL url = web_contents->GetURL();
-    title = UTF8ToUTF16(url.spec());
-    // Force URL to be LTR.
-    title = base::i18n::GetDisplayStringInLTRDirectionality(title);
-  } else {
-    // Since the tab_title will be concatenated with
-    // IDS_TASK_MANAGER_TAB_PREFIX, we need to explicitly set the tab_title to
-    // be LTR format if there is no strong RTL charater in it. Otherwise, if
-    // IDS_TASK_MANAGER_TAB_PREFIX is an RTL word, the concatenated result
-    // might be wrong. For example, http://mail.yahoo.com, whose title is
-    // "Yahoo! Mail: The best web-based Email!", without setting it explicitly
-    // as LTR format, the concatenated result will be "!Yahoo! Mail: The best
-    // web-based Email :BAT", in which the capital letters "BAT" stands for
-    // the Hebrew word for "tab".
-    base::i18n::AdjustStringForLocaleDirection(&title);
-  }
-  return title;
-}
-
-}  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerGuestResource class
-////////////////////////////////////////////////////////////////////////////////
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerGuestResource);
+};
 
 TaskManagerGuestResource::TaskManagerGuestResource(
     RenderViewHost* render_view_host)
@@ -89,7 +60,8 @@ string16 TaskManagerGuestResource::GetTitle() const {
   WebContents* web_contents = GetWebContents();
   const int message_id = IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX;
   if (web_contents) {
-    string16 title = GetTitleFromWebContents(web_contents);
+    string16 title = TaskManagerResourceUtil::GetTitleFromWebContents(
+        web_contents);
     return l10n_util::GetStringFUTF16(message_id, title);
   }
   return l10n_util::GetStringFUTF16(message_id, string16());
@@ -100,7 +72,7 @@ string16 TaskManagerGuestResource::GetProfileName() const {
   if (web_contents) {
     Profile* profile = Profile::FromBrowserContext(
         web_contents->GetBrowserContext());
-    return GetProfileNameFromInfoCache(profile);
+    return TaskManagerResourceUtil::GetProfileNameFromInfoCache(profile);
   }
   return string16();
 }
@@ -121,10 +93,6 @@ WebContents* TaskManagerGuestResource::GetWebContents() const {
 const Extension* TaskManagerGuestResource::GetExtension() const {
   return NULL;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerGuestContentsResourceProvider class
-////////////////////////////////////////////////////////////////////////////////
 
 TaskManagerGuestResourceProvider::
     TaskManagerGuestResourceProvider(TaskManager* task_manager)

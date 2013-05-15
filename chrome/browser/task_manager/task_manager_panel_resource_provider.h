@@ -9,43 +9,14 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "chrome/browser/task_manager/task_manager_render_resource.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/image/image_skia.h"
 
 class Panel;
 class TaskManager;
-
-namespace content {
-class WebContents;
-}
-
-namespace extensions {
-class Extension;
-}
-
-class TaskManagerPanelResource : public TaskManagerRendererResource {
- public:
-  explicit TaskManagerPanelResource(Panel* panel);
-  virtual ~TaskManagerPanelResource();
-
-  // TaskManager::Resource methods:
-  virtual Type GetType() const OVERRIDE;
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual const extensions::Extension* GetExtension() const OVERRIDE;
-
- private:
-  Panel* panel_;
-  // Determines prefix for title reflecting whether extensions are apps
-  // or in incognito mode.
-  int message_prefix_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerPanelResource);
-};
+class TaskManagerPanelResource;
 
 class TaskManagerPanelResourceProvider
     : public TaskManager::ResourceProvider,

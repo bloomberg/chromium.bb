@@ -4,11 +4,11 @@
 
 #include "chrome/browser/task_manager/task_manager_worker_resource_provider.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/stl_util.h"
+#include <vector>
+
+#include "base/basictypes.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_process_type.h"
@@ -25,6 +25,10 @@
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::WorkerService;
+
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerSharedWorkerResource class
+////////////////////////////////////////////////////////////////////////////////
 
 // Objects of this class are created on the IO thread and then passed to the UI
 // thread where they are passed to the task manager. All methods must be called

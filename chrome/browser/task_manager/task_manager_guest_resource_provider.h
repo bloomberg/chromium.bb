@@ -8,38 +8,15 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/browser/task_manager/task_manager_render_resource.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/gfx/image/image_skia.h"
+
+class TaskManagerGuestResource;
 
 namespace content {
 class RenderViewHost;
-class WebContents;
 }
-
-namespace extensions {
-class Extension;
-}
-
-class TaskManagerGuestResource : public TaskManagerRendererResource {
- public:
-  explicit TaskManagerGuestResource(content::RenderViewHost* render_view_host);
-  virtual ~TaskManagerGuestResource();
-
-  // TaskManager::Resource methods:
-  virtual Type GetType() const OVERRIDE;
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual const extensions::Extension* GetExtension() const OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerGuestResource);
-};
 
 class TaskManagerGuestResourceProvider
     : public TaskManager::ResourceProvider,

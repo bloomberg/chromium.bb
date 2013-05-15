@@ -1,22 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/task_manager/task_manager_notification_resource_provider.h"
 
-#include "base/basictypes.h"
-#include "base/stl_util.h"
+#include "base/string16.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -24,9 +19,38 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerNotificationResource class
-////////////////////////////////////////////////////////////////////////////////
+class TaskManagerNotificationResource : public TaskManager::Resource {
+ public:
+  explicit TaskManagerNotificationResource(BalloonHost* balloon_host);
+  virtual ~TaskManagerNotificationResource();
+
+  // TaskManager::Resource interface
+  virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
+  virtual base::ProcessHandle GetProcess() const OVERRIDE;
+  virtual int GetUniqueChildProcessId() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual bool CanInspect() const OVERRIDE;
+  virtual void Inspect() const OVERRIDE;
+  virtual bool SupportNetworkUsage() const OVERRIDE;
+  virtual void SetSupportNetworkUsage() OVERRIDE { }
+
+ private:
+  // The icon painted for notifications.       .
+  static gfx::ImageSkia* default_icon_;
+
+  // Non-owned pointer to the balloon host.
+  BalloonHost* balloon_host_;
+
+  // Cached data about the balloon host.
+  base::ProcessHandle process_handle_;
+  int pid_;
+  int unique_process_id_;
+  string16 title_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerNotificationResource);
+};
 
 gfx::ImageSkia* TaskManagerNotificationResource::default_icon_ = NULL;
 

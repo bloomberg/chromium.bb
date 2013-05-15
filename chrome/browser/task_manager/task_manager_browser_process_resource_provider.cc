@@ -4,7 +4,6 @@
 
 #include "chrome/browser/task_manager/task_manager_browser_process_resource_provider.h"
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/string16.h"
 #include "chrome/common/chrome_switches.h"

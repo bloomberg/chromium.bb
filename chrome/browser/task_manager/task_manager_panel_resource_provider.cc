@@ -4,15 +4,11 @@
 
 #include "chrome/browser/task_manager/task_manager_panel_resource_provider.h"
 
-#include <string>
-
 #include "base/i18n/rtl.h"
-#include "base/string16.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/task_manager/task_manager_render_resource.h"
+#include "chrome/browser/task_manager/task_manager_resource_util.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -22,8 +18,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::RenderProcessHost;
@@ -31,63 +25,40 @@ using content::RenderViewHost;
 using content::WebContents;
 using extensions::Extension;
 
-namespace {
+class TaskManagerPanelResource : public TaskManagerRendererResource {
+ public:
+  explicit TaskManagerPanelResource(Panel* panel);
+  virtual ~TaskManagerPanelResource();
 
-// Returns the appropriate message prefix ID for tabs and extensions,
-// reflecting whether they are apps or in incognito mode.
-int GetMessagePrefixID(bool is_app,
-                       bool is_extension,
-                       bool is_incognito,
-                       bool is_prerender,
-                       bool is_instant_overlay,
-                       bool is_background) {
-  if (is_app) {
-    if (is_background) {
-      return IDS_TASK_MANAGER_BACKGROUND_PREFIX;
-    } else if (is_incognito) {
-      return IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX;
-    } else {
-      return IDS_TASK_MANAGER_APP_PREFIX;
-    }
-  } else if (is_extension) {
-    if (is_incognito)
-      return IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX;
-    else
-      return IDS_TASK_MANAGER_EXTENSION_PREFIX;
-  } else if (is_prerender) {
-    return IDS_TASK_MANAGER_PRERENDER_PREFIX;
-  } else if (is_instant_overlay) {
-    return IDS_TASK_MANAGER_INSTANT_OVERLAY_PREFIX;
-  } else {
-    return IDS_TASK_MANAGER_TAB_PREFIX;
-  }
-}
+  // TaskManager::Resource methods:
+  virtual Type GetType() const OVERRIDE;
+  virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
-string16 GetProfileNameFromInfoCache(Profile* profile) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(
-      profile->GetOriginalProfile()->GetPath());
-  if (index == std::string::npos)
-    return string16();
-  else
-    return cache.GetNameOfProfileAtIndex(index);
-}
+ private:
+  Panel* panel_;
+  // Determines prefix for title reflecting whether extensions are apps
+  // or in incognito mode.
+  int message_prefix_id_;
 
-}  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerPanelResource class
-////////////////////////////////////////////////////////////////////////////////
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerPanelResource);
+};
 
 TaskManagerPanelResource::TaskManagerPanelResource(Panel* panel)
     : TaskManagerRendererResource(
         panel->GetWebContents()->GetRenderProcessHost()->GetHandle(),
         panel->GetWebContents()->GetRenderViewHost()),
       panel_(panel) {
-  message_prefix_id_ = GetMessagePrefixID(
-      GetExtension()->is_app(), true, panel->profile()->IsOffTheRecord(),
-      false, false, false);
+  message_prefix_id_ = TaskManagerResourceUtil::GetMessagePrefixID(
+      GetExtension()->is_app(),
+      true,  // is_extension
+      panel->profile()->IsOffTheRecord(),
+      false,  // is_prerender
+      false,  // is_instant_overlay
+      false);  // is_background
 }
 
 TaskManagerPanelResource::~TaskManagerPanelResource() {
@@ -113,7 +84,8 @@ string16 TaskManagerPanelResource::GetTitle() const {
 }
 
 string16 TaskManagerPanelResource::GetProfileName() const {
-  return GetProfileNameFromInfoCache(panel_->profile());
+  return TaskManagerResourceUtil::GetProfileNameFromInfoCache(
+      panel_->profile());
 }
 
 gfx::ImageSkia TaskManagerPanelResource::GetIcon() const {

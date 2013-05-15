@@ -8,51 +8,18 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
-#include "chrome/browser/task_manager/task_manager_render_resource.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/gfx/image/image_skia.h"
 
-class Profile;
 class TaskManager;
+class TaskManagerTabContentsResource;
 
 namespace content {
 class WebContents;
 class NotificationSource;
 class NotificationDetails;
 }
-
-// Tracks a single tab contents, prerendered page, Instant page, or background
-// printing page.
-class TaskManagerTabContentsResource : public TaskManagerRendererResource {
- public:
-  explicit TaskManagerTabContentsResource(content::WebContents* web_contents);
-  virtual ~TaskManagerTabContentsResource();
-
-  // Called when the underlying web_contents has been committed and is no
-  // longer an Instant overlay.
-  void InstantCommitted();
-
-  // TaskManager::Resource methods:
-  virtual Type GetType() const OVERRIDE;
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual const extensions::Extension* GetExtension() const OVERRIDE;
-
- private:
-  // Returns true if contains content rendered by an extension.
-  bool HostsExtension() const;
-
-  static gfx::ImageSkia* prerender_icon_;
-  content::WebContents* web_contents_;
-  Profile* profile_;
-  bool is_instant_overlay_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
-};
 
 // Provides resources for tab contents, prerendered pages, Instant pages, and
 // background printing pages.

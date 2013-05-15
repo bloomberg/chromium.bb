@@ -4,9 +4,6 @@
 
 #include "chrome/browser/task_manager/task_manager_background_resource_provider.h"
 
-#include <string>
-
-#include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -17,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/background_contents.h"
+#include "chrome/browser/task_manager/task_manager_render_resource.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
@@ -27,15 +25,40 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 using content::RenderProcessHost;
 using content::RenderViewHost;
 using content::WebContents;
 using extensions::Extension;
 
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerBackgroundContentsResource class
-////////////////////////////////////////////////////////////////////////////////
+class TaskManagerBackgroundContentsResource
+    : public TaskManagerRendererResource {
+ public:
+  TaskManagerBackgroundContentsResource(
+      BackgroundContents* background_contents,
+      const string16& application_name);
+  virtual ~TaskManagerBackgroundContentsResource();
+
+  // TaskManager::Resource methods:
+  virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
+  virtual bool IsBackground() const OVERRIDE;
+
+  const string16& application_name() const { return application_name_; }
+ private:
+  BackgroundContents* background_contents_;
+
+  string16 application_name_;
+
+  // The icon painted for BackgroundContents.
+  // TODO(atwilson): Use the favicon when there's a way to get the favicon for
+  // BackgroundContents.
+  static gfx::ImageSkia* default_icon_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerBackgroundContentsResource);
+};
 
 gfx::ImageSkia* TaskManagerBackgroundContentsResource::default_icon_ = NULL;
 
