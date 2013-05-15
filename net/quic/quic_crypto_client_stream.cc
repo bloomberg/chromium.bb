@@ -125,9 +125,9 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           // the packets dropped when the client hello is dropped cause the
           // congestion control to be too conservative and the server times
           // out.
+          //   encryption_established_ = true;
           //   session()->OnCryptoHandshakeEvent(
           //       QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
-          //   encryption_established_ = true;
         } else {
           session()->OnCryptoHandshakeEvent(
               QuicSession::ENCRYPTION_REESTABLISHED);
@@ -229,9 +229,9 @@ void QuicCryptoClientStream::DoHandshakeLoop(
 
         // TODO(agl): this code shouldn't be here. See the TODO further up
         // about it.
+        encryption_established_ = true;
         session()->OnCryptoHandshakeEvent(
             QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
-        encryption_established_ = true;
 
         handshake_confirmed_ = true;
         session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
