@@ -2349,7 +2349,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
   const int kReadBufferSize = 200;
   DCHECK_GE(kReadBufferSize, entry->GetDataSize(0));
   scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(kReadBufferSize));
-  EXPECT_EQ(net::ERR_FAILED,
+  EXPECT_EQ(net::ERR_CACHE_CHECKSUM_MISMATCH,
             ReadData(entry, 0, 0, read_buffer, kReadBufferSize));
 
   entry->Close();
@@ -2371,7 +2371,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
   const int kReadBufferSize = 200;
   DCHECK_GE(kReadBufferSize, entry->GetDataSize(0));
   scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(kReadBufferSize));
-  EXPECT_EQ(net::ERR_FAILED,
+  EXPECT_EQ(net::ERR_CACHE_CHECKSUM_MISMATCH,
             ReadData(entry, 0, 0, read_buffer, kReadBufferSize));
 
   entry->Doom();  // Should not crash.

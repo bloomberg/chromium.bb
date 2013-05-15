@@ -560,6 +560,17 @@ NET_ERROR(CACHE_CREATE_FAILURE, -405)
 // of the cache has changed.
 NET_ERROR(CACHE_RACE, -406)
 
+// The cache was unable to read a checksum record on an entry. This can be
+// returned from attempts to read from the cache. It is an internal error,
+// returned by the SimpleCache backend, but not by any URLRequest methods
+// or members.
+NET_ERROR(CACHE_CHECKSUM_READ_FAILURE, -407)
+
+// The cache found an entry with an invalid checksum. This can be returned from
+// attempts to read from the cache. It is an internal error, returned by the
+// SimpleCache backend, but not by any URLRequest methods or members.
+NET_ERROR(CACHE_CHECKSUM_MISMATCH, -408)
+
 // The server's response was insecure (e.g. there was a cert error).
 NET_ERROR(INSECURE_RESPONSE, -501)
 

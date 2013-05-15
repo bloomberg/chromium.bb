@@ -918,6 +918,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="HttpCache.ReadErrorNonRestartable" enum="NetErrorCodes">
+  <summary>Net error results from non-restartable cache read errors.</summary>
+</histogram>
+
+<histogram name="HttpCache.ReadErrorRestartable" enum="NetErrorCodes">
+  <summary>Net error results from restartable cache read errors.</summary>
+</histogram>
+
 <histogram name="Import.ImporterType.AutoImport" enum="ImporterType">
   <summary>The importer used on first run Auto Import.</summary>
 </histogram>
@@ -10548,6 +10556,8 @@ other types of suffix sets.
   <int value="404" label="CACHE_OPEN_FAILURE"/>
   <int value="405" label="CACHE_CREATE_FAILURE"/>
   <int value="406" label="CACHE_RACE"/>
+  <int value="407" label="CACHE_CACHE_CHECKSUM_READ_FAILURE"/>
+  <int value="408" label="CACHE_CACHE_CHECKSUM_MISMATCH"/>
   <int value="501" label="INSECURE_RESPONSE"/>
   <int value="502" label="NO_PRIVATE_KEY_FOR_CERT"/>
   <int value="503" label="ADD_USER_CERT_FAILED"/>

@@ -237,7 +237,7 @@ void SimpleSynchronousEntry::ReadData(
   if (bytes_read >= 0) {
     *out_result = bytes_read;
   } else {
-    *out_result = net::ERR_FAILED;
+    *out_result = net::ERR_CACHE_READ_FAILURE;
     Doom();
   }
 }
@@ -259,7 +259,7 @@ void SimpleSynchronousEntry::WriteData(
     if (!TruncatePlatformFile(files_[index], file_eof_offset)) {
       RecordWriteResult(WRITE_RESULT_PRETRUNCATE_FAILURE);
       Doom();
-      *out_result = net::ERR_FAILED;
+      *out_result = net::ERR_CACHE_WRITE_FAILURE;
       return;
     }
   }
@@ -269,7 +269,7 @@ void SimpleSynchronousEntry::WriteData(
         buf_len) {
       RecordWriteResult(WRITE_RESULT_WRITE_FAILURE);
       Doom();
-      *out_result = net::ERR_FAILED;
+      *out_result = net::ERR_CACHE_WRITE_FAILURE;
       return;
     }
   }
@@ -279,7 +279,7 @@ void SimpleSynchronousEntry::WriteData(
     if (!TruncatePlatformFile(files_[index], file_offset + buf_len)) {
       RecordWriteResult(WRITE_RESULT_TRUNCATE_FAILURE);
       Doom();
-      *out_result = net::ERR_FAILED;
+      *out_result = net::ERR_CACHE_WRITE_FAILURE;
       return;
     }
     data_size_[index] = offset + buf_len;
@@ -304,7 +304,7 @@ void SimpleSynchronousEntry::CheckEOFRecord(
                        sizeof(eof_record)) != sizeof(eof_record)) {
     RecordCheckEOFResult(CHECK_EOF_RESULT_READ_FAILURE);
     Doom();
-    *out_result = net::ERR_FAILED;
+    *out_result = net::ERR_CACHE_CHECKSUM_READ_FAILURE;
     return;
   }
 
@@ -312,7 +312,7 @@ void SimpleSynchronousEntry::CheckEOFRecord(
     RecordCheckEOFResult(CHECK_EOF_RESULT_MAGIC_NUMBER_MISMATCH);
     DLOG(INFO) << "eof record had bad magic number.";
     Doom();
-    *out_result = net::ERR_FAILED;
+    *out_result = net::ERR_CACHE_CHECKSUM_READ_FAILURE;
     return;
   }
 
@@ -323,7 +323,7 @@ void SimpleSynchronousEntry::CheckEOFRecord(
     RecordCheckEOFResult(CHECK_EOF_RESULT_CRC_MISMATCH);
     DLOG(INFO) << "eof record had bad crc.";
     Doom();
-    *out_result = net::ERR_FAILED;
+    *out_result = net::ERR_CACHE_CHECKSUM_MISMATCH;
     return;
   }
 

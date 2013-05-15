@@ -10,6 +10,7 @@
 #include <unistd.h>
 #endif
 
+#include <algorithm>
 #include <string>
 
 #include "base/bind.h"
@@ -17,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -2301,6 +2303,14 @@ void HttpCache::Transaction::DoneWritingToEntry(bool success) {
 
 int HttpCache::Transaction::OnCacheReadError(int result, bool restart) {
   DLOG(ERROR) << "ReadData failed: " << result;
+  const int result_for_histogram = std::max(0, -result);
+  if (restart) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("HttpCache.ReadErrorRestartable",
+                                result_for_histogram);
+  } else {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("HttpCache.ReadErrorNonRestartable",
+                                result_for_histogram);
+  }
 
   // Avoid using this entry in the future.
   if (cache_)
