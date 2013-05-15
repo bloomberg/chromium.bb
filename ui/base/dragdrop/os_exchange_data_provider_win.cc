@@ -5,14 +5,13 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
 #include <algorithm>
-#include <vector>
 
+#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
 #include "base/memory/scoped_handle.h"
 #include "base/pickle.h"
-#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"
 #include "googleurl/src/gurl.h"
@@ -26,9 +25,9 @@ namespace ui {
 // Creates a new STGMEDIUM object to hold the specified text. The caller
 // owns the resulting object. The "Bytes" version does not NULL terminate, the
 // string version does.
-static STGMEDIUM* GetStorageForBytes(const char* data, size_t bytes);
-static STGMEDIUM* GetStorageForString16(const string16& data);
-static STGMEDIUM* GetStorageForString(const std::string& data);
+static STGMEDIUM* GetStorageForBytes(const void* data, size_t bytes);
+template <typename T>
+static STGMEDIUM* GetStorageForString(const std::basic_string<T>& data);
 // Creates the contents of an Internet Shortcut file for the given URL.
 static void GetInternetShortcutFileContents(const GURL& url, std::string* data);
 // Creates a valid file name given a suggested title and URL.
@@ -86,7 +85,7 @@ class FormatEtcEnumerator : public IEnumFORMATETC {
   // retarded IEnumFORMATETC API assumes a deterministic ordering of elements
   // through methods like Next and Skip. This exposes the underlying data
   // structure to the user. Bah.
-  std::vector<FORMATETC*> contents_;
+  ScopedVector<FORMATETC> contents_;
 
   // The cursor of the active enumeration - an index into |contents_|.
   size_t cursor_;
@@ -120,7 +119,6 @@ FormatEtcEnumerator::FormatEtcEnumerator(
 }
 
 FormatEtcEnumerator::~FormatEtcEnumerator() {
-  STLDeleteContainerPointers(contents_.begin(), contents_.end());
 }
 
 STDMETHODIMP FormatEtcEnumerator::Next(
@@ -194,7 +192,7 @@ FormatEtcEnumerator* FormatEtcEnumerator::CloneFromOther(
     const FormatEtcEnumerator* other) {
   FormatEtcEnumerator* e = new FormatEtcEnumerator;
   // Copy FORMATETC data from our source into ourselves.
-  std::vector<FORMATETC*>::const_iterator start = other->contents_.begin();
+  ScopedVector<FORMATETC>::const_iterator start = other->contents_.begin();
   while (start != other->contents_.end()) {
     FORMATETC* format_etc = new FORMATETC;
     CloneFormatEtc(*start, format_etc);
@@ -266,11 +264,11 @@ OSExchangeDataProviderWin::~OSExchangeDataProviderWin() {
 }
 
 void OSExchangeDataProviderWin::SetString(const string16& data) {
-  STGMEDIUM* storage = GetStorageForString16(data);
+  STGMEDIUM* storage = GetStorageForString(data);
   data_->contents_.push_back(
       new DataObjectImpl::StoredDataInfo(CF_UNICODETEXT, storage));
 
-  // Also add plain text.
+  // Also add the UTF8-encoded version.
   storage = GetStorageForString(UTF16ToUTF8(data));
   data_->contents_.push_back(
       new DataObjectImpl::StoredDataInfo(CF_TEXT, storage));
@@ -288,7 +286,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   string16 x_moz_url_str = UTF8ToUTF16(url.spec());
   x_moz_url_str += '\n';
   x_moz_url_str += title;
-  STGMEDIUM* storage = GetStorageForString16(x_moz_url_str);
+  STGMEDIUM* storage = GetStorageForString(x_moz_url_str);
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetMozUrlFormat()->cfFormat, storage));
 
@@ -300,7 +298,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   SetFileContents(base::FilePath(valid_file_name), shortcut_url_file_contents);
 
   // Add a UniformResourceLocator link for apps like IE and Word.
-  storage = GetStorageForString16(UTF8ToUTF16(url.spec()));
+  storage = GetStorageForString(UTF8ToUTF16(url.spec()));
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetUrlWFormat()->cfFormat, storage));
   storage = GetStorageForString(url.spec());
@@ -312,12 +310,8 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
 
   // Also add text representations (these should be last since they're the
   // least preferable).
-  storage = GetStorageForString16(UTF8ToUTF16(url.spec()));
-  data_->contents_.push_back(
-      new DataObjectImpl::StoredDataInfo(CF_UNICODETEXT, storage));
-  storage = GetStorageForString(url.spec());
-  data_->contents_.push_back(
-      new DataObjectImpl::StoredDataInfo(CF_TEXT, storage));
+  SetString(UTF8ToUTF16(url.spec()));
+
 }
 
 void OSExchangeDataProviderWin::SetFilename(const base::FilePath& path) {
@@ -339,8 +333,7 @@ void OSExchangeDataProviderWin::SetFilenames(
 
 void OSExchangeDataProviderWin::SetPickledData(CLIPFORMAT format,
                                                const Pickle& data) {
-  STGMEDIUM* storage = GetStorageForBytes(static_cast<const char*>(data.data()),
-                                          data.size());
+  STGMEDIUM* storage = GetStorageForBytes(data.data(), data.size());
   data_->contents_.push_back(
       new DataObjectImpl::StoredDataInfo(format, storage));
 }
@@ -612,7 +605,6 @@ DataObjectImpl::DataObjectImpl()
 
 DataObjectImpl::~DataObjectImpl() {
   StopDownloads();
-  STLDeleteContainerPointers(contents_.begin(), contents_.end());
   if (observer_)
     observer_->OnDataObjectDisposed();
 }
@@ -637,7 +629,6 @@ void DataObjectImpl::RemoveData(const FORMATETC& format) {
         format.dwAspect == (*i)->format_etc.dwAspect &&
         format.lindex == (*i)->format_etc.lindex &&
         format.tymed == (*i)->format_etc.tymed) {
-      delete *i;
       contents_.erase(i);
       return;
     }
@@ -854,9 +845,9 @@ ULONG DataObjectImpl::Release() {
 ///////////////////////////////////////////////////////////////////////////////
 // DataObjectImpl, private:
 
-static STGMEDIUM* GetStorageForBytes(const char* data, size_t bytes) {
+static STGMEDIUM* GetStorageForBytes(const void* data, size_t bytes) {
   HANDLE handle = GlobalAlloc(GPTR, static_cast<int>(bytes));
-  base::win::ScopedHGlobal<char> scoped(handle);
+  base::win::ScopedHGlobal<uint8> scoped(handle);
   size_t allocated = static_cast<size_t>(GlobalSize(handle));
   memcpy(scoped.get(), data, allocated);
 
@@ -867,33 +858,11 @@ static STGMEDIUM* GetStorageForBytes(const char* data, size_t bytes) {
   return storage;
 }
 
-template<class T>
-static HGLOBAL CopyStringToGlobalHandle(const T& payload) {
-  int bytes =
-      static_cast<int>(payload.size() + 1) * sizeof(typename T::value_type);
-  HANDLE handle = GlobalAlloc(GPTR, bytes);
-  void* data = GlobalLock(handle);
-  size_t allocated = static_cast<size_t>(GlobalSize(handle));
-  memcpy(data, payload.c_str(), allocated);
-  static_cast<typename T::value_type*>(data)[payload.size()] = '\0';
-  GlobalUnlock(handle);
-  return handle;
-}
-
-static STGMEDIUM* GetStorageForString16(const string16& data) {
-  STGMEDIUM* storage = new STGMEDIUM;
-  storage->hGlobal = CopyStringToGlobalHandle<string16>(data);
-  storage->tymed = TYMED_HGLOBAL;
-  storage->pUnkForRelease = NULL;
-  return storage;
-}
-
-static STGMEDIUM* GetStorageForString(const std::string& data) {
-  STGMEDIUM* storage = new STGMEDIUM;
-  storage->hGlobal = CopyStringToGlobalHandle<std::string>(data);
-  storage->tymed = TYMED_HGLOBAL;
-  storage->pUnkForRelease = NULL;
-  return storage;
+template <typename T>
+static STGMEDIUM* GetStorageForString(const std::basic_string<T>& data) {
+  return GetStorageForBytes(
+      data.c_str(),
+      (data.size() + 1) * sizeof(std::basic_string<T>::value_type));
 }
 
 static void GetInternetShortcutFileContents(const GURL& url,

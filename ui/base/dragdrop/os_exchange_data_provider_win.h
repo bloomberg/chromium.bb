@@ -8,6 +8,7 @@
 #include <objidl.h>
 #include <shlobj.h>
 #include <string>
+#include <vector>
 
 // Win8 SDK compatibility, see http://goo.gl/fufvl for more information.
 // "Note: This interface has been renamed IDataObjectAsyncCapability."
@@ -17,6 +18,7 @@
 #define IDataObjectAsyncCapability IAsyncOperation
 #endif
 
+#include "base/memory/scoped_vector.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_export.h"
@@ -123,7 +125,7 @@ class DataObjectImpl : public DownloadFileObserver,
     }
   };
 
-  typedef std::vector<StoredDataInfo*> StoredData;
+  typedef ScopedVector<StoredDataInfo> StoredData;
   StoredData contents_;
 
   base::win::ScopedComPtr<IDataObject> source_object_;
