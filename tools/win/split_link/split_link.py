@@ -49,8 +49,10 @@ def GetFlagsAndInputs(argv):
   flags = []
   for arg in args:
     lower_arg = arg.lower()
-    # We'll be replacing this ourselves.
+    # We'll be replacing these ourselves.
     if lower_arg.startswith('/out:'):
+      continue
+    if lower_arg.startswith('/manifestfile:'):
       continue
     if (not lower_arg.startswith('/') and
         lower_arg.endswith(('.obj', '.lib', '.res'))):
@@ -61,16 +63,24 @@ def GetFlagsAndInputs(argv):
   return flags, inputs
 
 
-def GetOriginalLinkerPath():
+def GetRegistryValue(subkey):
   try:
     val = _winreg.QueryValue(_winreg.HKEY_CURRENT_USER,
-                             'Software\\Chromium\\split_link_installed')
+                             'Software\\Chromium\\' + subkey)
     if os.path.exists(val):
       return val
   except WindowsError:
     pass
 
-  raise SystemExit("Couldn't read linker location from registry")
+  raise SystemExit("Couldn't read from registry")
+
+
+def GetOriginalLinkerPath():
+  return GetRegistryValue('split_link_installed')
+
+
+def GetMtPath():
+  return GetRegistryValue('split_link_mt_path')
 
 
 def PartFor(input_file, description_parts, description_all):
@@ -118,7 +128,8 @@ def ParseOutExternals(output):
 
   mo = re.search(r'fatal error LNK1120: (\d+) unresolved externals', output)
   # Make sure we have the same number that the linker thinks we have.
-  assert mo or not result
+  if mo is None and result:
+    raise SystemExit(output)
   if len(result) != int(mo.group(1)):
     print output
     print 'Expecting %d, got %d' % (int(mo.group(1)), len(result))
@@ -139,6 +150,10 @@ def OutputNameForIndex(index):
     return 'chrome%d.dll' % index
 
 
+def ManifestNameForIndex(index):
+  return OutputNameForIndex(index) + '.intermediate.manifest'
+
+
 def RunLinker(flags, index, inputs, phase):
   """Invokes the linker and returns the stdout, returncode and target name."""
   rspfile = 'part%d_%s.rsp' % (index, phase)
@@ -146,8 +161,10 @@ def RunLinker(flags, index, inputs, phase):
     print >> f, AsCommandLineArgs(inputs)
     print >> f, AsCommandLineArgs(flags)
     output_name = OutputNameForIndex(index)
+    manifest_name = ManifestNameForIndex(index)
     print >> f, '/ENTRY:ChromeEmptyEntry@12'
     print >> f, '/OUT:' + output_name
+    print >> f, '/MANIFESTFILE:' + manifest_name
   # Log('[[[\n' + open(rspfile).read() + '\n]]]')
   link_exe = GetOriginalLinkerPath()
   popen = subprocess.Popen([link_exe, '@' + rspfile], stdout=subprocess.PIPE)
@@ -253,6 +270,16 @@ def main():
     import_libs = BuildImportLibs(flags, inputs_by_part, deffiles)
   else:
     return 1
+
+  mt_exe = GetMtPath()
+  for i, dll in enumerate(dlls):
+    Log('embedding manifest in %s' % dll)
+    args = [mt_exe, '-nologo', '-manifest']
+    args.append(ManifestNameForIndex(i))
+    args.append(description['manifest'])
+    args.append('-outputresource:%s;2' % dll)
+    subprocess.check_call(args)
+
   Log('built %r' % dlls)
 
   return 0

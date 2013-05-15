@@ -44,9 +44,10 @@ def main():
   os.chdir(BASE_DIR)
 
   link = FindInPath('link.exe')
-  if not link:
-    print("Couldn't find link.exe in PATH. Must run from Administrator "
-          "Visual Studio Command Prompt.")
+  mt = FindInPath('mt.exe')
+  if not link or not mt:
+    print("Couldn't find link.exe or mt.exe in PATH. "
+          "Must run from Administrator Visual Studio Command Prompt.")
     return 1
 
   link_backup = os.path.join(os.path.split(link)[0], 'link.exe.split_link.exe')
@@ -83,6 +84,10 @@ def main():
                      'Software\\Chromium\\split_link_installed',
                      _winreg.REG_SZ,
                      link_backup)
+    _winreg.SetValue(_winreg.HKEY_CURRENT_USER,
+                     'Software\\Chromium\\split_link_mt_path',
+                     _winreg.REG_SZ,
+                     mt)
   except IOError:
     print("Wasn't able to copy split_link.exe over %s. "
           "Not running with Administrator privileges?" % link)

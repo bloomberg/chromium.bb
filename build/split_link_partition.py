@@ -9,7 +9,7 @@
     # the part for the last block that matches. Inputs are lower()d before
     # the regex is run.
 
-    # chrome0.dll.
+    # chrome.dll.
     [
       r'.*',
     ],
@@ -113,4 +113,8 @@
     r'^winspool\.lib$',
     r'^ws2_32\.lib$',
   ],
+
+  # This manifest will be merged with the intermediate one from the linker,
+  # and embedded in both DLLs.
+  'manifest': '..\\..\\chrome\\app\\chrome.dll.manifest'
 }
