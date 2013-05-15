@@ -909,9 +909,10 @@ int SpdyStream::DoSendBody() {
   // the number of bytes in the frame that were written, only consume the
   // data portion, of course.
   io_state_ = STATE_SEND_BODY_COMPLETE;
-  if (!delegate_)
-    return ERR_UNEXPECTED;
-  return delegate_->OnSendBody();
+  CHECK(delegate_);
+  int status = delegate_->OnSendBody();
+  CHECK(status == OK || status == ERR_IO_PENDING);
+  return status;
 }
 
 int SpdyStream::DoSendBodyComplete(int result) {
