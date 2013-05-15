@@ -99,7 +99,6 @@ WebPreferences::WebPreferences()
       visual_word_movement_enabled(false),
       css_sticky_position_enabled(false),
       css_shaders_enabled(false),
-      css_variables_enabled(false),
       css_grid_layout_enabled(false),
       lazy_layout_enabled(false),
       touch_enabled(false),
@@ -440,7 +439,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 
   settings->setCSSStickyPositionEnabled(prefs.css_sticky_position_enabled);
   settings->setExperimentalCSSCustomFilterEnabled(prefs.css_shaders_enabled);
-  settings->setExperimentalCSSVariablesEnabled(prefs.css_variables_enabled);
   settings->setExperimentalCSSGridLayoutEnabled(prefs.css_grid_layout_enabled);
 
   WebRuntimeFeatures::enableLazyLayout(prefs.lazy_layout_enabled);
