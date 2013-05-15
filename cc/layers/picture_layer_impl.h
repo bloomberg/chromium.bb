@@ -94,6 +94,9 @@ class CC_EXPORT PictureLayerImpl
   void UpdateLCDTextStatus();
   void ResetRasterScale();
 
+  bool CanHaveTilings() const;
+  bool CanHaveTilingWithScale(float contents_scale) const;
+
   virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
   virtual void AsValueInto(base::DictionaryValue* dict) const OVERRIDE;

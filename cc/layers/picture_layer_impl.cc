@@ -548,13 +548,15 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   invalidation_.Union(difference_region);
 
   tilings_->RemoveAllTilings();
-  tilings_->AddTilingsToMatchScales(*other->tilings_, MinimumContentsScale());
+  if (CanHaveTilings())
+    tilings_->AddTilingsToMatchScales(*other->tilings_, MinimumContentsScale());
+
   DCHECK(bounds() == tilings_->layer_bounds());
 }
 
 void PictureLayerImpl::SyncTiling(
     const PictureLayerTiling* tiling) {
-  if (!DrawsContent() || tiling->contents_scale() < MinimumContentsScale())
+  if (!CanHaveTilingWithScale(tiling->contents_scale()))
     return;
   tilings_->AddTiling(tiling->contents_scale());
 
@@ -652,7 +654,8 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
 }
 
 PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
-  DCHECK(contents_scale >= MinimumContentsScale());
+  DCHECK(CanHaveTilingWithScale(contents_scale)) <<
+      "contents_scale: " << contents_scale;
 
   PictureLayerTiling* tiling = tilings_->AddTiling(contents_scale);
 
@@ -703,7 +706,7 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   DCHECK(ideal_device_scale_);
   DCHECK(ideal_source_scale_);
 
-  if (pile_->recorded_region().IsEmpty())
+  if (!CanHaveTilings())
     return;
 
   bool change_target_tiling =
@@ -941,6 +944,22 @@ void PictureLayerImpl::ResetRasterScale() {
   raster_source_scale_ = 0.f;
   raster_contents_scale_ = 0.f;
   low_res_raster_contents_scale_ = 0.f;
+}
+
+bool PictureLayerImpl::CanHaveTilings() const {
+  if (!DrawsContent())
+    return false;
+  if (pile_->recorded_region().IsEmpty())
+    return false;
+  return true;
+}
+
+bool PictureLayerImpl::CanHaveTilingWithScale(float contents_scale) const {
+  if (!CanHaveTilings())
+    return false;
+  if (contents_scale < MinimumContentsScale())
+    return false;
+  return true;
 }
 
 void PictureLayerImpl::GetDebugBorderProperties(
