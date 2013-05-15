@@ -2182,10 +2182,13 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     }
 
     // The slop built in to this mask rect matches the heuristic used in FontCGWin.cpp for GDI text.
-    FloatRect textRect = FloatRect(location.x() - fontMetrics.height() / 2, location.y() - fontMetrics.ascent() - fontMetrics.lineGap(),
-                                   width + fontMetrics.height(), fontMetrics.lineSpacing());
+    TextRunPaintInfo textRunPaintInfo(textRun);
+    textRunPaintInfo.bounds = FloatRect(location.x() - fontMetrics.height() / 2,
+                                        location.y() - fontMetrics.ascent() - fontMetrics.lineGap(),
+                                        width + fontMetrics.height(),
+                                        fontMetrics.lineSpacing());
     if (!fill)
-        inflateStrokeRect(textRect);
+        inflateStrokeRect(textRunPaintInfo.bounds);
 
     c->setTextDrawingMode(fill ? TextModeFill : TextModeStroke);
     if (useMaxWidth) {
@@ -2193,11 +2196,11 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
         c->translate(location.x(), location.y());
         // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op) still work.
         c->scale(FloatSize((fontWidth > 0 ? (width / fontWidth) : 0), 1));
-        c->drawBidiText(font, textRun, FloatPoint(0, 0), Font::UseFallbackIfFontNotReady);
+        c->drawBidiText(font, textRunPaintInfo, FloatPoint(0, 0), Font::UseFallbackIfFontNotReady);
     } else
-        c->drawBidiText(font, textRun, location, Font::UseFallbackIfFontNotReady);
+        c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
 
-    didDraw(textRect);
+    didDraw(textRunPaintInfo.bounds);
 }
 
 void CanvasRenderingContext2D::inflateStrokeRect(FloatRect& rect) const

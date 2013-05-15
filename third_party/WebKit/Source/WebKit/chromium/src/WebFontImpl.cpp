@@ -93,13 +93,19 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
                            int from, int to) const
 {
     FontCachePurgePreventer fontCachePurgePreventer;
+    WebCore::FloatRect textClipRect(clip);
+    TextRun textRun(run);
+    TextRunPaintInfo runInfo(textRun);
+    runInfo.from = from;
+    runInfo.to = to == -1 ? textRun.length() : to;
+    runInfo.bounds = textClipRect;
     GraphicsContext gc(canvas);
 
     gc.save();
     gc.setShouldSmoothFonts(canvasIsOpaque);
     gc.setFillColor(color, ColorSpaceDeviceRGB);
-    gc.clip(WebCore::FloatRect(clip));
-    m_font.drawText(&gc, run, leftBaseline, from, to);
+    gc.clip(textClipRect);
+    m_font.drawText(&gc, runInfo, leftBaseline);
     gc.restore();
 
 #if defined(WIN32)

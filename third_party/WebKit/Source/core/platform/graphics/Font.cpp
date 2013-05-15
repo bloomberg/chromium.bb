@@ -156,7 +156,7 @@ void Font::update(PassRefPtr<FontSelector> fontSelector) const
     m_typesettingFeatures = computeTypesettingFeatures();
 }
 
-void Font::drawText(GraphicsContext* context, const TextRun& run, const FloatPoint& point, int from, int to, CustomFontNotReadyAction customFontNotReadyAction) const
+void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction) const
 {
     // Don't draw anything while we are using custom fonts that are in the process of loading,
     // except if the 'force' argument is set to true (in which case it will use a fallback
@@ -164,36 +164,31 @@ void Font::drawText(GraphicsContext* context, const TextRun& run, const FloatPoi
     if (loadingCustomFonts() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
         return;
     
-    to = (to == -1 ? run.length() : to);
-
-    CodePath codePathToUse = codePath(run);
+    CodePath codePathToUse = codePath(runInfo.run);
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != Complex && typesettingFeatures() && (from || to != run.length()))
+    if (codePathToUse != Complex && typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
         codePathToUse = Complex;
 
     if (codePathToUse != Complex)
-        return drawSimpleText(context, run, point, from, to);
+        return drawSimpleText(context, runInfo, point);
 
-    return drawComplexText(context, run, point, from, to);
+    return drawComplexText(context, runInfo, point);
 }
 
-void Font::drawEmphasisMarks(GraphicsContext* context, const TextRun& run, const AtomicString& mark, const FloatPoint& point, int from, int to) const
+void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
 {
     if (loadingCustomFonts())
         return;
 
-    if (to < 0)
-        to = run.length();
-
-    CodePath codePathToUse = codePath(run);
+    CodePath codePathToUse = codePath(runInfo.run);
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != Complex && typesettingFeatures() && (from || to != run.length()))
+    if (codePathToUse != Complex && typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
         codePathToUse = Complex;
 
     if (codePathToUse != Complex)
-        drawEmphasisMarksForSimpleText(context, run, mark, point, from, to);
+        drawEmphasisMarksForSimpleText(context, runInfo, mark, point);
     else
-        drawEmphasisMarksForComplexText(context, run, mark, point, from, to);
+        drawEmphasisMarksForComplexText(context, runInfo, mark, point);
 }
 
 float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const

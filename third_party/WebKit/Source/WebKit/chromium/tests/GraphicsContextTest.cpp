@@ -705,11 +705,13 @@ TEST(PlatformContextSkiaTest, trackOpaqueRoundedRectTest)
 
 TEST(PlatformContextSkiaTest, trackOpaqueTextTest)
 {
+    int width = 200, height = 200;
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
     bitmap.allocPixels();
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
+    SkRect textRect = SkRect::MakeWH(width, height);
 
     GraphicsContext context(&canvas);
     context.setTrackOpaqueRegion(true);
@@ -734,11 +736,11 @@ TEST(PlatformContextSkiaTest, trackOpaqueTextTest)
     EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.drawPosText("A", 1, &point, opaquePaint);
+    context.drawPosText("A", 1, &point, textRect, opaquePaint);
     EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.drawPosText("A", 1, &point, alphaPaint);
+    context.drawPosText("A", 1, &point, textRect, alphaPaint);
     EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
@@ -746,11 +748,11 @@ TEST(PlatformContextSkiaTest, trackOpaqueTextTest)
     EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.drawPosTextH("A", 1, &pointX, 0, opaquePaint);
+    context.drawPosTextH("A", 1, &pointX, 0, textRect, opaquePaint);
     EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.drawPosTextH("A", 1, &pointX, 0, alphaPaint);
+    context.drawPosTextH("A", 1, &pointX, 0, textRect, alphaPaint);
     EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
@@ -758,11 +760,11 @@ TEST(PlatformContextSkiaTest, trackOpaqueTextTest)
     EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.drawTextOnPath("A", 1, path, 0, opaquePaint);
+    context.drawTextOnPath("A", 1, path, textRect, 0, opaquePaint);
     EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.drawTextOnPath("A", 1, path, 0, alphaPaint);
+    context.drawTextOnPath("A", 1, path, textRect, 0, alphaPaint);
     EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }

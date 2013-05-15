@@ -62,7 +62,8 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
                       const GlyphBuffer& glyphBuffer,
                       int from,
                       int numGlyphs,
-                      const FloatPoint& point) const
+                      const FloatPoint& point,
+                      const FloatRect& textRect) const
 {
     SkColor color = graphicsContext->effectiveFillColor();
     unsigned char alpha = SkColorGetA(color);
@@ -77,6 +78,7 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
     int glyphIndex = 0;  // The starting glyph of the current chunk.
 
     float horizontalOffset = point.x(); // The floating point offset of the left side of the current glyph.
+
 #if ENABLE(OPENTYPE_VERTICAL)
     const OpenTypeVerticalData* verticalData = font->verticalData();
     if (verticalData) {
@@ -110,7 +112,7 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
             SkPoint origin;
             origin.set(verticalOriginX, SkFloatToScalar(point.y() + horizontalOffset - point.x()));
             horizontalOffset += currentWidth;
-            paintSkiaText(graphicsContext, font->platformData(), curLen, &glyphs[0], &advances[0], &offsets[0], &origin);
+            paintSkiaText(graphicsContext, font->platformData(), curLen, &glyphs[0], &advances[0], &offsets[0], origin, SkRect(textRect));
         }
 
         graphicsContext->setCTM(savedMatrix);
@@ -151,7 +153,7 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
 
         SkPoint origin = point;
         origin.fX += SkFloatToScalar(horizontalOffset - point.x() - currentWidth);
-        paintSkiaText(graphicsContext, font->platformData(), curLen, &glyphs[0], &advances[0], 0, &origin);
+        paintSkiaText(graphicsContext, font->platformData(), curLen, &glyphs[0], &advances[0], 0, origin, SkRect(textRect));
     }
 }
 
@@ -175,12 +177,10 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
 }
 
 void Font::drawComplexText(GraphicsContext* graphicsContext,
-                           const TextRun& run,
-                           const FloatPoint& point,
-                           int from,
-                           int to) const
+                           const TextRunPaintInfo& runInfo,
+                           const FloatPoint& point) const
 {
-    UniscribeHelperTextRun state(run, *this);
+    UniscribeHelperTextRun state(runInfo.run, *this);
 
     SkColor color = graphicsContext->effectiveFillColor();
     unsigned char alpha = SkColorGetA(color);
@@ -191,10 +191,10 @@ void Font::drawComplexText(GraphicsContext* graphicsContext,
     HDC hdc = 0;
     // Uniscribe counts the coordinates from the upper left, while WebKit uses
     // the baseline, so we have to subtract off the ascent.
-    state.draw(graphicsContext, hdc, lroundf(point.x()), lroundf(point.y() - fontMetrics().ascent()), from, to);
+    state.draw(graphicsContext, hdc, lroundf(point.x()), lroundf(point.y() - fontMetrics().ascent()), runInfo.bounds, runInfo.from, runInfo.to);
 }
 
-void Font::drawEmphasisMarksForComplexText(GraphicsContext* /* context */, const TextRun& /* run */, const AtomicString& /* mark */, const FloatPoint& /* point */, int /* from */, int /* to */) const
+void Font::drawEmphasisMarksForComplexText(GraphicsContext* /* context */, const TextRunPaintInfo& /* runInfo */, const AtomicString& /* mark */, const FloatPoint& /* point */) const
 {
     notImplemented();
 }

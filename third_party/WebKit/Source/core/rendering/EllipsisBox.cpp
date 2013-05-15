@@ -57,7 +57,13 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
     }
 
     // FIXME: Why is this always LTR? Fix by passing correct text run flags below.
-    context->drawText(font, RenderBlock::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), LayoutPoint(x() + paintOffset.x(), y() + paintOffset.y() + style->fontMetrics().ascent()));
+    FloatPoint boxOrigin(paintOffset);
+    boxOrigin.move(x(), y());
+    FloatPoint textOrigin(boxOrigin.x(), boxOrigin.y() + style->fontMetrics().ascent());
+    TextRun textRun = RenderBlock::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
+    TextRunPaintInfo textRunPaintInfo(textRun);
+    textRunPaintInfo.bounds = FloatRect(boxOrigin, FloatSize(logicalWidth(), logicalHeight()));
+    context->drawText(font, textRunPaintInfo, textOrigin);
 
     // Restore the regular fill color.
     if (textColor != context->fillColor())

@@ -48,6 +48,7 @@ namespace WebCore {
 
 static void skiaDrawText(GraphicsContext* context,
                          const SkPoint& point,
+                         const SkRect& textRect,
                          SkPaint* paint,
                          const WORD* glyphs,
                          const int* advances,
@@ -71,7 +72,7 @@ static void skiaDrawText(GraphicsContext* context,
                        y + -SkIntToScalar(offsets[i].dv));
             x += SkIntToScalar(advances[i]);
         }
-        context->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, *paint);
+        context->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, textRect, *paint);
     } else {
         SkAutoSTArray<kLocalGlyphMax * 2, SkScalar> storage(numGlyphs);
         SkScalar* xpos = storage.get();
@@ -80,7 +81,7 @@ static void skiaDrawText(GraphicsContext* context,
             x += SkIntToScalar(advances[i]);
         }
         context->drawPosTextH(glyphs, numGlyphs * sizeof(uint16_t),
-                             xpos, y, *paint);
+                             xpos, y, textRect, *paint);
     }
 }
 
@@ -118,7 +119,8 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
                           const WORD* glyphs,
                           const int* advances,
                           const GOFFSET* offsets,
-                          const SkPoint* origin)
+                          const SkPoint& origin,
+                          const SkRect& textRect)
 {
     TextDrawingModeFlags textMode = context->textDrawingMode();
     // Ensure font load for printing, because PDF device needs it.
@@ -134,7 +136,7 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
     bool didFill = false;
 
     if ((textMode & TextModeFill) && (SkColorGetA(paint.getColor()) || paint.getLooper())) {
-        skiaDrawText(context, *origin, &paint, &glyphs[0], &advances[0], &offsets[0], numGlyphs);
+        skiaDrawText(context, origin, textRect, &paint, &glyphs[0], &advances[0], &offsets[0], numGlyphs);
         didFill = true;
     }
 
@@ -161,7 +163,7 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
             paint.setLooper(0);
         }
 
-        skiaDrawText(context, *origin, &paint, &glyphs[0], &advances[0], &offsets[0], numGlyphs);
+        skiaDrawText(context, origin, textRect, &paint, &glyphs[0], &advances[0], &offsets[0], numGlyphs);
     }
 }
 
@@ -173,10 +175,11 @@ void paintSkiaText(GraphicsContext* context,
                    const WORD* glyphs,
                    const int* advances,
                    const GOFFSET* offsets,
-                   const SkPoint* origin)
+                   const SkPoint& origin,
+                   const SkRect& textRect)
 {
     paintSkiaText(context, data.hfont(), data.typeface(), data.size(), data.paintTextFlags(),
-                  numGlyphs, glyphs, advances, offsets, origin);
+                  numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
 
 void paintSkiaText(GraphicsContext* context,
@@ -185,14 +188,15 @@ void paintSkiaText(GraphicsContext* context,
                    const WORD* glyphs,
                    const int* advances,
                    const GOFFSET* offsets,
-                   const SkPoint* origin)
+                   const SkPoint& origin,
+                   const SkRect& textRect)
 {
     int size;
     int paintTextFlags;
     SkTypeface* face = CreateTypefaceFromHFont(hfont, &size, &paintTextFlags);
     SkAutoUnref aur(face);
 
-    paintSkiaText(context, hfont, face, size, paintTextFlags, numGlyphs, glyphs, advances, offsets, origin);
+    paintSkiaText(context, hfont, face, size, paintTextFlags, numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
 
 }  // namespace WebCore

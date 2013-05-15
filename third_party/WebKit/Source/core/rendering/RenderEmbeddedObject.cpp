@@ -190,9 +190,11 @@ void RenderEmbeddedObject::paintReplaced(PaintInfo& paintInfo, const LayoutPoint
     const FontMetrics& fontMetrics = font.fontMetrics();
     float labelX = roundf(replacementTextRect.location().x() + (replacementTextRect.size().width() - textWidth) / 2);
     float labelY = roundf(replacementTextRect.location().y() + (replacementTextRect.size().height() - fontMetrics.height()) / 2 + fontMetrics.ascent());
+    TextRunPaintInfo runInfo(run);
+    runInfo.bounds = replacementTextRect;
     context->setAlpha(replacementTextTextOpacity);
     context->setFillColor(Color::black, style()->colorSpace());
-    context->drawBidiText(font, run, FloatPoint(labelX, labelY));
+    context->drawBidiText(font, runInfo, FloatPoint(labelX, labelY));
 }
 
 bool RenderEmbeddedObject::getReplacementTextGeometry(const LayoutPoint& accumulatedOffset, FloatRect& contentRect, Path& path, FloatRect& replacementTextRect, Font& font, TextRun& run, float& textWidth) const
