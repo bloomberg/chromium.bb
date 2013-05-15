@@ -22,10 +22,10 @@
 
 // static
 void DownloadInProgressDialogView::Show(Browser* browser,
-                                        gfx::NativeWindow parent_window) {
+                                        gfx::NativeWindow parent) {
   DownloadInProgressDialogView* window =
       new DownloadInProgressDialogView(browser);
-  views::Widget::CreateWindowWithParent(window, parent_window)->Show();
+  views::DialogDelegate::CreateDialogWidget(window, NULL, parent)->Show();
 }
 
 DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)

@@ -17,7 +17,7 @@ class MessageBoxView;
 
 class DownloadInProgressDialogView : public views::DialogDelegate {
  public:
-  static void Show(Browser* browser, gfx::NativeWindow parent_window);
+  static void Show(Browser* browser, gfx::NativeWindow parent);
 
  private:
   explicit DownloadInProgressDialogView(Browser* browser);
