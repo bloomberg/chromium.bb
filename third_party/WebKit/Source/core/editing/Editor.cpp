@@ -746,7 +746,7 @@ void Editor::outdent()
     applyCommand(IndentOutdentCommand::create(m_frame->document(), IndentOutdentCommand::Outdent));
 }
 
-static void dispatchEditableContentChangedEvents(Element* startRoot, Element* endRoot)
+static void dispatchEditableContentChangedEvents(PassRefPtr<Element> startRoot, PassRefPtr<Element> endRoot)
 {
     if (startRoot)
         startRoot->dispatchEvent(Event::create(eventNames().webkitEditableContentChangedEvent, false, false), IGNORE_EXCEPTION);
