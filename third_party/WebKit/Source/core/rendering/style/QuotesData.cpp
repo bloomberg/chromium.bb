@@ -31,11 +31,11 @@ PassRefPtr<QuotesData> QuotesData::create(String open, String close)
     return data;
 }
 
-PassRefPtr<QuotesData> QuotesData::create(String open1, String close1, String open2, String close2)
+PassRefPtr<QuotesData> QuotesData::create(UChar open1, UChar close1, UChar open2, UChar close2)
 {
     RefPtr<QuotesData> data = QuotesData::create();
-    data->addPair(std::make_pair(open1, close1));
-    data->addPair(std::make_pair(open2, close2));
+    data->addPair(std::make_pair(String(&open1, 1), String(&close1, 1)));
+    data->addPair(std::make_pair(String(&open2, 1), String(&close2, 1)));
     return data;
 }
 
