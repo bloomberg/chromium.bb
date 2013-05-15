@@ -147,7 +147,7 @@ DemuxerStream::Type VideoFrameStream::type() {
 
 void VideoFrameStream::EnableBitstreamConverter() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  stream_->EnableBitstreamConverter();
+  NOTREACHED();
 }
 
 void VideoFrameStream::OnDecoderSelected(
@@ -164,6 +164,9 @@ void VideoFrameStream::OnDecoderSelected(
   } else {
     decoder_ = selected_decoder.Pass();
     decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
+    if (decoder_->NeedsBitstreamConversion()) {
+      stream_->EnableBitstreamConverter();
+    }
     state_ = NORMAL;
     base::ResetAndReturn(&init_cb_).Run(true, decoder_->HasAlpha());
   }

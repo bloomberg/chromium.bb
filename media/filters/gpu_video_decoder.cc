@@ -161,6 +161,7 @@ GpuVideoDecoder::GpuVideoDecoder(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const scoped_refptr<Factories>& factories)
     : demuxer_stream_(NULL),
+      needs_bitstream_conversion_(false),
       gvd_loop_proxy_(message_loop),
       weak_factory_(this),
       vda_loop_proxy_(factories->GetMessageLoop()),
@@ -270,11 +271,9 @@ void GpuVideoDecoder::Initialize(DemuxerStream* stream,
     return;
   }
 
-  if (config.codec() == kCodecH264)
-    stream->EnableBitstreamConverter();
-
   demuxer_stream_ = stream;
   statistics_cb_ = statistics_cb;
+  needs_bitstream_conversion_ = (config.codec() == kCodecH264);
 
   DVLOG(1) << "GpuVideoDecoder::Initialize() succeeded.";
   PostTaskAndReplyWithResult(
@@ -475,6 +474,11 @@ void GpuVideoDecoder::GetBufferData(int32 id, base::TimeDelta* timestamp,
 bool GpuVideoDecoder::HasAlpha() const {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   return true;
+}
+
+bool GpuVideoDecoder::NeedsBitstreamConversion() const {
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
+  return needs_bitstream_conversion_;
 }
 
 bool GpuVideoDecoder::HasOutputFrameAvailable() const {

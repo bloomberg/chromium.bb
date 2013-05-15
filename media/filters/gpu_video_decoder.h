@@ -85,6 +85,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual bool HasAlpha() const OVERRIDE;
+  virtual bool NeedsBitstreamConversion() const OVERRIDE;
   virtual bool HasOutputFrameAvailable() const OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
@@ -167,6 +168,8 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   DemuxerStream* demuxer_stream_;
+
+  bool needs_bitstream_conversion_;
 
   // Message loop on which to fire callbacks and trampoline calls to this class
   // if they arrive on other loops.

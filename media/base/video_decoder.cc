@@ -14,6 +14,10 @@ bool VideoDecoder::HasAlpha() const {
   return false;
 }
 
+bool VideoDecoder::NeedsBitstreamConversion() const {
+  return false;
+}
+
 bool VideoDecoder::HasOutputFrameAvailable() const {
   return true;
 }
