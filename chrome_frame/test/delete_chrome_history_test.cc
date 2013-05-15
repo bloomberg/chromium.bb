@@ -210,7 +210,7 @@ TEST_F(DeleteBrowsingHistoryTest, DISABLED_CFDeleteBrowsingHistory) {
   EXPECT_CALL(load_helper, OnLoadComplete())
       .WillOnce(testing::DoAll(
           AccLeftClickInRenderer(&ie_mock_, AccObjectMatcher(L"username")),
-          PostCharMessagesToRenderer(&ie_mock_, WideToASCII(kFormFieldValue)),
+          PostKeyMessagesToRenderer(&ie_mock_, WideToASCII(kFormFieldValue)),
           AccLeftClickInRenderer(&ie_mock_, AccObjectMatcher(L"Submit"))));
 
   EXPECT_CALL(server_mock_, Post(_, testing::StrEq(L"/form"), _))

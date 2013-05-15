@@ -401,7 +401,7 @@ TEST_P(FullTabNavigationTest, JavascriptWindowOpenCanClose) {
   ie_mock_.ExpectNewWindow(&new_window_mock);
   EXPECT_CALL(new_window_mock, OnLoad(_, StrEq(GetSimplePageUrl())))
       .Times(testing::AtMost(2))
-      .WillOnce(PostCharMessageToRenderer(&ie_mock_, 'C'))  // close the popup
+      .WillOnce(PostKeyMessageToRenderer(&ie_mock_, 'c'))  // close the popup
       .WillOnce(testing::Return());
 
   EXPECT_CALL(new_window_mock, OnQuit())

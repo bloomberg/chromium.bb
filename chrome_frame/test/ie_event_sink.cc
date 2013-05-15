@@ -14,6 +14,8 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_piece.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_handle.h"
@@ -313,9 +315,37 @@ void IEEventSink::SetFocusToRenderer() {
   simulate_input::SetKeyboardFocusToWindow(GetRendererWindow());
 }
 
-void IEEventSink::SendKeys(const wchar_t* input_string) {
-  SetFocusToRenderer();
-  simulate_input::SendStringW(input_string);
+void IEEventSink::SendKeys(const char* input_string) {
+  HWND window = GetRendererWindow();
+  const base::TimeDelta kMessageSleep = base::TimeDelta::FromMilliseconds(50);
+  const base::StringPiece codes(input_string);
+  for (size_t i = 0; i < codes.length(); ++i) {
+    char character = codes[i];
+    UINT virtual_key = 0;
+
+    if (character >= 'a' && character <= 'z') {
+      // VK_A - VK_Z are ASCII 'A' - 'Z'.
+      virtual_key = 'A' + (character - 'a');
+    } else if (character >= '0' && character <= '9') {
+      // VK_0 - VK_9 are ASCII '0' - '9'.
+      virtual_key = character;
+    } else {
+      FAIL() << "Character value out of range at position " << i
+             << " of string \"" << input_string << "\"";
+    }
+
+    UINT scan_code = MapVirtualKey(virtual_key, MAPVK_VK_TO_VSC);
+    EXPECT_NE(0U, scan_code) << "No translation for virtual key "
+                             << virtual_key << " for character at position "
+                             << i << " of string \"" << input_string << "\"";
+
+    ::PostMessage(window, WM_KEYDOWN,
+                  virtual_key, MAKELPARAM(1, scan_code));
+    base::PlatformThread::Sleep(kMessageSleep);
+    ::PostMessage(window, WM_KEYUP,
+                  virtual_key, MAKELPARAM(1, scan_code | KF_UP | KF_REPEAT));
+    base::PlatformThread::Sleep(kMessageSleep);
+  }
 }
 
 void IEEventSink::SendMouseClick(int x, int y,

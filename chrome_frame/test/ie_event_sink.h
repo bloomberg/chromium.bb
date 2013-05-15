@@ -103,9 +103,9 @@ class IEEventSink
     // Set input focus to chrome frame window.
   void SetFocusToRenderer();
 
-  // Send keyboard input to the renderer window hosted in chrome using
-  // SendInput API.
-  void SendKeys(const wchar_t* input_string);
+  // Send keyboard input to the renderer window hosted in chrome using direct
+  // key down/up messages.
+  void SendKeys(const char* input_string);
 
   // Send mouse click to the renderer window hosted in chrome using
   // SendInput API.
