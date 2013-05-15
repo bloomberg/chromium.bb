@@ -435,7 +435,6 @@
         # 3) anything tests directly depend on
         '../google_apis/google_apis.gyp:google_apis',
         '../skia/skia.gyp:skia',
-        '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -1552,7 +1551,6 @@
         'browser/webdata/keyword_table_unittest.cc',
         'browser/webdata/token_service_table_unittest.cc',
         'browser/webdata/web_apps_table_unittest.cc',
-        'common/bzip2_unittest.cc',
         'common/cancelable_task_tracker_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',
         'common/chrome_paths_unittest.cc',
@@ -1847,7 +1845,6 @@
             ['include', '_ios\\.(cc|mm)$'],
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
-            ['include', '^common/bzip2_unittest\\.cc$'],
             ['include', '^common/zip_'],
           ],
           'conditions': [

@@ -42,7 +42,6 @@
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
         '../sync/sync.gyp:sync',
-        '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         '../third_party/icu/icu.gyp:icui18n',

@@ -690,7 +690,6 @@
         '../content/content.gyp:content_common',
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',
-        '../third_party/bzip2/bzip2.gyp:bzip2',
         '../webkit/support/webkit_support.gyp:user_agent',
       ],
       'sources': [
