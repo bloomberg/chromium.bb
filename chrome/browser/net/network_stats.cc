@@ -210,11 +210,6 @@ bool NetworkStats::DoConnect(int result) {
   }
   set_socket(udp_socket);
 
-  if (addresses().empty()) {
-    Finish(RESOLVE_FAILED, net::ERR_INVALID_ARGUMENT);
-    return false;
-  }
-
   const net::IPEndPoint& endpoint = addresses().front();
   int rv = udp_socket->Connect(endpoint);
   if (rv < 0) {

@@ -146,9 +146,6 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
   if (rv != OK)
     return rv;
 
-  if (address_list_.empty())
-    return ERR_NAME_NOT_RESOLVED;
-
   DCHECK(!factory_->HasActiveSession(host_port_proxy_pair_));
   io_state_ = STATE_CONNECT;
   return OK;

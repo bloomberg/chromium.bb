@@ -69,14 +69,7 @@ class P2PSocketDispatcherHost::DnsRequest {
       return;
     }
 
-    // TODO(szym): Redundant check. http://crbug.com/126211
-    if (addresses_.empty()) {
-      LOG(ERROR) << "Received 0 addresses when trying to resolve address for "
-                 << host_name_;
-      done_callback_.Run(net::IPAddressNumber());
-      return;
-    }
-
+    DCHECK(!addresses_.empty());
     done_callback_.Run(addresses_.front().address());
   }
 
