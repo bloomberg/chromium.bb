@@ -1,0 +1,67 @@
+{% from "macros.tmpl" import wrap_with_condition, license -%}
+{{ license() }}
+
+#include "config.h"
+#include "core/css/resolver/StyleBuilder.h"
+
+#include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/resolver/StyleResolver.h"
+
+// FIXME: currently we're just generating a switch statement, but we should
+//   test other variations for performance once we have more properties here.
+
+namespace WebCore {
+
+class StyleBuilderImpl {
+public:
+
+{%- macro setValue(property) -%}
+    styleResolver->style()->{{property.setter}}
+{%- endmacro %}
+
+{%- for property in properties %}
+{%- call wrap_with_condition(property.condition) %}
+{%- set propertyid = property.propertyid %}
+{%- set applytype = property.applytype %}
+
+static void applyInitial{{propertyid}}(StyleResolver* styleResolver)
+{
+    {{ setValue(property) }}(RenderStyle::{{property.initial}}());
+}
+
+static void applyInherit{{propertyid}}(StyleResolver* styleResolver)
+{
+    {{ setValue(property) }}(styleResolver->parentStyle()->{{property.getter}}());
+}
+
+static void applyValue{{propertyid}}(StyleResolver* styleResolver, CSSValue* value)
+{
+    {{ setValue(property) }}(static_cast<{{property.typename}}>(*static_cast<CSSPrimitiveValue*>(value)));
+}
+
+{%- endcall %}
+{%- endfor %}
+
+};
+
+bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolver* styleResolver, CSSValue* value, bool isInitial, bool isInherit) {
+    switch(property) {
+{%- for property in properties %}
+{%- call wrap_with_condition(property.condition) %}
+{%- set propertyid = property.propertyid %}
+    case {{propertyid}}:
+        if (isInitial)
+            StyleBuilderImpl::applyInitial{{propertyid}}(styleResolver);
+        else if (isInherit)
+            StyleBuilderImpl::applyInherit{{propertyid}}(styleResolver);
+        else
+            StyleBuilderImpl::applyValue{{propertyid}}(styleResolver, value);
+        return true;
+{%- endcall %}
+{% endfor %}
+    default:
+        return false;
+    }
+}
+}
+

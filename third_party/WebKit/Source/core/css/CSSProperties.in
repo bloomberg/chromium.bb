@@ -1,0 +1,98 @@
+// FIXME: When we have all the properties using the new StyleBuilder, we
+//   should use this for make_css_property_names.py
+// Note: Mandatory blank line to skip parameter parsing phase
+
+border-collapse
+border-bottom-style typename=EBorderStyle, initial=initialBorderStyle
+border-left-style typename=EBorderStyle, initial=initialBorderStyle
+border-right-style typename=EBorderStyle, initial=initialBorderStyle
+border-top-style typename=EBorderStyle, initial=initialBorderStyle
+box-sizing
+caption-side
+clear
+empty-cells typename=EEmptyCell
+float typename=EFloat, nameformethods=Floating
+image-rendering
+list-style-position
+list-style-type
+mix-blend-mode typename=BlendMode, nameformethods=BlendMode
+opacity typename=float
+overflow-wrap
+overflow-x typename=EOverflow
+overflow-y typename=EOverflow
+page-break-after typename=EPageBreak, initial=initialPageBreak
+page-break-before typename=EPageBreak, initial=initialPageBreak
+page-break-inside typename=EPageBreak, initial=initialPageBreak
+pointer-events
+position
+speak
+table-layout
+tab-size typename=unsigned
+text-overflow typename=TextOverflow
+text-transform
+unicode-bidi
+visibility
+white-space
+word-break
+// UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
+word-wrap nameformethods=OverflowWrap
+
+-webkit-align-content
+-webkit-align-items
+-webkit-align-self typename=EAlignItems
+-webkit-appearance typename=ControlPart
+-webkit-backface-visibility
+-webkit-border-fit
+-webkit-box-align typename=EBoxAlignment
+-webkit-box-decoration-break
+-webkit-box-direction
+-webkit-box-flex typename=float
+-webkit-box-flex-group typename=unsigned int
+-webkit-box-lines
+-webkit-box-ordinal-group typename=unsigned int
+-webkit-box-orient
+-webkit-box-pack
+-webkit-color-correction typename=ColorSpace, nameformethods=ColorSpace
+-webkit-column-axis typename=ColumnAxis
+-webkit-column-break-after typename=EPageBreak, initial=initialPageBreak
+-webkit-column-break-before typename=EPageBreak, initial=initialPageBreak
+-webkit-column-break-inside typename=EPageBreak, initial=initialPageBreak
+-webkit-column-progression typename=ColumnProgression
+-webkit-column-rule-style typename=EBorderStyle, initial=initialBorderStyle
+-webkit-column-span typename=ColumnSpan
+-webkit-flex-direction
+-webkit-flex-grow typename=float
+-webkit-flex-shrink typename=float
+-webkit-flex-wrap
+-webkit-grid-auto-flow typename=GridAutoFlow
+-webkit-hyphens typename=Hyphens
+-webkit-line-align typename=LineAlign
+-webkit-line-break typename=LineBreak
+-webkit-line-clamp typename=LineClampValue
+-webkit-line-snap typename=LineSnap
+-webkit-justify-content
+-webkit-margin-after-collapse typename=EMarginCollapse
+-webkit-margin-before-collapse typename=EMarginCollapse
+-webkit-margin-bottom-collapse typename=EMarginCollapse, nameformethods=MarginAfterCollapse
+-webkit-margin-top-collapse typename=EMarginCollapse, nameformethods=MarginBeforeCollapse
+-webkit-marquee-direction
+-webkit-marquee-style nameformethods=MarqueeBehavior
+-webkit-order typename=int
+-webkit-print-color-adjust typename=PrintColorAdjust
+-webkit-region-break-after typename=EPageBreak, initial=initialPageBreak
+-webkit-region-break-before typename=EPageBreak, initial=initialPageBreak
+-webkit-region-break-inside typename=EPageBreak, initial=initialPageBreak
+-webkit-region-overflow typename=RegionOverflow
+-webkit-rtl-ordering typename=Order, getter=rtlOrdering, setter=setRTLOrdering, initial=initialRTLOrdering
+-webkit-ruby-position typename=RubyPosition
+-webkit-text-align-last typename=TextAlignLast, condition=CSS3_TEXT
+-webkit-text-combine typename=TextCombine
+-webkit-text-decoration-line typename=TextDecorationStyle, condition=CSS3_TEXT
+-webkit-text-emphasis-position typename=TextEmphasisPosition
+-webkit-text-security
+-webkit-transform-style nameformethods=TransformStyle3D
+-webkit-user-drag
+-webkit-user-modify
+-webkit-user-select
+-webkit-wrap-flow typename=WrapFlow
+-webkit-wrap-through typename=WrapThrough
