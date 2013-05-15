@@ -206,7 +206,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       VLOG(1) << "Reporting limit skipped for " << params_.url
               << " as it was in the cache.";
       UMA_HISTOGRAM_COUNTS("SBClientPhishing.ReportLimitSkipped", 1);
-    } else if (csd_service_->OverReportLimit()) {
+    } else if (csd_service_->OverPhishingReportLimit()) {
       VLOG(1) << "Too many report phishing requests sent recently, "
               << "not running classification for " << params_.url;
       UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",

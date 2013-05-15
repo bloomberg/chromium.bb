@@ -102,7 +102,7 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
   MOCK_CONST_METHOD1(IsPrivateIPAddress, bool(const std::string&));
   MOCK_METHOD2(GetValidCachedResult, bool(const GURL&, bool*));
   MOCK_METHOD1(IsInCache, bool(const GURL&));
-  MOCK_METHOD0(OverReportLimit, bool());
+  MOCK_METHOD0(OverPhishingReportLimit, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSideDetectionService);
@@ -297,7 +297,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
       EXPECT_CALL(*csd_service_, IsInCache(url)).WillOnce(Return(*is_in_cache));
     }
     if (over_report_limit) {
-      EXPECT_CALL(*csd_service_, OverReportLimit())
+      EXPECT_CALL(*csd_service_, OverPhishingReportLimit())
           .WillOnce(Return(*over_report_limit));
     }
   }

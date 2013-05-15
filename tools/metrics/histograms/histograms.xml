@@ -6701,6 +6701,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SBClientMalware.SentReports" enum="SBClientMalwareSentReports">
+  <summary>
+    Measures the success rate of sending malware reports.  Sending a report can
+    fail due to a client reaching the limit on the number of reports it can send
+    per day or due to the report failing to be serialized.
+  </summary>
+</histogram>
+
 <histogram name="SBClientPhishing.CancelClassificationReason"
     enum="SBClientPhishingCancelClassificationReason">
   <summary>
@@ -11014,6 +11022,12 @@ other types of suffix sets.
 <enum name="SBClientDownloadIsSignedBinary" type="int">
   <int value="0" label="Unsigned"/>
   <int value="1" label="Signed"/>
+</enum>
+
+<enum name="SBClientMalwareSentReports" type="int">
+  <int value="0" label="Sent"/>
+  <int value="1" label="Hit limit"/>
+  <int value="2" label="Failed serialization"/>
 </enum>
 
 <enum name="SBClientPhishingCancelClassificationReason" type="int">

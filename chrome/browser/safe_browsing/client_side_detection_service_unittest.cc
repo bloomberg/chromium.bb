@@ -126,12 +126,16 @@ class ClientSideDetectionServiceTest : public testing::Test {
         response_data, success);
   }
 
-  int GetNumReports() {
-    return csd_service_->GetNumReports();
+  int GetNumReports(std::queue<base::Time>* report_times) {
+    return csd_service_->GetNumReports(report_times);
   }
 
   std::queue<base::Time>& GetPhishingReportTimes() {
     return csd_service_->phishing_report_times_;
+  }
+
+  std::queue<base::Time>& GetMalwareReportTimes() {
+    return csd_service_->malware_report_times_;
   }
 
   void SetCache(const GURL& gurl, bool is_phishing, base::Time time) {
@@ -413,6 +417,8 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
   csd_service_->SetEnabledAndRefreshState(true);
   GURL url("http://a.com/");
 
+  base::Time before = base::Time::Now();
+
   // Invalid response body from the server.
   SetClientReportMalwareResponse("invalid proto response", true /* success */);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
@@ -433,6 +439,25 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
   response.set_blacklist(false);
   SetClientReportMalwareResponse(response.SerializeAsString(), true);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
+
+  // Check that we have recorded all 4 requests within the correct time range.
+  base::Time after = base::Time::Now();
+  std::queue<base::Time>& report_times = GetMalwareReportTimes();
+  EXPECT_EQ(4U, report_times.size());
+
+  // Another normal behavior will fail because of the limit is hit
+  response.set_blacklist(true);
+  SetClientReportMalwareResponse(response.SerializeAsString(), true);
+  EXPECT_FALSE(SendClientReportMalwareRequest(url));
+
+  report_times = GetMalwareReportTimes();
+  EXPECT_EQ(4U, report_times.size());
+  while (!report_times.empty()) {
+    base::Time time = report_times.back();
+    report_times.pop();
+    EXPECT_LE(before, time);
+    EXPECT_GE(after, time);
+  }
 }
 
 TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
@@ -447,7 +472,7 @@ TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
   report_times.push(now);
   report_times.push(now);
 
-  EXPECT_EQ(2, GetNumReports());
+  EXPECT_EQ(2, GetNumReports(&report_times));
 }
 
 TEST_F(ClientSideDetectionServiceTest, CacheTest) {
