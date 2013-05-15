@@ -2746,6 +2746,19 @@ PassRefPtr<HTMLCollection> Element::ensureCachedHTMLCollection(CollectionType ty
     return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLCollection>(this, type);
 }
 
+static void needsSyntheticStyleChangeCallback(Node* node)
+{
+    node->setNeedsStyleRecalc(SyntheticStyleChange);
+}
+
+void Element::scheduleSyntheticStyleChange()
+{
+    if (postAttachCallbacksAreSuspended())
+        queuePostAttachCallback(needsSyntheticStyleChangeCallback, this);
+    else
+        setNeedsStyleRecalc(SyntheticStyleChange);
+}
+
 HTMLCollection* Element::cachedHTMLCollection(CollectionType type)
 {
     return hasRareData() && rareData()->nodeLists() ? rareData()->nodeLists()->cacheWithAtomicName<HTMLCollection>(type) : 0;

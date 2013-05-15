@@ -35,7 +35,7 @@ namespace WebCore {
 class FloatPoint;
 class HTMLCollection;
 
-typedef void (*NodeCallback)(Node*, unsigned);
+typedef void (*NodeCallback)(Node*);
 
 namespace Private { 
     template<class GenericNode, class GenericNodeContainer>
@@ -118,7 +118,6 @@ public:
     virtual void setFocus(bool) OVERRIDE;
     virtual void setActive(bool active = true, bool pause = false) OVERRIDE;
     virtual void setHovered(bool = true) OVERRIDE;
-    virtual void scheduleSetNeedsStyleRecalc(StyleChangeType = FullStyleChange) OVERRIDE FINAL;
 
     // -----------------------------------------------------------------------------
     // Notification of document structure changes (see core/dom/Node.h for more notification methods)
@@ -141,7 +140,7 @@ public:
 protected:
     ContainerNode(Document*, ConstructionType = CreateContainer);
 
-    static void queuePostAttachCallback(NodeCallback, Node*, unsigned = 0);
+    static void queuePostAttachCallback(NodeCallback, Node*);
     static bool postAttachCallbacksAreSuspended();
 
     template<class GenericNode, class GenericNodeContainer>

@@ -59,8 +59,7 @@ static void dispatchChildInsertionEvents(Node*);
 static void dispatchChildRemovalEvents(Node*);
 static void updateTreeAfterInsertion(ContainerNode*, Node*, AttachBehavior);
 
-typedef pair<RefPtr<Node>, unsigned> CallbackParameters;
-typedef pair<NodeCallback, CallbackParameters> CallbackInfo;
+typedef pair<NodeCallback, RefPtr<Node> > CallbackInfo;
 typedef Vector<CallbackInfo> NodeCallbackQueue;
 
 static NodeCallbackQueue* s_postAttachCallbackQueue;
@@ -714,12 +713,11 @@ void ContainerNode::resumePostAttachCallbacks()
     --s_attachDepth;
 }
 
-void ContainerNode::queuePostAttachCallback(NodeCallback callback, Node* node, unsigned callbackData)
+void ContainerNode::queuePostAttachCallback(NodeCallback callback, Node* node)
 {
     if (!s_postAttachCallbackQueue)
         s_postAttachCallbackQueue = new NodeCallbackQueue;
-    
-    s_postAttachCallbackQueue->append(CallbackInfo(callback, CallbackParameters(node, callbackData)));
+    s_postAttachCallbackQueue->append(CallbackInfo(callback, node));
 }
 
 bool ContainerNode::postAttachCallbacksAreSuspended()
@@ -733,25 +731,9 @@ void ContainerNode::dispatchPostAttachCallbacks()
     // can add more callbacks to the end of the queue.
     for (size_t i = 0; i < s_postAttachCallbackQueue->size(); ++i) {
         const CallbackInfo& info = (*s_postAttachCallbackQueue)[i];
-        NodeCallback callback = info.first;
-        CallbackParameters params = info.second;
-
-        callback(params.first.get(), params.second);
+        info.first(info.second.get());
     }
     s_postAttachCallbackQueue->clear();
-}
-
-static void needsStyleRecalcCallback(Node* node, unsigned data)
-{
-    node->setNeedsStyleRecalc(static_cast<StyleChangeType>(data));
-}
-
-void ContainerNode::scheduleSetNeedsStyleRecalc(StyleChangeType changeType)
-{
-    if (postAttachCallbacksAreSuspended())
-        queuePostAttachCallback(needsStyleRecalcCallback, this, static_cast<unsigned>(changeType));
-    else
-        setNeedsStyleRecalc(changeType);
 }
 
 void ContainerNode::attach()

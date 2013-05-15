@@ -220,9 +220,9 @@ void HTMLPlugInImageElement::didMoveToNewDocument(Document* oldDocument)
     HTMLPlugInElement::didMoveToNewDocument(oldDocument);
 }
 
-void HTMLPlugInImageElement::updateWidgetCallback(Node* n, unsigned)
+void HTMLPlugInImageElement::updateWidgetCallback(Node* n)
 {
-    static_cast<HTMLPlugInImageElement*>(n)->updateWidgetIfNecessary();
+    toHTMLPlugInImageElement(n)->updateWidgetIfNecessary();
 }
 
 void HTMLPlugInImageElement::subframeLoaderWillCreatePlugIn(const KURL& url)

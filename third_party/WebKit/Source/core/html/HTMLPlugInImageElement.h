@@ -88,7 +88,7 @@ protected:
     String m_url;
     KURL m_loadedUrl;
     
-    static void updateWidgetCallback(Node*, unsigned = 0);
+    static void updateWidgetCallback(Node*);
     virtual void attach();
     virtual void detach();
 
