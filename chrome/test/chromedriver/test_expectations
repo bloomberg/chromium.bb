@@ -169,8 +169,8 @@ _OS_NEGATIVE_FILTER['android'] = [
     'WindowSwitchingTest.*',
 ]
 
-def GetPassedJavaTestFilter(operating_system, chrome_version):
-  """Returns the test filter for running all passing tests.
+def GetDisabledTestMatchers(operating_system, chrome_version):
+  """Returns the list of disabled test matchers for the specific configuration.
 
   Args:
     operating_system: The operating system, one of 'linux', 'mac', 'win', or
@@ -178,10 +178,10 @@ def GetPassedJavaTestFilter(operating_system, chrome_version):
     chrome_version: Chrome version to test against, e.g., 'HEAD' or '26'.
 
   Returns:
-    Filter string, in Google Test (C++) format.
+    List of disabled test matchers, which may contain '*' wildcards.
   """
-  return '*-' + ':'.join(_OS_NEGATIVE_FILTER[operating_system] +
-                         _REVISION_NEGATIVE_FILTER[chrome_version])
+  return (_OS_NEGATIVE_FILTER[operating_system] +
+          _REVISION_NEGATIVE_FILTER[chrome_version])[:]
 
 def ApplyJavaTestFilter(operating_system, chrome_version, tests):
   """Applies the test filter to the given list of tests.

@@ -54,13 +54,13 @@ class BaseTestEnvironment(object):
     """Tears down the global test environment state."""
     pass
 
-  def GetPassedJavaTestFilter(self):
-    """Get the test filter for running all passing tests.
+  def GetDisabledJavaTestMatchers(self):
+    """Get the list of disabled java test matchers.
 
     Returns:
-      Filter string, in Google Test (C++) format.
+      List of disabled test matchers, which may contain '*' wildcards.
     """
-    return _EXPECTATIONS['GetPassedJavaTestFilter'](
+    return _EXPECTATIONS['GetDisabledTestMatchers'](
         self.GetOS(), self._chrome_version)
 
   def GetPassedJavaTests(self):

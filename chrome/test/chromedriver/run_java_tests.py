@@ -241,6 +241,9 @@ def main():
       help='Filter for specifying what tests to run, "*" will run all. E.g., '
            '*testShouldReturnTitleOfPageIfSet')
   parser.add_option(
+      '', '--also-run-disabled-tests', action='store_true', default=False,
+      help='Include disabled tests while running the tests')
+  parser.add_option(
       '', '--isolate-tests', action='store_true', default=False,
       help='Relaunch the jar test harness after each test')
   options, args = parser.parse_args()
@@ -260,13 +263,20 @@ def main():
   try:
     environment.GlobalSetUp()
     # Run passed tests when filter is not provided.
-    if options.filter:
-      test_filters = [options.filter]
+    if options.isolate_tests:
+      test_filters = environment.GetPassedJavaTests()
     else:
-      if options.isolate_tests:
-        test_filters = environment.GetPassedJavaTests()
+      if options.filter:
+        test_filter = options.filter
       else:
-        test_filters = [environment.GetPassedJavaTestFilter()]
+        test_filter = '*'
+      if not options.also_run_disabled_tests:
+        if '-' in test_filter:
+          test_filter += ':'
+        else:
+          test_filter += '-'
+        test_filter += ':'.join(environment.GetDisabledJavaTestMatchers())
+      test_filters = [test_filter]
 
     java_tests_src_dir = os.path.join(chrome_paths.GetSrc(), 'chrome', 'test',
                                       'chromedriver', 'third_party',
