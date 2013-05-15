@@ -388,6 +388,16 @@ bool WebRuntimeFeatures::isNotificationsEnabled()
 #endif
 }
 
+void WebRuntimeFeatures::enablePagePopup(bool enable)
+{
+    RuntimeEnabledFeatures::setPagePopupEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isPagePopupEnabled()
+{
+    return RuntimeEnabledFeatures::pagePopupEnabled();
+}
+
 void WebRuntimeFeatures::enablePeerConnection(bool enable)
 {
     RuntimeEnabledFeatures::setPeerConnectionEnabled(enable);

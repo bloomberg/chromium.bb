@@ -44,6 +44,7 @@ LocalStorage status=stable
 Media custom
 MediaStream status=stable
 Notifications status=stable
+PagePopup status=stable
 PeerConnection depends_on=MediaStream, status=stable
 Quota status=stable
 RequestAutocomplete status=test

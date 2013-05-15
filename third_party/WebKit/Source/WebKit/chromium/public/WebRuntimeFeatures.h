@@ -145,6 +145,9 @@ public:
     WEBKIT_EXPORT static void enableNotifications(bool);
     WEBKIT_EXPORT static bool isNotificationsEnabled();
 
+    WEBKIT_EXPORT static void enablePagePopup(bool);
+    WEBKIT_EXPORT static bool isPagePopupEnabled();
+
     WEBKIT_EXPORT static void enablePeerConnection(bool);
     WEBKIT_EXPORT static bool isPeerConnectionEnabled();
 
