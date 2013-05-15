@@ -1737,12 +1737,15 @@ unary_term:
 
 function:
     FUNCTION maybe_space expr closing_parenthesis {
-        CSSParserFunction* f = parser->createFloatingFunction();
-        f->name = $1;
-        f->args = parser->sinkFloatingValueList($3);
-        $$.id = 0;
-        $$.unit = CSSParserValue::Function;
-        $$.function = f;
+        if ($3) {
+            CSSParserFunction* f = parser->createFloatingFunction();
+            f->name = $1;
+            f->args = parser->sinkFloatingValueList($3);
+            $$.id = 0;
+            $$.unit = CSSParserValue::Function;
+            $$.function = f;
+        } else
+            YYERROR;
     } |
     FUNCTION maybe_space closing_parenthesis {
         CSSParserFunction* f = parser->createFloatingFunction();
@@ -1754,13 +1757,8 @@ function:
         $$.function = f;
     } |
     FUNCTION maybe_space expr_recovery closing_parenthesis {
-        CSSParserFunction* f = parser->createFloatingFunction();
-        f->name = $1;
-        f->args = nullptr;
-        $$.id = 0;
-        $$.unit = CSSParserValue::Function;
-        $$.function = f;
-  }
+        YYERROR;
+    }
   ;
 
 calc_func_term:
@@ -1805,7 +1803,7 @@ calc_func_paren_expr:
             v.iValue = ')';
             $$->addValue(v);
         } else
-            $$ = 0;
+            YYERROR;
     }
     | '(' maybe_space expr_recovery closing_parenthesis {
         YYERROR;
@@ -1832,7 +1830,7 @@ valid_calc_func_expr:
             $$->addValue(v);
             $$->addValue(parser->sinkFloatingValue($3));
         } else
-            $$ = 0;
+            YYERROR;
 
     }
     | calc_func_expr calc_func_operator calc_func_paren_expr {
@@ -1845,7 +1843,7 @@ valid_calc_func_expr:
             $$->addValue(v);
             $$->extend(*($3));
         } else 
-            $$ = 0;
+            YYERROR;
     }
     | calc_func_paren_expr
   ;
@@ -1864,7 +1862,7 @@ calc_func_expr_list:
             $$->addValue(v);
             $$->extend(*($4));
         } else
-            $$ = 0;
+            YYERROR;
     }
   ;
 
