@@ -762,14 +762,13 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa) {
   EXPECT_EQ(CERT_STATUS_REVOKED, verify_result2.cert_status);
 }
 
-// Fails on Linux. crbug.com/224612
-#if defined(OS_LINUX)
-#define MAYBE_TrustIntermediateCa2 DISABLED_TrustIntermediateCa2
-#else
-#define MAYBE_TrustIntermediateCa2 TrustIntermediateCa2
-#endif
+TEST_F(CertDatabaseNSSTest, TrustIntermediateCa2) {
+  if (NSS_VersionCheck("3.14.2") && !NSS_VersionCheck("3.15")) {
+    // See http://bugzil.la/863947 for details.
+    LOG(INFO) << "Skipping test for NSS 3.14.2 - NSS 3.15";
+    return;
+  }
 
-TEST_F(CertDatabaseNSSTest, MAYBE_TrustIntermediateCa2) {
   NSSCertDatabase::ImportCertFailureList failed;
 
   CertificateList intermediate_certs = CreateCertificateListFromFile(
@@ -815,14 +814,13 @@ TEST_F(CertDatabaseNSSTest, MAYBE_TrustIntermediateCa2) {
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result2.cert_status);
 }
 
-// Fails on Linux. crbug.com/224612
-#if defined(OS_LINUX)
-#define MAYBE_TrustIntermediateCa3 DISABLED_TrustIntermediateCa3
-#else
-#define MAYBE_TrustIntermediateCa3 TrustIntermediateCa3
-#endif
+TEST_F(CertDatabaseNSSTest, TrustIntermediateCa3) {
+  if (NSS_VersionCheck("3.14.2") && !NSS_VersionCheck("3.15")) {
+    // See http://bugzil.la/863947 for details.
+    LOG(INFO) << "Skipping test for NSS 3.14.2 - NSS 3.15";
+    return;
+  }
 
-TEST_F(CertDatabaseNSSTest, MAYBE_TrustIntermediateCa3) {
   NSSCertDatabase::ImportCertFailureList failed;
 
   CertificateList ca_certs = CreateCertificateListFromFile(
