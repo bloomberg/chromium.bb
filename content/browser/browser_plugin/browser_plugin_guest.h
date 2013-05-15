@@ -254,6 +254,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Returns whether BrowserPluginGuest is interested in receiving the given
   // |message|.
   static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
+  gfx::Rect ToGuestRect(const gfx::Rect& rect);
 
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
       int screen_y, WebKit::WebDragOperation operation);
@@ -391,6 +392,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   void OnTerminateGuest(int instance_id);
   void OnUnlockMouse();
   void OnUnlockMouseAck(int instance_id);
+  void OnUpdateGeometry(int instance_id, const gfx::Rect& view_rect);
   void OnUpdateRectACK(
       int instance_id,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,

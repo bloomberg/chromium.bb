@@ -448,6 +448,7 @@ class CONTENT_EXPORT WebContentsImpl
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool PreHandleWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+  virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) OVERRIDE;
 #if defined(OS_WIN) && defined(USE_AURA)
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
 #endif

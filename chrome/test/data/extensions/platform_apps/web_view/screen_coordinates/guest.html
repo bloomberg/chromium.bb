@@ -1,0 +1,35 @@
+<!doctype html>
+<!--
+ * Copyright 2013 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<html>
+  <head>
+    <script type="text/javascript">
+      // Notifies the embedder about the result of the request (success/fail)
+      // via post message. Note that the embedder has to initiate a postMessage
+      // first so that guest has a reference to the embedder's window.
+      var onPostMessageReceived = function(e) {
+        var data = JSON.parse(e.data);
+        if (data[0] == 'test1') {
+          var screenInfo = {
+            'screenX': window.screenX,
+            'screenY': window.screenY,
+            'screenLeft': window.screenLeft,
+            'screenTop': window.screenTop
+          };
+          var responseArray = [];
+          responseArray.push(data[0]);
+          responseArray.push(screenInfo);
+          e.source.postMessage(JSON.stringify(responseArray), '*');
+
+        }
+      };
+      window.addEventListener('message', onPostMessageReceived, false);
+    </script>
+  </head>
+  <body>
+    <div>This is guest</div>
+  </body>
+</html>

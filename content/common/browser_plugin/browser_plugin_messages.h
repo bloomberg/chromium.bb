@@ -50,8 +50,8 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   IPC_STRUCT_MEMBER(base::SharedMemoryHandle, damage_buffer_handle)
   // The size of the damage buffer.
   IPC_STRUCT_MEMBER(size_t, damage_buffer_size)
-  // The new size of the guest view area.
-  IPC_STRUCT_MEMBER(gfx::Size, view_size)
+  // The new rect of the guest view area.
+  IPC_STRUCT_MEMBER(gfx::Rect, view_rect)
   // Indicates the scale factor of the embedder WebView.
   IPC_STRUCT_MEMBER(float, scale_factor)
   // Indicates a request for a full repaint of the page.
@@ -283,6 +283,11 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_LockMouse_ACK,
 
 // Sends a PointerLock Unlock ACK to the BrowserPluginGuest.
 IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_UnlockMouse_ACK, int /* instance_id */)
+
+// Sent when plugin's position has changed without UpdateRect.
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_UpdateGeometry,
+                    int /* instance_id */,
+                    gfx::Rect /* view_rect */)
 
 // -----------------------------------------------------------------------------
 // These messages are from the guest renderer to the browser process

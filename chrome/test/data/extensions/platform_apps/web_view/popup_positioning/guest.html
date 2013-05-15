@@ -1,0 +1,57 @@
+<!doctype html>
+<!--
+ * Copyright 2013 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<html>
+<head>
+  <title>WAITING</title>
+  <style type="text/css">
+    body { margin: 0; padding: 0; }
+  </style>
+</head>
+<body>
+  <div>
+    <input type="text" list="items" style="height: 20px;"/>
+    <datalist id="items">
+      <option value="Chromium"></option>
+      <option value="ChromiumB"></option>
+      <option value="ChromiumC"></option>
+      <option value="Molybdenum"></option>
+      <option value="Seaborgium"></option>
+      <option value="Tungsten"></option>
+    </datalist>
+  </div>
+
+  <script>
+    // TODO(lazyboy): Apps do not support <input> + datalist with id attribute.
+    var inputElement = document.querySelector('input');
+    var step = 1;
+
+    var onInput = function(e) {
+      var value = inputElement.value;
+      window.console.log('onInput, value: ' + value);
+      if (step == 1) {
+        document.title = 'PASSED1';
+      } else if (step == 2) {
+        if (value == 'Chromium') {
+          inputElement.value = '';
+          document.title = 'PASSED3';
+          step = 0;
+        } else {
+          document.title = 'FAILED';
+        }
+      }
+      ++step;
+    };
+
+    inputElement.oninput = onInput;
+    inputElement.focus();
+
+    window['changeTitle'] = function() {
+      window.setTimeout(function() { document.title = 'PASSED2'; }, 0);
+    };
+  </script>
+</body>
+</html>

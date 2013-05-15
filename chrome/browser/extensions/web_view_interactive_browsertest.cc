@@ -12,6 +12,8 @@
 #include "chrome/test/base/ui_controls.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/browser_test_utils.h"
@@ -86,8 +88,8 @@ class WebViewInteractiveTest
   void SetupTest(const std::string& app_name,
                  const std::string& guest_url_spec) {
     ASSERT_TRUE(StartTestServer());
-    std::string host_str("localhost");  // Must stay in scope with replace_host.
     GURL::Replacements replace_host;
+    std::string host_str("localhost");  // Must stay in scope with replace_host.
     replace_host.SetHostStr(host_str);
 
     GURL guest_url = test_server()->GetURL(guest_url_spec);
@@ -126,6 +128,116 @@ class WebViewInteractiveTest
 
   gfx::Point corner() {
     return corner_;
+  }
+
+  void SimulateRWHMouseClick(content::RenderWidgetHost* rwh, int x, int y) {
+    WebKit::WebMouseEvent mouse_event;
+    mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+    mouse_event.x = mouse_event.windowX = x;
+    mouse_event.y = mouse_event.windowY = y;
+    mouse_event.modifiers = 0;
+
+    mouse_event.type = WebKit::WebInputEvent::MouseDown;
+    rwh->ForwardMouseEvent(mouse_event);
+    mouse_event.type = WebKit::WebInputEvent::MouseUp;
+    rwh->ForwardMouseEvent(mouse_event);
+  }
+
+  class PopupCreatedObserver {
+   public:
+    PopupCreatedObserver() : created_(false), last_render_widget_host_(NULL) {
+      created_callback_ = base::Bind(
+          &PopupCreatedObserver::CreatedCallback, base::Unretained(this));
+      content::RenderWidgetHost::AddCreatedCallback(created_callback_);
+    }
+    virtual ~PopupCreatedObserver() {
+      content::RenderWidgetHost::RemoveCreatedCallback(created_callback_);
+    }
+    void Reset() {
+      created_ = false;
+    }
+    void Start() {
+      if (created_)
+        return;
+      message_loop_ = new content::MessageLoopRunner;
+      message_loop_->Run();
+    }
+    content::RenderWidgetHost* last_render_widget_host() {
+      return last_render_widget_host_;
+    }
+
+   private:
+    void CreatedCallback(content::RenderWidgetHost* rwh) {
+      last_render_widget_host_ = rwh;
+      if (message_loop_)
+        message_loop_->Quit();
+      else
+        created_ = true;
+    }
+    content::RenderWidgetHost::CreatedCallback created_callback_;
+    scoped_refptr<content::MessageLoopRunner> message_loop_;
+    bool created_;
+    content::RenderWidgetHost* last_render_widget_host_;
+  };
+
+  void WaitForTitle(const char* title) {
+    string16 expected_title(ASCIIToUTF16(title));
+    string16 error_title(ASCIIToUTF16("FAILED"));
+    content::TitleWatcher title_watcher(guest_web_contents(), expected_title);
+    title_watcher.AlsoWaitForTitle(error_title);
+    ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
+  void PopupTestHelper(const gfx::Point& padding) {
+    PopupCreatedObserver popup_created_observer;
+    popup_created_observer.Reset();
+
+    content::SimulateKeyPress(
+        guest_web_contents(),
+        ui::VKEY_C,  // C to autocomplete.
+        false, false, false, false);
+
+    WaitForTitle("PASSED1");
+
+    popup_created_observer.Start();
+
+    content::RenderWidgetHost* popup_rwh = NULL;
+    popup_rwh = popup_created_observer.last_render_widget_host();
+    // Popup must be present.
+    ASSERT_TRUE(popup_rwh);
+    ASSERT_TRUE(!popup_rwh->IsRenderView());
+    ASSERT_TRUE(popup_rwh->GetView());
+
+    string16 expected_title = ASCIIToUTF16("PASSED2");
+    string16 error_title = ASCIIToUTF16("FAILED");
+    content::TitleWatcher title_watcher(guest_web_contents(), expected_title);
+    title_watcher.AlsoWaitForTitle(error_title);
+    EXPECT_TRUE(content::ExecuteScript(guest_web_contents(),
+                                       "changeTitle();"));
+    ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+    gfx::Rect popup_bounds = popup_rwh->GetView()->GetViewBounds();
+    // (2, 2) is expected to lie on the first datalist element.
+    SimulateRWHMouseClick(popup_rwh, 2, 2);
+
+    content::RenderViewHost* embedder_rvh =
+        GetFirstShellWindowWebContents()->GetRenderViewHost();
+    gfx::Rect embedder_bounds = embedder_rvh->GetView()->GetViewBounds();
+    gfx::Vector2d diff = popup_bounds.origin() - embedder_bounds.origin();
+    LOG(INFO) << "DIFF: x = " << diff.x() << ", y = " << diff.y();
+
+    const int left_spacing = 40 + padding.x();  // div.style.paddingLeft = 40px.
+    // div.style.paddingTop = 50px + (input box height = 26px).
+    const int top_spacing = 50 + 26 + padding.y();
+
+    // If the popup is placed within |threshold_px| of the expected position,
+    // then we consider the test as a pass.
+    const int threshold_px = 10;
+
+    EXPECT_LE(std::abs(diff.x() - left_spacing), threshold_px);
+    EXPECT_LE(std::abs(diff.y() - top_spacing), threshold_px);
+
+    WaitForTitle("PASSED3");
   }
 
  private:
@@ -249,4 +361,30 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/execute_code"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioning) {
+  SetupTest(
+      "web_view/popup_positioning",
+      "files/extensions/platform_apps/web_view/popup_positioning/guest.html");
+  ASSERT_TRUE(guest_web_contents());
+
+  PopupTestHelper(gfx::Point());
+
+  // moveTo a random location and run the steps again.
+  EXPECT_TRUE(content::ExecuteScript(embedder_web_contents(),
+                                     "window.moveTo(16, 20);"));
+  PopupTestHelper(gfx::Point());
+}
+
+// Tests that moving browser plugin (without resize/UpdateRects) correctly
+// repositions popup.
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioningMoved) {
+  SetupTest(
+      "web_view/popup_positioning_moved",
+      "files/extensions/platform_apps/web_view/popup_positioning_moved"
+      "/guest.html");
+  ASSERT_TRUE(guest_web_contents());
+
+  PopupTestHelper(gfx::Point(20, 0));
 }

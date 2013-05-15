@@ -230,4 +230,19 @@ void BrowserPluginGuestManager::OnUnhandledSwapBuffersACK(
                                                sync_point);
 }
 
+void BrowserPluginGuestManager::DidSendScreenRects(
+    WebContents* embedder_web_contents, RenderWidgetHostImpl* rwh) {
+  // TODO(lazyboy): Generalize iterating over guest instances and performing
+  // actions on the guests.
+  for (GuestInstanceMap::iterator it =
+           guest_web_contents_by_instance_id_.begin();
+               it != guest_web_contents_by_instance_id_.end(); ++it) {
+    BrowserPluginGuest* guest = it->second->GetBrowserPluginGuest();
+    if (embedder_web_contents == guest->embedder_web_contents()) {
+      static_cast<RenderViewHostImpl*>(
+          guest->GetWebContents()->GetRenderViewHost())->SendScreenRects();
+    }
+  }
+}
+
 }  // namespace content

@@ -922,7 +922,7 @@ void BrowserPlugin::UpdateDeviceScaleFactor(float device_scale_factor) {
     return;
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
-  PopulateResizeGuestParameters(&params, gfx::Size(width(), height()));
+  PopulateResizeGuestParameters(&params, plugin_rect());
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
       instance_id_,
@@ -1166,7 +1166,7 @@ void BrowserPlugin::EnableCompositing(bool enable) {
     // We're switching back to the software path. We create a new damage
     // buffer that can accommodate the current size of the container.
     BrowserPluginHostMsg_ResizeGuest_Params params;
-    PopulateResizeGuestParameters(&params, gfx::Size(width(), height()));
+    PopulateResizeGuestParameters(&params, plugin_rect());
     // Request a full repaint from the guest even if its size is not actually
     // changing.
     params.repaint = true;
@@ -1307,21 +1307,26 @@ void BrowserPlugin::updateGeometry(
   int old_width = width();
   int old_height = height();
   plugin_rect_ = window_rect;
+  if (!HasGuest())
+    return;
+
   // In AutoSize mode, guests don't care when the BrowserPlugin container is
   // resized. If |!resize_ack_received_|, then we are still waiting on a
   // previous resize to be ACK'ed and so we don't issue additional resizes
   // until the previous one is ACK'ed.
   // TODO(mthiesse): Assess the performance of calling GetAutoSizeAttribute() on
   // resize.
-  if (!HasGuest() ||
-      !resize_ack_received_ ||
+  if (!resize_ack_received_ ||
       (old_width == window_rect.width && old_height == window_rect.height) ||
       GetAutoSizeAttribute()) {
+    // Let the browser know about the updated view rect.
+    browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateGeometry(
+        render_view_routing_id_, instance_id_, plugin_rect_));
     return;
   }
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
-  PopulateResizeGuestParameters(&params, gfx::Size(width(), height()));
+  PopulateResizeGuestParameters(&params, plugin_rect());
   resize_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
@@ -1336,8 +1341,8 @@ void BrowserPlugin::SwapDamageBuffers() {
 
 void BrowserPlugin::PopulateResizeGuestParameters(
     BrowserPluginHostMsg_ResizeGuest_Params* params,
-    const gfx::Size& view_size) {
-  params->view_size = view_size;
+    const gfx::Rect& view_rect) {
+  params->view_rect = view_rect;
   params->scale_factor = GetDeviceScaleFactor();
   if (last_device_scale_factor_ != params->scale_factor){
     params->repaint = true;
@@ -1348,12 +1353,12 @@ void BrowserPlugin::PopulateResizeGuestParameters(
   if (compositing_enabled_)
     return;
 
-  const size_t stride = skia::PlatformCanvasStrideForWidth(view_size.width());
+  const size_t stride = skia::PlatformCanvasStrideForWidth(view_rect.width());
   // Make sure the size of the damage buffer is at least four bytes so that we
   // can fit in a magic word to verify that the memory is shared correctly.
   size_t size =
       std::max(sizeof(unsigned int),
-               static_cast<size_t>(view_size.height() *
+               static_cast<size_t>(view_rect.height() *
                                    stride *
                                    GetDeviceScaleFactor() *
                                    GetDeviceScaleFactor()));
@@ -1376,7 +1381,8 @@ void BrowserPlugin::GetDamageBufferWithSizeParams(
   if (view_size.IsEmpty())
     return;
   resize_ack_received_ = false;
-  PopulateResizeGuestParameters(resize_guest_params, view_size);
+  gfx::Rect view_rect = gfx::Rect(plugin_rect_.origin(), view_size);
+  PopulateResizeGuestParameters(resize_guest_params, view_rect);
 }
 
 #if defined(OS_POSIX)

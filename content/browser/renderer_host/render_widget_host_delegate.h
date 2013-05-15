@@ -46,6 +46,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns true if the |event| was handled.
   virtual bool PreHandleWheelEvent(const WebKit::WebMouseWheelEvent& event);
 
+  // Notifies that screen rects were sent to renderer process.
+  virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) {}
+
 #if defined(OS_WIN) && defined(USE_AURA)
   // Returns the widget's parent's NativeViewAccessible.
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();

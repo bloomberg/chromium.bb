@@ -1596,6 +1596,11 @@ void WebContentsImpl::RequestMediaAccessPermission(
     callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
 }
 
+void WebContentsImpl::DidSendScreenRects(RenderWidgetHostImpl* rwh) {
+  if (browser_plugin_embedder_)
+    browser_plugin_embedder_->DidSendScreenRects(rwh);
+}
+
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
   preferred_size_ = pref_size;
   if (delegate_)

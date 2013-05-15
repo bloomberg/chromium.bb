@@ -239,6 +239,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   int width() const { return plugin_rect_.width(); }
   int height() const { return plugin_rect_.height(); }
+  gfx::Rect plugin_rect() { return plugin_rect_; }
   // Gets the Max Height value used for auto size.
   int GetAdjustedMaxHeight() const;
   // Gets the Max Width value used for auto size.
@@ -274,7 +275,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // allocates a new |pending_damage_buffer_| if in software rendering mode.
   void PopulateResizeGuestParameters(
       BrowserPluginHostMsg_ResizeGuest_Params* params,
-      const gfx::Size& view_size);
+      const gfx::Rect& view_size);
 
   // Populates BrowserPluginHostMsg_AutoSize_Params object with autosize state.
   void PopulateAutoSizeParameters(

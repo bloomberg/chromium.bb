@@ -265,10 +265,10 @@ void TestBrowserPluginGuest::OnStop(int instance_id) {
 void TestBrowserPluginGuest::SetDamageBuffer(
     const BrowserPluginHostMsg_ResizeGuest_Params& params) {
   ++damage_buffer_call_count_;
-  last_damage_buffer_size_ = params.view_size;
+  last_damage_buffer_size_ = params.view_rect.size();
 
   if (waiting_for_damage_buffer_with_size_ &&
-      expected_damage_buffer_size_ == params.view_size &&
+      expected_damage_buffer_size_ == params.view_rect.size() &&
       damage_buffer_message_loop_runner_) {
     damage_buffer_message_loop_runner_->Quit();
     waiting_for_damage_buffer_with_size_ = false;

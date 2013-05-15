@@ -31,6 +31,7 @@ namespace content {
 class BrowserPluginGuest;
 class BrowserPluginHostFactory;
 class RenderProcessHostImpl;
+class RenderWidgetHostImpl;
 class SiteInstance;
 class WebContents;
 class WebContentsImpl;
@@ -78,6 +79,9 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   // |instance_id|, and kills the embedder if not.
   bool CanEmbedderAccessInstanceIDMaybeKill(int embedder_render_process_id,
                                             int instance_id) const;
+
+  void DidSendScreenRects(WebContents* embedder_web_contents,
+                          RenderWidgetHostImpl* rwh);
 
   void OnMessageReceived(const IPC::Message& message, int render_process_id);
 

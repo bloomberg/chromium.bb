@@ -81,7 +81,8 @@ void RenderWidgetHostViewGuest::SetSize(const gfx::Size& size) {
 }
 
 gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
-  return gfx::Rect(size_);
+  // We do not have any root window specific parts in this view.
+  return GetViewBounds();
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewGuest::GetCompositingSurface() {
@@ -125,7 +126,12 @@ bool RenderWidgetHostViewGuest::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
-  return gfx::Rect(size_);
+  gfx::Rect embedder_bounds = static_cast<RenderWidgetHostViewPort*>(
+      guest_->GetEmbedderRenderWidgetHostView())->GetViewBounds();
+  gfx::Rect shifted_rect = guest_->ToGuestRect(embedder_bounds);
+  shifted_rect.set_width(size_.width());
+  shifted_rect.set_height(size_.height());
+  return shifted_rect;
 }
 
 void RenderWidgetHostViewGuest::RenderViewGone(base::TerminationStatus status,

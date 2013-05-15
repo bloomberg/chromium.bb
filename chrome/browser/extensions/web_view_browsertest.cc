@@ -890,6 +890,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_MediaAccessAPIAllow) {
   }
 }
 
+// Checks that window.screenX/screenY/screenLeft/screenTop works correctly for
+// guests.
+IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
+  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/screen_coordinates"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
   ASSERT_TRUE(StartTestServer());
   content::WebContents* guest_web_contents = LoadGuest(

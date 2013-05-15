@@ -1,0 +1,13 @@
+{
+  "name": "<webview> Guest screenX/Y",
+  "description": "Test that checks window.screenX/Y correctness for guest.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

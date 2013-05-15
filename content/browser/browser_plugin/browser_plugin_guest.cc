@@ -356,6 +356,7 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_TerminateGuest, OnTerminateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UnlockMouse_ACK, OnUnlockMouseAck)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateGeometry, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateRect_ACK, OnUpdateRectACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -367,6 +368,8 @@ void BrowserPluginGuest::Initialize(
     const BrowserPluginHostMsg_Attach_Params& params) {
   focused_ = params.focused;
   guest_visible_ = params.visible;
+  guest_window_rect_ = params.resize_guest_params.view_rect;
+
   if (!params.name.empty())
     name_ = params.name;
   auto_size_enabled_ = params.auto_size_params.enable;
@@ -470,6 +473,13 @@ RenderWidgetHostView* BrowserPluginGuest::GetEmbedderRenderWidgetHostView() {
 
 void BrowserPluginGuest::UpdateVisibility() {
   OnSetVisibility(instance_id_, visible());
+}
+
+// screen.
+gfx::Rect BrowserPluginGuest::ToGuestRect(const gfx::Rect& bounds) {
+  gfx::Rect guest_rect(bounds);
+  guest_rect.Offset(guest_window_rect_.OffsetFromOrigin());
+  return guest_rect;
 }
 
 void BrowserPluginGuest::Observe(int type,
@@ -667,7 +677,7 @@ void BrowserPluginGuest::SetDamageBuffer(
   DCHECK(*static_cast<unsigned int*>(damage_buffer_->memory()) == 0xdeadbeef);
   damage_buffer_sequence_id_ = params.damage_buffer_sequence_id;
   damage_buffer_size_ = params.damage_buffer_size;
-  damage_view_size_ = params.view_size;
+  damage_view_size_ = params.view_rect.size();
   damage_buffer_scale_factor_ = params.scale_factor;
 }
 
@@ -972,6 +982,7 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_Stop::ID:
     case BrowserPluginHostMsg_TerminateGuest::ID:
     case BrowserPluginHostMsg_UnlockMouse_ACK::ID:
+    case BrowserPluginHostMsg_UpdateGeometry::ID:
     case BrowserPluginHostMsg_UpdateRect_ACK::ID:
       return true;
     default:
@@ -1251,16 +1262,16 @@ void BrowserPluginGuest::OnResizeGuest(
   // Invalid damage buffer means we are in HW compositing mode,
   // so just resize the WebContents and repaint if needed.
   if (!base::SharedMemory::IsHandleValid(params.damage_buffer_handle)) {
-    if (!params.view_size.IsEmpty())
-      GetWebContents()->GetView()->SizeContents(params.view_size);
+    if (!params.view_rect.size().IsEmpty())
+      GetWebContents()->GetView()->SizeContents(params.view_rect.size());
     if (params.repaint)
-      Send(new ViewMsg_Repaint(routing_id(), params.view_size));
+      Send(new ViewMsg_Repaint(routing_id(), params.view_rect.size()));
     return;
   }
   SetDamageBuffer(params);
-  GetWebContents()->GetView()->SizeContents(params.view_size);
+  GetWebContents()->GetView()->SizeContents(params.view_rect.size());
   if (params.repaint)
-    Send(new ViewMsg_Repaint(routing_id(), params.view_size));
+    Send(new ViewMsg_Repaint(routing_id(), params.view_rect.size()));
 }
 
 void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
@@ -1304,7 +1315,7 @@ void BrowserPluginGuest::OnSetSize(
     Send(new ViewMsg_Repaint(routing_id(), max_auto_size_));
   } else if (!auto_size_enabled_ && old_auto_size_enabled) {
     GetWebContents()->GetRenderViewHost()->DisableAutoResize(
-        resize_guest_params.view_size);
+        resize_guest_params.view_rect.size());
   }
   OnResizeGuest(instance_id_, resize_guest_params);
 }
@@ -1386,6 +1397,17 @@ void BrowserPluginGuest::OnUpdateRectACK(
   OnSetSize(instance_id_, auto_size_params, resize_guest_params);
 }
 
+void BrowserPluginGuest::OnUpdateGeometry(int instance_id,
+                                          const gfx::Rect& view_rect) {
+  // The plugin has moved within the embedder without resizing or the
+  // embedder/container's view rect changing.
+  guest_window_rect_ = view_rect;
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      GetWebContents()->GetRenderViewHost());
+  if (rvh)
+    rvh->SendScreenRects();
+}
+
 void BrowserPluginGuest::OnHasTouchEventHandlers(bool accept) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_ShouldAcceptTouchEvents(instance_id(), accept));
@@ -1415,9 +1437,7 @@ void BrowserPluginGuest::OnShowPopup(
 
 void BrowserPluginGuest::OnShowWidget(int route_id,
                                       const gfx::Rect& initial_pos) {
-  gfx::Rect screen_pos(initial_pos);
-  screen_pos.Offset(guest_screen_rect_.OffsetFromOrigin());
-  GetWebContents()->ShowCreatedWidget(route_id, screen_pos);
+  GetWebContents()->ShowCreatedWidget(route_id, initial_pos);
 }
 
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {
@@ -1482,8 +1502,7 @@ void BrowserPluginGuest::OnUpdateRect(
   // The scaling change can happen due to asynchronous updates of the DPI on a
   // resolution change.
   if (((auto_size_enabled_ && InAutoSizeBounds(params.view_size)) ||
-      (params.view_size.width() == damage_view_size().width() &&
-       params.view_size.height() == damage_view_size().height())) &&
+      (params.view_size == damage_view_size())) &&
        params.scale_factor == damage_buffer_scale_factor()) {
     TransportDIB* dib = GetWebContents()->GetRenderProcessHost()->
         GetTransportDIB(params.bitmap);

@@ -33,6 +33,7 @@ namespace content {
 class BrowserPluginGuest;
 class BrowserPluginGuestManager;
 class BrowserPluginHostFactory;
+class RenderWidgetHostImpl;
 class WebContentsImpl;
 
 class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
@@ -48,6 +49,9 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
       int x,
       int y,
       const WebContents::GetRenderViewHostCallback& callback);
+
+  // Called when embedder's |rwh| has sent screen rects to renderer.
+  void DidSendScreenRects(RenderWidgetHostImpl* rwh);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
