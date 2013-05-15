@@ -44,4 +44,3 @@ After paste:
 |   height="100"
 |   style="border: 1px solid black;"
 |   width="100"
-| <br>

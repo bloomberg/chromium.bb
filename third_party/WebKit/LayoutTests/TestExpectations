@@ -1569,7 +1569,6 @@ crbug.com/234758 inspector/debugger/script-formatter-breakpoints.html [ Timeout 
 crbug.com/234758 [ Debug ] jquery/traversing.html [ Timeout Crash ]
 crbug.com/234758 inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Pass Crash Timeout ]
 crbug.com/234758 [ Lion ] virtual/softwarecompositing/scrollbars/custom-composited-different-track-parts.html [ Pass ImageOnlyFailure ]
-crbug.com/234758 [ Debug ] fast/parser/nested-fragment-parser-crash.html [ Pass Timeout ]
 crbug.com/234758 [ Debug ] http/tests/workers/terminate-during-sync-operation.html [ Pass Timeout ]
 crbug.com/234758 [ Win7 ] fast/frames/seamless/seamless-nested-crash.html [ Pass Timeout Crash ]
 crbug.com/234758 [ Debug ] inspector/elements/edit-style-attribute.html [ Pass Timeout ]
@@ -1605,6 +1604,22 @@ crbug.com/237270 [ Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ 
 crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ ImageOnlyFailure Timeout ]
 crbug.com/237270 [ Win7 Debug ] inspector/profiler/heap-snapshot-comparison-show-all.html [ Crash Timeout ]
 crbug.com/237270 [ Win7 Debug ] inspector/profiler/heap-snapshot-summary-sorting-instances.html [ Crash Timeout ]
+
+# Need rebaselines after landing fix for crbug.com/222806
+crbug.com/222806 editing/deleting/delete-block-contents-001.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 editing/deleting/delete-block-contents-002.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 editing/deleting/delete-block-contents-003.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 editing/deleting/delete-image-004.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 editing/deleting/5272440.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 editing/inserting/insert-3775316-fix.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 editing/inserting/insert-after-delete-001.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 editing/pasteboard/4076267-3.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 fast/forms/input-placeholder-visibility-3.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 fast/forms/textarea-placeholder-visibility-1.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 editing/deleting/delete-all-text-in-text-field-assertion.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 editing/execCommand/create-list-with-hr.html [ Failure Pass ImageOnlyFailure ]
+crbug.com/222806 crbug.com/234758 fast/parser/nested-fragment-parser-crash.html [ Failure Pass ImageOnlyFailure Timeout ]
+crbug.com/222806 editing/deleting/delete-3775172-fix.html [ Failure Pass ImageOnlyFailure ]
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
 crbug.com/14885 [ Debug ] fast/js/JSON-stringify.html [ Failure ]
