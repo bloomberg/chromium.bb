@@ -111,7 +111,7 @@ PopupContainer::~PopupContainer()
         removeChild(m_listBox.get());
 }
 
-IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, const IntSize& transformOffset, PopupContent* listBox, bool& needToResizeView)
+IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, const int verticalOffset, const IntSize& transformOffset, PopupContent* listBox, bool& needToResizeView)
 {
     ASSERT(listBox);
     if (windowRect.x() >= screen.x() && windowRect.maxX() <= screen.maxX() && (widgetRectInScreen.x() < screen.x() || widgetRectInScreen.maxX() > screen.maxX())) {
@@ -119,6 +119,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectI
         // this might fix things (or make them better).
         IntRect inverseWidgetRectInScreen = widgetRectInScreen;
         inverseWidgetRectInScreen.setX(inverseWidgetRectInScreen.x() + (isRTL ? -rtlOffset : rtlOffset));
+        inverseWidgetRectInScreen.setY(inverseWidgetRectInScreen.y() + (isRTL ? -verticalOffset : verticalOffset));
         IntRect enclosingScreen = enclosingIntRect(screen);
         unsigned originalCutoff = std::max(enclosingScreen.x() - widgetRectInScreen.x(), 0) + std::max(widgetRectInScreen.maxX() - enclosingScreen.maxX(), 0);
         unsigned inverseCutoff = std::max(enclosingScreen.x() - inverseWidgetRectInScreen.x(), 0) + std::max(inverseWidgetRectInScreen.maxX() - enclosingScreen.maxX(), 0);
@@ -180,11 +181,13 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
     // the right edge of dropdown box should be aligned with the right edge of <select>/<input> element box,
     // and the dropdown box should be expanded to the left if more space is needed.
     // m_originalFrameRect.width() is the width of the target <select>/<input> element.
-    int horizontalForRtlOffset = isRTL ? m_controlPosition.p2().x() - m_controlPosition.p1().x() - (m_listBox->width() + kBorderSize * 2) : 0;
+    int rtlOffset = m_controlPosition.p2().x() - m_controlPosition.p1().x() - (m_listBox->width() + kBorderSize * 2);
+    int rightOffset = isRTL ? rtlOffset : 0;
 
     // Compute the y-axis offset between the bottom left and bottom right points.
     // If the <select>/<input> is transformed, they are not the same.
-    int verticalForRtlOffset = isRTL ? - m_controlPosition.p4().y() + m_controlPosition.p3().y() : 0;
+    int verticalOffset = - m_controlPosition.p4().y() + m_controlPosition.p3().y();
+    int verticalForRTLOffset = isRTL ? verticalOffset : 0;
 
     // Assume m_listBox size is already calculated.
     IntSize targetSize(m_listBox->width() + kBorderSize * 2,
@@ -197,7 +200,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
         FloatRect screen = screenAvailableRect(m_frameView.get());
         // Use popupInitialCoordinate.x() + rightOffset because RTL position
         // needs to be considered.
-        widgetRectInScreen = client->rootViewToScreen(IntRect(popupInitialCoordinate.x() + horizontalForRtlOffset, popupInitialCoordinate.y() + verticalForRtlOffset, targetSize.width(), targetSize.height()));
+        widgetRectInScreen = client->rootViewToScreen(IntRect(popupInitialCoordinate.x() + rightOffset, popupInitialCoordinate.y() + verticalForRTLOffset, targetSize.width(), targetSize.height()));
 
         // If we have multiple screens and the browser rect is in one screen, we have
         // to clip the window width to the screen width.
@@ -205,7 +208,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
         FloatRect windowRect = client->windowRect();
 
         bool needToResizeView = false;
-        widgetRectInScreen = layoutAndCalculateWidgetRectInternal(widgetRectInScreen, targetControlHeight, windowRect, screen, isRTL, horizontalForRtlOffset, transformOffset, m_listBox.get(), needToResizeView);
+        widgetRectInScreen = layoutAndCalculateWidgetRectInternal(widgetRectInScreen, targetControlHeight, windowRect, screen, isRTL, rtlOffset, verticalOffset, transformOffset, m_listBox.get(), needToResizeView);
         if (needToResizeView)
             fitToListBox();
     }
