@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_COMMON_MATCHER_SUBSTRING_SET_MATCHER_H_
 #define EXTENSIONS_COMMON_MATCHER_SUBSTRING_SET_MATCHER_H_
 
+#include <limits>
 #include <map>
 #include <set>
 #include <string>
@@ -80,21 +81,22 @@ class SubstringSetMatcher {
   class AhoCorasickNode {
    public:
     // Key: label of the edge, value: node index in |tree_| of parent class.
-    typedef std::map<char, int> Edges;
+    typedef std::map<char, uint32> Edges;
     typedef std::set<StringPattern::ID> Matches;
+
+    static const uint32 kNoSuchEdge;  // Represents an invalid node index.
 
     AhoCorasickNode();
     ~AhoCorasickNode();
     AhoCorasickNode(const AhoCorasickNode& other);
     AhoCorasickNode& operator=(const AhoCorasickNode& other);
 
-    bool HasEdge(char c) const;
-    int GetEdge(char c) const;
-    void SetEdge(char c, int node);
+    uint32 GetEdge(char c) const;
+    void SetEdge(char c, uint32 node);
     const Edges& edges() const { return edges_; }
 
-    int failure() const { return failure_; }
-    void set_failure(int failure) { failure_ = failure; }
+    uint32 failure() const { return failure_; }
+    void set_failure(uint32 failure) { failure_ = failure; }
 
     void AddMatch(StringPattern::ID id);
     void AddMatches(const Matches& matches);
@@ -105,13 +107,17 @@ class SubstringSetMatcher {
     Edges edges_;
 
     // Node index that failure edge leads to.
-    int failure_;
+    uint32 failure_;
 
     // Identifiers of matches.
     Matches matches_;
   };
 
-  void RebuildAhoCorasickTree();
+  typedef std::map<StringPattern::ID, const StringPattern*> SubstringPatternMap;
+  typedef std::vector<const StringPattern*> SubstringPatternVector;
+
+  // |sorted_patterns| is a copy of |patterns_| sorted by the pattern string.
+  void RebuildAhoCorasickTree(const SubstringPatternVector& sorted_patterns);
 
   // Inserts a path for |pattern->pattern()| into the tree and adds
   // |pattern->id()| to the set of matches. Ownership of |pattern| remains with
@@ -121,9 +127,7 @@ class SubstringSetMatcher {
 
   // Set of all registered StringPatterns. Used to regenerate the
   // Aho-Corasick tree in case patterns are registered or unregistered.
-  typedef std::map<StringPattern::ID, const StringPattern*>
-      SubstringPatternSet;
-  SubstringPatternSet patterns_;
+  SubstringPatternMap patterns_;
 
   // The nodes of a Aho-Corasick tree.
   std::vector<AhoCorasickNode> tree_;
