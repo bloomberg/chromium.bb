@@ -156,11 +156,6 @@
 #define WTF_COMPILER_INTEL 1
 #endif
 
-/* COMPILER(SUNCC) */
-#if defined(__SUNPRO_CC) || defined(__SUNPRO_C)
-#define WTF_COMPILER_SUNCC 1
-#endif
-
 /* ==== Compiler features ==== */
 
 

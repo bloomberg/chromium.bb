@@ -28,7 +28,7 @@
 
 namespace WTF {
 
-#if COMPILER(GCC) || COMPILER(MINGW) || COMPILER(GCCE) || (COMPILER(SUNCC) && __SUNPRO_CC > 0x590)
+#if COMPILER(GCC) || COMPILER(MINGW) || COMPILER(GCCE)
     #define WTF_ALIGN_OF(type) __alignof__(type)
     #define WTF_ALIGNED(variable_type, variable, n) variable_type variable __attribute__((__aligned__(n)))
 #elif COMPILER(MSVC)
