@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
-#include <algorithm>
-
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/search/search.h"
@@ -14,20 +12,17 @@
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
-#include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/overlay_container.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
-#include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "ui/views/controls/single_split_view.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/non_client_view.h"
@@ -43,17 +38,6 @@ using views::FocusManager;
 
 namespace {
 
-// Tab strip bounds depend on the window frame sizes.
-gfx::Point ExpectedTabStripOrigin(BrowserView* browser_view) {
-  gfx::Rect tabstrip_bounds(
-      browser_view->frame()->GetBoundsForTabStrip(browser_view->tabstrip()));
-  gfx::Point tabstrip_origin(tabstrip_bounds.origin());
-  views::View::ConvertPointToTarget(browser_view->parent(),
-                                    browser_view,
-                                    &tabstrip_origin);
-  return tabstrip_origin;
-}
-
 // Returns the bounds of |view| in widget coordinates.
 gfx::Rect GetRectInWidget(views::View* view) {
   return view->ConvertRectToWidget(view->GetLocalBounds());
@@ -62,100 +46,6 @@ gfx::Rect GetRectInWidget(views::View* view) {
 }
 
 typedef InProcessBrowserTest BrowserViewTest;
-
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserView) {
-  BookmarkBarView::DisableAnimationsForTesting(true);
-
-  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  TopContainerView* top_container = browser_view->top_container();
-  TabStrip* tabstrip = browser_view->tabstrip();
-  ToolbarView* toolbar = browser_view->toolbar();
-  views::SingleSplitView* contents_split =
-      browser_view->GetContentsSplitForTest();
-  views::WebView* contents_web_view =
-      browser_view->GetContentsWebViewForTest();
-  OverlayContainer* overlay_container =
-      browser_view->GetOverlayContainerForTest();
-
-  // Verify the view hierarchy.
-  EXPECT_EQ(top_container, browser_view->tabstrip()->parent());
-  EXPECT_EQ(top_container, browser_view->toolbar()->parent());
-  EXPECT_EQ(top_container, browser_view->GetBookmarkBarView()->parent());
-  EXPECT_EQ(browser_view, browser_view->infobar_container()->parent());
-  EXPECT_EQ(browser_view, overlay_container->parent());
-
-  // Overlay container is at the front of the view hierarchy, followed by top
-  // container.
-  EXPECT_EQ(browser_view->child_count() - 1,
-            browser_view->GetIndexOf(overlay_container));
-  EXPECT_EQ(browser_view->child_count() - 2,
-            browser_view->GetIndexOf(top_container));
-
-  // Verify basic layout.
-  EXPECT_EQ(0, top_container->x());
-  EXPECT_EQ(0, top_container->y());
-  EXPECT_EQ(browser_view->width(), top_container->width());
-  // Tabstrip layout varies based on window frame sizes.
-  gfx::Point expected_tabstrip_origin = ExpectedTabStripOrigin(browser_view);
-  EXPECT_EQ(expected_tabstrip_origin.x(), tabstrip->x());
-  EXPECT_EQ(expected_tabstrip_origin.y(), tabstrip->y());
-  EXPECT_EQ(0, toolbar->x());
-  EXPECT_EQ(
-      tabstrip->bounds().bottom() -
-          BrowserViewLayout::kToolbarTabStripVerticalOverlap,
-      toolbar->y());
-  EXPECT_EQ(0, contents_split->x());
-  EXPECT_EQ(toolbar->bounds().bottom(), contents_split->y());
-  EXPECT_EQ(0, contents_web_view->x());
-  EXPECT_EQ(0, contents_web_view->y());
-
-  // Verify bookmark bar visibility.
-  BookmarkBarView* bookmark_bar = browser_view->GetBookmarkBarView();
-  EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_FALSE(bookmark_bar->IsDetached());
-  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
-  EXPECT_TRUE(bookmark_bar->visible());
-  EXPECT_FALSE(bookmark_bar->IsDetached());
-  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
-  EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_FALSE(bookmark_bar->IsDetached());
-
-  // Bookmark bar is reparented to BrowserView on NTP.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  EXPECT_TRUE(bookmark_bar->visible());
-  EXPECT_TRUE(bookmark_bar->IsDetached());
-  EXPECT_EQ(browser_view, bookmark_bar->parent());
-  // Overlay container is still at front, followed by top container.
-  EXPECT_EQ(browser_view->child_count() - 1,
-            browser_view->GetIndexOf(overlay_container));
-  EXPECT_EQ(browser_view->child_count() - 2,
-            browser_view->GetIndexOf(top_container));
-
-  // Bookmark bar layout on NTP.
-  EXPECT_EQ(0, bookmark_bar->x());
-  EXPECT_EQ(
-      tabstrip->bounds().bottom() +
-          toolbar->height() -
-          BrowserViewLayout::kToolbarTabStripVerticalOverlap -
-          views::NonClientFrameView::kClientEdgeThickness,
-      bookmark_bar->y());
-  EXPECT_EQ(toolbar->bounds().bottom(), contents_split->y());
-  // Contents view has a "top margin" pushing it below the bookmark bar.
-  EXPECT_EQ(bookmark_bar->height() -
-                views::NonClientFrameView::kClientEdgeThickness,
-            contents_web_view->y());
-
-  // Bookmark bar is parented back to top container on normal page.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_FALSE(bookmark_bar->IsDetached());
-  EXPECT_EQ(top_container, bookmark_bar->parent());
-  // Top container is still second from front.
-  EXPECT_EQ(browser_view->child_count() - 2,
-            browser_view->GetIndexOf(top_container));
-
-  BookmarkBarView::DisableAnimationsForTesting(false);
-}
 
 // Active window and focus testing is not reliable on Windows crbug.com/79493
 // TODO(linux_aura) http://crbug.com/163931
