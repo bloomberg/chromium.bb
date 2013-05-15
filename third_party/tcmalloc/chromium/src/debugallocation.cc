@@ -127,19 +127,16 @@ DEFINE_bool(symbolize_stacktrace,
             EnvToBool("TCMALLOC_SYMBOLIZE_STACKTRACE", true),
             "Symbolize the stack trace when provided (on some error exits)");
 
-// If we are LD_PRELOAD-ed against a non-pthreads app, then
-// pthread_once won't be defined.  We declare it here, for that
-// case (with weak linkage) which will cause the non-definition to
-// resolve to NULL.  We can then check for NULL or not in Instance.
-extern "C" int pthread_once(pthread_once_t *, void (*)(void))
-    ATTRIBUTE_WEAK;
-
 // ========================================================================= //
 
 // A safe version of printf() that does not do any allocation and
 // uses very little stack space.
 static void TracePrintf(int fd, const char *fmt, ...)
+#ifdef __GNUC__
   __attribute__ ((__format__ (__printf__, 2, 3)));
+#else
+  ;
+#endif
 
 // The do_* functions are defined in tcmalloc/tcmalloc.cc,
 // which is included before this file
@@ -624,9 +621,7 @@ class MallocBlock {
   }
 
   static void CheckForDanglingWrites(const MallocBlockQueueEntry& queue_entry) {
-    // Initialize the buffer if necessary.
-    if (pthread_once)
-      pthread_once(&deleted_buffer_initialized_, &InitDeletedBuffer);
+    perftools_pthread_once(&deleted_buffer_initialized_, &InitDeletedBuffer);
     if (!deleted_buffer_initialized_no_pthreads_) {
       // This will be the case on systems that don't link in pthreads,
       // including on FreeBSD where pthread_once has a non-zero address

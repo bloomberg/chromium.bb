@@ -313,8 +313,7 @@
             'disable_debugallocation%': 0,
           },
           'conditions': [
-            # TODO(phajdan.jr): Also enable on Windows.
-            ['disable_debugallocation==0 and OS!="win"', {
+            ['disable_debugallocation==0', {
               'defines': [
                 # Use debugallocation for Debug builds to catch problems early
                 # and cleanly, http://crbug.com/30715 .
