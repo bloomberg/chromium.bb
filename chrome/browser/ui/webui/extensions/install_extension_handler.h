@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_INSTALL_EXTENSION_HANDLER_H_
 
 #include "base/files/file_path.h"
+#include "base/string16.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -42,8 +43,10 @@ class InstallExtensionHandler : public content::WebUIMessageHandler {
   // getting XSS'd.
   void HandleInstallMessage(const ListValue* args);
 
-  // The extension that will be installed when HandleInstallMessage() is called.
+  // The path to the file that will be installed when HandleInstallMessage() is
+  // called.
   base::FilePath file_to_install_;
+  base::string16 file_display_name_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallExtensionHandler);
 };

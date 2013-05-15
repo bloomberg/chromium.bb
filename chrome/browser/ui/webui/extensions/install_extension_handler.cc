@@ -65,12 +65,19 @@ void InstallExtensionHandler::HandleStartDragMessage(const ListValue* args) {
     return;
   }
 
+  const WebDropData::FileInfo& file_info = drop_data->filenames.front();
+
   file_to_install_ = base::FilePath::FromWStringHack(
-      UTF16ToWide(drop_data->filenames.front().path));
+      UTF16ToWide(file_info.path));
+  // Use the display name if provided, for checking file names
+  // (.path is likely a random hash value in that case).
+  file_display_name_ =
+      file_info.display_name.empty() ? file_info.path : file_info.display_name;
 }
 
 void InstallExtensionHandler::HandleStopDragMessage(const ListValue* args) {
   file_to_install_.clear();
+  file_display_name_.clear();
 }
 
 void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
@@ -92,16 +99,12 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
 
   const bool kCaseSensitive = false;
 
-  // Have to use EndsWith() because FilePath::Extension() would return ".js" for
-  // "foo.user.js".
-  if (EndsWith(file_to_install_.BaseName().value(),
-               FILE_PATH_LITERAL(".user.js"),
-               kCaseSensitive)) {
+  if (EndsWith(file_display_name_, ASCIIToUTF16(".user.js"), kCaseSensitive)) {
     crx_installer->InstallUserScript(
         file_to_install_,
         net::FilePathToFileURL(file_to_install_));
-  } else if (EndsWith(file_to_install_.BaseName().value(),
-                      FILE_PATH_LITERAL(".crx"),
+  } else if (EndsWith(file_display_name_,
+                      ASCIIToUTF16(".crx"),
                       kCaseSensitive)) {
     crx_installer->InstallCrx(file_to_install_);
   } else {
@@ -109,4 +112,5 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
   }
 
   file_to_install_.clear();
+  file_display_name_.clear();
 }
