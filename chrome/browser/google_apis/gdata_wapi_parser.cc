@@ -775,6 +775,7 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFromChangeResource(
   entry->resource_id_ = change.file_id();
   // If |is_deleted()| returns true, the file is removed from Drive.
   entry->removed_ = change.is_deleted();
+  entry->changestamp_ = change.change_id();
 
   return entry.Pass();
 }
