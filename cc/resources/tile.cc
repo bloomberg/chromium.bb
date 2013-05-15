@@ -28,6 +28,7 @@ Tile::Tile(TileManager* tile_manager,
 }
 
 Tile::~Tile() {
+  TRACE_EVENT_OBJECT_DELETED_WITH_ID("cc.debug", "cc::Tile", this);
   tile_manager_->UnregisterTile(this);
 }
 
