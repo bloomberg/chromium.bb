@@ -28,6 +28,8 @@ namespace {
 
 const int kMaxThrottleCount = 5;
 
+const int kMaxRetryCount = kMaxThrottleCount - 1;
+
 // Parameter struct for RunUploadNewFile.
 struct UploadNewFileParams {
   std::string parent_resource_id;
@@ -83,7 +85,8 @@ const int JobScheduler::kMaxJobCount[] = {
 
 JobScheduler::JobEntry::JobEntry(JobType type)
     : job_info(type),
-      context(DriveClientContext(USER_INITIATED)) {
+      context(DriveClientContext(USER_INITIATED)),
+      retry_count(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -714,10 +717,13 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
   --jobs_running_[queue_type];
 
   // Retry, depending on the error.
-  if (error == google_apis::HTTP_SERVICE_UNAVAILABLE ||
-      error == google_apis::HTTP_INTERNAL_SERVER_ERROR) {
+  if ((error == google_apis::HTTP_SERVICE_UNAVAILABLE ||
+      error == google_apis::HTTP_INTERNAL_SERVER_ERROR) &&
+      job_entry->retry_count < kMaxRetryCount) {
     job_info->state = STATE_RETRY;
     NotifyJobUpdated(*job_info);
+
+    ++job_entry->retry_count;
 
     // Requeue the job.
     QueueJob(job_id);

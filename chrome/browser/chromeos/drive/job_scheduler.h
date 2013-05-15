@@ -172,6 +172,8 @@ class JobScheduler
     // Context of the job.
     DriveClientContext context;
 
+    int retry_count;
+
     base::Closure task;
   };
 
