@@ -62,3 +62,10 @@ undeprecate_destruct_packet_api.patch
   wolenetz: Until upstream fully deprecates usage of FF_API_DESTRUCT_PACKET and
   we switch to using refcounted AVBuffer API, this patch is necessary.
   See http://crbug.com/236611
+
+preserve_m27_avcodecids.patch
+  wolenetz: Insert a deprecated placeholder into AVCodecID enum such that
+  the resulting IDs are either new IDs since M27 or have same enumeration as
+  M27.  This is specific to the M29 roll.
+  See https://ffmpeg.org/trac/ffmpeg/ticket/2575
+  See also http://crbug.com/241212
