@@ -1,3 +1,7 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Determines whether a certain driver bug exists in the current system.
 // A valid gpu_driver_bug_list.json file are in the format of
 // {
@@ -30,25 +34,24 @@
 //    The version is interpreted as "year.month.day".
 // 10. "gl_vendor" is a STRING structure (defined below).
 // 11. "gl_renderer" is a STRING structure (defined below).
-// 12. "gl_extensions" is a STRING structure (defined below).
-// 13. "perf_graphics" is a FLOAT structure (defined below).
-// 14. "perf_gaming" is a FLOAT structure (defined below).
-// 15. "perf_overall" is a FLOAT structure (defined below).
-// 16. "machine_model" contais "name" and an optional "version".  "name" is a 
+// 12. "perf_graphics" is a FLOAT structure (defined below).
+// 13. "perf_gaming" is a FLOAT structure (defined below).
+// 14. "perf_overall" is a FLOAT structure (defined below).
+// 15. "machine_model" contais "name" and an optional "version".  "name" is a 
 //     STRING structure and "version" is a VERSION structure (defined below).
-// 17. "gpu_count" is a INT structure (defined below).
-// 18  "cpu_info" is a STRING structure (defined below).
-// 19. "exceptions" is a list of entries.
-// 20. "features" is a list of driver bug types. For a list of supported types,
+// 16. "gpu_count" is a INT structure (defined below).
+// 17  "cpu_info" is a STRING structure (defined below).
+// 18. "exceptions" is a list of entries.
+// 19. "features" is a list of driver bug types. For a list of supported types,
 //     see src/gpu/command_buffer/service/gpu_driver_bug_workaround_type.h
 //     This field is mandatory.
-// 21. "description" has the description of the entry.
-// 22. "webkit_bugs" is an array of associated webkit bug numbers.
-// 23. "cr_bugs" is an array of associated chromium bug numbers.
-// 24. "browser_version" is a VERSION structure (defined below).  If this
+// 20. "description" has the description of the entry.
+// 21. "webkit_bugs" is an array of associated webkit bug numbers.
+// 22. "cr_bugs" is an array of associated chromium bug numbers.
+// 23. "browser_version" is a VERSION structure (defined below).  If this
 //     condition is not satisfied, the entry will be ignored.  If it is not
 //     present, then the entry applies to all versions of the browser.
-// 25. "disabled" is a boolean. If it is present, the entry will be skipped.
+// 24. "disabled" is a boolean. If it is present, the entry will be skipped.
 //     This can not be used in exceptions.
 //
 // VERSION includes "op", "style", "number", and "number2".  "op" can be any of
@@ -70,10 +73,18 @@
 // "any". "value" and "value2" are valid float numbers.
 // INT is very much like FLOAT, except that the values need to be integers.
 
+#include "content/browser/gpu/gpu_control_list_jsons.h"
+
+#define LONG_STRING_CONST(...) #__VA_ARGS__
+
+namespace content {
+
+const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
+
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "1.4",
+  "version": "1.3",
   "entries": [
     {
       "id": 1,
@@ -301,36 +312,11 @@
       "features": [
         "disable_ext_draw_buffers"
       ]
-    },
-    {
-      "id": 21,
-      "description": "Vivante GPUs are buggy with context switching.",
-      "cr_bugs": [179250, 235935],
-      "os": {
-        "type": "android"
-      },
-      "gl_extensions": {
-        "op": "contains",
-        "value": "GL_VIV_shader_binary"
-      },
-      "features": [
-        "unbind_fbo_on_context_switch"
-      ]
-    },
-    {
-      "id": 22,
-      "description": "Imagination drivers are buggy with context switching.",
-      "cr_bugs": [230896],
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Imagination"
-      },
-      "features": [
-        "unbind_fbo_on_context_switch"
-      ]
     }
   ]
 }
+
+);  // LONG_STRING_CONST macro
+
+}  // namespace content
+

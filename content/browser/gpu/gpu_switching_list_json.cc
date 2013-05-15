@@ -1,3 +1,7 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Determines whether a certain gpu is prefered in a dual-gpu situation.
 // A valid gpu_switching_list.json file are in the format of
 // {
@@ -69,6 +73,14 @@
 // "any". "value" and "value2" are valid float numbers.
 // INT is very much like FLOAT, except that the values need to be integers.
 
+#include "content/browser/gpu/gpu_control_list_jsons.h"
+
+#define LONG_STRING_CONST(...) #__VA_ARGS__
+
+namespace content {
+
+const char kGpuSwitchingListJson[] = LONG_STRING_CONST(
+
 {
   "name": "gpu switching list",
   // Please update the version number whenever you change this file.
@@ -105,3 +117,8 @@
     }
   ]
 }
+
+);  // LONG_STRING_CONST macro
+
+}  // namespace content
+

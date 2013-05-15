@@ -4,11 +4,8 @@
 
 #include <vector>
 
-#include "base/base_paths.h"
-#include "base/file_util.h"
-#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/path_service.h"
+#include "content/browser/gpu/gpu_control_list_jsons.h"
 #include "content/browser/gpu/gpu_switching_list.h"
 #include "content/public/common/gpu_info.h"
 #include "content/public/common/gpu_switching_option.h"
@@ -53,23 +50,9 @@ class GpuSwitchingListTest : public testing::Test {
 };
 
 TEST_F(GpuSwitchingListTest, CurrentSwitchingListValidation) {
-  base::FilePath data_file;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_file));
-  data_file =
-      data_file.Append(FILE_PATH_LITERAL("content"))
-               .Append(FILE_PATH_LITERAL("browser"))
-               .Append(FILE_PATH_LITERAL("gpu"))
-               .Append(FILE_PATH_LITERAL("gpu_switching_list.json"));
-  ASSERT_TRUE(file_util::PathExists(data_file));
-  int64 data_file_size64 = 0;
-  ASSERT_TRUE(file_util::GetFileSize(data_file, &data_file_size64));
-  int data_file_size = static_cast<int>(data_file_size64);
-  scoped_ptr<char[]> data(new char[data_file_size]);
-  ASSERT_EQ(data_file_size,
-            file_util::ReadFile(data_file, data.get(), data_file_size));
-  std::string json_string(data.get(), data_file_size);
   scoped_ptr<GpuSwitchingList> switching_list(GpuSwitchingList::Create());
-  EXPECT_TRUE(switching_list->LoadList(json_string, GpuControlList::kAllOs));
+  EXPECT_TRUE(switching_list->LoadList(
+      kGpuSwitchingListJson, GpuControlList::kAllOs));
   EXPECT_FALSE(switching_list->contains_unknown_fields());
 }
 

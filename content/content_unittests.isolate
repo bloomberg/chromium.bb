@@ -25,9 +25,6 @@
         'isolate_dependency_untracked': [
           '../third_party/hyphen/hyph_en_US.dic',
           '../webkit/data/',
-          'browser/gpu/gpu_driver_bug_list.json',
-          'browser/gpu/gpu_switching_list.json',
-          'browser/gpu/software_rendering_list.json',
           'test/data/',
         ],
       },

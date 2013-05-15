@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base_paths.h"
-#include "base/file_util.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/path_service.h"
+#include "content/browser/gpu/gpu_control_list_jsons.h"
 #include "content/browser/gpu/gpu_driver_bug_list.h"
 #include "content/public/common/gpu_info.h"
 #include "gpu/command_buffer/service/gpu_driver_bug_workaround_type.h"
@@ -25,30 +22,6 @@ class GpuDriverBugListTest : public testing::Test {
 
   const GPUInfo& gpu_info() const {
     return gpu_info_;
-  }
-
-  bool GetCurrentDriverBugList(std::string* json) {
-    DCHECK(json);
-    base::FilePath data_file;
-    if (!PathService::Get(base::DIR_SOURCE_ROOT, &data_file))
-      return false;
-    data_file =
-        data_file.Append(FILE_PATH_LITERAL("content"))
-                 .Append(FILE_PATH_LITERAL("browser"))
-                 .Append(FILE_PATH_LITERAL("gpu"))
-                 .Append(FILE_PATH_LITERAL("gpu_driver_bug_list.json"));
-    if (!file_util::PathExists(data_file))
-      return false;
-    int64 data_file_size64 = 0;
-    if (!file_util::GetFileSize(data_file, &data_file_size64))
-      return false;
-    int data_file_size = static_cast<int>(data_file_size64);
-    scoped_ptr<char[]> data(new char[data_file_size]);
-    if (file_util::ReadFile(data_file, data.get(), data_file_size) !=
-        data_file_size)
-      return false;
-    *json = std::string(data.get(), data_file_size);
-    return true;
   }
 
  protected:
@@ -76,16 +49,13 @@ class GpuDriverBugListTest : public testing::Test {
 TEST_F(GpuDriverBugListTest, CurrentDriverBugListValidation) {
   scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   std::string json;
-  EXPECT_TRUE(GetCurrentDriverBugList(&json));
-  EXPECT_TRUE(list->LoadList(json, GpuControlList::kAllOs));
+  EXPECT_TRUE(list->LoadList(kGpuDriverBugListJson, GpuControlList::kAllOs));
   EXPECT_FALSE(list->contains_unknown_fields());
 }
 
 TEST_F(GpuDriverBugListTest, CurrentListForARM) {
   scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
-  std::string json;
-  EXPECT_TRUE(GetCurrentDriverBugList(&json));
-  EXPECT_TRUE(list->LoadList(json, GpuControlList::kAllOs));
+  EXPECT_TRUE(list->LoadList(kGpuDriverBugListJson, GpuControlList::kAllOs));
 
   GPUInfo gpu_info;
   gpu_info.gl_vendor = "ARM";
@@ -97,9 +67,7 @@ TEST_F(GpuDriverBugListTest, CurrentListForARM) {
 
 TEST_F(GpuDriverBugListTest, CurrentListForImagination) {
   scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
-  std::string json;
-  EXPECT_TRUE(GetCurrentDriverBugList(&json));
-  EXPECT_TRUE(list->LoadList(json, GpuControlList::kAllOs));
+  EXPECT_TRUE(list->LoadList(kGpuDriverBugListJson, GpuControlList::kAllOs));
 
   GPUInfo gpu_info;
   gpu_info.gl_vendor = "Imagination Technologies";

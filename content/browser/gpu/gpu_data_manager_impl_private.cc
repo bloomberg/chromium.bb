@@ -16,9 +16,9 @@
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/sys_info.h"
 #include "base/version.h"
+#include "content/browser/gpu/gpu_control_list_jsons.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_util.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -30,7 +30,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_feature_type.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "grit/content_resources.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
@@ -319,20 +318,11 @@ void GpuDataManagerImplPrivate::Initialize() {
   std::string gpu_switching_list_string;
   std::string gpu_driver_bug_list_string;
   if (!command_line->HasSwitch(switches::kIgnoreGpuBlacklist)) {
-    const base::StringPiece gpu_blacklist_json =
-        GetContentClient()->GetDataResource(
-            IDR_GPU_BLACKLIST, ui::SCALE_FACTOR_NONE);
-    gpu_blacklist_string = gpu_blacklist_json.as_string();
-    const base::StringPiece gpu_switching_list_json =
-        GetContentClient()->GetDataResource(
-            IDR_GPU_SWITCHING_LIST, ui::SCALE_FACTOR_NONE);
-    gpu_switching_list_string = gpu_switching_list_json.as_string();
+    gpu_blacklist_string = kSoftwareRenderingListJson;
+    gpu_switching_list_string = kGpuSwitchingListJson;
   }
   if (!command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
-    const base::StringPiece gpu_driver_bug_list_json =
-        GetContentClient()->GetDataResource(
-            IDR_GPU_DRIVER_BUG_LIST, ui::SCALE_FACTOR_NONE);
-    gpu_driver_bug_list_string = gpu_driver_bug_list_json.as_string();
+    gpu_driver_bug_list_string = kGpuDriverBugListJson;
   }
   InitializeImpl(gpu_blacklist_string,
                  gpu_switching_list_string,

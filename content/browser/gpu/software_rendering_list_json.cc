@@ -1,3 +1,7 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Determines whether certain gpu-related features are blacklisted or not.
 // A valid software_rendering_list.json file are in the format of
 // {
@@ -30,28 +34,27 @@
 //    The version is interpreted as "year.month.day".
 // 10. "gl_vendor" is a STRING structure (defined below).
 // 11. "gl_renderer" is a STRING structure (defined below).
-// 12. "gl_extensions" is a STRING structure (defined below).
-// 13. "perf_graphics" is a FLOAT structure (defined below).
-// 14. "perf_gaming" is a FLOAT structure (defined below).
-// 15. "perf_overall" is a FLOAT structure (defined below).
-// 16. "machine_model" contais "name" and an optional "version".  "name" is a 
+// 12. "perf_graphics" is a FLOAT structure (defined below).
+// 13. "perf_gaming" is a FLOAT structure (defined below).
+// 14. "perf_overall" is a FLOAT structure (defined below).
+// 15. "machine_model" contais "name" and an optional "version".  "name" is a 
 //     STRING structure and "version" is a VERSION structure (defined below).
-// 17. "gpu_count" is a INT structure (defined below).
-// 18  "cpu_info" is a STRING structure (defined below).
-// 19. "exceptions" is a list of entries.
-// 20. "features" is a list of gpu feature strings, valid values include
+// 16. "gpu_count" is a INT structure (defined below).
+// 17  "cpu_info" is a STRING structure (defined below).
+// 18. "exceptions" is a list of entries.
+// 19. "features" is a list of gpu feature strings, valid values include
 //     "accelerated_2d_canvas", "accelerated_compositing", "webgl",
 //     "multisampling", "flash_3d", "flash_stage3d", "texture_sharing",
 //     "accelerated_video", "accelerated_video_decode", "panel_fitting",
 //     "force_compositing_mode", and "all".
 //     This field is mandatory.
-// 21. "description" has the description of the entry.
-// 22. "webkit_bugs" is an array of associated webkit bug numbers.
-// 23. "cr_bugs" is an array of associated webkit bug numbers.
-// 24. "browser_version" is a VERSION structure (defined below).  If this
+// 20. "description" has the description of the entry.
+// 21. "webkit_bugs" is an array of associated webkit bug numbers.
+// 22. "cr_bugs" is an array of associated webkit bug numbers.
+// 23. "browser_version" is a VERSION structure (defined below).  If this
 //     condition is not satisfied, the entry will be ignored.  If it is not
 //     present, then the entry applies to all versions of the browser.
-// 25. "disabled" is a boolean. If it is present, the entry will be skipped.
+// 24. "disabled" is a boolean. If it is present, the entry will be skipped.
 //     This can not be used in exceptions.
 //
 // VERSION includes "op", "style", "number", and "number2".  "op" can be any of
@@ -72,6 +75,14 @@
 // only used if "op" is "between".  "value" is used for all "op" values except
 // "any". "value" and "value2" are valid float numbers.
 // INT is very much like FLOAT, except that the values need to be integers.
+
+#include "content/browser/gpu/gpu_control_list_jsons.h"
+
+#define LONG_STRING_CONST(...) #__VA_ARGS__
+
+namespace content {
+
+const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 
 {
   "name": "software rendering list",
@@ -1097,3 +1108,8 @@
     }
   ]
 }
+
+);  // LONG_STRING_CONST macro
+
+}  // namespace content
+
