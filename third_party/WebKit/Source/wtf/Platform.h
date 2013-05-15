@@ -275,11 +275,6 @@
 #define WTF_OS_ANDROID 1
 #endif
 
-/* OS(AIX) - AIX */
-#ifdef _AIX
-#define WTF_OS_AIX 1
-#endif
-
 /* OS(DARWIN) - Any Darwin-based OS, including Mac OS X and iPhone OS */
 #ifdef __APPLE__
 #define WTF_OS_DARWIN 1
@@ -325,8 +320,7 @@
 #endif
 
 /* OS(UNIX) - Any Unix-like system */
-#if   OS(AIX)              \
-    || OS(ANDROID)          \
+#if OS(ANDROID)          \
     || OS(DARWIN)           \
     || OS(FREEBSD)          \
     || OS(HURD)             \
