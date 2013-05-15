@@ -123,6 +123,12 @@ public:
     // NPN_SetProperty
     WEBKIT_EXPORT static bool setProperty(NPP, NPObject*, NPIdentifier, const NPVariant*);
 
+    // _NPN_RegisterObjectOwner
+    WEBKIT_EXPORT static void registerObjectOwner(NPP);
+
+    // _NPN_UnregisterObjectOwner
+    WEBKIT_EXPORT static void unregisterObjectOwner(NPP);
+
     // _NPN_UnregisterObject
     WEBKIT_EXPORT static void unregisterObject(NPObject*);
 

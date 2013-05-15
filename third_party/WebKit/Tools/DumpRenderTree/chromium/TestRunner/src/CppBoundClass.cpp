@@ -353,7 +353,7 @@ void CppBoundClass::bindToJavascript(WebFrame* frame, const WebString& classname
     // BindToWindowObject will take its own reference to the NPObject, and clean
     // up after itself. It will also (indirectly) register the object with V8,
     // so we must remember this so we can unregister it when we're destroyed.
-    frame->bindToWindowObject(classname, NPVARIANT_TO_OBJECT(*getAsCppVariant()));
+    frame->bindToWindowObject(classname, NPVARIANT_TO_OBJECT(*getAsCppVariant()), 0);
     m_boundToFrame = true;
 }
 

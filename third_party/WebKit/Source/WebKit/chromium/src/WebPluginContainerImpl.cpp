@@ -399,6 +399,10 @@ void WebPluginContainerImpl::reportGeometry()
     }
 }
 
+void WebPluginContainerImpl::allowScriptObjects()
+{
+}
+
 void WebPluginContainerImpl::clearScriptObjects()
 {
     Frame* frame = m_element->document()->frame();

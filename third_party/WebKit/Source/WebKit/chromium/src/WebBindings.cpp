@@ -164,6 +164,14 @@ bool WebBindings::setProperty(NPP npp, NPObject* object, NPIdentifier identifier
     return _NPN_SetProperty(npp, object, identifier, value);
 }
 
+void WebBindings::registerObjectOwner(NPP)
+{
+}
+
+void WebBindings::unregisterObjectOwner(NPP)
+{
+}
+
 void WebBindings::unregisterObject(NPObject* object)
 {
     _NPN_UnregisterObject(object);

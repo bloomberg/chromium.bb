@@ -226,6 +226,8 @@ public:
 
     // Binds a NPObject as a property of this frame's DOMWindow.
     virtual void bindToWindowObject(const WebString& name, NPObject*) = 0;
+    virtual void bindToWindowObject(
+        const WebString& name, NPObject*, void*) = 0;
 
     // Executes script in the context of the current page.
     virtual void executeScript(const WebScriptSource&) = 0;

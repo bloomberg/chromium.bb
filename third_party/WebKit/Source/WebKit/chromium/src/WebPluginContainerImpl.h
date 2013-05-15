@@ -100,6 +100,7 @@ public:
     virtual void invalidateRect(const WebRect&);
     virtual void scrollRect(int dx, int dy, const WebRect&);
     virtual void reportGeometry();
+    virtual void allowScriptObjects();
     virtual void clearScriptObjects();
     virtual NPObject* scriptableObjectForElement();
     virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed);
