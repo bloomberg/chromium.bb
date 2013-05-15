@@ -1911,6 +1911,7 @@
         ['use_ash==1', {
           'sources': [
             'browser/ui/app_list/apps_model_builder_unittest.cc',
+            'browser/ui/app_list/search/mixer_unittest.cc',
             'browser/ui/app_list/search/term_break_iterator_unittest.cc',
             'browser/ui/app_list/search/tokenized_string_char_iterator_unittest.cc',
             'browser/ui/app_list/search/tokenized_string_match_unittest.cc',
