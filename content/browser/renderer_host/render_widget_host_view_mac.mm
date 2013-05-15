@@ -1115,9 +1115,13 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
   // No need to draw the surface if we are inside a drawRect. It will be done
   // later.
   if (!about_to_validate_and_paint_) {
+    CompositingIOSurfaceMac::SurfaceOrder order = allow_overlapping_views_ ?
+        CompositingIOSurfaceMac::SURFACE_ORDER_BELOW_WINDOW :
+        CompositingIOSurfaceMac::SURFACE_ORDER_ABOVE_WINDOW;
     compositing_iosurface_->DrawIOSurface(cocoa_view_,
                                           ScaleFactor(cocoa_view_),
                                           window_number(),
+                                          order,
                                           frame_subscriber_.get());
   }
 
@@ -2325,10 +2329,15 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
       NSRectFill(dirtyRect);
     }
 
+    content::CompositingIOSurfaceMac::SurfaceOrder order =
+        renderWidgetHostView_->allow_overlapping_views_
+        ? content::CompositingIOSurfaceMac::SURFACE_ORDER_BELOW_WINDOW
+        : content::CompositingIOSurfaceMac::SURFACE_ORDER_ABOVE_WINDOW;
     renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
         self,
         ScaleFactor(self),
         renderWidgetHostView_->window_number(),
+        order,
         renderWidgetHostView_->frame_subscriber());
     return;
   }

@@ -54,7 +54,7 @@ class CompositingIOSurfaceMac {
   // |order| the desired ordering relationship of the surface to the containing
   // window.
   static CompositingIOSurfaceMac* Create(int window_number,
-                                  SurfaceOrder order);
+                                         SurfaceOrder order);
   ~CompositingIOSurfaceMac();
 
   // Set IOSurface that will be drawn on the next NSView drawRect.
@@ -72,6 +72,7 @@ class CompositingIOSurfaceMac {
   void DrawIOSurface(NSView* view,
                      float scale_factor,
                      int window_number,
+                     SurfaceOrder surface_order,
                      RenderWidgetHostViewFrameSubscriber* frame_subscriber);
 
   // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
@@ -231,7 +232,9 @@ class CompositingIOSurfaceMac {
   // If this IOSurface has moved to a different window, use that window's
   // GL context (if multiple visible windows are using the same GL context
   // then call to setView call can stall and prevent reaching 60fps).
-  void SwitchToContextOnNewWindow(NSView* view, int window_number);
+  void SwitchToContextOnNewWindow(NSView* view,
+                                  int window_number,
+                                  SurfaceOrder surface_order);
 
   bool IsVendorIntel();
 
