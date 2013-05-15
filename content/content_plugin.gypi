@@ -9,6 +9,8 @@
         '../skia/skia.gyp:skia',
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/support/webkit_support.gyp:plugins',
+        '../webkit/support/webkit_support.gyp:plugins_common',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',

@@ -6,16 +6,15 @@
 #define WEBKIT_PLUGINS_PLUGIN_SWITCHES_H_
 
 #include "build/build_config.h"
-#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace switches {
 
-WEBKIT_PLUGINS_EXPORT extern const char kDebugPluginLoading[];
-WEBKIT_PLUGINS_EXPORT extern const char kDisablePepper3d[];
-WEBKIT_PLUGINS_EXPORT extern const char kPpapiFlashArgs[];
+extern const char kDebugPluginLoading[];
+extern const char kDisablePepper3d[];
+extern const char kPpapiFlashArgs[];
 
 #if defined(OS_WIN)
-WEBKIT_PLUGINS_EXPORT extern const char kUseOldWMPPlugin[];
+extern const char kUseOldWMPPlugin[];
 #endif
 
 }  // namespace switches

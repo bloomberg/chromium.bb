@@ -10,13 +10,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
-#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
 // Base class for Chrome's implementation of the "extra data".
-class WEBKIT_GLUE_EXPORT WebURLResponseExtraDataImpl
-    : NON_EXPORTED_BASE(public WebKit::WebURLResponse::ExtraData) {
+class WebURLResponseExtraDataImpl : public WebKit::WebURLResponse::ExtraData {
  public:
   explicit WebURLResponseExtraDataImpl(
       const std::string& npn_negotiated_protocol);

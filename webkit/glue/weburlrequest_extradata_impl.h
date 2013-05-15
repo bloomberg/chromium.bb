@@ -9,14 +9,12 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
-#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
 // Base class for Chrome's implementation of the "extra data" stored in each
 // ResourceRequest.
-class WEBKIT_GLUE_EXPORT WebURLRequestExtraDataImpl :
-    NON_EXPORTED_BASE(public WebKit::WebURLRequest::ExtraData) {
+class WebURLRequestExtraDataImpl : public WebKit::WebURLRequest::ExtraData {
  public:
   // |custom_user_agent| is used to communicate an overriding custom user agent
   // to |RenderViewImpl::willSendRequest()|; set to a null string to indicate no

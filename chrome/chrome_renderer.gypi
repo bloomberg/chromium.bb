@@ -28,6 +28,8 @@
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/support/webkit_support.gyp:glue_common',
+        '../webkit/support/webkit_support.gyp:plugins',
         '../webkit/support/webkit_support.gyp:webkit_media',
         '../webkit/support/webkit_support.gyp:webkit_resources',
       ],

@@ -10,6 +10,7 @@
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
 #include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -139,7 +140,7 @@ PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
     return PP_FALSE;
   canvas->save();
   canvas->scale(scale(), scale());
-  scrollbar_->paint(webkit_glue::ToWebCanvas(canvas), rect);
+  scrollbar_->paint(canvas, rect);
   canvas->restore();
 
 #if defined(OS_WIN)

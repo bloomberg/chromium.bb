@@ -20,6 +20,9 @@
     '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
     '../webkit/gpu/webkit_gpu.gyp:webkit_gpu',
     '../webkit/support/webkit_support.gyp:glue',
+    '../webkit/support/webkit_support.gyp:glue_common',
+    '../webkit/support/webkit_support.gyp:plugins',
+    '../webkit/support/webkit_support.gyp:plugins_common',
     '../webkit/support/webkit_support.gyp:webkit_media',
   ],
   'include_dirs': [
