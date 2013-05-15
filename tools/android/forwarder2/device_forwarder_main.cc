@@ -62,7 +62,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
     char buf[kBufSize];
     const int bytes_read = client_socket->Read(buf, sizeof(buf));
     if (bytes_read <= 0) {
-      if (client_socket->exited())
+      if (client_socket->DidReceiveEvent())
         return;
       PError("Read()");
       return;

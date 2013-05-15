@@ -94,16 +94,9 @@ Forwarder::Forwarder(scoped_ptr<Socket> socket1, scoped_ptr<Socket> socket2)
       socket2_(socket2.Pass()) {
   DCHECK(socket1_.get());
   DCHECK(socket2_.get());
-  // The forwarder thread doesn't need to listen to notifications. It can be
-  // keept alive until either the conenction is broken or the program exit.
-  socket1_->reset_exit_notifier_fd();
-  socket2_->reset_exit_notifier_fd();
 }
 
-Forwarder::~Forwarder() {
-  socket1_->Close();
-  socket2_->Close();
-}
+Forwarder::~Forwarder() {}
 
 void Forwarder::Run() {
   const int nfds = Socket::GetHighestFileDescriptor(*socket1_, *socket2_) + 1;

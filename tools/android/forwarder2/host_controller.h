@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "tools/android/forwarder2/pipe_notifier.h"
 #include "tools/android/forwarder2/socket.h"
 #include "tools/android/forwarder2/thread.h"
 
@@ -43,14 +44,21 @@ class HostController : public Thread {
  private:
   void StartForwarder(scoped_ptr<Socket> host_server_data_socket_ptr);
 
+  // Helper method that creates a socket and adds the appropriate event file
+  // descriptors.
+  scoped_ptr<Socket> CreateSocket();
+
   Socket adb_control_socket_;
   int device_port_;
   const std::string forward_to_host_;
   const int forward_to_host_port_;
   const int adb_port_;
 
-  // Used to notify the controller to exit.
-  const int exit_notifier_fd_;
+  // Used to notify the controller when the process is killed.
+  const int global_exit_notifier_fd_;
+  // Used to cancel the pending blocking IO operations when the host controller
+  // instance is deleted.
+  PipeNotifier delete_controller_notifier_;
 
   bool ready_;
 

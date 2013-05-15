@@ -56,7 +56,7 @@ bool RunServerAcceptLoop(const std::string& welcome_message,
   for (;;) {
     scoped_ptr<Socket> client_socket(new Socket());
     if (!server_socket->Accept(client_socket.get())) {
-      if (server_socket->exited())
+      if (server_socket->DidReceiveEvent())
         break;
       PError("Accept()");
       failed = true;
@@ -207,7 +207,7 @@ bool Daemon::SpawnIfNeeded() {
           exit(1);
         }
         server_delegate_->Init();
-        command_socket.set_exit_notifier_fd(get_exit_fd_callback_());
+        command_socket.AddEventFd(get_exit_fd_callback_());
         exit(!RunServerAcceptLoop(identifier_, &command_socket,
                                   server_delegate_));
       }

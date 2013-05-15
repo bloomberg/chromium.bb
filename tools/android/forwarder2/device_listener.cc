@@ -30,8 +30,8 @@ DeviceListener::DeviceListener(scoped_ptr<Socket> adb_control_socket, int port)
       is_alive_(false),
       must_exit_(false) {
   CHECK(adb_control_socket_.get());
-  adb_control_socket_->set_exit_notifier_fd(exit_notifier_.receiver_fd());
-  listener_socket_.set_exit_notifier_fd(exit_notifier_.receiver_fd());
+  adb_control_socket_->AddEventFd(exit_notifier_.receiver_fd());
+  listener_socket_.AddEventFd(exit_notifier_.receiver_fd());
   pthread_mutex_init(&adb_data_socket_mutex_, NULL);
   pthread_cond_init(&adb_data_socket_cond_, NULL);
 }
@@ -106,7 +106,7 @@ void DeviceListener::RunInternal() {
   while (!must_exit_) {
     scoped_ptr<Socket> device_data_socket(new Socket);
     if (!listener_socket_.Accept(device_data_socket.get())) {
-      if (listener_socket_.exited()) {
+      if (listener_socket_.DidReceiveEvent()) {
         LOG(INFO) << "Received exit notification, stopped accepting clients.";
         break;
       }

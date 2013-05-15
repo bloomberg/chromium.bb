@@ -23,20 +23,26 @@ HostController::HostController(int device_port,
       forward_to_host_(forward_to_host),
       forward_to_host_port_(forward_to_host_port),
       adb_port_(adb_port),
-      exit_notifier_fd_(exit_notifier_fd),
+      global_exit_notifier_fd_(exit_notifier_fd),
       ready_(false) {
-  adb_control_socket_.set_exit_notifier_fd(exit_notifier_fd);
+  adb_control_socket_.AddEventFd(global_exit_notifier_fd_);
+  adb_control_socket_.AddEventFd(delete_controller_notifier_.receiver_fd());
 }
 
 HostController::~HostController() {
+  delete_controller_notifier_.Notify();
+  Join();
+  // Note that the Forwarder instance (that also received a delete notification)
+  // might still be running on its own thread at this point. This is not a
+  // problem since it will self-delete once the socket that it is operating on
+  // is closed.
 }
 
 void HostController::StartForwarder(
     scoped_ptr<Socket> host_server_data_socket) {
-  scoped_ptr<Socket> adb_data_socket(new Socket);
+  scoped_ptr<Socket> adb_data_socket(CreateSocket());
   if (!adb_data_socket->ConnectTcp("", adb_port_)) {
-    LOG(ERROR) << "Could not connect AdbDataSocket on port: "
-               << adb_port_;
+    LOG(ERROR) << "Could not connect AdbDataSocket on port: " << adb_port_;
     return;
   }
   // Open the Adb data connection, and send a command with the
@@ -59,6 +65,13 @@ void HostController::StartForwarder(
                                        adb_data_socket.Pass());
   // Forwarder object will self delete after returning.
   forwarder->Start();
+}
+
+scoped_ptr<Socket> HostController::CreateSocket() {
+  scoped_ptr<Socket> socket(new Socket());
+  socket->AddEventFd(global_exit_notifier_fd_);
+  socket->AddEventFd(delete_controller_notifier_.receiver_fd());
+  return socket.Pass();
 }
 
 bool HostController::Connect() {
@@ -89,8 +102,15 @@ bool HostController::Connect() {
 void HostController::Run() {
   CHECK(ready_) << "HostController not ready. Must call Connect() first.";
   while (true) {
-    if (!ReceivedCommand(command::ACCEPT_SUCCESS,
-                         &adb_control_socket_)) {
+    if (!ReceivedCommand(command::ACCEPT_SUCCESS, &adb_control_socket_)) {
+      if (adb_control_socket_.DidReceiveEventOnFd(
+              delete_controller_notifier_.receiver_fd())) {
+        // The instance is being deleted. The control socket will be closed and
+        // the device controller will see that as an error (that it will recover
+        // from properly). TODO(pliard): tell the device controller that this is
+        // a graceful (i.e. user-intended) shutdown rather than an error.
+        break;
+      }
       // TODO(pliard): This can also happen if device_forwarder was
       // intentionally killed before host_forwarder. In that case,
       // device_forwarder should send a notification to the host.  Currently the
@@ -101,8 +121,7 @@ void HostController::Run() {
       break;
     }
     // Try to connect to host server.
-    scoped_ptr<Socket> host_server_data_socket(new Socket);
-    host_server_data_socket->set_exit_notifier_fd(exit_notifier_fd_);
+    scoped_ptr<Socket> host_server_data_socket(CreateSocket());
     if (!host_server_data_socket->ConnectTcp(
             forward_to_host_, forward_to_host_port_)) {
       LOG(ERROR) << "Could not Connect HostServerData socket on port: "

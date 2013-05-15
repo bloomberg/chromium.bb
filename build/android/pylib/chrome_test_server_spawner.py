@@ -256,7 +256,7 @@ class TestServerThread(threading.Thread):
     if self.process.poll() is None:
       self.process.kill()
     if self._test_server_forwarder:
-      self._test_server_forwarder.Close()
+      self._test_server_forwarder.UnmapDevicePort(self.forwarder_device_port)
     self.process = None
     self.is_ready = False
     if self.pipe_out:

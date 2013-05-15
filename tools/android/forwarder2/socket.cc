@@ -73,9 +73,7 @@ Socket::Socket()
       socket_error_(false),
       family_(AF_INET),
       addr_ptr_(reinterpret_cast<sockaddr*>(&addr_.addr4)),
-      addr_len_(sizeof(sockaddr)),
-      exit_notifier_fd_(-1),
-      exited_(false) {
+      addr_len_(sizeof(sockaddr)) {
   memset(&addr_, 0, sizeof(addr_));
 }
 
@@ -330,6 +328,27 @@ int Socket::WriteString(const std::string& buffer) {
   return WriteNumBytes(buffer.c_str(), buffer.size());
 }
 
+void Socket::AddEventFd(int event_fd) {
+  Event event;
+  event.fd = event_fd;
+  event.was_fired = false;
+  events_.push_back(event);
+}
+
+bool Socket::DidReceiveEventOnFd(int fd) const {
+  for (size_t i = 0; i < events_.size(); ++i)
+    if (events_[i].fd == fd)
+      return events_[i].was_fired;
+  return false;
+}
+
+bool Socket::DidReceiveEvent() const {
+  for (size_t i = 0; i < events_.size(); ++i)
+    if (events_[i].was_fired)
+      return true;
+  return false;
+}
+
 int Socket::WriteNumBytes(const void* buffer, size_t num_bytes) {
   int bytes_written = 0;
   int ret = 1;
@@ -343,9 +362,8 @@ int Socket::WriteNumBytes(const void* buffer, size_t num_bytes) {
 }
 
 bool Socket::WaitForEvent(EventType type, int timeout_secs) {
-  if (exit_notifier_fd_ == -1 || socket_ == -1)
+  if (events_.empty() || socket_ == -1)
     return true;
-  const int nfds = std::max(socket_, exit_notifier_fd_) + 1;
   fd_set read_fds;
   fd_set write_fds;
   FD_ZERO(&read_fds);
@@ -354,8 +372,8 @@ bool Socket::WaitForEvent(EventType type, int timeout_secs) {
     FD_SET(socket_, &read_fds);
   else
     FD_SET(socket_, &write_fds);
-  FD_SET(exit_notifier_fd_, &read_fds);
-
+  for (size_t i = 0; i < events_.size(); ++i)
+    FD_SET(events_[i].fd, &read_fds);
   timeval tv = {};
   timeval* tv_ptr = NULL;
   if (timeout_secs > 0) {
@@ -363,13 +381,22 @@ bool Socket::WaitForEvent(EventType type, int timeout_secs) {
     tv.tv_usec = 0;
     tv_ptr = &tv;
   }
-  if (HANDLE_EINTR(select(nfds, &read_fds, &write_fds, NULL, tv_ptr)) <= 0)
-    return false;
-  if (FD_ISSET(exit_notifier_fd_, &read_fds)) {
-    exited_ = true;
+  int max_fd = socket_;
+  for (size_t i = 0; i < events_.size(); ++i)
+    if (events_[i].fd > max_fd)
+      max_fd = events_[i].fd;
+  if (HANDLE_EINTR(
+          select(max_fd + 1, &read_fds, &write_fds, NULL, tv_ptr)) <= 0) {
     return false;
   }
-  return true;
+  bool event_was_fired = false;
+  for (size_t i = 0; i < events_.size(); ++i) {
+    if (FD_ISSET(events_[i].fd, &read_fds)) {
+      events_[i].was_fired = true;
+      event_was_fired = true;
+    }
+  }
+  return !event_was_fired;
 }
 
 // static

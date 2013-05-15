@@ -67,20 +67,20 @@ class Forwarder(object):
     Raises:
       Exception on failure to forward the port.
     """
-    host_adb_control_port = ports.AllocateTestServerPort()
-    if not host_adb_control_port:
+    self._host_adb_control_port = ports.AllocateTestServerPort()
+    if not self._host_adb_control_port:
       raise Exception('Failed to allocate a TCP port in the host machine.')
     self._adb.PushIfNeeded(
         self._device_forwarder_path_on_host, Forwarder._DEVICE_FORWARDER_FOLDER)
     redirection_commands = [
-        '%d:%d:%d:%s' % (host_adb_control_port, device, host,
+        '%d:%d:%d:%s' % (self._host_adb_control_port, device, host,
                          host_name) for device, host in port_pairs]
     logging.info('Command format: <ADB port>:<Device port>' +
                  '[:<Forward to port>:<Forward to address>]')
     logging.info('Forwarding using commands: %s', redirection_commands)
     if cmd_helper.RunCmd(
         ['adb', '-s', self._adb._adb.GetSerialNumber(), 'forward',
-         'tcp:%s' % host_adb_control_port,
+         'tcp:%s' % self._host_adb_control_port,
          'localabstract:%s' % Forwarder._DEVICE_ADB_CONTROL_PORT]) != 0:
       raise Exception('Error while running adb forward.')
 
@@ -113,6 +113,15 @@ class Forwarder(object):
       self._host_to_device_port_map[host_port] = device_port
       logging.info('Forwarding device port: %d to host port: %d.', device_port,
                    host_port)
+
+  def UnmapDevicePort(self, device_port):
+    # Please note the minus sign below.
+    redirection_command = '%d:-%d' % (self._host_adb_control_port, device_port)
+    (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
+        [self._host_forwarder_path, redirection_command])
+    if exit_code != 0:
+      raise Exception('%s exited with %d:\n%s' % (
+          self._host_forwarder_path, exit_code, '\n'.join(output)))
 
   @staticmethod
   def KillHost(build_type):

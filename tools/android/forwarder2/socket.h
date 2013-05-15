@@ -11,6 +11,7 @@
 #include <sys/un.h>
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 
@@ -69,25 +70,27 @@ class Socket {
 
   bool has_error() const { return socket_error_; }
 
-  // |exit_notifier_fd| must be a valid pipe file descriptor created from the
+  // |event_fd| must be a valid pipe file descriptor created from the
   // PipeNotifier and must live (not be closed) at least as long as this socket
   // is alive.
-  void set_exit_notifier_fd(int exit_notifier_fd) {
-    exit_notifier_fd_ = exit_notifier_fd;
-  }
-  // Unset the |exit_notifier_fd_| so that it will not receive notifications
-  // anymore.
-  void reset_exit_notifier_fd() { exit_notifier_fd_ = -1; }
+  void AddEventFd(int event_fd);
 
   // Returns whether Accept() or Connect() was interrupted because the socket
-  // received an exit notification.
-  bool exited() const { return exited_; }
+  // received an external event fired through the provided fd.
+  bool DidReceiveEventOnFd(int fd) const;
+
+  bool DidReceiveEvent() const;
 
   static int GetHighestFileDescriptor(const Socket& s1, const Socket& s2);
 
   static pid_t GetUnixDomainSocketProcessOwner(const std::string& path);
 
  private:
+  enum EventType {
+    READ,
+    WRITE
+  };
+
   union SockAddr {
     // IPv4 sockaddr
     sockaddr_in addr4;
@@ -95,6 +98,11 @@ class Socket {
     sockaddr_in6 addr6;
     // Unix Domain sockaddr
     sockaddr_un addr_un;
+  };
+
+  struct Event {
+    int fd;
+    bool was_fired;
   };
 
   // If |host| is empty, use localhost.
@@ -106,11 +114,6 @@ class Socket {
   bool Resolve(const std::string& host);
   bool InitSocketInternal();
   void SetSocketError();
-
-  enum EventType {
-    READ,
-    WRITE
-  };
 
   // Waits until either the Socket or the |exit_notifier_fd_| has received an
   // event.
@@ -130,12 +133,9 @@ class Socket {
   // Length of one of the members of the above union depending on the family.
   socklen_t addr_len_;
 
-  // File descriptor from PipeNotifier (see pipe_notifier.h) to send application
-  // exit notifications before calling socket blocking operations such as Read
-  // and Accept.
-  int exit_notifier_fd_;
-
-  bool exited_;
+  // Used to listen for external events (e.g. process received a SIGTERM) while
+  // blocking on I/O operations.
+  std::vector<Event> events_;
 
   DISALLOW_COPY_AND_ASSIGN(Socket);
 };

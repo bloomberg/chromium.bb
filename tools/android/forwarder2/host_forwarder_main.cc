@@ -9,13 +9,16 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/hash_tables.h"
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/safe_strerror_posix.h"
@@ -122,7 +125,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
     char buf[kBufSize];
     const int bytes_read = client_socket->Read(buf, sizeof(buf));
     if (bytes_read <= 0) {
-      if (client_socket->exited())
+      if (client_socket->DidReceiveEvent())
         return;
       PError("Read()");
       has_failed_ = true;
@@ -137,35 +140,53 @@ class ServerDelegate : public Daemon::ServerDelegate {
         command, &adb_port, &device_port, &forward_to_host, &forward_to_port);
     if (!succeeded) {
       has_failed_ = true;
-      client_socket->WriteString(
-          base::StringPrintf("ERROR: Could not parse forward command '%s'",
-                             command.c_str()));
+      const std::string msg = base::StringPrintf(
+          "ERROR: Could not parse forward command '%s'", command.c_str());
+      SendMessage(msg, client_socket.get());
       return;
     }
+    if (device_port < 0) {
+      // Remove the previously created host controller.
+      const std::string controller_key = MakeHostControllerMapKey(
+          adb_port, -device_port);
+      const HostControllerMap::size_type removed_elements = controllers_.erase(
+          controller_key);
+      SendMessage(
+          !removed_elements ? "ERROR: could not unmap port" : "OK",
+          client_socket.get());
+      return;
+    }
+    // Create a new host controller.
     scoped_ptr<HostController> host_controller(
         new HostController(device_port, forward_to_host, forward_to_port,
                            adb_port, GetExitNotifierFD()));
     if (!host_controller->Connect()) {
       has_failed_ = true;
-      client_socket->WriteString("ERROR: Connection to device failed.");
+      SendMessage("ERROR: Connection to device failed.", client_socket.get());
       return;
     }
     // Get the current allocated port.
     device_port = host_controller->device_port();
     LOG(INFO) << "Forwarding device port " << device_port << " to host "
               << forward_to_host << ":" << forward_to_port;
-    if (!client_socket->WriteString(
-        base::StringPrintf("%d:%d", device_port, forward_to_port))) {
-      has_failed_ = true;
+    const std::string msg = base::StringPrintf(
+        "%d:%d", device_port, forward_to_port);
+    if (!SendMessage(msg, client_socket.get()))
       return;
-    }
     host_controller->Start();
-    controllers_.push_back(host_controller.release());
+    const std::string controller_key = MakeHostControllerMapKey(
+        adb_port, device_port);
+    controllers_.insert(
+        std::make_pair(controller_key,
+                       linked_ptr<HostController>(host_controller.release())));
   }
 
   virtual void OnServerExited() OVERRIDE {
-    for (int i = 0; i < controllers_.size(); ++i)
-      controllers_[i]->Join();
+    for (HostControllerMap::iterator it = controllers_.begin();
+         it != controllers_.end(); ++it) {
+      linked_ptr<HostController> host_controller = it->second;
+      host_controller->Join();
+    }
     if (controllers_.size() == 0) {
       LOG(ERROR) << "No forwarder servers could be started. Exiting.";
       has_failed_ = true;
@@ -173,7 +194,22 @@ class ServerDelegate : public Daemon::ServerDelegate {
   }
 
  private:
-  ScopedVector<HostController> controllers_;
+  typedef base::hash_map<
+      std::string, linked_ptr<HostController> > HostControllerMap;
+
+  static std::string MakeHostControllerMapKey(int adb_port, int device_port) {
+    return base::StringPrintf("%d:%d", adb_port, device_port);
+  }
+
+  bool SendMessage(const std::string& msg, Socket* client_socket) {
+    bool result = client_socket->WriteString(msg);
+    DCHECK(result);
+    if (!result)
+      has_failed_ = true;
+    return result;
+  }
+
+  HostControllerMap controllers_;
   bool has_failed_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerDelegate);
@@ -213,8 +249,10 @@ class ClientDelegate : public Daemon::ClientDelegate {
 };
 
 void PrintUsage(const char* program_name) {
-  LOG(ERROR) << program_name << " adb_port:from_port:to_port:to_host\n"
-      "<adb port> is the TCP port Adb is configured to forward to.";
+  LOG(ERROR) << program_name
+             << " adb_port:from_port:to_port:to_host\n"
+                "<adb port> is the TCP port Adb is configured to forward to.\n"
+                "Note that <from_port> can be unmapped by making it negative.";
 }
 
 int RunHostForwarder(int argc, char** argv) {
