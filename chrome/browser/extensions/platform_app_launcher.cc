@@ -332,7 +332,7 @@ class SavedFileEntryLauncher
 
       // Record that we have granted this file permission.
       app_file_handler_util::AddSavedFileEntry(
-          ExtensionPrefs::Get(profile_),
+          ExtensionSystem::Get(profile_)->extension_prefs(),
           host->extension()->id(),
           it->id,
           it->path,

@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -42,9 +41,8 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
   permission_list->Append(media_galleries_permission);
   manifest->Set(extension_manifest_keys::kPermissions, permission_list);
 
-  extensions::ExtensionPrefs* extension_prefs =
-      extensions::ExtensionPrefs::Get(profile);
-  base::FilePath path = extension_prefs->install_directory().AppendASCII(name);
+
+  base::FilePath path = profile->GetPath().AppendASCII(name);
   std::string errors;
   scoped_refptr<extensions::Extension> extension =
       extensions::Extension::Create(path, extensions::Manifest::INTERNAL,
@@ -55,11 +53,11 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
   if (!extension.get() || !extensions::Extension::IdIsValid(extension->id()))
     return NULL;
 
-  extension_prefs->OnExtensionInstalled(
-      extension.get(), extensions::Extension::ENABLED,
-      syncer::StringOrdinal::CreateInitialOrdinal());
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
+  extension_service->extension_prefs()->OnExtensionInstalled(
+      extension.get(), extensions::Extension::ENABLED,
+      syncer::StringOrdinal::CreateInitialOrdinal());
   extension_service->AddExtension(extension);
   extension_service->EnableExtension(extension->id());
 

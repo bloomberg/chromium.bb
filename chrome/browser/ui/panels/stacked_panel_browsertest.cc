@@ -988,12 +988,12 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   DictionaryValue empty_value;
   scoped_refptr<extensions::Extension> extension1 =
       CreateExtension(FILE_PATH_LITERAL("TestExtension1"),
-                      extensions::Manifest::INTERNAL, empty_value);
+                      extensions::Manifest::INVALID_LOCATION, empty_value);
   std::string extension1_app_name =
       web_app::GenerateApplicationNameFromExtensionId(extension1->id());
   scoped_refptr<extensions::Extension> extension2 =
       CreateExtension(FILE_PATH_LITERAL("TestExtension2"),
-                      extensions::Manifest::INTERNAL, empty_value);
+                      extensions::Manifest::INVALID_LOCATION, empty_value);
   std::string extension2_app_name =
       web_app::GenerateApplicationNameFromExtensionId(extension2->id());
 

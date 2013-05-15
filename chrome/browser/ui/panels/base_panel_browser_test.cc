@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -457,9 +456,12 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
     const base::FilePath::StringType& path,
     extensions::Manifest::Location location,
     const DictionaryValue& extra_value) {
-  extensions::ExtensionPrefs* extension_prefs =
-      extensions::ExtensionPrefs::Get(browser()->profile());
-  base::FilePath full_path = extension_prefs->install_directory().Append(path);
+#if defined(OS_WIN)
+  base::FilePath full_path(FILE_PATH_LITERAL("c:\\"));
+#else
+  base::FilePath full_path(FILE_PATH_LITERAL("/"));
+#endif
+  full_path = full_path.Append(path);
 
   scoped_ptr<DictionaryValue> input_value(extra_value.DeepCopy());
   input_value->SetString(extension_manifest_keys::kVersion, "1.0.0.0");

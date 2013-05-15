@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "extensions/common/url_pattern_set.h"
 #include "sync/api/string_ordinal.h"
@@ -25,7 +24,6 @@
 class ExtensionPrefValueMap;
 class ExtensionSorting;
 class PrefService;
-class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -51,8 +49,7 @@ class URLPatternSet;
 //       PrefValueStore::extension_prefs(), which this class populates and
 //       maintains as the underlying extensions change.
 class ExtensionPrefs : public ContentSettingsStore::Observer,
-                       public ExtensionScopedPrefs,
-                       public ProfileKeyedService {
+                       public ExtensionScopedPrefs {
  public:
   // Key name for a preference that keeps track of per-extension settings. This
   // is a dictionary object read from the Preferences file, keyed off of
@@ -130,9 +127,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   // Creates and initializes an ExtensionPrefs object.
   // Does not take ownership of |prefs| and |extension_pref_value_map|.
-  // If |extensions_disabled| is true, extension controlled preferences and
-  // content settings do not become effective.
-  static ExtensionPrefs* Create(
+  static scoped_ptr<ExtensionPrefs> Create(
       PrefService* prefs,
       const base::FilePath& root_dir,
       ExtensionPrefValueMap* extension_pref_value_map,
@@ -140,7 +135,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   // A version of Create which allows injection of a custom base::Time provider.
   // Use this as needed for testing.
-  static ExtensionPrefs* Create(
+  static scoped_ptr<ExtensionPrefs> Create(
       PrefService* prefs,
       const base::FilePath& root_dir,
       ExtensionPrefValueMap* extension_pref_value_map,
@@ -148,12 +143,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
       scoped_ptr<TimeProvider> time_provider);
 
   virtual ~ExtensionPrefs();
-
-  // ProfileKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
-
-  // Convenience function to get the ExtensionPrefs for a Profile.
-  static ExtensionPrefs* Get(Profile* profile);
 
   // Returns all installed extensions from extension preferences provided by
   // |pref_service|. This is exposed for ProtectedPrefsWatcher because it needs
@@ -554,8 +543,11 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   ExtensionPrefs(PrefService* prefs,
                  const base::FilePath& root_dir,
                  ExtensionPrefValueMap* extension_pref_value_map,
-                 scoped_ptr<TimeProvider> time_provider,
-                 bool extensions_disabled);
+                 scoped_ptr<TimeProvider> time_provider);
+
+  // If |extensions_disabled| is true, extension controlled preferences and
+  // content settings do not become effective.
+  void Init(bool extensions_disabled);
 
   // extensions::ContentSettingsStore::Observer methods:
   virtual void OnContentSettingChanged(const std::string& extension_id,
@@ -619,8 +611,8 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   void FixMissingPrefs(const ExtensionIdList& extension_ids);
 
   // Installs the persistent extension preferences into |prefs_|'s extension
-  // pref store. Does nothing if extensions_disabled_ is true.
-  void InitPrefStore();
+  // pref store. Does nothing if |extensions_disabled| is true.
+  void InitPrefStore(bool extensions_disabled);
 
   // Migrates the permissions data in the pref store.
   void MigratePermissions(const ExtensionIdList& extension_ids);
@@ -673,8 +665,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   scoped_refptr<ContentSettingsStore> content_settings_store_;
 
   scoped_ptr<TimeProvider> time_provider_;
-
-  bool extensions_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefs);
 };

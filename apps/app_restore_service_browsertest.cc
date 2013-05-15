@@ -7,6 +7,8 @@
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/common/extensions/extension.h"
@@ -33,7 +35,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, RunningAppsAreRecorded) {
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("platform_apps/restart_test"));
   ASSERT_TRUE(extension);
-  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser()->profile());
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(browser()->profile())->extension_service();
+  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
 
   // App is running.
   ASSERT_TRUE(extension_prefs->IsExtensionRunning(extension->id()));
@@ -79,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
   file_written_listener.WaitUntilSatisfied();
 
   ExtensionPrefs* extension_prefs =
-      ExtensionPrefs::Get(browser()->profile());
+      ExtensionSystem::Get(browser()->profile())->extension_prefs();
 
   // Record the file entries in prefs because when the app gets suspended it
   // will have them all cleared.
@@ -123,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsRestored) {
   file_written_listener.WaitUntilSatisfied();
 
   ExtensionPrefs* extension_prefs =
-      ExtensionPrefs::Get(browser()->profile());
+      ExtensionSystem::Get(browser()->profile())->extension_prefs();
   // Record the file entries in prefs because when the app gets suspended it
   // will have them all cleared.
   std::vector<SavedFileEntry> file_entries;

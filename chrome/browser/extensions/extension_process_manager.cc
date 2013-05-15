@@ -580,8 +580,7 @@ void ExtensionProcessManager::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       Profile* profile = content::Source<Profile>(source).ptr();
-      ExtensionService* service =
-          extensions::ExtensionSystem::Get(profile)->extension_service();
+      ExtensionService* service = profile->GetExtensionService();
       if (service->is_ready()) {
         const Extension* extension =
             content::Details<const Extension>(details).ptr();

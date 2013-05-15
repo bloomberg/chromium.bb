@@ -14,9 +14,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/admin_policy.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
-#include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_sorting.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -381,7 +379,7 @@ template class ExtensionPrefs::ScopedUpdate<ListValue, Value::TYPE_LIST>;
 //
 
 // static
-ExtensionPrefs* ExtensionPrefs::Create(
+scoped_ptr<ExtensionPrefs> ExtensionPrefs::Create(
     PrefService* prefs,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
@@ -394,7 +392,7 @@ ExtensionPrefs* ExtensionPrefs::Create(
 }
 
 // static
-ExtensionPrefs* ExtensionPrefs::Create(
+scoped_ptr<ExtensionPrefs> ExtensionPrefs::Create(
     PrefService* pref_service,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
@@ -404,24 +402,12 @@ ExtensionPrefs* ExtensionPrefs::Create(
       new ExtensionPrefs(pref_service,
                          root_dir,
                          extension_pref_value_map,
-                         time_provider.Pass(),
-                         extensions_disabled));
-  return prefs.release();
+                         time_provider.Pass()));
+  prefs->Init(extensions_disabled);
+  return prefs.Pass();
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
-}
-
-void ExtensionPrefs::Shutdown() {
-  // It's safe to do this for any profile because the regular profile going away
-  // implies its incognito profile going away.
-  if (!extensions_disabled_)
-    ClearIncognitoSessionOnlyContentSettings();
-}
-
-// static
-ExtensionPrefs* ExtensionPrefs::Get(Profile* profile) {
-  return ExtensionPrefsFactory::GetInstance()->GetForProfile(profile);
 }
 
 // static
@@ -1770,8 +1756,8 @@ void ExtensionPrefs::LoadExtensionControlledPrefs(
   }
 }
 
-void ExtensionPrefs::InitPrefStore() {
-  if (extensions_disabled_) {
+void ExtensionPrefs::InitPrefStore(bool extensions_disabled) {
+  if (extensions_disabled) {
     extension_pref_value_map_->NotifyInitializationCompleted();
     return;
   }
@@ -1992,17 +1978,20 @@ ExtensionPrefs::ExtensionPrefs(
     PrefService* prefs,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
-    scoped_ptr<TimeProvider> time_provider,
-    bool extensions_disabled)
+    scoped_ptr<TimeProvider> time_provider)
     : prefs_(prefs),
       install_directory_(root_dir),
       extension_pref_value_map_(extension_pref_value_map),
       extension_sorting_(new ExtensionSorting(this, prefs)),
       content_settings_store_(new ContentSettingsStore()),
-      time_provider_(time_provider.Pass()),
-      extensions_disabled_(extensions_disabled) {
+      time_provider_(time_provider.Pass()) {
+}
+
+void ExtensionPrefs::Init(bool extensions_disabled) {
   MakePathsRelative();
-  InitPrefStore();
+
+  InitPrefStore(extensions_disabled);
+
   content_settings_store_->AddObserver(this);
 }
 

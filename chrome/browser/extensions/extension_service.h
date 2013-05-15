@@ -144,6 +144,10 @@ class ExtensionService
       public content::NotificationObserver,
       public extensions::Blacklist::Observer {
  public:
+  // The name of the directory inside the profile where extensions are
+  // installed to.
+  static const char kInstallDirectoryName[];
+
   // If auto-updates are turned on, default to running every 5 hours.
   static const int kDefaultUpdateFrequencySeconds = 60 * 60 * 5;
 

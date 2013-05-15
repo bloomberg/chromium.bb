@@ -28,6 +28,7 @@ class AlarmManager;
 class Blacklist;
 class EventRouter;
 class Extension;
+class ExtensionPrefs;
 class ExtensionSystemSharedFactory;
 class ExtensionWarningBadgeService;
 class ExtensionWarningService;
@@ -84,6 +85,9 @@ class ExtensionSystem : public ProfileKeyedService {
 
   // The rules store is created at startup.
   virtual StateStore* rules_store() = 0;
+
+  // The extension prefs.
+  virtual ExtensionPrefs* extension_prefs() = 0;
 
   // The ShellWindowGeometryCache is created at startup.
   virtual ShellWindowGeometryCache* shell_window_geometry_cache() = 0;
@@ -156,6 +160,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;  // shared
   virtual StateStore* rules_store() OVERRIDE;  // shared
+  virtual ExtensionPrefs* extension_prefs() OVERRIDE;  // shared
   virtual ShellWindowGeometryCache* shell_window_geometry_cache()
       OVERRIDE;  // shared
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
@@ -200,6 +205,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     StateStore* state_store();
     StateStore* rules_store();
+    ExtensionPrefs* extension_prefs();
     ShellWindowGeometryCache* shell_window_geometry_cache();
     ExtensionService* extension_service();
     ManagementPolicy* management_policy();
@@ -217,6 +223,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     scoped_ptr<StateStore> state_store_;
     scoped_ptr<StateStore> rules_store_;
+    scoped_ptr<ExtensionPrefs> extension_prefs_;
+    // ShellWindowGeometryCache depends on ExtensionPrefs.
     scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
     // LazyBackgroundTaskQueue is a dependency of
     // MessageService and EventRouter.
@@ -224,11 +232,12 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<EventRouter> event_router_;
     scoped_ptr<NavigationObserver> navigation_observer_;
     scoped_refptr<UserScriptMaster> user_script_master_;
+    // Blacklist depends on ExtensionPrefs.
     scoped_ptr<Blacklist> blacklist_;
-    // StandardManagementPolicyProvider depends on Blacklist.
+    // StandardManagementPolicyProvider depends on ExtensionPrefs and Blacklist.
     scoped_ptr<StandardManagementPolicyProvider>
         standard_management_policy_provider_;
-    // ExtensionService depends on StateStore and Blacklist.
+    // ExtensionService depends on ExtensionPrefs, StateStore, and Blacklist.
     scoped_ptr<ExtensionService> extension_service_;
     scoped_ptr<ManagementPolicy> management_policy_;
     // extension_info_map_ needs to outlive extension_process_manager_.
