@@ -26,14 +26,14 @@
 #ifndef KURL_h
 #define KURL_h
 
-#include "weborigin/KURLPrivate.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
-
-namespace WTF{
-class TextEncoding;
-}
+#include <googleurl/src/url_canon.h>
+#include <googleurl/src/url_parse.h>
 
 namespace WebCore {
 
@@ -43,14 +43,21 @@ enum ParsedURLStringTag { ParsedURLString };
 
 class KURL {
 public:
-    // Generates a URL which contains a null string.
-    KURL() { invalidate(); }
+    KURL()
+        : m_isValid(false)
+        , m_protocolIsInHTTPFamily(false)
+    {
+    }
 
-    // The argument is an absolute URL string. The string is assumed to be output of KURL::string() called on a valid
-    // KURL object, or indiscernible from such.
-    // It is usually best to avoid repeatedly parsing a string, unless memory saving outweigh the possible slow-downs.
+    KURL(const KURL&);
+    KURL& operator=(const KURL&);
+
+    // The argument is an absolute URL string. The string is assumed to be
+    // output of KURL::string() called on a valid KURL object, or indiscernible
+    // from such. It is usually best to avoid repeatedly parsing a string,
+    // unless memory saving outweigh the possible slow-downs.
     KURL(ParsedURLStringTag, const String&);
-    explicit KURL(WTF::HashTableDeletedValueType) : m_url(WTF::HashTableDeletedValue) { }
+    explicit KURL(WTF::HashTableDeletedValueType);
 
     bool isHashTableDeletedValue() const { return string().isHashTableDeletedValue(); }
 
@@ -96,7 +103,7 @@ public:
     bool canSetPathname() const { return isHierarchical(); }
     bool isHierarchical() const;
 
-    const String& string() const { return m_url.string(); }
+    const String& string() const { return m_string; }
 
     String elidedString() const;
 
@@ -157,9 +164,9 @@ public:
 
     operator const String&() const { return string(); }
 
-    const url_parse::Parsed& parsed() const { return m_url.m_parsed; }
+    const url_parse::Parsed& parsed() const { return m_parsed; }
 
-    const KURL* innerURL() const { return m_url.innerURL(); }
+    const KURL* innerURL() const { return m_innerURL.get(); }
 
 #ifndef NDEBUG
     void print() const;
@@ -169,11 +176,23 @@ public:
     bool isSafeToSendToAnotherThread() const;
 
 private:
-    void invalidate();
-    static bool protocolIs(const String&, const char*);
+    void init(const KURL& base, const String& relative, const WTF::TextEncoding* queryEncoding);
 
-    friend class KURLPrivate;
-    KURLPrivate m_url;
+    String componentString(const url_parse::Component&) const;
+
+    typedef url_canon::Replacements<url_parse::UTF16Char> Replacements;
+    void replaceComponents(const Replacements&);
+
+    template <typename CHAR>
+    void init(const KURL& base, const CHAR* relative, int relativeLength, const WTF::TextEncoding* queryEncoding);
+    void initInnerURL();
+    void initProtocolIsInHTTPFamily();
+
+    bool m_isValid;
+    bool m_protocolIsInHTTPFamily;
+    url_parse::Parsed m_parsed;
+    String m_string;
+    OwnPtr<KURL> m_innerURL;
 };
 
 bool operator==(const KURL&, const KURL&);
@@ -241,11 +260,11 @@ inline bool operator!=(const String& a, const KURL& b)
 
 namespace WTF {
 
-    // KURLHash is the default hash for String
-    template<typename T> struct DefaultHash;
-    template<> struct DefaultHash<WebCore::KURL> {
-        typedef WebCore::KURLHash Hash;
-    };
+// KURLHash is the default hash for String
+template<typename T> struct DefaultHash;
+template<> struct DefaultHash<WebCore::KURL> {
+    typedef WebCore::KURLHash Hash;
+};
 
 } // namespace WTF
 

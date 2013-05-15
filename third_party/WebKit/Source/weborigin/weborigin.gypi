@@ -5,8 +5,6 @@
       'DatabaseIdentifier.h',
       'KURL.cpp',
       'KURL.h',
-      'KURLPrivate.cpp',
-      'KURLPrivate.h',
       'KURLHash.h',
       'KnownPorts.cpp',
       'KnownPorts.h',
