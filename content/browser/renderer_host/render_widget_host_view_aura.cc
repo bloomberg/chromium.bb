@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/touch_smooth_scroll_gesture_aura.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/gpu/client/gl_helper.h"
@@ -1742,6 +1743,17 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
       end = events.end(); iter != end; ++iter) {
     root->ProcessedTouchEvent((*iter), window_, result);
   }
+}
+
+SmoothScrollGesture* RenderWidgetHostViewAura::CreateSmoothScrollGesture(
+    bool scroll_down,
+    int pixels_to_scroll,
+    int mouse_event_x,
+    int mouse_event_y) {
+  return new TouchSmoothScrollGestureAura(scroll_down,
+                                          pixels_to_scroll,
+                                          mouse_event_x,
+                                          mouse_event_y);
 }
 
 void RenderWidgetHostViewAura::SetHasHorizontalScrollbar(

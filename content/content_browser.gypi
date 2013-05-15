@@ -865,6 +865,8 @@
     'browser/renderer_host/touch_event_queue.h',
     'browser/renderer_host/touch_smooth_scroll_gesture_android.cc',
     'browser/renderer_host/touch_smooth_scroll_gesture_android.h',
+    'browser/renderer_host/touch_smooth_scroll_gesture_aura.cc',
+    'browser/renderer_host/touch_smooth_scroll_gesture_aura.h',
     'browser/renderer_host/touchpad_tap_suppression_controller_aura.cc',
     'browser/renderer_host/touchpad_tap_suppression_controller.cc',
     'browser/renderer_host/touchpad_tap_suppression_controller.h',

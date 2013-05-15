@@ -220,6 +220,11 @@ class RenderWidgetHostViewAura
   virtual void ProcessAckedTouchEvent(
       const WebKit::WebTouchEvent& touch,
       InputEventAckState ack_result) OVERRIDE;
+  virtual SmoothScrollGesture* CreateSmoothScrollGesture(
+      bool scroll_down,
+      int pixels_to_scroll,
+      int mouse_event_x,
+      int mouse_event_y) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
