@@ -67,7 +67,7 @@ LinkHash visitedLinkHash(const KURL& base, const AtomicString& attributeURL)
 
     bool isValid = false;
     const String& relative = attributeURL.string();
-    if (relative.is8Bit()) {
+    if (!relative.isNull() && relative.is8Bit()) {
         StringUTF8Adaptor relativeUTF8(relative);
         isValid = url_util::ResolveRelative(baseUTF8.data(), baseUTF8.length(), baseParsed, relativeUTF8.data(), relativeUTF8.length(), 0, &buffer, &parsed);
     } else
