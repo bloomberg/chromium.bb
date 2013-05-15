@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -59,8 +60,9 @@ bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
   std::string unique_id = MakeDeviceUniqueId(*disk);
   // Keep track of device uuid and label, to see how often we receive empty
   // values.
-  chrome::MediaStorageUtil::RecordDeviceInfoHistogram(
-      true, unique_id, UTF8ToUTF16(disk->device_label()));
+  string16 device_label = UTF8ToUTF16(disk->device_label());
+  chrome::MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id,
+                                                      device_label);
   if (unique_id.empty())
     return false;
 
@@ -73,7 +75,7 @@ bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
     info->location = mount_info.mount_path,
     info->vendor_name = UTF8ToUTF16(disk->vendor_name());
     info->model_name = UTF8ToUTF16(disk->product_name());
-    info->storage_label = UTF8ToUTF16(disk->device_label());
+    info->storage_label = device_label;
     info->total_size_in_bytes = disk->total_size_in_bytes();
   }
 
