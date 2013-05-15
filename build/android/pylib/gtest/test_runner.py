@@ -169,7 +169,6 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'content/test/data/webkit',
         'content/test/data/content-sniffer-test1.html',
         'content/test/data/download',
-        'content/test/data/rwhv_compositing_static.html',
         'content/test/data/content-sniffer-test2.html',
         'content/test/data/simple_page.html',
         'content/test/data/google.mht',

@@ -10,112 +10,235 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/port/browser/render_widget_host_view_port.h"
+#include "content/public/browser/compositor_util.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "media/base/video_frame.h"
 #include "net/base/net_util.h"
-#include "skia/ext/platform_canvas.h"
 #include "ui/compositor/compositor_setup.h"
 #if defined(OS_MACOSX)
 #include "ui/surface/io_surface_support_mac.h"
 #endif
 
 namespace content {
+namespace {
 
+// Convenience macro: Short-cicuit a pass for the tests where platform support
+// for forced-compositing mode (or disabled-compositing mode) is lacking.
+#define SET_UP_SURFACE_OR_PASS_TEST()  \
+  if (!SetUpSourceSurface()) {  \
+    LOG(WARNING)  \
+        << ("Blindly passing this test: This platform does not support "  \
+            "forced compositing (or forced-disabled compositing) mode.");  \
+    return;  \
+  }
+
+// Common base class for browser tests.  This is subclassed twice: Once to test
+// the browser in forced-compositing mode, and once to test with compositing
+// mode disabled.
 class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
  public:
-  RenderWidgetHostViewBrowserTest() : finish_called_(false), size_(400, 300) {}
+  RenderWidgetHostViewBrowserTest()
+      : frame_size_(400, 300),
+        callback_invoke_count_(0),
+        frames_captured_(0) {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_dir_));
+    ContentBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ui::DisableTestCompositor();
+  // Attempts to set up the source surface.  Returns false if unsupported on the
+  // current platform.
+  virtual bool SetUpSourceSurface() = 0;
+
+  int callback_invoke_count() const {
+    return callback_invoke_count_;
   }
 
-  bool CheckAcceleratedCompositingActive() {
-    RenderWidgetHostImpl* impl =
-        RenderWidgetHostImpl::From(
-            shell()->web_contents()->GetRenderWidgetHostView()->
-                GetRenderWidgetHost());
-    return impl->is_accelerated_compositing_active();
+  int frames_captured() const {
+    return frames_captured_;
   }
 
-  bool CheckCompositingSurface() {
-#if defined(OS_WIN)
-    if (!GpuDataManagerImpl::GetInstance()->IsUsingAcceleratedSurface())
-      return false;
-#endif
-
-    RenderViewHost* const rwh =
-        shell()->web_contents()->GetRenderViewHost();
-    RenderWidgetHostViewPort* rwhvp =
-        static_cast<RenderWidgetHostViewPort*>(rwh->GetView());
-    bool ret = !rwhvp->GetCompositingSurface().is_null();
-#if defined(OS_MACOSX)
-    ret &= rwhvp->HasAcceleratedSurface(gfx::Size());
-#endif
-    return ret;
+  const gfx::Size& frame_size() const {
+    return frame_size_;
   }
 
-  bool SetupCompositingSurface() {
-#if defined(OS_MACOSX)
-    if (!IOSurfaceSupport::Initialize())
-      return false;
-#endif
-    NavigateToURL(shell(), net::FilePathToFileURL(
-        test_dir_.AppendASCII("rwhv_compositing_animation.html")));
-    if (!CheckAcceleratedCompositingActive())
-      return false;
-
-    // The page is now accelerated composited but a compositing surface might
-    // not be available immediately so wait for it.
-    while (!CheckCompositingSurface()) {
-      base::RunLoop run_loop;
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          run_loop.QuitClosure(),
-          base::TimeDelta::FromMilliseconds(10));
-      run_loop.Run();
-    }
-    return true;
+  const base::FilePath& test_dir() const {
+    return test_dir_;
   }
 
-  bool SetupNonCompositing() {
-    NavigateToURL(shell(), net::FilePathToFileURL(
-        test_dir_.AppendASCII("rwhv_compositing_static.html")));
-    return !CheckCompositingSurface();
+  RenderViewHost* GetRenderViewHost() const {
+    RenderViewHost* const rvh = shell()->web_contents()->GetRenderViewHost();
+    CHECK(rvh);
+    return rvh;
   }
 
-  void FinishCopyFromBackingStore(bool expected_result,
-                                  const base::Closure& quit_closure,
-                                  bool result,
+  RenderWidgetHostImpl* GetRenderWidgetHost() const {
+    RenderWidgetHostImpl* const rwh = RenderWidgetHostImpl::From(
+        shell()->web_contents()->GetRenderWidgetHostView()->
+            GetRenderWidgetHost());
+    CHECK(rwh);
+    return rwh;
+  }
+
+  RenderWidgetHostViewPort* GetRenderWidgetHostViewPort() const {
+    RenderWidgetHostViewPort* const view =
+        RenderWidgetHostViewPort::FromRWHV(GetRenderViewHost()->GetView());
+    CHECK(view);
+    return view;
+  }
+
+  // Callback when using CopyFromBackingStore() API.
+  void FinishCopyFromBackingStore(const base::Closure& quit_closure,
+                                  bool frame_captured,
                                   const SkBitmap& bitmap) {
-    quit_closure.Run();
-    EXPECT_EQ(expected_result, result);
-    if (expected_result)
+    ++callback_invoke_count_;
+    if (frame_captured) {
+      ++frames_captured_;
       EXPECT_FALSE(bitmap.empty());
-    finish_called_ = true;
-  }
-
-  void FinishCopyFromCompositingSurface(bool expected_result,
-                                        const base::Closure& quit_closure,
-                                        bool result) {
+    }
     if (!quit_closure.is_null())
       quit_closure.Run();
-    EXPECT_EQ(expected_result, result);
-    finish_called_ = true;
+  }
+
+  // Callback when using CopyFromCompositingSurfaceToVideoFrame() API.
+  void FinishCopyFromCompositingSurface(const base::Closure& quit_closure,
+                                        bool frame_captured) {
+    ++callback_invoke_count_;
+    if (frame_captured)
+      ++frames_captured_;
+    if (!quit_closure.is_null())
+      quit_closure.Run();
+  }
+
+  // Callback when using frame subscriber API.
+  void FrameDelivered(const scoped_refptr<base::MessageLoopProxy>& loop,
+                      base::Closure quit_closure,
+                      base::Time timestamp,
+                      bool frame_captured) {
+    ++callback_invoke_count_;
+    if (frame_captured)
+      ++frames_captured_;
+    if (!quit_closure.is_null())
+      loop->PostTask(FROM_HERE, quit_closure);
+  }
+
+  // Copy one frame using the CopyFromBackingStore API.
+  void RunBasicCopyFromBackingStoreTest() {
+    SET_UP_SURFACE_OR_PASS_TEST();
+
+    // Repeatedly call CopyFromBackingStore() since, on some platforms (e.g.,
+    // Windows), the operation will fail until the first "present" has been
+    // made.
+    int count_attempts = 0;
+    while (true) {
+      ++count_attempts;
+      base::RunLoop run_loop;
+      GetRenderViewHost()->CopyFromBackingStore(
+          gfx::Rect(),
+          frame_size(),
+          base::Bind(
+              &RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
+              base::Unretained(this),
+              run_loop.QuitClosure()));
+      run_loop.Run();
+
+      if (frames_captured())
+        break;
+      else
+        GiveItSomeTime();
+    }
+
+    EXPECT_EQ(count_attempts, callback_invoke_count());
+    EXPECT_EQ(1, frames_captured());
   }
 
  protected:
+  // Waits until the source is available for copying.
+  void WaitForCopySourceReady() {
+    while (!GetRenderWidgetHostViewPort()->IsSurfaceAvailableForCopy())
+      GiveItSomeTime();
+  }
+
+  // Run the current message loop for a short time without unwinding the current
+  // call stack.
+  static void GiveItSomeTime() {
+    base::RunLoop run_loop;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(10));
+    run_loop.Run();
+  }
+
+ private:
+  const gfx::Size frame_size_;
   base::FilePath test_dir_;
-  bool finish_called_;
-  gfx::Size size_;
+  int callback_invoke_count_;
+  int frames_captured_;
+};
+
+class CompositingRenderWidgetHostViewBrowserTest
+    : public RenderWidgetHostViewBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // Note: Not appending kForceCompositingMode switch here, since not all bots
+    // support compositing.  Some bots will run with compositing on, and others
+    // won't.  Therefore, the call to SetUpSourceSurface() later on will detect
+    // whether compositing mode is actually on or not.  If not, the tests will
+    // pass blindly, logging a warning message, since we cannot test what the
+    // platform/implementation does not support.
+    RenderWidgetHostViewBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  virtual bool SetUpSourceSurface() OVERRIDE {
+    if (!IsForceCompositingModeEnabled())
+      return false;  // See comment in SetUpCommandLine().
+#if defined(OS_MACOSX)
+    CHECK(IOSurfaceSupport::Initialize());
+#endif
+    NavigateToURL(shell(), net::FilePathToFileURL(
+        test_dir().AppendASCII("rwhv_compositing_animation.html")));
+#if !defined(USE_AURA)
+    if (!GetRenderWidgetHost()->is_accelerated_compositing_active())
+      return false;  // Renderer did not turn on accelerated compositing.
+#endif
+
+    // Using accelerated compositing, but a compositing surface might not be
+    // available yet.  So, wait for it.
+    WaitForCopySourceReady();
+    return true;
+  }
+};
+
+class NonCompositingRenderWidgetHostViewBrowserTest
+    : public RenderWidgetHostViewBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // Note: Appending the kDisableAcceleratedCompositing switch here, but there
+    // are some builds that only use compositing and will ignore this switch.
+    // Therefore, the call to SetUpSourceSurface() later on will detect whether
+    // compositing mode is actually off.  If it's on, the tests will pass
+    // blindly, logging a warning message, since we cannot test what the
+    // platform/implementation does not support.
+    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
+    RenderWidgetHostViewBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  virtual bool SetUpSourceSurface() OVERRIDE {
+    if (IsForceCompositingModeEnabled())
+      return false;  // See comment in SetUpCommandLine().
+    NavigateToURL(shell(), GURL("about:blank"));
+    WaitForCopySourceReady();
+    // Return whether the renderer left accelerated compositing turned off.
+    return !GetRenderWidgetHost()->is_accelerated_compositing_active();
+  }
 };
 
 class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
@@ -146,177 +269,154 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   DeliverFrameCallback callback_;
 };
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// Disable tests for Android and IOS as these platforms have incomplete
+// implementation.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 
-static void DeliverFrameFunc(const scoped_refptr<base::MessageLoopProxy>& loop,
-                             base::Closure quit_closure,
-                             bool* frame_captured_out,
-                             base::Time timestamp,
-                             bool frame_captured) {
-  *frame_captured_out = frame_captured;
-  if (!quit_closure.is_null())
-    loop->PostTask(FROM_HERE, quit_closure);
+// The CopyFromBackingStore() API should work on all platforms when compositing
+// is enabled.
+IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
+                       CopyFromBackingStore) {
+  RunBasicCopyFromBackingStoreTest();
 }
 
-#endif
+// The CopyFromBackingStore() API should work on all platforms when compositing
+// is disabled.
+IN_PROC_BROWSER_TEST_F(NonCompositingRenderWidgetHostViewBrowserTest,
+                       CopyFromBackingStore) {
+  RunBasicCopyFromBackingStoreTest();
+}
 
-#if defined(OS_MACOSX)
-// Tests that the callback passed to CopyFromBackingStore is always called, even
-// when the RenderWidgetHost is deleting in the middle of an async copy.
-IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
-                       MacAsyncCopyFromBackingStoreCallbackTest) {
-  if (!SetupCompositingSurface()) {
-    LOG(WARNING) << "Accelerated compositing not running.";
-    return;
-  }
+// Tests that the callback passed to CopyFromBackingStore is always called,
+// even when the RenderWidgetHost is deleting in the middle of an async copy.
+IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
+                       CopyFromBackingStore_CallbackDespiteDelete) {
+  SET_UP_SURFACE_OR_PASS_TEST();
 
   base::RunLoop run_loop;
-  RenderViewHost* const rwh =
-      shell()->web_contents()->GetRenderViewHost();
-  RenderWidgetHostViewPort* rwhvp =
-      static_cast<RenderWidgetHostViewPort*>(rwh->GetView());
-
-  rwh->CopyFromBackingStore(
+  GetRenderViewHost()->CopyFromBackingStore(
       gfx::Rect(),
-      size_,
+      frame_size(),
       base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
-                 base::Unretained(this), false, run_loop.QuitClosure()));
-
-  // Delete the surface before the callback is run. This is synchronous until
-  // we get to the copy_timer_, so we will always end up in the destructor
-  // before the timer fires.
-  rwhvp->AcceleratedSurfaceRelease();
+                 base::Unretained(this), run_loop.QuitClosure()));
+  // Delete the surface before the callback is run.
+  GetRenderWidgetHostViewPort()->AcceleratedSurfaceRelease();
   run_loop.Run();
 
-  EXPECT_TRUE(finish_called_);
+  EXPECT_EQ(1, callback_invoke_count());
 }
 
 // Tests that the callback passed to CopyFromCompositingSurfaceToVideoFrame is
 // always called, even when the RenderWidgetHost is deleting in the middle of
 // an async copy.
-IN_PROC_BROWSER_TEST_F(
-    RenderWidgetHostViewBrowserTest,
-    MacAsyncCopyFromCompositingSurfaceToVideoFrameCallbackTest) {
-  if (!SetupCompositingSurface()) {
-    LOG(WARNING) << "Accelerated compositing not running.";
+IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
+                       CopyFromCompositingSurface_CallbackDespiteDelete) {
+  SET_UP_SURFACE_OR_PASS_TEST();
+  RenderWidgetHostViewPort* const view = GetRenderWidgetHostViewPort();
+  if (!view->CanCopyToVideoFrame()) {
+    LOG(WARNING) <<
+        ("Blindly passing this test: CopyFromCompositingSurfaceToVideoFrame() "
+         "not supported on this platform.");
     return;
   }
 
   base::RunLoop run_loop;
-  RenderViewHost* const rwh =
-      shell()->web_contents()->GetRenderViewHost();
-  RenderWidgetHostViewPort* rwhvp =
-      static_cast<RenderWidgetHostViewPort*>(rwh->GetView());
-
   scoped_refptr<media::VideoFrame> dest =
-      media::VideoFrame::CreateBlackFrame(size_);
-  rwhvp->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(rwhvp->GetViewBounds().size()), dest, base::Bind(
+      media::VideoFrame::CreateBlackFrame(frame_size());
+  view->CopyFromCompositingSurfaceToVideoFrame(
+      gfx::Rect(view->GetViewBounds().size()), dest, base::Bind(
           &RenderWidgetHostViewBrowserTest::FinishCopyFromCompositingSurface,
-          base::Unretained(this), false, run_loop.QuitClosure()));
-
-  // Delete the surface before the callback is run. This is synchronous until
-  // we get to the copy_timer_, so we will always end up in the destructor
-  // before the timer fires.
-  rwhvp->AcceleratedSurfaceRelease();
+          base::Unretained(this), run_loop.QuitClosure()));
+  // Delete the surface before the callback is run.
+  view->AcceleratedSurfaceRelease();
   run_loop.Run();
 
-  ASSERT_TRUE(finish_called_);
+  EXPECT_EQ(1, callback_invoke_count());
 }
+
+// With compositing turned off, no platforms should support the
+// CopyFromCompositingSurfaceToVideoFrame() API.
+IN_PROC_BROWSER_TEST_F(NonCompositingRenderWidgetHostViewBrowserTest,
+                       CopyFromCompositingSurfaceToVideoFrameCallbackTest) {
+  SET_UP_SURFACE_OR_PASS_TEST();
+  EXPECT_FALSE(GetRenderWidgetHostViewPort()->CanCopyToVideoFrame());
+}
+
+// Test basic frame subscription functionality.  We subscribe, and then run
+// until at least one DeliverFrameCallback has been invoked.
+IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
+                       FrameSubscriberTest) {
+  SET_UP_SURFACE_OR_PASS_TEST();
+  RenderWidgetHostViewPort* const view = GetRenderWidgetHostViewPort();
+  if (!view->CanSubscribeFrame()) {
+    LOG(WARNING) << ("Blindly passing this test: Frame subscription not "
+                     "supported on this platform.");
+    return;
+  }
+#if defined(USE_AURA)
+  if (ui::IsTestCompositorEnabled()) {
+    LOG(WARNING) << ("Blindly passing this test: Aura test compositor doesn't "
+                     "support frame subscription.");
+    // TODO(miu): Aura test compositor should support frame subscription for
+    // testing.  http://crbug.com/240572
+    return;
+  }
 #endif
 
-#if (defined(OS_WIN) && !defined(USE_AURA)) || defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
-                       FrameSubscriberTest) {
-  if (!SetupCompositingSurface()) {
-    LOG(WARNING) << "Accelerated compositing not running.";
-    return;
-  }
-
   base::RunLoop run_loop;
-  RenderWidgetHostViewPort* view = RenderWidgetHostViewPort::FromRWHV(
-      shell()->web_contents()->GetRenderViewHost()->GetView());
-  ASSERT_TRUE(view);
-
-  if (!view->CanSubscribeFrame()) {
-    LOG(WARNING) << "Frame subscription no supported on this platform.";
-    return;
-  }
-
-  bool frame_captured = false;
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
-      new FakeFrameSubscriber(base::Bind(&DeliverFrameFunc,
-                                         base::MessageLoopProxy::current(),
-                                         run_loop.QuitClosure(),
-                                         &frame_captured)));
+      new FakeFrameSubscriber(
+          base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
+                     base::Unretained(this),
+                     base::MessageLoopProxy::current(),
+                     run_loop.QuitClosure())));
   view->BeginFrameSubscription(subscriber.Pass());
   run_loop.Run();
   view->EndFrameSubscription();
-  EXPECT_TRUE(frame_captured);
+
+  EXPECT_LE(1, callback_invoke_count());
+  EXPECT_LE(1, frames_captured());
 }
 
-// Test copying from backing store when page is non-accelerated-composited.
-// Flaky. http://crbug.com/224351
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_CopyFromBackingStore DISABLED_CopyFromBackingStore
-#else
-#define MAYBE_CopyFromBackingStore CopyFromBackingStore
-#endif
-IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
-                       MAYBE_CopyFromBackingStore) {
-  SetupNonCompositing();
-  base::RunLoop run_loop;
-
-  shell()->web_contents()->GetRenderViewHost()->CopyFromBackingStore(
-      gfx::Rect(),
-      size_,
-      base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
-                 base::Unretained(this), true, run_loop.QuitClosure()));
-  run_loop.Run();
-
-  EXPECT_TRUE(finish_called_);
-}
-#endif
-
-#if defined(OS_MACOSX)
 // Test that we can copy twice from an accelerated composited page.
-// This test is only running on Mac because this is the only platform that
-// we can reliably detect that accelerated surface is in use.
-IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest, CopyTwice) {
-  if (!SetupCompositingSurface()) {
-    LOG(WARNING) << "Accelerated compositing not running.";
+IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
+  SET_UP_SURFACE_OR_PASS_TEST();
+  RenderWidgetHostViewPort* const view = GetRenderWidgetHostViewPort();
+  if (!view->CanCopyToVideoFrame()) {
+    LOG(WARNING) << ("Blindly passing this test: "
+                     "CopyFromCompositingSurfaceToVideoFrame() not supported "
+                     "on this platform.");
     return;
   }
 
   base::RunLoop run_loop;
-  RenderViewHost* const rwh =
-      shell()->web_contents()->GetRenderViewHost();
-  RenderWidgetHostViewPort* rwhvp =
-      static_cast<RenderWidgetHostViewPort*>(rwh->GetView());
-  scoped_refptr<media::VideoFrame> dest =
-      media::VideoFrame::CreateBlackFrame(size_);
-
-  bool first_frame_captured = false;
-  bool second_frame_captured = false;
-  rwhvp->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(rwhvp->GetViewBounds().size()), dest,
-      base::Bind(&DeliverFrameFunc,
+  scoped_refptr<media::VideoFrame> first_output =
+      media::VideoFrame::CreateBlackFrame(frame_size());
+  ASSERT_TRUE(first_output);
+  scoped_refptr<media::VideoFrame> second_output =
+      media::VideoFrame::CreateBlackFrame(frame_size());
+  ASSERT_TRUE(second_output);
+  view->CopyFromCompositingSurfaceToVideoFrame(
+      gfx::Rect(view->GetViewBounds().size()), first_output,
+      base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
+                 base::Unretained(this),
                  base::MessageLoopProxy::current(),
                  base::Closure(),
-                 &first_frame_captured,
                  base::Time::Now()));
-  rwhvp->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(rwhvp->GetViewBounds().size()), dest,
-      base::Bind(&DeliverFrameFunc,
+  view->CopyFromCompositingSurfaceToVideoFrame(
+      gfx::Rect(view->GetViewBounds().size()), second_output,
+      base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
+                 base::Unretained(this),
                  base::MessageLoopProxy::current(),
                  run_loop.QuitClosure(),
-                 &second_frame_captured,
                  base::Time::Now()));
   run_loop.Run();
 
-  EXPECT_TRUE(first_frame_captured);
-  EXPECT_TRUE(second_frame_captured);
+  EXPECT_EQ(2, callback_invoke_count());
+  EXPECT_EQ(2, frames_captured());
 }
-#endif
 
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
+}  // namespace
 }  // namespace content
