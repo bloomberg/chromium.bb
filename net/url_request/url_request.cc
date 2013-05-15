@@ -1034,7 +1034,18 @@ void URLRequest::OnHeadersComplete() {
   // socket is closed and the ClientSocketHandle is Reset, which will happen
   // once the body is complete.  The start times should already be populated.
   if (job_) {
+    // Keep a copy of the two times the URLRequest sets.
+    base::TimeTicks request_start = load_timing_info_.request_start;
+    base::Time request_start_time = load_timing_info_.request_start_time;
+
+    // Clear load times.  Shouldn't be neded, but gives the GetLoadTimingInfo a
+    // consistent place to start from.
+    load_timing_info_ = LoadTimingInfo();
     job_->GetLoadTimingInfo(&load_timing_info_);
+
+    load_timing_info_.request_start = request_start;
+    load_timing_info_.request_start_time = request_start_time;
+
     ConvertRealLoadTimesToBlockingTimes(&load_timing_info_);
   }
 }

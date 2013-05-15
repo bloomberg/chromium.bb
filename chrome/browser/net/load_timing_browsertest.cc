@@ -89,7 +89,7 @@ class RelativeTime {
 // and for times retrieved from the renderer process.
 //
 // Times used for mock requests are all expressed as TimeDeltas relative to
-// request_start.  Null RelativeTimes correspond to null TimeTicks().
+// when the Job starts.  Null RelativeTimes correspond to null TimeTicks().
 //
 // Times read from the renderer are expressed relative to fetchStart (Which is
 // not the same as request_start).  Null RelativeTimes correspond to times that
@@ -127,6 +127,7 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
   // net::URLRequestFileJob implementation:
   virtual void Start() OVERRIDE {
     base::TimeDelta time_to_wait;
+    start_time_ = base::TimeTicks::Now();
     if (!load_timing_deltas_.receive_headers_end.is_null()) {
       // Need to delay starting until the largest of the times has elapsed.
       // Wait a little longer than necessary, to be on the safe side.
@@ -143,15 +144,11 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
 
   virtual void GetLoadTimingInfo(
       net::LoadTimingInfo* load_timing_info) const OVERRIDE {
-    // This should have been set by the URLRequest.
-    base::TimeTicks request_start = load_timing_info->request_start;
-    ASSERT_FALSE(request_start.is_null());
-
     // Make sure enough time has elapsed since start was called.  If this
     // fails, the test fixture itself is flaky.
     if (!load_timing_deltas_.receive_headers_end.is_null()) {
       EXPECT_LE(
-          request_start + load_timing_deltas_.receive_headers_end.GetDelta(),
+          start_time_ + load_timing_deltas_.receive_headers_end.GetDelta(),
           base::TimeTicks::Now());
     }
 
@@ -165,20 +162,20 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
     }
 
     load_timing_info->proxy_resolve_start =
-        load_timing_deltas_.proxy_resolve_start.ToTimeTicks(request_start);
+        load_timing_deltas_.proxy_resolve_start.ToTimeTicks(start_time_);
     load_timing_info->proxy_resolve_end =
-        load_timing_deltas_.proxy_resolve_end.ToTimeTicks(request_start);
+        load_timing_deltas_.proxy_resolve_end.ToTimeTicks(start_time_);
 
     load_timing_info->connect_timing.dns_start =
-        load_timing_deltas_.dns_start.ToTimeTicks(request_start);
+        load_timing_deltas_.dns_start.ToTimeTicks(start_time_);
     load_timing_info->connect_timing.dns_end =
-        load_timing_deltas_.dns_end.ToTimeTicks(request_start);
+        load_timing_deltas_.dns_end.ToTimeTicks(start_time_);
     load_timing_info->connect_timing.connect_start =
-        load_timing_deltas_.connect_start.ToTimeTicks(request_start);
+        load_timing_deltas_.connect_start.ToTimeTicks(start_time_);
     load_timing_info->connect_timing.ssl_start =
-        load_timing_deltas_.ssl_start.ToTimeTicks(request_start);
+        load_timing_deltas_.ssl_start.ToTimeTicks(start_time_);
     load_timing_info->connect_timing.connect_end =
-        load_timing_deltas_.connect_end.ToTimeTicks(request_start);
+        load_timing_deltas_.connect_end.ToTimeTicks(start_time_);
 
     // If there's an SSL start time, use connect end as the SSL end time.
     // The NavigationTiming API does not have a corresponding field, and there's
@@ -189,11 +186,11 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
     }
 
     load_timing_info->send_start =
-        load_timing_deltas_.send_start.ToTimeTicks(request_start);
+        load_timing_deltas_.send_start.ToTimeTicks(start_time_);
     load_timing_info->send_end=
-        load_timing_deltas_.send_end.ToTimeTicks(request_start);
+        load_timing_deltas_.send_end.ToTimeTicks(start_time_);
     load_timing_info->receive_headers_end =
-        load_timing_deltas_.receive_headers_end.ToTimeTicks(request_start);
+        load_timing_deltas_.receive_headers_end.ToTimeTicks(start_time_);
   }
 
  private:
@@ -204,8 +201,9 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
     net::URLRequestFileJob::Start();
   }
 
-  // Load times to use, relative to request_start from the URLRequest.
+  // Load times to use, relative to |start_time_|.
   const TimingDeltas load_timing_deltas_;
+  base::TimeTicks start_time_;
 
   base::WeakPtrFactory<MockUrlRequestJobWithTiming> weak_factory_;
 
@@ -257,7 +255,7 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   // Path of the file to use as the response body.
   const base::FilePath path_;
 
-  // Load times for each request to use, relative to their request_start times.
+  // Load times for each request to use, relative to when the Job starts.
   const TimingDeltas load_timing_deltas_;
 
   DISALLOW_COPY_AND_ASSIGN(TestProtocolHandler);
@@ -503,10 +501,10 @@ IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, ReuseSocket) {
 // Preconnect case.  Connect times are all before the request was started.
 IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, Preconnect) {
   TimingDeltas load_timing_deltas;
-  load_timing_deltas.dns_start = RelativeTime(-100300);
-  load_timing_deltas.dns_end = RelativeTime(-100200);
-  load_timing_deltas.connect_start = RelativeTime(-100100);
-  load_timing_deltas.connect_end = RelativeTime(-100000);
+  load_timing_deltas.dns_start = RelativeTime(-1000300);
+  load_timing_deltas.dns_end = RelativeTime(-1000200);
+  load_timing_deltas.connect_start = RelativeTime(-1000100);
+  load_timing_deltas.connect_end = RelativeTime(-1000000);
   load_timing_deltas.send_start = RelativeTime(0);
   load_timing_deltas.send_end = RelativeTime(100);
   load_timing_deltas.receive_headers_end = RelativeTime(200);
@@ -514,15 +512,15 @@ IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, Preconnect) {
   TimingDeltas navigation_deltas;
   RunTest(load_timing_deltas, &navigation_deltas);
 
-  // Connect times should all be the same as request_start, which is also the
-  // same as send_start (Since send_start is 0).
+  // Connect times should all be the same as request_start.
   EXPECT_EQ(navigation_deltas.dns_start.GetDelta(),
             navigation_deltas.dns_end.GetDelta());
   EXPECT_EQ(navigation_deltas.dns_start.GetDelta(),
             navigation_deltas.connect_start.GetDelta());
   EXPECT_EQ(navigation_deltas.dns_start.GetDelta(),
             navigation_deltas.connect_end.GetDelta());
-  EXPECT_EQ(navigation_deltas.dns_start.GetDelta(),
+
+  EXPECT_LE(navigation_deltas.dns_start.GetDelta(),
             navigation_deltas.send_start.GetDelta());
 
   EXPECT_LT(navigation_deltas.send_start.GetDelta(),
@@ -539,9 +537,9 @@ IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, PreconnectProxySsl) {
   TimingDeltas load_timing_deltas;
   load_timing_deltas.proxy_resolve_start = RelativeTime(0);
   load_timing_deltas.proxy_resolve_end = RelativeTime(100);
-  load_timing_deltas.dns_start = RelativeTime(-300);
-  load_timing_deltas.dns_end = RelativeTime(-200);
-  load_timing_deltas.connect_start = RelativeTime(-100);
+  load_timing_deltas.dns_start = RelativeTime(-3000000);
+  load_timing_deltas.dns_end = RelativeTime(-2000000);
+  load_timing_deltas.connect_start = RelativeTime(-1000000);
   load_timing_deltas.ssl_start = RelativeTime(0);
   load_timing_deltas.connect_end = RelativeTime(100);
   load_timing_deltas.send_start = RelativeTime(100);
@@ -587,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, Integration) {
   EXPECT_LE(navigation_deltas.connect_end.GetDelta(),
             navigation_deltas.send_start.GetDelta());
   // The only times that are guaranteed to be distinct are send_start and
-  // received_headers end.
+  // received_headers_end.
   EXPECT_LT(navigation_deltas.send_start.GetDelta(),
             navigation_deltas.receive_headers_end.GetDelta());
 

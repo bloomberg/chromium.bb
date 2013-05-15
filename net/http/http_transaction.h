@@ -113,9 +113,11 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // zero will be returned.  This does not include the request headers.
   virtual UploadProgress GetUploadProgress() const = 0;
 
-  // Populates all of load timing, except for request start times.
+  // Populates all of load timing, except for request start times and receive
+  // headers time.
   // |load_timing_info| must have all null times when called.  Returns false and
-  // does not modify |load_timing_info| if not currently connected.
+  // does not modify |load_timing_info| if there's no timing information to
+  // provide.
   virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const = 0;
 
   // Called when the priority of the parent job changes.

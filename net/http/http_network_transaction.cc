@@ -397,7 +397,6 @@ bool HttpNetworkTransaction::GetLoadTimingInfo(
   load_timing_info->proxy_resolve_end = proxy_info_.proxy_resolve_end_time();
   load_timing_info->send_start = send_start_time_;
   load_timing_info->send_end = send_end_time_;
-  load_timing_info->receive_headers_end = receive_headers_end_;
   return true;
 }
 
@@ -846,8 +845,6 @@ int HttpNetworkTransaction::HandleConnectionClosedBeforeEndOfHeaders() {
 }
 
 int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
-  receive_headers_end_ = base::TimeTicks::Now();
-
   // We can get a certificate error or ERR_SSL_CLIENT_AUTH_CERT_NEEDED here
   // due to SSL renegotiation.
   if (IsCertificateError(result)) {
@@ -1308,7 +1305,6 @@ void HttpNetworkTransaction::ResetStateForRestart() {
 void HttpNetworkTransaction::ResetStateForAuthRestart() {
   send_start_time_ = base::TimeTicks();
   send_end_time_ = base::TimeTicks();
-  receive_headers_end_ = base::TimeTicks();
 
   pending_auth_target_ = HttpAuth::AUTH_NONE;
   read_buf_ = NULL;

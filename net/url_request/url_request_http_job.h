@@ -239,6 +239,9 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // The start time for the job, ignoring re-starts.
   base::TimeTicks start_time_;
 
+  // When the transaction finished reading the request headers.
+  base::TimeTicks receive_headers_end_;
+
   scoped_ptr<HttpFilterContext> filter_context_;
   base::WeakPtrFactory<URLRequestHttpJob> weak_factory_;
 

@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/time.h"
 #include "net/base/net_errors.h"
 #include "net/base/load_flags.h"
+#include "net/base/load_timing_info.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_request_info.h"
@@ -227,7 +229,8 @@ MockNetworkTransaction::MockNetworkTransaction(
     : weak_factory_(this),
       data_cursor_(0),
       priority_(priority),
-      transaction_factory_(factory->AsWeakPtr()) {
+      transaction_factory_(factory->AsWeakPtr()),
+      socket_log_id_(net::NetLog::Source::kInvalidId) {
 }
 
 MockNetworkTransaction::~MockNetworkTransaction() {}
@@ -241,7 +244,7 @@ int MockNetworkTransaction::Start(const net::HttpRequestInfo* request,
 
   test_mode_ = t->test_mode;
 
-  // Return immediately if we're returning in error.
+  // Return immediately if we're returning an error.
   if (net::OK != t->return_code) {
     if (test_mode_ & TEST_MODE_SYNC_NET_START)
       return t->return_code;
@@ -274,6 +277,9 @@ int MockNetworkTransaction::Start(const net::HttpRequestInfo* request,
   response_.vary_data.Init(*request, *response_.headers);
   response_.ssl_info.cert_status = t->cert_status;
   data_ = resp_data;
+
+  if (net_log.net_log())
+    socket_log_id_ = net_log.net_log()->NextID();
 
   if (test_mode_ & TEST_MODE_SYNC_NET_START)
     return net::OK;
@@ -341,7 +347,24 @@ net::UploadProgress MockNetworkTransaction::GetUploadProgress() const {
 
 bool MockNetworkTransaction::GetLoadTimingInfo(
     net::LoadTimingInfo* load_timing_info) const {
-  return false;
+  if (socket_log_id_ != net::NetLog::Source::kInvalidId) {
+    // The minimal set of times for a request that gets a response, assuming it
+    // gets a new socket.
+    load_timing_info->socket_reused = false;
+    load_timing_info->socket_log_id = socket_log_id_;
+    load_timing_info->connect_timing.connect_start = base::TimeTicks::Now();
+    load_timing_info->connect_timing.connect_end = base::TimeTicks::Now();
+    load_timing_info->send_start = base::TimeTicks::Now();
+    load_timing_info->send_end = base::TimeTicks::Now();
+  } else {
+    // If there's no valid socket ID, just use the generic socket reused values.
+    // No tests currently depend on this, just should not match the values set
+    // by a cache hit.
+    load_timing_info->socket_reused = true;
+    load_timing_info->send_start = base::TimeTicks::Now();
+    load_timing_info->send_end = base::TimeTicks::Now();
+  }
+  return true;
 }
 
 void MockNetworkTransaction::SetPriority(net::RequestPriority priority) {

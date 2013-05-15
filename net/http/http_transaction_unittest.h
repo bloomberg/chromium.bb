@@ -16,6 +16,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
@@ -213,6 +214,11 @@ class MockNetworkTransaction
   int test_mode_;
   net::RequestPriority priority_;
   base::WeakPtr<MockNetworkLayer> transaction_factory_;
+
+  // NetLog ID of the fake / non-existent underlying socket used by the
+  // connection. Requires Start() be passed a BoundNetLog with a real NetLog to
+  // be initialized.
+  unsigned int socket_log_id_;
 };
 
 class MockNetworkLayer : public net::HttpTransactionFactory,

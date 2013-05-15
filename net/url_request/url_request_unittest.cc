@@ -156,10 +156,28 @@ void TestLoadTimingReusedWithProxy(
   EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
 }
 
-// Tests load timing in the case that there is no underlying connection.  This
-// can be used to test in the case of cached responses, errors, or non-HTTP
-// requests.
-void TestLoadTimingNoHttpConnection(
+// Tests load timing information in the case of a cache hit, when no cache
+// validation request was sent over the wire.
+void TestLoadTimingCacheHitNoNetwork(
+    const net::LoadTimingInfo& load_timing_info) {
+  EXPECT_FALSE(load_timing_info.socket_reused);
+  EXPECT_EQ(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  EXPECT_FALSE(load_timing_info.request_start_time.is_null());
+  EXPECT_FALSE(load_timing_info.request_start.is_null());
+
+  ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
+  EXPECT_LE(load_timing_info.request_start, load_timing_info.send_start);
+  EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+
+  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
+}
+
+// Tests load timing in the case that there is no HTTP response.  This can be
+// used to test in the case of errors or non-HTTP requests.
+void TestLoadTimingNoHttpResponse(
     const net::LoadTimingInfo& load_timing_info) {
   EXPECT_FALSE(load_timing_info.socket_reused);
   EXPECT_EQ(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
@@ -4023,7 +4041,7 @@ TEST_F(URLRequestTestHTTP, CancelDeferredRedirect) {
 TEST_F(URLRequestTestHTTP, VaryHeader) {
   ASSERT_TRUE(test_server_.Start());
 
-  // populate the cache
+  // Populate the cache.
   {
     TestDelegate d;
     URLRequest req(
@@ -4033,9 +4051,13 @@ TEST_F(URLRequestTestHTTP, VaryHeader) {
     req.SetExtraRequestHeaders(headers);
     req.Start();
     MessageLoop::current()->Run();
+
+    LoadTimingInfo load_timing_info;
+    req.GetLoadTimingInfo(&load_timing_info);
+    TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
   }
 
-  // expect a cache hit
+  // Expect a cache hit.
   {
     TestDelegate d;
     URLRequest req(
@@ -4047,9 +4069,13 @@ TEST_F(URLRequestTestHTTP, VaryHeader) {
     MessageLoop::current()->Run();
 
     EXPECT_TRUE(req.was_cached());
+
+    LoadTimingInfo load_timing_info;
+    req.GetLoadTimingInfo(&load_timing_info);
+    TestLoadTimingCacheHitNoNetwork(load_timing_info);
   }
 
-  // expect a cache miss
+  // Expect a cache miss.
   {
     TestDelegate d;
     URLRequest req(
@@ -4061,6 +4087,10 @@ TEST_F(URLRequestTestHTTP, VaryHeader) {
     MessageLoop::current()->Run();
 
     EXPECT_FALSE(req.was_cached());
+
+    LoadTimingInfo load_timing_info;
+    req.GetLoadTimingInfo(&load_timing_info);
+    TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
   }
 }
 
@@ -4194,8 +4224,8 @@ TEST_F(URLRequestTestHTTP, BasicAuthLoadTiming) {
               load_timing_info.connect_timing.connect_start);
   }
 
-  // repeat request with end-to-end validation.  since auth-basic results in a
-  // cachable page, we expect this test to result in a 304.  in which case, the
+  // Repeat request with end-to-end validation.  Since auth-basic results in a
+  // cachable page, we expect this test to result in a 304.  In which case, the
   // response should be fetched from the cache.
   {
     TestDelegate d;
@@ -4212,9 +4242,11 @@ TEST_F(URLRequestTestHTTP, BasicAuthLoadTiming) {
     // Should be the same cached document.
     EXPECT_TRUE(r.was_cached());
 
+    // Since there was a request that went over the wire, the load timing
+    // information should include connection times.
     LoadTimingInfo load_timing_info;
     r.GetLoadTimingInfo(&load_timing_info);
-    TestLoadTimingNoHttpConnection(load_timing_info);
+    TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
   }
 }
 
@@ -5576,7 +5608,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPGetTest) {
 
     LoadTimingInfo load_timing_info;
     r.GetLoadTimingInfo(&load_timing_info);
-    TestLoadTimingNoHttpConnection(load_timing_info);
+    TestLoadTimingNoHttpResponse(load_timing_info);
   }
 }
 

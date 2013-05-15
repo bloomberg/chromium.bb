@@ -147,11 +147,11 @@ void TestLoadTimingReused(const net::LoadTimingInfo& load_timing_info) {
   EXPECT_FALSE(load_timing_info.send_start.is_null());
 
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
-  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
 
-  // Set by URLRequest, at a higher level.
+  // Set at a higher level.
   EXPECT_TRUE(load_timing_info.request_start_time.is_null());
   EXPECT_TRUE(load_timing_info.request_start.is_null());
+  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 
 // Tests LoadTimingInfo in the case a new socket is used and no PAC script is
@@ -165,16 +165,16 @@ void TestLoadTimingNotReused(const net::LoadTimingInfo& load_timing_info,
   EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
 
   net::ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
-                                    connect_timing_flags);
+                                   connect_timing_flags);
   EXPECT_LE(load_timing_info.connect_timing.connect_end,
             load_timing_info.send_start);
 
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
-  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
 
-  // Set by URLRequest, at a higher level.
+  // Set at a higher level.
   EXPECT_TRUE(load_timing_info.request_start_time.is_null());
   EXPECT_TRUE(load_timing_info.request_start.is_null());
+  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 
 // Tests LoadTimingInfo in the case a socket is reused and a PAC script is
@@ -191,11 +191,11 @@ void TestLoadTimingReusedWithPac(const net::LoadTimingInfo& load_timing_info) {
   EXPECT_LE(load_timing_info.proxy_resolve_end,
             load_timing_info.send_start);
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
-  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
 
-  // Set by URLRequest, at a higher level.
+  // Set at a higher level.
   EXPECT_TRUE(load_timing_info.request_start_time.is_null());
   EXPECT_TRUE(load_timing_info.request_start.is_null());
+  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 
 // Tests LoadTimingInfo in the case a new socket is used and a PAC script is
@@ -216,11 +216,11 @@ void TestLoadTimingNotReusedWithPac(const net::LoadTimingInfo& load_timing_info,
             load_timing_info.send_start);
 
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
-  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
 
-  // Set by URLRequest, at a higher level.
+  // Set at a higher level.
   EXPECT_TRUE(load_timing_info.request_start_time.is_null());
   EXPECT_TRUE(load_timing_info.request_start.is_null());
+  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 
 }  // namespace
