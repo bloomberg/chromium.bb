@@ -1368,22 +1368,6 @@ ErrorCode ArmMaliGpuBrokerProcessPolicy(Sandbox *sandbox,
   }
 }
 
-// Allow clone(2) for threads, crash if anything else is attempted.
-// Don't restrict on ASAN.
-ErrorCode RestrictCloneToThreads(Sandbox *sandbox) {
-  // Glibc's pthread.
-  if (!RunningOnASAN()) {
-    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-        CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
-        CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
-        CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID,
-        ErrorCode(ErrorCode::ERR_ALLOWED),
-        sandbox->Trap(ReportCloneFailure, NULL));
-  } else {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-}
-
 // Allow clone(2) for threads.
 // Reject fork(2) attempts with EPERM.
 // Crash if anything else is attempted.
@@ -1430,7 +1414,7 @@ ErrorCode RestrictIoctl(Sandbox *sandbox) {
 ErrorCode RendererOrWorkerProcessPolicy(Sandbox *sandbox, int sysno, void *) {
   switch (sysno) {
     case __NR_clone:
-      return RestrictCloneToThreads(sandbox);
+      return RestrictCloneToThreadsAndEPERMFork(sandbox);
     case __NR_ioctl:
       // Restrict IOCTL on x86_64.
       if (IsArchitectureX86_64()) {
