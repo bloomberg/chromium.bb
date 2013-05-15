@@ -430,7 +430,8 @@ ImageUtil.ImageLoader.isTooLarge = function(image) {
  * @param {string} url Image URL.
  * @param {function(function(object))} transformFetcher function to get
  *     the image transform (which we need for the image orientation).
- * @param {function(HTMLCanvasElement)} callback To be called when loaded.
+ * @param {function(HTMLCanvasElement, string=)} callback Callback to be
+ *     called when loaded. The second optional argument is an error identifier.
  * @param {number=} opt_delay Load delay in milliseconds, useful to let the
  *     animations play out before the computation heavy image loading starts.
  */
@@ -450,37 +451,54 @@ ImageUtil.ImageLoader.prototype.load = function(
     }
   };
 
-  var startLoad = function() {
+  var onError = function(opt_error) {
+    this.image_.onerror = null;
+    this.image_.onload = null;
+    var tmpCallback = this.callback_;
+    this.callback_ = null;
+    var emptyCanvas = this.document_.createElement('canvas');
+    emptyCanvas.width = 0;
+    emptyCanvas.height = 0;
+    tmpCallback(emptyCanvas, opt_error);
+  }.bind(this);
+
+  var loadImage = function() {
     ImageUtil.metrics.startInterval(ImageUtil.getMetricName('LoadTime'));
     this.timeout_ = null;
-    // The clients of this class sometimes request the same url repeatedly.
-    // The onload fires only if the src is different from the previous value.
-    // To work around that we reset the src temporarily.
-    this.image_.src = '';
-    var errorCallback = function(error) {
-      this.image_.onerror = null;
-      this.image_.onload = null;
-      var tmpCallback = this.callback_;
-      this.callback_ = null;
-      var emptyCanvas = this.document_.createElement('canvas');
-      emptyCanvas.width = 0;
-      emptyCanvas.height = 0;
-      tmpCallback(emptyCanvas, error);
-    }.bind(this);
     this.image_.onload = function(e) {
       this.image_.onerror = null;
       this.image_.onload = null;
       if (ImageUtil.ImageLoader.isTooLarge(this.image_)) {
-        errorCallback('IMAGE_TOO_BIG_ERROR');
+        onError('IMAGE_TOO_BIG_ERROR');
         return;
       }
       transformFetcher(url, onTransform.bind(this, e.target));
     }.bind(this);
     // errorCallback has an optional error argument, which in case of general
     // error should not be specified
-    this.image_.onerror = errorCallback.bind(this, 'IMAGE_ERROR');
+    this.image_.onerror = onError.bind(this, 'IMAGE_ERROR');
     this.taskId_ = util.loadImage(this.image_, url);
   }.bind(this);
+
+  // The clients of this class sometimes request the same url repeatedly.
+  // The onload fires only if the src is different from the previous value.
+  // To work around that we reset the src temporarily to an 1x1 pixel.
+  // Load an empty 1x1 pixel image first.
+  var resetImage = function(callback) {
+    this.image_.onload = callback;
+    this.image_.onerror = onError.bind(this, 'IMAGE_ERROR');
+    this.image_.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAA' +
+        'AAABAAEAAAICTAEAOw==';
+  }.bind(this);
+
+  // Loads the image. If already loaded, then forces reloads.
+  var startLoad = function() {
+    if (this.image_.src == url)
+      resetImage(loadImage);
+    else
+      loadImage();
+  }.bind(this);
+
   if (opt_delay) {
     this.timeout_ = setTimeout(startLoad, opt_delay);
   } else {
