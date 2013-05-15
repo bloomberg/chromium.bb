@@ -17,7 +17,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/focus/view_storage.h"
@@ -464,13 +463,14 @@ void AccessibilityEventRouterViews::RecursiveGetMenuItemIndexAndCount(
     views::View* child = menu->child_at(i);
     int previous_count = *count;
     RecursiveGetMenuItemIndexAndCount(child, item, index, count);
-    if (!strcmp(child->GetClassName(), views::MenuItemView::kViewClassName) &&
+    ui::AccessibleViewState state;
+    child->GetAccessibleState(&state);
+    if (state.role == ui::AccessibilityTypes::ROLE_MENUITEM &&
         *count == previous_count) {
       if (item == child)
         *index = *count;
       (*count)++;
-    } else if (!strcmp(child->GetClassName(),
-                       views::TextButton::kViewClassName)) {
+    } else if (state.role == ui::AccessibilityTypes::ROLE_PUSHBUTTON) {
       if (item == child)
         *index = *count;
       (*count)++;
