@@ -640,12 +640,12 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
     RequestPriority request_priority,
     SpdyFrameType type,
     SpdyControlFlags flags,
-    const char* const* kHeaders,
-    int kHeadersSize,
+    const char* const* tail_headers,
+    int tail_header_size,
     SpdyStreamId associated_stream_id) const {
   EXPECT_GE(type, FIRST_CONTROL_TYPE);
   EXPECT_LE(type, LAST_CONTROL_TYPE);
-  const SpdyHeaderInfo kSynStartHeader = {
+  const SpdyHeaderInfo header_info = {
     type,
     stream_id,
     associated_stream_id,
@@ -660,9 +660,9 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
   };
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());
   AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
-  if (kHeaders && kHeadersSize)
-    AppendToHeaderBlock(kHeaders, kHeadersSize / 2, headers.get());
-  return ConstructSpdyFrame(kSynStartHeader, headers.Pass());
+  if (tail_headers && tail_header_size)
+    AppendToHeaderBlock(tail_headers, tail_header_size / 2, headers.get());
+  return ConstructSpdyFrame(header_info, headers.Pass());
 }
 
 }  // namespace net

@@ -116,29 +116,6 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                                         associated_stream_id);
 }
 
-// Construct a generic SPDY control frame.
-SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
-                                     int extra_header_count,
-                                     bool compressed,
-                                     int stream_id,
-                                     RequestPriority request_priority,
-                                     SpdyFrameType type,
-                                     SpdyControlFlags flags,
-                                     const char* const* kHeaders,
-                                     int kHeadersSize) {
-  SpdyTestUtil util(kProtoSPDY3);
-  return util.ConstructSpdyControlFrame(extra_headers,
-                                        extra_header_count,
-                                        compressed,
-                                        stream_id,
-                                        request_priority,
-                                        type,
-                                        flags,
-                                        kHeaders,
-                                        kHeadersSize,
-                                        0);
-}
-
 }  // namespace
 
 SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) {
@@ -264,7 +241,8 @@ SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                                    SYN_STREAM,
                                    CONTROL_FLAG_FIN,
                                    kStandardGetHeaders,
-                                   arraysize(kStandardGetHeaders));
+                                   arraysize(kStandardGetHeaders),
+                                   0);
 }
 
 SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
@@ -284,7 +262,8 @@ SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
                                    SYN_STREAM,
                                    CONTROL_FLAG_NONE,
                                    kConnectHeaders,
-                                   arraysize(kConnectHeaders));
+                                   arraysize(kConnectHeaders),
+                                   0);
 }
 
 SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
@@ -380,7 +359,8 @@ SpdyFrame* ConstructSpdyPushHeaders(int stream_id,
                                    HEADERS,
                                    CONTROL_FLAG_NONE,
                                    kStandardGetHeaders,
-                                   arraysize(kStandardGetHeaders));
+                                   arraysize(kStandardGetHeaders),
+                                   0);
 }
 
 SpdyFrame* ConstructSpdySynReplyError(const char* const status,
@@ -400,7 +380,8 @@ SpdyFrame* ConstructSpdySynReplyError(const char* const status,
                                    SYN_REPLY,
                                    CONTROL_FLAG_NONE,
                                    kStandardGetHeaders,
-                                   arraysize(kStandardGetHeaders));
+                                   arraysize(kStandardGetHeaders),
+                                   0);
 }
 
 SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id) {
@@ -431,7 +412,8 @@ SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
                                    SYN_REPLY,
                                    CONTROL_FLAG_NONE,
                                    kStandardGetHeaders,
-                                   arraysize(kStandardGetHeaders));
+                                   arraysize(kStandardGetHeaders),
+                                   0);
 }
 
 SpdyFrame* ConstructSpdyPost(const char* url,

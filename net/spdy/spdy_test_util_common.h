@@ -298,6 +298,12 @@ class SpdyTestUtil {
                                 const char* const tail_headers[],
                                 int tail_header_count) const;
 
+  // Construct a generic SpdyControlFrame.
+  //
+  // Warning: extra_header_count is the number of header-value pairs in
+  // extra_headers (so half the number of elements), but tail_headers_size is
+  // the actual number of elements (both keys and values) in tail_headers.
+  // TODO(ttuttle): Fix this inconsistency.
   SpdyFrame* ConstructSpdyControlFrame(
       const char* const extra_headers[],
       int extra_header_count,
@@ -306,8 +312,8 @@ class SpdyTestUtil {
       RequestPriority request_priority,
       SpdyFrameType type,
       SpdyControlFlags flags,
-      const char* const* kHeaders,
-      int kHeadersSize,
+      const char* const* tail_headers,
+      int tail_headers_size,
       SpdyStreamId associated_stream_id) const;
 
  private:
