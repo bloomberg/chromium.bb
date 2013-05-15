@@ -17,3 +17,4 @@ After cut and paste:
 |   "world"
 | " "
 | "WebKit<#selection-caret>"
+| <br>
