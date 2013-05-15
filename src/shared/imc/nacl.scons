@@ -8,5 +8,4 @@ Import('env')
 libimc = env.NaClSdkLibrary('libimc', ['nacl_imc_common.cc',
                                        'nacl/nacl_imc.cc'])
 
-env.AddLibraryToSdk(libimc)
 env.AddHeaderToSdk(['nacl_imc_c.h'])

@@ -26,5 +26,4 @@ platform_inputs = [
 libplatform = env.NaClSdkLibrary('libplatform',
                                  platform_inputs,
                                  LIBS=['pthread', 'gio'])
-env.AddLibraryToSdk(libplatform)
 

@@ -11,4 +11,3 @@ libgio = env.NaClSdkLibrary('libgio',
                              'gprintf.c',
                              'gio_mem_snapshot.c'
                              ])
-env.AddLibraryToSdk(libgio)

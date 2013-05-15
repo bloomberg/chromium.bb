@@ -128,7 +128,6 @@ imc_syscalls = [
     ]
 
 libimc_syscalls = env.NaClSdkLibrary('libimc_syscalls', imc_syscalls)
-env.AddLibraryToSdk(libimc_syscalls)
 
 sys_private = [
     'null.c',

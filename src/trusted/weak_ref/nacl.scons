@@ -10,7 +10,6 @@ weak_ref_inputs = [
 ]
 
 libweak_ref = env.NaClSdkLibrary('libweak_ref', weak_ref_inputs)
-env.AddLibraryToSdk(libweak_ref)
 
 headers = [
     'weak_ref.h',

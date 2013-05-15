@@ -14,7 +14,6 @@ if env.Bit('target_arm') or env.Bit('bitcode'):
   Return()
 
 libvalgrind = env.NaClSdkLibrary('libvalgrind', 'valgrind_interceptors.c')
-env.AddLibraryToSdk(libvalgrind)
 env.AddHeaderToSdk(['dynamic_annotations.h'])
 
 # With newlib, dynamic annotations are built into libpthread.
@@ -22,4 +21,3 @@ env.AddHeaderToSdk(['dynamic_annotations.h'])
 if env.Bit('nacl_glibc'):
   libdynamic_annotations = env.NaClSdkLibrary('libdynamic_annotations',
                                               'dynamic_annotations.c')
-  env.AddLibraryToSdk(libdynamic_annotations)
