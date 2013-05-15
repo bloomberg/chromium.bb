@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,8 +52,10 @@ static const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 static const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
 
 // Common test expectations.
-const string16 kExpectedEnded = ASCIIToUTF16("ENDED");
-const string16 kExpectedWebKitError = ASCIIToUTF16("WEBKITKEYERROR");
+const string16 kEnded = ASCIIToUTF16("ENDED");
+const string16 kError = ASCIIToUTF16("ERROR");
+const string16 kFailed = ASCIIToUTF16("FAILED");
+const string16 kKeyError = ASCIIToUTF16("KEYERROR");
 
 namespace content {
 
@@ -79,9 +81,6 @@ class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
                           const string16 expectation) {
     // TODO(shadi): Add non-HTTP tests once src is supported for EME.
     ASSERT_TRUE(test_server()->Start());
-
-    const string16 kError = ASCIIToUTF16("ERROR");
-    const string16 kFailed = ASCIIToUTF16("FAILED");
     GURL player_gurl = test_server()->GetURL(base::StringPrintf(
         "files/media/%s?keysystem=%s&mediafile=%s&mediatype=%s", html_page,
         key_system, media_file, media_type));
@@ -155,7 +154,7 @@ class WVEncryptedMediaTest : public EncryptedMediaTest {
     }
 #endif  // defined(OS_LINUX)
     EncryptedMediaTest::TestSimplePlayback(encrypted_media, media_type,
-                                           key_system, kExpectedWebKitError);
+                                           key_system, kKeyError);
     bool receivedKeyMessage = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
         shell()->web_contents(),
@@ -188,28 +187,27 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
-  TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly, GetParam(),
-                     kExpectedEnded);
+  TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly, GetParam(), kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
   TestSimplePlayback("bear-320x240-av-enc_a.webm", kWebMAudioVideo, GetParam(),
-                     kExpectedEnded);
+                     kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM) {
   TestSimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo, GetParam(),
-                     kExpectedEnded);
+                     kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM) {
   TestSimplePlayback("bear-320x240-v-enc_v.webm", kWebMVideoOnly, GetParam(),
-                     kExpectedEnded);
+                     kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
   TestSimplePlayback("bear-320x240-av-enc_v.webm", kWebMAudioVideo,GetParam(),
-                     kExpectedEnded);
+                     kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
@@ -218,18 +216,18 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
 #endif
-  TestFrameSizeChange(GetParam(), kExpectedEnded);
+  TestFrameSizeChange(GetParam(), kEnded);
 }
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4) {
   TestSimplePlayback("bear-640x360-v_frag-cenc.mp4", kMP4VideoOnly, GetParam(),
-                     kExpectedEnded);
+                     kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
   TestSimplePlayback("bear-640x360-a_frag-cenc.mp4", kMP4AudioOnly, GetParam(),
-                     kExpectedEnded);
+                     kEnded);
 }
 #endif
 

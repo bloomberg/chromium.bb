@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Media Source Player</title>
+  </head>
+  <body onload="runTest();">
+    <video controls></video>
+    <script src="media_utils.js" type="text/javascript"></script>
+    <script src="media_source_utils.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var video = document.querySelector('video');
+
+      function onTimeUpdate() {
+        video.removeEventListener('timeupdate', onTimeUpdate);
+        video.currentTime =  0.9 * video.duration;
+      }
+
+      function onSeeked() {
+        video.removeEventListener('ended', failTest);
+        installTitleEventHandler(video, 'ended');
+      }
+
+      // The test completes after media starts playing, seeks to 0.9 of
+      // duration and fires the ended event.
+      // The test stops when an error or ended event fire unexpectedly.
+      function runTest() {
+        loadMediaFromURL(video);
+        video.addEventListener('ended', failTest);
+        video.addEventListener('seeked', onSeeked);
+        video.addEventListener('timeupdate', onTimeUpdate);
+        video.play();
+      }
+    </script>
+  </body>
+</html>

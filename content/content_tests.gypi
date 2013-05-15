@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -782,6 +782,7 @@
             'browser/media/audio_browsertest.cc',
             'browser/media/encrypted_media_browsertest.cc',
             'browser/media/media_browsertest.cc',
+            'browser/media/media_source_browsertest.cc',
             'browser/media/webrtc_internals_browsertest.cc',
             'browser/plugin_data_remover_impl_browsertest.cc',
             'browser/plugin_browsertest.cc',
