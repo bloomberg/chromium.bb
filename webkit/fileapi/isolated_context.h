@@ -102,6 +102,16 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
                                         const base::FilePath& path,
                                         std::string* register_name);
 
+  // Registers a virtual filesystem. This is different from
+  // RegisterFileSystemForPath because register_name is required, and
+  // cracked_path_prefix is allowed to be non-absolute.
+  // |register_name| is required, since we cannot infer one from the path.
+  // |cracked_path_prefix| has no parent references, but can be relative.
+  std::string RegisterFileSystemForVirtualPath(
+      FileSystemType type,
+      const std::string& register_name,
+      const base::FilePath& cracked_path_prefix);
+
   // Revokes all filesystem(s) registered for the given path.
   // This is assumed to be called when the registered path becomes
   // globally invalid, e.g. when a device for the path is detached.

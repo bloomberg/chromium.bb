@@ -301,4 +301,16 @@ TEST_F(IsolatedContextTest, CanHandleURL) {
       fileapi::kFileSystemTypeDeviceMedia));
 }
 
+TEST_F(IsolatedContextTest, VirtualFileSystemTests) {
+  // Should be able to register empty and non-absolute paths
+  std::string empty_fsid = isolated_context()->RegisterFileSystemForVirtualPath(
+      fileapi::kFileSystemTypeIsolated, "_", base::FilePath());
+  std::string relative_fsid =
+      isolated_context()->RegisterFileSystemForVirtualPath(
+          fileapi::kFileSystemTypeIsolated, "_",
+          base::FilePath(FPL("relpath")));
+  ASSERT_FALSE(empty_fsid.empty());
+  ASSERT_FALSE(relative_fsid.empty());
+}
+
 }  // namespace fileapi

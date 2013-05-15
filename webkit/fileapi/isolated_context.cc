@@ -107,7 +107,8 @@ bool IsolatedContext::FileInfoSet::AddPathWithName(
 class IsolatedContext::Instance {
  public:
   // For a single-path isolated file system, which could be registered by
-  // IsolatedContext::RegisterFileSystemForPath().
+  // IsolatedContext::RegisterFileSystemForPath() or
+  // IsolatedContext::RegisterFileSystemForVirtualPath().
   // Most of isolated file system contexts should be of this type.
   Instance(FileSystemType type, const MountPointInfo& file_info);
 
@@ -227,6 +228,22 @@ std::string IsolatedContext::RegisterFileSystemForPath(
   return filesystem_id;
 }
 
+std::string IsolatedContext::RegisterFileSystemForVirtualPath(
+    FileSystemType type,
+    const std::string& register_name,
+    const base::FilePath& cracked_path_prefix) {
+  base::AutoLock locker(lock_);
+  base::FilePath path(cracked_path_prefix.NormalizePathSeparators());
+  if (path.ReferencesParent())
+    return std::string();
+  std::string filesystem_id = GetNewFileSystemId();
+  instance_map_[filesystem_id] = new Instance(
+      type,
+      MountPointInfo(register_name, cracked_path_prefix));
+  path_to_id_map_[path].insert(filesystem_id);
+  return filesystem_id;
+}
+
 bool IsolatedContext::HandlesFileSystemMountType(FileSystemType type) const {
   return type == kFileSystemTypeIsolated;
 }
@@ -248,9 +265,9 @@ bool IsolatedContext::GetRegisteredPath(
 }
 
 bool IsolatedContext::CrackVirtualPath(const base::FilePath& virtual_path,
-                                        std::string* id_or_name,
-                                        FileSystemType* type,
-                                        base::FilePath* path) const {
+                                       std::string* id_or_name,
+                                       FileSystemType* type,
+                                       base::FilePath* path) const {
   DCHECK(id_or_name);
   DCHECK(path);
 
