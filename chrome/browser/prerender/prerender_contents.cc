@@ -141,11 +141,6 @@ void PrerenderContents::Observer::OnPrerenderStopLoading(
     PrerenderContents* contents) {
 }
 
-void PrerenderContents::Observer::OnPrerenderAddAlias(
-    PrerenderContents* contents,
-    const GURL& alias_url) {
-}
-
 void PrerenderContents::Observer::OnPrerenderCreatedMatchCompleteReplacement(
     PrerenderContents* contents, PrerenderContents* replacement) {
 }
@@ -370,6 +365,15 @@ PrerenderContents::~PrerenderContents() {
   prerender_manager_->RecordFinalStatusWithMatchCompleteStatus(
       origin(), experiment_id(), match_complete_status(), final_status());
 
+  // Broadcast the removal of aliases.
+  for (content::RenderProcessHost::iterator host_iterator =
+           content::RenderProcessHost::AllHostsIterator();
+       !host_iterator.IsAtEnd();
+       host_iterator.Advance()) {
+    content::RenderProcessHost* host = host_iterator.GetCurrentValue();
+    host->Send(new PrerenderMsg_OnPrerenderRemoveAliases(alias_urls_));
+  }
+
   // If we still have a WebContents, clean up anything we need to and then
   // destroy it.
   if (prerender_contents_.get())
@@ -485,11 +489,6 @@ void PrerenderContents::NotifyPrerenderStop() {
   observer_list_.Clear();
 }
 
-void PrerenderContents::NotifyPrerenderAddAlias(const GURL& alias_url) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderAddAlias(this,
-                                                                  alias_url));
-}
-
 void PrerenderContents::NotifyPrerenderCreatedMatchCompleteReplacement(
     PrerenderContents* replacement) {
   FOR_EACH_OBSERVER(Observer, observer_list_,
@@ -531,7 +530,15 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
   }
 
   alias_urls_.push_back(url);
-  NotifyPrerenderAddAlias(url);
+
+  for (content::RenderProcessHost::iterator host_iterator =
+           content::RenderProcessHost::AllHostsIterator();
+       !host_iterator.IsAtEnd();
+       host_iterator.Advance()) {
+    content::RenderProcessHost* host = host_iterator.GetCurrentValue();
+    host->Send(new PrerenderMsg_OnPrerenderAddAlias(url));
+  }
+
   return true;
 }
 

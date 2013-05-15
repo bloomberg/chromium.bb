@@ -54,9 +54,12 @@ IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStopLoading,
                      int /* prerender_id */)
 
 // Signals to a launcher that a new alias has been added to a prerender.
-IPC_MESSAGE_CONTROL2(PrerenderMsg_OnPrerenderAddAlias,
-                     int /* prerender_id */,
+IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderAddAlias,
                      GURL /* url */)
+
+// Signals to a launcher that a new alias has been added to a prerender.
+IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderRemoveAliases,
+                     std::vector<GURL> /* urls */)
 
 // Signals to a launcher that a prerender is no longer running.
 IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStop,

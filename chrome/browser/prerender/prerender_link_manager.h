@@ -121,8 +121,6 @@ class PrerenderLinkManager : public ProfileKeyedService,
   virtual void OnPrerenderStopLoading(PrerenderHandle* prerender_handle)
       OVERRIDE;
   virtual void OnPrerenderStop(PrerenderHandle* prerender_handle) OVERRIDE;
-  virtual void OnPrerenderAddAlias(PrerenderHandle* prerender_handle,
-                                   const GURL& alias_url) OVERRIDE;
 
   bool has_shutdown_;
 

@@ -338,16 +338,4 @@ void PrerenderLinkManager::OnPrerenderStop(
   StartPrerenders();
 }
 
-void PrerenderLinkManager::OnPrerenderAddAlias(
-    PrerenderHandle* prerender_handle,
-    const GURL& alias_url) {
-  LinkPrerender* prerender = FindByPrerenderHandle(prerender_handle);
-  if (!prerender)
-    return;
-
-  Send(prerender->launcher_child_id,
-       new PrerenderMsg_OnPrerenderAddAlias(prerender->prerender_id,
-                                            alias_url));
-}
-
 }  // namespace prerender

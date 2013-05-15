@@ -43,7 +43,6 @@ void PrerenderDispatcher::OnPrerenderStart(int prerender_id) {
     return;
 
   prerender.didStartPrerender();
-  OnPrerenderAddAlias(prerender_id, prerender.url());
 }
 
 void PrerenderDispatcher::OnPrerenderStopLoading(int prerender_id) {
@@ -58,11 +57,18 @@ void PrerenderDispatcher::OnPrerenderStopLoading(int prerender_id) {
   prerender.didSendLoadForPrerender();
 }
 
-void PrerenderDispatcher::OnPrerenderAddAlias(int prerender_id,
-                                              const GURL& url) {
-  DCHECK_NE(0u, prerenders_.count(prerender_id));
-  running_prerender_urls_.insert(
-      std::multimap<GURL, int>::value_type(url, prerender_id));
+void PrerenderDispatcher::OnPrerenderAddAlias(const GURL& alias) {
+  running_prerender_urls_.insert(alias);
+}
+
+void PrerenderDispatcher::OnPrerenderRemoveAliases(
+    const std::vector<GURL>& aliases) {
+  for (size_t i = 0; i < aliases.size(); ++i) {
+    std::multiset<GURL>::iterator it = running_prerender_urls_.find(aliases[i]);
+    if (it != running_prerender_urls_.end()) {
+      running_prerender_urls_.erase(it);
+    }
+  }
 }
 
 void PrerenderDispatcher::OnPrerenderStop(int prerender_id) {
@@ -78,17 +84,6 @@ void PrerenderDispatcher::OnPrerenderStop(int prerender_id) {
   // This may not be that big of a deal in practice, since the newly created tab
   // is unlikely to go to the prerendered page.
   prerenders_.erase(prerender_id);
-
-  std::multimap<GURL, int>::iterator it = running_prerender_urls_.begin();
-  while (it != running_prerender_urls_.end()) {
-    std::multimap<GURL, int>::iterator next = it;
-    ++next;
-
-    if (it->second == prerender_id)
-      running_prerender_urls_.erase(it);
-
-    it = next;
-  }
 }
 
 bool PrerenderDispatcher::OnControlMessageReceived(
@@ -99,6 +94,8 @@ bool PrerenderDispatcher::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderStopLoading,
                         OnPrerenderStopLoading)
     IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderAddAlias, OnPrerenderAddAlias)
+    IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderRemoveAliases,
+                        OnPrerenderRemoveAliases)
     IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderStop, OnPrerenderStop)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

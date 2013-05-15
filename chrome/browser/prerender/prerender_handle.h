@@ -41,11 +41,6 @@ class PrerenderHandle : public base::NonThreadSafe,
     // Signals that the prerender has stopped running.
     virtual void OnPrerenderStop(PrerenderHandle* handle) = 0;
 
-    // Signals the discovery, through redirects, of a new alias for this
-    // prerender.
-    virtual void OnPrerenderAddAlias(PrerenderHandle* handle,
-                                     const GURL& alias_url) = 0;
-
    protected:
     Observer();
     virtual ~Observer();
@@ -91,8 +86,6 @@ class PrerenderHandle : public base::NonThreadSafe,
   virtual void OnPrerenderStopLoading(PrerenderContents* prerender_contents)
       OVERRIDE;
   virtual void OnPrerenderStop(PrerenderContents* prerender_contents) OVERRIDE;
-  virtual void OnPrerenderAddAlias(PrerenderContents* prerender_contents,
-                                   const GURL& alias_url) OVERRIDE;
   virtual void OnPrerenderCreatedMatchCompleteReplacement(
       PrerenderContents* contents, PrerenderContents* replacement) OVERRIDE;
 

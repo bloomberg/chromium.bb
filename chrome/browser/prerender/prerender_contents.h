@@ -81,11 +81,6 @@ class PrerenderContents : public content::NotificationObserver,
     // Signals that the prerender has stopped running.
     virtual void OnPrerenderStop(PrerenderContents* contents) = 0;
 
-    // Signals the discovery, through redirects, of a new alias for this
-    // prerender.
-    virtual void OnPrerenderAddAlias(PrerenderContents* contents,
-                                     const GURL& alias_url);
-
     // Signals that this prerender has just become a MatchComplete replacement.
     virtual void OnPrerenderCreatedMatchCompleteReplacement(
         PrerenderContents* contents, PrerenderContents* replacement);
@@ -298,7 +293,6 @@ class PrerenderContents : public content::NotificationObserver,
   void NotifyPrerenderStart();
   void NotifyPrerenderStopLoading();
   void NotifyPrerenderStop();
-  void NotifyPrerenderAddAlias(const GURL& alias_url);
   void NotifyPrerenderCreatedMatchCompleteReplacement(
       PrerenderContents* replacement);
 

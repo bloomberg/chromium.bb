@@ -115,15 +115,6 @@ void PrerenderHandle::OnPrerenderStop(PrerenderContents* prerender_contents) {
     observer_->OnPrerenderStop(this);
 }
 
-void PrerenderHandle::OnPrerenderAddAlias(PrerenderContents* prerender_contents,
-                                          const GURL& alias_url) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(prerender_data_);
-  DCHECK_EQ(prerender_data_->contents(), prerender_contents);
-  if (observer_)
-    observer_->OnPrerenderAddAlias(this, alias_url);
-}
-
 void PrerenderHandle::OnPrerenderCreatedMatchCompleteReplacement(
     PrerenderContents* contents, PrerenderContents* replacement) {
   DCHECK(CalledOnValidThread());
