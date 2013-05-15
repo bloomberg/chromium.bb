@@ -3188,7 +3188,7 @@ LayoutRect AccessibilityRenderObject::computeElementRect() const
     // Checkboxes and radio buttons include their label as part of their rect.
     if (isCheckboxOrRadio()) {
         HTMLLabelElement* label = labelForElement(toElement(m_renderer->node()));
-        if (label && !label->renderer()) {
+        if (label && label->renderer()) {
             LayoutRect labelRect = axObjectCache()->getOrCreate(label)->elementRect();
             result.unite(labelRect);
         }
