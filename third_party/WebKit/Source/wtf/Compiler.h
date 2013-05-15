@@ -41,10 +41,6 @@
 #if defined(__clang__)
 #define WTF_COMPILER_CLANG 1
 
-#ifndef __has_extension
-#define __has_extension __has_feature /* Compatibility with older versions of clang */
-#endif
-
 #define CLANG_PRAGMA(PRAGMA) _Pragma(PRAGMA)
 
 /* Specific compiler features */
@@ -85,13 +81,6 @@
 #define WTF_COMPILER_QUIRK_FINAL_IS_CALLED_SEALED 1
 #endif
 
-#endif
-
-/* COMPILER(GCCE) - GNU Compiler Collection for Embedded */
-#if defined(__GCCE__)
-#define WTF_COMPILER_GCCE 1
-#define GCCE_VERSION (__GCCE__ * 10000 + __GCCE_MINOR__ * 100 + __GCCE_PATCHLEVEL__)
-#define GCCE_VERSION_AT_LEAST(major, minor, patch) (GCCE_VERSION >= (major * 10000 + minor * 100 + patch))
 #endif
 
 /* COMPILER(GCC) - GNU Compiler Collection */
@@ -143,11 +132,6 @@
         #define WTF_COMPILER_MINGW64 1
     #endif /* __MINGW64_VERSION_MAJOR */
 #endif /* __MINGW32__ */
-
-/* COMPILER(INTEL) - Intel C++ Compiler */
-#if defined(__INTEL_COMPILER)
-#define WTF_COMPILER_INTEL 1
-#endif
 
 /* ==== Compiler features ==== */
 

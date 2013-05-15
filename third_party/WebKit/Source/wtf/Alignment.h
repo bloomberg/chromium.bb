@@ -28,7 +28,7 @@
 
 namespace WTF {
 
-#if COMPILER(GCC) || COMPILER(MINGW) || COMPILER(GCCE)
+#if COMPILER(GCC) || COMPILER(MINGW)
     #define WTF_ALIGN_OF(type) __alignof__(type)
     #define WTF_ALIGNED(variable_type, variable, n) variable_type variable __attribute__((__aligned__(n)))
 #elif COMPILER(MSVC)
@@ -38,7 +38,7 @@ namespace WTF {
     #error WTF_ALIGN macros need alignment control.
 #endif
 
-#if COMPILER(GCC) && !COMPILER(INTEL) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 303)
+#if COMPILER(GCC)
     typedef char __attribute__((__may_alias__)) AlignedBufferChar; 
 #else
     typedef char AlignedBufferChar; 
