@@ -52,8 +52,8 @@ function test(magnitude)
 }
 
 Magnitude.description('Tests that document.contains is O(1).');
-Magnitude.tolerance = 0.15;
-Magnitude.trim = 1;
+Magnitude.tolerance = 0.30;
+Magnitude.trim = 2;
 Magnitude.run(setup1, test, Magnitude.CONSTANT);
 Magnitude.run(setup2, test, Magnitude.CONSTANT);
 Magnitude.run(setup3, test, Magnitude.CONSTANT);

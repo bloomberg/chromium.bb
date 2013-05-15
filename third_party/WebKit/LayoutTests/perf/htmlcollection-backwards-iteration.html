@@ -23,7 +23,9 @@ function test(magnitude)
 Magnitude.description("Tests that iterating over HTMLCollection backwards is linear.");
 Magnitude.initialExponent = 9;
 Magnitude.numPoints = 4;
-Magnitude.tolerance = 0.15; // 10%-15% deviations not uncommon
+Magnitude.numTrials = 5;
+Magnitude.successThreshold = 0.40;
+Magnitude.tolerance = 0.30;
 Magnitude.run(setupFunction, test, Magnitude.LINEAR);
 </script>
 </body>

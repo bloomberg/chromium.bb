@@ -19,8 +19,11 @@ function test(magnitude)
 Magnitude.description("Tests that style recalculation time is linear when adding text nodes that do not have renderers. See https://bugs.webkit.org/show_bug.cgi?id=110786");
 Magnitude.initialExponent = 9;
 Magnitude.numPoints = 7;
-Magnitude.tolerance = 0.25; // 5%-25% deviations not uncommon
-Magnitude.trim = 1; // initial run often slow
+// Extremely noisy
+Magnitude.numTrials = 5;
+Magnitude.successThreshold = 0.20;
+Magnitude.tolerance = 0.50;
+Magnitude.trim = 2;
 Magnitude.run(setupFunction, test, Magnitude.LINEAR);
 </script>
 </body>

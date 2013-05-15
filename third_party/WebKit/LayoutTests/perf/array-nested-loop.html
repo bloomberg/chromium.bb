@@ -18,8 +18,12 @@ function test(magnitude)
 }
 
 Magnitude.description("Tests that doing a nested loop over an array is quadratic.");
+// Quite noisy
+// lax settings ok as simply verifying "significantly superlinear"
 Magnitude.initialExponent = 9;
 Magnitude.numPoints = 3;
-Magnitude.tolerance = 0.20;
+Magnitude.numTrials = 5;
+Magnitude.successThreshold = 0.40;
+Magnitude.tolerance = 0.40;
 Magnitude.run(setupFunction, test, Magnitude.POLYNOMIAL);
 </script>

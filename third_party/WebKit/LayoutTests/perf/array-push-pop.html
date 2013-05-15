@@ -16,7 +16,11 @@ function test(magnitude)
 
 Magnitude.description("Tests that pushing and popping from an array is constant time.");
 Magnitude.numPoints = 12;
-Magnitude.tolerance = 0.20;
-Magnitude.trim = 1;
+// *Really* noisy; can sometimes get several 40% swings, so have more trials
+// and lax tolerance
+Magnitude.numTrials = 5;
+Magnitude.successThreshold = 0.40;
+Magnitude.tolerance = 0.40;
+Magnitude.trim = 2;
 Magnitude.run(setupFunction, test, Magnitude.CONSTANT);
 </script>

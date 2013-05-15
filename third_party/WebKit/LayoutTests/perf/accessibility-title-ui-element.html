@@ -48,8 +48,10 @@ function test(magnitude) {
 }
 
 Magnitude.description("Tests that titleUIElement on an accessibility element runs in amortized constant time.");
-Magnitude.tolerance = 0.10;
-Magnitude.trim = 1; // occasionally noisy
+Magnitude.numTrials = 5;
+Magnitude.successThreshold = 0.40;
+Magnitude.tolerance = 0.40;
+Magnitude.trim = 2;
 Magnitude.run(setup, test, Magnitude.CONSTANT);
 </script>
 </body>
