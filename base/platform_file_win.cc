@@ -286,7 +286,7 @@ PlatformFileError LastErrorToPlatformFileError(DWORD last_error) {
     case ERROR_DISK_CORRUPT:
       return PLATFORM_FILE_ERROR_IO;
     default:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownCreateFileErrors",
+      UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownErrors.Windows",
                                   last_error);
       return PLATFORM_FILE_ERROR_FAILED;
   }

@@ -5103,8 +5103,26 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="PlatformFile.UnknownCreateFileErrors" units="code">
+  <obsolete>
+    Deprecated as of 2013-05, replaced by
+    PlatformFile.UnknownCreateFileErrorsWin in chrome 29.
+  </obsolete>
   <summary>
     Errors returned by CreateFile on windows that PlatformFileError doesn't yet
+    support.
+  </summary>
+</histogram>
+
+<histogram name="PlatformFile.UnknownErrors.Posix" units="errno">
+  <summary>
+    Errors returned by CreateFile on POSIX that PlatformFileError doesn't yet
+    support.
+  </summary>
+</histogram>
+
+<histogram name="PlatformFile.UnknownErrors.Windows" units="GetLastError">
+  <summary>
+    Errors returned by CreateFile on Windows that PlatformFileError doesn't yet
     support.
   </summary>
 </histogram>

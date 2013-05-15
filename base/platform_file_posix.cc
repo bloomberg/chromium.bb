@@ -11,6 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -326,6 +327,8 @@ PlatformFileError ErrnoToPlatformFileError(int saved_errno) {
     case ENOTDIR:
       return PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
     default:
+      UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownErrors.Posix",
+                                  saved_errno);
       return PLATFORM_FILE_ERROR_FAILED;
   }
 }
