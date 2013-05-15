@@ -3283,6 +3283,9 @@ Battery full
   <message name="IDS_STATUSBAR_LAYOUT_ICELANDIC" desc="In the language menu button, this shows the input mode.">
     Icelandic keyboard
   </message>
+  <message name="IDS_STATUSBAR_LAYOUT_CANADIAN_MULTILINGUAL" desc="In the language menu button, this shows the input mode.">
+    Canadian Multilingual keyboard
+  </message>
   <message name="IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE" desc="The title of the infolist window where the meanings and the usages of words are displayed.">
     Information
   </message>

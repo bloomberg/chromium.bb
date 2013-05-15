@@ -76,6 +76,7 @@ xkb:fr::fra	fr	fr
 xkb:be::fra	be	fr	
 xkb:ca::fra	ca	fr	
 xkb:ch:fr:fra	ch(fr)	fr	
+xkb:ca:multi:fra ca(multi) fr
 
 # German
 xkb:de::ger	de	de	

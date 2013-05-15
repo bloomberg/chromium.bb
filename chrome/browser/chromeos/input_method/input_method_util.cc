@@ -269,6 +269,7 @@ const struct EnglishToResouceId {
   { "xkb:il::heb", IDS_STATUSBAR_LAYOUT_ISRAEL },
   { "xkb:kr:kr104:kor", IDS_STATUSBAR_LAYOUT_KOREA_104 },
   { "xkb:is::ice", IDS_STATUSBAR_LAYOUT_ICELANDIC },
+  { "xkb:ca:multi:fra", IDS_STATUSBAR_LAYOUT_CANADIAN_MULTILINGUAL },
 
   { "english-m", IDS_STATUSBAR_LAYOUT_USA_MYSTERY },
 };
