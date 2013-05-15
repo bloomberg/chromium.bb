@@ -70,6 +70,7 @@
 //<include src="combobutton.js"/>
 //<include src="commandbutton.js"/>
 //
+//<include src="async_util.js"/>
 //<include src="path_util.js"/>
 //<include src="util.js"/>
 //<include src="action_choice_util.js"/>

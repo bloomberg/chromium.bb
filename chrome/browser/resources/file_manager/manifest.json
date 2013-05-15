@@ -220,6 +220,7 @@
     "background": {
       "scripts": [
         "js/file_copy_manager.js",
+        "js/async_util.js",
         "js/path_util.js",
         "js/util.js",
         "js/test_util.js",
