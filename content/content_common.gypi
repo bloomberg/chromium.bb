@@ -300,15 +300,6 @@
     'common/net/url_fetcher.cc',
     'common/net/url_request_user_data.cc',
     'common/net/url_request_user_data.h',
-    'common/np_channel_base.cc',
-    'common/np_channel_base.h',
-    'common/npobject_base.h',
-    'common/npobject_proxy.cc',
-    'common/npobject_proxy.h',
-    'common/npobject_stub.cc',
-    'common/npobject_stub.h',
-    'common/npobject_util.cc',
-    'common/npobject_util.h',
     'common/p2p_messages.h',
     'common/p2p_sockets.h',
     'common/page_zoom.cc',
@@ -321,7 +312,6 @@
     'common/pepper_renderer_instance_data.h',
     'common/plugin_carbon_interpose_constants_mac.cc',
     'common/plugin_carbon_interpose_constants_mac.h',
-    'common/plugin_messages.h',
     'common/process_type.cc',
     'common/quota_messages.h',
     'common/quota_dispatcher.cc',
@@ -420,7 +410,6 @@
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:shared_memory_support',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-        '../third_party/npapi/npapi.gyp:npapi',
         '../ui/gl/gl.gyp:gl',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:webkit_base',
@@ -486,6 +475,11 @@
       'sources': [
         'common/gpu/media/android_video_decode_accelerator.cc',
         'common/gpu/media/android_video_decode_accelerator.h',
+      ],
+    }],
+    ['java_bridge==1', {
+      'defines': [
+        'ENABLE_JAVA_BRIDGE',
       ],
     }],
     ['target_arch=="arm" and chromeos == 1 and use_x11 == 1', {

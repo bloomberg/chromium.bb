@@ -12,7 +12,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace content {
 namespace {

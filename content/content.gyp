@@ -47,6 +47,7 @@
           'dependencies': [
             'content_app',
             'content_browser',
+            'content_common_plugin',
             'content_common',
           ],
           'conditions': [
@@ -96,6 +97,11 @@
                 'content_gpu',
               ],
             }],
+            ['java_bridge==1', {
+              'dependencies': [
+                'content_common_plugin',
+              ]
+            }]
           ],
         },
         {
@@ -115,6 +121,24 @@
           # Disable c4267 warnings until we fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         },
+        {
+          'target_name': 'content_common_plugin',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'includes': [
+            'content_common_plugin.gypi',
+          ],
+          'conditions': [
+            ['OS != "ios"', {
+              'dependencies': [
+                'content_resources.gyp:content_resources',
+              ],
+            }],
+          ],
+          # Disable c4267 warnings until we fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
+        },
+
       ],
       'conditions': [
         ['OS != "ios"', {
@@ -138,6 +162,7 @@
                 'content_plugin.gypi',
               ],
               'dependencies': [
+                'content_common_plugin',
                 'content_common',
               ],
             },
@@ -159,6 +184,7 @@
                 'content_renderer.gypi',
               ],
               'dependencies': [
+                'content_common_plugin',
                 'content_common',
                 'content_resources.gyp:content_resources',
               ],
@@ -208,6 +234,7 @@
           'includes': [
             'content_app.gypi',
             'content_browser.gypi',
+            'content_common_plugin.gypi',
             'content_common.gypi',
             'content_gpu.gypi',
             'content_plugin.gypi',
@@ -242,6 +269,11 @@
           'dependencies': ['content', 'content_resources.gyp:content_resources'],
           # Disable c4267 warnings until we fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
+        },
+        {
+          'target_name': 'content_common_plugin',
+          'type': 'none',
+          'dependencies': ['content'],
         },
         {
           'target_name': 'content_gpu',
