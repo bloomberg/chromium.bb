@@ -52,11 +52,12 @@ TEST_F(ServerBoundCertServiceTest, GetDomainForHost) {
             ServerBoundCertService::GetDomainForHost("google.com"));
   EXPECT_EQ("google.com",
             ServerBoundCertService::GetDomainForHost("www.google.com"));
-  // NOTE(rch): we would like to segregate cookies and certificates for
-  // *.appspot.com, but currently we can not do that becaues we want to
-  // allow direct navigation to appspot.com.
-  EXPECT_EQ("appspot.com",
+  EXPECT_EQ("foo.appspot.com",
             ServerBoundCertService::GetDomainForHost("foo.appspot.com"));
+  EXPECT_EQ("bar.appspot.com",
+            ServerBoundCertService::GetDomainForHost("foo.bar.appspot.com"));
+  EXPECT_EQ("appspot.com",
+            ServerBoundCertService::GetDomainForHost("appspot.com"));
   EXPECT_EQ("google.com",
             ServerBoundCertService::GetDomainForHost("www.mail.google.com"));
   EXPECT_EQ("goto",
