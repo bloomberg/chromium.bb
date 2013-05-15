@@ -714,11 +714,9 @@ class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase {
   LocalTestVolume volume_;
 };
 
-// InGuestMode tests temporarily disabled due to the crbug.com/230724 bug.
-//
-// INSTANTIATE_TEST_CASE_P(InGuestMode,
-//                         FileManagerBrowserLocalTest,
-//                         ::testing::Values(true));
+INSTANTIATE_TEST_CASE_P(InGuestMode,
+                        FileManagerBrowserLocalTest,
+                        ::testing::Values(true));
 
 INSTANTIATE_TEST_CASE_P(InNonGuestMode,
                         FileManagerBrowserLocalTest,
