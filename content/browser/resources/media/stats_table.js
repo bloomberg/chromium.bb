@@ -74,8 +74,7 @@ var StatsTable = (function(ssrcInfoManager) {
      * @private
      */
      ensureStatsTable_: function(peerConnectionElement, report) {
-      var tableId = peerConnectionElement.id + '-table-' +
-          report.type + '-' + report.id;
+      var tableId = peerConnectionElement.id + '-table-' + report.id;
       var table = $(tableId);
       if (!table) {
         var container = this.ensureStatsTableContainer_(peerConnectionElement);
@@ -85,8 +84,7 @@ var StatsTable = (function(ssrcInfoManager) {
         table.border = 1;
 
         table.innerHTML = '<tr><th colspan=2></th></tr>';
-        table.rows[0].cells[0].textContent =
-            'Statistics ' + report.type + '-' + report.id;
+        table.rows[0].cells[0].textContent = 'Statistics ' + report.id;
         if (report.type == 'ssrc') {
             table.insertRow(1);
             table.rows[1].innerHTML = '<td colspan=2></td>';

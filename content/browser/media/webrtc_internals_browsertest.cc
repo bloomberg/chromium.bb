@@ -219,7 +219,7 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
     // Adds each new value to the map of stats history.
     std::map<string, string>::iterator iter;
     for (iter = stats.values.begin(); iter != stats.values.end(); iter++) {
-      pc.stats_[type + "-" + id][iter->first].push_back(iter->second);
+      pc.stats_[id][iter->first].push_back(iter->second);
     }
     std::stringstream ss;
     ss << "{pid:" << pc.pid_ << ", lid:" << pc.lid_ << ","
@@ -235,7 +235,7 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
   void VerifyStatsTable(const PeerConnectionEntry& pc,
                         const StatsEntry& report) {
     string table_id =
-        pc.getIdString() + "-table-" + report.type + "-" + report.id;
+        pc.getIdString() + "-table-" + report.id;
     VerifyElementWithId(table_id);
 
     std::map<string, string>::const_iterator iter;
@@ -272,9 +272,14 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
       for (stats_iter = stream_iter->second.begin();
            stats_iter != stream_iter->second.end();
            stats_iter++) {
+        string graph_id = pc.getIdString() + "-" +
+            stream_iter->first + "-" + stats_iter->first;
         for (size_t i = 0; i < stats_iter->second.size(); ++i) {
-          string graph_id = pc.getIdString() + "-" +
-              stream_iter->first + "-" + stats_iter->first;
+          float number;
+          std::stringstream stream(stats_iter->second[i]);
+          stream >> number;
+          if (stream.fail())
+            continue;
           VerifyGraphDataPoint(graph_id, i, stats_iter->second[i]);
         }
       }
@@ -408,8 +413,9 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, AddStats) {
   ExecuteAddPeerConnectionJs(pc);
 
   const string type = "ssrc";
-  const string id = "1234";
+  const string id = "ssrc-1234";
   StatsUnit stats = {FAKE_TIME_STAMP};
+  stats.values["trackId"] = "abcd";
   stats.values["bitrate"] = "2000";
   stats.values["framerate"] = "30";
 
@@ -443,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, BweCompoundGraph) {
   ExecuteAndVerifyAddStats(pc, stats_type, stats_id, stats);
 
   string graph_id =
-      pc.getIdString() + "-" + stats_type + "-" + stats_id + "-bweCompound";
+      pc.getIdString() + "-" + stats_id + "-bweCompound";
   bool result = false;
   // Verify that the bweCompound graph exists.
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
@@ -498,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, ConvertedGraphs) {
   ExecuteAndVerifyAddStats(pc, stats_type, stats_id, stats);
 
   // Verifies the graph data matches converted_values.
-  string graph_id_prefix = pc.getIdString() + "-" + stats_type + "-" + stats_id;
+  string graph_id_prefix = pc.getIdString() + "-" + stats_id;
   for (int i = 0; i < num_converted_stats; ++i) {
     VerifyGraphDataPoint(
         graph_id_prefix + "-" + converted_names[i], 1, converted_values[i]);

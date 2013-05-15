@@ -79,6 +79,14 @@ var dataConversionConfig = {
   }
 };
 
+
+// The object contains the stats names that should not be added to the graph,
+// even if they are numbers.
+var statsNameBlackList = {
+  'ssrc': true,
+  'googTrackId': true,
+};
+
 var graphViews = {};
 var dataSeries = {};
 
@@ -91,15 +99,16 @@ function drawSingleReport(peerConnectionElement, report) {
   if (!stats || !stats.values)
     return;
 
-  var reportName = reportType + '-' + reportId;
   for (var i = 0; i < stats.values.length - 1; i = i + 2) {
     var rawLabel = stats.values[i];
-    var rawValue = parseInt(stats.values[i + 1]);
+    if (statsNameBlackList[rawLabel])
+      continue;
+    var rawValue = parseFloat(stats.values[i + 1]);
     if (isNaN(rawValue))
-      return;
+      continue;
 
     var rawDataSeriesId =
-        peerConnectionElement.id + '-' + reportName + '-' + rawLabel;
+        peerConnectionElement.id + '-' + reportId + '-' + rawLabel;
 
     var finalDataSeriesId = rawDataSeriesId;
     var finalLabel = rawLabel;
@@ -116,7 +125,7 @@ function drawSingleReport(peerConnectionElement, report) {
           dataSeries[rawDataSeriesId]);
       finalLabel = dataConversionConfig[rawLabel].convertedName;
       finalDataSeriesId =
-          peerConnectionElement.id + '-' + reportName + '-' + finalLabel;
+          peerConnectionElement.id + '-' + reportId + '-' + finalLabel;
     }
 
     // Updates the final dataSeries to draw.
@@ -127,7 +136,7 @@ function drawSingleReport(peerConnectionElement, report) {
     var graphType = bweCompoundGraphConfig[finalLabel] ?
                     'bweCompound' : finalLabel;
     var graphViewId =
-        peerConnectionElement.id + '-' + reportName + '-' + graphType;
+        peerConnectionElement.id + '-' + reportId + '-' + graphType;
 
     if (!graphViews[graphViewId]) {
       graphViews[graphViewId] = createStatsGraphView(peerConnectionElement,
@@ -174,7 +183,7 @@ function ensureStatsGraphTopContainer(peerConnectionElement, report) {
     container.firstChild.firstChild.className =
         STATS_GRAPH_CONTAINER_HEADING_CLASS;
     container.firstChild.firstChild.textContent =
-        'Stats graphs for ' + report.type + '-' + report.id;
+        'Stats graphs for ' + report.id;
 
     if (report.type == 'ssrc') {
       var ssrcInfoElement = document.createElement('div');
