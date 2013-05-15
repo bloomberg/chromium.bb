@@ -21,6 +21,7 @@
 
 namespace color_utils {
 
+
 // Helper functions -----------------------------------------------------------
 
 namespace {
@@ -61,14 +62,17 @@ SkColor LumaInvertColor(SkColor color) {
 }
 
 double ContrastRatio(double foreground_luminance, double background_luminance) {
-  // NOTE: Only pass in numbers obtained from RelativeLuminance(), since those
-  // are guaranteed to be > 0 and thus not cause a divide-by-zero error here.
+  DCHECK_GE(foreground_luminance, 0.0);
+  DCHECK_GE(background_luminance, 0.0);
+  foreground_luminance += 0.05;
+  background_luminance += 0.05;
   return (foreground_luminance > background_luminance) ?
       (foreground_luminance / background_luminance) :
       (background_luminance / foreground_luminance);
 }
 
 }  // namespace
+
 
 // ----------------------------------------------------------------------------
 
@@ -81,8 +85,8 @@ unsigned char GetLuminanceForColor(SkColor color) {
 
 double RelativeLuminance(SkColor color) {
   return (0.2126 * ConvertSRGB(SkColorGetR(color))) +
-      (0.7152 * ConvertSRGB(SkColorGetG(color))) +
-      (0.0722 * ConvertSRGB(SkColorGetB(color))) + 0.05;
+         (0.7152 * ConvertSRGB(SkColorGetG(color))) +
+         (0.0722 * ConvertSRGB(SkColorGetB(color)));
 }
 
 void SkColorToHSL(SkColor c, HSL* hsl) {
@@ -99,8 +103,8 @@ void SkColorToHSL(SkColor c, HSL* hsl) {
     double dr = (((vmax - r) / 6.0) + (delta / 2.0)) / delta;
     double dg = (((vmax - g) / 6.0) + (delta / 2.0)) / delta;
     double db = (((vmax - b) / 6.0) + (delta / 2.0)) / delta;
-    // We need to compare for the max value because comparing vmax to r,
-    // g or b can sometimes result in values overflowing registers.
+    // We need to compare for the max value because comparing vmax to r, g, or b
+    // can sometimes result in values overflowing registers.
     if (r >= g && r >= b)
       hsl->h = db - dg;
     else if (g >= r && g >= b)
@@ -122,8 +126,8 @@ SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha) {
   double saturation = hsl.s;
   double lightness = hsl.l;
 
-  // If there's no color, we don't care about hue and can do everything based
-  // on brightness.
+  // If there's no color, we don't care about hue and can do everything based on
+  // brightness.
   if (!saturation) {
     uint8 light;
 
@@ -169,9 +173,8 @@ SkColor HSLShift(SkColor color, const HSL& shift) {
   if (shift.l < 0)
     return result;
 
-  // Lightness shifts in the style of popular image editors aren't
-  // actually represented in HSL - the L value does have some effect
-  // on saturation.
+  // Lightness shifts in the style of popular image editors aren't actually
+  // represented in HSL - the L value does have some effect on saturation.
   double r = static_cast<double>(SkColorGetR(result));
   double g = static_cast<double>(SkColorGetG(result));
   double b = static_cast<double>(SkColorGetB(result));
@@ -191,12 +194,11 @@ SkColor HSLShift(SkColor color, const HSL& shift) {
 }
 
 void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]) {
+  DCHECK_EQ(SkBitmap::kARGB_8888_Config, bitmap.config());
+
   SkAutoLockPixels bitmap_lock(bitmap);
   if (!bitmap.getPixels())
     return;
-
-  // Assume ARGB_8888 format.
-  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
 
   int pixel_width = bitmap.width();
   int pixel_height = bitmap.height();
@@ -218,7 +220,7 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
 
   double normalizer = (f_alpha * alpha + b_alpha * (255 - alpha)) / 255.0;
   if (normalizer == 0.0)
-    return SkColorSetARGB(0, 0, 0, 0);
+    return SK_ColorTRANSPARENT;
 
   double f_weight = f_alpha * alpha / normalizer;
   double b_weight = b_alpha * (255 - alpha) / normalizer;
