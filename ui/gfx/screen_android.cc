@@ -15,20 +15,16 @@ class ScreenAndroid : public Screen {
  public:
   ScreenAndroid() {}
 
-  bool IsDIPEnabled() OVERRIDE {
-    return true;
-  }
+  virtual bool IsDIPEnabled() OVERRIDE { return true; }
 
-  gfx::Point GetCursorScreenPoint() OVERRIDE {
-    return gfx::Point();
-  }
+  virtual gfx::Point GetCursorScreenPoint() OVERRIDE { return gfx::Point(); }
 
-  gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
+  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
     NOTIMPLEMENTED();
     return NULL;
   }
 
-  gfx::Display GetPrimaryDisplay() const OVERRIDE {
+  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
     gfx::DeviceDisplayInfo device_info;
     const float device_scale_factor = device_info.GetDIPScale();
     const gfx::Rect bounds_in_pixels =
@@ -43,17 +39,17 @@ class ScreenAndroid : public Screen {
     return display;
   }
 
-  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const OVERRIDE {
+  virtual gfx::Display GetDisplayNearestWindow(
+      gfx::NativeView view) const OVERRIDE {
     return GetPrimaryDisplay();
   }
 
-  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const OVERRIDE {
+  virtual gfx::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const OVERRIDE {
     return GetPrimaryDisplay();
   }
 
-  int GetNumDisplays() OVERRIDE {
-    return 1;
-  }
+  virtual int GetNumDisplays() OVERRIDE { return 1; }
 
   virtual gfx::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const OVERRIDE {

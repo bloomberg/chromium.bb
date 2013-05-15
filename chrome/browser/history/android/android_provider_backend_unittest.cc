@@ -114,8 +114,7 @@ class AndroidProviderBackendTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {
   }
-  ~AndroidProviderBackendTest() {
-  }
+  virtual ~AndroidProviderBackendTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {

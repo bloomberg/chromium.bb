@@ -32,8 +32,7 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {
   }
-  ~BookmarkModelSQLHandlerTest() {
-  }
+  virtual ~BookmarkModelSQLHandlerTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {

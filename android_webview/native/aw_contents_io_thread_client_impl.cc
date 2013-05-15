@@ -104,7 +104,7 @@ class ClientMapEntryUpdater : public content::WebContentsObserver {
   virtual void RenderViewForInterstitialPageCreated(
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void WebContentsDestroyed(WebContents* web_contents);
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
  private:
   JavaObjectWeakGlobalRef jdelegate_;

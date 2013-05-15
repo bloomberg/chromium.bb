@@ -26,8 +26,7 @@ class VisitSQLHandlerTest : public testing::Test {
       : urls_sql_handler_(&history_db_),
         visit_sql_handler_(&history_db_) {
   }
-  ~VisitSQLHandlerTest() {
-  }
+  virtual ~VisitSQLHandlerTest() {}
 
  protected:
   virtual void SetUp() {

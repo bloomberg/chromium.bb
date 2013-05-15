@@ -47,15 +47,15 @@ class NotImplInputStream : public InputStream {
  public:
   NotImplInputStream() {}
   virtual ~NotImplInputStream() {}
-  virtual bool BytesAvailable(int* bytes_available) const {
+  virtual bool BytesAvailable(int* bytes_available) const OVERRIDE {
     NOTIMPLEMENTED();
     return false;
   }
-  virtual bool Skip(int64_t n, int64_t* bytes_skipped) {
+  virtual bool Skip(int64_t n, int64_t* bytes_skipped) OVERRIDE {
     NOTIMPLEMENTED();
     return false;
   }
-  virtual bool Read(net::IOBuffer* dest, int length, int* bytes_read) {
+  virtual bool Read(net::IOBuffer* dest, int length, int* bytes_read) OVERRIDE {
     NOTIMPLEMENTED();
     return false;
   }
@@ -69,28 +69,26 @@ class StreamReaderDelegate :
 
   virtual scoped_ptr<InputStream> OpenInputStream(
       JNIEnv* env,
-      const GURL& url) {
+      const GURL& url) OVERRIDE {
     return make_scoped_ptr<InputStream>(new NotImplInputStream());
   }
 
   virtual void OnInputStreamOpenFailed(net::URLRequest* request,
-                                       bool* restart) {
+                                       bool* restart) OVERRIDE {
     *restart = false;
   }
 
-  virtual bool GetMimeType(
-      JNIEnv* env,
-      net::URLRequest* request,
-      android_webview::InputStream* stream,
-      std::string* mime_type) {
+  virtual bool GetMimeType(JNIEnv* env,
+                           net::URLRequest* request,
+                           android_webview::InputStream* stream,
+                           std::string* mime_type) OVERRIDE {
     return false;
   }
 
-  virtual bool GetCharset(
-      JNIEnv* env,
-      net::URLRequest* request,
-      android_webview::InputStream* stream,
-      std::string* charset) {
+  virtual bool GetCharset(JNIEnv* env,
+                          net::URLRequest* request,
+                          android_webview::InputStream* stream,
+                          std::string* charset) OVERRIDE {
     return false;
   }
 };
@@ -101,7 +99,7 @@ class NullStreamReaderDelegate : public StreamReaderDelegate {
 
   virtual scoped_ptr<InputStream> OpenInputStream(
       JNIEnv* env,
-      const GURL& url) {
+      const GURL& url) OVERRIDE {
     return make_scoped_ptr<InputStream>(NULL);
   }
 };
@@ -131,13 +129,13 @@ class TestStreamReaderJob : public AndroidStreamReaderURLRequestJob {
   }
 
   virtual scoped_ptr<InputStreamReader> CreateStreamReader(
-      InputStream* stream) {
+      InputStream* stream) OVERRIDE {
     return stream_reader_.Pass();
   }
  protected:
   virtual ~TestStreamReaderJob() {}
 
-  virtual base::TaskRunner* GetWorkerThreadRunner() {
+  virtual base::TaskRunner* GetWorkerThreadRunner() OVERRIDE {
     return message_loop_proxy_.get();
   }
 

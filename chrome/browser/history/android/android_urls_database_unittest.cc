@@ -19,8 +19,7 @@ class AndroidURLsMigrationTest : public HistoryUnitTestBase {
  public:
   AndroidURLsMigrationTest() {
   }
-  ~AndroidURLsMigrationTest() {
-  }
+  virtual ~AndroidURLsMigrationTest() {}
 
  protected:
   virtual void SetUp() {

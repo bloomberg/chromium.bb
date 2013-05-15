@@ -47,7 +47,7 @@ class SurfaceTexturePeerChildImpl : public content::SurfaceTexturePeer,
       base::ProcessHandle pid,
       scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge,
       int primary_id,
-      int secondary_id) {
+      int secondary_id) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
     content::Java_ChildProcessService_establishSurfaceTexturePeer(
         env, service_.obj(), pid,

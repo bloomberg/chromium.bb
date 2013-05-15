@@ -20,8 +20,7 @@ class AndroidCacheDatabaseTest : public testing::Test {
  public:
   AndroidCacheDatabaseTest() {
   }
-  ~AndroidCacheDatabaseTest() {
-  }
+  virtual ~AndroidCacheDatabaseTest() {}
 
  protected:
   virtual void SetUp() {
