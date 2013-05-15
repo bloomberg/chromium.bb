@@ -24,7 +24,9 @@
 #include <gdk/gdk.h>
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(OS_WIN)
+#include <objidl.h>
+#elif defined(OS_ANDROID)
 #include <jni.h>
 
 #include "base/android/jni_android.h"
@@ -75,14 +77,23 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     FormatType();
     ~FormatType();
 
+    // Serializes and deserializes a FormatType for use in IPC messages.
     std::string Serialize() const;
     static FormatType Deserialize(const std::string& serialization);
 
-    // FormatType can be used as the key in a map on some platforms.
 #if defined(OS_WIN) || defined(USE_AURA)
-    bool operator<(const FormatType& other) const {
-      return data_ < other.data_;
-    }
+    // FormatType can be used in a set on some platforms.
+    bool operator<(const FormatType& other) const;
+#endif
+
+#if defined(OS_WIN)
+    const FORMATETC& ToFormatEtc() const { return data_; }
+#elif defined(OS_MACOSX)
+    // Custom copy and assignment constructor to handle NSString.
+    FormatType(const FormatType& other);
+    FormatType& operator=(const FormatType& other);
+#elif defined(USE_AURA)
+    const std::string& ToString() const { return data_; }
 #endif
 
    private:
@@ -90,23 +101,25 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
     bool Equals(const FormatType& other) const;
 
+    // Platform-specific glue used internally by the Clipboard class. Each
+    // plaform should define,at least one of each of the following:
+    // 1. A constructor that wraps that native clipboard format descriptor.
+    // 2. An accessor to retrieve the wrapped descriptor.
+    // 3. A data member to hold the wrapped descriptor.
+    //
+    // Note that in some cases, the accessor for the wrapped descriptor may be
+    // public, as these format types can be used by drag and drop code as well.
 #if defined(OS_WIN)
     explicit FormatType(UINT native_format);
-    UINT ToUINT() const { return data_; }
-    UINT data_;
+    FormatType(UINT native_format, LONG index);
+    UINT ToUINT() const { return data_.cfFormat; }
+    FORMATETC data_;
 #elif defined(OS_MACOSX)
-   public:
-    FormatType(const FormatType& other);
-    FormatType& operator=(const FormatType& other);
-   private:
     explicit FormatType(NSString* native_format);
     NSString* ToNSString() const { return data_; }
     NSString* data_;
 #elif defined(USE_AURA)
     explicit FormatType(const std::string& native_format);
-   public:
-    const std::string& ToString() const { return data_; }
-   private:
     std::string data_;
 #elif defined(TOOLKIT_GTK)
     explicit FormatType(const std::string& native_format);
@@ -116,11 +129,12 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 #elif defined(OS_ANDROID)
     explicit FormatType(const std::string& native_format);
     const std::string& data() const { return data_; }
-    int compare(const std::string& str) const { return data_.compare(str); }
     std::string data_;
 #else
 #error No FormatType definition.
 #endif
+
+    // Copyable and assignable, since this is essentially an opaque value type.
   };
 
   // ObjectType designates the type of data to be stored in the clipboard. This
@@ -317,7 +331,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   static const FormatType& GetTextHtmlFormatType();
   static const FormatType& GetCFHDropFormatType();
   static const FormatType& GetFileDescriptorFormatType();
-  static const FormatType& GetFileContentFormatZeroType();
+  static const FormatType& GetFileContentZeroFormatType();
 #endif
 
 #if defined(OS_MACOSX)

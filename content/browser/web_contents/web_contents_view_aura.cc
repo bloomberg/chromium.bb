@@ -39,6 +39,7 @@
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
@@ -54,10 +55,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "webkit/glue/webdropdata.h"
-
-#if defined(OS_WIN)
-#include "ui/base/clipboard/clipboard_util_win.h"
-#endif
 
 namespace content {
 WebContentsViewPort* CreateWebContentsView(
@@ -254,13 +251,8 @@ void PrepareDragData(const WebDropData& drop_data,
   if (!drop_data.custom_data.empty()) {
     Pickle pickle;
     ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
-#if defined(OS_WIN)
-    provider->SetPickledData(
-        ui::ClipboardUtil::GetWebCustomDataFormat()->cfFormat, pickle);
-#else
     provider->SetPickledData(ui::Clipboard::GetWebCustomDataFormatType(),
                              pickle);
-#endif
   }
 }
 
@@ -300,15 +292,9 @@ void PrepareWebDropData(WebDropData* drop_data,
   }
 
   Pickle pickle;
-#if defined(OS_WIN)
-  if (data.GetPickledData(ui::ClipboardUtil::GetWebCustomDataFormat()->cfFormat,
-                          &pickle))
-#else
-  if (data.GetPickledData(ui::Clipboard::GetWebCustomDataFormatType(),
-                          &pickle))
-#endif
-    ui::ReadCustomDataIntoMap(pickle.data(), pickle.size(),
-                              &drop_data->custom_data);
+  if (data.GetPickledData(ui::Clipboard::GetWebCustomDataFormatType(), &pickle))
+    ui::ReadCustomDataIntoMap(
+        pickle.data(), pickle.size(), &drop_data->custom_data);
 }
 
 // Utilities to convert between WebKit::WebDragOperationsMask and

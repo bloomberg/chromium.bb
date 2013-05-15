@@ -99,21 +99,8 @@ class DataObjectImpl : public DownloadFileObserver,
     bool owns_medium;
     scoped_refptr<DownloadFileProvider> downloader;
 
-    StoredDataInfo(CLIPFORMAT cf, STGMEDIUM* medium)
-        : medium(medium),
-          owns_medium(true) {
-      format_etc.cfFormat = cf;
-      format_etc.dwAspect = DVASPECT_CONTENT;
-      format_etc.lindex = -1;
-      format_etc.ptd = NULL;
-      format_etc.tymed = medium ? medium->tymed : TYMED_HGLOBAL;
-    }
-
-    StoredDataInfo(FORMATETC* format_etc, STGMEDIUM* medium)
-        : format_etc(*format_etc),
-          medium(medium),
-          owns_medium(true) {
-    }
+    StoredDataInfo(const FORMATETC& format_etc, STGMEDIUM* medium)
+        : format_etc(format_etc), medium(medium), owns_medium(true) {}
 
     ~StoredDataInfo() {
       if (owns_medium) {
@@ -165,7 +152,7 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual void SetFilename(const base::FilePath& path);
   virtual void SetFilenames(
       const std::vector<OSExchangeData::FileInfo>& filenames);
-  virtual void SetPickledData(OSExchangeData::CustomFormat format,
+  virtual void SetPickledData(const OSExchangeData::CustomFormat& format,
                               const Pickle& data);
   virtual void SetFileContents(const base::FilePath& filename,
                                const std::string& file_contents);
@@ -176,7 +163,7 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual bool GetFilename(base::FilePath* path) const;
   virtual bool GetFilenames(
       std::vector<OSExchangeData::FileInfo>* filenames) const;
-  virtual bool GetPickledData(OSExchangeData::CustomFormat format,
+  virtual bool GetPickledData(const OSExchangeData::CustomFormat& format,
                               Pickle* data) const;
   virtual bool GetFileContents(base::FilePath* filename,
                                std::string* file_contents) const;
@@ -186,7 +173,8 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual bool HasFile() const;
   virtual bool HasFileContents() const;
   virtual bool HasHtml() const;
-  virtual bool HasCustomFormat(OSExchangeData::CustomFormat format) const;
+  virtual bool HasCustomFormat(
+      const OSExchangeData::CustomFormat& format) const;
   virtual void SetDownloadFileInfo(
       const OSExchangeData::DownloadFileInfo& download_info);
   virtual void SetInDragLoop(bool in_drag_loop) OVERRIDE;

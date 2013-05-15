@@ -43,7 +43,7 @@ void OSExchangeDataProviderAura::SetFilenames(
 }
 
 void OSExchangeDataProviderAura::SetPickledData(
-    OSExchangeData::CustomFormat format,
+    const OSExchangeData::CustomFormat& format,
     const Pickle& data) {
   pickle_data_[format] = data;
   formats_ |= OSExchangeData::PICKLED_DATA;
@@ -88,7 +88,7 @@ bool OSExchangeDataProviderAura::GetFilenames(
 }
 
 bool OSExchangeDataProviderAura::GetPickledData(
-    OSExchangeData::CustomFormat format,
+    const OSExchangeData::CustomFormat& format,
     Pickle* data) const {
   PickleData::const_iterator i = pickle_data_.find(format);
   if (i == pickle_data_.end())
@@ -115,7 +115,7 @@ bool OSExchangeDataProviderAura::HasFile() const {
 }
 
 bool OSExchangeDataProviderAura::HasCustomFormat(
-    OSExchangeData::CustomFormat format) const {
+    const OSExchangeData::CustomFormat& format) const {
   return pickle_data_.find(format) != pickle_data_.end();
 }
 
@@ -175,15 +175,5 @@ bool OSExchangeDataProviderAura::GetPlainTextURL(GURL* url) const {
 OSExchangeData::Provider* OSExchangeData::CreateProvider() {
   return new OSExchangeDataProviderAura();
 }
-
-// static
-OSExchangeData::CustomFormat
-OSExchangeData::RegisterCustomFormat(const std::string& type) {
-  // On Aura you probably want to just use the Clipboard::Get*FormatType APIs
-  // instead.  But we can also dynamically generate new CustomFormat objects
-  // here too if really necessary.
-  return Clipboard::FormatType::Deserialize(type);
-}
-
 
 }  // namespace ui

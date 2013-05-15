@@ -8,16 +8,16 @@
 #include "base/pickle.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/common/url_constants.h"
+#include "ui/base/clipboard/clipboard.h"
 
 // static
-ui::OSExchangeData::CustomFormat BookmarkNodeData::GetBookmarkCustomFormat() {
-  CR_DEFINE_STATIC_LOCAL(ui::OSExchangeData::CustomFormat, format, ());
-  static bool format_valid = false;
+const ui::OSExchangeData::CustomFormat&
+BookmarkNodeData::GetBookmarkCustomFormat() {
+  CR_DEFINE_STATIC_LOCAL(
+      ui::OSExchangeData::CustomFormat,
+      format,
+      (ui::Clipboard::GetFormatType(BookmarkNodeData::kClipboardFormatString)));
 
-  if (!format_valid) {
-    format_valid = true;
-    format = ui::OSExchangeData::RegisterCustomFormat(kClipboardFormatString);
-  }
   return format;
 }
 

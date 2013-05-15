@@ -120,7 +120,7 @@ void OSExchangeDataProviderAuraX11::SetFilenames(
 }
 
 void OSExchangeDataProviderAuraX11::SetPickledData(
-    OSExchangeData::CustomFormat format,
+    const OSExchangeData::CustomFormat& format,
     const Pickle& data) {
   NOTIMPLEMENTED();
 }
@@ -204,7 +204,7 @@ bool OSExchangeDataProviderAuraX11::GetFilenames(
 }
 
 bool OSExchangeDataProviderAuraX11::GetPickledData(
-    OSExchangeData::CustomFormat format,
+    const OSExchangeData::CustomFormat& format,
     Pickle* data) const {
   NOTIMPLEMENTED();
   return false;
@@ -230,7 +230,7 @@ bool OSExchangeDataProviderAuraX11::HasFile() const {
 }
 
 bool OSExchangeDataProviderAuraX11::HasCustomFormat(
-    OSExchangeData::CustomFormat format) const {
+    const OSExchangeData::CustomFormat& format) const {
   std::vector< ::Atom> url_atoms;
   url_atoms.push_back(atom_cache_.GetAtom(format.ToString().c_str()));
   std::vector< ::Atom> requested_types;
@@ -303,15 +303,6 @@ bool OSExchangeDataProviderAuraX11::GetPlainTextURL(GURL* url) const {
 // static
 OSExchangeData::Provider* OSExchangeData::CreateProvider() {
   return new OSExchangeDataProviderAuraX11();
-}
-
-// static
-OSExchangeData::CustomFormat
-OSExchangeData::RegisterCustomFormat(const std::string& type) {
-  // On AuraX11 you probably want to just use the Clipboard::Get*FormatType APIs
-  // instead.  But we can also dynamically generate new CustomFormat objects
-  // here too if really necessary.
-  return Clipboard::FormatType::Deserialize(type);
 }
 
 }  // namespace ui

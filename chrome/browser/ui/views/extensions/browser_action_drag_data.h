@@ -35,7 +35,7 @@ class BrowserActionDragData {
   bool Read(const ui::OSExchangeData& data);
 
   // Returns the Custom Format this class supports (for Browser Actions).
-  static ui::OSExchangeData::CustomFormat GetBrowserActionCustomFormat();
+  static const ui::OSExchangeData::CustomFormat& GetBrowserActionCustomFormat();
 #endif
 
  private:

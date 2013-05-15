@@ -19,12 +19,9 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/download_file_interface.h"
 #include "ui/base/ui_export.h"
-
-#if defined(USE_AURA)
-#include "ui/base/clipboard/clipboard.h"
-#endif
 
 class GURL;
 class Pickle;
@@ -54,17 +51,8 @@ class UI_EXPORT OSExchangeData {
  public:
   // CustomFormats are used for non-standard data types. For example, bookmark
   // nodes are written using a CustomFormat.
-#if defined(OS_WIN)
-  typedef CLIPFORMAT CustomFormat;
-#elif defined(USE_AURA)
-  // Use the same type as the clipboard (why do we want two different
-  // definitions of this on other platforms?).
+  // TODO(dcheng): Remove this completely and just use Clipboard::FormatType.
   typedef Clipboard::FormatType CustomFormat;
-#elif defined(TOOLKIT_GTK)
-  typedef GdkAtom CustomFormat;
-#else
-  typedef void* CustomFormat;
-#endif
 
   // Enumeration of the known formats.
   enum Format {
@@ -113,20 +101,21 @@ class UI_EXPORT OSExchangeData {
     virtual void SetFilename(const base::FilePath& path) = 0;
     virtual void SetFilenames(
         const std::vector<FileInfo>& file_names) = 0;
-    virtual void SetPickledData(CustomFormat format, const Pickle& data) = 0;
+    virtual void SetPickledData(const CustomFormat& format,
+                                const Pickle& data) = 0;
 
     virtual bool GetString(string16* data) const = 0;
     virtual bool GetURLAndTitle(GURL* url, string16* title) const = 0;
     virtual bool GetFilename(base::FilePath* path) const = 0;
     virtual bool GetFilenames(
         std::vector<FileInfo>* file_names) const = 0;
-    virtual bool GetPickledData(CustomFormat format, Pickle* data) const = 0;
+    virtual bool GetPickledData(const CustomFormat& format,
+                                Pickle* data) const = 0;
 
     virtual bool HasString() const = 0;
     virtual bool HasURL() const = 0;
     virtual bool HasFile() const = 0;
-    virtual bool HasCustomFormat(
-        OSExchangeData::CustomFormat format) const = 0;
+    virtual bool HasCustomFormat(const CustomFormat& format) const = 0;
 
 #if defined(OS_WIN)
     virtual void SetFileContents(const base::FilePath& filename,
@@ -162,9 +151,6 @@ class UI_EXPORT OSExchangeData {
 
   ~OSExchangeData();
 
-  // Registers the specific string as a possible format for data.
-  static CustomFormat RegisterCustomFormat(const std::string& type);
-
   // Returns the Provider, which actually stores and manages the data.
   const Provider& provider() const { return *provider_; }
   Provider& provider() { return *provider_; }
@@ -188,7 +174,7 @@ class UI_EXPORT OSExchangeData {
   void SetFilenames(
       const std::vector<FileInfo>& file_names);
   // Adds pickled data of the specified format.
-  void SetPickledData(CustomFormat format, const Pickle& data);
+  void SetPickledData(const CustomFormat& format, const Pickle& data);
 
   // These functions retrieve data of the specified type. If data exists, the
   // functions return and the result is in the out parameter. If the data does
@@ -200,14 +186,14 @@ class UI_EXPORT OSExchangeData {
   bool GetFilename(base::FilePath* path) const;
   bool GetFilenames(
       std::vector<FileInfo>* file_names) const;
-  bool GetPickledData(CustomFormat format, Pickle* data) const;
+  bool GetPickledData(const CustomFormat& format, Pickle* data) const;
 
   // Test whether or not data of certain types is present, without actually
   // returning anything.
   bool HasString() const;
   bool HasURL() const;
   bool HasFile() const;
-  bool HasCustomFormat(CustomFormat format) const;
+  bool HasCustomFormat(const CustomFormat& format) const;
 
   // Returns true if this OSExchangeData has data for ALL the formats in
   // |formats| and ALL the custom formats in |custom_formats|.

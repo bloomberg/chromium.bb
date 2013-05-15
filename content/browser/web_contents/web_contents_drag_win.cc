@@ -28,7 +28,7 @@
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/clipboard/clipboard_util_win.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/layout.h"
@@ -338,8 +338,7 @@ bool WebContentsDragWin::DoDragging(const WebDropData& drop_data,
   if (!drop_data.custom_data.empty()) {
     Pickle pickle;
     ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
-    data.SetPickledData(ui::ClipboardUtil::GetWebCustomDataFormat()->cfFormat,
-                        pickle);
+    data.SetPickledData(ui::Clipboard::GetWebCustomDataFormatType(), pickle);
   }
 
   // Set drag image.

@@ -17,6 +17,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/ui_strings.h"
 #include "net/base/net_util.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -265,13 +266,13 @@ OSExchangeDataProviderWin::~OSExchangeDataProviderWin() {
 
 void OSExchangeDataProviderWin::SetString(const string16& data) {
   STGMEDIUM* storage = GetStorageForString(data);
-  data_->contents_.push_back(
-      new DataObjectImpl::StoredDataInfo(CF_UNICODETEXT, storage));
+  data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
+      Clipboard::GetPlainTextWFormatType().ToFormatEtc(), storage));
 
   // Also add the UTF8-encoded version.
   storage = GetStorageForString(UTF16ToUTF8(data));
-  data_->contents_.push_back(
-      new DataObjectImpl::StoredDataInfo(CF_TEXT, storage));
+  data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
+      Clipboard::GetPlainTextFormatType().ToFormatEtc(), storage));
 }
 
 void OSExchangeDataProviderWin::SetURL(const GURL& url,
@@ -288,7 +289,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   x_moz_url_str += title;
   STGMEDIUM* storage = GetStorageForString(x_moz_url_str);
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
-      ClipboardUtil::GetMozUrlFormat()->cfFormat, storage));
+      Clipboard::GetMozUrlFormatType().ToFormatEtc(), storage));
 
   // Add a .URL shortcut file for dragging to Explorer.
   string16 valid_file_name;
@@ -300,10 +301,10 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   // Add a UniformResourceLocator link for apps like IE and Word.
   storage = GetStorageForString(UTF8ToUTF16(url.spec()));
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
-      ClipboardUtil::GetUrlWFormat()->cfFormat, storage));
+      Clipboard::GetUrlWFormatType().ToFormatEtc(), storage));
   storage = GetStorageForString(url.spec());
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
-      ClipboardUtil::GetUrlFormat()->cfFormat, storage));
+      Clipboard::GetUrlFormatType().ToFormatEtc(), storage));
 
   // TODO(beng): add CF_HTML.
   // http://code.google.com/p/chromium/issues/detail?id=6767
@@ -311,13 +312,12 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   // Also add text representations (these should be last since they're the
   // least preferable).
   SetString(UTF8ToUTF16(url.spec()));
-
 }
 
 void OSExchangeDataProviderWin::SetFilename(const base::FilePath& path) {
   STGMEDIUM* storage = GetStorageForFileName(path);
-  DataObjectImpl::StoredDataInfo* info =
-      new DataObjectImpl::StoredDataInfo(CF_HDROP, storage);
+  DataObjectImpl::StoredDataInfo* info = new DataObjectImpl::StoredDataInfo(
+      Clipboard::GetCFHDropFormatType().ToFormatEtc(), storage);
   data_->contents_.push_back(info);
 }
 
@@ -325,17 +325,18 @@ void OSExchangeDataProviderWin::SetFilenames(
     const std::vector<OSExchangeData::FileInfo>& filenames) {
   for (size_t i = 0; i < filenames.size(); ++i) {
     STGMEDIUM* storage = GetStorageForFileName(filenames[i].path);
-    DataObjectImpl::StoredDataInfo* info =
-        new DataObjectImpl::StoredDataInfo(CF_HDROP, storage);
+    DataObjectImpl::StoredDataInfo* info = new DataObjectImpl::StoredDataInfo(
+        Clipboard::GetCFHDropFormatType().ToFormatEtc(), storage);
     data_->contents_.push_back(info);
   }
 }
 
-void OSExchangeDataProviderWin::SetPickledData(CLIPFORMAT format,
-                                               const Pickle& data) {
+void OSExchangeDataProviderWin::SetPickledData(
+    const OSExchangeData::CustomFormat& format,
+    const Pickle& data) {
   STGMEDIUM* storage = GetStorageForBytes(data.data(), data.size());
   data_->contents_.push_back(
-      new DataObjectImpl::StoredDataInfo(format, storage));
+      new DataObjectImpl::StoredDataInfo(format.ToFormatEtc(), storage));
 }
 
 void OSExchangeDataProviderWin::SetFileContents(
@@ -344,12 +345,12 @@ void OSExchangeDataProviderWin::SetFileContents(
   // Add CFSTR_FILEDESCRIPTOR
   STGMEDIUM* storage = GetStorageForFileDescriptor(filename);
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
-      ClipboardUtil::GetFileDescriptorFormat()->cfFormat, storage));
+      Clipboard::GetFileDescriptorFormatType().ToFormatEtc(), storage));
 
   // Add CFSTR_FILECONTENTS
   storage = GetStorageForBytes(file_contents.data(), file_contents.length());
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
-      ClipboardUtil::GetFileContentFormatZero(), storage));
+      Clipboard::GetFileContentZeroFormatType().ToFormatEtc(), storage));
 }
 
 void OSExchangeDataProviderWin::SetHtml(const string16& html,
@@ -361,12 +362,12 @@ void OSExchangeDataProviderWin::SetHtml(const string16& html,
   std::string cf_html = ClipboardUtil::HtmlToCFHtml(utf8_html, url);
   STGMEDIUM* storage = GetStorageForBytes(cf_html.c_str(), cf_html.size());
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
-      ClipboardUtil::GetHtmlFormat()->cfFormat, storage));
+      Clipboard::GetHtmlFormatType().ToFormatEtc(), storage));
 
   STGMEDIUM* storage_plain = GetStorageForBytes(utf8_html.c_str(),
                                                 utf8_html.size());
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
-      ClipboardUtil::GetTextHtmlFormat()->cfFormat, storage_plain));
+      Clipboard::GetTextHtmlFormatType().ToFormatEtc(), storage_plain));
 }
 
 bool OSExchangeDataProviderWin::GetString(string16* data) const {
@@ -414,13 +415,13 @@ bool OSExchangeDataProviderWin::GetFilenames(
   return success;
 }
 
-bool OSExchangeDataProviderWin::GetPickledData(CLIPFORMAT format,
-                                               Pickle* data) const {
+bool OSExchangeDataProviderWin::GetPickledData(
+    const OSExchangeData::CustomFormat& format,
+    Pickle* data) const {
   DCHECK(data);
-  FORMATETC format_etc =
-      { format, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
   bool success = false;
   STGMEDIUM medium;
+  FORMATETC format_etc = format.ToFormatEtc();
   if (SUCCEEDED(source_object_->GetData(&format_etc, &medium))) {
     if (medium.tymed & TYMED_HGLOBAL) {
       base::win::ScopedHGlobal<char> c_data(medium.hGlobal);
@@ -475,9 +476,9 @@ bool OSExchangeDataProviderWin::HasHtml() const {
   return ClipboardUtil::HasHtml(source_object_);
 }
 
-bool OSExchangeDataProviderWin::HasCustomFormat(CLIPFORMAT format) const {
-  FORMATETC format_etc =
-      { format, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+bool OSExchangeDataProviderWin::HasCustomFormat(
+    const OSExchangeData::CustomFormat& format) const {
+  FORMATETC format_etc = format.ToFormatEtc();
   return (source_object_->QueryGetData(&format_etc) == S_OK);
 }
 
@@ -493,7 +494,7 @@ void OSExchangeDataProviderWin::SetDownloadFileInfo(
 
   // Add CF_HDROP.
   DataObjectImpl::StoredDataInfo* info = new DataObjectImpl::StoredDataInfo(
-      ClipboardUtil::GetCFHDropFormat()->cfFormat, storage);
+      Clipboard::GetCFHDropFormatType().ToFormatEtc(), storage);
   info->downloader = download.downloader;
   data_->contents_.push_back(info);
 }
@@ -636,10 +637,9 @@ void DataObjectImpl::RemoveData(const FORMATETC& format) {
 }
 
 void DataObjectImpl::OnDownloadCompleted(const base::FilePath& file_path) {
-  CLIPFORMAT hdrop_format = ClipboardUtil::GetCFHDropFormat()->cfFormat;
   DataObjectImpl::StoredData::iterator iter = contents_.begin();
   for (; iter != contents_.end(); ++iter) {
-    if ((*iter)->format_etc.cfFormat == hdrop_format) {
+    if ((*iter)->format_etc.cfFormat == CF_HDROP) {
       // Release the old storage.
       if ((*iter)->owns_medium) {
         ReleaseStgMedium((*iter)->medium);
@@ -748,7 +748,7 @@ HRESULT DataObjectImpl::SetData(
   }
 
   DataObjectImpl::StoredDataInfo* info =
-      new DataObjectImpl::StoredDataInfo(format_etc->cfFormat, local_medium);
+      new DataObjectImpl::StoredDataInfo(*format_etc, local_medium);
   info->medium->tymed = format_etc->tymed;
   info->owns_medium = !!should_release;
   // Make newly added data appear first.
@@ -947,12 +947,6 @@ static STGMEDIUM* GetStorageForFileDescriptor(
 // static
 OSExchangeData::Provider* OSExchangeData::CreateProvider() {
   return new OSExchangeDataProviderWin();
-}
-
-// static
-OSExchangeData::CustomFormat OSExchangeData::RegisterCustomFormat(
-    const std::string& type) {
-  return RegisterClipboardFormat(ASCIIToUTF16(type).c_str());
 }
 
 }  // namespace ui

@@ -20,29 +20,6 @@ namespace ui {
 class UI_EXPORT ClipboardUtil {
  public:
   /////////////////////////////////////////////////////////////////////////////
-  // Clipboard formats.
-  static FORMATETC* GetUrlFormat();
-  static FORMATETC* GetUrlWFormat();
-  static FORMATETC* GetMozUrlFormat();
-  static FORMATETC* GetPlainTextFormat();
-  static FORMATETC* GetPlainTextWFormat();
-  static FORMATETC* GetFilenameFormat();
-  static FORMATETC* GetFilenameWFormat();
-  // MS HTML Format
-  static FORMATETC* GetHtmlFormat();
-  // MS RTF Format
-  static FORMATETC* GetRtfFormat();
-  // Firefox text/html
-  static FORMATETC* GetTextHtmlFormat();
-  static FORMATETC* GetCFHDropFormat();
-  static FORMATETC* GetFileDescriptorFormat();
-  static FORMATETC* GetFileContentFormatZero();
-  static FORMATETC* GetWebKitSmartPasteFormat();
-  static FORMATETC* GetWebCustomDataFormat();
-  static FORMATETC* GetPepperCustomDataFormat();
-  static FORMATETC* GetSourceTagFormat();
-
-  /////////////////////////////////////////////////////////////////////////////
   // These methods check to see if |data_object| has the requested type.
   // Returns true if it does.
   static bool HasUrl(IDataObject* data_object);

@@ -82,7 +82,7 @@ struct BookmarkNodeData {
   ~BookmarkNodeData();
 
 #if defined(TOOLKIT_VIEWS)
-  static ui::OSExchangeData::CustomFormat GetBookmarkCustomFormat();
+  static const ui::OSExchangeData::CustomFormat& GetBookmarkCustomFormat();
 #endif
 
   static bool ClipboardContainsBookmarks();

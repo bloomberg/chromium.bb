@@ -456,6 +456,10 @@ Clipboard::FormatType Clipboard::FormatType::Deserialize(
   return FormatType(serialization);
 }
 
+bool Clipboard::FormatType::operator<(const FormatType& other) const {
+  return data_ < other.data_;
+}
+
 bool Clipboard::FormatType::Equals(const FormatType& other) const {
   return data_ == other.data_;
 }

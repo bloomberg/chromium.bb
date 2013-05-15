@@ -10,7 +10,7 @@
 #include "base/win/scoped_hglobal.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/clipboard/clipboard_util_win.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
@@ -337,19 +337,20 @@ TEST(OSExchangeDataTest, TestURLExchangeFormats) {
 }
 
 TEST(OSExchangeDataTest, TestPickledData) {
-  CLIPFORMAT test_cf = RegisterClipboardFormat(L"chrome/test");
+  const OSExchangeData::CustomFormat kTestFormat =
+      ui::Clipboard::GetFormatType("application/vnd.chromium.test");
 
   Pickle saved_pickle;
   saved_pickle.WriteInt(1);
   saved_pickle.WriteInt(2);
   OSExchangeData data;
-  data.SetPickledData(test_cf, saved_pickle);
+  data.SetPickledData(kTestFormat, saved_pickle);
 
   OSExchangeData copy(CloneProvider(data));
-  EXPECT_TRUE(copy.HasCustomFormat(test_cf));
+  EXPECT_TRUE(copy.HasCustomFormat(kTestFormat));
 
   Pickle restored_pickle;
-  EXPECT_TRUE(copy.GetPickledData(test_cf, &restored_pickle));
+  EXPECT_TRUE(copy.GetPickledData(kTestFormat, &restored_pickle));
   PickleIterator iterator(restored_pickle);
   int value;
   EXPECT_TRUE(restored_pickle.ReadInt(&iterator, &value));
@@ -394,10 +395,10 @@ TEST(OSExchangeDataTest, Html) {
   expected_cf_html += WideToUTF8(html);
   expected_cf_html.append("<!--EndFragment-->\r\n</body>\r\n</html>");
 
+  FORMATETC format = Clipboard::GetHtmlFormatType().ToFormatEtc();
   STGMEDIUM medium;
   IDataObject* data_object = OSExchangeDataProviderWin::GetIDataObject(data);
-  EXPECT_EQ(S_OK,
-      data_object->GetData(ui::ClipboardUtil::GetHtmlFormat(), &medium));
+  EXPECT_EQ(S_OK, data_object->GetData(&format, &medium));
   base::win::ScopedHGlobal<char> glob(medium.hGlobal);
   std::string output(glob.get(), glob.Size());
   EXPECT_EQ(expected_cf_html, output);

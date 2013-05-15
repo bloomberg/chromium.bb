@@ -8,6 +8,7 @@
 #include "base/pickle.h"
 #include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "ui/base/clipboard/clipboard.h"
 
 const char* BrowserActionDragData::kClipboardFormatString =
     "chromium/x-browser-actions";
@@ -49,16 +50,13 @@ bool BrowserActionDragData::Read(const ui::OSExchangeData& data) {
 }
 
 // static
-ui::OSExchangeData::CustomFormat
-    BrowserActionDragData::GetBrowserActionCustomFormat() {
-  CR_DEFINE_STATIC_LOCAL(ui::OSExchangeData::CustomFormat, format, ());
-  static bool format_valid = false;
+const ui::OSExchangeData::CustomFormat&
+BrowserActionDragData::GetBrowserActionCustomFormat() {
+  CR_DEFINE_STATIC_LOCAL(
+      ui::OSExchangeData::CustomFormat,
+      format,
+      (ui::Clipboard::GetFormatType(kClipboardFormatString)));
 
-  if (!format_valid) {
-    format_valid = true;
-    format = ui::OSExchangeData::RegisterCustomFormat(
-        BrowserActionDragData::kClipboardFormatString);
-  }
   return format;
 }
 #endif
