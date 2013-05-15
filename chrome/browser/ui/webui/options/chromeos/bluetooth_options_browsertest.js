@@ -294,4 +294,81 @@ TEST_F('BluetoothWebUITest','testConnectionState', function() {
                                          fakeDevice.name));
 });
 
+
+TEST_F('BluetoothWebUITest','testMaliciousInput', function() {
+  assertEquals(this.browsePreload, document.location.href);
+
+  var unpairedDeviceList = $('bluetooth-unpaired-devices-list');
+  var pairDeviceDialog = $('bluetooth-pairing');
+
+  var maliciousStrings = [
+      '<SCRIPT>alert(1)</SCRIPT>',
+      '>\'>\\"><SCRIPT>alert(1)</SCRIPT>',
+      '<IMG SRC=\\"javascript:alert(1)\\">',
+      '<A HREF=\\"data:text/html;base64,' +
+          'PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pgo=\\">...</A>',
+      '<div>',
+      '<textarea>',
+      '<style>',
+      '[0xC0][0xBC]SCRIPT[0xC0][0xBE]alert(1)[0xC0][0xBC]/SCRIPT[0xC0][0xBE]',
+      '+ADw-SCRIPT+AD4-alert(1)+ADw-/SCRIPT+AD4-',
+      '&#<script>alert(1)</script>;',
+      '<!-- Hello -- world > <SCRIPT>alert(1)</SCRIPT> -->',
+      '<!<!-- Hello world > <SCRIPT>alert(1)</SCRIPT> -->',
+      '\x3CSCRIPT\x3Ealert(1)\x3C/SCRIPT\x3E',
+      '<IMG SRC=\\"j[0x00]avascript:alert(1)\\">',
+      '<BASE HREF=\\"javascript:1;/**/\\"><IMG SRC=\\"alert(1)\\">',
+      'javascript:alert(1);',
+      ' xss_injection=\\"\\" ',
+      '\\" xss_injection=\\"',
+      '\' xss_injection=\'',
+      '<!--',
+      '\'',
+      '\\"'
+  ];
+
+  var fakeDevice = {
+    address: '11:22:33:44:55:66',
+    connectable: true,
+    connected: false,
+    name: 'fake',
+    paired: false,
+    pairing: 'bluetoothStartConnecting'
+  };
+
+  options.BrowserOptions.addBluetoothDevice(fakeDevice);
+
+  var nodeCount = function(node) {
+    if (node.getAttribute)
+      assertFalse(!!node.getAttribute('xss_injection'));
+    var length = node.childNodes.length;
+    var tally = length;
+    for (var i = 0; i < length; i++) {
+      tally += nodeCount(node.childNodes[i]);
+    }
+    return tally;
+  };
+
+  // Determine the expected sizes.
+  var unpairedDeviceListSize = nodeCount(unpairedDeviceList);
+  var pairDeviceDialogSize = nodeCount(pairDeviceDialog);
+
+  // Ensure that updating the device with a malicious name does not corrupt the
+  // structure of the document.  Tests the unpaired device list and bluetooth
+  // pairing dialog.
+  for (var i = 0; i < maliciousStrings.length; i++) {
+    fakeDevice.name = maliciousStrings[i];
+    options.BrowserOptions.addBluetoothDevice(fakeDevice);
+    assertEquals(unpairedDeviceListSize, nodeCount(unpairedDeviceList));
+    var element = this.getElementForDevice(unpairedDeviceList,
+                                           fakeDevice.name);
+    assertTrue(!!element);
+    var label = element.querySelector('.bluetooth-device-label');
+    assertTrue(!!label);
+    assertEquals(maliciousStrings[i], label.textContent);
+    assertEquals(pairDeviceDialogSize, nodeCount(pairDeviceDialog));
+  }
+
+});
+
 GEN('#endif');
