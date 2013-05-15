@@ -1404,9 +1404,9 @@ ErrorCode RestrictPrctl(Sandbox *sandbox) {
 
 ErrorCode RestrictIoctl(Sandbox *sandbox) {
   // Allow TCGETS and FIONREAD, trap to ReportIoctlFailure otherwise.
-  return sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_EQUAL, TCGETS,
+  return sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, TCGETS,
                        ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_EQUAL, FIONREAD,
+         sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, FIONREAD,
                        ErrorCode(ErrorCode::ERR_ALLOWED),
                        sandbox->Trap(ReportIoctlFailure, NULL)));
 }
@@ -1416,12 +1416,7 @@ ErrorCode RendererOrWorkerProcessPolicy(Sandbox *sandbox, int sysno, void *) {
     case __NR_clone:
       return RestrictCloneToThreadsAndEPERMFork(sandbox);
     case __NR_ioctl:
-      // Restrict IOCTL on x86_64.
-      if (IsArchitectureX86_64()) {
-        return RestrictIoctl(sandbox);
-      } else {
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
-      }
+      return RestrictIoctl(sandbox);
     case __NR_prctl:
       return RestrictPrctl(sandbox);
     // Allow the system calls below.
