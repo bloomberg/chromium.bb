@@ -48,7 +48,7 @@ bool WebMClusterParser::TextTrackIterator::operator()(
 
 WebMClusterParser::WebMClusterParser(
     int64 timecode_scale, int audio_track_num, int video_track_num,
-    const std::set<int>& text_tracks,
+    const WebMTracksParser::TextTracks& text_tracks,
     const std::set<int64>& ignored_tracks,
     const std::string& audio_encryption_key_id,
     const std::string& video_encryption_key_id,
@@ -67,10 +67,10 @@ WebMClusterParser::WebMClusterParser(
       audio_(audio_track_num, false),
       video_(video_track_num, true),
       log_cb_(log_cb) {
-  for (std::set<int>::const_iterator it = text_tracks.begin();
+  for (WebMTracksParser::TextTracks::const_iterator it = text_tracks.begin();
        it != text_tracks.end();
        ++it) {
-    text_track_map_.insert(std::make_pair(*it, Track(*it, false)));
+    text_track_map_.insert(std::make_pair(it->first, Track(it->first, false)));
   }
 }
 
