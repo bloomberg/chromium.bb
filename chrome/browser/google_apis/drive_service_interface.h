@@ -209,12 +209,26 @@ class DriveServiceInterface {
                               const std::string& etag,
                               const EntryActionCallback& callback) = 0;
 
+  // Makes a copy of a resource with |resource_id|.
+  // The new resource will be put under a directory with |parent_resource_id|,
+  // and it'll be named |new_name|.
+  // This operation is supported only on DriveAPIService, because GData WAPI
+  // doesn't support the function unfortunately.
+  // Upon completion, invokes |callback| with results on the calling thread.
+  // |callback| must not be null.
+  virtual void CopyResource(const std::string& resource_id,
+                            const std::string& parent_resource_id,
+                            const std::string& new_name,
+                            const GetResourceEntryCallback& callback) = 0;
+
   // Makes a copy of a hosted document identified by its |resource_id|.
   // The copy is named as the UTF-8 encoded |new_name| and is not added to any
   // collection. Use AddResourceToDirectory() to add the copy to a collection
   // when needed. Upon completion, invokes |callback| with results on the
   // calling thread.
   // |callback| must not be null.
+  // TODO(hidehiko): After the migration to Drive API v2, remove this method,
+  // because we can use CopyResource instead.
   virtual void CopyHostedDocument(
       const std::string& resource_id,
       const std::string& new_name,

@@ -494,6 +494,18 @@ void DriveAPIService::AddNewDirectory(
           base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
+void DriveAPIService::CopyResource(
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    const std::string& new_name,
+    const GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this (crbug.com/138273).
+  NOTIMPLEMENTED();
+}
+
 void DriveAPIService::CopyHostedDocument(
     const std::string& resource_id,
     const std::string& new_name,

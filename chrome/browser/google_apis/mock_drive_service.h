@@ -61,6 +61,11 @@ class MockDriveService : public DriveServiceInterface {
       void(const std::string& resource_id,
           const std::string& etag,
           const EntryActionCallback& callback));
+  MOCK_METHOD4(CopyResource,
+      void(const std::string& resource_id,
+          const std::string& parent_resource_id,
+          const std::string& new_name,
+          const GetResourceEntryCallback& callback));
   MOCK_METHOD3(CopyHostedDocument,
       void(const std::string& resource_id,
           const std::string& new_name,

@@ -364,6 +364,20 @@ void GDataWapiService::AddNewDirectory(
                                    directory_name));
 }
 
+void GDataWapiService::CopyResource(
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    const std::string& new_name,
+    const GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // GData WAPI doesn't support "copy" of regular files.
+  // This method should never be called if GData WAPI is enabled.
+  // Instead, client code should download the file (if needed) and upload it.
+  NOTREACHED();
+}
+
 void GDataWapiService::CopyHostedDocument(
     const std::string& resource_id,
     const std::string& new_name,

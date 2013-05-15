@@ -90,6 +90,11 @@ class DriveAPIService : public DriveServiceInterface,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback,
       const ProgressCallback& progress_callback) OVERRIDE;
+  virtual void CopyResource(
+      const std::string& resource_id,
+      const std::string& parent_resource_id,
+      const std::string& new_name,
+      const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void CopyHostedDocument(
       const std::string& resource_id,
       const std::string& new_name,
