@@ -235,14 +235,6 @@ BrowserWindow* CreateBrowserWindow(Browser* browser) {
   return BrowserWindow::CreateBrowserWindow(browser);
 }
 
-bool ShouldReloadCrashedTab(WebContents* contents) {
-#if defined(OS_CHROMEOS)
-  return contents->IsCrashed();
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -633,22 +625,6 @@ void Browser::OnWindowClosing() {
   tab_strip_model_->CloseAllTabs();
 }
 
-void Browser::OnWindowActivated() {
-  // On some platforms we want to automatically reload tabs that are
-  // killed when the user selects them.
-  WebContents* contents = tab_strip_model_->GetActiveWebContents();
-  if (contents && ShouldReloadCrashedTab(contents)) {
-    chrome::Reload(this, CURRENT_TAB);
-    // The reload above will change the toolbar reload button into a stop
-    // button. If the user activated the window with a mouse press on the
-    // reload button itself, the reload will stop on mouse release and the page
-    // will be blank. Disable the stop command temporarily. It will be
-    // re-enabled as the page loads.
-    command_controller_->command_updater()->UpdateCommandEnabled(IDC_STOP,
-                                                                 false);
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // In-progress download termination handling:
 
@@ -1025,21 +1001,8 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
                                int reason) {
   content::RecordAction(UserMetricsAction("ActiveTabChanged"));
 
-  // On some platforms we want to automatically reload tabs that are
-  // killed when the user selects them.
-  bool did_reload = false;
-  if ((reason & CHANGE_REASON_USER_GESTURE) &&
-      ShouldReloadCrashedTab(new_contents)) {
-    LOG(WARNING) << "Reloading killed tab at " << index;
-    static int reload_count = 0;
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Tabs.SadTab.ReloadCount", ++reload_count, 1, 1000, 50);
-    chrome::Reload(this, CURRENT_TAB);
-    did_reload = true;
-  }
-
   // Discarded tabs always get reloaded.
-  if (!did_reload && tab_strip_model_->IsTabDiscarded(index)) {
+  if (tab_strip_model_->IsTabDiscarded(index)) {
     LOG(WARNING) << "Reloading discarded tab at " << index;
     static int reload_count = 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS(

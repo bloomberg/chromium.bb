@@ -295,11 +295,6 @@ class Browser : public TabStripModelObserver,
   // cleanup.
   void OnWindowClosing();
 
-  // OnWindowActivationChanged handling ///////////////////////////////////////
-
-  // Invoked when the window containing us is activated.
-  void OnWindowActivated();
-
   // In-progress download termination handling /////////////////////////////////
 
   // Called when the user has decided whether to proceed or not with the browser

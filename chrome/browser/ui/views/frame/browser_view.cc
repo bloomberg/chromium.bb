@@ -1705,10 +1705,8 @@ void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
     launcher_item_controller_->BrowserActivationStateChanged();
 #endif
 
-  if (active) {
+  if (active)
     BrowserList::SetLastActive(browser_.get());
-    browser_->OnWindowActivated();
-  }
 }
 
 void BrowserView::OnWindowBeginUserBoundsChange() {

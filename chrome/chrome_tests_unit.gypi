@@ -1269,6 +1269,7 @@
         'browser/ui/bookmarks/recently_used_folders_combo_model_unittest.cc',
         'browser/ui/browser_command_controller_unittest.cc',
         'browser/ui/browser_iterator_unittest.cc',
+        'browser/ui/browser_unittest.cc',
         'browser/ui/chrome_select_file_policy_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
