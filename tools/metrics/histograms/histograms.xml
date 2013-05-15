@@ -7236,7 +7236,7 @@ other types of suffix sets.
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
-<histogram name="SimpleCache.IndexCorrupt" units="BooleanCorrupt">
+<histogram name="SimpleCache.IndexCorrupt" enum="BooleanCorrupt">
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
 
@@ -7273,7 +7273,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="SimpleCache.IndexStale" units="BooleanStale">
+<histogram name="SimpleCache.IndexStale" enum="BooleanStale">
   <summary>For each index load, whether the index file was stale.</summary>
 </histogram>
 
