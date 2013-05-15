@@ -10,6 +10,7 @@
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "webkit/plugins/ppapi/gfx_conversion.h"
+#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
@@ -96,6 +97,7 @@ void PpapiUnittest::TearDown() {
   instance_ = NULL;
   module_ = NULL;
   message_loop_.reset();
+  PluginModule::ResetHostGlobalsForTest();
 }
 
 MockPluginDelegate* PpapiUnittest::NewPluginDelegate() {

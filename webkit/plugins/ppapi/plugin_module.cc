@@ -149,6 +149,9 @@ namespace {
 // Note that we don't want a Singleton here since destroying this object will
 // try to free some stuff that requires WebKit, and Singletons are destroyed
 // after WebKit.
+// TODO(raymes): I'm not sure if it is completely necessary to leak the
+// HostGlobals. Figure out the shutdown sequence and find a way to do this
+// more elegantly.
 webkit::ppapi::HostGlobals* host_globals = NULL;
 
 // Maintains all currently loaded plugin libs for validating PP_Module
@@ -643,6 +646,12 @@ void PluginModule::SetBroker(PluginDelegate::Broker* broker) {
 
 PluginDelegate::Broker* PluginModule::GetBroker() {
   return broker_;
+}
+
+// static
+void PluginModule::ResetHostGlobalsForTest() {
+  delete host_globals;
+  host_globals = NULL;
 }
 
 bool PluginModule::InitializeModule(const EntryPoints& entry_points) {

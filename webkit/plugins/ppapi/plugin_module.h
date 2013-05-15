@@ -197,6 +197,12 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   void SetBroker(PluginDelegate::Broker* broker);
   PluginDelegate::Broker* GetBroker();
 
+  // In production we purposely leak the HostGlobals object but in unittest
+  // code, this can interfere with subsequent tests. This deletes the
+  // existing HostGlobals. A new one will be constructed when a PluginModule is
+  // instantiated.
+  static void ResetHostGlobalsForTest();
+
  private:
   // Calls the InitializeModule entrypoint. The entrypoint must have been
   // set and the plugin must not be out of process (we don't maintain
