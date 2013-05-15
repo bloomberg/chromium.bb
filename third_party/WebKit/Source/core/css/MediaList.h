@@ -74,6 +74,8 @@ private:
     MediaQuerySet(const String& mediaQuery, bool fallbackToDescription);
     MediaQuerySet(const MediaQuerySet&);
 
+    PassOwnPtr<MediaQuery> parseMediaQuery(const String&);
+
     unsigned m_fallbackToDescriptor : 1; // true if failed media query parsing should fallback to media description parsing.
     signed m_lastLine : 31;
     Vector<OwnPtr<MediaQuery> > m_queries;

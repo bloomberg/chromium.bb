@@ -25,11 +25,11 @@ function test() {
         return;
     }
     try {
-        // this should throw
+        // this shouldn't throw
         document.styleSheets[0].cssRules[1].media.mediaText = ",,,,";
-        document.getElementById("result").innerHTML = "Failure. No exception thrown.";
-    } catch (e) {
         document.getElementById("result").innerHTML = "Success. This text should be green.";
+    } catch (e) {
+        document.getElementById("result").innerHTML = "Failure. Exception thrown.";
         document.getElementById("details").innerHTML = "Caught exception: " + e;
    }
 }
@@ -38,6 +38,6 @@ function test() {
 </head>
 <body onload="test()">
 <p id="result">Failure: test not run</p>
-<p id="details">aaa</p>
+<p id="details"></p>
 </body>
 </html>

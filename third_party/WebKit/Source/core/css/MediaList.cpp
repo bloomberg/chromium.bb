@@ -120,68 +120,60 @@ static String parseMediaDescriptor(const String& string)
     return string.left(i);
 }
 
-bool MediaQuerySet::parse(const String& mediaString)
+PassOwnPtr<MediaQuery> MediaQuerySet::parseMediaQuery(const String& queryString)
 {
     CSSParser parser(CSSStrictMode);
+    OwnPtr<MediaQuery> parsedQuery = parser.parseMediaQuery(queryString);
+
+    if (parsedQuery)
+        return parsedQuery.release();
+
+    if (m_fallbackToDescriptor) {
+        String medium = parseMediaDescriptor(queryString);
+        if (!medium.isNull())
+            return adoptPtr(new MediaQuery(MediaQuery::None, medium, nullptr));
+    }
+
+    return adoptPtr(new MediaQuery(MediaQuery::None, "not all", nullptr));
+}
+
+bool MediaQuerySet::parse(const String& mediaString)
+{
+    if (mediaString.isEmpty()) {
+        m_queries.clear();
+        return true;
+    }
+
+    Vector<String> list;
+    // FIXME: This is too simple as it shouldn't split when the ',' is inside
+    // other allowed matching pairs such as (), [], {}, "", and ''.
+    mediaString.split(',', /* allowEmptyEntries */ true, list);
 
     Vector<OwnPtr<MediaQuery> > result;
-    Vector<String> list;
-    mediaString.split(',', list);
+    result.reserveInitialCapacity(list.size());
+
     for (unsigned i = 0; i < list.size(); ++i) {
-        String medium = list[i].stripWhiteSpace();
-        if (medium.isEmpty()) {
-            if (!m_fallbackToDescriptor)
-                return false;
-            continue;
-        }
-        OwnPtr<MediaQuery> mediaQuery = parser.parseMediaQuery(medium);
-        if (!mediaQuery) {
-            if (!m_fallbackToDescriptor)
-                return false;
-            String mediaDescriptor = parseMediaDescriptor(medium);
-            if (mediaDescriptor.isNull())
-                continue;
-            mediaQuery = adoptPtr(new MediaQuery(MediaQuery::None, mediaDescriptor, nullptr));
-        }
-        result.append(mediaQuery.release());
+        String queryString = list[i].stripWhiteSpace();
+        if (OwnPtr<MediaQuery> parsedQuery = parseMediaQuery(queryString))
+            result.uncheckedAppend(parsedQuery.release());
     }
-    // ",,,," falls straight through, but is not valid unless fallback
-    if (!m_fallbackToDescriptor && list.isEmpty()) {
-        String strippedMediaString = mediaString.stripWhiteSpace();
-        if (!strippedMediaString.isEmpty())
-            return false;
-    }
+
     m_queries.swap(result);
     return true;
 }
 
 bool MediaQuerySet::add(const String& queryString)
 {
-    CSSParser parser(CSSStrictMode);
-
-    OwnPtr<MediaQuery> parsedQuery = parser.parseMediaQuery(queryString);
-    if (!parsedQuery && m_fallbackToDescriptor) {
-        String medium = parseMediaDescriptor(queryString);
-        if (!medium.isNull())
-            parsedQuery = adoptPtr(new MediaQuery(MediaQuery::None, medium, nullptr));
+    if (OwnPtr<MediaQuery> parsedQuery = parseMediaQuery(queryString)) {
+        m_queries.append(parsedQuery.release());
+        return true;
     }
-    if (!parsedQuery)
-        return false;
-
-    m_queries.append(parsedQuery.release());
-    return true;
+    return false;
 }
 
 bool MediaQuerySet::remove(const String& queryStringToRemove)
 {
-    CSSParser parser(CSSStrictMode);
-
-    OwnPtr<MediaQuery> parsedQuery = parser.parseMediaQuery(queryStringToRemove);
-    if (!parsedQuery && m_fallbackToDescriptor) {
-        String medium = parseMediaDescriptor(queryStringToRemove);
-        if (!medium.isNull())
-            parsedQuery = adoptPtr(new MediaQuery(MediaQuery::None, medium, nullptr));
-    }
+    OwnPtr<MediaQuery> parsedQuery = parseMediaQuery(queryStringToRemove);
     if (!parsedQuery)
         return false;
 
