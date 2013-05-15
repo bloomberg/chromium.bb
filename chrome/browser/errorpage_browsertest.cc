@@ -117,7 +117,7 @@ class ErrorPageTest : public InProcessBrowserTest {
 };
 
 // See crbug.com/109669
-#if defined(USE_AURA) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(USE_AURA)
 #define MAYBE_DNSError_Basic DISABLED_DNSError_Basic
 #else
 #define MAYBE_DNSError_Basic DNSError_Basic
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_Basic) {
 }
 
 // See crbug.com/109669
-#if defined(USE_AURA) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(USE_AURA)
 #define MAYBE_DNSError_GoBack1 DISABLED_DNSError_GoBack1
 #else
 #define MAYBE_DNSError_GoBack1 DNSError_GoBack1
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack1) {
 }
 
 // See crbug.com/109669
-#if defined(USE_AURA) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(USE_AURA)
 #define MAYBE_DNSError_GoBack2 DISABLED_DNSError_GoBack2
 #else
 #define MAYBE_DNSError_GoBack2 DNSError_GoBack2
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2) {
 }
 
 // See crbug.com/109669
-#if defined(USE_AURA) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(USE_AURA)
 #define MAYBE_DNSError_GoBack2AndForward DISABLED_DNSError_GoBack2AndForward
 #else
 #define MAYBE_DNSError_GoBack2AndForward DNSError_GoBack2AndForward
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
 }
 
 // See crbug.com/109669
-#if defined(USE_AURA) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(USE_AURA)
 #define MAYBE_DNSError_GoBack2Forward2 DISABLED_DNSError_GoBack2Forward2
 #else
 #define MAYBE_DNSError_GoBack2Forward2 DNSError_GoBack2Forward2
