@@ -127,6 +127,7 @@ static void
 update_device_with_profile_in_idle(struct cms_output *ocms)
 {
 	gboolean signal_write = FALSE;
+	ssize_t rc;
 	struct cms_colord *cms = ocms->cms;
 
 	colord_idle_cancel_for_output(cms, ocms->o);
@@ -139,7 +140,9 @@ update_device_with_profile_in_idle(struct cms_output *ocms)
 	/* signal we've got updates to do */
 	if (signal_write) {
 		gchar tmp = '\0';
-		write(cms->writefd, &tmp, 1);
+		rc = write(cms->writefd, &tmp, 1);
+		if (rc == 0)
+			weston_log("colord: failed to write to pending fd");
 	}
 }
 
@@ -365,6 +368,7 @@ colord_dispatch_all_pending(int fd, uint32_t mask, void *data)
 {
 	gchar tmp;
 	GList *l;
+	ssize_t rc;
 	struct cms_colord *cms = data;
 	struct cms_output *ocms;
 
@@ -387,7 +391,9 @@ colord_dispatch_all_pending(int fd, uint32_t mask, void *data)
 	g_mutex_unlock(&cms->pending_mutex);
 
 	/* done */
-	read(cms->readfd, &tmp, 1);
+	rc = read(cms->readfd, &tmp, 1);
+	if (rc == 0)
+		weston_log("colord: failed to read from pending fd");
 	return 1;
 }
 
