@@ -264,6 +264,22 @@ class DeleteEdit : public Edit {
 
 }  // namespace internal
 
+namespace {
+
+// Returns the first segment that is visually emphasized. Usually it's used for
+// representing the target clause (on Windows). Returns an invalid range if
+// there is no such a range.
+ui::Range GetFirstEmphasizedRange(const ui::CompositionText& composition) {
+  for (size_t i = 0; i < composition.underlines.size(); ++i) {
+    const ui::CompositionUnderline& underline = composition.underlines[i];
+    if (underline.thick)
+      return ui::Range(underline.start_offset, underline.end_offset);
+  }
+  return ui::Range::InvalidRange();
+}
+
+}  // namespace
+
 using internal::Edit;
 using internal::DeleteEdit;
 using internal::InsertEdit;
@@ -577,17 +593,25 @@ void TextfieldViewsModel::SetCompositionText(
   render_text_->SetText(new_text.insert(cursor, composition.text));
   ui::Range range(cursor, cursor + composition.text.length());
   render_text_->SetCompositionRange(range);
-  if (composition.selection.is_empty()) {
-    // There is likely to be no target segment. Interpret the selection as a
-    // cursor position.
-    render_text_->SetCursorPosition(cursor + composition.selection.end());
+  ui::Range emphasized_range = GetFirstEmphasizedRange(composition);
+  if (emphasized_range.IsValid()) {
+    // This is a workaround due to the lack of support in RenderText to draw
+    // a thick underline. In a composition returned from an IME, the segment
+    // emphasized by a thick underline usually represents the target clause.
+    // Because the target clause is more important than the actual selection
+    // range (or caret position) in the composition here we use a selection-like
+    // marker instead to show this range.
+    // TODO(yukawa, msw): Support thick underline in RenderText and remove
+    // this workaround.
+    render_text_->SelectRange(ui::Range(
+        cursor + emphasized_range.GetMin(),
+        cursor + emphasized_range.GetMax()));
+  } else if (!composition.selection.is_empty()) {
+    render_text_->SelectRange(ui::Range(
+        cursor + composition.selection.GetMin(),
+        cursor + composition.selection.GetMax()));
   } else {
-    // It is OK to normalize the |composition.selection| because this selection
-    // is artificial and it can always be interpreted as a selection from min
-    // to max.
-    render_text_->SelectRange(
-        ui::Range(cursor + composition.selection.GetMin(),
-                  cursor + composition.selection.GetMax()));
+    render_text_->SetCursorPosition(cursor + composition.selection.end());
   }
 }
 
