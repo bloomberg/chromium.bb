@@ -121,7 +121,7 @@ public:
     void hideHighlight();
     void highlightNode(Node*, Node* eventTarget, const HighlightConfig&);
     void highlightQuad(PassOwnPtr<FloatQuad>, const HighlightConfig&);
-    void showAndHideViewSize();
+    void showAndHideViewSize(bool showGrid);
 
     Node* highlightedNode() const;
 
@@ -154,6 +154,7 @@ private:
     HighlightConfig m_quadHighlightConfig;
     IntSize m_size;
     bool m_drawViewSize;
+    bool m_drawViewSizeWithGrid;
     Timer<InspectorOverlay> m_timer;
 };
 

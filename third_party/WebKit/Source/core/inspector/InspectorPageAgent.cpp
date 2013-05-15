@@ -97,6 +97,8 @@ static const char pageAgentShowPaintRects[] = "pageAgentShowPaintRects";
 static const char pageAgentShowDebugBorders[] = "pageAgentShowDebugBorders";
 static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char pageAgentEmulatedMedia[] = "pageAgentEmulatedMedia";
+static const char showSizeOnResize[] = "showSizeOnResize";
+static const char showGridOnResize[] = "showGridOnResize";
 }
 
 static bool decodeBuffer(const char* buffer, unsigned size, const String& textEncodingName, String* result)
@@ -402,6 +404,7 @@ void InspectorPageAgent::disable(ErrorString*)
     setShowFPSCounter(0, false);
     setEmulatedMedia(0, "");
     setContinuousPaintingEnabled(0, false);
+    setShowViewportSizeOnResize(0, false, 0);
 
     if (!deviceMetricsChanged(0, 0, 1, false))
         return;
@@ -1009,8 +1012,8 @@ void InspectorPageAgent::didScroll()
 
 void InspectorPageAgent::didResizeMainFrame()
 {
-    if (m_enabled)
-        m_overlay->showAndHideViewSize();
+    if (m_enabled && m_state->getBoolean(PageAgentState::showSizeOnResize))
+        m_overlay->showAndHideViewSize(m_state->getBoolean(PageAgentState::showGridOnResize));
 }
 
 void InspectorPageAgent::didRecalculateStyle()
@@ -1228,6 +1231,12 @@ void InspectorPageAgent::captureScreenshot(ErrorString*, String*)
 void InspectorPageAgent::handleJavaScriptDialog(ErrorString* errorString, bool accept, const String* promptText)
 {
     // Handled on the browser level.
+}
+
+void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid)
+{
+    m_state->setBoolean(PageAgentState::showSizeOnResize, show);
+    m_state->setBoolean(PageAgentState::showGridOnResize, showGrid && *showGrid);
 }
 
 } // namespace WebCore

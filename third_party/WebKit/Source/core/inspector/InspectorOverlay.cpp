@@ -195,6 +195,7 @@ InspectorOverlay::InspectorOverlay(Page* page, InspectorClient* client)
     : m_page(page)
     , m_client(client)
     , m_drawViewSize(false)
+    , m_drawViewSizeWithGrid(false)
     , m_timer(this, &InspectorOverlay::onTimer)
 {
 }
@@ -266,9 +267,10 @@ void InspectorOverlay::highlightQuad(PassOwnPtr<FloatQuad> quad, const Highlight
     update();
 }
 
-void InspectorOverlay::showAndHideViewSize()
+void InspectorOverlay::showAndHideViewSize(bool showGrid)
 {
     m_drawViewSize = true;
+    m_drawViewSizeWithGrid = showGrid;
     update();
     m_timer.startOneShot(1);
 }
@@ -324,6 +326,7 @@ void InspectorOverlay::hide()
     m_pausedInDebuggerMessage = String();
     m_size = IntSize();
     m_drawViewSize = false;
+    m_drawViewSizeWithGrid = false;
     update();
 }
 
@@ -443,7 +446,7 @@ void InspectorOverlay::drawPausedInDebuggerMessage()
 void InspectorOverlay::drawViewSize()
 {
     if (m_drawViewSize)
-        evaluateInOverlay("drawViewSize", m_pausedInDebuggerMessage);
+        evaluateInOverlay("drawViewSize", m_drawViewSizeWithGrid ? "true" : "false");
 }
 
 Page* InspectorOverlay::overlayPage()

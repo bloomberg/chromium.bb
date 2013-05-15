@@ -340,8 +340,9 @@ function drawGutter()
     }
 }
 
-function drawViewSize()
+function drawViewSize(drawViewSizeWithGrid)
 {
+    var drawGridBoolean = drawViewSizeWithGrid === "true";
     var text = viewportSize.width + "px \u00D7 " + viewportSize.height + "px";
     context.save();
     context.font = "20px ";
@@ -354,10 +355,12 @@ function drawViewSize()
     var frameWidth = frameViewFullSize.width || canvasWidth;
     var textWidth = context.measureText(text).width;
     context.fillStyle = gridBackgroundColor;
-    context.fillRect(frameWidth - textWidth - 12, 0, frameWidth, 25);
+    context.fillRect(frameWidth - textWidth - 12, drawGridBoolean ? 15 : 0, frameWidth, 25);
     context.fillStyle = darkGridColor;
-    context.fillText(text, frameWidth - textWidth - 6, 18);
+    context.fillText(text, frameWidth - textWidth - 6, drawGridBoolean ? 33 : 18);
     context.restore();
+    if (drawGridBoolean)
+        _drawGrid();
 }
 
 function reset(resetData)
