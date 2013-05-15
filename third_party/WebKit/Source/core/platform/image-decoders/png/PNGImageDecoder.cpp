@@ -350,6 +350,7 @@ void PNGImageDecoder::headerAvailable()
     if (colorType == PNG_COLOR_TYPE_GRAY || colorType == PNG_COLOR_TYPE_GRAY_ALPHA)
         png_set_gray_to_rgb(png);
 
+#if USE(QCMSLIB)
     if ((colorType & PNG_COLOR_MASK_COLOR) && !m_ignoreGammaAndColorProfile) {
         // We only support color profiles for color PALETTE and RGB[A] PNG. Supporting
         // color profiles for gray-scale images is slightly tricky, at least using the
@@ -357,13 +358,13 @@ void PNGImageDecoder::headerAvailable()
         // do not similarly transform the color profile. We'd either need to transform
         // the color profile or we'd need to decode into a gray-scale image buffer and
         // hand that to CoreGraphics.
-        readColorProfile(png, info, m_colorProfile);
-#if USE(QCMSLIB)
+        ColorProfile colorProfile;
+        // FIXME: maybe readColorProfile() could return a color profile?
+        readColorProfile(png, info, colorProfile);
         bool decodedImageHasAlpha = (colorType & PNG_COLOR_MASK_ALPHA) || trnsCount;
-        m_reader->createColorTransform(m_colorProfile, decodedImageHasAlpha);
-        m_colorProfile.clear();
-#endif
+        m_reader->createColorTransform(colorProfile, decodedImageHasAlpha);
     }
+#endif
 
     // Deal with gamma and keep it under our control.
     double gamma;
@@ -433,7 +434,6 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
 #endif
         buffer.setStatus(ImageFrame::FramePartial);
         buffer.setHasAlpha(false);
-        buffer.setColorProfile(m_colorProfile);
 
         // For PNGs, the frame always fills the entire image.
         buffer.setOriginalFrameRect(IntRect(IntPoint(), size()));

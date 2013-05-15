@@ -127,12 +127,6 @@ void ImageFrame::setHasAlpha(bool alpha)
     m_bitmap->bitmap().setIsOpaque(isOpaque);
 }
 
-void ImageFrame::setColorProfile(const ColorProfile& colorProfile)
-{
-    // FIXME: Do we need this ImageFrame function anymore, on any port?
-    UNUSED_PARAM(colorProfile);
-}
-
 void ImageFrame::setStatus(FrameStatus status)
 {
     m_status = status;

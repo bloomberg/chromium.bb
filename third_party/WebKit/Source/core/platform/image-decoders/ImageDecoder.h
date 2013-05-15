@@ -119,7 +119,6 @@ namespace WebCore {
         void reportMemoryUsage(MemoryObjectInfo*) const;
 
         void setHasAlpha(bool alpha);
-        void setColorProfile(const ColorProfile&);
         void setOriginalFrameRect(const IntRect& r) { m_originalFrameRect = r; }
         void setStatus(FrameStatus status);
         void setDuration(unsigned duration) { m_duration = duration; }
@@ -405,8 +404,6 @@ namespace WebCore {
 
         RefPtr<SharedBuffer> m_data; // The encoded data.
         Vector<ImageFrame, 1> m_frameBufferCache;
-        // FIXME: Do we need m_colorProfile any more, for any port?
-        ColorProfile m_colorProfile;
         bool m_scaled;
         Vector<int> m_scaledColumns;
         Vector<int> m_scaledRows;

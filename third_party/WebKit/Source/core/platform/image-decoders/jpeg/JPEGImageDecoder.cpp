@@ -380,21 +380,19 @@ public:
             if (m_decoder->willDownSample() && turboSwizzled(m_info.out_color_space))
                 m_info.out_color_space = JCS_RGB;
 #endif
+
+#if USE(QCMSLIB)
             // Allow color management of the decoded RGBA pixels if possible.
             if (!m_decoder->ignoresGammaAndColorProfile()) {
-                ColorProfile rgbInputDeviceColorProfile = readColorProfile(info());
-                if (!rgbInputDeviceColorProfile.isEmpty())
-                    m_decoder->setColorProfile(rgbInputDeviceColorProfile);
-#if USE(QCMSLIB)
-                createColorTransform(rgbInputDeviceColorProfile, colorSpaceHasAlpha(m_info.out_color_space));
+                ColorProfile colorProfile = readColorProfile(info());
+                createColorTransform(colorProfile, colorSpaceHasAlpha(m_info.out_color_space));
 #if defined(TURBO_JPEG_RGB_SWIZZLE)
                 // Input RGBA data to qcms. Note: restored to BGRA on output.
                 if (m_transform && m_info.out_color_space == JCS_EXT_BGRA)
                     m_info.out_color_space = JCS_EXT_RGBA;
 #endif
-#endif
             }
-
+#endif
             // Don't allocate a giant and superfluous memory buffer when the
             // image is a sequential JPEG.
             m_info.buffered_image = jpeg_has_multiple_scans(&m_info);
@@ -716,7 +714,6 @@ bool JPEGImageDecoder::outputScanlines()
         // The buffer is transparent outside the decoded area while the image is
         // loading. The completed image will be marked fully opaque in jpegComplete().
         buffer.setHasAlpha(true);
-        buffer.setColorProfile(m_colorProfile);
 
         // For JPEGs, the frame always fills the entire image.
         buffer.setOriginalFrameRect(IntRect(IntPoint(), size()));

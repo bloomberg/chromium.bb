@@ -142,7 +142,6 @@ void ImageDecoder::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
     info.addMember(m_data, "data");
     info.addMember(m_frameBufferCache, "frameBufferCache");
-    info.addMember(m_colorProfile, "colorProfile");
     info.addMember(m_scaledColumns, "scaledColumns");
     info.addMember(m_scaledRows, "scaledRows");
 }
