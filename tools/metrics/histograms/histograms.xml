@@ -1290,6 +1290,27 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MouseEventPrefetch.TapDownDuration_Click" units="ms">
+  <summary>
+    Measures the time elapsed between when the user tapdown-ed a link and when
+    the user clicked a link.
+  </summary>
+</histogram>
+
+<histogram name="MouseEventPrefetch.TapDowns">
+  <summary>
+    The number of gesturetapdown events detected at HTML anchor-tag links'
+    default event handler.
+  </summary>
+</histogram>
+
+<histogram name="MouseEventPrefetch.TapUnconfirmeds">
+  <summary>
+    The number of gesturetapunconfirmed events detected at HTML anchor-tag
+    links' default event handler.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.MainFrameScheme" enum="NavigationScheme">
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
@@ -9996,8 +10017,8 @@ other types of suffix sets.
 </enum>
 
 <enum name="MouseEventFollowedByClick" type="int">
-  <int value="0" label="Caught event before click"/>
-  <int value="1" label="Misses event before click"/>
+  <int value="0" label="Missed event before click"/>
+  <int value="1" label="Caught event before click"/>
 </enum>
 
 <enum name="NavigationScheme" type="int">
