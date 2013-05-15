@@ -751,6 +751,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
       GLsizei height,
       GLint border);
 
+  // Wrapper for SwapBuffers.
+  void DoSwapBuffers();
+
   // Wrapper for CopyTexSubImage2D.
   void DoCopyTexSubImage2D(
       GLenum target,
@@ -8698,8 +8701,7 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
 #endif
 }
 
-error::Error GLES2DecoderImpl::HandleSwapBuffers(
-    uint32 immediate_data_size, const cmds::SwapBuffers& c) {
+void GLES2DecoderImpl::DoSwapBuffers() {
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
 
   int this_frame_number = frame_number_++;
@@ -8709,7 +8711,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
                        "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
                        "width", (is_offscreen ? offscreen_size_.width() :
                                  surface_->GetSize().width()));
-  TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleSwapBuffers",
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoSwapBuffers",
                "offscreen", is_offscreen,
                "frame", this_frame_number);
   // If offscreen then don't actually SwapBuffers to the display. Just copy
@@ -8738,7 +8740,8 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
             GL_FRAMEBUFFER_COMPLETE) {
           LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
                      << "because offscreen saved FBO was incomplete.";
-          return error::kLostContext;
+          LoseContext(GL_UNKNOWN_CONTEXT_RESET_ARB);
+          return;
         }
 
         // Clear the offscreen color texture.
@@ -8758,14 +8761,13 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     }
 
     if (offscreen_size_.width() == 0 || offscreen_size_.height() == 0)
-      return error::kNoError;
+      return;
     ScopedGLErrorSuppressor suppressor(
-        "GLES2DecoderImpl::HandleSwapBuffers", this);
+        "GLES2DecoderImpl::DoSwapBuffers", this);
 
     if (IsOffscreenBufferMultisampled()) {
       // For multisampled buffers, resolve the frame buffer.
       ScopedResolvedFrameBufferBinder binder(this, true, false);
-      return error::kNoError;
     } else {
       ScopedFrameBufferBinder binder(this,
                                      offscreen_target_frame_buffer_->id());
@@ -8791,7 +8793,6 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       // single D3D device for all contexts.
       if (!IsAngle())
         glFlush();
-      return error::kNoError;
     }
   } else {
     TRACE_EVENT2("gpu", "Onscreen",
@@ -8799,11 +8800,9 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
         "height", surface_->GetSize().height());
     if (!surface_->SwapBuffers()) {
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
-      return error::kLostContext;
+      LoseContext(GL_UNKNOWN_CONTEXT_RESET_ARB);
     }
   }
-
-  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleEnableFeatureCHROMIUM(

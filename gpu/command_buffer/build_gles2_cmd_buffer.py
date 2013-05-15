@@ -1883,8 +1883,8 @@ _FUNCTION_INFO = {
     'expectation': False,
   },
   'SwapBuffers': {
-    'type': 'Custom',
     'impl_func': False,
+    'decoder_func': 'DoSwapBuffers',
     'unit_test': False,
     'client_test': False,
     'extension': True,

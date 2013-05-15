@@ -2969,6 +2969,12 @@ error::Error GLES2DecoderImpl::HandleBindVertexArrayOES(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleSwapBuffers(
+    uint32 immediate_data_size, const gles2::cmds::SwapBuffers& c) {
+  DoSwapBuffers();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetMaxValueInBufferCHROMIUM(
     uint32 immediate_data_size,
     const gles2::cmds::GetMaxValueInBufferCHROMIUM& c) {
