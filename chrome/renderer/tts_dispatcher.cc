@@ -30,6 +30,7 @@ TtsDispatcher::TtsDispatcher(WebSpeechSynthesizerClient* client)
 }
 
 TtsDispatcher::~TtsDispatcher() {
+  RenderThread::Get()->RemoveObserver(this);
 }
 
 bool TtsDispatcher::OnControlMessageReceived(const IPC::Message& message) {
