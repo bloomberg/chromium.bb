@@ -15,6 +15,8 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.cc"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -23,9 +25,11 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #import "testing/gtest_mac.h"
 
@@ -500,4 +504,65 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, InstantSearchResultsMode) {
   EXPECT_TRUE(browser()->search_model()->mode().is_search_results());
   EXPECT_EQ(browser_window_controller::kInstantUIFullPageResults,
             [controller() currentInstantUIState]);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
+  NSWindow* window = browser()->window()->GetNativeWindow();
+  BrowserWindowController* mainController =
+      static_cast<BrowserWindowController*>([window windowController]);
+  ASSERT_TRUE([mainController isKindOfClass:[BrowserWindowController class]]);
+  EXPECT_TRUE([mainController isTabbedWindow]);
+  EXPECT_TRUE([mainController hasTabStrip]);
+  EXPECT_FALSE([mainController hasTitleBar]);
+  EXPECT_TRUE([mainController hasToolbar]);
+  EXPECT_FALSE([mainController isBookmarkBarVisible]);
+
+  NSRect defaultAlertFrame = NSMakeRect(0, 0, 300, 200);
+  NSRect alertFrame = [mainController window:window
+                           willPositionSheet:nil
+                                   usingRect:defaultAlertFrame];
+  NSRect toolbarFrame = [[[mainController toolbarController] view] frame];
+  EXPECT_EQ(NSMinY(alertFrame), NSMinY(toolbarFrame));
+
+  // Open sheet with normal browser window, persistent bookmark bar.
+  browser()->window()->ToggleBookmarkBar();
+  EXPECT_TRUE([mainController isBookmarkBarVisible]);
+  alertFrame = [mainController window:window
+                    willPositionSheet:nil
+                            usingRect:defaultAlertFrame];
+  NSRect bookmarkBarFrame =
+      [[[mainController bookmarkBarController] view] frame];
+  EXPECT_EQ(NSMinY(alertFrame), NSMinY(bookmarkBarFrame));
+
+  // Make sure the profile does not have the bookmark visible so that
+  // we'll create the shortcut window without the bookmark bar.
+  browser()->window()->ToggleBookmarkBar();
+  // Open application mode window.
+  gfx::Rect initial_bounds(0, 0, 400, 400);
+  chrome::OpenAppShortcutWindow(
+      browser()->profile(), GURL("about:blank"), initial_bounds);
+  Browser* popup_browser = BrowserList::GetInstance(
+      chrome::HOST_DESKTOP_TYPE_NATIVE)->GetLastActive();
+  NSWindow* popupWindow = popup_browser->window()->GetNativeWindow();
+  BrowserWindowController* controller =
+      static_cast<BrowserWindowController*>([popupWindow windowController]);
+  ASSERT_TRUE([controller isKindOfClass:[BrowserWindowController class]]);
+  EXPECT_FALSE([controller isTabbedWindow]);
+  EXPECT_FALSE([controller hasTabStrip]);
+  EXPECT_TRUE([controller hasTitleBar]);
+  EXPECT_FALSE([controller isBookmarkBarVisible]);
+  EXPECT_FALSE([controller hasToolbar]);
+
+  // Open sheet in an application window.
+  [controller showWindow:nil];
+  alertFrame = [controller window:popupWindow
+                willPositionSheet:nil
+                        usingRect:defaultAlertFrame];
+  EXPECT_EQ(NSMinY(alertFrame),
+            NSHeight([[popupWindow contentView] frame]) -
+            defaultAlertFrame.size.height);
+
+  // Close the application window.
+  popup_browser->tab_strip_model()->CloseSelectedTabs();
+  [controller close];
 }

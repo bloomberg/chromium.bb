@@ -155,8 +155,15 @@ willPositionSheet:(NSWindow*)sheet
     }
     case BookmarkBar::HIDDEN:
     case BookmarkBar::DETACHED: {
-      NSRect toolbarFrame = [[toolbarController_ view] frame];
-      defaultSheetRect.origin.y = toolbarFrame.origin.y;
+      if ([self hasToolbar]) {
+        NSRect toolbarFrame = [[toolbarController_ view] frame];
+        defaultSheetRect.origin.y = toolbarFrame.origin.y;
+      } else {
+        // The toolbar is not shown in application mode. The sheet should be
+        // located at the top of the window, under the title of the window.
+        defaultSheetRect.origin.y = NSHeight([[window contentView] frame]) -
+                                    defaultSheetRect.size.height;
+      }
       break;
     }
   }
