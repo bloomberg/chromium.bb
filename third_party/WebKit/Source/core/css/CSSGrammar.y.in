@@ -1551,7 +1551,7 @@ decl_list:
 
 decl_list_recovery:
     error error_location error_recovery {
-        parser->syntaxError($2, CSSParser::PropertyDeclarationError);
+        parser->reportError($2, CSSParser::PropertyDeclarationError);
     }
     ;
 
@@ -1571,7 +1571,7 @@ declaration:
             $$ = parser->parseValue(static_cast<CSSPropertyID>($1), $6);
             if (!$$) {
                 parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
-                parser->syntaxError($4, CSSParser::InvalidPropertyValueError);
+                parser->reportError($4, CSSParser::InvalidPropertyValueError);
             } else
                 isPropertyParsed = true;
             parser->m_valueList = nullptr;
@@ -1580,7 +1580,7 @@ declaration:
     }
     |
     property declaration_recovery {
-        parser->endProperty(false, false, CSSParser::GeneralSyntaxError);
+        parser->endProperty(false, false, CSSParser::GeneralError);
         $$ = false;
     }
     |
@@ -1592,7 +1592,7 @@ declaration:
     |
     IMPORTANT_SYM maybe_space declaration_recovery {
         /* Handle this case: div { text-align: center; !important } Just reduce away the stray !important. */
-        parser->endProperty(false, false, CSSParser::GeneralSyntaxError);
+        parser->endProperty(false, false, CSSParser::GeneralError);
         $$ = false;
     }
     |
@@ -1605,7 +1605,7 @@ declaration:
 
 declaration_recovery:
     error error_location error_recovery {
-        parser->syntaxError($2);
+        parser->reportError($2);
     }
   ;
 
@@ -1648,7 +1648,7 @@ valid_expr:
 
 expr_recovery:
     error error_location error_recovery {
-        parser->syntaxError($2, CSSParser::PropertyDeclarationError);
+        parser->reportError($2, CSSParser::PropertyDeclarationError);
     }
   ;
 

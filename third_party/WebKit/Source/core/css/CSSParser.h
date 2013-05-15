@@ -74,11 +74,11 @@ class CSSParser {
 
 public:
     class SourceDataHandler;
-    enum SyntaxErrorType {
-        NoSyntaxError,
+    enum ErrorType {
+        NoError,
         PropertyDeclarationError,
         InvalidPropertyValueError,
-        GeneralSyntaxError
+        GeneralError
     };
 
     CSSParser(const CSSParserContext&);
@@ -386,9 +386,9 @@ public:
     void startRuleBody();
     void endRuleBody(bool discard = false);
     void startProperty();
-    void endProperty(bool isImportantFound, bool isPropertyParsed, SyntaxErrorType = NoSyntaxError);
+    void endProperty(bool isImportantFound, bool isPropertyParsed, ErrorType = NoError);
     void startEndUnknownRule();
-    void syntaxError(const CSSParserLocation&, SyntaxErrorType = GeneralSyntaxError);
+    void reportError(const CSSParserLocation&, ErrorType = GeneralError);
 
     inline int lex(void* yylval) { return (this->*m_lexFunc)(yylval); }
 
@@ -660,7 +660,7 @@ public:
     virtual void endRuleBody(unsigned offset, bool error) = 0;
     virtual void startEndUnknownRule() = 0;
     virtual void startProperty(unsigned offset) = 0;
-    virtual void endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParser::SyntaxErrorType) = 0;
+    virtual void endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParser::ErrorType) = 0;
     virtual void startComment(unsigned offset) = 0;
     virtual void endComment(unsigned offset) = 0;
 };

@@ -10945,7 +10945,7 @@ CSSParser::RuleList* CSSParser::createRuleList()
     return listPtr;
 }
 
-void CSSParser::syntaxError(const CSSParserLocation& location, SyntaxErrorType error)
+void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
 {
     if (!isLoggingErrors())
         return;
@@ -11343,7 +11343,7 @@ void CSSParser::startProperty()
         m_sourceDataHandler->startProperty(safeUserStringTokenOffset());
 }
 
-void CSSParser::endProperty(bool isImportantFound, bool isPropertyParsed, SyntaxErrorType errorType)
+void CSSParser::endProperty(bool isImportantFound, bool isPropertyParsed, ErrorType errorType)
 {
     m_id = CSSPropertyInvalid;
     if (m_sourceDataHandler)

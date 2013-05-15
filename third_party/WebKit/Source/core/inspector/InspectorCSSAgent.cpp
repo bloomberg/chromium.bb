@@ -638,6 +638,7 @@ static bool hasVendorSpecificPrefix(const CSSParserString& string)
     return false;
 }
 
+// static
 bool InspectorCSSAgent::cssErrorFilter(const CSSParserLocation& location, int propertyId, int errorType)
 {
     const size_t tokenLength = location.token.length();

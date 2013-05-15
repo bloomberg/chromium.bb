@@ -171,7 +171,7 @@ private:
     virtual void endRuleBody(unsigned, bool) OVERRIDE;
     virtual void startEndUnknownRule() OVERRIDE { addNewRuleToSourceTree(CSSRuleSourceData::createUnknown()); }
     virtual void startProperty(unsigned) OVERRIDE;
-    virtual void endProperty(bool, bool, unsigned, CSSParser::SyntaxErrorType) OVERRIDE;
+    virtual void endProperty(bool, bool, unsigned, CSSParser::ErrorType) OVERRIDE;
     virtual void startComment(unsigned) OVERRIDE;
     virtual void endComment(unsigned) OVERRIDE;
 
@@ -343,9 +343,9 @@ void StyleSheetHandler::startProperty(unsigned offset)
     m_propertyRangeStart = offset;
 }
 
-void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParser::SyntaxErrorType errorType)
+void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParser::ErrorType errorType)
 {
-    if (errorType != CSSParser::NoSyntaxError)
+    if (errorType != CSSParser::NoError)
         m_propertyRangeStart = UINT_MAX;
 
     if (m_propertyRangeStart == UINT_MAX || m_currentRuleDataStack.isEmpty() || !m_currentRuleDataStack.last()->styleSourceData)
