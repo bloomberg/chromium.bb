@@ -359,9 +359,9 @@ public:
     bool hasLocalName(const AtomicString& other) const { return m_tagName.localName() == other; }
     bool hasLocalName(const QualifiedName& other) const { return m_tagName.localName() == other.localName(); }
 
-    const AtomicString& localName() const { return m_tagName.localName(); }
-    const AtomicString& prefix() const { return m_tagName.prefix(); }
-    const AtomicString& namespaceURI() const { return m_tagName.namespaceURI(); }
+    virtual const AtomicString& localName() const OVERRIDE { return m_tagName.localName(); }
+    virtual const AtomicString& prefix() const OVERRIDE { return m_tagName.prefix(); }
+    virtual const AtomicString& namespaceURI() const OVERRIDE { return m_tagName.namespaceURI(); }
 
     virtual KURL baseURI() const OVERRIDE FINAL;
 
@@ -682,9 +682,6 @@ private:
 
     void cancelFocusAppearanceUpdate();
 
-    virtual const AtomicString& virtualPrefix() const OVERRIDE FINAL { return prefix(); }
-    virtual const AtomicString& virtualLocalName() const OVERRIDE FINAL { return localName(); }
-    virtual const AtomicString& virtualNamespaceURI() const OVERRIDE FINAL { return namespaceURI(); }
     virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return computedStyle(pseudoElementSpecifier); }
     
     // cloneNode is private so that non-virtual cloneElementWithChildren and cloneElementWithoutChildren
