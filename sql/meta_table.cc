@@ -52,6 +52,8 @@ bool MetaTable::Init(Connection* db, int version, int compatible_version) {
     // there, we should create an index.
     SetVersionNumber(version);
     SetCompatibleVersionNumber(compatible_version);
+  } else {
+    db_->AddTaggedHistogram("Sqlite.Version", GetVersionNumber());
   }
   return transaction.Commit();
 }

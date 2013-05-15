@@ -374,7 +374,7 @@ bool TopSitesDatabase::RemoveURL(const MostVisitedURL& url) {
 sql::Connection* TopSitesDatabase::CreateDB(const base::FilePath& db_name) {
   scoped_ptr<sql::Connection> db(new sql::Connection());
   // Settings copied from ThumbnailDatabase.
-  db->set_error_histogram_name("Sqlite.Thumbnail.Error");
+  db->set_histogram_tag("TopSites");
   db->set_page_size(4096);
   db->set_cache_size(32);
 

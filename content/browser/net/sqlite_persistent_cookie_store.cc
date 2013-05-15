@@ -596,7 +596,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
     UMA_HISTOGRAM_COUNTS("Cookie.DBSizeInKB", db_size / 1024 );
 
   db_.reset(new sql::Connection);
-  db_->set_error_histogram_name("Sqlite.Cookie.Error");
+  db_->set_histogram_tag("Cookie");
   db_->set_error_delegate(new KillDatabaseErrorDelegate(this));
 
   if (!db_->Open(path_)) {

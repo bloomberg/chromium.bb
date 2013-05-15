@@ -146,12 +146,16 @@ class SQL_EXPORT Connection {
     error_delegate_.reset(delegate);
   }
 
-  // SQLite error codes for errors on all connections are logged to
-  // enum histogram "Sqlite.Error".  Setting this additionally logs
-  // errors to the histogram |name|.
-  void set_error_histogram_name(const std::string& name) {
-    error_histogram_name_ = name;
+  // Set this tag to enable additional connection-type histogramming
+  // for SQLite error codes and database version numbers.
+  void set_histogram_tag(const std::string& tag) {
+    histogram_tag_ = tag;
   }
+
+  // Record a sparse UMA histogram sample under
+  // |name|+"."+|histogram_tag_|.  If |histogram_tag_| is empty, no
+  // histogram is recorded.
+  void AddTaggedHistogram(const std::string& name, size_t sample) const;
 
   // Initialization ------------------------------------------------------------
 
@@ -497,8 +501,8 @@ class SQL_EXPORT Connection {
   // commands or statements. It can be null which means default handling.
   scoped_ptr<ErrorDelegate> error_delegate_;
 
-  // Auxiliary error-code histogram.
-  std::string error_histogram_name_;
+  // Tag for auxiliary histograms.
+  std::string histogram_tag_;
 
   DISALLOW_COPY_AND_ASSIGN(Connection);
 };

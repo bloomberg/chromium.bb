@@ -7150,11 +7150,14 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Sqlite.Error" enum="SqliteErrorCode">
-  <summary>Error codes returned by sqlite for all databases.</summary>
+  <summary>SQLite extended error codes.</summary>
 </histogram>
 
 <histogram name="Sqlite.Error.IOERR" enum="SqliteIOERRCode">
-  <summary>Error codes returned by sqlite for all databases.</summary>
+  <obsolete>
+    Replaced 5/14/2013 by expanded Sqlite.Error histogram.
+  </obsolete>
+  <summary>SQLite extended SQLITE_IOERR codes for all databases.</summary>
 </histogram>
 
 <histogram name="Sqlite.History.Error" enum="SqliteErrorCode">
@@ -7171,6 +7174,10 @@ other types of suffix sets.
 
 <histogram name="Sqlite.Thumbnail.Error" enum="SqliteErrorCode">
   <summary>Error codes returned by sqlite for the thumbnail db.</summary>
+</histogram>
+
+<histogram name="Sqlite.Version">
+  <summary>Version of pre-existing database at startup.</summary>
 </histogram>
 
 <histogram name="Sqlite.Web.Error" enum="SqliteErrorCode">
@@ -11261,7 +11268,7 @@ other types of suffix sets.
 </enum>
 
 <enum name="SqliteErrorCode" type="int">
-  <summary>Error codes returned by SQLite - see sqlite.h</summary>
+  <summary>Error codes returned by SQLite - see sqlite3.h</summary>
   <int value="0" label="SQLITE_OK">Successful result</int>
   <int value="1" label="SQLITE_ERROR">SQL error or missing database</int>
   <int value="2" label="SQLITE_INTERNAL">
@@ -11308,7 +11315,7 @@ other types of suffix sets.
   <int value="23" label="SQLITE_AUTH">Authorization denied</int>
   <int value="24" label="SQLITE_FORMAT">Auxiliary database format error</int>
   <int value="25" label="SQLITE_RANGE">
-    2nd parameter to sqlite3_bind out of range
+    2nd parameter to sqlite3_bind() out of range
   </int>
   <int value="26" label="SQLITE_NOTADB">
     File opened that is not a database file
@@ -11317,10 +11324,50 @@ other types of suffix sets.
   <int value="101" label="SQLITE_DONE">
     sqlite3_step() has finished executing
   </int>
+  <int value="261" label="SQLITE_BUSY_RECOVERY">TBD</int>
+  <int value="262" label="SQLITE_LOCKED_SHAREDCACHE">TBD</int>
+  <int value="266" label="SQLITE_IOERR_READ">Error reading from file</int>
+  <int value="270" label="SQLITE_CANTOPEN_NOTEMPDIR">TBD</int>
+  <int value="522" label="SQLITE_IOERR_SHORT_READ">Short read from file</int>
+  <int value="778" label="SQLITE_IOERR_WRITE">
+    Error writing to file (other than SQLITE_FULL)
+  </int>
+  <int value="1034" label="SQLITE_IOERR_FSYNC">Error syncing to disk</int>
+  <int value="1290" label="SQLITE_IOERR_DIR_FSYNC">
+    Error syncing directory changes to disk
+  </int>
+  <int value="1546" label="SQLITE_IOERR_TRUNCATE">Error truncating file</int>
+  <int value="1802" label="SQLITE_IOERR_FSTAT">Error reading file metadata</int>
+  <int value="2058" label="SQLITE_IOERR_UNLOCK">Error unlocking file</int>
+  <int value="2314" label="SQLITE_IOERR_RDLOCK">
+    Error getting read lock - should not be possible
+  </int>
+  <int value="2570" label="SQLITE_IOERR_DELETE">Error deleting file</int>
+  <int value="2826" label="SQLITE_IOERR_BLOCKED">
+    Deadlock due to other process access to SQLite files
+  </int>
+  <int value="3082" label="SQLITE_IOERR_NOMEM">Error mapping shared memory</int>
+  <int value="3338" label="SQLITE_IOERR_ACCESS">
+    Error getting file attributes (other than not found)
+  </int>
+  <int value="3594" label="SQLITE_IOERR_CHECKRESERVEDLOCK">
+    Error while querying lock status
+  </int>
+  <int value="3850" label="SQLITE_IOERR_LOCK">Error acquiring lock</int>
+  <int value="4106" label="SQLITE_IOERR_CLOSE">Error closing file</int>
+  <int value="4362" label="SQLITE_IOERR_DIR_CLOSE">Unused</int>
+  <int value="4618" label="SQLITE_IOERR_SHMOPEN">Error mmapping file</int>
+  <int value="4874" label="SQLITE_IOERR_SHMSIZE">
+    Error in stat while mmapping file
+  </int>
+  <int value="5130" label="SQLITE_IOERR_SHMLOCK">Unused</int>
 </enum>
 
 <enum name="SqliteIOERRCode" type="int">
-  <summary>Extended error codes returned by SQLite - see sqlite.h</summary>
+  <obsolete>
+    Replaced 5/14/2013 by expanded Sqlite.Error histogram.
+  </obsolete>
+  <summary>Extended error codes returned by SQLite - see sqlite3.h</summary>
   <int value="0" label="SQLITE_IOERR">No extended code given</int>
   <int value="1" label="SQLITE_IOERR_READ">Error reading from file</int>
   <int value="2" label="SQLITE_IOERR_SHORT_READ">Short read from file</int>
@@ -13007,6 +13054,22 @@ other types of suffix sets.
   <group name="50K" label="where at least 50KB was transferred."/>
   <group name="100K" label="where at least 100KB was transferred."/>
   <affected-histogram name="Net.SpdySettingsCwnd"/>
+</fieldtrial>
+
+<fieldtrial name="SqliteDatabases" separator=".">
+  <group name="AppCache" label="AppCache"/>
+  <group name="Cookie" label="Cookie"/>
+  <group name="DatabaseTracker" label="DatabaseTracker"/>
+  <group name="DomainBoundCerts" label="DomainBoundCerts"/>
+  <group name="DomStorageDatabase" label="DomStorageDatabase"/>
+  <group name="History" label="History"/>
+  <group name="Quota" label="Quota"/>
+  <group name="Text" label="Text"/>
+  <group name="Thumbnail" label="Thumbnail"/>
+  <group name="TopSites" label="TopSites"/>
+  <group name="Web" label="Web"/>
+  <affected-histogram name="Sqlite.Error"/>
+  <affected-histogram name="Sqlite.Version"/>
 </fieldtrial>
 
 <fieldtrial name="SSLFalseStart">

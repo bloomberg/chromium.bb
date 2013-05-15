@@ -1001,7 +1001,7 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
   db_.reset(new sql::Connection);
   meta_table_.reset(new sql::MetaTable);
 
-  db_->set_error_histogram_name("Sqlite.AppCache.Error");
+  db_->set_histogram_tag("AppCache");
 
   bool opened = false;
   if (use_in_memory_db) {

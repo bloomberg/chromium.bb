@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -708,35 +709,27 @@ void Connection::StatementRefDeleted(StatementRef* ref) {
     open_statements_.erase(i);
 }
 
+void Connection::AddTaggedHistogram(const std::string& name,
+                                    size_t sample) const {
+  if (histogram_tag_.empty())
+    return;
+
+  // TODO(shess): The histogram macros create a bit of static storage
+  // for caching the histogram object.  This code shouldn't execute
+  // often enough for such caching to be crucial.  If it becomes an
+  // issue, the object could be cached alongside histogram_prefix_.
+  std::string full_histogram_name = name + "." + histogram_tag_;
+  base::HistogramBase* histogram =
+      base::SparseHistogram::FactoryGet(
+          full_histogram_name,
+          base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (histogram)
+    histogram->Add(sample);
+}
+
 int Connection::OnSqliteError(int err, sql::Statement *stmt) {
-  // Strip extended error codes.
-  int base_err = err&0xff;
-
-  static size_t kSqliteErrorMax = 50;
-  UMA_HISTOGRAM_ENUMERATION("Sqlite.Error", base_err, kSqliteErrorMax);
-  if (base_err == SQLITE_IOERR) {
-    // TODO(shess): Consider folding the IOERR range into the main
-    // histogram directly.  Perhaps 30..49?  The downside risk would
-    // be that SQLite core adds a bunch of codes and this becomes a
-    // complicated mapping.
-    static size_t kSqliteIOErrorMax = 20;
-    UMA_HISTOGRAM_ENUMERATION("Sqlite.Error.IOERR", err>>8, kSqliteIOErrorMax);
-  }
-
-  if (!error_histogram_name_.empty()) {
-    // TODO(shess): The histogram macros create a bit of static
-    // storage for caching the histogram object.  Since SQLite is
-    // being used for I/O, generally without error, this code
-    // shouldn't execute often enough for such caching to be crucial.
-    // If it becomes an issue, the object could be cached alongside
-    // error_histogram_name_.
-    base::HistogramBase* histogram =
-        base::LinearHistogram::FactoryGet(
-            error_histogram_name_, 1, kSqliteErrorMax, kSqliteErrorMax + 1,
-            base::HistogramBase::kUmaTargetedHistogramFlag);
-    if (histogram)
-      histogram->Add(base_err);
-  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.Error", err);
+  AddTaggedHistogram("Sqlite.Error", err);
 
   // Always log the error.
   LOG(ERROR) << "sqlite error " << err

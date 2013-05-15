@@ -218,7 +218,7 @@ sql::InitStatus ThumbnailDatabase::Init(
 
 sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
                                                 const base::FilePath& db_name) {
-  db->set_error_histogram_name("Sqlite.Thumbnail.Error");
+  db->set_histogram_tag("Thumbnail");
 
   // Thumbnails db now only stores favicons, so we don't need that big a page
   // size or cache.

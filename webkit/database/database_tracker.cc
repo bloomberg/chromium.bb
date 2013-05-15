@@ -482,7 +482,7 @@ bool DatabaseTracker::LazyInit() {
         return false;
     }
 
-    db_->set_error_histogram_name("Sqlite.DatabaseTracker.Error");
+    db_->set_histogram_tag("DatabaseTracker");
 
     databases_table_.reset(new DatabasesTable(db_.get()));
     meta_table_.reset(new sql::MetaTable());

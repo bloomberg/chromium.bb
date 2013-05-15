@@ -75,7 +75,7 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   if (!content::NotificationService::current())
     notification_service_.reset(content::NotificationService::Create());
 
-  db_.set_error_histogram_name("Sqlite.Web.Error");
+  db_.set_histogram_tag("Web");
 
   // We don't store that much data in the tables so use a small page size.
   // This provides a large benefit for empty tables (which is very likely with

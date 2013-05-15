@@ -447,7 +447,7 @@ bool QuotaDatabase::LazyOpen(bool create_if_needed) {
   db_.reset(new sql::Connection);
   meta_table_.reset(new sql::MetaTable);
 
-  db_->set_error_histogram_name("Sqlite.Quota.Error");
+  db_->set_histogram_tag("Quota");
 
   bool opened = false;
   if (in_memory_only) {

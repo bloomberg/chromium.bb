@@ -253,7 +253,7 @@ void SQLiteServerBoundCertStore::Backend::LoadOnDBThread(
     UMA_HISTOGRAM_COUNTS("DomainBoundCerts.DBSizeInKB", db_size / 1024 );
 
   db_.reset(new sql::Connection);
-  db_->set_error_histogram_name("Sqlite.DomainBoundCerts.Error");
+  db_->set_histogram_tag("DomainBoundCerts");
   db_->set_error_delegate(new KillDatabaseErrorDelegate(this));
 
   if (!db_->Open(path_)) {
