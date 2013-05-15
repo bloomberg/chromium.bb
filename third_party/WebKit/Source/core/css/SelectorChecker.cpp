@@ -46,6 +46,7 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLProgressElement.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"
@@ -236,6 +237,14 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
     return SelectorFailsCompletely;
 }
 
+static inline bool containsHTMLSpace(const AtomicString& string)
+{
+    for (unsigned i = 0; i < string.length(); i++)
+        if (isHTMLSpace(string[i]))
+            return true;
+    return false;
+}
+
 static bool attributeValueMatches(const Attribute* attributeItem, CSSSelector::Match match, const AtomicString& selectorValue, bool caseSensitive)
 {
     const AtomicString& value = attributeItem->value();
@@ -249,8 +258,8 @@ static bool attributeValueMatches(const Attribute* attributeItem, CSSSelector::M
         break;
     case CSSSelector::List:
         {
-            // Ignore empty selectors or selectors containing spaces
-            if (selectorValue.contains(' ') || selectorValue.isEmpty())
+            // Ignore empty selectors or selectors containing HTML spaces
+            if (containsHTMLSpace(selectorValue) || selectorValue.isEmpty())
                 return false;
 
             unsigned startSearchAt = 0;
@@ -258,9 +267,9 @@ static bool attributeValueMatches(const Attribute* attributeItem, CSSSelector::M
                 size_t foundPos = value.find(selectorValue, startSearchAt, caseSensitive);
                 if (foundPos == notFound)
                     return false;
-                if (!foundPos || value[foundPos - 1] == ' ') {
+                if (!foundPos || isHTMLSpace(value[foundPos - 1])) {
                     unsigned endStr = foundPos + selectorValue.length();
-                    if (endStr == value.length() || value[endStr] == ' ')
+                    if (endStr == value.length() || isHTMLSpace(value[endStr]))
                         break; // We found a match.
                 }
 
