@@ -403,6 +403,7 @@ def main(argv):
       # We place '-strip-metadata' after optimization passes since
       # optimizations depend on the metadata.
       passes += ['-strip-metadata',
+                 '-flatten-globals',
                  '-expand-constant-expr',
                  '-expand-getelementptr']
       if (not env.getbool('DISABLE_ABI_CHECK') and
