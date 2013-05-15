@@ -3026,6 +3026,8 @@ bool CSSParser::parseFillShorthand(CSSPropertyID propId, const CSSPropertyID* pr
                 RefPtr<CSSValue> val2;
                 CSSPropertyID propId1, propId2;
                 CSSParserValue* parserValue = m_valueList->current();
+                // parseFillProperty() may modify m_implicitShorthand, so we MUST reset it
+                // before EACH return below.
                 if (parseFillProperty(properties[i], propId1, propId2, val1, val2)) {
                     parsedProperty[i] = found = true;
                     addFillValue(values[i], val1.release());
@@ -3053,8 +3055,10 @@ bool CSSParser::parseFillShorthand(CSSPropertyID propId, const CSSPropertyID* pr
 
         // if we didn't find at least one match, this is an
         // invalid shorthand and we have to ignore it
-        if (!found)
+        if (!found) {
+            m_implicitShorthand = false;
             return false;
+        }
     }
 
     // Now add all of the properties we found.
@@ -3100,6 +3104,7 @@ bool CSSParser::parseFillShorthand(CSSPropertyID propId, const CSSPropertyID* pr
             addProperty(CSSPropertyWebkitMaskClip, clipValue.release(), important);
     }
 
+    m_implicitShorthand = false;
     return true;
 }
 
