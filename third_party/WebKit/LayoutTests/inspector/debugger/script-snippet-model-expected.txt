@@ -3,8 +3,32 @@ Tests script snippet model.
 Debugger was enabled.
 
 Running: testCreateAndRename
-Snippet created.
-Snippet uiSourceCode url is correct.
+Snippet1 created.
+Snippet2 created.
+Renaming snippet to 'foo' ...
+Snippet renamed successfully.
+UISourceCode name is 'foo' now.
+Number of uiSourceCodes in workspace: 2
+Renaming snippet to '   ' ...
+Snippet was not renamed.
+UISourceCode name is 'foo' now.
+Number of uiSourceCodes in workspace: 2
+Renaming snippet to ' bar ' ...
+Snippet renamed successfully.
+UISourceCode name is 'bar' now.
+Number of uiSourceCodes in workspace: 2
+Renaming snippet to 'foo' ...
+Snippet renamed successfully.
+UISourceCode name is 'foo' now.
+Number of uiSourceCodes in workspace: 2
+Renaming snippet to 'bar' ...
+Snippet renamed successfully.
+UISourceCode name is 'bar' now.
+Number of uiSourceCodes in workspace: 2
+Renaming snippet to 'foo' ...
+Snippet was not renamed.
+UISourceCode name is 'bar' now.
+Number of uiSourceCodes in workspace: 2
 
 Running: testEvaluate
 Last evaluation source url for snippet: snippets:///1_1

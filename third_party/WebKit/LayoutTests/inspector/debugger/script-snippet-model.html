@@ -9,6 +9,7 @@ function test()
     {
         WebInspector.scriptSnippetModel._snippetStorage.reset();
         WebInspector.scriptSnippetModel._lastSnippetEvaluationIndexSetting.set(0);
+        WebInspector.scriptSnippetModel.reset();
     }
 
     var workspace = new WebInspector.Workspace();
@@ -18,17 +19,33 @@ function test()
     InspectorTest.runDebuggerTestSuite([
         function testCreateAndRename(next)
         {
+            function renameSnippetAndCheckWorkspace(uiSourceCode, snippetName)
+            {
+                InspectorTest.addResult("Renaming snippet to '" + snippetName + "' ...");
+                uiSourceCode.rename(snippetName, renameCallback);
+
+                function renameCallback(success)
+                {
+                    if (success)
+                        InspectorTest.addResult("Snippet renamed successfully.");
+                    else
+                        InspectorTest.addResult("Snippet was not renamed.");
+                }
+                InspectorTest.addResult("UISourceCode name is '" + uiSourceCode.name() + "' now.");
+                InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().length);
+            }
+
             resetSnippetsSettings();
-            var uiSourceCode = WebInspector.scriptSnippetModel.createScriptSnippet();
-            var snippetName = "TestSnippet" + Math.random();
-            InspectorTest.addResult("Snippet created.");
-            WebInspector.scriptSnippetModel.renameScriptSnippet(uiSourceCode, snippetName);
-            uiSourceCode.rename(snippetName);
-            InspectorTest.assertEquals(1, workspace.uiSourceCodes().length, "Only one snippet uiSourceCode should be present.");
-            var uiSourceCode = workspace.uiSourceCodes()[0];
-            if (uiSourceCode.originURL().indexOf(snippetName) === -1)
-                return;
-            InspectorTest.addResult("Snippet uiSourceCode url is correct.");
+            var uiSourceCode1 = WebInspector.scriptSnippetModel.createScriptSnippet();
+            InspectorTest.addResult("Snippet1 created.");
+            var uiSourceCode2 = WebInspector.scriptSnippetModel.createScriptSnippet();
+            InspectorTest.addResult("Snippet2 created.");
+            renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
+            renameSnippetAndCheckWorkspace(uiSourceCode1, "   ");
+            renameSnippetAndCheckWorkspace(uiSourceCode1, " bar ");
+            renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
+            renameSnippetAndCheckWorkspace(uiSourceCode2, "bar");
+            renameSnippetAndCheckWorkspace(uiSourceCode2, "foo");
             next();
         },
 
@@ -37,16 +54,14 @@ function test()
             resetSnippetsSettings();
 
             var uiSourceCode1 = WebInspector.scriptSnippetModel.createScriptSnippet();
-            WebInspector.scriptSnippetModel.renameScriptSnippet(uiSourceCode1, "Snippet1");
-            uiSourceCode1.rename("Snippet1");
+            uiSourceCode1.rename("Snippet1", function() { });
             var content = "";
             content += "// This snippet does nothing.\n";
             content += "var i = 2+2;\n";
             uiSourceCode1.setWorkingCopy(content);
 
             var uiSourceCode2 = WebInspector.scriptSnippetModel.createScriptSnippet();
-            WebInspector.scriptSnippetModel.renameScriptSnippet(uiSourceCode2, "Snippet2");
-            uiSourceCode2.rename("Snippet2");
+            uiSourceCode2.rename("Snippet2", function() { });
             content = "";
             content += "// This snippet creates a function that does nothing and returns it.\n";
             content += "function doesNothing() {\n";
