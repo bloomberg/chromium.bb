@@ -4,6 +4,7 @@
 
 #include "net/http/http_network_layer.h"
 
+#include "base/stringprintf.h"
 #include "net/base/net_log.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
@@ -190,6 +191,83 @@ TEST_F(HttpNetworkLayerTest, ServerFallback) {
   ASSERT_TRUE(1u == proxy_service_->proxy_retry_info().size());
   EXPECT_EQ("bad:8080", (*proxy_service_->proxy_retry_info().begin()).first);
 }
+
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+TEST_F(HttpNetworkLayerTest, ServerFallbackOnInternalServerError) {
+  // Verify that "500 Internal Server Error" via the data reduction proxy
+  // induces proxy fallback to a second proxy, if configured.
+
+  // To configure this test, we need to wire up a custom proxy service to use
+  // a pair of proxies. We'll induce fallback via the first and return
+  // the expected data via the second.
+  std::string data_reduction_proxy(
+      HostPortPair::FromURL(GURL(SPDY_PROXY_AUTH_ORIGIN)).ToString());
+  std::string pac_string = base::StringPrintf(
+      "PROXY %s; PROXY good:8080", data_reduction_proxy.data());
+  ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(pac_string));
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.1 500 Internal Server Error\r\n\r\n"),
+    MockRead("Bypass message"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  MockWrite data_writes[] = {
+    MockWrite("GET http://www.google.com/ HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  StaticSocketDataProvider data1(data_reads, arraysize(data_reads),
+                                 data_writes, arraysize(data_writes));
+  mock_socket_factory_.AddSocketDataProvider(&data1);
+
+  // Second data provider returns the expected content.
+  MockRead data_reads2[] = {
+    MockRead("HTTP/1.0 200 OK\r\n"
+             "Server: not-proxy\r\n\r\n"),
+    MockRead("content"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  MockWrite data_writes2[] = {
+    MockWrite("GET http://www.google.com/ HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
+                                 data_writes2, arraysize(data_writes2));
+  mock_socket_factory_.AddSocketDataProvider(&data2);
+
+  TestCompletionCallback callback;
+
+  HttpRequestInfo request_info;
+  request_info.url = GURL("http://www.google.com/");
+  request_info.method = "GET";
+  request_info.load_flags = LOAD_NORMAL;
+
+  scoped_ptr<HttpTransaction> trans;
+  int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans, NULL);
+  EXPECT_EQ(OK, rv);
+
+  rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  ASSERT_EQ(OK, rv);
+
+  std::string contents;
+  rv = ReadTransaction(trans.get(), &contents);
+  EXPECT_EQ(OK, rv);
+
+  // We should obtain content from the second socket provider write
+  // corresponding to the fallback proxy.
+  EXPECT_EQ("content", contents);
+  // We also have a server header here that isn't set by the proxy.
+  EXPECT_TRUE(trans->GetResponseInfo()->headers->HasHeaderValue(
+      "server", "not-proxy"));
+  // We should also observe the data reduction proxy in the retry list.
+  ASSERT_TRUE(1u == proxy_service_->proxy_retry_info().size());
+  EXPECT_EQ(data_reduction_proxy,
+            (*proxy_service_->proxy_retry_info().begin()).first);
+}
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 TEST_F(HttpNetworkLayerTest, ServerFallbackDoesntLoop) {
   // Verify that a Connection: Proxy-Bypass header will display the original
