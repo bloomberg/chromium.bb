@@ -698,14 +698,13 @@ translator-all() {
     "SANDBOXED TC [prod=${SBTC_PRODUCTION}] [arches=${SBTC_ARCHES_ALL}]"
 
   # Build the SDK if it not already present.
-  if ! [ -d "$(GetInstallDir newlib)/sdk/lib" ]; then
-    sdk newlib
-    # Also build private libs to allow building nexes without the IRT
-    # segment gap.  Specifically, only the sandboxed translator nexes
-    # are built without IRT support to gain address space and reduce
-    # swap file usage.
-    sdk-private-libs newlib
-  fi
+  sdk
+  # Also build private libs to allow building nexes without the IRT
+  # segment gap.  Specifically, only the sandboxed translator nexes
+  # are built without IRT support to gain address space and reduce
+  # swap file usage. Also libsrpc and its dependencies are now considered
+  # private libs because they are not in the real SDK
+  sdk-private-libs
 
   binutils-liberty
   if ${SBTC_PRODUCTION}; then
@@ -2108,7 +2107,7 @@ llvm-sb-setup() {
 
   # The SRPC headers are included directly from the nacl tree, as they are
   # not in the SDK. libsrpc should have already been built by the
-  # build.sh sdk step.
+  # build.sh sdk-private-libs step.
   # This is always statically linked.
   local flags=" -static -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) "
 
@@ -2496,7 +2495,7 @@ binutils-gold-sb-configure() {
 
   # The SRPC headers are included directly from the nacl tree, as they are
   # not in the SDK. libsrpc should have already been built by the
-  # build.sh sdk step
+  # build.sh sdk-private-libs step
   local flags="-static -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) \
     -fno-exceptions -O3"
   local configure_env=(
@@ -2953,12 +2952,8 @@ sdk-setup() {
   if ${SDK_IS_SETUP} && [ $# -eq 0 ]; then
     return 0
   fi
-  if [ $# -ne 1 ]; then
-    Fatal "Please specify libmode: newlib or glibc"
-  fi
-  check-libmode "$1"
   SDK_IS_SETUP=true
-  SDK_LIBMODE=$1
+  SDK_LIBMODE=newlib
 
   SDK_INSTALL_ROOT="${INSTALL_ROOT}/${SDK_LIBMODE}/sdk"
   SDK_INSTALL_LIB="${SDK_INSTALL_ROOT}/lib"
@@ -3052,12 +3047,18 @@ sdk-private-libs() {
     --verbose \
     libnacl_sys_private \
     libpthread_private \
-    libnacl_dyncode_private
+    libnacl_dyncode_private \
+    libplatform \
+    libimc \
+    libimc_syscalls \
+    libsrpc \
+    libgio
 
   local out_dir_prefix="${SCONS_OUT}"/nacl-x86-32-pnacl-pexe-clang
   local outdir="${out_dir_prefix}"/lib
   mkdir -p "${SDK_INSTALL_LIB}"
-  cp "${outdir}"/lib*_private.a "${SDK_INSTALL_LIB}"
+  cp "${outdir}"/lib*_private.a \
+     "${outdir}"/lib{platform,imc,imc_syscalls,srpc,gio}.a "${SDK_INSTALL_LIB}"
   spopd
 }
 
