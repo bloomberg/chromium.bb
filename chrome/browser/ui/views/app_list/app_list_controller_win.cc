@@ -489,6 +489,7 @@ void AppListController::OnSigninStatusChanged() {
 
 void AppListController::ShowAppList(Profile* requested_profile) {
   DCHECK(requested_profile);
+  ScopedKeepAlive show_app_list_keepalive;
 
   content::BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(SetDidRunForNDayActiveStats));
