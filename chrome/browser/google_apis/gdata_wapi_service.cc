@@ -490,7 +490,6 @@ void GDataWapiService::InitiateUploadExistingFile(
 }
 
 void GDataWapiService::ResumeUpload(
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 start_position,
@@ -508,7 +507,6 @@ void GDataWapiService::ResumeUpload(
                                 url_request_context_getter_,
                                 callback,
                                 progress_callback,
-                                upload_mode,
                                 drive_file_path,
                                 upload_url,
                                 start_position,
@@ -519,7 +517,6 @@ void GDataWapiService::ResumeUpload(
 }
 
 void GDataWapiService::GetUploadStatus(
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
@@ -531,7 +528,6 @@ void GDataWapiService::GetUploadStatus(
       new GetUploadStatusOperation(operation_registry(),
                                    url_request_context_getter_,
                                    callback,
-                                   upload_mode,
                                    drive_file_path,
                                    upload_url,
                                    content_length));

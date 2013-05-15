@@ -14,7 +14,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
-#include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/power_save_blocker.h"
@@ -46,14 +45,12 @@ namespace google_apis {
 // Structure containing current upload information of file, passed between
 // DriveServiceInterface methods and callbacks.
 struct DriveUploader::UploadFileInfo {
-  UploadFileInfo(UploadMode upload_mode,
-                 const base::FilePath& drive_path,
+  UploadFileInfo(const base::FilePath& drive_path,
                  const base::FilePath& local_path,
                  const std::string& content_type,
                  const UploadCompletionCallback& callback,
                  const ProgressCallback& progress_callback)
-      : upload_mode(upload_mode),
-        drive_path(drive_path),
+      : drive_path(drive_path),
         file_path(local_path),
         content_type(content_type),
         completion_callback(callback),
@@ -75,9 +72,6 @@ struct DriveUploader::UploadFileInfo {
            "], drive_path=[" + drive_path.AsUTF8Unsafe() +
            "]";
   }
-
-  // Whether this is uploading a new file or updating an existing file.
-  const UploadMode upload_mode;
 
   // Final path in gdata. Looks like /special/drive/MyFolder/MyFile.
   const base::FilePath drive_path;
@@ -128,8 +122,7 @@ void DriveUploader::UploadNewFile(const std::string& parent_resource_id,
   DCHECK(!callback.is_null());
 
   StartUploadFile(
-      scoped_ptr<UploadFileInfo>(new UploadFileInfo(UPLOAD_NEW_FILE,
-                                                    drive_file_path,
+      scoped_ptr<UploadFileInfo>(new UploadFileInfo(drive_file_path,
                                                     local_file_path,
                                                     content_type,
                                                     callback,
@@ -156,8 +149,7 @@ void DriveUploader::UploadExistingFile(
   DCHECK(!callback.is_null());
 
   StartUploadFile(
-      scoped_ptr<UploadFileInfo>(new UploadFileInfo(UPLOAD_EXISTING_FILE,
-                                                    drive_file_path,
+      scoped_ptr<UploadFileInfo>(new UploadFileInfo(drive_file_path,
                                                     local_file_path,
                                                     content_type,
                                                     callback,
@@ -283,7 +275,6 @@ void DriveUploader::UploadNextChunk(
 
   UploadFileInfo* info_ptr = upload_file_info.get();
   drive_service_->ResumeUpload(
-      info_ptr->upload_mode,
       info_ptr->drive_path,
       info_ptr->upload_location,
       start_position,
@@ -308,11 +299,11 @@ void DriveUploader::OnUploadRangeResponseReceived(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (response.code == HTTP_CREATED || response.code == HTTP_SUCCESS) {
-    // When upload_mode is UPLOAD_NEW_FILE, we expect HTTP_CREATED, and
-    // when upload_mode is UPLOAD_EXISTING_FILE, we expect HTTP_SUCCESS.
-    // There is an exception: if we uploading an empty file, UPLOAD_NEW_FILE
-    // also returns HTTP_SUCCESS on Drive API v2. The correct way of the fix
-    // should be uploading the metadata only. However, to keep the
+    // When uploading a new file, we expect HTTP_CREATED, and when uploading
+    // an existing file (to overwrite), we expect HTTP_SUCCESS.
+    // There is an exception: if we uploading an empty file, uploading a new
+    // file also returns HTTP_SUCCESS on Drive API v2. The correct way of the
+    // fix should be uploading the metadata only. However, to keep the
     // compatibility with GData WAPI during the migration period, we just
     // relax the condition here.
     // TODO(hidehiko): Upload metadata only for empty files, after GData WAPI

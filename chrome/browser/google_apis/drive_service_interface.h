@@ -317,7 +317,6 @@ class DriveServiceInterface {
   // Resumes uploading of a document/file on the calling thread.
   // |callback| must not be null. |progress_callback| may be null.
   virtual void ResumeUpload(
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
@@ -329,11 +328,10 @@ class DriveServiceInterface {
       const ProgressCallback& progress_callback) = 0;
 
   // Gets the current status of the uploading to |upload_url| from the server.
-  // |upload_mode|, |drive_file_path| and |content_length| should be set to
-  // the same value which is used for ResumeUpload.
+  // |drive_file_path| and |content_length| should be set to the same value
+  // which is used for ResumeUpload.
   // |callback| must not be null.
   virtual void GetUploadStatus(
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,

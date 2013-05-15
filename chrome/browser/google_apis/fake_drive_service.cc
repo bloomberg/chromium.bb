@@ -88,6 +88,13 @@ GURL GetUploadUrl(const base::DictionaryValue& entry) {
   return GURL(upload_url);
 }
 
+// Returns |url| without query parameter.
+GURL RemoveQueryParameter(const GURL& url) {
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
+  return url.ReplaceComponents(replacements);
+}
+
 }  // namespace
 
 FakeDriveService::FakeDriveService()
@@ -800,7 +807,9 @@ void FakeDriveService::InitiateUploadNewFile(
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, upload_url));
+      base::Bind(callback, HTTP_SUCCESS,
+                 net::AppendQueryParameter(upload_url, "mode", "newfile")));
+
 }
 
 void FakeDriveService::InitiateUploadExistingFile(
@@ -843,11 +852,11 @@ void FakeDriveService::InitiateUploadExistingFile(
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, upload_url));
+      base::Bind(callback, HTTP_SUCCESS,
+                 net::AppendQueryParameter(upload_url, "mode", "existing")));
 }
 
 void FakeDriveService::GetUploadStatus(
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
@@ -857,7 +866,6 @@ void FakeDriveService::GetUploadStatus(
 }
 
 void FakeDriveService::ResumeUpload(
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
@@ -884,7 +892,7 @@ void FakeDriveService::ResumeUpload(
   }
 
   DictionaryValue* entry = NULL;
-  entry = FindEntryByUploadUrl(upload_url);
+  entry = FindEntryByUploadUrl(RemoveQueryParameter(upload_url));
   if (!entry) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -942,9 +950,14 @@ void FakeDriveService::ResumeUpload(
 
   result_entry = ResourceEntry::CreateFrom(*entry).Pass();
 
-  GDataErrorCode return_code = HTTP_SUCCESS;
-  if (upload_mode == UPLOAD_NEW_FILE)
-    return_code = HTTP_CREATED;
+  std::string upload_mode;
+  bool upload_mode_found =
+      net::GetValueForKeyInQuery(upload_url, "mode", &upload_mode);
+  DCHECK(upload_mode_found &&
+         (upload_mode == "newfile" || upload_mode == "existing"));
+
+  GDataErrorCode return_code =
+      upload_mode == "newfile" ? HTTP_CREATED : HTTP_SUCCESS;
 
   MessageLoop::current()->PostTask(
       FROM_HERE,

@@ -629,7 +629,6 @@ void DriveAPIService::InitiateUploadExistingFile(
 }
 
 void DriveAPIService::ResumeUpload(
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 start_position,
@@ -646,7 +645,6 @@ void DriveAPIService::ResumeUpload(
       new drive::ResumeUploadOperation(
           operation_registry(),
           url_request_context_getter_,
-          upload_mode,
           drive_file_path,
           upload_url,
           start_position,
@@ -659,7 +657,6 @@ void DriveAPIService::ResumeUpload(
 }
 
 void DriveAPIService::GetUploadStatus(
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
@@ -670,7 +667,6 @@ void DriveAPIService::GetUploadStatus(
   runner_->StartOperationWithRetry(new drive::GetUploadStatusOperation(
       operation_registry(),
       url_request_context_getter_,
-      upload_mode,
       drive_file_path,
       upload_url,
       content_length,

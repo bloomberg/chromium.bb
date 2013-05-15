@@ -475,7 +475,6 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
   ResumeUploadOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_location,
       int64 start_position,
@@ -513,7 +512,6 @@ class GetUploadStatusOperation : public GetUploadStatusOperationBase {
   GetUploadStatusOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,

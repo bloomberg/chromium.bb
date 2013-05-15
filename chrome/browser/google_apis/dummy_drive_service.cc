@@ -128,7 +128,6 @@ void DummyDriveService::InitiateUploadExistingFile(
     const InitiateUploadCallback& callback) {}
 
 void DummyDriveService::ResumeUpload(
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 start_position,
@@ -140,7 +139,6 @@ void DummyDriveService::ResumeUpload(
     const ProgressCallback& progress_callback) {}
 
 void DummyDriveService::GetUploadStatus(
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,

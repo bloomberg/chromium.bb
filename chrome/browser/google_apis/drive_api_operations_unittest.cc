@@ -764,7 +764,6 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
       new drive::ResumeUploadOperation(
           &operation_registry_,
           request_context_getter_.get(),
-          UPLOAD_NEW_FILE,
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
           0,  // start_position
@@ -857,7 +856,6 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
       new drive::ResumeUploadOperation(
           &operation_registry_,
           request_context_getter_.get(),
-          UPLOAD_NEW_FILE,
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
           0,  // start_position
@@ -952,7 +950,6 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
         new drive::GetUploadStatusOperation(
             &operation_registry_,
             request_context_getter_.get(),
-            UPLOAD_NEW_FILE,
             base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
             upload_url,
             kTestContent.size(),
@@ -995,7 +992,6 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
         new drive::ResumeUploadOperation(
             &operation_registry_,
             request_context_getter_.get(),
-            UPLOAD_NEW_FILE,
             base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
             upload_url,
             start_position,
@@ -1046,7 +1042,6 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
         new drive::GetUploadStatusOperation(
             &operation_registry_,
             request_context_getter_.get(),
-            UPLOAD_NEW_FILE,
             base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
             upload_url,
             kTestContent.size(),
@@ -1128,7 +1123,6 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
       new drive::ResumeUploadOperation(
           &operation_registry_,
           request_context_getter_.get(),
-          UPLOAD_EXISTING_FILE,
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
           0,  // start_position
@@ -1217,7 +1211,6 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
       new drive::ResumeUploadOperation(
           &operation_registry_,
           request_context_getter_.get(),
-          UPLOAD_EXISTING_FILE,
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
           0,  // start_position

@@ -134,7 +134,6 @@ class GDataWapiService : public DriveServiceInterface,
       const std::string& etag,
       const InitiateUploadCallback& callback) OVERRIDE;
   virtual void ResumeUpload(
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
@@ -145,7 +144,6 @@ class GDataWapiService : public DriveServiceInterface,
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback) OVERRIDE;
   virtual void GetUploadStatus(
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,

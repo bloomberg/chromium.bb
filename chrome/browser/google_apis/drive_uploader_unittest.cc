@@ -30,7 +30,9 @@ const char kTestDrivePath[] = "drive/dummy.txt";
 const char kTestInitiateUploadParentResourceId[] = "parent_resource_id";
 const char kTestInitiateUploadResourceId[] = "resource_id";
 const char kTestMimeType[] = "text/plain";
-const char kTestUploadURL[] = "http://test/upload_location";
+const char kTestUploadNewFileURL[] = "http://test/upload_location/new_file";
+const char kTestUploadExistingFileURL[] =
+    "http://test/upload_location/existing_file";
 const int64 kUploadChunkSize = 512 * 1024;
 const char kTestETag[] = "test_etag";
 
@@ -70,7 +72,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     // Calls back the upload URL for subsequent ResumeUpload operations.
     // InitiateUpload is an asynchronous function, so don't callback directly.
     MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadURL)));
+        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadNewFileURL)));
   }
 
   virtual void InitiateUploadExistingFile(
@@ -93,12 +95,11 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     // Calls back the upload URL for subsequent ResumeUpload operations.
     // InitiateUpload is an asynchronous function, so don't callback directly.
     MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadURL)));
+        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadExistingFileURL)));
   }
 
   // Handles a request for uploading a chunk of bytes.
   virtual void ResumeUpload(
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
@@ -118,7 +119,8 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     EXPECT_EQ(expected_chunk_end, end_position);
 
     // The upload URL returned by InitiateUpload() must be used.
-    EXPECT_EQ(GURL(kTestUploadURL), upload_url);
+    EXPECT_TRUE(GURL(kTestUploadNewFileURL) == upload_url ||
+                GURL(kTestUploadExistingFileURL) == upload_url);
 
     // Other parameters should be the exact values passed to DriveUploader.
     EXPECT_EQ(expected_content_length_, content_length);
@@ -141,9 +143,9 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     UploadRangeResponse response;
     scoped_ptr<ResourceEntry> entry;
     if (received_bytes_ == content_length) {
-      response = UploadRangeResponse(
-          upload_mode == UPLOAD_NEW_FILE ? HTTP_CREATED : HTTP_SUCCESS,
-          -1, -1);
+      GDataErrorCode response_code = upload_url == GURL(kTestUploadNewFileURL) ?
+          HTTP_CREATED : HTTP_SUCCESS;
+      response = UploadRangeResponse(response_code, -1, -1);
 
       base::DictionaryValue dict;
       dict.Set("id.$t", new base::StringValue(kTestDummyId));
@@ -189,7 +191,6 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
 
   // Should not be used.
   virtual void ResumeUpload(
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
@@ -214,7 +215,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       const std::string& title,
       const InitiateUploadCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadURL)));
+        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadNewFileURL)));
   }
 
   virtual void InitiateUploadExistingFile(
@@ -225,12 +226,11 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       const std::string& etag,
       const InitiateUploadCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadURL)));
+        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadExistingFileURL)));
   }
 
   // Returns error.
   virtual void ResumeUpload(
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,

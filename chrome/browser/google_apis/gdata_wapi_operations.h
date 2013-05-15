@@ -10,7 +10,6 @@
 
 #include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
-#include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 
 namespace net {
@@ -475,7 +474,6 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback,
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_location,
       int64 start_position,
@@ -512,7 +510,6 @@ class GetUploadStatusOperation : public GetUploadStatusOperationBase {
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length);

@@ -546,7 +546,6 @@ InitiateUploadExistingFileOperation::GetExtraRequestHeaders() const {
 ResumeUploadOperation::ResumeUploadOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_location,
     int64 start_position,
@@ -558,7 +557,6 @@ ResumeUploadOperation::ResumeUploadOperation(
     const ProgressCallback& progress_callback)
     : ResumeUploadOperationBase(registry,
                                 url_request_context_getter,
-                                upload_mode,
                                 drive_file_path,
                                 upload_location,
                                 start_position,
@@ -589,14 +587,12 @@ void ResumeUploadOperation::OnURLFetchUploadProgress(
 GetUploadStatusOperation::GetUploadStatusOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
     const UploadRangeCallback& callback)
   : GetUploadStatusOperationBase(registry,
                                  url_request_context_getter,
-                                 upload_mode,
                                  drive_file_path,
                                  upload_url,
                                  content_length),

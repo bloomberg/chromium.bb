@@ -108,9 +108,8 @@ class MockDriveService : public DriveServiceInterface {
           const std::string& resource_id,
           const std::string& etag,
           const InitiateUploadCallback& callback));
-  MOCK_METHOD10(ResumeUpload,
-      void(UploadMode upload_mode,
-          const base::FilePath& drive_file_path,
+  MOCK_METHOD9(ResumeUpload,
+      void(const base::FilePath& drive_file_path,
           const GURL& upload_url,
           int64 start_position,
           int64 end_position,
@@ -119,9 +118,8 @@ class MockDriveService : public DriveServiceInterface {
           const base::FilePath& local_file_path,
           const UploadRangeCallback& callback,
           const ProgressCallback& progress_callback));
-  MOCK_METHOD5(GetUploadStatus,
-      void(UploadMode upload_mode,
-          const base::FilePath& drive_file_path,
+  MOCK_METHOD4(GetUploadStatus,
+      void(const base::FilePath& drive_file_path,
           const GURL& upload_url,
           int64 content_length,
           const UploadRangeCallback& callback));

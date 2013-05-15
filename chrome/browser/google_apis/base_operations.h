@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "googleurl/src/gurl.h"
@@ -351,7 +350,6 @@ class UploadRangeOperationBase : public UrlFetchOperationBase {
   UploadRangeOperationBase(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
-      const UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url);
   virtual ~UploadRangeOperationBase();
@@ -387,7 +385,6 @@ class UploadRangeOperationBase : public UrlFetchOperationBase {
   // Called when ParseJson() is completed.
   void OnDataParsed(GDataErrorCode code, scoped_ptr<base::Value> value);
 
-  const UploadMode upload_mode_;
   const base::FilePath drive_file_path_;
   const GURL upload_url_;
 
@@ -422,7 +419,6 @@ class ResumeUploadOperationBase : public UploadRangeOperationBase {
   ResumeUploadOperationBase(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_location,
       int64 start_position,
@@ -468,7 +464,6 @@ class GetUploadStatusOperationBase : public UploadRangeOperationBase {
   GetUploadStatusOperationBase(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
-      UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length);

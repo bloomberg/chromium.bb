@@ -486,13 +486,11 @@ UploadRangeResponse::~UploadRangeResponse() {
 UploadRangeOperationBase::UploadRangeOperationBase(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
-    const UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_url)
     : UrlFetchOperationBase(registry,
                             url_request_context_getter,
                             drive_file_path),
-      upload_mode_(upload_mode),
       drive_file_path_(drive_file_path),
       upload_url_(upload_url),
       last_chunk_completed_(false),
@@ -574,10 +572,8 @@ void UploadRangeOperationBase::OnDataParsed(GDataErrorCode code,
 
   // For a new file, HTTP_CREATED is returned.
   // For an existing file, HTTP_SUCCESS is returned.
-  if ((upload_mode_ == UPLOAD_NEW_FILE && code == HTTP_CREATED) ||
-      (upload_mode_ == UPLOAD_EXISTING_FILE && code == HTTP_SUCCESS)) {
+  if (code == HTTP_CREATED || code == HTTP_SUCCESS)
     last_chunk_completed_ = true;
-  }
 
   OnRangeOperationComplete(UploadRangeResponse(code, -1, -1), value.Pass());
   OnProcessURLFetchResultsComplete(last_chunk_completed_);
@@ -605,7 +601,6 @@ void UploadRangeOperationBase::RunCallbackOnPrematureFailure(
 ResumeUploadOperationBase::ResumeUploadOperationBase(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_location,
     int64 start_position,
@@ -615,7 +610,6 @@ ResumeUploadOperationBase::ResumeUploadOperationBase(
     const base::FilePath& local_file_path)
     : UploadRangeOperationBase(registry,
                                url_request_context_getter,
-                               upload_mode,
                                drive_file_path,
                                upload_location),
       start_position_(start_position),
@@ -677,13 +671,11 @@ bool ResumeUploadOperationBase::GetContentFile(
 GetUploadStatusOperationBase::GetUploadStatusOperationBase(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
-    UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length)
   : UploadRangeOperationBase(registry,
                              url_request_context_getter,
-                             upload_mode,
                              drive_file_path,
                              upload_url),
     content_length_(content_length) {}

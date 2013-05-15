@@ -1391,7 +1391,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_FALSE(upload_location.is_empty());
-  EXPECT_NE(GURL("https://1_folder_resumable_create_media_link"),
+  EXPECT_NE(GURL("https://1_folder_resumable_create_media_link?mode=newfile"),
             upload_location);
 }
 
@@ -1469,7 +1469,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(GURL("https://2_file_link_resumable_create_media"),
+  EXPECT_EQ(GURL("https://2_file_link_resumable_create_media?mode=existing"),
             upload_location);
 }
 
@@ -1498,7 +1498,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> entry;
   fake_service_.ResumeUpload(
-      UPLOAD_NEW_FILE,
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       upload_location,
       0, 13, 15, "test/foo",
@@ -1531,7 +1530,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> entry;
   fake_service_.ResumeUpload(
-      UPLOAD_NEW_FILE,
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       GURL("https://foo.com/"),
       0, 13, 15, "test/foo",
@@ -1565,7 +1563,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   scoped_ptr<ResourceEntry> entry;
   std::vector<test_util::ProgressInfo> upload_progress_values;
   fake_service_.ResumeUpload(
-      UPLOAD_EXISTING_FILE,
       base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
       upload_location,
       0, 13, 15, "text/plain",
@@ -1584,7 +1581,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
 
   upload_progress_values.clear();
   fake_service_.ResumeUpload(
-      UPLOAD_EXISTING_FILE,
       base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
       upload_location,
       13, 15, 15, "text/plain",
@@ -1628,7 +1624,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   scoped_ptr<ResourceEntry> entry;
   std::vector<test_util::ProgressInfo> upload_progress_values;
   fake_service_.ResumeUpload(
-      UPLOAD_NEW_FILE,
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       upload_location,
       0, 13, 15, "test/foo",
@@ -1647,7 +1642,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 
   upload_progress_values.clear();
   fake_service_.ResumeUpload(
-      UPLOAD_NEW_FILE,
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       upload_location,
       13, 15, 15, "test/foo",
