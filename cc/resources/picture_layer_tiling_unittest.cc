@@ -482,7 +482,6 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
 
@@ -499,7 +498,6 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       2.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
 }
@@ -524,7 +522,6 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExistGiantViewport) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
 
@@ -541,7 +538,6 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExistGiantViewport) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       2.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
 }
@@ -569,7 +565,6 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExistOutsideViewport) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
 }
@@ -606,7 +601,6 @@ TEST_F(PictureLayerTilingIteratorTest,
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       1);  // max tiles in tile manager
   VerifyTiles(1.f,
               gfx::Rect(layer_bounds),
@@ -639,7 +633,6 @@ TEST_F(PictureLayerTilingIteratorTest,
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       1);  // max tiles in tile manager
 
   int num_tiles = 0;
@@ -679,7 +672,6 @@ TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
 
   // The active tiling has tiles now.
@@ -712,7 +704,6 @@ TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
 
   VerifyTiles(pending_set.tiling_at(0),
@@ -740,7 +731,6 @@ TEST_F(PictureLayerTilingIteratorTest, LCDText) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
 
   VerifyTiles(tiling_.get(),
@@ -784,7 +774,6 @@ TEST_F(PictureLayerTilingIteratorTest, LCDText_CanRecreate) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
 
   VerifyTiles(tiling_.get(),
@@ -841,7 +830,6 @@ TEST_F(PictureLayerTilingIteratorTest, LCDText_WithTwin) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
   twin_tiling->UpdateTilePriorities(
       PENDING_TREE,
@@ -855,7 +843,6 @@ TEST_F(PictureLayerTilingIteratorTest, LCDText_WithTwin) {
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
       1.0,  // current frame time
-      false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
 
   VerifyTiles(tiling_.get(),

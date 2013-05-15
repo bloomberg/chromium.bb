@@ -200,13 +200,15 @@ LayerTreeHostImpl::LayerTreeHostImpl(
 
   // LTHI always has an active tree.
   active_tree_ = LayerTreeImpl::create(this);
-  TRACE_EVENT_OBJECT_CREATED_WITH_ID("cc.debug", "cc::LayerTreeHostImpl", this);
+  TRACE_EVENT_OBJECT_CREATED_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", this);
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
   DCHECK(proxy_->IsImplThread());
   TRACE_EVENT0("cc", "LayerTreeHostImpl::~LayerTreeHostImpl()");
-  TRACE_EVENT_OBJECT_DELETED_WITH_ID("cc.debug", "cc::LayerTreeHostImpl", this);
+  TRACE_EVENT_OBJECT_DELETED_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", this);
 
   if (active_tree_->root_layer()) {
     ClearRenderSurfaces();
@@ -1103,11 +1105,9 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
     paint_time_counter_->SavePaintTime(stats.total_paint_time);
   }
 
-  if (debug_state_.trace_all_rendered_frames) {
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-        "cc.debug", "cc::LayerTreeHostImpl", this,
-        TracedValue::FromValue(AsValue().release()));
-  }
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", this,
+      TracedValue::FromValue(AsValue().release()));
 
   // Because the contents of the HUD depend on everything else in the frame, the
   // contents of its texture are updated as the last thing before the frame is

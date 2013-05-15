@@ -292,7 +292,6 @@ void PictureLayerTiling::UpdateTilePriorities(
     const gfx::Transform& last_screen_transform,
     const gfx::Transform& current_screen_transform,
     double current_frame_time_in_seconds,
-    bool store_screen_space_quads_on_tiles,
     size_t max_tiles_for_interest_area) {
   if (!NeedsUpdateForFrameAtTime(current_frame_time_in_seconds)) {
     // This should never be zero for the purposes of has_ever_been_updated().
@@ -337,6 +336,10 @@ void PictureLayerTiling::UpdateTilePriorities(
   gfx::Rect view_rect(device_viewport);
   float current_scale = current_layer_contents_scale / contents_scale_;
   float last_scale = last_layer_contents_scale / contents_scale_;
+
+  bool store_screen_space_quads_on_tiles;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                                     &store_screen_space_quads_on_tiles);
 
   // Fast path tile priority calculation when both transforms are translations.
   if (last_screen_transform.IsIdentityOrTranslation() &&
@@ -415,8 +418,8 @@ void PictureLayerTiling::UpdateTilePriorities(
           time_to_visible_in_seconds,
           distance_to_visible_in_pixels);
       if (store_screen_space_quads_on_tiles) {
-          bool clipped;
-          priority.set_current_screen_quad(
+        bool clipped;
+        priority.set_current_screen_quad(
             MathUtil::MapQuad(current_screen_transform,
                               gfx::QuadF(current_layer_content_rect),
                               &clipped));

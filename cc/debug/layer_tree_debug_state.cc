@@ -23,7 +23,6 @@ LayerTreeDebugState::LayerTreeDebugState()
       show_non_occluding_rects(false),
       slow_down_raster_scale_factor(0),
       show_picture_borders(false),
-      trace_all_rendered_frames(false),
       record_rendering_stats_(false) {}
 
 LayerTreeDebugState::~LayerTreeDebugState() {}
@@ -68,8 +67,7 @@ bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
           a.show_non_occluding_rects == b.show_non_occluding_rects &&
           a.slow_down_raster_scale_factor == b.slow_down_raster_scale_factor &&
           a.show_picture_borders == b.show_picture_borders &&
-          a.record_rendering_stats_ == b.record_rendering_stats_ &&
-          a.trace_all_rendered_frames == b.trace_all_rendered_frames);
+          a.record_rendering_stats_ == b.record_rendering_stats_);
 }
 
 LayerTreeDebugState LayerTreeDebugState::Unite(const LayerTreeDebugState& a,
@@ -94,7 +92,6 @@ LayerTreeDebugState LayerTreeDebugState::Unite(const LayerTreeDebugState& a,
   r.show_picture_borders |= b.show_picture_borders;
 
   r.record_rendering_stats_ |= b.record_rendering_stats_;
-  r.trace_all_rendered_frames |= b.trace_all_rendered_frames;
 
   return r;
 }

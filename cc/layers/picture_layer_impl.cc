@@ -323,8 +323,6 @@ void PictureLayerImpl::UpdateTilePriorities() {
 
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
-  bool store_screen_space_quads_on_tiles =
-      layer_tree_impl()->debug_state().trace_all_rendered_frames;
   size_t max_tiles_for_interest_area =
       layer_tree_impl()->settings().max_tiles_for_interest_area;
   tilings_->UpdateTilePriorities(
@@ -339,7 +337,6 @@ void PictureLayerImpl::UpdateTilePriorities() {
       last_screen_space_transform_,
       current_screen_space_transform,
       current_frame_time_in_seconds,
-      store_screen_space_quads_on_tiles,
       max_tiles_for_interest_area);
 
   last_screen_space_transform_ = current_screen_space_transform;
