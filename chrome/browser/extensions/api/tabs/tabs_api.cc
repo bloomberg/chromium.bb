@@ -2035,8 +2035,6 @@ bool ExecuteCodeInTabFunction::Init() {
   if (!InjectDetails::Populate(*details_value, details.get()))
     return false;
 
-  details_ = details.Pass();
-
   // If the tab ID wasn't given then it needs to be converted to the
   // currently active tab's ID.
   if (tab_id == -1) {
@@ -2049,6 +2047,7 @@ bool ExecuteCodeInTabFunction::Init() {
   }
 
   execute_tab_id_ = tab_id;
+  details_ = details.Pass();
   return true;
 }
 
