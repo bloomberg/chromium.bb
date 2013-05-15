@@ -250,7 +250,7 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     if (m_rootDefaultStyle && view)
         m_medium = adoptPtr(new MediaQueryEvaluator(view->mediaType(), view->frame(), m_rootDefaultStyle.get()));
 
-    m_ruleSets.resetAuthorStyle();
+    m_styleTree.clear();
 
     DocumentStyleSheetCollection* styleSheetCollection = document->styleSheetCollection();
     m_ruleSets.initUserStyle(styleSheetCollection, *m_medium, *this);
@@ -269,13 +269,64 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
 
 void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >& styleSheets)
 {
-    m_ruleSets.appendAuthorStyleSheets(firstNew, styleSheets, m_medium.get(), m_inspectorCSSOMWrappers, document()->isViewSource(), this);
+    // This handles sheets added to the end of the stylesheet list only. In other cases the style resolver
+    // needs to be reconstructed. To handle insertions too the rule order numbers would need to be updated.
+    ScopedStyleResolver* lastUpdatedResolver = 0;
+    unsigned size = styleSheets.size();
+    for (unsigned i = firstNew; i < size; ++i) {
+        CSSStyleSheet* cssSheet = styleSheets[i].get();
+        ASSERT(!cssSheet->disabled());
+        if (cssSheet->mediaQueries() && !m_medium->eval(cssSheet->mediaQueries(), this))
+            continue;
+
+        StyleSheetContents* sheet = cssSheet->contents();
+        ScopedStyleResolver* resolver = ensureScopedStyleResolver(ScopedStyleResolver::scopeFor(cssSheet));
+        ASSERT(resolver);
+        resolver->addRulesFromSheet(sheet, *m_medium, this);
+        m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
+
+        if (lastUpdatedResolver && lastUpdatedResolver != resolver)
+            lastUpdatedResolver->postAddRulesFromSheet();
+        lastUpdatedResolver = resolver;
+    }
+
+    if (lastUpdatedResolver)
+        lastUpdatedResolver->postAddRulesFromSheet();
+    collectFeatures();
+
     if (document()->renderer() && document()->renderer()->style())
         document()->renderer()->style()->font().update(fontSelector());
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
     viewportStyleResolver()->resolve();
 #endif
+}
+
+void StyleResolver::resetAuthorStyle()
+{
+    m_styleTree.clear();
+}
+
+static PassOwnPtr<RuleSet> makeRuleSet(const Vector<RuleFeature>& rules)
+{
+    size_t size = rules.size();
+    if (!size)
+        return nullptr;
+    OwnPtr<RuleSet> ruleSet = RuleSet::create();
+    for (size_t i = 0; i < size; ++i)
+        ruleSet->addRule(rules[i].rule, rules[i].selectorIndex, rules[i].hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState);
+    ruleSet->shrinkToFit();
+    return ruleSet.release();
+}
+
+void StyleResolver::collectFeatures()
+{
+    m_features.clear();
+    m_ruleSets.collectFeaturesTo(m_features, document()->isViewSource());
+    m_styleTree.collectFeaturesTo(m_features);
+
+    m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
+    m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
 }
 
 void StyleResolver::pushParentElement(Element* parent)
@@ -292,8 +343,7 @@ void StyleResolver::pushParentElement(Element* parent)
         m_selectorFilter.pushParent(parent);
 
     // Note: We mustn't skip ShadowRoot nodes for the scope stack.
-    if (m_scopeResolver)
-        m_scopeResolver->push(parent, parent->parentOrShadowHostNode());
+    m_styleTree.pushStyleCache(parent, parent->parentOrShadowHostNode());
 }
 
 void StyleResolver::popParentElement(Element* parent)
@@ -302,22 +352,20 @@ void StyleResolver::popParentElement(Element* parent)
     // Pause maintaining the stack in this case.
     if (m_selectorFilter.parentStackIsConsistent(parent))
         m_selectorFilter.popParent();
-    if (m_scopeResolver)
-        m_scopeResolver->pop(parent);
+
+    m_styleTree.popStyleCache(parent);
 }
 
 void StyleResolver::pushParentShadowRoot(const ShadowRoot* shadowRoot)
 {
     ASSERT(shadowRoot->host());
-    if (m_scopeResolver)
-        m_scopeResolver->push(shadowRoot, shadowRoot->host());
+    m_styleTree.pushStyleCache(shadowRoot, shadowRoot->host());
 }
 
 void StyleResolver::popParentShadowRoot(const ShadowRoot* shadowRoot)
 {
     ASSERT(shadowRoot->host());
-    if (m_scopeResolver)
-        m_scopeResolver->pop(shadowRoot);
+    m_styleTree.popStyleCache(shadowRoot);
 }
 
 // This is a simplified style setting function for keyframe styles
@@ -359,21 +407,16 @@ void StyleResolver::sweepMatchedPropertiesCache(Timer<StyleResolver>*)
     m_matchedPropertiesCacheAdditionsSinceLastSweep = 0;
 }
 
-inline bool StyleResolver::styleSharingCandidateMatchesHostRules()
-{
-    return m_scopeResolver && m_scopeResolver->styleSharingCandidateMatchesHostRules(m_state.element());
-}
-
 bool StyleResolver::classNamesAffectedByRules(const SpaceSplitString& classNames) const
 {
     for (unsigned i = 0; i < classNames.size(); ++i) {
-        if (m_ruleSets.features().classesInRules.contains(classNames[i].impl()))
+        if (m_features.classesInRules.contains(classNames[i].impl()))
             return true;
     }
     return false;
 }
 
-inline void StyleResolver::matchShadowDistributedRules(ElementRuleCollector& collector, bool includeEmptyRules, StyleResolver::RuleRange& ruleRange)
+inline void StyleResolver::matchShadowDistributedRules(ElementRuleCollector& collector, bool includeEmptyRules)
 {
     if (m_ruleSets.shadowDistributedRules().isEmpty())
         return;
@@ -383,87 +426,52 @@ inline void StyleResolver::matchShadowDistributedRules(ElementRuleCollector& col
     collector.setBehaviorAtBoundary(static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::CrossesBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
     collector.setCanUseFastReject(false);
 
+    collector.clearMatchedRules();
+    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
+    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
+
     Vector<MatchRequest> matchRequests;
     m_ruleSets.shadowDistributedRules().collectMatchRequests(includeEmptyRules, matchRequests);
     for (size_t i = 0; i < matchRequests.size(); ++i)
         collector.collectMatchingRules(matchRequests[i], ruleRange);
+    collector.sortAndTransferMatchedRules();
 
     collector.setBehaviorAtBoundary(previousBoundary);
     collector.setCanUseFastReject(previousCanUseFastReject);
 }
 
-void StyleResolver::matchHostRules(ElementRuleCollector& collector, bool includeEmptyRules)
+void StyleResolver::matchHostRules(ScopedStyleResolver* resolver, ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    ASSERT(m_scopeResolver);
-
-    collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
-
-    Vector<RuleSet*> matchedRules;
-    m_scopeResolver->matchHostRules(m_state.element(), matchedRules);
-    if (matchedRules.isEmpty())
+    if (m_state.element() != resolver->scope())
         return;
-
-    for (unsigned i = matchedRules.size(); i > 0; --i) {
-        StyleResolver::RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
-        collector.collectMatchingRules(MatchRequest(matchedRules.at(i-1), includeEmptyRules, m_state.element()), ruleRange);
-    }
-    collector.sortAndTransferMatchedRules();
+    resolver->matchHostRules(collector, includeEmptyRules);
 }
 
 void StyleResolver::matchScopedAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    if (!m_scopeResolver)
+    // fast path
+    if (m_styleTree.hasOnlyScopeResolverForDocument()) {
+        m_styleTree.scopedStyleResolverForDocument()->matchAuthorRules(collector, includeEmptyRules, true);
         return;
-
-    // Match scoped author rules by traversing the scoped element stack (rebuild it if it got inconsistent).
-    if (m_scopeResolver->hasScopedStyles() && m_scopeResolver->ensureStackConsistency(m_state.element())) {
-        bool applyAuthorStyles = m_state.element()->treeScope()->applyAuthorStyles();
-        bool documentScope = true;
-
-        unsigned scopeSize = m_scopeResolver->stackSize();
-        for (unsigned i = 0; i < scopeSize; ++i) {
-            collector.clearMatchedRules();
-            collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
-
-            const ScopedStyleResolver::StackFrame& frame = m_scopeResolver->stackFrameAt(i);
-            documentScope = documentScope && !frame.m_scope->isInShadowTree();
-            if (documentScope) {
-                if (!applyAuthorStyles)
-                    continue;
-            } else {
-                if (!m_scopeResolver->matchesStyleBounds(frame))
-                    continue;
-            }
-
-            MatchRequest matchRequest(frame.m_ruleSet, includeEmptyRules, frame.m_scope);
-            StyleResolver::RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
-            collector.collectMatchingRules(matchRequest, ruleRange);
-            collector.collectMatchingRulesForRegion(matchRequest, ruleRange);
-            collector.sortAndTransferMatchedRules();
-        }
     }
 
-    matchHostRules(collector, includeEmptyRules);
+    Vector<std::pair<ScopedStyleResolver*, bool>, 8> stack;
+    m_styleTree.resolveScopeStyles(m_state.element(), stack);
+    if (stack.isEmpty())
+        return;
+
+    for (int i = stack.size() - 1; i >= 0; --i) {
+        ScopedStyleResolver* scopeResolver = stack.at(i).first;
+        bool applyAuthorStyles = stack.at(i).second;
+        scopeResolver->matchAuthorRules(collector, includeEmptyRules, applyAuthorStyles);
+    }
+    matchHostRules(stack.first().first, collector, includeEmptyRules);
 }
 
 void StyleResolver::matchAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
-
-    if (!m_state.element())
-        return;
-
-    // Match global author rules.
-    MatchRequest matchRequest(m_ruleSets.authorStyle(), includeEmptyRules);
-    StyleResolver::RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
-    collector.collectMatchingRules(matchRequest, ruleRange);
-    collector.collectMatchingRulesForRegion(matchRequest, ruleRange);
-    matchShadowDistributedRules(collector, includeEmptyRules, ruleRange);
-    collector.sortAndTransferMatchedRules();
-
     matchScopedAuthorRules(collector, includeEmptyRules);
+    matchShadowDistributedRules(collector, includeEmptyRules);
 }
 
 void StyleResolver::matchUserRules(ElementRuleCollector& collector, bool includeEmptyRules)
@@ -602,7 +610,7 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
     if (p->isSVGElement() && toSVGElement(p)->animatedSMILStyleProperties())
         return 0;
 #endif
-    if (p->hasID() && m_ruleSets.features().idsInRules.contains(p->idForStyleResolution().impl()))
+    if (p->hasID() && m_features.idsInRules.contains(p->idForStyleResolution().impl()))
         return 0;
 
     RenderStyle* parentStyle = p->renderStyle();
@@ -778,7 +786,7 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
     if (element->additionalPresentationAttributeStyle() != state.styledElement()->additionalPresentationAttributeStyle())
         return false;
 
-    if (element->hasID() && m_ruleSets.features().idsInRules.contains(element->idForStyleResolution().impl()))
+    if (element->hasID() && m_features.idsInRules.contains(element->idForStyleResolution().impl()))
         return false;
     if (element->hasScopedHTMLStyleChild())
         return false;
@@ -853,7 +861,7 @@ RenderStyle* StyleResolver::locateSharedStyle()
         return 0;
 #endif
     // Ids stop style sharing if they show up in the stylesheets.
-    if (state.styledElement()->hasID() && m_ruleSets.features().idsInRules.contains(state.styledElement()->idForStyleResolution().impl()))
+    if (state.styledElement()->hasID() && m_features.idsInRules.contains(state.styledElement()->idForStyleResolution().impl()))
         return 0;
     if (parentElementPreventsSharing(state.element()->parentElement()))
         return 0;
@@ -887,13 +895,10 @@ RenderStyle* StyleResolver::locateSharedStyle()
         return 0;
 
     // Can't share if sibling rules apply. This is checked at the end as it should rarely fail.
-    if (styleSharingCandidateMatchesRuleSet(m_ruleSets.sibling()))
+    if (styleSharingCandidateMatchesRuleSet(m_siblingRuleSet.get()))
         return 0;
     // Can't share if attribute rules apply.
-    if (styleSharingCandidateMatchesRuleSet(m_ruleSets.uncommonAttribute()))
-        return 0;
-    // Can't share if @host @-rules apply.
-    if (styleSharingCandidateMatchesHostRules())
+    if (styleSharingCandidateMatchesRuleSet(m_uncommonAttributeRuleSet.get()))
         return 0;
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
     if (parentElementPreventsSharing(state.element()->parentElement()))
@@ -1136,7 +1141,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     bool needsCollection = false;
     CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(element, needsCollection);
     if (needsCollection) {
-        m_ruleSets.collectFeatures(document()->isViewSource(), m_scopeResolver.get());
+        collectFeatures();
         m_inspectorCSSOMWrappers.reset();
     }
 
@@ -1342,7 +1347,9 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     collector.matchPageRules(CSSDefaultStyleSheets::defaultPrintStyle);
     collector.matchPageRules(m_ruleSets.userStyle());
-    collector.matchPageRules(m_ruleSets.authorStyle());
+
+    if (ScopedStyleResolver* scopeResolver = m_styleTree.scopedStyleResolverForDocument())
+        scopeResolver->matchPageRules(collector);
 
     m_state.setLineHeightValue(0);
     bool inheritedOnly = false;
@@ -1726,15 +1733,12 @@ bool StyleResolver::checkRegionStyle(Element* regionElement)
     // FIXME (BUG 72472): We don't add @-webkit-region rules of scoped style sheets for the moment,
     // so all region rules are global by default. Verify whether that can stand or needs changing.
 
-    unsigned rulesSize = m_ruleSets.authorStyle()->m_regionSelectorsAndRuleSets.size();
-    for (unsigned i = 0; i < rulesSize; ++i) {
-        ASSERT(m_ruleSets.authorStyle()->m_regionSelectorsAndRuleSets.at(i).ruleSet.get());
-        if (checkRegionSelector(m_ruleSets.authorStyle()->m_regionSelectorsAndRuleSets.at(i).selector, regionElement))
+    if (ScopedStyleResolver* scopeResolver = m_styleTree.scopedStyleResolverForDocument())
+        if (scopeResolver->checkRegionStyle(regionElement))
             return true;
-    }
 
     if (m_ruleSets.userStyle()) {
-        rulesSize = m_ruleSets.userStyle()->m_regionSelectorsAndRuleSets.size();
+        unsigned rulesSize = m_ruleSets.userStyle()->m_regionSelectorsAndRuleSets.size();
         for (unsigned i = 0; i < rulesSize; ++i) {
             ASSERT(m_ruleSets.userStyle()->m_regionSelectorsAndRuleSets.at(i).ruleSet.get());
             if (checkRegionSelector(m_ruleSets.userStyle()->m_regionSelectorsAndRuleSets.at(i).selector, regionElement))
@@ -2527,7 +2531,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                     state.style()->setContent(value.isNull() ? emptyAtom : value.impl(), didSet);
                     didSet = true;
                     // register the fact that the attribute value affects the style
-                    m_ruleSets.features().attrsInRules.add(attr.localName().impl());
+                    m_features.attrsInRules.add(attr.localName().impl());
                 } else if (contentValue->isCounter()) {
                     Counter* counterValue = contentValue->getCounterValue();
                     EListStyleType listStyleType = NoneListStyle;
@@ -3838,7 +3842,6 @@ void StyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(m_ruleSets, "ruleSets");
-    info.addMember(m_keyframesRuleMap, "keyframesRuleMap");
     info.addMember(m_matchedPropertiesCache, "matchedPropertiesCache");
     info.addMember(m_matchedPropertiesCacheSweepTimer, "matchedPropertiesCacheSweepTimer");
 
@@ -3850,8 +3853,8 @@ void StyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_viewportDependentMediaQueryResults, "viewportDependentMediaQueryResults");
     info.ignoreMember(m_styleBuilder);
     info.addMember(m_inspectorCSSOMWrappers);
-    info.addMember(m_scopeResolver, "scopeResolver");
 
+    info.addMember(m_styleTree, "scopedStyleTree");
     info.addMember(m_state, "state");
 
     // FIXME: move this to a place where it would be called only once?

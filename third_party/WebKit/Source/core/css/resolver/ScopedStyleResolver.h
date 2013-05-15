@@ -27,6 +27,28 @@
 #ifndef ScopedStyleResolver_h
 #define ScopedStyleResolver_h
 
+#include "core/css/CSSRuleList.h"
+#include "core/css/CSSToStyleMap.h"
+#include "core/css/CSSValueList.h"
+#include "core/css/DocumentRuleSets.h"
+#include "core/css/InspectorCSSOMWrappers.h"
+#include "core/css/MediaQueryExp.h"
+#include "core/css/RuleFeature.h"
+#include "core/css/RuleSet.h"
+#include "core/css/SelectorChecker.h"
+#include "core/css/SelectorFilter.h"
+#include "core/css/SiblingTraversalStrategies.h"
+#if ENABLE(SVG)
+#include "core/css/WebKitCSSSVGDocumentValue.h"
+#endif
+#include "core/css/WebKitCSSKeyframeRule.h"
+#include "core/css/WebKitCSSKeyframesRule.h"
+#include "core/css/resolver/ViewportStyleResolver.h"
+#include "core/platform/LinkHash.h"
+#include "core/platform/ScrollTypes.h"
+#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -36,76 +58,114 @@
 namespace WebCore {
 
 class ContainerNode;
-class CSSStyleSheet;
-class Element;
-class RuleSet;
+class ElementRuleCollector;
+class MediaQueryEvaluator;
+class PageRuleCollector;
+class ScopedStyleResolver;
 class ShadowRoot;
-class StyleRuleHost;
-struct RuleFeatureSet;
+class StyleSheetContents;
 
+// This class selects a RenderStyle for a given element based on a collection of stylesheets.
 class ScopedStyleResolver {
+    WTF_MAKE_NONCOPYABLE(ScopedStyleResolver); WTF_MAKE_FAST_ALLOCATED;
 public:
-    typedef HashMap<const ContainerNode*, OwnPtr<RuleSet> > ScopedRuleSetMap;
-
-    struct StackFrame {
-        StackFrame() : m_scope(0), m_authorStyleBoundsIndex(0), m_ruleSet(0) { }
-        StackFrame(const ContainerNode* scope, int authorStyleBoundsIndex, RuleSet* ruleSet)
-            : m_scope(scope), m_authorStyleBoundsIndex(authorStyleBoundsIndex), m_ruleSet(ruleSet)
-        { }
-
-        const ContainerNode* m_scope;
-        int m_authorStyleBoundsIndex;
-        RuleSet* m_ruleSet;
-    };
-
-    ScopedStyleResolver();
-    ~ScopedStyleResolver();
+    static PassOwnPtr<ScopedStyleResolver> create(const ContainerNode* scope) { return adoptPtr(new ScopedStyleResolver(scope)); }
 
     static const ContainerNode* scopeFor(const CSSStyleSheet*);
 
-    void push(const ContainerNode* scope, const ContainerNode* scopeParent);
-    void pop(const ContainerNode* scope);
-    bool hasScopedStyles() const { return !m_authorStyles.isEmpty(); }
-    RuleSet* ensureRuleSetFor(const ContainerNode* scope);
-    bool ensureStackConsistency(ContainerNode*);
-    unsigned stackSize() const { return m_stack.size(); }
-    const StackFrame& stackFrameAt(unsigned index) const { return m_stack.at(index); }
-    bool matchesStyleBounds(const StackFrame& frame) const { return frame.m_authorStyleBoundsIndex == m_stackParentBoundsIndex; }
-    void collectFeaturesTo(RuleFeatureSet&);
+    // methods for building tree.
+    const ContainerNode* scope() const { return m_scope; }
+    const TreeScope* treeScope() const { return m_scope->treeScope(); }
+    void prepareEmptyRuleSet() { m_authorStyle = RuleSet::create(); }
+    void setParent(ScopedStyleResolver* newParent) { m_parent = newParent; }
+    ScopedStyleResolver* parent() { return m_parent; }
 
+public:
+    bool checkRegionStyle(Element*);
+
+    void matchHostRules(ElementRuleCollector&, bool includeEmptyRules);
+    void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles);
+    void matchPageRules(PageRuleCollector&);
+    void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver*);
+    void postAddRulesFromSheet() { m_authorStyle->shrinkToFit(); }
     void addHostRule(StyleRuleHost*, bool hasDocumentSecurityOrigin, const ContainerNode* scope);
-    bool styleSharingCandidateMatchesHostRules(const Element*);
-    void matchHostRules(const Element*, Vector<RuleSet*>& matchedRules);
-
+    void collectFeaturesTo(RuleFeatureSet&);
+    void resetAuthorStyle();
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    RuleSet* ruleSetFor(const ContainerNode* scope) const;
-    void setupStack(const ContainerNode*);
-    bool stackIsConsistent(const ContainerNode* parent) const { return parent && parent == m_stackParent; }
+    ScopedStyleResolver() : m_scope(0), m_parent(0) { }
+    ScopedStyleResolver(const ContainerNode* scope) : m_scope(scope), m_parent(0) { }
+
     RuleSet* ensureAtHostRuleSetFor(const ShadowRoot*);
     RuleSet* atHostRuleSetFor(const ShadowRoot*) const;
 
-    ScopedRuleSetMap m_authorStyles;
+    const ContainerNode* m_scope;
+    ScopedStyleResolver* m_parent;
 
-    // Vector (used as stack) that keeps track of scoping elements (i.e., elements with a <style scoped> child)
-    // encountered during tree iteration for style resolution.
-    Vector<StackFrame> m_stack;
-    // Element last seen as parent element when updating m_scopingElementStack.
-    // This is used to decide whether m_scopingElementStack is consistent, separately from SelectorChecker::m_parentStack.
-    const ContainerNode* m_stackParent;
-    int m_stackParentBoundsIndex;
-
-    ScopedRuleSetMap m_atHostRules;
+    OwnPtr<RuleSet> m_authorStyle;
+    HashMap<const ShadowRoot*, OwnPtr<RuleSet> > m_atHostRules;
 };
 
-inline bool ScopedStyleResolver::ensureStackConsistency(ContainerNode* parent)
+class ScopedStyleTree {
+    WTF_MAKE_NONCOPYABLE(ScopedStyleTree); WTF_MAKE_FAST_ALLOCATED;
+public:
+    ScopedStyleTree() : m_scopeResolverForDocument(0) { }
+
+    ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode* scope);
+    ScopedStyleResolver* scopedStyleResolverFor(const ContainerNode* scope);
+    ScopedStyleResolver* addScopedStyleResolver(const ContainerNode* scope, bool& isNewEntry);
+    void clear();
+
+    // for fast-path.
+    bool hasOnlyScopeResolverForDocument() const { return m_scopeResolverForDocument && m_authorStyles.size() == 1; }
+    ScopedStyleResolver* scopedStyleResolverForDocument() { return m_scopeResolverForDocument; }
+
+    void resolveScopeStyles(const Element*, Vector<std::pair<ScopedStyleResolver*, bool>, 8>& resolvers);
+    ScopedStyleResolver* scopedResolverFor(const Element*);
+
+    void pushStyleCache(const ContainerNode* scope, const ContainerNode* parent);
+    void popStyleCache(const ContainerNode* scope);
+
+    void collectFeaturesTo(RuleFeatureSet& features);
+
+    void reportMemoryUsage(MemoryObjectInfo*) const;
+private:
+    void setupScopeStylesTree(ScopedStyleResolver* target);
+
+    bool cacheIsValid(const ContainerNode* parent) const { return parent && parent == m_cache.nodeForScopeStyles; }
+    void resolveStyleCache(const ContainerNode* scope);
+    ScopedStyleResolver* enclosingScopedStyleResolverFor(const ContainerNode* scope, int& authorStyleBoundsIndex);
+
+private:
+    HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> > m_authorStyles;
+    ScopedStyleResolver* m_scopeResolverForDocument;
+
+    struct ScopeStyleCache {
+        ScopedStyleResolver* scopeResolver;
+        int scopeResolverBoundsIndex;
+        const ContainerNode* nodeForScopeStyles;
+        int authorStyleBoundsIndex;
+
+        void clear()
+        {
+            scopeResolver = 0;
+            scopeResolverBoundsIndex = 0;
+            nodeForScopeStyles = 0;
+            authorStyleBoundsIndex = 0;
+        }
+    };
+    ScopeStyleCache m_cache;
+};
+
+inline ScopedStyleResolver* ScopedStyleTree::scopedResolverFor(const Element* element)
 {
-    // Match scoped author rules by traversing the scoped element stack (rebuild it if it got inconsistent).
-    if (!stackIsConsistent(parent))
-        setupStack(parent);
-    return !m_stack.isEmpty();
+    if (!cacheIsValid(element))
+        resolveStyleCache(element);
+
+    return m_cache.scopeResolver;
 }
+
 } // namespace WebCore
 
 #endif // ScopedStyleResolver_h

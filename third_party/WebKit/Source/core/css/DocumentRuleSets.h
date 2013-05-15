@@ -39,7 +39,6 @@ class InspectorCSSOMWrappers;
 class MatchRequest;
 class MediaQueryEvaluator;
 class RuleSet;
-class ScopedStyleResolver;
 
 class ShadowDistributedRules {
 public:
@@ -59,28 +58,18 @@ class DocumentRuleSets {
 public:
     DocumentRuleSets();
     ~DocumentRuleSets();
-    RuleSet* authorStyle() const { return m_authorStyle.get(); }
     RuleSet* userStyle() const { return m_userStyle.get(); }
-    RuleFeatureSet& features() { return m_features; }
-    const RuleFeatureSet& features() const { return m_features; }
-    RuleSet* sibling() const { return m_siblingRuleSet.get(); }
-    RuleSet* uncommonAttribute() const { return m_uncommonAttributeRuleSet.get(); }
 
     void initUserStyle(DocumentStyleSheetCollection*, const MediaQueryEvaluator&, StyleResolver&);
     void resetAuthorStyle();
-    void appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >&, MediaQueryEvaluator*, InspectorCSSOMWrappers&, bool isViewSource, StyleResolver*);
+    void collectFeaturesTo(RuleFeatureSet&, bool isViewSource);
 
-    void collectFeatures(bool isViewSource, ScopedStyleResolver*);
     void reportMemoryUsage(MemoryObjectInfo*) const;
     ShadowDistributedRules& shadowDistributedRules() { return m_shadowDistributedRules; }
 
 private:
     void collectRulesFromUserStyleSheets(const Vector<RefPtr<CSSStyleSheet> >&, RuleSet& userStyle, const MediaQueryEvaluator&, StyleResolver&);
-    OwnPtr<RuleSet> m_authorStyle;
     OwnPtr<RuleSet> m_userStyle;
-    RuleFeatureSet m_features;
-    OwnPtr<RuleSet> m_siblingRuleSet;
-    OwnPtr<RuleSet> m_uncommonAttributeRuleSet;
     ShadowDistributedRules m_shadowDistributedRules;
 };
 

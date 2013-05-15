@@ -56,6 +56,11 @@ using namespace HTMLNames;
 
 // -----------------------------------------------------------------
 
+static inline bool isDocumentScope(const ContainerNode* scope)
+{
+    return !scope || scope->isDocumentNode();
+}
+
 static inline bool isSelectorMatchingHTMLBasedOnRuleHash(const CSSSelector* selector)
 {
     ASSERT(selector);
@@ -304,7 +309,7 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             const CSSSelectorList& selectorList = styleRule->selectorList();
             for (size_t selectorIndex = 0; selectorIndex != notFound; selectorIndex = selectorList.indexOfNextSelectorAfter(selectorIndex)) {
                 if (selectorList.hasShadowDistributedAt(selectorIndex)) {
-                    if (!scope)
+                    if (isDocumentScope(scope))
                         continue;
                     resolver->ruleSets().shadowDistributedRules().addRule(styleRule, selectorIndex, const_cast<ContainerNode*>(scope), addRuleFlags);
                 } else
@@ -319,29 +324,27 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
         } else if (rule->isFontFaceRule() && resolver) {
             // Add this font face to our set.
             // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
-            if (scope)
+            if (!isDocumentScope(scope))
                 continue;
             const StyleRuleFontFace* fontFaceRule = static_cast<StyleRuleFontFace*>(rule);
             resolver->fontSelector()->addFontFaceRule(fontFaceRule);
             resolver->invalidateMatchedPropertiesCache();
         } else if (rule->isKeyframesRule() && resolver) {
             // FIXME (BUG 72462): We don't add @keyframe rules of scoped style sheets for the moment.
-            if (scope)
+            if (!isDocumentScope(scope))
                 continue;
             resolver->addKeyframeStyle(static_cast<StyleRuleKeyframes*>(rule));
         }
         else if (rule->isRegionRule() && resolver) {
             // FIXME (BUG 72472): We don't add @-webkit-region rules of scoped style sheets for the moment.
-            if (scope)
-                continue;
             addRegionRule(static_cast<StyleRuleRegion*>(rule), hasDocumentSecurityOrigin);
         }
         else if (rule->isHostRule())
-            resolver->addHostRule(static_cast<StyleRuleHost*>(rule), hasDocumentSecurityOrigin, scope);
+            resolver->ensureScopedStyleResolver(scope->shadowHost())->addHostRule(static_cast<StyleRuleHost*>(rule), hasDocumentSecurityOrigin, scope);
 #if ENABLE(CSS_DEVICE_ADAPTATION)
         else if (rule->isViewportRule() && resolver) {
             // @viewport should not be scoped.
-            if (scope)
+            if (!isDocumentScope(scope))
                 continue;
             resolver->viewportStyleResolver()->addViewportRule(static_cast<StyleRuleViewport*>(rule));
         }

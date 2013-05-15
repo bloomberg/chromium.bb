@@ -50,7 +50,8 @@ public:
         , m_sameOriginOnly(false)
         , m_mode(SelectorChecker::ResolvingStyle)
         , m_canUseFastReject(m_selectorFilter.parentStackIsConsistent(state.parentNode()))
-        , m_behaviorAtBoundary(SelectorChecker::DoesNotCrossBoundary) { }
+        , m_behaviorAtBoundary(SelectorChecker::DoesNotCrossBoundary)
+        , m_matchingUARules(false) { }
 
     void setBehaviorAtBoundary(SelectorChecker::BehaviorAtBoundary boundary) { m_behaviorAtBoundary = boundary; }
     SelectorChecker::BehaviorAtBoundary behaviorAtBoundary() const { return m_behaviorAtBoundary; }

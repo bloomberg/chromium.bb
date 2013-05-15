@@ -90,6 +90,7 @@ class RenderRegion;
 class RenderScrollbar;
 class RuleData;
 class RuleSet;
+class ScopedStyleResolver;
 class Settings;
 class StaticCSSRuleList;
 class StyleCustomFilterProgramCache;
@@ -177,7 +178,6 @@ public:
     void popParentElement(Element*);
     void pushParentShadowRoot(const ShadowRoot*);
     void popParentShadowRoot(const ShadowRoot*);
-    void addHostRule(StyleRuleHost* rule, bool hasDocumentSecurityOrigin, const ContainerNode* scope) { ensureScopeResolver()->addHostRule(rule, hasDocumentSecurityOrigin, scope); }
 
     PassRefPtr<RenderStyle> styleForElement(Element*, RenderStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules, RenderRegion* regionForStyling = 0);
@@ -201,29 +201,26 @@ public:
     RenderStyle* rootElementStyle() const { return m_state.rootElementStyle(); }
     Element* element() { return m_state.element(); }
     Document* document() { return m_document; }
-    ScopedStyleResolver* scopeResolver() const { return m_scopeResolver.get(); }
     bool hasParentNode() const { return m_state.parentNode(); }
 
     // FIXME: It could be better to call m_ruleSets.appendAuthorStyleSheets() directly after we factor StyleRsolver further.
     // https://bugs.webkit.org/show_bug.cgi?id=108890
     void appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >&);
+    void resetAuthorStyle();
 
     DocumentRuleSets& ruleSets() { return m_ruleSets; }
     const DocumentRuleSets& ruleSets() const { return m_ruleSets; }
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
-    ScopedStyleResolver* ensureScopeResolver()
+    ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode* scope)
     {
-        if (!m_scopeResolver)
-            m_scopeResolver = adoptPtr(new ScopedStyleResolver());
-        return m_scopeResolver.get();
+        return m_styleTree.ensureScopedStyleResolver(scope ? scope : document());
     }
 
 private:
     void initElement(Element*);
     RenderStyle* locateSharedStyle();
     bool styleSharingCandidateMatchesRuleSet(RuleSet*);
-    bool styleSharingCandidateMatchesHostRules();
     Node* locateCousinList(Element* parent, unsigned& visitedNodeCount) const;
     StyledElement* findSiblingForStyleSharing(Node*, unsigned& count) const;
     bool canShareStyleWithElement(StyledElement*) const;
@@ -287,9 +284,9 @@ public:
 
     bool checkRegionStyle(Element* regionElement);
 
-    bool usesSiblingRules() const { return !m_ruleSets.features().siblingRules.isEmpty(); }
-    bool usesFirstLineRules() const { return m_ruleSets.features().usesFirstLineRules; }
-    bool usesBeforeAfterRules() const { return m_ruleSets.features().usesBeforeAfterRules; }
+    bool usesSiblingRules() const { return !m_features.siblingRules.isEmpty(); }
+    bool usesFirstLineRules() const { return m_features.usesFirstLineRules; }
+    bool usesBeforeAfterRules() const { return m_features.usesBeforeAfterRules; }
 
     void invalidateMatchedPropertiesCache();
 
@@ -348,12 +345,13 @@ public:
 private:
     void matchUARules(ElementRuleCollector&, RuleSet*);
     void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules);
-    void matchShadowDistributedRules(ElementRuleCollector&, bool includeEmptyRules, RuleRange&);
-    void matchHostRules(ElementRuleCollector&, bool includeEmptyRules);
+    void matchShadowDistributedRules(ElementRuleCollector&, bool includeEmptyRules);
+    void matchHostRules(ScopedStyleResolver*, ElementRuleCollector&, bool includeEmptyRules);
     void matchScopedAuthorRules(ElementRuleCollector&, bool includeEmptyRules);
     void matchAllRules(ElementRuleCollector&, bool matchAuthorAndUserStyles, bool includeSMILProperties);
     void matchUARules(ElementRuleCollector&);
     void matchUserRules(ElementRuleCollector&, bool includeEmptyRules);
+    void collectFeatures();
 
 private:
     // This function fixes up the default font size if it detects that the current generic font family has changed. -dwh
@@ -480,8 +478,12 @@ private:
 #endif
 
     const DeprecatedStyleBuilder& m_styleBuilder;
+    ScopedStyleTree m_styleTree;
 
-    OwnPtr<ScopedStyleResolver> m_scopeResolver;
+    RuleFeatureSet m_features;
+    OwnPtr<RuleSet> m_siblingRuleSet;
+    OwnPtr<RuleSet> m_uncommonAttributeRuleSet;
+
     CSSToStyleMap m_styleMap;
     InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 
@@ -499,19 +501,19 @@ private:
 inline bool StyleResolver::hasSelectorForAttribute(const AtomicString &attributeName) const
 {
     ASSERT(!attributeName.isEmpty());
-    return m_ruleSets.features().attrsInRules.contains(attributeName.impl());
+    return m_features.attrsInRules.contains(attributeName.impl());
 }
 
 inline bool StyleResolver::hasSelectorForClass(const AtomicString& classValue) const
 {
     ASSERT(!classValue.isEmpty());
-    return m_ruleSets.features().classesInRules.contains(classValue.impl());
+    return m_features.classesInRules.contains(classValue.impl());
 }
 
 inline bool StyleResolver::hasSelectorForId(const AtomicString& idValue) const
 {
     ASSERT(!idValue.isEmpty());
-    return m_ruleSets.features().idsInRules.contains(idValue.impl());
+    return m_features.idsInRules.contains(idValue.impl());
 }
 
 inline bool checkRegionSelector(const CSSSelector* regionSelector, Element* regionElement)

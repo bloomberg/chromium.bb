@@ -35,6 +35,8 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 
@@ -94,82 +96,32 @@ void DocumentRuleSets::collectRulesFromUserStyleSheets(const Vector<RefPtr<CSSSt
     }
 }
 
-static PassOwnPtr<RuleSet> makeRuleSet(const Vector<RuleFeature>& rules)
-{
-    size_t size = rules.size();
-    if (!size)
-        return nullptr;
-    OwnPtr<RuleSet> ruleSet = RuleSet::create();
-    for (size_t i = 0; i < size; ++i)
-        ruleSet->addRule(rules[i].rule, rules[i].selectorIndex, rules[i].hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState);
-    ruleSet->shrinkToFit();
-    return ruleSet.release();
-}
-
 void DocumentRuleSets::resetAuthorStyle()
 {
-    m_authorStyle = RuleSet::create();
-    m_authorStyle->disableAutoShrinkToFit();
     m_shadowDistributedRules.clear();
 }
 
-void DocumentRuleSets::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >& styleSheets, MediaQueryEvaluator* medium, InspectorCSSOMWrappers& inspectorCSSOMWrappers, bool isViewSource, StyleResolver* resolver)
+void DocumentRuleSets::collectFeaturesTo(RuleFeatureSet& features, bool isViewSource)
 {
-    // This handles sheets added to the end of the stylesheet list only. In other cases the style resolver
-    // needs to be reconstructed. To handle insertions too the rule order numbers would need to be updated.
-    unsigned size = styleSheets.size();
-    for (unsigned i = firstNew; i < size; ++i) {
-        CSSStyleSheet* cssSheet = styleSheets[i].get();
-        ASSERT(!cssSheet->disabled());
-        if (cssSheet->mediaQueries() && !medium->eval(cssSheet->mediaQueries(), resolver))
-            continue;
-        StyleSheetContents* sheet = cssSheet->contents();
-        if (const ContainerNode* scope = ScopedStyleResolver::scopeFor(cssSheet)) {
-            // FIXME: Remove a dependency to calling a StyleResolver's member function.
-            // If we can avoid calling resolver->ensureScopeResolver() here, we don't have to include "core/css/resolver/StyleResolver.h".
-            // https://bugs.webkit.org/show_bug.cgi?id=108890
-            resolver->ensureScopeResolver()->ensureRuleSetFor(scope)->addRulesFromSheet(sheet, *medium, resolver, scope);
-            inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
-            continue;
-        }
-        m_authorStyle->addRulesFromSheet(sheet, *medium, resolver);
-        inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
-    }
-    m_authorStyle->shrinkToFit();
-    collectFeatures(isViewSource, resolver->scopeResolver());
-}
-
-void DocumentRuleSets::collectFeatures(bool isViewSource, ScopedStyleResolver* scopeResolver)
-{
-    m_features.clear();
     // Collect all ids and rules using sibling selectors (:first-child and similar)
     // in the current set of stylesheets. Style sharing code uses this information to reject
     // sharing candidates.
     if (CSSDefaultStyleSheets::defaultStyle)
-        m_features.add(CSSDefaultStyleSheets::defaultStyle->features());
-    if (m_authorStyle)
-        m_features.add(m_authorStyle->features());
+        features.add(CSSDefaultStyleSheets::defaultStyle->features());
+
     if (isViewSource)
-        m_features.add(CSSDefaultStyleSheets::viewSourceStyle()->features());
+        features.add(CSSDefaultStyleSheets::viewSourceStyle()->features());
 
-    if (scopeResolver)
-        scopeResolver->collectFeaturesTo(m_features);
     if (m_userStyle)
-        m_features.add(m_userStyle->features());
-    m_shadowDistributedRules.collectFeaturesTo(m_features);
+        features.add(m_userStyle->features());
 
-    m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
-    m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
+    m_shadowDistributedRules.collectFeaturesTo(features);
 }
 
 void DocumentRuleSets::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_authorStyle, "authorStyle");
     info.addMember(m_userStyle, "userStyle");
-    info.addMember(m_features, "features");
-    info.addMember(m_siblingRuleSet, "siblingRuleSet");
-    info.addMember(m_uncommonAttributeRuleSet, "uncommonAttributeRuleSet");
     info.addMember(m_shadowDistributedRules, "shadowDistributedRules");
 }
 

@@ -470,7 +470,7 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(UpdateFlag updateFlag
     else {
         StyleResolver* styleResolver = m_document->styleResolver();
         if (styleResolverUpdateType == Reset) {
-            styleResolver->ruleSets().resetAuthorStyle();
+            styleResolver->resetAuthorStyle();
             styleResolver->appendAuthorStyleSheets(0, activeCSSStyleSheets);
         } else {
             ASSERT(styleResolverUpdateType == Additive);
