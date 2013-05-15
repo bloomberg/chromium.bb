@@ -15,7 +15,7 @@
 PNACL_CC?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang -c
 PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++ -c
 PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++
-PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-ar r
+PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-ar
 PNACL_STRIP?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-finalize
 
 #
@@ -77,7 +77,7 @@ $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
 all: $(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
 $(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_pnacl))
 	$(MKDIR) -p $$(dir $$@)
-	$(call LOG,LIB,$$@,$(PNACL_LIB) $$@ $$^ $(3))
+	$(call LOG,LIB,$$@,$(PNACL_LIB) -cr $$@ $$^ $(3))
 endef
 
 
