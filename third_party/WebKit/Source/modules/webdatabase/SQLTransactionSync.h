@@ -32,12 +32,13 @@
 #ifndef SQLTransactionSync_h
 #define SQLTransactionSync_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/webdatabase/SQLTransactionBackendSync.h"
 
 namespace WebCore {
 
 // Instances of this class should be created and used only on the worker's context thread.
-class SQLTransactionSync : public SQLTransactionBackendSync {
+class SQLTransactionSync : public SQLTransactionBackendSync, public ScriptWrappable {
 public:
     static PassRefPtr<SQLTransactionSync> create(DatabaseSync*, PassRefPtr<SQLTransactionSyncCallback>, bool readOnly = false);
 

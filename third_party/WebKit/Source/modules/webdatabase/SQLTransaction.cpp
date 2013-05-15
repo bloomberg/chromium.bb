@@ -65,6 +65,7 @@ SQLTransaction::SQLTransaction(Database* db, PassRefPtr<SQLTransactionCallback> 
     , m_readOnly(readOnly)
 {
     ASSERT(m_database);
+    ScriptWrappable::init(this);
 }
 
 bool SQLTransaction::hasCallback() const

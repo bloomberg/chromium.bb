@@ -29,6 +29,7 @@
 #ifndef Database_h
 #define Database_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseBase.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
@@ -47,7 +48,7 @@ class SQLTransactionCallback;
 class SQLTransactionErrorCallback;
 class VoidCallback;
 
-class Database : public DatabaseBase, public DatabaseBackend {
+class Database : public DatabaseBase, public DatabaseBackend, public ScriptWrappable {
 public:
     virtual ~Database();
 

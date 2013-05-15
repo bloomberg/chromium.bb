@@ -29,6 +29,7 @@
 #ifndef SQLTransaction_h
 #define SQLTransaction_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/webdatabase/AbstractSQLTransaction.h"
 #include "modules/webdatabase/SQLCallbackWrapper.h"
 #include "modules/webdatabase/SQLStatement.h"
@@ -48,7 +49,7 @@ class SQLTransactionErrorCallback;
 class SQLValue;
 class VoidCallback;
 
-class SQLTransaction : public SQLTransactionStateMachine<SQLTransaction>, public AbstractSQLTransaction {
+class SQLTransaction : public SQLTransactionStateMachine<SQLTransaction>, public AbstractSQLTransaction, public ScriptWrappable {
 public:
     static PassRefPtr<SQLTransaction> create(Database*, PassRefPtr<SQLTransactionCallback>,
         PassRefPtr<VoidCallback> successCallback, PassRefPtr<SQLTransactionErrorCallback>,

@@ -29,13 +29,14 @@
 #ifndef SQLResultSetRowList_h
 #define SQLResultSetRowList_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/sql/SQLValue.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class SQLResultSetRowList : public RefCounted<SQLResultSetRowList> {
+class SQLResultSetRowList : public RefCounted<SQLResultSetRowList>, public ScriptWrappable {
 public:
     static PassRefPtr<SQLResultSetRowList> create() { return adoptRef(new SQLResultSetRowList); }
 
@@ -48,7 +49,10 @@ public:
     unsigned length() const;
 
 private:
-    SQLResultSetRowList() { }
+    SQLResultSetRowList()
+    {
+        ScriptWrappable::init(this);
+    }
 
     Vector<String> m_columns;
     Vector<SQLValue> m_result;

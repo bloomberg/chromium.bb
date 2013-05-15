@@ -75,6 +75,7 @@ Database::Database(PassRefPtr<DatabaseBackendContext> databaseContext,
     , m_databaseContext(DatabaseBackend::databaseContext()->frontend())
     , m_deleted(false)
 {
+    ScriptWrappable::init(this);
     m_databaseThreadSecurityOrigin = m_contextThreadSecurityOrigin->isolatedCopy();
     setFrontend(this);
 

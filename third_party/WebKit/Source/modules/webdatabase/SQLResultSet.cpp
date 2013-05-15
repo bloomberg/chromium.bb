@@ -41,6 +41,7 @@ SQLResultSet::SQLResultSet()
     , m_insertIdSet(false)
     , m_rowsAffected(0)
 {
+    ScriptWrappable::init(this);
 }
 
 int64_t SQLResultSet::insertId(ExceptionCode& e) const

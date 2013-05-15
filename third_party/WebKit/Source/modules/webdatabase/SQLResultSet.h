@@ -29,13 +29,14 @@
 #ifndef SQLResultSet_h
 #define SQLResultSet_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/SQLResultSetRowList.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
 namespace WebCore {
 
-class SQLResultSet : public ThreadSafeRefCounted<SQLResultSet> {
+class SQLResultSet : public ThreadSafeRefCounted<SQLResultSet>, public ScriptWrappable {
 public:
     static PassRefPtr<SQLResultSet> create() { return adoptRef(new SQLResultSet); }
 
@@ -44,7 +45,7 @@ public:
     int64_t insertId(ExceptionCode&) const;
     int rowsAffected() const;
 
-// For internal (non-JS) use
+    // For internal (non-JS) use
     void setInsertId(int64_t);
     void setRowsAffected(int);
 

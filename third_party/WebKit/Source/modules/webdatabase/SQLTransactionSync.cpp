@@ -47,6 +47,7 @@ SQLTransactionSync::SQLTransactionSync(DatabaseSync* db, PassRefPtr<SQLTransacti
     : SQLTransactionBackendSync(db, callback, readOnly)
 {
     ASSERT(m_database->scriptExecutionContext()->isContextThread());
+    ScriptWrappable::init(this);
 }
 
 SQLTransactionSync* SQLTransactionSync::from(SQLTransactionBackendSync* backend)
