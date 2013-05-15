@@ -1705,23 +1705,7 @@ bool OmniboxViewGtk::OnPerformDropImpl(const string16& text) {
 }
 
 gfx::Font OmniboxViewGtk::GetFont() {
-  bool use_gtk = theme_service_->UsingNativeTheme();
-  if (use_gtk) {
-    // If we haven't initialized the text view yet, just create a temporary one
-    // whose style we can grab.
-    GtkWidget* widget = text_view_ ? text_view_ : gtk_text_view_new();
-    GtkStyle* gtk_style = gtk_widget_get_style(widget);
-    GtkRcStyle* rc_style = gtk_widget_get_modifier_style(widget);
-    gfx::Font font((rc_style && rc_style->font_desc) ?
-                   rc_style->font_desc :
-                   gtk_style->font_desc);
-    if (!text_view_)
-      g_object_unref(g_object_ref_sink(widget));
-
-    // Scaling the font down for popup windows doesn't help here, since we just
-    // use the normal unforced font size when using the GTK theme.
-    return font;
-  } else {
+  if (!theme_service_->UsingNativeTheme()) {
     return gfx::Font(
         ui::ResourceBundle::GetSharedInstance().GetFont(
             ui::ResourceBundle::BaseFont).GetFontName(),
@@ -1729,6 +1713,18 @@ gfx::Font OmniboxViewGtk::GetFont() {
             browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
             browser_defaults::kAutocompleteEditFontPixelSize);
   }
+
+  // If we haven't initialized the text view yet, just create a temporary one
+  // whose style we can grab.
+  GtkWidget* widget = text_view_ ? text_view_ : gtk_text_view_new();
+  GtkStyle* gtk_style = gtk_widget_get_style(widget);
+  GtkRcStyle* rc_style = gtk_widget_get_modifier_style(widget);
+  gfx::Font font(
+      (rc_style && rc_style->font_desc) ?
+          rc_style->font_desc : gtk_style->font_desc);
+  if (!text_view_)
+    g_object_unref(g_object_ref_sink(widget));
+  return font;
 }
 
 void OmniboxViewGtk::OwnPrimarySelection(const std::string& text) {
