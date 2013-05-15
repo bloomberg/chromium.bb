@@ -53,6 +53,13 @@ class TopSites
                                 const gfx::Image& thumbnail,
                                 const ThumbnailScore& score) = 0;
 
+  // While testing the history system, we want to set the thumbnail to a piece
+  // of static memory.
+  virtual bool SetPageThumbnailToJPEGBytes(
+      const GURL& url,
+      const base::RefCountedMemory* memory,
+      const ThumbnailScore& score) = 0;
+
   typedef base::Callback<void(const MostVisitedURLList&)>
       GetMostVisitedURLsCallback;
   typedef std::vector<GetMostVisitedURLsCallback> PendingCallbacks;
