@@ -502,8 +502,15 @@ void DriveAPIService::CopyResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this (crbug.com/138273).
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new drive::CopyResourceOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          resource_id,
+          parent_resource_id,
+          new_name,
+          base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
 void DriveAPIService::CopyHostedDocument(
@@ -519,6 +526,7 @@ void DriveAPIService::CopyHostedDocument(
           url_request_context_getter_,
           url_generator_,
           resource_id,
+          std::string(),  // parent_resource_id.
           new_name,
           base::Bind(&ParseResourceEntryAndRun, callback)));
 }

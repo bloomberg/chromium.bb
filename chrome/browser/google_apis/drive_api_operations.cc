@@ -302,12 +302,14 @@ CopyResourceOperation::CopyResourceOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
     const std::string& resource_id,
+    const std::string& parent_resource_id,
     const std::string& new_name,
     const FileResourceCallback& callback)
     : GetDataOperation(registry, url_request_context_getter,
                        base::Bind(&ParseJsonAndRun<FileResource>, callback)),
       url_generator_(url_generator),
       resource_id_(resource_id),
+      parent_resource_id_(parent_resource_id),
       new_name_(new_name) {
   DCHECK(!callback.is_null());
 }
@@ -329,6 +331,16 @@ bool CopyResourceOperation::GetContentData(std::string* upload_content_type,
 
   base::DictionaryValue root;
   root.SetString("title", new_name_);
+
+  if (!parent_resource_id_.empty()) {
+    // Set the parent resource (destination directory) of the new resource.
+    base::ListValue* parents = new base::ListValue;
+    root.Set("parents", parents);
+    base::DictionaryValue* parent_value = new base::DictionaryValue;
+    parents->Append(parent_value);
+    parent_value->SetString("id", parent_resource_id_);
+  }
+
   base::JSONWriter::Write(&root, upload_content);
 
   DVLOG(1) << "CopyResource data: " << *upload_content_type << ", ["

@@ -250,30 +250,23 @@ class RenameResourceOperation : public EntryActionOperation {
 
 // This class performs the operation for copying a resource.
 //
-// This class is designed to copy only the hosted documents at the moment,
-// but the operation (in server side) can work with regular files, too.
-// TODO(hidehiko): Extend this operation to adapt copy regular files on
-// server side (crbug.com/138273).
+// Copies the resource with |resource_id| into a directory with
+// |parent_resource_id|. The new resource will be named as |new_name|.
+// |parent_resource_id| can be empty. In the case, the copy will be created
+// directly under the default root directory (this is the default behavior
+// of Drive API v2's copy operation).
 //
-// Also, note that, at the moment, this operation copies the hosted document
-// to the root directory. However, the operation (in server side) supports
-// copying files into any directory on Drive API v2, while it is not supported
-// on GData WAPI. Now, we are on the way of migration from GData WAPI to
-// Drive API v2, so we drop the feature for now to reduce the migration
-// complexity.
-// TODO(hidehiko): Support the feature for the copy after the migration,
-// which should be somehow benficial (at least we can simplify
-// chromeos/drive/file_system/copy_operation).
+// This operation corresponds to "Files: copy" operation on Drive API v2. See
+// also: https://developers.google.com/drive/v2/reference/files/copy
 class CopyResourceOperation : public GetDataOperation {
  public:
-  // |resource_id| is the resource id of the file to be copied.
-  // |new_name| is the name of the copied (newly created) file.
-  // |callback| must not be null.
+  // Upon completion, |callback| will be called. |callback| must not be null.
   CopyResourceOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& resource_id,
+      const std::string& parent_resource_id,
       const std::string& new_name,
       const FileResourceCallback& callback);
   virtual ~CopyResourceOperation();
@@ -286,6 +279,7 @@ class CopyResourceOperation : public GetDataOperation {
  private:
   const DriveApiUrlGenerator url_generator_;
   const std::string resource_id_;
+  const std::string parent_resource_id_;
   const std::string new_name_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyResourceOperation);
