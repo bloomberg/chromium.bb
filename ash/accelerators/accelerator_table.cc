@@ -73,7 +73,8 @@ const AcceleratorData kAcceleratorData[] = {
 #endif  // defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
 #if !defined(OS_WIN)
-  { true, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT },
+  { true, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT_PRESSED },
+  { false, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT_RELEASED },
 #endif
   { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOUCH_HUD_MODE_CHANGE },
@@ -276,7 +277,8 @@ const size_t kActionsAllowedAtLoginOrLockScreenLength =
     arraysize(kActionsAllowedAtLoginOrLockScreen);
 
 const AcceleratorAction kActionsAllowedAtLockScreen[] = {
-  EXIT,
+  EXIT_PRESSED,
+  EXIT_RELEASED
 };
 
 const size_t kActionsAllowedAtLockScreenLength =
@@ -286,7 +288,8 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
   DISABLE_CAPS_LOCK,
-  EXIT,
+  EXIT_PRESSED,
+  EXIT_RELEASED,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
   MAGNIFY_SCREEN_ZOOM_IN,
@@ -348,7 +351,8 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   CYCLE_FORWARD_LINEAR,
   CYCLE_FORWARD_MRU,
   DISABLE_CAPS_LOCK,
-  EXIT,
+  EXIT_PRESSED,
+  EXIT_RELEASED,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
   MAGNIFY_SCREEN_ZOOM_IN,  // Control+F7

@@ -164,7 +164,7 @@ struct ChromeCmdId2AshActionId {
 };
 const ChromeCmdId2AshActionId kChromeCmdId2AshActionId[] = {
   { IDC_FEEDBACK,             ash::OPEN_FEEDBACK_PAGE },
-  { IDC_EXIT,                 ash::EXIT },
+  { IDC_EXIT,                 ash::EXIT_PRESSED },
   { IDC_NEW_INCOGNITO_WINDOW, ash::NEW_INCOGNITO_WINDOW },
   { IDC_NEW_TAB,              ash::NEW_TAB },
   { IDC_NEW_WINDOW,           ash::NEW_WINDOW },

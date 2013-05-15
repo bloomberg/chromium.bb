@@ -494,6 +494,9 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_FAIL" desc="The text of the notification when taking a screenshot failed.">
         Failed to save screenshot
       </message>
+      <message name="IDS_ASH_EXIT_WARNING_POPUP_TEXT" desc="The text of the popup when the user preses the exit shortcut.">
+        Hold Ctrl+Shift+Q to quit.
+      </message>
 
       <!-- ChromeOS-specific strings -->
       <if expr="pp_ifdef('chromeos')">

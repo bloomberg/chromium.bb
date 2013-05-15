@@ -574,8 +574,9 @@ bool AcceleratorController::PerformAction(int action,
     case OPEN_FEEDBACK_PAGE:
       ash::Shell::GetInstance()->delegate()->OpenFeedbackPage();
       return true;
-    case EXIT:
-      Shell::GetInstance()->delegate()->Exit();
+    case EXIT_PRESSED:
+    case EXIT_RELEASED:
+      exit_warning_handler_.HandleExitKey(action == EXIT_PRESSED);
       return true;
     case NEW_INCOGNITO_WINDOW:
       Shell::GetInstance()->delegate()->NewWindow(true /* is_incognito */);

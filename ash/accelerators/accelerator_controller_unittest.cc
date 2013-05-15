@@ -321,6 +321,26 @@ class AcceleratorControllerTest : public test::AshTestBase {
   static AcceleratorController* GetController();
   static bool ProcessWithContext(const ui::Accelerator& accelerator);
 
+  // Several functions to access ExitWarningHandler (as friend).
+  static void StubForTest(ExitWarningHandler& ewh) {
+    ewh.stub_timers_for_test_ = true;
+  }
+  static void SimulateTimer1Expired(ExitWarningHandler& ewh) {
+    ewh.Timer1Action();
+  }
+  static void SimulateTimer2Expired(ExitWarningHandler& ewh) {
+    ewh.Timer2Action();
+  }
+  static bool is_ui_shown(ExitWarningHandler& ewh) {
+    return !!ewh.widget_;
+  }
+  static bool is_idle(ExitWarningHandler& ewh) {
+    return ewh.state_ == ExitWarningHandler::IDLE;
+  }
+  static bool is_exiting(ExitWarningHandler& ewh) {
+    return ewh.state_ == ExitWarningHandler::EXITING;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerTest);
 };
@@ -334,6 +354,72 @@ bool AcceleratorControllerTest::ProcessWithContext(
   AcceleratorController* controller = GetController();
   controller->context()->UpdateContext(accelerator);
   return controller->Process(accelerator);
+}
+
+// Quick double press of exit key => exiting
+TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestDoublePress) {
+  ExitWarningHandler ewh;
+  StubForTest(ewh);
+  EXPECT_TRUE(is_idle(ewh));
+  EXPECT_FALSE(is_ui_shown(ewh));
+
+  ewh.HandleExitKey(true);
+  EXPECT_TRUE(is_ui_shown(ewh));
+  ewh.HandleExitKey(false);
+  ewh.HandleExitKey(true); // double press
+  SimulateTimer1Expired(ewh); // simulate double press timer expired
+  SimulateTimer2Expired(ewh); // simulate long hold timer expired
+  ewh.HandleExitKey(false);
+  EXPECT_FALSE(is_ui_shown(ewh));
+  EXPECT_TRUE(is_exiting(ewh));
+}
+
+// Long hold of exit key => exiting
+TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestLongHold) {
+  ExitWarningHandler ewh;
+  StubForTest(ewh);
+  EXPECT_TRUE(is_idle(ewh));
+  EXPECT_FALSE(is_ui_shown(ewh));
+
+  ewh.HandleExitKey(true);
+  EXPECT_TRUE(is_ui_shown(ewh));
+  SimulateTimer1Expired(ewh); // simulate double press timer expired
+  SimulateTimer2Expired(ewh); // simulate long hold timer expired
+  ewh.HandleExitKey(false); // release after long hold
+  EXPECT_FALSE(is_ui_shown(ewh));
+  EXPECT_TRUE(is_exiting(ewh));
+}
+
+// Release of exit key before hold time limit => cancel
+TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestEarlyRelease) {
+  ExitWarningHandler ewh;
+  StubForTest(ewh);
+  EXPECT_TRUE(is_idle(ewh));
+  EXPECT_FALSE(is_ui_shown(ewh));
+
+  ewh.HandleExitKey(true);
+  EXPECT_TRUE(is_ui_shown(ewh));
+  SimulateTimer1Expired(ewh); // simulate double press timer expired
+  ewh.HandleExitKey(false); // release before long hold limit
+  SimulateTimer2Expired(ewh); // simulate long hold timer expired
+  EXPECT_FALSE(is_ui_shown(ewh));
+  EXPECT_TRUE(is_idle(ewh));
+}
+
+// Release of exit key before double press limit => cancel.
+TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestQuickRelease) {
+  ExitWarningHandler ewh;
+  StubForTest(ewh);
+  EXPECT_TRUE(is_idle(ewh));
+  EXPECT_FALSE(is_ui_shown(ewh));
+
+  ewh.HandleExitKey(true);
+  EXPECT_TRUE(is_ui_shown(ewh));
+  ewh.HandleExitKey(false); // release before double press limit
+  SimulateTimer1Expired(ewh); // simulate double press timer expired
+  SimulateTimer2Expired(ewh); // simulate long hold timer expired
+  EXPECT_FALSE(is_ui_shown(ewh));
+  EXPECT_TRUE(is_idle(ewh));
 }
 
 TEST_F(AcceleratorControllerTest, Register) {
@@ -860,8 +946,19 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 
 #if !defined(OS_WIN)
   // Exit
+  ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
+  ASSERT_TRUE(!!ewh);
+  StubForTest(*ewh);
+  EXPECT_TRUE(is_idle(*ewh));
+  EXPECT_FALSE(is_ui_shown(*ewh));
   EXPECT_TRUE(ProcessWithContext(
       ui::Accelerator(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
+  EXPECT_FALSE(is_idle(*ewh));
+  EXPECT_TRUE(is_ui_shown(*ewh));
+  SimulateTimer1Expired(*ewh);
+  SimulateTimer2Expired(*ewh);
+  EXPECT_FALSE(is_ui_shown(*ewh));
+  EXPECT_TRUE(is_exiting(*ewh));
 #endif
 
   // New tab
