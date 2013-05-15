@@ -140,17 +140,14 @@ namespace WTF {
     };
 
     template<typename P> struct HashTraits<RefPtr<P> > : SimpleClassHashTraits<RefPtr<P> > {
-        static RefPtr<P>& emptyValue()
-        {
-            static RefPtr<P>& null = *(new RefPtr<P>);
-            return null;
-        }
+        static P* emptyValue() { return 0; }
 
         typedef PassRefPtr<P> PassInType;
         static void store(PassRefPtr<P> value, RefPtr<P>& storage) { storage = value; }
 
         typedef PassRefPtr<P> PassOutType;
         static PassRefPtr<P> passOut(RefPtr<P>& value) { return value.release(); }
+        static PassRefPtr<P> passOut(P* value) { return value; }
 
         typedef P* PeekType;
         static PeekType peek(const RefPtr<P>& value) { return value.get(); }
