@@ -18,15 +18,15 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/rendering_benchmark.h"
 #include "content/renderer/skia_benchmarking_extension.h"
-#include "third_party/skia/include/core/SkGraphics.h"
-#include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewBenchmarkSupport.h"
+#include "third_party/skia/include/core/SkGraphics.h"
+#include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkStream.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "v8/include/v8.h"
-#include "webkit/compositor_bindings/web_rendering_stats_impl.h"
+#include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebFrame;

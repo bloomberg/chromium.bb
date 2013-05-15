@@ -113,7 +113,7 @@
     },
     'cc': {
       'filepath': 'cc/|'\
-                  'webkit/compositor_bindings/|'\
+                  'webkit/renderer/compositor_bindings/|'\
                   'content/common/cc_messages'
     },
     'chrome_frame': {

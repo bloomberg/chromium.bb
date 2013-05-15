@@ -19,12 +19,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/media/media_stream_audio_renderer.h"
 #include "webkit/media/media_stream_client.h"
 #include "webkit/media/video_frame_provider.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_util.h"
+#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebMediaPlayer;

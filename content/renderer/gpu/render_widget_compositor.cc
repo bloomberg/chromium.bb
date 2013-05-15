@@ -23,8 +23,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 #include "ui/gl/gl_switches.h"
-#include "webkit/compositor_bindings/web_layer_impl.h"
-#include "webkit/compositor_bindings/web_to_ccinput_handler_adapter.h"
+#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
+#include "webkit/renderer/compositor_bindings/web_to_ccinput_handler_adapter.h"
 
 namespace cc {
 class Layer;

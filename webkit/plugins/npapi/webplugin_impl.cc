@@ -41,13 +41,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/rect.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
-#include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/plugins/npapi/plugin_host.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 #include "webkit/plugins/plugin_constants.h"
+#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 using appcache::WebApplicationCacheHostImpl;
 using WebKit::WebCanvas;

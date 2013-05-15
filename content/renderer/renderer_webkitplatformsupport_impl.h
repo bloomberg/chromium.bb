@@ -13,7 +13,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerRepository.h"
-#include "webkit/compositor_bindings/web_compositor_support_impl.h"
+#include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
 namespace cc {
 class ContextProvider;

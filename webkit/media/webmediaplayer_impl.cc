@@ -43,7 +43,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
-#include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/media/buffered_data_source.h"
 #include "webkit/media/webaudiosourceprovider_impl.h"
 #include "webkit/media/webmediaplayer_delegate.h"
@@ -51,6 +50,7 @@
 #include "webkit/media/webmediaplayer_util.h"
 #include "webkit/media/webmediasourceclient_impl.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
+#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebMediaPlayer;

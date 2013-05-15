@@ -70,7 +70,6 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/content_decryptor_delegate.h"
@@ -89,6 +88,7 @@
 #include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/ppapi/url_request_info_util.h"
 #include "webkit/plugins/sad_plugin.h"
+#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 #if defined(OS_MACOSX)
 #include "printing/metafile_impl.h"

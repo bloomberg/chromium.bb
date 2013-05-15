@@ -21,10 +21,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #include "webkit/media/android/webmediaplayer_proxy_android.h"
 #include "webkit/media/webmediaplayer_util.h"
+#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 #if defined(GOOGLE_TV)
 #include "webkit/media/android/media_source_delegate.h"
