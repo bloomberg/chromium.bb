@@ -65,8 +65,9 @@ static void StartOnUIThread(
   DownloadItem* item = download_manager->StartDownload(
       info.Pass(), stream.Pass());
 
+  // |item| can be NULL if the download has been removed.
   if (!started_cb.is_null())
-    started_cb.Run(item, net::OK);
+    started_cb.Run(item, item ? net::OK : net::ERR_ABORTED);
 }
 
 }  // namespace

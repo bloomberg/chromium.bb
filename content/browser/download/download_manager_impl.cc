@@ -247,12 +247,14 @@ DownloadManagerImpl::~DownloadManagerImpl() {
   DCHECK(!shutdown_needed_);
 }
 
-void DownloadManagerImpl::CreateActiveItem(
+DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
     DownloadId id, const DownloadCreateInfo& info) {
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
-  downloads_[id.local()] =
+  DownloadItemImpl* download =
       item_factory_->CreateActiveItem(this, id, info, bound_net_log);
+  downloads_[id.local()] = download;
+  return download;
 }
 
 DownloadId DownloadManagerImpl::GetNextId() {
@@ -377,6 +379,26 @@ DownloadItem* DownloadManagerImpl::StartDownload(
     scoped_ptr<ByteStreamReader> stream) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  DownloadId id(info->download_id);
+  const bool new_download = !id.IsValid();
+  DownloadItemImpl* download = NULL;
+
+  if (new_download) {
+    id = GetNextId();
+    download = CreateActiveItem(id, *info);
+  } else {
+    DownloadMap::iterator item_iterator = downloads_.find(id.local());
+    // Trying to resume an interrupted download.
+    if (item_iterator == downloads_.end()) {
+      // If the download is no longer known to the DownloadManager, then it was
+      // removed after it was resumed. Ignore.
+      info->request_handle.CancelRequest();
+      return NULL;
+    }
+    download = item_iterator->second;
+    DCHECK(download->IsInterrupted());
+  }
+
   base::FilePath default_download_directory;
   if (delegate_) {
     base::FilePath website_save_directory;  // Unused
@@ -384,20 +406,6 @@ DownloadItem* DownloadManagerImpl::StartDownload(
     delegate_->GetSaveDir(GetBrowserContext(), &website_save_directory,
                           &default_download_directory, &skip_dir_check);
   }
-
-  // If we don't have a valid id, that's a signal to generate one.
-  DownloadId id(info->download_id);
-  if (!id.IsValid())
-    id = GetNextId();
-
-  // Create a new download item if this isn't a resumption.
-  bool new_download(!ContainsKey(downloads_, id.local()));
-  if (new_download)
-    CreateActiveItem(id, *info);
-
-  DownloadItemImpl* download(downloads_[id.local()]);
-  DCHECK(download);
-  DCHECK(new_download || download->IsInterrupted());
 
   // Create the download file and start the download.
   scoped_ptr<DownloadFile> download_file(

@@ -309,33 +309,39 @@ void DownloadItemImpl::Pause() {
 
 void DownloadItemImpl::Resume() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  switch (state_) {
+    case IN_PROGRESS_INTERNAL:
+      if (!is_paused_)
+        return;
+      request_handle_->ResumeRequest();
+      is_paused_ = false;
+      UpdateObservers();
+      return;
 
-  // Ignore irrelevant states.
-  if (state_ == COMPLETE_INTERNAL ||
-      state_ == COMPLETING_INTERNAL ||
-      state_ == CANCELLED_INTERNAL ||
-      (state_ == IN_PROGRESS_INTERNAL && !is_paused_))
-    return;
+    case COMPLETING_INTERNAL:
+    case COMPLETE_INTERNAL:
+    case CANCELLED_INTERNAL:
+    case RESUMING_INTERNAL:
+      return;
 
-  if (state_ == INTERRUPTED_INTERNAL) {
-    auto_resume_count_ = 0;  // User input resets the counter.
-    ResumeInterruptedDownload();
-    return;
+    case INTERRUPTED_INTERNAL:
+      auto_resume_count_ = 0;  // User input resets the counter.
+      ResumeInterruptedDownload();
+      return;
+
+    case MAX_DOWNLOAD_INTERNAL_STATE:
+      NOTREACHED();
   }
-  DCHECK_EQ(IN_PROGRESS_INTERNAL, state_);
-
-  request_handle_->ResumeRequest();
-  is_paused_ = false;
-  UpdateObservers();
 }
 
 void DownloadItemImpl::Cancel(bool user_cancel) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
-  if (state_ != IN_PROGRESS_INTERNAL && state_ != INTERRUPTED_INTERNAL) {
-    // Small downloads might be complete before this method has
-    // a chance to run.
+  if (state_ != IN_PROGRESS_INTERNAL &&
+      state_ != INTERRUPTED_INTERNAL &&
+      state_ != RESUMING_INTERNAL) {
+    // Small downloads might be complete before this method has a chance to run.
     return;
   }
 
@@ -352,7 +358,7 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
   if (!is_save_package_download_ && download_file_)
     ReleaseDownloadFile(true);
 
-  if (state_ != INTERRUPTED_INTERNAL) {
+  if (state_ == IN_PROGRESS_INTERNAL) {
     // Cancel the originating URL request unless it's already been cancelled
     // by interrupt.
     request_handle_->CancelRequest();
@@ -1009,6 +1015,14 @@ void DownloadItemImpl::Start(
   download_file_ = file.Pass();
   request_handle_ = req_handle.Pass();
 
+  if (IsCancelled()) {
+    // The download was in the process of resuming when it was cancelled. Don't
+    // proceed.
+    ReleaseDownloadFile(true);
+    request_handle_->CancelRequest();
+    return;
+  }
+
   TransitionTo(IN_PROGRESS_INTERNAL);
 
   last_reason_ = DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -1287,6 +1301,25 @@ void DownloadItemImpl::Completed() {
   }
 }
 
+void DownloadItemImpl::OnResumeRequestStarted(DownloadItem* item,
+                                              net::Error error) {
+  // If |item| is not NULL, then Start() has been called already, and nothing
+  // more needs to be done here.
+  if (item) {
+    DCHECK_EQ(net::OK, error);
+    DCHECK_EQ(static_cast<DownloadItem*>(this), item);
+    return;
+  }
+  // Otherwise, the request failed without passing through
+  // DownloadResourceHandler::OnResponseStarted.
+  if (error == net::OK)
+    error = net::ERR_FAILED;
+  DownloadInterruptReason reason =
+      ConvertNetErrorToInterruptReason(error, DOWNLOAD_INTERRUPT_FROM_NETWORK);
+  DCHECK_NE(DOWNLOAD_INTERRUPT_REASON_NONE, reason);
+  Interrupt(reason);
+}
+
 // **** End of Download progression cascade
 
 // An error occurred somewhere.
@@ -1303,7 +1336,7 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
   // interrupts to race with cancels.
 
   // Whatever happens, the first one to hit the UI thread wins.
-  if (state_ != IN_PROGRESS_INTERNAL)
+  if (state_ != IN_PROGRESS_INTERNAL && state_ != RESUMING_INTERNAL)
     return;
 
   last_reason_ = reason;
@@ -1516,7 +1549,7 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
     return;
 
   // If we're not interrupted, ignore the request; our caller is drunk.
-  if (!IsInterrupted())
+  if (state_ != INTERRUPTED_INTERNAL)
     return;
 
   // If we can't get a web contents, we can't resume the download.
@@ -1545,11 +1578,15 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
   download_params->set_hash_state(GetHashState());
   download_params->set_last_modified(GetLastModifiedTime());
   download_params->set_etag(GetETag());
+  download_params->set_callback(
+      base::Bind(&DownloadItemImpl::OnResumeRequestStarted,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   delegate_->ResumeInterruptedDownload(download_params.Pass(), GetGlobalId());
-
   // Just in case we were interrupted while paused.
   is_paused_ = false;
+
+  TransitionTo(RESUMING_INTERNAL);
 }
 
 // static
@@ -1566,30 +1603,33 @@ DownloadItem::DownloadState DownloadItemImpl::InternalToExternalState(
       return CANCELLED;
     case INTERRUPTED_INTERNAL:
       return INTERRUPTED;
-    default:
-      NOTREACHED();
+    case RESUMING_INTERNAL:
+      return INTERRUPTED;
+    case MAX_DOWNLOAD_INTERNAL_STATE:
+      break;
   }
+  NOTREACHED();
   return MAX_DOWNLOAD_STATE;
 }
 
 // static
 DownloadItemImpl::DownloadInternalState
 DownloadItemImpl::ExternalToInternalState(
-     DownloadState external_state) {
-   switch (external_state) {
-     case IN_PROGRESS:
-       return IN_PROGRESS_INTERNAL;
-     case COMPLETE:
-       return COMPLETE_INTERNAL;
-     case CANCELLED:
-       return CANCELLED_INTERNAL;
-     case INTERRUPTED:
-       return INTERRUPTED_INTERNAL;
-     default:
-       NOTREACHED();
-   }
-   return MAX_DOWNLOAD_INTERNAL_STATE;
- }
+    DownloadState external_state) {
+  switch (external_state) {
+    case IN_PROGRESS:
+      return IN_PROGRESS_INTERNAL;
+    case COMPLETE:
+      return COMPLETE_INTERNAL;
+    case CANCELLED:
+      return CANCELLED_INTERNAL;
+    case INTERRUPTED:
+      return INTERRUPTED_INTERNAL;
+    default:
+      NOTREACHED();
+  }
+  return MAX_DOWNLOAD_INTERNAL_STATE;
+}
 
 const char* DownloadItemImpl::DebugDownloadStateString(
     DownloadInternalState state) {
@@ -1604,10 +1644,13 @@ const char* DownloadItemImpl::DebugDownloadStateString(
       return "CANCELLED";
     case INTERRUPTED_INTERNAL:
       return "INTERRUPTED";
-    default:
-      NOTREACHED() << "Unknown download state " << state;
-      return "unknown";
+    case RESUMING_INTERNAL:
+      return "RESUMING";
+    case MAX_DOWNLOAD_INTERNAL_STATE:
+      break;
   };
+  NOTREACHED() << "Unknown download state " << state;
+  return "unknown";
 }
 
 const char* DownloadItemImpl::DebugResumeModeString(ResumeMode mode) {

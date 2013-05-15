@@ -210,32 +210,71 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void DestinationCompleted(const std::string& final_hash) OVERRIDE;
 
  private:
-  // Fine grained states of a download.
-  enum DownloadInternalState {
-    // Unless otherwise specified, state transitions are linear forward
-    // in this list.
+  // Fine grained states of a download. Note that active downloads are created
+  // in IN_PROGRESS_INTERNAL state. However, downloads creates via history can
+  // be created in COMPLETE_INTERNAL, CANCELLED_INTERNAL and
+  // INTERRUPTED_INTERNAL.
 
-    // Includes both before and after file name determination.
+  enum DownloadInternalState {
+    // Includes both before and after file name determination, and paused
+    // downloads.
     // TODO(rdsmith): Put in state variable for file name determination.
+    // Transitions from:
+    //   <Initial creation>    Active downloads are created in this state.
+    //   RESUMING_INTERNAL
+    // Transitions to:
+    //   COMPLETING_INTERNAL   On final rename completion.
+    //   CANCELLED_INTERNAL    On cancel.
+    //   INTERRUPTED_INTERNAL  On interrupt.
+    //   COMPLETE_INTERNAL     On SavePackage download completion.
     IN_PROGRESS_INTERNAL,
 
     // Between commit point (dispatch of download file release) and completed.
-    // Embedder may be opening the file in this state.  Note that the
-    // DownloadItem may be deleted (by shutdown) or interrupted (e.g. due to a
-    // failure during AnnotateWithSourceInformation()) in this state.
+    // Embedder may be opening the file in this state.
+    // Transitions from:
+    //   IN_PROGRESS_INTERNAL
+    // Transitions to:
+    //   COMPLETE_INTERNAL     On successful completion.
     COMPLETING_INTERNAL,
 
     // After embedder has had a chance to auto-open.  User may now open
     // or auto-open based on extension.
+    // Transitions from:
+    //   COMPLETING_INTERNAL
+    //   IN_PROGRESS_INTERNAL  SavePackage only.
+    //   <Initial creation>    Completed persisted downloads.
+    // Transitions to:
+    //   <none>                Terminal state.
     COMPLETE_INTERNAL,
 
     // User has cancelled the download.
-    // Only incoming transition IN_PROGRESS->
+    // Transitions from:
+    //   IN_PROGRESS_INTERNAL
+    //   INTERRUPTED_INTERNAL
+    //   RESUMING_INTERNAL
+    //   <Initial creation>    Canceleld persisted downloads.
+    // Transitions to:
+    //   <none>                Terminal state.
     CANCELLED_INTERNAL,
 
     // An error has interrupted the download.
-    // Only incoming transition IN_PROGRESS->
+    // Transitions from:
+    //   IN_PROGRESS_INTERNAL
+    //   RESUMING_INTERNAL
+    //   <Initial creation>    Interrupted persisted downloads.
+    // Transitions to:
+    //   RESUMING_INTERNAL     On resumption.
     INTERRUPTED_INTERNAL,
+
+    // A request to resume this interrupted download is in progress.
+    // Transitions from:
+    //   INTERRUPTED_INTERNAL
+    // Transitions to:
+    //   IN_PROGRESS_INTERNAL  Once a server response is received from a
+    //                         resumption.
+    //   INTERRUPTED_INTERNAL  If the resumption request fails.
+    //   CANCELLED_INTERNAL    On cancel.
+    RESUMING_INTERNAL,
 
     MAX_DOWNLOAD_INTERNAL_STATE,
   };
@@ -289,6 +328,9 @@ class CONTENT_EXPORT DownloadItemImpl
   // Called when the entire download operation (including renaming etc)
   // is completed.
   void Completed();
+
+  // Callback invoked when the URLRequest for a download resumption has started.
+  void OnResumeRequestStarted(DownloadItem* item, net::Error error);
 
   // Helper routines -----------------------------------------------------------
 

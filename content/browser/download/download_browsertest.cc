@@ -1378,4 +1378,42 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileFinalRenameError) {
   EXPECT_EQ(download->GetState(), DownloadItem::COMPLETE);
 }
 
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
+  SetupEnsureNoPendingDownloads();
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url = test_server()->GetURL(
+      base::StringPrintf("rangereset?size=%d&rst_boundary=%d",
+                   GetSafeBufferChunk() * 3, GetSafeBufferChunk()));
+
+  MockDownloadManagerObserver dm_observer(DownloadManagerForShell(shell()));
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(1);
+
+  DownloadItem* download(StartDownloadAndReturnItem(url));
+  WaitForData(download, GetSafeBufferChunk());
+  ::testing::Mock::VerifyAndClearExpectations(&dm_observer);
+
+  // Tell the server to send the RST and confirm the interrupt happens.
+  ReleaseRSTAndConfirmInterruptForResume(download);
+  ConfirmFileStatusForResume(
+      download, true, GetSafeBufferChunk(), GetSafeBufferChunk() * 3,
+      base::FilePath(FILE_PATH_LITERAL("rangereset.crdownload")));
+
+  // Resume and remove download. We expect only a single OnDownloadCreated()
+  // call, and that's for the second download created below.
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(1);
+  download->Resume();
+  download->Remove();
+
+  // Start the second download and wait until it's done.
+  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
+  GURL url2(URLRequestMockHTTPJob::GetMockUrl(file));
+  // Download the file and wait.
+  DownloadAndWait(shell(), url2, DownloadItem::COMPLETE);
+
+  EXPECT_TRUE(EnsureNoPendingDownloads());
+}
+
 }  // namespace content
