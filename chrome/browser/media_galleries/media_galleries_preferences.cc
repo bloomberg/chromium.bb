@@ -213,10 +213,15 @@ MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
       profile_(profile) {
   AddDefaultGalleriesIfFreshProfile();
 
+  // TODO(vandebo) Turn this back on when the iTunes code is ready.
+  // Temporarily turned off because it adds an extra user-visible entry to the
+  // preferences that does not quite work.
+#if 0
   // Look for optional default galleries every time.
   itunes::ITunesFinder::FindITunesLibrary(
       base::Bind(&MediaGalleriesPreferences::OnITunesDeviceID,
                  weak_factory_.GetWeakPtr()));
+#endif
 
   InitFromPrefs(false /*no notification*/);
 

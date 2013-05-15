@@ -970,6 +970,8 @@
         'browser/media_galleries/fileapi/filtering_file_enumerator.h',
         'browser/media_galleries/fileapi/itunes_finder.cc',
         'browser/media_galleries/fileapi/itunes_finder.h',
+        'browser/media_galleries/fileapi/itunes_finder_mac.h',
+        'browser/media_galleries/fileapi/itunes_finder_mac.mm',
         'browser/media_galleries/fileapi/itunes_finder_win.cc',
         'browser/media_galleries/fileapi/itunes_finder_win.h',
         'browser/media_galleries/fileapi/itunes/itunes_file_util.cc',

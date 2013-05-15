@@ -11,13 +11,12 @@ namespace itunes {
 
 class ITunesFinderWin : public ITunesFinder {
  public:
-  explicit ITunesFinderWin(ITunesFinderCallback callback);
+  explicit ITunesFinderWin(const ITunesFinderCallback& callback);
   virtual ~ITunesFinderWin();
 
- protected:
+ private:
   virtual void FindITunesLibraryOnFileThread() OVERRIDE;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(ITunesFinderWin);
 };
 

@@ -8,7 +8,7 @@
 
 namespace itunes {
 
-ITunesFinderWin::ITunesFinderWin(ITunesFinderCallback callback)
+ITunesFinderWin::ITunesFinderWin(const ITunesFinderCallback& callback)
     : ITunesFinder(callback) {
 }
 
