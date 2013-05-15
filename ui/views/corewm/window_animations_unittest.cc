@@ -45,6 +45,62 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
   EXPECT_TRUE(window->layer()->GetTargetVisibility());
 }
 
+TEST_F(WindowAnimationsTest, LayerTargetVisibility_AnimateShow) {
+  // Tests if opacity and transform are reset when only show animation is
+  // enabled.  See also LayerTargetVisibility_AnimateHide.
+  // Since the window is not visible after Hide() is called, opacity and
+  // transform shouldn't matter in case of ANIMATE_SHOW, but we reset them
+  // to keep consistency.
+
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithId(0, NULL));
+  SetWindowVisibilityAnimationTransition(window.get(), ANIMATE_SHOW);
+
+  // Layer target visibility and opacity change according to Show/Hide.
+  window->Show();
+  AnimateOnChildWindowVisibilityChanged(window.get(), true);
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
+  EXPECT_EQ(1, window->layer()->opacity());
+
+  window->Hide();
+  AnimateOnChildWindowVisibilityChanged(window.get(), false);
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
+  EXPECT_EQ(0, window->layer()->opacity());
+  EXPECT_EQ(gfx::Transform(), window->layer()->transform());
+
+  window->Show();
+  AnimateOnChildWindowVisibilityChanged(window.get(), true);
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
+  EXPECT_EQ(1, window->layer()->opacity());
+}
+
+TEST_F(WindowAnimationsTest, LayerTargetVisibility_AnimateHide) {
+  // Tests if opacity and transform are reset when only hide animation is
+  // enabled.  Hide animation changes opacity and transform in addition to
+  // visibility, so we need to reset not only visibility but also opacity
+  // and transform to show the window.
+
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithId(0, NULL));
+  SetWindowVisibilityAnimationTransition(window.get(), ANIMATE_HIDE);
+
+  // Layer target visibility and opacity change according to Show/Hide.
+  window->Show();
+  AnimateOnChildWindowVisibilityChanged(window.get(), true);
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
+  EXPECT_EQ(1, window->layer()->opacity());
+  EXPECT_EQ(gfx::Transform(), window->layer()->transform());
+
+  window->Hide();
+  AnimateOnChildWindowVisibilityChanged(window.get(), false);
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
+  EXPECT_EQ(0, window->layer()->opacity());
+
+  window->Show();
+  AnimateOnChildWindowVisibilityChanged(window.get(), true);
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
+  EXPECT_EQ(1, window->layer()->opacity());
+  EXPECT_EQ(gfx::Transform(), window->layer()->transform());
+}
+
 // A simple AnimationHost implementation for the NotifyHideCompleted test.
 class NotifyHideCompletedAnimationHost : public aura::client::AnimationHost {
  public:
