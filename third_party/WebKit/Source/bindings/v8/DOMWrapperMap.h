@@ -73,10 +73,8 @@ public:
             MapType map;
             map.swap(m_map);
             for (typename MapType::iterator it = map.begin(); it != map.end(); ++it) {
-                v8::Persistent<v8::Object> unsafeWrapper;
-                it->value.copyTo(&unsafeWrapper);
-                toWrapperTypeInfo(unsafeWrapper)->derefObject(it->key);
-                unsafeWrapper.Dispose(m_isolate);
+                toWrapperTypeInfo(it->value.handle())->derefObject(it->key);
+                it->value.dispose(m_isolate);
             }
         }
     }
