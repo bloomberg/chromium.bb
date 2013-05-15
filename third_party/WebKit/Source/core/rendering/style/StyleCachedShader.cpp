@@ -45,7 +45,7 @@ StyleCachedShader::StyleCachedShader(CachedShader* shader)
 
 PassRefPtr<CSSValue> StyleCachedShader::cssValue() const
 {
-    return CSSPrimitiveValue::create(m_shader->url(), CSSPrimitiveValue::CSS_URI);
+    return CSSPrimitiveValue::create(m_shader->url().string(), CSSPrimitiveValue::CSS_URI);
 }
 
 } // namespace WebCore

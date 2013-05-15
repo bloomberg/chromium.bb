@@ -401,7 +401,7 @@ void ImageLoader::dispatchPendingBeforeLoadEvent()
     if (!m_element->document()->attached())
         return;
     m_hasPendingBeforeLoadEvent = false;
-    if (m_element->dispatchBeforeLoadEvent(m_image->url())) {
+    if (m_element->dispatchBeforeLoadEvent(m_image->url().string())) {
         updateRenderer();
         return;
     }

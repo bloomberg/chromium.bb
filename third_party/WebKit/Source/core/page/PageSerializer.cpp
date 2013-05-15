@@ -339,9 +339,7 @@ void PageSerializer::retrieveResourcesForProperties(const StylePropertySet* styl
             continue;
 
         CachedImage* image = static_cast<StyleCachedImage*>(styleImage)->cachedImage();
-
-        KURL url = document->completeURL(image->url());
-        addImageToResources(image, 0, url);
+        addImageToResources(image, 0, image->url());
     }
 }
 

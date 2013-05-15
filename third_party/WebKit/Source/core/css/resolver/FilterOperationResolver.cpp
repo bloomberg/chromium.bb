@@ -244,7 +244,7 @@ static PassRefPtr<CustomFilterProgram> lookupCustomFilterProgram(WebKitCSSShader
     KURL fragmentShaderURL = fragmentShader ? fragmentShader->completeURL(cachedResourceLoader) : KURL();
     RefPtr<StyleCustomFilterProgram> program;
     if (customFilterProgramCache)
-        program = customFilterProgramCache->lookup(CustomFilterProgramInfo(vertexShaderURL, fragmentShaderURL, programType, mixSettings, meshType));
+        program = customFilterProgramCache->lookup(CustomFilterProgramInfo(vertexShaderURL.string(), fragmentShaderURL.string(), programType, mixSettings, meshType));
     if (!program) {
         // Create a new StyleCustomFilterProgram that will be resolved during the loadPendingShaders and added to the cache.
         program = StyleCustomFilterProgram::create(vertexShaderURL, vertexShader ? styleShader(vertexShader, state) : 0,

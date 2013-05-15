@@ -56,7 +56,7 @@ public:
     ScriptSourceCode(CachedScript* cs)
         : m_source(cs->script())
         , m_cachedScript(cs)
-        , m_url(ParsedURLString, cs->url())
+        , m_url(cs->url())
         , m_startPosition(TextPosition::minimumPosition())
     {
     }

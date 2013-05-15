@@ -539,7 +539,7 @@ void InspectorPageAgent::getCookies(ErrorString*, RefPtr<TypeBuilder::Array<Type
         Vector<KURL> allURLs = allResourcesURLsForFrame(frame);
         for (Vector<KURL>::const_iterator it = allURLs.begin(); it != allURLs.end(); ++it) {
             Vector<Cookie> docCookiesList;
-            getRawCookies(document, KURL(ParsedURLString, *it), docCookiesList);
+            getRawCookies(document, *it, docCookiesList);
             int cookiesSize = docCookiesList.size();
             for (int i = 0; i < cookiesSize; i++) {
                 if (!rawCookiesList.contains(docCookiesList[i]))
@@ -644,13 +644,13 @@ void InspectorPageAgent::searchInResources(ErrorString*, const String& text, con
             if (textContentForCachedResource(cachedResource, &content)) {
                 int matchesCount = ContentSearchUtils::countRegularExpressionMatches(regex.get(), content);
                 if (matchesCount)
-                    searchResults->addItem(buildObjectForSearchResult(frameId(frame), cachedResource->url(), matchesCount));
+                    searchResults->addItem(buildObjectForSearchResult(frameId(frame), cachedResource->url().string(), matchesCount));
             }
         }
         if (mainResourceContent(frame, false, &content)) {
             int matchesCount = ContentSearchUtils::countRegularExpressionMatches(regex.get(), content);
             if (matchesCount)
-                searchResults->addItem(buildObjectForSearchResult(frameId(frame), frame->document()->url(), matchesCount));
+                searchResults->addItem(buildObjectForSearchResult(frameId(frame), frame->document()->url().string(), matchesCount));
         }
     }
 
@@ -1063,7 +1063,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
         CachedResource* cachedResource = *it;
 
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
-            .setUrl(cachedResource->url())
+            .setUrl(cachedResource->url().string())
             .setType(cachedResourceTypeJson(*cachedResource))
             .setMimeType(cachedResource->response().mimeType());
         if (cachedResource->wasCanceled())

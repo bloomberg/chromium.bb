@@ -150,7 +150,7 @@ void DocumentThreadableLoader::cancel()
     // Cancel can re-enter and m_resource might be null here as a result.
     if (m_client && m_resource) {
         // FIXME: This error is sent to the client in didFail(), so it should not be an internal one. Use FrameLoaderClient::cancelledError() instead.
-        ResourceError error(errorDomainWebKitInternal, 0, m_resource->url(), "Load cancelled");
+        ResourceError error(errorDomainWebKitInternal, 0, m_resource->url().string(), "Load cancelled");
         error.setIsCancellation(true);
         didFail(m_resource->identifier(), error);
     }
@@ -212,8 +212,8 @@ void DocumentThreadableLoader::redirectReceived(CachedResource* resource, Resour
             if (m_resource)
                 clearResource();
 
-            RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::createFromString(redirectResponse.url());
-            RefPtr<SecurityOrigin> requestOrigin = SecurityOrigin::createFromString(request.url());
+            RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(redirectResponse.url());
+            RefPtr<SecurityOrigin> requestOrigin = SecurityOrigin::create(request.url());
             // If the original request wasn't same-origin, then if the request URL origin is not same origin with the original URL origin,
             // set the source origin to a globally unique identifier. (If the original request was same-origin, the origin of the new request
             // should be the original URL origin.)
@@ -275,7 +275,7 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
         InspectorInstrumentation::didReceiveResourceResponse(cookie, identifier, loader, response, 0);
 
         if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
-            preflightFailure(identifier, response.url(), accessControlErrorDescription);
+            preflightFailure(identifier, response.url().string(), accessControlErrorDescription);
             return;
         }
 
@@ -283,7 +283,7 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
         if (!preflightResult->parse(response, accessControlErrorDescription)
             || !preflightResult->allowsCrossOriginMethod(m_actualRequest->httpMethod(), accessControlErrorDescription)
             || !preflightResult->allowsCrossOriginHeaders(m_actualRequest->httpHeaderFields(), accessControlErrorDescription)) {
-            preflightFailure(identifier, response.url(), accessControlErrorDescription);
+            preflightFailure(identifier, response.url().string(), accessControlErrorDescription);
             return;
         }
 

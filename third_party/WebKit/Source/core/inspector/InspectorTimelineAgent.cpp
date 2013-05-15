@@ -467,7 +467,7 @@ bool InspectorTimelineAgent::willDispatchXHRLoadEvent(ScriptExecutionContext* co
 {
     if (!request->hasEventListeners(eventNames().loadEvent))
         return false;
-    pushCurrentRecord(TimelineRecordFactory::createXHRLoadData(request->url()), TimelineRecordType::XHRLoad, true, frameForScriptExecutionContext(context));
+    pushCurrentRecord(TimelineRecordFactory::createXHRLoadData(request->url().string()), TimelineRecordType::XHRLoad, true, frameForScriptExecutionContext(context));
     return true;
 }
 

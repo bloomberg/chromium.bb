@@ -54,7 +54,7 @@ namespace WebCore {
 void PingLoader::loadImage(Frame* frame, const KURL& url)
 {
     if (!frame->document()->securityOrigin()->canDisplay(url)) {
-        FrameLoader::reportLocalLoadFailed(frame, url);
+        FrameLoader::reportLocalLoadFailed(frame, url.string());
         return;
     }
 
@@ -86,14 +86,14 @@ void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destina
     SecurityOrigin* sourceOrigin = frame->document()->securityOrigin();
     RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
     FrameLoader::addHTTPOriginIfNeeded(request, sourceOrigin->toString());
-    request.setHTTPHeaderField("Ping-To", destinationURL);
+    request.setHTTPHeaderField("Ping-To", destinationURL.string());
     if (!SecurityPolicy::shouldHideReferrer(pingURL, frame->loader()->outgoingReferrer())) {
-      request.setHTTPHeaderField("Ping-From", frame->document()->url());
-      if (!sourceOrigin->isSameSchemeHostPort(pingOrigin.get())) {
-          String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), pingURL, frame->loader()->outgoingReferrer());
-          if (!referrer.isEmpty())
-              request.setHTTPReferrer(referrer);
-      }
+        request.setHTTPHeaderField("Ping-From", frame->document()->url().string());
+        if (!sourceOrigin->isSameSchemeHostPort(pingOrigin.get())) {
+            String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), pingURL, frame->loader()->outgoingReferrer());
+            if (!referrer.isEmpty())
+                request.setHTTPReferrer(referrer);
+        }
     }
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request));
 

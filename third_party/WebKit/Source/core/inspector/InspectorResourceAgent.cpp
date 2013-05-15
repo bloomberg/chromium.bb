@@ -184,7 +184,7 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
 static PassRefPtr<TypeBuilder::Network::CachedResource> buildObjectForCachedResource(const CachedResource& cachedResource, DocumentLoader* loader)
 {
     RefPtr<TypeBuilder::Network::CachedResource> resourceObject = TypeBuilder::Network::CachedResource::create()
-        .setUrl(cachedResource.url())
+        .setUrl(cachedResource.url().string())
         .setType(InspectorPageAgent::cachedResourceTypeJson(cachedResource))
         .setBodySize(cachedResource.encodedSize());
     RefPtr<TypeBuilder::Network::Response> resourceResponse = buildObjectForResourceResponse(cachedResource.response(), loader);

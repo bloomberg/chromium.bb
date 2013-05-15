@@ -43,7 +43,7 @@ StyleCachedImage::~StyleCachedImage()
 
 PassRefPtr<CSSValue> StyleCachedImage::cssValue() const
 {
-    return CSSPrimitiveValue::create(m_image->url(), CSSPrimitiveValue::CSS_URI);
+    return CSSPrimitiveValue::create(m_image->url().string(), CSSPrimitiveValue::CSS_URI);
 }
 
 bool StyleCachedImage::canRender(const RenderObject* renderer, float multiplier) const

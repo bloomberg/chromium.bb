@@ -2236,7 +2236,7 @@ void FrameLoader::loadedResourceFromMemoryCache(CachedResource* resource)
     if (!page)
         return;
 
-    if (!resource->shouldSendResourceLoadCallbacks() || m_documentLoader->haveToldClientAboutLoad(resource->url()))
+    if (!resource->shouldSendResourceLoadCallbacks() || m_documentLoader->haveToldClientAboutLoad(resource->url().string()))
         return;
 
     // Main resource delegate messages are synthesized in MainResourceLoader, so we must not send them here.
