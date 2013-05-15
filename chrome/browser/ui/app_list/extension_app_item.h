@@ -9,15 +9,19 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
+#include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "sync/api/string_ordinal.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/image/image_skia.h"
 
 class AppListControllerDelegate;
 class ExtensionEnableFlow;
 class Profile;
+
+namespace app_list {
+class AppContextMenu;
+}
 
 namespace extensions {
 class ContextMenuMatcher;
@@ -28,7 +32,7 @@ class Extension;
 class ExtensionAppItem : public ChromeAppListItem,
                          public extensions::IconImage::Observer,
                          public ExtensionEnableFlowDelegate,
-                         public ui::SimpleMenuModel::Delegate {
+                         public app_list::AppContextMenuDelegate {
  public:
   ExtensionAppItem(Profile* profile,
                    const std::string& extension_id,
@@ -55,6 +59,7 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   const std::string& extension_id() const { return extension_id_; }
 
+  // TODO(xiyuan): Move back to private after deprecating SearchBuilder.
   // Overridden from ChromeAppListItem:
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
 
@@ -65,10 +70,6 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   // Loads extension icon.
   void LoadImage(const extensions::Extension* extension);
-
-  void ShowExtensionOptions();
-  void ShowExtensionDetails();
-  void StartExtensionUninstall();
 
   // Checks if extension is disabled and if enable flow should be started.
   // Returns true if extension enable flow is started or there is already one
@@ -89,26 +90,18 @@ class ExtensionAppItem : public ChromeAppListItem,
   virtual void ExtensionEnableFlowFinished() OVERRIDE;
   virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
 
-  // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
-  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* acclelrator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-
   // Overridden from ChromeAppListItem:
   virtual void Activate(int event_flags) OVERRIDE;
+
+  // Overridden from app_list::AppContextMenuDelegate:
+  virtual void ExecuteLaunchCommand(int event_flags) OVERRIDE;
 
   Profile* profile_;
   const std::string extension_id_;
   AppListControllerDelegate* controller_;
 
   scoped_ptr<extensions::IconImage> icon_;
-  scoped_ptr<ui::SimpleMenuModel> context_menu_model_;
-  scoped_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
+  scoped_ptr<app_list::AppContextMenu> context_menu_;
   scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   // Name to use for the extension if we can't access it.
