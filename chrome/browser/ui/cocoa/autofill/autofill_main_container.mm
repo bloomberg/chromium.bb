@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "grit/generated_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -45,9 +46,21 @@
   scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
   [view setAutoresizesSubviews:YES];
   [view setSubviews:@[accountChooser_, buttonContainer_]];
-  self.view = view;
+  [self setView:view];
 
   [self layoutButtons];
+
+  detailsContainer_.reset(
+      [[AutofillDetailsContainer alloc] initWithController:controller_]);
+  NSSize frameSize = [[detailsContainer_ view] frame].size;
+  [[detailsContainer_ view] setFrameOrigin:
+      NSMakePoint(0, NSHeight([buttonContainer_ frame]))];
+  frameSize.height += NSHeight([accountChooser_ frame]);
+  frameSize.height += NSHeight([buttonContainer_ frame]);
+  [[detailsContainer_ view] setFrameOrigin:
+      NSMakePoint(0, NSHeight([buttonContainer_ frame]))];
+  [[self view] setFrameSize:frameSize];
+  [[self view] addSubview:[detailsContainer_ view]];
 }
 
 - (void)buildWindowButtonsForFrame:(NSRect)frame {

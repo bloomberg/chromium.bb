@@ -4,16 +4,18 @@
 
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 
-#include "chrome/browser/ui/chrome_style.h"
 #include "base/mac/bundle_locations.h"
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
+#include "ui/base/cocoa/window_size_constants.h"
 
 namespace autofill {
 
@@ -112,33 +114,39 @@ void AutofillDialogCocoa::PerformClose() {
       autofillDialog:(autofill::AutofillDialogCocoa*)autofillDialog {
   DCHECK(webContents);
 
-  // TODO(groby): Should be ui::kWindowSizeDeterminedLater
-  NSRect frame = NSMakeRect(0, 0, 550, 600);
   scoped_nsobject<ConstrainedWindowCustomWindow> window(
-      [[ConstrainedWindowCustomWindow alloc] initWithContentRect:frame]);
+      [[ConstrainedWindowCustomWindow alloc]
+          initWithContentRect:ui::kWindowSizeDeterminedLater]);
 
   if ((self = [super initWithWindow:window])) {
     webContents_ = webContents;
     autofillDialog_ = autofillDialog;
 
-    NSRect clientFrame = NSInsetRect(
-        frame, chrome_style::kHorizontalPadding, 0);
-    clientFrame.size.height -= chrome_style::kTitleTopPadding +
-                               chrome_style::kClientBottomPadding;
-    clientFrame.origin.y = chrome_style::kClientBottomPadding;
     mainContainer_.reset([[AutofillMainContainer alloc]
                              initWithController:autofillDialog->controller()]);
     [mainContainer_ setTarget:self];
-    [[mainContainer_ view] setFrame:clientFrame];
 
     signInContainer_.reset(
         [[AutofillSignInContainer alloc]
             initWithController:autofillDialog->controller()]);
     [[signInContainer_ view] setHidden:YES];
-    [[signInContainer_ view] setFrame:clientFrame];
 
+    NSRect clientRect = [[mainContainer_ view] frame];
+    clientRect.origin = NSMakePoint(chrome_style::kClientBottomPadding,
+                                    chrome_style::kHorizontalPadding);
+    [[mainContainer_ view] setFrame:clientRect];
+    [[signInContainer_ view] setFrame:clientRect];
     [[[self window] contentView] setSubviews:
         @[[mainContainer_ view], [signInContainer_ view]]];
+
+    NSRect contentRect = clientRect;
+    contentRect.origin = NSMakePoint(0, 0);
+    contentRect.size.width += 2 * chrome_style::kHorizontalPadding;
+    contentRect.size.height += chrome_style::kClientBottomPadding +
+                               chrome_style::kTitleTopPadding;
+    [[[self window] contentView] setFrame:contentRect];
+    NSRect frame = [[self window] frameRectForContentRect:contentRect];
+    [[self window] setFrame:frame display:YES];
   }
   return self;
 }

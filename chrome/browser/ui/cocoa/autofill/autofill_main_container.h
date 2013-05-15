@@ -10,6 +10,7 @@
 #include "base/memory/scoped_nsobject.h"
 
 @class AutofillAccountChooser;
+@class AutofillDetailsContainer;
 @class AutofillDialogWindowController;
 @class GTMWidthBasedTweaker;
 
@@ -21,6 +22,7 @@ namespace autofill {
  @private
   scoped_nsobject<AutofillAccountChooser> accountChooser_;
   scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
+  scoped_nsobject<AutofillDetailsContainer> detailsContainer_;
   AutofillDialogWindowController* target_;
   autofill::AutofillDialogController* controller_;  // Not owned.
 }
