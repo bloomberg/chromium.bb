@@ -24,4 +24,7 @@
 //<include src="audio_player.js"/>
 //<include src="player_testapi.js"/>
 
+window.reload = reload;
+window.unload = unload;
+
 })();

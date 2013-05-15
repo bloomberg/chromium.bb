@@ -25,4 +25,7 @@
 //<include src="video_player.js"/>
 //<include src="player_testapi.js"/>
 
+window.reload = reload;
+window.unload = unload;
+
 })();

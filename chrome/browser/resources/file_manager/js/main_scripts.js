@@ -105,4 +105,6 @@
 window.util = util;
 window.FileCopyManagerWrapper = FileCopyManagerWrapper;
 
+window.unload = unload;
+
 })();
