@@ -42,13 +42,13 @@ class CachingFileSystem(FileSystem):
           category='%s/%s' % (file_system.GetIdentity(), category),
           **optargs)
     self._stat_object_store = create_object_store('stat')
-    # Force the read stores to start populated, even if |object_store_creator|
-    # is configured to start empty, because the result from Stat entirely
-    # determines how we end up (re)Read-ing data. This is a core optimisation.
+    # The read caches can both (a) start populated and (b) be shared with all
+    # other app versions, because the data changing is detected by the stat.
+    # Without this optimisation, bumping app version is extremely slow.
     self._read_object_store = create_object_store(
-        'read', start_empty=False)
+        'read', start_empty=False, app_version=None)
     self._read_binary_object_store = create_object_store(
-        'read-binary', start_empty=False)
+        'read-binary', start_empty=False, app_version=None)
 
   def Stat(self, path):
     '''Stats the directory given, or if a file is given, stats the file's parent
