@@ -121,6 +121,9 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
       std::vector<SBPrefix>* prefix_hits) OVERRIDE {
     return true;
   }
+  virtual bool ContainsSideEffectFreeWhitelistUrl(const GURL& url) OVERRIDE {
+    return true;
+  }
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) OVERRIDE {
     ADD_FAILURE() << "Not implemented.";
     return false;
@@ -206,7 +209,8 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
       bool enable_download_protection,
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,
-      bool enable_extension_blacklist) OVERRIDE {
+      bool enable_extension_blacklist,
+      bool enable_side_effect_free_whitelist) OVERRIDE {
     db_ = new TestSafeBrowsingDatabase();
     return db_;
   }

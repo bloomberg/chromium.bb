@@ -219,28 +219,7 @@ bool SafeBrowsingStoreFile::Delete() {
     return false;
   }
 
-  if (!file_util::Delete(filename_, false) &&
-      file_util::PathExists(filename_)) {
-    NOTREACHED();
-    return false;
-  }
-
-  const base::FilePath new_filename = TemporaryFileForFilename(filename_);
-  if (!file_util::Delete(new_filename, false) &&
-      file_util::PathExists(new_filename)) {
-    NOTREACHED();
-    return false;
-  }
-
-  // With SQLite support gone, one way to get to this code is if the
-  // existing file is a SQLite file.  Make sure the journal file is
-  // also removed.
-  const base::FilePath journal_filename(
-      filename_.value() + FILE_PATH_LITERAL("-journal"));
-  if (file_util::PathExists(journal_filename))
-    file_util::Delete(journal_filename, false);
-
-  return true;
+  return DeleteStore(filename_);
 }
 
 bool SafeBrowsingStoreFile::CheckValidity() {
@@ -756,4 +735,30 @@ void SafeBrowsingStoreFile::DeleteAddChunk(int32 chunk_id) {
 
 void SafeBrowsingStoreFile::DeleteSubChunk(int32 chunk_id) {
   sub_del_cache_.insert(chunk_id);
+}
+
+// static
+bool SafeBrowsingStoreFile::DeleteStore(const base::FilePath& basename) {
+  if (!file_util::Delete(basename, false) &&
+      file_util::PathExists(basename)) {
+    NOTREACHED();
+    return false;
+  }
+
+  const base::FilePath new_filename = TemporaryFileForFilename(basename);
+  if (!file_util::Delete(new_filename, false) &&
+      file_util::PathExists(new_filename)) {
+    NOTREACHED();
+    return false;
+  }
+
+  // With SQLite support gone, one way to get to this code is if the
+  // existing file is a SQLite file.  Make sure the journal file is
+  // also removed.
+  const base::FilePath journal_filename(
+      basename.value() + FILE_PATH_LITERAL("-journal"));
+  if (file_util::PathExists(journal_filename))
+    file_util::Delete(journal_filename, false);
+
+  return true;
 }

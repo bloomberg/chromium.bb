@@ -163,6 +163,9 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
     return base::FilePath(filename.value() + FILE_PATH_LITERAL("_new"));
   }
 
+  // Delete any on-disk files, including the permanent storage.
+  static bool DeleteStore(const base::FilePath& basename);
+
  private:
   // Update store file with pending full hashes.
   virtual bool DoUpdate(const std::vector<SBAddFullHash>& pending_adds,

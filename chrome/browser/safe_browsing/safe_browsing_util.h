@@ -293,6 +293,8 @@ extern const char kCsdWhiteList[];
 extern const char kDownloadWhiteList[];
 // SafeBrowsing extension list name.
 extern const char kExtensionBlacklist[];
+// SafeBrowsing side-effect free whitelist name.
+extern const char kSideEffectFreeWhitelist[];
 
 enum ListType {
   INVALID = -1,
@@ -307,6 +309,9 @@ enum ListType {
   DOWNLOADWHITELIST = 6,
   // See above comment. Leave 7 available.
   EXTENSIONBLACKLIST = 8,
+  // See above comment. Leave 9 available.
+  SIDEEFFECTFREEWHITELIST = 10,
+  // See above comment. Leave 11 available.
 };
 
 // Maps a list name to ListType.

@@ -251,6 +251,10 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     // blacklist.
     command_line->AppendSwitch(switches::kSbDisableExtensionBlacklist);
 
+    // TODO(tburkard): Generate new testing data that includes the side-effect
+    // free whitelist.
+    command_line->AppendSwitch(switches::kSbDisableSideEffectFreeWhitelist);
+
     // Point to the testing server for all SafeBrowsing requests.
     std::string url_prefix = test_server_->GetURL("safebrowsing").spec();
     command_line->AppendSwitchASCII(switches::kSbURLPrefix, url_prefix);

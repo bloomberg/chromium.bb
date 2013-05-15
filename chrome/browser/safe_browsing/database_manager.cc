@@ -18,6 +18,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
@@ -139,6 +140,7 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
       enable_csd_whitelist_(false),
       enable_download_whitelist_(false),
       enable_extension_blacklist_(false),
+      enable_side_effect_free_whitelist_(false),
       update_in_progress_(false),
       database_update_in_progress_(false),
       closing_database_(false),
@@ -163,6 +165,24 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
   // TODO(kalman): there really shouldn't be a flag for this.
   enable_extension_blacklist_ =
       !cmdline->HasSwitch(switches::kSbDisableExtensionBlacklist);
+
+  enable_side_effect_free_whitelist_ =
+      prerender::IsSideEffectFreeWhitelistEnabled() &&
+      !cmdline->HasSwitch(switches::kSbDisableSideEffectFreeWhitelist);
+
+  enum SideEffectFreeWhitelistStatus {
+    SIDE_EFFECT_FREE_WHITELIST_ENABLED,
+    SIDE_EFFECT_FREE_WHITELIST_DISABLED,
+    SIDE_EFFECT_FREE_WHITELIST_STATUS_MAX
+  };
+
+  SideEffectFreeWhitelistStatus side_effect_free_whitelist_status =
+      enable_side_effect_free_whitelist_ ? SIDE_EFFECT_FREE_WHITELIST_ENABLED :
+      SIDE_EFFECT_FREE_WHITELIST_DISABLED;
+
+  UMA_HISTOGRAM_ENUMERATION("SB2.SideEffectFreeWhitelistStatus",
+                            side_effect_free_whitelist_status,
+                            SIDE_EFFECT_FREE_WHITELIST_STATUS_MAX);
 }
 
 SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {
@@ -245,6 +265,17 @@ bool SafeBrowsingDatabaseManager::CheckExtensionIDs(
                  this,
                  check));
   return false;
+}
+
+bool SafeBrowsingDatabaseManager::CheckSideEffectFreeWhitelistUrl(
+    const GURL& url) {
+  if (!enabled_)
+    return true;
+
+  if (!CanCheckUrl(url))
+    return true;
+
+  return database_->ContainsSideEffectFreeWhitelistUrl(url);
 }
 
 bool SafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
@@ -577,7 +608,8 @@ SafeBrowsingDatabase* SafeBrowsingDatabaseManager::GetDatabase() {
       SafeBrowsingDatabase::Create(enable_download_protection_,
                                    enable_csd_whitelist_,
                                    enable_download_whitelist_,
-                                   enable_extension_blacklist_);
+                                   enable_extension_blacklist_,
+                                   enable_side_effect_free_whitelist_);
 
   database->Init(SafeBrowsingService::GetBaseFilename());
   {

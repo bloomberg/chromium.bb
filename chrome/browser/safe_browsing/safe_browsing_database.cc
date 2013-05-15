@@ -46,6 +46,9 @@ const base::FilePath::CharType kDownloadWhitelistDBFile[] =
 // Filename suffix for the extension blacklist store.
 const base::FilePath::CharType kExtensionBlacklistDBFile[] =
     FILE_PATH_LITERAL(" Extension Blacklist");
+// Filename suffix for the side-effect free whitelist store.
+const base::FilePath::CharType kSideEffectFreeWhitelistDBFile[] =
+    FILE_PATH_LITERAL(" Side-Effect Free Whitelist");
 // Filename suffix for browse store.
 // TODO(shess): "Safe Browsing Bloom Prefix Set" is full of win.
 // Unfortunately, to change the name implies lots of transition code
@@ -317,13 +320,15 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
       bool enable_download_protection,
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,
-      bool enable_extension_blacklist) OVERRIDE {
+      bool enable_extension_blacklist,
+      bool enable_side_effect_free_whitelist) OVERRIDE {
     return new SafeBrowsingDatabaseNew(
         new SafeBrowsingStoreFile,
         enable_download_protection ? new SafeBrowsingStoreFile : NULL,
         enable_client_side_whitelist ? new SafeBrowsingStoreFile : NULL,
         enable_download_whitelist ? new SafeBrowsingStoreFile : NULL,
-        enable_extension_blacklist ? new SafeBrowsingStoreFile : NULL);
+        enable_extension_blacklist ? new SafeBrowsingStoreFile : NULL,
+        enable_side_effect_free_whitelist ? new SafeBrowsingStoreFile : NULL);
   }
 
   SafeBrowsingDatabaseFactoryImpl() { }
@@ -344,13 +349,16 @@ SafeBrowsingDatabase* SafeBrowsingDatabase::Create(
     bool enable_download_protection,
     bool enable_client_side_whitelist,
     bool enable_download_whitelist,
-    bool enable_extension_blacklist) {
+    bool enable_extension_blacklist,
+    bool enable_side_effect_free_whitelist) {
   if (!factory_)
     factory_ = new SafeBrowsingDatabaseFactoryImpl();
-  return factory_->CreateSafeBrowsingDatabase(enable_download_protection,
-                                              enable_client_side_whitelist,
-                                              enable_download_whitelist,
-                                              enable_extension_blacklist);
+  return factory_->CreateSafeBrowsingDatabase(
+      enable_download_protection,
+      enable_client_side_whitelist,
+      enable_download_whitelist,
+      enable_extension_blacklist,
+      enable_side_effect_free_whitelist);
 }
 
 SafeBrowsingDatabase::~SafeBrowsingDatabase() {
@@ -398,6 +406,12 @@ base::FilePath SafeBrowsingDatabase::ExtensionBlacklistDBFilename(
   return base::FilePath(db_filename.value() + kExtensionBlacklistDBFile);
 }
 
+// static
+base::FilePath SafeBrowsingDatabase::SideEffectFreeWhitelistDBFilename(
+    const base::FilePath& db_filename) {
+  return base::FilePath(db_filename.value() + kSideEffectFreeWhitelistDBFile);
+}
+
 SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
   if (list_id == safe_browsing_util::PHISH ||
       list_id == safe_browsing_util::MALWARE) {
@@ -411,6 +425,8 @@ SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
     return download_whitelist_store_.get();
   } else if (list_id == safe_browsing_util::EXTENSIONBLACKLIST) {
     return extension_blacklist_store_.get();
+  } else if (list_id == safe_browsing_util::SIDEEFFECTFREEWHITELIST) {
+    return side_effect_free_whitelist_store_.get();
   }
   return NULL;
 }
@@ -435,6 +451,7 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew()
   DCHECK(!csd_whitelist_store_.get());
   DCHECK(!download_whitelist_store_.get());
   DCHECK(!extension_blacklist_store_.get());
+  DCHECK(!side_effect_free_whitelist_store_.get());
 }
 
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
@@ -442,13 +459,15 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
     SafeBrowsingStore* download_store,
     SafeBrowsingStore* csd_whitelist_store,
     SafeBrowsingStore* download_whitelist_store,
-    SafeBrowsingStore* extension_blacklist_store)
+    SafeBrowsingStore* extension_blacklist_store,
+    SafeBrowsingStore* side_effect_free_whitelist_store)
     : creation_loop_(MessageLoop::current()),
       browse_store_(browse_store),
       download_store_(download_store),
       csd_whitelist_store_(csd_whitelist_store),
       download_whitelist_store_(download_whitelist_store),
       extension_blacklist_store_(extension_blacklist_store),
+      side_effect_free_whitelist_store_(side_effect_free_whitelist_store),
       reset_factory_(this),
       corruption_detected_(false) {
   DCHECK(browse_store_.get());
@@ -466,9 +485,10 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
   DCHECK(csd_whitelist_filename_.empty());
   DCHECK(download_whitelist_filename_.empty());
   DCHECK(extension_blacklist_filename_.empty());
+  DCHECK(side_effect_free_whitelist_filename_.empty());
 
   browse_filename_ = BrowseDBFilename(filename_base);
-  prefix_set_filename_ = PrefixSetForFilename(browse_filename_);
+  browse_prefix_set_filename_ = PrefixSetForFilename(browse_filename_);
 
   browse_store_->Init(
       browse_filename_,
@@ -540,6 +560,41 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
     DVLOG(1) << "Init extension blacklist store: "
              << extension_blacklist_filename_.value();
   }
+
+  if (side_effect_free_whitelist_store_.get()) {
+    side_effect_free_whitelist_filename_ =
+        SideEffectFreeWhitelistDBFilename(filename_base);
+    side_effect_free_whitelist_prefix_set_filename_ =
+        PrefixSetForFilename(side_effect_free_whitelist_filename_);
+    side_effect_free_whitelist_store_->Init(
+        side_effect_free_whitelist_filename_,
+        base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
+                   base::Unretained(this)));
+    DVLOG(1) << "Init side-effect free whitelist store: "
+             << side_effect_free_whitelist_filename_.value();
+
+    // If there is no database, the filter cannot be used.
+    base::PlatformFileInfo db_info;
+    if (file_util::GetFileInfo(side_effect_free_whitelist_filename_, &db_info)
+        && db_info.size != 0) {
+      const base::TimeTicks before = base::TimeTicks::Now();
+      side_effect_free_whitelist_prefix_set_.reset(
+          safe_browsing::PrefixSet::LoadFile(
+              side_effect_free_whitelist_prefix_set_filename_));
+      DVLOG(1) << "SafeBrowsingDatabaseNew read side-effect free whitelist "
+               << "prefix set in "
+               << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
+      UMA_HISTOGRAM_TIMES("SB2.SideEffectFreeWhitelistPrefixSetLoad",
+                          base::TimeTicks::Now() - before);
+      if (!side_effect_free_whitelist_prefix_set_.get())
+        RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_READ);
+    }
+  } else {
+    // Delete any files of the side-effect free sidelist that may be around
+    // from when it was previously enabled.
+    SafeBrowsingStoreFile::DeleteStore(
+        SideEffectFreeWhitelistDBFilename(filename_base));
+  }
 }
 
 bool SafeBrowsingDatabaseNew::ResetDatabase() {
@@ -557,7 +612,8 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
     full_browse_hashes_.clear();
     pending_browse_hashes_.clear();
     prefix_miss_cache_.clear();
-    prefix_set_.reset();
+    browse_prefix_set_.reset();
+    side_effect_free_whitelist_prefix_set_.reset();
   }
   // Wants to acquire the lock itself.
   WhitelistEverything(&csd_whitelist_);
@@ -587,16 +643,16 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
   // filter and caches.
   base::AutoLock locked(lookup_lock_);
 
-  // |prefix_set_| is empty until it is either read from disk, or the
+  // |browse_prefix_set_| is empty until it is either read from disk, or the
   // first update populates it.  Bail out without a hit if not yet
   // available.
-  if (!prefix_set_.get())
+  if (!browse_prefix_set_.get())
     return false;
 
   size_t miss_count = 0;
   for (size_t i = 0; i < full_hashes.size(); ++i) {
     const SBPrefix prefix = full_hashes[i].prefix;
-    if (prefix_set_->Exists(prefix)) {
+    if (browse_prefix_set_->Exists(prefix)) {
       prefix_hits->push_back(prefix);
       if (prefix_miss_cache_.count(prefix) > 0)
         ++miss_count;
@@ -677,6 +733,30 @@ bool SafeBrowsingDatabaseNew::ContainsExtensionPrefixes(
                           safe_browsing_util::EXTENSIONBLACKLIST % 2,
                           prefixes,
                           prefix_hits);
+}
+
+bool SafeBrowsingDatabaseNew::ContainsSideEffectFreeWhitelistUrl(
+    const GURL& url) {
+  SBFullHash full_hash;
+  std::string host;
+  std::string path;
+  std::string query;
+  safe_browsing_util::CanonicalizeUrl(url, &host, &path, &query);
+  std::string url_to_check = host + path;
+  if (!query.empty())
+    url_to_check +=  "?" + query;
+  crypto::SHA256HashString(url_to_check, &full_hash, sizeof(full_hash));
+
+  // This function can be called on any thread, so lock against any changes
+  base::AutoLock locked(lookup_lock_);
+
+  // |side_effect_free_whitelist_prefix_set_| is empty until it is either read
+  // from disk, or the first update populates it.  Bail out without a hit if
+  // not yet available.
+  if (!side_effect_free_whitelist_prefix_set_.get())
+    return false;
+
+  return side_effect_free_whitelist_prefix_set_->Exists(full_hash.prefix);
 }
 
 bool SafeBrowsingDatabaseNew::ContainsDownloadWhitelistedString(
@@ -977,6 +1057,13 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
     return false;
   }
 
+  if (side_effect_free_whitelist_store_ &&
+      !side_effect_free_whitelist_store_->BeginUpdate()) {
+    RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_BEGIN);
+    HandleCorruptDatabase();
+    return false;
+  }
+
   std::vector<std::string> browse_listnames;
   browse_listnames.push_back(safe_browsing_util::kMalwareList);
   browse_listnames.push_back(safe_browsing_util::kPhishingList);
@@ -1032,6 +1119,14 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
         lists);
   }
 
+  if (side_effect_free_whitelist_store_) {
+    UpdateChunkRanges(
+        side_effect_free_whitelist_store_.get(),
+        std::vector<std::string>(
+            1, safe_browsing_util::kSideEffectFreeWhitelist),
+        lists);
+  }
+
   corruption_detected_ = false;
   change_detected_ = false;
   return true;
@@ -1065,6 +1160,12 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
         !extension_blacklist_store_->CheckValidity()) {
       DLOG(ERROR) << "Safe-browsing extension blacklist database corrupt.";
     }
+
+    if (side_effect_free_whitelist_store_ &&
+        !side_effect_free_whitelist_store_->CheckValidity()) {
+      DLOG(ERROR) << "Safe-browsing side-effect free whitelist database "
+                  << "corrupt.";
+    }
   }
 
   if (corruption_detected_)
@@ -1086,6 +1187,8 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
       download_whitelist_store_->CancelUpdate();
     if (extension_blacklist_store_)
       extension_blacklist_store_->CancelUpdate();
+    if (side_effect_free_whitelist_store_)
+      side_effect_free_whitelist_store_->CancelUpdate();
     return;
   }
 
@@ -1114,6 +1217,9 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
     UMA_HISTOGRAM_COUNTS("SB2.ExtensionBlacklistKilobytes",
                          static_cast<int>(size_bytes / 1024));
   }
+
+  if (side_effect_free_whitelist_store_)
+    UpdateSideEffectFreeWhitelistStore();
 }
 
 void SafeBrowsingDatabaseNew::UpdateWhitelistStore(
@@ -1246,7 +1352,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
     // hash will be fetched again).
     pending_browse_hashes_.clear();
     prefix_miss_cache_.clear();
-    prefix_set_.swap(prefix_set);
+    browse_prefix_set_.swap(prefix_set);
   }
 
   DVLOG(1) << "SafeBrowsingDatabaseImpl built prefix set in "
@@ -1255,7 +1361,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
   UMA_HISTOGRAM_LONG_TIMES("SB2.BuildFilter", base::TimeTicks::Now() - before);
 
   // Persist the prefix set to disk.  Since only this thread changes
-  // |prefix_set_|, there is no need to lock.
+  // |browse_prefix_set_|, there is no need to lock.
   WritePrefixSet();
 
   // Gather statistics.
@@ -1274,7 +1380,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
                                           io_before.WriteOperationCount));
   }
 
-  int64 file_size = GetFileSizeOrZero(prefix_set_filename_);
+  int64 file_size = GetFileSizeOrZero(browse_prefix_set_filename_);
   UMA_HISTOGRAM_COUNTS("SB2.PrefixSetKilobytes",
                        static_cast<int>(file_size / 1024));
   file_size = GetFileSizeOrZero(browse_filename_);
@@ -1283,6 +1389,70 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
 
 #if defined(OS_MACOSX)
   base::mac::SetFileBackupExclusion(browse_filename_);
+#endif
+}
+
+void SafeBrowsingDatabaseNew::UpdateSideEffectFreeWhitelistStore() {
+  std::vector<SBAddFullHash> empty_add_hashes;
+  std::set<SBPrefix> empty_miss_cache;
+  SBAddPrefixes add_prefixes;
+  std::vector<SBAddFullHash> add_full_hashes_result;
+
+  if (!side_effect_free_whitelist_store_->FinishUpdate(
+          empty_add_hashes,
+          empty_miss_cache,
+          &add_prefixes,
+          &add_full_hashes_result)) {
+    RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH);
+    return;
+  }
+
+  // TODO(shess): If |add_prefixes| were sorted by the prefix, it
+  // could be passed directly to |PrefixSet()|, removing the need for
+  // |prefixes|.  For now, |prefixes| is useful while debugging
+  // things.
+  std::vector<SBPrefix> prefixes;
+  prefixes.reserve(add_prefixes.size());
+  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
+       iter != add_prefixes.end(); ++iter) {
+    prefixes.push_back(iter->prefix);
+  }
+
+  std::sort(prefixes.begin(), prefixes.end());
+  scoped_ptr<safe_browsing::PrefixSet>
+      prefix_set(new safe_browsing::PrefixSet(prefixes));
+
+  // Swap in the newly built prefix set.
+  {
+    base::AutoLock locked(lookup_lock_);
+    side_effect_free_whitelist_prefix_set_.swap(prefix_set);
+  }
+
+  const base::TimeTicks before = base::TimeTicks::Now();
+  const bool write_ok = side_effect_free_whitelist_prefix_set_->WriteFile(
+      side_effect_free_whitelist_prefix_set_filename_);
+  DVLOG(1) << "SafeBrowsingDatabaseNew wrote side-effect free whitelist prefix "
+           << "set in " << (base::TimeTicks::Now() - before).InMilliseconds()
+           << " ms";
+  UMA_HISTOGRAM_TIMES("SB2.SideEffectFreePrefixSetWrite",
+                      base::TimeTicks::Now() - before);
+
+  if (!write_ok)
+    RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_WRITE);
+
+  // Gather statistics.
+  int64 file_size = GetFileSizeOrZero(
+      side_effect_free_whitelist_prefix_set_filename_);
+  UMA_HISTOGRAM_COUNTS("SB2.SideEffectFreeWhitelistPrefixSetKilobytes",
+                       static_cast<int>(file_size / 1024));
+  file_size = GetFileSizeOrZero(side_effect_free_whitelist_filename_);
+  UMA_HISTOGRAM_COUNTS("SB2.SideEffectFreeWhitelistDatabaseKilobytes",
+                       static_cast<int>(file_size / 1024));
+
+#if defined(OS_MACOSX)
+  base::mac::SetFileBackupExclusion(side_effect_free_whitelist_filename_);
+  base::mac::SetFileBackupExclusion(
+      side_effect_free_whitelist_prefix_set_filename_);
 #endif
 }
 
@@ -1308,7 +1478,7 @@ void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
 // real error-handling.
 void SafeBrowsingDatabaseNew::LoadPrefixSet() {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
-  DCHECK(!prefix_set_filename_.empty());
+  DCHECK(!browse_prefix_set_filename_.empty());
 
   // If there is no database, the filter cannot be used.
   base::PlatformFileInfo db_info;
@@ -1322,13 +1492,14 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet() {
   file_util::Delete(bloom_filter_filename, false);
 
   const base::TimeTicks before = base::TimeTicks::Now();
-  prefix_set_.reset(safe_browsing::PrefixSet::LoadFile(prefix_set_filename_));
+  browse_prefix_set_.reset(safe_browsing::PrefixSet::LoadFile(
+      browse_prefix_set_filename_));
   DVLOG(1) << "SafeBrowsingDatabaseNew read prefix set in "
            << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
   UMA_HISTOGRAM_TIMES("SB2.PrefixSetLoad", base::TimeTicks::Now() - before);
 
-  if (!prefix_set_.get())
-    RecordFailure(FAILURE_DATABASE_PREFIX_SET_READ);
+  if (!browse_prefix_set_.get())
+    RecordFailure(FAILURE_BROWSE_PREFIX_SET_READ);
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
@@ -1358,34 +1529,46 @@ bool SafeBrowsingDatabaseNew::Delete() {
   if (!r5)
     RecordFailure(FAILURE_DATABASE_FILTER_DELETE);
 
-  const bool r6 = file_util::Delete(prefix_set_filename_, false);
+  const bool r6 = file_util::Delete(browse_prefix_set_filename_, false);
   if (!r6)
-    RecordFailure(FAILURE_DATABASE_PREFIX_SET_DELETE);
+    RecordFailure(FAILURE_BROWSE_PREFIX_SET_DELETE);
 
   const bool r7 = file_util::Delete(extension_blacklist_filename_, false);
   if (!r7)
     RecordFailure(FAILURE_EXTENSION_BLACKLIST_DELETE);
 
-  return r1 && r2 && r3 && r4 && r5 && r6 && r7;
+  const bool r8 = file_util::Delete(side_effect_free_whitelist_filename_,
+                                    false);
+  if (!r8)
+    RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_DELETE);
+
+  const bool r9 = file_util::Delete(
+      side_effect_free_whitelist_prefix_set_filename_,
+      false);
+  if (!r9)
+    RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_DELETE);
+
+  return r1 && r2 && r3 && r4 && r5 && r6 && r7 && r8 && r9;
 }
 
 void SafeBrowsingDatabaseNew::WritePrefixSet() {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
 
-  if (!prefix_set_.get())
+  if (!browse_prefix_set_.get())
     return;
 
   const base::TimeTicks before = base::TimeTicks::Now();
-  const bool write_ok = prefix_set_->WriteFile(prefix_set_filename_);
+  const bool write_ok = browse_prefix_set_->WriteFile(
+      browse_prefix_set_filename_);
   DVLOG(1) << "SafeBrowsingDatabaseNew wrote prefix set in "
            << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
   UMA_HISTOGRAM_TIMES("SB2.PrefixSetWrite", base::TimeTicks::Now() - before);
 
   if (!write_ok)
-    RecordFailure(FAILURE_DATABASE_PREFIX_SET_WRITE);
+    RecordFailure(FAILURE_BROWSE_PREFIX_SET_WRITE);
 
 #if defined(OS_MACOSX)
-  base::mac::SetFileBackupExclusion(prefix_set_filename_);
+  base::mac::SetFileBackupExclusion(browse_prefix_set_filename_);
 #endif
 }
 

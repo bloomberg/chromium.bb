@@ -374,7 +374,8 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
                                               download_store,
                                               csd_whitelist_store,
                                               download_whitelist_store,
-                                              extension_blacklist_store));
+                                              extension_blacklist_store,
+                                              NULL));
   database_->Init(database_filename_);
 
   SBChunkList chunks;
@@ -1080,7 +1081,8 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   database_.reset();
   MessageLoop loop(MessageLoop::TYPE_DEFAULT);
   SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile();
-  database_.reset(new SafeBrowsingDatabaseNew(store, NULL, NULL, NULL, NULL));
+  database_.reset(new SafeBrowsingDatabaseNew(store, NULL, NULL, NULL, NULL,
+                                              NULL));
   database_->Init(database_filename_);
 
   // This will cause an empty database to be created.
@@ -1153,6 +1155,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   database_.reset(new SafeBrowsingDatabaseNew(browse_store,
                                               download_store,
                                               csd_whitelist_store,
+                                              NULL,
                                               NULL,
                                               NULL));
   database_->Init(database_filename_);
@@ -1256,7 +1259,7 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
 
   // If the whitelist is disabled everything should match the whitelist.
   database_.reset(new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile(),
-                                              NULL, NULL, NULL, NULL));
+                                              NULL, NULL, NULL, NULL, NULL));
   database_->Init(database_filename_);
   EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
       GURL(std::string("http://www.phishing.com/"))));
@@ -1272,7 +1275,8 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   database_.reset(new SafeBrowsingDatabaseNew(browse_store, NULL,
                                               csd_whitelist_store,
                                               download_whitelist_store,
-                                              extension_blacklist_store));
+                                              extension_blacklist_store,
+                                              NULL));
   database_->Init(database_filename_);
 
   const char kGood1Host[] = "www.good1.com/";
