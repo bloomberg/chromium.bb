@@ -49,7 +49,7 @@ typedef NSUInteger NSEventPhase;
 
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
-    [self setHasHorizontalScroller:YES];
+    [self setHasHorizontalScroller:base::mac::IsOSLionOrLater()];
     NSRect horizontalScrollerRect = [self bounds];
     horizontalScrollerRect.size.height = 0;
     scoped_nsobject<InvisibleScroller> horizontalScroller(

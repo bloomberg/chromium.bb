@@ -19,7 +19,11 @@ const CGFloat kBubbleCornerRadius = 3;
 // Height of the pager.
 const CGFloat kPagerPreferredHeight = 57;
 // Padding between the bottom of the grid and the bottom of the view.
-const CGFloat kViewGridOffsetY = 38;
+const CGFloat kViewGridOffsetY = 41;
+
+// Padding between the top of the grid and the top of the view.
+// TODO(tapted): Update padding when the search entry control is added.
+const CGFloat kTopPadding = 16;
 
 // Height of the search input. TODO(tapted): Make this visible when the search
 // input UI is written.
@@ -104,7 +108,7 @@ const CGFloat kMaxSegmentWidth = 80;
   [[appsGridController_ view] setFrameOrigin:NSMakePoint(0, kViewGridOffsetY)];
 
   NSRect backgroundRect = [[appsGridController_ view] bounds];
-  backgroundRect.size.height += kViewGridOffsetY;
+  backgroundRect.size.height += kViewGridOffsetY + kTopPadding;
   scoped_nsobject<BackgroundView> backgroundView(
       [[BackgroundView alloc] initWithFrame:backgroundRect]);
 

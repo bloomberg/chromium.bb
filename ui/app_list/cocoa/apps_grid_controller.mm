@@ -22,7 +22,7 @@ const int kItemsPerPage = kFixedRows * kFixedColumns;
 
 // Padding space in pixels for fixed layout.
 const CGFloat kLeftRightPadding = 16;
-const CGFloat kTopPadding = 30;
+const CGFloat kScrollerPadding = 16;
 
 // Preferred tile size when showing in fixed layout. These should be even
 // numbers to ensure that if they are grown 50% they remain integers.
@@ -118,6 +118,19 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 };
 
 }  // namespace app_list
+
+@interface PageContainerView : NSView;
+@end
+
+// The container view needs to flip coordinates so that it is laid out
+// correctly whether or not there is a horizontal scrollbar.
+@implementation PageContainerView
+
+- (BOOL)isFlipped {
+  return YES;
+}
+
+@end
 
 @implementation AppsGridController
 
@@ -258,10 +271,11 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 }
 
 - (void)loadAndSetView {
-  scoped_nsobject<NSView> pagesContainer(
-      [[NSView alloc] initWithFrame:NSZeroRect]);
+  scoped_nsobject<PageContainerView> pagesContainer(
+      [[PageContainerView alloc] initWithFrame:NSZeroRect]);
 
-  NSRect scrollFrame = NSMakeRect(0, 0, kViewWidth, kViewHeight + kTopPadding);
+  NSRect scrollFrame = NSMakeRect(0, 0, kViewWidth,
+                                  kViewHeight + kScrollerPadding);
   scoped_nsobject<ScrollViewWithNoScrollbars> scrollView(
       [[ScrollViewWithNoScrollbars alloc] initWithFrame:scrollFrame]);
   [scrollView setBorderType:NSNoBorder];
