@@ -30,6 +30,18 @@ if (window.testRunner)
     -webkit-grid-end: auto;
     -webkit-grid-after: auto;
 }
+.gridItemWithString {
+    -webkit-grid-end: "first";
+    -webkit-grid-after: "last";
+}
+.gridItemWithSpanString {
+    -webkit-grid-end: "first" span;
+    -webkit-grid-after: span "last";
+}
+.gridItemWithSpanNumberString {
+    -webkit-grid-end: 2 "first" span;
+    -webkit-grid-after: "last" 3 span;
+}
 </style>
 <script src="resources/grid-item-column-row-parsing-utils.js"></script>
 <script src="../js/resources/js-test-pre.js"></script>
@@ -43,6 +55,9 @@ if (window.testRunner)
 <div class="gridItemWithAfterSpan" id="gridItemWithAfterSpan"></div>
 <div class="gridItemWithOnlySpan" id="gridItemWithOnlySpan"></div>
 <div class="gridItemWithAuto" id="gridItemWithAutoElement"></div>
+<div class="gridItemWithString" id="gridItemWithStringElement"></div>
+<div class="gridItemWithSpanString" id="gridItemWithSpanStringElement"></div>
+<div class="gridItemWithSpanNumberString" id="gridItemWithSpanNumberStringElement"></div>
 <script>
     description('Test that setting and getting grid-end and grid-after works as expected');
 
@@ -54,6 +69,9 @@ if (window.testRunner)
     testColumnRowCSSParsing("gridItemWithAfterSpan", "auto / span 2", "auto / span 9");
     testColumnRowCSSParsing("gridItemWithOnlySpan", "auto / span 1", "auto / span 1");
     testColumnRowCSSParsing("gridItemWithAutoElement", "auto / auto", "auto / auto");
+    testColumnRowCSSParsing("gridItemWithStringElement", "auto / 1 first", "auto / 1 last");
+    testColumnRowCSSParsing("gridItemWithSpanStringElement", "auto / span 1 first", "auto / span 1 last");
+    testColumnRowCSSParsing("gridItemWithSpanNumberStringElement", "auto / span 2 first", "auto / span 3 last");
 
     debug("");
     debug("Test the initial value");
@@ -68,7 +86,9 @@ if (window.testRunner)
     debug("Test getting and setting grid-end and grid-after through JS");
     testEndAfterJSParsing("18", "66");
     testEndAfterJSParsing("-55", "-40");
+    testEndAfterJSParsing("'first'", "'last'", "1 first", "1 last");
     testEndAfterJSParsing("span 7", "span 2");
+    testEndAfterJSParsing("span 'first'", "span 'last'", "span 1 first", "span 1 last");
     testEndAfterJSParsing("auto", "auto");
 
     debug("");

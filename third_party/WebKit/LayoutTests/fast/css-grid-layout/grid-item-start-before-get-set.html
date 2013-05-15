@@ -30,6 +30,18 @@ if (window.testRunner)
     -webkit-grid-start: auto;
     -webkit-grid-before: auto;
 }
+.gridItemWithString {
+    -webkit-grid-start: "first";
+    -webkit-grid-before: "last";
+}
+.gridItemWithSpanString {
+    -webkit-grid-start: "first" span;
+    -webkit-grid-before: span "last";
+}
+.gridItemWithSpanNumberString {
+    -webkit-grid-start: 2 "first" span;
+    -webkit-grid-before: "last" 3 span;
+}
 </style>
 <script src="resources/grid-item-column-row-parsing-utils.js"></script>
 <script src="../js/resources/js-test-pre.js"></script>
@@ -43,6 +55,9 @@ if (window.testRunner)
 <div class="gridItemWithAfterSpan" id="gridItemWithAfterSpan"></div>
 <div class="gridItemWithOnlySpan" id="gridItemWithOnlySpan"></div>
 <div class="gridItemWithAuto" id="gridItemWithAutoElement"></div>
+<div class="gridItemWithString" id="gridItemWithStringElement"></div>
+<div class="gridItemWithSpanString" id="gridItemWithSpanStringElement"></div>
+<div class="gridItemWithSpanNumberString" id="gridItemWithSpanNumberStringElement"></div>
 <script>
     description('Test that setting and getting grid-start and grid-before works as expected');
 
@@ -59,6 +74,9 @@ if (window.testRunner)
     testColumnRowCSSParsing("gridItemWithAfterSpan", "span 2 / auto", "span 8 / auto");
     testColumnRowCSSParsing("gridItemWithOnlySpan", "span 1 / auto", "span 1 / auto");
     testColumnRowCSSParsing("gridItemWithAutoElement", "auto / auto", "auto / auto");
+    testColumnRowCSSParsing("gridItemWithStringElement", "1 first / auto", "1 last / auto");
+    testColumnRowCSSParsing("gridItemWithSpanStringElement", "span 1 first / auto", "span 1 last / auto");
+    testColumnRowCSSParsing("gridItemWithSpanNumberStringElement", "span 2 first / auto", "span 3 last / auto");
 
     debug("");
     debug("Test the initial value");
@@ -73,7 +91,9 @@ if (window.testRunner)
     debug("Test getting and setting grid-start and grid-before through JS");
     testStartBeforeJSParsing("18", "66");
     testStartBeforeJSParsing("-55", "-40");
+    testStartBeforeJSParsing("'nav'", "'last'", "1 nav", "1 last");
     testStartBeforeJSParsing("span 3", "span 20");
+    testStartBeforeJSParsing("span 'nav'", "span 'last'", "span 1 nav", "span 1 last");
     testStartBeforeJSParsing("auto", "auto");
 
     debug("");

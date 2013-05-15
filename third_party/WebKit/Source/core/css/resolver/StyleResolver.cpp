@@ -2324,28 +2324,49 @@ static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSiz
 
 static bool createGridPosition(CSSValue* value, GridPosition& position)
 {
-    // For now, we only accept: 'auto' | <integer> | span && <integer>?
+    // For now, we only accept: 'auto' | [ <integer> || <string> ] | span && <integer>?
+
     if (value->isPrimitiveValue()) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        if (primitiveValue->getIdent() == CSSValueAuto)
-            return true;
-
-        if (primitiveValue->getIdent() == CSSValueSpan) {
-            // If the <integer> is omitted, it defaults to '1'.
-            position.setSpanPosition(1);
-            return true;
-        }
-
-        ASSERT(primitiveValue->isNumber());
-        position.setIntegerPosition(primitiveValue->getIntValue());
+        ASSERT(primitiveValue->getIdent() == CSSValueAuto);
         return true;
     }
 
     CSSValueList* values = toCSSValueList(value);
-    ASSERT(values->length() == 2);
-    CSSPrimitiveValue* numericValue = toCSSPrimitiveValue(values->itemWithoutBoundsCheck(1));
-    ASSERT(numericValue->isNumber());
-    position.setSpanPosition(numericValue->getIntValue());
+    ASSERT(values->length());
+
+    bool isSpanPosition = false;
+    // The specification makes the <integer> optional, in which case it default to '1'.
+    int gridLineNumber = 1;
+    String gridLineName;
+
+    CSSValueListIterator it = values;
+    CSSPrimitiveValue* currentValue = toCSSPrimitiveValue(it.value());
+    if (currentValue->getIdent() == CSSValueSpan) {
+        isSpanPosition = true;
+        it.advance();
+        currentValue = it.hasMore() ? toCSSPrimitiveValue(it.value()) : 0;
+    }
+
+    if (currentValue && currentValue->isNumber()) {
+        gridLineNumber = currentValue->getIntValue();
+        it.advance();
+        currentValue = it.hasMore() ? toCSSPrimitiveValue(it.value()) : 0;
+    }
+
+    if (currentValue && currentValue->isString()) {
+        gridLineName = currentValue->getStringValue();
+        it.advance();
+    }
+
+    ASSERT(!it.hasMore());
+    if (isSpanPosition) {
+        // FIXME: Implement named line with 'span'.
+        ASSERT(gridLineName.isNull());
+        position.setSpanPosition(gridLineNumber);
+    } else
+        position.setExplicitPosition(gridLineNumber, gridLineName);
+
     return true;
 }
 

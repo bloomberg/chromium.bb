@@ -40,26 +40,36 @@ window.testColumnRowJSParsing = function(columnValue, rowValue, expectedColumnVa
     document.body.removeChild(gridItem);
 }
 
-window.testStartBeforeJSParsing = function(startValue, beforeValue)
+window.testStartBeforeJSParsing = function(startValue, beforeValue, expectedStartValue, expectedBeforeValue)
 {
     var gridItem = document.createElement("div");
     document.body.appendChild(gridItem);
     gridItem.style.webkitGridStart = startValue;
     gridItem.style.webkitGridBefore = beforeValue;
 
-    checkColumnRowValues(gridItem, startValue + " / auto", beforeValue + " / auto");
+    if (expectedStartValue === undefined)
+        expectedStartValue = startValue;
+    if (expectedBeforeValue === undefined)
+        expectedBeforeValue = beforeValue;
+
+    checkColumnRowValues(gridItem, expectedStartValue + " / auto", expectedBeforeValue + " / auto");
 
     document.body.removeChild(gridItem);
 }
 
-window.testEndAfterJSParsing = function(endValue, afterValue)
+window.testEndAfterJSParsing = function(endValue, afterValue, expectedEndValue, expectedAfterValue)
 {
     var gridItem = document.createElement("div");
     document.body.appendChild(gridItem);
     gridItem.style.webkitGridEnd = endValue;
     gridItem.style.webkitGridAfter = afterValue;
 
-    checkColumnRowValues(gridItem, "auto / " + endValue, "auto / " + afterValue);
+    if (expectedEndValue === undefined)
+        expectedEndValue = endValue;
+    if (expectedAfterValue === undefined)
+        expectedAfterValue = afterValue;
+
+    checkColumnRowValues(gridItem, "auto / " + expectedEndValue, "auto / " + expectedAfterValue);
 
     document.body.removeChild(gridItem);
 }

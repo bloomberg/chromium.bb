@@ -4543,13 +4543,26 @@ PassRefPtr<CSSValue> CSSParser::parseGridPosition()
     }
 
     RefPtr<CSSPrimitiveValue> numericValue;
+    RefPtr<CSSPrimitiveValue> gridLineName;
     bool hasSeenSpanKeyword = false;
 
+    // FIXME: Currently there is a lot of duplication when checking [ <string> || <integer> ]. It
+    // will be factored out into a helper method once we support named grid lines with 'span'.
     if (validUnit(value, FInteger) && value->fValue) {
         numericValue = createPrimitiveNumericValue(value);
         value = m_valueList->next();
         if (value && value->id == CSSValueSpan) {
             hasSeenSpanKeyword = true;
+            m_valueList->next();
+        } else if (value && value->unit == CSSPrimitiveValue::CSS_STRING) {
+            gridLineName = createPrimitiveStringValue(m_valueList->current());
+            m_valueList->next();
+        }
+    } else if (value->unit == CSSPrimitiveValue::CSS_STRING) {
+        gridLineName = createPrimitiveStringValue(m_valueList->current());
+        value = m_valueList->next();
+        if (value && validUnit(value, FInteger) && value->fValue) {
+            numericValue = createPrimitiveNumericValue(value);
             m_valueList->next();
         }
     } else if (value->id == CSSValueSpan) {
@@ -4561,20 +4574,27 @@ PassRefPtr<CSSValue> CSSParser::parseGridPosition()
         }
     }
 
-    if (!hasSeenSpanKeyword)
-        return numericValue.release();
+    // Check that we have consumed all the value list. For shorthands, the parser will pass
+    // the whole value list (including the opposite position).
+    if (m_valueList->current() && !isForwardSlashOperator(m_valueList->current()))
+        return 0;
 
-    if (!numericValue && hasSeenSpanKeyword)
-        return cssValuePool().createIdentifierValue(CSSValueSpan);
+    // If we didn't parse anything, this is not a valid grid position.
+    if (!hasSeenSpanKeyword && !gridLineName && !numericValue)
+        return 0;
 
     // Negative numbers are not allowed for span (but are for <integer>).
-    if (numericValue && numericValue->getIntValue() < 0)
+    if (hasSeenSpanKeyword && numericValue && numericValue->getIntValue() < 0)
         return 0;
 
     RefPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
-    values->append(cssValuePool().createIdentifierValue(CSSValueSpan));
+    if (hasSeenSpanKeyword)
+        values->append(cssValuePool().createIdentifierValue(CSSValueSpan));
     if (numericValue)
         values->append(numericValue.release());
+    if (gridLineName)
+        values->append(gridLineName.release());
+    ASSERT(values->length());
     return values.release();
 }
 
