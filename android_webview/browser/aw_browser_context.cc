@@ -100,14 +100,25 @@ AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {
   return quota_manager_bridge_.get();
 }
 
-// TODO(sgurun) we may need to do this at the constructor, depending on
-// how the rest of the implementation to enable autocomplete unwraps itself.
 AwFormDatabaseService* AwBrowserContext::GetFormDatabaseService() {
   if (!form_database_service_) {
     form_database_service_.reset(
         new AwFormDatabaseService(context_storage_path_));
   }
   return form_database_service_.get();
+}
+
+AwAutofillManagerDelegate* AwBrowserContext::AutofillManagerDelegate() {
+  return autofill_manager_delegate_.get();
+}
+
+AwAutofillManagerDelegate* AwBrowserContext::CreateAutofillManagerDelegate(
+    bool enabled) {
+  if (!autofill_manager_delegate_) {
+    autofill_manager_delegate_.reset(
+        new AwAutofillManagerDelegate(enabled));
+  }
+  return autofill_manager_delegate_.get();
 }
 
 base::FilePath AwBrowserContext::GetPath() {

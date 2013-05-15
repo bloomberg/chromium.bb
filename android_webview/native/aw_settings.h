@@ -30,6 +30,7 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateInitialPageScaleLocked(JNIEnv* env, jobject obj);
   void UpdateUserAgentLocked(JNIEnv* env, jobject obj);
   void UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj);
+  void UpdateFormDataPreferencesLocked(JNIEnv* env, jobject obj);
 
  private:
   AwRenderViewHostExt* GetAwRenderViewHostExt();

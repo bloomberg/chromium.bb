@@ -60,8 +60,7 @@ class WEBDATA_EXPORT WebDatabaseService
   // method must be made before |LoadDatabase| is called.
   virtual void AddTable(scoped_ptr<WebDatabaseTable> table);
 
-  // Initializes the web database service. Takes a callback which will return
-  // the status of the DB after the init.
+  // Initializes the web database service.
   virtual void LoadDatabase();
 
   // Unloads the database without actually shutting down the service.  This can

@@ -73,6 +73,7 @@ void AwSettings::UpdateEverythingLocked(JNIEnv* env, jobject obj) {
   UpdateUserAgentLocked(env, obj);
   ResetScrollAndScaleState(env, obj);
   UpdatePreferredSizeMode();
+  UpdateFormDataPreferencesLocked(env, obj);
 }
 
 void AwSettings::UpdateUserAgentLocked(JNIEnv* env, jobject obj) {
@@ -224,6 +225,14 @@ void AwSettings::UpdatePreferredSizeMode() {
   if (web_contents()->GetRenderViewHost()) {
     web_contents()->GetRenderViewHost()->EnablePreferredSizeMode();
   }
+}
+
+void AwSettings::UpdateFormDataPreferencesLocked(JNIEnv* env, jobject obj) {
+  if (!web_contents()) return;
+  AwContents* contents = AwContents::FromWebContents(web_contents());
+  if (!contents) return;
+
+  contents->SetSaveFormData(Java_AwSettings_getSaveFormDataLocked(env, obj));
 }
 
 void AwSettings::RenderViewCreated(content::RenderViewHost* render_view_host) {

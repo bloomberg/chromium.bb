@@ -146,8 +146,11 @@ class AwContents : public FindHelper::Listener,
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
   jint ReleasePopupWebContents(JNIEnv* env, jobject obj);
 
+  void SetSaveFormData(bool enabled);
+
  private:
   void SetWebContents(content::WebContents* web_contents);
+  void InitAutofillIfNecessary(bool enabled);
 
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;

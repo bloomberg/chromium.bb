@@ -28,6 +28,9 @@
 #include "base/pickle.h"
 #include "base/string16.h"
 #include "base/supports_user_data.h"
+#include "components/autofill/browser/autofill_external_delegate.h"
+#include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,11 +42,14 @@
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
 #include "net/cert/x509_certificate.h"
+#include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 struct AwDrawSWFunctionTable;
 struct AwDrawGLFunctionTable;
 
+using autofill::AutofillExternalDelegate;
+using autofill::AutofillManager;
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertJavaStringToUTF8;
@@ -146,6 +152,48 @@ void AwContents::SetWebContents(content::WebContents* web_contents) {
   web_contents_->SetDelegate(web_contents_delegate_.get());
   render_view_host_ext_.reset(
       new AwRenderViewHostExt(this, web_contents_.get()));
+
+  AwAutofillManagerDelegate* autofill_manager_delegate =
+      AwBrowserContext::FromWebContents(web_contents_.get())->
+          AutofillManagerDelegate();
+  if (autofill_manager_delegate)
+    InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
+}
+
+void AwContents::SetSaveFormData(bool enabled) {
+  InitAutofillIfNecessary(enabled);
+  // We need to check for the existence, since autofill_manager_delegate
+  // may not be created when the setting is false.
+  if (AutofillManager::FromWebContents(web_contents_.get())) {
+    AwAutofillManagerDelegate* autofill_manager_delegate =
+        AwBrowserContext::FromWebContents(web_contents_.get())->
+            AutofillManagerDelegate();
+    autofill_manager_delegate->SetSaveFormData(enabled);
+  }
+}
+
+void AwContents::InitAutofillIfNecessary(bool enabled) {
+  // Do not initialize if the feature is not enabled.
+  if (!enabled)
+    return;
+  // Check if the autofill manager already exists.
+  content::WebContents* web_contents = web_contents_.get();
+  if (AutofillManager::FromWebContents(web_contents))
+    return;
+
+  AutofillManager::CreateForWebContentsAndDelegate(
+      web_contents,
+      AwBrowserContext::FromWebContents(web_contents)->
+          CreateAutofillManagerDelegate(enabled),
+      l10n_util::GetDefaultLocale(),
+      AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+  AutofillManager* autofill_manager =
+      AutofillManager::FromWebContents(web_contents);
+  AutofillExternalDelegate::CreateForWebContentsAndManager(
+      web_contents,
+      autofill_manager);
+  autofill_manager->SetExternalDelegate(
+      AutofillExternalDelegate::FromWebContents(web_contents));
 }
 
 void AwContents::SetWebContents(JNIEnv* env, jobject obj, jint new_wc) {

@@ -10,6 +10,7 @@ include_rules = [
   "+components/autofill/browser",
   "+components/autofill/common",
   "+components/navigation_interception",
+  "+components/user_prefs",
   "+components/visitedlink/browser",
   "+components/webdata/common",
 

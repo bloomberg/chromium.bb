@@ -90,6 +90,7 @@ public class AwSettings {
     private int mCacheMode = WebSettings.LOAD_DEFAULT;
     private boolean mShouldFocusFirstNode = true;
     private boolean mGeolocationEnabled = true;
+    private boolean mAutoCompleteEnabled = true;
     private boolean mSupportZoom = true;
     private boolean mBuiltInZoomControls = false;
     private boolean mDisplayZoomControls = true;
@@ -359,6 +360,39 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             return mGeolocationEnabled;
         }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#setSaveFormData}.
+     */
+    public void setSaveFormData(final boolean enable) {
+        synchronized (mAwSettingsLock) {
+            if (mAutoCompleteEnabled != enable) {
+                mAutoCompleteEnabled = enable;
+                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mNativeAwSettings != 0) {
+                            nativeUpdateFormDataPreferencesLocked(mNativeAwSettings);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#getSaveFormData}.
+     */
+    public boolean getSaveFormData() {
+        synchronized (mAwSettingsLock) {
+            return getSaveFormDataLocked();
+        }
+    }
+
+    @CalledByNative
+    private boolean getSaveFormDataLocked() {
+        return mAutoCompleteEnabled;
     }
 
     /**
@@ -1332,4 +1366,6 @@ public class AwSettings {
     private native void nativeUpdateWebkitPreferencesLocked(int nativeAwSettings);
 
     private static native String nativeGetDefaultUserAgent();
+
+    private native void nativeUpdateFormDataPreferencesLocked(int nativeAwSettings);
 }

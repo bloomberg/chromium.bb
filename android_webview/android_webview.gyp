@@ -95,6 +95,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/',
       ],
       'sources': [
+        'browser/aw_autofill_manager_delegate.cc',
+        'browser/aw_autofill_manager_delegate.h',
         'browser/aw_browser_context.cc',
         'browser/aw_browser_context.h',
         'browser/aw_browser_main_parts.cc',
@@ -122,6 +124,8 @@
         'browser/aw_quota_manager_bridge.h',
         'browser/aw_quota_permission_context.cc',
         'browser/aw_quota_permission_context.h',
+        'browser/aw_pref_store.cc',
+        'browser/aw_pref_store.h',
         'browser/aw_request_interceptor.cc',
         'browser/aw_request_interceptor.h',
         'browser/aw_result_codes.h',
