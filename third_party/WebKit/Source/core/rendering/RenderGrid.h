@@ -32,6 +32,13 @@ namespace WebCore {
 
 class GridTrack;
 
+enum GridPositionSide {
+    StartSide,
+    EndSide,
+    BeforeSide,
+    AfterSide
+};
+
 class RenderGrid FINAL : public RenderBlock {
 public:
     RenderGrid(Element*);
@@ -129,12 +136,6 @@ private:
 
     GridSpan resolveGridPositionsFromAutoPlacementPosition(const RenderBox*, TrackSizingDirection, size_t) const;
     PassOwnPtr<GridSpan> resolveGridPositionsFromStyle(const RenderBox*, TrackSizingDirection) const;
-    enum GridPositionSide {
-        StartSide,
-        EndSide,
-        BeforeSide,
-        AfterSide
-    };
     size_t resolveGridPositionFromStyle(const GridPosition&, GridPositionSide) const;
     PassOwnPtr<GridSpan> resolveGridPositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, GridPositionSide) const;
 

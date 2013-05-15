@@ -857,28 +857,32 @@ PassOwnPtr<RenderGrid::GridSpan> RenderGrid::resolveGridPositionsFromStyle(const
     return adoptPtr(new GridSpan(resolvedInitialPosition, resolvedFinalPosition));
 }
 
+static size_t adjustGridPositionForSide(size_t resolvedPosition, GridPositionSide side)
+{
+    // An item finishing on the N-th line belongs to the N-1-th cell.
+    if (side == EndSide || side == AfterSide)
+        return resolvedPosition ? resolvedPosition - 1 : 0;
+
+    return resolvedPosition;
+}
+
 size_t RenderGrid::resolveGridPositionFromStyle(const GridPosition& position, GridPositionSide side) const
 {
     // FIXME: Handle other values for grid-{row,column} like ranges or line names.
     switch (position.type()) {
     case ExplicitPosition: {
-        if (position.isPositive()) {
-            if (side == EndSide || side == AfterSide)
-                return std::max(0, position.integerPosition() - 2);
+        ASSERT(position.integerPosition());
+        if (position.isPositive())
+            return adjustGridPositionForSide(position.integerPosition() - 1, side);
 
-            return position.integerPosition() - 1;
-        }
-
-        size_t resolvedPosition = abs(position.integerPosition());
-        // FIXME: This returns one less than the expected result for side == StartSide or BeforeSide as we don't properly convert
-        // the grid line to its grid track. However this avoids the issue of growing the grid when inserting the item (e.g. -1 / auto).
+        size_t resolvedPosition = abs(position.integerPosition()) - 1;
         const size_t endOfTrack = (side == StartSide || side == EndSide) ? explicitGridColumnCount() : explicitGridRowCount();
 
         // Per http://lists.w3.org/Archives/Public/www-style/2013Mar/0589.html, we clamp negative value to the first line.
         if (endOfTrack < resolvedPosition)
             return 0;
 
-        return endOfTrack - resolvedPosition;
+        return adjustGridPositionForSide(endOfTrack - resolvedPosition, side);
     }
     case AutoPosition:
         // 'auto' depends on the opposite position for resolution (e.g. grid-row: auto / 1).
