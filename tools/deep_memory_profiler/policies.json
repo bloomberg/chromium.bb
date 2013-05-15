@@ -3,6 +3,10 @@
     "file": "policy.android.browser.json",
     "format": "json"
   },
+  "android.renderer": {
+    "file": "policy.android.renderer.json",
+    "format": "json"
+  },
   "sourcefile": {
     "file": "policy.sourcefile.json",
     "format": "json"
