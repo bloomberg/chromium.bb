@@ -45,6 +45,10 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
 
+  const LayerTilingData* TilingForTesting() const { return tiler_.get(); }
+
+  virtual size_t GPUMemoryUsageInBytes() const OVERRIDE;
+
  protected:
   TiledLayerImpl(LayerTreeImpl* tree_impl, int id);
   // Exposed for testing.

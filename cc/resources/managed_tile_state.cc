@@ -74,6 +74,12 @@ bool ManagedTileState::DrawingInfo::IsReadyToDraw() const {
   }
 }
 
+size_t ManagedTileState::DrawingInfo::GPUMemoryUsageInBytes() const {
+  if (!resource_)
+    return 0;
+  return resource_->bytes();
+}
+
 ManagedTileState::~ManagedTileState() {
 }
 

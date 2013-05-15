@@ -1008,6 +1008,7 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
   state->SetInteger("layer_id", id());
   state->Set("bounds", MathUtil::AsValue(bounds()).release());
   state->SetInteger("draws_content", DrawsContent());
+  state->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
 
   bool clipped;
   gfx::QuadF layer_quad = MathUtil::MapQuad(
@@ -1026,6 +1027,8 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
   if (replica_layer_)
     state->Set("replica_layer", replica_layer_->AsValue().release());
 }
+
+size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }
 
 scoped_ptr<base::Value> LayerImpl::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());

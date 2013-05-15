@@ -117,6 +117,21 @@ void TiledLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   state->Set("invalidation", MathUtil::AsValue(update_rect()).release());
 }
 
+size_t TiledLayerImpl::GPUMemoryUsageInBytes() const {
+  size_t amount = 0;
+  const size_t kMemoryUsagePerTileInBytes =
+      4 * tiler_->tile_size().width() * tiler_->tile_size().height();
+  for (LayerTilingData::TileMap::const_iterator iter = tiler_->tiles().begin();
+       iter != tiler_->tiles().end();
+       ++iter) {
+    const DrawableTile* tile = static_cast<DrawableTile*>(iter->second);
+    if (!tile || !tile->resource_id())
+      continue;
+    amount += kMemoryUsagePerTileInBytes;
+  }
+  return amount;
+}
+
 void TiledLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
 

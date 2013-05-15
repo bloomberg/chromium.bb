@@ -74,6 +74,8 @@ class CC_EXPORT PictureLayerImpl
 
   virtual bool AreVisibleResourcesReady() const OVERRIDE;
 
+  virtual size_t GPUMemoryUsageInBytes() const OVERRIDE;
+
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(float contents_scale);

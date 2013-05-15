@@ -977,4 +977,8 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   state->Set("invalidation", invalidation_.AsValue().release());
 }
 
+size_t PictureLayerImpl::GPUMemoryUsageInBytes() const {
+  return tilings_->GPUMemoryUsageInBytes();
+}
+
 }  // namespace cc

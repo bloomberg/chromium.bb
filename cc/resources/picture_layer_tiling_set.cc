@@ -301,4 +301,11 @@ scoped_ptr<base::Value> PictureLayerTilingSet::AsValue() const {
   return state.PassAs<base::Value>();
 }
 
+size_t PictureLayerTilingSet::GPUMemoryUsageInBytes() const {
+  size_t amount = 0;
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    amount += tilings_[i]->GPUMemoryUsageInBytes();
+  return amount;
+}
+
 }  // namespace cc

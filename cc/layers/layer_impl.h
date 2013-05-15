@@ -413,6 +413,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   virtual void PushPropertiesTo(LayerImpl* layer);
 
   scoped_ptr<base::Value> AsValue() const;
+  virtual size_t GPUMemoryUsageInBytes() const;
 
  protected:
   LayerImpl(LayerTreeImpl* layer_impl, int id);

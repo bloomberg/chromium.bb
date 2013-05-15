@@ -65,6 +65,8 @@ class CC_EXPORT ManagedTileState {
                mode_ == PICTURE_PILE_MODE;
       }
 
+      size_t GPUMemoryUsageInBytes() const;
+
       scoped_ptr<ResourcePool::Resource>& GetResourceForTesting() {
         return resource_;
       }
@@ -107,6 +109,7 @@ class CC_EXPORT ManagedTileState {
 
   ManagedTileState();
   ~ManagedTileState();
+
   scoped_ptr<base::Value> AsValue() const;
 
   // Persisted state: valid all the time.

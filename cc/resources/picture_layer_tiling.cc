@@ -487,6 +487,15 @@ scoped_ptr<base::Value> PictureLayerTiling::AsValue() const {
   return state.PassAs<base::Value>();
 }
 
+size_t PictureLayerTiling::GPUMemoryUsageInBytes() const {
+  size_t amount = 0;
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    const Tile* tile = it->second;
+    amount += tile->drawing_info().GPUMemoryUsageInBytes();
+  }
+  return amount;
+}
+
 namespace {
 
 // This struct represents an event at which the expending rect intersects

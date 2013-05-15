@@ -22,9 +22,7 @@ class TiledLayerImplTest : public testing::Test {
  public:
   TiledLayerImplTest() : host_impl_(&proxy_) {}
 
-  // Create a default tiled layer with textures for all tiles and a default
-  // visibility of the entire layer size.
-  scoped_ptr<TiledLayerImpl> CreateLayer(
+  scoped_ptr<TiledLayerImpl> CreateLayerNoTiles(
       gfx::Size tile_size,
       gfx::Size layer_size,
       LayerTilingData::BorderTexelOption border_texels) {
@@ -42,10 +40,21 @@ class TiledLayerImplTest : public testing::Test {
     layer->SetContentBounds(layer_size);
     layer->CreateRenderSurface();
     layer->draw_properties().render_target = layer.get();
+    return layer.Pass();
+  }
+
+  // Create a default tiled layer with textures for all tiles and a default
+  // visibility of the entire layer size.
+  scoped_ptr<TiledLayerImpl> CreateLayer(
+      gfx::Size tile_size,
+      gfx::Size layer_size,
+      LayerTilingData::BorderTexelOption border_texels) {
+    scoped_ptr<TiledLayerImpl> layer =
+        CreateLayerNoTiles(tile_size, layer_size, border_texels);
 
     ResourceProvider::ResourceId resource_id = 1;
-    for (int i = 0; i < tiler->num_tiles_x(); ++i) {
-      for (int j = 0; j < tiler->num_tiles_y(); ++j) {
+    for (int i = 0; i < layer->TilingForTesting()->num_tiles_x(); ++i) {
+      for (int j = 0; j < layer->TilingForTesting()->num_tiles_y(); ++j) {
         layer->PushTileProperties(
             i, j, resource_id++, gfx::Rect(0, 0, 1, 1), false);
       }
@@ -258,6 +267,35 @@ TEST_F(TiledLayerImplTest, TextureInfoForLayerNoBorders) {
     EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaque_rect)
         << LayerTestCommon::quad_string << i;
   }
+}
+
+TEST_F(TiledLayerImplTest, GPUMemoryUsage) {
+  gfx::Size tile_size(20, 30);
+  int num_tiles_x = 12;
+  int num_tiles_y = 32;
+  gfx::Size layer_size(tile_size.width() * num_tiles_x,
+                       tile_size.height() * num_tiles_y);
+
+  scoped_ptr<TiledLayerImpl> layer = CreateLayerNoTiles(
+      tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
+
+  EXPECT_EQ(layer->GPUMemoryUsageInBytes(), 0u);
+
+  ResourceProvider::ResourceId resource_id = 1;
+  layer->PushTileProperties(0, 1, resource_id++, gfx::Rect(0, 0, 1, 1), false);
+  layer->PushTileProperties(2, 3, resource_id++, gfx::Rect(0, 0, 1, 1), false);
+  layer->PushTileProperties(2, 0, resource_id++, gfx::Rect(0, 0, 1, 1), false);
+
+  EXPECT_EQ(
+      layer->GPUMemoryUsageInBytes(),
+      static_cast<size_t>(3 * 4 * tile_size.width() * tile_size.height()));
+
+  ResourceProvider::ResourceId empty_resource(0);
+  layer->PushTileProperties(0, 1, empty_resource, gfx::Rect(0, 0, 1, 1), false);
+  layer->PushTileProperties(2, 3, empty_resource, gfx::Rect(0, 0, 1, 1), false);
+  layer->PushTileProperties(2, 0, empty_resource, gfx::Rect(0, 0, 1, 1), false);
+
+  EXPECT_EQ(layer->GPUMemoryUsageInBytes(), 0u);
 }
 
 }  // namespace

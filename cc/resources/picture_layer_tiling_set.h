@@ -106,6 +106,7 @@ class CC_EXPORT PictureLayerTilingSet {
   };
 
   scoped_ptr<base::Value> AsValue() const;
+  size_t GPUMemoryUsageInBytes() const;
 
  private:
   PictureLayerTilingClient* client_;

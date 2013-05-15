@@ -151,6 +151,7 @@ class CC_EXPORT PictureLayerTiling {
   }
 
   scoped_ptr<base::Value> AsValue() const;
+  size_t GPUMemoryUsageInBytes() const;
 
   static gfx::Rect ExpandRectEquallyToAreaBoundedBy(
       gfx::Rect starting_rect,
