@@ -96,10 +96,6 @@ EXTRA_ENV = {
     # with stubs to access it from newlib.
     '${LIBMODE_NEWLIB ? -l:libcrt_platform.a} ',
 
-  # Determine whether or not to use bitcode metadata to generate .so stubs
-  # for the final link.
-  'USE_META': '0',
-
   'TRIPLE'      : '${TRIPLE_%ARCH%}',
   'TRIPLE_ARM'  : 'armv7a-none-nacl-gnueabi',
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
@@ -167,8 +163,7 @@ EXTRA_ENV = {
 
   # Note: this is only used in the unsandboxed case
   'RUN_LLC'       : '${LLVM_LLC} ${LLC_FLAGS} ${LLC_MCPU} '
-                    '${input} -o ${output} ' +
-                    '-metadata-text ${output}.meta',
+                    '${input} -o ${output} ',
   # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
   # for testing. Defaults to 1Gbps (effectively unlimited).
   'BITCODE_STREAM_RATE' : '1000000000',
@@ -222,14 +217,6 @@ TranslatorPatterns = [
   # Allowing C++ exception handling causes a specific set of native objects to
   # get linked into the nexe.
   ( '--pnacl-allow-exceptions', "env.set('ALLOW_CXX_EXCEPTIONS', '1')"),
-
-  # Toggle the use of ELF-stubs / bitcode metadata, which represent real .so
-  # files in the final native link.
-  # There may be cases where this will not work (e.g., when the final link
-  # includes native .o files, where its imports / exports were not known
-  # at bitcode link time, and not added to the bitcode metadata).
-  ( '-usemeta',         "env.set('USE_META', '1')"),
-  ( '-nousemeta',       "env.set('USE_META', '0')"),
 
   ( '-rpath-link=(.+)', "env.append('LD_FLAGS', '-L'+$0)"),
 
@@ -478,9 +465,6 @@ def RunLD(infile, outfile):
   if not env.getbool('SHARED') and env.getbool('STDLIB'):
     args += env.get('LD_ARGS_ENTRY')
   args += env.get('LD_FLAGS')
-  # If there is bitcode, there is also a metadata file.
-  if infile and env.getbool('USE_META'):
-    args += ['--metadata', '%s.meta' % infile]
   driver_tools.RunDriver('nativeld', args)
 
 def RunLLC(infile, outfile, filetype):
@@ -493,9 +477,6 @@ def RunLLC(infile, outfile, filetype):
     driver_tools.SetBitcodeMetadata(infile, is_shared, soname, needed)
   else:
     driver_tools.Run("${RUN_LLC}")
-    # As a side effect, this creates a temporary file
-    if not env.getbool('SAVE_TEMPS'):
-      TempFiles.add(outfile + '.meta')
     env.pop()
   return 0
 
