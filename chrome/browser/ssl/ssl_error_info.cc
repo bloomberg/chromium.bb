@@ -114,8 +114,12 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
           IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2,
           UTF8ToUTF16(request_url.host()),
           UTF8ToUTF16(request_url.host())));
+#if !defined(OS_IOS)
+      // The third paragraph advises users to install a private trust anchor,
+      // but that is not possible in Chrome for iOS at this time.
       extra_info.push_back(l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_3));
+#endif
       break;
     case CERT_CONTAINS_ERRORS:
       title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_CONTAINS_ERRORS_TITLE);
