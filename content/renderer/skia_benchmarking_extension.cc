@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkGraphics.h"
+#include "ui/gfx/rect_conversions.h"
 #include "v8/include/v8.h"
 
 namespace {
@@ -25,15 +26,17 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
         "if (typeof(chrome.skiaBenchmarking) == 'undefined') {"
         "  chrome.skiaBenchmarking = {};"
         "};"
-        "chrome.skiaBenchmarking.rasterize = function(picture) {"
+        "chrome.skiaBenchmarking.rasterize = function(picture, scale, rect) {"
         "  /* "
         "     Rasterizes a base64-encoded Picture."
-        "     @param {String} picture Base64-encoded Picture. "
+        "     @param {String} picture Base64-encoded Picture."
+        "     @param {Number} scale (optional) Rendering scale."
+        "     @param [Number, Number, Number, Number] clip_rect (optional)."
         "     @returns { 'width': {Number}, 'height': {Number},"
         "                'data': {ArrayBuffer} }"
         "   */"
         "  native function Rasterize();"
-        "  return Rasterize(picture);"
+        "  return Rasterize(picture, scale, rect);"
         "};"
         ) {
       content::SkiaBenchmarkingExtension::InitSkGraphics();
@@ -48,7 +51,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> Rasterize(const v8::Arguments& args) {
-    if (args.Length() != 1)
+    if (args.Length() < 1)
       return v8::Undefined();
 
     v8::String::AsciiValue base64_picture(args[0]);
@@ -57,15 +60,45 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (!picture)
       return v8::Undefined();
 
-    gfx::Rect rect = picture->LayerRect();
+    float scale = 1.0f;
+    if (args.Length() > 1 && args[1]->IsNumber())
+      scale = std::max(0.01, std::min(100.0, args[1]->NumberValue()));
+
+    gfx::RectF clip(picture->LayerRect());
+    if (args.Length() > 2 && args[2]->IsArray()) {
+      v8::Array* a = v8::Array::Cast(*args[2]);
+      if (a->Length() == 4
+          && a->Get(0)->IsNumber()
+          && a->Get(1)->IsNumber()
+          && a->Get(2)->IsNumber()
+          && a->Get(3)->IsNumber()) {
+        clip.SetRect(a->Get(0)->NumberValue(), a->Get(1)->NumberValue(),
+                     a->Get(2)->NumberValue(), a->Get(3)->NumberValue());
+        clip.Intersect(picture->LayerRect());
+      }
+    }
+
+    // cc::Picture::Raster() clips before scaling, so the clip needs to be
+    // scaled explicitly.
+    clip.Scale(scale);
+    gfx::Rect snapped_clip = gfx::ToEnclosingRect(clip);
+
+    const int kMaxBitmapSize = 4096;
+    if (snapped_clip.width() > kMaxBitmapSize
+        || snapped_clip.height() > kMaxBitmapSize)
+      return v8::Undefined();
+
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, snapped_clip.width(),
+                     snapped_clip.height());
     if (!bitmap.allocPixels())
       return v8::Undefined();
 
     bitmap.eraseARGB(0, 0, 0, 0);
     SkCanvas canvas(bitmap);
-    picture->Raster(&canvas, rect, 1, true);
+    canvas.translate(SkFloatToScalar(-clip.x()),
+                     SkFloatToScalar(-clip.y()));
+    picture->Raster(&canvas, snapped_clip, scale, true);
 
     WebKit::WebArrayBuffer buffer =
         WebKit::WebArrayBuffer::create(bitmap.getSize(), 1);
@@ -81,8 +114,10 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     }
 
     v8::Handle<v8::Object> result = v8::Object::New();
-    result->Set(v8::String::New("width"), v8::Number::New(rect.width()));
-    result->Set(v8::String::New("height"), v8::Number::New(rect.height()));
+    result->Set(v8::String::New("width"),
+                v8::Number::New(snapped_clip.width()));
+    result->Set(v8::String::New("height"),
+                v8::Number::New(snapped_clip.height()));
     result->Set(v8::String::New("data"), buffer.toV8Value());
 
     return result;
