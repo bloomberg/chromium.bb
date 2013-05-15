@@ -2,9 +2,9 @@ Tests the properties of XMLHttpRequest exceptions.
 
 PASS e.toString() is "Error: NetworkError: DOM Exception 19"
 PASS Object.prototype.toString.call(e) is "[object DOMException]"
-FAIL Object.prototype.toString.call(e.__proto__) is not "[object DOMException]". Was "[object DOMExceptionPrototype]"
-PASS e.constructor.toString() is "[object DOMExceptionConstructor]"
+FAIL Object.prototype.toString.call(e.__proto__) is not "[object DOMExceptionPrototype]". Was "[object Object]"
+PASS e.constructor.toString() is "function DOMException() { [native code] }"
 PASS e.constructor is window.DOMException
 PASS e.NETWORK_ERR is e.constructor.NETWORK_ERR
-PASS e.NETWORK_ERR is 101
+PASS e.NETWORK_ERR is 19
 

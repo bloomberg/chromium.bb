@@ -2,7 +2,7 @@ description("Test to make sure we expose all the global constructor objects requ
 
 function shouldBeDefined(a)
 {
-    var constructorString = "'[object " + a + "Constructor]'";
+    var constructorString = "'function " + a + "() { [native code] }'";
     shouldBe("" + a + ".toString()", constructorString);
 }
 
