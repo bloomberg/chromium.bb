@@ -478,7 +478,9 @@ COMPILE_ASSERT_MATCHING_ENUM(WebView::UserStyleInjectInExistingDocuments, Inject
 COMPILE_ASSERT_MATCHING_ENUM(WebView::UserStyleInjectInSubsequentDocuments, InjectInSubsequentDocuments);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionUnknownError, IDBDatabaseException::UnknownError);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionConstraintError, IDBDatabaseException::ConstraintError);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionDataError, IDBDatabaseException::DataError);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionVersionError, IDBDatabaseException::VersionError);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionAbortError, IDBDatabaseException::AbortError);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionQuotaError, IDBDatabaseException::QuotaExceededError);
 
