@@ -54,6 +54,8 @@ def GetFlagsAndInputs(argv):
       continue
     if lower_arg.startswith('/manifestfile:'):
       continue
+    if lower_arg.startswith('/pdb:'):
+      continue
     if (not lower_arg.startswith('/') and
         lower_arg.endswith(('.obj', '.lib', '.res'))):
       inputs.append(arg)
@@ -154,6 +156,10 @@ def ManifestNameForIndex(index):
   return OutputNameForIndex(index) + '.intermediate.manifest'
 
 
+def PdbNameForIndex(index):
+  return OutputNameForIndex(index) + '.pdb'
+
+
 def RunLinker(flags, index, inputs, phase):
   """Invokes the linker and returns the stdout, returncode and target name."""
   rspfile = 'part%d_%s.rsp' % (index, phase)
@@ -165,6 +171,7 @@ def RunLinker(flags, index, inputs, phase):
     print >> f, '/ENTRY:ChromeEmptyEntry@12'
     print >> f, '/OUT:' + output_name
     print >> f, '/MANIFESTFILE:' + manifest_name
+    print >> f, '/PDB:' + PdbNameForIndex(index)
   # Log('[[[\n' + open(rspfile).read() + '\n]]]')
   link_exe = GetOriginalLinkerPath()
   popen = subprocess.Popen([link_exe, '@' + rspfile], stdout=subprocess.PIPE)
