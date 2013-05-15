@@ -14,6 +14,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/renderer/savable_resources.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
@@ -34,7 +35,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/base/file_path_string_conversions.h"
-#include "webkit/glue/dom_operations.h"
 
 using WebKit::WebCString;
 using WebKit::WebData;
@@ -619,8 +619,7 @@ class DomSerializerTests : public ContentBrowserTest,
         original_base_tag_count++;
       } else {
         // Get link.
-        WebString value =
-            webkit_glue::GetSubResourceLinkFromElement(element);
+        WebString value = GetSubResourceLinkFromElement(element);
         if (value.isNull() && element.hasTagName("a")) {
           value = element.getAttribute("href");
           if (value.isEmpty())
@@ -668,8 +667,7 @@ class DomSerializerTests : public ContentBrowserTest,
         new_base_tag_count++;
       } else {
         // Get link.
-        WebString value =
-            webkit_glue::GetSubResourceLinkFromElement(element);
+        WebString value = GetSubResourceLinkFromElement(element);
         if (value.isNull() && element.hasTagName("a")) {
           value = element.getAttribute("href");
           if (value.isEmpty())
@@ -759,7 +757,7 @@ class DomSerializerTests : public ContentBrowserTest,
     WebDocument doc = web_frame->document();
     WebNode lastNodeInBody = doc.body().lastChild();
     ASSERT_EQ(WebNode::ElementNode, lastNodeInBody.nodeType());
-    WebString uri = webkit_glue::GetSubResourceLinkFromElement(
+    WebString uri = GetSubResourceLinkFromElement(
         lastNodeInBody.to<WebElement>());
     EXPECT_TRUE(uri.isNull());
   }

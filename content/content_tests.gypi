@@ -669,9 +669,9 @@
           'sources!': [
             # http://crbug.com/234172: these tests depend on single process
             # mode, which doesn't work in content_browsertests on Linux Aura.
-            'renderer/dom_operations_browsertest.cc',
             'renderer/dom_serializer_browsertest.cc',
             'renderer/resource_fetcher_browsertest.cc',
+            'renderer/savable_resources_browsertest.cc',
           ],
         }],
         ['OS == "android"', {
@@ -809,7 +809,6 @@
             'renderer/browser_plugin/browser_plugin_browsertest.h',
             'renderer/browser_plugin/browser_plugin_browsertest.cc',
             'renderer/cpp_bound_class_unittest.cc',
-            'renderer/dom_operations_browsertest.cc',
             'renderer/dom_serializer_browsertest.cc',
             'renderer/mouse_lock_dispatcher_browsertest.cc',
             'renderer/password_form_conversion_utils_browsertest.cc',
@@ -823,6 +822,7 @@
             'renderer/render_view_browsertest_mac.mm',
             'renderer/render_widget_browsertest.cc',
             'renderer/resource_fetcher_browsertest.cc',
+            'renderer/savable_resources_browsertest.cc',
             'test/browser_test_message_pump_android.cc',
             'test/browser_test_message_pump_android.h',
             'test/content_browser_test.h',

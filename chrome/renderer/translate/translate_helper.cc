@@ -22,7 +22,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
-#include "webkit/glue/dom_operations.h"
 
 #if defined(ENABLE_LANGUAGE_DETECTION)
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"

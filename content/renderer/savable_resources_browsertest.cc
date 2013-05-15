@@ -8,15 +8,15 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_view.h"
+#include "content/renderer/savable_resources.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "net/base/net_util.h"
-#include "webkit/glue/dom_operations.h"
 
 namespace content {
 
-class DomOperationsTests : public ContentBrowserTest {
+class SavableResourcesTest : public ContentBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kSingleProcess);
@@ -38,8 +38,11 @@ class DomOperationsTests : public ContentBrowserTest {
     NavigateToURL(shell(), file_url);
 
     PostTaskToInProcessRendererAndWait(
-        base::Bind(&DomOperationsTests::CheckResources, base::Unretained(this),
-                   page_file_path, expected_resources_set, file_url,
+        base::Bind(&SavableResourcesTest::CheckResources,
+                   base::Unretained(this),
+                   page_file_path,
+                   expected_resources_set,
+                   file_url,
                    shell()->web_contents()->GetRoutingID()));
   }
 
@@ -52,10 +55,10 @@ class DomOperationsTests : public ContentBrowserTest {
     std::vector<GURL> referrer_urls_list;
     std::vector<WebKit::WebReferrerPolicy> referrer_policies_list;
     std::vector<GURL> frames_list;
-    webkit_glue::SavableResourcesResult result(&resources_list,
-                                               &referrer_urls_list,
-                                               &referrer_policies_list,
-                                               &frames_list);
+    SavableResourcesResult result(&resources_list,
+                                  &referrer_urls_list,
+                                  &referrer_policies_list,
+                                  &frames_list);
 
     const char* savable_schemes[] = {
       "http",
@@ -66,7 +69,7 @@ class DomOperationsTests : public ContentBrowserTest {
 
     RenderView* render_view = RenderView::FromRoutingID(render_view_id);
 
-    ASSERT_TRUE(webkit_glue::GetAllSavableResourceLinksForCurrentPage(
+    ASSERT_TRUE(GetAllSavableResourceLinksForCurrentPage(
         render_view->GetWebView(), file_url, &result, savable_schemes));
     // Check all links of sub-resource
     for (std::vector<GURL>::const_iterator cit = resources_list.begin();
@@ -85,7 +88,7 @@ class DomOperationsTests : public ContentBrowserTest {
 
 // Test function GetAllSavableResourceLinksForCurrentPage with a web page
 // which has valid savable resource links.
-IN_PROC_BROWSER_TEST_F(DomOperationsTests,
+IN_PROC_BROWSER_TEST_F(SavableResourcesTest,
                        GetSavableResourceLinksWithPageHasValidLinks) {
   std::set<GURL> expected_resources_set;
 
@@ -116,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(DomOperationsTests,
 
 // Test function GetAllSavableResourceLinksForCurrentPage with a web page
 // which does not have valid savable resource links.
-IN_PROC_BROWSER_TEST_F(DomOperationsTests,
+IN_PROC_BROWSER_TEST_F(SavableResourcesTest,
                        GetSavableResourceLinksWithPageHasInvalidLinks) {
   std::set<GURL> expected_resources_set;
 

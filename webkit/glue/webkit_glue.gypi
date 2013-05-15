@@ -253,8 +253,6 @@
         'cpp_bound_class.h',
         'cpp_variant.cc',
         'cpp_variant.h',
-        'dom_operations.cc',
-        'dom_operations.h',
         'fling_curve_configuration.cc',
         'fling_curve_configuration.h',
         'fling_animator_impl_android.cc',

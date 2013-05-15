@@ -105,6 +105,7 @@
 #include "content/renderer/renderer_date_time_picker.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webcolorchooser_impl.h"
+#include "content/renderer/savable_resources.h"
 #include "content/renderer/speech_recognition_dispatcher.h"
 #include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/v8_value_converter_impl.h"
@@ -194,7 +195,6 @@
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
@@ -5379,13 +5379,13 @@ void RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage(
   std::vector<GURL> referrer_urls_list;
   std::vector<WebKit::WebReferrerPolicy> referrer_policies_list;
   std::vector<GURL> frames_list;
-  webkit_glue::SavableResourcesResult result(&resources_list,
-                                             &referrer_urls_list,
-                                             &referrer_policies_list,
-                                             &frames_list);
+  SavableResourcesResult result(&resources_list,
+                                &referrer_urls_list,
+                                &referrer_policies_list,
+                                &frames_list);
 
   // webkit/ doesn't know about Referrer.
-  if (!webkit_glue::GetAllSavableResourceLinksForCurrentPage(
+  if (!GetAllSavableResourceLinksForCurrentPage(
           webview(),
           page_url,
           &result,

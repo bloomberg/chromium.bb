@@ -294,6 +294,8 @@
     'renderer/renderer_webkitplatformsupport_impl.h',
     'renderer/rendering_benchmark.cc',
     'renderer/rendering_benchmark.h',
+    'renderer/savable_resources.cc',
+    'renderer/savable_resources.h',
     'renderer/skia_benchmarking_extension.cc',
     'renderer/skia_benchmarking_extension.h',
     'renderer/speech_recognition_dispatcher.cc',

@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_DOM_OPERATIONS_H__
-#define WEBKIT_GLUE_DOM_OPERATIONS_H__
+#ifndef CONTENT_RENDERER_SAVABLE_RESOURCES_H_
+#define CONTENT_RENDERER_SAVABLE_RESOURCES_H_
 
 #include <string>
 #include <vector>
 
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
-#include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
 class WebElement;
@@ -19,7 +19,7 @@ class WebView;
 }
 
 // A collection of operations that access the underlying WebKit DOM directly.
-namespace webkit_glue {
+namespace content {
 
 // Structure for storage the result of getting all savable resource links
 // for current page. The consumer of the SavableResourcesResult is responsible
@@ -55,9 +55,10 @@ struct SavableResourcesResult {
 // and sub-frame. After collecting all savable resource links, this function
 // will send those links to embedder. Return value indicates whether we get
 // all saved resource links successfully.
-WEBKIT_GLUE_EXPORT bool GetAllSavableResourceLinksForCurrentPage(
+CONTENT_EXPORT bool GetAllSavableResourceLinksForCurrentPage(
     WebKit::WebView* view,
-    const GURL& page_url, SavableResourcesResult* savable_resources_result,
+    const GURL& page_url,
+    SavableResourcesResult* savable_resources_result,
     const char** savable_schemes);
 
 // Returns the value in an elements resource url attribute. For IMG, SCRIPT or
@@ -65,9 +66,9 @@ WEBKIT_GLUE_EXPORT bool GetAllSavableResourceLinksForCurrentPage(
 // the value in "href". For BODY, TABLE, TR, TD, returns the value in
 // "background". For BLOCKQUOTE, Q, DEL, INS, returns the value in "cite"
 // attribute. Otherwise returns a null WebString.
-WEBKIT_GLUE_EXPORT WebKit::WebString GetSubResourceLinkFromElement(
+CONTENT_EXPORT WebKit::WebString GetSubResourceLinkFromElement(
     const WebKit::WebElement& element);
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_GLUE_DOM_OPERATIONS_H__
+#endif  // CONTENT_RENDERER_SAVABLE_RESOURCES_H_

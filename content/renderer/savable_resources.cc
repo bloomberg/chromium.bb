@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/dom_operations.h"
+#include "content/renderer/savable_resources.h"
 
 #include <set>
 
@@ -31,6 +31,7 @@ using WebKit::WebString;
 using WebKit::WebVector;
 using WebKit::WebView;
 
+namespace content {
 namespace {
 
 // Structure for storage the unique set of all savable resource links for
@@ -65,7 +66,7 @@ void GetSavableResourceLinkForElement(
     const WebElement& element,
     const WebDocument& current_doc,
     SavableResourcesUniqueCheck* unique_check,
-    webkit_glue::SavableResourcesResult* result) {
+    SavableResourcesResult* result) {
 
   // Handle frame and iframe tag.
   if (element.hasTagName("iframe") ||
@@ -77,8 +78,7 @@ void GetSavableResourceLinkForElement(
   }
 
   // Check whether the node has sub resource URL or not.
-  WebString value =
-      webkit_glue::GetSubResourceLinkFromElement(element);
+  WebString value = GetSubResourceLinkFromElement(element);
   if (value.isNull())
     return;
   // Get absolute URL.
@@ -103,7 +103,7 @@ void GetSavableResourceLinkForElement(
 // Get all savable resource links from current WebFrameImpl object pointer.
 void GetAllSavableResourceLinksForFrame(WebFrame* current_frame,
     SavableResourcesUniqueCheck* unique_check,
-    webkit_glue::SavableResourcesResult* result,
+    SavableResourcesResult* result,
     const char** savable_schemes) {
   // Get current frame's URL.
   GURL current_frame_url = current_frame->document().url();
@@ -146,8 +146,6 @@ void GetAllSavableResourceLinksForFrame(WebFrame* current_frame,
 }
 
 }  // namespace
-
-namespace webkit_glue {
 
 WebString GetSubResourceLinkFromElement(const WebElement& element) {
   const char* attribute_name = NULL;
@@ -237,4 +235,4 @@ bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
   return true;
 }
 
-}  // webkit_glue
+}  // namespace content
