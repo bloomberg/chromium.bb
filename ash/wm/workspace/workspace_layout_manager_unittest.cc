@@ -24,10 +24,18 @@ namespace {
 
 typedef test::AshTestBase WorkspaceLayoutManagerTest;
 
+// Multi root doesn't work on Win8/metro. crbug.com/240628.
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_RestoreFromMinimizeKeepsRestore \
+  DISABLED_RestoreFromMinimizeKeepsRestore
+#else
+#define MAYBE_RestoreFromMinimizeKeepsRestore RestoreFromMinimizeKeepsRestore
+#endif
+
 // Verifies that a window containing a restore coordinate will be restored to
 // to the size prior to minimize, keeping the restore rectangle in tact (if
 // there is one).
-TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
+TEST_F(WorkspaceLayoutManagerTest, MAYBE_RestoreFromMinimizeKeepsRestore) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
   gfx::Rect bounds(10, 15, 25, 35);
