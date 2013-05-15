@@ -1037,7 +1037,8 @@ bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType&
 
     WebKit::Platform::current()->histogramEnumeration("Renderer.ModalDialogsDuringPageDismissal", dismissal * arraysize(kDialogs) + dialog, arraysize(kDialogs) * arraysize(kDismissals));
 
-    m_webView->mainFrame()->addMessageToConsole(WebConsoleMessage(WebConsoleMessage::LevelError, makeString("Blocked ", kDialogs[dialog], "('", dialogMessage, "') during ", kDismissals[dismissal], ".")));
+    String message = String("Blocked ") + kDialogs[dialog] + "('" + dialogMessage + "') during " + kDismissals[dismissal] + ".";
+    m_webView->mainFrame()->addMessageToConsole(WebConsoleMessage(WebConsoleMessage::LevelError, message));
 
     return false;
 }

@@ -183,7 +183,7 @@ static String twoDigitStringFromNumber(int number)
     ASSERT(number >= 0 && number < 100);
     if (number > 9)
         return String::number(number);
-    return makeString("0", String::number(number));
+    return "0" + String::number(number);
 }
 
 int msToYear(double ms)

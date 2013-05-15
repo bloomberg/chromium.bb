@@ -196,7 +196,7 @@ static unsigned computePseudoClassMask(InspectorArray* pseudoClassArray)
 
 inline String SelectorProfile::makeKey()
 {
-    return makeString(m_currentMatchData.selector, "?", m_currentMatchData.url, ":", String::number(m_currentMatchData.lineNumber));
+    return m_currentMatchData.selector + "?" + m_currentMatchData.url + ":" + String::number(m_currentMatchData.lineNumber);
 }
 
 inline void SelectorProfile::startSelector(const CSSStyleRule* rule)

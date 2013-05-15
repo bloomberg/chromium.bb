@@ -136,8 +136,10 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
             UChar c = propertyName[i];
             if (!isASCIIUpper(c))
                 builder.append(c);
-            else
-                builder.append(makeString('-', toASCIILower(c)));
+            else {
+                builder.append('-');
+                builder.append(toASCIILower(c));
+            }
         }
 
         String propName = builder.toString();

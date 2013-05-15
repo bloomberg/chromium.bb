@@ -1691,9 +1691,9 @@ void FrameLoader::setOriginalURLForDownloadRequest(ResourceRequest& request)
         // FIXME: Using host-only URL is a very heavy-handed approach. We should attempt to provide the actual page where the download was initiated from, as a reminder to the user.
         String hostOnlyURLString;
         if (port)
-            hostOnlyURLString = makeString(originalURL.protocol(), "://", originalURL.host(), ":", String::number(port));
+            hostOnlyURLString = originalURL.protocol() + "://" + originalURL.host() + ":" + String::number(port);
         else
-            hostOnlyURLString = makeString(originalURL.protocol(), "://", originalURL.host());
+            hostOnlyURLString = originalURL.protocol() + "://" + originalURL.host();
 
         // FIXME: Rename firstPartyForCookies back to mainDocumentURL. It was a mistake to think that it was only used for cookies.
         request.setFirstPartyForCookies(KURL(KURL(), hostOnlyURLString));

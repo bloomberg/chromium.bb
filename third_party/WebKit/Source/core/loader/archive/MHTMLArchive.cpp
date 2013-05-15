@@ -141,7 +141,7 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(Page* page, bool useBin
     pageSerializer.serialize(page);
 
     String boundary = generateRandomBoundary();
-    String endOfResourceBoundary = makeString("--", boundary, "\r\n");
+    String endOfResourceBoundary = "--" + boundary + "\r\n";
 
     GregorianDateTime now;
     now.setToCurrentLocalTime();
@@ -227,7 +227,7 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(Page* page, bool useBin
         }
     }
 
-    asciiString = makeString("--", boundary, "--\r\n").utf8();
+    asciiString = String("--" + boundary + "--\r\n").utf8();
     mhtmlData->append(asciiString.data(), asciiString.length());
 
     return mhtmlData.release();

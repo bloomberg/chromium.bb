@@ -228,7 +228,7 @@ static int domTypeForName(ErrorString* errorString, const String& typeString)
         return AttributeModified;
     if (typeString == "node-removed")
         return NodeRemoved;
-    *errorString = makeString("Unknown DOM breakpoint type: ", typeString);
+    *errorString = "Unknown DOM breakpoint type: " + typeString;
     return -1;
 }
 

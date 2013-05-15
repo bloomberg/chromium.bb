@@ -269,7 +269,8 @@ bool WebPageSerializer::retrieveAllResources(WebView* view,
 
 WebString WebPageSerializer::generateMetaCharsetDeclaration(const WebString& charset)
 {
-    return makeString("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=", static_cast<const String&>(charset), "\">");
+    String charsetString = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + static_cast<const String&>(charset) + "\">";
+    return charsetString;
 }
 
 WebString WebPageSerializer::generateMarkOfTheWebDeclaration(const WebURL& url)
@@ -282,8 +283,9 @@ WebString WebPageSerializer::generateMarkOfTheWebDeclaration(const WebURL& url)
 WebString WebPageSerializer::generateBaseTagDeclaration(const WebString& baseTarget)
 {
     if (baseTarget.isEmpty())
-        return makeString("<base href=\".\">");
-    return makeString("<base href=\".\" target=\"", static_cast<const String&>(baseTarget), "\">");
+        return String(ASCIILiteral("<base href=\".\">"));
+    String baseString = "<base href=\".\" target=\"" + static_cast<const String&>(baseTarget) + "\">";
+    return baseString;
 }
 
 } // namespace WebKit

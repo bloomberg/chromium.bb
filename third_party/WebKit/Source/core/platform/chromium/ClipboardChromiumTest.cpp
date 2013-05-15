@@ -61,8 +61,8 @@ TEST(ClipboardChromiumTest, Normal)
 
 TEST(ClipboardChromiumTest, InvalidCharacters)
 {
-    String name = makeString("na", String(invalidCharacters, arraysize(invalidCharacters)), "me");
-    String extension = makeString("e", String(invalidCharacters, arraysize(invalidCharacters)), "xt");
+    String name = "na" + String(invalidCharacters, arraysize(invalidCharacters)) + "me";
+    String extension = "e" + String(invalidCharacters, arraysize(invalidCharacters)) + "xt";
     ClipboardChromium::validateFilename(name, extension);
     EXPECT_EQ("name", name);
     EXPECT_EQ("ext", extension);
@@ -71,14 +71,14 @@ TEST(ClipboardChromiumTest, InvalidCharacters)
 TEST(ClipboardChromiumTest, ExtensionTooLong)
 {
     String name;
-    String extension = makeString(longString, longString);
+    String extension = String(longString) + longString;
     ClipboardChromium::validateFilename(name, extension);
     EXPECT_EQ(String(), extension);
 }
 
 TEST(ClipboardChromiumTest, NamePlusExtensionTooLong)
 {
-    String name = makeString(longString, longString);
+    String name = String(longString) + longString;
     String extension = longString;
     ClipboardChromium::validateFilename(name, extension);
     EXPECT_EQ("0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,109", name);

@@ -63,7 +63,7 @@ static inline String transformValueToCssString(WebKitCSSTransformValue::Transfor
 {
     if (operation != WebKitCSSTransformValue::UnknownTransformOperation) {
         ASSERT_WITH_SECURITY_IMPLICATION(static_cast<size_t>(operation) < WTF_ARRAY_LENGTH(transformNamePrefixes));
-        return makeString(transformNamePrefixes[operation], value, ')');
+        return transformNamePrefixes[operation] + value + ")";
     }
     return String();
 }

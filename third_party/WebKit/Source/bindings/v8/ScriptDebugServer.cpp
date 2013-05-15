@@ -97,7 +97,7 @@ public:
 
         v8::TryCatch tryCatch;
 
-        String wrappedScript = makeString("(", preprocessorScript, ")");
+        String wrappedScript = "(" + preprocessorScript + ")";
         v8::Handle<v8::String> preprocessor = v8::String::New(wrappedScript.utf8().data(), wrappedScript.utf8().length());
 
         v8::Handle<v8::Script> script = v8::Script::Compile(preprocessor);

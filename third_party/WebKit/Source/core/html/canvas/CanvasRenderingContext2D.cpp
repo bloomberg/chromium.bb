@@ -1961,7 +1961,7 @@ String CanvasRenderingContext2D::font() const
         if (family.startsWith("-webkit-"))
             family = family.substring(8);
         if (family.contains(' '))
-            family = makeString('"', family, '"');
+            family = "\"" + family + "\"";
 
         serializedFont.append(' ');
         serializedFont.append(family);

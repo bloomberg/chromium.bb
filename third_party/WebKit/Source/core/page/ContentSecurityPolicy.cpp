@@ -928,7 +928,7 @@ PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* pol
     directives->parse(header);
 
     if (!directives->checkEval(directives->operativeDirective(directives->m_scriptSrc.get()))) {
-        String message = makeString("Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: \"", directives->operativeDirective(directives->m_scriptSrc.get())->text(), "\".\n");
+        String message = "Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: \"" + directives->operativeDirective(directives->m_scriptSrc.get())->text() + "\".\n";
         directives->setEvalDisabledErrorMessage(message);
     }
 
@@ -1008,7 +1008,7 @@ bool CSPDirectiveList::checkMediaTypeAndReportViolation(MediaListDirective* dire
     if (checkMediaType(directive, type, typeAttribute))
         return true;
 
-    String message = makeString(consoleMessage, "\'", directive->text(), "\'.");
+    String message = consoleMessage + "\'" + directive->text() + "\'.";
     if (typeAttribute.isEmpty())
         message = message + " When enforcing the 'plugin-types' directive, the plugin's media type must be explicitly declared with a 'type' attribute on the containing element (e.g. '<object type=\"[TYPE GOES HERE]\" ...>').";
 
@@ -1023,7 +1023,7 @@ bool CSPDirectiveList::checkInlineAndReportViolation(SourceListDirective* direct
 
     String suffix = String();
     if (directive == m_defaultSrc)
-        suffix = makeString(" Note that '", (isScript ? "script" : "style"), "-src' was not explicitly set, so 'default-src' is used as a fallback.");
+        suffix = " Note that '" + String(isScript ? "script" : "style") + "-src' was not explicitly set, so 'default-src' is used as a fallback.";
 
     reportViolation(directive->text(), isScript ? scriptSrc : styleSrc, consoleMessage + "\"" + directive->text() + "\"." + suffix + "\n", KURL(), contextURL, contextLine);
 
@@ -1789,7 +1789,7 @@ void ContentSecurityPolicy::reportUnsupportedDirective(const String& name) const
     DEFINE_STATIC_LOCAL(String, optionsMessage, (ASCIILiteral("The 'options' directive has been replaced with 'unsafe-inline' and 'unsafe-eval' source expressions for the 'script-src' and 'style-src' directives. Please use those directives instead, as 'options' has no effect.")));
     DEFINE_STATIC_LOCAL(String, policyURIMessage, (ASCIILiteral("The 'policy-uri' directive has been removed from the specification. Please specify a complete policy via the Content-Security-Policy header.")));
 
-    String message = makeString("Unrecognized Content-Security-Policy directive '", name, "'.\n");
+    String message = "Unrecognized Content-Security-Policy directive '" + name + "'.\n";
     if (equalIgnoringCase(name, allow))
         message = allowMessage;
     else if (equalIgnoringCase(name, options))
@@ -1808,7 +1808,7 @@ void ContentSecurityPolicy::reportDirectiveAsSourceExpression(const String& dire
 
 void ContentSecurityPolicy::reportDuplicateDirective(const String& name) const
 {
-    String message = makeString("Ignoring duplicate Content-Security-Policy directive '", name, "'.\n");
+    String message = "Ignoring duplicate Content-Security-Policy directive '" + name + "'.\n";
     logToConsole(message);
 }
 
@@ -1818,7 +1818,7 @@ void ContentSecurityPolicy::reportInvalidPluginTypes(const String& pluginType) c
     if (pluginType.isNull())
         message = "'plugin-types' Content Security Policy directive is empty; all plugins will be blocked.\n";
     else
-        message = makeString("Invalid plugin type in 'plugin-types' Content Security Policy directive: '", pluginType, "'.\n");
+        message = "Invalid plugin type in 'plugin-types' Content Security Policy directive: '" + pluginType + "'.\n";
     logToConsole(message);
 }
 
@@ -1834,7 +1834,7 @@ void ContentSecurityPolicy::reportInvalidReflectedXSS(const String& invalidValue
 
 void ContentSecurityPolicy::reportInvalidDirectiveValueCharacter(const String& directiveName, const String& value) const
 {
-    String message = makeString("The value for Content Security Policy directive '", directiveName, "' contains an invalid character: '", value, "'. Non-whitespace characters outside ASCII 0x21-0x7E must be percent-encoded, as described in RFC 3986, section 2.1: http://tools.ietf.org/html/rfc3986#section-2.1.");
+    String message = "The value for Content Security Policy directive '" + directiveName + "' contains an invalid character: '" + value + "'. Non-whitespace characters outside ASCII 0x21-0x7E must be percent-encoded, as described in RFC 3986, section 2.1: http://tools.ietf.org/html/rfc3986#section-2.1.";
     logToConsole(message);
 }
 
@@ -1845,21 +1845,21 @@ void ContentSecurityPolicy::reportInvalidPathCharacter(const String& directiveNa
     String ignoring = "The fragment identifier, including the '#', will be ignored.";
     if (invalidChar == '?')
         ignoring = "The query component, including the '?', will be ignored.";
-    String message = makeString("The source list for Content Security Policy directive '", directiveName, "' contains a source with an invalid path: '", value, "'. ", ignoring);
+    String message = "The source list for Content Security Policy directive '" + directiveName + "' contains a source with an invalid path: '" + value + "'. " + ignoring;
     logToConsole(message);
 }
 
 void ContentSecurityPolicy::reportInvalidNonce(const String& nonce) const
 {
-    String message = makeString("Ignoring invalid Content Security Policy script nonce: '", nonce, "'.\n");
+    String message = "Ignoring invalid Content Security Policy script nonce: '" + nonce + "'.\n";
     logToConsole(message);
 }
 
 void ContentSecurityPolicy::reportInvalidSourceExpression(const String& directiveName, const String& source) const
 {
-    String message = makeString("The source list for Content Security Policy directive '", directiveName, "' contains an invalid source: '", source, "'. It will be ignored.");
+    String message = "The source list for Content Security Policy directive '" + directiveName + "' contains an invalid source: '" + source + "'. It will be ignored.";
     if (equalIgnoringCase(source, "'none'"))
-        message = makeString(message, " Note that 'none' has no effect unless it is the only expression in the source list.");
+        message = message + " Note that 'none' has no effect unless it is the only expression in the source list.";
     logToConsole(message);
 }
 

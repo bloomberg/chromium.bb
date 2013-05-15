@@ -42,7 +42,7 @@ ExceptionBase::ExceptionBase(const ExceptionCodeDescription& description)
     if (description.name)
         m_message = m_name + ": " + description.typeName + " Exception " + String::number(description.code);
     else
-        m_message = makeString(description.typeName, " Exception ", String::number(description.code));
+        m_message = String(description.typeName) + " Exception " + String::number(description.code);
 }
 
 String ExceptionBase::toString() const

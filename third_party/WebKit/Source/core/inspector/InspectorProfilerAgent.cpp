@@ -61,7 +61,7 @@ static const char profilerEnabled[] = "profilerEnabled";
 static const char profileHeadersRequested[] = "profileHeadersRequested";
 }
 
-static const char* const UserInitiatedProfileName = "org.webkit.profiles.user-initiated";
+static const char* const userInitiatedProfileName = "org.webkit.profiles.user-initiated";
 static const char* const CPUProfileType = "CPU";
 
 
@@ -149,7 +149,7 @@ void InspectorProfilerAgent::addProfileFinishedMessageToConsole(PassRefPtr<Scrip
     if (!m_frontend)
         return;
     RefPtr<ScriptProfile> profile = prpProfile;
-    String message = makeString(profile->title(), '#', String::number(profile->uid()));
+    String message = profile->title() + "#" + String::number(profile->uid());
     m_consoleAgent->addMessageToConsole(ConsoleAPIMessageSource, ProfileEndMessageType, DebugMessageLevel, message, sourceURL, lineNumber);
 }
 
@@ -203,7 +203,7 @@ String InspectorProfilerAgent::getCurrentUserInitiatedProfileName(bool increment
     if (incrementProfileNumber)
         m_currentUserInitiatedProfileNumber = m_nextUserInitiatedProfileNumber++;
 
-    return makeString(UserInitiatedProfileName, '.', String::number(m_currentUserInitiatedProfileNumber));
+    return String(ASCIILiteral(userInitiatedProfileName)) + "." + String::number(m_currentUserInitiatedProfileNumber);
 }
 
 void InspectorProfilerAgent::getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::ProfileHeader> >& headers)

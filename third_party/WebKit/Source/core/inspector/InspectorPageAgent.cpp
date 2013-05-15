@@ -673,7 +673,7 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
     const static long maxDimension = 10000000;
 
     if (width < 0 || height < 0 || width > maxDimension || height > maxDimension) {
-        *errorString = makeString("Width and height values must be positive, not greater than ", String::number(maxDimension));
+        *errorString = "Width and height values must be positive, not greater than " + String::number(maxDimension);
         return;
     }
 

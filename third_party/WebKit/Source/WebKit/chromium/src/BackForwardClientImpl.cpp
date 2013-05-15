@@ -91,7 +91,7 @@ HistoryItem* BackForwardClientImpl::itemAtIndex(int index)
     // differently.  It should perhaps just ask the FrameLoaderClient to
     // perform those navigations.
 
-    String urlString = makeString(backForwardNavigationScheme, "://go/", String::number(index));
+    String urlString = String(backForwardNavigationScheme) + "://go/" + String::number(index);
     m_pendingHistoryItem = HistoryItem::create(urlString);
     return m_pendingHistoryItem.get();
 }
