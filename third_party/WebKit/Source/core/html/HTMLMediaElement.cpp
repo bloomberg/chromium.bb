@@ -4225,7 +4225,7 @@ void HTMLMediaElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
     info.addMember(m_currentSourceNode, "currentSourceNode");
     info.addMember(m_nextChildNodeToConsider, "nextChildNodeToConsider");
     info.addMember(m_player, "player");
-    info.addMember(m_mediaSource, "mediaSource");
+    info.addMember(static_cast<ActiveDOMObject*>(m_mediaSource.get()), "mediaSource");
     info.addMember(m_textTracks, "textTracks");
     info.addMember(m_textTracksWhenResourceSelectionBegan, "textTracksWhenResourceSelectionBegan");
     info.addMember(m_cueTree, "cueTree");

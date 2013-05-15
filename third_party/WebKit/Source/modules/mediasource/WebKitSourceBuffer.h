@@ -31,6 +31,7 @@
 #ifndef WebKitSourceBuffer_h
 #define WebKitSourceBuffer_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -41,7 +42,7 @@ class WebKitMediaSource;
 class SourceBufferPrivate;
 class TimeRanges;
 
-class WebKitSourceBuffer : public RefCounted<WebKitSourceBuffer> {
+class WebKitSourceBuffer : public RefCounted<WebKitSourceBuffer>, public ScriptWrappable {
 public:
     static PassRefPtr<WebKitSourceBuffer> create(PassOwnPtr<SourceBufferPrivate>, PassRefPtr<WebKitMediaSource>);
 

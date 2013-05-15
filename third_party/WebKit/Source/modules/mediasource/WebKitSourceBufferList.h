@@ -31,6 +31,7 @@
 #ifndef WebKitSourceBufferList_h
 #define WebKitSourceBufferList_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -40,7 +41,7 @@ namespace WebCore {
 class WebKitSourceBuffer;
 class GenericEventQueue;
 
-class WebKitSourceBufferList : public RefCounted<WebKitSourceBufferList>, public EventTarget {
+class WebKitSourceBufferList : public RefCounted<WebKitSourceBufferList>, public ScriptWrappable, public EventTarget {
 public:
     static PassRefPtr<WebKitSourceBufferList> create(ScriptExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {

@@ -50,6 +50,7 @@ WebKitSourceBuffer::WebKitSourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBuf
 {
     ASSERT(m_private);
     ASSERT(m_source);
+    ScriptWrappable::init(this);
 }
 
 WebKitSourceBuffer::~WebKitSourceBuffer()

@@ -31,6 +31,7 @@
 #ifndef WebKitMediaSource_h
 #define WebKitMediaSource_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/GenericEventQueue.h"
 #include "core/platform/graphics/MediaSourcePrivate.h"
@@ -40,7 +41,7 @@
 
 namespace WebCore {
 
-class WebKitMediaSource : public RefCounted<WebKitMediaSource>, public EventTarget, public ActiveDOMObject {
+class WebKitMediaSource : public RefCounted<WebKitMediaSource>, public ScriptWrappable, public EventTarget, public ActiveDOMObject {
 public:
     static const String& openKeyword();
     static const String& closedKeyword();

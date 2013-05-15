@@ -41,6 +41,7 @@ WebKitSourceBufferList::WebKitSourceBufferList(ScriptExecutionContext* context, 
     : m_scriptExecutionContext(context)
     , m_asyncEventQueue(asyncEventQueue)
 {
+    ScriptWrappable::init(this);
 }
 
 unsigned long WebKitSourceBufferList::length() const

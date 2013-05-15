@@ -52,6 +52,7 @@ WebKitMediaSource::WebKitMediaSource(ScriptExecutionContext* context)
     , m_readyState(closedKeyword())
     , m_asyncEventQueue(GenericEventQueue::create(this))
 {
+    ScriptWrappable::init(this);
     m_sourceBuffers = WebKitSourceBufferList::create(scriptExecutionContext(), m_asyncEventQueue.get());
     m_activeSourceBuffers = WebKitSourceBufferList::create(scriptExecutionContext(), m_asyncEventQueue.get());
 }
