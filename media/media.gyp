@@ -429,7 +429,6 @@
         'webm/webm_audio_client.h',
         'webm/webm_cluster_parser.cc',
         'webm/webm_cluster_parser.h',
-        'webm/webm_constants.cc',
         'webm/webm_constants.h',
         'webm/webm_content_encodings.cc',
         'webm/webm_content_encodings.h',
@@ -996,12 +995,9 @@
         'video/capture/video_capture_device_unittest.cc',
         'webm/cluster_builder.cc',
         'webm/cluster_builder.h',
-        'webm/tracks_builder.cc',
-        'webm/tracks_builder.h',
         'webm/webm_cluster_parser_unittest.cc',
         'webm/webm_content_encodings_client_unittest.cc',
         'webm/webm_parser_unittest.cc',
-        'webm/webm_tracks_parser_unittest.cc',
       ],
       'conditions': [
         ['arm_neon == 1', {
