@@ -221,3 +221,100 @@ function buildTaskManager(areConflicting) {
     wrapCallback: wrapCallback
   };
 }
+
+var storage = chrome.storage.local;
+
+/**
+ * Builds an object to manage retrying activities with exponential backoff.
+ * @param {string} name Name of this attempt manager.
+ * @param {function()} attempt Activity that the manager retries until it
+ *     calls 'stop' method.
+ * @param {number} initialDelaySeconds Default first delay until first retry.
+ * @param {number} maximumDelaySeconds Maximum delay between retries.
+ * @return {Object} Attempt manager interface.
+ */
+function buildAttemptManager(
+    name, attempt, initialDelaySeconds, maximumDelaySeconds) {
+  var alarmName = name + '-scheduler';
+  var currentDelayStorageKey = name + '-current-delay';
+
+  /**
+   * Creates an alarm for the next attempt. The alarm is repeating for the case
+   * when the next attempt crashes before registering next alarm.
+   * @param {number} delaySeconds Delay until next retry.
+   */
+  function createAlarm(delaySeconds) {
+    var alarmInfo = {
+      delayInMinutes: delaySeconds / 60,
+      periodInMinutes: maximumDelaySeconds / 60
+    };
+    chrome.alarms.create(alarmName, alarmInfo);
+  }
+
+  /**
+   * Schedules next attempt.
+   * @param {number=} opt_previousDelaySeconds Previous delay in a sequence of
+   *     retry attempts, if specified. Not specified for scheduling first retry
+   *     in the exponential sequence.
+   */
+  function scheduleNextAttempt(opt_previousDelaySeconds) {
+    var base = opt_previousDelaySeconds ? opt_previousDelaySeconds * 2 :
+                                          initialDelaySeconds;
+    var newRetryDelaySeconds =
+        Math.min(base * (1 + 0.2 * Math.random()), maximumDelaySeconds);
+
+    createAlarm(newRetryDelaySeconds);
+
+    var items = {};
+    items[currentDelayStorageKey] = newRetryDelaySeconds;
+    storage.set(items);
+  }
+
+  /**
+   * Starts repeated attempts.
+   * @param {number=} opt_firstDelaySeconds Time until the first attempt, if
+   *     specified. Otherwise, initialDelaySeconds will be used for the first
+   *     attempt.
+   */
+  function start(opt_firstDelaySeconds) {
+    if (opt_firstDelaySeconds) {
+      createAlarm(opt_firstDelaySeconds);
+      storage.remove(currentDelayStorageKey);
+    } else {
+      scheduleNextAttempt();
+    }
+  }
+
+  /**
+   * Stops repeated attempts.
+   */
+  function stop() {
+    chrome.alarms.clear(alarmName);
+    storage.remove(currentDelayStorageKey);
+  }
+
+  /**
+   * Plans for the next attempt.
+   * @param {function()} callback Completion callback. It will be invoked after
+   *     the planning is done.
+   */
+  function planForNext(callback) {
+    tasks.debugSetStepName('planForNext-get-storage');
+    storage.get(currentDelayStorageKey, function(items) {
+      console.log('planForNext-get-storage ' + JSON.stringify(items));
+      scheduleNextAttempt(items[currentDelayStorageKey]);
+      callback();
+    });
+  }
+
+  chrome.alarms.onAlarm.addListener(function(alarm) {
+    if (alarm.name == alarmName)
+      attempt();
+  });
+
+  return {
+    start: start,
+    planForNext: planForNext,
+    stop: stop
+  };
+}
