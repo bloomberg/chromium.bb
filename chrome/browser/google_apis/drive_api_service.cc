@@ -647,8 +647,14 @@ void DriveAPIService::GetUploadStatus(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTREACHED();
+  runner_->StartOperationWithRetry(new drive::GetUploadStatusOperation(
+      operation_registry(),
+      url_request_context_getter_,
+      upload_mode,
+      drive_file_path,
+      upload_url,
+      content_length,
+      base::Bind(&ParseResourceEntryForUploadRangeAndRun, callback)));
 }
 
 void DriveAPIService::AuthorizeApp(

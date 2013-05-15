@@ -681,7 +681,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_url;
 
-  // 1) Initiate uploading a new file to the directory with
+  // Initiate uploading a new file to the directory with
   // "parent_resource_id".
   drive::InitiateUploadNewFileOperation* operation =
       new drive::InitiateUploadNewFileOperation(
@@ -718,7 +718,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
             "\"title\":\"new file title\"}",
             http_request_.content);
 
-  // 2) Upload the content to the upload URL.
+  // Upload the content to the upload URL.
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
@@ -776,8 +776,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_url;
 
-  // 1) Initiate uploading a new file to the directory with
-  // "parent_resource_id".
+  // Initiate uploading a new file to the directory with "parent_resource_id".
   drive::InitiateUploadNewFileOperation* operation =
       new drive::InitiateUploadNewFileOperation(
           &operation_registry_,
@@ -812,7 +811,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
             "\"title\":\"new file title\"}",
             http_request_.content);
 
-  // 2) Upload the content to the upload URL.
+  // Upload the content to the upload URL.
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
@@ -868,8 +867,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_url;
 
-  // 1) Initiate uploading a new file to the directory with
-  // "parent_resource_id".
+  // Initiate uploading a new file to the directory with "parent_resource_id".
   drive::InitiateUploadNewFileOperation* operation =
       new drive::InitiateUploadNewFileOperation(
           &operation_registry_,
@@ -905,7 +903,46 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
             "\"title\":\"new file title\"}",
             http_request_.content);
 
-  // 2) Upload the content to the upload URL.
+  // Before sending any data, check the current status.
+  // This is an edge case test for GetUploadStatusOperation.
+  {
+    UploadRangeResponse response;
+    scoped_ptr<FileResource> new_entry;
+
+    // Check the response by GetUploadStatusOperation.
+    drive::GetUploadStatusOperation* get_upload_status_operation =
+        new drive::GetUploadStatusOperation(
+            &operation_registry_,
+            request_context_getter_.get(),
+            UPLOAD_NEW_FILE,
+            base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
+            upload_url,
+            kTestContent.size(),
+            CreateComposedCallback(
+                base::Bind(&test_util::RunAndQuit),
+                test_util::CreateCopyResultCallback(&response, &new_entry)));
+    get_upload_status_operation->Start(
+        kTestDriveApiAuthToken, kTestUserAgent,
+        base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+    MessageLoop::current()->Run();
+
+    // METHOD_PUT should be used to upload data.
+    EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
+    // Request should go to the upload URL.
+    EXPECT_EQ(upload_url.path(), http_request_.relative_url);
+    // Content-Range header should be added.
+    EXPECT_EQ("bytes */" + base::Int64ToString(kTestContent.size()),
+              http_request_.headers["Content-Range"]);
+    EXPECT_TRUE(http_request_.has_content);
+    EXPECT_TRUE(http_request_.content.empty());
+
+    // Check the response.
+    EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
+    EXPECT_EQ(0, response.start_position_received);
+    EXPECT_EQ(0, response.end_position_received);
+  }
+
+  // Upload the content to the upload URL.
   for (size_t start_position = 0; start_position < kTestContent.size();
        start_position += kNumChunkBytes) {
     const std::string payload = kTestContent.substr(
@@ -958,13 +995,46 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
       // complete.
       EXPECT_EQ(-1, response.start_position_received);
       EXPECT_EQ(-1, response.end_position_received);
-    } else {
-      // Check the response.
-      EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
-      EXPECT_EQ(0, response.start_position_received);
-      EXPECT_EQ(static_cast<int64>(end_position),
-                response.end_position_received);
+      break;
     }
+
+    // Check the response.
+    EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
+    EXPECT_EQ(0, response.start_position_received);
+    EXPECT_EQ(static_cast<int64>(end_position), response.end_position_received);
+
+    // Check the response by GetUploadStatusOperation.
+    drive::GetUploadStatusOperation* get_upload_status_operation =
+        new drive::GetUploadStatusOperation(
+            &operation_registry_,
+            request_context_getter_.get(),
+            UPLOAD_NEW_FILE,
+            base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
+            upload_url,
+            kTestContent.size(),
+            CreateComposedCallback(
+                base::Bind(&test_util::RunAndQuit),
+                test_util::CreateCopyResultCallback(&response, &new_entry)));
+    get_upload_status_operation->Start(
+        kTestDriveApiAuthToken, kTestUserAgent,
+        base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+    MessageLoop::current()->Run();
+
+    // METHOD_PUT should be used to upload data.
+    EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
+    // Request should go to the upload URL.
+    EXPECT_EQ(upload_url.path(), http_request_.relative_url);
+    // Content-Range header should be added.
+    EXPECT_EQ("bytes */" + base::Int64ToString(kTestContent.size()),
+              http_request_.headers["Content-Range"]);
+    EXPECT_TRUE(http_request_.has_content);
+    EXPECT_TRUE(http_request_.content.empty());
+
+    // Check the response.
+    EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
+    EXPECT_EQ(0, response.start_position_received);
+    EXPECT_EQ(static_cast<int64>(end_position),
+              response.end_position_received);
   }
 }
 
@@ -1012,7 +1082,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_TRUE(http_request_.content.empty());
 
-  // 2) Upload the content to the upload URL.
+  // Upload the content to the upload URL.
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
@@ -1101,7 +1171,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_TRUE(http_request_.content.empty());
 
-  // 2) Upload the content to the upload URL.
+  // Upload the content to the upload URL.
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 

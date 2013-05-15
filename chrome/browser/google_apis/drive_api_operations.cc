@@ -572,5 +572,32 @@ void ResumeUploadOperation::OnURLFetchUploadProgress(
     progress_callback_.Run(current, total);
 }
 
+//========================== GetUploadStatusOperation ==========================
+
+GetUploadStatusOperation::GetUploadStatusOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    UploadMode upload_mode,
+    const base::FilePath& drive_file_path,
+    const GURL& upload_url,
+    int64 content_length,
+    const UploadRangeCallback& callback)
+  : GetUploadStatusOperationBase(registry,
+                                 url_request_context_getter,
+                                 upload_mode,
+                                 drive_file_path,
+                                 upload_url,
+                                 content_length),
+    callback_(callback) {
+  DCHECK(!callback.is_null());
+}
+
+GetUploadStatusOperation::~GetUploadStatusOperation() {}
+
+void GetUploadStatusOperation::OnRangeOperationComplete(
+    const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
+  ParseFileResourceWithUploadRangeAndRun(callback_, response, value.Pass());
+}
+
 }  // namespace drive
 }  // namespace google_apis
