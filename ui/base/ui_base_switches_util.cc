@@ -25,7 +25,7 @@ bool IsNewDialogStyleEnabled() {
     return false;
   if (command_line->HasSwitch(switches::kEnableNewDialogStyle))
     return true;
-  return false;
+  return true;
 }
 
 }  // namespace switches
