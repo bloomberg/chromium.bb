@@ -101,8 +101,6 @@
         'proxy/resource_message_test_sink.h',
         'shared_impl/test_globals.cc',
         'shared_impl/test_globals.h',
-        'shared_impl/unittest_utils.cc',
-        'shared_impl/unittest_utils.h',
       ],
     },
 
