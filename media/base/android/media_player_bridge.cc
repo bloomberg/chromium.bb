@@ -37,30 +37,14 @@ MediaPlayerAndroid* MediaPlayerAndroid::Create(
     bool is_media_source,
     const GURL& first_party_for_cookies,
     bool hide_url_log,
-    MediaPlayerManager* manager,
-    const MediaErrorCB& media_error_cb,
-    const VideoSizeChangedCB& video_size_changed_cb,
-    const BufferingUpdateCB& buffering_update_cb,
-    const MediaMetadataChangedCB& media_prepared_cb,
-    const PlaybackCompleteCB& playback_complete_cb,
-    const SeekCompleteCB& seek_complete_cb,
-    const TimeUpdateCB& time_update_cb,
-    const MediaInterruptedCB& media_interrupted_cb) {
+    MediaPlayerManager* manager) {
   LOG_IF(WARNING, is_media_source) << "MSE is not supported";
   return new MediaPlayerBridge(
       player_id,
       url,
       first_party_for_cookies,
       hide_url_log,
-      manager,
-      media_error_cb,
-      video_size_changed_cb,
-      buffering_update_cb,
-      media_prepared_cb,
-      playback_complete_cb,
-      seek_complete_cb,
-      time_update_cb,
-      media_interrupted_cb);
+      manager);
 }
 #endif
 
@@ -69,25 +53,9 @@ MediaPlayerBridge::MediaPlayerBridge(
     const GURL& url,
     const GURL& first_party_for_cookies,
     bool hide_url_log,
-    MediaPlayerManager* manager,
-    const MediaErrorCB& media_error_cb,
-    const VideoSizeChangedCB& video_size_changed_cb,
-    const BufferingUpdateCB& buffering_update_cb,
-    const MediaMetadataChangedCB& media_metadata_changed_cb,
-    const PlaybackCompleteCB& playback_complete_cb,
-    const SeekCompleteCB& seek_complete_cb,
-    const TimeUpdateCB& time_update_cb,
-    const MediaInterruptedCB& media_interrupted_cb)
+    MediaPlayerManager* manager)
     : MediaPlayerAndroid(player_id,
-                         manager,
-                         media_error_cb,
-                         video_size_changed_cb,
-                         buffering_update_cb,
-                         media_metadata_changed_cb,
-                         playback_complete_cb,
-                         seek_complete_cb,
-                         time_update_cb,
-                         media_interrupted_cb),
+                         manager),
       prepared_(false),
       pending_play_(false),
       url_(url),

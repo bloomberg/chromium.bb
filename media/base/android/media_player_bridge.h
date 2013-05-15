@@ -44,15 +44,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
                     const GURL& url,
                     const GURL& first_party_for_cookies,
                     bool hide_url_log,
-                    MediaPlayerManager* manager,
-                    const MediaErrorCB& media_error_cb,
-                    const VideoSizeChangedCB& video_size_changed_cb,
-                    const BufferingUpdateCB& buffering_update_cb,
-                    const MediaMetadataChangedCB& media_prepared_cb,
-                    const PlaybackCompleteCB& playback_complete_cb,
-                    const SeekCompleteCB& seek_complete_cb,
-                    const TimeUpdateCB& time_update_cb,
-                    const MediaInterruptedCB& media_interrupted_cb);
+                    MediaPlayerManager* manager);
   virtual ~MediaPlayerBridge();
 
   // MediaPlayerAndroid implementation.

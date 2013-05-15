@@ -48,27 +48,29 @@ class MediaPlayerManagerImpl
   void ExitFullscreen(bool release_media_player);
   void SetVideoSurface(jobject surface);
 
-  // An internal method that checks for current time routinely and generates
-  // time update events.
-  void OnTimeUpdate(int player_id, base::TimeDelta current_time);
-
-  // Callbacks needed by media::MediaPlayerAndroid.
-  void OnMediaMetadataChanged(int player_id, base::TimeDelta duration,
-                              int width, int height, bool success);
-  void OnPlaybackComplete(int player_id);
-  void OnMediaInterrupted(int player_id);
-  void OnBufferingUpdate(int player_id, int percentage);
-  void OnSeekComplete(int player_id, base::TimeDelta current_time);
-  void OnError(int player_id, int error);
-  void OnVideoSizeChanged(int player_id, int width, int height);
-
-#if defined(GOOGLE_TV)
-  // Callbacks needed by media::DemuxerStreamPlayer.
-  void OnReadFromDemuxer(
-      int player_id, media::DemuxerStream::Type type, bool seek_done);
-#endif
-
   // media::MediaPlayerManager overrides.
+  virtual void OnTimeUpdate(
+      int player_id, base::TimeDelta current_time) OVERRIDE;
+  virtual void OnMediaMetadataChanged(
+      int player_id,
+      base::TimeDelta duration,
+      int width,
+      int height,
+      bool success) OVERRIDE;
+  virtual void OnPlaybackComplete(int player_id) OVERRIDE;
+  virtual void OnMediaInterrupted(int player_id) OVERRIDE;
+  virtual void OnBufferingUpdate(int player_id, int percentage) OVERRIDE;
+  virtual void OnSeekComplete(
+      int player_id, base::TimeDelta current_time) OVERRIDE;
+  virtual void OnError(int player_id, int error) OVERRIDE;
+  virtual void OnVideoSizeChanged(
+      int player_id, int width, int height) OVERRIDE;
+#if defined(GOOGLE_TV)
+  virtual void OnReadFromDemuxer(
+      int player_id,
+      media::DemuxerStream::Type type,
+      bool seek_done) OVERRIDE;
+#endif
   virtual void RequestMediaResources(
       media::MediaPlayerAndroid* player) OVERRIDE;
   virtual void ReleaseMediaResources(

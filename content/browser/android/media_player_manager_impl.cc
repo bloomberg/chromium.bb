@@ -4,7 +4,6 @@
 
 #include "content/browser/android/media_player_manager_impl.h"
 
-#include "base/bind.h"
 #include "content/browser/android/media_resource_getter_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/media/media_player_messages.h"
@@ -119,26 +118,7 @@ void MediaPlayerManagerImpl::OnInitialize(
   RenderProcessHost* host = render_view_host()->GetProcess();
   players_.push_back(media::MediaPlayerAndroid::Create(
       player_id, url, is_media_source, first_party_for_cookies,
-      host->GetBrowserContext()->IsOffTheRecord(), this,
-#if defined(GOOGLE_TV)
-      base::Bind(&MediaPlayerManagerImpl::OnReadFromDemuxer,
-                 base::Unretained(this)),
-#endif
-      base::Bind(&MediaPlayerManagerImpl::OnError, base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerImpl::OnVideoSizeChanged,
-                 base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerImpl::OnBufferingUpdate,
-                 base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerImpl::OnMediaMetadataChanged,
-                 base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerImpl::OnPlaybackComplete,
-                 base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerImpl::OnSeekComplete,
-                 base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerImpl::OnTimeUpdate,
-                 base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerImpl::OnMediaInterrupted,
-                 base::Unretained(this))));
+      host->GetBrowserContext()->IsOffTheRecord(), this));
 }
 
 media::MediaResourceGetter* MediaPlayerManagerImpl::GetMediaResourceGetter() {
