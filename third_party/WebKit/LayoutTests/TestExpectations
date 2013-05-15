@@ -222,6 +222,9 @@ crbug.com/233066 http/tests/security/MessagePort/event-listener-context.html [ S
 crbug.com/233066 canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
+# This test's image expectations might need updating.
+crbug.com/238633 editing/style/unbold-in-bold.html [ ImageOnlyFailure ]
+
 webkit.org/b/112923 fast/forms/calendar-picker/calendar-picker-appearance-month-popup.html [ Pass ImageOnlyFailure ]
 
 # -----------------------------------------------------------------

@@ -3,6 +3,9 @@
 
 <script src="../editing.js"></script>
 <script>
+if (window.internals)
+    internals.settings.setEditingBehavior("win");
+
 runDumpAsTextEditingTest(true);
 
 function editingTest() {
@@ -13,6 +16,7 @@ function editingTest() {
     moveSelectionForwardByCharacterCommand();
     extendSelectionForwardByWordCommand();
     extendSelectionForwardByWordCommand();
+    extendSelectionBackwardByCharacterCommand();
     deleteCommand();
 }
 </script>
