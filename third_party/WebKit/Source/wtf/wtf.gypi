@@ -109,8 +109,6 @@
             'RandomNumber.cpp',
             'RandomNumber.h',
             'RandomNumberSeed.h',
-            'RawBuffer.cpp',
-            'RawBuffer.h',
             'RefCounted.h',
             'RefCountedLeakCounter.cpp',
             'RefCountedLeakCounter.h',
