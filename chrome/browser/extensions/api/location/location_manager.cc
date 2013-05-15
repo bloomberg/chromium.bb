@@ -127,48 +127,33 @@ void LocationManager::AddLocationRequest(const std::string& extension_id,
   // TODO(vadimt): Consider resuming requests after restarting the browser.
 
   // Override any old request with the same name.
-  LocationRequestIterator old_location_request =
-      GetLocationRequestIterator(extension_id, request_name);
-  if (old_location_request.first != location_requests_.end())
-    RemoveLocationRequestIterator(old_location_request);
+  RemoveLocationRequest(extension_id, request_name);
 
   LocationRequestPointer location_request = new LocationRequest(AsWeakPtr(),
                                                                 extension_id,
                                                                 request_name);
-  location_requests_[extension_id].push_back(location_request);
+  location_requests_.insert(
+      LocationRequestMap::value_type(extension_id, location_request));
 }
 
 void LocationManager::RemoveLocationRequest(const std::string& extension_id,
                                             const std::string& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  LocationRequestIterator it = GetLocationRequestIterator(extension_id, name);
-  if (it.first == location_requests_.end())
-    return;
+  std::pair<LocationRequestMap::iterator, LocationRequestMap::iterator>
+      extension_range = location_requests_.equal_range(extension_id);
 
-  RemoveLocationRequestIterator(it);
+  for (LocationRequestMap::iterator it = extension_range.first;
+       it != extension_range.second;
+       ++it) {
+    if (it->second->request_name() == name) {
+      location_requests_.erase(it);
+      return;
+    }
+  }
 }
 
 LocationManager::~LocationManager() {
-}
-
-LocationManager::LocationRequestIterator
-    LocationManager::GetLocationRequestIterator(
-        const std::string& extension_id,
-        const std::string& name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  LocationRequestMap::iterator list = location_requests_.find(extension_id);
-  if (list == location_requests_.end())
-    return make_pair(location_requests_.end(), LocationRequestList::iterator());
-
-  for (LocationRequestList::iterator it = list->second.begin();
-       it != list->second.end(); ++it) {
-    if ((*it)->request_name() == name)
-      return make_pair(list, it);
-  }
-
-  return make_pair(location_requests_.end(), LocationRequestList::iterator());
 }
 
 void LocationManager::GeopositionToApiCoordinates(
@@ -187,16 +172,6 @@ void LocationManager::GeopositionToApiCoordinates(
     coordinates->heading.reset(new double(position.heading));
   if (position.speed >= 0.)
     coordinates->speed.reset(new double(position.speed));
-}
-
-void LocationManager::RemoveLocationRequestIterator(
-    const LocationRequestIterator& iter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  LocationRequestList& list = iter.first->second;
-  list.erase(iter.second);
-  if (list.empty())
-    location_requests_.erase(iter.first);
 }
 
 void LocationManager::SendLocationUpdate(

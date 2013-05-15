@@ -7,7 +7,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
@@ -62,34 +61,16 @@ class LocationManager
   friend class LocationRequest;
   friend class ProfileKeyedAPIFactory<LocationManager>;
 
-  typedef scoped_refptr<LocationRequest> LocationRequestPointer;
-  typedef std::vector<LocationRequestPointer> LocationRequestList;
   typedef std::string ExtensionId;
-
-  // TODO(vadimt): Consider converting to multimap.
-  typedef std::map<ExtensionId, LocationRequestList> LocationRequestMap;
-
-  // Iterator used to identify a particular request within the Map/List pair.
-  // "Not found" is represented by <location_requests_.end(), invalid_iterator>.
-  typedef std::pair<LocationRequestMap::iterator, LocationRequestList::iterator>
-      LocationRequestIterator;
-
-  // Helper to return the iterators within the LocationRequestMap and
-  // LocationRequestList for the  matching request, or an iterator to the end of
-  // the LocationRequestMap if none were found.
-  LocationRequestIterator GetLocationRequestIterator(
-      const std::string& extension_id,
-      const std::string& name);
+  typedef scoped_refptr<LocationRequest> LocationRequestPointer;
+  typedef std::multimap<ExtensionId, LocationRequestPointer> LocationRequestMap;
+  typedef LocationRequestMap::iterator LocationRequestIterator;
 
   // Converts |position| from GeolocationProvider to the location API
   // |coordinates|.
   static void GeopositionToApiCoordinates(
       const content::Geoposition& position,
       api::location::Coordinates* coordinates);
-
-  // Helper to cancel and remove the request at the given iterator. The iterator
-  // must be valid.
-  void RemoveLocationRequestIterator(const LocationRequestIterator& iter);
 
   // Sends a location update to the extension.
   void SendLocationUpdate(const std::string& extension_id,
