@@ -43,6 +43,7 @@ class EPKPChallengeKeyBase : public AsyncExtensionFunction {
   static const char kChallengeBadBase64Error[];
   static const char kDevicePolicyDisabledError[];
   static const char kDomainsDontMatchError[];
+  static const char kExtensionNotWhitelistedError[];
   static const char kResponseBadBase64Error[];
   static const char kSignChallengeFailedError[];
 
@@ -69,6 +70,9 @@ class EPKPChallengeKeyBase : public AsyncExtensionFunction {
 
   // Returns true if the device is enterprise managed.
   bool IsEnterpriseDevice() const;
+
+  // Returns true if the extension is white-listed in the user policy.
+  bool IsExtensionWhitelisted() const;
 
   // Returns the enterprise domain the device is enrolled to.
   std::string GetEnterpriseDomain() const;
@@ -151,7 +155,6 @@ typedef EPKPChallengeMachineKey
 
 class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
  public:
-  static const char kExtensionNotWhitelistedError[];
   static const char kGetCertificateFailedError[];
   static const char kKeyRegistrationFailedError[];
   static const char kUserPolicyDisabledError[];
@@ -189,7 +192,6 @@ class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
                            bool success,
                            cryptohome::MountError return_code);
 
-  bool IsExtensionWhitelisted() const;
   bool IsRemoteAttestationEnabledForUser() const;
 
   DECLARE_EXTENSION_FUNCTION(

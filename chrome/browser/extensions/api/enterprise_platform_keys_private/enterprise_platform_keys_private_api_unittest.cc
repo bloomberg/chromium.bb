@@ -157,6 +157,9 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
     // Set the user preferences.
     prefs_ = browser()->profile()->GetPrefs();
     prefs_->SetString(prefs::kGoogleServicesUsername, "test@google.com");
+    base::ListValue whitelist;
+    whitelist.AppendString(extension_->id());
+    prefs_->Set(prefs::kAttestationExtensionWhitelist, whitelist);
   }
 
   NiceMock<chromeos::MockCryptohomeClient> mock_cryptohome_client_;
@@ -197,6 +200,14 @@ TEST_F(EPKPChallengeMachineKeyTest, NonEnterpriseDevice) {
   stub_install_attributes_.SetRegistrationUser("");
 
   EXPECT_EQ(EPKPChallengeMachineKey::kNonEnterpriseDeviceError,
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+TEST_F(EPKPChallengeMachineKeyTest, ExtensionNotWhitelisted) {
+  base::ListValue empty_whitelist;
+  prefs_->Set(prefs::kAttestationExtensionWhitelist, empty_whitelist);
+
+  EXPECT_EQ(EPKPChallengeKeyBase::kExtensionNotWhitelistedError,
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -292,9 +303,6 @@ class EPKPChallengeUserKeyTest : public EPKPChallengeKeyTestBase {
 
     // Set the user preferences.
     prefs_->SetBoolean(prefs::kAttestationEnabled, true);
-    base::ListValue whitelist;
-    whitelist.AppendString(extension_->id());
-    prefs_->Set(prefs::kAttestationExtensionWhitelist, whitelist);
   }
 
   scoped_refptr<EPKPChallengeUserKey> func_;
@@ -320,7 +328,7 @@ TEST_F(EPKPChallengeUserKeyTest, ExtensionNotWhitelisted) {
   base::ListValue empty_whitelist;
   prefs_->Set(prefs::kAttestationExtensionWhitelist, empty_whitelist);
 
-  EXPECT_EQ(EPKPChallengeUserKey::kExtensionNotWhitelistedError,
+  EXPECT_EQ(EPKPChallengeKeyBase::kExtensionNotWhitelistedError,
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 

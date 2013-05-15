@@ -45,6 +45,8 @@ const char EPKPChallengeKeyBase::kDevicePolicyDisabledError[] =
     "Remote attestation is not enabled for your device.";
 const char EPKPChallengeKeyBase::kDomainsDontMatchError[] =
     "User domain %s and Enterprise domain %s don't match.";
+const char EPKPChallengeKeyBase::kExtensionNotWhitelistedError[] =
+    "The extension does not have permission to call this function.";
 const char EPKPChallengeKeyBase::kResponseBadBase64Error[] =
     "Response cannot be encoded in base64.";
 const char EPKPChallengeKeyBase::kSignChallengeFailedError[] =
@@ -107,6 +109,13 @@ void EPKPChallengeKeyBase::GetDeviceAttestationEnabled(
 
 bool EPKPChallengeKeyBase::IsEnterpriseDevice() const {
   return install_attributes_->IsEnterpriseDevice();
+}
+
+bool EPKPChallengeKeyBase::IsExtensionWhitelisted() const {
+  const base::ListValue* list =
+      profile()->GetPrefs()->GetList(prefs::kAttestationExtensionWhitelist);
+  StringValue value(extension_->id());
+  return list->Find(value) != list->end();
 }
 
 std::string EPKPChallengeKeyBase::GetEnterpriseDomain() const {
@@ -248,6 +257,13 @@ bool EPKPChallengeMachineKey::RunImpl() {
     return false;
   }
 
+  // Check if the extension is whitelisted in the user policy.
+  if (!IsExtensionWhitelisted()) {
+    SetError(kExtensionNotWhitelistedError);
+    return false;
+  }
+
+  // Check if the user domain is the same as the enrolled enterprise domain.
   std::string user_domain = GetUserDomain();
   std::string enterprise_domain = GetEnterpriseDomain();
   if (user_domain != enterprise_domain) {
@@ -320,8 +336,6 @@ void EPKPChallengeMachineKey::SignChallengeCallback(
 
 // Implementation of ChallengeUserKey()
 
-const char EPKPChallengeUserKey::kExtensionNotWhitelistedError[] =
-    "The extension does not have permission to call this function.";
 const char EPKPChallengeUserKey::kGetCertificateFailedError[] =
     "Failed to get Enterprise user certificate. Error code = %d";
 const char EPKPChallengeUserKey::kKeyRegistrationFailedError[] =
@@ -496,13 +510,6 @@ void EPKPChallengeUserKey::RegisterKeyCallback(
 
   results_ = api_epkp::ChallengeUserKey::Results::Create(encoded_response);
   SendResponse(true);
-}
-
-bool EPKPChallengeUserKey::IsExtensionWhitelisted() const {
-  const base::ListValue* list =
-      profile()->GetPrefs()->GetList(prefs::kAttestationExtensionWhitelist);
-  StringValue value(extension_->id());
-  return list->Find(value) != list->end();
 }
 
 bool EPKPChallengeUserKey::IsRemoteAttestationEnabledForUser() const {
