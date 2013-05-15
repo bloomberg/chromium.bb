@@ -15,7 +15,7 @@
   ],
   'conditions': [
     # This target won't build in fastbuild, since there are no PDBs. 
-    ['OS=="win" and fastbuild==0', {
+    ['OS=="win" and fastbuild==0 and chrome_split_dll==0', {
       'targets': [
         {
           'target_name': 'mini_installer_syzygy',
@@ -31,6 +31,8 @@
           'includes': [ 'mini_installer.gypi', ],
         },
       ],
+    },{
+      'targets': [],
     }],
     [ 'branding == "Chrome"', {
       'variables': {
