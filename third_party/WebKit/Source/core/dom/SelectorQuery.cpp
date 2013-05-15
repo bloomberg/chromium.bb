@@ -98,38 +98,67 @@ PassRefPtr<Element> SelectorDataList::queryFirst(Node* rootNode) const
     return toElement(result.first().get());
 }
 
-bool SelectorDataList::canUseIdLookup(Node* rootNode) const
-{
-    // We need to return the matches in document order. To use id lookup while there is possiblity of multiple matches
-    // we would need to sort the results. For now, just traverse the document in that case.
-    if (m_selectors.size() != 1)
-        return false;
-    if (m_selectors[0].selector->m_match != CSSSelector::Id)
-        return false;
-    if (!rootNode->inDocument())
-        return false;
-    if (rootNode->document()->inQuirksMode())
-        return false;
-    if (rootNode->document()->containsMultipleElementsWithId(m_selectors[0].selector->value()))
-        return false;
-    return true;
-}
-
 static inline bool isTreeScopeRoot(Node* node)
 {
     ASSERT(node);
     return node->isDocumentNode() || node->isShadowRoot();
 }
 
+// If the first pair value is true, the returned Node is the single Element that may match the selector query.
+//
+// If the first value is false, the returned Node is the rootNode parameter or a descendant of rootNode representing
+// the subtree for which we can limit the querySelector traversal.
+//
+// The returned Node may be 0, regardless of the returned bool value, if this method finds that the selectors won't
+// match any element.
+std::pair<bool, Node*> SelectorDataList::findTraverseRoot(Node* rootNode) const
+{
+    // We need to return the matches in document order. To use id lookup while there is possiblity of multiple matches
+    // we would need to sort the results. For now, just traverse the document in that case.
+    if (m_selectors.size() != 1)
+        return std::make_pair(false, rootNode);
+    if (!rootNode->inDocument())
+        return std::make_pair(false, rootNode);
+    if (rootNode->document()->inQuirksMode())
+        return std::make_pair(false, rootNode);
+
+    bool matchSingleNode = true;
+    bool startFromParent = false;
+    for (const CSSSelector* selector = m_selectors[0].selector; selector; selector = selector->tagHistory()) {
+        if (selector->m_match == CSSSelector::Id && !rootNode->document()->containsMultipleElementsWithId(selector->value())) {
+            Element* element = rootNode->treeScope()->getElementById(selector->value());
+            if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(rootNode)))
+                rootNode = element;
+            else if (!element || matchSingleNode)
+                rootNode = 0;
+            if (matchSingleNode)
+                return std::make_pair(true, rootNode);
+            if (startFromParent && rootNode)
+                rootNode = rootNode->parentNode();
+            return std::make_pair(false, rootNode);
+        }
+        if (selector->relation() == CSSSelector::SubSelector)
+            continue;
+        matchSingleNode = false;
+        if (selector->relation() == CSSSelector::DirectAdjacent || selector->relation() == CSSSelector::IndirectAdjacent)
+            startFromParent = true;
+        else
+            startFromParent = false;
+    }
+    return std::make_pair(false, rootNode);
+}
+
 template <bool firstMatchOnly>
 void SelectorDataList::execute(Node* rootNode, Vector<RefPtr<Node> >& matchedElements) const
 {
-    if (canUseIdLookup(rootNode)) {
+    std::pair<bool, Node*> traverseRoot = findTraverseRoot(rootNode);
+    if (!traverseRoot.second)
+        return;
+    Node* traverseRootNode = traverseRoot.second;
+    if (traverseRoot.first) {
         ASSERT(m_selectors.size() == 1);
-        const CSSSelector* selector = m_selectors[0].selector;
-        Element* element = rootNode->treeScope()->getElementById(selector->value());
-        if (!element || !(isTreeScopeRoot(rootNode) || element->isDescendantOf(rootNode)))
-            return;
+        ASSERT(traverseRootNode->isElementNode());
+        Element* element = toElement(traverseRootNode);
         if (selectorMatches(m_selectors[0], element, rootNode))
             matchedElements.append(element);
         return;
@@ -137,7 +166,7 @@ void SelectorDataList::execute(Node* rootNode, Vector<RefPtr<Node> >& matchedEle
 
     unsigned selectorCount = m_selectors.size();
 
-    Node* n = rootNode->firstChild();
+    Node* n = traverseRootNode->firstChild();
     while (n) {
         if (n->isElementNode()) {
             Element* element = toElement(n);
@@ -156,7 +185,7 @@ void SelectorDataList::execute(Node* rootNode, Vector<RefPtr<Node> >& matchedEle
         }
         while (!n->nextSibling()) {
             n = n->parentNode();
-            if (n == rootNode)
+            if (n == traverseRootNode)
                 return;
         }
         n = n->nextSibling();
