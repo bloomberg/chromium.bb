@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -85,6 +86,19 @@ class ExtensionFunction
     : public base::RefCountedThreadSafe<ExtensionFunction,
                                         ExtensionFunctionDeleteTraits> {
  public:
+  enum ResponseType {
+    // The function has succeeded.
+    SUCCEEDED,
+    // The function has failed.
+    FAILED,
+    // The input message is malformed.
+    BAD_MESSAGE
+  };
+
+  typedef base::Callback<void(ResponseType type,
+                              const base::ListValue& results,
+                              const std::string& error)> ResponseCallback;
+
   ExtensionFunction();
 
   virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction();
@@ -176,6 +190,10 @@ class ExtensionFunction
   extensions::functions::HistogramValue histogram_value() const {
     return histogram_value_; }
 
+  void set_response_callback(const ResponseCallback& callback) {
+    response_callback_ = callback;
+  }
+
  protected:
   friend struct ExtensionFunctionDeleteTraits;
 
@@ -192,16 +210,7 @@ class ExtensionFunction
   virtual void SendResponse(bool success) = 0;
 
   // Common implementation for SendResponse.
-  void SendResponseImpl(base::ProcessHandle process,
-                        IPC::Sender* ipc_sender,
-                        int routing_id,
-                        bool success);
-
-  // Called when we receive an extension api request that is invalid in a way
-  // that JSON validation in the renderer should have caught. This should never
-  // happen and could be an attacker trying to exploit the browser, so we crash
-  // the renderer instead.
-  void HandleBadMessage(base::ProcessHandle process);
+  void SendResponseImpl(bool success);
 
   // Return true if the argument to this function at |index| was provided and
   // is non-null.
@@ -247,12 +256,15 @@ class ExtensionFunction
   std::string error_;
 
   // Any class that gets a malformed message should set this to true before
-  // returning.  The calling renderer process will be killed.
+  // returning.  Usually we want to kill the message sending process.
   bool bad_message_;
 
   // The sample value to record with the histogram API when the function
   // is invoked.
   extensions::functions::HistogramValue histogram_value_;
+
+  // The callback to run once the function has done execution.
+  ResponseCallback response_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };
@@ -261,6 +273,8 @@ class ExtensionFunction
 // this category.
 class UIThreadExtensionFunction : public ExtensionFunction {
  public:
+  // TODO(yzshen): We should be able to remove this interface now that we
+  // support overriding the response callback.
   // A delegate for use in testing, to intercept the call to SendResponse.
   class DelegateForTests {
    public:
@@ -391,13 +405,9 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
   virtual IOThreadExtensionFunction* AsIOThreadExtensionFunction() OVERRIDE;
 
-  void set_ipc_sender(base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
-                      int routing_id) {
+  void set_ipc_sender(base::WeakPtr<ChromeRenderMessageFilter> ipc_sender) {
     ipc_sender_ = ipc_sender;
-    routing_id_ = routing_id;
   }
-  ChromeRenderMessageFilter* ipc_sender() const { return ipc_sender_.get(); }
-  int routing_id() const { return routing_id_; }
 
   base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_weak() const {
     return ipc_sender_;
@@ -423,7 +433,6 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
  private:
   base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_;
-  int routing_id_;
 
   scoped_refptr<const ExtensionInfoMap> extension_info_map_;
 };

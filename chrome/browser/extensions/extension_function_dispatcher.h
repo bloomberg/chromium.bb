@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_DISPATCHER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_DISPATCHER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/extension_function.h"
 #include "ipc/ipc_sender.h"
 #include "googleurl/src/gurl.h"
 
 class ChromeRenderMessageFilter;
-class ExtensionFunction;
 class ExtensionInfoMap;
 class Profile;
 struct ExtensionHostMsg_Request_Params;
@@ -97,8 +98,15 @@ class ExtensionFunctionDispatcher
   Delegate* delegate() { return delegate_; }
 
   // Message handlers.
+  // The response is sent to the corresponding render view in an
+  // ExtensionMsg_Response message.
   void Dispatch(const ExtensionHostMsg_Request_Params& params,
-                content::RenderViewHost* sender);
+                content::RenderViewHost* render_view_host);
+  // |callback| is called when the function execution completes.
+  void DispatchWithCallback(
+      const ExtensionHostMsg_Request_Params& params,
+      content::RenderViewHost* render_view_host,
+      const ExtensionFunction::ResponseCallback& callback);
 
   // Called when an ExtensionFunction is done executing, after it has sent
   // a response (if any) to the extension.
@@ -108,14 +116,22 @@ class ExtensionFunctionDispatcher
   Profile* profile() { return profile_; }
 
  private:
+  // For a given RenderViewHost instance, UIThreadResponseCallbackWrapper
+  // creates ExtensionFunction::ResponseCallback instances which send responses
+  // to the corresponding render view in ExtensionMsg_Response messages.
+  // This class tracks the lifespan of the RenderViewHost instance, and will be
+  // destroyed automatically when it goes away.
+  class UIThreadResponseCallbackWrapper;
+
   // Helper to check whether an ExtensionFunction has the required permissions.
   // This should be called after the function is fully initialized.
+  // If the check fails, |callback| is run with an access-denied error and false
+  // is returned. |function| must not be run in that case.
   static bool CheckPermissions(
       ExtensionFunction* function,
       const extensions::Extension* extension,
       const ExtensionHostMsg_Request_Params& params,
-      IPC::Sender* ipc_sender,
-      int routing_id);
+      const ExtensionFunction::ResponseCallback& callback);
 
   // Helper to create an ExtensionFunction to handle the function given by
   // |params|. Can be called on any thread.
@@ -127,19 +143,23 @@ class ExtensionFunctionDispatcher
       const extensions::ProcessMap& process_map,
       extensions::ExtensionAPI* api,
       void* profile,
-      IPC::Sender* ipc_sender,
-      content::RenderViewHost* render_view_host,
-      int routing_id);
+      const ExtensionFunction::ResponseCallback& callback);
 
-  // Helper to send an access denied error to the requesting renderer. Can be
+  // Helper to run the response callback with an access denied error. Can be
   // called on any thread.
-  static void SendAccessDenied(IPC::Sender* ipc_sender,
-                               int routing_id,
-                               int request_id);
+  static void SendAccessDenied(
+      const ExtensionFunction::ResponseCallback& callback);
 
   Profile* profile_;
 
   Delegate* delegate_;
+
+  // This map doesn't own either the keys or the values. When a RenderViewHost
+  // instance goes away, the corresponding entry in this map (if exists) will be
+  // removed.
+  typedef std::map<content::RenderViewHost*, UIThreadResponseCallbackWrapper*>
+      UIThreadResponseCallbackWrapperMap;
+  UIThreadResponseCallbackWrapperMap ui_thread_response_callback_wrappers_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_DISPATCHER_H_

@@ -10,9 +10,14 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
+#include "chrome/browser/extensions/extension_function.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/host/resource_message_filter.h"
+
+struct ExtensionHostMsg_Request_Params;
 
 namespace base {
 class ListValue;
@@ -52,6 +57,13 @@ class PepperExtensionsCommonMessageFilter
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
+  // DispatcherOwner holds an ExtensionFunctionDispatcher instance and acts as
+  // its delegate. It is designed to meet the lifespan requirements of
+  // ExtensionFunctionDispatcher and its delegate. (Please see the comment of
+  // ExtensionFunctionDispatcher constructor in
+  // extension_function_dispatcher.h.)
+  class DispatcherOwner;
+
   int32_t OnPost(ppapi::host::HostMessageContext* context,
                  const std::string& request_name,
                  base::ListValue& args);
@@ -60,12 +72,40 @@ class PepperExtensionsCommonMessageFilter
                  const std::string& request_name,
                  base::ListValue& args);
 
+  // It is possible that |dispatcher_owner_| is still NULL after this method is
+  // called.
+  void EnsureDispatcherOwnerInitialized();
+  // Resets |dispatcher_owner_| to NULL.
+  void DetachDispatcherOwner();
+
+  void PopulateParams(const std::string& request_name,
+                      base::ListValue* args,
+                      bool has_callback,
+                      ExtensionHostMsg_Request_Params* params);
+
+  void OnExtensionFunctionCompleted(
+      scoped_ptr<ppapi::host::ReplyMessageContext> reply_context,
+      ExtensionFunction::ResponseType type,
+      const base::ListValue& results,
+      const std::string& error);
+
+  bool HandleRequest(ppapi::host::HostMessageContext* context,
+                     const std::string& request_name,
+                     base::ListValue* args,
+                     bool has_callback);
+
   // All the members are initialized on the IO thread when the object is
   // constructed, and accessed only on the UI thread afterwards.
   int render_process_id_;
   int render_view_id_;
   base::FilePath profile_directory_;
   GURL document_url_;
+
+  // Not-owning pointer. It will be set to NULL when it goes away.
+  DispatcherOwner* dispatcher_owner_;
+  bool dispatcher_owner_initialized_;
+
+  base::string16 source_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperExtensionsCommonMessageFilter);
 };
