@@ -36,6 +36,7 @@
 #include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlowThread.h"
+#include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTheme.h"
@@ -344,6 +345,15 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
     // Create a clone of this inline.
     RenderInline* cloneInline = clone();
     cloneInline->setContinuation(oldCont);
+
+    // If we're splitting the inline containing the fullscreened element,
+    // |beforeChild| may be the renderer for the fullscreened element. However,
+    // that renderer is wrapped in a RenderFullScreen, so |this| is not its
+    // parent. Since the splitting logic expects |this| to be the parent, set
+    // |beforeChild| to be the RenderFullScreen.
+    const Element* fullScreenElement = document()->webkitCurrentFullScreenElement();
+    if (fullScreenElement && beforeChild && beforeChild->node() == fullScreenElement)
+        beforeChild = document()->fullScreenRenderer();
 
     // Now take all of the children from beforeChild to the end and remove
     // them from |this| and place them in the clone.
