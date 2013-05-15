@@ -65,7 +65,9 @@ class BrowserPluginGuest::PermissionRequest {
   virtual void Respond(bool should_allow) = 0;
   virtual ~PermissionRequest() {}
  protected:
-  PermissionRequest() {}
+  PermissionRequest() {
+    RecordAction(UserMetricsAction("BrowserPlugin.Guest.PermissionRequest"));
+  }
 };
 
 class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
@@ -1061,6 +1063,8 @@ void BrowserPluginGuest::Attach(
       new BrowserPluginMsg_Attach_ACK(instance_id_, ack_params));
 
   SendQueuedMessages();
+
+  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Attached"));
 }
 
 void BrowserPluginGuest::OnCompositorFrameACK(

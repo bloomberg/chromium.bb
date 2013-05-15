@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/api/webview.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/error_utils.h"
 
@@ -73,6 +74,7 @@ void WebviewExecuteScriptFunction::OnExecuteCodeFinished(
     int32 on_page_id,
     const GURL& on_url,
     const ListValue& result) {
+  content::RecordAction(content::UserMetricsAction("WebView.ExecuteScript"));
   if (error.empty())
     SetResult(result.DeepCopy());
   WebviewExecuteCodeFunction::OnExecuteCodeFinished(error, on_page_id, on_url,
