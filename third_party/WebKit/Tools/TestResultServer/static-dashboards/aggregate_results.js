@@ -36,7 +36,8 @@
 
 function generatePage(historyInstance)
 {
-    var html = ui.html.testTypeSwitcher(true) + '<br>';
+    var html = ui.html.testTypeSwitcher(true);
+    html += ui.html.checkbox('rawValues', 'Show raw values', g_history.dashboardSpecificState.rawValues);
     for (var builder in currentBuilders())
         html += htmlForBuilder(builder);
     document.body.innerHTML = html;
@@ -80,25 +81,15 @@ function htmlForBuilder(builder)
     var numColumns = results[ALL_FIXABLE_COUNT_KEY].length;
     var html = '<div class=container><h2>' + builder + '</h2>';
 
-    if (g_history.dashboardSpecificState.rawValues)
-        html += rawValuesHTML(results, numColumns);
-    else {
+    if (g_history.dashboardSpecificState.rawValues) {
+        html += htmlForSummaryTable(results, numColumns) +
+            htmlForTestType(results, FIXABLE_COUNTS_KEY, FIXABLE_DESCRIPTION, numColumns);
+    } else {
         html += '<a href="timeline_explorer.html' + (location.hash ? location.hash + '&' : '#') + 'builder=' + builder + '">' +
             chartHTML(results, numColumns) + '</a>';
     }
 
     html += '</div>';
-    return html;
-}
-
-function rawValuesHTML(results, numColumns)
-{
-    var html = htmlForSummaryTable(results, numColumns) +
-        htmlForTestType(results, FIXABLE_COUNTS_KEY, FIXABLE_DESCRIPTION, numColumns);
-    if (g_history.isLayoutTestResults()) {
-        html += htmlForTestType(results, DEFERRED_COUNTS_KEY, DEFERRED_DESCRIPTION, numColumns) +
-            htmlForTestType(results, WONTFIX_COUNTS_KEY, WONTFIX_DESCRIPTION, numColumns);
-    }
     return html;
 }
 
@@ -108,7 +99,7 @@ function chartHTML(results, numColumns)
     var revisionKey = shouldShowBlinkRevisions ? BLINK_REVISIONS_KEY : CHROME_REVISIONS_KEY;
     var startRevision = results[revisionKey][numColumns - 1];
     var endRevision = results[revisionKey][0];
-    var revisionLabel = shouldShowBlinkRevisions ? "WebKit Revision" : "Chromium Revision";
+    var revisionLabel = shouldShowBlinkRevisions ? "Blink Revision" : "Chromium Revision";
 
     var fixable = results[FIXABLE_COUNT_KEY].slice(0, numColumns);
     var html = chart("Total failing", {"": fixable}, revisionLabel, startRevision, endRevision);
@@ -140,7 +131,8 @@ function filteredValues(values, desiredNumberOfPoints)
     });
 }
 
-function chartUrl(title, values, revisionLabel, startRevision, endRevision, desiredNumberOfPoints) {
+function chartUrl(title, values, revisionLabel, startRevision, endRevision, desiredNumberOfPoints)
+{
     var maxValue = 0;
     for (var expectation in values)
         maxValue = Math.max(maxValue, Math.max.apply(null, filteredValues(values[expectation], desiredNumberOfPoints)));
@@ -164,7 +156,6 @@ function chartUrl(title, values, revisionLabel, startRevision, endRevision, desi
             chartData + "&chg=15,15,1,3&chxt=x,x,y&chxl=1:||" + revisionLabel +
             "|&chxr=0," + startRevision + "," + endRevision + "|2,0," + maxValue + "&chtt=" + title;
 
-
     if (labels)
         url += "&chdl=" + labels + "&chco=" + LABEL_COLORS.slice(0, numLabels).join(',');
     return url;
@@ -187,7 +178,7 @@ function chart(title, values, revisionLabel, startRevision, endRevision)
 
 function htmlForRevisionRows(results, numColumns)
 {
-    return htmlForTableRow('WebKit Revision', results[BLINK_REVISIONS_KEY].slice(0, numColumns)) +
+    return htmlForTableRow('Blink Revision', results[BLINK_REVISIONS_KEY].slice(0, numColumns)) +
         htmlForTableRow('Chrome Revision', results[CHROME_REVISIONS_KEY].slice(0, numColumns));
 }
 
@@ -208,8 +199,8 @@ function htmlForSummaryTable(results, numColumns)
     }
     var html = htmlForRevisionRows(results, numColumns) +
         htmlForTableRow('Percent passed', percent) +
-        htmlForTableRow('Failures (deduped)', fixable) +
-        htmlForTableRow('Fixable Tests', allFixable);
+        htmlForTableRow('Failures', fixable) +
+        htmlForTableRow('Total Tests', allFixable);
     return wrapHTMLInTable('Summary', html);
 }
 

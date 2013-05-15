@@ -26,6 +26,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+module('history');
+
 test('queryHashAsMap', 2, function() {
     equal(window.location.hash, '#useTestData=true');
     deepEqual(history.queryHashAsMap(), {useTestData: 'true'});
