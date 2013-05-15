@@ -3022,7 +3022,7 @@
    ...
    fun:_ZNSt5dequeIN*PendingTaskESaIS1_EE*push_back*
    fun:_ZNSt5queueIN4*PendingTask*deque*push*
-   fun:_ZN4base11MessageLoop18AddToIncomingQueueEPN*PendingTaskE
+   fun:_ZN4base11MessageLoop18AddToIncomingQueueEPN*PendingTaskE*
 }
 {
    bug_84224_b
