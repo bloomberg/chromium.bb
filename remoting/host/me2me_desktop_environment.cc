@@ -67,21 +67,18 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
     curtain_ = CurtainMode::Create(caller_task_runner(),
                                    ui_task_runner(),
                                    client_session_control);
-    return curtain_->Activate();
+    bool active = curtain_->Activate();
+    if (!active)
+      LOG(ERROR) << "Failed to activate the curtain mode.";
+    return active;
   }
 
   // Otherwise, if the session is shared with the local user start monitoring
   // the local input and create the in-session UI.
 
-  // Create the local input monitor.
-  local_input_monitor_ = LocalInputMonitor::Create(caller_task_runner(),
-                                                   input_task_runner(),
-                                                   ui_task_runner(),
-                                                   client_session_control);
-
-  // The host UI should be created on the UI thread.
-  bool want_user_interface = true;
-#if defined(OS_MACOSX)
+#if defined(OS_LINUX)
+  bool want_user_interface = false;
+#elif defined(OS_MACOSX)
   // Don't try to display any UI on top of the system's login screen as this
   // is rejected by the Window Server on OS X 10.7.4, and prevents the
   // capturer from working (http://crbug.com/140984).
@@ -89,11 +86,19 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
   // TODO(lambroslambrou): Use a better technique of detecting whether we're
   // running in the LoginWindow context, and refactor this into a separate
   // function to be used here and in CurtainMode::ActivateCurtain().
-  want_user_interface = getuid() != 0;
-#endif  // defined(OS_MACOSX)
+  bool want_user_interface = getuid() != 0;
+#elif defined(OS_WIN)
+  bool want_user_interface = true;
+#endif  // defined(OS_WIN)
 
   // Create the disconnect window.
   if (want_user_interface) {
+    // Create the local input monitor.
+    local_input_monitor_ = LocalInputMonitor::Create(caller_task_runner(),
+                                                     input_task_runner(),
+                                                     ui_task_runner(),
+                                                     client_session_control);
+
     disconnect_window_ = HostWindow::CreateDisconnectWindow(ui_strings);
     disconnect_window_.reset(new HostWindowProxy(
         caller_task_runner(),
