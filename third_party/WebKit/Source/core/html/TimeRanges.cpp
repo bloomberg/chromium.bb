@@ -36,6 +36,7 @@ using namespace std;
 
 TimeRanges::TimeRanges(double start, double end)
 {
+    ScriptWrappable::init(this);
     add(start, end);
 }
 

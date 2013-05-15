@@ -29,6 +29,7 @@
 #ifndef ImageData_h
 #define ImageData_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/graphics/IntSize.h"
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
@@ -36,7 +37,7 @@
 
 namespace WebCore {
 
-class ImageData : public RefCounted<ImageData> {
+class ImageData : public RefCounted<ImageData>, public ScriptWrappable {
 public:
     static PassRefPtr<ImageData> create(const IntSize&);
     static PassRefPtr<ImageData> create(const IntSize&, PassRefPtr<Uint8ClampedArray>);

@@ -26,6 +26,7 @@
 #ifndef MediaController_h
 #define MediaController_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventListener.h"
@@ -43,7 +44,7 @@ class HTMLMediaElement;
 class Event;
 class ScriptExecutionContext;
 
-class MediaController : public RefCounted<MediaController>, public MediaControllerInterface, public EventTarget {
+class MediaController : public RefCounted<MediaController>, public ScriptWrappable, public MediaControllerInterface, public EventTarget {
 public:
     static PassRefPtr<MediaController> create(ScriptExecutionContext*);
     virtual ~MediaController();
@@ -53,32 +54,32 @@ public:
     bool containsMediaElement(HTMLMediaElement*) const;
 
     const String& mediaGroup() const { return m_mediaGroup; }
-    
+
     virtual PassRefPtr<TimeRanges> buffered() const;
     virtual PassRefPtr<TimeRanges> seekable() const;
     virtual PassRefPtr<TimeRanges> played();
-    
+
     virtual double duration() const;
     virtual double currentTime() const;
     virtual void setCurrentTime(double, ExceptionCode&);
-    
+
     virtual bool paused() const { return m_paused; }
     virtual void play();
     virtual void pause();
     void unpause();
-    
+
     virtual double defaultPlaybackRate() const { return m_defaultPlaybackRate; }
     virtual void setDefaultPlaybackRate(double);
-    
+
     virtual double playbackRate() const;
     virtual void setPlaybackRate(double);
-    
+
     virtual double volume() const { return m_volume; }
     virtual void setVolume(double, ExceptionCode&);
-    
+
     virtual bool muted() const { return m_muted; }
     virtual void setMuted(bool);
-    
+
     virtual ReadyState readyState() const { return m_readyState; }
 
     enum PlaybackState { WAITING, PLAYING, ENDED };
@@ -93,18 +94,18 @@ public:
     virtual bool hasClosedCaptions() const;
     virtual void setClosedCaptionsVisible(bool);
     virtual bool closedCaptionsVisible() const { return m_closedCaptionsVisible; }
-    
+
     virtual bool supportsScanning() const;
-    
+
     virtual void beginScrubbing();
     virtual void endScrubbing();
-    
+
     virtual bool canPlay() const;
-    
+
     virtual bool isLiveStream() const;
-    
+
     virtual bool hasCurrentSrc() const;
-    
+
     virtual void returnToRealtime();
 
     bool isBlocked() const;
