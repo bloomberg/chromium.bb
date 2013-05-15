@@ -125,7 +125,7 @@ void AppShortcutLauncherItemController::LauncherItemChanged(
 }
 
 ChromeLauncherAppMenuItems
-AppShortcutLauncherItemController::GetApplicationList() {
+AppShortcutLauncherItemController::GetApplicationList(int event_flags) {
   ChromeLauncherAppMenuItems items;
   // Add the application name to the menu.
   items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));

@@ -192,6 +192,8 @@
         'browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h',
         'browser/ui/ash/launcher/browser_launcher_item_controller.cc',
         'browser/ui/ash/launcher/browser_launcher_item_controller.h',
+        'browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.cc',
+        'browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h',
         'browser/ui/ash/launcher/chrome_launcher_app_menu_item.cc',
         'browser/ui/ash/launcher/chrome_launcher_app_menu_item.h',
         'browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.cc',

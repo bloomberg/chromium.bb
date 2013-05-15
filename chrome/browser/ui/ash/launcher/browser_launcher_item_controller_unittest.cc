@@ -37,8 +37,6 @@
 
 namespace {
 
-const int kExpectedAppIndex = 1;
-
 // Test implementation of AppTabHelper.
 class AppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
  public:
@@ -128,17 +126,18 @@ class TabHelperTabStripModelDelegate : public TestTabStripModelDelegate {
 
 }  // namespace
 
-class BrowserLauncherItemControllerTest
+// TODO(skuhne): Several of these unit tests need to be moved into a new home
+// when the old launcher & the browser launcher item controller are removed
+// (several of these tests are not testing the BrowserLauncherItemController -
+// but the LauncherController framework).
+class LauncherItemControllerPerAppTest
     : public ChromeRenderViewHostTestHarness {
  public:
-  BrowserLauncherItemControllerTest()
+  LauncherItemControllerPerAppTest()
       : browser_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshDisablePerAppLauncher);
-
     ChromeRenderViewHostTestHarness::SetUp();
 
     activation_client_.reset(
@@ -164,7 +163,7 @@ class BrowserLauncherItemControllerTest
   struct State : public aura::client::ActivationDelegate,
                  public aura::client::ActivationChangeObserver {
    public:
-    State(BrowserLauncherItemControllerTest* test,
+    State(LauncherItemControllerPerAppTest* test,
           const std::string& app_id,
           BrowserLauncherItemController::Type launcher_type)
         : launcher_test(test),
@@ -202,7 +201,7 @@ class BrowserLauncherItemControllerTest
       updater.BrowserActivationStateChanged();
     }
 
-    BrowserLauncherItemControllerTest* launcher_test;
+    LauncherItemControllerPerAppTest* launcher_test;
     aura::Window window;
     TabHelperTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip;
@@ -245,6 +244,80 @@ class BrowserLauncherItemControllerTest
 
  private:
   content::TestBrowserThread browser_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherItemControllerPerAppTest);
+};
+
+// Verify that the launcher item positions are persisted and restored.
+TEST_F(LauncherItemControllerPerAppTest, PersistLauncherItemPositions) {
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT,
+            launcher_model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST,
+            launcher_model_->items()[1].type);
+  scoped_ptr<content::WebContents> tab1(CreateTestWebContents());
+  scoped_ptr<content::WebContents> tab2(CreateTestWebContents());
+  app_tab_helper_->SetAppID(tab1.get(), "1");
+  app_tab_helper_->SetAppID(tab1.get(), "2");
+
+  launcher_delegate_->PinAppWithID("1");
+  launcher_delegate_->PinAppWithID("2");
+
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT,
+            launcher_model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
+            launcher_model_->items()[1].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
+            launcher_model_->items()[2].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST,
+            launcher_model_->items()[3].type);
+
+  launcher_model_->Move(0, 2);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
+            launcher_model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
+            launcher_model_->items()[1].type);
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT,
+            launcher_model_->items()[2].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST,
+            launcher_model_->items()[3].type);
+
+  launcher_delegate_.reset();
+  launcher_model_.reset(new ash::LauncherModel);
+  launcher_delegate_.reset(
+      ChromeLauncherController::CreateInstance(profile(),
+                                               launcher_model_.get()));
+  app_tab_helper_ = new AppTabHelperImpl;
+  app_tab_helper_->SetAppID(tab1.get(), "1");
+  app_tab_helper_->SetAppID(tab2.get(), "2");
+  ResetAppTabHelper();
+
+  launcher_delegate_->Init();
+
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
+            launcher_model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
+            launcher_model_->items()[1].type);
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT,
+            launcher_model_->items()[2].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST,
+            launcher_model_->items()[3].type);
+}
+
+class BrowserLauncherItemControllerTest
+    : public LauncherItemControllerPerAppTest {
+ public:
+  BrowserLauncherItemControllerTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshDisablePerAppLauncher);
+
+    LauncherItemControllerPerAppTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    LauncherItemControllerPerAppTest::TearDown();
+  }
 
   DISALLOW_COPY_AND_ASSIGN(BrowserLauncherItemControllerTest);
 };
@@ -294,19 +367,23 @@ TEST_F(BrowserLauncherItemControllerTest, TabbedSetup) {
 // Verifies pinned apps are persisted and restored.
 TEST_F(BrowserLauncherItemControllerTest, PersistPinned) {
   size_t initial_size = launcher_model_->items().size();
-    scoped_ptr<content::WebContents> tab1(CreateTestWebContents());
+  scoped_ptr<content::WebContents> tab1(CreateTestWebContents());
 
   app_tab_helper_->SetAppID(tab1.get(), "1");
 
   app_icon_loader_->GetAndClearFetchCount();
   launcher_delegate_->PinAppWithID("1");
+  ash::LauncherID id = launcher_delegate_->GetLauncherIDForAppID("1");
+  int app_index = launcher_model_->ItemIndexByID(id);
   EXPECT_GT(app_icon_loader_->GetAndClearFetchCount(), 0);
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
-            launcher_model_->items()[kExpectedAppIndex].type);
+            launcher_model_->items()[app_index].type);
   EXPECT_TRUE(launcher_delegate_->IsAppPinned("1"));
   EXPECT_FALSE(launcher_delegate_->IsAppPinned("0"));
   EXPECT_EQ(initial_size + 1, launcher_model_->items().size());
 
+  launcher_delegate_.reset();
+  launcher_model_.reset(new ash::LauncherModel);
   launcher_delegate_.reset(
       ChromeLauncherController::CreateInstance(profile(),
                                                launcher_model_.get()));
@@ -321,10 +398,71 @@ TEST_F(BrowserLauncherItemControllerTest, PersistPinned) {
   EXPECT_TRUE(launcher_delegate_->IsAppPinned("1"));
   EXPECT_FALSE(launcher_delegate_->IsAppPinned("0"));
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
-            launcher_model_->items()[kExpectedAppIndex].type);
+            launcher_model_->items()[app_index].type);
 
   UnpinAppsWithID("1");
   ASSERT_EQ(initial_size, launcher_model_->items().size());
+}
+
+// Verify that launcher item positions are persisted and restored.
+TEST_F(BrowserLauncherItemControllerTest,
+    PersistLauncherItemPositionsPerBrowser) {
+  int browser_shortcut_index = 0;
+  int app_list_index = 1;
+
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT,
+            launcher_model_->items()[browser_shortcut_index].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST,
+            launcher_model_->items()[app_list_index].type);
+
+  scoped_ptr<content::WebContents> tab1(CreateTestWebContents());
+  scoped_ptr<content::WebContents> tab2(CreateTestWebContents());
+
+  app_tab_helper_->SetAppID(tab1.get(), "1");
+  app_tab_helper_->SetAppID(tab2.get(), "2");
+
+  app_icon_loader_->GetAndClearFetchCount();
+  launcher_delegate_->PinAppWithID("1");
+  ash::LauncherID id = launcher_delegate_->GetLauncherIDForAppID("1");
+  int app1_index = launcher_model_->ItemIndexByID(id);
+
+  launcher_delegate_->PinAppWithID("2");
+  id = launcher_delegate_->GetLauncherIDForAppID("2");
+  int app2_index = launcher_model_->ItemIndexByID(id);
+
+  launcher_model_->Move(browser_shortcut_index, app1_index);
+
+  browser_shortcut_index = 1;
+  app1_index = 0;
+
+  EXPECT_GT(app_icon_loader_->GetAndClearFetchCount(), 0);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
+            launcher_model_->items()[app1_index].type);
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT,
+            launcher_model_->items()[browser_shortcut_index].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
+            launcher_model_->items()[app2_index].type);
+
+  launcher_delegate_.reset();
+  launcher_model_.reset(new ash::LauncherModel);
+  launcher_delegate_.reset(
+      ChromeLauncherController::CreateInstance(profile(),
+                                               launcher_model_.get()));
+
+  app_tab_helper_ = new AppTabHelperImpl;
+  app_tab_helper_->SetAppID(tab1.get(), "1");
+  app_tab_helper_->SetAppID(tab2.get(), "2");
+  ResetAppTabHelper();
+  app_icon_loader_ = new AppIconLoaderImpl;
+  ResetAppIconLoader();
+  launcher_delegate_->Init();
+
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
+            launcher_model_->items()[app1_index].type);
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT,
+            launcher_model_->items()[browser_shortcut_index].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
+            launcher_model_->items()[app2_index].type);
 }
 
 // Confirm that tabbed browsers handle activation correctly.

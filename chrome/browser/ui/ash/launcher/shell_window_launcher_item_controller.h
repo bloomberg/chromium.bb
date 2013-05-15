@@ -64,7 +64,8 @@ class ShellWindowLauncherItemController : public LauncherItemController,
   virtual void LauncherItemChanged(
       int model_index,
       const ash::LauncherItem& old_item) OVERRIDE {}
-  virtual ChromeLauncherAppMenuItems GetApplicationList() OVERRIDE;
+  virtual ChromeLauncherAppMenuItems GetApplicationList(
+      int event_flags) OVERRIDE;
 
   // aura::WindowObserver
   virtual void OnWindowPropertyChanged(aura::Window* window,

@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 
 class BaseWindow;
-class BrowserLauncherItemControllerTest;
+class LauncherItemControllerPerAppTest;
 class LauncherItemController;
 class Profile;
 class ChromeLauncherAppMenuItem;
@@ -262,10 +262,8 @@ class ChromeLauncherController
   virtual void ActivateWindowOrMinimizeIfActive(BaseWindow* window,
                                                 bool allow_minimize) = 0;
   // ash::LauncherDelegate overrides:
-  virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE = 0;
   virtual void ItemSelected(const ash::LauncherItem& item,
                            const ui::Event& event) OVERRIDE = 0;
-  virtual int GetBrowserShortcutResourceId() OVERRIDE = 0;
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE = 0;
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item, aura::RootWindow* root) OVERRIDE = 0;
@@ -282,7 +280,7 @@ class ChromeLauncherController
                            const gfx::ImageSkia& image) OVERRIDE = 0;
 
  protected:
-  friend class BrowserLauncherItemControllerTest;
+  friend class LauncherItemControllerPerAppTest;
   friend class LauncherPlatformAppBrowserTest;
   friend class LauncherAppBrowserTest;
   // TODO(skuhne): Remove these when the old launcher get removed.

@@ -25,10 +25,8 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   void set_watcher(WindowWatcher* watcher) { watcher_ = watcher; }
 
   // LauncherDelegate overrides:
-  virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;
   virtual void ItemSelected(const ash::LauncherItem& item,
                            const ui::Event& event) OVERRIDE;
-  virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual base::string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item,

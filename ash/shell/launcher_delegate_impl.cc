@@ -21,14 +21,6 @@ LauncherDelegateImpl::LauncherDelegateImpl(WindowWatcher* watcher)
 LauncherDelegateImpl::~LauncherDelegateImpl() {
 }
 
-// In the shell we'll create a window all the time.
-void LauncherDelegateImpl::OnBrowserShortcutClicked(int event_flags) {
-  ash::shell::ToplevelWindow::CreateParams create_params;
-  create_params.can_resize = true;
-  create_params.can_maximize = true;
-  ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
-}
-
 void LauncherDelegateImpl::ItemSelected(const ash::LauncherItem& item,
                                        const ui::Event& event) {
   aura::Window* window = watcher_->GetWindowByID(item.id);
@@ -36,10 +28,6 @@ void LauncherDelegateImpl::ItemSelected(const ash::LauncherItem& item,
     ash::wm::MoveWindowToEventRoot(window, event);
   window->Show();
   ash::wm::ActivateWindow(window);
-}
-
-int LauncherDelegateImpl::GetBrowserShortcutResourceId() {
-  return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
 }
 
 base::string16 LauncherDelegateImpl::GetTitle(const ash::LauncherItem& item) {

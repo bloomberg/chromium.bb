@@ -35,10 +35,6 @@
 using extensions::Extension;
 using extensions::Manifest;
 
-namespace {
-const int kExpectedAppIndex = 1;
-}
-
 class ChromeLauncherControllerPerBrowserTest : public testing::Test {
  protected:
   ChromeLauncherControllerPerBrowserTest()
@@ -148,7 +144,9 @@ TEST_F(ChromeLauncherControllerPerBrowserTest, DefaultApps) {
   // Installing |extension3_| should add it to the launcher.
   extension_service_->AddExtension(extension3_.get());
   EXPECT_EQ(3, model_.item_count());
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[0].type);
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_.items()[1].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST, model_.items()[2].type);
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension2_->id()));
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
@@ -171,16 +169,22 @@ TEST_F(ChromeLauncherControllerPerBrowserTest, Policy) {
                                                          &model_);
   launcher_controller.Init();
   EXPECT_EQ(3, model_.item_count());
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[1].type);
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension1_->id()));
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension2_->id()));
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension3_->id()));
 
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_.items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[1].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST, model_.items()[2].type);
+
   // Installing |extension2_| should add it to the launcher.
   extension_service_->AddExtension(extension2_.get());
   EXPECT_EQ(4, model_.item_count());
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_.items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[1].type);
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[2].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST, model_.items()[3].type);
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension1_->id()));
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension2_->id()));
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension3_->id()));
@@ -190,7 +194,7 @@ TEST_F(ChromeLauncherControllerPerBrowserTest, Policy) {
   profile_->GetTestingPrefService()->SetManagedPref(prefs::kPinnedLauncherApps,
                                                     policy_value.DeepCopy());
   EXPECT_EQ(3, model_.item_count());
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[1].type);
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension2_->id()));
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension3_->id()));

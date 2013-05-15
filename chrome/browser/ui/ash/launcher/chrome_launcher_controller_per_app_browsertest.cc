@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -54,10 +55,6 @@ using extensions::Extension;
 using content::WebContents;
 
 namespace {
-
-// TODO(skuhne): Remove this temporary fix once M28 is out and CL 11596003
-// has landed. See also launcher.cc for the offset introduction.
-const int kChromeItemOffset = 1;
 
 class TestEvent : public ui::Event {
  public:
@@ -163,7 +160,7 @@ class LauncherPlatformPerAppAppBrowserTest
 
   // Activate the launcher item with the given |id|.
   void ActivateLauncherItem(int id) {
-    launcher_->ActivateLauncherItem(id + kChromeItemOffset);
+    launcher_->ActivateLauncherItem(id);
   }
 
   ash::Launcher* launcher_;
@@ -202,7 +199,9 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
   size_t NumberOfDetectedLauncherBrowsers(bool show_all_tabs) {
     ChromeLauncherControllerPerApp* controller =
         static_cast<ChromeLauncherControllerPerApp*>(launcher_->delegate());
-    int items = controller->GetBrowserApplicationList(
+    LauncherItemController* item_controller =
+      controller->GetBrowserShortcutLauncherItemController();
+    int items = item_controller->GetApplicationList(
         show_all_tabs ? ui::EF_SHIFT_DOWN : 0).size();
     // If we have at least one item, we have also a title which we remove here.
     return items ? (items - 1) : 0;
@@ -253,7 +252,7 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
 
   // Activate the launcher item with the given |id|.
   void ActivateLauncherItem(int id) {
-    launcher_->ActivateLauncherItem(id + kChromeItemOffset);
+    launcher_->ActivateLauncherItem(id);
   }
 
   ash::Launcher* launcher_;
@@ -1301,10 +1300,10 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
   // Get the number of items in the browser menu.
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
   // The first activation should create a browser.
-  launcher_->ActivateLauncherItem(1);
+  launcher_->ActivateLauncherItem(0);
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   // A second activation should not create a new instance.
-  launcher_->ActivateLauncherItem(1);
+  launcher_->ActivateLauncherItem(0);
   Browser* browser1 = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
   EXPECT_TRUE(browser1);
   aura::Window* window1 = browser1->window()->GetNativeWindow();
@@ -1316,9 +1315,9 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(window2, ash::wm::GetActiveWindow());
 
   // Activate multiple times the switcher to see that the windows get activated.
-  launcher_->ActivateLauncherItem(1);
+  launcher_->ActivateLauncherItem(0);
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
-  launcher_->ActivateLauncherItem(1);
+  launcher_->ActivateLauncherItem(0);
   EXPECT_EQ(window2, ash::wm::GetActiveWindow());
 
   // Create a third browser - make sure that we do not toggle simply between
@@ -1331,13 +1330,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
   EXPECT_NE(window2, window3);
   EXPECT_EQ(window3, ash::wm::GetActiveWindow());
 
-  launcher_->ActivateLauncherItem(1);
+  launcher_->ActivateLauncherItem(0);
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
-  launcher_->ActivateLauncherItem(1);
+  launcher_->ActivateLauncherItem(0);
   EXPECT_EQ(window2, ash::wm::GetActiveWindow());
-  launcher_->ActivateLauncherItem(1);
+  launcher_->ActivateLauncherItem(0);
   EXPECT_EQ(window3, ash::wm::GetActiveWindow());
-  launcher_->ActivateLauncherItem(1);
+  launcher_->ActivateLauncherItem(0);
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
 
   // Create anther app and make sure that none of our browsers is active.
@@ -1346,7 +1345,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
   EXPECT_NE(window2, ash::wm::GetActiveWindow());
 
   // After activation our browser should be active again.
-  launcher_->ActivateLauncherItem(1);
+  launcher_->ActivateLauncherItem(0);
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
 }
 
@@ -1408,19 +1407,21 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, DragAndDrop) {
   EXPECT_EQ(3, model_->item_count());
   EXPECT_TRUE(grid_view->forward_events_to_drag_and_drop_host_for_test());
 
-  // Move it somewhere else and check that it disappears again.
-  generator.MoveMouseTo(0, 0);
+  // Move it where the item originally was and check that it disappears again.
+  generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
+                        bounds_grid_1.CenterPoint().y());
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
 
-  // Dropping it outside of the launcher should keep the launcher as it
-  // originally was.
+  // Dropping it should keep the launcher as it originally was.
   generator.ReleaseLeftButton();
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
   // There are a few animations which need finishing before we can continue.
   test.RunMessageLoopUntilAnimationsDone();
+  // Move the mouse outside of the launcher.
+  generator.MoveMouseTo(0, 0);
 
   // Test #2: Check that the unknown item dropped into the launcher will
   // create a new item.
@@ -1452,4 +1453,38 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, DragAndDrop) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
   EXPECT_EQ(3, model_->item_count());  // And it remains that way.
+}
+
+// Check LauncherItemController of Browser Shortcut functionality.
+IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
+    BrowserShortcutLauncherItemController) {
+  ChromeLauncherControllerPerApp* controller =
+      static_cast<ChromeLauncherControllerPerApp*>(launcher_->delegate());
+  LauncherItemController* item_controller =
+      controller->GetBrowserShortcutLauncherItemController();
+
+  // Get the number of browsers.
+  size_t running_browser = chrome::GetTotalBrowserCount();
+  EXPECT_EQ(0u, running_browser);
+  EXPECT_FALSE(item_controller->IsOpen());
+
+  // Activate. This creates new browser
+  item_controller->Activate();
+  // New Window is created.
+  running_browser = chrome::GetTotalBrowserCount();
+  EXPECT_EQ(1u, running_browser);
+  EXPECT_TRUE(item_controller->IsOpen());
+
+  // Minimize Window.
+  aura::Window* window = ash::wm::GetActiveWindow();
+  ash::wm::MinimizeWindow(window);
+  EXPECT_TRUE(ash::wm::IsWindowMinimized(window));
+
+  // Activate again. This doesn't create new browser.
+  // It activates window.
+  item_controller->Activate();
+  running_browser = chrome::GetTotalBrowserCount();
+  EXPECT_EQ(1u, running_browser);
+  EXPECT_TRUE(item_controller->IsOpen());
+  EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
 }

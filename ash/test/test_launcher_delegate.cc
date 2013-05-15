@@ -63,9 +63,6 @@ void TestLauncherDelegate::OnWillRemoveWindow(aura::Window* window) {
   }
 }
 
-void TestLauncherDelegate::OnBrowserShortcutClicked(int event_flags) {
-}
-
 void TestLauncherDelegate::ItemSelected(const ash::LauncherItem& item,
                                        const ui::Event& event) {
   aura::Window* window = GetWindowByID(item.id);
@@ -73,10 +70,6 @@ void TestLauncherDelegate::ItemSelected(const ash::LauncherItem& item,
     ash::wm::MoveWindowToEventRoot(window, event);
   window->Show();
   ash::wm::ActivateWindow(window);
-}
-
-int TestLauncherDelegate::GetBrowserShortcutResourceId() {
-  return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
 }
 
 base::string16 TestLauncherDelegate::GetTitle(const ash::LauncherItem& item) {

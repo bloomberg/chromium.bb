@@ -248,10 +248,8 @@ class ChromeLauncherControllerPerBrowser
                                                 bool allow_minimize) OVERRIDE;
 
   // ash::LauncherDelegate overrides:
-  virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;
   virtual void ItemSelected(const ash::LauncherItem& item,
                            const ui::Event& event) OVERRIDE;
-  virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item, aura::RootWindow* root) OVERRIDE;
@@ -367,6 +365,18 @@ class ChromeLauncherControllerPerBrowser
       int index);
 
   bool HasItemController(ash::LauncherID id) const;
+
+  // Create LauncherItem for Browser Shortcut.
+  ash::LauncherID CreateBrowserShortcutLauncherItem();
+
+  // Update browser shortcut's index.
+  void SetChromeIconIndexToPref(int index);
+
+  // Get browser shortcut's index from pref.
+  int GetChromeIconIndexFromPref() const;
+
+  // Invoked when browser shortcut is clicked.
+  void BrowserShortcutClicked(int event_flags);
 
   ash::LauncherModel* model_;
 

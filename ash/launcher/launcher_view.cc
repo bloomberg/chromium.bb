@@ -878,6 +878,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
       break;
     }
 
+    case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP_SHORTCUT:
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
@@ -905,18 +906,6 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
               views::ImageButton::ALIGN_MIDDLE,
               views::ImageButton::ALIGN_MIDDLE,
               views::ImageButton::ALIGN_BOTTOM));
-      view = button;
-      break;
-    }
-
-    case TYPE_BROWSER_SHORTCUT: {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      LauncherButton* button = LauncherButton::Create(
-          this, this, tooltip_->shelf_layout_manager());
-      int image_id = delegate_ ?
-          delegate_->GetBrowserShortcutResourceId() :
-          IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
-      button->SetImage(*rb.GetImageNamed(image_id).ToImageSkia());
       view = button;
       break;
     }
@@ -1030,10 +1019,11 @@ bool LauncherView::SameDragType(LauncherItemType typea,
     case TYPE_PLATFORM_APP:
       return (typeb == TYPE_TABBED || typeb == TYPE_PLATFORM_APP);
     case TYPE_APP_SHORTCUT:
+    case TYPE_BROWSER_SHORTCUT:
+      return (typeb == TYPE_APP_SHORTCUT || typeb == TYPE_BROWSER_SHORTCUT);
     case TYPE_WINDOWED_APP:
     case TYPE_APP_LIST:
     case TYPE_APP_PANEL:
-    case TYPE_BROWSER_SHORTCUT:
       return typeb == typea;
   }
   NOTREACHED();
@@ -1424,15 +1414,13 @@ base::string16 LauncherView::GetAccessibleName(const views::View* view) {
     case TYPE_APP_SHORTCUT:
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
+    case TYPE_BROWSER_SHORTCUT:
       return delegate_->GetTitle(model_->items()[view_index]);
 
     case TYPE_APP_LIST:
       return model_->status() == LauncherModel::STATUS_LOADING ?
           l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_SYNCING_TITLE) :
           l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
-
-    case TYPE_BROWSER_SHORTCUT:
-      return Shell::GetInstance()->delegate()->GetProductName();
   }
   return base::string16();
 }
@@ -1473,6 +1461,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
       case TYPE_APP_SHORTCUT:
       case TYPE_WINDOWED_APP:
       case TYPE_PLATFORM_APP:
+      case TYPE_BROWSER_SHORTCUT:
         Shell::GetInstance()->delegate()->RecordUserMetricsAction(
             UMA_LAUNCHER_CLICK_ON_APP);
         // Fallthrough
@@ -1490,13 +1479,6 @@ void LauncherView::ButtonPressed(views::Button* sender,
         if (CommandLine::ForCurrentProcess()->HasSwitch(
                 ash::switches::kAshDragAndDropAppListToLauncher))
           Shell::GetInstance()->SetDragAndDropHostOfCurrentAppList(this);
-        break;
-
-      case TYPE_BROWSER_SHORTCUT:
-        // Click on browser icon is counted in app clicks.
-        Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-            UMA_LAUNCHER_CLICK_ON_APP);
-        delegate_->OnBrowserShortcutClicked(event.flags());
         break;
     }
   }

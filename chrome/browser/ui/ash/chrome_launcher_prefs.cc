@@ -58,6 +58,10 @@ void RegisterChromeLauncherUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // TODO: If we want to support multiple profiles this will likely need to be
   // pushed to local state and we'll need to track profile per item.
+  registry->RegisterIntegerPref(
+      prefs::kShelfChromeIconIndex,
+      0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kPinnedLauncherApps,
                              CreateDefaultPinnedAppsList(),
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

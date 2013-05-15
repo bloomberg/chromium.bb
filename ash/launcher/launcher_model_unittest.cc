@@ -77,17 +77,16 @@ TEST(LauncherModel, BasicAssertions) {
   TestLauncherModelObserver observer;
   LauncherModel model;
 
-  // Model is initially populated with two items.
-  EXPECT_EQ(2, model.item_count());
-  // Two initial items should have different ids.
-  EXPECT_NE(model.items()[0].id, model.items()[1].id);
+  // Model is initially populated with item.
+  EXPECT_EQ(1, model.item_count());
 
   // Add an item.
   model.AddObserver(&observer);
   LauncherItem item;
   int index = model.Add(item);
-  EXPECT_EQ(3, model.item_count());
+  EXPECT_EQ(2, model.item_count());
   EXPECT_EQ("added=1", observer.StateStringAndClear());
+
   // Verifies all the items get unique ids.
   std::set<LauncherID> ids;
   for (int i = 0; i < model.item_count(); ++i)
@@ -103,7 +102,7 @@ TEST(LauncherModel, BasicAssertions) {
 
   // Remove the item.
   model.RemoveItemAt(index);
-  EXPECT_EQ(2, model.item_count());
+  EXPECT_EQ(1, model.item_count());
   EXPECT_EQ("removed=1", observer.StateStringAndClear());
 
   // Add an app item.
@@ -135,45 +134,49 @@ TEST(LauncherModel, AddIndices) {
   TestLauncherModelObserver observer;
   LauncherModel model;
 
-  // Model is initially populated with two items.
-  EXPECT_EQ(2, model.item_count());
-  // Two initial items should have different ids.
-  EXPECT_NE(model.items()[0].id, model.items()[1].id);
+  // Model is initially populated with one item.
+  EXPECT_EQ(1, model.item_count());
 
-  // Items come after the browser.
-  int browser = 0;
-  ASSERT_EQ(ash::TYPE_BROWSER_SHORTCUT, model.items()[browser].type);
+  // Insert browser short cut at index 0.
+  LauncherItem browser_shortcut;
+  browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
+  int browser_shortcut_index = model.Add(browser_shortcut);
+  EXPECT_EQ(0, browser_shortcut_index);
 
-  // Tabbed items should be after shortcut.
+  // Tabbed items should be after browser shortcut.
   LauncherItem item;
   int tabbed_index1 = model.Add(item);
-  EXPECT_EQ(browser + 1, tabbed_index1);
+  EXPECT_EQ(1, tabbed_index1);
 
   // Add another tabbed item, it should follow first.
   int tabbed_index2 = model.Add(item);
-  EXPECT_EQ(browser + 2, tabbed_index2);
+  EXPECT_EQ(2, tabbed_index2);
 
-  // APP_SHORTCUT preceed browsers.
+  // APP_SHORTCUT's priority is higher than TABBED but same as
+  // BROWSER_SHORTCUT. So APP_SHORTCUT is located after BROWSER_SHORCUT.
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index1 = model.Add(item);
-  EXPECT_EQ(browser + 1, app_shortcut_index1);
+  EXPECT_EQ(1, app_shortcut_index1);
 
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index2 = model.Add(item);
-  EXPECT_EQ(browser + 2, app_shortcut_index2);
+  EXPECT_EQ(2, app_shortcut_index2);
 
   // Check that AddAt() figures out the correct indexes for app shortcuts.
+  // APP_SHORTCUT and BROWSER_SHORTCUT has the same weight.
+  // So APP_SHORTCUT is located at index 0. And, BROWSER_SHORTCUT is located at
+  // index 1.
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index3 = model.AddAt(0, item);
-  EXPECT_EQ(browser + 1, app_shortcut_index3);
+  EXPECT_EQ(0, app_shortcut_index3);
 
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index4 = model.AddAt(5, item);
-  EXPECT_EQ(browser + 4, app_shortcut_index4);
+  EXPECT_EQ(4, app_shortcut_index4);
 
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index5 = model.AddAt(2, item);
-  EXPECT_EQ(browser + 2, app_shortcut_index5);
+  EXPECT_EQ(2, app_shortcut_index5);
 
   // Before there are any panels, no icons should be right aligned.
   EXPECT_EQ(model.item_count(), model.FirstPanelIndex());
@@ -181,33 +184,32 @@ TEST(LauncherModel, AddIndices) {
   // Check that AddAt() figures out the correct indexes for tabs and panels.
   item.type = TYPE_TABBED;
   int tabbed_index3 = model.AddAt(2, item);
-  EXPECT_EQ(browser + 6, tabbed_index3);
+  EXPECT_EQ(6, tabbed_index3);
 
   item.type = TYPE_APP_PANEL;
   int app_panel_index1 = model.AddAt(2, item);
-  EXPECT_EQ(browser + 10, app_panel_index1);
+  EXPECT_EQ(10, app_panel_index1);
 
   item.type = TYPE_TABBED;
   int tabbed_index4 = model.AddAt(11, item);
-  EXPECT_EQ(browser + 9, tabbed_index4);
+  EXPECT_EQ(9, tabbed_index4);
 
   item.type = TYPE_APP_PANEL;
   int app_panel_index2 = model.AddAt(12, item);
-  EXPECT_EQ(browser + 12, app_panel_index2);
+  EXPECT_EQ(12, app_panel_index2);
 
   item.type = TYPE_TABBED;
   int tabbed_index5 = model.AddAt(7, item);
-  EXPECT_EQ(browser + 7, tabbed_index5);
+  EXPECT_EQ(7, tabbed_index5);
 
   item.type = TYPE_APP_PANEL;
   int app_panel_index3 = model.AddAt(13, item);
-  EXPECT_EQ(browser + 13, app_panel_index3);
+  EXPECT_EQ(13, app_panel_index3);
 
   // Right aligned index should be the first app panel index.
-  EXPECT_EQ(browser + 12, model.FirstPanelIndex());
+  EXPECT_EQ(12, model.FirstPanelIndex());
 
-  // Browser shortcut and app list should still be first and second.
-  EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model.items()[0].type);
+  EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model.items()[1].type);
   EXPECT_EQ(TYPE_APP_LIST, model.items()[model.FirstPanelIndex() - 1].type);
 }
 
@@ -216,7 +218,7 @@ TEST(LauncherModel, LauncherIDTests) {
   TestLauncherModelObserver observer;
   LauncherModel model;
 
-  EXPECT_EQ(2, model.item_count());
+  EXPECT_EQ(1, model.item_count());
 
   // Get the next to use ID counter.
   LauncherID id = model.next_id();
@@ -228,7 +230,7 @@ TEST(LauncherModel, LauncherIDTests) {
   // but it will not change the item count and retrieving the next ID should
   // produce something new.
   EXPECT_EQ(model.reserve_external_id(), id);
-  EXPECT_EQ(2, model.item_count());
+  EXPECT_EQ(1, model.item_count());
   LauncherID id2 = model.next_id();
   EXPECT_NE(id2, id);
 

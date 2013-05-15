@@ -52,9 +52,11 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/url_pattern.h"
+#include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
@@ -128,7 +130,8 @@ class AppShortcutLauncherItemController : public LauncherItemController {
       const ash::LauncherItem& old_item) OVERRIDE {
   }
 
-  virtual ChromeLauncherAppMenuItems GetApplicationList() OVERRIDE {
+  virtual ChromeLauncherAppMenuItems GetApplicationList(
+      int event_flags) OVERRIDE {
     ChromeLauncherAppMenuItems items;
     return items.Pass();
   }
@@ -331,6 +334,7 @@ ChromeLauncherControllerPerBrowser::~ChromeLauncherControllerPerBrowser() {
 
 void ChromeLauncherControllerPerBrowser::Init() {
   UpdateAppLaunchersFromPref();
+  CreateBrowserShortcutLauncherItem();
 
   // TODO(sky): update unit test so that this test isn't necessary.
   if (ash::Shell::HasInstance()) {
@@ -451,7 +455,7 @@ void ChromeLauncherControllerPerBrowser::Pin(ash::LauncherID id) {
 bool ChromeLauncherControllerPerBrowser::IsPinned(ash::LauncherID id) {
   int index = model_->ItemIndexByID(id);
   ash::LauncherItemType type = model_->items()[index].type;
-  return type == ash::TYPE_APP_SHORTCUT;
+  return (type == ash::TYPE_APP_SHORTCUT || type == ash::TYPE_BROWSER_SHORTCUT);
 }
 
 void ChromeLauncherControllerPerBrowser::TogglePinned(ash::LauncherID id) {
@@ -539,7 +543,7 @@ void ChromeLauncherControllerPerBrowser::LaunchApp(const std::string& app_id,
 void ChromeLauncherControllerPerBrowser::ActivateApp(const std::string& app_id,
                                                      int event_flags) {
   if (app_id == extension_misc::kChromeAppId) {
-    OnBrowserShortcutClicked(event_flags);
+    BrowserShortcutClicked(event_flags);
     return;
   }
 
@@ -667,6 +671,14 @@ void ChromeLauncherControllerPerBrowser::SetLauncherItemImage(
 
 bool ChromeLauncherControllerPerBrowser::IsAppPinned(
     const std::string& app_id) {
+  // Check the LauncherModel since there is no controller for the browser item.
+  if (app_id == extension_misc::kChromeAppId) {
+    for (size_t index = 0; index < model_->items().size(); index++) {
+      if (model_->items()[index].type == ash::TYPE_BROWSER_SHORTCUT)
+        return true;
+    }
+    return false;
+  }
   for (IDToItemControllerMap::const_iterator i =
            id_to_item_controller_map_.begin();
        i != id_to_item_controller_map_.end(); ++i) {
@@ -861,7 +873,7 @@ void ChromeLauncherControllerPerBrowser::ActivateWindowOrMinimizeIfActive(
   window->Activate();
 }
 
-void ChromeLauncherControllerPerBrowser::OnBrowserShortcutClicked(
+void ChromeLauncherControllerPerBrowser::BrowserShortcutClicked(
     int event_flags) {
 #if defined(OS_CHROMEOS)
   chromeos::default_pinned_apps_field_trial::RecordShelfClick(
@@ -888,6 +900,11 @@ void ChromeLauncherControllerPerBrowser::OnBrowserShortcutClicked(
 void ChromeLauncherControllerPerBrowser::ItemSelected(
     const ash::LauncherItem& item,
     const ui::Event& event) {
+  if (item.type == ash::TYPE_BROWSER_SHORTCUT) {
+    BrowserShortcutClicked(event.flags());
+    return;
+  }
+
   DCHECK(HasItemController(item.id));
   LauncherItemController* item_controller = id_to_item_controller_map_[item.id];
 #if defined(OS_CHROMEOS)
@@ -899,12 +916,11 @@ void ChromeLauncherControllerPerBrowser::ItemSelected(
   item_controller->Clicked(event);
 }
 
-int ChromeLauncherControllerPerBrowser::GetBrowserShortcutResourceId() {
-  return IDR_PRODUCT_LOGO_32;
-}
-
 string16 ChromeLauncherControllerPerBrowser::GetTitle(
     const ash::LauncherItem& item) {
+  if (item.type == ash::TYPE_BROWSER_SHORTCUT)
+    return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+
   DCHECK(HasItemController(item.id));
   return id_to_item_controller_map_[item.id]->GetTitle();
 }
@@ -973,6 +989,9 @@ void ChromeLauncherControllerPerBrowser::LauncherItemMoved(
     int target_index) {
   ash::LauncherID id = model_->items()[target_index].id;
   if (HasItemController(id) && IsPinned(id))
+    PersistPinnedState();
+  else if (!HasItemController(id) &&
+           model_->items()[target_index].type == ash::TYPE_BROWSER_SHORTCUT)
     PersistPinnedState();
 }
 
@@ -1109,6 +1128,8 @@ void ChromeLauncherControllerPerBrowser::PersistPinnedState() {
           if (app_value)
             updater->Append(app_value);
         }
+      } else if (model_->items()[i].type == ash::TYPE_BROWSER_SHORTCUT) {
+          SetChromeIconIndexToPref(i);
       }
     }
   }
@@ -1356,6 +1377,31 @@ bool ChromeLauncherControllerPerBrowser::HasItemController(
     ash::LauncherID id) const {
   return id_to_item_controller_map_.find(id) !=
          id_to_item_controller_map_.end();
+}
+
+ash::LauncherID
+ChromeLauncherControllerPerBrowser::CreateBrowserShortcutLauncherItem() {
+  ash::LauncherItem browser_shortcut;
+  browser_shortcut.type = ash::TYPE_BROWSER_SHORTCUT;
+  browser_shortcut.is_incognito = false;
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  browser_shortcut.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_32);
+  ash::LauncherID id = model_->next_id();
+  size_t index = GetChromeIconIndexFromPref();
+  model_->AddAt(index, browser_shortcut);
+  return id;
+}
+
+void ChromeLauncherControllerPerBrowser::SetChromeIconIndexToPref(int index) {
+  profile_->GetPrefs()->SetInteger(prefs::kShelfChromeIconIndex, index);
+}
+
+int ChromeLauncherControllerPerBrowser::GetChromeIconIndexFromPref() const {
+  size_t index = profile_->GetPrefs()->GetInteger(prefs::kShelfChromeIconIndex);
+  const base::ListValue* pinned_apps_pref =
+  profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
+  return std::max(static_cast<size_t>(0),
+                  std::min(pinned_apps_pref->GetSize(), index));
 }
 
 ash::LauncherID

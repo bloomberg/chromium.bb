@@ -21,11 +21,6 @@ class Event;
 namespace ash {
 class Launcher;
 
-// When passed to LauncherDelegate::ItemSelected, the browser item will be
-// addressed for switching.
-// TODO(skuhne): Remove this constant once CL 11596003 has landed.
-const LauncherID kAppIdForBrowserSwitching = -1;
-
 // A special menu model which keeps track of an "active" menu item.
 class ASH_EXPORT LauncherMenuModel : public ui::SimpleMenuModel {
  public:
@@ -46,11 +41,6 @@ class ASH_EXPORT LauncherDelegate {
   // Launcher owns the delegate.
   virtual ~LauncherDelegate() {}
 
-  // Invoked when the user clicks on button in the launcher to open last used
-  // window (or create a new one if there is no last used window).
-  // |event_flags| is the flags of the click event.
-  virtual void OnBrowserShortcutClicked(int event_flags) = 0;
-
   // Invoked when the user clicks on a window entry in the launcher.
   // |event| is the click event. The |event| is dispatched by a view
   // and has an instance of |views::View| as the event target
@@ -59,10 +49,6 @@ class ASH_EXPORT LauncherDelegate {
   // handling might happen (PerApp launcher).
   virtual void ItemSelected(const LauncherItem& item,
                             const ui::Event& event) = 0;
-
-  // Returns the resource id of the image to show on the browser shortcut
-  // button.
-  virtual int GetBrowserShortcutResourceId() = 0;
 
   // Returns the title to display for the specified launcher item.
   virtual base::string16 GetTitle(const LauncherItem& item) = 0;

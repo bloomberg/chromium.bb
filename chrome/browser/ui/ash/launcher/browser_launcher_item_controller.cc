@@ -187,7 +187,7 @@ void BrowserLauncherItemController::LauncherItemChanged(
 }
 
 ChromeLauncherAppMenuItems
-BrowserLauncherItemController::GetApplicationList() {
+BrowserLauncherItemController::GetApplicationList(int event_flags) {
   // This will never be called and the entire class will go away.
   ChromeLauncherAppMenuItems items;
   return items.Pass();

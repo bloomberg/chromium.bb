@@ -35,10 +35,8 @@ class TestLauncherDelegate : public LauncherDelegate,
   virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
 
   // LauncherDelegate implementation.
-  virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;
   virtual void ItemSelected(const LauncherItem& item,
                            const ui::Event& event) OVERRIDE;
-  virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual base::string16 GetTitle(const LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(const LauncherItem& item,
                                            aura::RootWindow* root) OVERRIDE;

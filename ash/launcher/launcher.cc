@@ -63,14 +63,16 @@ Launcher::~Launcher() {
 
 // static
 Launcher* Launcher::ForPrimaryDisplay() {
-  return internal::RootWindowController::ForLauncher(
-      Shell::GetPrimaryRootWindow())->shelf()->launcher();
+  ShelfWidget* shelf_widget = internal::RootWindowController::ForLauncher(
+      Shell::GetPrimaryRootWindow())->shelf();
+  return shelf_widget ? shelf_widget->launcher() : NULL;
 }
 
 // static
 Launcher* Launcher::ForWindow(aura::Window* window) {
-  return internal::RootWindowController::ForLauncher(window)->
-      shelf()->launcher();
+  ShelfWidget* shelf_widget =
+    internal::RootWindowController::ForLauncher(window)->shelf();
+  return shelf_widget ? shelf_widget->launcher() : NULL;
 }
 
 void Launcher::SetAlignment(ShelfAlignment alignment) {
@@ -108,20 +110,6 @@ void Launcher::ActivateLauncherItem(int index) {
                      ui::VKEY_UNKNOWN,  // The actual key gets ignored.
                      ui::EF_NONE,
                      false);
-  // TODO(skuhne): Remove this temporary fix once M28 is out and CL 11596003
-  // has landed. Note that all unit tests which use this function need to remove
-  // the "kChromeItemOffset" as well.
-  // Note: The index gets only decremented for the per app instance of the
-  // launcher. The old per browser launcher does not get impacted here.
-  if (delegate_->IsPerAppLauncher() && --index <= 0) {
-    LauncherItem item;
-    // Create a fake launcher item with an invalid ID so that
-    // our ChromeLauncherControllerPerApp can handle it accordingly. This is
-    // only a temporary fix until CL 11596003 has landed.
-    item.id = ash::kAppIdForBrowserSwitching;
-    delegate_->ItemSelected(item, event);
-    return;
-  }
 
   const ash::LauncherItems& items =
       launcher_view_->model()->items();
@@ -177,8 +165,7 @@ void Launcher::SwitchToWindow(int window_index) {
   // Iterating until we have hit the index we are interested in which
   // is true once indexes_left becomes negative.
   for (int i = 0; i < item_count && indexes_left >= 0; i++) {
-    if (items[i].type != TYPE_APP_LIST &&
-        items[i].type != TYPE_BROWSER_SHORTCUT) {
+    if (items[i].type != TYPE_APP_LIST) {
       found_index = i;
       indexes_left--;
     }

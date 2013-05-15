@@ -34,10 +34,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace {
-const int kExpectedAppIndex = 1;
-}
-
 namespace ash {
 namespace test {
 
@@ -208,7 +204,10 @@ class LauncherViewTest : public AshTestBase {
 
     test_api_.reset(new LauncherViewTestAPI(launcher_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
-  }
+
+    // Add browser shortcut launcher item at index 0 for test.
+    AddBrowserShortcut();
+ }
 
   virtual void TearDown() OVERRIDE {
     test_api_.reset();
@@ -216,6 +215,17 @@ class LauncherViewTest : public AshTestBase {
   }
 
  protected:
+  LauncherID AddBrowserShortcut() {
+    LauncherItem browser_shortcut;
+    browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
+    browser_shortcut.is_incognito = false;
+
+    LauncherID id = model_->next_id();
+    model_->AddAt(0, browser_shortcut);
+    test_api_->RunMessageLoopUntilAnimationsDone();
+    return id;
+  }
+
   LauncherID AddAppShortcut() {
     LauncherItem item;
     item.type = TYPE_APP_SHORTCUT;
@@ -321,20 +331,17 @@ class LauncherViewTest : public AshTestBase {
   views::View* SimulateDrag(internal::LauncherButtonHost::Pointer pointer,
                             int button_index,
                             int destination_index) {
-    // Add kExpectedAppIndex to each button index to allow default icons.
     internal::LauncherButtonHost* button_host = launcher_view_;
 
     // Mouse down.
-    views::View* button =
-        test_api_->GetButton(kExpectedAppIndex + button_index);
+    views::View* button = test_api_->GetButton(button_index);
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
                                button->bounds().origin(),
                                button->bounds().origin(), 0);
     button_host->PointerPressedOnButton(button, pointer, click_event);
 
     // Drag.
-    views::View* destination =
-        test_api_->GetButton(kExpectedAppIndex + destination_index);
+    views::View* destination = test_api_->GetButton(destination_index);
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
                               destination->bounds().origin(),
                               destination->bounds().origin(), 0);
@@ -354,7 +361,9 @@ class LauncherViewTest : public AshTestBase {
     // Add 5 app launcher buttons for testing.
     for (int i = 0; i < 5; ++i) {
       LauncherID id = AddAppShortcut();
-      id_map->insert(id_map->begin() + (kExpectedAppIndex + i),
+      // browser shortcut is located at index 0. So we should start to add app
+      // shortcut at index 1.
+      id_map->insert(id_map->begin() + (i + 1),
                      std::make_pair(id, GetButtonByID(id)));
     }
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
@@ -586,27 +595,40 @@ TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
-  // Dragging changes model order.
+  // Dragging browser shortcut at index 0.
+  EXPECT_TRUE(model_->items()[0].type == TYPE_BROWSER_SHORTCUT);
   views::View* dragged_button = SimulateDrag(
       internal::LauncherButtonHost::MOUSE, 0, 2);
-  std::rotate(id_map.begin() + kExpectedAppIndex,
-              id_map.begin() + kExpectedAppIndex + 1,
-              id_map.begin() + kExpectedAppIndex + 3);
+  std::rotate(id_map.begin(),
+              id_map.begin() + 1,
+              id_map.begin() + 3);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       false);
+  EXPECT_TRUE(model_->items()[2].type == TYPE_BROWSER_SHORTCUT);
+
+  // Dragging changes model order.
+  dragged_button = SimulateDrag(
+      internal::LauncherButtonHost::MOUSE, 0, 2);
+  std::rotate(id_map.begin(),
+              id_map.begin() + 1,
+              id_map.begin() + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Cancelling the drag operation restores previous order.
   button_host->PointerReleasedOnButton(dragged_button,
                                        internal::LauncherButtonHost::MOUSE,
                                        true);
-  std::rotate(id_map.begin() + kExpectedAppIndex,
-              id_map.begin() + kExpectedAppIndex + 2,
-              id_map.begin() + kExpectedAppIndex + 3);
+  std::rotate(id_map.begin(),
+              id_map.begin() + 2,
+              id_map.begin() + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Deleting an item keeps the remaining intact.
   dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 0, 2);
-  model_->RemoveItemAt(kExpectedAppIndex + 1);
-  id_map.erase(id_map.begin() + kExpectedAppIndex + 1);
+  model_->RemoveItemAt(1);
+  id_map.erase(id_map.begin() + 1);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
                                        internal::LauncherButtonHost::MOUSE,
@@ -615,7 +637,7 @@ TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
   // Adding a launcher item cancels the drag and respects the order.
   dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 0, 2);
   LauncherID new_id = AddAppShortcut();
-  id_map.insert(id_map.begin() + kExpectedAppIndex + 4,
+  id_map.insert(id_map.begin() + 5,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
@@ -626,7 +648,7 @@ TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
   // the order.
   dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 0, 2);
   new_id = AddPanel();
-  id_map.insert(id_map.begin() + kExpectedAppIndex + 6,
+  id_map.insert(id_map.begin() + 7,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
@@ -644,9 +666,9 @@ TEST_F(LauncherViewTest, SimultaneousDrag) {
   // Start a mouse drag.
   views::View* dragged_button_mouse = SimulateDrag(
       internal::LauncherButtonHost::MOUSE, 0, 2);
-  std::rotate(id_map.begin() + kExpectedAppIndex,
-              id_map.begin() + kExpectedAppIndex + 1,
-              id_map.begin() + kExpectedAppIndex + 3);
+  std::rotate(id_map.begin(),
+              id_map.begin() + 1,
+              id_map.begin() + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   // Attempt a touch drag before the mouse drag finishes.
   views::View* dragged_button_touch = SimulateDrag(
@@ -664,9 +686,9 @@ TEST_F(LauncherViewTest, SimultaneousDrag) {
   // Now start a touch drag.
   dragged_button_touch = SimulateDrag(
       internal::LauncherButtonHost::TOUCH, 3, 1);
-  std::rotate(id_map.begin() + kExpectedAppIndex + 2,
-              id_map.begin() + kExpectedAppIndex + 3,
-              id_map.begin() + kExpectedAppIndex + 4);
+  std::rotate(id_map.begin() + 2,
+              id_map.begin() + 3,
+              id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // And attempt a mouse drag before the touch drag finishes.

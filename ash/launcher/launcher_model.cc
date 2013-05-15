@@ -15,21 +15,20 @@ namespace {
 int LauncherItemTypeToWeight(LauncherItemType type) {
   switch (type) {
     case TYPE_BROWSER_SHORTCUT:
-      return 0;
     case TYPE_APP_SHORTCUT:
     case TYPE_WINDOWED_APP:
-      return 1;
+      return 0;
     case TYPE_TABBED:
     case TYPE_PLATFORM_APP:
-      return 2;
+      return 1;
     case TYPE_APP_LIST:
-      return 3;
+      return 2;
     case TYPE_APP_PANEL:
-      return 4;
+      return 3;
   }
 
   NOTREACHED() << "Invalid type " << type;
-  return 2;
+  return 1;
 }
 
 bool CompareByWeight(const LauncherItem& a, const LauncherItem& b) {
@@ -42,13 +41,7 @@ LauncherModel::LauncherModel() : next_id_(1), status_(STATUS_NORMAL) {
   LauncherItem app_list;
   app_list.type = TYPE_APP_LIST;
   app_list.is_incognito = false;
-
-  LauncherItem browser_shortcut;
-  browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
-  browser_shortcut.is_incognito = false;
-
-  AddAt(0, browser_shortcut);
-  AddAt(1, app_list);
+  AddAt(0, app_list);
 }
 
 LauncherModel::~LauncherModel() {

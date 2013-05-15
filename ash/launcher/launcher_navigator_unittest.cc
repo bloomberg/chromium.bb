@@ -21,6 +21,16 @@ class LauncherNavigatorTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     model_.reset(new LauncherModel);
+
+    // Initially, applist launcher item is only created.
+    int total_num = model_->item_count();
+    EXPECT_EQ(1, total_num);
+    EXPECT_TRUE(model_->items()[0].type == TYPE_APP_LIST);
+
+    // Add BROWSER_SHORTCUT for test.
+    LauncherItem browser_shortcut;
+    browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
+    model_->Add(browser_shortcut);
   }
 
   void SetupMockLauncherModel(LauncherItemType* types,

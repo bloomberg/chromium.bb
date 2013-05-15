@@ -192,7 +192,7 @@ void ShellWindowLauncherItemController::ActivateIndexedApp(size_t index) {
 }
 
 ChromeLauncherAppMenuItems
-ShellWindowLauncherItemController::GetApplicationList() {
+ShellWindowLauncherItemController::GetApplicationList(int event_flags) {
   ChromeLauncherAppMenuItems items;
   items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
   int index = 0;
@@ -234,7 +234,7 @@ void ShellWindowLauncherItemController::ShowAndActivateOrMinimize(
   // Either show or minimize windows when shown from the launcher.
   launcher_controller()->ActivateWindowOrMinimizeIfActive(
       shell_window->GetBaseWindow(),
-      GetApplicationList().size() == 2);
+      GetApplicationList(0).size() == 2);
 }
 
 void ShellWindowLauncherItemController::ActivateOrAdvanceToNextShellWindow(
