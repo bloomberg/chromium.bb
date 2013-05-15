@@ -30,8 +30,8 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -1685,7 +1685,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   // slow download job.
   history::DownloadRow& row(downloads_in_database->at(0));
   EXPECT_EQ(DestinationFile(browser(), file), row.target_path);
-  EXPECT_EQ(download_util::GetCrDownloadPath(DestinationFile(browser(), file)),
+  EXPECT_EQ(DownloadTargetDeterminer::GetCrDownloadPath(
+                DestinationFile(browser(), file)),
             row.current_path);
   ASSERT_EQ(2u, row.url_chain.size());
   EXPECT_EQ(redirect_url.spec(), row.url_chain[0].spec());
@@ -1769,7 +1770,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
   // dangerous file.
   history::DownloadRow& row(downloads_in_database->at(0));
   EXPECT_EQ(DestinationFile(browser(), file), row.target_path);
-  EXPECT_NE(download_util::GetCrDownloadPath(DestinationFile(browser(), file)),
+  EXPECT_NE(DownloadTargetDeterminer::GetCrDownloadPath(
+                DestinationFile(browser(), file)),
             row.current_path);
   EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, row.danger_type);
   EXPECT_LE(start, row.start_time);

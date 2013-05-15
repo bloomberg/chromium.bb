@@ -10,7 +10,7 @@
 #include "base/observer_list.h"
 #include "base/test/test_file_util.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_target_determiner.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -282,8 +282,9 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingFiles) {
       GetPathInDownloadsDirectory(FILE_PATH_LITERAL("foo (1).txt")));
   // Create a file at |path|, and a .crdownload file at |path1|.
   ASSERT_EQ(0, file_util::WriteFile(path, "", 0));
-  ASSERT_EQ(0, file_util::WriteFile(download_util::GetCrDownloadPath(path1),
-                                    "", 0));
+  ASSERT_EQ(0,
+            file_util::WriteFile(
+                DownloadTargetDeterminer::GetCrDownloadPath(path1), "", 0));
   ASSERT_TRUE(IsPathInUse(path));
 
   base::FilePath reserved_path;

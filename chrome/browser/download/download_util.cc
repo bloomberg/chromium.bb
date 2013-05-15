@@ -459,11 +459,6 @@ string16 GetProgressStatusText(DownloadItem* download) {
                                     speed_text, amount, time_remaining);
 }
 
-base::FilePath GetCrDownloadPath(const base::FilePath& suggested_path) {
-  return base::FilePath(suggested_path.value() +
-                        FILE_PATH_LITERAL(".crdownload"));
-}
-
 bool IsSavableURL(const GURL& url) {
   for (int i = 0; content::GetSavableSchemes()[i] != NULL; ++i) {
     if (url.SchemeIs(content::GetSavableSchemes()[i])) {

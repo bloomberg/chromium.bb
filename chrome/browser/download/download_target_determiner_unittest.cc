@@ -410,7 +410,7 @@ void DownloadTargetDeterminerTest::DownloadTargetVerifier(
 
   switch (test_case.expected_intermediate) {
     case EXPECT_CRDOWNLOAD:
-      EXPECT_EQ(download_util::GetCrDownloadPath(local_path).value(),
+      EXPECT_EQ(DownloadTargetDeterminer::GetCrDownloadPath(local_path).value(),
                 intermediate_path.value());
       break;
 
@@ -421,7 +421,8 @@ void DownloadTargetDeterminerTest::DownloadTargetVerifier(
       // 2. Points to the same directory as the target.
       // 3. Has extension ".crdownload".
       // 4. Basename starts with "Unconfirmed ".
-      EXPECT_NE(download_util::GetCrDownloadPath(expected_local_path).value(),
+      EXPECT_NE(DownloadTargetDeterminer::GetCrDownloadPath(expected_local_path)
+                    .value(),
                 intermediate_path.value());
       EXPECT_EQ(expected_local_path.DirName().value(),
                 intermediate_path.DirName().value());

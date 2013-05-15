@@ -427,7 +427,7 @@ DownloadTargetDeterminer::Result
 
   // Other safe downloads get a .crdownload suffix for their intermediate name.
   if (danger_type_ == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
-    intermediate_path_ = download_util::GetCrDownloadPath(local_path_);
+    intermediate_path_ = GetCrDownloadPath(local_path_);
     return COMPLETE;
   }
 
@@ -593,4 +593,11 @@ void DownloadTargetDeterminer::Start(
   // asynchronously.
   new DownloadTargetDeterminer(download, download_prefs,
                                last_selected_directory, delegate, callback);
+}
+
+// static
+base::FilePath DownloadTargetDeterminer::GetCrDownloadPath(
+    const base::FilePath& suggested_path) {
+  return base::FilePath(suggested_path.value() +
+                        FILE_PATH_LITERAL(".crdownload"));
 }

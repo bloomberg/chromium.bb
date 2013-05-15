@@ -70,6 +70,9 @@ class DownloadTargetDeterminer
                     DownloadTargetDeterminerDelegate* delegate,
                     const content::DownloadTargetCallback& callback);
 
+  // Returns a .crdownload intermediate path for the |suggested_path|.
+  static base::FilePath GetCrDownloadPath(const base::FilePath& suggested_path);
+
  private:
   // The main workflow is controlled via a set of state transitions. Each state
   // has an associated handler. The handler for STATE_FOO is DoFoo. Each handler
