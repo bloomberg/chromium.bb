@@ -3013,7 +3013,8 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
         GL_CLAMP_TO_EDGE);
     Texture* texture = GetTextureInfoForTarget(
         offscreen_saved_color_texture_info_->target());
-    glBindTexture(texture->target(), texture->service_id());
+    glBindTexture(offscreen_saved_color_texture_info_->target(),
+                  texture ? texture->service_id() : 0);
   } else {
     offscreen_saved_color_texture_info_ = NULL;
   }
