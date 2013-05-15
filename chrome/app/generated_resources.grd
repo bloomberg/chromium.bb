@@ -6691,12 +6691,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_DESCRIPTION" desc="Description for the flag to defer image decoding in WebKit.">
         Defer image decoding operations in WebKit until painting.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SPDY4A1_NAME" desc="Title for the flag to enable SPDY/4 alpha 1">
-        Enable SPDY/4 alpha 1
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SPDY4A1_DESCRIPTION" desc="Description for the flag to enable SPDY/4 alpha 1.">
-        Enable experimental SPDY/4 alpha 1. Note that this also enables SPDY/3.1.
-      </message>
       <message name="IDS_FLAGS_ENABLE_ASYNC_DNS_NAME" desc="Title for the flag to enable asynchronous DNS client.">
         Built-in Asynchronous DNS
       </message>

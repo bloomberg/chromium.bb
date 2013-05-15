@@ -394,7 +394,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost) {
 }
 
 TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost4) {
-  session_deps_.protocol = kProtoSPDY4a1;
+  session_deps_.protocol = kProtoSPDY4a2;
   RunSendChunkedPostTest(kSpdyVersion4);
 }
 

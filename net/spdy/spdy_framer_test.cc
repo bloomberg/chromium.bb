@@ -692,9 +692,13 @@ TEST_P(SpdyFramerTest, OutOfOrderHeaders) {
 
   // Frame builder with plentiful buffer size.
   SpdyFrameBuilder frame(1024);
-  frame.WriteControlFrameHeader(framer, SYN_STREAM, CONTROL_FLAG_NONE);
+  if (spdy_version_ < 4) {
+    frame.WriteControlFrameHeader(framer, SYN_STREAM, CONTROL_FLAG_NONE);
+    frame.WriteUInt32(3);  // stream_id
+  } else {
+    frame.WriteFramePrefix(framer, SYN_STREAM, CONTROL_FLAG_NONE, 3);
+  }
 
-  frame.WriteUInt32(3);  // stream_id
   frame.WriteUInt32(0);  // Associated stream id
   frame.WriteUInt16(0);  // Priority.
 
@@ -746,7 +750,8 @@ TEST_P(SpdyFramerTest, CreateCredential) {
       'e',  'r',  't',
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x37, 0x0A, 0x00,
+      0x00, 0x3b, 0x0A, 0x00,
+      0x00, 0x00, 0x00, 0x00,
       0x00, 0x03, 0x00, 0x00,
       0x00, 0x05, 'p',  'r',
       'o',  'o',  'f',  0x00,
@@ -799,6 +804,7 @@ TEST_P(SpdyFramerTest, ParseCredentialFrameData) {
     };
     const unsigned char kV4FrameData[] = {
       0x00, 0x37, 0x0A, 0x00,
+      0x00, 0x00, 0x00, 0x00,
       0x00, 0x03, 0x00, 0x00,
       0x00, 0x05, 'p',  'r',
       'o',  'o',  'f',  0x00,
@@ -844,9 +850,13 @@ TEST_P(SpdyFramerTest, DuplicateHeader) {
   SpdyFramer framer(spdy_version_);
   // Frame builder with plentiful buffer size.
   SpdyFrameBuilder frame(1024);
-  frame.WriteControlFrameHeader(framer, SYN_STREAM, CONTROL_FLAG_NONE);
+  if (spdy_version_ < 4) {
+    frame.WriteControlFrameHeader(framer, SYN_STREAM, CONTROL_FLAG_NONE);
+    frame.WriteUInt32(3);  // stream_id
+  } else {
+    frame.WriteFramePrefix(framer, SYN_STREAM, CONTROL_FLAG_NONE, 3);
+  }
 
-  frame.WriteUInt32(3);  // stream_id
   frame.WriteUInt32(0);  // associated stream id
   frame.WriteUInt16(0);  // Priority.
 
@@ -881,9 +891,13 @@ TEST_P(SpdyFramerTest, MultiValueHeader) {
   SpdyFramer framer(spdy_version_);
   // Frame builder with plentiful buffer size.
   SpdyFrameBuilder frame(1024);
-  frame.WriteControlFrameHeader(framer, SYN_STREAM, CONTROL_FLAG_NONE);
+  if (spdy_version_ < 4) {
+    frame.WriteControlFrameHeader(framer, SYN_STREAM, CONTROL_FLAG_NONE);
+    frame.WriteUInt32(3);  // stream_id
+  } else {
+    frame.WriteFramePrefix(framer, SYN_STREAM, CONTROL_FLAG_NONE, 3);
+  }
 
-  frame.WriteUInt32(3);  // stream_id
   frame.WriteUInt32(0);  // associated stream id
   frame.WriteUInt16(0);  // Priority.
 
@@ -2390,7 +2404,8 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x0a, 0x0b, 0x0c, 0x0d,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x10, 0x04, 0x00,
+      0x00, 0x14, 0x04, 0x00,
+      0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x01,
       0x01, 0x02, 0x03, 0x04,
       0x0a, 0x0b, 0x0c, 0x0d,
@@ -2433,7 +2448,8 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0xff, 0x00, 0x00, 0x04,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x28, 0x04, 0x00,
+      0x00, 0x2c, 0x04, 0x00,
+      0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x04,
       0x00, 0x00, 0x00, 0x00,  // 1st Setting
       0x00, 0x00, 0x00, 0x01,
@@ -2463,7 +2479,8 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x00, 0x00, 0x00, 0x00,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x08, 0x04, 0x00,
+      0x00, 0x0c, 0x04, 0x00,
+      0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00,
     };
     scoped_ptr<SpdyFrame> frame(framer.CreateSettings(settings));
@@ -2486,7 +2503,8 @@ TEST_P(SpdyFramerTest, CreatePingFrame) {
       0x12, 0x34, 0x56, 0x78,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x08, 0x06, 0x00,
+      0x00, 0x0c, 0x06, 0x00,
+      0x00, 0x00, 0x00, 0x00,
       0x12, 0x34, 0x56, 0x78,
     };
     scoped_ptr<SpdyFrame> frame(framer.CreatePingFrame(0x12345678u));
@@ -2515,7 +2533,8 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
       0x00, 0x00, 0x00, 0x00,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x0c, 0x07, 0x00,
+      0x00, 0x10, 0x07, 0x00,
+      0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00,
     };
@@ -2543,7 +2562,8 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
       0x00, 0x00, 0x00, 0x02,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x0c, 0x07, 0x00,
+      0x00, 0x10, 0x07, 0x00,
+      0x00, 0x00, 0x00, 0x00,
       0x7f, 0xff, 0xff, 0xff,
       0x00, 0x00, 0x00, 0x02,
     };
@@ -3270,7 +3290,8 @@ TEST_P(SpdyFramerTest, ReadDuplicateSettings) {
     0x00, 0x00, 0x00, 0x03,
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x20, 0x04, 0x00,
+    0x00, 0x24, 0x04, 0x00,
+    0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x03,
     0x00, 0x00, 0x00, 0x01,  // 1st Setting
     0x00, 0x00, 0x00, 0x02,
@@ -3320,7 +3341,8 @@ TEST_P(SpdyFramerTest, ReadOutOfOrderSettings) {
     0x00, 0x00, 0x00, 0x03,
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x20, 0x04, 0x00,
+    0x00, 0x24, 0x04, 0x00,
+    0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x03,
     0x00, 0x00, 0x00, 0x02,  // 1st Setting
     0x00, 0x00, 0x00, 0x02,
@@ -3507,17 +3529,15 @@ TEST_P(SpdyFramerTest, SizesTest) {
   SpdyFramer framer(spdy_version_);
   EXPECT_EQ(8u, framer.GetDataFrameMinimumSize());
   if (IsSpdy4()) {
-    EXPECT_EQ(4u, framer.GetControlFrameHeaderSize());
-    EXPECT_EQ(14u, framer.GetSynStreamMinimumSize());
     EXPECT_EQ(8u, framer.GetSynReplyMinimumSize());
     EXPECT_EQ(12u, framer.GetRstStreamSize());
-    EXPECT_EQ(8u, framer.GetSettingsMinimumSize());
-    EXPECT_EQ(8u, framer.GetPingSize());
-    EXPECT_EQ(12u, framer.GetGoAwaySize());
+    EXPECT_EQ(12u, framer.GetSettingsMinimumSize());
+    EXPECT_EQ(12u, framer.GetPingSize());
+    EXPECT_EQ(16u, framer.GetGoAwaySize());
     EXPECT_EQ(8u, framer.GetHeadersMinimumSize());
     EXPECT_EQ(12u, framer.GetWindowUpdateSize());
-    EXPECT_EQ(6u, framer.GetCredentialMinimumSize());
-    EXPECT_EQ(4u, framer.GetFrameMinimumSize());
+    EXPECT_EQ(10u, framer.GetCredentialMinimumSize());
+    EXPECT_EQ(8u, framer.GetFrameMinimumSize());
     EXPECT_EQ(65535u, framer.GetFrameMaximumSize());
     EXPECT_EQ(65527u, framer.GetDataFrameMaximumPayload());
   } else {
@@ -4124,7 +4144,8 @@ TEST_P(SpdyFramerTest, GoAwayStreamIdBounds) {
     0x00, 0x00, 0x00, 0x00,
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x0c, 0x07, 0x00,
+    0x00, 0x10, 0x07, 0x00,
+    0x00, 0x00, 0x00, 0x00,
     0xff, 0xff, 0xff, 0xff,
     0x00, 0x00, 0x00, 0x00,
   };

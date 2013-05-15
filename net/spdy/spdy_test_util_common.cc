@@ -517,7 +517,7 @@ NextProto NextProtoFromSpdyVersion(int spdy_version) {
   case kSpdyVersion3:
     return kProtoSPDY3;
   case kSpdyVersion4:
-    return kProtoSPDY4a1;
+    return kProtoSPDY4a2;
   default:
     NOTREACHED();
     return kProtoUnknown;
@@ -532,7 +532,7 @@ int SpdyVersionFromNextProto(NextProto next_proto) {
   case kProtoSPDY3:
   case kProtoSPDY31:
     return kSpdyVersion3;
-  case kProtoSPDY4a1:
+  case kProtoSPDY4a2:
     return kSpdyVersion4;
   default:
     NOTREACHED();

@@ -61,7 +61,7 @@ int NPNToSpdyVersion(NextProto next_proto) {
     case kProtoSPDY3:
     case kProtoSPDY31:
       return kSpdyVersion3;
-    case kProtoSPDY4a1:
+    case kProtoSPDY4a2:
       return kSpdyVersion4;
     default:
       NOTREACHED();
@@ -444,7 +444,7 @@ Error SpdySession::InitializeWithSocket(
   }
 
   DCHECK_GE(protocol, kProtoSPDY2);
-  DCHECK_LE(protocol, kProtoSPDY4a1);
+  DCHECK_LE(protocol, kProtoSPDY4a2);
   if (protocol >= kProtoSPDY31) {
     flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
     session_send_window_size_ = kSpdySessionInitialWindowSize;

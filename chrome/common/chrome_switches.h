@@ -182,7 +182,6 @@ extern const char kEnableQuic[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
 extern const char kDisableSpdy31[];
-extern const char kEnableSpdy4a1[];
 extern const char kEnableSpdyCredentialFrames[];
 extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableStackedTabStrip[];

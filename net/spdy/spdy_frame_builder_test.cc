@@ -53,7 +53,11 @@ TEST_P(SpdyFrameBuilderTest, RewriteLength) {
   SettingsMap settings;
   scoped_ptr<SpdyFrame> expected(framer.CreateSettings(settings));
   SpdyFrameBuilder builder(expected->size() + 1);
-  builder.WriteControlFrameHeader(framer, SETTINGS, 0);
+  if (spdy_version_ < 4) {
+    builder.WriteControlFrameHeader(framer, SETTINGS, 0);
+  } else {
+    builder.WriteFramePrefix(framer, SETTINGS, 0, 0);
+  }
   builder.WriteUInt32(0); // Write the number of settings.
   EXPECT_TRUE(builder.GetWritableBuffer(1) != NULL);
   builder.RewriteLength(framer);

@@ -62,19 +62,13 @@ bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
                                                uint8 flags) {
   DCHECK_GE(type, FIRST_CONTROL_TYPE);
   DCHECK_LE(type, LAST_CONTROL_TYPE);
+  DCHECK_GT(4, framer.protocol_version());
   bool success = true;
-  if (framer.protocol_version() < 4) {
-    FlagsAndLength flags_length = CreateFlagsAndLength(
-        flags, capacity_ - framer.GetControlFrameHeaderSize());
-    success &= WriteUInt16(kControlFlagMask | framer.protocol_version());
-    success &= WriteUInt16(type);
-    success &= WriteBytes(&flags_length, sizeof(flags_length));
-  } else {
-    DCHECK_GT(1u<<16, capacity_);  // Make sure length fits in 2B.
-    success &= WriteUInt16(capacity_);
-    success &= WriteUInt8(type);
-    success &= WriteUInt8(flags);
-  }
+  FlagsAndLength flags_length = CreateFlagsAndLength(
+      flags, capacity_ - framer.GetControlFrameHeaderSize());
+  success &= WriteUInt16(kControlFlagMask | framer.protocol_version());
+  success &= WriteUInt16(type);
+  success &= WriteBytes(&flags_length, sizeof(flags_length));
   DCHECK_EQ(framer.GetControlFrameHeaderSize(), length());
   return success;
 }
@@ -82,24 +76,37 @@ bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
 bool SpdyFrameBuilder::WriteDataFrameHeader(const SpdyFramer& framer,
                                             SpdyStreamId stream_id,
                                             SpdyDataFlags flags) {
+  if (framer.protocol_version() >= 4) {
+    return WriteFramePrefix(framer, DATA, flags, stream_id);
+  }
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
   bool success = true;
-  if (framer.protocol_version() < 4) {
-    success &= WriteUInt32(stream_id);
-    size_t length_field = capacity_ - framer.GetDataFrameMinimumSize();
-    DCHECK_EQ(0u, length_field & ~static_cast<size_t>(kLengthMask));
-    FlagsAndLength flags_length;
-    flags_length.length_ = htonl(length_field);
-    DCHECK_EQ(0, flags & ~kDataFlagsMask);
-    flags_length.flags_[0] = flags;
-    success &= WriteBytes(&flags_length, sizeof(flags_length));
-  } else {
-    DCHECK_GT(1u<<16, capacity_);  // Make sure length fits in 2B.
-    success &= WriteUInt16(capacity_);
-    success &= WriteUInt8(0);
-    success &= WriteUInt8(flags);
-    success &= WriteUInt32(stream_id);
-  }
+  success &= WriteUInt32(stream_id);
+  size_t length_field = capacity_ - framer.GetDataFrameMinimumSize();
+  DCHECK_EQ(0u, length_field & ~static_cast<size_t>(kLengthMask));
+  FlagsAndLength flags_length;
+  flags_length.length_ = htonl(length_field);
+  DCHECK_EQ(0, flags & ~kDataFlagsMask);
+  flags_length.flags_[0] = flags;
+  success &= WriteBytes(&flags_length, sizeof(flags_length));
+  DCHECK_EQ(framer.GetDataFrameMinimumSize(), length());
+  return success;
+}
+
+bool SpdyFrameBuilder::WriteFramePrefix(const SpdyFramer& framer,
+                                        SpdyFrameType type,
+                                        uint8 flags,
+                                        SpdyStreamId stream_id) {
+  DCHECK_LE(DATA, type);
+  DCHECK_GE(LAST_CONTROL_TYPE, type);
+  DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
+  DCHECK_LE(4, framer.protocol_version());
+  bool success = true;
+  DCHECK_GT(1u<<16, capacity_);  // Make sure length fits in 2B.
+  success &= WriteUInt16(capacity_);
+  success &= WriteUInt8(type);
+  success &= WriteUInt8(flags);
+  success &= WriteUInt32(stream_id);
   DCHECK_EQ(framer.GetDataFrameMinimumSize(), length());
   return success;
 }

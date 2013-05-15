@@ -2409,7 +2409,7 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation31) {
 // NOTE(akalin): We are still figuring out the story for SPDY4 test
 // coverage.
 TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation4) {
-  session_deps_.protocol = kProtoSPDY4a1;
+  session_deps_.protocol = kProtoSPDY4a2;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
