@@ -5,7 +5,7 @@
 import copy
 import logging
 import os
-import collections
+from collections import defaultdict, Mapping
 
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
@@ -28,6 +28,31 @@ def _RemoveNoDocs(item):
       item.remove(i)
   return False
 
+def _DetectInlineableTypes(schema):
+  """Look for documents that are only referenced once and mark them as inline.
+  Actual inlining is done by _InlineDocs.
+  """
+  if not schema.get('types'):
+    return
+
+  banned = frozenset(('value', 'choices', 'items', 'returns'))
+  refcounts = defaultdict(int)
+  # Use an explicit stack instead of recursion.
+  stack = [schema]
+
+  while stack:
+    node = stack.pop()
+    if isinstance(node, list):
+      stack.extend(node)
+    elif isinstance(node, Mapping):
+      if '$ref' in node:
+        refcounts[node['$ref']] += 1
+      stack.extend(v for k, v in node.iteritems() if k not in banned)
+
+  for type_ in schema['types']:
+    if not 'enum' in type_:
+      if refcounts[type_['id']] == 1:
+        type_['inline_doc'] = True
 
 def _InlineDocs(schema):
   """Replace '$ref's that refer to inline_docs with the json for those docs.
@@ -43,10 +68,8 @@ def _InlineDocs(schema):
   for type_ in types:
     if type_.get('inline_doc'):
       inline_docs[type_['id']] = type_
-      if type_.get('description'):
-        del type_['description']
-      del type_['inline_doc']
-      del type_['id']
+      for k in ('description', 'id', 'inline_doc'):
+        type_.pop(k, None)
     else:
       types_without_inline_doc.append(type_)
   schema['types'] = types_without_inline_doc
@@ -55,7 +78,7 @@ def _InlineDocs(schema):
     if isinstance(node, list):
       for i in node:
         apply_inline(i)
-    elif isinstance(node, collections.Mapping):
+    elif isinstance(node, Mapping):
       ref = node.get('$ref')
       if ref and ref in inline_docs:
         node.update(inline_docs[ref])
@@ -80,13 +103,15 @@ class _JSCModel(object):
   """Uses a Model from the JSON Schema Compiler and generates a dict that
   a Handlebar template can use for a data source.
   """
-  def __init__(self, json, ref_resolver, disable_refs):
+  def __init__(self, json, ref_resolver, disable_refs, idl=False):
     self._ref_resolver = ref_resolver
     self._disable_refs = disable_refs
     clean_json = copy.deepcopy(json)
     if _RemoveNoDocs(clean_json):
       self._namespace = None
     else:
+      if idl:
+        _DetectInlineableTypes(clean_json)
       _InlineDocs(clean_json)
       self._namespace = model.Namespace(clean_json, clean_json['namespace'])
 
@@ -380,7 +405,8 @@ class APIDataSource(object):
       return _JSCModel(
           idl_schema.IDLSchema(idl).process()[0],
           self._ref_resolver_factory.Create() if not disable_refs else None,
-          disable_refs).ToDict()
+          disable_refs,
+          idl=True).ToDict()
 
     def _GetIDLNames(self, base_dir, apis):
       return self._GetExtNames(apis, ['idl'])
