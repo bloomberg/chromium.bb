@@ -13,15 +13,18 @@ var sidebar = document.getElementById('gc-sidebar');
 var scrollToTop = document.getElementById('scroll-to-top');
 var offsetTop = sidebar.offsetTop;
 
-window.addEventListener('scroll', function() {
+function relayout() {
   // Obviously, this code executes every time the window scrolls, so avoid
   // putting things in here.
+  var isFloatingSidebar = sidebar.classList.contains('floating');
+  var isShowingScrollToTop = !scrollToTop.classList.contains('hidden');
+
   var floatSidebar = false;
   var showScrollToTop = false;
 
   if (window.scrollY > offsetTop) {
     // Scrolled past the top of the sidebar.
-    if (window.innerHeight >= sidebar.offsetHeight) {
+    if (window.innerHeight >= sidebar.scrollHeight) {
       // The whole sidebar fits in the window. Make it always visible.
       floatSidebar = true;
     } else {
@@ -30,9 +33,14 @@ window.addEventListener('scroll', function() {
     }
   }
 
-  sidebar.classList.toggle('floating', floatSidebar);
-  scrollToTop.classList.toggle('hidden', !showScrollToTop);
-});
+  if (floatSidebar != isFloatingSidebar)
+    sidebar.classList.toggle('floating', floatSidebar);
+  if (isShowingScrollToTop != showScrollToTop)
+    scrollToTop.classList.toggle('hidden', !showScrollToTop);
+}
+
+window.addEventListener('scroll', relayout);
+setTimeout(relayout, 0);
 
 scrollToTop.addEventListener('click', function() {
   window.scrollTo(0, 0);
