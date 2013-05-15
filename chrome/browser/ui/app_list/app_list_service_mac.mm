@@ -17,6 +17,8 @@
 #include "chrome/common/mac/app_mode_common.h"
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/app_list_window_controller.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 
 namespace gfx {
 class ImageSkia;
@@ -38,6 +40,7 @@ class AppListServiceMac : public AppListServiceImpl,
 
   void CreateAppList(Profile* profile);
   NSWindow* GetNativeWindow();
+  void ShowWindowNearDock();
 
   // AppListService overrides:
   virtual void Init(Profile* initial_profile) OVERRIDE;
@@ -149,9 +152,7 @@ void AppListServiceMac::ShowAppList(Profile* requested_profile) {
   InvalidatePendingProfileLoads();
 
   if (IsAppListVisible() && (requested_profile == profile())) {
-    DCHECK(window_controller_);
-    [[window_controller_ window] makeKeyAndOrderFront:nil];
-    [NSApp activateIgnoringOtherApps:YES];
+    ShowWindowNearDock();
     return;
   }
 
@@ -159,10 +160,7 @@ void AppListServiceMac::ShowAppList(Profile* requested_profile) {
 
   DismissAppList();
   CreateAppList(requested_profile);
-
-  DCHECK(window_controller_);
-  [[window_controller_ window] makeKeyAndOrderFront:nil];
-  [NSApp activateIgnoringOtherApps:YES];
+  ShowWindowNearDock();
 }
 
 void AppListServiceMac::DismissAppList() {
@@ -201,6 +199,81 @@ void AppListServiceMac::OnShimClose(apps::AppShimHandler::Host* host) {
 
 void AppListServiceMac::OnShimFocus(apps::AppShimHandler::Host* host) {
   DismissAppList();
+}
+
+enum DockLocation {
+  DockLocationOtherDisplay,
+  DockLocationBottom,
+  DockLocationLeft,
+  DockLocationRight,
+};
+
+DockLocation DockLocationInDisplay(const gfx::Display& display) {
+  // Assume the dock occupies part of the work area either on the left, right or
+  // bottom of the display. Note in the autohide case, it is always 4 pixels.
+  const gfx::Rect work_area = display.work_area();
+  const gfx::Rect display_bounds = display.bounds();
+  if (work_area.bottom() != display_bounds.bottom())
+    return DockLocationBottom;
+
+  if (work_area.x() != display_bounds.x())
+    return DockLocationLeft;
+
+  if (work_area.right() != display_bounds.right())
+    return DockLocationRight;
+
+  return DockLocationOtherDisplay;
+}
+
+NSPoint GetAppListWindowOrigin(NSWindow* window) {
+  gfx::Screen* const screen = gfx::Screen::GetScreenFor([window contentView]);
+  gfx::Point anchor = screen->GetCursorScreenPoint();
+  const gfx::Display display = screen->GetDisplayNearestPoint(anchor);
+  const DockLocation dock_location = DockLocationInDisplay(display);
+  const gfx::Rect display_bounds = display.bounds();
+
+  // Ensure y coordinates are flipped back into AppKit's coordinate system.
+  const CGFloat max_y = NSMaxY([[[NSScreen screens] objectAtIndex:0] frame]);
+  if (dock_location == DockLocationOtherDisplay) {
+    // Just display at the bottom-left of the display the cursor is on.
+    return NSMakePoint(display_bounds.x(),
+                       max_y - display_bounds.bottom());
+  }
+
+  // Anchor the center of the window in a region that prevents the window
+  // showing outside of the work area.
+  const NSSize window_size = [window frame].size;
+  gfx::Rect anchor_area = display.work_area();
+  anchor_area.Inset(window_size.width / 2, window_size.height / 2);
+  anchor.ClampToMin(anchor_area.origin());
+  anchor.ClampToMax(anchor_area.bottom_right());
+
+  // Move anchor to the dock, keeping the other axis aligned with the cursor.
+  switch (dock_location) {
+    case DockLocationBottom:
+      anchor.set_y(anchor_area.bottom());
+      break;
+    case DockLocationLeft:
+      anchor.set_x(anchor_area.x());
+      break;
+    case DockLocationRight:
+      anchor.set_x(anchor_area.right());
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return NSMakePoint(
+      anchor.x() - window_size.width / 2,
+      max_y - anchor.y() - window_size.height / 2);
+}
+
+void AppListServiceMac::ShowWindowNearDock() {
+  NSWindow* window = GetNativeWindow();
+  DCHECK(window);
+  [window setFrameOrigin:GetAppListWindowOrigin(window)];
+  [window makeKeyAndOrderFront:nil];
+  [NSApp activateIgnoringOtherApps:YES];
 }
 
 }  // namespace
