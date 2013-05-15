@@ -111,6 +111,15 @@
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
+        [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }],
         [ 'toolkit_uses_gtk == 1', {
           'dependencies': [
             # Workaround for gyp bug 69.
