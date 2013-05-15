@@ -1203,13 +1203,8 @@ bool SetDefaultTaskFileBrowserFunction::RunImpl() {
     return true;
   }
 
-  BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &file_handler_util::UpdateDefaultTask,
-            profile_, task_id, suffixes, mime_types));
+  file_handler_util::UpdateDefaultTask(profile_, task_id, suffixes, mime_types);
 
-  SetResult(new base::FundamentalValue(true));
   return true;
 }
 

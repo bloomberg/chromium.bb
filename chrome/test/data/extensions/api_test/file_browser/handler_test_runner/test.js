@@ -116,12 +116,10 @@ function run() {
       onError('Task "' + tasks[0].taskId + '" is default for "' + fileUrl +
           '"');
     }
-    chrome.fileBrowserPrivate.setDefaultTask(tasks[0].taskId, [fileUrl],
-        [mimeType]);
-    chrome.fileBrowserPrivate.getFileTasks(
-        [fileUrl],
-        [mimeType],
-        onGotTasks.bind(null, fileUrl));
+    chrome.fileBrowserPrivate.setDefaultTask(
+        tasks[0].taskId, [fileUrl], [mimeType],
+        chrome.fileBrowserPrivate.getFileTasks.bind(null, [fileUrl], [mimeType],
+            onGotTasks.bind(null, fileUrl)));
   }
 
   /**
