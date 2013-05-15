@@ -59,28 +59,28 @@ ResourceLoader::RequestCountTracker::~RequestCountTracker()
     m_cachedResourceLoader->decrementRequestCount(m_resource);
 }
 
-PassRefPtr<ResourceLoader> ResourceLoader::create(Frame* frame, CachedResource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
+PassRefPtr<ResourceLoader> ResourceLoader::create(DocumentLoader* documentLoader, CachedResource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
 {
-    RefPtr<ResourceLoader> loader(adoptRef(new ResourceLoader(frame, resource, options)));
+    RefPtr<ResourceLoader> loader(adoptRef(new ResourceLoader(documentLoader, resource, options)));
     if (!loader->init(request))
         return 0;
     loader->start();
     return loader.release();
 }
 
-ResourceLoader::ResourceLoader(Frame* frame, CachedResource* resource, ResourceLoaderOptions options)
-    : m_frame(frame)
-    , m_documentLoader(frame->loader()->activeDocumentLoader())
+ResourceLoader::ResourceLoader(DocumentLoader* documentLoader, CachedResource* resource, ResourceLoaderOptions options)
+    : m_frame(documentLoader->frame())
+    , m_documentLoader(documentLoader)
     , m_identifier(0)
     , m_loadingMultipartContent(false)
     , m_reachedTerminalState(false)
     , m_cancelled(false)
     , m_notifiedLoadComplete(false)
-    , m_defersLoading(frame->page()->defersLoading())
+    , m_defersLoading(m_frame->page()->defersLoading())
     , m_options(options)
     , m_resource(resource)
     , m_state(Uninitialized)
-    , m_requestCountTracker(adoptPtr(new RequestCountTracker(frame->document()->cachedResourceLoader(), resource)))
+    , m_requestCountTracker(adoptPtr(new RequestCountTracker(documentLoader->cachedResourceLoader(), resource)))
 {
 }
 

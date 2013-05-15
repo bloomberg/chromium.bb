@@ -51,7 +51,7 @@ class ResourceHandle;
 
 class ResourceLoader : public RefCounted<ResourceLoader>, protected ResourceHandleClient {
 public:
-    static PassRefPtr<ResourceLoader> create(Frame*, CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&);
+    static PassRefPtr<ResourceLoader> create(DocumentLoader*, CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();
 
     void cancel();
@@ -97,7 +97,7 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    ResourceLoader(Frame*, CachedResource*, ResourceLoaderOptions);
+    ResourceLoader(DocumentLoader*, CachedResource*, ResourceLoaderOptions);
 
     bool init(const ResourceRequest&);
     void start();
