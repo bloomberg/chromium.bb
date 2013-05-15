@@ -959,7 +959,10 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() OVERRIDE {
+    drew_frame_ = -1;
+    PostSetNeedsCommitToMainThread();
+  }
 
   virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
@@ -1010,6 +1013,12 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
         impl->output_surface()->context3d());
 
+    if (drew_frame_ == impl->active_tree()->source_frame_number()) {
+      EXPECT_EQ(0u, context->NumUsedTextures()) << "For frame " << drew_frame_;
+      return;
+    }
+    drew_frame_ = impl->active_tree()->source_frame_number();
+
     // We draw/ship one texture each frame for each layer.
     EXPECT_EQ(2u, context->NumUsedTextures());
     context->ResetUsedTextures();
@@ -1026,6 +1035,7 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> layer_;
   scoped_refptr<FakeScrollbarLayer> scrollbar_;
+  int drew_frame_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestAtomicCommit);
@@ -1050,8 +1060,6 @@ static void SetLayerPropertiesForTesting(Layer* layer,
 class LayerTreeHostTestAtomicCommitWithPartialUpdate
     : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestAtomicCommitWithPartialUpdate() : num_commits_(0) {}
-
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     // Allow one partial texture update.
     settings->max_partial_texture_updates = 1;
@@ -1090,7 +1098,11 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() OVERRIDE {
+    num_commits_ = 0;
+    drew_frame_ = -1;
+    PostSetNeedsCommitToMainThread();
+  }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     ASSERT_EQ(1u, layer_tree_host()->settings().max_partial_texture_updates);
@@ -1183,6 +1195,12 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
         impl->output_surface()->context3d());
 
+    if (drew_frame_ == impl->active_tree()->source_frame_number()) {
+      EXPECT_EQ(0u, context->NumUsedTextures()) << "For frame " << drew_frame_;
+      return;
+    }
+    drew_frame_ = impl->active_tree()->source_frame_number();
+
     // Number of textures used for drawing should one per layer except for
     // frame 3 where the viewport only contains one layer.
     if (impl->active_tree()->source_frame_number() == 3)
@@ -1237,6 +1255,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
   scoped_refptr<FakeScrollbarLayer> scrollbar_with_paints_;
   scoped_refptr<FakeScrollbarLayer> scrollbar_without_paints_;
   int num_commits_;
+  int drew_frame_;
 };
 
 // Partial updates are not possible with a delegating renderer.
