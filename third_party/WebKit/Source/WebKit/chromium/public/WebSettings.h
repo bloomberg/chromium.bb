@@ -155,7 +155,7 @@ public:
     virtual void setTextAreasAreResizable(bool) = 0;
     virtual void setTextAutosizingEnabled(bool) = 0;
     virtual void setTextAutosizingFontScaleFactor(float) = 0;
-    virtual void setTextDirectionSubmenuInclusionBehaviorNeverIncluded() = 0;
+    virtual void setTextDirectionSubmenuInclusionBehaviorNeverIncluded() { } // FIXME: Remove once its caller is gone from Chromium
     virtual void setThreadedHTMLParser(bool) = 0;
     virtual void setTouchDragDropEnabled(bool) = 0;
     virtual void setTouchEditingEnabled(bool) = 0;

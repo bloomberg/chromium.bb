@@ -202,12 +202,7 @@ public:
     void toggleContinuousSpellChecking();
     bool isGrammarCheckingEnabled();
     void ignoreSpelling();
-    void learnSpelling();
-    bool isSelectionUngrammatical();
-    String misspelledSelectionString() const;
     String misspelledWordAtCaretOrRange(Node* clickedNode) const;
-    Vector<String> guessesForUngrammaticalSelection();
-    Vector<String> guessesForMisspelledOrUngrammatical(bool& misspelled, bool& ungrammatical);
     bool isSpellCheckingEnabledInFocusedNode() const;
     bool isSpellCheckingEnabledFor(Node*) const;
     void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping);
@@ -223,7 +218,6 @@ public:
 
     void advanceToNextMisspelling(bool startBeforeSelection = false);
     void showSpellingGuessPanel();
-    bool spellingPanelIsShowing();
 
     bool shouldBeginEditing(Range*);
     bool shouldEndEditing(Range*);
@@ -237,19 +231,12 @@ public:
     void didBeginEditing();
     void didEndEditing();
 
-    void showFontPanel();
-    void showStylesPanel();
-    void showColorPanel();
-    void toggleBold();
-    void toggleUnderline();
     void setBaseWritingDirection(WritingDirection);
 
     // smartInsertDeleteEnabled and selectTrailingWhitespaceEnabled are 
     // mutually exclusive, meaning that enabling one will disable the other.
     bool smartInsertDeleteEnabled();
     bool isSelectTrailingWhitespaceEnabled();
-    
-    bool hasBidiSelection() const;
 
     // international text input composition
     bool hasComposition() const { return m_compositionNode; }

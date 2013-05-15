@@ -482,34 +482,6 @@ void Editor::respondToChangedContents(const VisibleSelection& endingSelection)
         client()->respondToChangedContents();
 }
 
-bool Editor::hasBidiSelection() const
-{
-    if (m_frame->selection()->isNone())
-        return false;
-
-    Node* startNode;
-    if (m_frame->selection()->isRange()) {
-        startNode = m_frame->selection()->selection().start().downstream().deprecatedNode();
-        Node* endNode = m_frame->selection()->selection().end().upstream().deprecatedNode();
-        if (enclosingBlock(startNode) != enclosingBlock(endNode))
-            return false;
-    } else
-        startNode = m_frame->selection()->selection().visibleStart().deepEquivalent().deprecatedNode();
-
-    RenderObject* renderer = startNode->renderer();
-    while (renderer && !renderer->isRenderBlock())
-        renderer = renderer->parent();
-
-    if (!renderer)
-        return false;
-
-    RenderStyle* style = renderer->style();
-    if (!style->isLeftToRightDirection())
-        return true;
-
-    return toRenderBlock(renderer)->containsNonZeroBidiLevel();
-}
-
 TriState Editor::selectionUnorderedListState() const
 {
     if (m_frame->selection()->isCaret()) {
@@ -1104,16 +1076,6 @@ void Editor::didEndEditing()
         client()->didEndEditing();
 }
 
-void Editor::toggleBold()
-{
-    command("ToggleBold").execute();
-}
-
-void Editor::toggleUnderline()
-{
-    command("ToggleUnderline").execute();
-}
-
 void Editor::setBaseWritingDirection(WritingDirection direction)
 {
     Node* focusedNode = frame()->document()->focusedNode();
@@ -1356,16 +1318,6 @@ void Editor::ignoreSpelling()
         frame()->document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Spelling);
 }
 
-void Editor::learnSpelling()
-{
-    if (!client())
-        return;
-
-    RefPtr<Range> selectedRange = frame()->selection()->toNormalizedRange();
-    if (selectedRange)
-        frame()->document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Spelling);
-}
-
 void Editor::advanceToNextMisspelling(bool startBeforeSelection)
 {
     // The basic approach is to search in two phases - from the selection end to the end of the doc, and
@@ -1556,74 +1508,6 @@ String Editor::misspelledWordAtCaretOrRange(Node* clickedNode) const
     return misspellingLength == wordLength ? word : String();
 }
 
-String Editor::misspelledSelectionString() const
-{
-    String selectedString = selectedText();
-    int length = selectedString.length();
-    if (!length || !client())
-        return String();
-
-    int misspellingLocation = -1;
-    int misspellingLength = 0;
-    textChecker()->checkSpellingOfString(selectedString.characters(), length, &misspellingLocation, &misspellingLength);
-    
-    // The selection only counts as misspelled if the selected text is exactly one misspelled word
-    if (misspellingLength != length)
-        return String();
-    
-    // Update the spelling panel to be displaying this error (whether or not the spelling panel is on screen).
-    // This is necessary to make a subsequent call to [NSSpellChecker ignoreWord:inSpellDocumentWithTag:] work
-    // correctly; that call behaves differently based on whether the spelling panel is displaying a misspelling
-    // or a grammar error.
-    client()->updateSpellingUIWithMisspelledWord(selectedString);
-    
-    return selectedString;
-}
-
-bool Editor::isSelectionUngrammatical()
-{
-    Vector<String> ignoredGuesses;
-    RefPtr<Range> range = frame()->selection()->toNormalizedRange();
-    if (!range)
-        return false;
-    return TextCheckingHelper(client(), range).isUngrammatical(ignoredGuesses);
-}
-
-Vector<String> Editor::guessesForUngrammaticalSelection()
-{
-    Vector<String> guesses;
-    RefPtr<Range> range = frame()->selection()->toNormalizedRange();
-    if (!range)
-        return guesses;
-    // Ignore the result of isUngrammatical; we just want the guesses, whether or not there are any
-    TextCheckingHelper(client(), range).isUngrammatical(guesses);
-    return guesses;
-}
-
-Vector<String> Editor::guessesForMisspelledOrUngrammatical(bool& misspelled, bool& ungrammatical)
-{
-    if (unifiedTextCheckerEnabled()) {
-        FrameSelection* frameSelection = frame()->selection();
-        if (RefPtr<Range> range = frameSelection->toNormalizedRange())
-            return TextCheckingHelper(client(), range).guessesForMisspelledOrUngrammaticalRange(isGrammarCheckingEnabled(), misspelled, ungrammatical);
-        return Vector<String>();
-    }
-
-    String misspelledWord = misspelledSelectionString();
-    misspelled = !misspelledWord.isEmpty();
-
-    if (misspelled) {
-        ungrammatical = false;
-        return Vector<String>();
-    }
-    if (isGrammarCheckingEnabled() && isSelectionUngrammatical()) {
-        ungrammatical = true;
-        return guessesForUngrammaticalSelection();
-    }
-    ungrammatical = false;
-    return Vector<String>();
-}
-
 void Editor::showSpellingGuessPanel()
 {
     if (!client()) {
@@ -1638,13 +1522,6 @@ void Editor::showSpellingGuessPanel()
     
     advanceToNextMisspelling(true);
     client()->showSpellingUI(true);
-}
-
-bool Editor::spellingPanelIsShowing()
-{
-    if (!client())
-        return false;
-    return client()->spellingUIIsShowing();
 }
 
 void Editor::clearMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)

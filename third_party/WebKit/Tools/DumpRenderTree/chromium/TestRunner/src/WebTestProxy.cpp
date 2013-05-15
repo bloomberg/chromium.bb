@@ -1245,14 +1245,6 @@ void WebTestProxyBase::willRequestResource(WebFrame* frame, const WebKit::WebCac
     }
 }
 
-bool WebTestProxyBase::canHandleRequest(WebFrame*, const WebURLRequest& request)
-{
-    GURL url = request.url();
-    // Just reject the scheme used in
-    // LayoutTests/http/tests/misc/redirect-to-external-url.html
-    return !url.SchemeIs("spaceballs");
-}
-
 WebURLError WebTestProxyBase::cannotHandleRequestError(WebFrame*, const WebURLRequest& request)
 {
     WebURLError error;

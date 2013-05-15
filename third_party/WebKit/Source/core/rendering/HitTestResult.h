@@ -95,30 +95,16 @@ public:
     bool isSelected() const;
     String spellingToolTip(TextDirection&) const;
     String title(TextDirection&) const;
-    String innerTextIfTruncated(TextDirection&) const;
     String altDisplayString() const;
     String titleDisplayString() const;
     Image* image() const;
     IntRect imageRect() const;
     KURL absoluteImageURL() const;
-    KURL absolutePDFURL() const;
     KURL absoluteMediaURL() const;
     KURL absoluteLinkURL() const;
     String textContent() const;
     bool isLiveLink() const;
     bool isContentEditable() const;
-    void toggleMediaControlsDisplay() const;
-    void toggleMediaLoopPlayback() const;
-    void enterFullscreenForVideo() const;
-    bool mediaControlsEnabled() const;
-    bool mediaLoopEnabled() const;
-    bool mediaPlaying() const;
-    bool mediaSupportsFullscreen() const;
-    void toggleMediaPlayState() const;
-    bool mediaHasAudio() const;
-    bool mediaIsVideo() const;
-    bool mediaMuted() const;
-    void toggleMediaMuteState() const;
 
     // Returns true if it is rect-based hit test and needs to continue until the rect is fully
     // enclosed by the boundaries of a node.

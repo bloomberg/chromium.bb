@@ -235,32 +235,6 @@ String HitTestResult::title(TextDirection& dir) const
     return String();
 }
 
-String HitTestResult::innerTextIfTruncated(TextDirection& dir) const
-{
-    for (Node* truncatedNode = m_innerNode.get(); truncatedNode; truncatedNode = truncatedNode->parentNode()) {
-        if (!truncatedNode->isElementNode())
-            continue;
-
-        if (RenderObject* renderer = truncatedNode->renderer()) {
-            if (renderer->isRenderBlock()) {
-                RenderBlock* block = toRenderBlock(renderer);
-                if (block->style()->textOverflow()) {
-                    for (RootInlineBox* line = block->firstRootBox(); line; line = line->nextRootBox()) {
-                        if (line->hasEllipsisBox()) {
-                            dir = block->style()->direction();
-                            return toElement(truncatedNode)->innerText();
-                        }
-                    }
-                }
-                break;
-            }
-        }
-    }
-
-    dir = LTR;
-    return String();
-}
-
 String displayString(const String& string, const Node* node)
 {
     if (!node)
@@ -333,35 +307,11 @@ KURL HitTestResult::absoluteImageURL() const
     return m_innerNonSharedNode->document()->completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 }
 
-KURL HitTestResult::absolutePDFURL() const
-{
-    if (!(m_innerNonSharedNode && m_innerNonSharedNode->document()))
-        return KURL();
-
-    if (!m_innerNonSharedNode->hasTagName(embedTag) && !m_innerNonSharedNode->hasTagName(objectTag))
-        return KURL();
-
-    HTMLPlugInImageElement* element = toHTMLPlugInImageElement(m_innerNonSharedNode.get());
-    KURL url = m_innerNonSharedNode->document()->completeURL(stripLeadingAndTrailingHTMLSpaces(element->url()));
-    if (!url.isValid())
-        return KURL();
-
-    if (element->serviceType() == "application/pdf" || (element->serviceType().isEmpty() && url.path().lower().endsWith(".pdf")))
-        return url;
-    return KURL();
-}
-
 KURL HitTestResult::absoluteMediaURL() const
 {
     if (HTMLMediaElement* mediaElt = mediaElement())
         return mediaElt->currentSrc();
     return KURL();
-}
-
-bool HitTestResult::mediaSupportsFullscreen() const
-{
-    HTMLMediaElement* mediaElt(mediaElement());
-    return (mediaElt && mediaElt->hasTagName(HTMLNames::videoTag) && mediaElt->supportsFullscreen());
 }
 
 HTMLMediaElement* HitTestResult::mediaElement() const
@@ -375,82 +325,6 @@ HTMLMediaElement* HitTestResult::mediaElement() const
     if (m_innerNonSharedNode->hasTagName(HTMLNames::videoTag) || m_innerNonSharedNode->hasTagName(HTMLNames::audioTag))
         return static_cast<HTMLMediaElement*>(m_innerNonSharedNode.get());
     return 0;
-}
-
-void HitTestResult::toggleMediaControlsDisplay() const
-{
-    if (HTMLMediaElement* mediaElt = mediaElement())
-        mediaElt->setControls(!mediaElt->controls());
-}
-
-void HitTestResult::toggleMediaLoopPlayback() const
-{
-    if (HTMLMediaElement* mediaElt = mediaElement())
-        mediaElt->setLoop(!mediaElt->loop());
-}
-
-void HitTestResult::enterFullscreenForVideo() const
-{
-    HTMLMediaElement* mediaElt(mediaElement());
-    if (mediaElt && mediaElt->hasTagName(HTMLNames::videoTag)) {
-        HTMLVideoElement* videoElt = static_cast<HTMLVideoElement*>(mediaElt);
-        if (!videoElt->isFullscreen() && mediaElt->supportsFullscreen())
-            videoElt->enterFullscreen();
-    }
-}
-
-bool HitTestResult::mediaControlsEnabled() const
-{
-    if (HTMLMediaElement* mediaElt = mediaElement())
-        return mediaElt->controls();
-    return false;
-}
-
-bool HitTestResult::mediaLoopEnabled() const
-{
-    if (HTMLMediaElement* mediaElt = mediaElement())
-        return mediaElt->loop();
-    return false;
-}
-
-bool HitTestResult::mediaPlaying() const
-{
-    if (HTMLMediaElement* mediaElt = mediaElement())
-        return !mediaElt->paused();
-    return false;
-}
-
-void HitTestResult::toggleMediaPlayState() const
-{
-    if (HTMLMediaElement* mediaElt = mediaElement())
-        mediaElt->togglePlayState();
-}
-
-bool HitTestResult::mediaHasAudio() const
-{
-    if (HTMLMediaElement* mediaElt = mediaElement())
-        return mediaElt->hasAudio();
-    return false;
-}
-
-bool HitTestResult::mediaIsVideo() const
-{
-    if (HTMLMediaElement* mediaElt = mediaElement())
-        return mediaElt->hasTagName(HTMLNames::videoTag);
-    return false;
-}
-
-bool HitTestResult::mediaMuted() const
-{
-    if (HTMLMediaElement* mediaElt = mediaElement())
-        return mediaElt->muted();
-    return false;
-}
-
-void HitTestResult::toggleMediaMuteState() const
-{
-    if (HTMLMediaElement* mediaElt = mediaElement())
-        mediaElt->setMuted(!mediaElt->muted());
 }
 
 KURL HitTestResult::absoluteLinkURL() const

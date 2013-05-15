@@ -185,7 +185,6 @@ protected:
     void didRunInsecureContent(WebKit::WebFrame*, const WebKit::WebSecurityOrigin&, const WebKit::WebURL& insecureURL);
     void didDetectXSS(WebKit::WebFrame*, const WebKit::WebURL& insecureURL, bool didBlockEntirePage);
     void willRequestResource(WebKit::WebFrame*, const WebKit::WebCachedURLRequest&);
-    bool canHandleRequest(WebKit::WebFrame*, const WebKit::WebURLRequest&);
     WebKit::WebURLError cannotHandleRequestError(WebKit::WebFrame*, const WebKit::WebURLRequest&);
     void didCreateDataSource(WebKit::WebFrame*, WebKit::WebDataSource*);
     void willSendRequest(WebKit::WebFrame*, unsigned identifier, WebKit::WebURLRequest&, const WebKit::WebURLResponse& redirectResponse);
@@ -521,12 +520,6 @@ public:
     {
         WebTestProxyBase::willRequestResource(frame, request);
         Base::willRequestResource(frame, request);
-    }
-    virtual bool canHandleRequest(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request)
-    {
-        if (!WebTestProxyBase::canHandleRequest(frame, request))
-            return false;
-        return Base::canHandleRequest(frame, request);
     }
     virtual WebKit::WebURLError cannotHandleRequestError(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request)
     {

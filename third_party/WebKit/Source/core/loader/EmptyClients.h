@@ -247,7 +247,6 @@ public:
 
     virtual bool shouldFallBack(const ResourceError&) OVERRIDE { return false; }
 
-    virtual bool canHandleRequest(const ResourceRequest&) const OVERRIDE { return false; }
     virtual bool canShowMIMEType(const String&) const OVERRIDE { return false; }
     virtual String generatedMIMETypeForURLScheme(const String&) const OVERRIDE { return ""; }
 

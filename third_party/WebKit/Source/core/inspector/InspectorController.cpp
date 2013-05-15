@@ -195,11 +195,6 @@ void InspectorController::setInspectorFrontendClient(PassOwnPtr<InspectorFronten
     m_inspectorFrontendClient = inspectorFrontendClient;
 }
 
-bool InspectorController::hasInspectorFrontendClient() const
-{
-    return m_inspectorFrontendClient;
-}
-
 void InspectorController::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* world)
 {
     if (world != mainThreadNormalWorld())

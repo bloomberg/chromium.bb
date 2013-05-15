@@ -171,7 +171,6 @@ namespace WebCore {
 
         virtual bool shouldFallBack(const ResourceError&) = 0;
 
-        virtual bool canHandleRequest(const ResourceRequest&) const = 0;
         virtual bool canShowMIMEType(const String& MIMEType) const = 0;
         virtual String generatedMIMETypeForURLScheme(const String& URLScheme) const = 0;
 

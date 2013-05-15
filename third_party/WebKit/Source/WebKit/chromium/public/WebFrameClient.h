@@ -140,10 +140,6 @@ public:
         WebFrame*, const WebURLRequest&, WebNavigationType,
         WebNavigationPolicy defaultPolicy, bool isRedirect) { return defaultPolicy; }
 
-    // Query if the specified request can be handled.
-    virtual bool canHandleRequest(
-        WebFrame*, const WebURLRequest& request) { return true; }
-
     // Returns an error corresponding to canHandledRequest() returning false.
     virtual WebURLError cannotHandleRequestError(
         WebFrame*, const WebURLRequest& request) { return WebURLError(); }

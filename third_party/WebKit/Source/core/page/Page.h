@@ -137,7 +137,6 @@ public:
     // DEPRECATED. Use backForward() instead of the following 5 functions.
     bool goBack();
     bool goForward();
-    bool canGoBackOrForward(int distance) const;
     void goBackOrForward(int distance);
     int getHistoryLength();
 

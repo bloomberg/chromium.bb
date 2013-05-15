@@ -279,17 +279,6 @@ bool Page::goForward()
     return false;
 }
 
-bool Page::canGoBackOrForward(int distance) const
-{
-    if (distance == 0)
-        return true;
-    if (distance > 0 && distance <= backForward()->forwardCount())
-        return true;
-    if (distance < 0 && -distance <= backForward()->backCount())
-        return true;
-    return false;
-}
-
 void Page::goBackOrForward(int distance)
 {
     if (distance == 0)

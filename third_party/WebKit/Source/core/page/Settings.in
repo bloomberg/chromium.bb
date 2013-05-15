@@ -3,7 +3,6 @@
 
 defaultTextEncodingName type=String
 editableLinkBehavior type=EditableLinkBehavior, initial=EditableLinkDefaultBehavior
-textDirectionSubmenuInclusionBehavior type=TextDirectionSubmenuInclusionBehavior, initial=TextDirectionSubmenuAutomaticallyIncluded
 passwordEchoDurationInSeconds type=double, initial=1
 
 # Sets the magnification value for validation message timer.  If the

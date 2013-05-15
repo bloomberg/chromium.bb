@@ -57,8 +57,6 @@ public:
     int checkingLength() const;
     String checkingSubstring() const { return textSubstring(checkingStart(), checkingLength()); }
 
-    bool checkingRangeMatches(int location, int length) const { return location == checkingStart() && length == checkingLength(); }
-    bool isCheckingRangeCoveredBy(int location, int length) const { return location <= checkingStart() && location + length >= checkingStart() + checkingLength(); }
     bool checkingRangeCovers(int location, int length) const { return location < checkingEnd() && location + length > checkingStart(); }
     PassRefPtr<Range> paragraphRange() const;
 
@@ -90,8 +88,6 @@ public:
     void markAllMisspellings(RefPtr<Range>& firstMisspellingRange);
     void markAllBadGrammar();
 
-    bool isUngrammatical(Vector<String>& guessesVector) const;
-    Vector<String> guessesForMisspelledOrUngrammaticalRange(bool checkGrammar, bool& misspelled, bool& ungrammatical) const;
 private:
     EditorClient* m_client;
     RefPtr<Range> m_range;

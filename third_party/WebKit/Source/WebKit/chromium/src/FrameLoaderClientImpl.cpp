@@ -1083,12 +1083,6 @@ bool FrameLoaderClientImpl::shouldFallBack(const ResourceError& error)
     return error.errorCode() != c.errorCode() || error.domain() != c.domain();
 }
 
-bool FrameLoaderClientImpl::canHandleRequest(const ResourceRequest& request) const
-{
-    return m_webFrame->client()->canHandleRequest(
-        m_webFrame, WrappedResourceRequest(request));
-}
-
 bool FrameLoaderClientImpl::canShowMIMEType(const String& mimeType) const
 {
     // This method is called to determine if the media type can be shown

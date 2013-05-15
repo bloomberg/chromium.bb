@@ -46,7 +46,6 @@ public:
 
     BackForwardClient* client() const { return m_client; }
 
-    bool canGoBackOrForward(int distance) const;
     void goBackOrForward(int distance);
 
     bool goBack();
