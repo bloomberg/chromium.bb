@@ -208,7 +208,7 @@ PRE_CQ_BUILDER_NAME = 'pre-cq-group'
 
 # Define pool of machines for Hardware tests.
 HWTEST_DEFAULT_NUM = 6
-HWTEST_TRYBOT_NUM = 1
+HWTEST_TRYBOT_NUM = 3
 HWTEST_MACH_POOL = 'bvt'
 HWTEST_PALADIN_POOL = 'cq'
 HWTEST_CHROME_PFQ_POOL = 'chromepfq'
