@@ -59,28 +59,43 @@ bool ManagedState::ManagedStatePropertyChanged(const std::string& key,
 bool ManagedState::GetBooleanValue(const std::string& key,
                                    const base::Value& value,
                                    bool* out_value) {
-  bool res = value.GetAsBoolean(out_value);
-  if (!res)
+  bool new_value;
+  if (!value.GetAsBoolean(&new_value)) {
     LOG(WARNING) << "Failed to parse boolean value for:" << key;
-  return res;
+    return false;
+  }
+  if (*out_value == new_value)
+    return false;
+  *out_value = new_value;
+  return true;
 }
 
 bool ManagedState::GetIntegerValue(const std::string& key,
                                    const base::Value& value,
                                    int* out_value) {
-  bool res = value.GetAsInteger(out_value);
-  if (!res)
+  int new_value;
+  if (!value.GetAsInteger(&new_value)) {
     LOG(WARNING) << "Failed to parse integer value for:" << key;
-  return res;
+    return false;
+  }
+  if (*out_value == new_value)
+    return false;
+  *out_value = new_value;
+  return true;
 }
 
 bool ManagedState::GetStringValue(const std::string& key,
                                   const base::Value& value,
                                   std::string* out_value) {
-  bool res = value.GetAsString(out_value);
-  if (!res)
+  std::string new_value;
+  if (!value.GetAsString(&new_value)) {
     LOG(WARNING) << "Failed to parse string value for:" << key;
-  return res;
+    return false;
+  }
+  if (*out_value == new_value)
+    return false;
+  *out_value = new_value;
+  return true;
 }
 
 }  // namespace chromeos

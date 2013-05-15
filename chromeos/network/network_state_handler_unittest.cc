@@ -274,6 +274,14 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
   EXPECT_EQ("TestSecurity",
             network_state_handler_->GetNetworkState(eth0)->security());
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(eth0));
+
+  // Changing a service to the exsiting value should not trigger an update.
+  DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
+      dbus::ObjectPath(eth0),
+      flimflam::kSecurityProperty, security_value,
+      base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(eth0));
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
