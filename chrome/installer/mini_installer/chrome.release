@@ -7,7 +7,7 @@ app_host.exe: %(ChromeDir)s\
 chrome.exe: %(ChromeDir)s\
 wow_helper.exe: %(ChromeDir)s\
 asan_rtl.dll: %(VersionDir)s\
-chrome[0-9]*.dll: %(VersionDir)s\
+chrome.dll: %(VersionDir)s\
 nacl64.exe: %(VersionDir)s\
 ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
 nacl_irt_x86_32.nexe: %(VersionDir)s\
