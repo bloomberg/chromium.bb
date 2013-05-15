@@ -26,6 +26,8 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
+#include <assert.h>
+
 #include "freedreno_drmif.h"
 #include "freedreno_priv.h"
 #include "freedreno_ringbuffer.h"
@@ -201,7 +203,9 @@ uint32_t fd_ringbuffer_timestamp(struct fd_ringbuffer *ring)
 void fd_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 		struct fd_bo *bo, uint32_t offset, uint32_t or)
 {
-	(*ring->cur++) = fd_bo_gpuaddr(bo, offset) | or;
+	uint32_t addr = fd_bo_gpuaddr(bo, offset);
+	assert(addr);
+	(*ring->cur++) = addr | or;
 	fd_pipe_add_submit(ring->pipe, bo);
 }
 
@@ -209,6 +213,7 @@ void fd_ringbuffer_emit_reloc_shift(struct fd_ringbuffer *ring,
 		struct fd_bo *bo, uint32_t offset, uint32_t or, int32_t shift)
 {
 	uint32_t addr = fd_bo_gpuaddr(bo, offset);
+	assert(addr);
 	if (shift < 0)
 		addr >>= -shift;
 	else
