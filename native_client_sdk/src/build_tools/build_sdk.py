@@ -20,6 +20,7 @@ and whether it should upload an SDK to file storage (GSTORE)
 # std python includes
 import copy
 import datetime
+import glob
 import optparse
 import os
 import re
@@ -118,23 +119,21 @@ def GetPNaClNativeLib(tcpath, arch):
   return os.path.join(tcpath, 'lib-' + arch)
 
 
-def GetBuildArgs(tcname, tcpath, outdir, arch, xarch=None):
-  """Return list of scons build arguments to generate user libraries."""
+def GetSconsArgs(tcpath, outdir, arch, xarch=None):
+  """Return list of scons build arguments to generate user libraries.
+
+  Only used for pnacl builds.
+  """
   scons = GetScons()
   mode = '--mode=opt-host,nacl'
   arch_name = GetArchName(arch, xarch)
   plat = 'platform=' + arch_name
   binarg = 'bindir=' + os.path.join(outdir, 'tools')
-  lib = 'libdir=' + GetToolchainNaClLib(tcname, tcpath, arch, xarch)
+  lib = 'libdir=' + GetToolchainNaClLib('pnacl', tcpath, arch, xarch)
   args = [scons, mode, plat, binarg, lib, '-j10',
-          'install_bin', 'install_lib']
-  if tcname == 'glibc':
-    args.append('--nacl_glibc')
+          'install_bin', 'install_lib', 'bitcode=1']
 
-  if tcname == 'pnacl':
-    args.append('bitcode=1')
-
-  print "Building %s (%s): %s" % (tcname, arch, ' '.join(args))
+  print "Building pnacl (%s): %s" % (arch, ' '.join(args))
   return args
 
 
@@ -227,6 +226,8 @@ def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
     pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
     buildbot_common.Move(tmpdir, pnacldir)
 
+  buildbot_common.RemoveDir(tmpdir)
+
   if options.gyp and sys.platform not in ['cygwin', 'win32']:
     # If the gyp options is specified we install a toolchain
     # wrapper so that gyp can switch toolchains via a commandline
@@ -244,108 +245,126 @@ def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
     os.symlink('compiler-wrapper.py', os.path.join(bindir, 'i686-nacl-ar'))
 
 
-HEADER_MAP = {
-  'newlib': {
-      'pthread.h': 'src/untrusted/pthread/pthread.h',
-      'semaphore.h': 'src/untrusted/pthread/semaphore.h',
-      'nacl/dynamic_annotations.h':
-          'src/untrusted/valgrind/dynamic_annotations.h',
-      'nacl/nacl_dyncode.h': 'src/untrusted/nacl/nacl_dyncode.h',
-      'nacl/nacl_exception.h': 'src/include/nacl/nacl_exception.h',
-      'nacl/nacl_startup.h': 'src/untrusted/nacl/nacl_startup.h',
-      'nacl/nacl_thread.h': 'src/untrusted/nacl/nacl_thread.h',
-      'pnacl.h': 'src/untrusted/nacl/pnacl.h',
-      'irt.h': 'src/untrusted/irt/irt.h',
-      'irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
-  },
-  'glibc': {
-      'nacl/dynamic_annotations.h':
-          'src/untrusted/valgrind/dynamic_annotations.h',
-      'nacl/nacl_dyncode.h': 'src/untrusted/nacl/nacl_dyncode.h',
-      'nacl/nacl_exception.h': 'src/include/nacl/nacl_exception.h',
-      'nacl/nacl_startup.h': 'src/untrusted/nacl/nacl_startup.h',
-      'nacl/nacl_thread.h': 'src/untrusted/nacl/nacl_thread.h',
-      'pnacl.h': 'src/untrusted/nacl/pnacl.h',
-      'irt.h': 'src/untrusted/irt/irt.h',
-      'irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
-  },
-  'host': {
-  },
+# List of toolchain headers to install.
+# Source is relative to native_client tree, destination is relative
+# to the toolchain header directory.
+NACL_HEADER_MAP = {
+  'newlib': [
+      ('src/include/nacl/nacl_exception.h', 'nacl/'),
+      ('src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
+      ('src/untrusted/nacl/nacl_startup.h', 'nacl/'),
+      ('src/untrusted/nacl/nacl_thread.h', 'nacl/'),
+      ('src/untrusted/nacl/pnacl.h', ''),
+      ('src/untrusted/irt/irt.h', ''),
+      ('src/untrusted/irt/irt_ppapi.h', ''),
+      ('src/untrusted/pthread/pthread.h', ''),
+      ('src/untrusted/pthread/semaphore.h', ''),
+      ('src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
+  ],
+  'glibc': [
+      ('src/include/nacl/nacl_exception.h', 'nacl/'),
+      ('src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
+      ('src/untrusted/nacl/nacl_startup.h', 'nacl/'),
+      ('src/untrusted/nacl/nacl_thread.h', 'nacl/'),
+      ('src/untrusted/nacl/pnacl.h', ''),
+      ('src/untrusted/irt/irt.h', ''),
+      ('src/untrusted/irt/irt_ppapi.h', ''),
+      ('src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
+  ],
+  'host': []
 }
+
+# Source relative to 'ppapi' foler.  Destiniation relative
+# to SDK include folder.
+PPAPI_HEADER_MAP = [
+  # Copy the KHR headers
+  ('lib/gl/include/KHR/khrplatform.h',     'KHR/'),
+
+  # Copy the GLES2 headers
+  ('lib/gl/include/GLES2/gl2.h',           'GLES2/'),
+  ('lib/gl/include/GLES2/gl2ext.h',        'GLES2/'),
+  ('lib/gl/include/GLES2/gl2platform.h',   'GLES2/'),
+
+  # Copy the EGL headers
+  ('lib/gl/include/EGL/egl.h',             'EGL/'),
+  ('lib/gl/include/EGL/eglext.h',          'EGL/'),
+  ('lib/gl/include/EGL/eglplatform.h',     'EGL/'),
+
+  # Copy in the gles2 headers
+  ('lib/gl/gles2/gl2ext_ppapi.h',          'ppapi/gles2/'),
+  # Create a duplicate copy of this header
+  # TODO(sbc), remove this copy once we find a way to build gl2ext_ppapi.c.
+  ('lib/gl/gles2/gl2ext_ppapi.h',          'ppapi/lib/gl/gles2/'),
+
+  # Copy in the C++ headers
+  ('utility/graphics/paint_aggregator.h',  'ppapi/utility/graphics/'),
+  ('utility/graphics/paint_manager.h',     'ppapi/utility/graphics/'),
+  ('utility/threading/lock.h',             'ppapi/utility/threading/'),
+  ('utility/threading/simple_thread.h',    'ppapi/utility/threading/'),
+  ('utility/websocket/websocket_api.h',    'ppapi/utility/websocket/'),
+  ('utility/completion_callback_factory.h','ppapi/utility/'),
+  ('utility/completion_callback_factory_thread_traits.h', 'ppapi/utility/'),
+
+  # Copy in c, c/dev and c/extensions/dev headers
+  # TODO(sbc): remove the use of wildcards here so that we can more
+  # tightly control what ends up in the SDK.
+  ('c/*.h',                  'ppapi/c/'),
+  ('c/dev/*.h',              'ppapi/c/dev/'),
+  ('c/extensions/dev/*.h',   'ppapi/c/extensions/dev/'),
+
+  # Copy in cpp, cpp/dev, cpp/extensions/, cpp/extensions/dev
+  ('cpp/*.h',                'ppapi/cpp/'),
+  ('cpp/extensions/*.h',     'ppapi/cpp/extensions/'),
+  ('cpp/dev/*.h',            'ppapi/cpp/dev/'),
+  ('cpp/extensions/dev/*.h', 'ppapi/cpp/extensions/dev/'),
+]
 
 
 def InstallCommonHeaders(inc_path):
-  # Clean out per toolchain ppapi directory
-  ppapi = os.path.join(inc_path, 'ppapi')
-  buildbot_common.RemoveDir(ppapi)
+  InstallFiles(PPAPI_DIR, inc_path, PPAPI_HEADER_MAP)
 
-  # Copy in c, c/dev and c/extensions/dev headers
-  buildbot_common.MakeDir(os.path.join(ppapi, 'c', 'dev'))
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'c', '*.h'),
-          os.path.join(ppapi, 'c'))
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'c', 'dev', '*.h'),
-          os.path.join(ppapi, 'c', 'dev'))
-  buildbot_common.MakeDir(os.path.join(ppapi, 'c', 'extensions', 'dev'))
-  buildbot_common.CopyDir(
-          os.path.join(PPAPI_DIR, 'c', 'extensions', 'dev', '*.h'),
-          os.path.join(ppapi, 'c', 'extensions', 'dev'))
 
-  # Remove private and trusted interfaces
-  buildbot_common.RemoveDir(os.path.join(ppapi, 'c', 'private'))
-  buildbot_common.RemoveDir(os.path.join(ppapi, 'c', 'trusted'))
+def InstallFiles(src_root, dest_root, file_list):
+  """Copy a set of files from src_root to dest_root according
+  to the given mapping.  This allows files to be copied from
+  to a location in the destination tree that is different to the
+  location in the source tree.
 
-  # Copy in the C++ headers
-  buildbot_common.MakeDir(os.path.join(ppapi, 'cpp', 'dev'))
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'cpp', '*.h'),
-          os.path.join(ppapi, 'cpp'))
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'cpp', 'dev', '*.h'),
-          os.path.join(ppapi, 'cpp', 'dev'))
-  buildbot_common.MakeDir(os.path.join(ppapi, 'cpp', 'extensions', 'dev'))
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'cpp', 'extensions', '*.h'),
-          os.path.join(ppapi, 'cpp', 'extensions'))
-  buildbot_common.CopyDir(
-          os.path.join(PPAPI_DIR, 'cpp', 'extensions', 'dev', '*.h'),
-          os.path.join(ppapi, 'cpp', 'extensions', 'dev'))
-  buildbot_common.MakeDir(os.path.join(ppapi, 'utility', 'graphics'))
-  buildbot_common.MakeDir(os.path.join(ppapi, 'utility', 'threading'))
-  buildbot_common.MakeDir(os.path.join(ppapi, 'utility', 'websocket'))
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'utility', '*.h'),
-          os.path.join(ppapi, 'utility'))
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'utility', 'graphics', '*.h'),
-          os.path.join(ppapi, 'utility', 'graphics'))
-  buildbot_common.CopyDir(
-          os.path.join(PPAPI_DIR, 'utility', 'threading', '*.h'),
-          os.path.join(ppapi, 'utility', 'threading'))
-  buildbot_common.CopyDir(
-          os.path.join(PPAPI_DIR, 'utility', 'websocket', '*.h'),
-          os.path.join(ppapi, 'utility', 'websocket'))
+  If the destination mapping ends with a '/' then the destination
+  basename is inherited from the the source file.
 
-  # Copy in the gles2 headers
-  buildbot_common.MakeDir(os.path.join(ppapi, 'gles2'))
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'lib', 'gl', 'gles2', '*.h'),
-          os.path.join(ppapi, 'gles2'))
+  Wildcards can be used in the source list but it is not recommended
+  as this can end up adding things to the SDK unintentionally.
+  """
+  for file_spec in file_list:
+    # The list of files to install can be a simple list of
+    # strings or a list of pairs, where each pair corresponds
+    # to a mapping from source to destination names.
+    if type(file_spec) == str:
+      src_file = dest_file = file_spec
+    else:
+      src_file, dest_file = file_spec
 
-  # Copy the EGL headers
-  buildbot_common.MakeDir(os.path.join(inc_path, 'EGL'))
-  buildbot_common.CopyDir(
-          os.path.join(PPAPI_DIR, 'lib', 'gl', 'include', 'EGL', '*.h'),
-          os.path.join(inc_path, 'EGL'))
+    src_file = os.path.join(src_root, src_file)
 
-  # Copy the GLES2 headers
-  buildbot_common.MakeDir(os.path.join(inc_path, 'GLES2'))
-  buildbot_common.CopyDir(
-          os.path.join(PPAPI_DIR, 'lib', 'gl', 'include', 'GLES2', '*.h'),
-          os.path.join(inc_path, 'GLES2'))
+    # Expand sources files using glob.
+    sources = glob.glob(src_file)
+    if not sources:
+      sources = [src_file]
 
-  # Copy the KHR headers
-  buildbot_common.MakeDir(os.path.join(inc_path, 'KHR'))
-  buildbot_common.CopyDir(
-          os.path.join(PPAPI_DIR, 'lib', 'gl', 'include', 'KHR', '*.h'),
-          os.path.join(inc_path, 'KHR'))
+    if len(sources) > 1 and not dest_file.endswith('/'):
+      buildbot_common.ErrorExit("Target file must end in '/' when "
+                                "using globbing to install multiple files")
 
-  # Copy the lib files
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'lib'),
-          os.path.join(inc_path, 'ppapi'))
+    for source in sources:
+      if dest_file.endswith('/'):
+        dest = os.path.join(dest_file, os.path.basename(source))
+      else:
+        dest = dest_file
+      dest = os.path.join(dest_root, dest)
+      if not os.path.isdir(os.path.dirname(dest)):
+        buildbot_common.MakeDir(os.path.dirname(dest))
+      buildbot_common.CopyFile(source, dest)
 
 
 def InstallNaClHeaders(tc_dst_inc, tc_name):
@@ -354,50 +373,70 @@ def InstallNaClHeaders(tc_dst_inc, tc_name):
     # arm toolchain header should be the same as the x86 newlib
     # ones
     tc_name = 'newlib'
-  tc_map = HEADER_MAP[tc_name]
 
-  for filename in tc_map:
-    src = os.path.join(NACL_DIR, tc_map[filename])
-    dst = os.path.join(tc_dst_inc, filename)
-    buildbot_common.MakeDir(os.path.dirname(dst))
-    buildbot_common.CopyFile(src, dst)
+  InstallFiles(NACL_DIR, tc_dst_inc, NACL_HEADER_MAP[tc_name])
 
 
 def MakeNinjaRelPath(path):
   return os.path.join(os.path.relpath(OUT_DIR, SRC_DIR), path)
 
 
+TOOLCHAIN_LIBS = {
+  'newlib' : [
+    'crti.o',
+    'crtn.o',
+    'libnacl.a',
+    'libnacl_dyncode.a',
+    'libnacl_list_mappings.a',
+    'libppapi.a',
+    'libppapi_stub.a',
+    'libnosys.a',
+    'libpthread.a',
+  ],
+  'glibc': [
+    'libnacl.a',
+    'libnacl_dyncode.a',
+    'libnacl_dyncode.so',
+    'libnacl_list_mappings.a',
+    'libnacl_list_mappings.so',
+    'libppapi.a',
+    'libppapi.so',
+    'libppapi_stub.a',
+  ]
+}
+
+
 def GypNinjaInstall(pepperdir, platform, toolchains):
   build_dir = 'gypbuild'
   ninja_out_dir = os.path.join(OUT_DIR, build_dir, 'Release')
-  # src_file, dst_file, is_host_exe?
   tools_files = [
-    ('sel_ldr', 'sel_ldr_x86_32', True),
-    ('ncval_x86_32', 'ncval_x86_32', True),
-    ('ncval_arm', 'ncval_arm', True),
-    ('irt_core_newlib_x32.nexe', 'irt_core_newlib_x32.nexe', False),
-    ('irt_core_newlib_x64.nexe', 'irt_core_newlib_x64.nexe', False),
+    ['sel_ldr', 'sel_ldr_x86_32'],
+    ['ncval_x86_32', 'ncval_x86_32'],
+    ['ncval_arm', 'ncval_arm'],
+    ['irt_core_newlib_x32.nexe', 'irt_core_newlib_x32.nexe'],
+    ['irt_core_newlib_x64.nexe', 'irt_core_newlib_x64.nexe'],
   ]
+
   if platform != 'mac':
     # Mac doesn't build 64-bit binaries.
-    tools_files.append(('sel_ldr64', 'sel_ldr_x86_64', True))
-    tools_files.append(('ncval_x86_64', 'ncval_x86_64', True))
+    tools_files.append(['sel_ldr64', 'sel_ldr_x86_64'])
+    tools_files.append(['ncval_x86_64', 'ncval_x86_64'])
 
   if platform == 'linux':
-    tools_files.append(('nacl_helper_bootstrap',
-                        'nacl_helper_bootstrap_x86_32', True))
-    tools_files.append(('nacl_helper_bootstrap64',
-                        'nacl_helper_bootstrap_x86_64', True))
+    tools_files.append(['nacl_helper_bootstrap',
+                        'nacl_helper_bootstrap_x86_32'])
+    tools_files.append(['nacl_helper_bootstrap64',
+                        'nacl_helper_bootstrap_x86_64'])
 
   buildbot_common.MakeDir(os.path.join(pepperdir, 'tools'))
-  for src, dst, host_exe in tools_files:
-    if platform == 'win' and host_exe:
-      src += '.exe'
-      dst += '.exe'
 
-    buildbot_common.CopyFile(
-        os.path.join(ninja_out_dir, src),
-        os.path.join(pepperdir, 'tools', dst))
+  # Add .exe extensions to all windows tools
+  for pair in tools_files:
+    if platform == 'win' and not pair[0].endswith('.nexe'):
+      pair[0] += '.exe'
+      pair[1] += '.exe'
+
+  InstallFiles(ninja_out_dir, os.path.join(pepperdir, 'tools'), tools_files)
 
   for tc in set(toolchains) & set(['newlib', 'glibc']):
     for archname in ('arm', '32', '64'):
@@ -417,18 +456,13 @@ def GypNinjaInstall(pepperdir, platform, toolchains):
       tcpath = os.path.join(pepperdir, 'toolchain', tcdir)
       dst_dir = GetToolchainNaClLib(tc, tcpath, 'x86', archname)
 
-      buildbot_common.MakeDir(dst_dir)
-      buildbot_common.CopyDir(os.path.join(src_dir, '*.a'), dst_dir)
-      if tc == 'newlib':
-        buildbot_common.CopyDir(os.path.join(src_dir, '*.o'), dst_dir)
-
-      if tc == 'glibc':
-        buildbot_common.CopyDir(os.path.join(src_dir, '*.so'), dst_dir)
+      InstallFiles(src_dir, dst_dir, TOOLCHAIN_LIBS[tc])
 
       ninja_tcpath = os.path.join(ninja_out_dir, 'gen', 'sdk', 'toolchain',
                       tcdir)
       lib_dir = GetToolchainNaClLib(tc, ninja_tcpath, 'x86', archname)
       buildbot_common.CopyFile(os.path.join(lib_dir, 'crt1.o'), dst_dir)
+
 
 
 def GypNinjaBuild_NaCl(platform, rel_out_dir):
@@ -456,8 +490,8 @@ def GypNinjaBuild_NaCl(platform, rel_out_dir):
     files_to_copy = [
       ('sel_ldr', 'sel_ldr64'),
       ('ncval_x86_64', 'ncval_x86_64'),
+      ('nacl_helper_bootstrap', 'nacl_helper_bootstrap64'),
     ]
-    files_to_copy.append(('nacl_helper_bootstrap', 'nacl_helper_bootstrap64'))
 
     for src, dst in files_to_copy:
       buildbot_common.CopyFile(
@@ -556,10 +590,10 @@ def BuildStepBuildToolchains(pepperdir, platform, toolchains):
   if 'pnacl' in toolchains:
     shell = platform == 'win'
     buildbot_common.Run(
-        GetBuildArgs('pnacl', pnacldir, pepperdir, 'x86', '32'),
+        GetSconsArgs(pnacldir, pepperdir, 'x86', '32'),
         cwd=NACL_DIR, shell=shell)
     buildbot_common.Run(
-        GetBuildArgs('pnacl', pnacldir, pepperdir, 'x86', '64'),
+        GetSconsArgs(pnacldir, pepperdir, 'x86', '64'),
         cwd=NACL_DIR, shell=shell)
 
     for arch in ('ia32', 'arm'):
@@ -644,11 +678,11 @@ def BuildStepMakeAll(pepperdir, platform, directory, step_name,
                         cwd=make_dir)
 
 
-def BuildStepBuildLibraries(pepperdir, platform, directory, clean=True):
+def BuildStepBuildLibraries(pepperdir, platform, directory):
   BuildStepMakeAll(pepperdir, platform, directory, 'Build Libraries Debug',
-      clean=clean, config='Debug')
+      clean=True, config='Debug')
   BuildStepMakeAll(pepperdir, platform, directory, 'Build Libraries Release',
-      clean=clean, config='Release')
+      clean=True, config='Release')
 
 
 def GenerateNotice(fileroot, output_filename='NOTICE', extra_files=None):

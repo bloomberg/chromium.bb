@@ -4,12 +4,11 @@
 
 #include <stdio.h>
 
+#include "GLES2/gl2.h"
+
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/size.h"
-
-#include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
-#include "ppapi/lib/gl/include/GLES2/gl2.h"
-
+#include "ppapi/gles2/gl2ext_ppapi.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 #include "ppapi_main/ppapi_instance.h"
