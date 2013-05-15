@@ -205,18 +205,18 @@ TEST_F(DisplayManagerTest, NativeDisplayTest) {
 TEST_F(DisplayManagerTest, EmulatorTest) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
-  DisplayManager::CycleDisplay();
+  display_manager()->AddRemoveDisplay();
   // Update primary and add seconary.
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 1 0", GetCountSummary());
   reset();
 
-  DisplayManager::CycleDisplay();
+  display_manager()->AddRemoveDisplay();
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 0 1", GetCountSummary());
   reset();
 
-  DisplayManager::CycleDisplay();
+  display_manager()->AddRemoveDisplay();
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 1 0", GetCountSummary());
   reset();

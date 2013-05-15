@@ -39,6 +39,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
+#include "chromeos/display/output_configurator.h"
 #endif
 
 #if defined(OS_WIN)
@@ -139,16 +140,6 @@ DisplayManager::DisplayManager()
 }
 
 DisplayManager::~DisplayManager() {
-}
-
-// static
-void DisplayManager::CycleDisplay() {
-  Shell::GetInstance()->display_manager()->CycleDisplayImpl();
-}
-
-// static
-void DisplayManager::ToggleDisplayScaleFactor() {
-  Shell::GetInstance()->display_manager()->ScaleDisplayImpl();
 }
 
 // static
@@ -624,6 +615,53 @@ void DisplayManager::OnRootWindowResized(const aura::RootWindow* root,
   }
 }
 
+void DisplayManager::SetMirrorMode(bool mirrored) {
+  if (num_connected_displays() <= 1)
+    return;
+
+#if defined(OS_CHROMEOS)
+  if (base::chromeos::IsRunningOnChromeOS()) {
+    chromeos::OutputState new_state = mirrored ?
+        chromeos::STATE_DUAL_MIRROR : chromeos::STATE_DUAL_EXTENDED;
+    Shell::GetInstance()->output_configurator()->SetDisplayMode(new_state);
+  } else {
+    // TODO(oshima): Compositor based mirroring.
+  }
+#endif
+}
+
+void DisplayManager::AddRemoveDisplay() {
+  DCHECK(!displays_.empty());
+  std::vector<DisplayInfo> new_display_info_list;
+  new_display_info_list.push_back(
+      GetDisplayInfo(DisplayController::GetPrimaryDisplay().id()));
+  // Add if there is only one display.
+  if (displays_.size() == 1) {
+    // Layout the 2nd display below the primary as with the real device.
+    aura::RootWindow* primary = Shell::GetPrimaryRootWindow();
+    gfx::Rect host_bounds =
+        gfx::Rect(primary->GetHostOrigin(),  primary->GetHostSize());
+    new_display_info_list.push_back(DisplayInfo::CreateFromSpec(
+        base::StringPrintf(
+            "%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
+  }
+  num_connected_displays_ = new_display_info_list.size();
+  UpdateDisplays(new_display_info_list);
+}
+
+void DisplayManager::ToggleDisplayScaleFactor() {
+  DCHECK(!displays_.empty());
+  std::vector<DisplayInfo> new_display_info_list;
+  for (DisplayList::const_iterator iter = displays_.begin();
+       iter != displays_.end(); ++iter) {
+    DisplayInfo display_info = GetDisplayInfo(iter->id());
+    display_info.set_device_scale_factor(
+        display_info.device_scale_factor() == 1.0f ? 2.0f : 1.0f);
+    new_display_info_list.push_back(display_info);
+  }
+  UpdateDisplays(new_display_info_list);
+}
+
 int64 DisplayManager::GetDisplayIdForUIScaling() const {
   // UI Scaling is effective only on internal display.
   int64 display_id = gfx::Display::InternalDisplayId();
@@ -650,38 +688,6 @@ void DisplayManager::Init() {
   if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal))
     gfx::Display::SetInternalDisplayId(first_display_id_);
   num_connected_displays_ = displays_.size();
-}
-
-void DisplayManager::CycleDisplayImpl() {
-  DCHECK(!displays_.empty());
-  std::vector<DisplayInfo> new_display_info_list;
-  new_display_info_list.push_back(
-      GetDisplayInfo(DisplayController::GetPrimaryDisplay().id()));
-  // Add if there is only one display.
-  if (displays_.size() == 1) {
-    // Layout the 2nd display below the primary as with the real device.
-    aura::RootWindow* primary = Shell::GetPrimaryRootWindow();
-    gfx::Rect host_bounds =
-        gfx::Rect(primary->GetHostOrigin(),  primary->GetHostSize());
-    new_display_info_list.push_back(DisplayInfo::CreateFromSpec(
-        base::StringPrintf(
-            "%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
-  }
-  num_connected_displays_ = new_display_info_list.size();
-  UpdateDisplays(new_display_info_list);
-}
-
-void DisplayManager::ScaleDisplayImpl() {
-  DCHECK(!displays_.empty());
-  std::vector<DisplayInfo> new_display_info_list;
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
-    DisplayInfo display_info = GetDisplayInfo(iter->id());
-    display_info.set_device_scale_factor(
-        display_info.device_scale_factor() == 1.0f ? 2.0f : 1.0f);
-    new_display_info_list.push_back(display_info);
-  }
-  UpdateDisplays(new_display_info_list);
 }
 
 gfx::Display& DisplayManager::FindDisplayForRootWindow(

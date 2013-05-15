@@ -54,28 +54,20 @@ class DisplayView : public ash::internal::ActionableView {
   virtual ~DisplayView() {}
 
   void Update() {
-    chromeos::OutputState state =
-        base::chromeos::IsRunningOnChromeOS() ?
-        Shell::GetInstance()->output_configurator()->output_state() :
-        InferOutputState();
-    switch (state) {
-      case chromeos::STATE_INVALID:
-      case chromeos::STATE_HEADLESS:
-      case chromeos::STATE_SINGLE:
-        SetVisible(false);
-        return;
-      case chromeos::STATE_DUAL_MIRROR:
-        label_->SetText(l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING, GetExternalDisplayName()));
-        SetVisible(true);
-        return;
-      case chromeos::STATE_DUAL_EXTENDED:
-        label_->SetText(l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetExternalDisplayName()));
-        SetVisible(true);
-        return;
+    DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+    if (display_manager->num_connected_displays() == 1) {
+      // TODO(oshima|mukai): Support single display mode for overscan alignment.
+      SetVisible(false);
+      return;
     }
-    NOTREACHED() << "Unhandled state " << state;
+    SetVisible(true);
+    if (display_manager->IsMirrored()) {
+      label_->SetText(l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING, GetExternalDisplayName()));
+    } else {
+      label_->SetText(l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetExternalDisplayName()));
+    }
   }
 
   chromeos::OutputState InferOutputState() const {

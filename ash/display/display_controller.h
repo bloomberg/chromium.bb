@@ -132,8 +132,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   // Returns the root window for |display_id|.
   aura::RootWindow* GetRootWindowForDisplayId(int64 id);
 
-  // Cycles display mode.
-  void CycleDisplayMode();
+  // Toggle mirror mode.
+  void ToggleMirrorMode();
 
   // Swap primary and secondary display.
   void SwapPrimaryDisplay();
@@ -210,9 +210,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
 
  private:
   friend class internal::DisplayManager;
-
-  // Create a root window for given |display|.
-  aura::RootWindow* CreateRootWindowForDisplay(const gfx::Display& display);
 
   // Creates a root window for |display| and stores it in the |root_windows_|
   // map.

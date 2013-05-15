@@ -620,7 +620,7 @@ DisplayLayout DisplayController::GetRegisteredDisplayLayout(
   return iter != paired_layouts_.end() ? iter->second : default_display_layout_;
 }
 
-void DisplayController::CycleDisplayMode() {
+void DisplayController::ToggleMirrorMode() {
   if (limiter_) {
     if  (limiter_->IsThrottled())
       return;
@@ -629,17 +629,13 @@ void DisplayController::CycleDisplayMode() {
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   Shell* shell = Shell::GetInstance();
   internal::DisplayManager* display_manager = GetDisplayManager();
-  if (!base::chromeos::IsRunningOnChromeOS()) {
-    internal::DisplayManager::CycleDisplay();
-  } else if (display_manager->num_connected_displays() > 1) {
-    chromeos::OutputState new_state = display_manager->IsMirrored() ?
-       chromeos::STATE_DUAL_EXTENDED : chromeos::STATE_DUAL_MIRROR;
+  if (display_manager->num_connected_displays() > 1) {
     internal::OutputConfiguratorAnimation* animation =
         shell->output_configurator_animation();
     animation->StartFadeOutAnimation(base::Bind(
-        base::IgnoreResult(&chromeos::OutputConfigurator::SetDisplayMode),
-        base::Unretained(shell->output_configurator()),
-        new_state));
+        base::IgnoreResult(&internal::DisplayManager::SetMirrorMode),
+        base::Unretained(display_manager),
+        !display_manager->IsMirrored()));
   }
 #endif
 }
@@ -904,7 +900,7 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
 }
 
-aura::RootWindow* DisplayController::CreateRootWindowForDisplay(
+aura::RootWindow* DisplayController::AddRootWindowForDisplay(
     const gfx::Display& display) {
   static int root_window_count = 0;
   const internal::DisplayInfo& display_info =
@@ -922,23 +918,18 @@ aura::RootWindow* DisplayController::CreateRootWindowForDisplay(
   root_window->AddRootWindowObserver(GetDisplayManager());
   root_window->SetProperty(internal::kDisplayIdKey, display.id());
   root_window->Init();
-  return root_window;
-}
 
-aura::RootWindow* DisplayController::AddRootWindowForDisplay(
-    const gfx::Display& display) {
-  aura::RootWindow* root = CreateRootWindowForDisplay(display);
-  root_windows_[display.id()] = root;
-  SetDisplayPropertiesOnHostWindow(root, display);
+  root_windows_[display.id()] = root_window;
+  SetDisplayPropertiesOnHostWindow(root_window, display);
 
 #if defined(OS_CHROMEOS)
   static bool force_constrain_pointer_to_root =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshConstrainPointerToRoot);
   if (base::chromeos::IsRunningOnChromeOS() || force_constrain_pointer_to_root)
-    root->ConfineCursorToWindow();
+    root_window->ConfineCursorToWindow();
 #endif
-  return root;
+  return root_window;
 }
 
 void DisplayController::UpdateDisplayBoundsForLayout() {
