@@ -145,7 +145,7 @@ void IOSurfaceLayerImpl::SetIOSurfaceProperties(unsigned io_surface_id,
 }
 
 const char* IOSurfaceLayerImpl::LayerTypeAsString() const {
-  return "IOSurfaceLayer";
+  return "cc::IOSurfaceLayerImpl";
 }
 
 }  // namespace cc

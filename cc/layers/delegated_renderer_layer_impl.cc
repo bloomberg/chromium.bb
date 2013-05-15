@@ -445,7 +445,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
 }
 
 const char* DelegatedRendererLayerImpl::LayerTypeAsString() const {
-  return "DelegatedRendererLayer";
+  return "cc::DelegatedRendererLayerImpl";
 }
 
 void DelegatedRendererLayerImpl::CreateChildIdIfNeeded() {

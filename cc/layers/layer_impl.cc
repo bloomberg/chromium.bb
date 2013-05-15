@@ -561,7 +561,7 @@ void LayerImpl::NoteLayerPropertyChangedForDescendants() {
 }
 
 const char* LayerImpl::LayerTypeAsString() const {
-  return "Layer";
+  return "cc::LayerImpl";
 }
 
 void LayerImpl::ResetAllChangeTrackingForSubtree() {

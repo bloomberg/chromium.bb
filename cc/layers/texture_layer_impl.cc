@@ -128,7 +128,7 @@ void TextureLayerImpl::DidLoseOutputSurface() {
 }
 
 const char* TextureLayerImpl::LayerTypeAsString() const {
-  return "TextureLayer";
+  return "cc::TextureLayerImpl";
 }
 
 bool TextureLayerImpl::CanClipSelf() const {

@@ -321,7 +321,7 @@ void VideoLayerImpl::SetProviderClientImpl(
 }
 
 const char* VideoLayerImpl::LayerTypeAsString() const {
-  return "VideoLayer";
+  return "cc::VideoLayerImpl";
 }
 
 }  // namespace cc

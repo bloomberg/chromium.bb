@@ -676,7 +676,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
 }
 
 const char* HeadsUpDisplayLayerImpl::LayerTypeAsString() const {
-  return "HeadsUpDisplayLayer";
+  return "cc::HeadsUpDisplayLayerImpl";
 }
 
 }  // namespace cc

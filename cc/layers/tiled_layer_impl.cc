@@ -297,7 +297,7 @@ void TiledLayerImpl::DidLoseOutputSurface() {
 }
 
 const char* TiledLayerImpl::LayerTypeAsString() const {
-  return "ContentLayer";
+  return "cc::TiledLayerImpl";
 }
 
 }  // namespace cc

@@ -337,7 +337,7 @@ bool ScrollbarLayerImpl::Scrollbar::isCustomScrollbar() const {
 }
 
 const char* ScrollbarLayerImpl::LayerTypeAsString() const {
-  return "ScrollbarLayer";
+  return "cc::ScrollbarLayerImpl";
 }
 
 }  // namespace cc

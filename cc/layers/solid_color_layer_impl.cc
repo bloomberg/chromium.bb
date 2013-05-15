@@ -47,7 +47,7 @@ void SolidColorLayerImpl::AppendQuads(QuadSink* quad_sink,
 }
 
 const char* SolidColorLayerImpl::LayerTypeAsString() const {
-  return "SolidColorLayer";
+  return "cc::SolidColorLayerImpl";
 }
 
 }  // namespace cc

@@ -265,7 +265,7 @@ void NinePatchLayerImpl::DidLoseOutputSurface() {
 }
 
 const char* NinePatchLayerImpl::LayerTypeAsString() const {
-  return "NinePatchLayer";
+  return "cc::NinePatchLayerImpl";
 }
 
 void NinePatchLayerImpl::DumpLayerProperties(std::string* str, int indent)

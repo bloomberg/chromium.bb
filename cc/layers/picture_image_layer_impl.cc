@@ -19,7 +19,7 @@ PictureImageLayerImpl::~PictureImageLayerImpl() {
 }
 
 const char* PictureImageLayerImpl::LayerTypeAsString() const {
-  return "PictureImageLayer";
+  return "cc::PictureImageLayerImpl";
 }
 
 scoped_ptr<LayerImpl> PictureImageLayerImpl::CreateLayerImpl(
