@@ -1476,7 +1476,7 @@ metrics::OmniboxEventProto::PageClassification
   const std::string& url = gurl.spec();
   if (url == chrome::kChromeUINewTabURL)
     return metrics::OmniboxEventProto_PageClassification_NEW_TAB_PAGE;
-  if (url == chrome::kAboutBlankURL)
+  if (url == content::kAboutBlankURL)
     return metrics::OmniboxEventProto_PageClassification_BLANK;
   if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
     return metrics::OmniboxEventProto_PageClassification_HOMEPAGE;

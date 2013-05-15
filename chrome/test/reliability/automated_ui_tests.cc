@@ -410,7 +410,7 @@ bool AutomatedUITest::DoAction(const std::string& action) {
   } else if (LowerCaseEqualsASCII(action, "javascriptconsole")) {
     did_complete_action = JavaScriptConsole();
   } else if (LowerCaseEqualsASCII(action, "navigate")) {
-    std::string url = chrome::kAboutBlankURL;
+    std::string url = content::kAboutBlankURL;
     if (init_reader_.NodeAttribute("url", &url)) {
       xml_writer_.AddAttribute("url", url);
     }

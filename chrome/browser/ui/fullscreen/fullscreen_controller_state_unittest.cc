@@ -347,7 +347,7 @@ Browser* FullscreenControllerStateUnitTest::GetBrowser() {
 
 #define TEST_EVENT(state, event) \
     TEST_F(FullscreenControllerStateUnitTest, state##__##event) { \
-      AddTab(browser(), GURL(chrome::kAboutBlankURL)); \
+      AddTab(browser(), GURL(content::kAboutBlankURL)); \
       ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event)) \
           << GetAndClearDebugLog(); \
     }
@@ -366,7 +366,7 @@ Browser* FullscreenControllerStateUnitTest::GetBrowser() {
 // exist.
 TEST_F(FullscreenControllerStateUnitTest, TransitionsForEachState) {
   // A tab is needed for tab fullscreen.
-  AddTab(browser(), GURL(chrome::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
   TestTransitionsForEachState();
   // Progress of test can be examined via LOG(INFO) << GetAndClearDebugLog();
 }
@@ -525,7 +525,7 @@ TEST_EVENT(STATE_TO_TAB_FULLSCREEN, WINDOW_CHANGE);
 TEST_F(FullscreenControllerStateUnitTest,
        DISABLED_ToggleTabWhenPendingBrowser) {
 #if !defined(OS_WIN)  // Only possible without reentrancy
-  AddTab(browser(), GURL(chrome::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
   ASSERT_NO_FATAL_FAILURE(
       TransitionToState(STATE_TO_BROWSER_FULLSCREEN_NO_CHROME))
       << GetAndClearDebugLog();
@@ -540,7 +540,7 @@ TEST_F(FullscreenControllerStateUnitTest,
 // Browser fullscreen is broken currently http://crbug.com/154196
 TEST_F(FullscreenControllerStateUnitTest, DISABLED_ToggleTabWhenPendingTab) {
 #if !defined(OS_WIN)  // Only possible without reentrancy
-  AddTab(browser(), GURL(chrome::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
   ASSERT_NO_FATAL_FAILURE(
       TransitionToState(STATE_TO_TAB_FULLSCREEN))
       << GetAndClearDebugLog();
@@ -587,7 +587,7 @@ TEST_F(FullscreenControllerStateUnitTest, DISABLED_DebugLogStateTables) {
 // This currently occurs when an extension exits fullscreen via changing the
 // browser bounds.
 TEST_F(FullscreenControllerStateUnitTest, ExitFullscreenViaBrowserWindow) {
-  AddTab(browser(), GURL(chrome::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
   ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   ASSERT_TRUE(browser()->window()->IsFullscreen());

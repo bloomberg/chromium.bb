@@ -1839,7 +1839,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TemporaryTextResetWhenPopupClosed) {
 
   // The omnibox should've reverted to the underlying permanent URL.
   EXPECT_FALSE(HasTemporaryText());
-  EXPECT_EQ(std::string(chrome::kAboutBlankURL), GetOmniboxText());
+  EXPECT_EQ(std::string(content::kAboutBlankURL), GetOmniboxText());
 }
 
 // Test that autocomplete results aren't sent when the popup is closed.

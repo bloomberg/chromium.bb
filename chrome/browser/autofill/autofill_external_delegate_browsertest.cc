@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       content::Source<content::WebContents>(web_contents_));
-  chrome::AddSelectedTabWithURL(browser(), GURL(chrome::kAboutBlankURL),
+  chrome::AddSelectedTabWithURL(browser(), GURL(content::kAboutBlankURL),
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL);
   observer.Wait();
 }

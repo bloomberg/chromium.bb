@@ -547,7 +547,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
       return CanRequestURL(child_id, child_url);
     }
 
-    if (LowerCaseEqualsASCII(url.spec(), chrome::kAboutBlankURL))
+    if (LowerCaseEqualsASCII(url.spec(), kAboutBlankURL))
       return true;  // Every child process can request <about:blank>.
 
     // URLs like <about:memory> and <about:crash> shouldn't be requestable by

@@ -1438,7 +1438,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FitWindow) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(popup, GURL(chrome::kAboutBlankURL),
+  chrome::AddSelectedTabWithURL(popup, GURL(content::kAboutBlankURL),
                                 content::PAGE_TRANSITION_LINK);
   // Wait for the page to finish loading.
   observer.Wait();

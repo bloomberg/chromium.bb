@@ -374,7 +374,7 @@ static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =
 
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   // Replace any occurrences of swappedout:// with about:blank.
-  const WebURL& blank_url = GURL(chrome::kAboutBlankURL);
+  const WebURL& blank_url = GURL(kAboutBlankURL);
   WebVector<WebURL> urls;
   ds->redirectChain(urls);
   result->reserve(urls.size());
@@ -3035,7 +3035,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
   // (see below).
   bool is_fork =
       // Must start from a tab showing about:blank, which is later redirected.
-      old_url == GURL(chrome::kAboutBlankURL) &&
+      old_url == GURL(kAboutBlankURL) &&
       // Must be the first real navigation of the tab.
       historyBackListCount() < 1 &&
       historyForwardListCount() < 1 &&
@@ -3150,7 +3150,7 @@ void RenderViewImpl::willPerformClientRedirect(
     WebFrame* frame, const WebURL& from, const WebURL& to, double interval,
     double fire_time) {
   // Replace any occurrences of swappedout:// with about:blank.
-  const WebURL& blank_url = GURL(chrome::kAboutBlankURL);
+  const WebURL& blank_url = GURL(kAboutBlankURL);
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_,
@@ -3167,7 +3167,7 @@ void RenderViewImpl::didCancelClientRedirect(WebFrame* frame) {
 void RenderViewImpl::didCompleteClientRedirect(
     WebFrame* frame, const WebURL& from) {
   // Replace any occurrences of swappedout:// with about:blank.
-  const WebURL& blank_url = GURL(chrome::kAboutBlankURL);
+  const WebURL& blank_url = GURL(kAboutBlankURL);
   if (!frame->parent()) {
     WebDataSource* ds = frame->provisionalDataSource();
     // If there's no provisional data source, it's a reference fragment
@@ -3649,7 +3649,7 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame) {
 void RenderViewImpl::didCreateDocumentElement(WebFrame* frame) {
   // Notify the browser about non-blank documents loading in the top frame.
   GURL url = frame->document().url();
-  if (url.is_valid() && url.spec() != chrome::kAboutBlankURL) {
+  if (url.is_valid() && url.spec() != kAboutBlankURL) {
     if (frame == webview()->mainFrame())
       Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));
   }

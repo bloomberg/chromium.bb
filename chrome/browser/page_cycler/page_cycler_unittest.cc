@@ -35,7 +35,7 @@ using file_util::PathExists;
 namespace {
 const int kFrameID = 1;
 const bool kIsMainFrame = true;
-const GURL kAboutURL = GURL(chrome::kAboutBlankURL);
+const GURL kAboutURL = GURL(content::kAboutBlankURL);
 }  // namespace
 
 class MockPageCycler : public PageCycler {

@@ -574,7 +574,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   // pages (unless it's specifically allowed).
   if ((url.SchemeIs(chrome::kChromeUIScheme) ||
       (url.SchemeIs(chrome::kAboutScheme) &&
-       url.spec() != chrome::kAboutBlankURL)) &&
+       url.spec() != kAboutBlankURL)) &&
       !command_line.HasSwitch(switches::kAllowWebUICompositing)) {
     prefs.accelerated_compositing_enabled = false;
     prefs.accelerated_2d_canvas_enabled = false;
@@ -1992,7 +1992,7 @@ int WebContentsImpl::DownloadImage(const GURL& url,
 
 bool WebContentsImpl::FocusLocationBarByDefault() {
   NavigationEntry* entry = controller_.GetActiveEntry();
-  if (entry && entry->GetURL() == GURL(chrome::kAboutBlankURL))
+  if (entry && entry->GetURL() == GURL(kAboutBlankURL))
     return true;
   return delegate_ && delegate_->ShouldFocusLocationBarByDefault(this);
 }
@@ -2009,7 +2009,7 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
     bool is_main_frame,
     const GURL& url) {
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
-  bool is_iframe_srcdoc = (url.spec() == chrome::kAboutSrcDocURL);
+  bool is_iframe_srcdoc = (url.spec() == kAboutSrcDocURL);
   GURL validated_url(url);
   RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
@@ -2779,7 +2779,7 @@ void WebContentsImpl::DidNavigate(
   // this is for about:blank.  In that case, the SiteInstance can still be
   // considered unused until a navigation to a real page.
   if (!static_cast<SiteInstanceImpl*>(GetSiteInstance())->HasSite() &&
-      params.url != GURL(chrome::kAboutBlankURL)) {
+      params.url != GURL(kAboutBlankURL)) {
     static_cast<SiteInstanceImpl*>(GetSiteInstance())->SetSite(params.url);
   }
 

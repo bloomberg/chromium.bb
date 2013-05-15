@@ -398,7 +398,7 @@ void Automation::Init(
   if (options.ignore_certificate_errors)
     command.AppendSwitch(switches::kIgnoreCertificateErrors);
   if (options.user_data_dir.empty())
-    command.AppendArg(chrome::kAboutBlankURL);
+    command.AppendArg(content::kAboutBlankURL);
 
   command.AppendArguments(options.command, true /* include_program */);
 

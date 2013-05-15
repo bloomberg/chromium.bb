@@ -839,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
 // do not cause back/forward navigations to be considered stale by the
 // renderer.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
-  NavigateToURL(shell(), GURL(chrome::kAboutBlankURL));
+  NavigateToURL(shell(), GURL(kAboutBlankURL));
 
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());

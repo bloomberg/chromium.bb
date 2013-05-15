@@ -1207,7 +1207,7 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
   // should be killed.
   if (!CanCommitURL(validated_params.url)) {
     VLOG(1) << "Blocked URL " << validated_params.url.spec();
-    validated_params.url = GURL(chrome::kAboutBlankURL);
+    validated_params.url = GURL(kAboutBlankURL);
     RecordAction(UserMetricsAction("CanCommitURL_BlockedAndKilled"));
     // Kills the process.
     process->ReceivedBadMessage();
@@ -1725,7 +1725,7 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
     // This is because the browser treats navigation to an empty GURL as a
     // navigation to the home page. This is often a privileged page
     // (chrome://newtab/) which is exactly what we don't want.
-    *url = GURL(chrome::kAboutBlankURL);
+    *url = GURL(kAboutBlankURL);
     RecordAction(UserMetricsAction("FilterURLTermiate_Invalid"));
     return;
   }
@@ -1733,7 +1733,7 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
   if (url->SchemeIs(chrome::kAboutScheme)) {
     // The renderer treats all URLs in the about: scheme as being about:blank.
     // Canonicalize about: URLs to about:blank.
-    *url = GURL(chrome::kAboutBlankURL);
+    *url = GURL(kAboutBlankURL);
     RecordAction(UserMetricsAction("FilterURLTermiate_About"));
   }
 
@@ -1747,7 +1747,7 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
     // URL.  This prevents us from storing the blocked URL and becoming confused
     // later.
     VLOG(1) << "Blocked URL " << url->spec();
-    *url = GURL(chrome::kAboutBlankURL);
+    *url = GURL(kAboutBlankURL);
     RecordAction(UserMetricsAction("FilterURLTermiate_Blocked"));
   }
 }

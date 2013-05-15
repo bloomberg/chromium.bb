@@ -41,7 +41,7 @@ bool NavigationConstraintsImpl::IsSchemeAllowed(const GURL& url) {
 
   // Allow only about:blank or about:version
   if (url.SchemeIs(chrome::kAboutScheme)) {
-    if (LowerCaseEqualsASCII(url.spec(), chrome::kAboutBlankURL) ||
+    if (LowerCaseEqualsASCII(url.spec(), content::kAboutBlankURL) ||
         LowerCaseEqualsASCII(url.spec(), chrome::kAboutVersionURL)) {
       return true;
     }

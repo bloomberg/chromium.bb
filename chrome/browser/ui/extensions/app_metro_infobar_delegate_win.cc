@@ -39,11 +39,11 @@ void AppMetroInfoBarDelegateWin::Create(
       profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // Create a new tab at about:blank, and add the infobar.
-  content::OpenURLParams params(
-      GURL(chrome::kAboutBlankURL),
-      content::Referrer(),
-      NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false);
+  content::OpenURLParams params(GURL(content::kAboutBlankURL),
+                                content::Referrer(),
+                                NEW_FOREGROUND_TAB,
+                                content::PAGE_TRANSITION_LINK,
+                                false);
   content::WebContents* web_contents = browser->OpenURL(params);
   InfoBarService* info_bar_service =
       InfoBarService::FromWebContents(web_contents);

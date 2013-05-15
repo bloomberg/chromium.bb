@@ -133,7 +133,7 @@ void UserImageScreenHandler::HandleGetImages() {
   if (screen_->selected_image() != User::kInvalidImageIndex)
     SelectImage(screen_->selected_image());
 
-  if (screen_->profile_picture_data_url() != chrome::kAboutBlankURL)
+  if (screen_->profile_picture_data_url() != content::kAboutBlankURL)
     SendProfileImage(screen_->profile_picture_data_url());
   else if (screen_->profile_picture_absent())
     OnProfileImageAbsent();

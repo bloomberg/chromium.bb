@@ -35,13 +35,13 @@ CONTENT_EXPORT extern const char kMetadataScheme[];
 CONTENT_EXPORT extern const char kSwappedOutScheme[];
 CONTENT_EXPORT extern const char kViewSourceScheme[];
 
-// Hosts for about URLs.
-CONTENT_EXPORT extern const char kAboutBlankURL[];
-CONTENT_EXPORT extern const char kAboutSrcDocURL[];
-
 }  // namespace chrome
 
 namespace content {
+
+// Hosts for about URLs.
+CONTENT_EXPORT extern const char kAboutBlankURL[];
+CONTENT_EXPORT extern const char kAboutSrcDocURL[];
 
 CONTENT_EXPORT extern const char kChromeUIAccessibilityHost[];
 CONTENT_EXPORT extern const char kChromeUIAppCacheInternalsHost[];

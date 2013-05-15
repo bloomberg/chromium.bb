@@ -15,7 +15,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using chrome::kAboutBlankURL;
+using content::kAboutBlankURL;
 using content::PAGE_TRANSITION_TYPED;
 
 // Interactive test fixture testing Fullscreen Controller through its states. --

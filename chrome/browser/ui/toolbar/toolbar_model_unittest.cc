@@ -74,10 +74,10 @@ struct TestItem {
     false
   },
   {
-    GURL(chrome::kAboutBlankURL),
-    ASCIIToUTF16(chrome::kAboutBlankURL),
-    ASCIIToUTF16(chrome::kAboutBlankURL),
-    ASCIIToUTF16(chrome::kAboutBlankURL),
+    GURL(content::kAboutBlankURL),
+    ASCIIToUTF16(content::kAboutBlankURL),
+    ASCIIToUTF16(content::kAboutBlankURL),
+    ASCIIToUTF16(content::kAboutBlankURL),
     ToolbarModel::NO_SEARCH_TERMS,
     true
   },
@@ -187,7 +187,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
     chrome::EnableInstantExtendedAPIForTesting();
 
     ResetDefaultTemplateURL();
-    AddTab(browser(), GURL(chrome::kAboutBlankURL));
+    AddTab(browser(), GURL(content::kAboutBlankURL));
     for (size_t i = 0; i < queries.size(); ++i) {
       std::string url_string = kInstantExtendedPrefix +
           net::EscapeQueryParamValue(queries[i], true);
@@ -242,7 +242,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionDisabled) {
       << "This test expects query extraction to be disabled.";
 
   ResetDefaultTemplateURL();
-  AddTab(browser(), GURL(chrome::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
     NavigateAndCheckText(test_item.url,
@@ -258,7 +258,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionEnabled) {
   chrome::EnableInstantExtendedAPIForTesting();
 
   ResetDefaultTemplateURL();
-  AddTab(browser(), GURL(chrome::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
     NavigateAndCheckText(test_item.url,
@@ -330,7 +330,7 @@ TEST_F(ToolbarModelTest, SearchTermSecurityLevel) {
   chrome::EnableInstantExtendedAPIForTesting();
   browser()->toolbar_model()->SetSupportsExtractionOfURLLikeSearchTerms(true);
   ResetDefaultTemplateURL();
-  AddTab(browser(), GURL(chrome::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
 
   WebContents* contents = browser()->tab_strip_model()->GetWebContentsAt(0);
   contents->GetController().LoadURL(

@@ -62,7 +62,7 @@ class ViewIDTest : public InProcessBrowserTest {
         ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
 
       bookmark_utils::AddIfNotBookmarked(
-          bookmark_model, GURL(chrome::kAboutBlankURL), ASCIIToUTF16("about"));
+          bookmark_model, GURL(content::kAboutBlankURL), ASCIIToUTF16("about"));
     }
 
     for (int i = VIEW_ID_TOOLBAR; i < VIEW_ID_PREDEFINED_COUNT; ++i) {
@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Tab) {
   for (int i = 1; i <= 9; ++i) {
     CheckViewID(static_cast<ViewID>(VIEW_ID_TAB_0 + i), false);
     browser()->OpenURL(OpenURLParams(
-        GURL(chrome::kAboutBlankURL), Referrer(), NEW_BACKGROUND_TAB,
+        GURL(content::kAboutBlankURL), Referrer(), NEW_BACKGROUND_TAB,
          content::PAGE_TRANSITION_TYPED, false));
     CheckViewID(static_cast<ViewID>(VIEW_ID_TAB_0 + i), true);
     // VIEW_ID_TAB_LAST should always be available.
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Tab) {
 
   // Open the 11th tab.
   browser()->OpenURL(OpenURLParams(
-      GURL(chrome::kAboutBlankURL), Referrer(), NEW_BACKGROUND_TAB,
+      GURL(content::kAboutBlankURL), Referrer(), NEW_BACKGROUND_TAB,
       content::PAGE_TRANSITION_TYPED, false));
   CheckViewID(VIEW_ID_TAB_LAST, true);
 }

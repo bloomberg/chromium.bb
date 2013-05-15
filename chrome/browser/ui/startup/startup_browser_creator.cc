@@ -405,7 +405,7 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
           // command line. See ExistingUserController::OnLoginSuccess.
           (url.spec().find(chrome::kChromeUISettingsURL) == 0) ||
 #endif
-          (url.spec().compare(chrome::kAboutBlankURL) == 0)) {
+          (url.spec().compare(content::kAboutBlankURL) == 0)) {
         urls.push_back(url);
       }
     }

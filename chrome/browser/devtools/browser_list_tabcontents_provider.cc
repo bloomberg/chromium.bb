@@ -99,7 +99,7 @@ RenderViewHost* BrowserListTabContentsProvider::CreateNewTarget() {
 
   content::WebContents* web_contents = chrome::AddSelectedTabWithURL(
       browser_list->get(0),
-      GURL(chrome::kAboutBlankURL),
+      GURL(content::kAboutBlankURL),
       content::PAGE_TRANSITION_LINK);
   return web_contents->GetRenderViewHost();
 }

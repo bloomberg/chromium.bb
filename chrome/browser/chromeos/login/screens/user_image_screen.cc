@@ -46,7 +46,7 @@ UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
       accept_photo_after_decoding_(false),
       selected_image_(User::kInvalidImageIndex),
       profile_picture_enabled_(false),
-      profile_picture_data_url_(chrome::kAboutBlankURL),
+      profile_picture_data_url_(content::kAboutBlankURL),
       profile_picture_absent_(false) {
   actor_->SetDelegate(this);
   SetProfilePictureEnabled(true);

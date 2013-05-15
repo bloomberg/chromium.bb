@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupsLaunchWhenTabIsClosed) {
       base::FilePath(FILE_PATH_LITERAL("popup-on-unload.html")));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  NavigateAndCheckPopupShown(browser(), GURL(chrome::kAboutBlankURL));
+  NavigateAndCheckPopupShown(browser(), GURL(content::kAboutBlankURL));
 }
 
 // Verify that when you unblock popup, the popup shows in history and omnibox.

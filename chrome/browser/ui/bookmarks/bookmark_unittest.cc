@@ -25,7 +25,7 @@ TEST_F(BookmarkTest, DetachedBookmarkBarOnCustomNTP) {
   content::WebContents* web_contents = content::WebContents::Create(
       content::WebContents::CreateParams(browser()->profile()));
   web_contents->GetController().LoadURL(
-        GURL(chrome::kAboutBlankURL), content::Referrer(),
+        GURL(content::kAboutBlankURL), content::Referrer(),
         content::PAGE_TRANSITION_LINK, std::string());
 
   // Give it a NTP virtual URL.

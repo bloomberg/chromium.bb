@@ -20,7 +20,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
-using chrome::kAboutBlankURL;
+using content::kAboutBlankURL;
 using content::WebContents;
 using content::PAGE_TRANSITION_TYPED;
 

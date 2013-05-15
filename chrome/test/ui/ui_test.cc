@@ -82,7 +82,7 @@ UITestBase::UITestBase()
     : launch_arguments_(CommandLine::NO_PROGRAM),
       expected_errors_(0),
       expected_crashes_(0),
-      homepage_(chrome::kAboutBlankURL),
+      homepage_(content::kAboutBlankURL),
       wait_for_initial_loads_(true),
       dom_automation_enabled_(false),
       show_window_(false),

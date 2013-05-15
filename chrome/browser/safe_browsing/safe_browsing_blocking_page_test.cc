@@ -633,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareDontProceed) {
   EXPECT_TRUE(ClickAndWaitForDetach("back"));
   AssertNoInterstitial(false);   // Assert the interstitial is gone
   EXPECT_EQ(
-      GURL(chrome::kAboutBlankURL),  // Back to "about:blank"
+      GURL(content::kAboutBlankURL),  // Back to "about:blank"
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
@@ -679,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   AssertNoInterstitial(false);  // Assert the interstitial is gone
 
   EXPECT_EQ(
-      GURL(chrome::kAboutBlankURL),  // Back to "about:blank"
+      GURL(content::kAboutBlankURL),  // Back to "about:blank"
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
@@ -736,7 +736,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ProceedDisabled) {
   EXPECT_TRUE(ClickAndWaitForDetach("proceed"));
   AssertNoInterstitial(true);
   EXPECT_EQ(
-      GURL(chrome::kAboutBlankURL),  // Back to "about:blank"
+      GURL(content::kAboutBlankURL),  // Back to "about:blank"
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
@@ -766,7 +766,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ReportingDisabled) {
   EXPECT_TRUE(ClickAndWaitForDetach("back"));
   AssertNoInterstitial(false);   // Assert the interstitial is gone
   EXPECT_EQ(
-      GURL(chrome::kAboutBlankURL),  // Back to "about:blank"
+      GURL(content::kAboutBlankURL),  // Back to "about:blank"
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
@@ -788,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingDontProceed) {
   EXPECT_TRUE(ClickAndWaitForDetach("back"));
   AssertNoInterstitial(false);  // Assert the interstitial is gone
   EXPECT_EQ(
-      GURL(chrome::kAboutBlankURL),  // We are back to "about:blank".
+      GURL(content::kAboutBlankURL),  // We are back to "about:blank".
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 

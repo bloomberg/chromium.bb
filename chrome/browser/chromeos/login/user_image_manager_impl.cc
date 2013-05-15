@@ -178,7 +178,7 @@ UserImageManagerImpl::UserImageManagerImpl()
     : image_loader_(new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC)),
       unsafe_image_loader_(new UserImageLoader(ImageDecoder::DEFAULT_CODEC)),
       last_image_set_async_(false),
-      downloaded_profile_image_data_url_(chrome::kAboutBlankURL),
+      downloaded_profile_image_data_url_(content::kAboutBlankURL),
       downloading_profile_image_(false),
       migrate_current_user_on_load_(false) {
 }

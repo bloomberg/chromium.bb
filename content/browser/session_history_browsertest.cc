@@ -25,7 +25,7 @@ class SessionHistoryTest : public ContentBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(test_server()->Start());
-    NavigateToURL(shell(), GURL(chrome::kAboutBlankURL));
+    NavigateToURL(shell(), GURL(kAboutBlankURL));
   }
 
   // Simulate clicking a link.  Only works on the frames.html testserver page.
@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
 
   GoBack();
   EXPECT_EQ("about:blank", GetTabTitle());
-  EXPECT_EQ(GURL(chrome::kAboutBlankURL), GetTabURL());
+  EXPECT_EQ(GURL(kAboutBlankURL), GetTabURL());
 
   GoForward();
   EXPECT_EQ("bot1", GetTabTitle());

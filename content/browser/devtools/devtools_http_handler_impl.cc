@@ -489,7 +489,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     version.SetString("Browser",
                       content::GetContentClient()->GetProduct());
     version.SetString("User-Agent",
-                      webkit_glue::GetUserAgent(GURL(chrome::kAboutBlankURL)));
+                      webkit_glue::GetUserAgent(GURL(kAboutBlankURL)));
     SendJson(connection_id, net::HTTP_OK, &version, std::string());
     return;
   }

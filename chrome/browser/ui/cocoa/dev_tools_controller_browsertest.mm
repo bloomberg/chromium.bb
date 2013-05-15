@@ -96,9 +96,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, WebViewLayout) {
   [controller() setTopContentOffset:offset];
 
   SetDockSide(DEVTOOLS_DOCK_SIDE_RIGHT);
-  AddTabAtIndex(0,
-                GURL(chrome::kAboutBlankURL),
-                content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(
+      0, GURL(content::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
   DevToolsWindow::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_SHOW);
 
   NSView* container_view = [[[controller() splitView] subviews] lastObject];

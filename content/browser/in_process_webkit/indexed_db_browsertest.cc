@@ -406,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ConnectionsClosedOnTabClose) {
 
   // Start on a different URL to force a new renderer process.
   Shell* new_shell = CreateBrowser();
-  NavigateToURL(new_shell, GURL(chrome::kAboutBlankURL));
+  NavigateToURL(new_shell, GURL(kAboutBlankURL));
   NavigateAndWaitForTitle(new_shell, "version_change_blocked.html", "#tab2",
                           "setVersion(3) blocked");
 

@@ -70,14 +70,14 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
   OmniboxView* location_entry = location_bar->GetLocationEntry();
 
   EXPECT_TRUE(location_bar->GetInputString().empty());
-  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
+  EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), location_entry->GetText());
   // TODO(phajdan.jr): check state of IsSelectAll when it's consistent across
   // platforms.
 
   location_bar->FocusLocation(true);
 
   EXPECT_TRUE(location_bar->GetInputString().empty());
-  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
+  EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), location_entry->GetText());
   EXPECT_TRUE(location_entry->IsSelectAll());
 
   location_entry->SetUserText(ASCIIToUTF16("chrome"));
@@ -89,14 +89,14 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
   location_entry->RevertAll();
 
   EXPECT_TRUE(location_bar->GetInputString().empty());
-  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
+  EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), location_entry->GetText());
   EXPECT_FALSE(location_entry->IsSelectAll());
 
   location_entry->SetUserText(ASCIIToUTF16("chrome"));
   location_bar->Revert();
 
   EXPECT_TRUE(location_bar->GetInputString().empty());
-  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
+  EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), location_entry->GetText());
   EXPECT_FALSE(location_entry->IsSelectAll());
 }
 
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
     OmniboxView* location_entry = location_bar->GetLocationEntry();
 
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
+    EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), location_entry->GetText());
     EXPECT_FALSE(location_entry->IsSelectAll());
     const AutocompleteResult& result = autocomplete_controller->result();
     EXPECT_TRUE(result.empty()) << AutocompleteResultAsString(result);
@@ -159,17 +159,17 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
   // and select all.
   LocationBar* location_bar = GetLocationBar();
   OmniboxView* location_entry = location_bar->GetLocationEntry();
-  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
+  EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), location_entry->GetText());
   location_entry->SetUserText(string16());
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(browser(), GURL(chrome::kAboutBlankURL),
+  chrome::AddSelectedTabWithURL(browser(), GURL(content::kAboutBlankURL),
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL);
   observer.Wait();
-  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
+  EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), location_entry->GetText());
   chrome::CloseTab(browser());
-  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
+  EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), location_entry->GetText());
   EXPECT_TRUE(location_entry->IsSelectAll());
 }
 
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
   // Focus search when omnibox is blank
   {
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
+    EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), location_entry->GetText());
 
     location_bar->FocusSearch();
     EXPECT_TRUE(location_bar->GetInputString().empty());

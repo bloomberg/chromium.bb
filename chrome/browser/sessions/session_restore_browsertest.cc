@@ -872,7 +872,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoWindowsCloseOneRestoreOnlyOne) {
 
   // Open a second window.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kAboutBlankURL), NEW_WINDOW,
+      browser(), GURL(content::kAboutBlankURL), NEW_WINDOW,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
 
   ASSERT_EQ(2u, native_browser_list->size());
@@ -905,10 +905,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoWindowsCloseOneRestoreOnlyOne) {
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ShareProcessesOnRestore) {
   // Create two new tabs.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      browser(), GURL(content::kAboutBlankURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      browser(), GURL(content::kAboutBlankURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   int expected_process_count = RenderProcessHostCount();

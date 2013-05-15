@@ -565,9 +565,10 @@ void WebNavigationTabObserver::DidFinishLoad(
   navigation_state_.SetNavigationCompleted(frame_id);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
-  DCHECK(navigation_state_.GetUrl(frame_id) == validated_url ||
-         (navigation_state_.GetUrl(frame_id) == GURL(chrome::kAboutSrcDocURL) &&
-          validated_url == GURL(chrome::kAboutBlankURL)))
+  DCHECK(
+      navigation_state_.GetUrl(frame_id) == validated_url ||
+      (navigation_state_.GetUrl(frame_id) == GURL(content::kAboutSrcDocURL) &&
+       validated_url == GURL(content::kAboutBlankURL)))
       << "validated URL is " << validated_url << " but we expected "
       << navigation_state_.GetUrl(frame_id);
   DCHECK_EQ(navigation_state_.IsMainFrame(frame_id), is_main_frame);

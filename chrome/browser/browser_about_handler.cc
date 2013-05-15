@@ -111,7 +111,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
   *url = URLFixerUpper::FixupURL(url->possibly_invalid_spec(), std::string());
 
   // Check that about: URLs are fixed up to chrome: by URLFixerUpper::FixupURL.
-  DCHECK((*url == GURL(chrome::kAboutBlankURL)) ||
+  DCHECK((*url == GURL(content::kAboutBlankURL)) ||
          !url->SchemeIs(chrome::kAboutScheme));
 
   // Only handle chrome://foo/, URLFixerUpper::FixupURL translates about:foo.

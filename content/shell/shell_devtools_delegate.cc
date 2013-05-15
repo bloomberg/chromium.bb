@@ -90,7 +90,7 @@ std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
 
 RenderViewHost* ShellDevToolsDelegate::CreateNewTarget() {
   Shell* shell = Shell::CreateNewWindow(browser_context_,
-                                        GURL(chrome::kAboutBlankURL),
+                                        GURL(kAboutBlankURL),
                                         NULL,
                                         MSG_ROUTING_NONE,
                                         gfx::Size());

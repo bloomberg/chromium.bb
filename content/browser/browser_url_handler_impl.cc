@@ -36,7 +36,7 @@ static bool HandleViewSource(GURL* url,
     }
 
     if (!is_sub_scheme_allowed) {
-      *url = GURL(chrome::kAboutBlankURL);
+      *url = GURL(kAboutBlankURL);
       return false;
     }
 

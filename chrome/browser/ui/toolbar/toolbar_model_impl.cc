@@ -144,7 +144,7 @@ GURL ToolbarModelImpl::GetURL() const {
       return ShouldDisplayURL() ? entry->GetVirtualURL() : GURL();
   }
 
-  return GURL(chrome::kAboutBlankURL);
+  return GURL(content::kAboutBlankURL);
 }
 
 ToolbarModel::SearchTermsType ToolbarModelImpl::GetSearchTermsType() const {
