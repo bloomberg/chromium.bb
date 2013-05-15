@@ -731,8 +731,7 @@ int SpdyStream::DoLoop(int result) {
         result = DoSendDomainBoundCert();
         break;
       case STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE:
-        CHECK_EQ(result, OK);
-        result = DoSendDomainBoundCertComplete();
+        result = DoSendDomainBoundCertComplete(result);
         break;
       case STATE_SEND_HEADERS:
         CHECK_EQ(result, OK);
@@ -747,8 +746,7 @@ int SpdyStream::DoLoop(int result) {
         result = DoSendBody();
         break;
       case STATE_SEND_BODY_COMPLETE:
-        CHECK_EQ(result, OK);
-        result = DoSendBodyComplete();
+        result = DoSendBodyComplete(result);
         break;
       // This is an intermediary waiting state. This state is reached when all
       // data has been sent, but no data has been received.
@@ -858,7 +856,10 @@ int SpdyStream::DoSendDomainBoundCert() {
   return ERR_IO_PENDING;
 }
 
-int SpdyStream::DoSendDomainBoundCertComplete() {
+int SpdyStream::DoSendDomainBoundCertComplete(int result) {
+  if (result != OK)
+    return result;
+
   DCHECK_EQ(just_completed_frame_type_, CREDENTIAL);
   io_state_ = STATE_SEND_HEADERS;
   return OK;
@@ -901,7 +902,10 @@ int SpdyStream::DoSendBody() {
   return delegate_->OnSendBody();
 }
 
-int SpdyStream::DoSendBodyComplete() {
+int SpdyStream::DoSendBodyComplete(int result) {
+  if (result != OK)
+    return result;
+
   if (just_completed_frame_type_ != DATA) {
     NOTREACHED();
     return ERR_UNEXPECTED;
