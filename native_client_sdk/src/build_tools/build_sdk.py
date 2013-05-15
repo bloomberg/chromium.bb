@@ -40,8 +40,9 @@ import generate_notice
 import manifest_util
 import parse_dsc
 import test_sdk
+import verify_filelist
 
-from build_paths import SDK_SRC_DIR, SRC_DIR, NACL_DIR, OUT_DIR
+from build_paths import SCRIPT_DIR, SDK_SRC_DIR, SRC_DIR, NACL_DIR, OUT_DIR
 from build_paths import PPAPI_DIR, NACLPORTS_DIR, GSTORE
 
 # Add SDK make tools scripts to the python path.
@@ -929,6 +930,10 @@ def main(args):
   # Ship with libraries prebuilt, so run that first.
   BuildStepBuildLibraries(pepperdir, platform, 'src')
   GenerateNotice(pepperdir)
+
+  # Verify the SDK contains what we expect.
+  verify_filelist.Verify(platform, os.path.join(SCRIPT_DIR, 'sdk_files.list'),
+                         pepperdir)
 
   if not options.skip_tar:
     BuildStepTarBundle(pepper_ver, tarfile)
