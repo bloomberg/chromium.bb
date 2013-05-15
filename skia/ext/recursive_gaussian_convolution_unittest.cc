@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <functional>
 #include <numeric>
 #include <vector>
 
@@ -206,6 +207,31 @@ TEST(RecursiveGaussian, SmoothingImpulse) {
     // Symmetricity along X/Y (not really assured, but should be close).
     EXPECT_NEAR(value_x, value_y, 1);
   }
+
+  // Smooth the inverse now.
+  std::vector<unsigned char> output2(dest_byte_count);
+  std::transform(input.begin(), input.end(), input.begin(),
+                 std::bind1st(std::minus<unsigned char>(), 255U));
+  SingleChannelRecursiveGaussianY(&input[0], src_row_stride,
+                                  kChannelIndex, kChannelCount,
+                                  recursive_filter, image_size,
+                                  &intermediate[0], dest_row_stride,
+                                  0, 1, false);
+  SingleChannelRecursiveGaussianX(&intermediate[0], dest_row_stride, 0, 1,
+                                  recursive_filter, image_size,
+                                  &output2[0], dest_row_stride, 0, 1, false);
+  // The image should be the reverse of output, but permitting for rounding
+  // we will only claim that wherever output is 0, output2 should be 255.
+  // There still can be differences at the edges of the object.
+  std::vector<unsigned char>::const_iterator i1, i2;
+  int difference_count = 0;
+  for (i1 = output.begin(), i2 = output2.begin();
+       i1 != output.end(); ++i1, ++i2) {
+    // The line below checks (*i1 == 0 <==> *i2 == 255).
+    if ((*i1 != 0 && *i2 == 255) && ! (*i1 == 0 && *i2 != 255))
+      ++difference_count;
+  }
+  EXPECT_LE(difference_count, 8);
 }
 
 TEST(RecursiveGaussian, FirstDerivative) {
@@ -255,21 +281,44 @@ TEST(RecursiveGaussian, FirstDerivative) {
     *target = *ix + *iy;
   }
 
+  SkIRect inflated_rect(box);
+  inflated_rect.outset(spread, spread);
+  SkIRect deflated_rect(box);
+  deflated_rect.inset(spread, spread);
+
   int image_total = ComputeBoxSum(output,
                                   SkIRect::MakeWH(kImgWidth, kImgHeight),
                                   kImgWidth);
-  int box_inflated = ComputeBoxSum(output,
-                                   SkIRect::MakeLTRB(box.left() - spread,
-                                                     box.top() - spread,
-                                                     box.right() + spread,
-                                                     box.bottom() + spread),
-                                   kImgWidth);
-  int box_deflated = ComputeBoxSum(output,
-                                   SkIRect::MakeLTRB(box.left() + spread,
-                                                     box.top() + spread,
-                                                     box.right() - spread,
-                                                     box.bottom() - spread),
-                                   kImgWidth);
+  int box_inflated = ComputeBoxSum(output, inflated_rect, kImgWidth);
+  int box_deflated = ComputeBoxSum(output, deflated_rect, kImgWidth);
+  EXPECT_EQ(box_deflated, 0);
+  EXPECT_EQ(image_total, box_inflated);
+
+  // Try inverted image. Behaviour should be very similar (modulo rounding).
+  std::transform(input.begin(), input.end(), input.begin(),
+                 std::bind1st(std::minus<unsigned char>(), 255U));
+  SingleChannelRecursiveGaussianX(&input[0], src_row_stride,
+                                  kChannelIndex, kChannelCount,
+                                  recursive_filter, image_size,
+                                  &output_x[0], dest_row_stride,
+                                  0, 1, true);
+  SingleChannelRecursiveGaussianY(&input[0], src_row_stride,
+                                  kChannelIndex, kChannelCount,
+                                  recursive_filter, image_size,
+                                  &output_y[0], dest_row_stride,
+                                  0, 1, true);
+
+  for (target = output.begin(), ix = output_x.begin(), iy = output_y.begin();
+       target < output.end(); ++target, ++ix, ++iy) {
+    *target = *ix + *iy;
+  }
+
+  image_total = ComputeBoxSum(output,
+                              SkIRect::MakeWH(kImgWidth, kImgHeight),
+                              kImgWidth);
+  box_inflated = ComputeBoxSum(output, inflated_rect, kImgWidth);
+  box_deflated = ComputeBoxSum(output, deflated_rect, kImgWidth);
+
   EXPECT_EQ(box_deflated, 0);
   EXPECT_EQ(image_total, box_inflated);
 }

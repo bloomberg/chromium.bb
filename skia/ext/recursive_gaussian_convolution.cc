@@ -90,7 +90,10 @@ unsigned char SingleChannelRecursiveFilter(
        ++r, in += source_row_stride, out += output_row_stride) {
     // Compute forward filter.
     // First initialize start of the w (temporary) vector.
-    w[0] = w[1] = w[2] = in[0];
+    if (order == RecursiveFilter::FUNCTION)
+      w[0] = w[1] = w[2] = in[0];
+    else
+      w[0] = w[1] = w[2] = 0.0f;
     // Note that special-casing of w[3] is needed because of derivatives.
     w[3] = ForwardFilter<order>(
         in[0], in[0], in[source_pixel_stride], w, 3, b);
