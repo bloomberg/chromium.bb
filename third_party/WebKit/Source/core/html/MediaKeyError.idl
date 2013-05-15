@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=ENCRYPTED_MEDIA|ENCRYPTED_MEDIA_V2,
     EnabledAtRuntime=encryptedMedia, 
     ImplementationLacksVTable
 ] interface MediaKeyError {

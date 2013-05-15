@@ -53,6 +53,6 @@ protected:
 
 }
 
-#endif // ENABLE(ENCRYPTED_MEDIA)
+#endif // ENABLE(ENCRYPTED_MEDIA_V2)
 
 #endif // MockCDM_h

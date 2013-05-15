@@ -106,11 +106,9 @@ public:
 
     virtual bool hasSingleSecurityOrigin() const { return true; }
 
-#if ENABLE(ENCRYPTED_MEDIA)
     virtual MediaPlayer::MediaKeyException generateKeyRequest(const String&, const unsigned char*, unsigned) OVERRIDE { return MediaPlayer::InvalidPlayerState; }
     virtual MediaPlayer::MediaKeyException addKey(const String&, const unsigned char*, unsigned, const unsigned char*, unsigned, const String&) OVERRIDE { return MediaPlayer::InvalidPlayerState; }
     virtual MediaPlayer::MediaKeyException cancelKeyRequest(const String&, const String&) OVERRIDE { return MediaPlayer::InvalidPlayerState; }
-#endif
 };
 
 static PassOwnPtr<MediaPlayerPrivateInterface> createNullMediaPlayer(MediaPlayer* player) 
@@ -193,13 +191,7 @@ static MediaPlayerFactory* bestMediaEngineForTypeAndCodecs(const String& type, c
             return 0;
     }
 
-#if ENABLE(ENCRYPTED_MEDIA) || ENABLE(ENCRYPTED_MEDIA_V2)
     MediaPlayer::SupportsType engineSupport = engine->supportsTypeAndCodecs(type, codecs, keySystem, url);
-#else
-    UNUSED_PARAM(keySystem);
-    ASSERT(keySystem.isEmpty());
-    MediaPlayer::SupportsType engineSupport = engine->supportsTypeAndCodecs(type, codecs, url);
-#endif
     if (engineSupport > MediaPlayer::IsNotSupported)
         return engine;
 
@@ -354,7 +346,6 @@ void MediaPlayer::pause()
     m_private->pause();
 }
 
-#if ENABLE(ENCRYPTED_MEDIA)
 MediaPlayer::MediaKeyException MediaPlayer::generateKeyRequest(const String& keySystem, const unsigned char* initData, unsigned initDataLength)
 {
     return m_private->generateKeyRequest(keySystem.lower(), initData, initDataLength);
@@ -369,7 +360,6 @@ MediaPlayer::MediaKeyException MediaPlayer::cancelKeyRequest(const String& keySy
 {
     return m_private->cancelKeyRequest(keySystem.lower(), sessionId);
 }
-#endif
 
 double MediaPlayer::duration() const
 {
@@ -599,12 +589,7 @@ MediaPlayer::SupportsType MediaPlayer::supportsType(const ContentType& contentTy
     if (!engine)
         return IsNotSupported;
 
-#if ENABLE(ENCRYPTED_MEDIA) || ENABLE(ENCRYPTED_MEDIA_V2)
     return engine->supportsTypeAndCodecs(type, typeCodecs, system, url);
-#else
-    ASSERT(system.isEmpty());
-    return engine->supportsTypeAndCodecs(type, typeCodecs, url);
-#endif
 }
 
 bool MediaPlayer::isAvailable()
@@ -768,7 +753,6 @@ AudioSourceProvider* MediaPlayer::audioSourceProvider()
 }
 #endif // WEB_AUDIO
 
-#if ENABLE(ENCRYPTED_MEDIA)
 void MediaPlayer::keyAdded(const String& keySystem, const String& sessionId)
 {
     if (m_mediaPlayerClient)
@@ -793,7 +777,6 @@ bool MediaPlayer::keyNeeded(const String& keySystem, const String& sessionId, co
         return m_mediaPlayerClient->mediaPlayerKeyNeeded(this, keySystem, sessionId, initData, initDataLength);
     return false;
 }
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 bool MediaPlayer::keyNeeded(Uint8Array* initData)

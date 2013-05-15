@@ -37,10 +37,8 @@ public:
         MEDIA_ERR_ABORTED = 1,
         MEDIA_ERR_NETWORK,
         MEDIA_ERR_DECODE,
-        MEDIA_ERR_SRC_NOT_SUPPORTED
-#if ENABLE(ENCRYPTED_MEDIA) || ENABLE(ENCRYPTED_MEDIA_V2)
-        , MEDIA_ERR_ENCRYPTED
-#endif
+        MEDIA_ERR_SRC_NOT_SUPPORTED,
+        MEDIA_ERR_ENCRYPTED
     };
 
     static PassRefPtr<MediaError> create(Code code) { return adoptRef(new MediaError(code)); }

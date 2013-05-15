@@ -26,8 +26,6 @@
 #ifndef MediaKeyError_h
 #define MediaKeyError_h
 
-#if ENABLE(ENCRYPTED_MEDIA) || ENABLE(ENCRYPTED_MEDIA_V2)
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
@@ -59,5 +57,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

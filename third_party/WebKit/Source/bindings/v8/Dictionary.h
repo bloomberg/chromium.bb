@@ -79,9 +79,7 @@ public:
     bool get(const String&, MessagePortArray&) const;
     bool get(const String&, RefPtr<Uint8Array>&) const;
     bool get(const String&, RefPtr<MIDIPort>&) const;
-#if ENABLE(ENCRYPTED_MEDIA)
     bool get(const String&, RefPtr<MediaKeyError>&) const;
-#endif
     bool get(const String&, RefPtr<TrackBase>&) const;
     bool get(const String&, RefPtr<SpeechRecognitionError>&) const;
     bool get(const String&, RefPtr<SpeechRecognitionResult>&) const;

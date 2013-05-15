@@ -50,7 +50,7 @@ TouchEvent runtimeConditional=touchEnabled
 modules/device_orientation/DeviceMotionEvent
 core/dom/DeviceOrientationEvent
 OrientationEvent interfaceName=Event, conditional=ORIENTATION_EVENTS
-core/html/MediaKeyEvent conditional=ENCRYPTED_MEDIA
+core/html/MediaKeyEvent
 MediaKeyMessageEvent conditional=ENCRYPTED_MEDIA_V2
 MediaKeyNeededEvent conditional=ENCRYPTED_MEDIA_V2
 core/html/track/TrackEvent

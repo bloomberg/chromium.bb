@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=ENCRYPTED_MEDIA,
     EnabledAtRuntime=encryptedMedia,
     ConstructorTemplate=Event 
 ] interface MediaKeyEvent : Event {

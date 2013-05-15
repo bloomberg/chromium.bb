@@ -171,7 +171,6 @@ static void removeElementFromDocumentMap(HTMLMediaElement* element, Document* do
         map.add(document, set);
 }
 
-#if ENABLE(ENCRYPTED_MEDIA)
 static ExceptionCode exceptionCodeForMediaKeyException(MediaPlayer::MediaKeyException exception)
 {
     switch (exception) {
@@ -186,7 +185,6 @@ static ExceptionCode exceptionCodeForMediaKeyException(MediaPlayer::MediaKeyExce
     ASSERT_NOT_REACHED();
     return INVALID_STATE_ERR;
 }
-#endif
 
 class TrackDisplayUpdateScope {
 public:
@@ -1631,7 +1629,6 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
         updateActiveTextTrackCues(currentTime());
 }
 
-#if ENABLE(ENCRYPTED_MEDIA)
 void HTMLMediaElement::mediaPlayerKeyAdded(MediaPlayer*, const String& keySystem, const String& sessionId)
 {
     MediaKeyEventInit initializer;
@@ -1717,7 +1714,6 @@ bool HTMLMediaElement::mediaPlayerKeyNeeded(MediaPlayer*, const String& keySyste
     m_asyncEventQueue->enqueueEvent(event.release());
     return true;
 }
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 bool HTMLMediaElement::mediaPlayerKeyNeeded(MediaPlayer*, Uint8Array* initData)
@@ -2250,7 +2246,6 @@ void HTMLMediaElement::closeMediaSource()
     m_mediaSource = 0;
 }
 
-#if ENABLE(ENCRYPTED_MEDIA)
 void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionCode& ec)
 {
     if (keySystem.isEmpty()) {
@@ -2332,8 +2327,6 @@ void HTMLMediaElement::webkitCancelKeyRequest(const String& keySystem, const Str
     MediaPlayer::MediaKeyException result = m_player->cancelKeyRequest(keySystem, sessionId);
     ec = exceptionCodeForMediaKeyException(result);
 }
-
-#endif
 
 bool HTMLMediaElement::loop() const
 {

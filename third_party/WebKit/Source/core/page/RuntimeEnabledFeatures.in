@@ -25,7 +25,7 @@ DeviceMotion
 DeviceOrientation status=stable
 DialogElement status=experimental
 DirectoryUpload status=stable
-EncryptedMedia condition=ENCRYPTED_MEDIA, status=stable
+EncryptedMedia status=stable
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
 ExperimentalShadowDOM status=experimental

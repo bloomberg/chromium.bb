@@ -40,7 +40,6 @@
       'ENABLE_CSS_EXCLUSIONS=1',
       'ENABLE_CSS_REGIONS=1',
       'ENABLE_CUSTOM_SCHEME_HANDLER=0',
-      'ENABLE_ENCRYPTED_MEDIA=1',
       'ENABLE_SVG=1',
       'ENABLE_SVG_FONTS=1',
       'ENABLE_TOUCH_ICON_LOADING=<(enable_touch_icon_loading)',

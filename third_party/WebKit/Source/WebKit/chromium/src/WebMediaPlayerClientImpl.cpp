@@ -196,53 +196,26 @@ WebMediaPlayer::Preload WebMediaPlayerClientImpl::preload() const
 
 void WebMediaPlayerClientImpl::keyAdded(const WebString& keySystem, const WebString& sessionId)
 {
-#if ENABLE(ENCRYPTED_MEDIA)
     ASSERT(m_mediaPlayer);
     m_mediaPlayer->keyAdded(keySystem, sessionId);
-#else
-    UNUSED_PARAM(keySystem);
-    UNUSED_PARAM(sessionId);
-#endif
 }
 
 void WebMediaPlayerClientImpl::keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode errorCode, unsigned short systemCode)
 {
-#if ENABLE(ENCRYPTED_MEDIA)
     ASSERT(m_mediaPlayer);
     m_mediaPlayer->keyError(keySystem, sessionId, static_cast<MediaPlayerClient::MediaKeyErrorCode>(errorCode), systemCode);
-#else
-    UNUSED_PARAM(keySystem);
-    UNUSED_PARAM(sessionId);
-    UNUSED_PARAM(errorCode);
-    UNUSED_PARAM(systemCode);
-#endif
 }
 
 void WebMediaPlayerClientImpl::keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL)
 {
-#if ENABLE(ENCRYPTED_MEDIA)
     ASSERT(m_mediaPlayer);
     m_mediaPlayer->keyMessage(keySystem, sessionId, message, messageLength, defaultURL);
-#else
-    UNUSED_PARAM(keySystem);
-    UNUSED_PARAM(sessionId);
-    UNUSED_PARAM(message);
-    UNUSED_PARAM(messageLength);
-    UNUSED_PARAM(defaultURL);
-#endif
 }
 
 void WebMediaPlayerClientImpl::keyNeeded(const WebString& keySystem, const WebString& sessionId, const unsigned char* initData, unsigned initDataLength)
 {
-#if ENABLE(ENCRYPTED_MEDIA)
     ASSERT(m_mediaPlayer);
     m_mediaPlayer->keyNeeded(keySystem, sessionId, initData, initDataLength);
-#else
-    UNUSED_PARAM(keySystem);
-    UNUSED_PARAM(sessionId);
-    UNUSED_PARAM(initData);
-    UNUSED_PARAM(initDataLength);
-#endif
 }
 
 WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginType, WebFrame* frame)
@@ -408,7 +381,6 @@ bool WebMediaPlayerClientImpl::canEnterFullscreen() const
 }
 #endif
 
-#if ENABLE(ENCRYPTED_MEDIA)
 MediaPlayer::MediaKeyException WebMediaPlayerClientImpl::generateKeyRequest(const String& keySystem, const unsigned char* initData, unsigned initDataLength)
 {
     if (!m_webMediaPlayer)
@@ -435,7 +407,6 @@ MediaPlayer::MediaKeyException WebMediaPlayerClientImpl::cancelKeyRequest(const 
     WebMediaPlayer::MediaKeyException result = m_webMediaPlayer->cancelKeyRequest(keySystem, sessionId);
     return static_cast<MediaPlayer::MediaKeyException>(result);
 }
-#endif
 
 void WebMediaPlayerClientImpl::prepareToPlay()
 {
@@ -735,19 +706,11 @@ PassOwnPtr<MediaPlayerPrivateInterface> WebMediaPlayerClientImpl::create(MediaPl
     return client.release();
 }
 
-#if ENABLE(ENCRYPTED_MEDIA)
 MediaPlayer::SupportsType WebMediaPlayerClientImpl::supportsType(const String& type,
                                                                  const String& codecs,
                                                                  const String& keySystem,
                                                                  const KURL&)
 {
-#else
-MediaPlayer::SupportsType WebMediaPlayerClientImpl::supportsType(const String& type,
-                                                                 const String& codecs,
-                                                                 const KURL&)
-{
-    String keySystem;
-#endif
     WebMimeRegistry::SupportsType supportsType = WebKit::Platform::current()->mimeRegistry()->supportsMediaMIMEType(type, codecs, keySystem);
 
     switch (supportsType) {

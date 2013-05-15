@@ -32,6 +32,7 @@
 #include "V8EventTarget.h"
 #include "V8IDBKeyRange.h"
 #include "V8MIDIPort.h"
+#include "V8MediaKeyError.h"
 #include "V8SpeechRecognitionError.h"
 #include "V8SpeechRecognitionResult.h"
 #include "V8SpeechRecognitionResultList.h"
@@ -47,10 +48,6 @@
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "wtf/MathExtras.h"
-
-#if ENABLE(ENCRYPTED_MEDIA)
-#include "V8MediaKeyError.h"
-#endif
 
 #include "V8TextTrack.h"
 #include "core/html/track/TrackBase.h"
@@ -342,7 +339,6 @@ bool Dictionary::get(const String& key, RefPtr<MIDIPort>& value) const
     return true;
 }
 
-#if ENABLE(ENCRYPTED_MEDIA)
 bool Dictionary::get(const String& key, RefPtr<MediaKeyError>& value) const
 {
     v8::Local<v8::Value> v8Value;
@@ -354,7 +350,6 @@ bool Dictionary::get(const String& key, RefPtr<MediaKeyError>& value) const
         value = V8MediaKeyError::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
-#endif
 
 bool Dictionary::get(const String& key, RefPtr<TrackBase>& value) const
 {

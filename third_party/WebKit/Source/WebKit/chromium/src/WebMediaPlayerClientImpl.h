@@ -146,11 +146,9 @@ public:
 
     virtual bool supportsAcceleratedRendering() const;
 
-#if ENABLE(ENCRYPTED_MEDIA)
     virtual WebCore::MediaPlayer::MediaKeyException generateKeyRequest(const String& keySystem, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
     virtual WebCore::MediaPlayer::MediaKeyException addKey(const String& keySystem, const unsigned char* key, unsigned keyLength, const unsigned char* initData, unsigned initDataLength, const String& sessionId) OVERRIDE;
     virtual WebCore::MediaPlayer::MediaKeyException cancelKeyRequest(const String& keySystem, const String& sessionId) OVERRIDE;
-#endif
 
 protected:
     WebMediaPlayerClientImpl();
@@ -160,13 +158,8 @@ private:
     void loadInternal();
 
     static PassOwnPtr<WebCore::MediaPlayerPrivateInterface> create(WebCore::MediaPlayer*);
-#if ENABLE(ENCRYPTED_MEDIA)
     static WebCore::MediaPlayer::SupportsType supportsType(
         const WTF::String& type, const WTF::String& codecs, const String& keySystem, const WebCore::KURL&);
-#else
-    static WebCore::MediaPlayer::SupportsType supportsType(
-        const WTF::String& type, const WTF::String& codecs, const WebCore::KURL&);
-#endif
     bool acceleratedRenderingInUse();
 
 #if defined(OS_ANDROID)

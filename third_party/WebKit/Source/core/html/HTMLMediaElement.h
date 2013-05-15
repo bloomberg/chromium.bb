@@ -155,7 +155,6 @@ public:
 //  Media Source.
     void closeMediaSource();
 
-#if ENABLE(ENCRYPTED_MEDIA)
     void webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionCode&);
     void webkitGenerateKeyRequest(const String& keySystem, ExceptionCode&);
     void webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionCode&);
@@ -165,10 +164,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeyadded);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeyerror);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeymessage);
-#endif
-#if ENABLE(ENCRYPTED_MEDIA) || ENABLE(ENCRYPTED_MEDIA_V2)
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitneedkey);
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
     MediaKeys* mediaKeys() const { return m_mediaKeys.get(); }
@@ -388,12 +384,10 @@ private:
     virtual void mediaPlayerFirstVideoFrameAvailable(MediaPlayer*);
     virtual void mediaPlayerCharacteristicChanged(MediaPlayer*);
 
-#if ENABLE(ENCRYPTED_MEDIA)
     virtual void mediaPlayerKeyAdded(MediaPlayer*, const String& keySystem, const String& sessionId) OVERRIDE;
     virtual void mediaPlayerKeyError(MediaPlayer*, const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
     virtual void mediaPlayerKeyMessage(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL) OVERRIDE;
     virtual bool mediaPlayerKeyNeeded(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
     virtual bool mediaPlayerKeyNeeded(MediaPlayer*, Uint8Array*);
