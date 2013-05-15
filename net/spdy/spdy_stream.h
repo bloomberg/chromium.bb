@@ -388,6 +388,10 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   base::WeakPtrFactory<SpdyStream> weak_ptr_factory_;
 
+  // Sentinel variable used to make sure we don't get destroyed by a
+  // function called from DoLoop().
+  bool in_do_loop_;
+
   // There is a small period of time between when a server pushed stream is
   // first created, and the pushed data is replayed. Any data received during
   // this time should continue to be buffered.

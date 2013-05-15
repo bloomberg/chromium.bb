@@ -3402,10 +3402,13 @@ class SessionClosingDelegate : public test::StreamDelegateWithBody {
   virtual int OnSendBody() OVERRIDE {
     int rv = test::StreamDelegateWithBody::OnSendBody();
     if (session_to_close_) {
-      session_to_close_->CloseSessionOnError(
-          ERR_CONNECTION_CLOSED,
-          true,
-          "Closed by SessionClosingDelegate");
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&SpdySession::CloseSessionOnError,
+                     session_to_close_,
+                     ERR_CONNECTION_CLOSED,
+                     true,
+                     "Closed by SessionClosingDelegate"));
       session_to_close_ = NULL;
     }
     return rv;
@@ -3433,13 +3436,13 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedSession31) {
       ConstructSpdyPost(kStreamUrl, 1, kBodyDataSize, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> req2(
       ConstructSpdyPost(kStreamUrl, 3, kBodyDataSize, LOWEST, NULL, 0));
-  scoped_ptr<SpdyFrame> msg2(
-      ConstructSpdyBodyFrame(3, kBodyData, kBodyDataSize, false));
+  scoped_ptr<SpdyFrame> msg1(
+      ConstructSpdyBodyFrame(1, kBodyData, kBodyDataSize, false));
   MockWrite writes[] = {
     CreateMockWrite(*initial_window_update, 0),
     CreateMockWrite(*req1, 1),
     CreateMockWrite(*req2, 3),
-    CreateMockWrite(*msg2, 5),
+    CreateMockWrite(*msg1, 5),
   };
 
   scoped_ptr<SpdyFrame> resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -3515,10 +3518,14 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedSession31) {
 
   EXPECT_TRUE(spdy_session_pool_->HasSession(pair_));
 
-  // Unstall stream1, which should then close the session.
+  // Unstall stream1, which should then post a task to close the
+  // session.
   delegate1.set_session_to_close(session);
   UnstallSessionSend(session, kBodyDataSize);
   session = NULL;
+
+  // Run the task to close the session.
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_FALSE(spdy_session_pool_->HasSession(pair_));
 

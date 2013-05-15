@@ -115,6 +115,7 @@ SpdyStream::SpdyStream(SpdySession* session,
                        bool pushed,
                        const BoundNetLog& net_log)
     : weak_ptr_factory_(this),
+      in_do_loop_(false),
       continue_buffering_data_(true),
       stream_id_(0),
       path_(path),
@@ -142,6 +143,7 @@ SpdyStream::SpdyStream(SpdySession* session,
 }
 
 SpdyStream::~SpdyStream() {
+  CHECK(!in_do_loop_);
   UpdateHistograms();
 }
 
@@ -227,6 +229,7 @@ scoped_ptr<SpdyFrame> SpdyStream::ProduceHeaderFrame(
 }
 
 void SpdyStream::DetachDelegate() {
+  CHECK(!in_do_loop_);
   DCHECK(!closed());
   delegate_ = NULL;
   Cancel();
@@ -577,6 +580,7 @@ void SpdyStream::LogStreamError(int status, const std::string& description) {
 }
 
 void SpdyStream::OnClose(int status) {
+  CHECK(!in_do_loop_);
   io_state_ = STATE_DONE;
   response_status_ = status;
   Delegate* delegate = delegate_;
@@ -586,6 +590,7 @@ void SpdyStream::OnClose(int status) {
 }
 
 void SpdyStream::Cancel() {
+  CHECK(!in_do_loop_);
   if (stream_id_ != 0) {
     session_->ResetStream(stream_id_, priority_,
                           RST_STREAM_CANCEL, std::string());
@@ -595,6 +600,7 @@ void SpdyStream::Cancel() {
 }
 
 void SpdyStream::Close() {
+  CHECK(!in_do_loop_);
   if (stream_id_ != 0) {
     session_->CloseActiveStream(stream_id_, OK);
   } else {
@@ -714,6 +720,9 @@ void SpdyStream::OnGetDomainBoundCertComplete(int result) {
 }
 
 int SpdyStream::DoLoop(int result) {
+  CHECK(!in_do_loop_);
+  in_do_loop_ = true;
+
   do {
     State state = io_state_;
     io_state_ = STATE_NONE;
@@ -782,6 +791,9 @@ int SpdyStream::DoLoop(int result) {
     }
   } while (result != ERR_IO_PENDING && io_state_ != STATE_NONE &&
            io_state_ != STATE_OPEN);
+
+  CHECK(in_do_loop_);
+  in_do_loop_ = false;
 
   return result;
 }
