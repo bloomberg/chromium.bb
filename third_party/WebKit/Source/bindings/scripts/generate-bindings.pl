@@ -49,6 +49,7 @@ my $verbose;
 my $supplementalDependencyFile;
 my $additionalIdlFiles;
 my $idlAttributesFile;
+my $writeFileOnlyIfChanged;
 
 GetOptions('include=s@' => \@idlDirectories,
            'outputDir=s' => \$outputDirectory,
@@ -59,7 +60,8 @@ GetOptions('include=s@' => \@idlDirectories,
            'verbose' => \$verbose,
            'supplementalDependencyFile=s' => \$supplementalDependencyFile,
            'additionalIdlFiles=s' => \$additionalIdlFiles,
-           'idlAttributesFile=s' => \$idlAttributesFile);
+           'idlAttributesFile=s' => \$idlAttributesFile,
+           'writeFileOnlyIfChanged=s' => \$writeFileOnlyIfChanged);
 
 my $targetIdlFile = $ARGV[0];
 
@@ -184,7 +186,7 @@ foreach my $idlFile (@supplementedIdlFiles) {
 
 # Generate desired output for the target IDL file.
 my @dependentIdlFiles = ($targetDocument->fileName(), @supplementedIdlFiles);
-my $codeGenerator = CodeGeneratorV8->new($targetDocument, \@idlDirectories, $preprocessor, $defines, $verbose, \@dependentIdlFiles);
+my $codeGenerator = CodeGeneratorV8->new($targetDocument, \@idlDirectories, $preprocessor, $defines, $verbose, \@dependentIdlFiles, $writeFileOnlyIfChanged);
 my $interfaces = $targetDocument->interfaces;
 foreach my $interface (@$interfaces) {
     print "Generating bindings code for IDL interface \"" . $interface->name . "\"...\n" if $verbose;

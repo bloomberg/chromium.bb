@@ -73,6 +73,17 @@
           '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources19.cpp',
         ],
       }],
+      # The bindings generator can not write generated files if they are identical
+      # to the already existing file – that way they don't need to be recompiled.
+      # However, a reverse dependency having a newer timestamp than a
+      # generated binding can confuse some build systems, so only use this on
+      # ninja which explicitly supports this use case (gyp turns all actions into
+      # ninja restat rules).
+      ['"<(GENERATOR)"=="ninja"', {
+        'write_file_only_if_changed': '--writeFileOnlyIfChanged 1'
+      },{
+        'write_file_only_if_changed': '--writeFileOnlyIfChanged 0'
+      }],
     ],
   },
 
@@ -204,6 +215,7 @@
           '<(webcore_test_support_idl_files)',
           '<(RULE_INPUT_PATH)',
           '<@(preprocessor)',
+          '<@(write_file_only_if_changed)',
         ],
         'message': 'Generating binding from <(RULE_INPUT_PATH)',
       }],

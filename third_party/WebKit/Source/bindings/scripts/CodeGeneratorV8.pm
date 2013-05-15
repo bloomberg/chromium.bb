@@ -121,6 +121,7 @@ my $preprocessor;
 my $defines;
 my $verbose;
 my $dependentIdlFiles;
+my $writeFileOnlyIfChanged;
 my $sourceRoot;
 
 # Cache of IDL file pathnames.
@@ -232,6 +233,8 @@ sub new
     $defines = shift;
     $verbose = shift;
     $dependentIdlFiles = shift;
+    $writeFileOnlyIfChanged = shift;
+
     $sourceRoot = getcwd();
 
     bless($reference, $object);
@@ -5112,11 +5115,11 @@ sub WriteData
         $implementation{includes}->add("#endif\n");
     }
     $implementation{includes}->add("\n") unless $interface->isCallback;
-    UpdateFile($implFileName, $implementation{root}->toString());
+    WriteFileIfNeeded($implFileName, $implementation{root}->toString());
 
     %implIncludes = ();
 
-    UpdateFile($headerFileName, $header{root}->toString());
+    WriteFileIfNeeded($headerFileName, $header{root}->toString());
 }
 
 sub ConvertToV8StringResource
@@ -5170,12 +5173,19 @@ sub GetPassRefPtrType
     return "PassRefPtr<${v8ClassName}${angleBracketSpace}>";
 }
 
-sub UpdateFile
+sub WriteFileIfNeeded
 {
     my $fileName = shift;
     my $contents = shift;
 
-    open FH, "> $fileName" or die "Couldn't open $fileName: $!\n";
+    if (-f $fileName && $writeFileOnlyIfChanged) {
+        open FH, "<", $fileName or die "Couldn't open $fileName: $!\n";
+        my @lines = <FH>;
+        my $oldContents = join "", @lines;
+        close FH;
+        return if $contents eq $oldContents;
+    }
+    open FH, ">", $fileName or die "Couldn't open $fileName: $!\n";
     print FH $contents;
     close FH;
 }
