@@ -87,7 +87,7 @@ word-wrap nameformethods=OverflowWrap
 -webkit-ruby-position typename=RubyPosition
 -webkit-text-align-last typename=TextAlignLast, condition=CSS3_TEXT
 -webkit-text-combine typename=TextCombine
--webkit-text-decoration-line typename=TextDecorationStyle, condition=CSS3_TEXT
+-webkit-text-decoration-style typename=TextDecorationStyle, condition=CSS3_TEXT
 -webkit-text-emphasis-position typename=TextEmphasisPosition
 -webkit-text-security
 -webkit-transform-style nameformethods=TransformStyle3D
