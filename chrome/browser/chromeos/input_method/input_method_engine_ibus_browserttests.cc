@@ -10,7 +10,6 @@
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
-#include "chromeos/dbus/mock_update_engine_client.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/test/test_utils.h"
