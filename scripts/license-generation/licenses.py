@@ -25,11 +25,12 @@ Otherwise, it will query newer source code and then fail to work on packages
 that are out of date in your build.
 
 Recommended build:
-  board=x86-alex
   cros_sdk
+  export board=x86-alex
   sudo rm -rf /build/$board
-  setup_board --board=$board
-  build_packages --board=$board --nowithautotest --nowithtest --nowithdev
+  cd ~/trunk/src/scripts
+  ./setup_board --board=$board
+  ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev
   cd ~/trunk/chromite/scripts/license-generation
   ./licenses.py --debug $board out.html | tee output.sav
 
@@ -40,6 +41,9 @@ http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/ +
   chromeos/about_os_credits.html?view=log
 (gclient config svn://svn.chromium.org/chrome/trunk/src)
 For an example CL, see https://codereview.chromium.org/13496002/
+
+It is recommended that you use a fancy differ like 'meld' to review license
+diffs. GNU diff will show too much irrelevant noise and not resync properly.
 
 UPDATE: gcl will probably fail now, because the file is too big. Before it
 gets moved somewhere else, you should just use svn diff and svn commit.
@@ -59,6 +63,11 @@ import portage
 import subprocess
 import sys
 
+# This keeps track of whether we have an incomplete license file due to package
+# errors during parsing.
+# Any non empty list at the end shows the list of packages that caused errors.
+OUTPUT_INCOMPLETE = []
+
 EQUERY_BASE = '/usr/local/bin/equery-%s'
 
 STOCK_LICENSE_DIRS = [
@@ -77,14 +86,13 @@ SKIPPED_CATEGORIES = [
 
 SKIPPED_PACKAGES = [
   # Fix these packages by adding a real license in the code.
-  'dev-python/unittest2', # BSD
+  # You should not skip packages just because the license scraping doesn't
+  # work. Stick those special cases into PACKAGE_LICENSES.
+  # Packages should only be here because they are sub/split packages already
+  # covered by the license of the main package.
 
   # These are Chrome-OS-specific packages, copyright BSD-Google
-  'dev-util/hdctools',
-  'media-libs/libresample',
-  'sys-apps/rootdev',
   'sys-kernel/chromeos-kernel',  # already manually credit Linux
-  'sys-apps/flashmap',
 
   # These have been split across several packages, so we skip listing the
   # individual components (and just list the main package instead).
@@ -94,13 +102,7 @@ SKIPPED_PACKAGES = [
   # Portage metapackage.
   'x11-base/xorg-drivers',
 
-  # Written by google;
-  'dev-db/leveldb',
-
-  # These are covered by app-i18n/ibus-mozc (BSD, copyright Google).
-  # TODO(merlin): These should not be exceptions, but under the BSD-Google
-  # umbrella.
-  'app-i18n/ibus-mozc',
+   # These are covered by app-i18n/ibus-mozc (BSD, copyright Google).
   'app-i18n/ibus-mozc-chewing',
   'app-i18n/ibus-mozc-hangul',
   'app-i18n/ibus-mozc-pinyin',
@@ -205,16 +207,16 @@ SKIPPED_PACKAGES = [
 
 ARCHIVE_SUFFIXES = [ '.tar.gz', '.tgz', '.tar.bz2', '.tbz2' ]
 
+# TODO(merlin): Normalize case in comparison check without mangling the case
+# Matching is done in lowercase, you MUST give lowercase names.
 LICENSE_FILENAMES = [
-  'COPYING',
-  'COPYRIGHT',    # used by strace
-  'LICENCE',      # used by openssh
-  'LICENSE',
-  'LICENSE.txt',  # used by NumPy, glew
-  'LICENSE.TXT',  # used by hdparm
-  'License',      # used by libcap
+  'copying',
   'copyright',
-  'IPA_Font_License_Agreement_v1.0.txt',  # used by ja-ipafonts
+  'licence',      # used by openssh
+  'license',
+  'license.txt',  # used by hdparm, used by NumPy, glew
+  'copyright',
+  'ipa_font_license_agreement_v1.0.txt',  # used by ja-ipafonts
 ]
 
 SKIPPED_LICENSE_FILENAME_COMPONENTS = [
@@ -222,57 +224,61 @@ SKIPPED_LICENSE_FILENAME_COMPONENTS = [
   'third_party'
 ]
 
+# These are _temporary_ license mappings for packages that do not have a valid
+# stock license, or LICENSE file we can use.
+# Once this script runs earlier (during the package build process), it will
+# block new source without a LICENSE file.
+# At that point, new packages will get fixed to include LICENSE instead of
+# adding workaround mappings like those below.
+# We should also fix the packages listed below so that the hardcoded
+# mappings can be obsoleted.
 PACKAGE_LICENSES = {
-  # The licenses should be set in the ebuild, but are not. Look into
-  # why and fix upstream as appropriate.
-  'app-admin/eselect-opengl': ['GPL-2'],
-  'dev-libs/nspr': ['GPL-2'],
-  'dev-libs/nss': ['GPL-2'],
-  'media-libs/freeimage': ['GPL-2'],
-  'net-wireless/wpa_supplicant': ['GPL-2'],
-  'sys-libs/talloc': ['LGPL-3'],  # ebuild incorrectly says GPL-3
-  'app-crypt/nss': ['MPL-1.1'],
-
-  # One off licenses. We should check in a custom LICENSE file for these:
-  'dev-db/sqlite': ['sqlite'],
+  # One off licenses. Should we check in a custom LICENSE file in upstream?
   'dev-python/netifaces': ['netiface'],
-  'media-libs/jpeg': ['jpeg'],
   'net-dialup/ppp': ['ppp-2.4.4'],
-  'net-wireless/marvell_sd8787': ['Marvell'],
   'sys-libs/ncurses': ['ncurses'],
-
-  'app-editors/vim': ['vim'],
-  'sys-libs/timezone-data': ['public-domain'],
-
-  # These packages are not in Alex, check and remove.
-  # 'media-fonts/font-util': ['font-util'],  # COPYING file from git repo
-  # 'net-wireless/iwl1000-ucode': ['Intel-iwl1000'],
-  # 'sys-process/vixie-cron': ['vixie-cron'],
 
   # BSD and MIT license authorship mapping.
   # Ideally we should have a custom LICENSE file in the upstream source.
-  'dev-libs/libevent': ['BSD-libevent'],
+  # TODO: BSD-2: bsdiff is missing a license file, add one upstream.
   'dev-util/bsdiff': ['BSD-bsdiff'],
+  # TODO: libevent is missing a license file, add one upstream.
+  'dev-libs/libevent': ['BSD-libevent'],
+  # TODO: dhcpcd is missing a license file, (c) in README. Add one upstream.
   'net-misc/dhcpcd': ['BSD-dhcpcd'],
+  # TODO: iputils is missing a license file, add one upstream.
   'net-misc/iputils': ['BSD-iputils'],
-  'sys-apps/less': ['BSD-less'],
-  'app-editors/gentoo-editor': ['MIT-gentoo-editor'],
+  # TODO: c-ares is missing a license file, add one upstream.
   'net-dns/c-ares': ['MIT-MIT'],
 
-  'chromeos-base/madison-cromo-plugin-0.1-r40': ['BSD-Google'],
+  # TODO: We should just check in a LICENSE file in all of these:
   'app-i18n/input-tools': ['BSD-Google'],
   'app-i18n/nacl-mozc': ['BSD-Google'],
   'app-i18n/ibus-mozc': ['BSD-Google'],
-  'app-i18n/ibus-mozc-pinyin': ['BSD-Google'],
-  'dev-libs/protobuf': ['BSD-Google'],
-  'dev-util/quipper': ['BSD-Google'],
   'media-plugins/o3d': ['BSD-Google'],
-  'x11-drivers/xf86-input-cmt': ['BSD-Google'],
+  'dev-python/unittest2': ['BSD-Google'],
+
+  # These packages are not in Alex, check and remove later (might be used in
+  # other platforms).
+  #'media-libs/freeimage': ['GPL-2'],
+  #'sys-libs/talloc': ['LGPL-3'],  # ebuild incorrectly says GPL-3
+  #'app-crypt/nss': ['MPL-1.1'],
+  #'media-libs/jpeg': ['jpeg'],
+  #'app-editors/gentoo-editor': ['MIT-gentoo-editor'],
+  #
+  # 'media-fonts/font-util': ['font-util'],  # COPYING file from git repo
+  # 'net-wireless/iwl1000-ucode': ['Intel-iwl1000'],
+  # 'sys-process/vixie-cron': ['vixie-cron'],
 }
 
 INVALID_STOCK_LICENSES = [
   'BSD',  # requires distribution of copyright notice
+  'BSD-2',# so does BSD-2 http://opensource.org/licenses/BSD-2-Clause
+  'BSD-3',# and BSD-3 http://opensource.org/licenses/BSD-3-Clause ?
+  'BSD-4',
+  'BSD-with-attribution',
   'MIT',  # requires distribution of copyright notice
+  'MIT-with-advertising',  # requires distribution of copyright notice
 ]
 
 PACKAGE_HOMEPAGES = {
@@ -326,6 +332,14 @@ class PackageInfo:
 
     # Some packages have hardcoded licenses and are generated in
     # GetPackageInfo, so we skip the license extraction and exit early.
+    # FIXME, this is wrong: a hardcoded license now should mean that we're
+    # adding a license to whatever can also be found in the source.
+    # Here's an example:
+    # Read licenses from ebuild for net-dialup/ppp-2.4.5-r3: BSD,GPL-2
+    # We need to both get the substitution file for BSD, and display the GPL
+    # license.
+    # The new code will display both the licenses mapped manually, and the ones
+    # found in the source code.
     if self.fullname in PACKAGE_LICENSES:
       return False
 
@@ -368,7 +382,7 @@ class PackageInfo:
     files = [x[len(workdir):].lstrip('/') for x in files]
     licenses = []
     for name in files:
-      if os.path.basename(name) in LICENSE_FILENAMES and \
+      if os.path.basename(name).lower() in LICENSE_FILENAMES and \
         (name.count('/') == 1 or (name.count('/') == 2 and
          name.split('/')[1] == 'doc')):
         has_skipped_component = False
@@ -408,7 +422,7 @@ class PackageInfo:
   # license in the source code.
   def GetStockLicense(self):
     if not self.license_names:
-      logging.error('%s: no stock licenses from ebuild', self.fullnamerev)
+      logging.warning('%s: no stock licenses from ebuild', self.fullnamerev)
       return False
 
     logging.info('%s: using stock license(s) %s',
@@ -437,7 +451,7 @@ class PackageInfo:
         # sys-apps/hwids currently has a LICENSE field that triggers this:
         # LICENSE="|| ( GPL-2 BSD )"
         logging.error('%s: stock license %s could not be found in %s',
-            self.fullnamerev, license_name, 'n'.join(STOCK_LICENSE_DIRS))
+          self.fullnamerev, license_name, '\n'.join(STOCK_LICENSE_DIRS))
 
     if not license_texts:
       logging.error('%s: couldn\'t find any stock licenses', self.fullnamerev)
@@ -552,6 +566,28 @@ def GetPackageInfo(fullnamewithrev):
   (info.homepages,    licenses,         info.description) = (
     lines[0].split(), lines[1].split(), lines[2:])
 
+  # NOTE: the ebuild license field can look like:
+  # LICENSE="GPL-3 LGPL-3 Apache-2.0" (this means AND, as in all 3)
+  # for third_party/portage-stable/app-admin/rsyslog/rsyslog-5.8.11.ebuild
+  # LICENSE="|| ( LGPL-2.1 MPL-1.1 )"
+  # for third_party/portage-stable/x11-libs/cairo/cairo-1.8.8.ebuild
+  # LICENSE="Marvell International Ltd."
+  # for net-wireless/marvell_sd8787/marvell_sd8787-14.64.2.47-r16.ebuild
+
+  # The parser does not know the || ( X Y ) OR logic
+  # It partially ignores the AND logic by skipping BSD licenses
+  # And it craps out on the Marvel license trying to look for
+  # 'Marvel' (found), 'International' (not found), 'Ltd' (not found).
+  # This blows...
+
+  # Solution: show all licenses listed, ignore AND/OR and ignore errors
+  # like not finding an 'Ltd' license (show a warning, but do not die).
+  # This might skip a copyright attribution for a BSD license that does not
+  # include its own license file. We can fix on case by case basis with override
+  # mappings or putting a LICENSE file in the upstream code.
+  # TODO(merlin): have a list of licenses tokens to ignore to cut down on
+  # warnings '||' '(' ')' 'International' 'Ltd.'
+
   if info.fullname in PACKAGE_HOMEPAGES:
     info.homepages = PACKAGE_HOMEPAGES[info.fullname]
 
@@ -603,10 +639,10 @@ def ProcessPkg(package):
   # the ebuild.
   if (not info.ExtractLicense() and
       not info.GetStockLicense()):
-      # ^^^^^^^^^^^^^^^^^^^^^^
-      # If no license looking file is found in source archive, use our own copy
-      # of a stock license file matching what's defined in the ebuild (if any):
-    raise AssertionError("""
+    # ^^^^^^^^^^^^^^^^^^^^^^
+    # If no license looking file is found in source archive, use our own copy
+    # of a stock license file matching what's defined in the ebuild (if any):
+    logging.error("""
 %s: unable to find usable license.
 Typically this will happen because the ebuild says it's MIT or BSD, but there
 was no license file that this script could find to include along with a
@@ -615,8 +651,9 @@ Go investigate the unpacked source in /tmp/boardname/tmp/portage/..., and
 find which license to assign. Once you found it, add a static mapping to the
 PACKAGE_LICENSES dict.
 If there was a usable license file, you may also want to teach this script to
-find it if you have time."""
-      % info.fullnamerev)
+find it if you have time.""",
+    info.fullname)
+    OUTPUT_INCOMPLETE.append(info.fullname)
 
   return info
 
@@ -653,12 +690,17 @@ if __name__ == '__main__':
   # a single package to generate a license for, as an argument.
   board = sys.argv[1]
   packages = ListInstalledPackages(board)
+  # If the caller forgets to set $board, it'll default to beaglebone, and return
+  # no packages. Catch this and give a hint that the wrong board was given.
+  if not packages:
+    raise AssertionError('FATAL: Could not get any packages for board %s' %
+                         board)
   # For temporary single package debugging (make sure to include trailing -ver):
   #packages = [ "dev-python/unittest2-0.5.1" ]
   logging.debug("Package list to work through:")
-  logging.debug("\n".join(packages))
+  logging.debug('\n'.join(packages))
   logging.debug("Will skip these packages:")
-  logging.debug("\n".join(SKIPPED_PACKAGES))
+  logging.debug('\n'.join(SKIPPED_PACKAGES))
 
   infos = filter(None, (ProcessPkg(x) for x in packages))
   infos += BuildMetaPackages()
@@ -682,3 +724,12 @@ if __name__ == '__main__':
   out_file.write(EvaluateTemplate(file_template,
                                   { 'entries': '\n'.join(entries) },
                                   escape=False))
+
+  if OUTPUT_INCOMPLETE:
+    raise AssertionError("""
+DO NOT USE OUTPUT!!!
+Some packages are missing due to errors, please look at errors generated during
+this run.
+List of packages with errors:
+%s
+""" % '\n'.join(OUTPUT_INCOMPLETE))
