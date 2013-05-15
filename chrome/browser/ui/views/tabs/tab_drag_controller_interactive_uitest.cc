@@ -1283,9 +1283,7 @@ void CancelDragTabToWindowInSeparateDisplayStep3(
   ASSERT_EQ(2u, browser_list->size());
 
   // Switching display mode should cancel the drag operation.
-  ash::internal::DisplayManager* display_manager =
-      ash::Shell::GetInstance()->display_manager();
-  display_manager->AddRemoveDisplay();
+  ash::internal::DisplayManager::CycleDisplay();
 }
 
 // Invoked from the nested message loop.

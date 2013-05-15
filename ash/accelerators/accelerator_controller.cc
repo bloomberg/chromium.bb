@@ -525,11 +525,8 @@ bool AcceleratorController::PerformAction(int action,
       HandleCycleWindowLinear(CYCLE_FORWARD);
       return true;
 #if defined(OS_CHROMEOS)
-    case ADD_REMOVE_DISPLAY:
-      Shell::GetInstance()->display_manager()->AddRemoveDisplay();
-      return true;
-    case TOGGLE_MIRROR_MODE:
-      Shell::GetInstance()->display_controller()->ToggleMirrorMode();
+    case CYCLE_DISPLAY_MODE:
+      Shell::GetInstance()->display_controller()->CycleDisplayMode();
       return true;
     case LOCK_SCREEN:
       if (key_code == ui::VKEY_L)
@@ -855,7 +852,7 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
-      Shell::GetInstance()->display_manager()->ToggleDisplayScaleFactor();
+      internal::DisplayManager::ToggleDisplayScaleFactor();
       return true;
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
       ash::debug::ToggleShowDebugBorders();

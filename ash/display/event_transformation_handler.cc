@@ -68,9 +68,6 @@ void EventTransformationHandler::OnTouchEvent(ui::TouchEvent* event) {
   OutputConfigurator* output_configurator =
       ash::Shell::GetInstance()->output_configurator();
 
-  // Check output_configurator's output_state instead of checking
-  // DisplayManager::IsMirrored() because the compositor based mirroring
-  // won't cause the scaling issue.
   if (output_configurator->output_state() != chromeos::STATE_DUAL_MIRROR)
     return;
 

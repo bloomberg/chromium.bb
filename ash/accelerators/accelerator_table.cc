@@ -44,7 +44,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_KBD_BRIGHTNESS_DOWN, ui::EF_NONE, KEYBOARD_BRIGHTNESS_DOWN },
   { true, ui::VKEY_KBD_BRIGHTNESS_UP, ui::EF_NONE, KEYBOARD_BRIGHTNESS_UP },
   // Maximize button.
-  { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_CONTROL_DOWN, TOGGLE_MIRROR_MODE },
+  { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_CONTROL_DOWN, CYCLE_DISPLAY_MODE },
   { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_ALT_DOWN, SWAP_PRIMARY_DISPLAY },
   // Cycle windows button.
   { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN, TAKE_SCREENSHOT },
@@ -202,8 +202,6 @@ const AcceleratorData kDesktopAcceleratorData[] = {
       CYCLE_BACKWARD_MRU },
   { true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOGGLE_DESKTOP_BACKGROUND_MODE },
-  { true, ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
-    ADD_REMOVE_DISPLAY },
 };
 
 const size_t kDesktopAcceleratorDataLength = arraysize(kDesktopAcceleratorData);
@@ -266,9 +264,8 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   VOLUME_MUTE,
   VOLUME_UP,
 #if defined(OS_CHROMEOS)
-  ADD_REMOVE_DISPLAY,
+  CYCLE_DISPLAY_MODE,
   DISABLE_GPU_WATCHDOG,
-  TOGGLE_MIRROR_MODE,
 #endif
 #if defined(OS_CHROMEOS) && !defined(NDEBUG)
   POWER_PRESSED,
@@ -318,11 +315,8 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   VOLUME_MUTE,
   VOLUME_UP,
 #if defined(OS_CHROMEOS)
-#if !defined(NDEBUG)
-  ADD_REMOVE_DISPLAY,
-#endif
+  CYCLE_DISPLAY_MODE,
   LOCK_SCREEN,
-  TOGGLE_MIRROR_MODE,
 #endif
 };
 
@@ -388,9 +382,8 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   VOLUME_MUTE,
   VOLUME_UP,
 #if defined(OS_CHROMEOS)
-  ADD_REMOVE_DISPLAY,
+  CYCLE_DISPLAY_MODE,
   DISABLE_GPU_WATCHDOG,
-  TOGGLE_MIRROR_MODE,
 #endif  // defined(OS_CHROMEOS)
 };
 
