@@ -263,17 +263,17 @@
     [NotEnumerable] attribute EventListener onwebkitpointerlockerror;
     [NotEnumerable, EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute EventListener onsecuritypolicyviolation;
 
-    [EnabledAtRuntime=touch, RaisesException] Touch createTouch([Default=Undefined] optional DOMWindow window,
-                                                     [Default=Undefined] optional EventTarget target,
-                                                     [Default=Undefined] optional long identifier,
-                                                     [Default=Undefined] optional long pageX,
-                                                     [Default=Undefined] optional long pageY,
-                                                     [Default=Undefined] optional long screenX,
-                                                     [Default=Undefined] optional long screenY,
-                                                     [Default=Undefined] optional long webkitRadiusX,
-                                                     [Default=Undefined] optional long webkitRadiusY,
-                                                     [Default=Undefined] optional float webkitRotationAngle,
-                                                     [Default=Undefined] optional float webkitForce);
+    [EnabledAtRuntime=touch] Touch createTouch([Default=Undefined] optional DOMWindow window,
+                                               [Default=Undefined] optional EventTarget target,
+                                               [Default=Undefined] optional long identifier,
+                                               [Default=Undefined] optional long pageX,
+                                               [Default=Undefined] optional long pageY,
+                                               [Default=Undefined] optional long screenX,
+                                               [Default=Undefined] optional long screenY,
+                                               [Default=Undefined] optional long webkitRadiusX,
+                                               [Default=Undefined] optional long webkitRadiusY,
+                                               [Default=Undefined] optional float webkitRotationAngle,
+                                               [Default=Undefined] optional float webkitForce);
     [EnabledAtRuntime=touch, Custom, RaisesException] TouchList createTouchList();
 
     [EnabledAtRuntime=customDOMElements, ImplementedAs=registerElement, CallWith=ScriptState, DeliverCustomElementCallbacks, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);
