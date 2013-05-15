@@ -636,6 +636,18 @@ other types of suffix sets.
   <summary>Total duration time of the auto-enrollment protocol.</summary>
 </histogram>
 
+<histogram name="Enterprise.AutoEnrollmentRequestNetworkErrorCode"
+    enum="NetErrorCodes">
+  <summary>
+    Network error code (if applicable) for auto-enrollment requests.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.AutoEnrollmentRequestStatus"
+    enum="EnterpriseDeviceManagementStatus">
+  <summary>URL fetcher status for auto-enrollment requests.</summary>
+</histogram>
+
 <histogram name="Enterprise.DMToken" enum="EnterpriseDMTokenType">
   <summary>
     Events related to fetching, saving and loading DM server tokens. These are
@@ -664,6 +676,13 @@ other types of suffix sets.
   <summary>
     Events related to fetching, saving and loading user policies, and also
     device policies on ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.PolicyLoadStatus" enum="EnterprisePolicyLoadStatus">
+  <summary>
+    Load status from the policy loaders which pull policy settings from the
+    underlying platform, such as Windows Group Policy.
   </summary>
 </histogram>
 
@@ -8326,6 +8345,27 @@ other types of suffix sets.
   <int value="4" label="TTLS"/>
 </enum>
 
+<enum name="EnterpriseDeviceManagementStatus" type="int">
+  <summary>
+    Status codes produced by DeviceManagementService for requests made to the
+    device management server.
+  </summary>
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="REQUEST_INVALID"/>
+  <int value="2" label="REQUEST_FAILED"/>
+  <int value="3" label="TEMPORARY_UNAVAILABLE"/>
+  <int value="4" label="HTTP_STATUS_ERROR"/>
+  <int value="5" label="RESPONSE_DECODING_ERROR"/>
+  <int value="6" label="SERVICE_MANAGEMENT_NOT_SUPPORTED"/>
+  <int value="7" label="SERVICE_DEVICE_NOT_FOUND"/>
+  <int value="8" label="SERVICE_MANAGEMENT_TOKEN_INVALID"/>
+  <int value="9" label="SERVICE_ACTIVATION_PENDING"/>
+  <int value="10" label="SERVICE_INVALID_SERIAL_NUMBER"/>
+  <int value="11" label="SERVICE_DEVICE_ID_CONFLICT"/>
+  <int value="12" label="SERVICE_MISSING_LICENSES"/>
+  <int value="902" label="SERVICE_POLICY_NOT_FOUND"/>
+</enum>
+
 <enum name="EnterpriseDMTokenType" type="int">
   <summary>
     Result of DMToken operations as defined in
@@ -8668,6 +8708,37 @@ other types of suffix sets.
       label="Set the restriction on the fetching of the Variations seed"/>
   <int value="197" label="Idle warning delay when running on AC power"/>
   <int value="198" label="Idle warning delay when running on battery power"/>
+</enum>
+
+<enum name="EnterprisePolicyLoadStatus" type="int">
+  <summary>
+    Status codes produced by the policy loaders that pull policy settings from
+    the platform-specific management infrastructure, such as Windows Group
+    Policy.
+  </summary>
+  <int value="0" label="STARTED">
+    Policy load attempt started. This gets logged for each policy load attempt
+    to get a baseline on the number of requests, and an arbitrary number of the
+    below status codes may get added in addition.
+  </int>
+  <int value="1" label="QUERY_FAILED">
+    System failed to determine whether there's policy.
+  </int>
+  <int value="2" label="NO_POLICY">No policy present.</int>
+  <int value="3" label="INACCCESSIBLE">
+    Data inaccessible, such as non-local policy file.
+  </int>
+  <int value="4" label="MISSING">
+    Data missing, such as policy file not present.
+  </int>
+  <int value="5" label="WOW64_REDIRECTION_DISABLED">
+    Trying with Wow64 redirection disabled.
+  </int>
+  <int value="6" label="READ_ERROR">
+    Data read error, for example file reading errors.
+  </int>
+  <int value="7" label="TOO_BIG">Data too large to process.</int>
+  <int value="8" label="PARSE_ERROR">Parse error.</int>
 </enum>
 
 <enum name="EnterprisePolicyType" type="int">
