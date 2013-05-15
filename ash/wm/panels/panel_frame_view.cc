@@ -105,13 +105,19 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
   if (!frame_painter_)
     return;
   bool paint_as_active = ShouldPaintAsActive();
-  int theme_image_id = paint_as_active ? IDR_AURA_WINDOW_HEADER_BASE_ACTIVE :
-      IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
+  int theme_frame_id = 0;
+  if (frame_painter_->ShouldUseMinimalHeaderStyle(FramePainter::THEMED_NO))
+    theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
+  else if (paint_as_active)
+    theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
+  else
+    theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
+
   frame_painter_->PaintHeader(
       this,
       canvas,
       paint_as_active ? FramePainter::ACTIVE : FramePainter::INACTIVE,
-      theme_image_id,
+      theme_frame_id,
       NULL);
   frame_painter_->PaintTitleBar(this, canvas, title_font_);
   frame_painter_->PaintHeaderContentSeparator(this, canvas);

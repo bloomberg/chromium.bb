@@ -54,6 +54,11 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
     INACTIVE
   };
 
+  enum Themed {
+    THEMED_YES,
+    THEMED_NO
+  };
+
   // What happens when the |size_button_| is pressed.
   enum SizeButtonBehavior {
     SIZE_BUTTON_MINIMIZES,
@@ -90,6 +95,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
 
   // Returns the amount that the theme background should be inset.
   int GetThemeBackgroundXInset() const;
+
+  // Returns true if the header should be painted using a minimalistic style.
+  bool ShouldUseMinimalHeaderStyle(Themed header_themed) const;
 
   // Paints the frame header.
   void PaintHeader(views::NonClientFrameView* view,
@@ -166,14 +174,14 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Returns the opacity value used to paint the header.
   int GetHeaderOpacity(HeaderMode header_mode,
                        int theme_frame_id,
-                       const gfx::ImageSkia* theme_frame_overlay);
+                       const gfx::ImageSkia* theme_frame_overlay) const;
 
   // Returns true if the user is cycling through workspaces.
   bool IsCyclingThroughWorkspaces() const;
 
   // Returns true if |window_->GetRootWindow()| should be drawing transparent
   // window headers.
-  bool UseSoloWindowHeader();
+  bool UseSoloWindowHeader() const;
 
   // Returns true if |root_window| has exactly one visible, normal-type window.
   // It ignores |ignore_window| while calculating the number of windows.

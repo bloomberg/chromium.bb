@@ -356,6 +356,19 @@ int FramePainter::GetThemeBackgroundXInset() const {
   return kThemeFrameImageInsetX;
 }
 
+bool FramePainter::ShouldUseMinimalHeaderStyle(Themed header_themed) const {
+  // Use the minimalistic header style whenever |frame_| is maximized or
+  // fullscreen EXCEPT:
+  // - If the user has installed a theme with custom images for the header.
+  // - For windows whose workspace is not tracked by the workspace code (which
+  //   are used for tab dragging).
+  // - When the user is cycling through workspaces.
+  return ((frame_->IsMaximized() || frame_->IsFullscreen()) &&
+      header_themed == THEMED_NO &&
+      GetTrackedByWorkspace(frame_->GetNativeWindow()) &&
+      !IsCyclingThroughWorkspaces());
+}
+
 void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                gfx::Canvas* canvas,
                                HeaderMode header_mode,
@@ -743,25 +756,19 @@ int FramePainter::GetTitleOffsetX() const {
       kTitleNoIconOffsetX;
 }
 
-int FramePainter::GetHeaderOpacity(HeaderMode header_mode,
-                                   int theme_frame_id,
-                                   const gfx::ImageSkia* theme_frame_overlay) {
+int FramePainter::GetHeaderOpacity(
+    HeaderMode header_mode,
+    int theme_frame_id,
+    const gfx::ImageSkia* theme_frame_overlay) const {
   // User-provided themes are painted fully opaque.
   if (frame_->GetThemeProvider()->HasCustomImage(theme_frame_id))
     return kFullyOpaque;
   if (theme_frame_overlay)
     return kFullyOpaque;
 
-  // Maximized and fullscreen windows with workspaces are totally transparent,
-  // except:
-  // - For windows whose workspace is not tracked by the workspace code (which
-  //   are used for tab dragging).
-  // - When the user is cycling through workspaces.
-  if ((frame_->IsMaximized() || frame_->IsFullscreen()) &&
-      GetTrackedByWorkspace(frame_->GetNativeWindow()) &&
-      !IsCyclingThroughWorkspaces()) {
-    return 0;
-  }
+  // The header is fully opaque when using the minimalistic header style.
+  if (ShouldUseMinimalHeaderStyle(THEMED_NO))
+    return kFullyOpaque;
 
   // Single browser window is very transparent.
   if (UseSoloWindowHeader())
@@ -778,7 +785,7 @@ bool FramePainter::IsCyclingThroughWorkspaces() const {
   return root && root->GetProperty(internal::kCyclingThroughWorkspacesKey);
 }
 
-bool FramePainter::UseSoloWindowHeader() {
+bool FramePainter::UseSoloWindowHeader() const {
   // Don't use transparent headers for panels, pop-ups, etc.
   if (!IsSoloWindowHeaderCandidate(window_))
     return false;

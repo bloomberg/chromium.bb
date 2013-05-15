@@ -137,8 +137,14 @@ void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   canvas->ClipRect(gfx::Rect(0, 0, width(), NonClientTopBorderHeight()));
 
   bool paint_as_active = ShouldPaintAsActive();
-  int theme_image_id = paint_as_active ? IDR_AURA_WINDOW_HEADER_BASE_ACTIVE :
-      IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
+  int theme_image_id = 0;
+  if (frame_painter_->ShouldUseMinimalHeaderStyle(FramePainter::THEMED_NO))
+    theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
+  else if (paint_as_active)
+    theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
+  else
+    theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
+
   frame_painter_->PaintHeader(
       this,
       canvas,

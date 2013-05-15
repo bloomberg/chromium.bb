@@ -220,13 +220,25 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
     return;
   // The primary header image changes based on window activation state and
   // theme, so we look it up for each paint.
+  int theme_frame_image_id = GetThemeFrameImageId();
+  const gfx::ImageSkia* theme_frame_overlay_image = GetThemeFrameOverlayImage();
+
+  ash::FramePainter::Themed header_themed = ash::FramePainter::THEMED_NO;
+  if (GetThemeProvider()->HasCustomImage(theme_frame_image_id) ||
+      theme_frame_overlay_image) {
+    header_themed = ash::FramePainter::THEMED_YES;
+  }
+
+  if (frame_painter_->ShouldUseMinimalHeaderStyle(header_themed))
+    theme_frame_image_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
+
   frame_painter_->PaintHeader(
       this,
       canvas,
       ShouldPaintAsActive() ?
           ash::FramePainter::ACTIVE : ash::FramePainter::INACTIVE,
-      GetThemeFrameImageId(),
-      GetThemeFrameOverlayImage());
+      theme_frame_image_id,
+      theme_frame_overlay_image);
   if (browser_view()->ShouldShowWindowTitle())
     frame_painter_->PaintTitleBar(this, canvas, BrowserFrame::GetTitleFont());
   if (browser_view()->IsToolbarVisible())
