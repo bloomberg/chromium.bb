@@ -502,6 +502,8 @@
     'browser/gpu/gpu_control_list.h',
     'browser/gpu/gpu_data_manager_impl.cc',
     'browser/gpu/gpu_data_manager_impl.h',
+    'browser/gpu/gpu_data_manager_impl_private.cc',
+    'browser/gpu/gpu_data_manager_impl_private.h',
     'browser/gpu/gpu_driver_bug_list.cc',
     'browser/gpu/gpu_driver_bug_list.h',
     'browser/gpu/gpu_internals_ui.cc',
