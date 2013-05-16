@@ -90,8 +90,7 @@ class FileCacheTest : public testing::Test {
         expected_error_(FILE_ERROR_OK),
         expected_cache_state_(0),
         expected_sub_dir_type_(FileCache::CACHE_TYPE_META),
-        expected_success_(true),
-        expect_outgoing_symlink_(false) {
+        expected_success_(true) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -228,12 +227,10 @@ class FileCacheTest : public testing::Test {
       const base::FilePath& source_path,
       FileError expected_error,
       int expected_cache_state,
-      FileCache::CacheSubDirectoryType expected_sub_dir_type,
-      bool expected_outgoing_symlink) {
+      FileCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
-    expect_outgoing_symlink_ = expected_outgoing_symlink;
 
     FileError error = FILE_ERROR_OK;
     cache_->StoreLocallyModifiedOnUIThread(
@@ -280,10 +277,6 @@ class FileCacheTest : public testing::Test {
         PathToVerify(cache_->GetCacheFilePath(resource_id, "*",
                      FileCache::CACHE_TYPE_PERSISTENT,
                      FileCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
-    paths_to_verify.push_back(  // Index 2: CACHE_TYPE_OUTGOING.
-        PathToVerify(cache_->GetCacheFilePath(resource_id, "",
-                     FileCache::CACHE_TYPE_OUTGOING,
-                     FileCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
     if (!cache_entry_found) {
       for (size_t i = 0; i < paths_to_verify.size(); ++i) {
         file_util::FileEnumerator enumerator(
@@ -297,7 +290,6 @@ class FileCacheTest : public testing::Test {
       // Entry is dirty, verify that:
       // - no files with "<resource_id>.*" exist in tmp dir
       // - only 1 "<resource_id>.local" exists in persistent dir
-      // - only 1 <resource_id> exists in outgoing dir
       // - if entry is pinned, only 1 <resource_id> exists in pinned dir.
 
       // Change expected_existing_path of CACHE_TYPE_PERSISTENT (index 1).
@@ -306,13 +298,6 @@ class FileCacheTest : public testing::Test {
                            std::string(),
                            FileCache::CACHE_TYPE_PERSISTENT,
                            FileCache::CACHED_FILE_LOCALLY_MODIFIED);
-
-      // Change expected_existing_path of CACHE_TYPE_OUTGOING (index 2).
-      paths_to_verify[2].expected_existing_path =
-          GetCacheFilePath(resource_id,
-                           std::string(),
-                           FileCache::CACHE_TYPE_OUTGOING,
-                           FileCache::CACHED_FILE_FROM_SERVER);
 
       for (size_t i = 0; i < paths_to_verify.size(); ++i) {
         const struct PathToVerify& verify = paths_to_verify[i];
@@ -379,7 +364,6 @@ class FileCacheTest : public testing::Test {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
-    expect_outgoing_symlink_ = false;
 
     FileError error = FILE_ERROR_OK;
     cache_->MarkDirtyOnUIThread(
@@ -416,7 +400,6 @@ class FileCacheTest : public testing::Test {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
-    expect_outgoing_symlink_ = true;
 
     FileError error = FILE_ERROR_OK;
     cache_->CommitDirtyOnUIThread(
@@ -435,7 +418,6 @@ class FileCacheTest : public testing::Test {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
-    expect_outgoing_symlink_ = false;
 
     FileError error = FILE_ERROR_OK;
     cache_->ClearDirtyOnUIThread(
@@ -454,7 +436,6 @@ class FileCacheTest : public testing::Test {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
-    expect_outgoing_symlink_ = false;
 
     FileError error = FILE_ERROR_OK;
     base::FilePath cache_file_path;
@@ -482,7 +463,6 @@ class FileCacheTest : public testing::Test {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
-    expect_outgoing_symlink_ = false;
 
     FileError error = FILE_ERROR_OK;
     cache_->MarkAsUnmountedOnUIThread(
@@ -543,26 +523,6 @@ class FileCacheTest : public testing::Test {
       EXPECT_TRUE(exists);
     else
       EXPECT_FALSE(exists);
-
-    // Verify symlink in outgoing dir.
-    base::FilePath symlink_path = cache_->GetCacheFilePath(
-        resource_id,
-        std::string(),
-        FileCache::CACHE_TYPE_OUTGOING,
-        FileCache::CACHED_FILE_FROM_SERVER);
-    // Check that outgoing symlink exists, without dereferencing to target path.
-    exists = file_util::IsLink(symlink_path);
-    if (expect_outgoing_symlink_ &&
-        test_util::ToCacheEntry(expected_cache_state_).is_dirty()) {
-      EXPECT_TRUE(exists);
-      base::FilePath target_path;
-      EXPECT_TRUE(file_util::ReadSymbolicLink(symlink_path, &target_path));
-      EXPECT_NE(util::kSymLinkToDevNull, target_path.value());
-      if (test_util::ToCacheEntry(expected_cache_state_).is_present())
-        EXPECT_EQ(dest_path, target_path);
-    } else {
-      EXPECT_FALSE(exists);
-    }
   }
 
   base::FilePath GetCacheFilePath(const std::string& resource_id,
@@ -655,7 +615,6 @@ class FileCacheTest : public testing::Test {
   int expected_cache_state_;
   FileCache::CacheSubDirectoryType expected_sub_dir_type_;
   bool expected_success_;
-  bool expect_outgoing_symlink_;
   std::string expected_file_extension_;
 };
 
@@ -725,7 +684,7 @@ TEST_F(FileCacheTest, LocallyModifiedSimple) {
   TestStoreLocallyModifiedToCache(
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
-      FILE_ERROR_OK, kDirtyCacheState, FileCache::CACHE_TYPE_PERSISTENT, true);
+      FILE_ERROR_OK, kDirtyCacheState, FileCache::CACHE_TYPE_PERSISTENT);
 }
 
 TEST_F(FileCacheTest, GetFromCacheSimple) {
@@ -1161,11 +1120,6 @@ TEST_F(FileCacheTest, DirtyCacheInvalid) {
                 test_util::TEST_CACHE_STATE_NONE,
                 FileCache::CACHE_TYPE_TMP);
 
-  // Commit a non-existent file dirty.
-  TestCommitDirty(resource_id, md5, FILE_ERROR_NOT_FOUND,
-                  test_util::TEST_CACHE_STATE_NONE,
-                  FileCache::CACHE_TYPE_TMP);
-
   // Clear dirty state of a non-existent file.
   TestClearDirty(resource_id, md5, FILE_ERROR_NOT_FOUND,
                  test_util::TEST_CACHE_STATE_NONE,
@@ -1177,11 +1131,6 @@ TEST_F(FileCacheTest, DirtyCacheInvalid) {
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
       FileCache::CACHE_TYPE_TMP);
-
-  // Commit a non-dirty existing file dirty.
-  TestCommitDirty(resource_id, md5, FILE_ERROR_INVALID_OPERATION,
-                 test_util::TEST_CACHE_STATE_PRESENT,
-                 FileCache::CACHE_TYPE_TMP);
 
   // Clear dirty state of a non-dirty existing file.
   TestClearDirty(resource_id, md5, FILE_ERROR_INVALID_OPERATION,

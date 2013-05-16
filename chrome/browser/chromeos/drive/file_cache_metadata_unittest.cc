@@ -28,7 +28,6 @@ class FileCacheMetadataTest : public testing::Test {
 
     persistent_directory_ = cache_paths_[FileCache::CACHE_TYPE_PERSISTENT];
     tmp_directory_ = cache_paths_[FileCache::CACHE_TYPE_TMP];
-    outgoing_directory_ = cache_paths_[FileCache::CACHE_TYPE_OUTGOING];
   }
 
   virtual void TearDown() OVERRIDE {
@@ -41,39 +40,19 @@ class FileCacheMetadataTest : public testing::Test {
     ASSERT_TRUE(metadata_->Initialize(cache_paths_));
   }
 
-  // Sets up the cache directories with various files, including stale
-  // symbolic links etc. Should be called before SetUpCacheMetadata().
+  // Sets up the cache directories with various files.
+  // Should be called before SetUpCacheMetadata().
   void SetUpCacheWithVariousFiles() {
     // Create some files in persistent directory.
     //
     CreateFile(persistent_directory_.AppendASCII("id_foo.md5foo"));
     CreateFile(persistent_directory_.AppendASCII("id_bar.local"));
-    // "id_baz" is dirty but does not have a symlink in outgoing
-    // directory. This file should be removed.
-    CreateFile(persistent_directory_.AppendASCII("id_baz.local"));
-    // "id_symlink" is invalid, as symlink is not allowed here. This should
-    // be removed.
-    CreateSymbolicLink(base::FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
-                       persistent_directory_.AppendASCII("id_symlink"));
 
     // Create some files in tmp directory.
     //
     CreateFile(tmp_directory_.AppendASCII("id_qux.md5qux"));
     // "id_quux" is invalid as we shouldn't have a dirty file in "tmp".
     CreateFile(tmp_directory_.AppendASCII("id_quux.local"));
-    // "id_symlink_tmp" is invalid, as symlink is not allowed here. This
-    // should be removed.
-    CreateSymbolicLink(base::FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
-                       tmp_directory_.AppendASCII("id_symlink_tmp"));
-
-    // Create symbolic links in outgoing directory.
-    //
-    // "id_bar" is dirty and committed.
-    CreateSymbolicLink(persistent_directory_.AppendASCII("id_bar.local"),
-                       outgoing_directory_.AppendASCII("id_bar"));
-    // "id_foo" is not dirty. This symlink should be removed.
-    CreateSymbolicLink(persistent_directory_.AppendASCII("id_foo.md5foo"),
-                       outgoing_directory_.AppendASCII("id_foo"));
   }
 
   // Create a file at |file_path|.
@@ -81,13 +60,6 @@ class FileCacheMetadataTest : public testing::Test {
     const std::string kFoo = "foo";
     ASSERT_TRUE(google_apis::test_util::WriteStringToFile(file_path, kFoo))
         << ": " << file_path.value();
-  }
-
-  // Create an symlink to |target| at |symlink|.
-  void CreateSymbolicLink(const base::FilePath& target,
-                          const base::FilePath& symlink) {
-    ASSERT_TRUE(file_util::CreateSymbolicLink(target, symlink))
-        << ": " << target.value() << ": " << symlink.value();
   }
 
  protected:
@@ -113,7 +85,6 @@ class FileCacheMetadataTest : public testing::Test {
   std::vector<base::FilePath> cache_paths_;
   base::FilePath persistent_directory_;
   base::FilePath tmp_directory_;
-  base::FilePath outgoing_directory_;
 };
 
 // Test all the methods of FileCacheMetadata except for
@@ -222,7 +193,6 @@ TEST_F(FileCacheMetadataTest, CacheTest) {
 
 TEST_F(FileCacheMetadataTest, CorruptDB) {
   using file_util::PathExists;
-  using file_util::IsLink;
   SetUpCacheWithVariousFiles();
 
   const base::FilePath db_path =
@@ -235,10 +205,7 @@ TEST_F(FileCacheMetadataTest, CorruptDB) {
 
   // Some files are removed during cache initialization. Make sure these
   // exist beforehand.
-  EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_baz.local")));
   EXPECT_TRUE(PathExists(tmp_directory_.AppendASCII("id_quux.local")));
-  EXPECT_TRUE(IsLink(persistent_directory_.AppendASCII("id_symlink")));
-  EXPECT_TRUE(IsLink(tmp_directory_.AppendASCII("id_symlink_tmp")));
 
   SetUpCacheMetadata();
 
@@ -253,8 +220,6 @@ TEST_F(FileCacheMetadataTest, CorruptDB) {
       test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT),
       cache_entry));
   EXPECT_TRUE(PathExists(tmp_directory_.AppendASCII("id_foo.md5foo")));
-  // The invalid symlink in "outgoing" should be removed.
-  EXPECT_FALSE(PathExists(outgoing_directory_.AppendASCII("id_foo")));
 
   // "id_bar" is present and dirty.
   ASSERT_TRUE(metadata_->GetCacheEntry("id_bar", "", &cache_entry));
@@ -267,15 +232,6 @@ TEST_F(FileCacheMetadataTest, CorruptDB) {
                               test_util::TEST_CACHE_STATE_PERSISTENT),
       cache_entry));
   EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_bar.local")));
-  EXPECT_TRUE(PathExists(outgoing_directory_.AppendASCII("id_bar")));
-
-  // "id_baz" should be removed during cache initialization.
-  EXPECT_FALSE(metadata_->GetCacheEntry("id_baz", "", &cache_entry));
-  EXPECT_FALSE(PathExists(persistent_directory_.AppendASCII("id_baz.local")));
-
-  // "id_symlink" should be removed during cache initialization.
-  EXPECT_FALSE(metadata_->GetCacheEntry("id_symlink", "", &cache_entry));
-  EXPECT_FALSE(PathExists(persistent_directory_.AppendASCII("id_symlink")));
 
   // Check contents in "tmp" directory.
   //
@@ -291,18 +247,6 @@ TEST_F(FileCacheMetadataTest, CorruptDB) {
 
   // "id_quux" should be removed during cache initialization.
   EXPECT_FALSE(metadata_->GetCacheEntry("id_quux", "md5qux", &cache_entry));
-
-  // "id_symlink_tmp" should be removed during cache initialization.
-  EXPECT_FALSE(metadata_->GetCacheEntry("id_symlink_tmp", "", &cache_entry));
-
-  // "id_dangling" should be removed during cache initialization.
-  EXPECT_FALSE(metadata_->GetCacheEntry("id_dangling", "", &cache_entry));
-
-  // "id_outside" should be removed during cache initialization.
-  EXPECT_FALSE(metadata_->GetCacheEntry("id_outside", "", &cache_entry));
-
-  // "id_not_symlink" should be removed during cache initialization.
-  EXPECT_FALSE(metadata_->GetCacheEntry("id_not_symlink", "", &cache_entry));
 }
 
 // Test FileCacheMetadata::RemoveTemporaryFiles.

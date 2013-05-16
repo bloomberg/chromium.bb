@@ -69,8 +69,6 @@ class FileCache {
   // This indexes into |FileCache::cache_paths_| vector.
   enum CacheSubDirectoryType {
     CACHE_TYPE_META = 0,       // Downloaded feeds.
-    CACHE_TYPE_OUTGOING,       // Symlinks to files in persistent or tmp dir to
-                               // be uploaded.
     CACHE_TYPE_PERSISTENT,     // Files that are pinned or modified locally,
                                // not evictable, hopefully.
     CACHE_TYPE_TMP,            // Files that don't meet criteria to be in
@@ -362,10 +360,6 @@ class FileCache {
   // Used to implement MarkDirtyOnUIThread.
   FileError MarkDirty(const std::string& resource_id,
                       const std::string& md5);
-
-  // Used to implement CommitDirtyOnUIThread.
-  FileError CommitDirty(const std::string& resource_id,
-                        const std::string& md5);
 
   // Used to implement ClearDirtyOnUIThread.
   FileError ClearDirty(const std::string& resource_id,

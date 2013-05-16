@@ -29,34 +29,6 @@ enum DBOpenStatus {
 // A map table of resource ID to file path.
 typedef std::map<std::string, base::FilePath> ResourceIdToFilePathMap;
 
-// Returns true if |file_path| is a valid symbolic link as |sub_dir_type|.
-// Otherwise, returns false with the reason.
-bool IsValidSymbolicLink(const base::FilePath& file_path,
-                         FileCache::CacheSubDirectoryType sub_dir_type,
-                         const std::vector<base::FilePath>& cache_paths,
-                         std::string* reason) {
-  DCHECK_EQ(FileCache::CACHE_TYPE_OUTGOING, sub_dir_type);
-
-  base::FilePath destination;
-  if (!file_util::ReadSymbolicLink(file_path, &destination)) {
-    *reason = "failed to read the symlink (maybe not a symlink)";
-    return false;
-  }
-
-  if (!file_util::PathExists(destination)) {
-    *reason = "pointing to a non-existent file";
-    return false;
-  }
-
-  // The destination file should be in the persistent directory.
-  if (!cache_paths[FileCache::CACHE_TYPE_PERSISTENT].IsParent(destination)) {
-    *reason = "pointing to a file outside of persistent directory";
-    return false;
-  }
-
-  return true;
-}
-
 // Scans cache subdirectory and build or update |cache_map|
 // with found file blobs or symlinks.
 //
@@ -87,65 +59,31 @@ void ScanCacheDirectory(
     // Determine cache state.
     FileCacheEntry cache_entry;
     cache_entry.set_md5(md5);
-    if (sub_dir_type == FileCache::CACHE_TYPE_OUTGOING) {
-      std::string reason;
-      if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
-        LOG(WARNING) << "Removing an invalid symlink: " << current.value()
-                     << ": " << reason;
-        file_util::Delete(current, false);
-        continue;
-      }
+    if (sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT)
+      cache_entry.set_is_persistent(true);
 
-      // If we're scanning outgoing directory, entry must exist and be dirty.
-      // Otherwise, it's a logic error from previous execution, remove this
-      // outgoing symlink and move on.
-      FileCacheMetadata::CacheMap::iterator iter =
-          cache_map->find(resource_id);
-      if (iter == cache_map->end() || !iter->second.is_dirty()) {
-        LOG(WARNING) << "Removing an symlink to a non-dirty file: "
-                     << current.value();
-        file_util::Delete(current, false);
-        continue;
-      }
+    if (extra_extension == util::kMountedArchiveFileExtension) {
+      // Mounted archives in cache should be unmounted upon logout/shutdown.
+      // But if we encounter a mounted file at start, delete it and create an
+      // entry with not PRESENT state.
+      DCHECK(sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT);
+      file_util::Delete(current, false);
+    } else {
+      // The cache file is present.
+      cache_entry.set_is_present(true);
 
-      processed_file_map->insert(std::make_pair(resource_id, current));
-      continue;
-    } else if (sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT ||
-               sub_dir_type == FileCache::CACHE_TYPE_TMP) {
-      if (sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT)
-        cache_entry.set_is_persistent(true);
-
-      if (file_util::IsLink(current)) {
-        LOG(WARNING) << "Removing a symlink in persistent/tmp directory"
-                     << current.value();
-        file_util::Delete(current, false);
-        continue;
-      }
-      if (extra_extension == util::kMountedArchiveFileExtension) {
-        // Mounted archives in cache should be unmounted upon logout/shutdown.
-        // But if we encounter a mounted file at start, delete it and create an
-        // entry with not PRESENT state.
-        DCHECK(sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT);
-        file_util::Delete(current, false);
-      } else {
-        // The cache file is present.
-        cache_entry.set_is_present(true);
-
-        // Adds the dirty bit if |md5| indicates that the file is dirty, and
-        // the file is in the persistent directory.
-        if (md5 == util::kLocallyModifiedFileExtension) {
-          if (sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT) {
-            cache_entry.set_is_dirty(true);
-          } else {
-            LOG(WARNING) << "Removing a dirty file in tmp directory: "
-                         << current.value();
-            file_util::Delete(current, false);
-            continue;
-          }
+      // Adds the dirty bit if |md5| indicates that the file is dirty, and
+      // the file is in the persistent directory.
+      if (md5 == util::kLocallyModifiedFileExtension) {
+        if (sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT) {
+          cache_entry.set_is_dirty(true);
+        } else {
+          LOG(WARNING) << "Removing a dirty file in tmp directory: "
+                       << current.value();
+          file_util::Delete(current, false);
+          continue;
         }
       }
-    } else {
-      NOTREACHED() << "Unexpected sub directory type: " << sub_dir_type;
     }
 
     // Create and insert new entry into cache map.
@@ -171,14 +109,6 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
                      cache_map,
                      &tmp_file_map);
 
-  // Then scan outgoing directory to check if dirty-files are committed
-  // properly (i.e. symlinks created in outgoing directory).
-  ResourceIdToFilePathMap outgoing_file_map;
-  ScanCacheDirectory(cache_paths,
-                     FileCache::CACHE_TYPE_OUTGOING,
-                     cache_map,
-                     &outgoing_file_map);
-
   // On DB corruption, keep only dirty-and-committed files in persistent
   // directory. Other files are deleted or moved to temporary directory.
   for (ResourceIdToFilePathMap::const_iterator iter =
@@ -192,9 +122,8 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
     if (cache_map_iter != cache_map->end()) {
       FileCacheEntry* cache_entry = &cache_map_iter->second;
       const bool is_dirty = cache_entry->is_dirty();
-      const bool is_committed = outgoing_file_map.count(resource_id) != 0;
-      if (!is_dirty && !is_committed) {
-        // If the file is not dirty nor committed, move to temporary directory.
+      if (!is_dirty) {
+        // If the file is not dirty, move to temporary directory.
         base::FilePath new_file_path =
             cache_paths[FileCache::CACHE_TYPE_TMP].Append(
                 file_path.BaseName());
@@ -202,11 +131,6 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
                       << " to: " << new_file_path.value();
         file_util::Move(file_path, new_file_path);
         cache_entry->set_is_persistent(false);
-      } else if (!is_dirty || !is_committed) {
-        // If the file is not dirty-and-committed, remove it.
-        DLOG(WARNING) << "Removing: " << file_path.value();
-        file_util::Delete(file_path, false);
-        cache_map->erase(cache_map_iter);
       }
     }
   }
