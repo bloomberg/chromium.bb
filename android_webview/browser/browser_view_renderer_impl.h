@@ -41,7 +41,6 @@ class BrowserViewRendererImpl
                                          JavaHelper* java_helper);
   static BrowserViewRendererImpl* FromWebContents(
       content::WebContents* contents);
-  static void SetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
 
   virtual ~BrowserViewRendererImpl();
 

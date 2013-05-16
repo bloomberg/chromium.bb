@@ -29,6 +29,10 @@ class SynchronousCompositor {
   // the caller.
   virtual void SetClient(SynchronousCompositorClient* client) = 0;
 
+  // Returns true is the compositor is fully initialized and ready to receive
+  // calls to DemandDrawHw().
+  virtual bool IsHwReady() = 0;
+
   // "On demand" SW draw, into the supplied canvas (observing the transform
   // and clip set there-in).
   virtual bool DemandDrawSw(SkCanvas* canvas) = 0;

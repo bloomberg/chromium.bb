@@ -10,6 +10,7 @@
 #include "ui/gfx/rect.h"
 
 struct AwDrawGLInfo;
+struct AwDrawSWFunctionTable;
 
 namespace content {
 class ContentViewCore;
@@ -68,6 +69,10 @@ class BrowserViewRenderer {
    protected:
     virtual ~JavaHelper() {}
   };
+
+  static void SetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
+  static AwDrawSWFunctionTable* GetAwDrawSWFunctionTable();
+  static bool IsSkiaVersionCompatible();
 
   // Content control methods.
   virtual void SetContents(content::ContentViewCore* content_view_core) = 0;

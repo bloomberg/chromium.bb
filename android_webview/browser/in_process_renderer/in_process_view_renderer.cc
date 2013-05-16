@@ -4,14 +4,31 @@
 
 #include "android_webview/browser/in_process_renderer/in_process_view_renderer.h"
 
+#include <android/bitmap.h>
+
 #include "android_webview/public/browser/draw_gl.h"
+#include "android_webview/public/browser/draw_sw.h"
+#include "base/android/jni_android.h"
 #include "base/logging.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/renderer/android/synchronous_compositor.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkGraphics.h"
+#include "third_party/skia/include/core/SkPicture.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/vector2d_f.h"
 #include "ui/gl/gl_bindings.h"
+
+using base::android::AttachCurrentThread;
+using base::android::JavaRef;
+using base::android::ScopedJavaLocalRef;
+using content::Compositor;
+using content::ContentViewCore;
 
 namespace android_webview {
 
@@ -37,23 +54,74 @@ class UserData : public content::WebContents::Data {
   InProcessViewRenderer* instance_;
 };
 
+typedef base::Callback<bool(SkCanvas*)> RenderMethod;
+
+bool RasterizeIntoBitmap(JNIEnv* env,
+                         const JavaRef<jobject>& jbitmap,
+                         int scroll_x,
+                         int scroll_y,
+                         const RenderMethod& renderer) {
+  DCHECK(jbitmap.obj());
+
+  AndroidBitmapInfo bitmap_info;
+  if (AndroidBitmap_getInfo(env, jbitmap.obj(), &bitmap_info) < 0) {
+    LOG(ERROR) << "Error getting java bitmap info.";
+    return false;
+  }
+
+  void* pixels = NULL;
+  if (AndroidBitmap_lockPixels(env, jbitmap.obj(), &pixels) < 0) {
+    LOG(ERROR) << "Error locking java bitmap pixels.";
+    return false;
+  }
+
+  bool succeeded;
+  {
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     bitmap_info.width,
+                     bitmap_info.height,
+                     bitmap_info.stride);
+    bitmap.setPixels(pixels);
+
+    SkDevice device(bitmap);
+    SkCanvas canvas(&device);
+    canvas.translate(-scroll_x, -scroll_y);
+    succeeded = renderer.Run(&canvas);
+  }
+
+  if (AndroidBitmap_unlockPixels(env, jbitmap.obj()) < 0) {
+    LOG(ERROR) << "Error unlocking java bitmap pixels.";
+    return false;
+  }
+
+  return succeeded;
+}
+
+bool RenderPictureToCanvas(SkPicture* picture, SkCanvas* canvas) {
+  canvas->drawPicture(*picture);
+  return true;
+}
+
 }  // namespace
 
 InProcessViewRenderer::InProcessViewRenderer(
     BrowserViewRenderer::Client* client,
     JavaHelper* java_helper)
-    : web_contents_(NULL),
+    : client_(client),
+      java_helper_(java_helper),
+      web_contents_(NULL),
       compositor_(NULL),
-      client_(client),
       view_visible_(false),
-      inside_draw_(false),
       continuous_invalidate_(false),
+      continuous_invalidate_task_pending_(false),
       width_(0),
       height_(0),
       attached_to_window_(false),
       hardware_initialized_(false),
       hardware_failed_(false),
-      egl_context_at_init_(NULL) {
+      egl_context_at_init_(NULL),
+      weak_factory_(this) {
 }
 
 InProcessViewRenderer::~InProcessViewRenderer() {
@@ -111,14 +179,11 @@ void InProcessViewRenderer::WebContentsGone() {
   web_contents_ = NULL;
 }
 
-bool InProcessViewRenderer::RenderPicture(SkCanvas* canvas) {
-  return compositor_ && compositor_->DemandDrawSw(canvas);
-}
-
 bool InProcessViewRenderer::PrepareDrawGL(int x, int y) {
   // No harm in updating |hw_rendering_scroll_| even if we return false.
   hw_rendering_scroll_ = gfx::Point(x, y);
-  return attached_to_window_ && compositor_ && !hardware_failed_;
+  return attached_to_window_ && compositor_ && compositor_->IsHwReady() &&
+      !hardware_failed_;
 }
 
 void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
@@ -150,12 +215,10 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   if (!compositor_)
     return;
 
-  // TODO(boliu): Have a scoped var to unset this.
-  inside_draw_ = true;
-
   gfx::Transform transform;
   transform.matrix().setColMajorf(draw_info->transform);
   transform.Translate(hw_rendering_scroll_.x(), hw_rendering_scroll_.y());
+  // TODO(joth): Check return value.
   compositor_->DemandDrawHw(
       gfx::Size(draw_info->width, draw_info->height),
       transform,
@@ -164,26 +227,126 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
                 draw_info->clip_right - draw_info->clip_left,
                 draw_info->clip_bottom - draw_info->clip_top));
 
-  inside_draw_ = false;
-
   // The GL functor must ensure these are set to zero before returning.
   // Not setting them leads to graphical artifacts that can affect other apps.
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-  // TODO(boliu): Should post task to invalidate.
-  if (continuous_invalidate_)
-    Invalidate();
+  EnsureContinuousInvalidation();
 }
 
 bool InProcessViewRenderer::DrawSW(jobject java_canvas,
                                    const gfx::Rect& clip) {
-  return false;
+  bool result = DrawSWInternal(java_canvas, clip);
+  EnsureContinuousInvalidation();
+  return result;
+}
+
+bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
+                                           const gfx::Rect& clip) {
+  TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawSW");
+
+  if (clip.IsEmpty())
+    return true;
+
+  JNIEnv* env = AttachCurrentThread();
+
+  AwDrawSWFunctionTable* sw_functions = GetAwDrawSWFunctionTable();
+  AwPixelInfo* pixels = sw_functions ?
+      sw_functions->access_pixels(env, java_canvas) : NULL;
+  // Render into an auxiliary bitmap if pixel info is not available.
+  if (pixels == NULL) {
+    ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
+        env, clip.width(), clip.height()));
+    if (!jbitmap.obj())
+      return false;
+
+    if (!RasterizeIntoBitmap(env, jbitmap, clip.x(), clip.y(),
+                             base::Bind(&InProcessViewRenderer::RenderSW,
+                                        base::Unretained(this)))) {
+      return false;
+    }
+
+    ScopedJavaLocalRef<jobject> jcanvas(env, java_canvas);
+    java_helper_->DrawBitmapIntoCanvas(env, jbitmap, jcanvas);
+    return true;
+  }
+
+  // Draw in a SkCanvas built over the pixel information.
+  bool succeeded = false;
+  {
+    SkBitmap bitmap;
+    bitmap.setConfig(static_cast<SkBitmap::Config>(pixels->config),
+                     pixels->width,
+                     pixels->height,
+                     pixels->row_bytes);
+    bitmap.setPixels(pixels->pixels);
+    SkDevice device(bitmap);
+    SkCanvas canvas(&device);
+    SkMatrix matrix;
+    for (int i = 0; i < 9; i++)
+      matrix.set(i, pixels->matrix[i]);
+    canvas.setMatrix(matrix);
+
+    SkRegion clip;
+    if (pixels->clip_region_size) {
+      size_t bytes_read = clip.readFromMemory(pixels->clip_region);
+      DCHECK_EQ(pixels->clip_region_size, bytes_read);
+      canvas.setClipRegion(clip);
+    } else {
+      clip.setRect(SkIRect::MakeWH(pixels->width, pixels->height));
+    }
+
+    succeeded = RenderSW(&canvas);
+  }
+
+  sw_functions->release_pixels(pixels);
+  return succeeded;
 }
 
 base::android::ScopedJavaLocalRef<jobject>
 InProcessViewRenderer::CapturePicture() {
-  return base::android::ScopedJavaLocalRef<jobject>();
+  if (!GetAwDrawSWFunctionTable())
+    return ScopedJavaLocalRef<jobject>();
+
+  gfx::Size record_size(width_, height_);
+
+  // Return empty Picture objects for empty SkPictures.
+  JNIEnv* env = AttachCurrentThread();
+  if (record_size.width() <= 0 || record_size.height() <= 0) {
+    return java_helper_->RecordBitmapIntoPicture(
+        env, ScopedJavaLocalRef<jobject>());
+  }
+
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
+  SkCanvas* rec_canvas = picture->beginRecording(record_size.width(),
+                                                 record_size.height(),
+                                                 0);
+  if (!CompositeSW(rec_canvas))
+    return ScopedJavaLocalRef<jobject>();
+  picture->endRecording();
+
+  if (IsSkiaVersionCompatible()) {
+    // Add a reference that the create_picture() will take ownership of.
+    picture->ref();
+    return ScopedJavaLocalRef<jobject>(env,
+        GetAwDrawSWFunctionTable()->create_picture(env, picture.get()));
+  }
+
+  // If Skia versions are not compatible, workaround it by rasterizing the
+  // picture into a bitmap and drawing it into a new Java picture.
+  ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
+      env, picture->width(), picture->height()));
+  if (!jbitmap.obj())
+    return ScopedJavaLocalRef<jobject>();
+
+  if (!RasterizeIntoBitmap(env, jbitmap, 0, 0,
+      base::Bind(&RenderPictureToCanvas,
+                 base::Unretained(picture.get())))) {
+    return ScopedJavaLocalRef<jobject>();
+  }
+
+  return java_helper_->RecordBitmapIntoPicture(env, jbitmap);
 }
 
 void InProcessViewRenderer::EnableOnNewPicture(bool enabled) {
@@ -238,13 +401,31 @@ void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {
 
   continuous_invalidate_ = invalidate;
   // TODO(boliu): Handle if not attached to window case.
-  if (continuous_invalidate_ && !inside_draw_)
-    Invalidate();
+  EnsureContinuousInvalidation();
 }
 
 void InProcessViewRenderer::Invalidate() {
-  DCHECK(view_visible_);
+  continuous_invalidate_task_pending_ = false;
   client_->Invalidate();
+}
+
+void InProcessViewRenderer::EnsureContinuousInvalidation() {
+  if (continuous_invalidate_ && !continuous_invalidate_task_pending_) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&InProcessViewRenderer::Invalidate,
+                   weak_factory_.GetWeakPtr()));
+    continuous_invalidate_task_pending_ = true;
+  }
+}
+
+bool InProcessViewRenderer::RenderSW(SkCanvas* canvas) {
+  // TODO(joth): BrowserViewRendererImpl had a bunch of logic for dpi and page
+  // scale here. Determine what if any needs bringing over to this class.
+  return CompositeSW(canvas);
+}
+
+bool InProcessViewRenderer::CompositeSW(SkCanvas* canvas) {
+  return compositor_ && compositor_->DemandDrawSw(canvas);
 }
 
 }  // namespace android_webview

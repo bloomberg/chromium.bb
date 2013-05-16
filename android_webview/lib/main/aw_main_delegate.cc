@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
+#include "cc/base/switches.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -27,8 +28,8 @@ namespace android_webview {
 
 namespace {
 
-// TODO(boliu): Remove these global Allows once the underlying issues
-// are resolved. See AwMainDelegate::RunProcess below.
+// TODO(boliu): Remove these global Allows once the underlying issues are
+// resolved - http://crbug.com/240453. See AwMainDelegate::RunProcess below.
 
 base::LazyInstance<scoped_ptr<ScopedAllowWaitForLegacyWebViewApi> >
     g_allow_wait_in_ui_thread = LAZY_INSTANCE_INITIALIZER;
@@ -63,10 +64,11 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(switches::kNoMergeUIAndRendererCompositorThreads);
 
   if (UIAndRendererCompositorThreadsNotMerged()) {
+    cl->AppendSwitch(cc::switches::kEnableCompositorFrameMessage);
     cl->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
   } else {
-    // Set the command line to enable synchronous API compatibility.
     cl->AppendSwitch(switches::kEnableSynchronousRendererCompositor);
+    cl->AppendSwitch(switches::kEnableVsyncNotification);
   }
   return false;
 }

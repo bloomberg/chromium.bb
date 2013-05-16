@@ -226,7 +226,7 @@ void AwContents::Destroy(JNIEnv* env, jobject obj) {
 
 // static
 void SetAwDrawSWFunctionTable(JNIEnv* env, jclass, jint function_table) {
-  BrowserViewRendererImpl::SetAwDrawSWFunctionTable(
+  BrowserViewRenderer::SetAwDrawSWFunctionTable(
       reinterpret_cast<AwDrawSWFunctionTable*>(function_table));
 }
 

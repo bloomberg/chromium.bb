@@ -7,6 +7,7 @@
 
 #include "android_webview/browser/browser_view_renderer_impl.h"
 
+#include "base/memory/weak_ptr.h"
 #include "content/public/renderer/android/synchronous_compositor_client.h"
 
 namespace content {
@@ -59,21 +60,25 @@ class InProcessViewRenderer : public BrowserViewRenderer,
 
  private:
   void Invalidate();
-  bool RenderPicture(SkCanvas* canvas);
+  void EnsureContinuousInvalidation();
+  bool DrawSWInternal(jobject java_canvas,
+                      const gfx::Rect& clip_bounds);
+  bool RenderSW(SkCanvas* canvas);
+  bool CompositeSW(SkCanvas* canvas);
 
+  BrowserViewRenderer::Client* client_;
+  BrowserViewRenderer::JavaHelper* java_helper_;
   content::WebContents* web_contents_;
   content::SynchronousCompositor* compositor_;
-  BrowserViewRenderer::Client* client_;
 
   bool view_visible_;
-
-  // Set while inside DrawGL right before vsync so that we do not unnecessarily
-  // trigger invalidates.
-  bool inside_draw_;
 
   // When true, we should continuously invalidate and keep drawing, for example
   // to drive animation.
   bool continuous_invalidate_;
+  // True while an asynchronous invalidation task is pending.
+  bool continuous_invalidate_task_pending_;
+
   int width_, height_;  // TODO(boliu): Use these?
 
   bool attached_to_window_;
@@ -86,6 +91,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
 
   // Last View scroll before hardware rendering is triggered.
   gfx::Point hw_rendering_scroll_;
+
+  base::WeakPtrFactory<InProcessViewRenderer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessViewRenderer);
 };

@@ -179,13 +179,24 @@ BrowserViewRendererImpl::~BrowserViewRendererImpl() {
 }
 
 // static
-void BrowserViewRendererImpl::SetAwDrawSWFunctionTable(
+void BrowserViewRenderer::SetAwDrawSWFunctionTable(
     AwDrawSWFunctionTable* table) {
   g_sw_draw_functions = table;
   g_is_skia_version_compatible =
       g_sw_draw_functions->is_skia_version_compatible(&SkGraphics::GetVersion);
   LOG_IF(WARNING, !g_is_skia_version_compatible)
       << "Skia versions are not compatible, rendering performance will suffer.";
+}
+
+// static
+AwDrawSWFunctionTable* BrowserViewRenderer::GetAwDrawSWFunctionTable() {
+  return g_sw_draw_functions;
+}
+
+// static
+bool BrowserViewRenderer::IsSkiaVersionCompatible() {
+  DCHECK(g_sw_draw_functions);
+  return g_is_skia_version_compatible;
 }
 
 void BrowserViewRendererImpl::SetContents(ContentViewCore* content_view_core) {
