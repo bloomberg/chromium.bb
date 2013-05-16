@@ -167,19 +167,17 @@ PP_Resource PDFResource::GetResourceImageForScale(PP_ResourceImage image_id,
     return 0;
 
   HostResource resource;
-  std::string image_data_desc;
+  PP_ImageDataDesc image_desc;
   int fd;
   if (!UnpackMessage<PpapiPluginMsg_PDF_GetResourceImageReply>(
-      reply, &resource, &image_data_desc, &fd)) {
+      reply, &resource, &image_desc, &fd)) {
     return 0;
   }
 
-  if (resource.is_null() || image_data_desc.size() != sizeof(PP_ImageDataDesc))
+  if (resource.is_null())
     return 0;
-
-  // We serialize the PP_ImageDataDesc just by copying to a string.
-  PP_ImageDataDesc desc;
-  memcpy(&desc, image_data_desc.data(), sizeof(PP_ImageDataDesc));
+  if (!PPB_ImageData_Shared::IsImageDataDescValid(image_desc))
+    return 0;
 
 #if defined(OS_ANDROID)
   // This is compiled into android for tests only.
@@ -188,9 +186,9 @@ PP_Resource PDFResource::GetResourceImageForScale(PP_ResourceImage image_id,
   base::SharedMemoryHandle handle;
   if (!reply_params.TakeSharedMemoryHandleAtIndex(0, &handle))
     return 0;
-  return (new ImageData(resource, desc, handle))->GetReference();
+  return (new ImageData(resource, image_desc, handle))->GetReference();
 #elif defined(OS_LINUX)
-  return (new ImageData(resource, desc, fd))->GetReference();
+  return (new ImageData(resource, image_desc, fd))->GetReference();
 #else
 #error Not implemented.
 #endif

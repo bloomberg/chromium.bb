@@ -15,6 +15,7 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/serialized_structs.h"
 
+struct PP_ImageDataDesc;
 struct PP_Size;
 class SkBitmap;
 
@@ -69,7 +70,7 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
                        const PP_Size& size,
                        const SkBitmap& pixels_to_write,
                        ppapi::HostResource* result,
-                       std::string* out_image_data_desc,
+                       PP_ImageDataDesc* out_image_data_desc,
                        IPC::PlatformFileForTransit* out_image_handle,
                        uint32_t* out_byte_count);
 

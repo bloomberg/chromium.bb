@@ -42,4 +42,13 @@ PP_Bool PPB_ImageData_Shared::IsImageDataFormatSupported(
                      format == PP_IMAGEDATAFORMAT_RGBA_PREMUL);
 }
 
+// static
+PP_Bool PPB_ImageData_Shared::IsImageDataDescValid(
+    const PP_ImageDataDesc& desc) {
+  return PP_FromBool(IsImageDataFormatSupported(desc.format) &&
+                     desc.size.width > 0 &&
+                     desc.size.height > 0 &&
+                     desc.stride > 0);
+}
+
 }  // namespace ppapi

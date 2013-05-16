@@ -103,7 +103,8 @@ void VideoSourceResource::OnPluginMsgGetFrameComplete(
   // The callback may have been aborted by Close().
   if (TrackedCallback::IsPending(get_frame_callback_)) {
     int32_t result = reply_params.result();
-    if (result == PP_OK) {
+    if (result == PP_OK &&
+        PPB_ImageData_Shared::IsImageDataDescValid(image_desc)) {
       frame->timestamp = timestamp;
 
 #if defined(OS_ANDROID)

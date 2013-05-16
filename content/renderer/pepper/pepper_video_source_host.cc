@@ -199,7 +199,6 @@ void PepperVideoSourceHost::SendGetFrameReply() {
 
   reply_context_.params.set_result(PP_OK);
 
-  // TODO(bbudge) Change the PDF Host's image creation code to match.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
   ppapi::proxy::SerializedHandle serialized_handle;
   PpapiPluginMsg_VideoSource_GetFrameReply reply_msg(host_resource,
