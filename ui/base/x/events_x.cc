@@ -9,6 +9,7 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/message_pump_aurax11.h"
@@ -74,6 +75,19 @@ const char* kCMTCachedAtoms[] = {
   AXIS_LABEL_PROP_ABS_FINGER_COUNT,
   NULL
 };
+
+// A workaround for some incorrect implemented input drivers:
+// Ignore their mouse input valuators.
+bool IgnoreMouseValuators() {
+  static bool initialized = false;
+  static bool ignore_valuators = true;
+  if (initialized)
+    return ignore_valuators;
+  ignore_valuators =
+      CommandLine::ForCurrentProcess()->HasSwitch("disable-mouse-valuators");
+  initialized = true;
+  return ignore_valuators;
+}
 
 // A class to support the detection of scroll events, using X11 valuators.
 class CMTEventData {
@@ -874,6 +888,10 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
         return gfx::Point(static_cast<int>(xievent->event_x),
                           static_cast<int>(xievent->event_y));
 #endif
+      if (IgnoreMouseValuators()) {
+        return gfx::Point(static_cast<int>(xievent->event_x),
+                          static_cast<int>(xievent->event_y));
+      }
       // Read the position from the valuators, because the location reported in
       // event_x/event_y seems to be different (and doesn't match for events
       // coming from slave device and master device) from the values in the
