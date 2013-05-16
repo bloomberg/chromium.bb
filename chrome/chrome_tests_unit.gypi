@@ -444,6 +444,11 @@
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
       ],
+      # TODO(joi): Remove this section once the google_apis tests are
+      # a separate unit test binary.
+      'includes': [
+        '../google_apis/determine_use_official_keys.gypi',
+      ],
       'include_dirs': [
         '..',
       ],
@@ -2387,11 +2392,6 @@
             # http://crbug.com/64926
             ['exclude', '^browser/importer/'],
           ],
-        }],
-        # TODO(joi): Remove from this file once separate
-        # google_apis_unittests target is established.
-        ['use_official_google_api_keys==1', {
-          'defines': ['USE_OFFICIAL_GOOGLE_API_KEYS=1'],
         }],
         ['enable_managed_users!=1', {
           'sources/': [

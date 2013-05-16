@@ -675,22 +675,33 @@
       # for the HRTF panner in WebAudio.
       'use_concatenated_impulse_responses': 1,
 
-      # Set this to 1 to use the Google-internal file containing
-      # official API keys for Google Chrome even in a developer build.
-      # Setting this variable explicitly to 1 will cause your build to
-      # fail if the internal file is missing.
+      # You can set the variable 'use_official_google_api_keys' to 1
+      # to use the Google-internal file containing official API keys
+      # for Google Chrome even in a developer build.  Setting this
+      # variable explicitly to 1 will cause your build to fail if the
+      # internal file is missing.
       #
-      # Set this to 0 to not use the internal file, even when it
-      # exists in your checkout.
+      # The variable is documented here, but not handled in this file;
+      # see //google_apis/determine_use_official_keys.gypi for the
+      # implementation.
       #
-      # Leave set to 2 to have this variable implicitly set to 1 if
-      # you have src/google_apis/internal/google_chrome_api_keys.h in
-      # your checkout, and implicitly set to 0 if not.
+      # Set the variable to 0 to not use the internal file, even when
+      # it exists in your checkout.
       #
-      # Note that official builds always behave as if this variable
+      # Leave it unset in your include.gypi to have the variable
+      # implicitly set to 1 if you have
+      # src/google_apis/internal/google_chrome_api_keys.h in your
+      # checkout, and implicitly set to 0 if not.
+      #
+      # Note that official builds always behave as if the variable
       # was explicitly set to 1, i.e. they always use official keys,
       # and will fail to build if the internal file is missing.
-      'use_official_google_api_keys%': 2,
+      #
+      # NOTE: You MUST NOT explicitly set the variable to 2 in your
+      # include.gypi or by other means. Due to subtleties of GYP, this
+      # is not the same as leaving the variable unset, even though its
+      # default value in
+      # //google_apis/determine_use_official_keys.gypi is 2.
 
       # Set these to bake the specified API keys and OAuth client
       # IDs/secrets into your build.
@@ -797,7 +808,6 @@
     'enable_app_list%': '<(enable_app_list)',
     'use_default_render_theme%': '<(use_default_render_theme)',
     'enable_settings_app%': '<(enable_settings_app)',
-    'use_official_google_api_keys%': '<(use_official_google_api_keys)',
     'google_api_key%': '<(google_api_key)',
     'google_default_client_id%': '<(google_default_client_id)',
     'google_default_client_secret%': '<(google_default_client_secret)',
@@ -1093,15 +1103,6 @@
         # Set the python arch to prevent conflicts with pyauto on Win64 build.
         # TODO(jschuh): crbug.com/177664 Investigate Win64 pyauto build.
         'python_arch%': 'ia32',
-      }],
-      # If use_official_google_api_keys is already set (to 0 or 1), we
-      # do none of the implicit checking.  If it is set to 1 and the
-      # internal keys file is missing, the build will fail at compile
-      # time.  If it is set to 0 and keys are not provided by other
-      # means, a warning will be printed at compile time.
-      ['use_official_google_api_keys==2', {
-        'use_official_google_api_keys%':
-            '<!(python <(DEPTH)/google_apis/build/check_internal.py <(DEPTH)/google_apis/internal/google_chrome_api_keys.h)',
       }],
       ['os_posix==1 and OS!="mac" and OS!="ios"', {
         # Figure out the python architecture to decide if we build pyauto.

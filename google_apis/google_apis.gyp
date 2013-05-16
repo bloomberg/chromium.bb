@@ -13,6 +13,9 @@
     {
       'target_name': 'google_apis',
       'type': 'static_library',
+      'includes': [
+        'determine_use_official_keys.gypi',
+      ],
       'dependencies': [
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
@@ -44,9 +47,6 @@
             'GOOGLE_CLIENT_SECRET_CLOUD_PRINT="<(google_default_client_secret)"',
             'GOOGLE_CLIENT_SECRET_REMOTING="<(google_default_client_secret)"',
           ]
-        }],
-        ['use_official_google_api_keys==1', {
-          'defines': ['USE_OFFICIAL_GOOGLE_API_KEYS=1'],
         }],
       ],
       'sources': [
