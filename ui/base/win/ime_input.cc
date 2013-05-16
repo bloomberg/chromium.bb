@@ -296,22 +296,13 @@ void ImeInput::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
   // GCS_CURSORPOS value if it's available.
   // TODO(suzhe): due to a bug of webkit, we currently can't use selection range
   // with composition string. See: https://bugs.webkit.org/show_bug.cgi?id=40805
-  if (lparam & CS_NOMOVECARET) {
-    composition->selection = ui::Range(0);
-  } else if (lparam & GCS_CURSORPOS) {
-    // If cursor position is same as target_start or target_end, then selects
-    // the target range instead. We always use cursor position as selection end,
-    // so that if the client doesn't support drawing selection with composition,
-    // it can always retrieve the correct cursor position.
+  if (!(lparam & CS_NOMOVECARET) && (lparam & GCS_CURSORPOS)) {
+    // IMM32 does not support non-zero-width selection in a composition. So
+    // always use the caret position as selection range.
     int cursor = ::ImmGetCompositionString(imm_context, GCS_CURSORPOS, NULL, 0);
-    if (cursor == target_start)
-      composition->selection = ui::Range(target_end, cursor);
-    else if (cursor == target_end)
-      composition->selection = ui::Range(target_start, cursor);
-    else
-      composition->selection = ui::Range(cursor);
+    composition->selection = ui::Range(cursor);
   } else {
-    composition->selection = ui::Range(target_start, target_end);
+    composition->selection = ui::Range(0);
   }
 
   // Retrieve the clause segmentations and convert them to underlines.
