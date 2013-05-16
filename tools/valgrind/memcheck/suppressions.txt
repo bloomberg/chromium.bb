@@ -7206,7 +7206,7 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    Memcheck:Unaddressable
    fun:_ZNKSs4sizeEv
    fun:_ZSteqIcEN9__gnu_cxx11__enable_ifIXsrSt9__is_charIT_E7__valueEbE6__typeERKSbIS3_St11char_traitsIS3_ESaIS3_EESC_
-   fun:_ZL12getDirectivePKN2pp5TokenE   
+   fun:_ZL12getDirectivePKN2pp5TokenE
    fun:_ZN2pp15DirectiveParser14parseDirectiveEPNS_5TokenE
    fun:_ZN2pp15DirectiveParser3lexEPNS_5TokenE
    fun:_ZN2pp13MacroExpander8getTokenEPNS_5TokenE
@@ -7236,10 +7236,4 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content14RenderViewImpl10InitializeEPNS_20RenderViewImplParamsE
    fun:_ZN7content14RenderViewImpl6CreateEiRKNS_19RendererPreferencesERK14WebPreferencesPN4base14RefCountedDataIiEEiilRKSbItNS7_20string16_char_traitsESaItEEbbiRKN6WebKit13WebScreenInfoE17AccessibilityModeb
    fun:_ZN7content16RenderThreadImpl15OnCreateNewViewERK18ViewMsg_New_Params
-}
-{
-   bug_241379
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8remoting19DesktopSessionProxy18OnCaptureCompletedERK22SerializedDesktopFrame
 }

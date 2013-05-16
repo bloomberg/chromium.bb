@@ -1862,22 +1862,3 @@
    fun:GURL::GURL
    fun:TestBody
 }
-{
-   bug_241379_a
-   Heapcheck:Leak
-   fun:remoting::DesktopSessionProxy::OnCreateSharedBuffer
-   fun:void DispatchToMethod
-   fun:ChromotingDesktopNetworkMsg_CreateSharedBuffer::Dispatch
-   fun:remoting::DesktopSessionProxy::OnMessageReceived
-   fun:IPC::ChannelProxy::Context::OnDispatchMessage
-}
-{
-   bug_241379_b
-   Heapcheck:Leak
-   ...
-   fun:remoting::DesktopSessionProxy::OnCaptureCompleted
-   fun:void DispatchToMethod
-   fun:ChromotingDesktopNetworkMsg_CaptureCompleted::Dispatch
-   fun:remoting::DesktopSessionProxy::OnMessageReceived
-   fun:IPC::ChannelProxy::Context::OnDispatchMessage
-}
