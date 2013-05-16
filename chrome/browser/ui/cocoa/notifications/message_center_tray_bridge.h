@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_UI_COCOA_NOTIFICATIONS_MESSAGE_CENTER_TRAY_BRIDGE_H_
 #define CHROME_BROWSER_UI_COCOA_NOTIFICATIONS_MESSAGE_CENTER_TRAY_BRIDGE_H_
 
+#import <AppKit/AppKit.h>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 
 @class MCPopupCollection;
+@class MCStatusItemView;
+@class MCTrayController;
 
 namespace message_center {
 class MessageCenter;
@@ -43,6 +47,12 @@ class MessageCenterTrayBridge :
 
   // C++ controller for the notification tray UI.
   scoped_ptr<message_center::MessageCenterTray> tray_;
+
+  // Obj-C window controller for the notification tray.
+  scoped_nsobject<MCTrayController> tray_controller_;
+
+  // View that is displayed on the system menu bar item.
+  scoped_nsobject<MCStatusItemView> status_item_view_;
 
   // Obj-C controller for the on-screen popup notifications.
   scoped_nsobject<MCPopupCollection> popup_collection_;

@@ -32,6 +32,10 @@
         'cocoa/popup_controller.mm',
         'cocoa/status_item_view.h',
         'cocoa/status_item_view.mm',
+        'cocoa/tray_controller.h',
+        'cocoa/tray_controller.mm',
+        'cocoa/tray_view_controller.h',
+        'cocoa/tray_view_controller.mm',
         'dummy_message_center.cc',
         'message_center.cc',
         'message_center.h',
@@ -111,7 +115,7 @@
             ['include', '^dummy_message_center\\.cc$'],
             ['include', '^message_center_switches\\.cc$'],
           ],
-        }, {  # notifications==1 
+        }, {  # notifications==1
           'sources!': [ 'dummy_message_center.cc' ],
         }],
       ],
@@ -133,6 +137,7 @@
         'cocoa/popup_collection_unittest.mm',
         'cocoa/popup_controller_unittest.mm',
         'cocoa/status_item_view_unittest.mm',
+        'cocoa/tray_view_controller_unittest.mm',
         'message_center_tray_unittest.cc',
         'fake_message_center.h',
         'fake_message_center.cc',

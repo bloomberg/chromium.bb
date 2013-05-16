@@ -56,5 +56,9 @@ const int kMarginBetweenItems = 10;
 // Colors.
 const SkColor kBackgroundLightColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
 const SkColor kBackgroundDarkColor = SkColorSetRGB(0xe7, 0xe7, 0xe7);
+const SkColor kShadowColor = SkColorSetARGB(0.3 * 255, 0, 0, 0);
+const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
+const SkColor kFooterDelimiterColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
+const SkColor kFooterTextColor = SkColorSetRGB(0x7b, 0x7b, 0x7b);
 
 }  // namespace message_center

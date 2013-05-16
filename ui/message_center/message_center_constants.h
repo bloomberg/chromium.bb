@@ -71,6 +71,12 @@ MESSAGE_CENTER_EXPORT extern const int kMarginBetweenItems; // H & V space
 extern const SkColor kBackgroundLightColor;  // Behind notifications, gradient
 extern const SkColor kBackgroundDarkColor;   // from light to dark.
 
+extern const SkColor kShadowColor;           // Shadow in the tray.
+
+extern const SkColor kMessageCenterBackgroundColor;
+extern const SkColor kFooterDelimiterColor;  // Separator color for the tray.
+extern const SkColor kFooterTextColor;       // Text color for tray labels.
+
 }  // namespace message_center
 
 #endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_CONSTANTS_H_

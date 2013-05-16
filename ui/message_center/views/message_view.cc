@@ -31,7 +31,6 @@ const int kExpandIconRightPadding = 11;
 const int kShadowOffset = 1;
 const int kShadowBlur = 4;
 
-const SkColor kShadowColor = SkColorSetARGB(0.3 * 255, 0, 0, 0);
 const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
 
 // Menu constants
@@ -181,7 +180,8 @@ class ShadowBorder : public views::Border {
 void ShadowBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   SkPaint paint;
   std::vector<gfx::ShadowValue> shadows;
-  shadows.push_back(gfx::ShadowValue(gfx::Point(), kShadowBlur, kShadowColor));
+  shadows.push_back(gfx::ShadowValue(gfx::Point(), kShadowBlur,
+      message_center::kShadowColor));
   skia::RefPtr<SkDrawLooper> looper = gfx::CreateShadowDrawLooper(shadows);
   paint.setLooper(looper.get());
   paint.setColor(kTransparentColor);

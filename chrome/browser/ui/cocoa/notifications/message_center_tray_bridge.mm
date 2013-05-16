@@ -6,7 +6,10 @@
 
 #include "chrome/browser/browser_process.h"
 #import "ui/message_center/cocoa/popup_collection.h"
-#import "ui/message_center/message_center_tray.h"
+#import "ui/message_center/cocoa/status_item_view.h"
+#import "ui/message_center/cocoa/tray_controller.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_tray.h"
 
 namespace message_center {
 
@@ -20,13 +23,28 @@ MessageCenterTrayBridge::MessageCenterTrayBridge(
     message_center::MessageCenter* message_center)
     : message_center_(message_center),
       tray_(new message_center::MessageCenterTray(this, message_center)) {
+  tray_controller_.reset(
+      [[MCTrayController alloc] initWithMessageCenterTray:tray_.get()]);
+
+  NSStatusBar* status_bar = [NSStatusBar systemStatusBar];
+  status_item_view_.reset(
+      [[MCStatusItemView alloc] initWithStatusItem:
+          [status_bar statusItemWithLength:NSVariableStatusItemLength]]);
+  [status_item_view_ setCallback:^{
+      if ([[tray_controller_ window] isVisible])
+        tray_->HideMessageCenterBubble();
+      else
+        tray_->ShowMessageCenterBubble();
+  }];
 }
 
 MessageCenterTrayBridge::~MessageCenterTrayBridge() {
 }
 
 void MessageCenterTrayBridge::OnMessageCenterTrayChanged() {
-  // TODO(rsesek): Implement tray UI.
+  [status_item_view_ setUnreadCount:
+      message_center_->UnreadNotificationCount()];
+  [tray_controller_ onMessageCenterTrayChanged];
 }
 
 bool MessageCenterTrayBridge::ShowPopups() {
@@ -45,10 +63,13 @@ void MessageCenterTrayBridge::UpdatePopups() {
 }
 
 bool MessageCenterTrayBridge::ShowMessageCenter() {
-  // TODO(rsesek): Implement tray UI.
-  return false;
+  [status_item_view_ setHighlight:YES];
+  NSRect frame = [[status_item_view_ window] frame];
+  [tray_controller_ showTrayAt:NSMakePoint(NSMinX(frame), NSMinY(frame))];
+  return true;
 }
 
 void MessageCenterTrayBridge::HideMessageCenter() {
-  // TODO(rsesek): Implement tray UI.
+  [status_item_view_ setHighlight:NO];
+  [tray_controller_ close];
 }

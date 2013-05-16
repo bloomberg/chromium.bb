@@ -44,11 +44,8 @@ const int kMinScrollViewHeight = 100;
 const int kFooterMargin = 16;
 const int kFooterHeight = 24;
 const SkColor kNoNotificationsTextColor = SkColorSetRGB(0xb4, 0xb4, 0xb4);
-const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
 const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
-const SkColor kFooterDelimiterColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
-const SkColor kFooterTextColor = SkColorSetRGB(0x7b, 0x7b, 0x7b);
 const SkColor kButtonTextHighlightColor = SkColorSetRGB(0x2a, 0x2a, 0x2a);
 const SkColor kButtonTextHoverColor = SkColorSetRGB(0x2a, 0x2a, 0x2a);
 
