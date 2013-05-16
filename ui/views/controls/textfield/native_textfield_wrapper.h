@@ -62,8 +62,7 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // Clears the selection within the edit field and sets the caret to the end.
   virtual void ClearSelection() = 0;
 
-  // Updates the border display for the native text field with the state desired
-  // by the Textfield.
+  // Updates whether there is a visible border.
   virtual void UpdateBorder() = 0;
 
   // Updates the color of the border with the state desired by the Textfield.

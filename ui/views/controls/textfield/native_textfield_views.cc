@@ -547,14 +547,17 @@ void NativeTextfieldViews::ClearSelection() {
 }
 
 void NativeTextfieldViews::UpdateBorder() {
-  if (textfield_->draw_border()) {
-    gfx::Insets insets = GetInsets();
-    textfield_->SetHorizontalMargins(insets.left(), insets.right());
-    textfield_->SetVerticalMargins(insets.top(), insets.bottom());
-  } else {
-    textfield_->SetHorizontalMargins(0, 0);
-    textfield_->SetVerticalMargins(0, 0);
-  }
+  // By default, if a caller calls Textfield::RemoveBorder() and does not set
+  // any explicit margins, they should get zero margins.  But also call
+  // UpdateXXXMargins() so we respect any explicitly-set margins.
+  //
+  // NOTE: If someday Textfield supports toggling |draw_border_| back on, we'll
+  // need to update this conditional to set the insets to their default values.
+  if (!textfield_->draw_border())
+    text_border_->SetInsets(0, 0, 0, 0);
+  UpdateHorizontalMargins();
+  UpdateVerticalMargins();
+  UpdateBorderColor();
 }
 
 void NativeTextfieldViews::UpdateBorderColor() {
@@ -614,7 +617,6 @@ void NativeTextfieldViews::UpdateHorizontalMargins() {
   if (!textfield_->GetHorizontalMargins(&left, &right))
     return;
   gfx::Insets inset = GetInsets();
-
   text_border_->SetInsets(inset.top(), left, inset.bottom(), right);
   OnBoundsChanged(GetBounds());
 }
