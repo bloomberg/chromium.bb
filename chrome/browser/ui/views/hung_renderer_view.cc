@@ -191,10 +191,11 @@ static const int kCentralColumnPadding =
 // HungRendererDialogView, public:
 
 // static
-HungRendererDialogView* HungRendererDialogView::Create() {
+HungRendererDialogView* HungRendererDialogView::Create(
+    gfx::NativeView context) {
   if (!g_instance_) {
     g_instance_ = new HungRendererDialogView;
-    views::Widget::CreateWindow(g_instance_);
+    views::DialogDelegate::CreateDialogWidget(g_instance_, context, NULL);
   }
   return g_instance_;
 }
@@ -442,7 +443,8 @@ namespace chrome {
 void ShowHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed() &&
       !PlatformShowCustomHungRendererDialog(contents)) {
-    HungRendererDialogView* view = HungRendererDialogView::Create();
+    HungRendererDialogView* view = HungRendererDialogView::Create(
+        platform_util::GetTopLevel(contents->GetView()->GetNativeView()));
     view->ShowForWebContents(contents);
   }
 }
