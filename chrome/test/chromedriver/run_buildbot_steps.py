@@ -88,7 +88,7 @@ def MaybeRelease(revision):
   version = version_line[0].split('"')[1]
 
   bitness = '32'
-  if util.IsLinux():
+  if util.IsLinux() and platform.architecture()[0] == '64bit':
     bitness = '64'
   zip_name = 'chromedriver2_%s%s_%s.zip' % (
       util.GetPlatformName(), bitness, version)
