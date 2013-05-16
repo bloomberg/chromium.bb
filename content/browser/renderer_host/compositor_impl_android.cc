@@ -50,7 +50,9 @@ class DirectOutputSurface : public cc::OutputSurface {
 
   virtual void Reshape(gfx::Size size) OVERRIDE {}
   virtual void PostSubBuffer(gfx::Rect rect, const cc::LatencyInfo&) OVERRIDE {}
-  virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE {}
+  virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE {
+    context3d()->shallowFlushCHROMIUM();
+  }
 };
 
 static bool g_initialized = false;

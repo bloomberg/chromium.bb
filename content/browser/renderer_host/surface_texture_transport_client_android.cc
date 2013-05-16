@@ -13,6 +13,8 @@
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gl/android/surface_texture_bridge.h"
 
 namespace content {
@@ -99,7 +101,9 @@ scoped_refptr<media::VideoFrame> SurfaceTextureTransportClient::
         ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
     context->makeContextCurrent();
     texture_id_ = context->createTexture();
-    surface_texture_->AttachToGLContext(texture_id_);
+    context->bindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id_);
+    context->flush();
+    surface_texture_->AttachToGLContext();
   }
   if (!video_frame_) {
     const gfx::Size size = video_layer_->bounds();

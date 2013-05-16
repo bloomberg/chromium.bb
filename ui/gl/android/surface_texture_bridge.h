@@ -40,9 +40,9 @@ class GL_EXPORT SurfaceTextureBridge
   // Set the default size of the image buffers.
   void SetDefaultBufferSize(int width, int height);
 
-  // Attach the SurfaceTexture to the given texture in the GL context that is
-  // current on the calling thread.
-  void AttachToGLContext(int texture_id);
+  // Attach the SurfaceTexture to the texture currently bound to
+  // GL_TEXTURE_EXTERNAL_OES.
+  void AttachToGLContext();
 
   // Detaches the SurfaceTexture from the context that owns its current GL
   // texture. Must be called with that context current on the calling thread.

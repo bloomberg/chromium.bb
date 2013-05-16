@@ -13,6 +13,7 @@
 #include "jni/SurfaceTexture_jni.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture_listener.h"
+#include "ui/gl/gl_bindings.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -123,8 +124,11 @@ void SurfaceTextureBridge::SetDefaultBufferSize(int width, int height) {
   }
 }
 
-void SurfaceTextureBridge::AttachToGLContext(int texture_id) {
+void SurfaceTextureBridge::AttachToGLContext() {
   if (GlContextMethodsAvailable()) {
+    int texture_id;
+    glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_id);
+    DCHECK(texture_id);
     JNIEnv* env = AttachCurrentThread();
     // Note: This method is only available on JB and greater.
     JNI_SurfaceTexture::Java_SurfaceTexture_attachToGLContext(
