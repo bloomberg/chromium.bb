@@ -4,8 +4,6 @@
 
 #include "chrome/test/perf/perf_ui_test_suite.h"
 
-#include <stdio.h>
-
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/lazy_instance.h"
@@ -45,7 +43,6 @@ base::LazyInstance<base::FilePath> g_complex_profile_dir =
 
 PerfUITestSuite::PerfUITestSuite(int argc, char** argv)
     : UITestSuite(argc, argv) {
-  fprintf(stderr, "In the constructor of the PerfUITestSuite.\n");
   base::PlatformThread::SetName("Tests_Main");
 }
 
@@ -75,30 +72,23 @@ void PerfUITestSuite::Initialize() {
   //
   // TODO(darin): Kill this once http://crbug.com/52609 is fixed.
   base::FilePath dll;
-  fprintf(stderr, "About to get dir module.\n");
   PathService::Get(base::DIR_MODULE, &dll);
   dll = dll.Append(chrome::kBrowserResourcesDll);
-  fprintf(stderr, "About to LoadLibraryExW.\n");
   HMODULE res_mod = ::LoadLibraryExW(dll.value().c_str(),
       NULL, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
   DCHECK(res_mod);
-  fprintf(stderr, "About to _AtlBaseModule.SetResourceInstance().\n");
   _AtlBaseModule.SetResourceInstance(res_mod);
 
-  fprintf(stderr, "About to ui::SetResourcesDataDLL.\n");
   ui::SetResourcesDataDLL(_AtlBaseModule.GetResourceInstance());
 #endif
 
-  fprintf(stderr, "About to go through UITestSuite::Initialize().\n");
   UITestSuite::Initialize();
 
-  fprintf(stderr, "About to default_profile_dir_.CreateUniqueTempDir().\n");
   if (!default_profile_dir_.CreateUniqueTempDir()) {
     LOG(FATAL) << "Failed to create default profile directory...";
   }
 
   // Build a profile in default profile dir.
-  fprintf(stderr, "About to call GenerateProfile().\n");
   base::FilePath default_path =
       default_profile_dir_.path().AppendASCII("Default");
   if (!GenerateProfile(TOP_SITES, kNumURLs, default_path)) {
@@ -107,12 +97,10 @@ void PerfUITestSuite::Initialize() {
 
   g_default_profile_dir.Get() = default_profile_dir_.path();
 
-  fprintf(stderr, "About to build second temp dir().\n");
   if (!complex_profile_dir_.CreateUniqueTempDir()) {
     LOG(FATAL) << "Failed to create complex profile directory...";
   }
 
-  fprintf(stderr, "About to copy profile directory.\n");
   if (!file_util::CopyDirectory(default_path,
                                 complex_profile_dir_.path(),
                                 true)) {
@@ -129,14 +117,12 @@ void PerfUITestSuite::Initialize() {
   base_data_dir = base_data_dir.AppendASCII("profile_with_complex_theme");
   base_data_dir = base_data_dir.AppendASCII("Default");
 
-  fprintf(stderr, "About to copy extensions directory.\n");
   if (!file_util::CopyDirectory(base_data_dir,
                                 complex_profile_dir_.path(),
                                 true)) {
     LOG(FATAL) << "Failed to copy default to complex profile";
   }
 
-  fprintf(stderr, "About to build theme pack.\n");
   // Parse the manifest and make a temporary extension object because the
   // theme system takes extensions as input.
   base::FilePath extension_base =
@@ -148,7 +134,6 @@ void PerfUITestSuite::Initialize() {
   BuildCachedThemePakIn(extension_base);
 
   g_complex_profile_dir.Get() = complex_profile_dir_.path();
-  fprintf(stderr, "All done with init.\n");
 }
 
 void PerfUITestSuite::BuildCachedThemePakIn(
