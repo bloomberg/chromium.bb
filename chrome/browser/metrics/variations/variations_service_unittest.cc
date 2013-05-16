@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
@@ -79,6 +80,45 @@ TrialsSeed CreateTestSeed() {
   return seed;
 }
 
+// Constants for testing associating command line flags with trial groups.
+const char kFlagStudyName[] = "flag_test_trial";
+const char kFlagGroup1Name[] = "flag_group1";
+const char kFlagGroup2Name[] = "flag_group2";
+const char kNonFlagGroupName[] = "non_flag_group";
+const char kForcingFlag1[] = "flag_test1";
+const char kForcingFlag2[] = "flag_test2";
+
+// Populates |study| with test data used for testing associating command line
+// flags with trials groups. The study will contain three groups, a default
+// group that isn't associated with a flag, and two other groups, both
+// associated with different flags.
+Study CreateStudyWithFlagGroups(int default_group_probability,
+                                int flag_group1_probability,
+                                int flag_group2_probability) {
+  DCHECK_GE(default_group_probability, 0);
+  DCHECK_GE(flag_group1_probability, 0);
+  DCHECK_GE(flag_group2_probability, 0);
+  Study study;
+  study.set_name(kFlagStudyName);
+  study.set_default_experiment_name(kNonFlagGroupName);
+
+  Study_Experiment* experiment = study.add_experiment();
+  experiment->set_name(kNonFlagGroupName);
+  experiment->set_probability_weight(default_group_probability);
+
+  experiment = study.add_experiment();
+  experiment->set_name(kFlagGroup1Name);
+  experiment->set_probability_weight(flag_group1_probability);
+  experiment->set_forcing_flag(kForcingFlag1);
+
+  experiment = study.add_experiment();
+  experiment->set_name(kFlagGroup2Name);
+  experiment->set_probability_weight(flag_group2_probability);
+  experiment->set_forcing_flag(kForcingFlag2);
+
+  return study;
+}
+
 // Serializes |seed| to protobuf binary format.
 std::string SerializeSeed(const TrialsSeed& seed) {
   std::string serialized_seed;
@@ -103,6 +143,10 @@ void SimulateServerResponse(int response_code, net::TestURLFetcher* fetcher) {
   fetcher->set_response_headers(headers);
   fetcher->set_response_code(response_code);
 }
+
+// A reference time to be used instead of base::Time::Now(). The date is
+// 2013-05-13 00:00:00.
+const base::Time kReferenceTime = base::Time::FromDoubleT(1368428400);
 
 }  // namespace
 
@@ -697,6 +741,70 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
 
     EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
   }
+}
+
+// Test that the group for kForcingFlag1 is forced.
+TEST_F(VariationsServiceTest, ForceGroupWithFlag1) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+
+  base::FieldTrialList field_trial_list_(NULL);
+
+  TestVariationsService variations_service(new TestRequestAllowedNotifier,
+                                           NULL);
+
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  variations_service.CreateTrialFromStudy(study, kReferenceTime);
+
+  EXPECT_EQ(kFlagGroup1Name,
+            base::FieldTrialList::FindFullName(kFlagStudyName));
+}
+
+// Test that the group for kForcingFlag2 is forced.
+TEST_F(VariationsServiceTest, ForceGroupWithFlag2) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag2);
+
+  base::FieldTrialList field_trial_list_(NULL);
+
+  TestVariationsService variations_service(new TestRequestAllowedNotifier,
+                                           NULL);
+
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  variations_service.CreateTrialFromStudy(study, kReferenceTime);
+
+  EXPECT_EQ(kFlagGroup2Name,
+            base::FieldTrialList::FindFullName(kFlagStudyName));
+}
+
+TEST_F(VariationsServiceTest, ForceFirstGroupWithFlag) {
+  // Add the flag to the command line arguments so the flag group is forced.
+  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag2);
+
+  base::FieldTrialList field_trial_list_(NULL);
+
+  TestVariationsService variations_service(new TestRequestAllowedNotifier,
+                                           NULL);
+
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  variations_service.CreateTrialFromStudy(study, kReferenceTime);
+
+  EXPECT_EQ(kFlagGroup1Name,
+            base::FieldTrialList::FindFullName(kFlagStudyName));
+}
+
+TEST_F(VariationsServiceTest, DontChooseGroupWithFlag) {
+  base::FieldTrialList field_trial_list_(NULL);
+
+  TestVariationsService variations_service(new TestRequestAllowedNotifier,
+                                           NULL);
+
+  // The two flag groups are given high probability, which would normaly make
+  // them very likely to be choosen. They won't be chosen since flag groups are
+  // never chosen when their flag isn't preasent.
+  Study study = CreateStudyWithFlagGroups(1, 999, 999);
+  variations_service.CreateTrialFromStudy(study, kReferenceTime);
+  EXPECT_EQ(kNonFlagGroupName,
+            base::FieldTrialList::FindFullName(kFlagStudyName));
 }
 
 }  // namespace chrome_variations

@@ -95,6 +95,10 @@ class VariationsService
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ValidateStudy);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedStoredWhenOKStatus);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedNotStoredWhenNonOKStatus);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ForceGroupWithFlag1);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ForceGroupWithFlag2);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ForceFirstGroupWithFlag);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, DontChooseGroupWithFlag);
 
   // Creates the VariationsService with the given |local_state| prefs service.
   // Use the |Create| factory method to create a VariationsService.

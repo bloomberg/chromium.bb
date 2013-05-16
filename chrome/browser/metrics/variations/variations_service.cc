@@ -598,7 +598,9 @@ bool VariationsService::ValidateStudyAndComputeTotalProbability(
                << study.experiment(i).name();
       return false;
     }
-    divisor += study.experiment(i).probability_weight();
+
+    if (!study.experiment(i).has_forcing_flag())
+      divisor += study.experiment(i).probability_weight();
     if (study.experiment(i).name() == default_group_name)
       found_default_group = true;
   }
@@ -642,6 +644,20 @@ void VariationsService::CreateTrialFromStudy(const Study& study,
   if (!ValidateStudyAndComputeTotalProbability(study, &total_probability))
     return;
 
+  // Check if any experiments need to be forced due to a command line
+  // flag. Force the first experiment with an existing flag.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  for (int i = 0; i < study.experiment_size(); ++i) {
+    const Study_Experiment& experiment = study.experiment(i);
+    if (experiment.has_forcing_flag() &&
+        command_line->HasSwitch(experiment.forcing_flag())) {
+      base::FieldTrialList::CreateFieldTrial(study.name(), experiment.name());
+      DVLOG(1) << "Trial " << study.name() << " forced by flag: "
+               << experiment.forcing_flag();
+      return;
+    }
+  }
+
   // The trial is created without specifying an expiration date because the
   // expiration check in field_trial.cc is based on the build date. Instead,
   // the expiration check using |reference_date| is done explicitly below.
@@ -660,6 +676,11 @@ void VariationsService::CreateTrialFromStudy(const Study& study,
 
   for (int i = 0; i < study.experiment_size(); ++i) {
     const Study_Experiment& experiment = study.experiment(i);
+    // Groups with flags can't be selected randomly, so we don't add them to
+    // the field trial.
+    if (experiment.has_forcing_flag())
+      continue;
+
     if (experiment.name() != study.default_experiment_name())
       trial->AppendGroup(experiment.name(), experiment.probability_weight());
 

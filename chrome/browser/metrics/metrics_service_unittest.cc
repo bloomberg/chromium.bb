@@ -37,24 +37,6 @@ class MetricsServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceTest);
 };
 
-// Scoped helper that allows modifying CommandLine::ForCurrentProcess() by
-// tests, restoring it to its original value when destroyed.
-class ScopedTestingCommandLine {
- public:
-  ScopedTestingCommandLine()
-      : old_command_line_(*CommandLine::ForCurrentProcess()) {
-  }
-
-  ~ScopedTestingCommandLine() {
-    *CommandLine::ForCurrentProcess() = old_command_line_;
-  }
-
- private:
-  const CommandLine old_command_line_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTestingCommandLine);
-};
-
 }  // namespace
 
 // Ensure the ClientId is formatted as expected.
@@ -126,7 +108,6 @@ TEST_F(MetricsServiceTest, PermutedEntropyCacheClearedWhenLowEntropyReset) {
 
   // Verify that the cache does get reset if --reset-variations-state is passed.
   {
-    ScopedTestingCommandLine command_line;
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kResetVariationState);
 
