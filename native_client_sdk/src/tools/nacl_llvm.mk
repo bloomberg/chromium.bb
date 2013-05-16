@@ -12,11 +12,11 @@
 #
 # Paths to Tools
 #
-PNACL_CC?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang -c
-PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++ -c
-PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++
-PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-ar
-PNACL_STRIP?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-finalize
+PNACL_CC ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang -c
+PNACL_CXX ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++ -c
+PNACL_LINK ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++
+PNACL_LIB ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-ar
+PNACL_STRIP ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-finalize
 
 #
 # Compile Macro
@@ -140,7 +140,7 @@ endef
 NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
 
 define NMF_RULE
-all:$(OUTDIR)/$(1).nmf
+all: $(OUTDIR)/$(1).nmf
 $(OUTDIR)/$(1).nmf : $(OUTDIR)/$(1).pexe
 	$(call LOG,CREATE_NMF,$$@,$(NMF) -o $$@ $$^ -s $(OUTDIR) $(2))
 endef

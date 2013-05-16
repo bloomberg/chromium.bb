@@ -15,11 +15,11 @@
 # We use the C++ compiler for everything and then use the -Wl,-as-needed flag
 # in the linker to drop libc++ unless it's actually needed.
 #
-HOST_CC?=gcc
-HOST_CXX?=g++
-HOST_LINK?=g++
-HOST_LIB?=ar
-HOST_STRIP?=strip
+HOST_CC ?= gcc
+HOST_CXX ?= g++
+HOST_LINK ?= g++
+HOST_LIB ?= ar
+HOST_STRIP ?= strip
 
 ifeq (,$(findstring gcc,$(shell $(WHICH) gcc)))
 $(warning To skip the host build use:)
@@ -28,8 +28,8 @@ $(error Unable to find gcc in PATH while building Host build)
 endif
 
 
-LINUX_WARNINGS?=-Wno-long-long
-LINUX_CCFLAGS=-fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
+LINUX_WARNINGS ?= -Wno-long-long
+LINUX_CCFLAGS = -fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
 
 
 #

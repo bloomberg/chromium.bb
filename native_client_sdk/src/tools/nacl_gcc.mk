@@ -13,9 +13,9 @@
 # Default Paths
 #
 
-LD_X86_32:=-L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)
-LD_X86_64:=-L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)
-LD_ARM:=-L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)
+LD_X86_32 := -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)
+LD_X86_64 := -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)
+LD_ARM := -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)
 
 
 #
@@ -24,36 +24,36 @@ LD_ARM:=-L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)
 # We always link with the C++ compiler but include -Wl,-as-needed flag
 # in LD_FLAGS so the linker should drop libc++ unless it's actually needed.
 #
-X86_32_CC?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-gcc
-X86_32_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
-X86_32_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
-X86_32_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-ar
-X86_32_STRIP?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-strip
-X86_32_NM?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-nm
+X86_32_CC ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-gcc
+X86_32_CXX ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
+X86_32_LINK ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
+X86_32_LIB ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-ar
+X86_32_STRIP ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-strip
+X86_32_NM ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-nm
 
-X86_64_CC?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-gcc
-X86_64_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-g++
-X86_64_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-g++
-X86_64_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-ar
-X86_64_STRIP?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-strip
-X86_64_NM?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-nm
+X86_64_CC ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-gcc
+X86_64_CXX ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-g++
+X86_64_LINK ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-g++
+X86_64_LIB ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-ar
+X86_64_STRIP ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-strip
+X86_64_NM ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-nm
 
-ARM_CC?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-gcc
-ARM_CXX?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
-ARM_LINK?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
-ARM_LIB?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-ar
-ARM_STRIP?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-strip
-ARM_NM?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-nm
+ARM_CC ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-gcc
+ARM_CXX ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
+ARM_LINK ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
+ARM_LIB ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-ar
+ARM_STRIP ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-strip
+ARM_NM ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-nm
 
 
 # Architecture-specific flags
-X86_32_CFLAGS?=-DNACL_ARCH=x86_32
-X86_64_CFLAGS?=-DNACL_ARCH=x86_64
-ARM_CFLAGS?=-DNACL_ARCH=arm
+X86_32_CFLAGS ?= -DNACL_ARCH=x86_32
+X86_64_CFLAGS ?= -DNACL_ARCH=x86_64
+ARM_CFLAGS ?= -DNACL_ARCH=arm
 
-X86_32_CXXFLAGS?=-DNACL_ARCH=x86_32
-X86_64_CXXFLAGS?=-DNACL_ARCH=x86_64
-ARM_CXXFLAGS?=-DNACL_ARCH=arm
+X86_32_CXXFLAGS ?= -DNACL_ARCH=x86_32
+X86_64_CXXFLAGS ?= -DNACL_ARCH=x86_64
+ARM_CXXFLAGS ?= -DNACL_ARCH=arm
 
 #
 # Compile Macro
@@ -137,7 +137,7 @@ endef
 # $4 = List of DEPS
 # $5 = 1 => Don't add to NMF.
 #
-GLIBC_REMAP:=
+GLIBC_REMAP :=
 define SO_RULE
 all: $(OUTDIR)/lib$(1)_x86_32.so
 $(OUTDIR)/lib$(1)_x86_32.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32_pic)) $(4)
@@ -319,25 +319,25 @@ endef
 # Determine which architectures to build for.  The user can set NACL_ARCH or
 # ARCHES in the environment to control this.
 #
-VALID_ARCHES:=x86_32 x86_64
+VALID_ARCHES := x86_32 x86_64
 ifeq (newlib,$(TOOLCHAIN))
-VALID_ARCHES+=arm
+VALID_ARCHES += arm
 endif
 
 ifdef NACL_ARCH
 ifeq (,$(findstring $(NACL_ARCH),$(VALID_ARCHES)))
 $(error Invalid arch specified in NACL_ARCH: $(NACL_ARCH).  Valid values are: $(VALID_ARCHES))
 endif
-ARCHES=${NACL_ARCH}
+ARCHES = ${NACL_ARCH}
 else
-ARCHES?=${VALID_ARCHES}
+ARCHES ?= ${VALID_ARCHES}
 endif
 
 
 #
 # Generate NMF_ARCHES
 #
-NMF_ARCHES:=$(foreach arch,$(ARCHES),_$(arch).nexe)
+NMF_ARCHES := $(foreach arch,$(ARCHES),_$(arch).nexe)
 
 
 #
@@ -351,12 +351,12 @@ NMF_ARCHES:=$(foreach arch,$(ARCHES),_$(arch).nexe)
 # $1 = Target Name (the basename of the nmf
 # $2 = Additional create_nmf.py arguments
 #
-NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
-GLIBC_DUMP:=$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
-GLIBC_PATHS:=-L$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
-GLIBC_PATHS+=-L$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
-GLIBC_PATHS+=-L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)
-GLIBC_PATHS+=-L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)
+NMF := python $(NACL_SDK_ROOT)/tools/create_nmf.py
+GLIBC_DUMP := $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
+GLIBC_PATHS := -L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
+GLIBC_PATHS += -L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
+GLIBC_PATHS += -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)
+GLIBC_PATHS += -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)
 
 
 define NMF_RULE

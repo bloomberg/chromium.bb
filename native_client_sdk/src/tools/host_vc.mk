@@ -15,10 +15,10 @@
 # We use the C++ compiler for everything and then use the -Wl,-as-needed flag
 # in the linker to drop libc++ unless it's actually needed.
 #
-HOST_CC?=cl.exe /nologo
-HOST_CXX?=cl.exe /nologo /EHsc
-HOST_LINK?=link.exe /nologo
-HOST_LIB?=lib.exe /nologo
+HOST_CC ?= cl.exe /nologo
+HOST_CXX ?= cl.exe /nologo /EHsc
+HOST_LINK ?= link.exe /nologo
+HOST_LIB ?= lib.exe /nologo
 
 ifeq (,$(findstring cl.exe,$(shell $(WHICH) cl.exe)))
 $(warning To skip the host build use:)
@@ -28,12 +28,12 @@ endif
 
 
 ifeq ('Debug','$(CONFIG)')
-WIN_OPT_FLAGS?=/Od /MTd /Z7 -D NACL_SDK_DEBUG
+WIN_OPT_FLAGS ?= /Od /MTd /Z7 -D NACL_SDK_DEBUG
 else
-WIN_OPT_FLAGS?=/O2 /MT /Z7
+WIN_OPT_FLAGS ?= /O2 /MT /Z7
 endif
 
-WIN_FLAGS?=-D WIN32 -D _WIN32 -D PTW32_STATIC_LIB
+WIN_FLAGS ?= -D WIN32 -D _WIN32 -D PTW32_STATIC_LIB
 
 
 #
