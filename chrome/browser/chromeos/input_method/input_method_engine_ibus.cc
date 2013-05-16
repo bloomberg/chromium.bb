@@ -38,6 +38,7 @@ namespace {
 const uint32 kIBusAltKeyMask = 1 << 3;
 const uint32 kIBusCtrlKeyMask = 1 << 2;
 const uint32 kIBusShiftKeyMask = 1 << 0;
+const uint32 kIBusCapsLockMask = 1 << 1;
 const uint32 kIBusKeyReleaseMask = 1 << 30;
 }
 
@@ -481,6 +482,7 @@ void InputMethodEngineIBus::ProcessKeyEvent(
   event.alt_key = state & kIBusAltKeyMask;
   event.ctrl_key = state & kIBusCtrlKeyMask;
   event.shift_key = state & kIBusShiftKeyMask;
+  event.caps_lock = state & kIBusCapsLockMask;
   observer_->OnKeyEvent(
       engine_id_,
       event,

@@ -51,7 +51,6 @@ EchoBackIME.prototype.onBlur = function(contextID) {
 
 EchoBackIME.prototype.onInputContextUpdate = function(context) {
   chrome.test.sendMessage('onInputContextUpdate');
-  console.log('onInputContextUpdate');
 };
 
 EchoBackIME.prototype.onKeyEvent = function(context, engine, keyData) {
@@ -92,6 +91,31 @@ ToUpperIME.prototype.onKeyEvent = function(context, engine, keyData) {
     }, function() {});
     return true;
   }
+  return false;
+};
+
+/**
+ * This class provide an IME which sneds message with API argument.
+ * @constructor
+ */
+var APIArgumentIME = function() {};
+APIArgumentIME.prototype = new IMEBase();
+
+/**
+ * @param {Object} context A context object passed from input.ime.onFocus.
+ * @param {string} engine An engine ID.
+ * @param {Object} keyData A keyevent object passed from input.ime.onKeyEvent.
+ * @return {boolean} True on the key event is consumed.
+ **/
+APIArgumentIME.prototype.onKeyEvent = function(context, engine, keyData) {
+  chrome.test.sendMessage('onKeyEvent:' +
+                          keyData.type + ':' +
+                          keyData.key + ':' +
+                          keyData.code + ':' +
+                          keyData.ctrlKey + ':' +
+                          keyData.altKey + ':' +
+                          keyData.shiftKey + ':' +
+                          keyData.capsLock);
   return false;
 };
 
@@ -256,6 +280,7 @@ document.addEventListener('readystatechange', function() {
     engineBridge.addEngine('IdentityIME', new IdentityIME());
     engineBridge.addEngine('ToUpperIME', new ToUpperIME());
     engineBridge.addEngine('EchoBackIME', new EchoBackIME());
+    engineBridge.addEngine('APIArgumentIME', new APIArgumentIME());
     chrome.test.sendMessage('ReadyToUseImeEvent');
   }
 });

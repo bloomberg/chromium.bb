@@ -25,6 +25,13 @@ const char kToUpperIMEID[] =
     "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpToUpperIME";
 const char kEchoBackIMEID[] =
     "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpEchoBackIME";
+const char kAPIArgumentIMEID[] =
+    "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpAPIArgumentIME";
+
+const uint32 kAltKeyMask = 1 << 3;
+const uint32 kCtrlKeyMask = 1 << 2;
+const uint32 kShiftKeyMask = 1 << 0;
+const uint32 kCapsLockMask = 1 << 1;
 
 // InputMethod extension should work on 1)normal extension, 2)normal extension
 // in incognito mode 3)component extension.
@@ -60,6 +67,45 @@ class InputMethodEngineIBusBrowserTest
   }
 
  protected:
+  void LoadTestInputMethod() {
+    MockIBusClient* ibus_client = mock_dbus_thread_manager_->mock_ibus_client();
+    ibus_client->set_register_component_handler(
+        base::Bind(&OnRegisterComponent));
+
+    // This will load "chrome/test/data/extensions/input_ime"
+    ExtensionTestMessageListener ime_ready_listener("ReadyToUseImeEvent",
+                                                    false);
+    ASSERT_TRUE(LoadExtensionWithType("input_ime", GetParam()));
+    ASSERT_TRUE(ime_ready_listener.WaitUntilSatisfied());
+
+    // The reason why not EXPECT_EQ is that extension will be reloaded in the
+    // case of incognito mode switching. Thus registeration will be happend
+    // multiple times. Calling at least once per engine is sufficient for IBus
+    // component. Here, there is two engine, thus expectation is at least 4
+    // times.
+    EXPECT_LE(4, ibus_client->register_component_call_count());
+
+    // Extension IMEs are not enabled by default.
+    std::vector<std::string> extension_ime_ids;
+    extension_ime_ids.push_back(kIdentityIMEID);
+    extension_ime_ids.push_back(kToUpperIMEID);
+    extension_ime_ids.push_back(kEchoBackIMEID);
+    extension_ime_ids.push_back(kAPIArgumentIMEID);
+    InputMethodManager::Get()->SetEnabledExtensionImes(&extension_ime_ids);
+
+    InputMethodDescriptors extension_imes;
+    InputMethodManager::Get()->GetInputMethodExtensions(&extension_imes);
+
+    // Test IME has two input methods, thus InputMethodManager should have two
+    // extension IME.
+    // Note: Even extension is loaded by LoadExtensionAsComponent as above, the
+    // IME does not managed by ComponentExtensionIMEManager or it's id won't
+    // start with __comp__. The component extension IME is whitelisted and
+    // managed by ComponentExtensionIMEManager, but its framework is same as
+    // normal extension IME.
+    EXPECT_EQ(4U, extension_imes.size());
+  }
+
   bool LoadExtensionWithType(const std::string& extension_name,
                              TestType type) {
     switch (type) {
@@ -87,7 +133,6 @@ class KeyEventDoneCallback {
         is_called_(false) {}
   ~KeyEventDoneCallback() {}
 
- public:
   void Run(bool consumed) {
     if (consumed == expected_argument_) {
       MessageLoop::current()->Quit();
@@ -119,38 +164,7 @@ INSTANTIATE_TEST_CASE_P(InputMethodEngineIBusComponentExtensionBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
                        BasicScenarioTest) {
-  MockIBusClient* ibus_client = mock_dbus_thread_manager_->mock_ibus_client();
-  ibus_client->set_register_component_handler(base::Bind(&OnRegisterComponent));
-
-  // This will load "chrome/test/data/extensions/input_ime"
-  ExtensionTestMessageListener ime_ready_listener("ReadyToUseImeEvent", false);
-  ASSERT_TRUE(LoadExtensionWithType("input_ime", GetParam()));
-  ASSERT_TRUE(ime_ready_listener.WaitUntilSatisfied());
-
-  // The reason why not EXPECT_EQ is that extension will be reloaded in the
-  // case of incognito mode switching. Thus registeration will be happend
-  // multiple times. Calling at least once per engine is sufficient for IBus
-  // component. Here, there is two engine, thus expectation is at least twice.
-  EXPECT_LE(3, ibus_client->register_component_call_count());
-
-  // Extension IMEs are not enabled by default.
-  std::vector<std::string> extension_ime_ids;
-  extension_ime_ids.push_back(kIdentityIMEID);
-  extension_ime_ids.push_back(kToUpperIMEID);
-  extension_ime_ids.push_back(kEchoBackIMEID);
-  InputMethodManager::Get()->SetEnabledExtensionImes(&extension_ime_ids);
-
-  InputMethodDescriptors extension_imes;
-  InputMethodManager::Get()->GetInputMethodExtensions(&extension_imes);
-
-  // Test IME has two input methods, thus InputMethodManager should have two
-  // extension IME.
-  // Note: Even extension is loaded by LoadExtensionAsComponent as above, the
-  // IME does not managed by ComponentExtensionIMEManager or it's id won't start
-  // with __comp__. The component extension IME is whitelisted and managed by
-  // ComponentExtensionIMEManager, but its framework is same as normal extension
-  // IME.
-  EXPECT_EQ(3U, extension_imes.size());
+  LoadTestInputMethod();
 
   MockIBusEngineFactoryService* factory_service =
       mock_dbus_thread_manager_->mock_ibus_engine_factory_service();
@@ -165,11 +179,13 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   ExtensionTestMessageListener activated_listener("onActivate", false);
   engine_handler->Enable();
   ASSERT_TRUE(activated_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(activated_listener.was_satisfied());
 
   // onFocus event should be fired if FocusIn function is called.
   ExtensionTestMessageListener focus_listener("onFocus", false);;
   engine_handler->FocusIn();
   ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(focus_listener.was_satisfied());
 
   // onKeyEvent should be fired if ProcessKeyEvent is called.
   KeyEventDoneCallback callback(false);  // EchoBackIME doesn't consume keys.
@@ -180,6 +196,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
                                   base::Bind(&KeyEventDoneCallback::Run,
                                              base::Unretained(&callback)));
   ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(keyevent_listener.was_satisfied());
   callback.WaitUntilCalled();
 
   // onSurroundingTextChange should be fired if SetSurroundingText is called.
@@ -189,22 +206,157 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
                                      0,  // focused position.
                                      1);  // anchor position.
   ASSERT_TRUE(surrounding_text_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(surrounding_text_listener.was_satisfied());
 
   // onMenuItemActivated should be fired if PropertyActivate is called.
   ExtensionTestMessageListener property_listener("onMenuItemActivated", false);
   engine_handler->PropertyActivate("property_name",
                                    ibus::IBUS_PROPERTY_STATE_CHECKED);
   ASSERT_TRUE(property_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(property_listener.was_satisfied());
 
   // onBlur should be fired if FocusOut is called.
   ExtensionTestMessageListener blur_listener("onBlur", false);
   engine_handler->FocusOut();
   ASSERT_TRUE(blur_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(blur_listener.was_satisfied());
 
   // onDeactivated should be fired if Disable is called.
   ExtensionTestMessageListener disabled_listener("onDeactivated", false);
   engine_handler->Disable();
   ASSERT_TRUE(disabled_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(disabled_listener.was_satisfied());
+}
+
+IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
+                       APIArgumentTest) {
+  LoadTestInputMethod();
+
+  MockIBusEngineFactoryService* factory_service =
+      mock_dbus_thread_manager_->mock_ibus_engine_factory_service();
+  factory_service->CallCreateEngine(kAPIArgumentIMEID);
+
+  MockIBusEngineService* engine_service =
+      mock_dbus_thread_manager_->mock_ibus_engine_service();
+  IBusEngineHandlerInterface* engine_handler = engine_service->GetEngine();
+  ASSERT_TRUE(engine_handler);
+
+  engine_handler->Enable();
+  engine_handler->FocusIn();
+
+  {
+    SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:No, Caps:No");
+    KeyEventDoneCallback callback(false);
+    const std::string expected_value =
+        "onKeyEvent:keydown:a:KeyA:false:false:false:false";
+    ExtensionTestMessageListener keyevent_listener(expected_value, false);
+
+    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
+                                    0x26,  // KeyCode for 'a'.
+                                    0,  // No modifiers.
+                                    base::Bind(&KeyEventDoneCallback::Run,
+                                               base::Unretained(&callback)));
+    ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(keyevent_listener.was_satisfied());
+    callback.WaitUntilCalled();
+  }
+  {
+    SCOPED_TRACE("KeyDown, Ctrl:Yes, alt:No, Shift:No, Caps:No");
+    KeyEventDoneCallback callback(false);
+    const std::string expected_value =
+        "onKeyEvent:keydown:a:KeyA:true:false:false:false";
+    ExtensionTestMessageListener keyevent_listener(expected_value, false);
+
+    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
+                                    0x26,  // KeyCode for 'a'.
+                                    kCtrlKeyMask,
+                                    base::Bind(&KeyEventDoneCallback::Run,
+                                               base::Unretained(&callback)));
+    ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(keyevent_listener.was_satisfied());
+    callback.WaitUntilCalled();
+  }
+  {
+    SCOPED_TRACE("KeyDown, Ctrl:No, alt:Yes, Shift:No, Caps:No");
+    KeyEventDoneCallback callback(false);
+    const std::string expected_value =
+        "onKeyEvent:keydown:a:KeyA:false:true:false:false";
+    ExtensionTestMessageListener keyevent_listener(expected_value, false);
+
+    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
+                                    0x26,  // KeyCode for 'a'.
+                                    kAltKeyMask,
+                                    base::Bind(&KeyEventDoneCallback::Run,
+                                               base::Unretained(&callback)));
+    ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(keyevent_listener.was_satisfied());
+    callback.WaitUntilCalled();
+  }
+  {
+    SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:Yes, Caps:No");
+    KeyEventDoneCallback callback(false);
+    const std::string expected_value =
+        "onKeyEvent:keydown:a:KeyA:false:false:true:false";
+    ExtensionTestMessageListener keyevent_listener(expected_value, false);
+
+    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
+                                    0x26,  // KeyCode for 'a'.
+                                    kShiftKeyMask,
+                                    base::Bind(&KeyEventDoneCallback::Run,
+                                               base::Unretained(&callback)));
+    ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(keyevent_listener.was_satisfied());
+    callback.WaitUntilCalled();
+  }
+  {
+    SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:No, Caps:Yes");
+    KeyEventDoneCallback callback(false);
+    const std::string expected_value =
+        "onKeyEvent:keydown:a:KeyA:false:false:false:true";
+    ExtensionTestMessageListener keyevent_listener(expected_value, false);
+
+    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
+                                    0x26,  // KeyCode for 'a'.
+                                    kCapsLockMask,
+                                    base::Bind(&KeyEventDoneCallback::Run,
+                                               base::Unretained(&callback)));
+    ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(keyevent_listener.was_satisfied());
+    callback.WaitUntilCalled();
+  }
+  {
+    SCOPED_TRACE("KeyDown, Ctrl:Yes, alt:Yes, Shift:No, Caps:No");
+    KeyEventDoneCallback callback(false);
+    const std::string expected_value =
+        "onKeyEvent:keydown:a:KeyA:true:true:false:false";
+    ExtensionTestMessageListener keyevent_listener(expected_value, false);
+
+    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
+                                    0x26,  // KeyCode for 'a'.
+                                    kAltKeyMask | kCtrlKeyMask,
+                                    base::Bind(&KeyEventDoneCallback::Run,
+                                               base::Unretained(&callback)));
+    ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(keyevent_listener.was_satisfied());
+    callback.WaitUntilCalled();
+  }
+  {
+    SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:Yes, Caps:Yes");
+    KeyEventDoneCallback callback(false);
+    const std::string expected_value =
+        "onKeyEvent:keydown:a:KeyA:false:false:true:true";
+    ExtensionTestMessageListener keyevent_listener(expected_value, false);
+
+    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
+                                    0x26,  // KeyCode for 'a'.
+                                    kShiftKeyMask | kCapsLockMask,
+                                    base::Bind(&KeyEventDoneCallback::Run,
+                                               base::Unretained(&callback)));
+    ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(keyevent_listener.was_satisfied());
+    callback.WaitUntilCalled();
+  }
+  // TODO(nona): Add browser tests for other API as well.
 }
 
 }  // namespace

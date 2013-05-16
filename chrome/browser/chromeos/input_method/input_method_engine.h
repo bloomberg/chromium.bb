@@ -28,6 +28,7 @@ class InputMethodEngine {
     bool alt_key;
     bool ctrl_key;
     bool shift_key;
+    bool caps_lock;
   };
 
   enum {

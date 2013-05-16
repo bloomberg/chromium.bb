@@ -29,6 +29,13 @@
     "description": "Just echo back called function name to Chrome.",
     "language": "en",
     "layouts": ["us::eng"]
+  },{
+    "name": "APIArgumentIME",
+    "type": "ime",
+    "id": "APIArgumentIME",
+    "description": "Send back argument into Chrome.",
+    "language": "en",
+    "layouts": ["us::eng"]
   }]
 }
 

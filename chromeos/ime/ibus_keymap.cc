@@ -87,6 +87,8 @@ std::string GetIBusKey(int keyval) {
     case XK_Control_L:
     case XK_Control_R:
       return "Ctrl";
+    case XK_Caps_Lock:
+      return "CapsLock";
     default: {
       // TODO: Properly support unicode characters.
       char value[2];

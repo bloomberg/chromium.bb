@@ -252,6 +252,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     dict->SetBoolean("altKey", event.alt_key);
     dict->SetBoolean("ctrlKey", event.ctrl_key);
     dict->SetBoolean("shiftKey", event.shift_key);
+    dict->SetBoolean("capsLock", event.caps_lock);
 
     scoped_ptr<base::ListValue> args(new ListValue());
     args->Append(Value::CreateStringValue(engine_id));
