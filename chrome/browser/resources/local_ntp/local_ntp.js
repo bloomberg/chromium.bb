@@ -1418,11 +1418,12 @@ function updateSuggestions() {
   }
   var inputValue = searchboxApiHandle.value;
 
-  // Hide the NTP if input has made it into the omnibox.
-  if (inputValue && isNtpVisible())
+  // Hide the NTP if input has made it into the omnibox or the input is
+  // undefined, which signifies a sensitive query.
+  if (inputValue != '' && isNtpVisible())
     hideNtp();
 
-  if (inputValue && suggestions.length) {
+  if (inputValue != '' && suggestions.length) {
     pendingBox = new SuggestionsBox(inputValue,
         suggestions.slice(0, MAX_SUGGESTIONS_TO_SHOW), selectedIndex);
     searchboxApiHandle.hideBars();
