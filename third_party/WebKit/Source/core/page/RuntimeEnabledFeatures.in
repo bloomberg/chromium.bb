@@ -19,6 +19,7 @@ CanvasPath status=test
 CSSCompositing status=experimental
 CSSExclusions status=experimental
 CSSRegions status=experimental
+CSS3TextDecorations status=experimental
 CustomDOMElements status=experimental
 Database status=stable
 DeviceMotion

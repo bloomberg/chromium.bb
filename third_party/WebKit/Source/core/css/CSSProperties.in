@@ -45,6 +45,7 @@ speak
 table-layout
 tab-size typename=unsigned
 text-overflow typename=TextOverflow
+text-decoration-style typename=TextDecorationStyle
 text-transform
 top applytype=length, initial=initialOffset, useauto
 unicode-bidi
@@ -110,7 +111,6 @@ word-wrap nameformethods=OverflowWrap
 -webkit-shape-padding applytype=length
 -webkit-text-align-last typename=TextAlignLast, condition=CSS3_TEXT
 -webkit-text-combine typename=TextCombine
--webkit-text-decoration-style typename=TextDecorationStyle, condition=CSS3_TEXT
 -webkit-text-emphasis-position typename=TextEmphasisPosition
 -webkit-text-security
 -webkit-transform-origin-x applytype=length

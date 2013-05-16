@@ -35,10 +35,8 @@ enum StrokeStyle {
     SolidStroke,
     DottedStroke,
     DashedStroke,
-#if ENABLE(CSS3_TEXT)
     DoubleStroke,
     WavyStroke,
-#endif // CSS3_TEXT
 };
 
 enum InterpolationQuality {

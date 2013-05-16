@@ -340,12 +340,10 @@ inline ETextDecoration& operator|=(ETextDecoration& a, ETextDecoration b) { retu
 
 enum TextDecorationStyle {
     TextDecorationStyleSolid,
-#if ENABLE(CSS3_TEXT)
     TextDecorationStyleDouble,
     TextDecorationStyleDotted,
     TextDecorationStyleDashed,
     TextDecorationStyleWavy
-#endif // CSS3_TEXT
 };
 
 #if ENABLE(CSS3_TEXT)

@@ -1,37 +1,37 @@
 function testElementStyle(type, value)
 {
     if (type != null) {
-        shouldBe("e.style.webkitTextDecorationColor", "'" + value + "'");
-        shouldBe("e.style.getPropertyCSSValue('-webkit-text-decoration-color').toString()", "'" + type + "'");
-        shouldBe("e.style.getPropertyCSSValue('-webkit-text-decoration-color').cssText", "'" + value + "'");
+        shouldBe("e.style.textDecorationColor", "'" + value + "'");
+        shouldBe("e.style.getPropertyCSSValue('text-decoration-color').toString()", "'" + type + "'");
+        shouldBe("e.style.getPropertyCSSValue('text-decoration-color').cssText", "'" + value + "'");
     } else
-        shouldBeNull("e.style.getPropertyCSSValue('-webkit-text-decoration-color')");
+        shouldBeNull("e.style.getPropertyCSSValue('text-decoration-color')");
 }
 
 function testComputedStyleValue(type, value)
 {
     computedStyle = window.getComputedStyle(e, null);
-    shouldBe("computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').toString()", "'" + type + "'");
-    shouldBe("computedStyle.getPropertyCSSValue('-webkit-text-decoration-color').cssText", "'" + value + "'");
-    shouldBe("computedStyle.webkitTextDecorationColor", "'" + value + "'");
+    shouldBe("computedStyle.getPropertyCSSValue('text-decoration-color').toString()", "'" + type + "'");
+    shouldBe("computedStyle.getPropertyCSSValue('text-decoration-color').cssText", "'" + value + "'");
+    shouldBe("computedStyle.textDecorationColor", "'" + value + "'");
 }
 
 function testValue(value, elementValue, elementStyle, computedValue, computedStyle)
 {
     if (value != null)
-        e.style.webkitTextDecorationColor = value;
+        e.style.textDecorationColor = value;
     testElementStyle(elementStyle, elementValue);
     testComputedStyleValue(computedStyle, computedValue);
     debug('');
 }
 
-description("Test to make sure -webkit-text-decoration-color property returns CSSPrimitiveValue properly.")
+description("Test to make sure text-decoration-color property returns CSSPrimitiveValue properly.")
 
 var testContainer = document.createElement("div");
 testContainer.contentEditable = true;
 document.body.appendChild(testContainer);
 
-testContainer.innerHTML = '<div id="test-parent" style="-webkit-text-decoration-color: green !important;">hello <span id="test-ancestor">world</span></div>';
+testContainer.innerHTML = '<div id="test-parent" style="text-decoration-color: green !important;">hello <span id="test-ancestor">world</span></div>';
 debug("Ancestor should not inherit 'green' value from parent (fallback to initial value):")
 e = document.getElementById('test-ancestor');
 testValue(null, "", null, "rgb(0, 0, 0)", "[object CSSPrimitiveValue]");
@@ -43,7 +43,7 @@ testValue(null, "green", "[object CSSPrimitiveValue]", "rgb(0, 128, 0)", "[objec
 testContainer.innerHTML = '<div id="test-js">test</div>';
 debug("JavaScript setter tests for valid, initial, invalid and blank values:");
 e = document.getElementById('test-js');
-shouldBeNull("e.style.getPropertyCSSValue('-webkit-text-decoration-color')");
+shouldBeNull("e.style.getPropertyCSSValue('text-decoration-color')");
 
 debug("\nValid value 'blue':");
 testValue("blue", "blue", "[object CSSPrimitiveValue]", "rgb(0, 0, 255)", "[object CSSPrimitiveValue]");
