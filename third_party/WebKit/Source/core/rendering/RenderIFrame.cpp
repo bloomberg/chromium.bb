@@ -39,7 +39,7 @@ namespace WebCore {
 using namespace HTMLNames;
     
 RenderIFrame::RenderIFrame(Element* element)
-    : RenderFrameBase(element)
+    : RenderPart(element)
 {
 }
 
@@ -57,7 +57,7 @@ bool RenderIFrame::isInlineBlockOrInlineTable() const
 LayoutUnit RenderIFrame::minPreferredLogicalWidth() const
 {
     if (!isSeamless())
-        return RenderFrameBase::minPreferredLogicalWidth();
+        return RenderPart::minPreferredLogicalWidth();
 
     RenderView* childRoot = contentRootRenderer();
     if (!childRoot)
@@ -69,7 +69,7 @@ LayoutUnit RenderIFrame::minPreferredLogicalWidth() const
 LayoutUnit RenderIFrame::maxPreferredLogicalWidth() const
 {
     if (!isSeamless())
-        return RenderFrameBase::maxPreferredLogicalWidth();
+        return RenderPart::maxPreferredLogicalWidth();
 
     RenderView* childRoot = contentRootRenderer();
     if (!childRoot)
@@ -85,7 +85,7 @@ bool RenderIFrame::isSeamless() const
 
 bool RenderIFrame::requiresLayer() const
 {
-    return RenderFrameBase::requiresLayer() || style()->resize() != RESIZE_NONE;
+    return RenderPart::requiresLayer() || style()->resize() != RESIZE_NONE;
 }
 
 RenderView* RenderIFrame::contentRootRenderer() const

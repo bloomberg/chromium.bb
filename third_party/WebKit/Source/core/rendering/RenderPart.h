@@ -27,7 +27,7 @@
 
 namespace WebCore {
 
-// Renderer for frames via RenderFrameBase, and plug-ins via RenderEmbeddedObject.
+// Renderer for frames via RenderFrame and RenderIFrame, and plug-ins via RenderEmbeddedObject.
 class RenderPart : public RenderWidget {
 public:
     explicit RenderPart(Element*);
