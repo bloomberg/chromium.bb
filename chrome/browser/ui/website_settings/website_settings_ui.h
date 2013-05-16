@@ -114,17 +114,31 @@ class WebsiteSettingsUI {
       ContentSetting default_setting,
       content_settings::SettingSource source);
 
+  // Returns the icon resource ID for the given permission |type| and |setting|.
+  static int GetPermissionIconID(ContentSettingsType type,
+                                 ContentSetting setting);
+
   // Returns the icon for the given permission |type| and |setting|.
   static const gfx::Image& GetPermissionIcon(ContentSettingsType type,
                                              ContentSetting setting);
+
+  // Returns the identity icon ID for the given identity |status|.
+  static int GetIdentityIconID(WebsiteSettings::SiteIdentityStatus status);
 
   // Returns the identity icon for the given identity |status|.
   static const gfx::Image& GetIdentityIcon(
       WebsiteSettings::SiteIdentityStatus status);
 
+  // Returns the connection icon ID for the given connection |status|.
+  static int GetConnectionIconID(
+      WebsiteSettings::SiteConnectionStatus status);
+
   // Returns the connection icon for the given connection |status|.
   static const gfx::Image& GetConnectionIcon(
       WebsiteSettings::SiteConnectionStatus status);
+
+  // Returns the icon ID to show along with the first visit information.
+  static int GetFirstVisitIconID(const string16& first_visit);
 
   // Returns the icon to show along with the first visit information.
   static const gfx::Image& GetFirstVisitIcon(const string16& first_visit);

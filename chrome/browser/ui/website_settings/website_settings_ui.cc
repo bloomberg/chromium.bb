@@ -180,9 +180,8 @@ string16 WebsiteSettingsUI::PermissionActionToUIString(
 }
 
 // static
-const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
-    ContentSettingsType type,
-    ContentSetting setting) {
+int WebsiteSettingsUI::GetPermissionIconID(ContentSettingsType type,
+                                           ContentSetting setting) {
   bool use_blocked = (setting == CONTENT_SETTING_BLOCK);
   int resource_id = IDR_INFO;
   switch (type) {
@@ -229,12 +228,19 @@ const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
       NOTREACHED();
       break;
   }
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(resource_id);
+  return resource_id;
 }
 
 // static
-const gfx::Image& WebsiteSettingsUI::GetIdentityIcon(
+const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
+    ContentSettingsType type,
+    ContentSetting setting) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetNativeImageNamed(GetPermissionIconID(type, setting));
+}
+
+// static
+int WebsiteSettingsUI::GetIdentityIconID(
     WebsiteSettings::SiteIdentityStatus status) {
   int resource_id = IDR_PAGEINFO_INFO;
   switch (status) {
@@ -260,12 +266,18 @@ const gfx::Image& WebsiteSettingsUI::GetIdentityIcon(
       NOTREACHED();
       break;
   }
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(resource_id);
+  return resource_id;
 }
 
 // static
-const gfx::Image& WebsiteSettingsUI::GetConnectionIcon(
+const gfx::Image& WebsiteSettingsUI::GetIdentityIcon(
+    WebsiteSettings::SiteIdentityStatus status) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetNativeImageNamed(GetIdentityIconID(status));
+}
+
+// static
+int WebsiteSettingsUI::GetConnectionIconID(
     WebsiteSettings::SiteConnectionStatus status) {
   int resource_id = IDR_PAGEINFO_INFO;
   switch (status) {
@@ -287,15 +299,26 @@ const gfx::Image& WebsiteSettingsUI::GetConnectionIcon(
       NOTREACHED();
       break;
   }
+  return resource_id;
+}
+
+// static
+const gfx::Image& WebsiteSettingsUI::GetConnectionIcon(
+    WebsiteSettings::SiteConnectionStatus status) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(resource_id);
+  return rb.GetNativeImageNamed(GetConnectionIconID(status));
+}
+
+// static
+int WebsiteSettingsUI::GetFirstVisitIconID(const string16& first_visit) {
+  // FIXME(markusheintz): Display a minor warning icon if the page is visited
+  // the first time.
+  return IDR_PAGEINFO_INFO;
 }
 
 // static
 const gfx::Image& WebsiteSettingsUI::GetFirstVisitIcon(
     const string16& first_visit) {
-  // FIXME(markusheintz): Display a minor warning icon if the page is visited
-  // the first time.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(IDR_PAGEINFO_INFO);
+  return rb.GetNativeImageNamed(GetFirstVisitIconID(first_visit));
 }
