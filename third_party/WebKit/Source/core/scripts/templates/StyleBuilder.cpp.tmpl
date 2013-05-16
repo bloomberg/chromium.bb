@@ -19,6 +19,48 @@ public:
     styleResolver->style()->{{property.setter}}
 {%- endmacro %}
 
+{%- macro applylengthvalue(property) -%}
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+{% if property.usenone %}
+    if (primitiveValue->getIdent() == CSSValueNone)
+        {{ setValue(property) }}(Length(Undefined));
+{% endif %}
+
+{%- if property.useintrinsic %}
+    if (primitiveValue->getIdent() == CSSValueIntrinsic)
+        {{ setValue(property) }}(Length(Intrinsic));
+    else if (primitiveValue->getIdent() == CSSValueMinIntrinsic)
+        {{ setValue(property) }}(Length(MinIntrinsic));
+    else if (primitiveValue->getIdent() == CSSValueWebkitMinContent)
+        {{ setValue(property) }}(Length(MinContent));
+    else if (primitiveValue->getIdent() == CSSValueWebkitMaxContent)
+        {{ setValue(property) }}(Length(MaxContent));
+    else if (primitiveValue->getIdent() == CSSValueWebkitFillAvailable)
+        {{ setValue(property) }}(Length(FillAvailable));
+    else if (primitiveValue->getIdent() == CSSValueWebkitFitContent)
+        {{ setValue(property) }}(Length(FitContent));
+{% endif %}
+
+{%- if property.useauto %}
+    if (primitiveValue->getIdent() == CSSValueAuto)
+        {{ setValue(property) }}(Length());
+{%- endif %}
+
+    if (primitiveValue->isLength()) {
+        Length length = primitiveValue->computeLength<Length>(styleResolver->style(), styleResolver->rootElementStyle(), styleResolver->style()->effectiveZoom());
+        length.setQuirk(primitiveValue->isQuirkValue());
+        {{ setValue(property) }}(length);
+    } else if (primitiveValue->isPercentage())
+        {{ setValue(property) }}(Length(primitiveValue->getDoubleValue(), Percent));
+    else if (primitiveValue->isCalculatedPercentageWithLength())
+        {{ setValue(property) }}(Length(primitiveValue->cssCalcValue()->toCalcValue(styleResolver->style(), styleResolver->rootElementStyle(), styleResolver->style()->effectiveZoom())));
+    else if (primitiveValue->isViewportPercentageLength())
+        {{ setValue(property) }}(primitiveValue->viewportPercentageLength());
+{%- endmacro %}
+
 {%- for property in properties %}
 {%- call wrap_with_condition(property.condition) %}
 {%- set propertyid = property.propertyid %}
@@ -36,7 +78,11 @@ static void applyInherit{{propertyid}}(StyleResolver* styleResolver)
 
 static void applyValue{{propertyid}}(StyleResolver* styleResolver, CSSValue* value)
 {
-    {{ setValue(property) }}(static_cast<{{property.typename}}>(*static_cast<CSSPrimitiveValue*>(value)));
+{%- if applytype == "length" %}
+    {{ applylengthvalue(property) }}
+{%- else %}
+    {{ setValue(property) }}(static_cast<{{property.typename}}>(*toCSSPrimitiveValue(value)));
+{%- endif %}
 }
 
 {%- endcall %}

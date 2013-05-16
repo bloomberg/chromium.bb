@@ -37,17 +37,24 @@ class StyleBuilderWriter(in_generator.Writer):
     class_name = 'StyleBuilder'
 
     valid_values = {
-        'applytype': ['default'],
+        'applytype': ['default', 'length'],
+        'usenone': [True, False],
+        'useintrinsic': [True, False],
+        'useauto': [True, False],
     }
     defaults = {
         'condition': None,
         'applytype': 'default',
         'nameformethods': None,
-# depends on property name by default
+# These depend on property name by default
         'typename': None,
         'getter': None,
         'setter': None,
         'initial': None,
+# For the length apply type
+        'usenone': False,
+        'useintrinsic': False,
+        'useauto': False,
     }
 
     def __init__(self, in_file_path):
