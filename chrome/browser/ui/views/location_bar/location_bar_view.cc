@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_url_fetcher.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -128,6 +129,7 @@ const int kTouchEdgeItemPadding = kTouchItemPadding;
 
 // static
 const int LocationBarView::kNormalHorizontalEdgeThickness = 2;
+const int LocationBarView::kPopupHorizontalEdgeThickness = 1;
 const int LocationBarView::kVerticalEdgeThickness = 3;
 const int LocationBarView::kIconInternalPadding = 2;
 const int LocationBarView::kBubbleHorizontalPadding = 1;
@@ -668,10 +670,6 @@ void LocationBarView::Layout() {
   // hits ctrl-d).
   int location_height = GetInternalHeight(false);
 
-  // The edge stroke is 1 px thick.  In popup mode, the edges are drawn by the
-  // omnibox' parent, so there isn't any edge to account for at all.
-  const int kEdgeThickness = (mode_ == NORMAL) ?
-      kNormalHorizontalEdgeThickness : 0;
   // The edit has 1 px of horizontal whitespace inside it before the text.
   const int kEditInternalSpace = 1;
   // The space between an item and the edit is the normal item space, minus the
@@ -801,6 +799,7 @@ void LocationBarView::Layout() {
   }
 
   // Perform layout.
+  const int kEdgeThickness = GetHorizontalEdgeThickness();
   int full_width = width() - 2 * kEdgeThickness;
   int entry_width = full_width;
   left_decorations.LayoutPass1(&entry_width);
@@ -901,8 +900,18 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   } else if (mode_ == POPUP) {
     // When used in the app launcher, don't draw a border, the LocationBarView
     // has its own views::Border.
-    canvas->TileImageInt(*GetThemeProvider()->GetImageSkiaNamed(
-        IDR_LOCATIONBG_POPUPMODE_CENTER), 0, 0, 0, 0, width(), height());
+    const int kEdgeThickness = GetHorizontalEdgeThickness();
+    canvas->TileImageInt(
+        *GetThemeProvider()->GetImageSkiaNamed(IDR_LOCATIONBG_POPUPMODE_CENTER),
+        0, 0, kEdgeThickness, 0, width() - (kEdgeThickness * 2), height());
+    if (kEdgeThickness != 0) {
+      canvas->DrawImageInt(
+          *GetThemeProvider()->GetImageSkiaNamed(IDR_LOCATIONBG_POPUPMODE_EDGE),
+          0, 0);
+      canvas->DrawImageInt(
+          *GetThemeProvider()->GetImageSkiaNamed(IDR_LOCATIONBG_POPUPMODE_EDGE),
+          width() - kEdgeThickness, 0);
+    }
   }
 
   // Draw the background color so that the graphical elements at the edges
@@ -913,7 +922,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   // reverse; this antialiases better (see comments in
   // OmniboxPopupContentsView::OnPaint()).
   gfx::Rect bounds(GetContentsBounds());
-  bounds.Inset(0, kVerticalEdgeThickness);
+  bounds.Inset(GetHorizontalEdgeThickness(), kVerticalEdgeThickness);
   SkColor color(GetColor(ToolbarModel::NONE, BACKGROUND));
   if (mode_ == NORMAL) {
     SkPaint paint;
@@ -921,7 +930,6 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     paint.setAntiAlias(true);
     // TODO(jamescook): Make the corners of the dropdown match the corners of
     // the omnibox.
-    bounds.Inset(kNormalHorizontalEdgeThickness, 0);
     // Paint the actual background color.
     paint.setColor(color);
     canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
@@ -1079,6 +1087,15 @@ InstantController* LocationBarView::GetInstant() {
 
 WebContents* LocationBarView::GetWebContents() const {
   return delegate_->GetWebContents();
+}
+
+int LocationBarView::GetHorizontalEdgeThickness() const {
+  if (mode_ == NORMAL)
+    return kNormalHorizontalEdgeThickness;
+
+  // In maximized popup mode, there isn't any edge.
+  return (browser_ && browser_->window() && browser_->window()->IsMaximized()) ?
+      0 : kPopupHorizontalEdgeThickness;
 }
 
 void LocationBarView::RefreshContentSettingViews() {

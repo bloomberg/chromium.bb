@@ -337,6 +337,8 @@ class LocationBarView : public LocationBar,
 
   // Thickness of the left and right edges of the omnibox, in normal mode.
   static const int kNormalHorizontalEdgeThickness;
+  // The same, but for popup mode.
+  static const int kPopupHorizontalEdgeThickness;
   // Thickness of the top and bottom edges of the omnibox.
   static const int kVerticalEdgeThickness;
   // Amount of padding built into the standard omnibox icons.
@@ -353,6 +355,9 @@ class LocationBarView : public LocationBar,
   friend class PageActionImageView;
   friend class PageActionWithBadgeView;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
+
+  // Returns the thickness of any visible left and right edge, in pixels.
+  int GetHorizontalEdgeThickness() const;
 
   // Update the visibility state of the Content Blocked icons to reflect what is
   // actually blocked on the current page.
