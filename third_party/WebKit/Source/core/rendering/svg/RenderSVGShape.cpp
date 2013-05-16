@@ -27,7 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGShape.h"
 
 #include "core/platform/graphics/FloatPoint.h"
@@ -466,5 +465,3 @@ void RenderSVGShape::processMarkerPositions()
 }
 
 }
-
-#endif // ENABLE(SVG)

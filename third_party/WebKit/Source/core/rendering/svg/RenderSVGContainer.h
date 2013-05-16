@@ -23,8 +23,6 @@
 #ifndef RenderSVGContainer_h
 #define RenderSVGContainer_h
 
-#if ENABLE(SVG)
-
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
 namespace WebCore {
@@ -106,5 +104,4 @@ void toRenderSVGContainer(const RenderSVGContainer*);
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // RenderSVGContainer_h

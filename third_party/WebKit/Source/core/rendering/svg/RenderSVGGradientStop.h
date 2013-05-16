@@ -21,7 +21,6 @@
 #ifndef RenderSVGGradientStop_h
 #define RenderSVGGradientStop_h
 
-#if ENABLE(SVG)
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
@@ -63,5 +62,4 @@ inline const RenderSVGGradientStop* toRenderSVGGradientStop(const RenderObject* 
 
 }
 
-#endif // ENABLE(SVG)
 #endif // RenderSVGGradientStop_h

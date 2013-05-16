@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFEComponentTransferElement.h"
 
 #include "SVGNames.h"
@@ -107,5 +106,3 @@ PassRefPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* 
 }
 
 }
-
-#endif

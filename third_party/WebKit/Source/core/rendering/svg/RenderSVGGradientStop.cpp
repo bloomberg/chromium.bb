@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 
 #include "SVGNames.h"
@@ -77,5 +76,3 @@ SVGGradientElement* RenderSVGGradientStop::gradientElement() const
 }
 
 }
-
-#endif // ENABLE(SVG)

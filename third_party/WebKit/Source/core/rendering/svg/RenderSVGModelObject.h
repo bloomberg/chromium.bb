@@ -31,8 +31,6 @@
 #ifndef RenderSVGModelObject_h
 #define RenderSVGModelObject_h
 
-#if ENABLE(SVG)
-
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 
@@ -80,5 +78,4 @@ private:
 
 }
 
-#endif // ENABLE(SVG)
 #endif

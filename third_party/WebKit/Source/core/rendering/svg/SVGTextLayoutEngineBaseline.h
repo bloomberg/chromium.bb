@@ -20,7 +20,6 @@
 #ifndef SVGTextLayoutEngineBaseline_h
 #define SVGTextLayoutEngineBaseline_h
 
-#if ENABLE(SVG)
 #include "core/rendering/style/SVGRenderStyleDefs.h"
 #include <wtf/Noncopyable.h>
 
@@ -51,5 +50,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

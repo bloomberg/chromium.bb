@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGInline.h"
 
 #include "core/rendering/svg/RenderSVGInlineText.h"
@@ -144,5 +143,3 @@ void RenderSVGInline::removeChild(RenderObject* child)
 }
 
 }
-
-#endif // ENABLE(SVG)

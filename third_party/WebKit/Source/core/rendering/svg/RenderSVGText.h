@@ -22,7 +22,6 @@
 #ifndef RenderSVGText_h
 #define RenderSVGText_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/svg/RenderSVGBlock.h"
 #include "core/rendering/svg/SVGTextLayoutAttributesBuilder.h"
@@ -119,5 +118,4 @@ void toRenderSVGText(const RenderSVGText*);
 
 }
 
-#endif // ENABLE(SVG)
 #endif

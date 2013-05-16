@@ -20,7 +20,6 @@
 #ifndef RenderSVGHiddenContainer_h
 #define RenderSVGHiddenContainer_h
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGContainer.h"
 
 namespace WebCore {
@@ -50,5 +49,4 @@ private:
 };
 }
 
-#endif // ENABLE(SVG)
 #endif // RenderSVGHiddenContainer_h

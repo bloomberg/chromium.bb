@@ -28,7 +28,6 @@
 #ifndef RenderSVGRect_h
 #define RenderSVGRect_h
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/svg/SVGRectElement.h"
 
@@ -57,5 +56,4 @@ private:
 
 }
 
-#endif // ENABLE(SVG)
 #endif

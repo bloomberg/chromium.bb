@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 
 #include "SVGNames.h"
@@ -340,5 +339,3 @@ FloatRect RenderSVGResourceClipper::resourceBoundingBox(RenderObject* object)
 }
 
 }
-
-#endif // ENABLE(SVG)

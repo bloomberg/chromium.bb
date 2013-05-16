@@ -26,8 +26,6 @@
 #ifndef SVGRenderTreeAsText_h
 #define SVGRenderTreeAsText_h
 
-#if ENABLE(SVG)
-
 #include "core/platform/text/TextStream.h"
 
 namespace WebCore {
@@ -89,7 +87,5 @@ TextStream& operator<<(TextStream& ts, Pointer* t)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)
 
 #endif // SVGRenderTreeAsText_h

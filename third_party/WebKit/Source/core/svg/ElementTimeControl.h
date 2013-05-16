@@ -27,8 +27,6 @@
 #ifndef ElementTimeControl_h
 #define ElementTimeControl_h
 
-#if ENABLE(SVG)
-
 namespace WebCore {
 
 class ElementTimeControl {
@@ -41,7 +39,5 @@ public:
 };
         
 }
-
-#endif
 
 #endif

@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/animation/SVGSMILElement.h"
 
 #include "CSSPropertyNames.h"
@@ -1201,5 +1200,3 @@ void SVGSMILElement::endedActiveInterval()
 }
 
 }
-
-#endif

@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/properties/SVGAttributeToPropertyMap.h"
 
 #include "core/svg/properties/SVGAnimatedProperty.h"
@@ -126,5 +125,3 @@ PassRefPtr<SVGAnimatedProperty> SVGAttributeToPropertyMap::animatedProperty(SVGE
 }
 
 }
-
-#endif

@@ -20,7 +20,6 @@
 #ifndef SVGUnitTypes_h
 #define SVGUnitTypes_h
 
-#if ENABLE(SVG)
 #include "core/svg/properties/SVGPropertyTraits.h"
 #include <wtf/RefCounted.h>
 
@@ -69,5 +68,4 @@ struct SVGPropertyTraits<SVGUnitTypes::SVGUnitType> {
 
 }
 
-#endif
 #endif

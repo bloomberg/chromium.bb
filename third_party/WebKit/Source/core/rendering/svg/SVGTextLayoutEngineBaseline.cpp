@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/SVGTextLayoutEngineBaseline.h"
 
 #include "core/platform/graphics/Font.h"
@@ -235,5 +234,3 @@ float SVGTextLayoutEngineBaseline::calculateGlyphAdvanceAndOrientation(bool isVe
 }
 
 }
-
-#endif // ENABLE(SVG)

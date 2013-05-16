@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGRoot.h"
 
 #include "core/page/Chrome.h"
@@ -502,5 +501,3 @@ void RenderSVGRoot::addResourceForClientInvalidation(RenderSVGResourceContainer*
 }
 
 }
-
-#endif // ENABLE(SVG)

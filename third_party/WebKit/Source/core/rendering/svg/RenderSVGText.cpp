@@ -26,7 +26,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGText.h"
 
 #include "core/editing/VisiblePosition.h"
@@ -562,5 +561,3 @@ void RenderSVGText::updateFirstLetter()
 }
 
 }
-
-#endif // ENABLE(SVG)

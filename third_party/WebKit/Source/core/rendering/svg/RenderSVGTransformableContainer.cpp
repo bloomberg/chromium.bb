@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 
 #include "SVGNames.h"
@@ -73,5 +72,3 @@ bool RenderSVGTransformableContainer::calculateLocalTransform()
 }
 
 }
-
-#endif // ENABLE(SVG)

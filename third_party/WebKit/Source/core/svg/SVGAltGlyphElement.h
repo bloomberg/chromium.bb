@@ -56,5 +56,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
+#endif
 #endif

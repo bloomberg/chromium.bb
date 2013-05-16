@@ -21,7 +21,6 @@
 #ifndef RenderSVGTransformableContainer_h
 #define RenderSVGTransformableContainer_h
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGContainer.h"
 
 namespace WebCore {
@@ -48,5 +47,4 @@ private:
 
 }
 
-#endif // ENABLE(SVG)
 #endif // RenderSVGTransformableContainer_h

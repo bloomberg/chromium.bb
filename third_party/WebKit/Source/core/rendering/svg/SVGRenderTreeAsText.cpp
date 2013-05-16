@@ -28,7 +28,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/SVGRenderTreeAsText.h"
 
 #include "HTMLNames.h"
@@ -685,5 +684,3 @@ void writeResources(TextStream& ts, const RenderObject& object, int indent)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

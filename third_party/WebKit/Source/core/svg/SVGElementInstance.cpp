@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGElementInstance.h"
 
 #include "core/dom/ContainerNodeAlgorithms.h"
@@ -212,5 +211,3 @@ SVGElementInstance::InstanceUpdateBlocker::~InstanceUpdateBlocker()
 }
    
 }
-
-#endif

@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGTSpan.h"
 
 namespace WebCore {
@@ -33,5 +32,3 @@ RenderSVGTSpan::RenderSVGTSpan(Element* element)
 }
 
 }
-
-#endif // ENABLE(SVG)

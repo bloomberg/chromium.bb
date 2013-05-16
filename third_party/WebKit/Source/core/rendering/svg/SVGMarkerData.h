@@ -20,7 +20,6 @@
 #ifndef SVGMarkerData_h
 #define SVGMarkerData_h
 
-#if ENABLE(SVG)
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/Path.h"
 #include <wtf/MathExtras.h>
@@ -154,5 +153,4 @@ private:
 
 }
 
-#endif // ENABLE(SVG)
 #endif // SVGMarkerData_h

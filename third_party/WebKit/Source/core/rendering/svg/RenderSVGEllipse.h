@@ -27,7 +27,6 @@
 #ifndef RenderSVGEllipse_h
 #define RenderSVGEllipse_h
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/svg/SVGStyledTransformableElement.h"
 
@@ -57,5 +56,4 @@ private:
 
 }
 
-#endif // ENABLE(SVG)
 #endif

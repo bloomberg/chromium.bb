@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathUtilities.h"
 
 #include "core/platform/graphics/Path.h"
@@ -333,5 +332,3 @@ bool getPointAtLengthOfSVGPathByteStream(SVGPathByteStream* stream, float length
 }
 
 }
-
-#endif

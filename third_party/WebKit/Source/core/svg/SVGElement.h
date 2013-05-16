@@ -22,7 +22,6 @@
 #ifndef SVGElement_h
 #define SVGElement_h
 
-#if ENABLE(SVG)
 #include "core/dom/StyledElement.h"
 #include "core/platform/Timer.h"
 #include "core/svg/SVGLocatable.h"
@@ -182,5 +181,4 @@ inline const SVGElement* toSVGElement(const Node* node)
 
 }
 
-#endif
 #endif

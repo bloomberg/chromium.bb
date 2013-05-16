@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGMarkerElement.h"
 
 #include "SVGNames.h"
@@ -258,5 +257,3 @@ PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > SVGMarke
 }
 
 }
-
-#endif

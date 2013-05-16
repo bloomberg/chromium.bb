@@ -21,7 +21,6 @@
 #ifndef RenderSVGInline_h
 #define RenderSVGInline_h
 
-#if ENABLE(SVG)
 #include "core/rendering/RenderInline.h"
 
 #include "core/rendering/svg/SVGRenderSupport.h"
@@ -64,5 +63,4 @@ private:
 
 }
 
-#endif // ENABLE(SVG)
 #endif // !RenderSVGTSpan_H

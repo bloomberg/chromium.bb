@@ -27,7 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGRect.h"
 
 #include "SVGNames.h"
@@ -128,5 +127,3 @@ bool RenderSVGRect::shapeDependentFillContains(const FloatPoint& point, const Wi
 }
 
 }
-
-#endif // ENABLE(SVG)

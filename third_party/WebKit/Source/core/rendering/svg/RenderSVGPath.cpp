@@ -27,7 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGPath.h"
 
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -164,5 +163,3 @@ void RenderSVGPath::updateZeroLengthSubpaths()
 }
 
 }
-
-#endif // ENABLE(SVG)

@@ -20,7 +20,6 @@
 #ifndef SVGMaskElement_h
 #define SVGMaskElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
@@ -72,5 +71,4 @@ private:
 
 }
 
-#endif
 #endif

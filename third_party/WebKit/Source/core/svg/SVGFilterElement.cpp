@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFilterElement.h"
 
 #include "SVGNames.h"
@@ -242,5 +241,3 @@ bool SVGFilterElement::selfHasRelativeLengths() const
 }
 
 }
-
-#endif

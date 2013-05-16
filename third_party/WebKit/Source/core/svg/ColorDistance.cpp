@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#if ENABLE(SVG)
+
 #include "core/svg/ColorDistance.h"
 
 #include "core/platform/graphics/Color.h"
@@ -90,5 +90,3 @@ float ColorDistance::distance() const
 }
 
 }
-
-#endif

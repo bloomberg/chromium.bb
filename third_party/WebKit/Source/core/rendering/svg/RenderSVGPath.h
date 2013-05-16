@@ -26,7 +26,6 @@
 #ifndef RenderSVGPath_h
 #define RenderSVGPath_h
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGShape.h"
 
 namespace WebCore {
@@ -62,5 +61,4 @@ inline RenderSVGPath* toRenderSVGPath(RenderObject* object)
 
 }
 
-#endif // ENABLE(SVG)
 #endif

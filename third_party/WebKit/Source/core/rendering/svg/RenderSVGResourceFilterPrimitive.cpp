@@ -27,7 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 
 #include "SVGNames.h"
@@ -106,5 +105,3 @@ FloatRect RenderSVGResourceFilterPrimitive::determineFilterPrimitiveSubregion(Fi
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

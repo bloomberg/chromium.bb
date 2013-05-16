@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGLengthContext.h"
 
 #include "SVGNames.h"
@@ -313,5 +312,3 @@ bool SVGLengthContext::determineViewport(float& width, float& height) const
 }
 
 }
-
-#endif

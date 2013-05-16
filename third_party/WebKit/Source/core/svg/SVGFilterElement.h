@@ -23,7 +23,6 @@
 #ifndef SVGFilterElement_h
 #define SVGFilterElement_h
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
@@ -86,5 +85,4 @@ inline SVGFilterElement* toSVGFilterElement(SVGElement* element)
 
 }
 
-#endif
 #endif

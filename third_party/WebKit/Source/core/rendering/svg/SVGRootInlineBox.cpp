@@ -24,7 +24,6 @@
 #include "config.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
@@ -307,5 +306,3 @@ void SVGRootInlineBox::reorderValueLists(Vector<SVGTextLayoutAttributes*>& attri
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

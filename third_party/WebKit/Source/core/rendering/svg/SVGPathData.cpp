@@ -20,7 +20,6 @@
 #include "config.h"
 #include "core/rendering/svg/SVGPathData.h"
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/platform/graphics/Path.h"
 #include "core/svg/SVGCircleElement.h"
@@ -167,5 +166,3 @@ void updatePathFromGraphicsElement(SVGElement* element, Path& path)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

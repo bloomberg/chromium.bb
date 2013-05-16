@@ -27,8 +27,6 @@
 #ifndef RenderSVGResourceFilterPrimitive_h
 #define RenderSVGResourceFilterPrimitive_h
 
-#if ENABLE(SVG)
-
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
@@ -61,7 +59,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)
 
 #endif // RenderSVGResourceFilterPrimitive_h

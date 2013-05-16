@@ -20,7 +20,6 @@
 #ifndef SVGSubpathData_h
 #define SVGSubpathData_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/Path.h"
 #include <wtf/Vector.h>
 
@@ -95,6 +94,4 @@ private:
 
 }
 
-#endif // ENABLE(SVG)
 #endif // SVGSubpathData_h
-

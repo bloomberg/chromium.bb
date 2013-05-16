@@ -22,7 +22,6 @@
 #ifndef RenderSVGInlineText_h
 #define RenderSVGInlineText_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/Font.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/svg/SVGTextLayoutAttributes.h"
@@ -84,5 +83,4 @@ void toRenderSVGInlineText(const RenderSVGInlineText*);
 
 }
 
-#endif // ENABLE(SVG)
 #endif // RenderSVGInlineText_h

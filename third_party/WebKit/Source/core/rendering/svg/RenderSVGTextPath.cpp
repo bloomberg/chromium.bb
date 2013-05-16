@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGTextPath.h"
 
 #include "SVGNames.h"
@@ -76,5 +75,3 @@ bool RenderSVGTextPath::stretchMethod() const
 }
 
 }
-
-#endif // ENABLE(SVG)

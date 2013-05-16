@@ -21,7 +21,6 @@
 #ifndef SVGMarkerElement_h
 #define SVGMarkerElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedAngle.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
@@ -175,5 +174,4 @@ inline SVGMarkerElement* toSVGMarkerElement(SVGElement* element)
 
 }
 
-#endif
 #endif

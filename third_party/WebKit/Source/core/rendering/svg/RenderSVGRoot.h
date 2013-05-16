@@ -23,10 +23,8 @@
 #ifndef RenderSVGRoot_h
 #define RenderSVGRoot_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatRect.h"
 #include "core/rendering/RenderReplaced.h"
-
 #include "core/rendering/svg/SVGRenderSupport.h"
 
 namespace WebCore {
@@ -146,5 +144,4 @@ void toRenderSVGRoot(const RenderSVGRoot*);
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // RenderSVGRoot_h

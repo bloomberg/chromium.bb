@@ -20,7 +20,6 @@
 #ifndef SVGTextChunk_h
 #define SVGTextChunk_h
 
-#if ENABLE(SVG)
 #include "core/rendering/style/SVGRenderStyleDefs.h"
 #include "core/svg/SVGTextContentElement.h"
 
@@ -67,5 +66,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

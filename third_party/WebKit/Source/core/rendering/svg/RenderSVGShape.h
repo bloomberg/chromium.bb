@@ -26,7 +26,6 @@
 #ifndef RenderSVGShape_h
 #define RenderSVGShape_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
@@ -164,5 +163,4 @@ void toRenderSVGShape(const RenderSVGShape*);
 
 }
 
-#endif // ENABLE(SVG)
 #endif

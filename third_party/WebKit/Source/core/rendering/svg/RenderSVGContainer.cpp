@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGContainer.h"
 
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -192,5 +191,3 @@ bool RenderSVGContainer::nodeAtFloatPoint(const HitTestRequest& request, HitTest
 }
 
 }
-
-#endif // ENABLE(SVG)

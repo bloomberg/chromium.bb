@@ -21,7 +21,6 @@
 #ifndef RenderSVGTextPath_h
 #define RenderSVGTextPath_h
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGInline.h"
 
 namespace WebCore {
@@ -54,5 +53,4 @@ void toRenderSVGTextPath(const RenderSVGTextPath*);
 
 }
 
-#endif // ENABLE(SVG)
 #endif // RenderSVGTextPath_h
