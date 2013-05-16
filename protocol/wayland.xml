@@ -173,7 +173,7 @@
     </event>
   </interface>
 
-  <interface name="wl_compositor" version="2">
+  <interface name="wl_compositor" version="3">
     <description summary="the compositor singleton">
       A compositor.  This object is a singleton global.  The
       compositor is in charge of combining the contents of multiple
@@ -709,7 +709,7 @@
 
 	The x and y arguments specify the locations of the upper left
 	corner of the surface relative to the upper left corner of the
-	parent surface.
+	parent surface, in surface local coordinates.
 
 	The flags argument controls details of the transient behaviour.
       </description>
@@ -777,6 +777,10 @@
 	in any of the clients surfaces is reported as normal, however,
 	clicks in other clients surfaces will be discarded and trigger
 	the callback.
+
+	The x and y arguments specify the locations of the upper left
+	corner of the surface relative to the upper left corner of the
+	parent surface, in surface local coordinates.
       </description>
 
       <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
@@ -860,6 +864,9 @@
 
 	The client is free to dismiss all but the last configure
 	event it received.
+
+	The width and height arguments specify the size of the window
+	in surface local coordinates.
       </description>
 
       <arg name="edges" type="uint"/>
@@ -876,10 +883,15 @@
     </event>
   </interface>
 
-  <interface name="wl_surface" version="2">
+  <interface name="wl_surface" version="3">
     <description summary="an onscreen surface">
       A surface is a rectangular area that is displayed on the screen.
       It has a location, size and pixel contents.
+
+      The size of a surface (and relative positions on it) is described
+      in surface local coordinates, which may differ from the buffer
+      local coordinates of the pixel content, in case a buffer_transform
+      or a buffer_scale is used.
 
       Surfaces are also used for some special purposes, e.g. as
       cursor images for pointers, drag icons, etc.
@@ -895,20 +907,25 @@
       <description summary="set the surface contents">
 	Set a buffer as the content of this surface.
 
+	The new size of the surface is calculated based on the buffer
+	size transformed by the inverse buffer_transform and the
+	inverse buffer_scale. This means that the supplied buffer
+	must be an integer multiple of the buffer_scale.
+
 	The x and y arguments specify the location of the new pending
-	buffer's upper left corner, relative to the current buffer's
-	upper left corner. In other words, the x and y, and the width
-	and height of the wl_buffer together define in which directions
-	the surface's size changes.
+	buffer's upper left corner, relative to the current buffer's upper
+	left corner, in surface local coordinates. In other words, the
+	x and y, combined with the new surface size define in which
+	directions the surface's size changes.
 
 	Surface contents are double-buffered state, see wl_surface.commit.
 
 	The initial surface contents are void; there is no content.
 	wl_surface.attach assigns the given wl_buffer as the pending
 	wl_buffer. wl_surface.commit makes the pending wl_buffer the new
-	surface contents, and the size of the surface becomes the size of
-	the wl_buffer, as described above. After commit, there is no
-	pending buffer until the next attach.
+	surface contents, and the size of the surface becomes the size
+	calculated from the wl_buffer, as described above. After commit,
+	there is no pending buffer until the next attach.
 
 	Committing a pending wl_buffer allows the compositor to read the
 	pixels in the wl_buffer. The compositor may access the pixels at
@@ -944,6 +961,8 @@
 	the surface.
 
 	Damage is double-buffered state, see wl_surface.commit.
+
+	The damage rectangle is specified in surface local coordinates.
 
 	The initial value for pending damage is empty: no damage.
 	wl_surface.damage adds pending damage: the new pending damage
@@ -996,6 +1015,8 @@
 	behaviour, but marking transparent content as opaque will result
 	in repaint artifacts.
 
+	The opaque region is specified in surface local coordinates.
+
 	The compositor ignores the parts of the opaque region that fall
 	outside of the surface.
 
@@ -1022,6 +1043,8 @@
 	Input events happening outside of this region will try the next
 	surface in the server surface stack. The compositor ignores the
 	parts of the input region that fall outside of the surface.
+
+	The input region is specified in surface local coordinates.
 
 	Input region is double-buffered state, see wl_surface.commit.
 
@@ -1100,7 +1123,7 @@
 	according to the output transform, thus permiting the compositor to
 	use certain optimizations even if the display is rotated. Using
 	hardware overlays and scanning out a client buffer for fullscreen
-	surfaces are examples of such optmizations. Those optimizations are
+	surfaces are examples of such optimizations. Those optimizations are
 	highly dependent on the compositor implementation, so the use of this
 	request should be considered on a case-by-case basis.
 
@@ -1109,6 +1132,30 @@
 	of the buffer will become the surface width.
       </description>
       <arg name="transform" type="int"/>
+    </request>
+
+    <!-- Version 3 additions -->
+
+    <request name="set_buffer_scale" since="3">
+      <description summary="sets the buffer scaling factor">
+	This request sets an optional scaling factor on how the compositor
+	interprets the contents of the buffer attached to the window.
+
+	Buffer scale is double-buffered state, see wl_surface.commit.
+
+	A newly created surface has its buffer scale set to 1.
+
+	The purpose of this request is to allow clients to supply higher
+	resolution buffer data for use on high resolution outputs. Its
+	intended that you pick the same	buffer scale as the scale of the
+	output that the surface is displayed on.This means the compositor
+	can avoid scaling when rendering the surface on that output.
+
+	Note that if the scale is larger than 1, then you have to attach
+	a buffer that is larger (by a factor of scale in each dimension)
+	than the desired surface size.
+      </description>
+      <arg name="scale" type="uint"/>
     </request>
    </interface>
 
@@ -1197,7 +1244,8 @@
 	The parameters hotspot_x and hotspot_y define the position of
 	the pointer surface relative to the pointer location. Its
 	top-left corner is always at (x, y) - (hotspot_x, hotspot_y),
-	where (x, y) are the coordinates of the pointer location.
+	where (x, y) are the coordinates of the pointer location, in surface
+	local coordinates.
 
 	On surface.attach requests to the pointer surface, hotspot_x
 	and hotspot_y are decremented by the x and y parameters
@@ -1548,6 +1596,8 @@
 	     summary="indicates this is the current mode"/>
       <entry name="preferred" value="0x2"
 	     summary="indicates this is the preferred mode"/>
+      <entry name="scaled" value="0x4"
+	     summary="indicates that this is a scaled mode"/>
     </enum>
 
     <event name="mode">
@@ -1559,10 +1609,15 @@
 	again if an output changes mode, for the mode that is now
 	current.  In other words, the current mode is always the last
 	mode that was received with the current flag set.
+
+	The size of a mode is given relative to the global compositor
+	space. This is not necessarily the native size of the display,
+	as the output might be scaled, as described in wl_output.scale.
+	In this case the scaled flag will be set.
       </description>
       <arg name="flags" type="uint" summary="bitfield of mode flags"/>
-      <arg name="width" type="int" summary="width of the mode in pixels"/>
-      <arg name="height" type="int" summary="height of the mode in pixels"/>
+      <arg name="width" type="int" summary="width of the mode in global coordinates"/>
+      <arg name="height" type="int" summary="height of the mode in global coordinates"/>
       <arg name="refresh" type="int" summary="vertical refresh rate in mHz"/>
     </event>
 
@@ -1574,6 +1629,30 @@
         changes to the output properties to be seen as
         atomic, even if they happen via multiple events.
       </description>
+    </event>
+
+    <event name="scale" since="2">
+      <description summary="output scaling properties">
+	This event contains scaling geometry information
+        that is not in the geometry event. It may be sent after
+        binding the output object or if the output scale changes
+        later. If it is not sent, the client should assume a
+	scale of 1.
+
+	A scale larger than 1 means that the compositor will
+	automatically scale surface buffers by this amount
+	when rendering. This is used for very high resolution
+	displays where applications rendering at the native
+	resolution would be too small to be legible.
+
+	It is intended that scaling aware clients track the
+	current output of a surface, and if it is on a scaled
+	output it should use wl_surface.set_buffer_scale with
+	the scale of the output. That way the compositor can
+	avoid scaling the surface, and the client can supply
+	a higher detail image.
+      </description>
+      <arg name="factor" type="uint" summary="scaling factor of output"/>
     </event>
   </interface>
 
