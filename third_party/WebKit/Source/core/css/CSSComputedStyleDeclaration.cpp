@@ -549,7 +549,7 @@ static PassRefPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image)
     // Create the repeat rules.
     RefPtr<CSSValue> repeat = valueForNinePieceImageRepeat(image);
 
-    return createBorderImageValue(imageValue, imageSlices, borderSlices, outset, repeat);
+    return createBorderImageValue(imageValue.release(), imageSlices.release(), borderSlices.release(), outset.release(), repeat.release());
 }
 
 inline static PassRefPtr<CSSPrimitiveValue> zoomAdjustedPixelValue(double value, const RenderStyle* style)
@@ -713,7 +713,7 @@ static PassRefPtr<CSSValueList> getBorderRadiusShorthandValue(const RenderStyle*
     if (showHorizontalBottomLeft)
         horizontalRadii->append(bottomLeftRadius->item(0));
 
-    list->append(horizontalRadii);
+    list->append(horizontalRadii.release());
 
     if (showVerticalTopLeft) {
         RefPtr<CSSValueList> verticalRadii = CSSValueList::createSpaceSeparated();
@@ -724,7 +724,7 @@ static PassRefPtr<CSSValueList> getBorderRadiusShorthandValue(const RenderStyle*
             verticalRadii->append(bottomRightRadius->item(1));
         if (showVerticalBottomLeft)
             verticalRadii->append(bottomLeftRadius->item(1));
-        list->append(verticalRadii);
+        list->append(verticalRadii.release());
     }
     return list.release();
 }
@@ -985,7 +985,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
             filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::UnknownFilterOperation);
             break;
         }
-        list->append(filterValue);
+        list->append(filterValue.release());
     }
 
     return list.release();
@@ -1838,7 +1838,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             }
             RefPtr<CSSValue> value = cssValuePool().createValue(style->cursor());
             if (list) {
-                list->append(value);
+                list->append(value.release());
                 return list.release();
             }
             return value.release();
@@ -2885,13 +2885,13 @@ PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getCSSPropertyValuesForSid
     bool showBottom = !compareCSSValuePtr(topValue, bottomValue) || showLeft;
     bool showRight = !compareCSSValuePtr(topValue, rightValue) || showBottom;
 
-    list->append(topValue);
+    list->append(topValue.release());
     if (showRight)
-        list->append(rightValue);
+        list->append(rightValue.release());
     if (showBottom)
-        list->append(bottomValue);
+        list->append(bottomValue.release());
     if (showLeft)
-        list->append(leftValue);
+        list->append(leftValue.release());
 
     return list.release();
 }
@@ -2901,7 +2901,7 @@ PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getCSSPropertyValuesForGri
     RefPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
         RefPtr<CSSValue> value = getPropertyCSSValue(shorthand.properties()[i], DoNotUpdateLayout);
-        list->append(value);
+        list->append(value.release());
     }
     return list.release();
 }
