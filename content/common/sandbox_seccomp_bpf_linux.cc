@@ -662,6 +662,13 @@ bool IsAllowedAddressSpaceAccess(int sysno) {
   switch (sysno) {
     case __NR_brk:
     case __NR_mlock:
+#if defined(__i386__) || defined(__x86_64__)
+    case __NR_mmap:   // TODO(jln): to restrict flags.
+#endif
+#if defined(__i386__) || defined(__arm__)
+    case __NR_mmap2:
+#endif
+    case __NR_mprotect:
     case __NR_munlock:
     case __NR_munmap:
       return true;
@@ -669,15 +676,8 @@ bool IsAllowedAddressSpaceAccess(int sysno) {
     case __NR_mincore:
     case __NR_mlockall:
 #if defined(__i386__) || defined(__x86_64__)
-    case __NR_mmap:
-#endif
-#if defined(__i386__) || defined(__arm__)
-    case __NR_mmap2:
-#endif
-#if defined(__i386__) || defined(__x86_64__)
     case __NR_modify_ldt:
 #endif
-    case __NR_mprotect:
     case __NR_mremap:
     case __NR_msync:
     case __NR_munlockall:
@@ -1240,32 +1240,24 @@ bool IsBaselinePolicyWatched(int sysno) {
   }
 }
 
-ErrorCode RestrictMmapFlags(Sandbox *sandbox) {
-  // The flags you see are actually the allowed ones, and the variable is a
-  // "denied" mask because of the negation operator.
-  // Significantly, we don't permit MAP_HUGETLB, or the newer flags such as
-  // MAP_POPULATE.
-  uint32_t denied_mask = ~(MAP_SHARED | MAP_PRIVATE | MAP_ANONYMOUS |
-                           MAP_STACK | MAP_NORESERVE | MAP_FIXED);
-  return sandbox->Cond(3, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                       denied_mask,
-                       sandbox->Trap(CrashSIGSYS_Handler, NULL),
-                       ErrorCode(ErrorCode::ERR_ALLOWED));
-}
-
-ErrorCode RestrictMprotectFlags(Sandbox *sandbox) {
-  // The flags you see are actually the allowed ones, and the variable is a
-  // "denied" mask because of the negation operator.
-  // Significantly, we don't permit weird undocumented flags such as
-  // PROT_GROWSDOWN.
-  uint32_t denied_mask = ~(PROT_READ | PROT_WRITE | PROT_EXEC);
-  return sandbox->Cond(2, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                       denied_mask,
-                       sandbox->Trap(CrashSIGSYS_Handler, NULL),
-                       ErrorCode(ErrorCode::ERR_ALLOWED));
-}
-
 ErrorCode BaselinePolicy(Sandbox *sandbox, int sysno) {
+#if defined(__x86_64__) || defined(__arm__)
+  if (sysno == __NR_socketpair) {
+    // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
+    COMPILE_ASSERT(AF_UNIX == PF_UNIX, af_unix_pf_unix_different);
+    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, AF_UNIX,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+                         sandbox->Trap(CrashSIGSYS_Handler, NULL));
+  }
+#endif
+  if (sysno == __NR_madvise) {
+    // Only allow MADV_DONTNEED (aka MADV_FREE).
+    return sandbox->Cond(2, ErrorCode::TP_32BIT,
+                         ErrorCode::OP_EQUAL, MADV_DONTNEED,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+                         ErrorCode(EPERM));
+  }
+
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
@@ -1276,46 +1268,6 @@ ErrorCode BaselinePolicy(Sandbox *sandbox, int sysno) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 #endif
-
-#if defined(__x86_64__) || defined(__arm__)
-  if (sysno == __NR_socketpair) {
-    // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
-    COMPILE_ASSERT(AF_UNIX == PF_UNIX, af_unix_pf_unix_different);
-    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, AF_UNIX,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-                         sandbox->Trap(CrashSIGSYS_Handler, NULL));
-  }
-#endif
-
-  if (sysno == __NR_madvise) {
-    // Only allow MADV_DONTNEED (aka MADV_FREE).
-    return sandbox->Cond(2, ErrorCode::TP_32BIT,
-                         ErrorCode::OP_EQUAL, MADV_DONTNEED,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-                         ErrorCode(EPERM));
-  }
-
-#if defined(__i386__) || defined(__x86_64__)
-  if (sysno == __NR_mmap) {
-    if (IsArchitectureX86_64())
-      return RestrictMmapFlags(sandbox);
-    else
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-#endif
-
-#if defined(__i386__) || defined(__arm__)
-  if (sysno == __NR_mmap2) {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-#endif
-
-  if (sysno == __NR_mprotect) {
-    if (IsArchitectureX86_64())
-      return RestrictMprotectFlags(sandbox);
-    else
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
 
   // TODO(jln): some system calls in those sets are not supposed to
   // return ENOENT. Return the appropriate error.
