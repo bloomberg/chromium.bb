@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -215,6 +216,13 @@ class UserManagerImpl
   // Returns the user if found or NULL otherwise.
   // Also removes the user from the persistent user list.
   User* RemoveRegularOrLocallyManagedUserFromList(const std::string& username);
+
+  // Removes data belonging to public accounts that are no longer found on the
+  // user list. If the user is currently logged into one of these accounts, the
+  // data for that account is not removed immediately but marked as pending
+  // removal after logout.
+  void CleanUpPublicAccountNonCryptohomeData(
+      const std::vector<std::string>& old_public_accounts);
 
   // Replaces the list of public accounts with |public_accounts|. Ensures that
   // data belonging to accounts no longer on the list is removed. Returns |true|

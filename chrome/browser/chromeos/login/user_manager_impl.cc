@@ -6,7 +6,6 @@
 
 #include <cstddef>
 #include <set>
-#include <vector>
 
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -138,16 +137,13 @@ void RemoveUserInternal(const std::string& user_email,
 
 // Helper function that copies users from |users_list| to |users_vector| and
 // |users_set|. Duplicates and users already present in |existing_users| are
-// skipped. The |logged_in_user| is also skipped and the return value
-// indicates whether that user was found in |users_list|.
-bool ParseUserList(const ListValue& users_list,
+// skipped.
+void ParseUserList(const ListValue& users_list,
                    const std::set<std::string>& existing_users,
-                   const std::string& logged_in_user,
                    std::vector<std::string>* users_vector,
                    std::set<std::string>* users_set) {
   users_vector->clear();
   users_set->clear();
-  bool logged_in_user_on_list = false;
   for (size_t i = 0; i < users_list.GetSize(); ++i) {
     std::string email;
     if (!users_list.GetString(i, &email) || email.empty()) {
@@ -159,14 +155,8 @@ bool ParseUserList(const ListValue& users_list,
       LOG(ERROR) << "Duplicate user: " << email;
       continue;
     }
-    if (email == logged_in_user) {
-      logged_in_user_on_list = true;
-      continue;
-    }
     users_vector->push_back(email);
   }
-  users_set->erase(logged_in_user);
-  return logged_in_user_on_list;
 }
 
 }  // namespace
@@ -853,7 +843,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
   // Load regular users and locally managed users.
   std::vector<std::string> regular_users;
   std::set<std::string> regular_users_set;
-  ParseUserList(*prefs_regular_users, std::set<std::string>(), "",
+  ParseUserList(*prefs_regular_users, std::set<std::string>(),
                 &regular_users, &regular_users_set);
   for (std::vector<std::string>::const_iterator it = regular_users.begin();
        it != regular_users.end(); ++it) {
@@ -883,7 +873,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
   // Load public accounts.
   std::vector<std::string> public_accounts;
   std::set<std::string> public_accounts_set;
-  ParseUserList(*prefs_public_accounts, regular_users_set, "",
+  ParseUserList(*prefs_public_accounts, regular_users_set,
                 &public_accounts, &public_accounts_set);
   for (std::vector<std::string>::const_iterator it = public_accounts.begin();
        it != public_accounts.end(); ++it) {
@@ -1182,6 +1172,33 @@ User* UserManagerImpl::RemoveRegularOrLocallyManagedUserFromList(
   return user;
 }
 
+void UserManagerImpl::CleanUpPublicAccountNonCryptohomeData(
+    const std::vector<std::string>& old_public_accounts) {
+  std::set<std::string> users;
+  for (UserList::const_iterator it = users_.begin(); it != users_.end(); ++it)
+    users.insert((*it)->email());
+
+  // If the user is logged into a public account that has been removed from the
+  // user list, mark the account's data as pending removal after logout.
+  if (IsLoggedInAsPublicAccount()) {
+    const std::string active_user_id = GetActiveUser()->email();
+    if (users.find(active_user_id) == users.end()) {
+      g_browser_process->local_state()->SetString(
+          kPublicAccountPendingDataRemoval, active_user_id);
+      users.insert(active_user_id);
+    }
+  }
+
+  // Remove the data belonging to any other public accounts that are no longer
+  // found on the user list.
+  for (std::vector<std::string>::const_iterator
+           it = old_public_accounts.begin();
+       it != old_public_accounts.end(); ++it) {
+    if (users.find(*it) == users.end())
+      RemoveNonCryptohomeData(*it);
+  }
+}
+
 bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
     const base::ListValue& public_accounts) {
   PrefService* local_state = g_browser_process->local_state();
@@ -1215,15 +1232,8 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
   // Get the new list of public accounts from policy.
   std::vector<std::string> new_public_accounts;
   std::set<std::string> new_public_accounts_set;
-  if (!ParseUserList(public_accounts, regular_users, active_user_email,
-                     &new_public_accounts, &new_public_accounts_set) &&
-      IsLoggedInAsPublicAccount()) {
-    // If the user is currently logged into a public account that has been
-    // removed from the list, mark the account's data as pending removal after
-    // logout.
-    local_state->SetString(kPublicAccountPendingDataRemoval,
-                           active_user_email);
-  }
+  ParseUserList(public_accounts, regular_users,
+                &new_public_accounts, &new_public_accounts_set);
 
   // Persist the new list of public accounts in a pref.
   ListPrefUpdate prefs_public_accounts_update(local_state, kPublicAccounts);
@@ -1267,6 +1277,10 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
 
   user_image_manager_->LoadUserImages(
       UserList(users_.begin(), users_.begin() + new_public_accounts.size()));
+
+  // Remove data belonging to public accounts that are no longer found on the
+  // user list.
+  CleanUpPublicAccountNonCryptohomeData(old_public_accounts);
 
   return true;
 }
