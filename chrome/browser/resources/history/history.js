@@ -1335,6 +1335,19 @@ HistoryView.prototype.updateNavBar_ = function() {
       !this.model_.hasMoreResults();
 };
 
+/**
+ * Updates the visibility of the 'Clear browsing data' button.
+ * Only used on mobile platforms.
+ * @private
+ */
+HistoryView.prototype.updateClearBrowsingDataButton_ = function() {
+  // Ideally, we should hide the 'Clear browsing data' button whenever the
+  // soft keyboard is visible. This is not possible, so instead, hide the
+  // button whenever the search field has focus.
+  $('clear-browsing-data').hidden =
+      (document.activeElement === $('search-field'));
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // State object:
 /**
@@ -1541,16 +1554,20 @@ function load() {
       // Move the search box out of the header.
       var resultsDisplay = $('results-display');
       resultsDisplay.parentNode.insertBefore($('search-field'), resultsDisplay);
+
+      window.addEventListener(
+          'resize', historyView.updateClearBrowsingDataButton_);
+
+      // When the search field loses focus, add a delay before updating the
+      // visibility, otherwise the button will flash on the screen before the
+      // keyboard animates away.
+      searchField.addEventListener('blur', function() {
+        setTimeout(historyView.updateClearBrowsingDataButton_, 250);
+      });
     }
 
     // Move the button to the bottom of the body.
     document.body.appendChild($('clear-browsing-data'));
-
-    window.addEventListener('resize', function(e) {
-      // Don't show the Clear Browsing Data button when the soft keyboard is up.
-      $('clear-browsing-data').hidden =
-          window.innerHeight != window.outerHeight;
-    });
   } else {
     window.addEventListener('message', function(e) {
       if (e.data.method == 'frameSelected')
