@@ -357,11 +357,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   // Canceling a request will cause us to always report the result as SAFE
   // unless a pending request is about to call FinishRequest.
   void Cancel() {
-    // Calling FinishRequest might delete this object if we don't keep a
-    // reference around until Cancel() is finished running.
-    scoped_refptr<CheckClientDownloadRequest> request(this);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    FinishRequest(SAFE, REASON_REQUEST_CANCELED);
     if (fetcher_.get()) {
       // The DownloadProtectionService is going to release its reference, so we
       // might be destroyed before the URLFetcher completes.  Cancel the
@@ -372,6 +368,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // reference to this object.  We'll eventually wind up in some method on
     // the UI thread that will call FinishRequest() again.  If FinishRequest()
     // is called a second time, it will be a no-op.
+    FinishRequest(SAFE, REASON_REQUEST_CANCELED);
+    // Calling FinishRequest might delete this object, we may be deleted by
+    // this point.
   }
 
   // content::DownloadItem::Observer implementation.
@@ -672,6 +671,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return;
     }
     finished_ = true;
+    // Ensure the timeout task is cancelled while we still have a non-zero
+    // refcount. (crbug.com/240449)
+    weakptr_factory_.InvalidateWeakPtrs();
     if (service_) {
       VLOG(2) << "SafeBrowsing download verdict for: "
               << item_->DebugString(true) << " verdict:" << reason;
