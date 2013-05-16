@@ -18,7 +18,7 @@
 #define STUB(sym) \
   void sym() { \
     char msg[] = "Aborting: " #sym " called\n"; \
-    write(2, msg, strlen(msg) - 1); \
+    write(2, msg, sizeof(msg) - 1); \
     abort(); \
   }
 
