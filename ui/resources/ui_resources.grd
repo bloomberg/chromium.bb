@@ -244,6 +244,9 @@
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_H" file="minimize_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_P" file="minimize_pressed.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL" file="common/notification_clear_all.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL_HOVER" file="common/notification_clear_all_hover.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL_PRESSED" file="common/notification_clear_all_pressed.png"/>
       <if expr="is_win">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE" file="win/notification_close.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="win/notification_close_hover.png"/>
@@ -257,6 +260,12 @@
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND" file="common/notification_expand.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND_HOVER" file="common/notification_expand_hover.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND_PRESSED" file="common/notification_expand_pressed.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PAUSE" file="common/notification_pause.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PAUSE_HOVER" file="common/notification_pause_hover.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PAUSE_PRESSED" file="common/notification_pause_pressed.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS" file="common/notification_settings.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_HOVER" file="common/notification_settings_hover.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_PRESSED" file="common/notification_settings_pressed.png"/>
       <if expr="pp_ifdef('use_aura')">
         <structure type="chrome_scaled_image" name="IDR_OAK" file="oak.png" />
       </if>
