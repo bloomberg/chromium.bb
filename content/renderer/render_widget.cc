@@ -605,6 +605,8 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   attributes.antialias = false;
   attributes.shareResources = true;
   attributes.noAutomaticFlushes = true;
+  attributes.depth = false;
+  attributes.stencil = false;
   WebGraphicsContext3DCommandBufferImpl* context =
       CreateGraphicsContext3D(attributes);
   if (!context)
