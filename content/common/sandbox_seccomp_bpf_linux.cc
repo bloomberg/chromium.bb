@@ -1342,9 +1342,6 @@ ErrorCode GpuProcessPolicy(Sandbox *sandbox, int sysno,
                            void *broker_process) {
   switch(sysno) {
     case __NR_ioctl:
-#if defined(__i386__) || defined(__x86_64__)
-    case __NR_mmap:  // TODO(cevans) -- Nvidia driver uses weird mmap flags.
-#endif
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
