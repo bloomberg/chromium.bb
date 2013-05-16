@@ -642,8 +642,10 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
         || rareInheritedData->userSelect != other->rareInheritedData->userSelect
         || rareNonInheritedData->userDrag != other->rareNonInheritedData->userDrag
         || rareNonInheritedData->m_borderFit != other->rareNonInheritedData->m_borderFit
+#if ENABLE(CSS3_TEXT)
         || rareNonInheritedData->m_textDecorationStyle != other->rareNonInheritedData->m_textDecorationStyle
         || rareNonInheritedData->m_textDecorationColor != other->rareNonInheritedData->m_textDecorationColor
+#endif // CSS3_TEXT
         || rareInheritedData->textFillColor != other->rareInheritedData->textFillColor
         || rareInheritedData->textStrokeColor != other->rareInheritedData->textStrokeColor
         || rareInheritedData->textEmphasisColor != other->rareInheritedData->textEmphasisColor
@@ -1350,9 +1352,11 @@ Color RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) c
     case CSSPropertyWebkitColumnRuleColor:
         result = visitedLink ? visitedLinkColumnRuleColor() : columnRuleColor();
         break;
-    case CSSPropertyTextDecorationColor:
+#if ENABLE(CSS3_TEXT)
+    case CSSPropertyWebkitTextDecorationColor:
         // Text decoration color fallback is handled in RenderObject::decorationColor.
         return visitedLink ? visitedLinkTextDecorationColor() : textDecorationColor();
+#endif // CSS3_TEXT
     case CSSPropertyWebkitTextEmphasisColor:
         result = visitedLink ? visitedLinkTextEmphasisColor() : textEmphasisColor();
         break;
@@ -1384,9 +1388,11 @@ Color RenderStyle::visitedDependentColor(int colorProperty) const
 
     Color visitedColor = colorIncludingFallback(colorProperty, true);
 
+#if ENABLE(CSS3_TEXT)
     // Text decoration color validity is preserved (checked in RenderObject::decorationColor).
-    if (colorProperty == CSSPropertyTextDecorationColor)
+    if (colorProperty == CSSPropertyWebkitTextDecorationColor)
         return visitedColor;
+#endif // CSS3_TEXT
 
     // FIXME: Technically someone could explicitly specify the color transparent, but for now we'll just
     // assume that if the background color is transparent that it wasn't set. Note that it's weird that

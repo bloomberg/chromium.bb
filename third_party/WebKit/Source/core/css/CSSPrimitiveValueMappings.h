@@ -2304,6 +2304,7 @@ template<> inline CSSPrimitiveValue::operator ETextDecoration() const
     return TDNONE;
 }
 
+#if ENABLE(CSS3_TEXT)
 template<> inline CSSPrimitiveValue::operator TextDecorationStyle() const
 {
     switch (m_value.ident) {
@@ -2323,7 +2324,6 @@ template<> inline CSSPrimitiveValue::operator TextDecorationStyle() const
     return TextDecorationStyleSolid;
 }
 
-#if ENABLE(CSS3_TEXT)
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TextUnderlinePosition e)
     : CSSValue(PrimitiveClass)
 {

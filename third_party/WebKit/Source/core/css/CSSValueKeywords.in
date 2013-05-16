@@ -452,7 +452,9 @@ static
 thick
 thin
 underline
+#if defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT
 wavy
+#endif
 -webkit-nowrap
 
 // CSS3 Values

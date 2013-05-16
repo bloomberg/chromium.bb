@@ -64,12 +64,6 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
         CSSPropertyWebkitShapeOutside,
     };
     setCSSPropertiesEnabled(exclusionProperties, WTF_ARRAY_LENGTH(exclusionProperties), RuntimeEnabledFeatures::cssExclusionsEnabled());
-    CSSPropertyID css3TextDecorationProperties[] = {
-        CSSPropertyTextDecorationColor,
-        CSSPropertyTextDecorationLine,
-        CSSPropertyTextDecorationStyle,
-    };
-    setCSSPropertiesEnabled(css3TextDecorationProperties, WTF_ARRAY_LENGTH(css3TextDecorationProperties), RuntimeEnabledFeatures::css3TextDecorationsEnabled());
 
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyBackgroundBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMixBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());

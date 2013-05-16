@@ -156,9 +156,6 @@ table-layout
 tab-size
 text-align
 text-decoration
-text-decoration-line
-text-decoration-style
-text-decoration-color
 text-indent
 text-line-through
 text-line-through-color
@@ -357,6 +354,9 @@ z-index
 -webkit-ruby-position
 -webkit-text-combine
 -epub-text-combine alias_for=-webkit-text-combine
+-webkit-text-decoration-line condition=CSS3_TEXT
+-webkit-text-decoration-style condition=CSS3_TEXT
+-webkit-text-decoration-color condition=CSS3_TEXT
 -webkit-text-align-last condition=CSS3_TEXT
 -webkit-text-underline-position condition=CSS3_TEXT
 -webkit-text-decorations-in-effect

@@ -162,9 +162,6 @@ tableLayout
 textAlign
 textAnchor
 textDecoration
-textDecorationColor
-textDecorationLine
-textDecorationStyle
 textIndent
 textLineThrough
 textLineThroughColor

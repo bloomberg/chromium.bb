@@ -486,12 +486,13 @@ static inline bool isColorPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitBorderEndColor:
     case CSSPropertyWebkitBorderStartColor:
     case CSSPropertyWebkitColumnRuleColor:
+#if ENABLE(CSS3_TEXT)
+    case CSSPropertyWebkitTextDecorationColor:
+#endif // CSS3_TEXT
     case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTextStrokeColor:
         return true;
-    case CSSPropertyTextDecorationColor:
-        return RuntimeEnabledFeatures::css3TextDecorationsEnabled();
     default:
         return false;
     }
@@ -1876,18 +1877,16 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitBorderBeforeColor:
     case CSSPropertyWebkitBorderAfterColor:
     case CSSPropertyColor: // <color> | inherit
-    case CSSPropertyTextDecorationColor:
     case CSSPropertyTextLineThroughColor: // CSS3 text decoration colors
     case CSSPropertyTextUnderlineColor:
     case CSSPropertyTextOverlineColor:
     case CSSPropertyWebkitColumnRuleColor:
+#if ENABLE(CSS3_TEXT)
+    case CSSPropertyWebkitTextDecorationColor:
+#endif // CSS3_TEXT
     case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTextStrokeColor:
-        if (propId == CSSPropertyTextDecorationColor
-            && !RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-            return false;
-
         if (id == CSSValueWebkitText)
             validPrimitive = true; // Always allow this, even when strict parsing is on,
                                     // since we use this in our UA sheets.
@@ -2180,21 +2179,17 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         // none | [ underline || overline || line-through || blink ] | inherit
         return parseTextDecoration(propId, important);
 
-    case CSSPropertyTextDecorationLine:
-        if (!RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-            return false;
+#if ENABLE(CSS3_TEXT)
+    case CSSPropertyWebkitTextDecorationLine:
         // none | [ underline || overline || line-through ] | inherit
         return parseTextDecoration(propId, important);
 
-    case CSSPropertyTextDecorationStyle:
-        if (!RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-            return false;
+    case CSSPropertyWebkitTextDecorationStyle:
         // solid | double | dotted | dashed | wavy
         if (id == CSSValueSolid || id == CSSValueDouble || id == CSSValueDotted || id == CSSValueDashed || id == CSSValueWavy)
             validPrimitive = true;
         break;
 
-#if ENABLE(CSS3_TEXT)
     case CSSPropertyWebkitTextUnderlinePosition:
         // auto | alphabetic | under
         return parseTextUnderlinePosition(important);
@@ -8842,13 +8837,15 @@ bool CSSParser::parsePerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& prop
 
 void CSSParser::addTextDecorationProperty(CSSPropertyID propId, PassRefPtr<CSSValue> value, bool important)
 {
+#if ENABLE(CSS3_TEXT)
     // The text-decoration-line property takes priority over text-decoration, unless the latter has important priority set.
     if (propId == CSSPropertyTextDecoration && !important && m_currentShorthand == CSSPropertyInvalid) {
         for (unsigned i = 0; i < m_parsedProperties.size(); ++i) {
-            if (m_parsedProperties[i].id() == CSSPropertyTextDecorationLine)
+            if (m_parsedProperties[i].id() == CSSPropertyWebkitTextDecorationLine)
                 return;
         }
     }
+#endif // CSS3_TEXT
     addProperty(propId, value, important);
 }
 
@@ -8866,11 +8863,13 @@ bool CSSParser::parseTextDecoration(CSSPropertyID propId, bool important)
     while (isValid && value) {
         switch (value->id) {
         case CSSValueBlink:
-            // Blink value is not accepted by text-decoration-line.
-            isValid = propId != CSSPropertyTextDecorationLine;
+#if ENABLE(CSS3_TEXT)
+            // Blink value is not accepted by -webkit-text-decoration-line.
+            isValid = propId != CSSPropertyWebkitTextDecorationLine;
             if (isValid)
                 list->append(cssValuePool().createIdentifierValue(value->id));
             break;
+#endif // CSS3_TEXT
         case CSSValueUnderline:
         case CSSValueOverline:
         case CSSValueLineThrough:
@@ -8911,7 +8910,7 @@ bool CSSParser::parseTextUnderlinePosition(bool important)
     }
     return false;
 }
-#endif
+#endif // CSS3_TEXT
 
 bool CSSParser::parseTextEmphasisStyle(bool important)
 {

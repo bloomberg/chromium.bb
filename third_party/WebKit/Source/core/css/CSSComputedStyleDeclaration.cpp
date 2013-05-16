@@ -175,10 +175,10 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyTabSize,
     CSSPropertyTextAlign,
     CSSPropertyTextDecoration,
-    CSSPropertyTextDecorationLine,
-    CSSPropertyTextDecorationStyle,
-    CSSPropertyTextDecorationColor,
 #if ENABLE(CSS3_TEXT)
+    CSSPropertyWebkitTextDecorationLine,
+    CSSPropertyWebkitTextDecorationStyle,
+    CSSPropertyWebkitTextDecorationColor,
     CSSPropertyWebkitTextAlignLast,
     CSSPropertyWebkitTextUnderlinePosition,
 #endif // CSS3_TEXT
@@ -1325,6 +1325,7 @@ static PassRefPtr<CSSValue> renderTextDecorationFlagsToCSSValue(int textDecorati
     return list;
 }
 
+#if ENABLE(CSS3_TEXT)
 static PassRefPtr<CSSValue> renderTextDecorationStyleFlagsToCSSValue(TextDecorationStyle textDecorationStyle)
 {
     switch (textDecorationStyle) {
@@ -1343,6 +1344,7 @@ static PassRefPtr<CSSValue> renderTextDecorationStyleFlagsToCSSValue(TextDecorat
     ASSERT_NOT_REACHED();
     return cssValuePool().createExplicitInitialValue();
 }
+#endif // CSS3_TEXT
 
 static PassRefPtr<CSSValue> fillRepeatToCSSValue(EFillRepeat xRepeat, EFillRepeat yRepeat)
 {
@@ -2132,13 +2134,14 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyTextAlign:
             return cssValuePool().createValue(style->textAlign());
         case CSSPropertyTextDecoration:
-        case CSSPropertyTextDecorationLine:
             return renderTextDecorationFlagsToCSSValue(style->textDecoration());
-        case CSSPropertyTextDecorationStyle:
-            return renderTextDecorationStyleFlagsToCSSValue(style->textDecorationStyle());
-        case CSSPropertyTextDecorationColor:
-            return currentColorOrValidColor(style.get(), style->textDecorationColor());
 #if ENABLE(CSS3_TEXT)
+        case CSSPropertyWebkitTextDecorationLine:
+            return renderTextDecorationFlagsToCSSValue(style->textDecoration());
+        case CSSPropertyWebkitTextDecorationStyle:
+            return renderTextDecorationStyleFlagsToCSSValue(style->textDecorationStyle());
+        case CSSPropertyWebkitTextDecorationColor:
+            return currentColorOrValidColor(style.get(), style->textDecorationColor());
         case CSSPropertyWebkitTextAlignLast:
             return cssValuePool().createValue(style->textAlignLast());
         case CSSPropertyWebkitTextUnderlinePosition:
