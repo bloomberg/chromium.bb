@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/file_system_directory_database.h"
+#include "webkit/fileapi/sandbox_directory_database.h"
 
 #include <math.h>
 #include <algorithm>
@@ -23,7 +23,7 @@
 namespace {
 
 bool PickleFromFileInfo(
-    const fileapi::FileSystemDirectoryDatabase::FileInfo& info,
+    const fileapi::SandboxDirectoryDatabase::FileInfo& info,
     Pickle* pickle) {
   DCHECK(pickle);
   std::string data_path;
@@ -47,7 +47,7 @@ bool PickleFromFileInfo(
 
 bool FileInfoFromPickle(
     const Pickle& pickle,
-    fileapi::FileSystemDirectoryDatabase::FileInfo* info) {
+    fileapi::SandboxDirectoryDatabase::FileInfo* info) {
   PickleIterator iter(pickle);
   std::string data_path;
   std::string name;
@@ -66,7 +66,8 @@ bool FileInfoFromPickle(
   return false;
 }
 
-const base::FilePath::CharType kDirectoryDatabaseName[] = FILE_PATH_LITERAL("Paths");
+const base::FilePath::CharType kDirectoryDatabaseName[] =
+    FILE_PATH_LITERAL("Paths");
 const char kChildLookupPrefix[] = "CHILD_OF:";
 const char kChildLookupSeparator[] = ":";
 const char kLastFileIdKey[] = "LAST_FILE_ID";
@@ -91,7 +92,7 @@ enum RepairResult {
 };
 
 std::string GetChildLookupKey(
-    fileapi::FileSystemDirectoryDatabase::FileId parent_id,
+    fileapi::SandboxDirectoryDatabase::FileId parent_id,
     const base::FilePath::StringType& child_name) {
   std::string name;
   name = fileapi::FilePathToString(base::FilePath(child_name));
@@ -100,7 +101,7 @@ std::string GetChildLookupKey(
 }
 
 std::string GetChildListingKeyPrefix(
-    fileapi::FileSystemDirectoryDatabase::FileId parent_id) {
+    fileapi::SandboxDirectoryDatabase::FileId parent_id) {
   return std::string(kChildLookupPrefix) + base::Int64ToString(parent_id) +
       std::string(kChildLookupSeparator);
 }
@@ -114,7 +115,7 @@ const char* LastIntegerKey() {
 }
 
 std::string GetFileLookupKey(
-    fileapi::FileSystemDirectoryDatabase::FileId file_id) {
+    fileapi::SandboxDirectoryDatabase::FileId file_id) {
   return base::Int64ToString(file_id);
 }
 
@@ -132,10 +133,10 @@ std::string GetFileLookupKey(
 //  - Directory structure is tree, i.e. connected and acyclic.
 class DatabaseCheckHelper {
  public:
-  typedef fileapi::FileSystemDirectoryDatabase::FileId FileId;
-  typedef fileapi::FileSystemDirectoryDatabase::FileInfo FileInfo;
+  typedef fileapi::SandboxDirectoryDatabase::FileId FileId;
+  typedef fileapi::SandboxDirectoryDatabase::FileInfo FileInfo;
 
-  DatabaseCheckHelper(fileapi::FileSystemDirectoryDatabase* dir_db,
+  DatabaseCheckHelper(fileapi::SandboxDirectoryDatabase* dir_db,
                       leveldb::DB* db,
                       const base::FilePath& path);
 
@@ -153,7 +154,7 @@ class DatabaseCheckHelper {
   bool ScanDirectory();
   bool ScanHierarchy();
 
-  fileapi::FileSystemDirectoryDatabase* dir_db_;
+  fileapi::SandboxDirectoryDatabase* dir_db_;
   leveldb::DB* db_;
   base::FilePath path_;
 
@@ -168,7 +169,7 @@ class DatabaseCheckHelper {
 };
 
 DatabaseCheckHelper::DatabaseCheckHelper(
-    fileapi::FileSystemDirectoryDatabase* dir_db,
+    fileapi::SandboxDirectoryDatabase* dir_db,
     leveldb::DB* db,
     const base::FilePath& path)
     : dir_db_(dir_db), db_(db), path_(path),
@@ -306,7 +307,8 @@ bool DatabaseCheckHelper::ScanDirectory() {
       }
 
       // Check if the file has a database entry.
-      std::set<base::FilePath>::iterator itr = files_in_db_.find(relative_file_path);
+      std::set<base::FilePath>::iterator itr =
+          files_in_db_.find(relative_file_path);
       if (itr == files_in_db_.end()) {
         if (!file_util::Delete(absolute_file_path, false))
           return false;
@@ -402,22 +404,24 @@ bool VerifyDataPath(const base::FilePath& data_path) {
 
 namespace fileapi {
 
-FileSystemDirectoryDatabase::FileInfo::FileInfo() : parent_id(0) {
+SandboxDirectoryDatabase::FileInfo::FileInfo() : parent_id(0) {
 }
 
-FileSystemDirectoryDatabase::FileInfo::~FileInfo() {
+SandboxDirectoryDatabase::FileInfo::~FileInfo() {
 }
 
-FileSystemDirectoryDatabase::FileSystemDirectoryDatabase(
+SandboxDirectoryDatabase::SandboxDirectoryDatabase(
     const base::FilePath& filesystem_data_directory)
     : filesystem_data_directory_(filesystem_data_directory) {
 }
 
-FileSystemDirectoryDatabase::~FileSystemDirectoryDatabase() {
+SandboxDirectoryDatabase::~SandboxDirectoryDatabase() {
 }
 
-bool FileSystemDirectoryDatabase::GetChildWithName(
-    FileId parent_id, const base::FilePath::StringType& name, FileId* child_id) {
+bool SandboxDirectoryDatabase::GetChildWithName(
+    FileId parent_id,
+    const base::FilePath::StringType& name,
+    FileId* child_id) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(child_id);
@@ -438,7 +442,7 @@ bool FileSystemDirectoryDatabase::GetChildWithName(
   return false;
 }
 
-bool FileSystemDirectoryDatabase::GetFileWithPath(
+bool SandboxDirectoryDatabase::GetFileWithPath(
     const base::FilePath& path, FileId* file_id) {
   std::vector<base::FilePath::StringType> components;
   VirtualPath::GetComponents(path, &components);
@@ -456,7 +460,7 @@ bool FileSystemDirectoryDatabase::GetFileWithPath(
   return true;
 }
 
-bool FileSystemDirectoryDatabase::ListChildren(
+bool SandboxDirectoryDatabase::ListChildren(
     FileId parent_id, std::vector<FileId>* children) {
   // Check to add later: fail if parent is a file, at least in debug builds.
   if (!Init(REPAIR_ON_CORRUPTION))
@@ -481,7 +485,7 @@ bool FileSystemDirectoryDatabase::ListChildren(
   return true;
 }
 
-bool FileSystemDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
+bool SandboxDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(info);
@@ -515,7 +519,7 @@ bool FileSystemDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
   return false;
 }
 
-bool FileSystemDirectoryDatabase::AddFileInfo(
+bool SandboxDirectoryDatabase::AddFileInfo(
     const FileInfo& info, FileId* file_id) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
@@ -558,7 +562,7 @@ bool FileSystemDirectoryDatabase::AddFileInfo(
   return true;
 }
 
-bool FileSystemDirectoryDatabase::RemoveFileInfo(FileId file_id) {
+bool SandboxDirectoryDatabase::RemoveFileInfo(FileId file_id) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   leveldb::WriteBatch batch;
@@ -572,7 +576,7 @@ bool FileSystemDirectoryDatabase::RemoveFileInfo(FileId file_id) {
   return true;
 }
 
-bool FileSystemDirectoryDatabase::UpdateFileInfo(
+bool SandboxDirectoryDatabase::UpdateFileInfo(
     FileId file_id, const FileInfo& new_info) {
   // TODO(ericu): We should also check to see that this doesn't create a loop,
   // but perhaps only in a debug build.
@@ -606,7 +610,7 @@ bool FileSystemDirectoryDatabase::UpdateFileInfo(
   return true;
 }
 
-bool FileSystemDirectoryDatabase::UpdateModificationTime(
+bool SandboxDirectoryDatabase::UpdateModificationTime(
     FileId file_id, const base::Time& modification_time) {
   FileInfo info;
   if (!GetFileInfo(file_id, &info))
@@ -627,7 +631,7 @@ bool FileSystemDirectoryDatabase::UpdateModificationTime(
   return true;
 }
 
-bool FileSystemDirectoryDatabase::OverwritingMoveFile(
+bool SandboxDirectoryDatabase::OverwritingMoveFile(
     FileId src_file_id, FileId dest_file_id) {
   FileInfo src_file_info;
   FileInfo dest_file_info;
@@ -659,7 +663,7 @@ bool FileSystemDirectoryDatabase::OverwritingMoveFile(
   return true;
 }
 
-bool FileSystemDirectoryDatabase::GetNextInteger(int64* next) {
+bool SandboxDirectoryDatabase::GetNextInteger(int64* next) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(next);
@@ -694,7 +698,7 @@ bool FileSystemDirectoryDatabase::GetNextInteger(int64* next) {
 }
 
 // static
-bool FileSystemDirectoryDatabase::DestroyDatabase(const base::FilePath& path) {
+bool SandboxDirectoryDatabase::DestroyDatabase(const base::FilePath& path) {
   std::string name  = FilePathToString(path.Append(kDirectoryDatabaseName));
   leveldb::Status status = leveldb::DestroyDB(name, leveldb::Options());
   if (status.ok())
@@ -704,7 +708,7 @@ bool FileSystemDirectoryDatabase::DestroyDatabase(const base::FilePath& path) {
   return false;
 }
 
-bool FileSystemDirectoryDatabase::Init(RecoveryOption recovery_option) {
+bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
   if (db_)
     return true;
 
@@ -732,7 +736,7 @@ bool FileSystemDirectoryDatabase::Init(RecoveryOption recovery_option) {
     case FAIL_ON_CORRUPTION:
       return false;
     case REPAIR_ON_CORRUPTION:
-      LOG(WARNING) << "Corrupted FileSystemDirectoryDatabase detected."
+      LOG(WARNING) << "Corrupted SandboxDirectoryDatabase detected."
                    << " Attempting to repair.";
       if (RepairDatabase(path)) {
         UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
@@ -741,10 +745,10 @@ bool FileSystemDirectoryDatabase::Init(RecoveryOption recovery_option) {
       }
       UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
                                 DB_REPAIR_FAILED, DB_REPAIR_MAX);
-      LOG(WARNING) << "Failed to repair FileSystemDirectoryDatabase.";
+      LOG(WARNING) << "Failed to repair SandboxDirectoryDatabase.";
       // fall through
     case DELETE_ON_CORRUPTION:
-      LOG(WARNING) << "Clearing FileSystemDirectoryDatabase.";
+      LOG(WARNING) << "Clearing SandboxDirectoryDatabase.";
       if (!file_util::Delete(filesystem_data_directory_, true))
         return false;
       if (!file_util::CreateDirectory(filesystem_data_directory_))
@@ -756,7 +760,7 @@ bool FileSystemDirectoryDatabase::Init(RecoveryOption recovery_option) {
   return false;
 }
 
-bool FileSystemDirectoryDatabase::RepairDatabase(const std::string& db_path) {
+bool SandboxDirectoryDatabase::RepairDatabase(const std::string& db_path) {
   DCHECK(!db_.get());
   if (!leveldb::RepairDB(db_path, leveldb::Options()).ok())
     return false;
@@ -768,14 +772,14 @@ bool FileSystemDirectoryDatabase::RepairDatabase(const std::string& db_path) {
   return false;
 }
 
-bool FileSystemDirectoryDatabase::IsFileSystemConsistent() {
+bool SandboxDirectoryDatabase::IsFileSystemConsistent() {
   if (!Init(FAIL_ON_CORRUPTION))
     return false;
   DatabaseCheckHelper helper(this, db_.get(), filesystem_data_directory_);
   return helper.IsFileSystemConsistent();
 }
 
-void FileSystemDirectoryDatabase::ReportInitStatus(
+void SandboxDirectoryDatabase::ReportInitStatus(
     const leveldb::Status& status) {
   base::Time now = base::Time::Now();
   const base::TimeDelta minimum_interval =
@@ -799,7 +803,7 @@ void FileSystemDirectoryDatabase::ReportInitStatus(
   }
 }
 
-bool FileSystemDirectoryDatabase::StoreDefaultValues() {
+bool SandboxDirectoryDatabase::StoreDefaultValues() {
   // Verify that this is a totally new database, and initialize it.
   scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
   iter->SeekToFirst();
@@ -825,7 +829,7 @@ bool FileSystemDirectoryDatabase::StoreDefaultValues() {
   return true;
 }
 
-bool FileSystemDirectoryDatabase::GetLastFileId(FileId* file_id) {
+bool SandboxDirectoryDatabase::GetLastFileId(FileId* file_id) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(file_id);
@@ -850,7 +854,7 @@ bool FileSystemDirectoryDatabase::GetLastFileId(FileId* file_id) {
   return true;
 }
 
-bool FileSystemDirectoryDatabase::VerifyIsDirectory(FileId file_id) {
+bool SandboxDirectoryDatabase::VerifyIsDirectory(FileId file_id) {
   FileInfo info;
   if (!file_id)
     return true;  // The root is a directory.
@@ -864,7 +868,7 @@ bool FileSystemDirectoryDatabase::VerifyIsDirectory(FileId file_id) {
 }
 
 // This does very few safety checks!
-bool FileSystemDirectoryDatabase::AddFileInfoHelper(
+bool SandboxDirectoryDatabase::AddFileInfoHelper(
     const FileInfo& info, FileId file_id, leveldb::WriteBatch* batch) {
   if (!VerifyDataPath(info.data_path)) {
     LOG(ERROR) << "Invalid data path is given: " << info.data_path.value();
@@ -890,7 +894,7 @@ bool FileSystemDirectoryDatabase::AddFileInfoHelper(
 }
 
 // This does very few safety checks!
-bool FileSystemDirectoryDatabase::RemoveFileInfoHelper(
+bool SandboxDirectoryDatabase::RemoveFileInfoHelper(
     FileId file_id, leveldb::WriteBatch* batch) {
   DCHECK(file_id);  // You can't remove the root, ever.  Just delete the DB.
   FileInfo info;
@@ -911,10 +915,10 @@ bool FileSystemDirectoryDatabase::RemoveFileInfoHelper(
   return true;
 }
 
-void FileSystemDirectoryDatabase::HandleError(
+void SandboxDirectoryDatabase::HandleError(
     const tracked_objects::Location& from_here,
     const leveldb::Status& status) {
-  LOG(ERROR) << "FileSystemDirectoryDatabase failed at: "
+  LOG(ERROR) << "SandboxDirectoryDatabase failed at: "
              << from_here.ToString() << " with error: " << status.ToString();
   db_.reset();
 }

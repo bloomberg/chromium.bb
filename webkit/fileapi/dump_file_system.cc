@@ -38,12 +38,12 @@
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
-#include "webkit/fileapi/file_system_directory_database.h"
-#include "webkit/fileapi/file_system_origin_database.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
+#include "webkit/fileapi/sandbox_directory_database.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/fileapi/sandbox_origin_database.h"
 
 namespace {
 
@@ -76,20 +76,20 @@ static void DumpDirectoryTree(const std::string& origin_name,
   if (!file_util::DirectoryExists(origin_dir))
     return;
 
-  FileSystemDirectoryDatabase directory_db(origin_dir);
-  FileSystemDirectoryDatabase::FileId root_id;
+  SandboxDirectoryDatabase directory_db(origin_dir);
+  SandboxDirectoryDatabase::FileId root_id;
   if (!directory_db.GetFileWithPath(StringToFilePath("/"), &root_id))
     return;
 
-  std::stack<std::pair<FileSystemDirectoryDatabase::FileId,
+  std::stack<std::pair<SandboxDirectoryDatabase::FileId,
                        std::string> > paths;
   paths.push(std::make_pair(root_id, ""));
   while (!paths.empty()) {
-    FileSystemDirectoryDatabase::FileId id = paths.top().first;
+    SandboxDirectoryDatabase::FileId id = paths.top().first;
     const std::string dirname = paths.top().second;
     paths.pop();
 
-    FileSystemDirectoryDatabase::FileInfo info;
+    SandboxDirectoryDatabase::FileInfo info;
     if (!directory_db.GetFileInfo(id, &info)) {
       ShowMessageAndExit(base::StringPrintf("GetFileInfo failed for %"PRId64,
                                             id));
@@ -97,7 +97,7 @@ static void DumpDirectoryTree(const std::string& origin_name,
 
     const std::string name =
         dirname + "/" + FilePathToString(base::FilePath(info.name));
-    std::vector<FileSystemDirectoryDatabase::FileId> children;
+    std::vector<SandboxDirectoryDatabase::FileId> children;
     if (info.is_directory()) {
       if (!directory_db.ListChildren(id, &children)) {
         ShowMessageAndExit(base::StringPrintf(
@@ -134,7 +134,7 @@ static void DumpDirectoryTree(const std::string& origin_name,
 
 static void DumpOrigin(const base::FilePath& file_system_dir,
                        const std::string& origin_name) {
-  FileSystemOriginDatabase origin_db(file_system_dir);
+  SandboxOriginDatabase origin_db(file_system_dir);
   base::FilePath origin_dir;
   if (!origin_db.HasOriginPath(origin_name)) {
     ShowMessageAndExit("Origin " + origin_name + " is not in " +
@@ -149,11 +149,11 @@ static void DumpOrigin(const base::FilePath& file_system_dir,
 }
 
 static void DumpFileSystem(const base::FilePath& file_system_dir) {
-  FileSystemOriginDatabase origin_db(file_system_dir);
-  std::vector<FileSystemOriginDatabase::OriginRecord> origins;
+  SandboxOriginDatabase origin_db(file_system_dir);
+  std::vector<SandboxOriginDatabase::OriginRecord> origins;
   origin_db.ListAllOrigins(&origins);
   for (size_t i = 0; i < origins.size(); i++) {
-    const FileSystemOriginDatabase::OriginRecord& origin = origins[i];
+    const SandboxOriginDatabase::OriginRecord& origin = origins[i];
     DumpDirectoryTree(origin.origin, file_system_dir.Append(origin.path));
     puts("");
   }

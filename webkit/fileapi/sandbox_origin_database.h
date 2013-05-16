@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_ORIGIN_DATABASE_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_ORIGIN_DATABASE_H_
+#ifndef WEBKIT_FILEAPI_SANDBOX_ORIGIN_DATABASE_H_
+#define WEBKIT_FILEAPI_SANDBOX_ORIGIN_DATABASE_H_
 
 #include <string>
 #include <utility>
@@ -27,7 +27,7 @@ namespace fileapi {
 
 // All methods of this class other than the constructor may be used only from
 // the browser's FILE thread.  The constructor may be used on any thread.
-class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOriginDatabase {
+class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxOriginDatabase {
  public:
   struct WEBKIT_STORAGE_EXPORT_PRIVATE OriginRecord {
     std::string origin;
@@ -38,10 +38,10 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOriginDatabase {
     ~OriginRecord();
   };
 
-  // Only one instance of FileSystemOriginDatabase should exist for a given path
+  // Only one instance of SandboxOriginDatabase should exist for a given path
   // at a given time.
-  explicit FileSystemOriginDatabase(const base::FilePath& file_system_directory);
-  ~FileSystemOriginDatabase();
+  explicit SandboxOriginDatabase(const base::FilePath& file_system_directory);
+  ~SandboxOriginDatabase();
 
   bool HasOriginPath(const std::string& origin);
 
@@ -74,9 +74,9 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOriginDatabase {
   base::FilePath file_system_directory_;
   scoped_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
-  DISALLOW_COPY_AND_ASSIGN(FileSystemOriginDatabase);
+  DISALLOW_COPY_AND_ASSIGN(SandboxOriginDatabase);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_ORIGIN_DATABASE_H_
+#endif  // WEBKIT_FILEAPI_SANDBOX_ORIGIN_DATABASE_H_

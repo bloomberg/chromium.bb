@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/file_system_origin_database.h"
+#include "webkit/fileapi/sandbox_origin_database.h"
 
 #include <set>
 
@@ -11,8 +11,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -55,26 +55,26 @@ const char* LastPathKey() {
 
 namespace fileapi {
 
-FileSystemOriginDatabase::OriginRecord::OriginRecord() {
+SandboxOriginDatabase::OriginRecord::OriginRecord() {
 }
 
-FileSystemOriginDatabase::OriginRecord::OriginRecord(
+SandboxOriginDatabase::OriginRecord::OriginRecord(
     const std::string& origin_in, const base::FilePath& path_in)
     : origin(origin_in), path(path_in) {
 }
 
-FileSystemOriginDatabase::OriginRecord::~OriginRecord() {
+SandboxOriginDatabase::OriginRecord::~OriginRecord() {
 }
 
-FileSystemOriginDatabase::FileSystemOriginDatabase(
+SandboxOriginDatabase::SandboxOriginDatabase(
     const base::FilePath& file_system_directory)
     : file_system_directory_(file_system_directory) {
 }
 
-FileSystemOriginDatabase::~FileSystemOriginDatabase() {
+SandboxOriginDatabase::~SandboxOriginDatabase() {
 }
 
-bool FileSystemOriginDatabase::Init(RecoveryOption recovery_option) {
+bool SandboxOriginDatabase::Init(RecoveryOption recovery_option) {
   if (db_)
     return true;
 
@@ -101,12 +101,12 @@ bool FileSystemOriginDatabase::Init(RecoveryOption recovery_option) {
     case FAIL_ON_CORRUPTION:
       return false;
     case REPAIR_ON_CORRUPTION:
-      LOG(WARNING) << "Attempting to repair FileSystemOriginDatabase.";
+      LOG(WARNING) << "Attempting to repair SandboxOriginDatabase.";
 
       if (RepairDatabase(path)) {
         UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
                                   DB_REPAIR_SUCCEEDED, DB_REPAIR_MAX);
-        LOG(WARNING) << "Repairing FileSystemOriginDatabase completed.";
+        LOG(WARNING) << "Repairing SandboxOriginDatabase completed.";
         return true;
       }
       UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
@@ -123,11 +123,11 @@ bool FileSystemOriginDatabase::Init(RecoveryOption recovery_option) {
   return false;
 }
 
-bool FileSystemOriginDatabase::RepairDatabase(const std::string& db_path) {
+bool SandboxOriginDatabase::RepairDatabase(const std::string& db_path) {
   DCHECK(!db_.get());
   if (!leveldb::RepairDB(db_path, leveldb::Options()).ok() ||
       !Init(FAIL_ON_CORRUPTION)) {
-    LOG(WARNING) << "Failed to repair FileSystemOriginDatabase.";
+    LOG(WARNING) << "Failed to repair SandboxOriginDatabase.";
     return false;
   }
 
@@ -182,15 +182,15 @@ bool FileSystemOriginDatabase::RepairDatabase(const std::string& db_path) {
   return true;
 }
 
-void FileSystemOriginDatabase::HandleError(
+void SandboxOriginDatabase::HandleError(
     const tracked_objects::Location& from_here,
     const leveldb::Status& status) {
   db_.reset();
-  LOG(ERROR) << "FileSystemOriginDatabase failed at: "
+  LOG(ERROR) << "SandboxOriginDatabase failed at: "
              << from_here.ToString() << " with error: " << status.ToString();
 }
 
-void FileSystemOriginDatabase::ReportInitStatus(const leveldb::Status& status) {
+void SandboxOriginDatabase::ReportInitStatus(const leveldb::Status& status) {
   base::Time now = base::Time::Now();
   base::TimeDelta minimum_interval =
       base::TimeDelta::FromHours(kMinimumReportIntervalHours);
@@ -213,7 +213,7 @@ void FileSystemOriginDatabase::ReportInitStatus(const leveldb::Status& status) {
   }
 }
 
-bool FileSystemOriginDatabase::HasOriginPath(const std::string& origin) {
+bool SandboxOriginDatabase::HasOriginPath(const std::string& origin) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   if (origin.empty())
@@ -229,7 +229,7 @@ bool FileSystemOriginDatabase::HasOriginPath(const std::string& origin) {
   return false;
 }
 
-bool FileSystemOriginDatabase::GetPathForOrigin(
+bool SandboxOriginDatabase::GetPathForOrigin(
     const std::string& origin, base::FilePath* directory) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
@@ -263,7 +263,7 @@ bool FileSystemOriginDatabase::GetPathForOrigin(
   return false;
 }
 
-bool FileSystemOriginDatabase::RemovePathForOrigin(const std::string& origin) {
+bool SandboxOriginDatabase::RemovePathForOrigin(const std::string& origin) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   leveldb::Status status =
@@ -274,7 +274,7 @@ bool FileSystemOriginDatabase::RemovePathForOrigin(const std::string& origin) {
   return false;
 }
 
-bool FileSystemOriginDatabase::ListAllOrigins(
+bool SandboxOriginDatabase::ListAllOrigins(
     std::vector<OriginRecord>* origins) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
@@ -294,11 +294,11 @@ bool FileSystemOriginDatabase::ListAllOrigins(
   return true;
 }
 
-void FileSystemOriginDatabase::DropDatabase() {
+void SandboxOriginDatabase::DropDatabase() {
   db_.reset();
 }
 
-bool FileSystemOriginDatabase::GetLastPathNumber(int* number) {
+bool SandboxOriginDatabase::GetLastPathNumber(int* number) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(number);

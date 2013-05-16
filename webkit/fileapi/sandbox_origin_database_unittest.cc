@@ -15,26 +15,27 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/db/filename.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "webkit/fileapi/file_system_database_test_helper.h"
-#include "webkit/fileapi/file_system_origin_database.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/sandbox_database_test_helper.h"
+#include "webkit/fileapi/sandbox_origin_database.h"
 
 namespace fileapi {
 
 namespace {
 const base::FilePath::CharType kFileSystemDirName[] =
     FILE_PATH_LITERAL("File System");
-const base::FilePath::CharType kOriginDatabaseName[] = FILE_PATH_LITERAL("Origins");
+const base::FilePath::CharType kOriginDatabaseName[] =
+    FILE_PATH_LITERAL("Origins");
 }  // namespace
 
-TEST(FileSystemOriginDatabaseTest, BasicTest) {
+TEST(SandboxOriginDatabaseTest, BasicTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
-  FileSystemOriginDatabase database(kFSDir);
+  SandboxOriginDatabase database(kFSDir);
   std::string origin("origin");
 
   EXPECT_FALSE(database.HasOriginPath(origin));
@@ -57,14 +58,14 @@ TEST(FileSystemOriginDatabaseTest, BasicTest) {
   EXPECT_TRUE(file_util::PathExists(kFSDir.Append(kOriginDatabaseName)));
 }
 
-TEST(FileSystemOriginDatabaseTest, TwoPathTest) {
+TEST(SandboxOriginDatabaseTest, TwoPathTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
-  FileSystemOriginDatabase database(kFSDir);
+  SandboxOriginDatabase database(kFSDir);
   std::string origin0("origin0");
   std::string origin1("origin1");
 
@@ -85,14 +86,14 @@ TEST(FileSystemOriginDatabaseTest, TwoPathTest) {
   EXPECT_TRUE(file_util::PathExists(kFSDir.Append(kOriginDatabaseName)));
 }
 
-TEST(FileSystemOriginDatabaseTest, DropDatabaseTest) {
+TEST(SandboxOriginDatabaseTest, DropDatabaseTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
-  FileSystemOriginDatabase database(kFSDir);
+  SandboxOriginDatabase database(kFSDir);
   std::string origin("origin");
 
   EXPECT_FALSE(database.HasOriginPath(origin));
@@ -113,14 +114,14 @@ TEST(FileSystemOriginDatabaseTest, DropDatabaseTest) {
   EXPECT_EQ(path0, path1);
 }
 
-TEST(FileSystemOriginDatabaseTest, DeleteOriginTest) {
+TEST(SandboxOriginDatabaseTest, DeleteOriginTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
-  FileSystemOriginDatabase database(kFSDir);
+  SandboxOriginDatabase database(kFSDir);
   std::string origin("origin");
 
   EXPECT_FALSE(database.HasOriginPath(origin));
@@ -140,16 +141,16 @@ TEST(FileSystemOriginDatabaseTest, DeleteOriginTest) {
   EXPECT_NE(path0, path1);
 }
 
-TEST(FileSystemOriginDatabaseTest, ListOriginsTest) {
+TEST(SandboxOriginDatabaseTest, ListOriginsTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
-  std::vector<FileSystemOriginDatabase::OriginRecord> origins;
+  std::vector<SandboxOriginDatabase::OriginRecord> origins;
 
-  FileSystemOriginDatabase database(kFSDir);
+  SandboxOriginDatabase database(kFSDir);
   EXPECT_TRUE(database.ListAllOrigins(&origins));
   EXPECT_TRUE(origins.empty());
   origins.clear();
@@ -183,8 +184,8 @@ TEST(FileSystemOriginDatabaseTest, ListOriginsTest) {
   }
 }
 
-TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryTest) {
-  // Checks if FileSystemOriginDatabase properly handles database corruption.
+TEST(SandboxOriginDatabaseTest, DatabaseRecoveryTest) {
+  // Checks if SandboxOriginDatabase properly handles database corruption.
   // In this test, we'll register some origins to the origin database, then
   // corrupt database and its log file.
   // After repairing, the origin database should be consistent even when some
@@ -205,8 +206,8 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryTest) {
     "fuga.example.com",
   };
 
-  scoped_ptr<FileSystemOriginDatabase> database(
-      new FileSystemOriginDatabase(kFSDir));
+  scoped_ptr<SandboxOriginDatabase> database(
+      new SandboxOriginDatabase(kFSDir));
   for (size_t i = 0; i < arraysize(kOrigins); ++i) {
     base::FilePath path;
     EXPECT_FALSE(database->HasOriginPath(kOrigins[i]));
@@ -240,8 +241,8 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryTest) {
   CorruptDatabase(kDBDir, leveldb::kLogFile, -1, 1);
 
   base::FilePath path;
-  database.reset(new FileSystemOriginDatabase(kFSDir));
-  std::vector<FileSystemOriginDatabase::OriginRecord> origins_in_db;
+  database.reset(new SandboxOriginDatabase(kFSDir));
+  std::vector<SandboxOriginDatabase::OriginRecord> origins_in_db;
   EXPECT_TRUE(database->ListAllOrigins(&origins_in_db));
 
   // Expect all but last added origin will be repaired back, and kOrigins[1]
@@ -258,7 +259,7 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryTest) {
   EXPECT_FALSE(file_util::PathExists(kGarbageDir));
 }
 
-TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
+TEST(SandboxOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
   const leveldb::FileType kLevelDBFileTypes[] = {
     leveldb::kLogFile,
     leveldb::kDBLockFile,
@@ -280,8 +281,8 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
     const std::string kOrigin = "foo.example.com";
     base::FilePath path;
 
-    scoped_ptr<FileSystemOriginDatabase> database(
-        new FileSystemOriginDatabase(kFSDir));
+    scoped_ptr<SandboxOriginDatabase> database(
+        new SandboxOriginDatabase(kFSDir));
     EXPECT_FALSE(database->HasOriginPath(kOrigin));
     EXPECT_TRUE(database->GetPathForOrigin(kOrigin, &path));
     EXPECT_FALSE(path.empty());
@@ -291,8 +292,8 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
 
     DeleteDatabaseFile(kDBDir, kLevelDBFileTypes[i]);
 
-    database.reset(new FileSystemOriginDatabase(kFSDir));
-    std::vector<FileSystemOriginDatabase::OriginRecord> origins_in_db;
+    database.reset(new SandboxOriginDatabase(kFSDir));
+    std::vector<SandboxOriginDatabase::OriginRecord> origins_in_db;
     EXPECT_TRUE(database->ListAllOrigins(&origins_in_db));
 
     const std::string kOrigin2("piyo.example.org");

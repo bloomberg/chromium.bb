@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_DATABASE_TEST_HELPER_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_DATABASE_TEST_HELPER_H_
+#ifndef WEBKIT_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_
+#define WEBKIT_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_
 
 #include <cstddef>
 
@@ -25,4 +25,4 @@ void DeleteDatabaseFile(const base::FilePath& db_path,
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_DATABASE_TEST_HELPER_H_
+#endif  // WEBKIT_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_

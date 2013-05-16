@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_DIRECTORY_DATABASE_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_DIRECTORY_DATABASE_H_
+#ifndef WEBKIT_FILEAPI_SANDBOX_DIRECTORY_DATABASE_H_
+#define WEBKIT_FILEAPI_SANDBOX_DIRECTORY_DATABASE_H_
 
 #include <string>
 #include <vector>
@@ -34,7 +34,7 @@ namespace fileapi {
 // TODO(ericu): Safe mode, which does more checks such as the above on debug
 // builds.
 // TODO(ericu): Add a method that will give a unique filename for a data file.
-class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
+class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxDirectoryDatabase {
  public:
   typedef int64 FileId;
 
@@ -55,12 +55,14 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
     base::Time modification_time;
   };
 
-  explicit FileSystemDirectoryDatabase(
+  explicit SandboxDirectoryDatabase(
       const base::FilePath& filesystem_data_directory);
-  ~FileSystemDirectoryDatabase();
+  ~SandboxDirectoryDatabase();
 
   bool GetChildWithName(
-      FileId parent_id, const base::FilePath::StringType& name, FileId* child_id);
+      FileId parent_id,
+      const base::FilePath::StringType& name,
+      FileId* child_id);
   bool GetFileWithPath(const base::FilePath& path, FileId* file_id);
   // ListChildren will succeed, returning 0 children, if parent_id doesn't
   // exist.
@@ -82,7 +84,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
 
   // This produces the series 0, 1, 2..., starting at 0 when the underlying
   // filesystem is first created, and maintaining state across
-  // creation/destruction of FileSystemDirectoryDatabase objects.
+  // creation/destruction of SandboxDirectoryDatabase objects.
   bool GetNextInteger(int64* next);
 
   // Returns true if the database looks consistent with local filesystem.
@@ -97,7 +99,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
     FAIL_ON_CORRUPTION,
   };
 
-  friend class FileSystemDirectoryDatabaseTest;
+  friend class SandboxDirectoryDatabaseTest;
 
   bool Init(RecoveryOption recovery_option);
   bool RepairDatabase(const std::string& db_path);
@@ -114,9 +116,9 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
   const base::FilePath filesystem_data_directory_;
   scoped_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
-  DISALLOW_COPY_AND_ASSIGN(FileSystemDirectoryDatabase);
+  DISALLOW_COPY_AND_ASSIGN(SandboxDirectoryDatabase);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_DIRECTORY_DATABASE_H_
+#endif  // WEBKIT_FILEAPI_SANDBOX_DIRECTORY_DATABASE_H_

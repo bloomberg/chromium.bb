@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/file_system_directory_database.h"
+#include "webkit/fileapi/sandbox_directory_database.h"
 
 #include <math.h>
 #include <limits>
@@ -15,8 +15,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "webkit/fileapi/file_system_database_test_helper.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/sandbox_database_test_helper.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
@@ -26,17 +26,17 @@ namespace {
 const base::FilePath::CharType kDirectoryDatabaseName[] = FPL("Paths");
 }
 
-class FileSystemDirectoryDatabaseTest : public testing::Test {
+class SandboxDirectoryDatabaseTest : public testing::Test {
  public:
-  typedef FileSystemDirectoryDatabase::FileId FileId;
-  typedef FileSystemDirectoryDatabase::FileInfo FileInfo;
+  typedef SandboxDirectoryDatabase::FileId FileId;
+  typedef SandboxDirectoryDatabase::FileInfo FileInfo;
 
-  FileSystemDirectoryDatabaseTest() {
+  SandboxDirectoryDatabaseTest() {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
     InitDatabase();
   }
 
-  FileSystemDirectoryDatabase* db() {
+  SandboxDirectoryDatabase* db() {
     return db_.get();
   }
 
@@ -44,7 +44,7 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
     // Call CloseDatabase() to avoid having multiple database instances for
     // single directory at once.
     CloseDatabase();
-    db_.reset(new FileSystemDirectoryDatabase(path()));
+    db_.reset(new SandboxDirectoryDatabase(path()));
   }
 
   void CloseDatabase() {
@@ -102,7 +102,7 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
     db_.reset();
     ASSERT_TRUE(file_util::Delete(path(), true /* recursive */));
     ASSERT_TRUE(file_util::CreateDirectory(path()));
-    db_.reset(new FileSystemDirectoryDatabase(path()));
+    db_.reset(new SandboxDirectoryDatabase(path()));
   }
 
   bool RepairDatabase() {
@@ -138,18 +138,18 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
  protected:
   // Common temp base for nondestructive uses.
   base::ScopedTempDir base_;
-  scoped_ptr<FileSystemDirectoryDatabase> db_;
+  scoped_ptr<SandboxDirectoryDatabase> db_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemDirectoryDatabaseTest);
+  DISALLOW_COPY_AND_ASSIGN(SandboxDirectoryDatabaseTest);
 };
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestMissingFileGetInfo) {
+TEST_F(SandboxDirectoryDatabaseTest, TestMissingFileGetInfo) {
   FileId file_id = 888;
   FileInfo info;
   EXPECT_FALSE(db()->GetFileInfo(file_id, &info));
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestGetRootFileInfoBeforeCreate) {
+TEST_F(SandboxDirectoryDatabaseTest, TestGetRootFileInfoBeforeCreate) {
   FileId file_id = 0;
   FileInfo info;
   EXPECT_TRUE(db()->GetFileInfo(file_id, &info));
@@ -158,12 +158,12 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetRootFileInfoBeforeCreate) {
   EXPECT_TRUE(info.data_path.empty());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestMissingParentAddFileInfo) {
+TEST_F(SandboxDirectoryDatabaseTest, TestMissingParentAddFileInfo) {
   FileId parent_id = 7;
   EXPECT_FALSE(AddFileInfo(parent_id, FILE_PATH_LITERAL("foo")));
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestAddNameClash) {
+TEST_F(SandboxDirectoryDatabaseTest, TestAddNameClash) {
   FileInfo info;
   FileId file_id;
   info.parent_id = 0;
@@ -185,7 +185,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestAddNameClash) {
   EXPECT_TRUE(AddFileInfo(file_id, name));
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestRenameNoMoveNameClash) {
+TEST_F(SandboxDirectoryDatabaseTest, TestRenameNoMoveNameClash) {
   FileInfo info;
   FileId file_id0;
   base::FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
@@ -201,7 +201,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestRenameNoMoveNameClash) {
   EXPECT_TRUE(db()->UpdateFileInfo(file_id0, info));
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestMoveSameNameNameClash) {
+TEST_F(SandboxDirectoryDatabaseTest, TestMoveSameNameNameClash) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
@@ -218,7 +218,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestMoveSameNameNameClash) {
   EXPECT_TRUE(db()->UpdateFileInfo(file_id1, info));
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestMoveRenameNameClash) {
+TEST_F(SandboxDirectoryDatabaseTest, TestMoveRenameNameClash) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
@@ -242,7 +242,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestMoveRenameNameClash) {
   EXPECT_TRUE(db()->UpdateFileInfo(file_id1, info));
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestRemoveWithChildren) {
+TEST_F(SandboxDirectoryDatabaseTest, TestRemoveWithChildren) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
@@ -256,7 +256,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestRemoveWithChildren) {
   EXPECT_TRUE(db()->RemoveFileInfo(file_id0));
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestGetChildWithName) {
+TEST_F(SandboxDirectoryDatabaseTest, TestGetChildWithName) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
@@ -279,7 +279,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetChildWithName) {
   EXPECT_EQ(file_id1, check_file_id);
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestGetFileWithPath) {
+TEST_F(SandboxDirectoryDatabaseTest, TestGetFileWithPath) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
@@ -315,7 +315,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetFileWithPath) {
   EXPECT_EQ(file_id2, check_file_id);
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestListChildren) {
+TEST_F(SandboxDirectoryDatabaseTest, TestListChildren) {
   // No children in the root.
   std::vector<FileId> children;
   EXPECT_TRUE(db()->ListChildren(0, &children));
@@ -371,7 +371,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestListChildren) {
   }
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestUpdateModificationTime) {
+TEST_F(SandboxDirectoryDatabaseTest, TestUpdateModificationTime) {
   FileInfo info0;
   FileId file_id;
   info0.parent_id = 0;
@@ -401,7 +401,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestUpdateModificationTime) {
   EXPECT_FALSE(db()->UpdateModificationTime(999, base::Time::UnixEpoch()));
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestSimpleFileOperations) {
+TEST_F(SandboxDirectoryDatabaseTest, TestSimpleFileOperations) {
   FileId file_id = 888;
   FileInfo info0;
   EXPECT_FALSE(db()->GetFileInfo(file_id, &info0));
@@ -420,7 +420,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestSimpleFileOperations) {
       info1.modification_time.ToDoubleT());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSrcDirectory) {
+TEST_F(SandboxDirectoryDatabaseTest, TestOverwritingMoveFileSrcDirectory) {
   FileId directory_id;
   FileInfo info0;
   info0.parent_id = 0;
@@ -439,7 +439,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSrcDirectory) {
   EXPECT_FALSE(db()->OverwritingMoveFile(directory_id, file_id));
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileDestDirectory) {
+TEST_F(SandboxDirectoryDatabaseTest, TestOverwritingMoveFileDestDirectory) {
   FileId file_id;
   FileInfo info0;
   info0.parent_id = 0;
@@ -458,7 +458,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileDestDirectory) {
   EXPECT_FALSE(db()->OverwritingMoveFile(file_id, directory_id));
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSuccess) {
+TEST_F(SandboxDirectoryDatabaseTest, TestOverwritingMoveFileSuccess) {
   FileId file_id0;
   FileInfo info0;
   info0.parent_id = 0;
@@ -494,7 +494,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSuccess) {
   EXPECT_EQ(info0.data_path, check_info.data_path);
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestGetNextInteger) {
+TEST_F(SandboxDirectoryDatabaseTest, TestGetNextInteger) {
   int64 next = -1;
   EXPECT_TRUE(db()->GetNextInteger(&next));
   EXPECT_EQ(0, next);
@@ -510,7 +510,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetNextInteger) {
   EXPECT_EQ(4, next);
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_Empty) {
+TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_Empty) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 
   int64 next = -1;
@@ -519,7 +519,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_Empty) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_Consistent) {
+TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_Consistent) {
   FileId dir_id;
   CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
   CreateDirectory(0, FPL("bar"), &dir_id);
@@ -529,7 +529,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_Consistent) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest,
+TEST_F(SandboxDirectoryDatabaseTest,
        TestConsistencyCheck_BackingMultiEntry) {
   const base::FilePath::CharType kBackingFileName[] = FPL("the celeb");
   CreateFile(0, FPL("foo"), kBackingFileName, NULL);
@@ -540,7 +540,7 @@ TEST_F(FileSystemDirectoryDatabaseTest,
   EXPECT_FALSE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_FileLost) {
+TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_FileLost) {
   const base::FilePath::CharType kBackingFileName[] = FPL("hoge");
   CreateFile(0, FPL("foo"), kBackingFileName, NULL);
 
@@ -549,7 +549,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_FileLost) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_OrphanFile) {
+TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_OrphanFile) {
   CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
 
   EXPECT_TRUE(db()->IsFileSystemConsistent());
@@ -567,13 +567,13 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_OrphanFile) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_RootLoop) {
+TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_RootLoop) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
   MakeHierarchyLink(0, 0, base::FilePath::StringType());
   EXPECT_FALSE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_DirectoryLoop) {
+TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_DirectoryLoop) {
   FileId dir1_id;
   FileId dir2_id;
   base::FilePath::StringType dir1_name = FPL("foo");
@@ -585,7 +585,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_DirectoryLoop) {
   EXPECT_FALSE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_NameMismatch) {
+TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_NameMismatch) {
   FileId dir_id;
   FileId file_id;
   CreateDirectory(0, FPL("foo"), &dir_id);
@@ -597,7 +597,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_NameMismatch) {
   EXPECT_FALSE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_WreckedEntries) {
+TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_WreckedEntries) {
   FileId dir1_id;
   FileId dir2_id;
   CreateDirectory(0, FPL("foo"), &dir1_id);
@@ -609,14 +609,15 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_WreckedEntries) {
   EXPECT_FALSE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_Success) {
+TEST_F(SandboxDirectoryDatabaseTest, TestRepairDatabase_Success) {
   base::FilePath::StringType kFileName = FPL("bar");
 
   FileId file_id_prev;
   CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
   CreateFile(0, kFileName, FPL("fuga"), &file_id_prev);
 
-  const base::FilePath kDatabaseDirectory = path().Append(kDirectoryDatabaseName);
+  const base::FilePath kDatabaseDirectory =
+      path().Append(kDirectoryDatabaseName);
   CloseDatabase();
   CorruptDatabase(kDatabaseDirectory, leveldb::kDescriptorFile,
                   0, std::numeric_limits<size_t>::max());
@@ -630,13 +631,14 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_Success) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_Failure) {
+TEST_F(SandboxDirectoryDatabaseTest, TestRepairDatabase_Failure) {
   base::FilePath::StringType kFileName = FPL("bar");
 
   CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
   CreateFile(0, kFileName, FPL("fuga"), NULL);
 
-  const base::FilePath kDatabaseDirectory = path().Append(kDirectoryDatabaseName);
+  const base::FilePath kDatabaseDirectory =
+      path().Append(kDirectoryDatabaseName);
   CloseDatabase();
   CorruptDatabase(kDatabaseDirectory, leveldb::kDescriptorFile,
                   0, std::numeric_limits<size_t>::max());
@@ -650,7 +652,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_Failure) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
 
-TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_MissingManifest) {
+TEST_F(SandboxDirectoryDatabaseTest, TestRepairDatabase_MissingManifest) {
   base::FilePath::StringType kFileName = FPL("bar");
 
   FileId file_id_prev;

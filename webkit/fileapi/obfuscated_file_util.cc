@@ -42,14 +42,14 @@ namespace fileapi {
 
 namespace {
 
-typedef FileSystemDirectoryDatabase::FileId FileId;
-typedef FileSystemDirectoryDatabase::FileInfo FileInfo;
+typedef SandboxDirectoryDatabase::FileId FileId;
+typedef SandboxDirectoryDatabase::FileInfo FileInfo;
 
 const int64 kFlushDelaySeconds = 10 * 60;  // 10 minutes
 
 void InitFileInfo(
-    FileSystemDirectoryDatabase::FileInfo* file_info,
-    FileSystemDirectoryDatabase::FileId parent_id,
+    SandboxDirectoryDatabase::FileInfo* file_info,
+    SandboxDirectoryDatabase::FileId parent_id,
     const base::FilePath::StringType& file_name) {
   DCHECK(file_info);
   file_info->parent_id = parent_id;
@@ -88,7 +88,7 @@ void UpdateUsage(
       &FileUpdateObserver::OnUpdate, MakeTuple(url, growth));
 }
 
-void TouchDirectory(FileSystemDirectoryDatabase* db, FileId dir_id) {
+void TouchDirectory(SandboxDirectoryDatabase* db, FileId dir_id) {
   DCHECK(db);
   if (!db->UpdateModificationTime(dir_id, base::Time::Now()))
     NOTREACHED();
@@ -107,7 +107,7 @@ class ObfuscatedFileEnumerator
     : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
   ObfuscatedFileEnumerator(
-      FileSystemDirectoryDatabase* db,
+      SandboxDirectoryDatabase* db,
       FileSystemOperationContext* context,
       ObfuscatedFileUtil* obfuscated_file_util,
       const FileSystemURL& root_url,
@@ -170,8 +170,8 @@ class ObfuscatedFileEnumerator
   }
 
  private:
-  typedef FileSystemDirectoryDatabase::FileId FileId;
-  typedef FileSystemDirectoryDatabase::FileInfo FileInfo;
+  typedef SandboxDirectoryDatabase::FileId FileId;
+  typedef SandboxDirectoryDatabase::FileInfo FileInfo;
 
   struct FileRecord {
     FileId file_id;
@@ -190,7 +190,7 @@ class ObfuscatedFileEnumerator
     }
   }
 
-  FileSystemDirectoryDatabase* db_;
+  SandboxDirectoryDatabase* db_;
   FileSystemOperationContext* context_;
   ObfuscatedFileUtil* obfuscated_file_util_;
   GURL origin_;
@@ -208,9 +208,9 @@ class ObfuscatedFileEnumerator
 class ObfuscatedOriginEnumerator
     : public ObfuscatedFileUtil::AbstractOriginEnumerator {
  public:
-  typedef FileSystemOriginDatabase::OriginRecord OriginRecord;
+  typedef SandboxOriginDatabase::OriginRecord OriginRecord;
   ObfuscatedOriginEnumerator(
-      FileSystemOriginDatabase* origin_database,
+      SandboxOriginDatabase* origin_database,
       const base::FilePath& base_file_path)
       : base_file_path_(base_file_path) {
     if (origin_database)
@@ -286,7 +286,7 @@ PlatformFileError ObfuscatedFileUtil::EnsureFileExists(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     bool* created) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       url.origin(), url.type(), true);
   if (!db)
     return base::PLATFORM_FILE_ERROR_FAILED;
@@ -331,7 +331,7 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
     const FileSystemURL& url,
     bool exclusive,
     bool recursive) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       url.origin(), url.type(), true);
   if (!db)
     return base::PLATFORM_FILE_ERROR_FAILED;
@@ -402,7 +402,7 @@ PlatformFileError ObfuscatedFileUtil::GetFileInfo(
     const FileSystemURL& url,
     base::PlatformFileInfo* file_info,
     base::FilePath* platform_file_path) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       url.origin(), url.type(), false);
   if (!db)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -427,7 +427,7 @@ PlatformFileError ObfuscatedFileUtil::GetLocalFilePath(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     base::FilePath* local_path) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       url.origin(), url.type(), false);
   if (!db)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -453,7 +453,7 @@ PlatformFileError ObfuscatedFileUtil::Touch(
     const FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       url.origin(), url.type(), false);
   if (!db)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -509,7 +509,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
   DCHECK(src_url.origin() == dest_url.origin());
   DCHECK(src_url.type() == dest_url.type());
 
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       src_url.origin(), src_url.type(), true);
   if (!db)
     return base::PLATFORM_FILE_ERROR_FAILED;
@@ -645,7 +645,7 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
     FileSystemOperationContext* context,
     const base::FilePath& src_file_path,
     const FileSystemURL& dest_url) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       dest_url.origin(), dest_url.type(), true);
   if (!db)
     return base::PLATFORM_FILE_ERROR_FAILED;
@@ -723,7 +723,7 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
 PlatformFileError ObfuscatedFileUtil::DeleteFile(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       url.origin(), url.type(), true);
   if (!db)
     return base::PLATFORM_FILE_ERROR_FAILED;
@@ -768,7 +768,7 @@ PlatformFileError ObfuscatedFileUtil::DeleteFile(
 PlatformFileError ObfuscatedFileUtil::DeleteDirectory(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       url.origin(), url.type(), true);
   if (!db)
     return base::PLATFORM_FILE_ERROR_FAILED;
@@ -814,7 +814,7 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
     FileSystemOperationContext* context,
     const FileSystemURL& root_url,
     bool recursive) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       root_url.origin(), root_url.type(), false);
   if (!db) {
     return scoped_ptr<AbstractFileEnumerator>(new EmptyFileEnumerator());
@@ -826,7 +826,7 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
 bool ObfuscatedFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       url.origin(), url.type(), false);
   if (!db)
     return true;  // Not a great answer, but it's what others do.
@@ -950,7 +950,7 @@ base::FilePath::StringType ObfuscatedFileUtil::GetDirectoryNameForType(
 
 ObfuscatedFileUtil::AbstractOriginEnumerator*
 ObfuscatedFileUtil::CreateOriginEnumerator() {
-  std::vector<FileSystemOriginDatabase::OriginRecord> origins;
+  std::vector<SandboxOriginDatabase::OriginRecord> origins;
 
   InitOriginDatabase(false);
   return new ObfuscatedOriginEnumerator(
@@ -969,7 +969,7 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
       type_string;
   DirectoryMap::iterator iter = directories_.find(key);
   if (iter != directories_.end()) {
-    FileSystemDirectoryDatabase* database = iter->second;
+    SandboxDirectoryDatabase* database = iter->second;
     directories_.erase(iter);
     delete database;
   }
@@ -978,7 +978,7 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
   base::FilePath path = GetDirectoryForOriginAndType(origin, type, false, &error);
   if (path.empty() || error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
     return true;
-  return FileSystemDirectoryDatabase::DestroyDatabase(path);
+  return SandboxDirectoryDatabase::DestroyDatabase(path);
 }
 
 // static
@@ -987,7 +987,7 @@ int64 ObfuscatedFileUtil::ComputeFilePathCost(const base::FilePath& path) {
 }
 
 PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(
-    FileSystemDirectoryDatabase* db,
+    SandboxDirectoryDatabase* db,
     FileSystemOperationContext* context,
     const GURL& origin,
     FileSystemType type,
@@ -1044,7 +1044,7 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
     FileInfo* dest_file_info, int file_flags, PlatformFile* handle) {
   if (handle)
     *handle = base::kInvalidPlatformFileValue;
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       dest_origin, dest_type, true);
 
   PlatformFileError error = base::PLATFORM_FILE_OK;
@@ -1130,7 +1130,7 @@ base::FilePath ObfuscatedFileUtil::DataPathToLocalPath(
 // We may not have quota even to create the database.
 // Ah, in that case don't even get here?
 // Still doesn't answer the quota issue, though.
-FileSystemDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
+SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     const GURL& origin, FileSystemType type, bool create) {
   std::string type_string = GetFileSystemTypeString(type);
   if (type_string.empty()) {
@@ -1153,7 +1153,7 @@ FileSystemDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     return NULL;
   }
   MarkUsed();
-  FileSystemDirectoryDatabase* database = new FileSystemDirectoryDatabase(path);
+  SandboxDirectoryDatabase* database = new SandboxDirectoryDatabase(path);
   directories_[key] = database;
   return database;
 }
@@ -1243,13 +1243,13 @@ bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
       return false;
     }
     origin_database_.reset(
-        new FileSystemOriginDatabase(file_system_directory_));
+        new SandboxOriginDatabase(file_system_directory_));
   }
   return true;
 }
 
 PlatformFileError ObfuscatedFileUtil::GenerateNewLocalPath(
-    FileSystemDirectoryDatabase* db,
+    SandboxDirectoryDatabase* db,
     FileSystemOperationContext* context,
     const GURL& origin,
     FileSystemType type,
@@ -1287,7 +1287,7 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpenInternal(
   DCHECK(!(file_flags & (base::PLATFORM_FILE_DELETE_ON_CLOSE |
         base::PLATFORM_FILE_HIDDEN | base::PLATFORM_FILE_EXCLUSIVE_READ |
         base::PLATFORM_FILE_EXCLUSIVE_WRITE)));
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(
       url.origin(), url.type(), true);
   if (!db)
     return base::PLATFORM_FILE_ERROR_FAILED;

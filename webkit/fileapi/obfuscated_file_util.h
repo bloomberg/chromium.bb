@@ -14,11 +14,11 @@
 #include "base/platform_file.h"
 #include "base/timer.h"
 #include "webkit/blob/shareable_file_reference.h"
-#include "webkit/fileapi/file_system_directory_database.h"
 #include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/file_system_origin_database.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/sandbox_directory_database.h"
+#include "webkit/fileapi/sandbox_origin_database.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -171,13 +171,13 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
   static int64 ComputeFilePathCost(const base::FilePath& path);
 
  private:
-  typedef FileSystemDirectoryDatabase::FileId FileId;
-  typedef FileSystemDirectoryDatabase::FileInfo FileInfo;
+  typedef SandboxDirectoryDatabase::FileId FileId;
+  typedef SandboxDirectoryDatabase::FileInfo FileInfo;
 
   friend class ObfuscatedFileEnumerator;
 
   base::PlatformFileError GetFileInfoInternal(
-      FileSystemDirectoryDatabase* db,
+      SandboxDirectoryDatabase* db,
       FileSystemOperationContext* context,
       const GURL& origin,
       FileSystemType type,
@@ -217,7 +217,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
   // This returns NULL if |create| flag is false and a filesystem does not
   // exist for the given |origin_url| and |type|.
   // For read operations |create| should be false.
-  FileSystemDirectoryDatabase* GetDirectoryDatabase(
+  SandboxDirectoryDatabase* GetDirectoryDatabase(
       const GURL& origin_url, FileSystemType type, bool create);
 
   // Gets the topmost directory specific to this origin.  This will
@@ -235,7 +235,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
   bool InitOriginDatabase(bool create);
 
   base::PlatformFileError GenerateNewLocalPath(
-      FileSystemDirectoryDatabase* db,
+      SandboxDirectoryDatabase* db,
       FileSystemOperationContext* context,
       const GURL& origin,
       FileSystemType type,
@@ -248,9 +248,9 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
       base::PlatformFile* file_handle,
       bool* created);
 
-  typedef std::map<std::string, FileSystemDirectoryDatabase*> DirectoryMap;
+  typedef std::map<std::string, SandboxDirectoryDatabase*> DirectoryMap;
   DirectoryMap directories_;
-  scoped_ptr<FileSystemOriginDatabase> origin_database_;
+  scoped_ptr<SandboxOriginDatabase> origin_database_;
   base::FilePath file_system_directory_;
   base::OneShotTimer<ObfuscatedFileUtil> timer_;
 
