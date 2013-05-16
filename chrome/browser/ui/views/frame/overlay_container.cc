@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/detachable_toolbar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
@@ -90,8 +91,11 @@ class ShadowView : public views::View {
 
 }  // namespace
 
-OverlayContainer::OverlayContainer(BrowserView* browser_view)
+OverlayContainer::OverlayContainer(
+    BrowserView* browser_view,
+    ImmersiveModeController* immersive_mode_controller)
     : browser_view_(browser_view),
+      immersive_mode_controller_(immersive_mode_controller),
       overlay_(NULL),
       overlay_web_contents_(NULL),
       draw_drop_shadow_(false),
@@ -107,6 +111,8 @@ void OverlayContainer::ResetOverlayAndContents() {
   shadow_view_.reset();
   overlay_ = NULL;
   overlay_web_contents_ = NULL;
+  // Allow top views to close in immersive fullscreen.
+  immersive_revealed_lock_.reset();
   // Unregister from observing previous |overlay_web_contents_|.
   registrar_.RemoveAll();
 }
@@ -151,10 +157,16 @@ void OverlayContainer::SetOverlay(views::WebView* overlay,
     overlay_ = overlay;
     if (overlay_) {
       AddChildView(overlay_);
+      // Hold the top views open in immersive fullscreen.
+      immersive_revealed_lock_.reset(
+          immersive_mode_controller_->GetRevealedLock(
+              ImmersiveModeController::ANIMATE_REVEAL_NO));
     } else {
       // There's no more overlay, repaint infobars that were obscured by the
       // previous overlay.
       repaint_infobars = true;
+      // Allow top views to close in immersive fullscreen.
+      immersive_revealed_lock_.reset();
     }
   }
 

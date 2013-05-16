@@ -2034,7 +2034,8 @@ void BrowserView::InitViews() {
   top_container_->AddChildView(toolbar_);
   toolbar_->Init();
 
-  overlay_container_ = new OverlayContainer(this);
+  overlay_container_ =
+      new OverlayContainer(this, immersive_mode_controller_.get());
   overlay_container_->SetVisible(false);
   AddChildView(overlay_container_);
 

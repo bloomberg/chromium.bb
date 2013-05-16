@@ -9,12 +9,15 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/instant_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/view.h"
 
 class BrowserView;
+class ImmersiveModeController;
+class ImmersiveRevealedLock;
 
 namespace content {
 class WebContents;
@@ -35,7 +38,8 @@ class WebView;
 class OverlayContainer : public views::View,
                          public content::NotificationObserver {
  public:
-  explicit OverlayContainer(BrowserView* browser_view);
+  OverlayContainer(BrowserView* browser_view,
+                   ImmersiveModeController* immersive_mode_controller);
   virtual ~OverlayContainer();
 
   // Sets the overlay view. This does not delete the old.
@@ -89,6 +93,10 @@ class OverlayContainer : public views::View,
                        const content::NotificationDetails& details) OVERRIDE;
 
   BrowserView* const browser_view_;
+  ImmersiveModeController* immersive_mode_controller_;
+
+  // Used to force the top views open while in immersive fullscreen.
+  scoped_ptr<ImmersiveRevealedLock> immersive_revealed_lock_;
 
   // Owned by |InstantOverlayControllerViews|.
   views::WebView* overlay_;

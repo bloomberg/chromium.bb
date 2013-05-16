@@ -144,6 +144,8 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
 
     root_view_.reset(new MockView(gfx::Size(800, 600)));
 
+    immersive_mode_controller_.reset(new MockImmersiveModeController);
+
     top_container_ = new MockView(gfx::Size(800, 60));
     tab_strip_ = new TabStrip(NULL);
     top_container_->AddChildView(tab_strip_);
@@ -151,7 +153,8 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     top_container_->AddChildView(toolbar_);
     root_view_->AddChildView(top_container_);
 
-    overlay_container_ = new OverlayContainer(NULL);
+    overlay_container_ =
+        new OverlayContainer(NULL, immersive_mode_controller_.get());
     root_view_->AddChildView(overlay_container_);
 
     infobar_container_ = new InfoBarContainerView(NULL, NULL);
@@ -162,8 +165,6 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     contents_container_ = new ContentsContainer(active_web_view_);
     contents_split_->AddChildView(contents_container_);
     root_view_->AddChildView(contents_split_);
-
-    immersive_mode_controller_.reset(new MockImmersiveModeController);
 
     // TODO(jamescook): Attach |layout_| to |root_view_|?
     layout_.reset(new BrowserViewLayout);
