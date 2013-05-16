@@ -478,7 +478,7 @@ class InputApi(object):
       else:
         assert issubclass(t.message, _PresubmitResult)
         tests.append(t)
-    if parallel:
+    if tests and parallel:
       pool = multiprocessing.Pool()
       # async recipe works around multiprocessing bug handling Ctrl-C
       msgs.extend(pool.map_async(CallCommand, tests).get(99999))
