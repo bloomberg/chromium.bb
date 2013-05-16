@@ -16,14 +16,22 @@ class MostVisitedIframeSource : public IframeSource {
   MostVisitedIframeSource();
   virtual ~MostVisitedIframeSource();
 
- protected:
-  // Overridden from IframeSource:
-  virtual std::string GetSource() const OVERRIDE;
+  // Number of Most Visited elements on the NTP for logging purposes.
+  static const int kNumMostVisited;
+  // Name of the histogram keeping track of Most Visited clicks.
+  static const char kMostVisitedHistogramName[];
+
+  // Overridden from IframeSource. Public for testing.
   virtual void StartDataRequest(
       const std::string& path_and_query,
       int render_process_id,
       int render_view_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
+
+ protected:
+  // Overridden from IframeSource:
+  virtual std::string GetSource() const OVERRIDE;
+
   virtual bool ServesPath(const std::string& path) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedIframeSource);

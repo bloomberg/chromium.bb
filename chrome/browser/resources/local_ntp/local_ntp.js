@@ -362,7 +362,7 @@ function onMostVisitedChange() {
     // Otherwise render the tiles using the new data without animation.
     tiles = [];
     for (var i = 0; i < MAX_NUM_TILES_TO_SHOW; ++i) {
-      tiles.push(createTile(pages[i]));
+      tiles.push(createTile(pages[i], i));
     }
     renderTiles();
   }
@@ -393,16 +393,18 @@ function renderTiles() {
  * @param {string} fontFamily The font family for text in the iframe.
  * @param {number} fontSize The font size for text in the iframe.
  * @param {boolean} textShadow True if text should be drawn with a shadow.
+ * @param {number} position The position of the iframe in the UI.
  * @return {string} An URL to display the most visited component in an iframe.
  */
 function getMostVisitedIframeUrl(filename, rid, color, fontFamily, fontSize,
-    textShadow) {
+    textShadow, position) {
   return 'chrome-search://most-visited/' + encodeURIComponent(filename) + '?' +
       ['rid=' + encodeURIComponent(rid),
        'c=' + encodeURIComponent(color),
        'f=' + encodeURIComponent(fontFamily),
        'fs=' + encodeURIComponent(fontSize),
-       'ts=' + (textShadow ? '1' : '')].join('&');
+       'ts=' + (textShadow ? '1' : ''),
+       'pos=' + encodeURIComponent(position)].join('&');
 }
 
 
@@ -410,9 +412,10 @@ function getMostVisitedIframeUrl(filename, rid, color, fontFamily, fontSize,
  * Creates a Tile with the specified page data. If no data is provided, a
  * filler Tile is created.
  * @param {Object} page The page data.
+ * @param {number} position The position of the tile.
  * @return {Tile} The new Tile.
  */
-function createTile(page) {
+function createTile(page, position) {
   var tileElement = document.createElement('div');
   tileElement.classList.add(CLASSES.TILE);
 
@@ -433,7 +436,8 @@ function createTile(page) {
     titleElement.src = getMostVisitedIframeUrl(
         MOST_VISITED_TITLE_IFRAME, rid,
         usingCustomTheme ? MOST_VISITED_THEME_TITLE_COLOR : MOST_VISITED_COLOR,
-        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, usingCustomTheme);
+        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, usingCustomTheme,
+        position);
     titleElement.hidden = true;
     titleElement.onload = function() { titleElement.hidden = false; };
     titleElement.className = CLASSES.TITLE;
@@ -443,7 +447,7 @@ function createTile(page) {
     var thumbnailElement = document.createElement('iframe');
     thumbnailElement.src = getMostVisitedIframeUrl(
         MOST_VISITED_THUMBNAIL_IFRAME, rid, MOST_VISITED_COLOR,
-        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, false);
+        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, false, position);
     thumbnailElement.hidden = true;
     thumbnailElement.onload = function() {
       thumbnailElement.hidden = false;

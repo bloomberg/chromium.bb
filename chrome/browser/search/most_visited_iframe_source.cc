@@ -4,9 +4,12 @@
 
 #include "chrome/browser/search/most_visited_iframe_source.h"
 
+#include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
+#include "net/base/url_util.h"
 
 namespace {
 
@@ -18,6 +21,7 @@ const char kThumbnailCSSPath[] = "/thumbnail.css";
 const char kThumbnailJSPath[] = "/thumbnail.js";
 const char kUtilJSPath[] = "/util.js";
 const char kCommonCSSPath[] = "/common.css";
+const char kLogHTMLPath[] = "/log.html";
 
 }  // namespace
 
@@ -26,6 +30,10 @@ MostVisitedIframeSource::MostVisitedIframeSource() {
 
 MostVisitedIframeSource::~MostVisitedIframeSource() {
 }
+
+const int MostVisitedIframeSource::kNumMostVisited = 8;
+const char MostVisitedIframeSource::kMostVisitedHistogramName[] =
+    "NewTabPage.MostVisited";
 
 std::string MostVisitedIframeSource::GetSource() const {
   return chrome::kChromeSearchMostVisitedHost;
@@ -36,8 +44,8 @@ void MostVisitedIframeSource::StartDataRequest(
     int render_process_id,
     int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  std::string path(GURL(chrome::kChromeSearchMostVisitedUrl +
-                        path_and_query).path());
+  GURL url(chrome::kChromeSearchMostVisitedUrl + path_and_query);
+  std::string path(url.path());
   if (path == kTitleHTMLPath) {
     SendResource(IDR_MOST_VISITED_TITLE_HTML, callback);
   } else if (path == kTitleCSSPath) {
@@ -54,6 +62,15 @@ void MostVisitedIframeSource::StartDataRequest(
     SendResource(IDR_MOST_VISITED_UTIL_JS, callback);
   } else if (path == kCommonCSSPath) {
     SendResource(IDR_MOST_VISITED_IFRAME_CSS, callback);
+  } else if (path == kLogHTMLPath) {
+    // Log the clicked MostVisited element by position.
+    std::string str_position;
+    int position;
+    if (net::GetValueForKeyInQuery(url, "pos", &str_position) &&
+        base::StringToInt(str_position, &position))
+      UMA_HISTOGRAM_ENUMERATION(kMostVisitedHistogramName, position,
+                                kNumMostVisited);
+    callback.Run(NULL);
   } else {
     callback.Run(NULL);
   }
@@ -63,5 +80,5 @@ bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
   return path == kTitleHTMLPath || path == kTitleCSSPath ||
          path == kTitleJSPath || path == kThumbnailHTMLPath ||
          path == kThumbnailCSSPath || path == kThumbnailJSPath ||
-         path == kUtilJSPath || path == kCommonCSSPath;
+         path == kUtilJSPath || path == kCommonCSSPath || path == kLogHTMLPath;
 }

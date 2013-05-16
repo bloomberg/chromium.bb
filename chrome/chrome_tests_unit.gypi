@@ -1076,6 +1076,7 @@
         'browser/safe_browsing/signature_util_win_unittest.cc',
         'browser/safe_browsing/two_phase_uploader_unittest.cc',
         'browser/search/iframe_source_unittest.cc',
+        'browser/search/most_visited_iframe_source_unittest.cc',
         'browser/search/search_unittest.cc',
         'browser/search_engines/search_host_to_urls_map_unittest.cc',
         'browser/search_engines/search_provider_install_data_unittest.cc',

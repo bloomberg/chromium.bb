@@ -53,6 +53,8 @@ function createMostVisitedLink(params, href, title, text) {
   if (styles.textShadow)
     link.style.textShadow = styles.textShadow;
   link.href = href;
+  if ('pos' in params && isFinite(params.pos))
+    link.ping = '/log.html?pos=' + params.pos;
   link.title = title;
   link.target = '_top';
   if (text)
