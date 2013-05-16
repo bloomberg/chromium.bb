@@ -25,11 +25,8 @@
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_test_util_common.h"
-#include "net/spdy/spdy_test_util_spdy2.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-using namespace net::test_spdy2;
 
 //-----------------------------------------------------------------------------
 
@@ -63,9 +60,11 @@ static const char kRedirectUrl[] = "https://example.com/";
 
 namespace net {
 
-class SpdyProxyClientSocketSpdy2Test : public PlatformTest {
+class SpdyProxyClientSocketTest
+    : public PlatformTest,
+      public testing::WithParamInterface<NextProto> {
  public:
-  SpdyProxyClientSocketSpdy2Test();
+  SpdyProxyClientSocketTest();
 
   virtual void TearDown();
 
@@ -132,19 +131,23 @@ class SpdyProxyClientSocketSpdy2Test : public PlatformTest {
   HostPortProxyPair endpoint_host_port_proxy_pair_;
   scoped_refptr<TransportSocketParams> transport_params_;
 
-  DISALLOW_COPY_AND_ASSIGN(SpdyProxyClientSocketSpdy2Test);
+  DISALLOW_COPY_AND_ASSIGN(SpdyProxyClientSocketTest);
 };
 
-SpdyProxyClientSocketSpdy2Test::SpdyProxyClientSocketSpdy2Test()
-    : spdy_util_(kProtoSPDY2),
+INSTANTIATE_TEST_CASE_P(NextProto,
+                        SpdyProxyClientSocketTest,
+                        testing::Values(kProtoSPDY2, kProtoSPDY3));
+
+SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
+    : spdy_util_(GetParam()),
       sock_(NULL),
       data_(NULL),
       session_(NULL),
       read_buf_(NULL),
-      session_deps_(kProtoSPDY2),
+      session_deps_(GetParam()),
       connect_data_(SYNCHRONOUS, OK),
       spdy_session_(NULL),
-      framer_(2, false),
+      framer_(spdy_util_.spdy_version(), false),
       user_agent_(kUserAgent),
       url_(kRequestUrl),
       proxy_host_port_(kProxyHost, kProxyPort),
@@ -159,7 +162,7 @@ SpdyProxyClientSocketSpdy2Test::SpdyProxyClientSocketSpdy2Test()
   session_deps_.net_log = net_log_.bound().net_log();
 }
 
-void SpdyProxyClientSocketSpdy2Test::TearDown() {
+void SpdyProxyClientSocketTest::TearDown() {
   sock_.reset(NULL);
   if (session_ != NULL)
     session_->spdy_session_pool()->CloseAllSessions();
@@ -169,7 +172,7 @@ void SpdyProxyClientSocketSpdy2Test::TearDown() {
   PlatformTest::TearDown();
 }
 
-void SpdyProxyClientSocketSpdy2Test::Initialize(MockRead* reads,
+void SpdyProxyClientSocketTest::Initialize(MockRead* reads,
                                                 size_t reads_count,
                                                 MockWrite* writes,
                                                 size_t writes_count) {
@@ -215,33 +218,33 @@ void SpdyProxyClientSocketSpdy2Test::Initialize(MockRead* reads,
                                 session_->http_auth_handler_factory()));
 }
 
-scoped_refptr<IOBufferWithSize> SpdyProxyClientSocketSpdy2Test::CreateBuffer(
+scoped_refptr<IOBufferWithSize> SpdyProxyClientSocketTest::CreateBuffer(
     const char* data, int size) {
   scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(size));
   memcpy(buf->data(), data, size);
   return buf;
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertConnectSucceeds() {
+void SpdyProxyClientSocketTest::AssertConnectSucceeds() {
   ASSERT_EQ(ERR_IO_PENDING, sock_->Connect(read_callback_.callback()));
   data_->Run();
   ASSERT_EQ(OK, read_callback_.WaitForResult());
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertConnectFails(int result) {
+void SpdyProxyClientSocketTest::AssertConnectFails(int result) {
   ASSERT_EQ(ERR_IO_PENDING, sock_->Connect(read_callback_.callback()));
   data_->Run();
   ASSERT_EQ(result, read_callback_.WaitForResult());
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertConnectionEstablished() {
+void SpdyProxyClientSocketTest::AssertConnectionEstablished() {
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
   ASSERT_TRUE(response != NULL);
   ASSERT_EQ(200, response->headers->response_code());
   ASSERT_EQ("Connection Established", response->headers->GetStatusText());
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertSyncReadEquals(const char* data,
+void SpdyProxyClientSocketTest::AssertSyncReadEquals(const char* data,
                                                      int len) {
   scoped_refptr<IOBuffer> buf(new IOBuffer(len));
   ASSERT_EQ(len, sock_->Read(buf, len, CompletionCallback()));
@@ -249,7 +252,7 @@ void SpdyProxyClientSocketSpdy2Test::AssertSyncReadEquals(const char* data,
   ASSERT_TRUE(sock_->IsConnected());
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertAsyncReadEquals(const char* data,
+void SpdyProxyClientSocketTest::AssertAsyncReadEquals(const char* data,
                                                            int len) {
   data_->StopAfter(1);
   // Issue the read, which will be completed asynchronously
@@ -265,7 +268,7 @@ void SpdyProxyClientSocketSpdy2Test::AssertAsyncReadEquals(const char* data,
   ASSERT_EQ(std::string(data, len), std::string(buf->data(), len));
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertReadStarts(const char* data,
+void SpdyProxyClientSocketTest::AssertReadStarts(const char* data,
                                                       int len) {
   data_->StopAfter(1);
   // Issue the read, which will be completed asynchronously
@@ -275,7 +278,7 @@ void SpdyProxyClientSocketSpdy2Test::AssertReadStarts(const char* data,
   EXPECT_TRUE(sock_->IsConnected());
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertReadReturns(const char* data,
+void SpdyProxyClientSocketTest::AssertReadReturns(const char* data,
                                                        int len) {
   EXPECT_TRUE(sock_->IsConnected());
 
@@ -284,25 +287,25 @@ void SpdyProxyClientSocketSpdy2Test::AssertReadReturns(const char* data,
   ASSERT_EQ(std::string(data, len), std::string(read_buf_->data(), len));
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertAsyncWriteSucceeds(const char* data,
+void SpdyProxyClientSocketTest::AssertAsyncWriteSucceeds(const char* data,
                                                               int len) {
   AssertWriteReturns(data, len, ERR_IO_PENDING);
   data_->RunFor(1);
   AssertWriteLength(len);
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertWriteReturns(const char* data,
+void SpdyProxyClientSocketTest::AssertWriteReturns(const char* data,
                                                         int len,
                                                         int rv) {
   scoped_refptr<IOBufferWithSize> buf(CreateBuffer(data, len));
   EXPECT_EQ(rv, sock_->Write(buf, buf->size(), write_callback_.callback()));
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertWriteLength(int len) {
+void SpdyProxyClientSocketTest::AssertWriteLength(int len) {
   EXPECT_EQ(len, write_callback_.WaitForResult());
 }
 
-void SpdyProxyClientSocketSpdy2Test::AssertAsyncWriteWithReadsSucceeds(
+void SpdyProxyClientSocketTest::AssertAsyncWriteWithReadsSucceeds(
     const char* data, int len, int num_reads) {
   scoped_refptr<IOBufferWithSize> buf(CreateBuffer(data, len));
 
@@ -319,13 +322,14 @@ void SpdyProxyClientSocketSpdy2Test::AssertAsyncWriteWithReadsSucceeds(
 
 // Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
 SpdyFrame*
-SpdyProxyClientSocketSpdy2Test::ConstructConnectRequestFrame() {
+SpdyProxyClientSocketTest::ConstructConnectRequestFrame() {
   const SpdyHeaderInfo kSynStartHeader = {
     SYN_STREAM,
     kStreamId,
     0,
-    net::ConvertRequestPriorityToSpdyPriority(LOWEST, 2),
-    kSpdyCredentialSlotUnused,
+    net::ConvertRequestPriorityToSpdyPriority(
+        LOWEST, spdy_util_.spdy_version()),
+    0,
     CONTROL_FLAG_NONE,
     false,
     RST_STREAM_INVALID,
@@ -333,12 +337,13 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectRequestFrame() {
     0,
     DATA_FLAG_NONE
   };
+  bool spdy2 = spdy_util_.is_spdy2();
   const char* const kConnectHeaders[] = {
-    "method", "CONNECT",
-    "url", kOriginHostPort,
-    "host", kOriginHost,
+    spdy2 ? "method"  : ":method",  "CONNECT",
+    spdy2 ? "url"     : ":path",    kOriginHostPort,
+    spdy2 ? "host"    : ":host",    kOriginHost,
     "user-agent", kUserAgent,
-    "version", "HTTP/1.1",
+    spdy2 ? "version" : ":version", "HTTP/1.1",
   };
   return spdy_util_.ConstructSpdyFrame(
       kSynStartHeader, NULL, 0, kConnectHeaders, arraysize(kConnectHeaders)/2);
@@ -347,13 +352,14 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectRequestFrame() {
 // Constructs a SPDY SYN_STREAM frame for a CONNECT request which includes
 // Proxy-Authorization headers.
 SpdyFrame*
-SpdyProxyClientSocketSpdy2Test::ConstructConnectAuthRequestFrame() {
+SpdyProxyClientSocketTest::ConstructConnectAuthRequestFrame() {
   const SpdyHeaderInfo kSynStartHeader = {
     SYN_STREAM,
     kStreamId,
     0,
-    net::ConvertRequestPriorityToSpdyPriority(LOWEST, 2),
-    kSpdyCredentialSlotUnused,
+    net::ConvertRequestPriorityToSpdyPriority(
+        LOWEST, spdy_util_.spdy_version()),
+    0,
     CONTROL_FLAG_NONE,
     false,
     RST_STREAM_INVALID,
@@ -361,12 +367,13 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectAuthRequestFrame() {
     0,
     DATA_FLAG_NONE
   };
+  bool spdy2 = spdy_util_.is_spdy2();
   const char* const kConnectHeaders[] = {
-    "method", "CONNECT",
-    "url", kOriginHostPort,
-    "host", kOriginHost,
+    spdy2 ? "method"  : ":method",  "CONNECT",
+    spdy2 ? "url"     : ":path",    kOriginHostPort,
+    spdy2 ? "host"    : ":host",    kOriginHost,
     "user-agent", kUserAgent,
-    "version", "HTTP/1.1",
+    spdy2 ? "version" : ":version", "HTTP/1.1",
     "proxy-authorization", "Basic Zm9vOmJhcg==",
   };
   return spdy_util_.ConstructSpdyFrame(
@@ -374,10 +381,11 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectAuthRequestFrame() {
 }
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT.
-SpdyFrame* SpdyProxyClientSocketSpdy2Test::ConstructConnectReplyFrame() {
+SpdyFrame* SpdyProxyClientSocketTest::ConstructConnectReplyFrame() {
+  bool spdy2 = spdy_util_.is_spdy2();
   const char* const kStandardReplyHeaders[] = {
-      "status", "200 Connection Established",
-      "version", "HTTP/1.1"
+      spdy2 ? "status"  : ":status",  "200 Connection Established",
+      spdy2 ? "version" : ":version", "HTTP/1.1"
   };
   return spdy_util_.ConstructSpdyControlFrame(NULL,
                                               0,
@@ -393,10 +401,12 @@ SpdyFrame* SpdyProxyClientSocketSpdy2Test::ConstructConnectReplyFrame() {
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT.
 SpdyFrame*
-SpdyProxyClientSocketSpdy2Test::ConstructConnectAuthReplyFrame() {
+SpdyProxyClientSocketTest::ConstructConnectAuthReplyFrame() {
+  bool spdy2 = spdy_util_.is_spdy2();
+
   const char* const kStandardReplyHeaders[] = {
-      "status", "407 Proxy Authentication Required",
-      "version", "HTTP/1.1",
+      spdy2 ? "status"  : ":status",  "407 Proxy Authentication Required",
+      spdy2 ? "version" : ":version", "HTTP/1.1",
       "proxy-authenticate", "Basic realm=\"MyRealm1\"",
   };
 
@@ -414,10 +424,12 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectAuthReplyFrame() {
 
 // Constructs a SPDY SYN_REPLY frame with an HTTP 302 redirect.
 SpdyFrame*
-SpdyProxyClientSocketSpdy2Test::ConstructConnectRedirectReplyFrame() {
+SpdyProxyClientSocketTest::ConstructConnectRedirectReplyFrame() {
+  bool spdy2 = spdy_util_.is_spdy2();
+
   const char* const kStandardReplyHeaders[] = {
-      "status", "302 Found",
-      "version", "HTTP/1.1",
+      spdy2 ? "status"  : ":status",  "302 Found",
+      spdy2 ? "version" : ":version", "HTTP/1.1",
       "location", kRedirectUrl,
       "set-cookie", "foo=bar"
   };
@@ -436,10 +448,12 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectRedirectReplyFrame() {
 
 // Constructs a SPDY SYN_REPLY frame with an HTTP 500 error.
 SpdyFrame*
-SpdyProxyClientSocketSpdy2Test::ConstructConnectErrorReplyFrame() {
+SpdyProxyClientSocketTest::ConstructConnectErrorReplyFrame() {
+  bool spdy2 = spdy_util_.is_spdy2();
+
   const char* const kStandardReplyHeaders[] = {
-      "status", "500 Internal Server Error",
-      "version", "HTTP/1.1",
+      spdy2 ? "status"  : ":status",  "500 Internal Server Error",
+      spdy2 ? "version" : ":version", "HTTP/1.1",
   };
 
   return spdy_util_.ConstructSpdyControlFrame(NULL,
@@ -454,14 +468,15 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectErrorReplyFrame() {
                                               0);
 }
 
-SpdyFrame* SpdyProxyClientSocketSpdy2Test::ConstructBodyFrame(
-    const char* data,  int length) {
+SpdyFrame* SpdyProxyClientSocketTest::ConstructBodyFrame(
+    const char* data,
+    int length) {
   return framer_.CreateDataFrame(kStreamId, data, length, DATA_FLAG_NONE);
 }
 
 // ----------- Connect
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ConnectSendsCorrectRequest) {
+TEST_P(SpdyProxyClientSocketTest, ConnectSendsCorrectRequest) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -482,7 +497,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ConnectSendsCorrectRequest) {
   AssertConnectionEstablished();
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ConnectWithAuthRequested) {
+TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthRequested) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -505,7 +520,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ConnectWithAuthRequested) {
             response->headers->GetStatusText());
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ConnectWithAuthCredentials) {
+TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthCredentials) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectAuthRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -525,7 +540,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ConnectWithAuthCredentials) {
   AssertConnectionEstablished();
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ConnectRedirects) {
+TEST_P(SpdyProxyClientSocketTest, ConnectRedirects) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -554,7 +569,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ConnectRedirects) {
   ASSERT_EQ(location, kRedirectUrl);
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ConnectFails) {
+TEST_P(SpdyProxyClientSocketTest, ConnectFails) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -576,7 +591,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ConnectFails) {
 
 // ----------- WasEverUsed
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, WasEverUsedReturnsCorrectValues) {
+TEST_P(SpdyProxyClientSocketTest, WasEverUsedReturnsCorrectValues) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -599,7 +614,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, WasEverUsedReturnsCorrectValues) {
 
 // ----------- GetPeerAddress
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, GetPeerAddressReturnsCorrectValues) {
+TEST_P(SpdyProxyClientSocketTest, GetPeerAddressReturnsCorrectValues) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -632,7 +647,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, GetPeerAddressReturnsCorrectValues) {
 
 // ----------- Write
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, WriteSendsDataInDataFrame) {
+TEST_P(SpdyProxyClientSocketTest, WriteSendsDataInDataFrame) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   scoped_ptr<SpdyFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
   scoped_ptr<SpdyFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
@@ -656,7 +671,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, WriteSendsDataInDataFrame) {
   AssertAsyncWriteSucceeds(kMsg2, kLen2);
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, WriteSplitsLargeDataIntoMultipleFrames) {
+TEST_P(SpdyProxyClientSocketTest, WriteSplitsLargeDataIntoMultipleFrames) {
   std::string chunk_data(kMaxSpdyFrameChunkSize, 'x');
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   scoped_ptr<SpdyFrame> chunk(ConstructBodyFrame(chunk_data.data(),
@@ -691,7 +706,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, WriteSplitsLargeDataIntoMultipleFrames) {
 
 // ----------- Read
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ReadReadsDataInDataFrame) {
+TEST_P(SpdyProxyClientSocketTest, ReadReadsDataInDataFrame) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -714,7 +729,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ReadReadsDataInDataFrame) {
   AssertSyncReadEquals(kMsg1, kLen1);
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ReadDataFromBufferedFrames) {
+TEST_P(SpdyProxyClientSocketTest, ReadDataFromBufferedFrames) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -742,7 +757,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ReadDataFromBufferedFrames) {
   AssertSyncReadEquals(kMsg2, kLen2);
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ReadDataMultipleBufferedFrames) {
+TEST_P(SpdyProxyClientSocketTest, ReadDataMultipleBufferedFrames) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -768,7 +783,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ReadDataMultipleBufferedFrames) {
   AssertSyncReadEquals(kMsg2, kLen2);
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test,
+TEST_P(SpdyProxyClientSocketTest,
        LargeReadWillMergeDataFromDifferentFrames) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
@@ -796,7 +811,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test,
   AssertSyncReadEquals(kMsg33, kLen33);
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, MultipleShortReadsThenMoreRead) {
+TEST_P(SpdyProxyClientSocketTest, MultipleShortReadsThenMoreRead) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -828,7 +843,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, MultipleShortReadsThenMoreRead) {
   AssertSyncReadEquals(kMsg2, kLen2);
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ReadWillSplitDataFromLargeFrame) {
+TEST_P(SpdyProxyClientSocketTest, ReadWillSplitDataFromLargeFrame) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -858,7 +873,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ReadWillSplitDataFromLargeFrame) {
   AssertSyncReadEquals(kMsg3, kLen3);
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, MultipleReadsFromSameLargeFrame) {
+TEST_P(SpdyProxyClientSocketTest, MultipleReadsFromSameLargeFrame) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -889,7 +904,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, MultipleReadsFromSameLargeFrame) {
   ASSERT_TRUE(sock_->IsConnected());
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ReadAuthResponseBody) {
+TEST_P(SpdyProxyClientSocketTest, ReadAuthResponseBody) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -915,7 +930,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ReadAuthResponseBody) {
   AssertSyncReadEquals(kMsg2, kLen2);
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, ReadErrorResponseBody) {
+TEST_P(SpdyProxyClientSocketTest, ReadErrorResponseBody) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -938,7 +953,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ReadErrorResponseBody) {
 
 // ----------- Reads and Writes
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, AsyncReadAroundWrite) {
+TEST_P(SpdyProxyClientSocketTest, AsyncReadAroundWrite) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   scoped_ptr<SpdyFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockWrite writes[] = {
@@ -974,7 +989,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, AsyncReadAroundWrite) {
   AssertReadReturns(kMsg3, kLen3);
 }
 
-TEST_F(SpdyProxyClientSocketSpdy2Test, AsyncWriteAroundReads) {
+TEST_P(SpdyProxyClientSocketTest, AsyncWriteAroundReads) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   scoped_ptr<SpdyFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockWrite writes[] = {
@@ -1013,7 +1028,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, AsyncWriteAroundReads) {
 // ----------- Reading/Writing on Closed socket
 
 // Reading from an already closed socket should return 0
-TEST_F(SpdyProxyClientSocketSpdy2Test, ReadOnClosedSocketReturnsZero) {
+TEST_P(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsZero) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -1039,7 +1054,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ReadOnClosedSocketReturnsZero) {
 }
 
 // Read pending when socket is closed should return 0
-TEST_F(SpdyProxyClientSocketSpdy2Test, PendingReadOnCloseReturnsZero) {
+TEST_P(SpdyProxyClientSocketTest, PendingReadOnCloseReturnsZero) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -1063,7 +1078,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, PendingReadOnCloseReturnsZero) {
 }
 
 // Reading from a disconnected socket is an error
-TEST_F(SpdyProxyClientSocketSpdy2Test,
+TEST_P(SpdyProxyClientSocketTest,
        ReadOnDisconnectSocketReturnsNotConnected) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
@@ -1088,7 +1103,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test,
 
 // Reading buffered data from an already closed socket should return
 // buffered data, then 0.
-TEST_F(SpdyProxyClientSocketSpdy2Test, ReadOnClosedSocketReturnsBufferedData) {
+TEST_P(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsBufferedData) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -1121,7 +1136,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, ReadOnClosedSocketReturnsBufferedData) {
 }
 
 // Calling Write() on a closed socket is an error
-TEST_F(SpdyProxyClientSocketSpdy2Test, WriteOnClosedStream) {
+TEST_P(SpdyProxyClientSocketTest, WriteOnClosedStream) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -1145,7 +1160,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, WriteOnClosedStream) {
 }
 
 // Calling Write() on a disconnected socket is an error
-TEST_F(SpdyProxyClientSocketSpdy2Test, WriteOnDisconnectedSocket) {
+TEST_P(SpdyProxyClientSocketTest, WriteOnDisconnectedSocket) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -1171,7 +1186,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, WriteOnDisconnectedSocket) {
 
 // If the socket is closed with a pending Write(), the callback
 // should be called with ERR_CONNECTION_CLOSED.
-TEST_F(SpdyProxyClientSocketSpdy2Test, WritePendingOnClose) {
+TEST_P(SpdyProxyClientSocketTest, WritePendingOnClose) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -1201,7 +1216,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, WritePendingOnClose) {
 
 // If the socket is Disconnected with a pending Write(), the callback
 // should not be called.
-TEST_F(SpdyProxyClientSocketSpdy2Test, DisconnectWithWritePending) {
+TEST_P(SpdyProxyClientSocketTest, DisconnectWithWritePending) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -1232,7 +1247,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, DisconnectWithWritePending) {
 
 // If the socket is Disconnected with a pending Read(), the callback
 // should not be called.
-TEST_F(SpdyProxyClientSocketSpdy2Test, DisconnectWithReadPending) {
+TEST_P(SpdyProxyClientSocketTest, DisconnectWithReadPending) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -1262,7 +1277,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, DisconnectWithReadPending) {
 
 // If the socket is Reset when both a read and write are pending,
 // both should be called back.
-TEST_F(SpdyProxyClientSocketSpdy2Test, RstWithReadAndWritePending) {
+TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePending) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -1301,7 +1316,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, RstWithReadAndWritePending) {
 
 // Makes sure the proxy client socket's source gets the expected NetLog events
 // and only the expected NetLog events (No SpdySession events).
-TEST_F(SpdyProxyClientSocketSpdy2Test, NetLog) {
+TEST_P(SpdyProxyClientSocketTest, NetLog) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
@@ -1384,7 +1399,7 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
 // If the socket is Reset when both a read and write are pending, and the
 // read callback causes the socket to be deleted, the write callback should
 // not be called.
-TEST_F(SpdyProxyClientSocketSpdy2Test, RstWithReadAndWritePendingDelete) {
+TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),

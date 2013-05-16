@@ -552,13 +552,12 @@ scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlock(
     base::StringPiece url) const {
   std::string scheme, host, path;
   ParseUrl(url.data(), &scheme, &host, &path);
-  const bool spdy2 = protocol_ < kProtoSPDY3;
   const char* const headers[] = {
-    spdy2 ? "method"  : ":method",  "GET",
-    spdy2 ? "url"     : ":path",    path.c_str(),
-    spdy2 ? "host"    : ":host",    host.c_str(),
-    spdy2 ? "scheme"  : ":scheme",  scheme.c_str(),
-    spdy2 ? "version" : ":version", "HTTP/1.1"
+    is_spdy2() ? "method"  : ":method",  "GET",
+    is_spdy2() ? "url"     : ":path",    path.c_str(),
+    is_spdy2() ? "host"    : ":host",    host.c_str(),
+    is_spdy2() ? "scheme"  : ":scheme",  scheme.c_str(),
+    is_spdy2() ? "version" : ":version", "HTTP/1.1"
   };
   scoped_ptr<SpdyHeaderBlock> header_block(new SpdyHeaderBlock());
   AppendToHeaderBlock(headers, arraysize(headers) / 2, header_block.get());
@@ -571,13 +570,12 @@ scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructPostHeaderBlock(
   std::string scheme, host, path;
   ParseUrl(url.data(), &scheme, &host, &path);
   std::string length_str = base::Int64ToString(content_length);
-  const bool spdy2 = protocol_ < kProtoSPDY3;
   const char* const headers[] = {
-    spdy2 ? "method"  : ":method",  "POST",
-    spdy2 ? "url"     : ":path",    path.c_str(),
-    spdy2 ? "host"    : ":host",    host.c_str(),
-    spdy2 ? "scheme"  : ":scheme",  scheme.c_str(),
-    spdy2 ? "version" : ":version", "HTTP/1.1",
+    is_spdy2() ? "method"  : ":method",  "POST",
+    is_spdy2() ? "url"     : ":path",    path.c_str(),
+    is_spdy2() ? "host"    : ":host",    host.c_str(),
+    is_spdy2() ? "scheme"  : ":scheme",  scheme.c_str(),
+    is_spdy2() ? "version" : ":version", "HTTP/1.1",
     "content-length",               length_str.c_str()
   };
   scoped_ptr<SpdyHeaderBlock> header_block(new SpdyHeaderBlock());
@@ -589,7 +587,6 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyFrame(
     const SpdyHeaderInfo& header_info,
     scoped_ptr<SpdyHeaderBlock> headers) const {
   BufferedSpdyFramer framer(spdy_version_, header_info.compressed);
-  const bool spdy2 = protocol_ < kProtoSPDY3;
   SpdyFrame* frame = NULL;
   switch (header_info.kind) {
     case DATA:
@@ -598,11 +595,14 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyFrame(
                                      header_info.data_flags);
       break;
     case SYN_STREAM:
-      frame = framer.CreateSynStream(header_info.id, header_info.assoc_id,
-                                     header_info.priority,
-                                     spdy2 ? 0 : header_info.credential_slot,
-                                     header_info.control_flags,
-                                     header_info.compressed, headers.get());
+      {
+        size_t credential_slot = is_spdy2() ? 0 : header_info.credential_slot;
+        frame = framer.CreateSynStream(header_info.id, header_info.assoc_id,
+                                       header_info.priority,
+                                       credential_slot,
+                                       header_info.control_flags,
+                                       header_info.compressed, headers.get());
+      }
       break;
     case SYN_REPLY:
       frame = framer.CreateSynReply(header_info.id, header_info.control_flags,

@@ -352,6 +352,7 @@ class SpdyTestUtil {
 
   NextProto protocol() const { return protocol_; }
   int spdy_version() const { return spdy_version_; }
+  bool is_spdy2() const { return protocol_ < kProtoSPDY3; }
   scoped_ptr<SpdyFramer> CreateFramer() const;
 
  private:
