@@ -18,13 +18,15 @@ BOOL WINAPI _DllMainCRTStartup(HINSTANCE, DWORD, LPVOID);
 BOOL WINAPI ChromeEmptyEntry(HINSTANCE hinstance,
                              DWORD reason,
                              LPVOID reserved) {
-  if (reason != DLL_PROCESS_ATTACH)
-    _DllMainCRTStartup(hinstance, reason, reserved);
-  return 1;
+  // We are going to do the 'process attach initialization manually via
+  // DoDeferredCrtInit but we need to let the DLL_THREAD_ATTACH calls work.
+  if (reason == DLL_PROCESS_ATTACH)
+    return 1;
+  return _DllMainCRTStartup(hinstance, reason, reserved);
 }
 
-__declspec(dllexport) void __stdcall DoDeferredCrtInit(HINSTANCE hinstance) {
-  _DllMainCRTStartup(hinstance, DLL_PROCESS_ATTACH, NULL);
+__declspec(dllexport) BOOL __stdcall DoDeferredCrtInit(HINSTANCE hinstance) {
+  return _DllMainCRTStartup(hinstance, DLL_PROCESS_ATTACH, NULL);
 }
 
 // This function is needed for the linker to succeed. It seems to pick the
