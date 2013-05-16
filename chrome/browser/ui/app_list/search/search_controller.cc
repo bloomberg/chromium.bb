@@ -8,10 +8,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "ui/app_list/search_box_model.h"
 
@@ -37,6 +39,8 @@ void SearchController::Init() {
   AddProvider(Mixer::MAIN_GROUP,
               scoped_ptr<SearchProvider>(
                   new AppSearchProvider(profile_, list_controller_)).Pass());
+  AddProvider(Mixer::OMNIBOX_GROUP,
+              scoped_ptr<SearchProvider>(new OmniboxProvider(profile_)).Pass());
 
   // TODO(xiyuan): Add providers.
 }

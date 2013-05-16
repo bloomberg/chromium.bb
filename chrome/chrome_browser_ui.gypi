@@ -137,6 +137,8 @@
         'browser/ui/app_list/search/chrome_search_result.h',
         'browser/ui/app_list/search/mixer.cc',
         'browser/ui/app_list/search/mixer.h',
+        'browser/ui/app_list/search/omnibox_provider.cc',
+        'browser/ui/app_list/search/omnibox_provider.h',
         'browser/ui/app_list/search/search_controller.cc',
         'browser/ui/app_list/search/search_controller.h',
         'browser/ui/app_list/search/search_provider.cc',

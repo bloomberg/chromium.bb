@@ -26,7 +26,6 @@
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "media/base/media_switches.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -1001,13 +1000,6 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     ENABLE_DISABLE_VALUE_TYPE(cc::switches::kEnablePinchZoomScrollbars,
                               cc::switches::kDisablePinchZoomScrollbars)
-  },
-  {
-    "app-list-show-apps-only",
-    IDS_FLAGS_ENABLE_APP_LIST_SHOW_APPS_ONLY_NAME,
-    IDS_FLAGS_ENABLE_APP_LIST_SHOW_APPS_ONLY_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(app_list::switches::kAppListShowAppsOnly),
   },
   {
     "forced-maximize-mode",
