@@ -125,12 +125,11 @@ class BaseTestRunner(object):
     self.StartForwarderForHttpServer()
     return (self._forwarder_device_port, self._http_server.port)
 
-  def _CreateAndRunForwarder(
-      self, adb, port_pairs, tool, host_name, build_type):
-    """Creates and run a forwarder."""
-    forwarder = Forwarder(adb, build_type)
-    forwarder.Run(port_pairs, tool, host_name)
-    return forwarder
+  def _ForwardPort(self, port_pairs):
+    """Creates a forwarder instance if needed and forward a port."""
+    if not self._forwarder:
+      self._forwarder = Forwarder(self.adb, self.build_type)
+    self._forwarder.Run(port_pairs, self.tool, '127.0.0.1')
 
   def StartForwarder(self, port_pairs):
     """Starts TCP traffic forwarding for the given |port_pairs|.
@@ -138,17 +137,14 @@ class BaseTestRunner(object):
     Args:
       host_port_pairs: A list of (device_port, local_port) tuples to forward.
     """
-    if self._forwarder:
-      self._forwarder.Close()
-    self._forwarder = self._CreateAndRunForwarder(
-        self.adb, port_pairs, self.tool, '127.0.0.1', self.build_type)
+    self._ForwardPort(port_pairs)
 
   def StartForwarderForHttpServer(self):
     """Starts a forwarder for the HTTP server.
 
     The forwarder forwards HTTP requests and responses between host and device.
     """
-    self.StartForwarder([(self._forwarder_device_port, self._http_server.port)])
+    self._ForwardPort([(self._forwarder_device_port, self._http_server.port)])
 
   def RestartHttpServerForwarderIfNecessary(self):
     """Restarts the forwarder if it's not open."""
@@ -187,14 +183,18 @@ class BaseTestRunner(object):
     """Launches test server spawner."""
     server_ready = False
     error_msgs = []
+    # TODO(pliard): deflake this function. The for loop should be removed as
+    # well as IsHttpServerConnectable(). spawning_server.Start() should also
+    # block until the server is ready.
     # Try 3 times to launch test spawner server.
     for i in xrange(0, 3):
-      # Do not allocate port for test server here. We will allocate
-      # different port for individual test in TestServerThread.
       self.test_server_spawner_port = ports.AllocateTestServerPort()
+      self._ForwardPort(
+          [(self.test_server_spawner_port, self.test_server_spawner_port)])
       self._spawning_server = SpawningServer(self.test_server_spawner_port,
                                              self.adb,
                                              self.tool,
+                                             self._forwarder,
                                              self.build_type)
       self._spawning_server.Start()
       server_ready, error_msg = ports.IsHttpServerConnectable(
@@ -211,7 +211,3 @@ class BaseTestRunner(object):
       logging.error(';'.join(error_msgs))
       raise Exception('Can not start the test spawner server.')
     self._PushTestServerPortInfoToDevice()
-    self._spawner_forwarder = self._CreateAndRunForwarder(
-        self.adb,
-        [(self.test_server_spawner_port, self.test_server_spawner_port)],
-        self.tool, '127.0.0.1', self.build_type)
