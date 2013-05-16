@@ -55,6 +55,358 @@ other types of suffix sets.
 
 <histograms>
 
+<histogram name="AsyncDNS.ConfigChange" enum="BooleanSuccess">
+  <summary>
+    Whether DnsConfigService::OnConfigChange actually corresponded to a change
+    in DnsConfig.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ConfigNotifyInterval" units="milliseconds">
+  <summary>
+    Duration of time between calls to DnsConfigService::InvalidateConfig.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ConfigParseDuration" units="milliseconds">
+  <summary>Duration of time spent parsing DnsConfig.</summary>
+</histogram>
+
+<histogram name="AsyncDNS.ConfigParsePosix" enum="AsyncDNSConfigParsePosix">
+  <summary>
+    Counts of results of parsing DnsConfig in DnsConfigServicePosix.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ConfigParseResult" enum="BooleanSuccess">
+  <summary>Whether DnsConfig was parsed successfully.</summary>
+</histogram>
+
+<histogram name="AsyncDNS.ConfigParseWin" enum="AsyncDNSConfigParseWin">
+  <summary>
+    Counts of results of parsing DnsConfig in DnsConfigServiceWin.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.DNSChangerDetected" enum="BooleanSuccess">
+  <summary>
+    Whether the first valid DnsConfig included a rogue nameserver.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.DnsClientDisabledReason" enum="NetErrorCodes">
+  <summary>
+    Counts of specific error codes returned by DnsTask if a subsequent ProcTask
+    succeeded, at the end of a streak of failures after which the DnsClient was
+    disabled.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.DnsClientEnabled" enum="BooleanSuccess">
+  <summary>
+    TRUE counts the events when a valid DnsConfig is received and used to enable
+    DnsClient, while FALSE counts the events when DnsClient is disabled after a
+    series of successful fallbacks from DnsTask to ProcTask.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.FallbackFail" units="milliseconds">
+  <summary>
+    Duration of time spent by ProcTask in failing fallback resolutions.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.FallbackSuccess" units="milliseconds">
+  <summary>
+    Duration of time spent by ProcTask in successful fallback resolutions.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.HaveDnsConfig" enum="BooleanSuccess">
+  <summary>
+    Whether there was a valid DNS configuration at the start of a job which
+    eventually completed successfully.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.HostParseResult" enum="BooleanSuccess">
+  <summary>Whether DnsHosts were parsed successfully.</summary>
+</histogram>
+
+<histogram name="AsyncDNS.HostsChange" enum="BooleanSuccess">
+  <summary>
+    Whether DnsConfigService::OnHostsChange actually corresponded to a change in
+    DnsHosts.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.HostsNotifyInterval" units="milliseconds">
+  <summary>
+    Duration of time between calls to DnsConfigService::InvalidateHosts.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.HostsParseDuration" units="milliseconds">
+  <summary>Duration of time spent parsing DnsHosts.</summary>
+</histogram>
+
+<histogram name="AsyncDNS.HostsParseWin" enum="AsyncDNSHostsParseWin">
+  <summary>
+    Counts of results of parsing DnsHosts in DnsConfigServiceWin.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.HostsSize" units="bytes">
+  <summary>
+    The size of the HOSTS file observed before each attempt to parse it.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTime" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (using DnsClient).
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTime_HIGHEST" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (using DnsClient). Includes only Jobs which had
+    priority HIGHEST when started.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTime_IDLE" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (using DnsClient). Includes only Jobs which had
+    priority IDLE when started.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTime_LOW" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (using DnsClient). Includes only Jobs which had
+    priority LOW when started.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTime_LOWEST" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (using DnsClient). Includes only Jobs which had
+    priority LOWEST when started.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTime_MEDIUM" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (using DnsClient). Includes only Jobs which had
+    priority MEDIUM when started.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTimeAfterChange" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (using DnsClient).
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTimeAfterChange_HIGHEST" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (using DnsClient). Includes only Jobs which had priority HIGHEST
+    when started.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTimeAfterChange_IDLE" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (using DnsClient). Includes only Jobs which had priority IDLE when
+    started.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTimeAfterChange_LOW" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (using DnsClient). Includes only Jobs which had priority LOW when
+    started.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTimeAfterChange_LOWEST" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (using DnsClient). Includes only Jobs which had priority LOWEST when
+    started.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.JobQueueTimeAfterChange_MEDIUM" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (using DnsClient). Includes only Jobs which had priority MEDIUM when
+    started.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ParseToAddressList" enum="AsyncDNSParseResult">
+  <summary>
+    Counts of results of parsing addresses out of DNS responses in successful
+    DnsTransactions.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ResolveError" enum="NetErrorCodes">
+  <summary>
+    Counts of specific error codes returned by DnsTask if a subsequent ProcTask
+    succeeded.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ResolveFail" units="milliseconds">
+  <summary>
+    Duration of time taken by DnsTask in resolutions that failed. Excludes time
+    spent in the subsequent fallback.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ResolveStatus" enum="AsyncDNSResolveStatus">
+  <summary>
+    Counts of the overall results of using asynchronous DNS in HostResolverImpl.
+    This only includes jobs started with valid DNS configuration and excludes
+    synchronous resolutions (as IP literals, from cache, and from HOSTS).
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ResolveSuccess" units="milliseconds">
+  <summary>
+    Duration of time taken by DnsTask in resolutions that succeeded.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ResolveSuccess_FAMILY_IPV4" units="milliseconds">
+  <summary>
+    Same as AsyncDNS.ResolveSuccess, but limited to pure IPv4 lookups.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ResolveSuccess_FAMILY_IPV6" units="milliseconds">
+  <summary>
+    Same as AsyncDNS.ResolveSuccess, but limited to pure IPv6 lookups.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ResolveSuccess_FAMILY_UNSPEC" units="milliseconds">
+  <summary>
+    Same as AsyncDNS.ResolveSuccess, but limited to IPv4/IPv6 lookups.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.SortFailure" units="milliseconds">
+  <summary>
+    Duration of time taken in failing calls to AddressSorter in dual-stack
+    resolutions using DnsTask.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.SortSuccess" units="milliseconds">
+  <summary>
+    Duration of time taken in successful calls to AddressSorter in dual-stack
+    resolutions using DnsTask.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TotalTime" units="milliseconds">
+  <summary>
+    Duration of time since a HostResolverImpl::Resolve request to the time a
+    result is posted. Excludes canceled, evicted, and aborted requests. Includes
+    cache hits (recorded as 0). Excludes speculative requests.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TotalTime_speculative" units="milliseconds">
+  <summary>
+    Duration of time since a HostResolverImpl::Resolve request to the time a
+    result is posted. Excludes canceled, evicted, and aborted requests. Includes
+    cache hits (recorded as 0). Speculative requests only.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TransactionFailure" units="milliseconds">
+  <summary>
+    Duration of time taken in failing DnsTransactions. This includes server
+    failures, timeouts and NXDOMAIN results.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TransactionSuccess" units="milliseconds">
+  <summary>
+    Duration of time taken in successful DnsTransactions. This includes all
+    NOERROR answers, even if they indicate the name has no addresses or they
+    cannot be parsed.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TransactionSuccess_A" units="milliseconds">
+  <summary>
+    Same as AsyncDNS.TransactionSuccess but limited to A query type.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TransactionSuccess_AAAA" units="milliseconds">
+  <summary>
+    Same as AsyncDNS.TransactionSuccess but limited to AAAA query type.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TTL" units="milliseconds">
+  <summary>
+    TTL of the resolved addresses, as in the response received from the server.
+    For results served from local cache, the TTL is from the original response.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.UDPAttemptFail" units="milliseconds">
+  <summary>
+    Duration of time taken by DnsUDPAttempt in failed attempts. Excludes
+    timeouts.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.UDPAttemptSuccess" units="milliseconds">
+  <summary>
+    Duration of time taken by DnsUDPAttempt in successful attempts. Includes
+    responses arriving after timeout, if multiple attempts are allowed.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.UnchangedConfigInterval" units="milliseconds">
+  <summary>
+    Duration of time since the last empty config result to the time a non-change
+    OnConfigChange is received.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.UnchangedHostsInterval" units="milliseconds">
+  <summary>
+    Duration of time since the last empty config result to the time a non-change
+    OnHostsChange is received.
+  </summary>
+</histogram>
+
 <histogram name="Autocheckout.Bubble" enum="AutocheckoutBubble">
   <summary>
     Measures the frequency of user interactions with the Autocheckout bubble,
@@ -492,6 +844,539 @@ other types of suffix sets.
     The total time it takes to perform a payload IO operation, for the regular
     disk cache.
   </summary>
+</histogram>
+
+<histogram name="DNS.AttemptCancelled">
+  <summary>
+    The attempt which completed after the job was already cancelled.
+  </summary>
+</histogram>
+
+<histogram name="DNS.AttemptDiscarded">
+  <summary>
+    The attempt which completed after the job was already cancelled OR the
+    attempt that has finished after host resolution was already completed by an
+    earlier attempt.
+  </summary>
+</histogram>
+
+<histogram name="DNS.AttemptFailDuration" units="milliseconds">
+  <summary>
+    Duration of time taken in OS resolutions for actual navigations. These
+    attempts which completed after the job was already canceled OR after the job
+    was already completed by an earlier attempt. Note that cached resolutions
+    may provide low (0ms?) resolution times.
+  </summary>
+</histogram>
+
+<histogram name="DNS.AttemptFailure">
+  <summary>The attempt that has not resolved the host successfully.</summary>
+</histogram>
+
+<histogram name="DNS.AttemptFirstFailure">
+  <summary>
+    The attempt that resolved the host first and the resolution was not
+    successful.
+  </summary>
+</histogram>
+
+<histogram name="DNS.AttemptFirstSuccess">
+  <summary>
+    The attempt that resolved the host first and the resolution was successful.
+  </summary>
+</histogram>
+
+<histogram name="DNS.AttemptSuccess">
+  <summary>The attempt that has resolved the host successfully.</summary>
+</histogram>
+
+<histogram name="DNS.AttemptSuccessDuration" units="milliseconds">
+  <summary>
+    Duration of time taken in OS resolutions that succeeded and were requested
+    for actual navigations. These attempts which completed after the job was
+    already canceled OR after the job was already completed by an earlier
+    attempt. Note that cached resolutions may provide low (0ms?) resolution
+    times.
+  </summary>
+</histogram>
+
+<histogram name="DNS.AttemptTimeSavedByRetry" units="milliseconds">
+  <summary>
+    This histogram shows the time saved by having spawned an extra attempt, when
+    the first attempt didn't finish before retry attempt.
+  </summary>
+</histogram>
+
+<histogram name="DNS.CacheEvicted" units="milliseconds">
+  <summary>
+    The time left to expiration of an entry when it is removed while compacting
+    the HostCache.
+  </summary>
+</histogram>
+
+<histogram name="DNS.CacheExpired" units="milliseconds">
+  <summary>
+    The time since expiration of an entry when it is removed while compacting
+    the HostCache.
+  </summary>
+</histogram>
+
+<histogram name="DNS.CacheExpiredOnGet" units="milliseconds">
+  <summary>
+    The time since expiration of an entry when it is removed on lookup.
+  </summary>
+</histogram>
+
+<histogram name="DNS.IndependentFailedNavigation" units="milliseconds">
+  <summary>
+    When either a pre-resolution was not done recently enough to provide
+    benefit, or the the corresponding pre-resolution is still pending, this
+    histogram shows the duration of time used to resolve a hostname as not
+    existing during a failed attempt to navigate to (GET) a URL.  In newer
+    versions, if the hostname has never been found as a link during a page scan,
+    and it has a referring URL, then it is added to referrer list data structure
+    (hoping we'll do better next time).
+  </summary>
+</histogram>
+
+<histogram name="DNS.IndependentNavigation" units="milliseconds">
+  <summary>
+    When either a pre-resolution was not done recently enough to provide
+    benefit, or the the corresponding pre-resolution is still pending, this
+    histogram shows the duration of the duration of time used to resolve a
+    hostname to navigate to (GET) a URL.  In newer versions, if the hostname has
+    never been found as a link during a page scan, and it has a referring URL,
+    then it is added to referrer list data structure (hoping we'll do better
+    next time).
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTime" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (a getaddrinfo call was dispatched to the thread
+    pool).
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTime_HIGHEST" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (a getaddrinfo call was dispatched to the thread
+    pool). Includes only Jobs which had priority HIGHEST when started.
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTime_IDLE" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (a getaddrinfo call was dispatched to the thread
+    pool). Includes only Jobs which had priority IDLE when started.
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTime_LOW" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (a getaddrinfo call was dispatched to the thread
+    pool). Includes only Jobs which had priority LOW when started.
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTime_LOWEST" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (a getaddrinfo call was dispatched to the thread
+    pool). Includes only Jobs which had priority LOWEST when started.
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTime_MEDIUM" units="milliseconds">
+  <summary>
+    Time elapsed between the time the HostResolverImpl::Job was created and the
+    time the Job was started (a getaddrinfo call was dispatched to the thread
+    pool). Includes only Jobs which had priority MEDIUM when started.
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTimeAfterChange" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (a getaddrinfo call was dispatched to the thread pool).
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTimeAfterChange_HIGHEST" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (a getaddrinfo call was dispatched to the thread pool). Includes
+    only Jobs which had priority HIGHEST when started.
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTimeAfterChange_IDLE" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (a getaddrinfo call was dispatched to the thread pool). Includes
+    only Jobs which had priority IDLE when started.
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTimeAfterChange_LOW" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (a getaddrinfo call was dispatched to the thread pool). Includes
+    only Jobs which had priority LOW when started.
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTimeAfterChange_LOWEST" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (a getaddrinfo call was dispatched to the thread pool). Includes
+    only Jobs which had priority LOWEST when started.
+  </summary>
+</histogram>
+
+<histogram name="DNS.JobQueueTimeAfterChange_MEDIUM" units="milliseconds">
+  <summary>
+    Time elapsed between the last time the priority of a HostResolverImpl::Job
+    changed (when a Request was attached or detached) and the time the Job was
+    started (a getaddrinfo call was dispatched to the thread pool). Includes
+    only Jobs which had priority MEDIUM when started.
+  </summary>
+</histogram>
+
+<histogram name="DNS.PrefetchCacheEviction" units="milliseconds">
+  <summary>
+    The duration of time used (most recently) to pre-resolve a hostname, when
+    the prefetched resolution was apparently evicted from the cache.  The
+    included samples only list pre-resolution times when the later
+    navigations/fetches took in excess of 15ms.
+  </summary>
+</histogram>
+
+<histogram name="DNS.PrefetchCacheEvictionL" units="milliseconds">
+  <summary>
+    The duration of time used (most recently) to pre-resolve a hostname, when
+    the prefetched resolution was apparently evicted from the cache.  The
+    included samples only list pre-resolution times when the later
+    navigations/fetches took in excess of 15ms.
+  </summary>
+</histogram>
+
+<histogram name="DNS.PrefetchFoundName">
+  <summary>Replaced by DNS.PrefetchFoundNameL.</summary>
+</histogram>
+
+<histogram name="DNS.PrefetchFoundNameL" units="milliseconds">
+  <obsolete>
+    Deprecated 2/2010, and replaced by DNS.PrefetchResolution
+  </obsolete>
+  <summary>
+    The duration of time used by the DNS pre-resolving threads to resolve a host
+    name via the network.  Any resolutions that are faster than 15ms are
+    considered to be local cache hits, not requiring network access, and are not
+    included in this histogram. This histogram is most useful for estimating the
+    typical cost of a name resolution, but it also estimates the total number of
+    network-based resolutions induced by this feature.  Not all these
+    resolutions prove helpful (i.e., the user does not always actually visit the
+    resolved hostnames).
+  </summary>
+</histogram>
+
+<histogram name="DNS.PrefetchNegativeHit">
+  <summary>Replaced by DNS.PrefetchNegativeHitL.</summary>
+</histogram>
+
+<histogram name="DNS.PrefetchNegativeHitL" units="milliseconds">
+  <summary>
+    The duration of time saved due to DNS pre-resolving in the &quot;name not
+    found&quot; case.  Time &quot;savings&quot; shown in the histogram are
+    defined to be the difference between the DNS pre-resolution duration, and
+    the DNS resolution duration seen during a navigation.  These cache hits only
+    list events where the DNS pre-resolve duration for a host was in excess of
+    15ms (i.e., the network was consulted), and the actual DNS resolution (when
+    a user attempted to navigate to a link with the same host name) took less
+    than 15ms (i.e., the network was not consulted), which means the gain was a
+    result of a &quot;cache hit&quot; in the OS cache.  For some users with
+    LANs, all negative results (even when the DNS cache might otherwise help)
+    take about 2.5 seconds (due to timeouts for netbios broadcasts), and hence
+    no savings are possible (or shown) for such users in this category.
+  </summary>
+</histogram>
+
+<histogram name="DNS.PrefetchPositiveHit">
+  <summary>Replaced by DNS.PrefetchPositiveHitL.</summary>
+</histogram>
+
+<histogram name="DNS.PrefetchPositiveHitL" units="milliseconds">
+  <summary>
+    The duration of time saved due to DNS pre-resolving in the &quot;name was
+    found&quot; case, and induced by either a page scan for a link or an omnibox
+    entry by the user. Time &quot;savings&quot; shown in the histogram are
+    defined to be the difference between the DNS pre-resolution duration, and
+    the DNS resolution duration seen during a navigation.  These cache hits only
+    list events where the DNS pre-resolve duration for a host was in excess of
+    15ms (i.e., the network was consulted), and the actual DNS resolution (when
+    a user attempted to navigate to a link with the same host name) took less
+    than 15ms (i.e., the network was not consulted), which means the gain was a
+    result of a &quot;cache hit&quot; in the OS cache.
+  </summary>
+</histogram>
+
+<histogram name="DNS.PrefetchQueue" units="milliseconds">
+  <summary>
+    The duration of time spent by a proposed resolution waiting in the queue to
+    be resolved.  This number is in addition to any DNS resolution time that may
+    come later.
+  </summary>
+</histogram>
+
+<histogram name="DNS.PrefetchReferredPositiveHit" units="milliseconds">
+  <summary>
+    The duration of time saved due to DNS pre-resolving in the &quot;name was
+    found&quot; case, and induced by predicting (using referrer lists) that a
+    resolution was needed. Time &quot;savings&quot; shown in the histogram are
+    defined to be the difference between the DNS pre-resolution duration, and
+    the DNS resolution duration seen during a navigation.  These cache hits only
+    list events where the DNS pre-resolve duration for a host was in excess of
+    15ms (i.e., the network was consulted), and the actual DNS resolution (when
+    a user attempted to navigate to a link with the same host name) took less
+    than 15ms (i.e., the network was not consulted), which means the gain was a
+    result of a &quot;cache hit&quot; in the OS cache.
+  </summary>
+</histogram>
+
+<histogram name="DNS.PrefetchResolution" units="milliseconds">
+  <summary>
+    The duration of time used by the DNS pre-resolving threads to resolve a host
+    name via the network.  Any resolutions that are faster than 15ms are
+    considered to be local cache hits, not requiring network access, and are not
+    included in this histogram. This histogram is most useful for estimating the
+    typical cost of a name resolution, but it also estimates the total number of
+    network-based resolutions induced by this feature.  Not all these
+    resolutions prove helpful (i.e., the user does not always actually visit the
+    resolved hostnames).
+  </summary>
+</histogram>
+
+<histogram name="DNS.QueueRecycledDeltaOver2">
+  <summary>
+    When, due to congestion avoidance, a queued pre-resolution is abandoned
+    (recycled) without actually being resolved, this histograms records the age
+    in the queue of that entry.  Only times over 2 seconds are recorded in this
+    histogram.
+  </summary>
+</histogram>
+
+<histogram name="DNS.QueueRecycledUnder2">
+  <summary>
+    When, due to congestion avoidance, a queued pre-resolution is abandoned
+    (recycled) without actually being resolved, this histograms records the age
+    in the queue of that entry.  Only times less than or equal to 2 seconds are
+    recorded in this histogram.
+  </summary>
+</histogram>
+
+<histogram name="DNS.ResolveCategory" enum="ResolutionCategory">
+  <summary>
+    Counts of successes and failures of OS resolutions in various categories.
+  </summary>
+</histogram>
+
+<histogram name="DNS.ResolveFail" units="milliseconds">
+  <summary>
+    Duration of time taken in OS resolutions for actual navigations.  Note that
+    cached OS resolutions may provide low (0ms?) resolution times.
+  </summary>
+</histogram>
+
+<histogram name="DNS.ResolveFail_FAMILY_IPV4" units="milliseconds">
+  <summary>Same as DNS.ResolveFail, but limited to pure IPv4 lookups.</summary>
+</histogram>
+
+<histogram name="DNS.ResolveFail_FAMILY_IPV6" units="milliseconds">
+  <summary>Same as DNS.ResolveFail, but limited to pure IPv6 lookups.</summary>
+</histogram>
+
+<histogram name="DNS.ResolveFail_FAMILY_UNSPEC" units="milliseconds">
+  <summary>Same as DNS.ResolveFail, but limited to IPv4/IPv6 lookups.</summary>
+</histogram>
+
+<histogram name="DNS.ResolveSpeculativeFail" units="milliseconds">
+  <summary>
+    Duration of time taken in speculative OS resolutions.  Note that cached OS
+    resolutions may provide low (0ms?) resolution times.
+  </summary>
+</histogram>
+
+<histogram name="DNS.ResolveSpeculativeSuccess" units="milliseconds">
+  <summary>
+    Duration of time taken in speculative OS resolution that succeeded.  Note
+    that cached resolutions may provide low (0ms?) resolution times.
+  </summary>
+</histogram>
+
+<histogram name="DNS.ResolveSuccess" units="milliseconds">
+  <summary>
+    Duration of time taken in OS resolutions that succeeded and were requested
+    for actual navigations.  Note that cached resolutions may provide low (0ms?)
+    resolution times.
+  </summary>
+</histogram>
+
+<histogram name="DNS.ResolveSuccess_FAMILY_IPV4" units="milliseconds">
+  <summary>
+    Same as DNS.ResolveSuccess, but limited to pure IPv4 lookups.
+  </summary>
+</histogram>
+
+<histogram name="DNS.ResolveSuccess_FAMILY_IPV6" units="milliseconds">
+  <summary>
+    Same as DNS.ResolveSuccess, but limited to pure IPv6 lookups.
+  </summary>
+</histogram>
+
+<histogram name="DNS.ResolveSuccess_FAMILY_UNSPEC" units="milliseconds">
+  <summary>
+    Same as DNS.ResolveSuccess, but limited to IPv4/IPv6 lookups.
+  </summary>
+</histogram>
+
+<histogram name="DNS.ResolveUnspecWaste" enum="ResolutionUnspecWasteCategory">
+  <summary>
+    Counts of hits and misses in the DNS cache and DNS jobs pool of wasted
+    HostResolverImpl::Jobs that could be avoided by always resolving using
+    AF_UNSPEC.
+  </summary>
+</histogram>
+
+<histogram name="DNS.TotalTime" units="milliseconds">
+  <summary>
+    Duration of time since a HostResolverImpl::Resolve request to the time a
+    result is posted. Excludes canceled, evicted, and aborted requests. Includes
+    cache hits (recorded as 0). Excludes speculative requests.
+  </summary>
+</histogram>
+
+<histogram name="DNS.TotalTime_speculative" units="milliseconds">
+  <summary>
+    Duration of time since a HostResolverImpl::Resolve request to the time a
+    result is posted. Excludes canceled, evicted, and aborted requests. Includes
+    cache hits (recorded as 0). Speculative requests only.
+  </summary>
+</histogram>
+
+<histogram name="DNS.UnexpectedResolution">
+  <summary>
+    In some cases, such as when content arrives with embedded references to
+    other servers, the prefetch system can't (or doesn't) attempt to pre-resolve
+    the hostnames.  As an example, a visit to www.cnn.com will fetch content
+    with references to about 12 additional hostnames, none of which are
+    currently anticipated.  Such resolutions are termed &quot;Unexpected
+    Resolutions,&quot; and the durations associated with those DNS resolutions
+    are shown below.  Future features may attempt to learn (from prior
+    experience locally, or from server provided hints), what secondary hostname
+    resolutions should be done when a primary resolution (or navigation) takes
+    place.  This histogram shows what the potential savings are that
+    &quot;remain on the table&quot; until we employ some of these more advanced
+    features.
+  </summary>
+</histogram>
+
+<histogram name="DNS.UnexpectedResolutionL">
+  <summary>
+    In some cases, such as when content arrives with embedded references to
+    other servers, or when a page (such as one in SSL) preclude scanning and
+    prefetching, the prefetch system can't (or doesn't) attempt to pre-resolve
+    the hostnames.  As an example, a visit to www.cnn.com will fetch content
+    with references to about 12 additional hostnames, none of which might be
+    anticipated.  Similarly, clicking on a link in an SSL page won't be
+    anticipated (since scanning in not allowed by default). Such resolutions are
+    termed &quot;Unexpected Resolutions,&quot; and the durations associated with
+    those navigation induced DNS resolutions are shown below.  If a referring
+    URL is available for the navigation, the relationship to the referring URL
+    was recorded, and future navigations to the referring hostname would have
+    induced a pre-resolution of hostname that caused an entry below.  Such any
+    entry may facilitate future listing in the ReferredPositiveHit histogram.
+  </summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.Elapsed" units="ms">
+  <summary>Time between starting and finishing DNS probe.</summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.NcnOffline.Elapsed" units="ms">
+  <summary>
+    Time between starting and finishing DNS probe when NCN says we're offline.
+  </summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.NcnOffline.Result" enum="DnsProbe.Probe.Result">
+  <summary>
+    Result of DNS probes sent by the probe service when NCN says we're offline.
+  </summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.NcnOnline.Elapsed" units="ms">
+  <summary>
+    Time between starting and finishing DNS probe when NCN says we're online.
+  </summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.NcnOnline.Result" enum="DnsProbe.Probe.Result">
+  <summary>
+    Result of DNS probes sent by the probe service when NCN says we're online.
+  </summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.Result" enum="DnsProbe.Probe.Result">
+  <summary>Result of DNS probes sent by the probe service.</summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.ResultBadConfig.Elapsed" units="ms">
+  <summary>Elapsed time of DNS probes that return PROBE_BAD_CONFIG.</summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.ResultBadConfig.SystemIsLocalhost"
+    enum="DnsProbe.Probe.SystemIsLocalhost">
+  <summary>
+    Whether the only nameserver in the system DNS config was 127.0.0.1 when the
+    probe result was BAD_CONFIG.
+  </summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.ResultBadConfig.SystemJobResult"
+    enum="DnsProbe.Job.Result">
+  <summary>
+    The result of the system probe job when the overall probe result was
+    BAD_CONFIG.
+  </summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.ResultBadConfig.SystemNameserverCount">
+  <summary>
+    The number of nameservers in the system DNS config when the probe result was
+    BAD_CONFIG.
+  </summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.ResultNoInternet.Elapsed" units="ms">
+  <summary>Elapsed time of DNS probes that return PROBE_NO_INTERNET.</summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.ResultNxdomain.Elapsed" units="ms">
+  <summary>Elapsed time of DNS probes that return PROBE_NXDOMAIN.</summary>
+</histogram>
+
+<histogram name="DnsProbe.Probe.ResultUnknown.Elapsed" units="ms">
+  <summary>Elapsed time of DNS probes that return PROBE_UNKNOWN.</summary>
 </histogram>
 
 <histogram name="DomainBoundCerts.DBLoadedCount">
@@ -8030,6 +8915,64 @@ other types of suffix sets.
   <int value="3" label="LowMemory"/>
 </enum>
 
+<enum name="AsyncDNSConfigParsePosix" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="RES_INIT_FAILED"/>
+  <int value="2" label="RES_INIT_UNSET"/>
+  <int value="3" label="BAD_ADDRESS"/>
+  <int value="4" label="BAD_EXT_STRUCT"/>
+  <int value="5" label="NULL_ADDRESS"/>
+  <int value="6" label="NO_NAMESERVERS"/>
+  <int value="7" label="MISSING_OPTIONS"/>
+  <int value="8" label="UNHANDLED_OPTIONS"/>
+</enum>
+
+<enum name="AsyncDNSConfigParseWin" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="READ_IPHELPER"/>
+  <int value="2" label="READ_POLICY_SEARCHLIST"/>
+  <int value="3" label="READ_TCPIP_SEARCHLIST"/>
+  <int value="4" label="READ_DOMAIN"/>
+  <int value="5" label="READ_POLICY_DEVOLUTION"/>
+  <int value="6" label="READ_DNSCACHE_DEVOLUTION"/>
+  <int value="7" label="READ_TCPIP_DEVOLUTION"/>
+  <int value="8" label="READ_APPEND_MULTILABEL"/>
+  <int value="9" label="READ_PRIMARY_SUFFIX"/>
+  <int value="10" label="BAD_ADDRESS"/>
+  <int value="11" label="NO_NAMESERVERS"/>
+</enum>
+
+<enum name="AsyncDNSHostsParseWin" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="UNREADABLE_HOSTS_FILE"/>
+  <int value="2" label="COMPUTER_NAME_FAILED"/>
+  <int value="3" label="IPHELPER_FAILED"/>
+  <int value="4" label="BAD_ADDRESS"/>
+</enum>
+
+<enum name="AsyncDNSParseResult" type="int">
+  <summary>Results of DnsResponse::ParseToAddressList.</summary>
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="MALFORMED_RESPONSE"/>
+  <int value="2" label="MALFORMED_CNAME"/>
+  <int value="3" label="NAME_MISMATCH"/>
+  <int value="4" label="SIZE_MISMATCH"/>
+  <int value="5" label="CNAME_AFTER_ADDRESS"/>
+  <int value="6" label="ADDRESS_TTL_MISMATCH"/>
+  <int value="7" label="NO_ADDRESSES"/>
+</enum>
+
+<enum name="AsyncDNSResolveStatus" type="int">
+  <int value="0" label="DNS_SUCCESS">Succeeded with async DNS.</int>
+  <int value="1" label="PROC_SUCCESS">
+    Succeeded with getaddrinfo after async DNS failed.
+  </int>
+  <int value="2" label="FAIL">Both async DNS and getaddrinfo failed.</int>
+  <int value="3" label="SUSPECT_NETBIOS">
+    Same as PROC_SUCCESS except the hostname fits NetBIOS name criteria.
+  </int>
+</enum>
+
 <enum name="AudioRendererEvents" type="int">
   <int value="0" label="Initialized"/>
   <int value="1" label="Runtime error"/>
@@ -8499,6 +9442,30 @@ other types of suffix sets.
   <int value="6" label="Sheets"/>
   <int value="7" label="Slides"/>
   <int value="8" label="PlayMusic"/>
+</enum>
+
+<enum name="DnsProbe.Job.Result" type="int">
+  <int value="0" label="SERVERS_UNKNOWN"/>
+  <int value="1" label="SERVERS_CORRECT"/>
+  <int value="2" label="SERVERS_INCORRECT"/>
+  <int value="3" label="SERVERS_FAILING"/>
+  <int value="4" label="SERVERS_UNREACHABLE"/>
+</enum>
+
+<enum name="DnsProbe.Probe.Result" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="NO_INTERNET"/>
+  <int value="2" label="BAD_CONFIG"/>
+  <int value="3" label="NXDOMAIN"/>
+</enum>
+
+<enum name="DnsProbe.Probe.SystemIsLocalhost" type="int">
+  <int value="0" label="Not just 127.0.0.1">
+    127.0.0.1 was not the only nameserver in the system DNS config.
+  </int>
+  <int value="1" label="Just 127.0.0.1">
+    127.0.0.1 was the only nameserver in the system DNS config.
+  </int>
 </enum>
 
 <enum name="DomainBoundCerts.GetCertResult" type="int">
@@ -11292,6 +12259,37 @@ other types of suffix sets.
   <int value="22" label="DOMAIN_NUM_EVENTS"/>
 </enum>
 
+<enum name="ResolutionCategory" type="int">
+  <int value="0" label="RESOLVE_SUCCESS"/>
+  <int value="1" label="RESOLVE_FAIL"/>
+  <int value="2" label="RESOLVE_SPECULATIVE_SUCCESS"/>
+  <int value="3" label="RESOLVE_SPECULATIVE_FAIL"/>
+</enum>
+
+<enum name="ResolutionUnspecWasteCategory" type="int">
+  <int value="0" label="AF_WASTE_IPV4_ONLY">
+    Running in a IPv4-only configuration.  No waste.
+  </int>
+  <int value="1" label="AF_WASTE_CACHE_IPV4">
+    Cache contained an UNSPEC result for this IPv4 lookup.  Waste.
+  </int>
+  <int value="2" label="AF_WASTE_CACHE_UNSPEC">
+    Cache contained an IPv4 result for this UNSPEC lookup.  Waste.
+  </int>
+  <int value="3" label="AF_WASTE_JOB_IPV4">
+    Job pool contained an UNSPEC job for this IPv4 lookup.  Waste.
+  </int>
+  <int value="4" label="AF_WASTE_JOB_UNSPEC">
+    Job pool contained an IPv4 job for this UNSPEC lookup.  Waste.
+  </int>
+  <int value="5" label="AF_WASTE_NONE_IPV4">
+    A new job was needed for this IPv4 lookup.  No waste.
+  </int>
+  <int value="6" label="AF_WASTE_NONE_UNSPEC">
+    A new job was needed for this UNSPEC lookup.  No waste.
+  </int>
+</enum>
+
 <enum name="SB2BloomFailure" type="int">
   <int value="0" label="READ_OPEN"/>
   <int value="1" label="READ_VERSION"/>
@@ -12386,6 +13384,28 @@ other types of suffix sets.
   </affected-histogram>
 </fieldtrial>
 
+<fieldtrial name="DnsParallelism">
+  <group name="parallel_10"
+      label="with only 10 concurrent resolutions done in parallel"/>
+  <group name="parallel_14"
+      label="with only 14 concurrent resolutions done in parallel"/>
+  <group name="parallel_20"
+      label="with only 20 concurrent resolutions done in parallel"/>
+  <group name="parallel_6"
+      label="with only 6 concurrent resolutions done in parallel"/>
+  <group name="parallel_7"
+      label="with only 7 concurrent resolutions done in parallel"/>
+  <group name="parallel_8"
+      label="with only 8 concurrent resolutions done in parallel"/>
+  <group name="parallel_9"
+      label="with only 9 concurrent resolutions done in parallel"/>
+  <group name="parallel_default"
+      label="with the default number of concurrent resolutions done in
+             parallel"/>
+  <affected-histogram name="DNS.ResolveCategory"/>
+  <affected-histogram name="DNS.ResolveSuccess"/>
+</fieldtrial>
+
 <fieldtrial name="DomainGoogle" separator="">
   <group name="Google" label="only Google cookies are recorded."/>
   <group name="Other" label="only NON-Google cookies are recorded."/>
@@ -12444,6 +13464,14 @@ other types of suffix sets.
   <group name="Extended" label="Suggestions + Results"/>
   <group name="Instant" label="Results"/>
   <affected-histogram name="Instant.SessionsStorageNamespace"/>
+</fieldtrial>
+
+<fieldtrial name="IPv6_Probe">
+  <group name="IPv6_probe_skipped"
+      label="with IPv6 not probed, and default OS settings used"/>
+  <group name="IPv6_probe_done"
+      label="with IPv6 probed for and possibly disabled"/>
+  <affected-histogram name="DNS.PrefetchResolution"/>
 </fieldtrial>
 
 <fieldtrial name="LateBindingExperiment">
