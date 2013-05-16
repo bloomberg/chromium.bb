@@ -18,61 +18,70 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+
 namespace ash {
 namespace internal {
 
+// EdgePainter ----------------------------------------------------------------
+
 namespace {
-
-// Amount to inset from the bounds for EdgePainter.
-const int kInsetSize = 4;
-
-// Size of the round rect used by EdgePainter.
-const int kRoundRectSize = 4;
-
-// Animation time for the phantom window state change.
-const int kAnimationDuration = 200;
 
 // Paints the background of the phantom window for window snapping.
 class EdgePainter : public views::Painter {
  public:
-  EdgePainter() {}
+  EdgePainter();
+  virtual ~EdgePainter();
 
-  // views::Painter overrides:
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
-    int x = kInsetSize;
-    int y = kInsetSize;
-    int w = size.width() - kInsetSize * 2;
-    int h = size.height() - kInsetSize * 2;
-    bool inset = (w > 0 && h > 0);
-    if (w < 0 || h < 0) {
-      x = 0;
-      y = 0;
-      w = size.width();
-      h = size.height();
-    }
-    SkPaint paint;
-    paint.setColor(SkColorSetARGB(100, 0, 0, 0));
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setAntiAlias(true);
-    canvas->sk_canvas()->drawRoundRect(
-        gfx::RectToSkRect(gfx::Rect(x, y, w, h)),
-        SkIntToScalar(kRoundRectSize), SkIntToScalar(kRoundRectSize), paint);
-    if (!inset)
-      return;
-
-    paint.setColor(SkColorSetARGB(200, 255, 255, 255));
-    paint.setStyle(SkPaint::kStroke_Style);
-    paint.setStrokeWidth(SkIntToScalar(2));
-    canvas->sk_canvas()->drawRoundRect(
-        gfx::RectToSkRect(gfx::Rect(x, y, w, h)), SkIntToScalar(kRoundRectSize),
-        SkIntToScalar(kRoundRectSize), paint);
-  }
+  // views::Painter:
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EdgePainter);
 };
 
 }  // namespace
+
+
+EdgePainter::EdgePainter() {
+}
+
+EdgePainter::~EdgePainter() {
+}
+
+void EdgePainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
+  const int kInsetSize = 4;
+  int x = kInsetSize;
+  int y = kInsetSize;
+  int w = size.width() - kInsetSize * 2;
+  int h = size.height() - kInsetSize * 2;
+  bool inset = (w > 0 && h > 0);
+  if (!inset) {
+    x = 0;
+    y = 0;
+    w = size.width();
+    h = size.height();
+  }
+  SkPaint paint;
+  paint.setColor(SkColorSetARGB(100, 0, 0, 0));
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
+  const int kRoundRectSize = 4;
+  canvas->sk_canvas()->drawRoundRect(
+      gfx::RectToSkRect(gfx::Rect(x, y, w, h)),
+      SkIntToScalar(kRoundRectSize), SkIntToScalar(kRoundRectSize), paint);
+  if (!inset)
+    return;
+
+  paint.setColor(SkColorSetARGB(200, 255, 255, 255));
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(SkIntToScalar(2));
+  canvas->sk_canvas()->drawRoundRect(
+      gfx::RectToSkRect(gfx::Rect(x, y, w, h)), SkIntToScalar(kRoundRectSize),
+      SkIntToScalar(kRoundRectSize), paint);
+}
+
+
+// PhantomWindowController ----------------------------------------------------
 
 PhantomWindowController::PhantomWindowController(aura::Window* window)
     : window_(window),
@@ -98,7 +107,8 @@ void PhantomWindowController::Show(const gfx::Rect& bounds) {
   }
   animation_.reset(new ui::SlideAnimation(this));
   animation_->SetTweenType(ui::Tween::EASE_IN);
-  animation_->SetSlideDuration(kAnimationDuration);
+  const int kAnimationDurationMS = 200;
+  animation_->SetSlideDuration(kAnimationDurationMS);
   animation_->Show();
 }
 
