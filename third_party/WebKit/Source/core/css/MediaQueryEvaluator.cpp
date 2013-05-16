@@ -546,8 +546,10 @@ static bool animationMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, Med
     return true;
 }
 
-static bool transitionMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, MediaFeaturePrefix op)
+static bool deprecatedTransitionMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
 {
+    UseCounter::countDeprecation(frame->document(), UseCounter::PrefixedTransitionMediaFeature);
+
     if (value) {
         float number;
         return numberValue(value, number) && compareValue(1, static_cast<int>(number), op);

@@ -148,6 +148,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case DocumentClear:
         return "document.clear() is deprecated. This method doesn't do anything.";
 
+    case PrefixedTransitionMediaFeature:
+        return "The '(-webkit-transition)' media query feature is deprecated; please consider using the more exact conditional \"@supports('(transition-property: prop_name)')\" instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
