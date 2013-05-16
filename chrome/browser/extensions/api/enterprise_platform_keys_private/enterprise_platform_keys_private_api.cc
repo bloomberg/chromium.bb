@@ -43,14 +43,14 @@ const char EPKPChallengeKeyBase::kChallengeBadBase64Error[] =
     "Challenge is not base64 encoded.";
 const char EPKPChallengeKeyBase::kDevicePolicyDisabledError[] =
     "Remote attestation is not enabled for your device.";
+const char EPKPChallengeKeyBase::kDomainsDontMatchError[] =
+    "User domain %s and Enterprise domain %s don't match.";
 const char EPKPChallengeKeyBase::kExtensionNotWhitelistedError[] =
     "The extension does not have permission to call this function.";
 const char EPKPChallengeKeyBase::kResponseBadBase64Error[] =
     "Response cannot be encoded in base64.";
 const char EPKPChallengeKeyBase::kSignChallengeFailedError[] =
     "Failed to sign the challenge.";
-const char EPKPChallengeKeyBase::kUserNotManaged[] =
-    "The user account is not enterprise managed.";
 
 EPKPChallengeKeyBase::EPKPChallengeKeyBase()
     : cryptohome_client_(
@@ -118,26 +118,18 @@ bool EPKPChallengeKeyBase::IsExtensionWhitelisted() const {
   return list->Find(value) != list->end();
 }
 
-bool EPKPChallengeKeyBase::IsUserManaged() const {
-  std::string email = GetUserEmail();
-
-  // TODO(davidyu): Use BrowserPolicyConnector::GetUserAffiliation() and fix
-  // the test.
-  return email.empty() ? false :
-      gaia::ExtractDomainName(email) == GetEnterpriseDomain();
-}
-
 std::string EPKPChallengeKeyBase::GetEnterpriseDomain() const {
   return install_attributes_->GetDomain();
 }
 
-std::string EPKPChallengeKeyBase::GetUserEmail() const {
+std::string EPKPChallengeKeyBase::GetUserDomain() const {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
   if (!signin_manager)
     return std::string();
 
-  return gaia::CanonicalizeEmail(signin_manager->GetAuthenticatedUsername());
+  return gaia::ExtractDomainName(
+      gaia::CanonicalizeEmail(signin_manager->GetAuthenticatedUsername()));
 }
 
 std::string EPKPChallengeKeyBase::GetDeviceId() const {
@@ -272,8 +264,11 @@ bool EPKPChallengeMachineKey::RunImpl() {
   }
 
   // Check if the user domain is the same as the enrolled enterprise domain.
-  if (!IsUserManaged()) {
-    SetError(kUserNotManaged);
+  std::string user_domain = GetUserDomain();
+  std::string enterprise_domain = GetEnterpriseDomain();
+  if (user_domain != enterprise_domain) {
+    SetError(base::StringPrintf(kDomainsDontMatchError, user_domain.c_str(),
+                                enterprise_domain.c_str()));
     return false;
   }
 
@@ -400,10 +395,14 @@ bool EPKPChallengeUserKey::RunImpl() {
     return false;
   }
 
+  std::string user_domain = GetUserDomain();
+
   if (IsEnterpriseDevice()) {
     // Check if the user domain is the same as the enrolled enterprise domain.
-    if (!IsUserManaged()) {
-      SetError(kUserNotManaged);
+    std::string enterprise_domain = GetEnterpriseDomain();
+    if (user_domain != enterprise_domain) {
+      SetError(base::StringPrintf(kDomainsDontMatchError, user_domain.c_str(),
+                                  enterprise_domain.c_str()));
       return false;
     }
 
@@ -413,6 +412,7 @@ bool EPKPChallengeUserKey::RunImpl() {
                    this,
                    challenge,
                    params->register_key,
+                   user_domain,
                    false));  // user consent is not required.
   } else {
     // For personal devices, we don't need to check if RA is enabled in the
@@ -420,6 +420,7 @@ bool EPKPChallengeUserKey::RunImpl() {
     GetDeviceAttestationEnabledCallback(
         challenge,
         params->register_key,
+        user_domain,
         true,  // user consent is required.
         true);  // attestation is enabled.
   }
@@ -430,6 +431,7 @@ bool EPKPChallengeUserKey::RunImpl() {
 void EPKPChallengeUserKey::GetDeviceAttestationEnabledCallback(
     const std::string& challenge,
     bool register_key,
+    const std::string& domain,
     bool require_user_consent,
     bool enabled) {
   if (!enabled) {
@@ -443,11 +445,12 @@ void EPKPChallengeUserKey::GetDeviceAttestationEnabledCallback(
              chromeos::attestation::PROFILE_ENTERPRISE_USER_CERTIFICATE,
              require_user_consent,
              base::Bind(&EPKPChallengeUserKey::PrepareKeyCallback, this,
-                        challenge, register_key));
+                        challenge, register_key, domain));
 }
 
 void EPKPChallengeUserKey::PrepareKeyCallback(const std::string& challenge,
                                               bool register_key,
+                                              const std::string& domain,
                                               PrepareKeyResult result) {
   if (result != PREPARE_KEY_OK) {
     SetError(base::StringPrintf(kGetCertificateFailedError, result));
@@ -459,7 +462,7 @@ void EPKPChallengeUserKey::PrepareKeyCallback(const std::string& challenge,
   async_caller_->TpmAttestationSignEnterpriseChallenge(
       chromeos::attestation::KEY_USER,
       kKeyName,
-      GetUserEmail(),
+      domain,
       GetDeviceId(),
       register_key ?
           chromeos::attestation::CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY :
