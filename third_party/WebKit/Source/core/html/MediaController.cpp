@@ -59,7 +59,6 @@ MediaController::MediaController(ScriptExecutionContext* context)
     , m_timeupdateTimer(this, &MediaController::timeupdateTimerFired)
     , m_previousTimeupdateTime(0)
 {
-    ScriptWrappable::init(this);
 }
 
 MediaController::~MediaController()

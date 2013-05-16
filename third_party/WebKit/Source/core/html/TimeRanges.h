@@ -26,20 +26,18 @@
 #ifndef TimeRanges_h
 #define TimeRanges_h
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
-
 #include <algorithm>
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 
 typedef int ExceptionCode;
 
-class TimeRanges : public RefCounted<TimeRanges>, public ScriptWrappable {
+class TimeRanges : public RefCounted<TimeRanges> {
 public:
-    static PassRefPtr<TimeRanges> create()
+    static PassRefPtr<TimeRanges> create() 
     {
         return adoptRef(new TimeRanges);
     }
@@ -56,20 +54,17 @@ public:
     unsigned length() const { return m_ranges.size(); }
     double start(unsigned index, ExceptionCode&) const;
     double end(unsigned index, ExceptionCode&) const;
-
+    
     void add(double start, double end);
-
+    
     bool contain(double time) const;
-
+    
     double nearest(double time) const;
 
 private:
-    TimeRanges()
-    {
-        ScriptWrappable::init(this);
-    }
-
+    TimeRanges() { }
     TimeRanges(double start, double end);
+    TimeRanges(const TimeRanges&);
 
     // We consider all the Ranges to be semi-bounded as follow: [start, end[
     struct Range {

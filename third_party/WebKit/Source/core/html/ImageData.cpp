@@ -68,7 +68,6 @@ ImageData::ImageData(const IntSize& size, PassRefPtr<Uint8ClampedArray> byteArra
     , m_data(byteArray)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(static_cast<unsigned>(size.width() * size.height() * 4) <= m_data->length());
-    ScriptWrappable::init(this);
 }
 
 }
