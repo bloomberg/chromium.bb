@@ -255,6 +255,9 @@ bool InputMethodManagerImpl::MigrateOldInputMethods(
       }
     }
   }
+  std::vector<std::string>::iterator it =
+      std::unique(input_method_ids->begin(), input_method_ids->end());
+  input_method_ids->resize(std::distance(input_method_ids->begin(), it));
   return rewritten;
 }
 
