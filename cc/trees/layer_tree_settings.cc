@@ -35,7 +35,6 @@ LayerTreeSettings::LayerTreeSettings()
       calculate_top_controls_position(false),
       use_color_estimator(false),
       use_memory_management(true),
-      prediction_benchmarking(false),
       timeout_and_draw_when_animation_checkerboards(true),
       layer_transforms_should_scale_layer_contents(false),
       minimum_contents_scale(0.0625f),

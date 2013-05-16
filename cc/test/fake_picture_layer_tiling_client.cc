@@ -27,7 +27,6 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
                     NULL,
                     1,
                     false,
-                    false,
                     &stats_instrumentation_),
       pile_(new FakeInfinitePicturePileImpl()),
       twin_tiling_(NULL),

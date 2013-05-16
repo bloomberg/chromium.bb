@@ -7,6 +7,6 @@
 namespace cc {
 
 FakeTileManager::FakeTileManager(TileManagerClient* client)
-    : TileManager(client, NULL, 1, false, false, NULL) {
+    : TileManager(client, NULL, 1, false, NULL) {
 }
 }

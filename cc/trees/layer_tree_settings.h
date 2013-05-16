@@ -40,7 +40,6 @@ class CC_EXPORT LayerTreeSettings {
   bool calculate_top_controls_position;
   bool use_color_estimator;
   bool use_memory_management;
-  bool prediction_benchmarking;
   bool timeout_and_draw_when_animation_checkerboards;
   bool layer_transforms_should_scale_layer_contents;
   float minimum_contents_scale;

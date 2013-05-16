@@ -65,7 +65,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
               ResourceProvider *resource_provider,
               size_t num_raster_threads,
               bool use_color_estimator,
-              bool prediction_benchmarking,
               RenderingStatsInstrumentation* rendering_stats_instrumentation);
   virtual ~TileManager();
 
@@ -111,7 +110,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   // Data that is passed to raster tasks.
   struct RasterTaskMetadata {
       scoped_ptr<base::Value> AsValue() const;
-      bool prediction_benchmarking;
       bool is_tile_in_pending_tree_now_bin;
       TileResolution tile_resolution;
       int layer_id;
@@ -174,11 +172,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       skia::LazyPixelRef* pixel_ref,
       RenderingStatsInstrumentation* stats_instrumentation);
 
-  static void RecordSolidColorPredictorResults(const SkPMColor* actual_colors,
-                                               size_t color_count,
-                                               bool is_predicted_solid,
-                                               SkPMColor predicted_color);
-
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
@@ -204,7 +197,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
   bool use_color_estimator_;
-  bool prediction_benchmarking_;
   bool did_initialize_visible_tile_;
 
   size_t pending_tasks_;

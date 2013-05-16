@@ -22,7 +22,6 @@ CC_EXPORT extern const char kDisableImplSidePainting[];
 CC_EXPORT extern const char kDisableThreadedAnimation[];
 CC_EXPORT extern const char kEnableCompositorFrameMessage[];
 CC_EXPORT extern const char kEnableImplSidePainting[];
-CC_EXPORT extern const char kEnablePredictionBenchmarking[];
 CC_EXPORT extern const char kEnableRightAlignedScheduling[];
 CC_EXPORT extern const char kEnableTopControlsPositionCalculation[];
 CC_EXPORT extern const char kJankInsteadOfCheckerboard[];

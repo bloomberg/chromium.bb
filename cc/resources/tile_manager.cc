@@ -110,7 +110,6 @@ TileManager::TileManager(
     ResourceProvider* resource_provider,
     size_t num_raster_threads,
     bool use_color_estimator,
-    bool prediction_benchmarking,
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
@@ -122,7 +121,6 @@ TileManager::TileManager(
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       use_color_estimator_(use_color_estimator),
-      prediction_benchmarking_(prediction_benchmarking),
       did_initialize_visible_tile_(false),
       pending_tasks_(0),
       max_pending_tasks_(kMaxNumPendingTasksPerThread * num_raster_threads) {
@@ -745,7 +743,6 @@ TileManager::RasterTaskMetadata TileManager::GetRasterTaskMetadata(
     const Tile& tile) const {
   RasterTaskMetadata metadata;
   const ManagedTileState& mts = tile.managed_state();
-  metadata.prediction_benchmarking = prediction_benchmarking_;
   metadata.is_tile_in_pending_tree_now_bin =
       mts.tree_bin[PENDING_TREE] == NOW_BIN;
   metadata.tile_resolution = mts.resolution;
@@ -852,26 +849,6 @@ void TileManager::RunAnalyzeTask(
 
   // Clear the flag if we're not using the estimator.
   analysis->is_solid_color &= use_color_estimator;
-
-  if (metadata.prediction_benchmarking) {
-    gfx::Rect layer_rect = gfx::ToEnclosingRect(
-        gfx::ScaleRect(rect, 1.0f / contents_scale));
-
-    SkDevice device(
-        SkBitmap::kARGB_8888_Config, layer_rect.width(), layer_rect.height());
-    SkCanvas canvas(&device);
-    picture_pile->Raster(&canvas, layer_rect, 1.0f, NULL);
-
-    const SkBitmap bitmap = device.accessBitmap(false);
-    DCHECK_EQ(bitmap.rowBytes(),
-              static_cast<size_t>(bitmap.width() * bitmap.bytesPerPixel()));
-
-    RecordSolidColorPredictorResults(
-        reinterpret_cast<SkPMColor*>(bitmap.getPixels()),
-        bitmap.getSize() / bitmap.bytesPerPixel(),
-        analysis->is_solid_color,
-        SkPreMultiplyColor(analysis->solid_color));
-  }
 }
 
 scoped_ptr<base::Value> TileManager::RasterTaskMetadata::AsValue() const {
@@ -947,40 +924,6 @@ void TileManager::RunImageDecodeTask(
   pixel_ref->Decode();
   base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
   stats_instrumentation->AddDeferredImageDecode(duration);
-}
-
-// static
-void TileManager::RecordSolidColorPredictorResults(
-    const SkPMColor* actual_colors,
-    size_t color_count,
-    bool is_predicted_solid,
-    SkPMColor predicted_color) {
-  DCHECK_GT(color_count, 0u);
-
-  bool is_actually_solid = true;
-
-  SkPMColor actual_color = *actual_colors;
-  for (unsigned int i = 0; i < color_count; ++i) {
-    SkPMColor current_color = actual_colors[i];
-    if (current_color == actual_color)
-      continue;
-
-    is_actually_solid = false;
-    break;
-  }
-
-  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongActualNotSolid",
-                    is_predicted_solid && !is_actually_solid);
-  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongActualSolid",
-                    !is_predicted_solid && is_actually_solid);
-  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongColor",
-                    is_predicted_solid && predicted_color != actual_color);
-  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.Accuracy",
-                    is_predicted_solid == is_actually_solid &&
-                    (!is_predicted_solid || predicted_color == actual_color));
-  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsCorrectSolid",
-                    is_predicted_solid == is_actually_solid &&
-                    (is_predicted_solid && predicted_color == actual_color));
 }
 
 }  // namespace cc

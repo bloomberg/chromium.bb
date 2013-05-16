@@ -137,8 +137,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.impl_side_painting = cc::switches::IsImplSidePaintingEnabled();
   settings.use_color_estimator =
       !cmd->HasSwitch(cc::switches::kDisableColorEstimator);
-  settings.prediction_benchmarking =
-      cmd->HasSwitch(cc::switches::kEnablePredictionBenchmarking);
 
   settings.calculate_top_controls_position =
       cmd->HasSwitch(cc::switches::kEnableTopControlsPositionCalculation);

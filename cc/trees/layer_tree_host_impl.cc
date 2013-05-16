@@ -1388,7 +1388,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
                                         resource_provider.get(),
                                         settings_.num_raster_threads,
                                         settings_.use_color_estimator,
-                                        settings_.prediction_benchmarking,
                                         rendering_stats_instrumentation_));
     UpdateTileManagerMemoryPolicy(managed_memory_policy_);
   }

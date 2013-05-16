@@ -951,7 +951,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kEnablePerTilePainting,
     cc::switches::kEnablePinchZoomScrollbars,
     cc::switches::kDisablePinchZoomScrollbars,
-    cc::switches::kEnablePredictionBenchmarking,
     cc::switches::kEnableRightAlignedScheduling,
     cc::switches::kEnableTopControlsPositionCalculation,
     cc::switches::kLowResolutionContentsScaleFactor,

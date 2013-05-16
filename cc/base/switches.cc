@@ -35,9 +35,6 @@ const char kEnableRightAlignedScheduling[] = "enable-right-aligned-scheduling";
 const char kEnableTopControlsPositionCalculation[] =
     "enable-top-controls-position-calculation";
 
-// Enable solid tile color and transparent tile metrics.
-const char kEnablePredictionBenchmarking[] = "enable-prediction-benchmarking";
-
 // The height of the movable top controls.
 const char kTopControlsHeight[] = "top-controls-height";
 
