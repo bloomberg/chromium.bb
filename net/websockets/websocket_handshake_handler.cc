@@ -4,6 +4,8 @@
 
 #include "net/websockets/websocket_handshake_handler.h"
 
+#include <limits>
+
 #include "base/base64.h"
 #include "base/md5.h"
 #include "base/sha1.h"
@@ -113,35 +115,6 @@ std::string FilterHeaders(
   return filtered_headers;
 }
 
-// Gets a key number from |key| and appends the number to |challenge|.
-// The key number (/part_N/) is extracted as step 4.-8. in
-// 5.2. Sending the server's opening handshake of
-// http://www.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-00.txt
-void GetKeyNumber(const std::string& key, std::string* challenge) {
-  uint32 key_number = 0;
-  uint32 spaces = 0;
-  for (size_t i = 0; i < key.size(); ++i) {
-    if (isdigit(key[i])) {
-      // key_number should not overflow. (it comes from
-      // WebCore/websockets/WebSocketHandshake.cpp).
-      key_number = key_number * 10 + key[i] - '0';
-    } else if (key[i] == ' ') {
-      ++spaces;
-    }
-  }
-  // spaces should not be zero in valid handshake request.
-  if (spaces == 0)
-    return;
-  key_number /= spaces;
-
-  char part[4];
-  for (int i = 0; i < 4; i++) {
-    part[3 - i] = key_number & 0xFF;
-    key_number >>= 8;
-  }
-  challenge->append(part, 4);
-}
-
 int GetVersionFromRequest(const std::string& request_headers) {
   std::vector<std::string> values;
   const char* const headers_to_get[2] = { "sec-websocket-version",
@@ -157,9 +130,43 @@ int GetVersionFromRequest(const std::string& request_headers) {
   return version;
 }
 
-}  // anonymous namespace
+}  // namespace
 
 namespace net {
+
+namespace internal {
+
+void GetKeyNumber(const std::string& key, std::string* challenge) {
+  uint32 key_number = 0;
+  uint32 spaces = 0;
+  for (size_t i = 0; i < key.size(); ++i) {
+    if (isdigit(key[i])) {
+      // key_number should not overflow. (it comes from
+      // WebCore/websockets/WebSocketHandshake.cpp).
+      // Trust, but verify.
+      DCHECK_GE((std::numeric_limits<uint32>::max() - (key[i] - '0')) / 10,
+                key_number) << "Supplied key would overflow";
+      key_number = key_number * 10 + key[i] - '0';
+    } else if (key[i] == ' ') {
+      ++spaces;
+    }
+  }
+  DCHECK_NE(0u, spaces) << "Key must contain at least one space";
+  if (spaces == 0)
+    return;
+  DCHECK_EQ(0u, key_number % spaces) << "Key number must be an integral "
+                                     << "multiple of the number of spaces";
+  key_number /= spaces;
+
+  char part[4];
+  for (int i = 0; i < 4; i++) {
+    part[3 - i] = key_number & 0xFF;
+    key_number >>= 8;
+  }
+  challenge->append(part, 4);
+}
+
+}  // namespace internal
 
 WebSocketHandshakeRequestHandler::WebSocketHandshakeRequestHandler()
     : original_length_(0),
@@ -252,13 +259,13 @@ HttpRequestInfo WebSocketHandshakeRequestHandler::GetRequestInfo(
         request_info.extra_headers.GetHeader("Sec-WebSocket-Key1", &key);
     DCHECK(header_present);
     request_info.extra_headers.RemoveHeader("Sec-WebSocket-Key1");
-    GetKeyNumber(key, challenge);
+    internal::GetKeyNumber(key, challenge);
 
     header_present =
         request_info.extra_headers.GetHeader("Sec-WebSocket-Key2", &key);
     DCHECK(header_present);
     request_info.extra_headers.RemoveHeader("Sec-WebSocket-Key2");
-    GetKeyNumber(key, challenge);
+    internal::GetKeyNumber(key, challenge);
 
     challenge->append(key3_);
   }

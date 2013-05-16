@@ -151,6 +151,21 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeResponseHandler {
   DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeResponseHandler);
 };
 
+namespace internal {
+
+// Private Functions (Exposed for Unit Testing) -------------------------------
+
+// Gets a key number from |key| and appends the number to |challenge|.
+// The key number (/part_N/) is extracted as step per 4.-8. in
+// "5.2.  Sending the server's opening handshake" of
+// http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-00.txt
+// TODO(ricea): Remove this when we remove support for pre-RFC6455 versions of
+// WebSockets.
+void NET_EXPORT_PRIVATE GetKeyNumber(const std::string& key,
+                                     std::string* challenge);
+
+}  // namespace internal
+
 }  // namespace net
 
 #endif  // NET_WEBSOCKETS_WEBSOCKET_HANDSHAKE_HANDLER_H_

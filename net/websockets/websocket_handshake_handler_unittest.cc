@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -25,7 +26,47 @@ const char* const kSetCookieHeaders[] = {
   "set-cookie", "set-cookie2"
 };
 
-}
+// A test fixture to simplify tests for GetKeyNumber().
+class WebSocketHandshakeGetKeyNumberTest : public ::testing::Test {
+ protected:
+  static const char kExampleFromDraftKey1[];
+
+  // The object is default-initialised with an empty challenge and the example
+  // key from draft-ietf-hybi-thewebsocketprotocol-00. These can be changed
+  // using set_challenge() and set_key().
+  WebSocketHandshakeGetKeyNumberTest()
+      : challenge_(), key_(kExampleFromDraftKey1) {}
+
+  // A convenience wrapper for the function under test which automatically
+  // passes in the arguments stored in the object.
+  void GetKeyNumber() { ::net::internal::GetKeyNumber(key_, &challenge_); }
+
+  // Read current challenge.
+  const std::string& challenge() const { return challenge_; }
+
+  // Overwrite challenge.
+  void set_challenge(const std::string& challenge) { challenge_ = challenge; }
+
+  // Reset the challenge to be empty.
+  void reset_challenge() { challenge_.clear(); }
+
+  // Change key.
+  void set_key(const std::string& key) { key_ = key; }
+
+ private:
+  std::string challenge_;
+  std::string key_;
+};
+
+const char WebSocketHandshakeGetKeyNumberTest::kExampleFromDraftKey1[] =
+    "3e6b263  4 17 80";
+
+// A version of the above fixture for death tests.
+class WebSocketHandshakeGetKeyNumberDeathTest
+    : public WebSocketHandshakeGetKeyNumberTest {
+};
+
+}  // namespace
 
 namespace net {
 
@@ -463,5 +504,80 @@ TEST(WebSocketHandshakeHandlerTest, HttpRequestResponseHybi06Handshake) {
 
   EXPECT_EQ(kHandshakeResponseExpectedMessage, response_handler.GetResponse());
 }
+
+TEST_F(WebSocketHandshakeGetKeyNumberTest, AppendsToString) {
+  set_challenge("hello");
+  GetKeyNumber();
+  EXPECT_EQ("hello", challenge().substr(0, 5));
+}
+
+TEST_F(WebSocketHandshakeGetKeyNumberTest, AppendsFourBytes) {
+  set_challenge("hello");
+  set_key("1 1");
+  GetKeyNumber();
+  EXPECT_EQ(9u, challenge().length());
+}
+
+TEST_F(WebSocketHandshakeGetKeyNumberTest, IsBigEndian) {
+  set_key(base::StringPrintf("%u ", 0x61626364));
+  GetKeyNumber();
+  EXPECT_EQ("abcd", challenge());
+}
+
+TEST_F(WebSocketHandshakeGetKeyNumberTest, IgnoresLetters) {
+  set_key("1b 1");
+  GetKeyNumber();
+  char expected_response[] = { 0, 0, 0, 11 };
+  EXPECT_EQ(std::string(expected_response, 4), challenge());
+}
+
+TEST_F(WebSocketHandshakeGetKeyNumberTest, DividesBySpaces) {
+  set_key("1 2");
+  GetKeyNumber();
+  EXPECT_EQ(12, challenge()[3]);
+  reset_challenge();
+  set_key("1  2");
+  GetKeyNumber();
+  EXPECT_EQ(6, challenge()[3]);
+  reset_challenge();
+  set_key(" 1  2");
+  GetKeyNumber();
+  EXPECT_EQ(4, challenge()[3]);
+  reset_challenge();
+  set_key(" 1  2 ");
+  GetKeyNumber();
+  EXPECT_EQ(3, challenge()[3]);
+}
+
+TEST_F(WebSocketHandshakeGetKeyNumberTest, MatchesExampleFromDraft) {
+  set_key("3e6b263  4 17 80");
+  GetKeyNumber();
+  char expected_response[] = { 0x36, 0x09, 0x65, 0x65 };
+  EXPECT_EQ(std::string(expected_response, 4), challenge());
+}
+
+TEST_F(WebSocketHandshakeGetKeyNumberTest, Maximum32bitInteger) {
+  set_key("4294967295 ");
+  GetKeyNumber();
+  char expected_response[] = { '\xFF', '\xFF', '\xFF', '\xFF' };
+  EXPECT_EQ(std::string(expected_response, 4), challenge());
+}
+
+#if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
+TEST_F(WebSocketHandshakeGetKeyNumberDeathTest, ThirtyThreeBitIntegerNoGood) {
+  set_key(" 4294967296");
+  EXPECT_DEBUG_DEATH(GetKeyNumber(), "overflow");
+}
+
+TEST_F(WebSocketHandshakeGetKeyNumberDeathTest, NoSpacesNoGood) {
+  set_key("11");
+  EXPECT_DEBUG_DEATH(GetKeyNumber(), "space");
+}
+
+TEST_F(WebSocketHandshakeGetKeyNumberDeathTest, MustBeIntegralMultiple) {
+  set_key("1  1");
+  EXPECT_DEBUG_DEATH(GetKeyNumber(), "spaces");
+}
+#endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 
 }  // namespace net
