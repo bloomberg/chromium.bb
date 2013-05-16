@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (c) 2008, 2009, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,18 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VisitedLinks_h
-#define VisitedLinks_h
-
+#include "config.h"
 #include "core/platform/LinkHash.h"
+
+#include "core/platform/KURL.h"
+#include "wtf/text/StringUTF8Adaptor.h"
+#include <googleurl/src/url_util.h>
+#include <public/Platform.h>
 
 namespace WebCore {
 
-class VisitedLinks {
-public:
-    static bool isLinkVisited(LinkHash);
-};
+LinkHash visitedLinkHash(const KURL& base, const AtomicString& attributeURL)
+{
+    // Resolve the relative URL using googleurl and pass the absolute URL up to
+    // the embedder. We could create a GURL object from the base and resolve
+    // the relative URL that way, but calling the lower-level functions
+    // directly saves us the string allocation in most cases.
+    url_canon::RawCanonOutput<2048> buffer;
+    url_parse::Parsed parsed;
+
+    StringUTF8Adaptor baseUTF8(base.string());
+    const url_parse::Parsed& baseParsed = base.parsed();
+
+    bool isValid = false;
+    const String& relative = attributeURL.string();
+    if (!relative.isNull() && relative.is8Bit()) {
+        StringUTF8Adaptor relativeUTF8(relative);
+        isValid = url_util::ResolveRelative(baseUTF8.data(), baseUTF8.length(), baseParsed, relativeUTF8.data(), relativeUTF8.length(), 0, &buffer, &parsed);
+    } else
+        isValid = url_util::ResolveRelative(baseUTF8.data(), baseUTF8.length(), baseParsed, relative.characters16(), relative.length(), 0, &buffer, &parsed);
+
+    if (!isValid)
+        return 0;
+    return WebKit::Platform::current()->visitedLinkHash(buffer.data(), buffer.length());
+}
 
 } // namespace WebCore
-
-#endif // VisitedLinks_h

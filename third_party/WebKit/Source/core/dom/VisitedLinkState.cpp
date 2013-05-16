@@ -34,7 +34,7 @@
 #include "core/html/HTMLAnchorElement.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/VisitedLinks.h"
+#include <public/Platform.h>
 
 namespace WebCore {
 
@@ -122,7 +122,7 @@ EInsideLink VisitedLinkState::determineLinkStateSlowCase(Element* element)
 
     m_linksCheckedForVisitedState.add(hash);
 
-    return VisitedLinks::isLinkVisited(hash) ? InsideVisitedLink : InsideUnvisitedLink;
+    return WebKit::Platform::current()->isLinkVisited(hash) ? InsideVisitedLink : InsideUnvisitedLink;
 }
 
 }
