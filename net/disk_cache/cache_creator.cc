@@ -90,8 +90,6 @@ int CacheCreator::Run() {
     return simple_cache->Init(
         base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
   }
-  DCHECK(backend_type_ == net::CACHE_BACKEND_BLOCKFILE ||
-         backend_type_ == net::CACHE_BACKEND_DEFAULT);
   disk_cache::BackendImpl* new_cache =
       new disk_cache::BackendImpl(path_, thread_, net_log_);
   created_cache_ = new_cache;
