@@ -32,46 +32,10 @@
 #include <wtf/ThreadSafeRefCounted.h>
 #include <wtf/WeakPtr.h>
 
-#if OS(DARWIN) && COMPILER_SUPPORTS(BLOCKS)
-#include <Block.h>
-#include <wtf/ObjcRuntimeExtras.h>
-#endif
-
 namespace WTF {
 
 // Functional.h provides a very simple way to bind a function pointer and arguments together into a function object
 // that can be stored, copied and invoked, similar to how boost::bind and std::bind in C++11.
-
-// Helper class template to determine whether a given type has ref and deref member functions
-// with the right type signature.
-template<typename T>
-class HasRefAndDeref {
-    typedef char YesType;
-    struct NoType {
-        char padding[8];
-    };
-
-    struct BaseMixin {
-        void deref();
-        void ref();
-    };
-
-    struct Base : public T, public BaseMixin { };
-
-    template<typename U, U> struct
-    TypeChecker { };
-
-    template<typename U>
-    static NoType refCheck(U*, TypeChecker<void (BaseMixin::*)(), &U::ref>* = 0);
-    static YesType refCheck(...);
-
-    template<typename U>
-    static NoType derefCheck(U*, TypeChecker<void (BaseMixin::*)(), &U::deref>* = 0);
-    static YesType derefCheck(...);
-
-public:
-    static const bool value = sizeof(refCheck(static_cast<Base*>(0))) == sizeof(YesType) && sizeof(derefCheck(static_cast<Base*>(0))) == sizeof(YesType);
-};
 
 // A FunctionWrapper is a class template that can wrap a function pointer or a member function pointer and
 // provide a unified interface for calling that function.
@@ -84,7 +48,6 @@ template<typename R>
 class FunctionWrapper<R (*)()> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = false;
 
     explicit FunctionWrapper(R (*function)())
         : m_function(function)
@@ -104,7 +67,6 @@ template<typename R, typename P1>
 class FunctionWrapper<R (*)(P1)> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = false;
 
     explicit FunctionWrapper(R (*function)(P1))
         : m_function(function)
@@ -124,7 +86,6 @@ template<typename R, typename P1, typename P2>
 class FunctionWrapper<R (*)(P1, P2)> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = false;
 
     explicit FunctionWrapper(R (*function)(P1, P2))
         : m_function(function)
@@ -144,7 +105,6 @@ template<typename R, typename P1, typename P2, typename P3>
 class FunctionWrapper<R (*)(P1, P2, P3)> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = false;
 
     explicit FunctionWrapper(R (*function)(P1, P2, P3))
         : m_function(function)
@@ -164,7 +124,6 @@ template<typename R, typename P1, typename P2, typename P3, typename P4>
 class FunctionWrapper<R (*)(P1, P2, P3, P4)> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = false;
 
     explicit FunctionWrapper(R (*function)(P1, P2, P3, P4))
         : m_function(function)
@@ -184,7 +143,6 @@ template<typename R, typename P1, typename P2, typename P3, typename P4, typenam
 class FunctionWrapper<R (*)(P1, P2, P3, P4, P5)> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = false;
 
     explicit FunctionWrapper(R (*function)(P1, P2, P3, P4, P5))
         : m_function(function)
@@ -206,7 +164,6 @@ template<typename R, typename C>
 class FunctionWrapper<R (C::*)()> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = HasRefAndDeref<C>::value;
 
     explicit FunctionWrapper(R (C::*function)())
         : m_function(function)
@@ -234,7 +191,6 @@ template<typename R, typename C, typename P1>
 class FunctionWrapper<R (C::*)(P1)> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = HasRefAndDeref<C>::value;
 
     explicit FunctionWrapper(R (C::*function)(P1))
         : m_function(function)
@@ -262,7 +218,6 @@ template<typename R, typename C, typename P1, typename P2>
 class FunctionWrapper<R (C::*)(P1, P2)> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = HasRefAndDeref<C>::value;
 
     explicit FunctionWrapper(R (C::*function)(P1, P2))
         : m_function(function)
@@ -290,7 +245,6 @@ template<typename R, typename C, typename P1, typename P2, typename P3>
 class FunctionWrapper<R (C::*)(P1, P2, P3)> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = HasRefAndDeref<C>::value;
 
     explicit FunctionWrapper(R (C::*function)(P1, P2, P3))
         : m_function(function)
@@ -318,7 +272,6 @@ template<typename R, typename C, typename P1, typename P2, typename P3, typename
 class FunctionWrapper<R (C::*)(P1, P2, P3, P4)> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = HasRefAndDeref<C>::value;
 
     explicit FunctionWrapper(R (C::*function)(P1, P2, P3, P4))
         : m_function(function)
@@ -346,7 +299,6 @@ template<typename R, typename C, typename P1, typename P2, typename P3, typename
 class FunctionWrapper<R (C::*)(P1, P2, P3, P4, P5)> {
 public:
     typedef R ResultType;
-    static const bool shouldRefFirstParameter = HasRefAndDeref<C>::value;
 
     explicit FunctionWrapper(R (C::*function)(P1, P2, P3, P4, P5))
         : m_function(function)
@@ -368,48 +320,6 @@ public:
 
 private:
     R (C::*m_function)(P1, P2, P3, P4, P5);
-};
-
-#if OS(DARWIN) && COMPILER_SUPPORTS(BLOCKS)
-template<typename R>
-class FunctionWrapper<R (^)()> {
-public:
-    typedef R ResultType;
-    static const bool shouldRefFirstParameter = false;
-
-    explicit FunctionWrapper(R (^block)())
-        : m_block(Block_copy(block))
-    {
-    }
-
-    FunctionWrapper(const FunctionWrapper& other)
-        : m_block(Block_copy(other.m_block))
-    {
-    }
-
-    ~FunctionWrapper()
-    {
-        Block_release(m_block);
-    }
-
-    R operator()()
-    {
-        return m_block();
-    }
-
-private:
-    R (^m_block)();
-};
-#endif
-
-template<typename T, bool shouldRefAndDeref> struct RefAndDeref {
-    static void ref(T) { }
-    static void deref(T) { }
-};
-
-template<typename T> struct RefAndDeref<T*, true> {
-    static void ref(T* t) { t->ref(); }
-    static void deref(T* t) { t->deref(); }
 };
 
 template<typename T> struct ParamStorageTraits {
@@ -483,12 +393,6 @@ public:
         : m_functionWrapper(functionWrapper)
         , m_p1(ParamStorageTraits<P1>::wrap(p1))
     {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::ref(m_p1);
-    }
-
-    ~BoundFunctionImpl()
-    {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::deref(m_p1);
     }
 
     virtual typename FunctionWrapper::ResultType operator()()
@@ -509,14 +413,8 @@ public:
         , m_p1(ParamStorageTraits<P1>::wrap(p1))
         , m_p2(ParamStorageTraits<P2>::wrap(p2))
     {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::ref(m_p1);
     }
     
-    ~BoundFunctionImpl()
-    {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::deref(m_p1);
-    }
-
     virtual typename FunctionWrapper::ResultType operator()()
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2));
@@ -537,12 +435,6 @@ public:
         , m_p2(ParamStorageTraits<P2>::wrap(p2))
         , m_p3(ParamStorageTraits<P3>::wrap(p3))
     {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::ref(m_p1);
-    }
-    
-    ~BoundFunctionImpl()
-    {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::deref(m_p1);
     }
 
     virtual typename FunctionWrapper::ResultType operator()()
@@ -567,14 +459,8 @@ public:
         , m_p3(ParamStorageTraits<P3>::wrap(p3))
         , m_p4(ParamStorageTraits<P4>::wrap(p4))
     {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::ref(m_p1);
     }
     
-    ~BoundFunctionImpl()
-    {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::deref(m_p1);
-    }
-
     virtual typename FunctionWrapper::ResultType operator()()
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4));
@@ -599,12 +485,6 @@ public:
         , m_p4(ParamStorageTraits<P4>::wrap(p4))
         , m_p5(ParamStorageTraits<P5>::wrap(p5))
     {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::ref(m_p1);
-    }
-    
-    ~BoundFunctionImpl()
-    {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::deref(m_p1);
     }
 
     virtual typename FunctionWrapper::ResultType operator()()
@@ -633,12 +513,6 @@ public:
         , m_p5(ParamStorageTraits<P5>::wrap(p5))
         , m_p6(ParamStorageTraits<P6>::wrap(p6))
     {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::ref(m_p1);
-    }
-
-    ~BoundFunctionImpl()
-    {
-        RefAndDeref<P1, FunctionWrapper::shouldRefFirstParameter>::deref(m_p1);
     }
 
     virtual typename FunctionWrapper::ResultType operator()()
@@ -700,36 +574,8 @@ public:
     R operator()() const
     {
         ASSERT(!isNull());
-
         return impl<R ()>()->operator()();
     }
-
-#if OS(DARWIN) && COMPILER_SUPPORTS(BLOCKS)
-    typedef void (^BlockType)();
-    operator BlockType() const
-    {
-        // Declare a RefPtr here so we'll be sure that the underlying FunctionImpl object's
-        // lifecycle is managed correctly.
-        RefPtr<FunctionImpl<R ()> > functionImpl = impl<R ()>();
-        BlockType block = ^{
-           functionImpl->operator()();
-        };
-
-        // This is equivalent to:
-        //
-        //   return [[block copy] autorelease];
-        //
-        // We're using manual objc_msgSend calls here because we don't want to make the entire
-        // file Objective-C. It's useful to be able to implicitly convert a Function to
-        // a block even in C++ code, since that allows us to do things like:
-        //
-        //   dispatch_async(queue, bind(...));
-        //
-        id copiedBlock = wtfObjcMsgSend<id>((id)block, sel_registerName("copy"));
-        id autoreleasedBlock = wtfObjcMsgSend<id>(copiedBlock, sel_registerName("autorelease"));
-        return (BlockType)autoreleasedBlock;
-    }
-#endif
 };
 
 template<typename FunctionType>

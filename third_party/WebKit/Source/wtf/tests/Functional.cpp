@@ -108,52 +108,6 @@ TEST(FunctionalTest, MemberFunctionBind)
     ASSERT_EQ(25, function2());
 }
 
-class B {
-public:
-    B()
-        : m_numRefCalls(0)
-        , m_numDerefCalls(0)
-    {
-    }
-
-    ~B()
-    {
-    }
-
-    void ref()
-    {
-        m_numRefCalls++;
-    }
-
-    void deref()
-    {
-        m_numDerefCalls++;
-    }
-
-    void f() { ASSERT_GT(m_numRefCalls, 0); }
-    void g(int) { ASSERT_GT(m_numRefCalls, 0); }
-
-    int m_numRefCalls;
-    int m_numDerefCalls;
-};
-
-TEST(FunctionalTest, MemberFunctionBindRefDeref)
-{
-    B b;
-
-    {
-        Function<void ()> function1 = bind(&B::f, &b);
-        function1();
-
-        Function<void ()> function2 = bind(&B::g, &b, 10);
-        function2();
-    }
-
-    ASSERT_TRUE(b.m_numRefCalls == b.m_numDerefCalls);
-    ASSERT_GT(b.m_numRefCalls, 0);
-
-}
-
 class Number : public RefCounted<Number> {
 public:
     static PassRefPtr<Number> create(int value)
@@ -195,27 +149,6 @@ TEST(FunctionalTest, RefCountedStorage)
     Function<int ()> multiplySixByTwoFunction = bind(multiplyNumberByTwo, six.release());
     ASSERT_FALSE(six);
     ASSERT_EQ(12, multiplySixByTwoFunction());
-}
-
-namespace RefAndDerefTests {
-
-template<typename T> struct RefCounted {
-    void ref();
-    void deref();
-};
-
-struct Connection : RefCounted<Connection> { };
-COMPILE_ASSERT(WTF::HasRefAndDeref<Connection>::value, class_has_ref_and_deref);
-
-struct NoRefOrDeref { };
-COMPILE_ASSERT(!WTF::HasRefAndDeref<NoRefOrDeref>::value, class_has_no_ref_or_deref);
-
-struct RefOnly { void ref(); };
-COMPILE_ASSERT(!WTF::HasRefAndDeref<RefOnly>::value, class_has_ref_only);
-
-struct DerefOnly { void deref(); };
-COMPILE_ASSERT(!WTF::HasRefAndDeref<DerefOnly>::value, class_has_deref_only);
-
 }
 
 } // namespace
