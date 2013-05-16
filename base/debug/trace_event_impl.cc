@@ -829,6 +829,10 @@ const char* TraceLog::GetCategoryGroupName(
 void TraceLog::EnableIncludedCategoryGroup(int category_index) {
   bool is_enabled = category_filter_.IsCategoryGroupEnabled(
       g_category_groups[category_index]);
+  SetCategoryGroupEnabled(category_index, is_enabled);
+}
+
+void TraceLog::SetCategoryGroupEnabled(int category_index, bool is_enabled) {
   g_category_group_enabled[category_index] =
       is_enabled ? TraceLog::CATEGORY_ENABLED : 0;
 
@@ -876,7 +880,7 @@ const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
         // thereby enabling this category group.
         EnableIncludedCategoryGroup(new_index);
       } else {
-        g_category_group_enabled[new_index] = 0;
+        SetCategoryGroupEnabled(new_index, false);
       }
       category_group_enabled = &g_category_group_enabled[new_index];
     } else {
@@ -987,7 +991,7 @@ void TraceLog::SetDisabled() {
   watch_category_ = NULL;
   watch_event_name_ = "";
   for (int i = 0; i < g_category_index; i++)
-    g_category_group_enabled[i] = 0;
+    SetCategoryGroupEnabled(i, false);
   AddThreadNameMetadataEvents();
 }
 

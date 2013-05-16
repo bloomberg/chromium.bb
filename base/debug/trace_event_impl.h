@@ -462,6 +462,8 @@ class BASE_EXPORT TraceLog {
   void EnableIncludedCategoryGroups();
   void EnableIncludedCategoryGroup(int category_index);
 
+  static void SetCategoryGroupEnabled(int category_index, bool enabled);
+
   // The pointer returned from GetCategoryGroupEnabledInternal() points to a
   // value with zero or more of the following bits. Used in this class only.
   // The TRACE_EVENT macros should only use the value as a bool.
