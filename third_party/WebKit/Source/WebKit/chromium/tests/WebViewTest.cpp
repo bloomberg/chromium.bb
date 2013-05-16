@@ -806,14 +806,6 @@ TEST_F(WebViewTest, ConfirmCompositionTriggersAutofillTextChange)
     webView->close();
 }
 
-TEST_F(WebViewTest, VisitedLinkCrash)
-{
-    const char* testURL = "data:text/html,<svg><a></a></svg>";
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(testURL);
-    webView->updateVisitedLinkState(0);
-    webView->close();
-}
-
 TEST_F(WebViewTest, ShadowRoot)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("shadow_dom_test.html"));
