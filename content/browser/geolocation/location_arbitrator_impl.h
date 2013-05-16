@@ -92,6 +92,9 @@ class CONTENT_EXPORT GeolocationArbitratorImpl
   // The current best estimate of our position.
   Geoposition position_;
 
+  // Tracks whether providers should be running.
+  bool is_running_;
+
   DISALLOW_COPY_AND_ASSIGN(GeolocationArbitratorImpl);
 };
 

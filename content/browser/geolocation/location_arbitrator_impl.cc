@@ -29,7 +29,8 @@ GeolocationArbitratorImpl::GeolocationArbitratorImpl(
     const LocationUpdateCallback& callback)
     : callback_(callback),
       position_provider_(NULL),
-      is_permission_granted_(false) {
+      is_permission_granted_(false),
+      is_running_(false) {
 }
 
 GeolocationArbitratorImpl::~GeolocationArbitratorImpl() {
@@ -49,6 +50,7 @@ void GeolocationArbitratorImpl::OnPermissionGranted() {
 
 void GeolocationArbitratorImpl::StartProviders(bool use_high_accuracy) {
   // Stash options as OnAccessTokenStoresLoaded has not yet been called.
+  is_running_ = true;
   use_high_accuracy_ = use_high_accuracy;
   if (providers_.empty()) {
     DCHECK(DefaultNetworkProviderURL().is_valid());
@@ -69,12 +71,13 @@ void GeolocationArbitratorImpl::DoStartProviders() {
 
 void GeolocationArbitratorImpl::StopProviders() {
   providers_.clear();
+  is_running_ = false;
 }
 
 void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
     AccessTokenStore::AccessTokenSet access_token_set,
     net::URLRequestContextGetter* context_getter) {
-  if (!providers_.empty()) {
+  if (!is_running_ || !providers_.empty()) {
     // A second StartProviders() call may have arrived before the first
     // completed.
     return;
