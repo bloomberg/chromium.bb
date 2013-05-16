@@ -41,7 +41,7 @@ namespace {
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets.
-const int kThemePackVersion = 30;
+const int kThemePackVersion = 31;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16. kHeaderID should always have the maximum value because we want the
@@ -144,22 +144,19 @@ PersistingImagesTable kPersistingImages[] = {
   { 30, IDR_STOP_D, NULL },
   { 31, IDR_STOP_H, NULL },
   { 32, IDR_STOP_P, NULL },
-  { 33, IDR_LOCATIONBG_C, NULL },
-  { 34, IDR_LOCATIONBG_L, NULL },
-  { 35, IDR_LOCATIONBG_R, NULL },
-  { 36, IDR_BROWSER_ACTIONS_OVERFLOW, NULL },
-  { 37, IDR_BROWSER_ACTIONS_OVERFLOW_H, NULL },
-  { 38, IDR_BROWSER_ACTIONS_OVERFLOW_P, NULL },
-  { 39, IDR_TOOLS, NULL },
-  { 40, IDR_TOOLS_H, NULL },
-  { 41, IDR_TOOLS_P, NULL },
-  { 42, IDR_MENU_DROPARROW, NULL },
-  { 43, IDR_THROBBER, NULL },
-  { 44, IDR_THROBBER_WAITING, NULL },
-  { 45, IDR_THROBBER_LIGHT, NULL },
-  { 46, IDR_TOOLBAR_BEZEL_HOVER, NULL },
-  { 47, IDR_TOOLBAR_BEZEL_PRESSED, NULL },
-  { 48, IDR_TOOLS_BAR, NULL },
+  { 33, IDR_BROWSER_ACTIONS_OVERFLOW, NULL },
+  { 34, IDR_BROWSER_ACTIONS_OVERFLOW_H, NULL },
+  { 35, IDR_BROWSER_ACTIONS_OVERFLOW_P, NULL },
+  { 36, IDR_TOOLS, NULL },
+  { 37, IDR_TOOLS_H, NULL },
+  { 38, IDR_TOOLS_P, NULL },
+  { 39, IDR_MENU_DROPARROW, NULL },
+  { 40, IDR_THROBBER, NULL },
+  { 41, IDR_THROBBER_WAITING, NULL },
+  { 42, IDR_THROBBER_LIGHT, NULL },
+  { 43, IDR_TOOLBAR_BEZEL_HOVER, NULL },
+  { 44, IDR_TOOLBAR_BEZEL_PRESSED, NULL },
+  { 45, IDR_TOOLS_BAR, NULL },
 };
 const size_t kPersistingImagesLength = arraysize(kPersistingImages);
 
