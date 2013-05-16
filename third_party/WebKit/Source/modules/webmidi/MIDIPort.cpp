@@ -49,6 +49,7 @@ MIDIPort::MIDIPort(ScriptExecutionContext* context, const String& id, const Stri
     , m_version(version)
 {
     ASSERT(type == MIDIPortTypeInput || type == MIDIPortTypeOutput);
+    ScriptWrappable::init(this);
 }
 
 MIDIPort::~MIDIPort()

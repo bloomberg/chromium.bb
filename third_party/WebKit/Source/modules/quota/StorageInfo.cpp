@@ -44,6 +44,7 @@ namespace WebCore {
 
 StorageInfo::StorageInfo()
 {
+    ScriptWrappable::init(this);
 }
 
 StorageInfo::~StorageInfo()

@@ -41,6 +41,7 @@ PassRefPtr<MIDIInput> MIDIInput::create(ScriptExecutionContext* context, const S
 MIDIInput::MIDIInput(ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
     : MIDIPort(context, id, manufacturer, name, MIDIPortTypeInput, version)
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

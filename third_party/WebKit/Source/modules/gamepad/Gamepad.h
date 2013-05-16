@@ -26,14 +26,14 @@
 #ifndef Gamepad_h
 #define Gamepad_h
 
-
+#include "bindings/v8/ScriptWrappable.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class Gamepad: public RefCounted<Gamepad> {
+class Gamepad: public RefCounted<Gamepad>, public ScriptWrappable {
 public:
     static PassRefPtr<Gamepad> create()
     {

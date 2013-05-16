@@ -56,6 +56,7 @@ namespace WebCore {
 Notification::Notification()
     : ActiveDOMObject(0)
 {
+    ScriptWrappable::init(this);
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
@@ -65,6 +66,7 @@ Notification::Notification(const KURL& url, ScriptExecutionContext* context, Exc
     , m_state(Idle)
     , m_notificationCenter(provider)
 {
+    ScriptWrappable::init(this);
     if (m_notificationCenter->checkPermission() != NotificationClient::PermissionAllowed) {
         ec = SECURITY_ERR;
         return;
@@ -88,6 +90,7 @@ Notification::Notification(const String& title, const String& body, const String
     , m_state(Idle)
     , m_notificationCenter(provider)
 {
+    ScriptWrappable::init(this);
     if (m_notificationCenter->checkPermission() != NotificationClient::PermissionAllowed) {
         ec = SECURITY_ERR;
         return;
@@ -109,6 +112,7 @@ Notification::Notification(ScriptExecutionContext* context, const String& title)
     , m_state(Idle)
     , m_taskTimer(adoptPtr(new Timer<Notification>(this, &Notification::taskTimerFired)))
 {
+    ScriptWrappable::init(this);
     m_notificationCenter = DOMWindowNotifications::webkitNotifications(toDocument(context)->domWindow());
     
     ASSERT(m_notificationCenter->client());

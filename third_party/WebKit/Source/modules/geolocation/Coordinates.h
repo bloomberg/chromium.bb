@@ -26,12 +26,13 @@
 #ifndef Coordinates_h
 #define Coordinates_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/Event.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class Coordinates : public RefCounted<Coordinates> {
+class Coordinates : public RefCounted<Coordinates>, public ScriptWrappable {
 public:
     static PassRefPtr<Coordinates> create(double latitude, double longitude, bool providesAltitude, double altitude, double accuracy, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed) { return adoptRef(new Coordinates(latitude, longitude, providesAltitude, altitude, accuracy, providesAltitudeAccuracy, altitudeAccuracy, providesHeading, heading, providesSpeed, speed)); }
 
@@ -47,7 +48,7 @@ public:
     double altitudeAccuracy(bool& isNull) const;
     double heading(bool& isNull) const;
     double speed(bool& isNull) const;
-    
+
 private:
     Coordinates(double latitude, double longitude, bool providesAltitude, double altitude, double accuracy, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed)
         : m_latitude(latitude)
@@ -62,6 +63,7 @@ private:
         , m_canProvideHeading(providesHeading)
         , m_canProvideSpeed(providesSpeed)
     {
+        ScriptWrappable::init(this);
     }
 
     double m_latitude;

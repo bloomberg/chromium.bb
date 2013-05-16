@@ -53,6 +53,7 @@ NotificationCenter::NotificationCenter(ScriptExecutionContext* context, Notifica
     : ActiveDOMObject(context)
     , m_client(client)
 {
+    ScriptWrappable::init(this);
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)

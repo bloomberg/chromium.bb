@@ -41,6 +41,7 @@ PassRefPtr<MIDIOutput> MIDIOutput::create(ScriptExecutionContext* context, const
 MIDIOutput::MIDIOutput(ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
     : MIDIPort(context, id, manufacturer, name, MIDIPortTypeOutput, version)
 {
+    ScriptWrappable::init(this);
 }
 
 void MIDIOutput::send(Uint8Array* data, double timestamp)

@@ -31,6 +31,7 @@
 #ifndef StorageQuota_h
 #define StorageQuota_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -41,7 +42,7 @@ class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class StorageQuota : public RefCounted<StorageQuota> {
+class StorageQuota : public RefCounted<StorageQuota>, public ScriptWrappable {
 public:
     enum Type {
         Temporary,

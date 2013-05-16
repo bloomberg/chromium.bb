@@ -31,6 +31,7 @@
 #ifndef MIDIPort_h
 #define MIDIPort_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
 #include "wtf/RefCounted.h"
@@ -39,7 +40,7 @@
 
 namespace WebCore {
 
-class MIDIPort : public ActiveDOMObject, public RefCounted<MIDIPort>, public EventTarget {
+class MIDIPort : public RefCounted<MIDIPort>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
 public:
     enum MIDIPortTypeCode {
         MIDIPortTypeInput,

@@ -139,6 +139,7 @@ WebSocket::WebSocket(ScriptExecutionContext* context)
     , m_subprotocol("")
     , m_extensions("")
 {
+    ScriptWrappable::init(this);
 }
 
 WebSocket::~WebSocket()

@@ -33,6 +33,7 @@ Gamepad::Gamepad()
     : m_index(0)
     , m_timestamp(0)
 {
+    ScriptWrappable::init(this);
 }
 
 void Gamepad::axes(unsigned count, float* data)

@@ -32,6 +32,7 @@
 #ifndef NotificationCenter_h
 #define NotificationCenter_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/html/VoidCallback.h"
@@ -49,7 +50,7 @@ namespace WebCore {
 class NotificationClient;
 class VoidCallback;
 
-class NotificationCenter : public RefCounted<NotificationCenter>, public ActiveDOMObject {
+class NotificationCenter : public RefCounted<NotificationCenter>, public ScriptWrappable, public ActiveDOMObject {
 public:
     static PassRefPtr<NotificationCenter> create(ScriptExecutionContext*, NotificationClient*);
 

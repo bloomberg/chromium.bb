@@ -37,6 +37,7 @@ namespace WebCore {
 StorageQuota::StorageQuota(Type type)
     : m_type(type)
 {
+    ScriptWrappable::init(this);
 }
 
 StorageQuota::~StorageQuota()

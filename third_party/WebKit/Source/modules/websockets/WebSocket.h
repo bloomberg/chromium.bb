@@ -31,6 +31,7 @@
 #ifndef WebSocket_h
 #define WebSocket_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
@@ -47,7 +48,7 @@ namespace WebCore {
 class Blob;
 class WebSocketChannel;
 
-class WebSocket : public RefCounted<WebSocket>, public EventTarget, public ActiveDOMObject, public WebSocketChannelClient {
+class WebSocket : public RefCounted<WebSocket>, public ScriptWrappable, public EventTarget, public ActiveDOMObject, public WebSocketChannelClient {
 public:
     static const char* subProtocolSeperator();
     static PassRefPtr<WebSocket> create(ScriptExecutionContext*);

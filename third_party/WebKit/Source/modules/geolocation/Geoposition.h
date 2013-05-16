@@ -26,6 +26,7 @@
 #ifndef Geoposition_h
 #define Geoposition_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/Event.h"
 #include "modules/geolocation/Coordinates.h"
 #include "wtf/RefCounted.h"
@@ -33,7 +34,7 @@
 
 namespace WebCore {
 
-class Geoposition : public RefCounted<Geoposition> {
+class Geoposition : public RefCounted<Geoposition>, public ScriptWrappable {
 public:
     static PassRefPtr<Geoposition> create(PassRefPtr<Coordinates> coordinates, DOMTimeStamp timestamp)
     {
@@ -47,19 +48,20 @@ public:
 
     DOMTimeStamp timestamp() const { return m_timestamp; }
     Coordinates* coords() const { return m_coordinates.get(); }
-    
+
 private:
     Geoposition(PassRefPtr<Coordinates> coordinates, DOMTimeStamp timestamp)
         : m_coordinates(coordinates)
         , m_timestamp(timestamp)
     {
         ASSERT(m_coordinates);
+        ScriptWrappable::init(this);
     }
 
     RefPtr<Coordinates> m_coordinates;
     DOMTimeStamp m_timestamp;
 };
-    
+
 } // namespace WebCore
 
 #endif // Geoposition_h

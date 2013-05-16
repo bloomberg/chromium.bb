@@ -29,9 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Notification_h  
+#ifndef Notification_h
 #define Notification_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"
@@ -63,7 +64,7 @@ class ThreadableLoader;
 
 typedef int ExceptionCode;
 
-class Notification : public RefCounted<Notification>, public ActiveDOMObject, public EventTarget {
+class Notification : public RefCounted<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     Notification();
@@ -74,7 +75,7 @@ public:
 #if ENABLE(NOTIFICATIONS)
     static PassRefPtr<Notification> create(ScriptExecutionContext*, const String& title, const Dictionary& options);
 #endif
-    
+
     virtual ~Notification();
 
     void show();
@@ -85,7 +86,7 @@ public:
 
     bool isHTML() const { return m_isHTML; }
     void setHTML(bool isHTML) { m_isHTML = isHTML; }
-    
+
 #if ENABLE(LEGACY_NOTIFICATIONS)
     KURL url() const { return m_notificationURL; }
     void setURL(KURL url) { m_notificationURL = url; }
@@ -121,7 +122,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(click);
-    
+
     void dispatchClickEvent();
     void dispatchCloseEvent();
     void dispatchErrorEvent();
@@ -173,7 +174,7 @@ private:
 #if ENABLE(NOTIFICATIONS)
     void taskTimerFired(Timer<Notification>*);
 #endif
-    
+
     bool m_isHTML;
 
     // Text notifications.
@@ -197,7 +198,7 @@ private:
     NotificationState m_state;
 
     RefPtr<NotificationCenter> m_notificationCenter;
-    
+
     EventTargetData m_eventTargetData;
 
 #if ENABLE(NOTIFICATIONS)

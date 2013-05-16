@@ -29,6 +29,7 @@
 #ifndef AudioParam_h
 #define AudioParam_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioParamTimeline.h"
 #include "modules/webaudio/AudioSummingJunction.h"
@@ -42,7 +43,7 @@ namespace WebCore {
 
 class AudioNodeOutput;
 
-class AudioParam : public AudioSummingJunction, public RefCounted<AudioParam> {
+class AudioParam : public RefCounted<AudioParam>, public ScriptWrappable, public AudioSummingJunction {
 public:
     static const double DefaultSmoothingConstant;
     static const double SnapThreshold;
@@ -114,6 +115,7 @@ protected:
         , m_smoothedValue(defaultValue)
         , m_smoothingConstant(DefaultSmoothingConstant)
     {
+        ScriptWrappable::init(this);
     }
 
 private:
