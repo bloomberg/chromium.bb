@@ -3429,7 +3429,6 @@ verify-pso() {
   else
     verify-object-llvm "$1"
     echo "PASS (bitcode pso)"
-    # TODO(pdox): Add a call to pnacl-meta to check for the "shared" property.
   fi
 }
 

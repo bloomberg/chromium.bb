@@ -161,16 +161,15 @@ def main(argv):
   # Translate .pexe files
   is_pnacl = nexe.endswith('.pexe')
   if is_pnacl:
-    nexe, metadata = Translate(env.arch, nexe)
-    if metadata['OutputFormat'] != 'executable':
-      Fatal('Bitcode has non-executable type: %s', metadata['OutputFormat'])
+    nexe = Translate(env.arch, nexe)
 
   # Read the ELF file info
   if is_pnacl and env.dry_run:
     # In a dry run, we don't actually run pnacl-translate, so there is
     # no nexe for readelf. Fill in the information manually.
-    has_needed = len(metadata['NeedsLibrary']) > 0
-    arch, is_dynamic, is_glibc_static = env.arch, has_needed, False
+    arch = env.arch
+    is_dynamic = False
+    is_glibc_static = False
   else:
     arch, is_dynamic, is_glibc_static = ReadELFInfo(nexe)
 
@@ -331,41 +330,12 @@ def BuildSelLdr(mode):
 def Translate(arch, pexe):
   if arch is None:
     Fatal('Missing -arch for PNaCl translation.')
-  metadata = GetBitcodeMetadata(pexe)
   output_file = os.path.splitext(pexe)[0] + '.' + arch + '.nexe'
-  # TODO(pdox): It shouldn't be necessary to branch here.
-  # Both newlib and glibc's pnacl-translate should behave identically.
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
-  has_needed = len(metadata['NeedsLibrary']) > 0
-  if has_needed:
-    rootdir = env.pnacl_root_glibc
-  else:
-    rootdir = env.pnacl_root_newlib
-
-  pnacl_translate = os.path.join(rootdir, 'bin', 'pnacl-translate')
+  pnacl_translate = os.path.join(env.pnacl_root_newlib, 'bin',
+                                 'pnacl-translate')
   args = [ pnacl_translate, '-arch', arch, pexe, '-o', output_file ]
   Run(args)
-  return output_file, metadata
-
-def GetBitcodeMetadata(pexe):
-  pnaclmeta = os.path.join(env.pnacl_root_newlib, 'bin', 'pnacl-meta')
-  args = [ pnaclmeta, '--raw', pexe ]
-  raw_metadata = Run(args, capture = True)
-  metadata = { 'OutputFormat': '',
-               'SOName'      : '',
-               'NeedsLibrary': [] }
-  for line in raw_metadata.split('\n'):
-    line = line.strip()
-    if not line:
-      continue
-    k, v = line.split(':')
-    k = k.strip()
-    v = v.strip()
-    if isinstance(metadata[k], list):
-      metadata[k].append(v)
-    else:
-      metadata[k] = v
-  return metadata
+  return output_file
 
 def Stringify(args):
   ret = ''
