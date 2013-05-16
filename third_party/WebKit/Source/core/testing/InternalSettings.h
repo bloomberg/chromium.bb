@@ -51,7 +51,6 @@ public:
         void restoreTo(Settings*);
 
         bool m_originalCSSExclusionsEnabled;
-        bool m_originalCSSVariablesEnabled;
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
         bool m_originalExperimentalShadowDOMEnabled;
         bool m_originalExperimentalWebSocketEnabled;
@@ -104,10 +103,6 @@ public:
 
     void setShouldDisplayTrackKind(const String& kind, bool, ExceptionCode&);
     bool shouldDisplayTrackKind(const String& kind, ExceptionCode&);
-
-    // cssVariablesEnabled is not backed by RuntimeEnabledFeatures, but should be.
-    bool cssVariablesEnabled(ExceptionCode&);
-    void setCSSVariablesEnabled(bool, ExceptionCode&);
 
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start. These setters should

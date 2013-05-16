@@ -92,7 +92,6 @@ public:
     virtual void setExperimentalCSSCustomFilterEnabled(bool);
     virtual void setExperimentalCSSGridLayoutEnabled(bool);
     virtual void setCSSStickyPositionEnabled(bool);
-    virtual void setExperimentalCSSVariablesEnabled(bool);
     virtual void setExperimentalWebGLEnabled(bool);
     virtual void setExperimentalWebSocketEnabled(bool);
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON);

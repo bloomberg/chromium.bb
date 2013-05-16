@@ -138,9 +138,6 @@ public:
     void setCSSStickyPositionEnabled(bool enabled) { m_cssStickyPositionEnabled = enabled; }
     bool cssStickyPositionEnabled() const { return m_cssStickyPositionEnabled; }
 
-    void setCSSVariablesEnabled(bool enabled) { m_cssVariablesEnabled = enabled; }
-    bool cssVariablesEnabled() const { return m_cssVariablesEnabled; }
-
     static void setMockScrollbarsEnabled(bool flag);
     static bool mockScrollbarsEnabled();
 
@@ -183,7 +180,6 @@ private:
     unsigned m_fontRenderingMode : 1;
     bool m_isCSSCustomFilterEnabled : 1;
     bool m_cssStickyPositionEnabled : 1;
-    bool m_cssVariablesEnabled : 1;
     bool m_dnsPrefetchingEnabled : 1;
 
     bool m_touchEventEmulationEnabled : 1;
