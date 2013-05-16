@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/quota_internals_proxy.h"
+#include "chrome/browser/ui/webui/quota_internals/quota_internals_proxy.h"
 
 #include <set>
 #include <string>
 
 #include "base/bind.h"
-#include "chrome/browser/ui/webui/quota_internals_handler.h"
-#include "chrome/browser/ui/webui/quota_internals_types.h"
+#include "chrome/browser/ui/webui/quota_internals/quota_internals_handler.h"
+#include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "net/base/net_util.h"
 
 using content::BrowserThread;

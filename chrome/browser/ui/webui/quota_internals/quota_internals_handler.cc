@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/quota_internals_handler.h"
+#include "chrome/browser/ui/webui/quota_internals/quota_internals_handler.h"
 
 #include <string>
 
@@ -10,8 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/quota_internals_proxy.h"
-#include "chrome/browser/ui/webui/quota_internals_types.h"
+#include "chrome/browser/ui/webui/quota_internals/quota_internals_proxy.h"
+#include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 #include "net/base/net_util.h"
