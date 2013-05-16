@@ -131,10 +131,23 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   // Lay out the text controls from the bottom up.
   CGFloat totalYOffset = 0.0;
 
-  totalYOffset +=
-      [GTMUILocalizerAndLayoutTweaker sizeToFitView:advancedLink_].height;
-  [[advancedLink_ cell] setTextColor:
-      gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
+  if ([errorMessage_ length] == 0) {
+    totalYOffset +=
+        [GTMUILocalizerAndLayoutTweaker sizeToFitView:advancedLink_].height;
+    [[advancedLink_ cell] setTextColor:
+        gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
+  } else {
+    // Don't display the advanced link for the error bubble.
+    // To align the Learn More link with the OK button, we need to offset by
+    // the height of the Advanced link, plus the padding between it and the
+    // Learn More link above.
+    float advancedLinkHeightPlusPadding =
+        [informativePlaceholderTextField_ frame].origin.y -
+        [advancedLink_ frame].origin.y;
+
+    totalYOffset -= advancedLinkHeightPlusPadding;
+    [advancedLink_ removeFromSuperview];
+  }
 
   if (informativePlaceholderTextField_) {
     ShiftOriginY(informativePlaceholderTextField_, totalYOffset);

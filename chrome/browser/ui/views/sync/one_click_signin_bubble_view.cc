@@ -157,10 +157,12 @@ void OneClickSigninBubbleView::Init() {
   is_sync_dialog_ ? InitDialogContent(layout) : InitBubbleContent(layout);
 
   // Add controls at the bottom.
-  InitAdvancedLink();
-
-  layout->StartRow(0, COLUMN_SET_CONTROLS);
-  layout->AddView(advanced_link_);
+  // Don't display the advanced link for the error bubble.
+  if (is_sync_dialog_ || error_message_.empty()) {
+    InitAdvancedLink();
+    layout->StartRow(0, COLUMN_SET_CONTROLS);
+    layout->AddView(advanced_link_);
+  }
 
   InitButtons(layout);
   ok_button_->SetIsDefault(true);
@@ -289,11 +291,8 @@ void OneClickSigninBubbleView::GetButtons(views::LabelButton** ok_button,
 }
 
 void OneClickSigninBubbleView::InitAdvancedLink() {
-  advanced_link_ = is_sync_dialog_ ?
-      new views::Link(
-        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_ADVANCED)):
-      new views::Link(
-        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_ADVANCED));
+  advanced_link_ = new views::Link(
+      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_ADVANCED));
 
   advanced_link_->set_listener(this);
   advanced_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -357,7 +356,7 @@ void OneClickSigninBubbleView::LinkClicked(views::Link* source,
     // don't hide the modal dialog, as this is an informational link
     if (is_sync_dialog_)
       return;
-  } else if (source == advanced_link_) {
+  } else if (advanced_link_ && source == advanced_link_) {
     if (is_sync_dialog_) {
       OneClickSigninHelper::LogConfirmHistogramValue(
         clicked_learn_more_ ?
