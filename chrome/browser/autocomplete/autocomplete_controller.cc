@@ -241,9 +241,18 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   base::TimeTicks start_time = base::TimeTicks::Now();
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
        ++i) {
+    // TODO(mpearson): Remove timing code once bugs 178705 / 237703 / 168933
+    // are resolved.
+    base::TimeTicks provider_start_time = base::TimeTicks::Now();
     (*i)->Start(input_, minimal_changes);
     if (input.matches_requested() != AutocompleteInput::ALL_MATCHES)
       DCHECK((*i)->done());
+    base::TimeTicks provider_end_time = base::TimeTicks::Now();
+    std::string name = std::string("Omnibox.ProviderTime.") + (*i)->GetName();
+    base::HistogramBase* counter = base::Histogram::FactoryGet(
+        name, 1, 5000, 20, base::Histogram::kUmaTargetedHistogramFlag);
+    counter->Add(static_cast<int>(
+        (provider_end_time - provider_start_time).InMilliseconds()));
   }
   if (input.matches_requested() == AutocompleteInput::ALL_MATCHES &&
       (input.text().length() < 6)) {

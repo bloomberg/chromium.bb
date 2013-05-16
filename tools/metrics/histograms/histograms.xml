@@ -30,8 +30,8 @@ the affected histograms. For example, define the following:
   <histogram name="FileLoadLatency"/>
 
   <fieldtrial name="SuperHttpExperiment">
-    <group name="SuperHttpEnabled">
-    <group name="SuperHttpDisabled">
+    <group name="SuperHttpEnabled"/>
+    <group name="SuperHttpDisabled"/>
     <affected-histogram name="FileLoadLatency"/>
   </fieldtrial>
 
@@ -5622,6 +5622,12 @@ other types of suffix sets.
   <summary>
     The number of times users enter keyword hint mode &quot;Search ___
     for:&quot; and how.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.ProviderTime" units="ms">
+  <summary>
+    The length of time taken by the named provider&quot;s synchronous pass.
   </summary>
 </histogram>
 
@@ -14143,6 +14149,21 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity3.PacedPacket.Send6.SeriesAcked"/>
   <affected-histogram name="NetConnectivity3.StartPacket.Send6.PacketsSent"/>
   <affected-histogram name="NetConnectivity3.StartPacket.Send6.SeriesAcked"/>
+</fieldtrial>
+
+<fieldtrial name="OmniboxProviderTime" separator=".">
+  <group name="Bookmark"/>
+  <group name="Builtin"/>
+  <group name="Contact"/>
+  <group name="ExtensionApp"/>
+  <group name="HistoryContents"/>
+  <group name="HistoryQuick"/>
+  <group name="HistoryURL"/>
+  <group name="Keyword"/>
+  <group name="Search"/>
+  <group name="Shortcuts"/>
+  <group name="ZeroSuggest"/>
+  <affected-histogram name="Omnibox.ProviderTime"/>
 </fieldtrial>
 
 <fieldtrial name="OverlappedReadImpact">
