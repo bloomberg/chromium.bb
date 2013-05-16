@@ -14,6 +14,7 @@
 #include "ui/base/events/event_utils.h"
 #include "ui/base/gestures/gesture_sequence.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/shell.h"
@@ -2002,8 +2003,10 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
 #if defined(USE_AURA)
       if (touch_event_type != ui::ET_UNKNOWN) {
         POINT point;
-        point.x = TOUCH_COORD_TO_PIXEL(input[i].x);
-        point.y = TOUCH_COORD_TO_PIXEL(input[i].y);
+        point.x = TOUCH_COORD_TO_PIXEL(input[i].x) /
+            ui::win::GetUndocumentedDPIScale();
+        point.y = TOUCH_COORD_TO_PIXEL(input[i].y) /
+            ui::win::GetUndocumentedDPIScale();
 
         ScreenToClient(hwnd(), &point);
 
