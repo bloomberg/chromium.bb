@@ -589,6 +589,13 @@
           'sources': [
             'host/keygen_main.cc',
           ],
+          'conditions': [
+            ['OS=="linux" and linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
         },  # end of target 'remoting_host_keygen'
 
         {
@@ -731,6 +738,13 @@
             'host/setup/native_messaging_writer.cc',
             'host/setup/native_messaging_writer.h',
           ],
+          'conditions': [
+            ['OS=="linux" and linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
         },  # end of target 'remoting_native_messaging_host'
       ],  # end of 'targets'
     }],  # 'enable_remoting_host==1'
@@ -870,6 +884,11 @@
                 }],  # mac_breakpad==1
               ],  # conditions
             }],  # OS=mac
+            ['OS=="linux" and linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],  # OS=linux
           ],  # end of 'conditions'
         },  # end of target 'remoting_me2me_host'
 
@@ -923,6 +942,13 @@
           ],
           'sources': [
             'host/setup/start_host.cc',
+          ],
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
           ],
         },  # end of target 'remoting_start_host'
       ],  # end of 'targets'
