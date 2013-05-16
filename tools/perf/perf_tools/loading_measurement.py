@@ -44,7 +44,7 @@ class LoadingMeasurement(page_measurement.PageMeasurement):
       events_by_name[e.name].append(e)
 
     for key, group in events_by_name.items():
-      times = [e.self_time_ms for e in group]
+      times = [e.self_time for e in group]
       total = sum(times)
       biggest_jank = max(times)
       results.Add(key, 'ms', total)

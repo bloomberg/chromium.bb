@@ -26,7 +26,7 @@ class ImageDecoding(page_measurement.PageMeasurement):
       min_iterations = tab.EvaluateJavaScript('minIterations')
       decode_image_events = decode_image_events[-min_iterations:]
 
-    durations = [d.duration_ms for d in decode_image_events]
+    durations = [d.duration for d in decode_image_events]
     if not durations:
       results.Add('ImageDecoding_avg', 'ms', 'unsupported')
       return
