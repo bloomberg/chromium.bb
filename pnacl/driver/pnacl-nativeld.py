@@ -25,10 +25,11 @@ EXTRA_ENV = {
 
   # the INPUTS file coming from the llc translation step
   'LLC_TRANSLATED_FILE' : '',
-
   'STDLIB': '1',
 
-  'LINKER': 'old', # Use the old (hg) gold by default for now.
+  # Use the new gold by default, but allow it to be overridden for now.
+  # TODO(dschuff): eventually remove the old linker and clean up the scripts.
+  'LINKER': 'new',
 
   # These are used only for the static cases
   # For the shared/dynamic case it does not really make sense
@@ -45,12 +46,12 @@ EXTRA_ENV = {
   'LD_FLAGS_old': '--rosegment --native-client ' +
                   '--keep-headers-out-of-load-segment ' +
                   '${USE_IRT ? -Tdata=${BASE_RODATA}} -Ttext=${BASE_TEXT}',
-  # Upstream gold has the segment gap built in, but we can disable it once
-  # Roland's change gets pulled into our repo.
-  # TODO(dschuff): Check that a conservative value of 32 is ok for ARM, or
-  # conditionalize.
-  # '${!USE_IRT ? --rosegment-gap=32} ',
-  'LD_FLAGS_new': '',
+
+  # Upstream gold has the segment gap built in, but the gap can be modified
+  # when not using the IRT. The gap does need to be at least one bundle so the
+  # halt sled can be added for the TCB in case the segment ends up being a
+  # multiple of 64k.
+  'LD_FLAGS_new': '${!USE_IRT ? --rosegment-gap=32} ',
 
   # --eh-frame-hdr asks the linker to generate an .eh_frame_hdr section,
   # which is a presorted list of registered frames. This section is
