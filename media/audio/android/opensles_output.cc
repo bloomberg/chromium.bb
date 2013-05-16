@@ -109,8 +109,8 @@ void OpenSLESOutputStream::Close() {
 
   // Explicitly free the player objects and invalidate their associated
   // interfaces. They have to be done in the correct order.
-  output_mixer_.Reset();
   player_object_.Reset();
+  output_mixer_.Reset();
   engine_object_.Reset();
   simple_buffer_queue_ = NULL;
   player_ = NULL;
