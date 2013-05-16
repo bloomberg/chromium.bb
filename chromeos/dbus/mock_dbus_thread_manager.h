@@ -137,9 +137,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockGsmSMSClient* mock_gsm_sms_client() {
     return mock_gsm_sms_client_.get();
   }
-  MockPowerManagerClient* mock_power_manager_client() {
-    return mock_power_manager_client_.get();
-  }
   MockSessionManagerClient* mock_session_manager_client() {
     return mock_session_manager_client_.get();
   }
@@ -162,9 +159,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockShillProfileClient> mock_shill_profile_client_;
   scoped_ptr<MockShillServiceClient> mock_shill_service_client_;
   scoped_ptr<MockGsmSMSClient> mock_gsm_sms_client_;
-  scoped_ptr<MockPowerManagerClient> mock_power_manager_client_;
   scoped_ptr<MockSessionManagerClient> mock_session_manager_client_;
-  scoped_ptr<PowerPolicyController> power_policy_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManager);
 };

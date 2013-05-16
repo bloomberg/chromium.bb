@@ -24,7 +24,6 @@
 #include "chromeos/dbus/mock_shill_profile_client.h"
 #include "chromeos/dbus/mock_shill_service_client.h"
 #include "chromeos/dbus/mock_gsm_sms_client.h"
-#include "chromeos/dbus/mock_power_manager_client.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
 
@@ -65,7 +64,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_shill_profile_client_(new MockShillProfileClient),
       mock_shill_service_client_(new MockShillServiceClient),
       mock_gsm_sms_client_(new MockGsmSMSClient),
-      mock_power_manager_client_(new MockPowerManagerClient),
       mock_session_manager_client_(new MockSessionManagerClient) {
   EXPECT_CALL(*this, GetBluetoothAdapterClient())
       .WillRepeatedly(Return(mock_bluetooth_adapter_client_.get()));
@@ -93,8 +91,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_shill_service_client()));
   EXPECT_CALL(*this, GetGsmSMSClient())
       .WillRepeatedly(Return(mock_gsm_sms_client()));
-  EXPECT_CALL(*this, GetPowerManagerClient())
-      .WillRepeatedly(Return(mock_power_manager_client_.get()));
   EXPECT_CALL(*this, GetSessionManagerClient())
       .WillRepeatedly(Return(mock_session_manager_client_.get()));
 
@@ -102,23 +98,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(ReturnNull());
   EXPECT_CALL(*this, GetIBusBus())
       .WillRepeatedly(ReturnNull());
-
-  // |power_policy_controller_| calls some of these from the constructor, so
-  // set these expectations before creating the controller.
-  EXPECT_CALL(*mock_power_manager_client_.get(), AddObserver(_))
-      .Times(AnyNumber());
-  EXPECT_CALL(*mock_power_manager_client_.get(), RemoveObserver(_))
-      .Times(AnyNumber());
-  EXPECT_CALL(*mock_power_manager_client_.get(), NotifyUserActivity())
-      .Times(AnyNumber());
-  EXPECT_CALL(*mock_power_manager_client_.get(), NotifyVideoActivity(_, _))
-      .Times(AnyNumber());
-  EXPECT_CALL(*mock_power_manager_client_.get(), SetPolicy(_))
-      .Times(AnyNumber());
-  power_policy_controller_.reset(
-      new PowerPolicyController(this, mock_power_manager_client_.get()));
-  EXPECT_CALL(*this, GetPowerPolicyController())
-      .WillRepeatedly(Return(power_policy_controller_.get()));
 
   // These observers calls are used in ChromeBrowserMainPartsChromeos.
   EXPECT_CALL(*mock_session_manager_client_.get(), AddObserver(_))
@@ -148,10 +127,6 @@ MockDBusThreadManager::MockDBusThreadManager()
   EXPECT_CALL(*mock_bluetooth_node_client_.get(), RemoveObserver(_))
       .Times(AnyNumber());
 
-  // Called from PowerMenuButton ctor.
-  EXPECT_CALL(*mock_power_manager_client_.get(), RequestStatusUpdate(_))
-      .Times(AnyNumber());
-
   // Called from BluetoothManagerImpl ctor.
   EXPECT_CALL(*mock_bluetooth_manager_client_.get(), DefaultAdapter(_))
       .Times(AnyNumber());
@@ -165,11 +140,6 @@ MockDBusThreadManager::MockDBusThreadManager()
   EXPECT_CALL(*mock_cryptohome_client_.get(), GetSystemSalt(_))
       .WillRepeatedly(DoAll(SetArgumentPointee<0>(*GetMockSystemSalt()),
                             Return(true)));
-
-  // Called from BrightnessController::GetBrightnessPercent as part of ash tray
-  // initialization.
-  EXPECT_CALL(*mock_power_manager_client_.get(), GetScreenBrightnessPercent(_))
-      .Times(AnyNumber());
 
   // Called from GeolocationHandler::Init().
   EXPECT_CALL(*mock_shill_manager_client_.get(), GetProperties(_))
