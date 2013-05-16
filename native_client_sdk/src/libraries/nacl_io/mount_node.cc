@@ -109,10 +109,6 @@ void* MountNode::MMap(void* addr, size_t length, int prot, int flags,
   return new_addr;
 }
 
-int MountNode::Munmap(void* addr, size_t length) {
-  return _real_munmap(addr, length);
-}
-
 int MountNode::GetLinks() {
   return stat_.st_nlink;
 }

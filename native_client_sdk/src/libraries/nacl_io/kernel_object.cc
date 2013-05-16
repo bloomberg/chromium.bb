@@ -19,19 +19,6 @@
 #include "nacl_io/mount_node.h"
 #include "utils/auto_lock.h"
 
-KernelObject::MMapInfo::MMapInfo()
-    : addr(NULL),
-      length(0),
-      handle(NULL) {
-}
-
-KernelObject::MMapInfo::MMapInfo(void* addr, size_t length,
-                                 KernelHandle* handle)
-    : addr(addr),
-      length(length),
-      handle(handle) {
-}
-
 KernelObject::KernelObject() {
   pthread_mutex_init(&kernel_lock_, NULL);
   pthread_mutex_init(&process_lock_, NULL);

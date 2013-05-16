@@ -470,60 +470,42 @@ void* KernelProxy::mmap(void* addr, size_t length, int prot, int flags, int fd,
     }
   }
 
-  // Don't release the KernelHandle, it is now owned by the MMapInfo.
-  AutoLock lock(&process_lock_);
-  mmap_info_list_.push_back(MMapInfo(new_addr, length, handle));
-
+  ReleaseHandle(handle);
   return new_addr;
 }
 
 int KernelProxy::munmap(void* addr, size_t length) {
-  if (addr == NULL || length == 0) {
-    errno = EINVAL;
-    return -1;
-  }
+  // NOTE: The comment below is from a previous discarded implementation that
+  // tracks mmap'd regions. For simplicity, we no longer do this; because we
+  // "snapshot" the contents of the file in mmap(), and don't support
+  // write-back or updating the mapped region when the file is written, holding
+  // on to the KernelHandle is pointless.
+  //
+  // If we ever do, these threading issues should be considered.
 
-  MMapInfoList_t unmap_list;
-  {
-    AutoLock lock(&process_lock_);
-    int mmap_list_end = mmap_info_list_.size();
-    void* addr_end = static_cast<char*>(addr) + length;
-
-    for (int i = 0; i < mmap_list_end;) {
-      const MMapInfo& mmap_info = mmap_info_list_[i];
-      if (addr < static_cast<char*>(mmap_info.addr) + mmap_info.length &&
-          mmap_info.addr < addr_end)
-        // This memory area should be unmapped; swap it with the last entry in
-        // our list.
-        std::swap(mmap_info_list_[i], mmap_info_list_[--mmap_list_end]);
-      else
-        ++i;
-    }
-
-    int num_to_unmap =- mmap_info_list_.size() - mmap_list_end;
-    if (!num_to_unmap) {
-      // From the Linux mmap man page: "It is not an error if the indicated
-      // range does not contain any mapped pages."
-      return 0;
-    }
-
-    std::copy(mmap_info_list_.begin() + mmap_list_end, mmap_info_list_.end(),
-              std::back_inserter(unmap_list));
-
-    mmap_info_list_.resize(mmap_list_end);
-  }
-
-  // Unmap everything past the new end of the list.
-  for (int i = 0; i < unmap_list.size(); ++i) {
-    const MMapInfo& mmap_info = unmap_list[i];
-    KernelHandle* handle = mmap_info.handle;
-    assert(handle != NULL);
-
-    // Ignore the results from individual munmaps.
-    handle->node_->Munmap(mmap_info.addr, mmap_info.length);
-    ReleaseHandle(handle);
-  }
-
+  //
+  // WARNING: this function may be called by free().
+  //
+  // There is a potential deadlock scenario:
+  // Thread 1: open() -> takes lock1 -> free() -> takes lock2
+  // Thread 2: free() -> takes lock2 -> munmap() -> takes lock1
+  //
+  // Note that open() above could be any function that takes a lock that is
+  // shared with munmap (this includes munmap!)
+  //
+  // To prevent this, we avoid taking locks in munmap() that are used by other
+  // nacl_io functions that may call free. Specifically, we only take the
+  // mmap_lock, which is only shared with mmap() above. There is still a
+  // possibility of deadlock if mmap() or munmap() calls free(), so this is not
+  // allowed.
+  //
+  // Unfortunately, munmap still needs to acquire other locks; see the call to
+  // ReleaseHandle below which takes the process lock. This is safe as long as
+  // this is never executed from free() -- we can be reasonably sure this is
+  // true, because malloc only makes anonymous mmap() requests, and should only
+  // be munmapping those allocations. We never add to mmap_info_list_ for
+  // anonymous maps, so the unmap_list should always be empty when called from
+  // free().
   return 0;
 }
 

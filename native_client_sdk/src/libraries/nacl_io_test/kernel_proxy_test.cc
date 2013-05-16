@@ -269,13 +269,6 @@ class MountNodeMockMMap : public MountNode {
     }
   }
 
-  virtual int Munmap(void* addr, size_t length) {
-    EXPECT_GT(node_mmap_count_, 0);
-    --node_mmap_count_;
-    --g_MMapCount;
-    return 0;
-  }
-
  private:
   int node_mmap_count_;
 };
@@ -337,19 +330,10 @@ TEST_F(KernelProxyMMapTest, MMap) {
   EXPECT_EQ(reinterpret_cast<void*>(0x3000), addr3);
   EXPECT_EQ(3, g_MMapCount);
 
-  // Unmap 0x2000 and 0x3000.
-  EXPECT_EQ(0, ki_munmap(reinterpret_cast<void*>(0x2400), 0x1000));
-  EXPECT_EQ(1, g_MMapCount);
-
   ki_close(fd);
-  EXPECT_EQ(1, g_MMapCount);  // Closing the file doesn't unmap it.
 
-  // Open a new file, should have the same fd.
-  int fd2 = ki_open("/foo", O_RDWR | O_CREAT);
-  EXPECT_EQ(fd, fd2);
-
-  // Unmap 0x1000. This should unmap the old file, not the new file with the
-  // same fd.
-  EXPECT_EQ(0, ki_munmap(reinterpret_cast<void*>(0x1000), 0x800));
-  EXPECT_EQ(0, g_MMapCount);
+  // We no longer track mmap'd regions, so munmap is a no-op.
+  EXPECT_EQ(0, ki_munmap(reinterpret_cast<void*>(0x1000), 0x2800));
+  // We don't track regions, so the mmap count hasn't changed.
+  EXPECT_EQ(3, g_MMapCount);
 }
