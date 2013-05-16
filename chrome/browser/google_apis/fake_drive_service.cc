@@ -542,18 +542,7 @@ void FakeDriveService::DownloadFile(
 
 void FakeDriveService::CopyResource(
     const std::string& resource_id,
-    const std::string& parent_resource_id,
-    const std::string& new_name,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // TODO(hidehiko): Implement this (crbug.com/138273).
-  NOTIMPLEMENTED();
-}
-
-void FakeDriveService::CopyHostedDocument(
-    const std::string& resource_id,
+    const std::string& in_parent_resource_id,
     const std::string& new_name,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -569,6 +558,9 @@ void FakeDriveService::CopyHostedDocument(
     return;
   }
 
+  const std::string& parent_resource_id = in_parent_resource_id.empty() ?
+      GetRootResourceId() : in_parent_resource_id;
+
   base::DictionaryValue* resource_list_dict = NULL;
   base::ListValue* entries = NULL;
   // Go through entries and copy the one that matches |resource_id|.
@@ -576,45 +568,44 @@ void FakeDriveService::CopyHostedDocument(
       resource_list_dict->GetList("entry", &entries)) {
     for (size_t i = 0; i < entries->GetSize(); ++i) {
       base::DictionaryValue* entry = NULL;
-      base::ListValue* categories = NULL;
       std::string current_resource_id;
       if (entries->GetDictionary(i, &entry) &&
           entry->GetString("gd$resourceId.$t", &current_resource_id) &&
-          resource_id == current_resource_id &&
-          entry->GetList("category", &categories)) {
-        // Check that the resource is a hosted document. We consider it a
-        // hosted document if the kind is neither "folder" nor "file".
-        for (size_t k = 0; k < categories->GetSize(); ++k) {
-          base::DictionaryValue* category = NULL;
-          std::string scheme, term;
-          if (categories->GetDictionary(k, &category) &&
-              category->GetString("scheme", &scheme) &&
-              category->GetString("term", &term) &&
-              scheme == "http://schemas.google.com/g/2005#kind" &&
-              term != "http://schemas.google.com/docs/2007#file" &&
-              term != "http://schemas.google.com/docs/2007#folder") {
-            // Make a copy and set the new resource ID and the new title.
-            scoped_ptr<DictionaryValue> copied_entry(entry->DeepCopy());
-            copied_entry->SetString("gd$resourceId.$t",
-                                    resource_id + "_copied");
-            copied_entry->SetString("title.$t", new_name);
+          resource_id == current_resource_id) {
+        // Make a copy and set the new resource ID and the new title.
+        scoped_ptr<DictionaryValue> copied_entry(entry->DeepCopy());
+        copied_entry->SetString("gd$resourceId.$t",
+                                resource_id + "_copied");
+        copied_entry->SetString("title.$t", new_name);
 
-            AddNewChangestamp(copied_entry.get());
-
-            // Parse the new entry.
-            scoped_ptr<ResourceEntry> resource_entry =
-                ResourceEntry::CreateFrom(*copied_entry);
-            // Add it to the resource list.
-            entries->Append(copied_entry.release());
-
-            MessageLoop::current()->PostTask(
-                FROM_HERE,
-                base::Bind(callback,
-                           HTTP_SUCCESS,
-                           base::Passed(&resource_entry)));
-            return;
-          }
+        // Reset parent directory.
+        base::ListValue* links = NULL;
+        if (!entry->GetList("link", &links)) {
+          links = new base::ListValue;
+          entry->Set("link", links);
         }
+        links->Clear();
+
+        base::DictionaryValue* link = new base::DictionaryValue;
+        link->SetString(
+            "rel", "http://schemas.google.com/docs/2007#parent");
+        link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
+        links->Append(link);
+
+        AddNewChangestamp(copied_entry.get());
+
+        // Parse the new entry.
+        scoped_ptr<ResourceEntry> resource_entry =
+            ResourceEntry::CreateFrom(*copied_entry);
+        // Add it to the resource list.
+        entries->Append(copied_entry.release());
+
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(callback,
+                       HTTP_SUCCESS,
+                       base::Passed(&resource_entry)));
+        return;
       }
     }
   }
@@ -623,6 +614,16 @@ void FakeDriveService::CopyHostedDocument(
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_NOT_FOUND, base::Passed(&null)));
+}
+
+void FakeDriveService::CopyHostedDocument(
+    const std::string& resource_id,
+    const std::string& new_name,
+    const GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  CopyResource(resource_id, std::string(), new_name, callback);
 }
 
 void FakeDriveService::RenameResource(
