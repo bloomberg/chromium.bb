@@ -1258,7 +1258,9 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_NAME,
     IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_DESCRIPTION,
     kOsWin | kOsCrOS | kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableInteractiveAutocomplete)
+    ENABLE_DISABLE_VALUE_TYPE(
+        autofill::switches::kEnableInteractiveAutocomplete,
+        autofill::switches::kDisableInteractiveAutocomplete)
   },
 #if defined(USE_AURA)
   {

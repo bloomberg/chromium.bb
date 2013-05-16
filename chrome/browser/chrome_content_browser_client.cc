@@ -1256,7 +1256,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
+      autofill::switches::kDisableInteractiveAutocomplete,
       autofill::switches::kEnableExperimentalFormFilling,
+      autofill::switches::kEnableInteractiveAutocomplete,
       switches::kAllowHTTPBackgroundPage,
       switches::kAllowLegacyExtensionManifests,
       switches::kAllowScriptingGallery,
@@ -1272,7 +1274,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableBenchmarking,
       switches::kEnableExperimentalExtensionApis,
       switches::kEnableIPCFuzzing,
-      switches::kEnableInteractiveAutocomplete,
       switches::kEnableNaCl,
       switches::kEnableNetBenchmarking,
       switches::kEnablePasswordGeneration,

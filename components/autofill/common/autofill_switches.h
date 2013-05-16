@@ -12,7 +12,9 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kAutofillServiceUrl[];
 extern const char kBypassAutocheckoutWhitelist[];
+extern const char kDisableInteractiveAutocomplete[];
 extern const char kEnableExperimentalFormFilling[];
+extern const char kEnableInteractiveAutocomplete[];
 extern const char kShowAutofillTypePredictions[];
 extern const char kWalletSecureServiceUrl[];
 extern const char kWalletServiceUrl[];

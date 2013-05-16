@@ -20,17 +20,6 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 }
 
-void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
-  // Enable the new style dialogs when using the interactive autocomplete
-  // dialog. Modifying the command line is only safe before starting threads.
-  // It also has to come after about flags modifies the command line, which
-  // is why it's not possible to do this in ToolkitInitialized.
-  // TODO(estade): remove this.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableInteractiveAutocomplete))
-    command_line->AppendSwitch(switches::kEnableNewDialogStyle);
-}
-
 namespace chrome {
 
 void AddViewsToolkitExtraParts(ChromeBrowserMainParts* main_parts) {

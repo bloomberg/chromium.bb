@@ -13,9 +13,19 @@ const char kAutofillServiceUrl[]            = "autofill-service-url";
 // Bypass autocheckout whitelist check, so all sites are enabled.
 const char kBypassAutocheckoutWhitelist[]   = "bypass-autocheckout-whitelist";
 
+// Disables an interactive autocomplete UI. See kEnableInteractiveAutocomplete
+// for a description.
+const char kDisableInteractiveAutocomplete[] =
+    "disable-interactive-autocomplete";
+
 // Enable autofill for new elements like checkboxes. crbug.com/157636
 const char kEnableExperimentalFormFilling[] =
     "enable-experimental-form-filling";
+
+// Enables an interactive autocomplete UI and a way to invoke this UI from
+// WebKit by enabling HTMLFormElement#requestAutocomplete (and associated
+// autocomplete* events and logic).
+const char kEnableInteractiveAutocomplete[] = "enable-interactive-autocomplete";
 
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";

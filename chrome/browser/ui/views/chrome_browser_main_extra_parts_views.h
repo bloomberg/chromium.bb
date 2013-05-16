@@ -15,7 +15,6 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
 
   // Overridden from ChromeBrowserMainExtraParts:
   virtual void ToolkitInitialized() OVERRIDE;
-  virtual void PreCreateThreads() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViews);
