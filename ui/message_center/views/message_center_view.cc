@@ -36,7 +36,6 @@
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
-
 namespace message_center {
 
 namespace {
@@ -642,11 +641,14 @@ void RichMessageListView::DoUpdateIfPossible() {
   }
 
   if (!last_child || reposition_top_ < last_child->bounds().y()) {
-    int top = std::max(reposition_top_, child_area.y());
+    const int initial_top = std::max(reposition_top_, child_area.y());
+    int top = initial_top;
     for (int i = 0; i < child_count(); ++i) {
       views::View* child = child_at(i);
-      if (child->bounds().y() < top)
+      if (adding_views_.find(child) == adding_views_.end() &&
+          child->bounds().y() < initial_top) {
         continue;
+      }
       int height = child->GetHeightForWidth(width);
       AnimateChild(child, top, height);
       if (IsValidChild(child))
