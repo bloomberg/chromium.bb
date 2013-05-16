@@ -14,6 +14,7 @@
 #include "media/audio/audio_silence_detector.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/shared_memory_util.h"
+#include "media/base/scoped_histogram_timer.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -103,6 +104,7 @@ void AudioOutputController::SetVolume(double volume) {
 
 void AudioOutputController::DoCreate(bool is_for_device_change) {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CreateTime");
 
   // Close() can be called before DoCreate() is executed.
   if (state_ == kClosed)
@@ -169,6 +171,7 @@ void AudioOutputController::DoPlay() {
 
 void AudioOutputController::PollAndStartIfDataReady() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PlayTime");
 
   DCHECK_EQ(kStarting, state_);
 
@@ -223,6 +226,7 @@ void AudioOutputController::StopStream() {
 
 void AudioOutputController::DoPause() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PauseTime");
 
   StopStream();
 
@@ -237,6 +241,7 @@ void AudioOutputController::DoPause() {
 
 void AudioOutputController::DoClose() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CloseTime");
 
   if (state_ != kClosed) {
     DoStopCloseAndClearStream();
@@ -363,6 +368,7 @@ void AudioOutputController::DoStopCloseAndClearStream() {
 
 void AudioOutputController::OnDeviceChange() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.DeviceChangeTime");
 
   // TODO(dalecurtis): Notify the renderer side that a device change has
   // occurred.  Currently querying the hardware information here will lead to

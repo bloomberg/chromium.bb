@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "media/base/limits.h"
+#include "media/base/scoped_histogram_timer.h"
 
 namespace {
 const int kMaxInputChannels = 2;
@@ -168,6 +169,7 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
                                     const AudioParameters& params,
                                     const std::string& device_id) {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.CreateTime");
   // TODO(miu): See TODO at top of file.  Until that's resolved, assume all
   // platform audio input requires the |no_data_timer_| be used to auto-detect
   // errors.  In reality, probably only Windows and IOS need to be treated as
@@ -214,6 +216,7 @@ void AudioInputController::DoCreateForStream(
 
 void AudioInputController::DoRecord() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.RecordTime");
 
   if (state_ != kCreated)
     return;
@@ -235,6 +238,7 @@ void AudioInputController::DoRecord() {
 
 void AudioInputController::DoClose() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.CloseTime");
 
   // Delete the timer on the same thread that created it.
   no_data_timer_.reset();

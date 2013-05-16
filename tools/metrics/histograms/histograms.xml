@@ -1189,6 +1189,14 @@ other types of suffix sets.
   <summary>The version of glibc used. (Linux only)</summary>
 </histogram>
 
+<histogram name="Media.AudioInputController" units="ms">
+  <summary>Measures the time taken for AudioInputController::</summary>
+</histogram>
+
+<histogram name="Media.AudioOutputController" units="ms">
+  <summary>Measures the time taken for AudioOutputController::</summary>
+</histogram>
+
 <histogram name="Media.AudioRendererEvents" enum="AudioRendererEvents">
   <summary>Captures statistics for various AudioRendererImpl events.</summary>
 </histogram>
@@ -12477,6 +12485,25 @@ other types of suffix sets.
   <group name="LockFile" label="LockFile"/>
   <affected-histogram name="LevelDBEnv.IDB.TimeTo"/>
   <affected-histogram name="LevelDBEnv.TimeTo"/>
+</fieldtrial>
+
+<fieldtrial name="MediaAudioInputControllerTime" separator=".">
+  <group name="CloseTime" label="Measures the time taken for DoClose()."/>
+  <group name="CreateTime" label="Measures the time taken for DoCreate()."/>
+  <group name="RecordTime" label="Measures the time taken for DoRecord()."/>
+  <affected-histogram name="Media.AudioInputController"/>
+</fieldtrial>
+
+<fieldtrial name="MediaAudioOutputControllerTime" separator=".">
+  <group name="CloseTime" label="Measures the time taken for DoClose()."/>
+  <group name="CreateTime" label="Measures the time taken for DoCreate()."/>
+  <group name="DeviceChangeTime"
+      label="Measures the time taken for OnDeviceChange()."/>
+  <group name="PauseTime" label="Measures the time taken for DoPause()."/>
+  <group name="PlayTime"
+      label="Measures the time taken for DoPlay(). Technically only the
+             worker method AudioOutputController::PollAndStartIfDataReady()."/>
+  <affected-histogram name="Media.AudioOutputController"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity" separator=".">
