@@ -39,6 +39,8 @@ using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
 using testing::AtMost;
+using testing::DeleteArg;
+using testing::DoAll;
 using testing::Return;
 using testing::ReturnRef;
 
@@ -457,8 +459,10 @@ TEST_F(IpcDesktopEnvironmentTest, CaptureFrame) {
 
   // Stop the test when the first frame is captured.
   EXPECT_CALL(screen_capturer_callback_, OnCaptureCompleted(_))
-      .WillOnce(InvokeWithoutArgs(
-          this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
+      .WillOnce(DoAll(
+          DeleteArg<0>(),
+          InvokeWithoutArgs(
+              this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment)));
 
   // Capture a single frame.
   video_capturer_->Capture(webrtc::DesktopRegion());
