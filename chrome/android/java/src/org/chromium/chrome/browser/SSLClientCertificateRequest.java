@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,20 +29,18 @@ class SSLClientCertificateRequest extends AsyncTask<Void, Void, Void>
 
     static final String TAG = "SSLClientCertificateRequest";
 
-    // ClientCertRequest models an asynchronous client certificate request
-    // on the Java side. Use selectClientCertificate() on the UI thread to
-    // start/create a new request, this will launch a system activity
-    // through KeyChain.choosePrivateKeyAlias() to let the user select
-    // a client certificate.
+    // ClientCertRequest models an asynchronous client certificate request on the Java side. Use
+    // selectClientCertificate() on the UI thread to start/create a new request, this will launch a
+    // system activity through KeyChain.choosePrivateKeyAlias() to let the user select a client
+    // certificate.
     //
-    // The selected certificate will be sent back as a string alias,
-    // which is used to call KeyChain.getCertificateChain() and
-    // KeyChain.getPrivateKey(). Unfortunately, these APIs are blocking,
-    // thus can't be called from the UI thread.
+    // The selected certificate will be sent back as a string alias, which is used to call
+    // KeyChain.getCertificateChain() and KeyChain.getPrivateKey(). Unfortunately, these APIs are
+    // blocking, thus can't be called from the UI thread.
     //
-    // To solve this, start an AsyncTask when the alias is received.
-    // it will retrieve the certificate chain and private key in the
-    // background, then later send the result back to the UI thread.
+    // To solve this, start an AsyncTask when the alias is received. It will retrieve the
+    // certificate chain and private key in the background, then later send the result back to the
+    // UI thread.
     //
     private final int mNativePtr;
     private String mAlias;
@@ -58,15 +56,22 @@ class SSLClientCertificateRequest extends AsyncTask<Void, Void, Void>
 
     // KeyChainAliasCallback implementation
     @Override
-    public void alias(String alias) {
-        if (alias == null) {
-            // No certificate was selected.
-            onPostExecute(null);
-        } else {
-            mAlias = alias;
-            // Launch background thread.
-            execute();
-        }
+    public void alias(final String alias) {
+        // This is called by KeyChainActivity in a background thread. Post task to handle the
+        // certificate selection on the UI thread.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (alias == null) {
+                    // No certificate was selected.
+                    onPostExecute(null);
+                } else {
+                    mAlias = alias;
+                    // Launch background thread.
+                    execute();
+                }
+            }
+        });
     }
 
     @Override
@@ -123,13 +128,12 @@ class SSLClientCertificateRequest extends AsyncTask<Void, Void, Void>
      * @param host_name The server host name is available (empty otherwise).
      * @param port The server port if available (0 otherwise).
      * @return true on success.
-     * Note that nativeOnSystemRequestComplete will be called iff this
-     * method returns true.
+     * Note that nativeOnSystemRequestComplete will be called iff this method returns true.
      */
     @CalledByNative
     static private boolean selectClientCertificate(
-            int nativePtr, String[] keyTypes, byte[][] encodedPrincipals,
-            String hostName, int port) {
+            int nativePtr, String[] keyTypes, byte[][] encodedPrincipals, String hostName,
+            int port) {
         ThreadUtils.assertOnUiThread();
 
         Activity activity = ActivityStatus.getActivity();
@@ -153,8 +157,8 @@ class SSLClientCertificateRequest extends AsyncTask<Void, Void, Void>
             }
         }
 
-        // All good, create new request, add it to our list and launch
-        // the certificate selection activity.
+        // All good, create new request, add it to our list and launch the certificate selection
+        // activity.
         SSLClientCertificateRequest request = new SSLClientCertificateRequest(nativePtr);
 
         KeyChain.choosePrivateKeyAlias(
