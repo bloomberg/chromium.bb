@@ -37,20 +37,20 @@ class DomPerf(page_measurement.PageMeasurement):
   def results_are_the_same_on_every_page(self):
     return False
 
-  def WillNavigateToPage(self, page, tab):
-    tab.EvaluateJavaScript('document.cookie = "__domperf_finished=0"')
-
   def MeasurePage(self, page, tab, results):
-    def _IsDone():
-      return tab.GetCookieByName('__domperf_finished') == '1'
-    util.WaitFor(_IsDone, 600, poll_interval=5)
+    try:
+      def _IsDone():
+        return tab.GetCookieByName('__domperf_finished') == '1'
+      util.WaitFor(_IsDone, 600, poll_interval=5)
 
-    data = json.loads(tab.EvaluateJavaScript('__domperf_result'))
-    for suite in data['BenchmarkSuites']:
-      # Skip benchmarks that we didn't actually run this time around.
-      if len(suite['Benchmarks']) or suite['score']:
-        results.Add(SCORE_TRACE_NAME, SCORE_UNIT,
-                    suite['score'], suite['name'], 'unimportant')
+      data = json.loads(tab.EvaluateJavaScript('__domperf_result'))
+      for suite in data['BenchmarkSuites']:
+        # Skip benchmarks that we didn't actually run this time around.
+        if len(suite['Benchmarks']) or suite['score']:
+          results.Add(SCORE_TRACE_NAME, SCORE_UNIT,
+                      suite['score'], suite['name'], 'unimportant')
+    finally:
+      tab.EvaluateJavaScript('document.cookie = "__domperf_finished=0"')
 
   def DidRunPageSet(self, tab, results):
     # Now give the geometric mean as the total for the combined runs.
