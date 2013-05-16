@@ -225,6 +225,8 @@
     'renderer/pepper/pepper_truetype_font_linux.cc',
     'renderer/pepper/pepper_truetype_font_mac.mm',
     'renderer/pepper/pepper_truetype_font_win.cc',
+    'renderer/pepper/pepper_url_loader_host.cc',
+    'renderer/pepper/pepper_url_loader_host.h',
     'renderer/pepper/pepper_video_capture_host.cc',
     'renderer/pepper/pepper_video_capture_host.h',
     'renderer/pepper/pepper_websocket_host.cc',

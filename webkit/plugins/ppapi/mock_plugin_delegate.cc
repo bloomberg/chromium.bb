@@ -418,5 +418,10 @@ bool MockPluginDelegate::IsRunningInProcess(PP_Instance instance) const {
   return false;
 }
 
+void MockPluginDelegate::HandleDocumentLoad(
+    PluginInstance* instance,
+    const WebKit::WebURLResponse& response) {
+}
+
 }  // namespace ppapi
 }  // namespace webkit

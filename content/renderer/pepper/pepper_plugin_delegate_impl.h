@@ -321,6 +321,9 @@ class PepperPluginDelegateImpl
       PP_DeviceType_Dev type,
       const EnumerateDevicesCallback& callback) OVERRIDE;
   virtual void StopEnumerateDevices(int request_id) OVERRIDE;
+  virtual void HandleDocumentLoad(
+      webkit::ppapi::PluginInstance* instance,
+      const WebKit::WebURLResponse& response) OVERRIDE;
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

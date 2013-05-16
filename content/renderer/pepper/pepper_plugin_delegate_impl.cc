@@ -46,12 +46,14 @@
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
+#include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_platform_audio_input_impl.h"
 #include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 #include "content/renderer/pepper/pepper_platform_image_2d_impl.h"
 #include "content/renderer/pepper/pepper_platform_video_capture_impl.h"
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
+#include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -67,11 +69,16 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/url_loader_resource.h"
+#include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/platform_file.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
+#include "ppapi/shared_impl/ppp_instance_combined.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_tcp_server_socket_private_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
@@ -91,6 +98,7 @@
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
+#include "webkit/plugins/ppapi/url_response_info_util.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using WebKit::WebView;
@@ -1333,6 +1341,64 @@ void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
                              frame->document().referrerPolicy());
   render_view_->Send(new ViewHostMsg_SaveURLAs(
       render_view_->routing_id(), url, referrer));
+}
+
+void PepperPluginDelegateImpl::HandleDocumentLoad(
+    webkit::ppapi::PluginInstance* instance,
+    const WebKit::WebURLResponse& response) {
+  DCHECK(!instance->document_loader());
+
+  PP_Instance pp_instance = instance->pp_instance();
+  RendererPpapiHostImpl* host_impl = static_cast<RendererPpapiHostImpl*>(
+      instance->module()->GetEmbedderState());
+
+  // Create a loader resource host for this load. Note that we have to set
+  // the document_loader before issuing the in-process
+  // PPP_Instance.HandleDocumentLoad call below, since this may reentrantly
+  // call into the instance and expect it to be valid.
+  PepperURLLoaderHost* loader_host =
+      new PepperURLLoaderHost(host_impl, true, pp_instance, 0);
+  instance->set_document_loader(loader_host);
+  loader_host->didReceiveResponse(NULL, response);
+
+  // This host will be pending until the resource object attaches to it.
+  int pending_host_id = host_impl->GetPpapiHost()->AddPendingResourceHost(
+      scoped_ptr<ppapi::host::ResourceHost>(loader_host));
+  DCHECK(pending_host_id);
+  ppapi::URLResponseInfoData data =
+      webkit::ppapi::DataFromWebURLResponse(pp_instance, response);
+
+  if (host_impl->in_process_router()) {
+    // Running in-process, we can just create the resource and call the
+    // PPP_Instance function directly.
+    scoped_refptr<ppapi::proxy::URLLoaderResource> loader_resource(
+        new ppapi::proxy::URLLoaderResource(
+            host_impl->in_process_router()->GetPluginConnection(),
+            pp_instance, pending_host_id, data));
+
+    PP_Resource loader_pp_resource = loader_resource->GetReference();
+    if (!instance->instance_interface()->HandleDocumentLoad(
+            instance->pp_instance(), loader_pp_resource))
+      loader_resource->Close();
+    // We don't pass a ref into the plugin, if it wants one, it will have taken
+    // an additional one.
+    ppapi::PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(
+        loader_pp_resource);
+
+    // Danger! If the plugin doesn't take a ref in HandleDocumentLoad, the
+    // resource host will be destroyed as soon as our scoped_refptr for the
+    // resource goes out of scope.
+    //
+    // Null it out so people don't accidentally add code below that uses it.
+    loader_host = NULL;
+  } else {
+    // Running out-of-process. Initiate an IPC call to notify the plugin
+    // process.
+    ppapi::proxy::HostDispatcher* dispatcher =
+        ppapi::proxy::HostDispatcher::GetForInstance(pp_instance);
+    dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
+        ppapi::API_ID_PPP_INSTANCE, pp_instance, pending_host_id, data));
+  }
 }
 
 base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(

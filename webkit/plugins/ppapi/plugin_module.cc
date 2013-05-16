@@ -346,8 +346,6 @@ const void* InternalGetInterface(const char* name) {
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)
     return PPB_UMA_Private_Impl::GetInterface();
-  if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE_0_3) == 0)
-    return ::ppapi::thunk::GetPPB_URLLoaderTrusted_0_3_Thunk();
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)
     return PPB_Var_Deprecated_Impl::GetVarDeprecatedInterface();
   if (strcmp(name, PPB_VAR_INTERFACE_1_0) == 0)

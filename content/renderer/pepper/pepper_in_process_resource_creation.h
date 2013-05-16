@@ -61,6 +61,8 @@ class PepperInProcessResourceCreation
   virtual PP_Resource CreateTrueTypeFont(
       PP_Instance instance,
       const struct PP_TrueTypeFontDesc_Dev* desc) OVERRIDE;
+  virtual PP_Resource CreateURLLoader(
+      PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLResponseInfo(

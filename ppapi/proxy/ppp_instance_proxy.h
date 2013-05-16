@@ -20,6 +20,7 @@ struct PP_Rect;
 
 namespace ppapi {
 
+struct URLResponseInfoData;
 struct ViewData;
 
 namespace proxy {
@@ -50,8 +51,9 @@ class PPP_Instance_Proxy : public InterfaceProxy {
                                 PP_Bool flash_fullscreen);
   void OnPluginMsgDidChangeFocus(PP_Instance instance, PP_Bool has_focus);
   void OnPluginMsgHandleDocumentLoad(PP_Instance instance,
-                                     const HostResource& url_loader,
-                                     PP_Bool* result);
+                                     int pending_loader_host_id,
+                                     const URLResponseInfoData& data);
+
   scoped_ptr<PPP_Instance_Combined> combined_interface_;
 };
 

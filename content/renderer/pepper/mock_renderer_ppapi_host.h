@@ -47,6 +47,7 @@ class MockRendererPpapiHost : public RendererPpapiHost {
       PP_Instance instance) const OVERRIDE;
   virtual webkit::ppapi::PluginDelegate::PlatformGraphics2D*
       GetPlatformGraphics2D(PP_Resource resource) OVERRIDE;
+  virtual base::ProcessId GetPluginPID() const OVERRIDE;
   virtual bool HasUserGesture(PP_Instance instance) const OVERRIDE;
   virtual int GetRoutingIDForWidget(PP_Instance instance) const OVERRIDE;
   virtual gfx::Point PluginPointToRenderView(

@@ -10,7 +10,6 @@
 #include "ppapi/c/trusted/ppb_buffer_trusted.h"
 #include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
-#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 // Declares a getter for the interface thunk of the form:
@@ -50,8 +49,6 @@ PPAPI_THUNK_EXPORT const PPB_ImageDataTrusted_0_4*
     GetPPB_ImageDataTrusted_0_4_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Instance_Private_0_1*
     GetPPB_Instance_Private_0_1_Thunk();
-PPAPI_THUNK_EXPORT const PPB_URLLoaderTrusted_0_3*
-    GetPPB_URLLoaderTrusted_0_3_Thunk();
 
 }  // namespace thunk
 }  // namespace ppapi

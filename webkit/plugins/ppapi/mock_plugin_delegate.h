@@ -181,6 +181,8 @@ class MockPluginDelegate : public PluginDelegate {
       base::ProcessId target_process_id,
       bool should_close_source) const;
   virtual bool IsRunningInProcess(PP_Instance instance) const;
+  virtual void HandleDocumentLoad(PluginInstance* instance,
+                                  const WebKit::WebURLResponse& response);
 };
 
 }  // namespace ppapi

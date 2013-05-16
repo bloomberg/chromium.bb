@@ -40,6 +40,7 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/time_conversion.h"
+#include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
@@ -50,6 +51,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
@@ -84,7 +86,6 @@
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
-#include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/ppapi/url_request_info_util.h"
 #include "webkit/plugins/sad_plugin.h"
@@ -134,7 +135,11 @@ using WebKit::WebPrintParams;
 using WebKit::WebPrintScalingOption;
 using WebKit::WebScopedUserGesture;
 using WebKit::WebString;
+using WebKit::WebURLError;
+using WebKit::WebURLLoader;
+using WebKit::WebURLLoaderClient;
 using WebKit::WebURLRequest;
+using WebKit::WebURLResponse;
 using WebKit::WebUserGestureIndicator;
 using WebKit::WebUserGestureToken;
 using WebKit::WebView;
@@ -319,6 +324,51 @@ PluginInstance* PluginInstance::Create(PluginDelegate* delegate,
                             plugin_url);
 }
 
+PluginInstance::NaClDocumentLoader::NaClDocumentLoader()
+    : finished_loading_(false) {
+}
+
+PluginInstance::NaClDocumentLoader::~NaClDocumentLoader(){
+}
+
+void PluginInstance::NaClDocumentLoader::ReplayReceivedData(
+    WebURLLoaderClient* document_loader) {
+  for (std::list<std::string>::iterator it = data_.begin();
+       it != data_.end(); ++it) {
+    document_loader->didReceiveData(NULL, it->c_str(), it->length(),
+                                    0 /* encoded_data_length */);
+  }
+  if (finished_loading_) {
+    document_loader->didFinishLoading(NULL,
+                                      0 /* finish_time */);
+  }
+  if (error_.get()) {
+    document_loader->didFail(NULL, *error_);
+  }
+}
+
+void PluginInstance::NaClDocumentLoader::didReceiveData(
+    WebURLLoader* loader,
+    const char* data,
+    int data_length,
+    int encoded_data_length) {
+  data_.push_back(std::string(data, data_length));
+}
+
+void PluginInstance::NaClDocumentLoader::didFinishLoading(
+    WebURLLoader* loader,
+    double finish_time) {
+  DCHECK(!finished_loading_);
+  finished_loading_ = true;
+}
+
+void PluginInstance::NaClDocumentLoader::didFail(
+    WebURLLoader* loader,
+    const WebURLError& error) {
+  DCHECK(!error_.get());
+  error_.reset(new WebURLError(error));
+}
+
 PluginInstance::GamepadImpl::GamepadImpl(PluginDelegate* delegate)
     : Resource(::ppapi::Resource::Untracked()),
       delegate_(delegate) {
@@ -385,7 +435,9 @@ PluginInstance::PluginInstance(
       text_input_caret_set_(false),
       selection_caret_(0),
       selection_anchor_(0),
-      pending_user_gesture_(0.0) {
+      pending_user_gesture_(0.0),
+      document_loader_(NULL),
+      nacl_document_load_(false) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -397,6 +449,12 @@ PluginInstance::PluginInstance(
   view_data_.is_page_visible = delegate->IsPageVisible();
 
   resource_creation_ = delegate_->CreateResourceCreationAPI(this);
+
+  // TODO(bbudge) remove this when the trusted NaCl plugin has been removed.
+  // We must defer certain plugin events for NaCl instances since we switch
+  // from the in-process to the out-of-process proxy after instantiating them.
+  if (module->name() == "Native Client")
+    nacl_document_load_ = true;
 }
 
 PluginInstance::~PluginInstance() {
@@ -596,13 +654,27 @@ bool PluginInstance::Initialize(const std::vector<std::string>& arg_names,
   return success;
 }
 
-bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
-  if (!document_loader_)
-    document_loader_ = loader;
-  DCHECK(loader == document_loader_.get());
-
-  return PP_ToBool(instance_interface_->HandleDocumentLoad(
-      pp_instance(), loader->pp_resource()));
+bool PluginInstance::HandleDocumentLoad(
+    const WebKit::WebURLResponse& response) {
+  DCHECK(!document_loader_);
+  if (!nacl_document_load_) {
+    if (module()->is_crashed()) {
+      // Don't create a resource for a crashed plugin.
+      container()->element().document().frame()->stopLoading();
+      return false;
+    }
+    delegate()->HandleDocumentLoad(this, response);
+    // If the load was not abandoned, document_loader_ will now be set. It's
+    // possible that the load was canceled by now and document_loader_ was
+    // already nulled out.
+  } else {
+    // The NaCl proxy isn't available, so save the response and record document
+    // load notifications for later replay.
+    nacl_document_response_ = response;
+    nacl_document_loader_.reset(new NaClDocumentLoader());
+    document_loader_ = nacl_document_loader_.get();
+  }
+  return true;
 }
 
 bool PluginInstance::SendCompositionEventToPlugin(PP_InputEvent_Type type,
@@ -2452,9 +2524,18 @@ PP_NaClResult PluginInstance::ResetAsProxied(
   view_change_weak_ptr_factory_.InvalidateWeakPtrs();
   SendDidChangeView();
 
-  // If we received HandleDocumentLoad, re-send it now via the proxy.
-  if (document_loader_)
-    HandleDocumentLoad(document_loader_.get());
+  DCHECK(nacl_document_load_);
+  nacl_document_load_ = false;
+  if (!nacl_document_response_.isNull()) {
+    document_loader_ = NULL;
+    // Pass the response to the new proxy.
+    HandleDocumentLoad(nacl_document_response_);
+    nacl_document_response_ = WebKit::WebURLResponse();
+    // Replay any document load events we've received to the real loader.
+    nacl_document_loader_->ReplayReceivedData(document_loader_);
+    nacl_document_loader_.reset(NULL);
+  }
+
   return PP_NACL_OK;
 }
 

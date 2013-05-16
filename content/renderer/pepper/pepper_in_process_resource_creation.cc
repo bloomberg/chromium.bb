@@ -22,6 +22,7 @@
 #include "ppapi/proxy/graphics_2d_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/printing_resource.h"
+#include "ppapi/proxy/url_loader_resource.h"
 #include "ppapi/proxy/url_request_info_resource.h"
 #include "ppapi/proxy/url_response_info_resource.h"
 #include "ppapi/proxy/websocket_resource.h"
@@ -112,6 +113,13 @@ PP_Resource PepperInProcessResourceCreation::CreateTrueTypeFont(
     const PP_TrueTypeFontDesc_Dev* desc) {
   NOTIMPLEMENTED();
   return 0;
+}
+
+PP_Resource PepperInProcessResourceCreation::CreateURLLoader(
+    PP_Instance instance) {
+  return (new ppapi::proxy::URLLoaderResource(
+      host_impl_->in_process_router()->GetPluginConnection(),
+      instance))->GetReference();
 }
 
 PP_Resource PepperInProcessResourceCreation::CreateURLRequestInfo(

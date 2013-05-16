@@ -10,7 +10,6 @@
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 
 using ppapi::PpapiGlobals;
 using ppapi::thunk::EnterResource;
@@ -42,13 +41,6 @@ void SetReserveInstanceIDCallback(PP_Module module,
     plugin_module->SetReserveInstanceIDCallback(reserve);
 }
 
-int32_t GetURLLoaderBufferedBytes(PP_Resource url_loader) {
-  EnterResource<PPB_URLLoader_API> enter(url_loader, true);
-  if (enter.succeeded())
-    return static_cast<PPB_URLLoader_Impl*>(enter.object())->buffer_size();
-  return 0;
-}
-
 void AddRefModule(PP_Module module) {
   PluginModule* plugin_module = HostGlobals::Get()->GetModule(module);
   if (plugin_module)
@@ -72,7 +64,6 @@ const PPB_Proxy_Private ppb_proxy = {
   &PluginCrashed,
   &GetInstanceForResource,
   &SetReserveInstanceIDCallback,
-  &GetURLLoaderBufferedBytes,
   &AddRefModule,
   &ReleaseModule,
   &IsInModuleDestructor

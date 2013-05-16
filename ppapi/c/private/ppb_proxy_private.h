@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_PROXY_PRIVATE_INTERFACE "PPB_Proxy_Private;5"
+#define PPB_PROXY_PRIVATE_INTERFACE "PPB_Proxy_Private;6"
 
 // Exposes functions needed by the out-of-process proxy to call into the
 // renderer PPAPI implementation.
@@ -33,11 +33,6 @@ struct PPB_Proxy_Private {
   void (*SetReserveInstanceIDCallback)(
       PP_Module module,
       PP_Bool (*is_seen)(PP_Module, PP_Instance));
-
-  // Returns the number of bytes synchronously readable out of the URLLoader's
-  // buffer. Returns 0 on failure or if the url loader doesn't have any data
-  // now.
-  int32_t (*GetURLLoaderBufferedBytes)(PP_Resource url_loader);
 
   // Allows adding additional refcounts to the PluginModule that owns the
   // proxy dispatcher (and all interface proxies). For every AddRef call

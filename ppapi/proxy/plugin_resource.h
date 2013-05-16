@@ -131,6 +131,8 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
                           IPC::Message* reply_msg,
                           ResourceMessageReplyParams* reply_params);
 
+  const Connection& connection() { return connection_; }
+
  private:
   IPC::Sender* GetSender(Destination dest) {
     return dest == RENDERER ? connection_.renderer_sender :

@@ -96,7 +96,6 @@ class WebPluginImpl : public WebKit::WebPlugin {
   // being an embedded resource.
   bool full_frame_;
   scoped_refptr<PluginInstance> instance_;
-  scoped_refptr<PPB_URLLoader_Impl> document_loader_;
   gfx::Rect plugin_rect_;
   PP_Var instance_object_;
   WebKit::WebPluginContainer* container_;

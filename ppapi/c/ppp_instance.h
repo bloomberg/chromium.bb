@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_instance.idl modified Thu Jun 28 15:08:39 2012. */
+/* From ppp_instance.idl modified Thu Apr 25 13:07:47 2013. */
 
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
@@ -146,7 +146,7 @@ struct PPP_Instance_1_1 {
   void (*DidChangeFocus)(PP_Instance instance, PP_Bool has_focus);
   /**
    * HandleDocumentLoad() is called after initialize for a full-frame
-   * module that was instantiated based on the MIME type of a DOMWindow
+   * instance that was instantiated based on the MIME type of a DOMWindow
    * navigation. This situation only applies to modules that are pre-registered
    * to handle certain MIME types. If you haven't specifically registered to
    * handle a MIME type or aren't positive this applies to you, your
@@ -169,7 +169,8 @@ struct PPP_Instance_1_1 {
    * @param[in] url_loader An open <code>PPB_URLLoader</code> instance.
    *
    * @return <code>PP_TRUE</code> if the data was handled,
-   * <code>PP_FALSE</code> otherwise.
+   * <code>PP_FALSE</code> otherwise.  If you return false, the load will be
+   * canceled for you.
    */
   PP_Bool (*HandleDocumentLoad)(PP_Instance instance, PP_Resource url_loader);
 };

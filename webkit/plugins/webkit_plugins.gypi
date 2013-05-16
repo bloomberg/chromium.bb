@@ -181,8 +181,6 @@
         '../plugins/ppapi/ppb_tcp_socket_private_impl.h',
         '../plugins/ppapi/ppb_uma_private_impl.cc',
         '../plugins/ppapi/ppb_uma_private_impl.h',
-        '../plugins/ppapi/ppb_url_loader_impl.cc',
-        '../plugins/ppapi/ppb_url_loader_impl.h',
         '../plugins/ppapi/ppb_var_deprecated_impl.cc',
         '../plugins/ppapi/ppb_var_deprecated_impl.h',
         '../plugins/ppapi/ppb_video_decoder_impl.cc',

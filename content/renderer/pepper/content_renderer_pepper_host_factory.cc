@@ -12,6 +12,7 @@
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_truetype_font_host.h"
+#include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/pepper/pepper_video_destination_host.h"
 #include "content/renderer/pepper/pepper_video_source_host.h"
@@ -74,6 +75,9 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
           PepperGraphics2DHost::Create(host_, instance, params.pp_resource(),
                                        size, is_always_opaque));
     }
+    case PpapiHostMsg_URLLoader_Create::ID:
+      return scoped_ptr<ResourceHost>(new PepperURLLoaderHost(
+          host_, false, instance, params.pp_resource()));
     case PpapiHostMsg_WebSocket_Create::ID:
       return scoped_ptr<ResourceHost>(new PepperWebSocketHost(
           host_, instance, params.pp_resource()));

@@ -13,11 +13,14 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_url_loader_proxy.h"
+#include "ppapi/proxy/url_loader_resource.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_flash_fullscreen_api.h"
@@ -83,36 +86,11 @@ void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
                                               instance, has_focus));
 }
 
-PP_Bool HandleDocumentLoad(PP_Instance instance,
-                           PP_Resource url_loader) {
-  PP_Bool result = PP_FALSE;
-  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
-
-  // Set up the URLLoader for proxying.
-
-  PPB_URLLoader_Proxy* url_loader_proxy = static_cast<PPB_URLLoader_Proxy*>(
-      dispatcher->GetInterfaceProxy(API_ID_PPB_URL_LOADER));
-  url_loader_proxy->PrepareURLLoaderForSendingToPlugin(url_loader);
-
-  // PluginResourceTracker in the plugin process assumes that resources that it
-  // tracks have been addrefed on behalf of the plugin at the renderer side. So
-  // we explicitly do it for |url_loader| here.
-  //
-  // Please also see comments in PPP_Instance_Proxy::OnMsgHandleDocumentLoad()
-  // about releasing of this extra reference.
-  const PPB_Core* core = reinterpret_cast<const PPB_Core*>(
-      dispatcher->local_get_interface()(PPB_CORE_INTERFACE));
-  if (!core) {
-    NOTREACHED();
-    return PP_FALSE;
-  }
-  core->AddRefResource(url_loader);
-
-  HostResource serialized_loader;
-  serialized_loader.SetHostResource(instance, url_loader);
-  dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
-      API_ID_PPP_INSTANCE, instance, serialized_loader, &result));
-  return result;
+PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
+  // This should never get called. Out-of-process document loads are handled
+  // specially.
+  NOTREACHED();
+  return PP_FALSE;
 }
 
 static const PPP_Instance_1_1 instance_interface = {
@@ -253,19 +231,25 @@ void PPP_Instance_Proxy::OnPluginMsgDidChangeFocus(PP_Instance instance,
 
 void PPP_Instance_Proxy::OnPluginMsgHandleDocumentLoad(
     PP_Instance instance,
-    const HostResource& url_loader,
-    PP_Bool* result) {
-  PP_Resource plugin_loader =
-      PPB_URLLoader_Proxy::TrackPluginResource(url_loader);
-  *result = combined_interface_->HandleDocumentLoad(instance, plugin_loader);
+    int pending_loader_host_id,
+    const URLResponseInfoData& data) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return;
+  Connection connection(PluginGlobals::Get()->GetBrowserSender(),
+                        dispatcher);
 
-  // This balances the one reference that TrackPluginResource() initialized it
-  // with. The plugin will normally take an additional reference which will keep
-  // the resource alive in the plugin (and the one reference in the renderer
-  // representing all plugin references).
-  // Once all references at the plugin side are released, the renderer side will
-  // be notified and release the reference added in HandleDocumentLoad() above.
-  PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(plugin_loader);
+  scoped_refptr<URLLoaderResource> loader_resource(
+      new URLLoaderResource(connection, instance,
+                            pending_loader_host_id, data));
+
+  PP_Resource loader_pp_resource = loader_resource->GetReference();
+  if (!combined_interface_->HandleDocumentLoad(instance, loader_pp_resource))
+    loader_resource->Close();
+  // We don't pass a ref into the plugin, if it wants one, it will have taken
+  // an additional one.
+  PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(
+      loader_pp_resource);
 }
 
 }  // namespace proxy

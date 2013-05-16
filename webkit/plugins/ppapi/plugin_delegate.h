@@ -84,6 +84,9 @@ class WebGamepads;
 class WebPlugin;
 struct WebCompositionUnderline;
 struct WebCursorInfo;
+struct WebURLError;
+class WebURLLoaderClient;
+class WebURLResponse;
 }
 
 namespace webkit_glue {
@@ -675,6 +678,14 @@ class PluginDelegate {
 
   // Returns true if running in process.
   virtual bool IsRunningInProcess(PP_Instance instance) const = 0;
+
+  // Notifies the plugin of the document load. This should initiate the call to
+  // PPP_Instance.HandleDocumentLoad.
+  //
+  // The loader object should set itself on the PluginInstance as the document
+  // loader using set_document_loader.
+  virtual void HandleDocumentLoad(PluginInstance* instance,
+                                  const WebKit::WebURLResponse& response) = 0;
 };
 
 }  // namespace ppapi

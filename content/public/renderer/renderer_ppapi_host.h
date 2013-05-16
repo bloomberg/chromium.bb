@@ -94,6 +94,10 @@ class RendererPpapiHost {
   virtual WebKit::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const = 0;
 
+  // Returns the PID of the child process containing the plugin. If running
+  // in-process, this returns base::kNullProcessId.
+  virtual base::ProcessId GetPluginPID() const = 0;
+
   // Returns the PlatformGraphics2D for the given plugin resource, or NULL if
   // the resource is invalid.
   virtual webkit::ppapi::PluginDelegate::PlatformGraphics2D*
