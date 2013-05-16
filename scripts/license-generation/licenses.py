@@ -4,9 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# TODO?: recursively look in packages to see if they have license files not
-# at their top level.
-#
 # FIXME(merlin): remove this after fixing the current code.
 # pylint: disable-msg=W0621
 
@@ -32,7 +29,7 @@ Recommended build:
   ./setup_board --board=$board
   ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev
   cd ~/trunk/chromite/scripts/license-generation
-  ./licenses.py --debug $board out.html | tee output.sav
+  ./licenses.py --debug $board out.html 2>&1 | tee output.sav
 
 The script is still experimental. Review at least ERROR output from it.
 
@@ -47,6 +44,13 @@ diffs. GNU diff will show too much irrelevant noise and not resync properly.
 
 UPDATE: gcl will probably fail now, because the file is too big. Before it
 gets moved somewhere else, you should just use svn diff and svn commit.
+
+Recommended way to diff the html, go outside of the cros_sdk chroot:
+grep -E -A5 '(class=title|Gentoo Package Provided Stock|Source license)' \
+    out.html  > /tmp/new
+grep -E -A5 '(class=title|Gentoo Package Provided Stock|Source license)' \
+    out-sav-new3.html  > /tmp/old
+meld /tmp/old /tmp/new (or your favourite fancy diff program)
 
 If you don't get this in before the freeze window, it'll need to be merged into
 the branch being released, which is done by adding a Merge-Requested label to
@@ -80,7 +84,7 @@ STOCK_LICENSE_DIRS = [
 # chromeos-base contains google platform packages that are covered by the
 # general license at top of tree, so we skip those too.
 SKIPPED_CATEGORIES = [
-  'chromeos-base', # TODO: this shouldn't be excluded.
+  'chromeos-base', # TODO: this shouldn't be excluded ?
   'virtual',
 ]
 
@@ -106,6 +110,13 @@ SKIPPED_PACKAGES = [
   'app-i18n/ibus-mozc-chewing',
   'app-i18n/ibus-mozc-hangul',
   'app-i18n/ibus-mozc-pinyin',
+
+  # Those have License: Proprietary in the ebuild.
+  'app-i18n/GoogleChineseInput-cangjie',
+  'app-i18n/GoogleChineseInput-pinyin',
+  'app-i18n/GoogleChineseInput-wubi',
+  'app-i18n/GoogleChineseInput-zhuyin',
+  'app-i18n/GoogleKoreanInput',
 
   # These are all X.org sub-packages; shouldn't be any need to list them
   # individually.
@@ -205,16 +216,15 @@ SKIPPED_PACKAGES = [
   'x11-proto/xproto',
 ]
 
-ARCHIVE_SUFFIXES = [ '.tar.gz', '.tgz', '.tar.bz2', '.tbz2' ]
-
-# TODO(merlin): Normalize case in comparison check without mangling the case
+# TODO(merlin): replace matching with regex matching to simplify this
 # Matching is done in lowercase, you MUST give lowercase names.
 LICENSE_FILENAMES = [
   'copying',
   'copyright',
-  'licence',      # used by openssh
+  'licence',        # used by openssh
   'license',
-  'license.txt',  # used by hdparm, used by NumPy, glew
+  'license.txt',    # used by hdparm, used by NumPy, glew
+  'licensing.txt',  # used by libatomic_ops
   'copyright',
   'ipa_font_license_agreement_v1.0.txt',  # used by ja-ipafonts
 ]
@@ -227,7 +237,8 @@ SKIPPED_LICENSE_FILENAME_COMPONENTS = [
 # These are _temporary_ license mappings for packages that do not have a valid
 # stock license, or LICENSE file we can use.
 # Once this script runs earlier (during the package build process), it will
-# block new source without a LICENSE file.
+# block new source without a LICENSE file if the ebuild contains a license
+# that requires copyright assignment (BSD and friends).
 # At that point, new packages will get fixed to include LICENSE instead of
 # adding workaround mappings like those below.
 # We should also fix the packages listed below so that the hardcoded
@@ -258,6 +269,24 @@ PACKAGE_LICENSES = {
   'media-plugins/o3d': ['BSD-Google'],
   'dev-python/unittest2': ['BSD-Google'],
 
+  # Fix ebuild multi license definitions when they define licenses that do
+  # not apply to us because we don't use the resulting binaries.
+
+  # Mesa ebuild says MIT and seems to omit LGPL-3 and SGI-B-2.0 mentioned in the
+  # docs directory? Either way, I had to create a text license file like so:
+  # mesa-9.1-r9/work/Mesa-9.1/docs$ lynx --dump license.html -nolist > license
+  'media-libs/mesa': [ 'MIT-Mesa', 'LGPL-3','SGI-B-2.0' ],
+
+  # TODO: Ebuild seems to wrongfully say BSD + public-domain.
+  # I scanned the unpacked source with licensecheck and didn't find any BSD.
+  # FIXME: Do a second review and fix upstream gentoo package
+  'sys-libs/timezone-data': [ 'public-domain' ],
+
+  # Ebuild only says 'LGPL-2.1', but source disagrees. I'll include 'as-is'
+  # to force reading files from the source (which states some parts are as-is).
+  # FIXME? Should the ebuild license be updated to match xz-4.999.9beta/COPYING?
+  'app-arch/xz-utils': [ 'public-domain', 'as-is', 'LGPL-2.1', 'GPL-2' ],
+
   # These packages are not in Alex, check and remove later (might be used in
   # other platforms).
   #'media-libs/freeimage': ['GPL-2'],
@@ -271,20 +300,58 @@ PACKAGE_LICENSES = {
   # 'sys-process/vixie-cron': ['vixie-cron'],
 }
 
-INVALID_STOCK_LICENSES = [
-  'BSD',  # requires distribution of copyright notice
-  'BSD-2',# so does BSD-2 http://opensource.org/licenses/BSD-2-Clause
-  'BSD-3',# and BSD-3 http://opensource.org/licenses/BSD-3-Clause ?
-  'BSD-4',
+# FIXME(merlin): remove Old-MIT from the licenses shipped with this script
+# and portage-stable/licenses/... should be resynced against
+# http://git.chromium.org/gitweb/?p=chromiumos/overlays/portage.git;a=summary
+
+# Any license listed list here found in the ebuild will make the code look for
+# license files inside the package source code in order to get copyright
+# attribution from them.
+COPYRIGHT_ATTRIBUTION_LICENSES = [
+  'BSD',    # requires distribution of copyright notice
+  'BSD-2',  # so does BSD-2 http://opensource.org/licenses/BSD-2-Clause
+  'BSD-3',  # and BSD-3? http://opensource.org/licenses/BSD-3-Clause
+  'BSD-4',  # and 4?
   'BSD-with-attribution',
-  'MIT',  # requires distribution of copyright notice
-  'MIT-with-advertising',  # requires distribution of copyright notice
+  'Old-MIT',
+  'MIT',
+  'MIT-with-advertising',
+]
+
+# The following licenses are not invalid or to show as a less helpful stock
+# license, but it's better to look in the source code for a more specific
+# license if there is one, but not an error if no better one is found.
+# Note that you don't want to set just anything here since any license here
+# will be included once in stock form and a second time in custom form if
+# found (there is no good way to know that a license we found on disk is the
+# better version of the stock version, so we show both).
+LOOK_IN_SOURCE_LICENSES = [
+  'as-is',  # The stock license is very vague, source always has more details.
+  'PSF-2',  # The custom license in python is more complete than the template.
+
+# As far as I know, we have no requirement to do copyright attribution for
+# these licenses, but it's simple and reliable to do it, so go for it.
+  'BZIP2',     # Single use license, do copyright attribution because it's easy.
+  'OFL',       # Almost single use license, do copyright attribution.
+  'OFL-1.1',   # Almost single use license, do copyright attribution.
+  'UoI-NCSA',  # Only used by NSCA, might as well show their custom copyright.
 ]
 
 PACKAGE_HOMEPAGES = {
   'app-editors/vim': ['http://www.vim.org/'],
   'x11-proto/glproto': ['http://www.x.org/'],
 }
+
+# These are tokens found in LICENSE= in an ebuild that aren't licenses we
+# can actually read from disk.
+# You should not use this to blacklist real licenses.
+LICENCES_IGNORE = [
+  ')',            # Ignore OR tokens from LICENSE="|| ( LGPL-2.1 MPL-1.1 )"
+  '(',
+  '||',
+  'International', # Workaround for LICENSE="Marvell International Ltd."
+  'Ltd.',          # Find Marvell and ignore the other 2 tokens (FIXME upstream)
+]
 
 TEMPLATE_FILE = 'about_credits.tmpl'
 ENTRY_TEMPLATE_FILE = 'about_credits_entry.tmpl'
@@ -302,7 +369,19 @@ class PackageInfo:
     self.description = None
     self.homepages = []
     self.license_names = []
+    # Made up from stock license(s).
+    self.license_text_stock = ""
+    # Read from the source code if any.
+    self.license_text_scanned = ""
+    # Shows source scanned licenses first, and then stock ones.
     self.license_text = None
+    # We set this if the ebuild has a BSD/MIT like license that requires
+    # scanning for a LICENSE file in the source code, or a static mapping
+    # in PACKAGE_LICENSES. Not finding one once this is set, is fatal.
+    self.need_copyright_attribution = False
+    # This flag just says we'd like to include licenses from the source, but
+    # not finding any is not fatal.
+    self.scan_source_for_licenses = False
 
   @property
   def fullnamerev(self):
@@ -325,23 +404,13 @@ class PackageInfo:
     subprocess.check_call(
       ['ebuild-%s' % board, path] + list(phases), **kwargs)
 
-  def ExtractLicense(self):
-    """Try to get a license from the package by unpacking it with ebuild
+  def ExtractLicenses(self):
+    """Try to get licenses from the package by unpacking it with ebuild
     and looking for license files in the unpacked tree.
+    This is only called if we couldn't get usable licenses from the ebuild,
+    or one of them is BSD/MIT like, and forces us to look for a file with
+    copyright attribution in the source code itself.
     """
-
-    # Some packages have hardcoded licenses and are generated in
-    # GetPackageInfo, so we skip the license extraction and exit early.
-    # FIXME, this is wrong: a hardcoded license now should mean that we're
-    # adding a license to whatever can also be found in the source.
-    # Here's an example:
-    # Read licenses from ebuild for net-dialup/ppp-2.4.5-r3: BSD,GPL-2
-    # We need to both get the substitution file for BSD, and display the GPL
-    # license.
-    # The new code will display both the licenses mapped manually, and the ones
-    # found in the source code.
-    if self.fullname in PACKAGE_LICENSES:
-      return False
 
     path = GetEbuildPath(board, self.fullnamerev)
     self._RunEbuildPhases(
@@ -350,7 +419,7 @@ class PackageInfo:
       stderr=subprocess.STDOUT)
     self._RunEbuildPhases(path, 'unpack')
     try:
-      return self._ExtractLicense()
+      self._ExtractLicense()
     finally:
       if not debug:
         # In debug mode, leave unpacked trees so that we can look for files
@@ -371,8 +440,13 @@ class PackageInfo:
     # tmpdir gets something like /build/daisy/tmp/
     workdir = os.path.join(tmpdir, 'portage', self.fullnamerev, 'work')
 
-    args = ['find', workdir + '/', '-maxdepth', '3',
-            '-mindepth', '1', '-type', 'f']
+    # You may wonder how deep should we go?
+    # In case of packages with sub-packages, it could be deep.
+    # Let's just be safe and get everything we can find.
+    # In the case of libatomic_ops, it's actually required to look deep
+    # to find the MIT license:
+    # dev-libs/libatomic_ops-7.2d/work/gc-7.2/libatomic_ops/doc/LICENSING.txt
+    args = ['find', workdir, '-type', 'f']
     p = subprocess.Popen(args, stdout=subprocess.PIPE)
     files = p.communicate()[0].splitlines()
     ret = p.wait()
@@ -382,11 +456,10 @@ class PackageInfo:
     files = [x[len(workdir):].lstrip('/') for x in files]
     licenses = []
     for name in files:
-      if os.path.basename(name).lower() in LICENSE_FILENAMES and \
-        (name.count('/') == 1 or (name.count('/') == 2 and
-         name.split('/')[1] == 'doc')):
+      if os.path.basename(name).lower() in LICENSE_FILENAMES:
         has_skipped_component = False
         # FIXME: Should we really exclude third_party?
+        # (someone coded it that way with no comments as to why).
         for comp in SKIPPED_LICENSE_FILENAME_COMPONENTS:
           if comp in name:
             has_skipped_component = True
@@ -395,9 +468,17 @@ class PackageInfo:
           licenses.append(name)
 
     if not licenses:
-      logging.warn("%s: couldn't find license file in %s",
-          self.fullnamerev, workdir)
-      return False
+      if self.need_copyright_attribution:
+        OUTPUT_INCOMPLETE.append(self.fullname)
+        logging.error("%s used license with copyright attribution, but "
+                      "couldn't find license file in %s",
+                      self.fullnamerev, workdir)
+      else:
+        # We can get called for a license like as-is where it's preferable
+        # to find a better one in the source, but not fatal if we didn't.
+        logging.info("Was not able to find a better license for %s "
+                     "in %s to replace the more generic one from ebuild",
+                     self.fullnamerev, workdir)
 
     # Examples of multiple license matches:
     # dev-lang/swig-2.0.4-r1: swig-2.0.4/COPYRIGHT swig-2.0.4/LICENSE
@@ -410,23 +491,17 @@ class PackageInfo:
     #                               strongswan-5.0.2/LICENSE
     # sys-process/procps-3.2.8_p11: debian/copyright procps-3.2.8/COPYING
     logging.info('License(s) for %s: %s', self.fullnamerev, ' '.join(licenses))
-    self.license_text = ""
     for license_file in licenses:
       logging.debug("Adding license %s:", os.path.join(workdir, license_file))
-      self.license_text += "Source license %s:\n\n" % license_file
-      self.license_text += open(os.path.join(workdir, license_file)).read()
-      self.license_text += "\n\n"
-    return True
+      self.license_text_scanned += "Source license %s:\n\n" % license_file
+      self.license_text_scanned += open(os.path.join(workdir,
+                                        license_file)).read()
+      self.license_text_scanned += "\n\n"
 
-  # See if the ebuild file itself contains a license, in case there is no text
-  # license in the source code.
-  def GetStockLicense(self):
-    if not self.license_names:
-      logging.warning('%s: no stock licenses from ebuild', self.fullnamerev)
-      return False
-
+  # Read stock license files specified in an ebuild.
+  def ReadStockLicense(self):
     logging.info('%s: using stock license(s) %s',
-        self.fullnamerev, ','.join(self.license_names))
+                 self.fullnamerev, ','.join(self.license_names))
 
     license_texts = []
     for license_name in self.license_names:
@@ -445,20 +520,15 @@ class PackageInfo:
         license_texts.append(open(license_path).read())
         license_texts.append("\n\n")
       else:
-        # If a package with multiple stock licenses has one that we don't have,
-        # we report this, but it's ok to continue since we only have to honor/
-        # repeat one of the licenses. Still, worth looking into just in case.
-        # sys-apps/hwids currently has a LICENSE field that triggers this:
-        # LICENSE="|| ( GPL-2 BSD )"
         logging.error('%s: stock license %s could not be found in %s',
-          self.fullnamerev, license_name, '\n'.join(STOCK_LICENSE_DIRS))
+                      self.fullnamerev, license_name,
+                      '\n'.join(STOCK_LICENSE_DIRS))
+        OUTPUT_INCOMPLETE.append(self.fullname)
 
-    if not license_texts:
+    if license_texts:
+      self.license_text_stock += '\n'.join(license_texts)
+    else:
       logging.error('%s: couldn\'t find any stock licenses', self.fullnamerev)
-      return False
-
-    self.license_text = '\n'.join(license_texts)
-    return True
 
 
 def ListInstalledPackages(board):
@@ -485,7 +555,7 @@ def BuildMetaPackages():
   pkgs.append(pkg)
 
   for pkg in pkgs:
-    pkg.GetStockLicense()
+    pkg.ReadStockLicense()
   return pkgs
 
 
@@ -534,10 +604,9 @@ def GetPackageInfo(fullnamewithrev):
 
   ebuild = GetEbuildPath(board, info.fullnamerev)
 
-  # FIXME(merlin): Is it ok to just return an unprocessed object if the
-  # ebuild can't be found? I think not. Consider dying here.
   if not os.access(ebuild, os.F_OK):
     logging.error("Can't access %s", ebuild)
+    OUTPUT_INCOMPLETE.append(info.fullname)
     return info
 
   cmd = [
@@ -580,12 +649,8 @@ def GetPackageInfo(fullnamewithrev):
   # 'Marvel' (found), 'International' (not found), 'Ltd' (not found).
   # This blows...
 
-  # Solution: show all licenses listed, ignore AND/OR and ignore errors
-  # like not finding an 'Ltd' license (show a warning, but do not die).
-  # This might skip a copyright attribution for a BSD license that does not
-  # include its own license file. We can fix on case by case basis with override
-  # mappings or putting a LICENSE file in the upstream code.
-  # TODO(merlin): have a list of licenses tokens to ignore to cut down on
+  # Solution: show all licenses listed and ignore AND/OR.
+  # Later down, we ignore some license tokens like these (LICENCES_IGNORE):
   # warnings '||' '(' ')' 'International' 'Ltd.'
 
   if info.fullname in PACKAGE_HOMEPAGES:
@@ -600,15 +665,54 @@ def GetPackageInfo(fullnamewithrev):
   else:
     logging.debug("Read licenses from ebuild for %s: %s", info.fullnamerev,
                   ",".join(licenses))
+
+  if not licenses:
+    logging.error("%s: no license found in ebuild. FIXME!", info.fullnamerev)
+    # In a bind, you could comment this out. I'm making the output fail to get
+    # your attention since this error really should be fixed, but if you comment
+    # out the next line, the script will try to find a license inside the source
+    OUTPUT_INCOMPLETE.append(info.fullname)
+
+  if "||" in licenses[1:]:
+    raise AssertionError('Cannot parse || in the middle of a license for %s: %s'
+      % (info.fullnamerev, ' '.join(licenses)))
+
   info.license_names = []
-  for license_name in licenses:
-    # Licenses like BSD or MIT can't be used as it because they do not contain
-    # copyright info. They have to be replaced by a custom file generated by us.
-    if license_name in INVALID_STOCK_LICENSES:
-      logging.warning('%s: cannot use stock license %s, skipping...',
-                   info.fullnamerev, license_name)
+
+  or_licenses_and_one_is_no_attribution = False
+  for license_name in [ x for x in licenses if x not in LICENCES_IGNORE ]:
+    # Here we have an OR case, and one license that we can use stock, so
+    # we remember that in order to be able to skip license attributions if
+    # any were in the OR.
+    if (licenses[0] == "||" and
+        license_name not in COPYRIGHT_ATTRIBUTION_LICENSES):
+      or_licenses_and_one_is_no_attribution = True
+
+  for license_name in [ x for x in licenses if x not in LICENCES_IGNORE ]:
+    # Licenses like BSD or MIT can't be used as is because they do not contain
+    # copyright info. They have to be replaced by copyright file given in the
+    # source code, or manually mapped by us in PACKAGE_LICENSES
+    if license_name in COPYRIGHT_ATTRIBUTION_LICENSES:
+      # To limit needless efforts, if a package is BSD or GPL, we ignore BSD and
+      # use GPL to avoid scanning the package, but we can only do this if
+      # or_licenses_and_one_is_no_attribution has been set above.
+      # This ensures that if we have License: || (BSD3 BSD4), we will
+      # look in the source.
+      if or_licenses_and_one_is_no_attribution:
+        logging.info("%s: ignore license %s because ebuild LICENSES had %s",
+                     info.fullnamerev, license_name, ' '.join(licenses))
+      else:
+        logging.info("%s: can't use %s, will scan source code for copyright...",
+                     info.fullnamerev, license_name)
+        info.need_copyright_attribution = True
+        info.scan_source_for_licenses = True
     else:
       info.license_names.append(license_name)
+
+    if license_name in LOOK_IN_SOURCE_LICENSES:
+      logging.info("%s: Got %s, will try to find better license in source...",
+                   info.fullnamerev, license_name)
+      info.scan_source_for_licenses = True
 
   return info
 
@@ -632,16 +736,24 @@ def ProcessPkg(package):
   if not info:
     return None
 
-  # From that info object, either get a mapped license file as per the
-  # PACKAGE_LICENSES dict, or retrieve/unpack the source to look for license
-  # files (scanning recursively by file name).
-  # Note that finding a license file OVERRIDES any license specified in
-  # the ebuild.
-  if (not info.ExtractLicense() and
-      not info.GetStockLicense()):
-    # ^^^^^^^^^^^^^^^^^^^^^^
-    # If no license looking file is found in source archive, use our own copy
-    # of a stock license file matching what's defined in the ebuild (if any):
+  if info.license_names:
+    info.ReadStockLicense()
+  else:
+    logging.warning('%s: no usable licenses in ebuild', info.fullnamerev)
+
+  # If the license(s) could not be found, or one requires copyright attribution,
+  # dig in the source code for license files:
+  # For instance:
+  # Read licenses from ebuild for net-dialup/ppp-2.4.5-r3: BSD,GPL-2
+  # We need to both get the substitution file for BSD and add it to the GPL
+  # license retrieved by ReadStockLicense.
+  if not info.license_names or info.scan_source_for_licenses:
+    info.ExtractLicenses()
+
+  # Show scanned licenses first, they're usually better.
+  info.license_text = info.license_text_scanned + info.license_text_stock
+
+  if not info.license_text:
     logging.error("""
 %s: unable to find usable license.
 Typically this will happen because the ebuild says it's MIT or BSD, but there
@@ -696,7 +808,7 @@ if __name__ == '__main__':
     raise AssertionError('FATAL: Could not get any packages for board %s' %
                          board)
   # For temporary single package debugging (make sure to include trailing -ver):
-  #packages = [ "dev-python/unittest2-0.5.1" ]
+  # packages = [ "dev-libs/libatomic_ops-7.2d" ]
   logging.debug("Package list to work through:")
   logging.debug('\n'.join(packages))
   logging.debug("Will skip these packages:")
