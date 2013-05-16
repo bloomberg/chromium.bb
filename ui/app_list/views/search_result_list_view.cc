@@ -156,7 +156,7 @@ void SearchResultListView::ListItemsChanged(size_t start, size_t count) {
 void SearchResultListView::SearchResultActivated(SearchResultView* view,
                                                  const ui::Event& event) {
   if (delegate_ && view->result())
-    delegate_->OpenResult(*(view->result()), event.flags());
+    delegate_->OpenResult(view->result(), event.flags());
 }
 
 void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
@@ -164,7 +164,7 @@ void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
                                                        const ui::Event& event) {
   if (delegate_ && view->result()) {
     delegate_->InvokeResultAction(
-        *(view->result()), action_index, event.flags());
+        view->result(), action_index, event.flags());
   }
 }
 

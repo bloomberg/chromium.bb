@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/timer.h"
+#include "chrome/browser/ui/app_list/search/mixer.h"
 #include "ui/app_list/app_list_model.h"
 
 class AppListControllerDelegate;
@@ -16,9 +17,9 @@ class Profile;
 
 namespace app_list {
 
-class Mixer;
 class SearchBoxModel;
 class SearchProvider;
+class SearchResult;
 
 // Controller that collects query from given SearchBoxModel, dispatches it
 // to all search providers, then invokes the mixer to mix and to publish the
@@ -36,8 +37,17 @@ class SearchController {
   void Start();
   void Stop();
 
+  void OpenResult(SearchResult* result, int event_flags);
+  void InvokeResultAction(SearchResult* result,
+                          int action_index,
+                          int event_flags);
+
  private:
   typedef ScopedVector<SearchProvider> Providers;
+
+  // Takes ownership of |provider| and associates it with given mixer group.
+  void AddProvider(Mixer::GroupId group,
+                   scoped_ptr<SearchProvider> provider);
 
   // Invoked when the search results are changed.
   void OnResultsChanged();

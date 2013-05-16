@@ -60,8 +60,8 @@ class AppListMainView::IconLoader : public AppListItemModelObserver {
   }
   virtual void ItemTitleChanged() OVERRIDE {}
   virtual void ItemHighlightedChanged() OVERRIDE {}
-  virtual void ItemIsInstallingChanged() OVERRIDE {};
-  virtual void ItemPercentDownloadedChanged() OVERRIDE {};
+  virtual void ItemIsInstallingChanged() OVERRIDE {}
+  virtual void ItemPercentDownloadedChanged() OVERRIDE {}
 
   AppListMainView* owner_;
   AppListItemModel* item_;
@@ -202,12 +202,12 @@ void AppListMainView::QueryChanged(SearchBoxView* sender) {
   }
 }
 
-void AppListMainView::OpenResult(const SearchResult& result, int event_flags) {
+void AppListMainView::OpenResult(SearchResult* result, int event_flags) {
   if (delegate_)
     delegate_->OpenSearchResult(result, event_flags);
 }
 
-void AppListMainView::InvokeResultAction(const SearchResult& result,
+void AppListMainView::InvokeResultAction(SearchResult* result,
                                          int action_index,
                                          int event_flags) {
   if (delegate_)

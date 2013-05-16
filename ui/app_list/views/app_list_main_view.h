@@ -74,9 +74,9 @@ class AppListMainView : public views::View,
   virtual void QueryChanged(SearchBoxView* sender) OVERRIDE;
 
   // Overridden from SearchResultListViewDelegate:
-  virtual void OpenResult(const SearchResult& result,
+  virtual void OpenResult(SearchResult* result,
                           int event_flags) OVERRIDE;
-  virtual void InvokeResultAction(const SearchResult& result,
+  virtual void InvokeResultAction(SearchResult* result,
                                   int action_index,
                                   int event_flags) OVERRIDE;
 

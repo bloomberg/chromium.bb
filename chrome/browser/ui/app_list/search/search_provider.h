@@ -24,7 +24,7 @@ class SearchProvider {
   virtual ~SearchProvider();
 
   // Invoked to start a query.
-  virtual void Start(const string16& query) = 0;
+  virtual void Start(const base::string16& query) = 0;
 
   // Invoked to stop the current query and no more results changes.
   virtual void Stop() = 0;

@@ -16,12 +16,12 @@ class APP_LIST_EXPORT SearchResultListViewDelegate {
   // Invoked to open given |result|. |event_flags| contains the flags of the
   // keyboard/mouse event that triggers the "open" request. Delegate could use
   // the |event_flags| information to choose different ways to open the result.
-  virtual void OpenResult(const SearchResult& result,
+  virtual void OpenResult(SearchResult* result,
                           int event_flags) = 0;
 
   // Called to invoke a custom action on |result|.  |action_index| corresponds
   // to the index of the icon in |result.action_icons()| that was activated.
-  virtual void InvokeResultAction(const SearchResult& result,
+  virtual void InvokeResultAction(SearchResult* result,
                                   int action_index,
                                   int event_flags) = 0;
 

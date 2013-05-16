@@ -15,7 +15,10 @@
 class AppListControllerDelegate;
 class AppsModelBuilder;
 class Profile;
-class SearchBuilder;
+
+namespace app_list {
+class SearchController;
+}
 
 namespace gfx {
 class ImageSkia;
@@ -39,9 +42,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
                                    int event_flags) OVERRIDE;
   virtual void StartSearch() OVERRIDE;
   virtual void StopSearch() OVERRIDE;
-  virtual void OpenSearchResult(const app_list::SearchResult& result,
+  virtual void OpenSearchResult(app_list::SearchResult* result,
                                 int event_flags) OVERRIDE;
-  virtual void InvokeSearchResultAction(const app_list::SearchResult& result,
+  virtual void InvokeSearchResultAction(app_list::SearchResult* result,
                                         int action_index,
                                         int event_flags) OVERRIDE;
   virtual void Dismiss() OVERRIDE;
@@ -55,7 +58,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
 
   scoped_ptr<app_list::SigninDelegate> signin_delegate_;
   scoped_ptr<AppsModelBuilder> apps_builder_;
-  scoped_ptr<SearchBuilder> search_builder_;
+  scoped_ptr<app_list::SearchController> search_controller_;
   scoped_ptr<AppListControllerDelegate> controller_;
   Profile* profile_;
 

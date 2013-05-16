@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H
-#define UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H
+#ifndef UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_
+#define UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_
 
 #include "base/compiler_specific.h"
 #include "ui/app_list/app_list_view_delegate.h"
 
 namespace app_list {
-namespace test{
+namespace test {
 
 // A concrete AppListViewDelegate for unit tests.
 class AppListTestViewDelegate  : public AppListViewDelegate {
@@ -28,9 +28,9 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
                                    int event_flags) OVERRIDE;
   virtual void StartSearch() OVERRIDE {}
   virtual void StopSearch() OVERRIDE {}
-  virtual void OpenSearchResult(const SearchResult& result,
+  virtual void OpenSearchResult(SearchResult* result,
                                 int event_flags) OVERRIDE {}
-  virtual void InvokeSearchResultAction(const SearchResult& result,
+  virtual void InvokeSearchResultAction(SearchResult* result,
                                         int action_index,
                                         int event_flags) OVERRIDE {}
   virtual void Dismiss() OVERRIDE;
@@ -42,7 +42,7 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   virtual void OpenSettings() OVERRIDE {}
   virtual void OpenFeedback() OVERRIDE {}
 
-private:
+ private:
   int activate_count_;
   int dismiss_count_;
   AppListItemModel* last_activated_;
@@ -51,4 +51,4 @@ private:
 }  // namespace test
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H
+#endif  // UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_

@@ -59,10 +59,6 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   const std::string& extension_id() const { return extension_id_; }
 
-  // TODO(xiyuan): Move back to private after deprecating SearchBuilder.
-  // Overridden from ChromeAppListItem:
-  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
-
  private:
   // Gets extension associated with this model. Returns NULL if extension
   // no longer exists.
@@ -92,6 +88,7 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   // Overridden from ChromeAppListItem:
   virtual void Activate(int event_flags) OVERRIDE;
+  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
 
   // Overridden from app_list::AppContextMenuDelegate:
   virtual void ExecuteLaunchCommand(int event_flags) OVERRIDE;
