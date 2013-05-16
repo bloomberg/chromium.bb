@@ -5,7 +5,7 @@
 #preview-area.preview-area {
   -webkit-box-flex: 1;
   -webkit-user-select: none;
-  background-color: #ccc;
+  background-color: #e6e6e6;
   overflow: hidden;
   position: relative;
 }
@@ -41,7 +41,7 @@
    *     pluginFadeOutTransitionDuration = 350ms */
   -webkit-transition-delay: 350ms;
   -webkit-user-select: none;
-  background: #ccc;
+  background: #e6e6e6;
   height: 100%;
   margin: 0;
   opacity: 1;

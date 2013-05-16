@@ -16,9 +16,12 @@
 #destination-settings .destination-settings-box {
   -webkit-box-align: center;
   display: -webkit-box;
-  height: 32px;
-  margin-top: 0;
-  padding-bottom: 6px;
+  height: 29px;
+  margin-bottom: 10px;
+}
+
+#destination-settings .destination-settings-change-button {
+  margin-bottom: 10px;
 }
 
 .destination-settings-icon {
@@ -30,7 +33,7 @@
 
 .destination-settings-info-wrapper {
   -webkit-box-flex: 1;
-  height: 32px;
+  height: 29px;
   position: relative;
 }
 

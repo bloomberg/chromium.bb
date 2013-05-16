@@ -3,12 +3,11 @@
  * found in the LICENSE file. */
 
 #print-header {
-  padding-bottom: 10px;
-  padding-top: 10px;
+  padding-bottom: 20px;
+  padding-top: 6px;
 }
 
 #print-header .summary {
-  color: rgb(83, 99, 125);
   display: block;
-  min-height: 30px;
+  min-height: 34px;
 }

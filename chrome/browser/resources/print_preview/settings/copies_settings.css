@@ -3,8 +3,13 @@
  * found in the LICENSE file. */
 
 #copies-settings input.copies {
+  height: 29px;
   position: relative;
   width: 2.75em;
+}
+
+#copies-settings-box {
+  margin: 10px 0;
 }
 
 #copies-settings input.copies.invalid {
@@ -28,6 +33,7 @@
   -webkit-padding-end: 0;
   -webkit-padding-start: 0;
   font-weight: 600;
+  height: 29px;
   margin: 0;
   min-width: 0;
   position: relative;
