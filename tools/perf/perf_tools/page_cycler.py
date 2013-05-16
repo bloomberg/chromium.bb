@@ -149,7 +149,7 @@ class PageCycler(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     def _IsDone():
       return bool(tab.EvaluateJavaScript('__pc_load_time'))
-    util.WaitFor(_IsDone, 1200)
+    util.WaitFor(_IsDone, 60)
 
     for h in self.histograms:
       h.GetValue(page, tab, results)
