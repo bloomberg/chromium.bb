@@ -128,16 +128,10 @@ class DriveSystemService
   // Unregisters drive mount point from File API.
   void RemoveDriveMountPoint();
 
-  // Reinitializes |resource_metadata_|.
-  // Used to implement ClearCacheAndRemountFileSystem().
-  void ReinitializeResourceMetadataAfterClearCache(
-      const base::Callback<void(bool)>& callback,
-      bool success);
-
   // Adds back the drive mount point.
   // Used to implement ClearCacheAndRemountFileSystem().
   void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
-                              FileError error);
+                              bool success);
 
   // Called when cache initialization is done. Continues initialization if
   // the cache initialization is successful.
