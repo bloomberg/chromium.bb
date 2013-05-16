@@ -132,10 +132,10 @@
       "chrome/src/chrome/test/data/indexeddb/perf_test.html"
     ]
   },
-  "image_decoding_benchmark": {
+  "image_decoding_measurement": {
     "description": "Milliseconds to decode a large image of various formats (gif, jpg, png, webp).",
     "code": [
-      "chrome/src/tools/perf/perf_tools/image_decoding_benchmark.py",
+      "chrome/src/tools/perf/perf_tools/image_decoding_measurement.py",
       "chrome/src/chrome/test/data/image_decoding/"
     ]
   },
@@ -146,18 +146,39 @@
       "chrome/src/tools/perf/page_sets/page_cycler/indexed_db/basic_insert.json"
     ]
   },
-  "intl1": {
-    "description": "Page loading benchmark for a variety of pages in a variety of international languages.",
+  "intl_ar_fa_he": {
+    "description": "Page load time benchmark for a variety of pages in Arabic, Farsi and Hebrew. Runs against pages recorded in April, 2013.",
     "code": [
       "chrome/src/tools/perf/perf_tools/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/page_cycler/intl1.json"
+      "chrome/src/tools/perf/page_sets/intl_ar_fa_he.json"
     ]
   },
-  "intl2": {
-    "description": "Page loading benchmark for a variety of pages in a variety of international languages.",
+  "intl_es_fr_pt-BR": {
+    "description": "Page load time benchmark for a variety of pages in Spanish, French and Brazilian Portuguese. Runs against pages recorded in April, 2013.",
     "code": [
       "chrome/src/tools/perf/perf_tools/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/page_cycler/intl2.json"
+      "chrome/src/tools/perf/page_sets/intl_es_fr_pt-BR.json"
+    ]
+  },
+  "intl_hi_ru": {
+    "description": "Page load time benchmark for a variety of pages in Hindi and Russian. Runs against pages recorded in April, 2013.",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/page_cycler.py",
+      "chrome/src/tools/perf/page_sets/intl_hi_ru.json"
+    ]
+  },
+  "intl_ar_fa_he": {
+    "description": "Page load time benchmark for a variety of pages in Japanese and Chinese. Runs against pages recorded in April, 2013.",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/page_cycler.py",
+      "chrome/src/tools/perf/page_sets/intl_ja_zh.json"
+    ]
+  },
+  "intl_ar_fa_he": {
+    "description": "Page load time benchmark for a variety of pages in Korean, Thai and Vietnamese. Runs against pages recorded in April, 2013.",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/page_cycler.py",
+      "chrome/src/tools/perf/page_sets/intl_ko_th_vi.json"
     ]
   },
   "jsgamebench": {
@@ -174,9 +195,9 @@
       "chrome/src/chrome/test/perf/mach_ports_test.cc"
     ]
   },
-  "memory_benchmark": {
+  "memory_measurement": {
     "description": "Use (recorded versions of) real world web sites and measure memory consumption.",
-    "code": ["chrome/src/tools/perf/perf_tools/memory_benchmark.py"]
+    "code": ["chrome/src/tools/perf/perf_tools/memory_measurement.py"]
   },
   "memory_test": {
     "description": "Loads a number of URLs across tabs and windows and measures the memory usage.",
@@ -204,28 +225,35 @@
     "description": "Milliseconds to complete the [RoboHornetPro demo by Microsoft](http://ie.microsoft.com/testdrive/performance/robohornetpro/)",
     "code": ["chrome/src/tools/perf/perf_tools/robohornetpro.py"]
   },
-  "scrolling_benchmark": {
-    "description": "Measures frame rate and a variety of other statistics while scrolling down the top 25 web pages. [Documentation](http://www.chromium.org/developers/design-documents/rendering-benchmarks).",
-    "code": ["chrome/src/tools/perf/perf_tools/scrolling_benchmark.py"]
-  },
   "sizes": {
     "description": "Tracks binary sizes and number of static initializers.",
     "code": ["chrome/tools/build/scripts/slave/chromium/sizes.py"]
+  },
+  "smoothness_measurement": {
+    "description": "Measures frame rate and a variety of other statistics while scrolling down the top 25 web pages. [Documentation](http://www.chromium.org/developers/design-documents/rendering-benchmarks).",
+    "code": ["chrome/src/tools/perf/perf_tools/smoothness_measurement.py"]
   },
   "spaceport": {
     "description": "Performance on [spaceport.io's perfmarks benchmark](http://spaceport.io/community/perfmarks). This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS.",
     "code": ["chrome/src/tools/perf/perf_tools/spaceport.py"]
   },
-  "startup_benchmark": {
+  "startup_measurement": {
     "description": "Measures startup time under various scenarios. This is a port of our old startup_test target to Telemetry.",
-    "code": ["chrome/src/tools/perf/perf_tools/startup_benchmark.py"]
+    "code": ["chrome/src/tools/perf/perf_tools/startup_measurement.py"]
   },
   "startup_test": {
-    "description": "Measures startup and shutdown time for 1 tab, 5 tabs, and 10 tabs under a several different user profiles. These tests are in the process of being ported to Telemetry - see the startup_benchmark test.",
+    "description": "Measures startup and shutdown time for 1 tab, 5 tabs, and 10 tabs under a several different user profiles. These tests are in the process of being ported to Telemetry - see the startup_measurement test.",
     "code": ["chrome/src/chrome/test/perf/startup_test.cc"]
   },
   "sunspider": {
     "description": "Performance on the [SunSpider JavaScript benchmark](http://www.webkit.org/perf/sunspider/sunspider.html)",
     "code": ["chrome/src/tools/perf/perf_tools/sunspider.py"]
+  },
+  "typical_25": {
+    "description": "Page load time benchmark for a 25 typical web pages. Designed to represent typical, not highly optimized or highly popular web sites. Runs against pages recorded in April, 2013.",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/page_cycler.py",
+      "chrome/src/tools/perf/page_sets/typical_25.json"
+    ]
   }
 }
