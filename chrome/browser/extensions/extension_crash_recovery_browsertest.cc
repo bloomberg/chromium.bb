@@ -433,8 +433,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   CheckExtensionConsistency(second_extension_id_);
 }
 
+// Flaky, http://crbug.com/241164.
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       TwoExtensionsReloadIndependently) {
+                       DISABLED_TwoExtensionsReloadIndependently) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
