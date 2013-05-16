@@ -724,6 +724,8 @@
           ],
           'sources': [
             'host/setup/native_messaging_host.cc',
+            'host/setup/native_messaging_host.h',
+            'host/setup/native_messaging_host_main.cc',
             'host/setup/native_messaging_reader.cc',
             'host/setup/native_messaging_reader.h',
             'host/setup/native_messaging_writer.cc',
