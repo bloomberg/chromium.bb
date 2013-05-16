@@ -107,6 +107,7 @@ static void NaClSecureServiceConnectionCountDecr(
      * this to debugger.
      */
     NaClReportExitStatus(self->nap, NACL_ABI_W_EXITCODE(0, NACL_ABI_SIGKILL));
+    NaClExit(0);
   }
   NaClXMutexUnlock(&self->mu);
 }
