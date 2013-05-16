@@ -27,7 +27,6 @@
     CustomConstructor,
     CustomConstructor(float x, float y),
     InterfaceName=WebKitPoint,
-    ImplementationLacksVTable
 ] interface DOMPoint {
     attribute float x;
     attribute float y;

@@ -60,7 +60,6 @@ EventTarget
 GenerateIsReachable=ImplDocument|ImplElementRoot|ImplOwnerRoot|ImplOwnerNodeRoot
 GetterRaisesException
 Immutable
-ImplementationLacksVTable
 ImplementationNamespace=*
 ImplementedAs=*
 InitializedByEventConstructor
@@ -77,7 +76,6 @@ ReadOnly
 Reflect=*
 Replaceable
 SetterRaisesException
-SkipVTableValidation
 StrictTypeChecking
 TreatNullAs=NullString
 TreatReturnedNullStringAs=Null|Undefined

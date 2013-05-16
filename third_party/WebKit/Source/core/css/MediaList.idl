@@ -25,7 +25,6 @@
 
 // Introduced in DOM Level 2:
 [
-    ImplementationLacksVTable
 ] interface MediaList {
 
              [TreatNullAs=NullString, TreatReturnedNullStringAs=Null, SetterRaisesException] attribute DOMString mediaText;

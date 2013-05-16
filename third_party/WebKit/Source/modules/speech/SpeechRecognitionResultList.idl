@@ -25,7 +25,6 @@
 
 [
     NoInterfaceObject,
-    ImplementationLacksVTable
 ] interface SpeechRecognitionResultList {
     readonly attribute unsigned long length;
     getter SpeechRecognitionResult item([IsIndex] unsigned long index);

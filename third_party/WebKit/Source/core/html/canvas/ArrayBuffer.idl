@@ -26,7 +26,6 @@
 [
     CustomConstructor(unsigned long length),
     ImplementationNamespace=WTF,
-    ImplementationLacksVTable
 ] interface ArrayBuffer {
     readonly attribute unsigned long byteLength;
     ArrayBuffer slice(long begin, optional long end);

@@ -31,7 +31,6 @@
 [
     NoInterfaceObject,
     Conditional=PAGE_POPUP,
-    ImplementationLacksVTable
 ] interface PagePopupController {
     void setValueAndClosePopup(long numberValue, DOMString stringValue);
     void setValue(DOMString value);

@@ -28,7 +28,6 @@
     Constructor,
     CallWith=ScriptExecutionContext,
     CustomConstructor,
-    ImplementationLacksVTable
 ] interface MessageChannel {
 
     readonly attribute MessagePort port1;

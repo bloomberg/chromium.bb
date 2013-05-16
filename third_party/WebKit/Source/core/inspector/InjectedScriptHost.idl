@@ -32,7 +32,6 @@
 
 [
     NoInterfaceObject,
-    ImplementationLacksVTable
 ] interface InjectedScriptHost {
     void clearConsoleMessages();
 

@@ -21,7 +21,6 @@
  */
 
 [
-    ImplementationLacksVTable
 ] interface ValidityState {
     readonly attribute boolean         valueMissing;
     readonly attribute boolean         typeMismatch;

@@ -27,7 +27,6 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 [
-    SkipVTableValidation
 ] interface HTMLUnknownElement : HTMLElement {
 };
 

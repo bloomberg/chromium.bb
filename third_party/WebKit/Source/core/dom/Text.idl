@@ -20,7 +20,6 @@
     Constructor([Default=NullString] optional DOMString data),
     CallWith=ScriptExecutionContext,
     CustomToV8,
-    SkipVTableValidation,
 ] interface Text : CharacterData {
 
     // DOM Level 1

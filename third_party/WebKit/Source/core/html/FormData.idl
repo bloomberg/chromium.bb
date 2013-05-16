@@ -31,7 +31,6 @@
 [
     CustomConstructor(optional HTMLFormElement form),
     ImplementedAs=DOMFormData,
-    ImplementationLacksVTable
 ] interface FormData {
     // void append(DOMString name, DOMString value);
     // void append(DOMString name, Blob value, optional DOMString filename);

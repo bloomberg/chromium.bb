@@ -25,7 +25,6 @@
 
 [
     Conditional=SVG,
-    ImplementationLacksVTable
 ] interface SVGAnimatedString {
     [SetterRaisesException] attribute DOMString baseVal;
     readonly attribute DOMString animVal;

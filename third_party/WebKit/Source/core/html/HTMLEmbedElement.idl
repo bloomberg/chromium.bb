@@ -24,7 +24,6 @@
     CustomCall,
     CustomIndexedGetter,
     CustomIndexedSetter,
-    SkipVTableValidation
 ] interface HTMLEmbedElement : HTMLElement {
 [Reflect] attribute DOMString align;
 [Reflect] attribute DOMString height;

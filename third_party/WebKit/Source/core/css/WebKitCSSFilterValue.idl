@@ -25,7 +25,6 @@
 
 [
         DoNotCheckConstants,
-    ImplementationLacksVTable
 ] interface WebKitCSSFilterValue : CSSValueList {
 
     // OperationTypes

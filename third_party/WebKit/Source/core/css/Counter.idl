@@ -19,7 +19,6 @@
 
 // Introduced in DOM Level 2:
 [
-    ImplementationLacksVTable
 ] interface Counter {
     readonly attribute DOMString identifier;
     readonly attribute DOMString listStyle;

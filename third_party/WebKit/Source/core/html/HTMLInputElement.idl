@@ -20,7 +20,6 @@
  */
 
 [
-    SkipVTableValidation
 ] interface HTMLInputElement : HTMLElement {
     [Reflect] attribute DOMString accept;
     [Reflect] attribute DOMString alt;

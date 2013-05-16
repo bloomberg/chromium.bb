@@ -22,7 +22,6 @@
     CustomToV8,
     
     DependentLifetime,
-    ImplementationLacksVTable
 ] interface CSSValue {
 
     // UnitTypes

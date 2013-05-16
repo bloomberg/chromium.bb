@@ -27,7 +27,6 @@
  */
 [
     NoInterfaceObject,
-    ImplementationLacksVTable
 ] interface  DOMError {
     readonly attribute DOMString name;
   };

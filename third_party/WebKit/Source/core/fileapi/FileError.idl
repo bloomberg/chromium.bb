@@ -29,7 +29,6 @@
  */
 
 [
-    ImplementationLacksVTable
 ] interface FileError {
     // FIXME: Some of constant names are already defined in DOMException.h for Objective-C binding and we cannot have the same names here (they are translated into a enum in the same namespace).
     const unsigned short NOT_FOUND_ERR = 1;

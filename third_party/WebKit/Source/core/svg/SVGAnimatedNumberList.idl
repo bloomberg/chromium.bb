@@ -25,7 +25,6 @@
 
 [
     Conditional=SVG,
-    ImplementationLacksVTable
 ] interface SVGAnimatedNumberList {
     readonly attribute SVGNumberList baseVal;
     readonly attribute SVGNumberList animVal;

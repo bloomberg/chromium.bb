@@ -29,7 +29,6 @@
 [
     DoNotCheckConstants,
     InterfaceName=DOMException,
-    ImplementationLacksVTable
 ] exception DOMCoreException {
 
     readonly attribute unsigned short   code;

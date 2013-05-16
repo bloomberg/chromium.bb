@@ -97,11 +97,6 @@
         'feature_defines': [
           # 8Bit text runs should be enabled for all platforms webkit.org/b/111348
           'ENABLE_8BIT_TEXTRUN=1',
-          'ENABLE_BINDING_INTEGRITY=1',
-        ],
-      }, { # OS!="linux"
-        'feature_defines': [
-          'ENABLE_BINDING_INTEGRITY=0',
         ],
       }],
       # Mac OS X uses Accelerate.framework FFT by default instead of FFmpeg.

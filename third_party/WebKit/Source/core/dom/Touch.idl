@@ -25,7 +25,6 @@
 
 [
     NoInterfaceObject,
-    ImplementationLacksVTable
 ] interface Touch {
     readonly attribute long             clientX;
     readonly attribute long             clientY;

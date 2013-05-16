@@ -24,7 +24,6 @@
  */
 
 [
-    ImplementationLacksVTable
 ] interface TypeConversions {
     attribute long testLong;
     [EnforceRange] attribute long testEnforceRangeLong;

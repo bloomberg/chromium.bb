@@ -25,7 +25,6 @@
 
 [
     Conditional=SVG,
-    ImplementationLacksVTable
 ] interface SVGAnimatedBoolean {
     [StrictTypeChecking, SetterRaisesException] attribute boolean baseVal;
     readonly attribute boolean animVal;

@@ -23,7 +23,6 @@
     CustomToV8,
     ConstructorTemplate=Event,
     
-    SkipVTableValidation
 ] interface Event {
 
     // DOM PhaseType

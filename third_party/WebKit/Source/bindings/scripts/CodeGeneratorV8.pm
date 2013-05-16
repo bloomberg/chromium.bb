@@ -3305,9 +3305,6 @@ sub GenerateImplementation
     my $implClassName = GetImplClassName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $nativeType = GetNativeTypeForConversions($interface);
-    my $vtableNameGnu = GetGnuVTableNameForInterface($interface);
-    my $vtableRefGnu = GetGnuVTableRefForInterface($interface);
-    my $vtableRefWin = GetWinVTableRefForInterface($interface);
 
     AddToImplIncludes("bindings/v8/V8Binding.h");
     AddToImplIncludes("bindings/v8/V8DOMWrapper.h");
@@ -3331,43 +3328,6 @@ sub GenerateImplementation
         $parentClassTemplate = $parentClass . "::GetTemplate(isolate, currentWorldType)";
         last;
     }
-
-    $implementation{includes}->addFooter(<<END) if $vtableNameGnu;
-#if ENABLE(BINDING_INTEGRITY)
-#if defined(OS_WIN)
-#pragma warning(disable: 4483)
-extern "C" { extern void (*const ${vtableRefWin}[])(); }
-#else
-extern "C" { extern void* ${vtableNameGnu}[]; }
-#endif
-#endif // ENABLE(BINDING_INTEGRITY)
-END
-
-    $implementation{nameSpaceWebCore}->addHeader(<<END) if $vtableNameGnu;
-#if ENABLE(BINDING_INTEGRITY)
-// This checks if a DOM object that is about to be wrapped is valid.
-// Specifically, it checks that a vtable of the DOM object is equal to
-// a vtable of an expected class.
-// Due to a dangling pointer, the DOM object you are wrapping might be
-// already freed or realloced. If freed, the check will fail because
-// a free list pointer should be stored at the head of the DOM object.
-// If realloced, the check will fail because the vtable of the DOM object
-// differs from the expected vtable (unless the same class of DOM object
-// is realloced on the slot).
-inline void checkTypeOrDieTrying(${nativeType}* object)
-{
-    void* actualVTablePointer = *(reinterpret_cast<void**>(object));
-#if defined(OS_WIN)
-    void* expectedVTablePointer = reinterpret_cast<void*>(${vtableRefWin});
-#else
-    void* expectedVTablePointer = ${vtableRefGnu};
-#endif
-    if (actualVTablePointer != expectedVTablePointer)
-        CRASH();
-}
-#endif // ENABLE(BINDING_INTEGRITY)
-
-END
 
     my $parentClassInfo = $parentClass ? "&${parentClass}::info" : "0";
     my $WrapperTypePrototype = $interface->isException ? "WrapperTypeErrorPrototype" : "WrapperTypeObjectPrototype";
@@ -4220,14 +4180,6 @@ v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${createWrapperArgumentType
     ASSERT(DOMDataStore::getWrapper(impl.get(), isolate).IsEmpty());
 END
 
-    my $vtableNameGnu = GetGnuVTableNameForInterface($interface);
-    $code .= <<END if $vtableNameGnu;
-
-#if ENABLE(BINDING_INTEGRITY)
-    checkTypeOrDieTrying(impl.get());
-#endif
-END
-
     $code .= <<END if ($baseType ne $interfaceName);
     ASSERT(static_cast<void*>(static_cast<${baseType}*>(impl.get())) == static_cast<void*>(impl.get()));
 END
@@ -4292,117 +4244,10 @@ sub GetNativeTypeForConversions
     return $implClassName;
 }
 
-# See http://refspecs.linux-foundation.org/cxxabi-1.83.html.
-sub GetGnuVTableRefForInterface
-{
-    my $interface = shift;
-    my $vtableName = GetGnuVTableNameForInterface($interface);
-    if (!$vtableName) {
-        return "0";
-    }
-    my $typename = GetNativeTypeForConversions($interface);
-    my $offset = GetGnuVTableOffsetForType($typename);
-    return "&" . $vtableName . "[" . $offset . "]";
-}
-
-sub GetGnuVTableNameForInterface
-{
-    my $interface = shift;
-    my $typename = GetNativeTypeForConversions($interface);
-    my $templatePosition = index($typename, "<");
-    return "" if $templatePosition != -1;
-    return "" if GetImplementationLacksVTableForInterface($interface);
-    return "" if GetV8SkipVTableValidationForInterface($interface);
-    return "_ZTV" . GetGnuMangledNameForInterface($interface);
-}
-
-sub GetGnuMangledNameForInterface
-{
-    my $interface = shift;
-    my $typename = GetNativeTypeForConversions($interface);
-    my $templatePosition = index($typename, "<");
-    if ($templatePosition != -1) {
-        return "";
-    }
-    my $mangledType = length($typename) . $typename;
-    my $namespace = GetNamespaceForInterface($interface);
-    my $mangledNamespace =  "N" . length($namespace) . $namespace;
-    return $mangledNamespace . $mangledType . "E";
-}
-
-sub GetGnuVTableOffsetForType
-{
-    my $typename = shift;
-    if ($typename eq "SVGAElement"
-        || $typename eq "SVGCircleElement"
-        || $typename eq "SVGClipPathElement"
-        || $typename eq "SVGDefsElement"
-        || $typename eq "SVGEllipseElement"
-        || $typename eq "SVGForeignObjectElement"
-        || $typename eq "SVGGElement"
-        || $typename eq "SVGImageElement"
-        || $typename eq "SVGLineElement"
-        || $typename eq "SVGPathElement"
-        || $typename eq "SVGPolyElement"
-        || $typename eq "SVGPolygonElement"
-        || $typename eq "SVGPolylineElement"
-        || $typename eq "SVGRectElement"
-        || $typename eq "SVGSVGElement"
-        || $typename eq "SVGStyledLocatableElement"
-        || $typename eq "SVGStyledTransformableElement"
-        || $typename eq "SVGSwitchElement"
-        || $typename eq "SVGTextElement"
-        || $typename eq "SVGTransformable"
-        || $typename eq "SVGUseElement") {
-        return "3";
-    }
-    return "2";
-}
-
-# See http://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B_Name_Mangling.
-sub GetWinVTableRefForInterface
-{
-    my $interface = shift;
-    my $vtableName = GetWinVTableNameForInterface($interface);
-    return 0 if !$vtableName;
-    return "__identifier(\"" . $vtableName . "\")";
-}
-
-sub GetWinVTableNameForInterface
-{
-    my $interface = shift;
-    my $typename = GetNativeTypeForConversions($interface);
-    my $templatePosition = index($typename, "<");
-    return "" if $templatePosition != -1;
-    return "" if GetImplementationLacksVTableForInterface($interface);
-    return "" if GetV8SkipVTableValidationForInterface($interface);
-    return "??_7" . GetWinMangledNameForInterface($interface) . "6B@";
-}
-
-sub GetWinMangledNameForInterface
-{
-    my $interface = shift;
-    my $typename = GetNativeTypeForConversions($interface);
-    my $namespace = GetNamespaceForInterface($interface);
-    return $typename . "@" . $namespace . "@@";
-}
-
 sub GetNamespaceForInterface
 {
     my $interface = shift;
     return $interface->extendedAttributes->{"ImplementationNamespace"} || "WebCore";
-}
-
-sub GetImplementationLacksVTableForInterface
-{
-    my $interface = shift;
-    return $interface->extendedAttributes->{"ImplementationLacksVTable"};
-}
-
-sub GetV8SkipVTableValidationForInterface
-{
-    my $interface = shift;
-    return $interface->extendedAttributes->{"SkipVTableValidation"};
 }
 
 sub GenerateFunctionCallString

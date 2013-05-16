@@ -28,7 +28,6 @@
 
 [
     DoNotCheckConstants,
-    ImplementationLacksVTable
 ] exception XPathException {
 
     readonly attribute unsigned short   code;

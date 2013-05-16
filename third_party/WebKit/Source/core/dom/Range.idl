@@ -22,7 +22,6 @@
 [
     Constructor,
     CallWith=ScriptExecutionContext,
-    ImplementationLacksVTable,
 ] interface Range {
 
     [GetterRaisesException] readonly attribute Node startContainer;

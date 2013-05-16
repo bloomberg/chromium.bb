@@ -29,7 +29,6 @@
 // Introduced in DOM Level 2:
 [
     DoNotCheckConstants,
-    ImplementationLacksVTable,
 ] exception EventException {
 
     readonly attribute unsigned short   code;

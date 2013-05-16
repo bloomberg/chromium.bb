@@ -25,7 +25,6 @@
 
 [
     Conditional=SVG,
-    ImplementationLacksVTable
 ] interface SVGAnimatedEnumeration {
     [StrictTypeChecking, SetterRaisesException] attribute unsigned short baseVal;
     readonly attribute unsigned short animVal;

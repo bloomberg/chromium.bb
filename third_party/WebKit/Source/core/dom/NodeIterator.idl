@@ -21,7 +21,6 @@
 // Introduced in DOM Level 2:
 [
     NoInterfaceObject,
-    ImplementationLacksVTable
 ] interface NodeIterator {
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;

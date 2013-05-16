@@ -19,7 +19,6 @@
  */
 [
     NoInterfaceObject,
-    ImplementationLacksVTable
 ] interface XPathExpression {
      [RaisesException] XPathResult evaluate([Default=Undefined] optional Node contextNode, 
                                         [Default=Undefined] optional unsigned short type, 

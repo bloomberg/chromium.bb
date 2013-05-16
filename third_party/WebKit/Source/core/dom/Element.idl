@@ -20,7 +20,6 @@
 
 [
     CustomToV8,
-    SkipVTableValidation
 ] interface Element : Node {
 
     // DOM Level 1 Core

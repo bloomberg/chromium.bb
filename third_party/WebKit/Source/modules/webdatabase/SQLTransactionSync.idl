@@ -30,7 +30,6 @@
 
 [
     NoInterfaceObject,
-    ImplementationLacksVTable
 ] interface SQLTransactionSync {
     [Custom] SQLResultSet executeSql(DOMString sqlStatement, ObjectArray arguments);
 };

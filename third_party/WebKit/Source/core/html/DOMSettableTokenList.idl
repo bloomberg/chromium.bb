@@ -23,7 +23,6 @@
  */
 
 [
-    SkipVTableValidation
 ] interface DOMSettableTokenList : DOMTokenList {
     attribute DOMString value;
 };

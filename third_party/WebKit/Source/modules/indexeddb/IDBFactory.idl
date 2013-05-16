@@ -24,7 +24,6 @@
  */
 
 [
-    ImplementationLacksVTable
 ] interface IDBFactory {
     [CallWith=ScriptExecutionContext, ImplementedAs=getDatabaseNames, RaisesException] IDBRequest webkitGetDatabaseNames();
 

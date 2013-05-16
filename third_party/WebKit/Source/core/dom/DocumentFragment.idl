@@ -20,7 +20,6 @@
 [
     Constructor,
     CallWith=ScriptExecutionContext,
-    SkipVTableValidation
 ] interface DocumentFragment : Node {
     // NodeSelector - Selector API
     [RaisesException] Element querySelector(DOMString selectors);

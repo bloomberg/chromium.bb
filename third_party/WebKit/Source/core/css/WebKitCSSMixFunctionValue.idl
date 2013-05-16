@@ -28,7 +28,6 @@
  */
 
 [
-    ImplementationLacksVTable
 ] interface WebKitCSSMixFunctionValue : CSSValueList {
 };
 

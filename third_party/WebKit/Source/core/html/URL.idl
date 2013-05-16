@@ -27,7 +27,6 @@
 [
     Constructor,
     ImplementedAs=DOMURL,
-    ImplementationLacksVTable
 ] interface URL {
     [EnabledAtRuntime=webKitMediaSource,CallWith=ScriptExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(WebKitMediaSource? source);
     [CallWith=ScriptExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaStream? stream);

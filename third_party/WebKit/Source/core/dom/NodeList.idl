@@ -22,7 +22,6 @@
     CustomIsReachable,
     CustomNamedGetter,
     DependentLifetime,
-    SkipVTableValidation
 ] interface NodeList {
 
     getter Node item([IsIndex,Default=Undefined] optional unsigned long index);

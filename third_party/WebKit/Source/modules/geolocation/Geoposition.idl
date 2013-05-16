@@ -25,7 +25,6 @@
 
 [
     NoInterfaceObject,
-    ImplementationLacksVTable
 ] interface Geoposition {
     readonly attribute Coordinates coords;
     readonly attribute DOMTimeStamp timestamp;

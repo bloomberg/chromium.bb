@@ -18,7 +18,6 @@
  */
 
 [
-    ImplementationLacksVTable
 ] interface Rect {
     readonly attribute CSSPrimitiveValue  top;
     readonly attribute CSSPrimitiveValue  right;
