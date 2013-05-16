@@ -347,14 +347,16 @@ void ExternalInstallGlobalError::OnBubbleViewDidClose(Browser* browser) {
 
 void ExternalInstallGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
-  delegate_->InstallUIProceed();
+  ExternalInstallDialogDelegate* delegate = delegate_;
   delegate_ = NULL;
+  delegate->InstallUIProceed();
 }
 
 void ExternalInstallGlobalError::BubbleViewCancelButtonPressed(
     Browser* browser) {
-  delegate_->InstallUIAbort(true);
+  ExternalInstallDialogDelegate* delegate = delegate_;
   delegate_ = NULL;
+  delegate->InstallUIAbort(true);
 }
 
 // Public interface ---------------------------------------------------------
