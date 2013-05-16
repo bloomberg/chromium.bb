@@ -19,6 +19,7 @@ class BrowserContext;
 }
 
 namespace extensions {
+class ExtensionPrefs;
 
 // Test ExtensionSystem, for use with TestingProfile.
 class TestExtensionSystem : public ExtensionSystem {
@@ -57,7 +58,6 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;
   virtual StateStore* rules_store() OVERRIDE;
-  virtual ExtensionPrefs* extension_prefs() OVERRIDE;
   virtual ShellWindowGeometryCache* shell_window_geometry_cache() OVERRIDE;
   virtual ExtensionInfoMap* info_map() OVERRIDE;
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
@@ -78,9 +78,6 @@ class TestExtensionSystem : public ExtensionSystem {
   Profile* profile_;
 
  private:
-  // The Extension Preferences. Only created if CreateExtensionService is
-  // invoked.
-  scoped_ptr<ExtensionPrefs> extension_prefs_;
   scoped_ptr<StateStore> state_store_;
   scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
   scoped_ptr<Blacklist> blacklist_;

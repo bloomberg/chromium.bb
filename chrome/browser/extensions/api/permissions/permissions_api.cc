@@ -7,7 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -54,11 +53,11 @@ bool PermissionsContainsFunction::RunImpl() {
   scoped_ptr<Contains::Params> params(Contains::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
   scoped_refptr<PermissionSet> permissions =
-      helpers::UnpackPermissionSet(params->permissions,
-                                   prefs->AllowFileAccess(extension_->id()),
-                                   &error_);
+      helpers::UnpackPermissionSet(
+          params->permissions,
+          ExtensionPrefs::Get(profile_)->AllowFileAccess(extension_->id()),
+          &error_);
   if (!permissions.get())
     return false;
 
@@ -78,11 +77,11 @@ bool PermissionsRemoveFunction::RunImpl() {
   scoped_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
   scoped_refptr<PermissionSet> permissions =
-      helpers::UnpackPermissionSet(params->permissions,
-                                   prefs->AllowFileAccess(extension_->id()),
-                                   &error_);
+      helpers::UnpackPermissionSet(
+          params->permissions,
+          ExtensionPrefs::Get(profile_)->AllowFileAccess(extension_->id()),
+          &error_);
   if (!permissions.get())
     return false;
 
@@ -156,12 +155,11 @@ bool PermissionsRequestFunction::RunImpl() {
   scoped_ptr<Request::Params> params(Request::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
-
   requested_permissions_ =
-      helpers::UnpackPermissionSet(params->permissions,
-                                   prefs->AllowFileAccess(extension_->id()),
-                                   &error_);
+      helpers::UnpackPermissionSet(
+          params->permissions,
+          ExtensionPrefs::Get(profile_)->AllowFileAccess(extension_->id()),
+          &error_);
   if (!requested_permissions_.get())
     return false;
 
@@ -192,7 +190,8 @@ bool PermissionsRequestFunction::RunImpl() {
   // We don't need to prompt the user if the requested permissions are a subset
   // of the granted permissions set.
   scoped_refptr<const PermissionSet> granted =
-      prefs->GetGrantedPermissions(GetExtension()->id());
+      ExtensionPrefs::Get(profile_)->
+          GetGrantedPermissions(GetExtension()->id());
   if (granted && granted->Contains(*requested_permissions_)) {
     PermissionsUpdater perms_updater(profile());
     perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());

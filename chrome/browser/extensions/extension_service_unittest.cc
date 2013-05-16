@@ -4654,7 +4654,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
 #endif
   scoped_ptr<CommandLine> command_line;
   base::FilePath install_dir = profile->GetPath()
-      .AppendASCII(ExtensionService::kInstallDirectoryName);
+      .AppendASCII(extensions::kInstallDirectoryName);
 
 #if defined(ENABLE_PLUGINS)
   webkit::npapi::MockPluginList plugin_list;

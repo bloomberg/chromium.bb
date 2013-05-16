@@ -24,6 +24,10 @@ extern const base::FilePath::CharType kMessagesFilename[];
 // The base directory for subdirectories with platform-specific code.
 extern const base::FilePath::CharType kPlatformSpecificFolder[];
 
+// The name of the directory inside the profile where extensions are
+// installed to.
+extern const char kInstallDirectoryName[];
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_CONSTANTS_H_

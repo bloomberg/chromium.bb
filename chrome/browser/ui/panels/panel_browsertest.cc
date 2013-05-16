@@ -1454,7 +1454,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   DictionaryValue empty_value;
   scoped_refptr<extensions::Extension> extension =
       CreateExtension(FILE_PATH_LITERAL("TestExtension"),
-                      extensions::Manifest::INVALID_LOCATION, empty_value);
+                      extensions::Manifest::INTERNAL, empty_value);
   std::string extension_app_name =
       web_app::GenerateApplicationNameFromExtensionId(extension->id());
 
@@ -1480,7 +1480,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   // Create another extension and a panel from that extension.
   scoped_refptr<extensions::Extension> extension_other =
       CreateExtension(FILE_PATH_LITERAL("TestExtensionOther"),
-                      extensions::Manifest::INVALID_LOCATION, empty_value);
+                      extensions::Manifest::INTERNAL, empty_value);
   std::string extension_app_name_other =
       web_app::GenerateApplicationNameFromExtensionId(extension_other->id());
   Panel* panel_other = CreatePanel(extension_app_name_other);

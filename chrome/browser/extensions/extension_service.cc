@@ -103,6 +103,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -184,8 +185,6 @@ ExtensionService::NaClModuleInfo::~NaClModuleInfo() {
 }
 
 // ExtensionService.
-
-const char ExtensionService::kInstallDirectoryName[] = "Extensions";
 
 const char ExtensionService::kLocalAppSettingsDirectoryName[] =
     "Local App Settings";

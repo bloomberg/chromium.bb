@@ -5,8 +5,6 @@
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/mime_util.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -163,7 +161,7 @@ GrantedFileEntry CreateFileEntry(
     policy->GrantReadFile(renderer_id, path);
 
   // Save this file entry in the prefs.
-  AddSavedFileEntry(ExtensionSystem::Get(profile)->extension_prefs(),
+  AddSavedFileEntry(ExtensionPrefs::Get(profile),
                     extension_id,
                     result.id,
                     path,
