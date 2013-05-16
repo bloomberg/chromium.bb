@@ -581,7 +581,7 @@ bool Program::Link(ShaderManager* manager,
                                        attached_shaders_[i],
                                        translator,
                                        feature_info);
-          CHECK(shader->IsValid());
+          DCHECK(shader->IsValid());
         }
       }
     }
