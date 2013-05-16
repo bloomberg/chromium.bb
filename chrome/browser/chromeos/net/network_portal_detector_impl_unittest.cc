@@ -80,6 +80,10 @@ class NetworkPortalDetectorImplTest
     return network_portal_detector()->state();
   }
 
+  bool start_detection_if_idle() {
+    return network_portal_detector()->StartDetectionIfIdle();
+  }
+
   void enable_lazy_detection() {
     network_portal_detector()->EnableLazyDetection();
   }
@@ -604,6 +608,35 @@ TEST_F(NetworkPortalDetectorImplTest, DetectionTimeoutIsCancelled) {
   ASSERT_TRUE(detection_timeout_is_cancelled());
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN, -1,
                    wifi1_network());
+}
+
+TEST_F(NetworkPortalDetectorImplTest, TestDetectionRestart) {
+  ASSERT_TRUE(is_state_idle());
+  set_min_time_between_attempts(base::TimeDelta());
+
+  // First portal detection attempts determines ONLINE state.
+  SetConnected(wifi1_network());
+  ASSERT_TRUE(is_state_checking_for_portal());
+  ASSERT_FALSE(start_detection_if_idle());
+
+  CompleteURLFetch(net::OK, 204, NULL);
+
+  CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
+                   wifi1_network());
+  ASSERT_TRUE(is_state_idle());
+
+  // First portal detection attempts determines PORTAL state.
+  ASSERT_TRUE(start_detection_if_idle());
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  ASSERT_FALSE(start_detection_if_idle());
+
+  MessageLoop::current()->RunUntilIdle();
+  ASSERT_TRUE(is_state_checking_for_portal());
+  CompleteURLFetch(net::OK, 200, NULL);
+
+  CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
+                   wifi1_network());
+  ASSERT_TRUE(is_state_idle());
 }
 
 }  // namespace chromeos

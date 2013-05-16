@@ -150,6 +150,12 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   bool is_download_average_speed_computed_;
   double download_average_speed_;
 
+  // True if there was no notification from NetworkPortalDetector
+  // about state for the default network.
+  bool is_first_detection_notification_;
+
+  // True if there was no notification about captive portal state for
+  // the default network.
   bool is_first_portal_notification_;
 
   base::WeakPtrFactory<UpdateScreen> weak_factory_;

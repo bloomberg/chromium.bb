@@ -59,6 +59,10 @@ bool NetworkPortalDetectorStub::IsEnabled() {
 void NetworkPortalDetectorStub::Enable(bool start_detection) {
 }
 
+bool NetworkPortalDetectorStub::StartDetectionIfIdle() {
+  return false;
+}
+
 void NetworkPortalDetectorStub::EnableLazyDetection() {
 }
 

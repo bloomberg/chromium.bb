@@ -18,11 +18,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
+using ::testing::Exactly;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::_;
 
 namespace chromeos {
 
@@ -338,6 +339,41 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
               SetErrorState(ErrorScreen::ERROR_STATE_PROXY, std::string()))
       .Times(1);
 
+  NotifyPortalDetectionCompleted();
+}
+
+IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
+  SetActiveNetwork(NULL);
+
+  // Cancels pending update request.
+  EXPECT_CALL(*mock_screen_observer_,
+              OnExit(ScreenObserver::UPDATE_NOUPDATE))
+      .Times(1);
+  update_screen_->CancelUpdate();
+
+  // First portal detection attempt returns NULL network and undefined
+  // results, so detection is restarted.
+  EXPECT_CALL(*mock_error_screen_actor_,
+              SetUIState(_))
+      .Times(Exactly(0));
+  EXPECT_CALL(*mock_error_screen_actor_,
+              SetErrorState(_, _))
+      .Times(Exactly(0));
+  EXPECT_CALL(*mock_screen_observer_, ShowErrorScreen())
+      .Times(Exactly(0));
+  update_screen_->StartNetworkCheck();
+
+  // Second portal detection also returns NULL network and undefined
+  // results.  In this case, offline message should be displayed.
+  EXPECT_CALL(*mock_error_screen_actor_,
+              SetUIState(ErrorScreen::UI_STATE_UPDATE))
+      .Times(1);
+  EXPECT_CALL(*mock_error_screen_actor_,
+              SetErrorState(ErrorScreen::ERROR_STATE_OFFLINE, std::string()))
+      .Times(1);
+  EXPECT_CALL(*mock_screen_observer_, ShowErrorScreen())
+      .Times(1);
+  MessageLoop::current()->RunUntilIdle();
   NotifyPortalDetectionCompleted();
 }
 

@@ -30,6 +30,7 @@ class NetworkPortalDetectorStub : public NetworkPortalDetector {
       const chromeos::Network* network) OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;
   virtual void Enable(bool start_detection) OVERRIDE;
+  virtual bool StartDetectionIfIdle() OVERRIDE;
   virtual void EnableLazyDetection() OVERRIDE;
   virtual void DisableLazyDetection() OVERRIDE;
 

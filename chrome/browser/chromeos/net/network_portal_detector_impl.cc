@@ -171,7 +171,7 @@ void NetworkPortalDetectorImpl::Enable(bool start_detection) {
   enabled_ = true;
   DCHECK(!IsPortalCheckPending());
   DCHECK(!IsCheckingForPortal());
-  DCHECK(!lazy_detection_enabled_);
+  DCHECK(!lazy_detection_enabled());
   if (!start_detection)
     return;
   state_ = STATE_IDLE;
@@ -195,28 +195,35 @@ NetworkPortalDetectorImpl::GetCaptivePortalState(const Network* network) {
   return it->second;
 }
 
+bool NetworkPortalDetectorImpl::StartDetectionIfIdle() {
+  if (IsPortalCheckPending() || IsCheckingForPortal())
+    return false;
+  DetectCaptivePortal(base::TimeDelta());
+  return true;
+}
+
 void NetworkPortalDetectorImpl::EnableLazyDetection() {
-  if (lazy_detection_enabled_)
+  if (lazy_detection_enabled())
     return;
-  VLOG(1) << "Lazy detection mode enabled.";
   lazy_detection_enabled_ = true;
-  if (!IsPortalCheckPending() && !IsCheckingForPortal())
-    DetectCaptivePortal(base::TimeDelta());
+  VLOG(1) << "Lazy detection mode enabled.";
+  StartDetectionIfIdle();
 }
 
 void NetworkPortalDetectorImpl::DisableLazyDetection() {
-  if (!lazy_detection_enabled_)
-    return;
-  VLOG(1) << "Lazy detection mode disabled.";
+  CHECK(lazy_detection_enabled());
   lazy_detection_enabled_ = false;
+  VLOG(1) << "Lazy detection mode disabled.";
 }
 
 void NetworkPortalDetectorImpl::OnNetworkManagerChanged(NetworkLibrary* cros) {
   DCHECK(CalledOnValidThread());
   CHECK(cros);
   const Network* active_network = cros->active_network();
-  if (!active_network)
+  if (!active_network) {
+    active_network_id_.clear();
     return;
+  }
 
   active_network_id_ = active_network->unique_id();
 
@@ -240,7 +247,7 @@ void NetworkPortalDetectorImpl::OnNetworkManagerChanged(NetworkLibrary* cros) {
 
   if (!IsCheckingForPortal() && !IsPortalCheckPending() &&
       Network::IsConnectedState(active_connection_state_) &&
-      (attempt_count_ < kMaxRequestAttempts || lazy_detection_enabled_)) {
+      (attempt_count_ < kMaxRequestAttempts || lazy_detection_enabled())) {
     DCHECK(active_network);
 
     // Initiate Captive Portal detection if network's captive
@@ -266,7 +273,7 @@ void NetworkPortalDetectorImpl::DetectCaptivePortal(
     const base::TimeDelta& delay) {
   DCHECK(!IsPortalCheckPending());
   DCHECK(!IsCheckingForPortal());
-  DCHECK(attempt_count_ < kMaxRequestAttempts || lazy_detection_enabled_);
+  DCHECK(attempt_count_ < kMaxRequestAttempts || lazy_detection_enabled());
 
   if (!IsEnabled())
     return;
@@ -282,7 +289,7 @@ void NetworkPortalDetectorImpl::DetectCaptivePortal(
 
     base::TimeDelta delay_between_attempts = min_time_between_attempts_;
     if (attempt_count_ == kMaxRequestAttempts) {
-      DCHECK(lazy_detection_enabled_);
+      DCHECK(lazy_detection_enabled());
       delay_between_attempts = lazy_check_interval_;
     }
     if (now > attempt_start_time_)
@@ -314,7 +321,7 @@ void NetworkPortalDetectorImpl::DetectCaptivePortalTask() {
             << "network=" << active_network_id_ << ", "
             << "attempt=" << attempt_count_ << " of " << kMaxRequestAttempts;
   } else {
-    DCHECK(lazy_detection_enabled_);
+    DCHECK(lazy_detection_enabled());
     VLOG(1) << "Lazy portal detection attempt started";
   }
 
@@ -367,10 +374,6 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
 
   NetworkLibrary* cros = GetNetworkLibrary();
   const Network* active_network = cros->active_network();
-  if (!active_network) {
-    TryLazyDetection();
-    return;
-  }
 
   CaptivePortalState state;
   state.response_code = results.response_code;
@@ -379,7 +382,7 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
       if (attempt_count_ >= kMaxRequestAttempts) {
         if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
           state.status = CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
-        } else if (active_network->restricted_pool()) {
+        } else if (active_network && active_network->restricted_pool()) {
           // Take into account shill's detection results.
           state.status = CAPTIVE_PORTAL_STATUS_PORTAL;
           LOG(WARNING) << "Network " << active_network->unique_id() << " "
@@ -412,7 +415,7 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
 
 void NetworkPortalDetectorImpl::TryLazyDetection() {
   if (!IsPortalCheckPending() && !IsCheckingForPortal() &&
-      lazy_detection_enabled_) {
+      lazy_detection_enabled()) {
     DetectCaptivePortal(base::TimeDelta());
   }
 }
@@ -444,11 +447,14 @@ bool NetworkPortalDetectorImpl::IsCheckingForPortal() const {
 void NetworkPortalDetectorImpl::SetCaptivePortalState(
     const Network* network,
     const CaptivePortalState& state) {
-  DCHECK(network);
-
   if (!detection_start_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("CaptivePortal.OOBE.DetectionDuration",
                         GetCurrentTimeTicks() - detection_start_time_);
+  }
+
+  if (!network) {
+    NotifyPortalDetectionCompleted(network, state);
+    return;
   }
 
   CaptivePortalStateMap::const_iterator it =

@@ -55,6 +55,7 @@ class NetworkPortalDetectorImpl
       const chromeos::Network* network) OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;
   virtual void Enable(bool start_detection) OVERRIDE;
+  virtual bool StartDetectionIfIdle() OVERRIDE;
   virtual void EnableLazyDetection() OVERRIDE;
   virtual void DisableLazyDetection() OVERRIDE;
 
@@ -121,7 +122,9 @@ class NetworkPortalDetectorImpl
   // Returns the current TimeTicks.
   base::TimeTicks GetCurrentTimeTicks() const;
 
-  State state() { return state_; }
+  State state() const { return state_; }
+
+  bool lazy_detection_enabled() const { return lazy_detection_enabled_; }
 
   // Returns current number of portal detection attempts.
   // Used by unit tests.
@@ -193,7 +196,6 @@ class NetworkPortalDetectorImpl
   // Number of portal detection attemps for an active network.
   int attempt_count_;
 
-  // True if lazy detection is enabled.
   bool lazy_detection_enabled_;
 
   // Time between consecutive portal checks for a network in lazy

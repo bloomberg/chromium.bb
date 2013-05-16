@@ -43,7 +43,8 @@ class NetworkPortalDetector {
     // second case, |network| is the active network and |state| is a
     // current portal state for the active network, which can be
     // currently in the unknown state, for instance, if portal
-    // detection is in process for the active network.
+    // detection is in process for the active network. Note, that
+    // |network| may be NULL.
     virtual void OnPortalDetectionCompleted(
         const Network* network,
         const CaptivePortalState& state) = 0;
@@ -86,6 +87,11 @@ class NetworkPortalDetector {
   // disabled previously, portal detection for the active network is
   // initiated by this method.
   virtual void Enable(bool start_detection) = 0;
+
+  // Restarts portal detection for the default network if currently in
+  // the idle state. Returns true if new portal detection attempt was
+  // started.
+  virtual bool StartDetectionIfIdle() = 0;
 
   // Enables lazy detection mode. In this mode portal detection after
   // first 3 consecutive attemps will be performed once in 30 seconds.

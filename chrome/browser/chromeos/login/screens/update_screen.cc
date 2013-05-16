@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
@@ -83,6 +84,17 @@ bool IsBlockingUpdateEnabledInCommandLine() {
       chromeos::switches::kDisableOOBEBlockingUpdate);
 }
 
+// TODO (ygorshenin@): switch over to use NetworkStateHandler.
+const Network* GetDefaultNetwork() {
+  CrosLibrary* cros = CrosLibrary::Get();
+  if (!cros)
+    return NULL;
+  NetworkLibrary* network_library = cros->GetNetworkLibrary();
+  if (!network_library)
+    return NULL;
+  return network_library->active_network();
+}
+
 }  // anonymous namespace
 
 // static
@@ -111,6 +123,7 @@ UpdateScreen::UpdateScreen(
       is_shown_(false),
       ignore_idle_status_(true),
       actor_(actor),
+      is_first_detection_notification_(true),
       is_first_portal_notification_(true),
       weak_factory_(this) {
   DCHECK(actor_);
@@ -241,15 +254,32 @@ void UpdateScreen::UpdateStatusChanged(
 void UpdateScreen::OnPortalDetectionCompleted(
     const Network* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  // Wait for the sane portal detection results.
-  if (!network ||
+  LOG(WARNING) << "UpdateScreen::PortalDetectionCompleted(): "
+               << "network=" << (network ? network->service_path() : "") << ", "
+               << "state.status=" << state.status << ", "
+               << "state.response_code=" << state.response_code;
+
+  // Wait for the sane detection results.
+  if (network &&
       state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN) {
     return;
   }
-  LOG(WARNING) << "UpdateScreen::OnPortalDetectionCompleted(): "
-               << "network=" << network->service_path() << ", "
-               << "state.status=" << state.status << ", "
-               << "state.response_code=" << state.response_code;
+
+  // Restart portal detection for the first notification about offline state.
+  if ((!network ||
+       state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE) &&
+      is_first_detection_notification_) {
+    is_first_detection_notification_ = false;
+    NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            base::IgnoreResult(&NetworkPortalDetector::StartDetectionIfIdle),
+            base::Unretained(detector)));
+    return;
+  }
+  is_first_detection_notification_ = false;
+
   NetworkPortalDetector::CaptivePortalStatus status = state.status;
   if (state_ == STATE_ERROR) {
     // In the case of online state hide error message and proceed to
@@ -284,6 +314,8 @@ void UpdateScreen::StartNetworkCheck() {
     return;
   }
   state_ = STATE_FIRST_PORTAL_CHECK;
+  is_first_detection_notification_ = true;
+  is_first_portal_notification_ = true;
   detector->AddAndFireObserver(this);
 }
 
@@ -488,15 +520,16 @@ void UpdateScreen::UpdateErrorMessage(
     const Network* network,
     const NetworkPortalDetector::CaptivePortalStatus status) {
   switch (status) {
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
       NOTREACHED();
       break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
       GetErrorScreen()->SetErrorState(ErrorScreen::ERROR_STATE_OFFLINE,
                                       std::string());
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
+      DCHECK(network);
       GetErrorScreen()->SetErrorState(ErrorScreen::ERROR_STATE_PORTAL,
                                       network->name());
       if (is_first_portal_notification_) {
