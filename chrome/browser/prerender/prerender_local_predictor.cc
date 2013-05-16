@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/timer.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
@@ -23,6 +24,8 @@
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -662,6 +665,9 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
     scoped_ptr<LocalPredictorURLLookupInfo> info) {
   RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_STARTED);
   scoped_ptr<LocalPredictorURLInfo> url_info;
+  scoped_refptr<SafeBrowsingDatabaseManager> sb_db_manager =
+      g_browser_process->safe_browsing_service()->database_manager();
+
   for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
     url_info.reset(new LocalPredictorURLInfo(info->candidate_urls_[i]));
 
@@ -709,6 +715,12 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_LOGIN_URL);
       url_info.reset(NULL);
       continue;
+    }
+    if (sb_db_manager->CheckSideEffectFreeWhitelistUrl(url_info->url)) {
+      // If a page is on the side-effect free whitelist, we will just prerender
+      // it without any additional checks.
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ON_SIDE_EFFECT_FREE_WHITELIST);
+      break;
     }
     if (!url_info->logged_in && url_info->logged_in_lookup_ok) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_NOT_LOGGED_IN);

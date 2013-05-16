@@ -147,7 +147,10 @@ class SafeBrowsingDatabaseManager
                                  Client* client);
 
   // Check if the given url is on the side-effect free whitelist.
-  // Can be called on any thread.
+  // Can be called on any thread. Returns false if the check cannot be performed
+  // (e.g. because we are disabled or because of an invalid scheme in the URL).
+  // Otherwise, returns true if the URL is on the whitelist based on matching
+  // the hash prefix only (so there may be false positives).
   virtual bool CheckSideEffectFreeWhitelistUrl(const GURL& url);
 
   // Check if the |url| matches any of the full-length hashes from the

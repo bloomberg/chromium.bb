@@ -270,10 +270,10 @@ bool SafeBrowsingDatabaseManager::CheckExtensionIDs(
 bool SafeBrowsingDatabaseManager::CheckSideEffectFreeWhitelistUrl(
     const GURL& url) {
   if (!enabled_)
-    return true;
+    return false;
 
   if (!CanCheckUrl(url))
-    return true;
+    return false;
 
   return database_->ContainsSideEffectFreeWhitelistUrl(url);
 }

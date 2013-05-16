@@ -269,7 +269,7 @@ void ConfigureSideEffectFreeWhitelist() {
     return;
   }
   side_effect_free_whitelist_trial->AppendGroup(
-      kSideEffectFreeWhitelistEnabledGroup, 0);
+      kSideEffectFreeWhitelistEnabledGroup, 100);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
