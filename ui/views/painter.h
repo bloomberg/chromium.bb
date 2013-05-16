@@ -30,6 +30,9 @@ namespace views {
 // in any region of a View.
 class VIEWS_EXPORT Painter {
  public:
+  Painter();
+  virtual ~Painter();
+
   // A convenience method for painting a Painter in a particular region.
   // This translates the canvas to x/y and paints the painter.
   static void PaintPainterAt(gfx::Canvas* canvas,
@@ -62,10 +65,11 @@ class VIEWS_EXPORT Painter {
   // Top-Left/Top/Top-Right/Left/[Center]/Right/Bottom-Left/Bottom/Bottom-Right.
   static Painter* CreateImageGridPainter(const int image_ids[]);
 
-  virtual ~Painter() {}
-
   // Paints the painter in the specified region.
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Painter);
 };
 
 // HorizontalPainter paints 3 images into a box: left, center and right. The
@@ -77,14 +81,13 @@ class VIEWS_EXPORT HorizontalPainter : public Painter {
   // Constructs a new HorizontalPainter loading the specified image names.
   // The images must be in the order left, right and center.
   explicit HorizontalPainter(const int image_resource_names[]);
+  virtual ~HorizontalPainter();
 
-  virtual ~HorizontalPainter() {}
-
-  // Paints the images.
+  // Painter:
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
 
-  // Height of the images.
-  int height() const { return height_; }
+  // TODO(pkasting): This is about to disappear.
+  int height() const;
 
  private:
   // The image chunks.
@@ -94,8 +97,6 @@ class VIEWS_EXPORT HorizontalPainter : public Painter {
     RIGHT
   };
 
-  // The height.
-  int height_;
   // NOTE: the images are owned by ResourceBundle. Don't free them.
   const gfx::ImageSkia* images_[3];
 
