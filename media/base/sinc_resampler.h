@@ -34,6 +34,10 @@ class MEDIA_EXPORT SincResampler {
     kKernelStorageSize = kKernelSize * (kKernelOffsetCount + 1),
   };
 
+  // Selects runtime specific CPU features like SSE.  Must be called before
+  // using SincResampler.
+  static void InitializeCPUSpecificFeatures();
+
   // Callback type for providing more data into the resampler.  Expects |frames|
   // of data to be rendered into |destination|; zero padded if not enough frames
   // are available to satisfy the request.
@@ -122,13 +126,6 @@ class MEDIA_EXPORT SincResampler {
 
   // Data from the source is copied into this buffer for each processing pass.
   scoped_ptr<float[], base::ScopedPtrAlignedFree> input_buffer_;
-
-  // Stores the runtime selection of which Convolve function to use.
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(__SSE__)
-  typedef float (*ConvolveProc)(const float*, const float*, const float*,
-                                double);
-  const ConvolveProc convolve_proc_;
-#endif
 
   // Pointers to the various regions inside |input_buffer_|.  See the diagram at
   // the top of the .cc file for more information.

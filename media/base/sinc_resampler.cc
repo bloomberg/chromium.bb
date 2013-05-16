@@ -106,6 +106,37 @@ static double SincScaleFactor(double io_ratio) {
   return sinc_scale_factor;
 }
 
+// If we know the minimum architecture at compile time, avoid CPU detection.
+// Force NaCl code to use C routines since (at present) nothing there uses these
+// methods and plumbing the -msse built library is non-trivial.  iOS lies
+// about its architecture, so we also need to exclude it here.
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_NACL) && !defined(OS_IOS)
+#if defined(__SSE__)
+#define CONVOLVE_FUNC Convolve_SSE
+void SincResampler::InitializeCPUSpecificFeatures() {}
+#else
+// X86 CPU detection required.  Functions will be set by
+// InitializeCPUSpecificFeatures().
+// TODO(dalecurtis): Once Chrome moves to an SSE baseline this can be removed.
+#define CONVOLVE_FUNC g_convolve_proc_
+
+typedef float (*ConvolveProc)(const float*, const float*, const float*, double);
+static ConvolveProc g_convolve_proc_ = NULL;
+
+void SincResampler::InitializeCPUSpecificFeatures() {
+  CHECK(!g_convolve_proc_);
+  g_convolve_proc_ = base::CPU().has_sse() ? Convolve_SSE : Convolve_C;
+}
+#endif
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+#define CONVOLVE_FUNC Convolve_NEON
+void SincResampler::InitializeCPUSpecificFeatures() {}
+#else
+// Unknown architecture.
+#define CONVOLVE_FUNC Convolve_C
+void SincResampler::InitializeCPUSpecificFeatures() {}
+#endif
+
 SincResampler::SincResampler(double io_sample_rate_ratio,
                              size_t request_frames,
                              const ReadCB& read_cb)
@@ -122,9 +153,6 @@ SincResampler::SincResampler(double io_sample_rate_ratio,
           base::AlignedAlloc(sizeof(float) * kKernelStorageSize, 16))),
       input_buffer_(static_cast<float*>(
           base::AlignedAlloc(sizeof(float) * input_buffer_size_, 16))),
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(__SSE__)
-      convolve_proc_(base::CPU().has_sse() ? Convolve_SSE : Convolve_C),
-#endif
       r1_(input_buffer_.get()),
       r2_(input_buffer_.get() + kKernelSize / 2) {
   Flush();
@@ -222,22 +250,6 @@ void SincResampler::SetRatio(double io_sample_rate_ratio) {
     }
   }
 }
-
-// If we know the minimum architecture avoid function hopping for CPU detection.
-#if defined(ARCH_CPU_X86_FAMILY)
-#if defined(__SSE__)
-#define CONVOLVE_FUNC Convolve_SSE
-#else
-// X86 CPU detection required.  |convolve_proc_| will be set upon construction.
-// TODO(dalecurtis): Once Chrome moves to a SSE baseline this can be removed.
-#define CONVOLVE_FUNC convolve_proc_
-#endif
-#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
-#define CONVOLVE_FUNC Convolve_NEON
-#else
-// Unknown architecture.
-#define CONVOLVE_FUNC Convolve_C
-#endif
 
 void SincResampler::Resample(int frames, float* destination) {
   int remaining_frames = frames;

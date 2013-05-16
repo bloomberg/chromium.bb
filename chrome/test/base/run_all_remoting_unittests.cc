@@ -9,6 +9,7 @@
 
 #include "base/test/test_suite.h"
 #include "chrome/common/chrome_paths.h"
+#include "media/base/media.h"
 #include "net/socket/ssl_server_socket.h"
 
 int main(int argc, char** argv) {
@@ -22,6 +23,9 @@ int main(int argc, char** argv) {
   // Enable support for SSL server sockets, which must be done while
   // single-threaded.
   net::EnableSSLServerSockets();
+
+  // Ensures runtime specific CPU features are initialized.
+  media::InitializeCPUSpecificMediaFeatures();
 
   return test_suite.Run();
 }
