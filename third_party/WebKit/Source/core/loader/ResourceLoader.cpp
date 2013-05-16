@@ -307,7 +307,7 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
 
     ASSERT(!request.isNull());
     if (!redirectResponse.isNull()) {
-        if (!m_documentLoader->cachedResourceLoader()->canRequest(m_resource->type(), request.url())) {
+        if (!m_documentLoader->cachedResourceLoader()->canRequest(m_resource->type(), request.url(), m_options.contentSecurityPolicyOption)) {
             cancel();
             return;
         }

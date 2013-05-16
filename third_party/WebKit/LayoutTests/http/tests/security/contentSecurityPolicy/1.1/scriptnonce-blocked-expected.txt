@@ -1,9 +1,27 @@
-ALERT: PASS (1/2)
-ALERT: PASS (2/2)
-CONSOLE MESSAGE: line 13: Refused to execute script because it violates the following Content Security Policy directive: "script-nonce noncynonce".
+CONSOLE MESSAGE: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'nonce-nonce'".
 
-CONSOLE MESSAGE: line 16: Refused to execute script because it violates the following Content Security Policy directive: "script-nonce noncynonce".
+CONSOLE MESSAGE: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'nonce-notnonce'".
 
-CONSOLE MESSAGE: line 19: Refused to execute script because it violates the following Content Security Policy directive: "script-nonce noncynonce".
+Only the first two of these scripts should execute even though there are parse errors in the policy.
 
-This tests the effect of a valid script-nonce value. It passes if three console warnings are visible, and the two PASS alerts are executed.
+
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+PASS
+
+--------
+Frame: '<!--framePath //<!--frame1-->-->'
+--------
+PASS
+
+--------
+Frame: '<!--framePath //<!--frame2-->-->'
+--------
+PASS
+
+--------
+Frame: '<!--framePath //<!--frame3-->-->'
+--------
+PASS

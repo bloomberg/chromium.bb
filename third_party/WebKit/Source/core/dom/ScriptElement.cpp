@@ -254,8 +254,6 @@ bool ScriptElement::requestScript(const String& sourceUrl)
         return false;
     if (!m_element->inDocument() || m_element->document() != originalDocument)
         return false;
-    if (!m_element->document()->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr), m_element->document()->url(), m_startLineNumber, m_element->document()->completeURL(sourceUrl)))
-        return false;
 
     ASSERT(!m_cachedScript);
     if (!stripLeadingAndTrailingHTMLSpaces(sourceUrl).isEmpty()) {
@@ -269,6 +267,10 @@ bool ScriptElement::requestScript(const String& sourceUrl)
         }
         request.setCharset(scriptCharset());
         request.setInitiator(element());
+
+        bool isValidScriptNonce = m_element->document()->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
+        if (isValidScriptNonce)
+            request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
 
         m_cachedScript = m_element->document()->cachedResourceLoader()->requestScript(request);
         m_isExternalScript = true;
@@ -292,9 +294,7 @@ void ScriptElement::executeScript(const ScriptSourceCode& sourceCode)
     RefPtr<Document> document = m_element->document();
     Frame* frame = document->frame();
 
-    bool shouldBypassMainWorldContentSecurityPolicy = (frame && frame->script()->shouldBypassMainWorldContentSecurityPolicy());
-    if (!shouldBypassMainWorldContentSecurityPolicy && !document->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr), document->url(), m_startLineNumber))
-        return;
+    bool shouldBypassMainWorldContentSecurityPolicy = (frame && frame->script()->shouldBypassMainWorldContentSecurityPolicy()) || document->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
 
     if (!m_isExternalScript && (!shouldBypassMainWorldContentSecurityPolicy && !document->contentSecurityPolicy()->allowInlineScript(document->url(), m_startLineNumber)))
         return;

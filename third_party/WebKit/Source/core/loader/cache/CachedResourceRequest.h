@@ -61,6 +61,7 @@ public:
     void setInitiator(const AtomicString& name);
     const AtomicString& initiatorName() const;
     PassRefPtr<Element> initiatorElement();
+    void setContentSecurityCheck(ContentSecurityPolicyCheck contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
 
 private:
     ResourceRequest m_resourceRequest;

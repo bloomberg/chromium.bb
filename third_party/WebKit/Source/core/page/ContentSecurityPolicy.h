@@ -92,7 +92,6 @@ public:
     bool allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowEval(ScriptState* = 0, ReportingStatus = SendReport) const;
-    bool allowScriptNonce(const String& nonce, const String& contextURL, const WTF::OrdinalNumber& contextLine, const KURL& = KURL()) const;
     bool allowPluginType(const String& type, const String& typeAttribute, const KURL&, ReportingStatus = SendReport) const;
 
     bool allowScriptFromSource(const KURL&, ReportingStatus = SendReport) const;
@@ -105,6 +104,7 @@ public:
     bool allowConnectToSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowFormAction(const KURL&, ReportingStatus = SendReport) const;
     bool allowBaseURI(const KURL&, ReportingStatus = SendReport) const;
+    bool allowScriptNonce(const String& nonce) const;
 
     ReflectedXSSDisposition reflectedXSSDisposition() const;
 

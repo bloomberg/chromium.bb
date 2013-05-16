@@ -60,6 +60,11 @@ enum SecurityCheckPolicy {
     DoSecurityCheck
 };
 
+enum ContentSecurityPolicyCheck {
+    CheckContentSecurityPolicy,
+    DoNotCheckContentSecurityPolicy
+};
+
 struct ResourceLoaderOptions {
     ResourceLoaderOptions()
         : sendLoadCallbacks(DoNotSendCallbacks)
@@ -68,7 +73,8 @@ struct ResourceLoaderOptions {
         , allowCredentials(DoNotAllowStoredCredentials)
         , credentialsRequested(ClientDidNotRequestCredentials)
         , crossOriginCredentialPolicy(DoNotAskClientForCrossOriginCredentials)
-        , securityCheck(DoSecurityCheck) { }
+        , securityCheck(DoSecurityCheck)
+        , contentSecurityPolicyOption(CheckContentSecurityPolicy) { }
 
     ResourceLoaderOptions(
         SendCallbackPolicy sendLoadCallbacks,
@@ -77,7 +83,8 @@ struct ResourceLoaderOptions {
         StoredCredentials allowCredentials,
         CredentialRequest credentialsRequested,
         ClientCrossOriginCredentialPolicy crossOriginCredentialPolicy,
-        SecurityCheckPolicy securityCheck)
+        SecurityCheckPolicy securityCheck,
+        ContentSecurityPolicyCheck contentSecurityPolicyOption)
         : sendLoadCallbacks(sendLoadCallbacks)
         , sniffContent(sniffContent)
         , dataBufferingPolicy(dataBufferingPolicy)
@@ -85,6 +92,7 @@ struct ResourceLoaderOptions {
         , credentialsRequested(credentialsRequested)
         , crossOriginCredentialPolicy(crossOriginCredentialPolicy)
         , securityCheck(securityCheck)
+        , contentSecurityPolicyOption(contentSecurityPolicyOption)
     {
     }
     SendCallbackPolicy sendLoadCallbacks;
@@ -94,6 +102,7 @@ struct ResourceLoaderOptions {
     CredentialRequest credentialsRequested; // Whether the client (e.g. XHR) wanted credentials in the first place.
     ClientCrossOriginCredentialPolicy crossOriginCredentialPolicy; // Whether we will ask the client for credentials (if we allow credentials at all).
     SecurityCheckPolicy securityCheck;
+    ContentSecurityPolicyCheck contentSecurityPolicyOption;
 };
 
 } // namespace WebCore    

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-noncynonce'"></meta>
+        <script nonce="noncynonce">
+        if (window.testRunner)
+            testRunner.dumpAsText();
+        </script>
+    </head>
+    <body>
+        This tests whether a deferred script load caused by a redirect is properly allowed by a nonce.
+        <script nonce='noncynonce' src='../resources/redir.php?url=http://localhost:8000/security/contentSecurityPolicy/resources/alert-pass.js'></script>
+    </body>
+</html>
