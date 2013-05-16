@@ -625,6 +625,21 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Drive.PushNotificationInitiallyEnabled" enum="BooleanEnabled">
+  <summary>
+    Tracks whether the push notification is initially enabled for Drive.
+    Recorded when the first notification is processed. Notification is emulated
+    by polling if the push notication is disabled.
+  </summary>
+</histogram>
+
+<histogram name="Drive.PushNotificationRegistered" enum="BooleanRegistered">
+  <summary>
+    Tracks whether the push notification request is registered correctly for
+    Drive. Recorded when the push notification manager is initialized.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.AutoEnrollmentExtraTime" units="milliseconds">
   <summary>
     Time since the user logged in until the auto-enrollment protocol completed.
@@ -8310,6 +8325,11 @@ other types of suffix sets.
 <enum name="BooleanRaced" type="int">
   <int value="0" label="Did Not Race"/>
   <int value="1" label="Raced"/>
+</enum>
+
+<enum name="BooleanRegistered" type="int">
+  <int value="0" label="Not Registered"/>
+  <int value="1" label="Registered"/>
 </enum>
 
 <enum name="BooleanSelected" type="int">
