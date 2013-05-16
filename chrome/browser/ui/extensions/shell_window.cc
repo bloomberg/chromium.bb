@@ -24,12 +24,12 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -52,6 +52,8 @@
 using content::ConsoleMessageLevel;
 using content::WebContents;
 using extensions::APIPermission;
+using web_modal::WebContentsModalDialogHost;
+using web_modal::WebContentsModalDialogManager;
 
 namespace {
 const int kDefaultWidth = 512;
@@ -547,10 +549,6 @@ extensions::ActiveTabPermissionGranter*
     ShellWindow::GetActiveTabPermissionGranter() {
   // Shell windows don't support the activeTab permission.
   return NULL;
-}
-
-void ShellWindow::SetWebContentsBlocked(content::WebContents* web_contents,
-                                        bool blocked) {
 }
 
 WebContentsModalDialogHost* ShellWindow::GetWebContentsModalDialogHost() {

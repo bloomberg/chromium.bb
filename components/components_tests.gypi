@@ -17,6 +17,7 @@
             'visitedlink/test/visitedlink_unittest.cc',
             'webdata/encryptor/encryptor_password_mac_unittest.cc',
             'webdata/encryptor/encryptor_unittest.cc',
+            'web_modal/web_contents_modal_dialog_manager_unittest.cc',
           ],
           'include_dirs': [
             '..',
@@ -46,8 +47,18 @@
             'visitedlink_browser',
             'visitedlink_renderer',
             '../content/content_resources.gyp:content_resources',
+
+            'web_modal',
           ],
           'conditions': [
+            ['OS == "android"', {
+              'sources!': [
+                'web_modal/web_contents_modal_dialog_manager_unittest.cc',
+              ],
+              'dependencies!': [
+                'web_modal',
+              ],
+            }],
             ['OS == "android" and gtest_target_type == "shared_library"', {
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',

@@ -6,9 +6,11 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/test/test_utils.h"
+
+using web_modal::WebContentsModalDialogManager;
 
 typedef InProcessBrowserTest CollectedCookiesMacTest;
 

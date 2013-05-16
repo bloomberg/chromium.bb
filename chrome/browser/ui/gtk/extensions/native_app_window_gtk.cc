@@ -307,12 +307,12 @@ gfx::Point NativeAppWindowGtk::GetDialogPosition(const gfx::Size& size) {
 }
 
 void NativeAppWindowGtk::AddObserver(
-    WebContentsModalDialogHostObserver* observer) {
+    web_modal::WebContentsModalDialogHostObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
 void NativeAppWindowGtk::RemoveObserver(
-    WebContentsModalDialogHostObserver* observer) {
+    web_modal::WebContentsModalDialogHostObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
@@ -366,7 +366,7 @@ void NativeAppWindowGtk::OnDebouncedBoundsChanged() {
   gtk_window_util::UpdateWindowPosition(this, &bounds_, &restored_bounds_);
   shell_window_->OnNativeWindowChanged();
 
-  FOR_EACH_OBSERVER(WebContentsModalDialogHostObserver,
+  FOR_EACH_OBSERVER(web_modal::WebContentsModalDialogHostObserver,
                     observer_list_,
                     OnPositionRequiresUpdate());
 }

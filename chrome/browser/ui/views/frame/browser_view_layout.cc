@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/scrollbar_size.h"
@@ -31,6 +31,8 @@
 #include "ui/views/controls/webview/webview.h"
 
 using views::View;
+using web_modal::WebContentsModalDialogHost;
+using web_modal::WebContentsModalDialogHostObserver;
 
 namespace {
 

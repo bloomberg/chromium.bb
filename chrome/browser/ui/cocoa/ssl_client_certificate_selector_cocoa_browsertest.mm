@@ -8,16 +8,18 @@
 
 #include "base/bind.h"
 #import "base/mac/mac_util.h"
+#include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
-#include "chrome/browser/ssl/ssl_client_certificate_selector.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
+
+using web_modal::WebContentsModalDialogManager;
 
 namespace {
 

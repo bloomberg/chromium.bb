@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "net/cert/x509_certificate.h"
@@ -33,6 +33,7 @@
 
 using content::BrowserThread;
 using content::WebContents;
+using web_modal::WebContentsModalDialogManager;
 
 namespace {
 

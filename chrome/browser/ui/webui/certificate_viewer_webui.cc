@@ -26,6 +26,7 @@
 using content::WebContents;
 using content::WebUIMessageHandler;
 using ui::WebDialogObserver;
+using web_modal::NativeWebContentsModalDialog;
 
 namespace {
 

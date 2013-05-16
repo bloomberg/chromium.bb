@@ -22,8 +22,6 @@ class InfoBarContainerView;
 class OverlayContainer;
 class TabContentsContainer;
 class TabStrip;
-class TopContainerView;
-class WebContentsModalDialogHost;
 
 namespace gfx {
 class Point;
@@ -32,6 +30,10 @@ class Size;
 
 namespace views {
 class SingleSplitView;
+}
+
+namespace web_modal {
+class WebContentsModalDialogHost;
 }
 
 // The layout manager used in chrome browser.
@@ -71,7 +73,7 @@ class BrowserViewLayout : public views::LayoutManager {
     download_shelf_ = download_shelf;
   }
 
-  WebContentsModalDialogHost* GetWebContentsModalDialogHost();
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost();
 
   // Returns the minimum size of the browser view.
   gfx::Size GetMinimumSize();

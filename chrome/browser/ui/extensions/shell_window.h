@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
+#include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -67,7 +67,7 @@ class ShellWindowContents {
 class ShellWindow : public content::NotificationObserver,
                     public content::WebContentsDelegate,
                     public extensions::ExtensionKeybindingRegistry::Delegate,
-                    public WebContentsModalDialogManagerDelegate {
+                    public ChromeWebModalDialogManagerDelegate {
  public:
   enum WindowType {
     WINDOW_TYPE_DEFAULT  = 1 << 0,  // Default shell window.
@@ -260,11 +260,9 @@ class ShellWindow : public content::NotificationObserver,
   virtual extensions::ActiveTabPermissionGranter*
       GetActiveTabPermissionGranter() OVERRIDE;
 
-  // WebContentsModalDialogManagerDelegate implementation.
-  virtual void SetWebContentsBlocked(content::WebContents* web_contents,
-                                     bool blocked) OVERRIDE;
-
-  virtual WebContentsModalDialogHost* GetWebContentsModalDialogHost() OVERRIDE;
+  // web_modal::WebContentsModalDialogManagerDelegate implementation.
+  virtual web_modal::WebContentsModalDialogHost*
+      GetWebContentsModalDialogHost() OVERRIDE;
 
   // Callback from web_contents()->DownloadFavicon.
   void DidDownloadFavicon(int id,

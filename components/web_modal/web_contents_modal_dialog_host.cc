@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+
+namespace web_modal {
 
 WebContentsModalDialogHostObserver::~WebContentsModalDialogHostObserver() {
 }
@@ -15,3 +17,5 @@ WebContentsModalDialogHost::~WebContentsModalDialogHost() {
 
 WebContentsModalDialogHost::WebContentsModalDialogHost() {
 }
+
+}  // namespace web_modal

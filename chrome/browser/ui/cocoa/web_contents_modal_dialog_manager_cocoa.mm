@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
-#include "chrome/browser/ui/native_web_contents_modal_dialog_manager.h"
+#include "components/web_modal/native_web_contents_modal_dialog_manager.h"
+
+using web_modal::NativeWebContentsModalDialog;
 
 namespace {
 
 class NativeWebContentsModalDialogManagerCocoa
-    : public NativeWebContentsModalDialogManager {
+    : public web_modal::NativeWebContentsModalDialogManager {
  public:
   NativeWebContentsModalDialogManagerCocoa() {
   }
@@ -52,8 +54,12 @@ class NativeWebContentsModalDialogManagerCocoa
 
 }  // namespace
 
+namespace web_modal {
+
 NativeWebContentsModalDialogManager*
     WebContentsModalDialogManager::CreateNativeManager(
         NativeWebContentsModalDialogManagerDelegate* native_delegate) {
   return new NativeWebContentsModalDialogManagerCocoa;
 }
+
+}  // namespace web_modal

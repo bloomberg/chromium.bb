@@ -7,7 +7,9 @@
 
 #include "ui/gfx/native_widget_types.h"
 
+namespace web_modal {
 class WebContentsModalDialogHost;
+}
 
 namespace content {
 class WebContents;
@@ -22,7 +24,7 @@ class Widget;
 views::Widget* CreateWebContentsModalDialogViews(
     views::WidgetDelegate* widget_delegate,
     gfx::NativeView parent,
-    WebContentsModalDialogHost* dialog_host);
+    web_modal::WebContentsModalDialogHost* dialog_host);
 
 views::NonClientFrameView* CreateConstrainedStyleNonClientFrameView(
     views::Widget* widget,

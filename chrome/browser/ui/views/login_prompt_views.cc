@@ -10,9 +10,9 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/login_view.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -26,6 +26,7 @@
 using content::BrowserThread;
 using content::PasswordForm;
 using content::WebContents;
+using web_modal::WebContentsModalDialogManager;
 
 // ----------------------------------------------------------------------------
 // LoginHandlerViews

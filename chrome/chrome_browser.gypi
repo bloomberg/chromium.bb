@@ -33,6 +33,7 @@
         '../components/components.gyp:visitedlink_browser',
         '../components/components.gyp:visitedlink_common',
         '../components/components.gyp:webdata_common',
+        '../components/components.gyp:web_modal',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
@@ -2795,6 +2796,7 @@
             'chrome_browser_jni_headers',
           ],
           'dependencies!': [
+            '../components/components.gyp:web_modal',
             '../third_party/libusb/libusb.gyp:libusb',
           ],
           'sources': [

@@ -655,7 +655,7 @@ FindBar* BrowserWindowCocoa::CreateFindBar() {
   return bridge;
 }
 
-WebContentsModalDialogHost*
+web_modal::WebContentsModalDialogHost*
     BrowserWindowCocoa::GetWebContentsModalDialogHost() {
   return NULL;
 }

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
-#include "chrome/browser/ui/native_web_contents_modal_dialog_manager.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/native_web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/gtk/focus_store_gtk.h"
+
+using web_modal::NativeWebContentsModalDialog;
+using web_modal::NativeWebContentsModalDialogManagerDelegate;
 
 namespace {
 
@@ -15,7 +18,7 @@ namespace {
 // Win32 system, ConstrainedWindowGtk doesn't draw draggable fake windows and
 // instead just centers the dialog. It is thus an order of magnitude simpler.
 class NativeWebContentsModalDialogManagerGtk
-    : public NativeWebContentsModalDialogManager {
+    : public web_modal::NativeWebContentsModalDialogManager {
  public:
   NativeWebContentsModalDialogManagerGtk(
       NativeWebContentsModalDialogManagerDelegate* native_delegate)
@@ -142,8 +145,12 @@ void NativeWebContentsModalDialogManagerGtk::OnDestroy(
 
 }  // namespace
 
+namespace web_modal {
+
 NativeWebContentsModalDialogManager*
     WebContentsModalDialogManager::CreateNativeManager(
         NativeWebContentsModalDialogManagerDelegate* native_delegate) {
   return new NativeWebContentsModalDialogManagerGtk(native_delegate);
 }
+
+}  // namespace web_modal

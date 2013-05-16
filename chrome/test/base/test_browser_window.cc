@@ -137,7 +137,7 @@ FindBar* TestBrowserWindow::CreateFindBar() {
   return NULL;
 }
 
-WebContentsModalDialogHost*
+web_modal::WebContentsModalDialogHost*
     TestBrowserWindow::GetWebContentsModalDialogHost() {
   return NULL;
 }

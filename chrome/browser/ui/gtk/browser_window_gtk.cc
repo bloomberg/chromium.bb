@@ -112,6 +112,7 @@
 using content::NativeWebKeyboardEvent;
 using content::SSLStatus;
 using content::WebContents;
+using web_modal::WebContentsModalDialogHost;
 
 namespace {
 

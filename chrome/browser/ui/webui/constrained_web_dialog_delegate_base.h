@@ -37,7 +37,7 @@ class ConstrainedWebDialogDelegateBase
   virtual ui::WebDialogDelegate* GetWebDialogDelegate() OVERRIDE;
   virtual void OnDialogCloseFromWebUI() OVERRIDE;
   virtual void ReleaseWebContentsOnDialogClose() OVERRIDE;
-  virtual NativeWebContentsModalDialog GetNativeDialog() OVERRIDE;
+  virtual web_modal::NativeWebContentsModalDialog GetNativeDialog() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
 
   // WebDialogWebContentsDelegate interface.

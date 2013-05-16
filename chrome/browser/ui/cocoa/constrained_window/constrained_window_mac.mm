@@ -10,10 +10,13 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+
+using web_modal::WebContentsModalDialogManager;
+using web_modal::NativeWebContentsModalDialog;
 
 ConstrainedWindowMac::ConstrainedWindowMac(
     ConstrainedWindowMacDelegate* delegate,

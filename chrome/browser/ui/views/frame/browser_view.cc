@@ -158,6 +158,7 @@ using content::UserMetricsAction;
 using content::WebContents;
 using views::ColumnSet;
 using views::GridLayout;
+using web_modal::WebContentsModalDialogHost;
 
 namespace {
 // The height of the status bubble.

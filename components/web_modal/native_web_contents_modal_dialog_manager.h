@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
-#define CHROME_BROWSER_UI_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
+#ifndef COMPONENTS_WEB_MODAL_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
+#define COMPONENTS_WEB_MODAL_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
 
-#include "chrome/browser/ui/native_web_contents_modal_dialog.h"
+#include "components/web_modal/native_web_contents_modal_dialog.h"
 
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace web_modal {
 
 // Interface from NativeWebContentsModalDialogManager to
 // WebContentsModalDialogManager.
@@ -59,4 +61,6 @@ class NativeWebContentsModalDialogManager {
   DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManager);
 };
 
-#endif  // CHROME_BROWSER_UI_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
+}  // namespace web_modal
+
+#endif  // COMPONENTS_WEB_MODAL_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_

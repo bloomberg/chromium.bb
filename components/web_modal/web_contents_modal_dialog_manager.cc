@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 
-#include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
-#include "chrome/common/render_messages.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -19,7 +17,9 @@
 
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsModalDialogManager);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(web_modal::WebContentsModalDialogManager);
+
+namespace web_modal {
 
 WebContentsModalDialogManager::~WebContentsModalDialogManager() {
   DCHECK(child_dialogs_.empty());
@@ -32,7 +32,7 @@ void WebContentsModalDialogManager::ShowDialog(
   native_manager_->ManageDialog(dialog);
 
   if (child_dialogs_.size() == 1) {
-    if (IsWebContentsVisible())
+    if (delegate_ && delegate_->IsWebContentsVisible(web_contents()))
       native_manager_->ShowDialog(dialog);
     BlockWebContentsInteraction(true);
   }
@@ -107,17 +107,10 @@ void WebContentsModalDialogManager::BlockWebContentsInteraction(bool blocked) {
 
   // RenderViewHost may be NULL during shutdown.
   content::RenderViewHost* host = contents->GetRenderViewHost();
-  if (host) {
+  if (host)
     host->SetIgnoreInputEvents(blocked);
-    host->Send(new ChromeViewMsg_SetVisuallyDeemphasized(
-        host->GetRoutingID(), blocked));
-  }
   if (delegate_)
     delegate_->SetWebContentsBlocked(contents, blocked);
-}
-
-bool WebContentsModalDialogManager::IsWebContentsVisible() const {
-  return platform_util::IsVisible(web_contents()->GetView()->GetNativeView());
 }
 
 void WebContentsModalDialogManager::CloseAllDialogs() {
@@ -152,3 +145,5 @@ void WebContentsModalDialogManager::WebContentsDestroyed(WebContents* tab) {
   // twice before it runs.
   CloseAllDialogs();
 }
+
+}  // namespace web_modal

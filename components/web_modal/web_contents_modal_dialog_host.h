@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_HOST_H_
-#define CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_HOST_H_
+#ifndef COMPONENTS_WEB_MODAL_WEB_CONTENTS_MODAL_DIALOG_HOST_H_
+#define COMPONENTS_WEB_MODAL_WEB_CONTENTS_MODAL_DIALOG_HOST_H_
 
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
+
+namespace web_modal {
 
 // Observer to be implemented to update web contents modal dialogs when the host
 // indicates their position needs to be changed.
@@ -47,4 +49,6 @@ class WebContentsModalDialogHost {
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHost);
 };
 
-#endif  // CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_HOST_H_
+}  // namespace web_modal
+
+#endif  // COMPONENTS_WEB_MODAL_WEB_CONTENTS_MODAL_DIALOG_HOST_H_

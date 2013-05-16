@@ -80,7 +80,7 @@ void ConstrainedWebDialogDelegateBase::ReleaseWebContentsOnDialogClose() {
   release_contents_on_close_ = true;
 }
 
-NativeWebContentsModalDialog
+web_modal::NativeWebContentsModalDialog
     ConstrainedWebDialogDelegateBase::GetNativeDialog() {
   NOTREACHED();
   return NULL;

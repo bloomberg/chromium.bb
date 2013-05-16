@@ -131,7 +131,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -150,6 +149,7 @@
 #include "chrome/common/search_types.h"
 #include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/download_item.h"
@@ -218,6 +218,7 @@ using content::UserMetricsAction;
 using content::WebContents;
 using extensions::Extension;
 using ui::WebDialogDelegate;
+using web_modal::WebContentsModalDialogManager;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1637,10 +1638,12 @@ void Browser::ConfirmAddSearchProvider(TemplateURL* template_url,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, WebContentsModalDialogManagerDelegate implementation:
+// Browser, web_modal::WebContentsModalDialogManagerDelegate implementation:
 
 void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
                                     bool blocked) {
+  ChromeWebModalDialogManagerDelegate::SetWebContentsBlocked(web_contents,
+                                                             blocked);
   int index = tab_strip_model_->GetIndexOfWebContents(web_contents);
   if (index == TabStripModel::kNoTab) {
     NOTREACHED();
@@ -1651,7 +1654,8 @@ void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
     web_contents->GetView()->Focus();
 }
 
-WebContentsModalDialogHost* Browser::GetWebContentsModalDialogHost() {
+web_modal::WebContentsModalDialogHost*
+Browser::GetWebContentsModalDialogHost() {
   return window_->GetWebContentsModalDialogHost();
 }
 

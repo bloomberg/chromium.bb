@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/login/login_model.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -28,6 +28,7 @@
 using content::BrowserThread;
 using content::PasswordForm;
 using content::WebContents;
+using web_modal::WebContentsModalDialogManager;
 
 // ----------------------------------------------------------------------------
 // LoginHandlerGtk

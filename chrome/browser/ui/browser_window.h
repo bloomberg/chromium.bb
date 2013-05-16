@@ -28,7 +28,6 @@ class TemplateURL;
 #if !defined(OS_MACOSX)
 class ToolbarView;
 #endif
-class WebContentsModalDialogHost;
 
 namespace autofill {
 class PasswordGenerator;
@@ -47,6 +46,10 @@ class Extension;
 namespace gfx {
 class Rect;
 class Size;
+}
+
+namespace web_modal {
+class WebContentsModalDialogHost;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -326,7 +329,8 @@ class BrowserWindow : public BaseWindow {
 
   // Return the WebContentsModalDialogHost for use in positioning web contents
   // modal dialogs within the browser window.
-  virtual WebContentsModalDialogHost* GetWebContentsModalDialogHost() = 0;
+  virtual web_modal::WebContentsModalDialogHost*
+      GetWebContentsModalDialogHost() = 0;
 
   // Invoked when the preferred size of the contents in current tab has been
   // changed. We might choose to update the window size to accomodate this

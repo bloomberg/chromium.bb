@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/native_web_contents_modal_dialog_manager.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/web_modal/native_web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
+namespace web_modal {
+
 class WebContentsModalDialogManagerTest
-    : public ChromeRenderViewHostTestHarness {
+    : public content::RenderViewHostTestHarness {
  public:
   WebContentsModalDialogManagerTest()
-      : ChromeRenderViewHostTestHarness(),
-        ui_thread_(BrowserThread::UI, &message_loop_) {
+      : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
   virtual void SetUp() {
-    ChromeRenderViewHostTestHarness::SetUp();
+    content::RenderViewHostTestHarness::SetUp();
     WebContentsModalDialogManager::CreateForWebContents(web_contents());
   }
 
@@ -52,6 +53,12 @@ class NativeWebContentsModalDialogManagerCloseTest
   NativeWebContentsModalDialogManagerDelegate* delegate_;
 };
 
+NativeWebContentsModalDialogManager* WebContentsModalDialogManager::
+CreateNativeManager(
+    NativeWebContentsModalDialogManagerDelegate* native_delegate) {
+  return new NativeWebContentsModalDialogManagerCloseTest(native_delegate);
+}
+
 TEST_F(WebContentsModalDialogManagerTest, WebContentsModalDialogs) {
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents());
@@ -77,3 +84,5 @@ TEST_F(WebContentsModalDialogManagerTest, WebContentsModalDialogs) {
   test_api.CloseAllDialogs();
   EXPECT_EQ(native_manager->close_count, kWindowCount);
 }
+
+}  // namespace web_modal

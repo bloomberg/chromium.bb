@@ -139,13 +139,13 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual void RenderViewHostChanged() OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
 
-  // WebContentsModalDialogHost implementation.
+  // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
   virtual void AddObserver(
-      WebContentsModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
-      WebContentsModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
 
   Profile* profile() { return shell_window_->profile(); }
   content::WebContents* web_contents() {
@@ -176,7 +176,7 @@ class NativeAppWindowViews : public NativeAppWindow,
 
   base::WeakPtrFactory<NativeAppWindowViews> weak_ptr_factory_;
 
-  ObserverList<WebContentsModalDialogHostObserver> observer_list_;
+  ObserverList<web_modal::WebContentsModalDialogHostObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
 };

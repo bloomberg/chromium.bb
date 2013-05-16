@@ -6,9 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/native_web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/native_web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -28,6 +28,10 @@
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #endif
+
+using web_modal::NativeWebContentsModalDialog;
+using web_modal::NativeWebContentsModalDialogManager;
+using web_modal::NativeWebContentsModalDialogManagerDelegate;
 
 namespace {
 
@@ -187,8 +191,12 @@ class NativeWebContentsModalDialogManagerViews
 
 }  // namespace
 
+namespace web_modal {
+
 NativeWebContentsModalDialogManager* WebContentsModalDialogManager::
 CreateNativeManager(
     NativeWebContentsModalDialogManagerDelegate* native_delegate) {
   return new NativeWebContentsModalDialogManagerViews(native_delegate);
 }
+
+}  // namespace web_modal

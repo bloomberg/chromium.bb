@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_MANAGER_DELEGATE_H_
-#define CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_MANAGER_DELEGATE_H_
-
-class WebContentsModalDialogHost;
+#ifndef COMPONENTS_WEB_MODAL_WEB_CONTENTS_MODAL_DIALOG_MANAGER_DELEGATE_H_
+#define COMPONENTS_WEB_MODAL_WEB_CONTENTS_MODAL_DIALOG_MANAGER_DELEGATE_H_
 
 namespace content {
 class WebContents;
@@ -14,6 +12,10 @@ class WebContents;
 namespace gfx {
 class Point;
 }
+
+namespace web_modal {
+
+class WebContentsModalDialogHost;
 
 class WebContentsModalDialogManagerDelegate {
  public:
@@ -28,8 +30,13 @@ class WebContentsModalDialogManagerDelegate {
   // modal dialogs within the browser window.
   virtual WebContentsModalDialogHost* GetWebContentsModalDialogHost();
 
+  // Returns whether the WebContents is currently visible or not.
+  virtual bool IsWebContentsVisible(content::WebContents* web_contents);
+
  protected:
   virtual ~WebContentsModalDialogManagerDelegate();
 };
 
-#endif  // CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_MANAGER_DELEGATE_H_
+}  // namespace web_modal
+
+#endif  // COMPONENTS_WEB_MODAL_WEB_CONTENTS_MODAL_DIALOG_MANAGER_DELEGATE_H_

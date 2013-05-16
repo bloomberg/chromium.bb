@@ -714,12 +714,12 @@ gfx::Point NativeAppWindowCocoa::GetDialogPosition(const gfx::Size& size) {
 }
 
 void NativeAppWindowCocoa::AddObserver(
-    WebContentsModalDialogHostObserver* observer) {
+    web_modal::WebContentsModalDialogHostObserver* observer) {
   NOTIMPLEMENTED();
 }
 
 void NativeAppWindowCocoa::RemoveObserver(
-    WebContentsModalDialogHostObserver* observer) {
+    web_modal::WebContentsModalDialogHostObserver* observer) {
   NOTIMPLEMENTED();
 }
 

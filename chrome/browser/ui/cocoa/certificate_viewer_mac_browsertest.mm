@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/cocoa/certificate_viewer_mac.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
@@ -17,6 +17,8 @@
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "ui/base/cocoa/window_size_constants.h"
+
+using web_modal::WebContentsModalDialogManager;
 
 typedef InProcessBrowserTest SSLCertificateViewerCocoaTest;
 
