@@ -89,15 +89,12 @@ cr.define('options', function() {
         if (self.signedIn_)
           SyncSetupOverlay.showStopSyncingUI();
         else if (cr.isChromeOS)
-          SyncSetupOverlay.showSetupUIWithoutLogin();
+          SyncSetupOverlay.showSetupUI();
         else
           SyncSetupOverlay.startSignIn();
       };
       $('customize-sync').onclick = function(event) {
-        if (cr.isChromeOS)
-          SyncSetupOverlay.showSetupUIWithoutLogin();
-        else
-          SyncSetupOverlay.showSetupUI();
+        SyncSetupOverlay.showSetupUI();
       };
 
       // Internet connection section (ChromeOS only).

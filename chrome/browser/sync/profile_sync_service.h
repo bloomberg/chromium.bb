@@ -576,7 +576,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void StopAndSuppress();
 
   // Resets the flag for suppressing sync startup and starts the sync backend.
-  void UnsuppressAndStart();
+  virtual void UnsuppressAndStart();
 
   // Marks all currently registered types as "acknowledged" so we won't prompt
   // the user about them any more.

@@ -24,8 +24,10 @@ class WebContents;
 
 class SyncSetupHandler : public options::OptionsPageUIHandler,
                          public SigninTracker::Observer,
-                         public LoginUIService::LoginUI,
-                         public content::WebContentsObserver {
+#if !defined(OS_CHROMEOS)
+                         public content::WebContentsObserver,
+#endif
+                         public LoginUIService::LoginUI {
  public:
   // Constructs a new SyncSetupHandler. |profile_manager| may be NULL.
   explicit SyncSetupHandler(ProfileManager* profile_manager);
@@ -45,11 +47,14 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   virtual void FocusUI() OVERRIDE;
   virtual void CloseUI() OVERRIDE;
 
+#if !defined(OS_CHROMEOS)
+  // No need to track signin windows on chromeos.
   // content::WebContentsObserver implementation.
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
+#endif
 
   static void GetStaticLocalizedValues(
       base::DictionaryValue* localized_strings,
@@ -125,7 +130,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void HandlePassphraseCancel(const base::ListValue* args);
   void HandleShowErrorUI(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
-  void HandleShowSetupUIWithoutLogin(const base::ListValue* args);
   void HandleDoSignOutOnAuthError(const base::ListValue* args);
   void HandleStartSignin(const base::ListValue* args);
   void HandleStopSyncing(const base::ListValue* args);
@@ -144,18 +148,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
                 const std::string& password,
                 const std::string& captcha,
                 const std::string& access_code);
-#endif
-
-  // Helper routine that gets the Profile associated with this object (virtual
-  // so tests can override).
-  virtual Profile* GetProfile() const;
-
-  // Shows the GAIA login success page then exits.
-  void DisplayGaiaSuccessAndClose();
-
-  // Displays the GAIA login success page then transitions to sync setup.
-  void DisplayGaiaSuccessAndSettingUp();
-
   // Displays the GAIA login form. If |fatal_error| is true, displays the fatal
   // error UI.
   void DisplayGaiaLogin(bool fatal_error);
@@ -170,6 +162,17 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // |fatal_error| = true.
   void DisplayGaiaLoginWithErrorMessage(const string16& error_message,
                                         bool fatal_error);
+#endif
+
+  // Helper routine that gets the Profile associated with this object (virtual
+  // so tests can override).
+  virtual Profile* GetProfile() const;
+
+  // Shows the GAIA login success page then exits.
+  void DisplayGaiaSuccessAndClose();
+
+  // Displays the GAIA login success page then transitions to sync setup.
+  void DisplayGaiaSuccessAndSettingUp();
 
   // A utility function to call before actually showing setup dialog. Makes sure
   // that a new dialog can be shown and sets flag that setup is in progress.
@@ -193,14 +196,18 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // Invokes the javascript call to close the setup overlay.
   void CloseOverlay();
 
+#if !defined(OS_CHROMEOS)
   // When using web-flow, closes the Gaia page used to collection user
   // credentials.
   void CloseGaiaSigninPage();
+#endif
 
   // The SigninTracker object used to determine when the user has fully signed
   // in (this requires waiting for various services to initialize and tracking
   // errors from multiple sources). Should only be non-null while the login UI
-  // is visible.
+  // is visible. Note, this object is also used on ChromeOS to track when the
+  // ProfileSyncService backend is done starting up when restarting sync after
+  // a dashboard clear.
   scoped_ptr<SigninTracker> signin_tracker_;
 
   // Set to true whenever the sync configure UI is visible. This is used to tell
@@ -208,9 +215,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // histograms in the case that the user cancels out.
   bool configuring_sync_;
 
-  // Weak reference to the profile manager.
-  ProfileManager* const profile_manager_;
-
+#if !defined(OS_CHROMEOS)
   // Cache of the last name the client attempted to authenticate.
   std::string last_attempted_user_email_;
 
@@ -221,13 +226,17 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // When setup starts without login UI, do not retry login and fail.
   bool retry_on_signin_failure_;
 
-  // The OneShotTimer object used to timeout of starting the sync backend
-  // service.
-  scoped_ptr<base::OneShotTimer<SyncSetupHandler> > backend_start_timer_;
-
   // When using web-flow, weak pointer to the tab that holds the Gaia sign in
   // page.
   content::WebContents* active_gaia_signin_tab_;
+#endif
+
+  // Weak reference to the profile manager.
+  ProfileManager* const profile_manager_;
+
+  // The OneShotTimer object used to timeout of starting the sync backend
+  // service.
+  scoped_ptr<base::OneShotTimer<SyncSetupHandler> > backend_start_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };

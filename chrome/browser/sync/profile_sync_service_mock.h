@@ -63,8 +63,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                void(syncer::ModelType, syncer::ModelSafeGroup,
                     browser_sync::ChangeProcessor*));
   MOCK_METHOD1(DeactivateDataType, void(syncer::ModelType));
+  MOCK_METHOD0(UnsuppressAndStart, void());
 
-  MOCK_METHOD0(StartUp, void());
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
   MOCK_METHOD0(GetJsController, base::WeakPtr<syncer::JsController>());

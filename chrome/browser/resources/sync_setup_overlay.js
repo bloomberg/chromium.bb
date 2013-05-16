@@ -988,14 +988,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Shows advanced configuration UI, skipping the login dialog.
-     * @private
-     */
-    showSetupUIWithoutLogin_: function() {
-      chrome.send('SyncSetupShowSetupUIWithoutLogin');
-    },
-
-    /**
      * Forces user to sign out of Chrome for Chrome OS.
      * @private
      */
@@ -1037,10 +1029,6 @@ cr.define('options', function() {
 
   SyncSetupOverlay.startSignIn = function() {
     SyncSetupOverlay.getInstance().startSignIn_();
-  };
-
-  SyncSetupOverlay.showSetupUIWithoutLogin = function() {
-    SyncSetupOverlay.getInstance().showSetupUIWithoutLogin_();
   };
 
   SyncSetupOverlay.doSignOutOnAuthError = function() {
