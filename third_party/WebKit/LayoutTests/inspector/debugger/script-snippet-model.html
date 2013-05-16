@@ -17,8 +17,23 @@ function test()
     var workspaceController = new WebInspector.WorkspaceController(workspace);
     WebInspector.scriptSnippetModel = new WebInspector.ScriptSnippetModel(workspace, snippetWorkspaceProvider);
     InspectorTest.runDebuggerTestSuite([
-        function testCreateAndRename(next)
+        function testCreateEditRenameRemove(next)
         {
+            function uiSourceCodeAdded(event)
+            {
+                var uiSourceCode = event.data;
+                InspectorTest.addResult("UISourceCodeAdded: " + uiSourceCode.name());
+            }
+
+            function uiSourceCodeRemoved(event)
+            {
+                var uiSourceCode = event.data;
+                InspectorTest.addResult("UISourceCodeRemoved: " + uiSourceCode.name());
+            }
+
+            workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, uiSourceCodeAdded);
+            workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+
             function renameSnippetAndCheckWorkspace(uiSourceCode, snippetName)
             {
                 InspectorTest.addResult("Renaming snippet to '" + snippetName + "' ...");
@@ -33,10 +48,23 @@ function test()
                 }
                 InspectorTest.addResult("UISourceCode name is '" + uiSourceCode.name() + "' now.");
                 InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().length);
+                var storageSnippetsCount = WebInspector.scriptSnippetModel._snippetStorage.snippets().length;
+                InspectorTest.addResult("Number of snippets in the storage: " + storageSnippetsCount);
+            }
+
+            function contentCallback(content)
+            {
+                InspectorTest.addResult("Snippet content: " + content);
             }
 
             resetSnippetsSettings();
             var uiSourceCode1 = WebInspector.scriptSnippetModel.createScriptSnippet();
+            uiSourceCode1.requestContent(contentCallback);
+            uiSourceCode1.addRevision("<snippet content>");
+            InspectorTest.addResult("Snippet content set.");
+            delete uiSourceCode1._content;
+            delete uiSourceCode1._contentLoaded;
+            uiSourceCode1.requestContent(contentCallback);
             InspectorTest.addResult("Snippet1 created.");
             var uiSourceCode2 = WebInspector.scriptSnippetModel.createScriptSnippet();
             InspectorTest.addResult("Snippet2 created.");
@@ -46,6 +74,25 @@ function test()
             renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
             renameSnippetAndCheckWorkspace(uiSourceCode2, "bar");
             renameSnippetAndCheckWorkspace(uiSourceCode2, "foo");
+            delete uiSourceCode1._content;
+            delete uiSourceCode1._contentLoaded;
+            uiSourceCode1.requestContent(contentCallback);
+
+            WebInspector.scriptSnippetModel.deleteScriptSnippet(uiSourceCode1);
+            WebInspector.scriptSnippetModel.deleteScriptSnippet(uiSourceCode2);
+
+            var uiSourceCode3 = WebInspector.scriptSnippetModel.createScriptSnippet();
+            InspectorTest.addResult("Snippet3 created.");
+            WebInspector.scriptSnippetModel.deleteScriptSnippet(uiSourceCode3);
+            InspectorTest.addResult("Snippet3 deleted.");
+
+            InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().length);
+            var storageSnippetsCount = WebInspector.scriptSnippetModel._snippetStorage.snippets().length;
+            InspectorTest.addResult("Number of snippets in the storage: " + storageSnippetsCount);
+
+            workspace.removeEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, uiSourceCodeAdded);
+            workspace.removeEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+
             next();
         },
 
