@@ -1543,9 +1543,17 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     /**
      * @see View#onFocusedChanged(boolean, int, Rect)
+     * TODO(benm): Remove once downstream usages have been updated to use single
+     * parameter version
      */
+    @Deprecated
     @SuppressWarnings("javadoc")
     public void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
+        onFocusChanged(gainFocus);
+    }
+
+
+    public void onFocusChanged(boolean gainFocus) {
         if (!gainFocus) getContentViewClient().onImeStateChangeRequested(false);
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
     }

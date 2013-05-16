@@ -445,7 +445,7 @@ public class ContentView extends FrameLayout
     protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
         TraceEvent.begin();
         super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
-        mContentViewCore.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+        mContentViewCore.onFocusChanged(gainFocus);
         TraceEvent.end();
     }
 
