@@ -65,18 +65,6 @@ class PageCycler(page_measurement.PageMeasurement):
     options.AppendExtraBrowserArg('--dom-automation')
     options.AppendExtraBrowserArg('--js-flags=--expose_gc')
     options.AppendExtraBrowserArg('--no-sandbox')
-    # Temporarily enable threaded compositing on Mac on only some page sets.
-    # This malignancy is to diagnose an issue where the bots are experiencing
-    # a regression that isn't reproducing locally.
-    # TODO(ccameron): delete this
-    # http://crbug.com/180025
-    if sys.platform == 'darwin':
-      composited_page_sets = ('/bloat.json', '/moz.json', '/intl2.json')
-      if sys.argv[-1].endswith(composited_page_sets):
-        options.AppendExtraBrowserArg('--force-compositing-mode')
-        options.AppendExtraBrowserArg('--enable-threaded-compositing')
-      else:
-        options.AppendExtraBrowserArg('--disable-force-compositing-mode')
 
   def MeasureMemory(self, tab, results):
     memory = tab.browser.memory_stats
