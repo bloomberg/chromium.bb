@@ -163,11 +163,6 @@ public:
     void setShouldSmoothFonts(bool);
     bool shouldSmoothFonts() const;
 
-    // Normally CG enables subpixel-quantization because it improves the performance of aligning glyphs.
-    // In some cases we have to disable to to ensure a high-quality output of the glyphs.
-    void setShouldSubpixelQuantizeFonts(bool);
-    bool shouldSubpixelQuantizeFonts() const;
-
     // Turn off LCD text for the paint if not supported on this context.
     void adjustTextRenderMode(SkPaint*);
     bool couldUseLCDRenderedText();

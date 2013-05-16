@@ -86,7 +86,6 @@ private:
 #endif
         , m_shouldAntialias(true)
         , m_shouldSmoothFonts(true)
-        , m_shouldSubpixelQuantizeFonts(true)
         , m_shadowsIgnoreTransforms(false)
     {
     }
@@ -125,7 +124,6 @@ private:
         , m_interpolationQuality(other.m_interpolationQuality)
         , m_shouldAntialias(other.m_shouldAntialias)
         , m_shouldSmoothFonts(other.m_shouldSmoothFonts)
-        , m_shouldSubpixelQuantizeFonts(other.m_shouldSubpixelQuantizeFonts)
         , m_shadowsIgnoreTransforms(other.m_shadowsIgnoreTransforms)
     {
         // Up the ref count of these. SkSafeRef does nothing if its argument is 0.
@@ -208,7 +206,6 @@ private:
 
     bool m_shouldAntialias : 1;
     bool m_shouldSmoothFonts : 1;
-    bool m_shouldSubpixelQuantizeFonts : 1;
     bool m_shadowsIgnoreTransforms : 1;
 };
 

@@ -375,19 +375,6 @@ bool GraphicsContext::shouldSmoothFonts() const
     return m_state->m_shouldSmoothFonts;
 }
 
-void GraphicsContext::setShouldSubpixelQuantizeFonts(bool b)
-{
-    if (paintingDisabled())
-        return;
-
-    m_state->m_shouldSubpixelQuantizeFonts = b;
-}
-
-bool GraphicsContext::shouldSubpixelQuantizeFonts() const
-{
-    return m_state->m_shouldSubpixelQuantizeFonts;
-}
-
 void GraphicsContext::setShadowsIgnoreTransforms(bool ignoreTransforms)
 {
     if (paintingDisabled())

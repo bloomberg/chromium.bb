@@ -3730,18 +3730,6 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     IntRect rootRelativeBounds;
     bool rootRelativeBoundsComputed = false;
 
-    bool didQuantizeFonts = true;
-    bool scrollingOnMainThread = true;
-    Frame* frame = renderer()->frame();
-
-    // FIXME: We shouldn't have to disable subpixel quantization for overflow clips or subframes once we scroll those
-    // things on the scrolling thread.
-    bool needToAdjustSubpixelQuantization = scrollingOnMainThread || (renderer()->hasOverflowClip() && !usesCompositedScrolling()) || (frame && frame->ownerElement());
-    if (needToAdjustSubpixelQuantization) {
-        didQuantizeFonts = context->shouldSubpixelQuantizeFonts();
-        context->setShouldSubpixelQuantizeFonts(false);
-    }
-
     // Apply clip-path to context.
     bool hasClipPath = false;
     RenderStyle* style = renderer()->style();
@@ -3901,10 +3889,6 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
         context->restore();
         m_usedTransparency = false;
     }
-
-    // Re-set this to whatever it was before we painted the layer.
-    if (needToAdjustSubpixelQuantization)
-        context->setShouldSubpixelQuantizeFonts(didQuantizeFonts);
 
     if (hasClipPath)
         context->restore();
