@@ -5,15 +5,11 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_CAPTURE_DEVICES_DISPATCHER_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_CAPTURE_DEVICES_DISPATCHER_H_
 
-#include <queue>
-
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "content/public/browser/media_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/media_stream_request.h"
 
@@ -31,8 +27,7 @@ class PrefRegistrySyncable;
 
 // This singleton is used to receive updates about media events from the content
 // layer.
-class MediaCaptureDevicesDispatcher : public content::MediaObserver,
-                                      public content::NotificationObserver {
+class MediaCaptureDevicesDispatcher : public content::MediaObserver {
  public:
   class Observer {
    public:
@@ -119,23 +114,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
  private:
   friend struct DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
-  struct PendingAccessRequest {
-    PendingAccessRequest(const content::MediaStreamRequest& request,
-                         const content::MediaResponseCallback& callback);
-    ~PendingAccessRequest();
-
-    content::MediaStreamRequest request;
-    content::MediaResponseCallback callback;
-  };
-  typedef std::queue<PendingAccessRequest> RequestsQueue;
-
   MediaCaptureDevicesDispatcher();
   virtual ~MediaCaptureDevicesDispatcher();
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // Helpers for ProcessMediaAccessRequest().
   void ProcessScreenCaptureAccessRequest(
@@ -147,15 +127,6 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
       const extensions::Extension* extension);
-  void ProcessRegularMediaAccessRequest(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback);
-  void ProcessQueuedAccessRequest(content::WebContents* web_contents,
-                                  PendingAccessRequest& request);
-  void OnAccessRequestResponse(content::WebContents* web_contents,
-                               const content::MediaStreamDevices& devices,
-                               scoped_ptr<content::MediaStreamUI> ui);
 
   // Called by the MediaObserver() functions, executed on UI thread.
   void UpdateAudioDevicesOnUIThread(const content::MediaStreamDevices& devices);
@@ -179,15 +150,9 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   // Only accessed on UI thread.
   bool devices_enumerated_;
 
-  std::map<content::WebContents*, RequestsQueue> pending_requests_;
-
   scoped_refptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;
 
   scoped_refptr<AudioStreamIndicator> audio_stream_indicator_;
-
-  content::NotificationRegistrar notifications_registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesDispatcher);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_CAPTURE_DEVICES_DISPATCHER_H_

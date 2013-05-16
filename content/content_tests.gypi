@@ -323,6 +323,7 @@
         'browser/renderer_host/media/audio_renderer_host_unittest.cc',
         'browser/renderer_host/media/media_stream_dispatcher_host_unittest.cc',
         'browser/renderer_host/media/media_stream_manager_unittest.cc',
+        'browser/renderer_host/media/media_stream_ui_controller_unittest.cc',
         'browser/renderer_host/media/video_capture_buffer_pool_unittest.cc',
         'browser/renderer_host/media/video_capture_controller_unittest.cc',
         'browser/renderer_host/media/video_capture_host_unittest.cc',
