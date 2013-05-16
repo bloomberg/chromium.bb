@@ -116,6 +116,7 @@ LDPatterns = [
   # TODO(dschuff): clean this up when we go down to 1 linker
   ( ('-Ttext','(.*)'),                  "env.set('BASE_TEXT', $0)"),
   ( ('-Ttext=(.*)'),                    "env.set('BASE_TEXT', $0)"),
+  ( ('-Ttext-segment=(.*)'),            "env.set('BASE_TEXT', $0)"),
   ( ('--section-start','.text=(.*)'),   "env.set('BASE_TEXT', $0)"),
   ( ('--section-start','.rodata=(.*)'), "env.set('BASE_RODATA', $0)"),
 

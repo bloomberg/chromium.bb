@@ -187,8 +187,9 @@ LDPatterns = [
   ( ('(-rpath-link)=(.*)'),
     "env.append('TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
 
-  ( ('(-Ttext)','(.*)'), AddToNativeFlags),
-  ( ('(-Ttext=.*)'),     AddToNativeFlags),
+  ( ('(-Ttext)','(.*)'),     AddToNativeFlags),
+  ( ('(-Ttext=.*)'),         AddToNativeFlags),
+  ( ('(-Ttext-segment=.*)'), AddToNativeFlags),
 
   # This overrides the builtin linker script.
   ( ('(-T)', '(.*)'),    AddToNativeFlags),

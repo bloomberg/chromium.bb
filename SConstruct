@@ -1184,6 +1184,10 @@ def MakeArchSpecificEnv():
 
   env.Replace(BUILD_ISA_NAME=env.GetPlatform())
 
+  if env.Bit('target_mips32'):
+    # This is a silent default on MIPS.
+    env.SetBits('bitcode')
+
   # Determine where the object files go
   env.Replace(BUILD_TARGET_NAME=platform)
   # This may be changed later; see target_variant_map, below.
@@ -3382,7 +3386,8 @@ nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
 nacl_irt_env.ClearBits('pnacl_shared_newlib')
 # We build the IRT using the nnacl TC even when the pnacl TC is used otherwise.
-nacl_irt_env.ClearBits('bitcode')
+if not nacl_irt_env.Bit('target_mips32'):
+  nacl_irt_env.ClearBits('bitcode')
 nacl_irt_env.ClearBits('pnacl_generate_pexe')
 nacl_irt_env.ClearBits('use_sandboxed_translator')
 nacl_irt_env.Tool('naclsdk')
@@ -3404,6 +3409,8 @@ nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
 # IRT-private TLS from user TLS.
 if nacl_irt_env.Bit('target_arm'):
   nacl_irt_env.Append(CCFLAGS=['-mtp=soft'])
+elif nacl_irt_env.Bit('target_mips32'):
+  nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wt,-mtls-use-call'])
 else:
   nacl_irt_env.Append(CCFLAGS=['-mtls-use-call'])
 # A debugger should be able to unwind IRT call frames. As the IRT is compiled
