@@ -18,8 +18,12 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/video/capture/fake_video_capture_device.h"
-#include "media/video/capture/screen/screen_capture_device.h"
 #include "media/video/capture/video_capture_device.h"
+
+#if (defined(OS_LINUX) && defined(USE_X11)) || \
+    defined(OS_MACOSX) || defined(OS_WIN)
+#include "media/video/capture/screen/screen_capture_device.h"
+#endif
 
 namespace content {
 
