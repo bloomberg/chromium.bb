@@ -1701,7 +1701,7 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
     if (num_draw_layers_ == 2)
       return;
     content_layer_->SetNeedsDisplay();
