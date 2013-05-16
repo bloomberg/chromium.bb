@@ -149,27 +149,17 @@ my %header;
 #     NameSpaceInternal   ... namespace ${implClassName}V8Internal in case of non-callback
 my %implementation;
 
-my %primitiveTypeHash = ("boolean" => 1,
-                         "void" => 1,
-                         "Date" => 1,
-                         "short" => 1,
-                         "long" => 1,
-                         "long long" => 1,
-                         "unsigned short" => 1,
-                         "unsigned long" => 1,
-                         "unsigned long long" => 1,
-                         "float" => 1,
-                         "double" => 1);
-
-my %nonWrapperTypeHash = ('CompareHow' => 1,
-                          'DOMTimeStamp' => 1,
-                          'Date' => 1,
-                          'Dictionary' => 1,
-                          'MediaQueryListListener' => 1,
-                          'MessagePortArray' => 1,
-                          'SerializedScriptValue' => 1,
-                          'any' => 1,
-                         );
+my %primitiveTypeHash = ( "boolean" => 1,
+                          "void" => 1,
+                          "Date" => 1,
+                          "short" => 1,
+                          "long" => 1,
+                          "long long" => 1,
+                          "unsigned short" => 1,
+                          "unsigned long" => 1,
+                          "unsigned long long" => 1,
+                          "float" => 1,
+                          "double" => 1);
 
 my %enumTypeHash = ();
 
@@ -4634,15 +4624,45 @@ sub RequiresCustomSignature
     return 0;
 }
 
+
+my %non_wrapper_types = (
+    'CompareHow' => 1,
+    'DOMObject' => 1,
+    'DOMString' => 1,
+    'DOMTimeStamp' => 1,
+    'Date' => 1,
+    'Dictionary' => 1,
+    'EventListener' => 1,
+    # FIXME: When EventTarget is an interface and not a mixin, fix this so that
+    # EventTarget is treated as a wrapper type.
+    'EventTarget' => 1,
+    'JSObject' => 1,
+    'MediaQueryListListener' => 1,
+    'NodeFilter' => 1,
+    'SerializedScriptValue' => 1,
+    'any' => 1,
+    'boolean' => 1,
+    'double' => 1,
+    'float' => 1,
+    'int' => 1,
+    'long long' => 1,
+    'long' => 1,
+    'short' => 1,
+    'unsigned int' => 1,
+    'unsigned long long' => 1,
+    'unsigned long' => 1,
+    'unsigned short' => 1,
+    'void' => 1
+);
+
+
 sub IsWrapperType
 {
     my $type = shift;
     return 0 if GetArrayType($type);
     return 0 if GetSequenceType($type);
     return 0 if IsEnumType($type);
-    return 0 if IsPrimitiveType($type);
-    return 0 if $type eq "DOMString";
-    return !$nonWrapperTypeHash{$type};
+    return !($non_wrapper_types{$type});
 }
 
 sub IsCallbackInterface
