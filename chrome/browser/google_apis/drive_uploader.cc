@@ -160,6 +160,23 @@ void DriveUploader::UploadExistingFile(
                  etag));
 }
 
+void DriveUploader::ResumeUploadFile(
+    const GURL& upload_location,
+    const base::FilePath& drive_file_path,
+    const base::FilePath& local_file_path,
+    const std::string& content_type,
+    const UploadCompletionCallback& callback,
+    const ProgressCallback& progress_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!drive_file_path.empty());
+  DCHECK(!local_file_path.empty());
+  DCHECK(!content_type.empty());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this (crbug.com/240565).
+  NOTIMPLEMENTED();
+}
+
 void DriveUploader::StartUploadFile(
     scoped_ptr<UploadFileInfo> upload_file_info,
     const StartInitiateUploadCallback& start_initiate_upload_callback) {
@@ -312,10 +329,8 @@ void DriveUploader::OnUploadRangeResponseReceived(
              << upload_file_info->drive_path.value() << "]";
 
     // Done uploading.
-    upload_file_info->completion_callback.Run(HTTP_SUCCESS,
-                                              upload_file_info->drive_path,
-                                              upload_file_info->file_path,
-                                              entry.Pass());
+    upload_file_info->completion_callback.Run(
+        HTTP_SUCCESS, GURL(), entry.Pass());
     return;
   }
 
@@ -372,10 +387,8 @@ void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
 
   LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();
 
-  upload_file_info->completion_callback.Run(error,
-                                            upload_file_info->drive_path,
-                                            upload_file_info->file_path,
-                                            scoped_ptr<ResourceEntry>());
+  upload_file_info->completion_callback.Run(
+      error, upload_file_info->upload_location, scoped_ptr<ResourceEntry>());
 }
 
 }  // namespace google_apis

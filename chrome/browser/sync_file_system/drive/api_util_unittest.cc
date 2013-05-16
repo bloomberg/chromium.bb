@@ -68,8 +68,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
         FROM_HERE,
         base::Bind(callback,
                    google_apis::HTTP_SUCCESS,
-                   drive_file_path,
-                   local_file_path,
+                   GURL(),
                    base::Passed(&file_entry)));
   }
 
@@ -95,9 +94,20 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
         FROM_HERE,
         base::Bind(callback,
                    google_apis::HTTP_SUCCESS,
-                   drive_file_path,
-                   local_file_path,
+                   GURL(),
                    base::Passed(&file_entry)));
+  }
+
+  // At the moment, sync file system doesn't support resuming of the uploading.
+  // So this method shouldn't be reached.
+  virtual void ResumeUploadFile(
+      const GURL& upload_location,
+      const base::FilePath& drive_file_path,
+      const base::FilePath& local_file_path,
+      const std::string& content_type,
+      const google_apis::UploadCompletionCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) OVERRIDE {
+    NOTREACHED();
   }
 };
 

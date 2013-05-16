@@ -127,7 +127,7 @@ class JobScheduler
                      const std::string& title,
                      const std::string& content_type,
                      const DriveClientContext& context,
-                     const google_apis::UploadCompletionCallback& callback);
+                     const google_apis::GetResourceEntryCallback& callback);
 
   // Adds an UploadExistingFile operation to the queue.
   void UploadExistingFile(
@@ -137,7 +137,7 @@ class JobScheduler
       const std::string& content_type,
       const std::string& etag,
       const DriveClientContext& context,
-      const google_apis::UploadCompletionCallback& upload_completion_callback);
+      const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a CreateFile operation to the queue.
   void CreateFile(const std::string& parent_resource_id,
@@ -145,7 +145,7 @@ class JobScheduler
                   const std::string& title,
                   const std::string& content_type,
                   const DriveClientContext& context,
-                  const google_apis::UploadCompletionCallback& callback);
+                  const google_apis::GetResourceEntryCallback& callback);
 
  private:
   friend class JobSchedulerTest;
@@ -253,10 +253,9 @@ class JobScheduler
   // Callback for job finishing with a UploadCompletionCallback.
   void OnUploadCompletionJobDone(
       JobID job_id,
-      const google_apis::UploadCompletionCallback& callback,
+      const google_apis::GetResourceEntryCallback& callback,
       google_apis::GDataErrorCode error,
-      const base::FilePath& drive_path,
-      const base::FilePath& file_path,
+      const GURL& upload_location,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Updates the progress status of the specified job.

@@ -86,8 +86,6 @@ class UpdateOperation {
   void OnUpdatedFileUploaded(
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode error,
-      const base::FilePath& gdata_path,
-      const base::FilePath& file_path,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Part of UpdateFileByResourceId().

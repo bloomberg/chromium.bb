@@ -276,8 +276,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
       temp_dir_.path(), 0, &local_path, &data));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  base::FilePath drive_path;
-  base::FilePath file_path;
+  GURL upload_location;
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
@@ -290,7 +289,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
       kTestMimeType,
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry),
+          &error, &upload_location, &resource_entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
   test_util::RunBlockingPoolTask();
@@ -298,8 +297,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   EXPECT_EQ(1, mock_service.resume_upload_call_count());
   EXPECT_EQ(0, mock_service.received_bytes());
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), drive_path);
-  EXPECT_EQ(local_path, file_path);
+  EXPECT_TRUE(upload_location.is_empty());
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ(kTestDummyId, resource_entry->id());
   ASSERT_EQ(1U, upload_progress_values.size());
@@ -313,8 +311,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
       temp_dir_.path(), 512 * 1024, &local_path, &data));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  base::FilePath drive_path;
-  base::FilePath file_path;
+  GURL upload_location;
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
@@ -327,7 +324,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
       kTestMimeType,
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry),
+          &error, &upload_location, &resource_entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
   test_util::RunBlockingPoolTask();
@@ -336,8 +333,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   EXPECT_EQ(1, mock_service.resume_upload_call_count());
   EXPECT_EQ(512 * 1024, mock_service.received_bytes());
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), drive_path);
-  EXPECT_EQ(local_path, file_path);
+  EXPECT_TRUE(upload_location.is_empty());
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ(kTestDummyId, resource_entry->id());
   ASSERT_EQ(1U, upload_progress_values.size());
@@ -352,8 +348,7 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
       temp_dir_.path(), 512 * 1024, &local_path, &data));
 
   GDataErrorCode error = HTTP_SUCCESS;
-  base::FilePath drive_path;
-  base::FilePath file_path;
+  GURL upload_location;
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceNoConnectionAtInitiate mock_service;
@@ -365,11 +360,13 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
       kTestMimeType,
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry),
+          &error, &upload_location, &resource_entry),
       google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_TRUE(upload_location.is_empty());
+  EXPECT_FALSE(resource_entry);
 }
 
 TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
@@ -379,8 +376,7 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
       temp_dir_.path(), 512 * 1024, &local_path, &data));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  base::FilePath drive_path;
-  base::FilePath file_path;
+  GURL upload_location;
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
@@ -392,11 +388,12 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
       kTestMimeType,
       kTestETag,
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry),
+          &error, &upload_location, &resource_entry),
       google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_TRUE(upload_location.is_empty());
 }
 
 TEST_F(DriveUploaderTest, InitiateUploadConflict) {
@@ -407,8 +404,7 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
   const std::string kDestinationETag("destination_etag");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  base::FilePath drive_path;
-  base::FilePath file_path;
+  GURL upload_location;
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
@@ -420,11 +416,12 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
       kTestMimeType,
       kDestinationETag,
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry),
+          &error, &upload_location, &resource_entry),
       google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(HTTP_CONFLICT, error);
+  EXPECT_TRUE(upload_location.is_empty());
 }
 
 TEST_F(DriveUploaderTest, ResumeUploadFail) {
@@ -434,8 +431,7 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
       temp_dir_.path(), 512 * 1024, &local_path, &data));
 
   GDataErrorCode error = HTTP_SUCCESS;
-  base::FilePath drive_path;
-  base::FilePath file_path;
+  GURL upload_location;
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceNoConnectionAtResume mock_service;
@@ -447,17 +443,17 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
       kTestMimeType,
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry),
+          &error, &upload_location, &resource_entry),
       google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(GURL(kTestUploadExistingFileURL), upload_location);
 }
 
 TEST_F(DriveUploaderTest, NonExistingSourceFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  base::FilePath drive_path;
-  base::FilePath file_path;
+  GURL upload_location;
   scoped_ptr<ResourceEntry> resource_entry;
 
   DriveUploader uploader(NULL);  // NULL, the service won't be used.
@@ -468,12 +464,13 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
       kTestMimeType,
       std::string(),             // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry),
+          &error, &upload_location, &resource_entry),
       google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   // Should return failure without doing any attempt to connect to the server.
   EXPECT_EQ(HTTP_NOT_FOUND, error);
+  EXPECT_TRUE(upload_location.is_empty());
 }
 
 }  // namespace google_apis

@@ -116,8 +116,7 @@ void EntryAdapterForEnsureTitleUniqueness(
 
 void UploadResultAdapter(const APIUtil::ResourceEntryCallback& callback,
                          google_apis::GDataErrorCode error,
-                         const base::FilePath& drive_path,
-                         const base::FilePath& file_path,
+                         const GURL& upload_location,
                          scoped_ptr<google_apis::ResourceEntry> entry) {
   callback.Run(error, entry.Pass());
 }

@@ -841,8 +841,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
       "dummy title",
       "plain/plain",
       DriveClientContext(BACKGROUND),
-      google_apis::test_util::CreateCopyResultCallback(
-          &upload_error, &path, &path, &entry));
+      google_apis::test_util::CreateCopyResultCallback(&upload_error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
   std::vector<int64> upload_progress;

@@ -143,8 +143,6 @@ void CreateFileOperation::CreateFileAfterGetMimeType(
 void CreateFileOperation::CreateFileAfterUpload(
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode error,
-    const base::FilePath& drive_path,
-    const base::FilePath& local_path,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -157,7 +155,6 @@ void CreateFileOperation::CreateFileAfterUpload(
         base::Bind(&CreateFileOperation::CreateFileAfterAddToMetadata,
                    weak_ptr_factory_.GetWeakPtr(),
                    entry,
-                   local_path,
                    callback));
   } else {
     callback.Run(util::GDataToFileError(error));
@@ -166,7 +163,6 @@ void CreateFileOperation::CreateFileAfterUpload(
 
 void CreateFileOperation::CreateFileAfterAddToMetadata(
     const ResourceEntry& entry,
-    const base::FilePath& local_path,
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& drive_path) {
@@ -189,7 +185,7 @@ void CreateFileOperation::CreateFileAfterAddToMetadata(
   // always return success to the caller.
   cache_->StoreOnUIThread(entry.resource_id(),
                           entry.file_specific_info().file_md5(),
-                          local_path,
+                          base::FilePath(util::kSymLinkToDevNull),
                           internal::FileCache::FILE_OPERATION_COPY,
                           base::Bind(&IgnoreError, callback));
 }

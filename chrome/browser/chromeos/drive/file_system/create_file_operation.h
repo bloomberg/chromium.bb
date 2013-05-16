@@ -70,12 +70,9 @@ class CreateFileOperation {
   void CreateFileAfterUpload(
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode error,
-      const base::FilePath& drive_path,
-      const base::FilePath& local_path,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   void CreateFileAfterAddToMetadata(const ResourceEntry& entry,
-                                    const base::FilePath& local_path,
                                     const FileOperationCallback& callback,
                                     FileError error,
                                     const base::FilePath& drive_path);

@@ -464,7 +464,7 @@ void JobScheduler::UploadNewFile(
     const std::string& title,
     const std::string& content_type,
     const DriveClientContext& context,
-    const google_apis::UploadCompletionCallback& callback) {
+    const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   JobEntry* new_job = CreateNewJob(TYPE_UPLOAD_NEW_FILE);
@@ -496,7 +496,7 @@ void JobScheduler::UploadExistingFile(
     const std::string& content_type,
     const std::string& etag,
     const DriveClientContext& context,
-    const google_apis::UploadCompletionCallback& upload_completion_callback) {
+    const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   JobEntry* new_job = CreateNewJob(TYPE_UPLOAD_EXISTING_FILE);
@@ -512,7 +512,7 @@ void JobScheduler::UploadExistingFile(
   params.callback = base::Bind(&JobScheduler::OnUploadCompletionJobDone,
                                weak_ptr_factory_.GetWeakPtr(),
                                new_job->job_info.job_id,
-                               upload_completion_callback);
+                               callback);
   params.progress_callback = base::Bind(&JobScheduler::UpdateProgress,
                                         weak_ptr_factory_.GetWeakPtr(),
                                         new_job->job_info.job_id);
@@ -527,7 +527,7 @@ void JobScheduler::CreateFile(
     const std::string& title,
     const std::string& content_type,
     const DriveClientContext& context,
-    const google_apis::UploadCompletionCallback& callback) {
+    const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   JobEntry* new_job = CreateNewJob(TYPE_CREATE_FILE);
@@ -814,16 +814,15 @@ void JobScheduler::OnDownloadActionJobDone(
 
 void JobScheduler::OnUploadCompletionJobDone(
     JobID job_id,
-    const google_apis::UploadCompletionCallback& callback,
+    const google_apis::GetResourceEntryCallback& callback,
     google_apis::GDataErrorCode error,
-    const base::FilePath& drive_path,
-    const base::FilePath& file_path,
+    const GURL& upload_location,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (OnJobDone(job_id, error))
-    callback.Run(error, drive_path, file_path, resource_entry.Pass());
+    callback.Run(error, resource_entry.Pass());
 }
 
 void JobScheduler::UpdateProgress(JobID job_id, int64 progress, int64 total) {
