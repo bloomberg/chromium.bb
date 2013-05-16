@@ -1242,6 +1242,10 @@ public class AwContents {
         mContentViewCore.onInitializeAccessibilityEvent(event);
     }
 
+    public boolean supportsAccessibilityAction(int action) {
+        return mContentViewCore.supportsAccessibilityAction(action);
+    }
+
     /**
      * @see android.webkit.WebView#performAccessibilityAction(int, Bundle)
      */
