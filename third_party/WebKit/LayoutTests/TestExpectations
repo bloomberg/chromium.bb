@@ -1664,10 +1664,6 @@ crbug.com/239077 fast/canvas/webgl/index-validation-with-resized-buffer.html  [ 
 
 crbug.com/240400 fast/dom/console-log-stack-overflow.html [ Pass Failure ]
 
-# Transient. PNGs need to be uploaded separately.
-crbug.com/232063 virtual/gpu/compositedscrolling/scrollbars/scrollbars-on-positioned-content.html [ ImageOnlyFailure ]
-crbug.com/232063 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ ImageOnlyFailure ]
-
 crbug.com/240515 [ Mac ] fast/dom/HTMLMeterElement/meter-styles.html [ Pass ImageOnlyFailure ]
 
 crbug.com/240632 fast/loader/javascript-url-iframe-remove-on-navigate.html [ Skip ]
