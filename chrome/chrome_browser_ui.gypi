@@ -1376,6 +1376,8 @@
         'browser/ui/startup/default_browser_prompt.cc',
         'browser/ui/startup/default_browser_prompt.h',
         'browser/ui/startup/default_browser_prompt_win.cc',
+        'browser/ui/startup/google_api_keys_infobar_delegate.cc',
+        'browser/ui/startup/google_api_keys_infobar_delegate.h',
         'browser/ui/startup/obsolete_os_infobar_delegate.cc',
         'browser/ui/startup/obsolete_os_infobar_delegate.h',
         'browser/ui/startup/session_crashed_prompt.cc',

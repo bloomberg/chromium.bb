@@ -132,6 +132,8 @@ namespace official_build {
 TEST_F(GoogleAPIKeysTest, OfficialKeys) {
   namespace testcase = official_build::google_apis;
 
+  EXPECT_TRUE(testcase::HasKeysConfigured());
+
   std::string api_key = testcase::g_api_key_cache.Get().api_key();
   std::string id_main = testcase::g_api_key_cache.Get().GetClientID(
       testcase::CLIENT_MAIN);
@@ -212,6 +214,8 @@ namespace default_keys {
 TEST_F(GoogleAPIKeysTest, DefaultKeys) {
   namespace testcase = default_keys::google_apis;
 
+  EXPECT_FALSE(testcase::HasKeysConfigured());
+
   std::string api_key = testcase::g_api_key_cache.Get().api_key();
   std::string id_main = testcase::g_api_key_cache.Get().GetClientID(
       testcase::CLIENT_MAIN);
@@ -266,6 +270,8 @@ namespace override_some_keys {
 
 TEST_F(GoogleAPIKeysTest, OverrideSomeKeys) {
   namespace testcase = override_some_keys::google_apis;
+
+  EXPECT_FALSE(testcase::HasKeysConfigured());
 
   std::string api_key = testcase::g_api_key_cache.Get().api_key();
   std::string id_main = testcase::g_api_key_cache.Get().GetClientID(
@@ -326,6 +332,8 @@ namespace override_all_keys {
 
 TEST_F(GoogleAPIKeysTest, OverrideAllKeys) {
   namespace testcase = override_all_keys::google_apis;
+
+  EXPECT_TRUE(testcase::HasKeysConfigured());
 
   std::string api_key = testcase::g_api_key_cache.Get().api_key();
   std::string id_main = testcase::g_api_key_cache.Get().GetClientID(
@@ -396,6 +404,8 @@ TEST_F(GoogleAPIKeysTest, OverrideAllKeysUsingEnvironment) {
   env->SetVar("GOOGLE_CLIENT_SECRET_MAIN", "env-SECRET_MAIN");
   env->SetVar("GOOGLE_CLIENT_SECRET_CLOUD_PRINT", "env-SECRET_CLOUD_PRINT");
   env->SetVar("GOOGLE_CLIENT_SECRET_REMOTING", "env-SECRET_REMOTING");
+
+  EXPECT_TRUE(testcase::HasKeysConfigured());
 
   // It's important that the first call to Get() only happen after the
   // environment variables have been set.

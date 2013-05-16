@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
+#include "chrome/browser/ui/startup/google_api_keys_infobar_delegate.h"
 #include "chrome/browser/ui/startup/obsolete_os_infobar_delegate.h"
 #include "chrome/browser/ui/startup/session_crashed_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -893,15 +894,18 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   if (HasPendingUncleanExit(browser->profile()))
     SessionCrashedInfoBarDelegate::Create(browser);
 
-  // The bad flags info bar and the obsolete system info bar are only added to
-  // the first profile which is launched. Other profiles might be restoring the
-  // browsing sessions asynchronously, so we cannot add the info bars to the
-  // focused tabs here.
+  // The below info bars are only added to the first profile which is launched.
+  // Other profiles might be restoring the browsing sessions asynchronously,
+  // so we cannot add the info bars to the focused tabs here.
   if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP) {
     chrome::ShowBadFlagsPrompt(browser);
-    // TODO(phajdan.jr): Always enable after migrating bots:
-    // http://crbug.com/170262 .
     if (!command_line_.HasSwitch(switches::kTestType)) {
+      GoogleApiKeysInfoBarDelegate::Create(
+          InfoBarService::FromWebContents(
+              browser->tab_strip_model()->GetActiveWebContents()));
+
+      // TODO(phajdan.jr): Always enable after migrating bots:
+      // http://crbug.com/170262 .
       chrome::ObsoleteOSInfoBarDelegate::Create(
           InfoBarService::FromWebContents(
               browser->tab_strip_model()->GetActiveWebContents()));

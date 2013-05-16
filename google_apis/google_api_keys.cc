@@ -235,6 +235,21 @@ class APIKeyCache {
 static base::LazyInstance<APIKeyCache> g_api_key_cache =
     LAZY_INSTANCE_INITIALIZER;
 
+bool HasKeysConfigured() {
+  if (GetAPIKey() == DUMMY_API_TOKEN)
+    return false;
+
+  for (size_t client_id = 0; client_id < CLIENT_NUM_ITEMS; ++client_id) {
+    OAuth2Client client = static_cast<OAuth2Client>(client_id);
+    if (GetOAuth2ClientID(client) == DUMMY_API_TOKEN ||
+        GetOAuth2ClientSecret(client) == DUMMY_API_TOKEN) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 std::string GetAPIKey() {
   return g_api_key_cache.Get().api_key();
 }

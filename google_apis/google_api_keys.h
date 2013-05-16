@@ -56,7 +56,10 @@
 
 namespace google_apis {
 
-// Retrieves the API key, a.k.a. developer key, or the empty string
+// Returns true if no dummy API keys or OAuth2 tokens are set.
+bool HasKeysConfigured();
+
+// Retrieves the API key, a.k.a. developer key, or a dummy string
 // if not set.
 //
 // Note that the key should be escaped for the context you use it in,
