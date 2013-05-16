@@ -30,47 +30,78 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
 
+#include <algorithm>
+
 namespace WebCore {
 
 void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     GraphicsContext* context = paintInfo.context;
     RenderStyle* style = m_renderer->style(isFirstLineStyle());
-    Color textColor = style->visitedDependentColor(CSSPropertyWebkitTextFillColor);
-    if (textColor != context->fillColor())
-        context->setFillColor(textColor, style->colorSpace());
-    bool setShadow = false;
-    if (style->textShadow()) {
-        context->setShadow(LayoutSize(style->textShadow()->x(), style->textShadow()->y()),
-                           style->textShadow()->blur(), style->textShadow()->color(), style->colorSpace());
-        setShadow = true;
-    }
+    Color styleTextColor = style->visitedDependentColor(CSSPropertyWebkitTextFillColor);
+    if (styleTextColor != context->fillColor())
+        context->setFillColor(styleTextColor, style->colorSpace());
 
+    Color textColor = styleTextColor;
     const Font& font = style->font();
     if (selectionState() != RenderObject::SelectionNone) {
         paintSelection(context, paintOffset, style, font);
 
         // Select the correct color for painting the text.
         Color foreground = paintInfo.forceBlackText() ? Color::black : renderer()->selectionForegroundColor();
-        if (foreground.isValid() && foreground != textColor)
-            context->setFillColor(foreground, style->colorSpace());
+        if (foreground.isValid() && foreground != styleTextColor)
+            textColor = foreground;
     }
 
     // FIXME: Why is this always LTR? Fix by passing correct text run flags below.
+    const ShadowData* shadow = style->textShadow();
     FloatPoint boxOrigin(paintOffset);
     boxOrigin.move(x(), y());
+    FloatRect boxRect(boxOrigin, LayoutSize(logicalWidth(), logicalHeight()));
     FloatPoint textOrigin(boxOrigin.x(), boxOrigin.y() + style->fontMetrics().ascent());
     TextRun textRun = RenderBlock::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
     TextRunPaintInfo textRunPaintInfo(textRun);
-    textRunPaintInfo.bounds = FloatRect(boxOrigin, FloatSize(logicalWidth(), logicalHeight()));
-    context->drawText(font, textRunPaintInfo, textOrigin);
+    textRunPaintInfo.bounds = boxRect;
 
-    // Restore the regular fill color.
-    if (textColor != context->fillColor())
+    bool opaque = textColor.alpha() == 255;
+    if (!opaque)
+        context->setFillColor(Color::black, style->colorSpace());
+    else
         context->setFillColor(textColor, style->colorSpace());
 
-    if (setShadow)
-        context->clearShadow();
+    do {
+        IntSize extraOffset;
+        if (shadow) {
+            FloatSize shadowOffset(shadow->x(), shadow->y());
+            if (shadow->next() || !opaque) {
+                FloatRect shadowRect(boxRect);
+                shadowRect.inflate(shadow->blur());
+                shadowRect.move(shadowOffset);
+                context->save();
+                context->clip(shadowRect);
+                extraOffset = IntSize(0, 2 * boxRect.height() + std::max(0.0f, shadowOffset.height()) + shadow->blur());
+                shadowOffset -= extraOffset;
+            }
+            context->setShadow(shadowOffset, shadow->blur(), shadow->color(), style->colorSpace());
+        } else if (!opaque)
+            context->setFillColor(textColor, style->colorSpace());
+
+        context->drawText(font, textRunPaintInfo, textOrigin + extraOffset);
+
+        if (!shadow)
+            break;
+
+        if (shadow->next() || !opaque)
+            context->restore();
+        else
+            context->clearShadow();
+
+        shadow = shadow->next();
+    } while (shadow || !opaque);
+
+    // Restore the regular fill color.
+    if (styleTextColor != context->fillColor())
+        context->setFillColor(styleTextColor, style->colorSpace());
 
     paintMarkupBox(paintInfo, paintOffset, lineTop, lineBottom, style);
 }
