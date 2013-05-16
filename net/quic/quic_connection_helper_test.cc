@@ -23,7 +23,7 @@ namespace net {
 namespace test {
 
 const char kData[] = "foo";
-const bool kHasData = true;
+const bool kFromPeer = true;
 
 class TestConnection : public QuicConnection {
  public:
@@ -328,7 +328,7 @@ TEST_F(QuicConnectionHelperTest, InitialTimeout) {
 
   // Verify that a single task was posted.
   ASSERT_EQ(1u, runner_->GetPostedTasks().size());
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(kDefaultTimeoutUs),
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kDefaultInitialTimeoutSecs),
             runner_->GetPostedTasks().front().delay);
 
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
@@ -336,8 +336,8 @@ TEST_F(QuicConnectionHelperTest, InitialTimeout) {
   EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, false));
 
   runner_->RunNextTask();
-  EXPECT_EQ(QuicTime::Zero().Add(
-                QuicTime::Delta::FromMicroseconds(kDefaultTimeoutUs)),
+  EXPECT_EQ(QuicTime::Zero().Add(QuicTime::Delta::FromSeconds(
+                kDefaultInitialTimeoutSecs)),
             clock_.ApproximateNow());
   EXPECT_FALSE(connection_->connected());
   EXPECT_TRUE(AtEof());
@@ -374,7 +374,8 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   EXPECT_TRUE(connection_->connected());
   QuicTime start = clock_.ApproximateNow();
 
-  // When we send a packet, the timeout will change to 5000 + kDefaultTimeout.
+  // When we send a packet, the timeout will change to 5000 +
+  // kDefaultInitialTimeoutSecs.
   clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(5000));
   EXPECT_EQ(5000u, clock_.ApproximateNow().Subtract(start).ToMicroseconds());
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
@@ -386,17 +387,18 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   // network event at t=5000.  The alarm will reregister.
   runner_->RunNextTask();
 
-  EXPECT_EQ(QuicTime::Zero().Add(
-                QuicTime::Delta::FromMicroseconds(kDefaultTimeoutUs)),
+  EXPECT_EQ(QuicTime::Zero().Add(QuicTime::Delta::FromSeconds(
+                kDefaultInitialTimeoutSecs)),
             clock_.ApproximateNow());
   EXPECT_TRUE(connection_->connected());
 
   // This time, we should time out.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, false));
+  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, !kFromPeer));
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, NOT_RETRANSMISSION));
   runner_->RunNextTask();
-  EXPECT_EQ(kDefaultTimeoutUs + 5000, clock_.ApproximateNow().Subtract(
-      QuicTime::Zero()).ToMicroseconds());
+  EXPECT_EQ(kDefaultInitialTimeoutSecs * 1000000 + 5000,
+            clock_.ApproximateNow().Subtract(
+                QuicTime::Zero()).ToMicroseconds());
   EXPECT_FALSE(connection_->connected());
   EXPECT_TRUE(AtEof());
 }

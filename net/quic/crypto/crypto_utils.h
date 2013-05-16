@@ -23,30 +23,10 @@ struct QuicCryptoNegotiatedParameters;
 
 class NET_EXPORT_PRIVATE CryptoUtils {
  public:
-  enum Priority {
-    LOCAL_PRIORITY,
-    PEER_PRIORITY,
-  };
-
   enum Perspective {
     SERVER,
     CLIENT,
   };
-
-  // FindMutualTag sets |out_result| to the first tag in the priority list that
-  // is also in the other list and returns true. If there is no intersection it
-  // returns false.
-  //
-  // Which list has priority is determined by |priority|.
-  //
-  // If |out_index| is non-NULL and a match is found then the index of that
-  // match in |their_tags| is written to |out_index|.
-  static bool FindMutualTag(const QuicTagVector& our_tags,
-                            const QuicTag* their_tags,
-                            size_t num_their_tags,
-                            Priority priority,
-                            QuicTag* out_result,
-                            size_t* out_index);
 
   // Generates the connection nonce. The nonce is formed as:
   //   <4 bytes> current time

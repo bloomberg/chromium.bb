@@ -295,7 +295,9 @@ class MockSession : public QuicSession {
 
 class TestSession : public QuicSession {
  public:
-  TestSession(QuicConnection* connection, bool is_server);
+  TestSession(QuicConnection* connection,
+              const QuicConfig& config,
+              bool is_server);
   virtual ~TestSession();
 
   MOCK_METHOD1(CreateIncomingReliableStream,
@@ -351,11 +353,14 @@ class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {
  public:
   virtual ~TestDecompressorVisitor() {}
   virtual bool OnDecompressedData(base::StringPiece data) OVERRIDE;
+  virtual void OnDecompressionError() OVERRIDE;
 
   string data() { return data_; }
+  bool error() { return error_; }
 
  private:
   string data_;
+  bool error_;
 };
 
 }  // namespace test

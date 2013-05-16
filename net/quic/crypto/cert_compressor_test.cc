@@ -47,12 +47,12 @@ TEST(CertCompressor, Common) {
   vector<string> chain;
   chain.push_back("testcert");
   static const uint64 set_hash = 42;
-  scoped_ptr<CommonCertSets> common_set(
+  scoped_ptr<CommonCertSets> common_sets(
       CryptoTestUtils::MockCommonCertSets(chain[0], set_hash, 1));
   const string compressed = CertCompressor::CompressChain(
       chain,
       StringPiece(reinterpret_cast<const char*>(&set_hash), sizeof(set_hash)),
-      StringPiece(), common_set.get());
+      StringPiece(), common_sets.get());
   const string common("03"               /* common */
                       "2A00000000000000" /* set hash 42 */
                       "01000000"         /* index 1 */
@@ -62,7 +62,7 @@ TEST(CertCompressor, Common) {
 
   vector<string> chain2, cached_certs;
   ASSERT_TRUE(CertCompressor::DecompressChain(compressed, cached_certs,
-                                              common_set.get(), &chain2));
+                                              common_sets.get(), &chain2));
   EXPECT_EQ(chain.size(), chain2.size());
   EXPECT_EQ(chain[0], chain2[0]);
 }
@@ -124,7 +124,7 @@ TEST(CertCompressor, BadInputs) {
                       without_a_common_cert_set.size()),
       cached_certs, NULL, &chain));
 
-  scoped_ptr<CommonCertSets> common_set(
+  scoped_ptr<CommonCertSets> common_sets(
       CryptoTestUtils::MockCommonCertSets("foo", 42, 1));
 
   /* incorrect hash and index */

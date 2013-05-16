@@ -14,11 +14,9 @@
 namespace net {
 
 QuicCryptoServerStream::QuicCryptoServerStream(
-    const QuicConfig& config,
     const QuicCryptoServerConfig& crypto_config,
     QuicSession* session)
     : QuicCryptoStream(session),
-      config_(config),
       crypto_config_(crypto_config) {
 }
 
@@ -58,13 +56,14 @@ void QuicCryptoServerStream::OnHandshakeMessage(
   }
 
   // If we are returning a SHLO then we accepted the handshake.
-  error = config_.ProcessFinalPeerHandshake(
-      message, CryptoUtils::LOCAL_PRIORITY, &negotiated_params_,
-      &error_details);
+  QuicConfig* config = session()->config();
+  error = config->ProcessClientHello(message, &error_details);
   if (error != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(error, error_details);
     return;
   }
+
+  config->ToHandshakeMessage(&reply);
 
   // Receiving a full CHLO implies the client is prepared to decrypt with
   // the new server write key.  We can start to encrypt with the new server

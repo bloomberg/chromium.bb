@@ -15,13 +15,11 @@ namespace net {
 
 QuicCryptoClientStream::QuicCryptoClientStream(
     const string& server_hostname,
-    const QuicConfig& config,
     QuicSession* session,
     QuicCryptoClientConfig* crypto_config)
     : QuicCryptoStream(session),
       next_state_(STATE_IDLE),
       num_client_hellos_(0),
-      config_(config),
       crypto_config_(crypto_config),
       server_hostname_(server_hostname) {
 }
@@ -82,8 +80,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           SendHandshakeMessage(out);
           return;
         }
-        const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
-        config_.ToHandshakeMessage(&out);
+        session()->config()->ToHandshakeMessage(&out);
         error = crypto_config_->FillClientHello(
             server_hostname_,
             session()->connection()->guid(),
@@ -92,13 +89,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             session()->connection()->random_generator(),
             &crypto_negotiated_params_,
             &out,
-            &error_details);
-        if (error != QUIC_NO_ERROR) {
-          CloseConnectionWithDetails(error, error_details);
-          return;
-        }
-        error = config_.ProcessFinalPeerHandshake(
-            *scfg, CryptoUtils::PEER_PRIORITY, &negotiated_params_,
             &error_details);
         if (error != QUIC_NO_ERROR) {
           CloseConnectionWithDetails(error, error_details);
@@ -209,6 +199,12 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         error = crypto_config_->ProcessServerHello(
             *in, session()->connection()->guid(), &crypto_negotiated_params_,
             &error_details);
+        if (error != QUIC_NO_ERROR) {
+          CloseConnectionWithDetails(
+              error, "Server hello invalid: " + error_details);
+          return;
+        }
+        error = session()->config()->ProcessServerHello(*in, &error_details);
         if (error != QUIC_NO_ERROR) {
           CloseConnectionWithDetails(
               error, "Server hello invalid: " + error_details);

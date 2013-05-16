@@ -61,9 +61,10 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
         addr_(ParseIPLiteralToNumber("192.0.2.33", &ip_) ?
               ip_ : IPAddressNumber(), 1),
         connection_(new PacketSavingConnection(guid_, addr_, true)),
-        session_(connection_, true),
+        session_(connection_, QuicConfig(), true),
         crypto_config_(QuicCryptoServerConfig::TESTING),
-        stream_(config_, crypto_config_, &session_) {
+        stream_(crypto_config_, &session_) {
+    session_.config()->SetDefaults();
     session_.SetCryptoStream(&stream_);
     // We advance the clock initially because the default time is zero and the
     // strike register worries that we've just overflowed a uint32 time.
@@ -72,8 +73,8 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
     // crypto_config_.SetProofSource(CryptoTestUtils::ProofSourceForTesting());
 
     CryptoTestUtils::SetupCryptoServerConfigForTest(
-        connection_->clock(), connection_->random_generator(), &config_,
-        &crypto_config_);
+        connection_->clock(), connection_->random_generator(),
+        session_.config(), &crypto_config_);
   }
 
   void ConstructHandshakeMessage() {
@@ -82,7 +83,8 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
   }
 
   int CompleteCryptoHandshake() {
-    return CryptoTestUtils::HandshakeWithFakeClient(connection_, &stream_);
+    return CryptoTestUtils::HandshakeWithFakeClient(connection_, &stream_,
+                                                    client_options_);
   }
 
  protected:
@@ -96,6 +98,7 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
   QuicCryptoServerStream stream_;
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;
+  CryptoTestUtils::FakeClientOptions client_options_;
 };
 
 TEST_F(QuicCryptoServerStreamTest, NotInitiallyConected) {
@@ -144,18 +147,15 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
   client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(100000));
   server_conn->AdvanceTime(QuicTime::Delta::FromSeconds(100000));
 
-  scoped_ptr<TestSession> client_session(new TestSession(client_conn, true));
-  scoped_ptr<TestSession> server_session(new TestSession(server_conn, true));
-
   QuicConfig client_config;
+  scoped_ptr<TestSession> client_session(
+      new TestSession(client_conn, client_config, false));
+  client_session->config()->SetDefaults();
   QuicCryptoClientConfig client_crypto_config;
-
-  client_config.SetDefaults();
   client_crypto_config.SetDefaults();
 
   scoped_ptr<QuicCryptoClientStream> client(new QuicCryptoClientStream(
-        "test.example.com", client_config, client_session.get(),
-        &client_crypto_config));
+        "test.example.com", client_session.get(), &client_crypto_config));
   client_session->SetCryptoStream(client.get());
 
   // Do a first handshake in order to prime the client config with the server's
@@ -163,9 +163,11 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
   CHECK(client->CryptoConnect());
   CHECK_EQ(1u, client_conn->packets_.size());
 
+  scoped_ptr<TestSession> server_session(
+      new TestSession(server_conn, config_, true));
+  server_session->config()->SetDefaults();
   scoped_ptr<QuicCryptoServerStream> server(
-      new QuicCryptoServerStream(config_, crypto_config_,
-                                 server_session.get()));
+      new QuicCryptoServerStream(crypto_config_, server_session.get()));
   server_session->SetCryptoStream(server.get());
 
   CryptoTestUtils::CommunicateHandshakeMessages(
@@ -185,14 +187,15 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
   // This causes the client's nonce to be different and thus stops the
   // strike-register from rejecting the repeated nonce.
   client_conn->random_generator()->Reseed(NULL, 0);
-  client_session.reset(new TestSession(client_conn, true));
-  server_session.reset(new TestSession(server_conn, true));
+  client_session.reset(new TestSession(client_conn, client_config, false));
+  client_session->config()->SetDefaults();
+  server_session.reset(new TestSession(server_conn, config_, true));
+  server_session->config()->SetDefaults();
   client.reset(new QuicCryptoClientStream(
-        "test.example.com", client_config, client_session.get(),
-        &client_crypto_config));
+        "test.example.com", client_session.get(), &client_crypto_config));
   client_session->SetCryptoStream(client.get());
 
-  server.reset(new QuicCryptoServerStream(config_, crypto_config_,
+  server.reset(new QuicCryptoServerStream(crypto_config_,
                                           server_session.get()));
   server_session->SetCryptoStream(server.get());
 
@@ -228,6 +231,22 @@ TEST_F(QuicCryptoServerStreamTest, BadMessageType) {
   EXPECT_CALL(*connection_, SendConnectionClose(
       QUIC_INVALID_CRYPTO_MESSAGE_TYPE));
   stream_.ProcessData(message_data_->data(), message_data_->length());
+}
+
+TEST_F(QuicCryptoServerStreamTest, WithoutCertificates) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
+  crypto_config_.SetProofSource(NULL);
+  client_options_.dont_verify_certs = true;
+
+  // Only 2 client hellos need to be sent in the no-certs case: one to get the
+  // source-address token and the second to finish.
+  EXPECT_EQ(2, CompleteCryptoHandshake());
+  EXPECT_TRUE(stream_.encryption_established());
+  EXPECT_TRUE(stream_.handshake_confirmed());
 }
 
 }  // namespace

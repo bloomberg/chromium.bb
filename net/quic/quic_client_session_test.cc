@@ -13,6 +13,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
+#include "net/quic/test_tools/quic_client_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
 using testing::_;
@@ -29,8 +30,9 @@ class QuicClientSessionTest : public ::testing::Test {
       : guid_(1),
         connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)),
         session_(connection_, NULL, NULL, NULL, kServerHostname,
-                 &crypto_config_, &net_log_) {
+                 QuicConfig(), &crypto_config_, &net_log_) {
     crypto_config_.SetDefaults();
+    QuicClientSessionPeer::SetMaxOpenStreams(&session_, 1, 1);
   }
 
   void CompleteCryptoHandshake() {
@@ -49,7 +51,6 @@ class QuicClientSessionTest : public ::testing::Test {
   MockRandom random_;
   QuicConnectionVisitorInterface* visitor_;
   TestCompletionCallback callback_;
-  QuicConfig* config_;
   QuicCryptoClientConfig crypto_config_;
 };
 

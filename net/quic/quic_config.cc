@@ -4,125 +4,339 @@
 
 #include "net/quic/quic_config.h"
 
+#include <algorithm>
+
+#include "base/logging.h"
+
 using std::string;
 
 namespace net {
 
-QuicNegotiatedParameters::QuicNegotiatedParameters()
-    : idle_connection_state_lifetime(QuicTime::Delta::Zero()),
-      keepalive_timeout(QuicTime::Delta::Zero()) {
+QuicNegotiableValue::QuicNegotiableValue(QuicTag tag, Presence presence)
+    : tag_(tag),
+      presence_(presence),
+      negotiated_(false) {
 }
 
-QuicConfig::QuicConfig()
-    : idle_connection_state_lifetime_(QuicTime::Delta::Zero()),
-      keepalive_timeout_(QuicTime::Delta::Zero()) {
+QuicNegotiableUint32::QuicNegotiableUint32(QuicTag tag, Presence presence)
+    : QuicNegotiableValue(tag, presence) {
 }
 
-QuicConfig::~QuicConfig() {
+void QuicNegotiableUint32::set(uint32 max, uint32 default_value) {
+  DCHECK_LE(default_value, max);
+  max_value_ = max;
+  default_value_ = default_value;
 }
 
-void QuicConfig::SetDefaults() {
-  idle_connection_state_lifetime_ = QuicTime::Delta::FromSeconds(300);
-  keepalive_timeout_ = QuicTime::Delta::Zero();
-  congestion_control_.clear();
-  congestion_control_.push_back(kQBIC);
-}
-
-bool QuicConfig::SetFromHandshakeMessage(const CryptoHandshakeMessage& scfg) {
-  const QuicTag* cgst;
-  size_t num_cgst;
-  QuicErrorCode error;
-
-  error = scfg.GetTaglist(kCGST, &cgst, &num_cgst);
-  if (error != QUIC_NO_ERROR) {
-    return false;
+uint32 QuicNegotiableUint32::GetUint32() const {
+  if (negotiated_) {
+    return negotiated_value_;
   }
-
-  congestion_control_.assign(cgst, cgst + num_cgst);
-
-  uint32 idle;
-  error = scfg.GetUint32(kICSL, &idle);
-  if (error != QUIC_NO_ERROR) {
-    return false;
-  }
-  idle_connection_state_lifetime_ = QuicTime::Delta::FromSeconds(idle);
-
-  keepalive_timeout_ = QuicTime::Delta::Zero();
-
-  uint32 keepalive;
-  error = scfg.GetUint32(kKATO, &keepalive);
-  // KATO is optional.
-  if (error == QUIC_NO_ERROR) {
-    keepalive_timeout_ = QuicTime::Delta::FromSeconds(keepalive);
-  }
-
-  return true;
+  return default_value_;
 }
 
-void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
-  out->SetValue(
-      kICSL, static_cast<uint32>(idle_connection_state_lifetime_.ToSeconds()));
-  out->SetValue(kKATO, static_cast<uint32>(keepalive_timeout_.ToSeconds()));
-  out->SetVector(kCGST, congestion_control_);
+void QuicNegotiableUint32::ToHandshakeMessage(
+    CryptoHandshakeMessage* out) const {
+  if (negotiated_) {
+    out->SetValue(tag_, negotiated_value_);
+  } else {
+    out->SetValue(tag_, max_value_);
+  }
 }
 
-QuicErrorCode QuicConfig::ProcessFinalPeerHandshake(
+QuicErrorCode QuicNegotiableUint32::ReadUint32(
     const CryptoHandshakeMessage& msg,
-    CryptoUtils::Priority priority,
-    QuicNegotiatedParameters* out_params,
+    uint32* out,
     string* error_details) const {
   DCHECK(error_details != NULL);
+  QuicErrorCode error = msg.GetUint32(tag_, out);
+  switch (error) {
+    case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
+      if (presence_ == QuicNegotiableValue::PRESENCE_REQUIRED) {
+        *error_details = "Missing " + QuicUtils::TagToString(tag_);
+        break;
+      }
+      error = QUIC_NO_ERROR;
+      *out = default_value_;
 
-  const QuicTag* their_congestion_controls;
-  size_t num_their_congestion_controls;
-  QuicErrorCode error;
+    case QUIC_NO_ERROR:
+      break;
+    default:
+      *error_details = "Bad " + QuicUtils::TagToString(tag_);
+      break;
+  }
+  return error;
+}
 
-  error = msg.GetTaglist(kCGST, &their_congestion_controls,
-                         &num_their_congestion_controls);
+QuicErrorCode QuicNegotiableUint32::ProcessClientHello(
+    const CryptoHandshakeMessage& client_hello,
+    string* error_details) {
+  DCHECK(!negotiated_);
+  DCHECK(error_details != NULL);
+  uint32 value;
+  QuicErrorCode error = ReadUint32(client_hello, &value, error_details);
   if (error != QUIC_NO_ERROR) {
-    *error_details = "Missing CGST";
     return error;
   }
 
-  if (!CryptoUtils::FindMutualTag(congestion_control_,
-                                  their_congestion_controls,
-                                  num_their_congestion_controls,
-                                  priority,
-                                  &out_params->congestion_control,
-                                  NULL)) {
-    *error_details = "Unsuported CGST";
+  negotiated_ = true;
+  negotiated_value_ = std::min(value, max_value_);
+
+  return QUIC_NO_ERROR;
+}
+
+QuicErrorCode QuicNegotiableUint32::ProcessServerHello(
+    const CryptoHandshakeMessage& server_hello,
+    string* error_details) {
+  DCHECK(!negotiated_);
+  DCHECK(error_details != NULL);
+  uint32 value;
+  QuicErrorCode error = ReadUint32(server_hello, &value, error_details);
+  if (error != QUIC_NO_ERROR) {
+    return error;
+  }
+
+  if (value > max_value_) {
+    *error_details = "Invalid value received for " +
+        QuicUtils::TagToString(tag_);
+    return QUIC_INVALID_NEGOTIATED_VALUE;
+  }
+
+  negotiated_ = true;
+  negotiated_value_ = value;
+  return QUIC_NO_ERROR;
+}
+
+QuicNegotiableTag::QuicNegotiableTag(QuicTag tag, Presence presence)
+    : QuicNegotiableValue(tag, presence) {
+}
+
+QuicNegotiableTag::~QuicNegotiableTag() {}
+
+void QuicNegotiableTag::set(const QuicTagVector& possible,
+                            QuicTag default_value) {
+  DCHECK(std::find(possible.begin(), possible.end(), default_value) !=
+            possible.end());
+  possible_values_ = possible;
+  default_value_ = default_value;
+}
+
+QuicTag QuicNegotiableTag::GetTag() const {
+  if (negotiated_) {
+    return negotiated_tag_;
+  }
+  return default_value_;
+}
+
+void QuicNegotiableTag::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
+  if (negotiated_) {
+    // Because of the way we serialize and parse handshake messages we can
+    // serialize this as value and still parse it as a vector.
+    out->SetValue(tag_, negotiated_tag_);
+  } else {
+    out->SetVector(tag_, possible_values_);
+  }
+}
+
+QuicErrorCode QuicNegotiableTag::ReadVector(
+    const CryptoHandshakeMessage& msg,
+    const QuicTag** out,
+    size_t* out_length,
+    string* error_details) const {
+  DCHECK(error_details != NULL);
+  QuicErrorCode error = msg.GetTaglist(tag_, out, out_length);
+  switch (error) {
+    case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
+      if (presence_ == PRESENCE_REQUIRED) {
+        *error_details = "Missing " + QuicUtils::TagToString(tag_);
+        break;
+      }
+      error = QUIC_NO_ERROR;
+      *out_length = 1;
+      *out = &default_value_;
+
+    case QUIC_NO_ERROR:
+      break;
+    default:
+      *error_details = "Bad " + QuicUtils::TagToString(tag_);
+      break;
+  }
+  return error;
+}
+
+QuicErrorCode QuicNegotiableTag::ProcessClientHello(
+    const CryptoHandshakeMessage& client_hello,
+    string* error_details) {
+  DCHECK(!negotiated_);
+  DCHECK(error_details != NULL);
+  const QuicTag* received_tags;
+  size_t received_tags_length;
+  QuicErrorCode error = ReadVector(client_hello, &received_tags,
+                                   &received_tags_length, error_details);
+  if (error != QUIC_NO_ERROR) {
+    return error;
+  }
+
+  QuicTag negotiated_tag;
+  if (!QuicUtils::FindMutualTag(possible_values_,
+                                received_tags,
+                                received_tags_length,
+                                QuicUtils::LOCAL_PRIORITY,
+                                &negotiated_tag,
+                                NULL)) {
+    *error_details = "Unsuported " + QuicUtils::TagToString(tag_);
     return QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP;
   }
 
-  uint32 idle;
-  error = msg.GetUint32(kICSL, &idle);
+  negotiated_ = true;
+  negotiated_tag_ = negotiated_tag;
+  return QUIC_NO_ERROR;
+}
+
+QuicErrorCode QuicNegotiableTag::ProcessServerHello(
+    const CryptoHandshakeMessage& server_hello,
+    string* error_details) {
+  DCHECK(!negotiated_);
+  DCHECK(error_details != NULL);
+  const QuicTag* received_tags;
+  size_t received_tags_length;
+  QuicErrorCode error = ReadVector(server_hello, &received_tags,
+                                   &received_tags_length, error_details);
   if (error != QUIC_NO_ERROR) {
-    *error_details = "Missing ICSL";
     return error;
   }
 
-  out_params->idle_connection_state_lifetime = QuicTime::Delta::FromSeconds(
-      std::min(static_cast<uint32>(idle_connection_state_lifetime_.ToSeconds()),
-               idle));
-
-  uint32 keepalive;
-  error = msg.GetUint32(kKATO, &keepalive);
-  switch (error) {
-    case QUIC_NO_ERROR:
-      out_params->keepalive_timeout = QuicTime::Delta::FromSeconds(
-          std::min(static_cast<uint32>(keepalive_timeout_.ToSeconds()),
-                   keepalive));
-      break;
-    case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
-      // KATO is optional.
-      out_params->keepalive_timeout = QuicTime::Delta::Zero();
-      break;
-    default:
-      *error_details = "Bad KATO";
-      return error;
+  if (received_tags_length != 1 ||
+      std::find(possible_values_.begin(), possible_values_.end(),
+                *received_tags) == possible_values_.end()) {
+    *error_details = "Invalid " + QuicUtils::TagToString(tag_);
+    return QUIC_INVALID_NEGOTIATED_VALUE;
   }
 
+  negotiated_ = true;
+  negotiated_tag_ = *received_tags;
   return QUIC_NO_ERROR;
+}
+
+QuicConfig::QuicConfig() :
+    congestion_control_(kCGST, QuicNegotiableValue::PRESENCE_REQUIRED),
+    idle_connection_state_lifetime_seconds_(
+        kICSL, QuicNegotiableValue::PRESENCE_REQUIRED),
+    keepalive_timeout_seconds_(kKATO, QuicNegotiableValue::PRESENCE_OPTIONAL),
+    max_streams_per_connection_(kMSPC, QuicNegotiableValue::PRESENCE_REQUIRED) {
+  idle_connection_state_lifetime_seconds_.set(0, 0);
+  keepalive_timeout_seconds_.set(0, 0);
+}
+
+QuicConfig::~QuicConfig() {}
+
+void QuicConfig::set_congestion_control(
+    const QuicTagVector& congestion_control,
+    QuicTag default_congestion_control) {
+  congestion_control_.set(congestion_control, default_congestion_control);
+}
+
+QuicTag QuicConfig::congestion_control() const {
+  return congestion_control_.GetTag();
+}
+
+void QuicConfig::set_idle_connection_state_lifetime(
+    QuicTime::Delta max_idle_connection_state_lifetime,
+    QuicTime::Delta default_idle_conection_state_lifetime) {
+  idle_connection_state_lifetime_seconds_.set(
+      max_idle_connection_state_lifetime.ToSeconds(),
+      default_idle_conection_state_lifetime.ToSeconds());
+}
+
+QuicTime::Delta QuicConfig::idle_connection_state_lifetime() const {
+  return QuicTime::Delta::FromSeconds(
+      idle_connection_state_lifetime_seconds_.GetUint32());
+}
+
+QuicTime::Delta QuicConfig::keepalive_timeout() const {
+  return QuicTime::Delta::FromSeconds(
+      keepalive_timeout_seconds_.GetUint32());
+}
+
+void QuicConfig::set_max_streams_per_connection(size_t max_streams,
+                                                size_t default_streams) {
+  max_streams_per_connection_.set(max_streams, default_streams);
+}
+
+uint32 QuicConfig::max_streams_per_connection() const {
+  return max_streams_per_connection_.GetUint32();
+}
+
+bool QuicConfig::negotiated() {
+  return congestion_control_.negotiated() &&
+      idle_connection_state_lifetime_seconds_.negotiated() &&
+      keepalive_timeout_seconds_.negotiated() &&
+      max_streams_per_connection_.negotiated();
+}
+
+void QuicConfig::SetDefaults() {
+  congestion_control_.set(QuicTagVector(1, kQBIC), kQBIC);
+  idle_connection_state_lifetime_seconds_.set(kDefaultTimeoutSecs,
+                                              kDefaultTimeoutSecs);
+  // kKATO is optional. Return 0 if not negotiated.
+  keepalive_timeout_seconds_.set(0, 0);
+  max_streams_per_connection_.set(kDefaultMaxStreamsPerConnection,
+                                  kDefaultMaxStreamsPerConnection);
+}
+
+void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
+  congestion_control_.ToHandshakeMessage(out);
+  idle_connection_state_lifetime_seconds_.ToHandshakeMessage(out);
+  keepalive_timeout_seconds_.ToHandshakeMessage(out);
+  max_streams_per_connection_.ToHandshakeMessage(out);
+}
+
+QuicErrorCode QuicConfig::ProcessClientHello(
+    const CryptoHandshakeMessage& client_hello,
+    string* error_details) {
+  DCHECK(error_details != NULL);
+
+  QuicErrorCode error = QUIC_NO_ERROR;
+  if (error == QUIC_NO_ERROR) {
+    error = congestion_control_.ProcessClientHello(client_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = idle_connection_state_lifetime_seconds_.ProcessClientHello(
+        client_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = keepalive_timeout_seconds_.ProcessClientHello(
+        client_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = max_streams_per_connection_.ProcessClientHello(
+        client_hello, error_details);
+  }
+  return error;
+}
+
+QuicErrorCode QuicConfig::ProcessServerHello(
+    const CryptoHandshakeMessage& server_hello,
+    string* error_details) {
+  DCHECK(error_details != NULL);
+
+  QuicErrorCode error = QUIC_NO_ERROR;
+  if (error == QUIC_NO_ERROR) {
+    error = congestion_control_.ProcessServerHello(server_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = idle_connection_state_lifetime_seconds_.ProcessServerHello(
+        server_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = keepalive_timeout_seconds_.ProcessServerHello(
+        server_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = max_streams_per_connection_.ProcessServerHello(
+        server_hello, error_details);
+  }
+  return error;
 }
 
 }  // namespace net

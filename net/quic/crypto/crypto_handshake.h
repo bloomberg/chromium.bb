@@ -14,7 +14,6 @@
 #include "net/base/net_export.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_time.h"
 
 namespace net {
 
@@ -188,7 +187,7 @@ class NET_EXPORT_PRIVATE QuicCryptoConfig {
   // Authenticated encryption with associated data (AEAD) algorithms.
   QuicTagVector aead;
 
-  scoped_ptr<CommonCertSets> common_cert_set_;
+  scoped_ptr<CommonCertSets> common_cert_sets;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoConfig);
@@ -311,9 +310,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   const ProofVerifier* proof_verifier() const;
 
   // SetProofVerifier takes ownership of a |ProofVerifier| that clients are
-  // free to use in order to verify certificate chains from servers. Setting a
-  // |ProofVerifier| does not alter the behaviour of the
-  // QuicCryptoClientConfig, it's just a place to store it.
+  // free to use in order to verify certificate chains from servers. If a
+  // ProofVerifier is set then the client will request a certificate chain from
+  // the server.
   void SetProofVerifier(ProofVerifier* verifier);
 
  private:

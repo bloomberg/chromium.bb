@@ -63,6 +63,11 @@ size_t QuicConnectionPeer::GetNumRetransmissionTimeouts(
 }
 
 // static
+QuicTime::Delta QuicConnectionPeer::GetTimeout(QuicConnection* connection) {
+  return connection->timeout_;
+}
+
+// static
 bool QuicConnectionPeer::IsSavedForRetransmission(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
@@ -119,6 +124,25 @@ void QuicConnectionPeer::SetIsServer(QuicConnection* connection,
 void QuicConnectionPeer::SwapCrypters(QuicConnection* connection,
                                       QuicFramer* framer) {
   framer->SwapCryptersForTest(&connection->framer_);
+}
+
+// static
+void QuicConnectionPeer:: SetMaxPacketsPerRetransmissionAlarm(
+    QuicConnection* connection,
+    int max_packets) {
+  connection->max_packets_per_retransmission_alarm_ = max_packets;
+}
+
+// static
+QuicConnectionHelperInterface* QuicConnectionPeer::GetHelper(
+    QuicConnection* connection) {
+  return connection->helper_.get();
+}
+
+QuicFecGroup* QuicConnectionPeer::GetFecGroup(QuicConnection* connection,
+                                              int fec_group) {
+  connection->last_header_.fec_group = fec_group;
+  return connection->GetFecGroup();
 }
 
 }  // namespace test

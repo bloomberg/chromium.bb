@@ -11,7 +11,7 @@ using base::StringPiece;
 namespace net {
 namespace test {
 
-static unsigned char kGIACertificate[] = {
+static const unsigned char kGIACertificate[] = {
   0x30, 0x82, 0x02, 0xb0, 0x30, 0x82, 0x02, 0x19, 0xa0, 0x03, 0x02, 0x01,
   0x02, 0x02, 0x03, 0x0b, 0x67, 0x71, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86,
   0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x05, 0x05, 0x00, 0x30, 0x4e, 0x31,
@@ -76,30 +76,30 @@ TEST(CommonCertSets, FindGIA) {
   StringPiece gia(reinterpret_cast<const char*>(kGIACertificate),
                   sizeof(kGIACertificate));
 
-  CommonCertSetsQUIC set;
+  CommonCertSetsQUIC sets;
 
   const uint64 in_hash = GG_UINT64_C(0xde8086f914a3af54);
   uint64 hash;
   uint32 index;
-  ASSERT_TRUE(set.MatchCert(
+  ASSERT_TRUE(sets.MatchCert(
       gia,
       StringPiece(reinterpret_cast<const char*>(&in_hash), sizeof(in_hash)),
       &hash, &index));
   EXPECT_EQ(in_hash, hash);
 
-  StringPiece gia_copy = set.GetCert(hash, index);
+  StringPiece gia_copy = sets.GetCert(hash, index);
   EXPECT_FALSE(gia_copy.empty());
   ASSERT_EQ(gia.size(), gia_copy.size());
   EXPECT_TRUE(0 == memcmp(gia.data(), gia_copy.data(), gia.size()));
 }
 
 TEST(CommonCertSets, NonMatch) {
-  CommonCertSetsQUIC set;
+  CommonCertSetsQUIC sets;
   StringPiece not_a_cert("hello");
   const uint64 in_hash = GG_UINT64_C(0xde8086f914a3af54);
   uint64 hash;
   uint32 index;
-  EXPECT_FALSE(set.MatchCert(
+  EXPECT_FALSE(sets.MatchCert(
       not_a_cert,
       StringPiece(reinterpret_cast<const char*>(&in_hash), sizeof(in_hash)),
       &hash, &index));

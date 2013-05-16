@@ -52,6 +52,22 @@ TEST_F(QuicSpdyDecompressorTest, DecompressAndIgnoreTrailingData) {
   EXPECT_EQ(SpdyUtils::SerializeUncompressedHeaders(headers), visitor_.data());
 }
 
+TEST_F(QuicSpdyDecompressorTest, DecompressError) {
+  SpdyHeaderBlock headers;
+  headers[":host"] = "www.google.com";
+  headers[":path"] = "/index.hml";
+  headers[":scheme"] = "https";
+
+  EXPECT_EQ(1u, decompressor_.current_header_id());
+  string compressed_headers = compressor_.CompressHeaders(headers).substr(4);
+  compressed_headers[compressed_headers.length() - 1] ^= 0x01;
+  EXPECT_NE(compressed_headers.length(),
+            decompressor_.DecompressData(compressed_headers, &visitor_));
+
+  EXPECT_TRUE(visitor_.error());
+  EXPECT_EQ("", visitor_.data());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

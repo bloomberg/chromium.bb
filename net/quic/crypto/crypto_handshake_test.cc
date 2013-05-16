@@ -42,10 +42,9 @@ class QuicCryptoServerConfigPeer {
 TEST(QuicCryptoServerConfigTest, ServerConfig) {
   QuicCryptoServerConfig server("source address token secret");
   MockClock clock;
-  CryptoHandshakeMessage extra_tags;
 
   scoped_ptr<CryptoHandshakeMessage>(
-      server.AddDefaultConfig(QuicRandom::GetInstance(), &clock, extra_tags,
+      server.AddDefaultConfig(QuicRandom::GetInstance(), &clock,
                               QuicCryptoServerConfig::kDefaultExpiry));
 }
 

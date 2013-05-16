@@ -20,24 +20,26 @@ class NET_EXPORT_PRIVATE CommonCertSets {
   virtual ~CommonCertSets();
 
   // GetCommonHashes returns a StringPiece containing the hashes of common sets
-  // supported by this object.
+  // supported by this object. The 64-bit hashes are concatenated in the
+  // StringPiece.
   virtual base::StringPiece GetCommonHashes() const = 0;
 
-  // GetCert returns a specific certificate in the common set identified by
-  // |hash|. If no such certificate is known, an empty StringPiece is returned.
+  // GetCert returns a specific certificate (at index |index|) in the common
+  // set identified by |hash|. If no such certificate is known, an empty
+  // StringPiece is returned.
   virtual base::StringPiece GetCert(uint64 hash, uint32 index) const = 0;
 
   // MatchCert tries to find |cert| in one of the common certificate sets
-  // identified by |common_set_hashes|. On success it puts the hash in
-  // |out_hash|, the index in the set in |out_index| and returns true. Otherwise
-  // it returns false.
+  // identified by |common_set_hashes|. On success it puts the hash of the
+  // set in |out_hash|, the index of |cert| in the set in |out_index| and
+  // returns true. Otherwise it returns false.
   virtual bool MatchCert(base::StringPiece cert,
                          base::StringPiece common_set_hashes,
                          uint64* out_hash,
                          uint32* out_index) const = 0;
 };
 
-// CommonCertSetsQUIC implements the CommonCertSet interface using the default
+// CommonCertSetsQUIC implements the CommonCertSets interface using the default
 // certificate sets.
 class NET_EXPORT_PRIVATE CommonCertSetsQUIC : public CommonCertSets {
  public:

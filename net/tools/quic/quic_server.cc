@@ -46,19 +46,12 @@ QuicServer::QuicServer()
 
   // Use hardcoded crypto parameters for now.
   config_.SetDefaults();
-  CryptoHandshakeMessage extra_tags;
-  config_.ToHandshakeMessage(&extra_tags);
   QuicEpollClock clock(&epoll_server_);
 
   scoped_ptr<CryptoHandshakeMessage> scfg(
       crypto_config_.AddDefaultConfig(
-          QuicRandom::GetInstance(), &clock, extra_tags,
+          QuicRandom::GetInstance(), &clock,
           QuicCryptoServerConfig::kDefaultExpiry));
-  // If we were using the same config in many servers then we would have to
-  // parse a QuicConfig from config_tags here.
-  if (!config_.SetFromHandshakeMessage(*scfg)) {
-    CHECK(false) << "Crypto config could not be parsed by QuicConfig.";
-  }
 }
 
 QuicServer::~QuicServer() {

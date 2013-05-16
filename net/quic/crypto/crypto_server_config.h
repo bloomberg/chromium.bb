@@ -54,14 +54,12 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   static const char TESTING[];
 
   // DefaultConfig generates a QuicServerConfigProtobuf protobuf suitable for
-  // using in tests. |extra_tags| contains additional key/value pairs that will
-  // be inserted into the config. If |expiry_time| is non-zero then it's used
-  // as the expiry for the server config in UNIX epoch seconds. Otherwise the
-  // default expiry time is six months from now.
+  // using in tests. If |expiry_time| is non-zero then it's used as the expiry
+  // for the server config in UNIX epoch seconds. Otherwise the default expiry
+  // time is six months from now.
   static QuicServerConfigProtobuf* DefaultConfig(
       QuicRandom* rand,
       const QuicClock* clock,
-      const CryptoHandshakeMessage& extra_tags,
       uint64 expiry_time);
 
   // AddConfig adds a QuicServerConfigProtobuf to the availible configurations.
@@ -69,12 +67,12 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // takes ownership of the CryptoHandshakeMessage.
   CryptoHandshakeMessage* AddConfig(QuicServerConfigProtobuf* protobuf);
 
-  // AddDefaultConfig creates a config and then calls AddConfig to add it. See
-  // the comment for |DefaultConfig| for details of the arguments.
+  // AddDefaultConfig calls DefaultConfig to create a config and then calls
+  // AddConfig to add it. See the comment for |DefaultConfig| for details of
+  // the arguments.
   CryptoHandshakeMessage* AddDefaultConfig(
       QuicRandom* rand,
       const QuicClock* clock,
-      const CryptoHandshakeMessage& extra_tags,
       uint64 expiry_time);
 
   // ProcessClientHello processes |client_hello| and decides whether to accept
@@ -97,7 +95,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   QuicErrorCode ProcessClientHello(const CryptoHandshakeMessage& client_hello,
                                    QuicGuid guid,
                                    const IPEndPoint& client_ip,
-                                   const QuicClock* now,
+                                   const QuicClock* clock,
                                    QuicRandom* rand,
                                    QuicCryptoNegotiatedParameters* params,
                                    CryptoHandshakeMessage* out,
@@ -112,6 +110,27 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // |ephemeral_key_source|. If not set then ephemeral keys will be generated
   // per-connection.
   void SetEphemeralKeySource(EphemeralKeySource* ephemeral_key_source);
+
+  // set_strike_register_max_entries sets the maximum number of entries that
+  // the internal strike register will hold. If the strike register fills up
+  // then the oldest entries (by the client's clock) will be dropped.
+  void set_strike_register_max_entries(uint32 max_entries);
+
+  // set_strike_register_window_secs sets the number of seconds around the
+  // current time that the strike register will attempt to be authoritative
+  // for. Setting a larger value allows for greater client clock-skew, but
+  // means that the quiescent startup period must be longer.
+  void set_strike_register_window_secs(uint32 window_secs);
+
+  // set_source_address_token_future_secs sets the number of seconds into the
+  // future that source-address tokens will be accepted from. Since
+  // source-address tokens are authenticated, this should only happen if
+  // another, valid server has clock-skew.
+  void set_source_address_token_future_secs(uint32 future_secs);
+
+  // set_source_address_token_lifetime_secs sets the number of seconds that a
+  // source-address token will be valid for.
+  void set_source_address_token_lifetime_secs(uint32 lifetime_secs);
 
  private:
   friend class test::QuicCryptoServerConfigPeer;
@@ -177,6 +196,13 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // ephemeral_key_source_ contains an object that caches ephemeral keys for a
   // short period of time.
   scoped_ptr<EphemeralKeySource> ephemeral_key_source_;
+
+  // These fields store configuration values. See the comments for their
+  // respective setter functions.
+  uint32 strike_register_max_entries_;
+  uint32 strike_register_window_secs_;
+  uint32 source_address_token_future_secs_;
+  uint32 source_address_token_lifetime_secs_;
 };
 
 }  // namespace net

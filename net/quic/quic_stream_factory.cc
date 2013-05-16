@@ -372,7 +372,6 @@ QuicClientSession* QuicStreamFactory::CreateSession(
           DatagramSocket::DEFAULT_BIND, base::Bind(&base::RandInt),
           net_log.net_log(), net_log.source());
   socket->Connect(addr);
-  socket->GetLocalAddress(&addr);
 
   QuicConnectionHelper* helper = new QuicConnectionHelper(
       MessageLoop::current()->message_loop_proxy(),
@@ -387,7 +386,7 @@ QuicClientSession* QuicStreamFactory::CreateSession(
   QuicClientSession* session =
       new QuicClientSession(connection, socket, this,
                             quic_crypto_client_stream_factory_,
-                            host_port_proxy_pair.first.host(),
+                            host_port_proxy_pair.first.host(), QuicConfig(),
                             crypto_config, net_log.net_log());
   all_sessions_.insert(session);  // owning pointer
   return session;

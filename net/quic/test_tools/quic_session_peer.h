@@ -15,7 +15,8 @@ namespace test {
 
 class QuicSessionPeer {
  public:
-  static void SetNextStreamId(QuicStreamId id, QuicSession* session);
+  static void SetNextStreamId(QuicSession* session, QuicStreamId id);
+  static void SetMaxOpenStreams(QuicSession* session, uint32 max_streams);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSessionPeer);

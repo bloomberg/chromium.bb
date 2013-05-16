@@ -29,7 +29,7 @@ namespace test {
 namespace {
 
 const char data1[] = "foo";
-const bool kHasData = true;
+const bool kFromPeer = true;
 
 class TestConnectionHelper : public QuicEpollConnectionHelper {
  public:
@@ -141,17 +141,18 @@ TEST_F(QuicConnectionHelperTest, InitialTimeout) {
   EXPECT_TRUE(connection_.connected());
 
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, !kHasData));
+  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, !kFromPeer));
   epoll_server_.WaitForEventsAndExecuteCallbacks();
   EXPECT_FALSE(connection_.connected());
-  EXPECT_EQ(kDefaultTimeoutUs, epoll_server_.NowInUsec());
+  EXPECT_EQ(kDefaultInitialTimeoutSecs * 1000000, epoll_server_.NowInUsec());
 }
 
 TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   EXPECT_TRUE(connection_.connected());
   EXPECT_EQ(0, epoll_server_.NowInUsec());
 
-  // When we send a packet, the timeout will change to 5000 + kDefaultTimeout.
+  // When we send a packet, the timeout will change to 5000 +
+  // kDefaultInitialTimeoutSecs.
   epoll_server_.AdvanceBy(5000);
   EXPECT_EQ(5000, epoll_server_.NowInUsec());
 
@@ -162,13 +163,14 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   // The original alarm will fire.  We should not time out because we had a
   // network event at t=5000.  The alarm will reregister.
   epoll_server_.WaitForEventsAndExecuteCallbacks();
-  EXPECT_EQ(kDefaultTimeoutUs, epoll_server_.NowInUsec());
+  EXPECT_EQ(kDefaultInitialTimeoutSecs * 1000000, epoll_server_.NowInUsec());
 
   // This time, we should time out.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, false));
+  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, !kFromPeer));
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, NOT_RETRANSMISSION));
   epoll_server_.WaitForEventsAndExecuteCallbacks();
-  EXPECT_EQ(kDefaultTimeoutUs + 5000, epoll_server_.NowInUsec());
+  EXPECT_EQ(kDefaultInitialTimeoutSecs * 1000000 + 5000,
+            epoll_server_.NowInUsec());
   EXPECT_FALSE(connection_.connected());
 }
 

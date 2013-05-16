@@ -93,7 +93,10 @@ const QuicStreamId kCryptoStreamId = 1;
 // Value which indicates this packet is not FEC protected.
 const uint8 kNoFecOffset = 0xFF;
 
-const int64 kDefaultTimeoutUs = 600000000;  // 10 minutes.
+// This is the default network timeout a for connection till the crypto
+// handshake succeeds and the negotiated timeout from the handshake is received.
+const int64 kDefaultInitialTimeoutSecs = 30;  // 30 secs.
+const int64 kDefaultTimeoutSecs = 60 * 10;  // 10 minutes.
 
 enum Retransmission {
   NOT_RETRANSMISSION,
@@ -173,6 +176,8 @@ enum QuicErrorCode {
   QUIC_INVALID_ACK_DATA,
   // Version negotiation packet is malformed.
   QUIC_INVALID_VERSION_NEGOTIATION_PACKET,
+  // Public RST packet is malformed.
+  QUIC_INVALID_PUBLIC_RST_PACKET,
   // There was an error decrypting.
   QUIC_DECRYPTION_FAILURE,
   // There was an error encrypting.
@@ -195,9 +200,17 @@ enum QuicErrorCode {
   QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED,
   // The Header ID for a stream was too far from the previous.
   QUIC_INVALID_HEADER_ID,
-
+  // Negotiable parameter received during handshake had invalid value.
+  QUIC_INVALID_NEGOTIATED_VALUE,
+  // There was an error decompressing data.
+  QUIC_DECOMPRESSION_FAILURE,
   // We hit our prenegotiated (or default) timeout
   QUIC_CONNECTION_TIMED_OUT,
+  // There was an error encountered migrating addresses
+  QUIC_ERROR_MIGRATING_ADDRESS,
+  // There was an error while writing the packet.
+  QUIC_PACKET_WRITE_ERROR,
+
 
   // Crypto errors.
 
@@ -258,7 +271,7 @@ const QuicTag kUnsupportedVersion = -1;
 // Each time the wire format changes, this need needs to be incremented.
 // At some point, we will actually freeze the wire format and make an official
 // version number, but this works for now.
-const QuicTag kQuicVersion1 = TAG('Q', '0', '0', '1');
+const QuicTag kQuicVersion1 = TAG('Q', '0', '0', '2');
 #undef TAG
 
 // MakeQuicTag returns a value given the four bytes. For example:

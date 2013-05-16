@@ -19,8 +19,8 @@ QuicClientSession::QuicClientSession(
     const QuicConfig& config,
     QuicConnection* connection,
     QuicCryptoClientConfig* crypto_config)
-    : QuicSession(connection, false),
-      crypto_stream_(server_hostname, config, this, crypto_config) {
+    : QuicSession(connection, config, false),
+      crypto_stream_(server_hostname, this, crypto_config) {
 }
 
 QuicClientSession::~QuicClientSession() {

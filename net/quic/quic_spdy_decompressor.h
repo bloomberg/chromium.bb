@@ -27,6 +27,7 @@ class NET_EXPORT_PRIVATE QuicSpdyDecompressor {
    public:
     virtual ~Visitor() {}
     virtual bool OnDecompressedData(base::StringPiece data) = 0;
+    virtual void OnDecompressionError() = 0;
   };
 
   QuicSpdyDecompressor();

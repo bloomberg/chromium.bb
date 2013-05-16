@@ -50,7 +50,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     HANDSHAKE_CONFIRMED,
   };
 
-  QuicSession(QuicConnection* connection, bool is_server);
+  QuicSession(QuicConnection* connection,
+              const QuicConfig& config,
+              bool is_server);
 
   virtual ~QuicSession();
 
@@ -101,6 +103,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   //
   // Servers will simply call it once with HANDSHAKE_CONFIRMED.
   virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event);
+
+  virtual QuicConfig* config();
 
   // Returns true if the stream existed previously and has been closed.
   // Returns false if the stream is still active or if the stream has
@@ -176,6 +180,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     return max_open_streams_;
   }
 
+  void set_max_open_streams(size_t max_open_streams) {
+    max_open_streams_ = max_open_streams;
+  }
+
  private:
   friend class test::QuicSessionPeer;
   friend class VisitorShim;
@@ -195,8 +203,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   QuicSpdyDecompressor decompressor_;
   QuicSpdyCompressor compressor_;
 
+  QuicConfig config_;
+
   // Returns the maximum number of streams this connection can open.
-  const size_t max_open_streams_;
+  size_t max_open_streams_;
 
   // Map from StreamId to pointers to streams that are owned by the caller.
   ReliableStreamMap stream_map_;

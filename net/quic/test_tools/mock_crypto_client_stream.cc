@@ -8,11 +8,10 @@ namespace net {
 
 MockCryptoClientStream::MockCryptoClientStream(
     const string& server_hostname,
-    const QuicConfig& config,
     QuicSession* session,
     QuicCryptoClientConfig* crypto_config,
     HandshakeMode handshake_mode)
-  : QuicCryptoClientStream(server_hostname, config, session, crypto_config),
+  : QuicCryptoClientStream(server_hostname, session, crypto_config),
     handshake_mode_(handshake_mode) {
 }
 

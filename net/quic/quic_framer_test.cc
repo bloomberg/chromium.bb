@@ -572,7 +572,7 @@ TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
     // public flags (version)
     0x01,
     // version tag
-    'Q', '0', '0', '1',
+    'Q', '0', '0', '2',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -817,7 +817,7 @@ TEST_F(QuicFramerTest, StreamFrameWithVersion) {
     // public flags (version)
     0x01,
     // version tag
-    'Q', '0', '0', '1',
+    'Q', '0', '0', '2',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1608,14 +1608,21 @@ TEST_F(QuicFramerTest, PublicResetPacket) {
     DLOG(INFO) << "iteration: " << i;
     if (i < kPublicFlagsOffset) {
       expected_error = "Unable to read GUID.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PACKET_HEADER);
     } else if (i < kPublicResetPacketNonceProofOffset) {
       expected_error = "Unable to read public flags.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PACKET_HEADER);
     } else if (i < kPublicResetPacketRejectedSequenceNumberOffset) {
       expected_error = "Unable to read nonce proof.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PUBLIC_RST_PACKET);
     } else {
       expected_error = "Unable to read rejected sequence number.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PUBLIC_RST_PACKET);
     }
-    CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
   }
 }
 
@@ -1626,7 +1633,7 @@ TEST_F(QuicFramerTest, VersionNegotiationPacket) {
     // public flags (version)
     0x01,
     // version tag
-    'Q', '0', '0', '1',
+    'Q', '0', '0', '2',
     'Q', '2', '.', '0',
   };
 
@@ -1825,7 +1832,7 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
     // public flags (version)
     0x01,
     // version tag
-    'Q', '0', '0', '1',
+    'Q', '0', '0', '2',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1873,7 +1880,7 @@ TEST_F(QuicFramerTest, ConstructVersionNegotiationPacket) {
     // public flags (version)
     0x01,
     // version tag
-    'Q', '0', '0', '1',
+    'Q', '0', '0', '2',
     'Q', '2', '.', '0',
   };
 
@@ -2794,6 +2801,66 @@ TEST_F(QuicFramerTest, StopPacketProcessing) {
   EXPECT_CALL(visitor, OnPacketHeader(_));
   EXPECT_CALL(visitor, OnStreamFrame(_)).WillOnce(Return(false));
   EXPECT_CALL(visitor, OnAckFrame(_)).Times(0);
+  EXPECT_CALL(visitor, OnPacketComplete());
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+}
+
+TEST_F(QuicFramerTest, ConnectionCloseWithInvalidAck) {
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags
+    0x00,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+    // first fec protected packet offset
+    0xFF,
+
+    // frame type (connection close frame)
+    0x05,
+    // error code
+    0x11, 0x00, 0x00, 0x00,
+    // error details length
+    0x0d, 0x00,
+    // error details
+    'b',  'e',  'c',  'a',
+    'u',  's',  'e',  ' ',
+    'I',  ' ',  'c',  'a',
+    'n',
+
+    // Ack frame.
+    // entropy hash of sent packets till least awaiting - 1.
+    0xE0,
+    // least packet sequence number awaiting an ack
+    0xA0, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // entropy hash of all received packets.
+    0x43,
+    // largest observed packet sequence number
+    0xBF, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // Infinite delta time.
+    0xFF, 0xFF, 0xFF, 0xFF,
+    // num missing packets
+    0x01,
+    // missing packet
+    0xBE, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+  };
+
+  MockFramerVisitor visitor;
+  framer_.set_visitor(&visitor);
+  EXPECT_CALL(visitor, OnPacket());
+  EXPECT_CALL(visitor, OnPacketHeader(_));
+  EXPECT_CALL(visitor, OnAckFrame(_)).WillOnce(Return(false));
+  EXPECT_CALL(visitor, OnConnectionCloseFrame(_)).Times(0);
   EXPECT_CALL(visitor, OnPacketComplete());
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);

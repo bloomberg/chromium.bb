@@ -75,7 +75,7 @@ bool SpdyFramerVisitor::OnControlFrameHeaderData(SpdyStreamId stream_id,
 }
 
 QuicSpdyDecompressor::QuicSpdyDecompressor()
-    : spdy_framer_(3),
+    : spdy_framer_(kSpdyVersion3),
       spdy_visitor_(new SpdyFramerVisitor(NULL)),
       current_header_id_(1),
       has_current_compressed_size_(false),
@@ -116,9 +116,11 @@ size_t QuicSpdyDecompressor::DecompressData(StringPiece data,
       min(current_compressed_size_ - compressed_bytes_consumed_,
           static_cast<uint32>(data.length()));
   if (bytes_to_consume > 0) {
-    bool success = spdy_framer_.IncrementallyDecompressControlFrameHeaderData(
-        current_header_id_, data.data(), bytes_to_consume);
-    DCHECK(success);
+    if (!spdy_framer_.IncrementallyDecompressControlFrameHeaderData(
+            current_header_id_, data.data(), bytes_to_consume)) {
+      visitor->OnDecompressionError();
+      return bytes_consumed;
+    }
     compressed_bytes_consumed_ += bytes_to_consume;
     bytes_consumed += bytes_to_consume;
   }

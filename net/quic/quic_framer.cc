@@ -102,6 +102,14 @@ size_t QuicFramer::GetMinGoAwayFrameSize() {
       kQuicStreamIdSize;
 }
 
+// static
+// TODO(satyamshekhar): 16 - Crypto hash for integrity. Not a static value. Use
+// QuicEncrypter::GetMaxPlaintextSize.
+size_t QuicFramer::GetMaxUnackedPackets(bool include_version) {
+  return (kMaxPacketSize - GetPacketHeaderSize(include_version) -
+          GetMinAckFrameSize() - 16) / kSequenceNumberSize;
+}
+
 bool QuicFramer::IsSupportedVersion(QuicTag version) {
   return version == kQuicVersion1;
 }
@@ -313,6 +321,8 @@ QuicEncryptedPacket* QuicFramer::ConstructVersionNegotiationPacket(
 }
 
 bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
+  // TODO(satyamshekhar): Don't RaiseError (and close the connection) for
+  // invalid (unauthenticated) packets.
   DCHECK(!reader_.get());
   reader_.reset(new QuicDataReader(packet.data(), packet.length()));
 
@@ -409,15 +419,14 @@ bool QuicFramer::ProcessPublicResetPacket(
     const QuicPacketPublicHeader& public_header) {
   QuicPublicResetPacket packet(public_header);
   if (!reader_->ReadUInt64(&packet.nonce_proof)) {
-    // TODO(satyamshekhar): Raise error.
     set_detailed_error("Unable to read nonce proof.");
-    return false;
+    return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
   }
   // TODO(satyamshekhar): validate nonce to protect against DoS.
 
   if (!reader_->ReadUInt48(&packet.rejected_sequence_number)) {
     set_detailed_error("Unable to read rejected sequence number.");
-    return false;
+    return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
   }
   visitor_->OnPublicResetPacket(packet);
   return true;
@@ -431,8 +440,9 @@ bool QuicFramer::ProcessRevivedPacket(QuicPacketHeader* header,
 
   header->entropy_hash = GetPacketEntropyHash(*header);
 
-  // TODO(satyamshekhar): Don't process if the visitor refuses the header.
-  visitor_->OnPacketHeader(*header);
+  if (!visitor_->OnPacketHeader(*header)) {
+    return true;
+  }
 
   if (payload.length() > kMaxPacketSize) {
     set_detailed_error("Revived packet too large.");
@@ -704,6 +714,13 @@ bool QuicFramer::ProcessFrameData() {
         if (!ProcessConnectionCloseFrame(&frame)) {
           return RaiseError(QUIC_INVALID_CONNECTION_CLOSE_DATA);
         }
+
+        if (!visitor_->OnAckFrame(frame.ack_frame)) {
+          DLOG(INFO) << "Visitor asked to stopped further processing.";
+          // Returning true since there was no parsing error.
+          return true;
+        }
+
         if (!visitor_->OnConnectionCloseFrame(frame)) {
           DLOG(INFO) << "Visitor asked to stopped further processing.";
           // Returning true since there was no parsing error.
@@ -986,12 +1003,6 @@ bool QuicFramer::ProcessConnectionCloseFrame(QuicConnectionCloseFrame* frame) {
   if (!ProcessAckFrame(&frame->ack_frame)) {
     DLOG(WARNING) << "Unable to process ack frame.";
     return false;
-  }
-
-  if (!visitor_->OnAckFrame(frame->ack_frame)) {
-    DLOG(INFO) << "Visitor asked to stopped further processing.";
-    // Returning true since there was no parsing error.
-    return true;
   }
 
   return true;

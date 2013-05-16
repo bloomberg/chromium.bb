@@ -46,7 +46,6 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
   bool encryption_established() { return encryption_established_; }
   bool handshake_confirmed() { return handshake_confirmed_; }
 
-  const QuicNegotiatedParameters& negotiated_params() const;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params() const;
 
  protected:
@@ -57,7 +56,6 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
   bool encryption_established_;
   bool handshake_confirmed_;
 
-  QuicNegotiatedParameters negotiated_params_;
   QuicCryptoNegotiatedParameters crypto_negotiated_params_;
 
  private:

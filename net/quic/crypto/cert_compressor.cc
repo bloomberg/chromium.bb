@@ -20,7 +20,7 @@ namespace {
 // kCommonCertSubstrings contains ~1500 bytes of common certificate substrings
 // in order to help zlib. This was generated via a fairly dumb algorithm from
 // the Alexa Top 5000 set - we could probably do better.
-static unsigned char kCommonCertSubstrings[] = {
+static const unsigned char kCommonCertSubstrings[] = {
   0x04, 0x02, 0x30, 0x00, 0x30, 0x1d, 0x06, 0x03, 0x55, 0x1d, 0x25, 0x04,
   0x16, 0x30, 0x14, 0x06, 0x08, 0x2b, 0x06, 0x01, 0x05, 0x05, 0x07, 0x03,
   0x01, 0x06, 0x08, 0x2b, 0x06, 0x01, 0x05, 0x05, 0x07, 0x03, 0x02, 0x30,
@@ -176,7 +176,7 @@ struct CertEntry {
 vector<CertEntry> MatchCerts(const vector<string>& certs,
                              StringPiece client_common_set_hashes,
                              StringPiece client_cached_cert_hashes,
-                             const CommonCertSets* common_set) {
+                             const CommonCertSets* common_sets) {
   vector<CertEntry> entries;
   entries.reserve(certs.size());
 
@@ -214,8 +214,8 @@ vector<CertEntry> MatchCerts(const vector<string>& certs,
       }
     }
 
-    if (common_set && common_set->MatchCert(*i, client_common_set_hashes,
-                                            &entry.set_hash, &entry.index)) {
+    if (common_sets && common_sets->MatchCert(*i, client_common_set_hashes,
+                                              &entry.set_hash, &entry.index)) {
       entry.type = CertEntry::COMMON;
       entries.push_back(entry);
       continue;
@@ -328,11 +328,11 @@ vector<uint64> HashCerts(const vector<string>& certs) {
 
 // ParseEntries parses the serialised form of a vector of CertEntries from
 // |in_out| and writes them to |out_entries|. CACHED and COMMON entries are
-// resolved using |cached_certs| and |common_set| and written to |out_certs|.
+// resolved using |cached_certs| and |common_sets| and written to |out_certs|.
 // |in_out| is updated to contain the trailing data.
 bool ParseEntries(StringPiece* in_out,
                   const vector<string>& cached_certs,
-                  const CommonCertSets* common_set,
+                  const CommonCertSets* common_sets,
                   vector<CertEntry>* out_entries,
                   vector<string>* out_certs) {
   StringPiece in = *in_out;
@@ -383,7 +383,7 @@ bool ParseEntries(StringPiece* in_out,
         break;
       }
       case CertEntry::COMMON: {
-        if (!common_set) {
+        if (!common_sets) {
           return false;
         }
         if (in.size() < sizeof(uint64)) {
@@ -398,7 +398,7 @@ bool ParseEntries(StringPiece* in_out,
         memcpy(&entry.index, in.data(), sizeof(uint32));
         in.remove_prefix(sizeof(uint32));
 
-        StringPiece cert = common_set->GetCert(entry.set_hash, entry.index);
+        StringPiece cert = common_sets->GetCert(entry.set_hash, entry.index);
         if (cert.empty()) {
           return false;
         }
@@ -449,9 +449,9 @@ class ScopedZLib {
 string CertCompressor::CompressChain(const vector<string>& certs,
                                      StringPiece client_common_set_hashes,
                                      StringPiece client_cached_cert_hashes,
-                                     const CommonCertSets* common_set) {
+                                     const CommonCertSets* common_sets) {
   const vector<CertEntry> entries = MatchCerts(
-      certs, client_common_set_hashes, client_cached_cert_hashes, common_set);
+      certs, client_common_set_hashes, client_cached_cert_hashes, common_sets);
   DCHECK_EQ(entries.size(), certs.size());
 
   size_t uncompressed_size = 0;
@@ -549,10 +549,10 @@ string CertCompressor::CompressChain(const vector<string>& certs,
 // static
 bool CertCompressor::DecompressChain(StringPiece in,
                                      const vector<string>& cached_certs,
-                                     const CommonCertSets* common_set,
+                                     const CommonCertSets* common_sets,
                                      vector<string>* out_certs) {
   vector<CertEntry> entries;
-  if (!ParseEntries(&in, cached_certs, common_set, &entries, out_certs)) {
+  if (!ParseEntries(&in, cached_certs, common_sets, &entries, out_certs)) {
     return false;
   }
   DCHECK_EQ(entries.size(), out_certs->size());

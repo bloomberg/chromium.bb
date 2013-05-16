@@ -149,7 +149,7 @@ int QuicSocketUtils::WritePacket(int fd, const char* buffer, size_t buf_len,
   if (self_address.empty()) {
     hdr.msg_control = 0;
     hdr.msg_controllen = 0;
-  } else if (self_address.size() == sizeof(sockaddr_in)) {
+  } else if (GetAddressFamily(self_address) == ADDRESS_FAMILY_IPV4) {
     cmsghdr *cmsg = reinterpret_cast<cmsghdr*>(cbuf);
     hdr.msg_control = cmsg;
     hdr.msg_controllen = CMSG_SPACE(sizeof(in_pktinfo));

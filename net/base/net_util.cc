@@ -2016,6 +2016,17 @@ bool HaveOnlyLoopbackAddresses() {
 #endif  // defined(various platforms)
 }
 
+AddressFamily GetAddressFamily(const IPAddressNumber& address) {
+  switch (address.size()) {
+    case kIPv4AddressSize:
+      return ADDRESS_FAMILY_IPV4;
+    case kIPv6AddressSize:
+      return ADDRESS_FAMILY_IPV6;
+    default:
+      return ADDRESS_FAMILY_UNSPECIFIED;
+  }
+}
+
 bool ParseIPLiteralToNumber(const std::string& ip_literal,
                             IPAddressNumber* ip_number) {
   // |ip_literal| could be either a IPv4 or an IPv6 literal. If it contains

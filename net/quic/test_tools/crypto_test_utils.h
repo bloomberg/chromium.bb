@@ -32,13 +32,24 @@ class PacketSavingConnection;
 
 class CryptoTestUtils {
  public:
+  // FakeClientOptions bundles together a number of options for configuring
+  // HandshakeWithFakeClient.
+  struct FakeClientOptions {
+    FakeClientOptions();
+
+    // If dont_verify_certs is true then no ProofVerifier is set on the client.
+    // Thus no certificates will be requested or checked.
+    bool dont_verify_certs;
+  };
+
   // returns: the number of client hellos that the client sent.
   static int HandshakeWithFakeServer(PacketSavingConnection* client_conn,
                                      QuicCryptoClientStream* client);
 
   // returns: the number of client hellos that the client sent.
   static int HandshakeWithFakeClient(PacketSavingConnection* server_conn,
-                                     QuicCryptoServerStream* server);
+                                     QuicCryptoServerStream* server,
+                                     const FakeClientOptions& options);
 
   // SetupCryptoServerConfigForTest configures |config| and |crypto_config|
   // with sensible defaults for testing.

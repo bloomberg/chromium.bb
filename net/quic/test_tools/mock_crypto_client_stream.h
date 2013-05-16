@@ -34,7 +34,6 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
 
   MockCryptoClientStream(
       const string& server_hostname,
-      const QuicConfig& config,
       QuicSession* session,
       QuicCryptoClientConfig* crypto_config,
       HandshakeMode handshake_mode);

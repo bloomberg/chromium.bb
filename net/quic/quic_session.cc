@@ -64,9 +64,12 @@ class VisitorShim : public QuicConnectionVisitorInterface {
   QuicSession* session_;
 };
 
-QuicSession::QuicSession(QuicConnection* connection, bool is_server)
+QuicSession::QuicSession(QuicConnection* connection,
+                         const QuicConfig& config,
+                         bool is_server)
     : connection_(connection),
       visitor_shim_(new VisitorShim(this)),
+      config_(config),
       max_open_streams_(kDefaultMaxStreamsPerConnection),
       next_stream_id_(is_server ? 2 : 3),
       is_server_(is_server),
@@ -214,9 +217,15 @@ bool QuicSession::IsCryptoHandshakeConfirmed() {
 
 void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   if (event == QuicSession::HANDSHAKE_CONFIRMED) {
-    connection_->SetConnectionTimeout(
-        GetCryptoStream()->negotiated_params().idle_connection_state_lifetime);
+    LOG_IF(DFATAL, !config_.negotiated())
+        << "Handshake confirmed without parameter negotiation.";
+    connection_->SetConnectionTimeout(config_.idle_connection_state_lifetime());
+    max_open_streams_ = config_.max_streams_per_connection();
   }
+}
+
+QuicConfig* QuicSession::config() {
+  return &config_;
 }
 
 void QuicSession::ActivateStream(ReliableQuicStream* stream) {

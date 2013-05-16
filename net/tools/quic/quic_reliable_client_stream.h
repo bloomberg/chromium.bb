@@ -49,8 +49,6 @@ class QuicReliableClientStream : public ReliableQuicStream {
   // Returns whatever headers have been received for this stream.
   const BalsaHeaders& headers() { return headers_; }
 
-  bool closed() { return closed_; }
-
  protected:
   std::string* mutable_data() { return &data_; }
   BalsaHeaders* mutable_headers() { return &headers_; }
@@ -58,7 +56,6 @@ class QuicReliableClientStream : public ReliableQuicStream {
  private:
   BalsaHeaders headers_;
   std::string data_;
-  bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicReliableClientStream);
 };

@@ -503,7 +503,8 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   void MaybeSendAckInResponseToPacket();
 
-  // Get the FEC group associate with the last processed packet.
+  // Get the FEC group associate with the last processed packet or NULL, if the
+  // group has already been deleted.
   QuicFecGroup* GetFecGroup();
 
   // Closes any FEC groups protecting packets before |sequence_number|.
@@ -519,10 +520,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // client.
   IPEndPoint self_address_;
   IPEndPoint peer_address_;
-  // Address on the last(currently being processed) packet received. Not
-  // verified/authenticated.
-  IPEndPoint last_self_address_;
-  IPEndPoint last_peer_address_;
 
   bool last_packet_revived_;  // True if the last packet was revived from FEC.
   size_t last_size_;  // Size of the last received packet.
@@ -606,6 +603,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // The version of the protocol this connection is using.
   QuicTag quic_version_;
 
+  size_t max_packets_per_retransmission_alarm_;
+
   // Tracks if the connection was created by the server.
   bool is_server_;
 
@@ -618,6 +617,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool received_truncated_ack_;
 
   bool send_ack_in_response_to_packet_;
+
+  // Set to true if the udp packet headers have a new self or peer address.
+  // This is checked later on validating a data or version negotiation packet.
+  bool address_migrating_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

@@ -41,7 +41,6 @@ void HybridSlowStart::Reset(QuicPacketSequenceNumber end_sequence_number) {
 }
 
 bool HybridSlowStart::EndOfRound(QuicPacketSequenceNumber ack) {
-  // TODO(pwestin): do we need to handle wraparound?
   return end_sequence_number_ <= ack;
 }
 

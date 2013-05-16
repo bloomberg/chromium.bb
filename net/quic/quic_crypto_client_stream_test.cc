@@ -8,6 +8,7 @@
 #include "net/quic/crypto/aes_128_gcm_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
@@ -50,10 +51,10 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
   QuicCryptoClientStreamTest()
       : addr_(),
         connection_(new PacketSavingConnection(1, addr_, true)),
-        session_(connection_, true),
-        stream_(kServerHostname, config_, &session_, &crypto_config_) {
+        session_(connection_, QuicConfig(), true),
+        stream_(kServerHostname, &session_, &crypto_config_) {
     session_.SetCryptoStream(&stream_);
-    config_.SetDefaults();
+    session_.config()->SetDefaults();
     crypto_config_.SetDefaults();
   }
 
@@ -73,7 +74,6 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
   QuicCryptoClientStream stream_;
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;
-  QuicConfig config_;
   QuicCryptoClientConfig crypto_config_;
 };
 
@@ -137,10 +137,13 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
 
   CompleteCryptoHandshake();
 
-  const QuicNegotiatedParameters& params(stream_.negotiated_params());
-  EXPECT_EQ(kQBIC, params.congestion_control);
-  EXPECT_EQ(300, params.idle_connection_state_lifetime.ToSeconds());
-  EXPECT_EQ(0, params.keepalive_timeout.ToSeconds());
+  const QuicConfig* config = session_.config();
+  EXPECT_EQ(kQBIC, config->congestion_control());
+  EXPECT_EQ(kDefaultTimeoutSecs,
+            config->idle_connection_state_lifetime().ToSeconds());
+  EXPECT_EQ(kDefaultMaxStreamsPerConnection,
+            config->max_streams_per_connection());
+  EXPECT_EQ(0, config->keepalive_timeout().ToSeconds());
 
   const QuicCryptoNegotiatedParameters& crypto_params(
       stream_.crypto_negotiated_params());

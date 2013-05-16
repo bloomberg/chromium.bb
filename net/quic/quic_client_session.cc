@@ -24,9 +24,10 @@ QuicClientSession::QuicClientSession(
     QuicStreamFactory* stream_factory,
     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
     const string& server_hostname,
+    const QuicConfig& config,
     QuicCryptoClientConfig* crypto_config,
     NetLog* net_log)
-    : QuicSession(connection, false),
+    : QuicSession(connection, config, false),
       weak_factory_(this),
       stream_factory_(stream_factory),
       socket_(socket),
@@ -35,13 +36,12 @@ QuicClientSession::QuicClientSession(
       num_total_streams_(0),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
       logger_(net_log_) {
-  config_.SetDefaults();
+  QuicSession::config()->SetDefaults();
   crypto_stream_.reset(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
-              server_hostname, config_, this, crypto_config) :
-          new QuicCryptoClientStream(
-              server_hostname, config_, this, crypto_config));
+              server_hostname, this, crypto_config) :
+          new QuicCryptoClientStream(server_hostname, this, crypto_config));
 
   connection->set_debug_visitor(&logger_);
   // TODO(rch): pass in full host port proxy pair

@@ -60,6 +60,7 @@ const QuicTag kCGST = TAG('C', 'G', 'S', 'T');  // Congestion control
 const QuicTag kICSL = TAG('I', 'C', 'S', 'L');  // Idle connection state
                                                 // lifetime
 const QuicTag kKATO = TAG('K', 'A', 'T', 'O');  // Keepalive timeout
+const QuicTag kMSPC = TAG('M', 'S', 'P', 'C');  // Max streams per connection.
 const QuicTag kSNI  = TAG('S', 'N', 'I', '\0'); // Server name
                                                 // indication
 const QuicTag kPUBS = TAG('P', 'U', 'B', 'S');  // Public key values

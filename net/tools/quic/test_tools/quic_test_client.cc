@@ -182,6 +182,9 @@ size_t QuicTestClient::bytes_written() const {
 }
 
 void QuicTestClient::OnClose(ReliableQuicStream* stream) {
+  if (stream_ != stream) {
+    return;
+  }
   response_ = stream_->data();
   headers_.CopyFrom(stream_->headers());
   stream_error_ = stream_->stream_error();

@@ -1498,6 +1498,7 @@ const BoundNetLog& MockUDPClientSocket::NetLog() const {
 
 int MockUDPClientSocket::Connect(const IPEndPoint& address) {
   connected_ = true;
+  peer_addr_ = address;
   return OK;
 }
 

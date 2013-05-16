@@ -35,15 +35,7 @@ IPEndPoint::IPEndPoint(const IPEndPoint& endpoint) {
 }
 
 AddressFamily IPEndPoint::GetFamily() const {
-  switch (address_.size()) {
-    case kIPv4AddressSize:
-      return ADDRESS_FAMILY_IPV4;
-    case kIPv6AddressSize:
-      return ADDRESS_FAMILY_IPV6;
-    default:
-      NOTREACHED() << "Bad IP address";
-      return ADDRESS_FAMILY_UNSPECIFIED;
-  }
+  return GetAddressFamily(address_);
 }
 
 int IPEndPoint::GetSockAddrFamily() const {

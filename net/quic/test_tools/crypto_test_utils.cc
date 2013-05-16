@@ -102,6 +102,10 @@ void MovePackets(PacketSavingConnection* source_conn,
 
 }  // anonymous namespace
 
+CryptoTestUtils::FakeClientOptions::FakeClientOptions()
+    : dont_verify_certs(false) {
+}
+
 // static
 void CryptoTestUtils::CommunicateHandshakeMessages(
     PacketSavingConnection* a_conn,
@@ -135,16 +139,15 @@ int CryptoTestUtils::HandshakeWithFakeServer(
   IPEndPoint addr = IPEndPoint(ip, 1);
   PacketSavingConnection* server_conn =
       new PacketSavingConnection(guid, addr, true);
-  TestSession server_session(server_conn, true);
+  TestSession server_session(server_conn, QuicConfig(), true);
 
-  QuicConfig config;
   QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING);
   SetupCryptoServerConfigForTest(
       server_session.connection()->clock(),
       server_session.connection()->random_generator(),
-      &config, &crypto_config);
+      server_session.config(), &crypto_config);
 
-  QuicCryptoServerStream server(config, crypto_config, &server_session);
+  QuicCryptoServerStream server(crypto_config, &server_session);
   server_session.SetCryptoStream(&server);
 
   // The client's handshake must have been started already.
@@ -160,22 +163,24 @@ int CryptoTestUtils::HandshakeWithFakeServer(
 // static
 int CryptoTestUtils::HandshakeWithFakeClient(
     PacketSavingConnection* server_conn,
-    QuicCryptoServerStream* server) {
+    QuicCryptoServerStream* server,
+    const FakeClientOptions& options) {
   QuicGuid guid(1);
   IPAddressNumber ip;
   CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
   IPEndPoint addr = IPEndPoint(ip, 1);
   PacketSavingConnection* client_conn =
       new PacketSavingConnection(guid, addr, false);
-  TestSession client_session(client_conn, true);
-  QuicConfig config;
+  TestSession client_session(client_conn, QuicConfig(), false);
   QuicCryptoClientConfig crypto_config;
 
-  config.SetDefaults();
+  client_session.config()->SetDefaults();
   crypto_config.SetDefaults();
   // TODO(rtenneti): Enable testing of ProofVerifier.
-  // crypto_config.SetProofVerifier(ProofVerifierForTesting());
-  QuicCryptoClientStream client("test.example.com", config, &client_session,
+  // if (!options.dont_verify_certs) {
+  //  crypto_config.SetProofVerifier(ProofVerifierForTesting());
+  // }
+  QuicCryptoClientStream client("test.example.com", &client_session,
                                 &crypto_config);
   client_session.SetCryptoStream(&client);
 
@@ -196,15 +201,9 @@ void CryptoTestUtils::SetupCryptoServerConfigForTest(
     QuicConfig* config,
     QuicCryptoServerConfig* crypto_config) {
   config->SetDefaults();
-  CryptoHandshakeMessage extra_tags;
-  config->ToHandshakeMessage(&extra_tags);
-
   scoped_ptr<CryptoHandshakeMessage> scfg(
       crypto_config->AddDefaultConfig(
-          rand, clock, extra_tags, QuicCryptoServerConfig::kDefaultExpiry));
-  if (!config->SetFromHandshakeMessage(*scfg)) {
-    CHECK(false) << "Crypto config could not be parsed by QuicConfig.";
-  }
+          rand, clock, QuicCryptoServerConfig::kDefaultExpiry));
 }
 
 // static
@@ -274,8 +273,8 @@ class MockCommonCertSets : public CommonCertSets {
 };
 
 CommonCertSets* CryptoTestUtils::MockCommonCertSets(StringPiece cert,
-                                                   uint64 hash,
-                                                   uint32 index) {
+                                                    uint64 hash,
+                                                    uint32 index) {
   return new class MockCommonCertSets(cert, hash, index);
 }
 

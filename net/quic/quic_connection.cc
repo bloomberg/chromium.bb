@@ -30,17 +30,6 @@ namespace {
 // This will likely have to be tuned.
 const QuicPacketSequenceNumber kMaxPacketGap = 5000;
 
-// The maximum number of nacks which can be transmitted in a single ack packet
-// without exceeding kMaxPacketSize.
-// TODO(satyamshekhar): Get rid of magic numbers and move this to protocol.h
-// 16 - Min ack frame size.
-// 16 - Crypto hash for integrity. Not a static value. Use
-// QuicEncrypter::GetMaxPlaintextSize.
-size_t GetMaxUnackedPackets(bool include_version)  {
-  return (kMaxPacketSize - GetPacketHeaderSize(include_version) - 16 - 16) /
-      kSequenceNumberSize;
-}
-
 // We want to make sure if we get a large nack packet, we don't queue up too
 // many packets at once.  10 is arbitrary.
 const int kMaxRetransmissionsPerAck = 10;
@@ -58,7 +47,11 @@ const int kMaxPacketsToSerializeAtOnce = 6;
 
 // Limit the number of packets we send per retransmission-alarm so we
 // eventually cede.  10 is arbitrary.
-const int kMaxPacketsPerRetransmissionAlarm = 10;
+const size_t kMaxPacketsPerRetransmissionAlarm = 10;
+
+// Limit the number of FEC groups to two.  If we get enough out of order packets
+// that this becomes limiting, we can revisit.
+const size_t kMaxFecGroups = 2;
 
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
@@ -91,20 +84,20 @@ QuicConnection::QuicConnection(QuicGuid guid,
       debug_visitor_(NULL),
       packet_creator_(guid_, &framer_, random_generator_, is_server),
       packet_generator_(this, &packet_creator_),
-      timeout_(QuicTime::Delta::FromMicroseconds(kDefaultTimeoutUs)),
+      timeout_(QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs)),
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_packet_(clock_->ApproximateNow()),
       time_largest_observed_(QuicTime::Zero()),
       congestion_manager_(clock_, kTCP),
       version_negotiation_state_(START_NEGOTIATION),
       quic_version_(kQuicVersion1),
+      max_packets_per_retransmission_alarm_(kMaxPacketsPerRetransmissionAlarm),
       is_server_(is_server),
       connected_(true),
       received_truncated_ack_(false),
-      send_ack_in_response_to_packet_(false) {
+      send_ack_in_response_to_packet_(false),
+      address_migrating_(false) {
   helper_->SetConnection(this);
-  // TODO(satyamshekhar): Have a smaller timeout till version is negotiated and
-  // connection is established (CHLO fully processed).
   helper_->SetTimeoutAlarm(timeout_);
   framer_.set_visitor(this);
   framer_.set_entropy_calculator(&entropy_manager_);
@@ -160,10 +153,6 @@ void QuicConnection::OnPacket() {
   time_of_last_received_packet_ = clock_->Now();
   DVLOG(1) << "time of last received packet: "
            << time_of_last_received_packet_.ToDebuggingValue();
-
-  // TODO(alyssar, rch) handle migration!
-  self_address_ = last_self_address_;
-  peer_address_ = last_peer_address_;
 }
 
 void QuicConnection::OnPublicResetPacket(
@@ -175,6 +164,12 @@ void QuicConnection::OnPublicResetPacket(
 }
 
 bool QuicConnection::OnProtocolVersionMismatch(QuicTag received_version) {
+  if (address_migrating_) {
+    SendConnectionCloseWithDetails(
+        QUIC_ERROR_MIGRATING_ADDRESS,
+        "Address migration is not yet a supported feature");
+  }
+
   // TODO(satyamshekhar): Implement no server state in this mode.
   if (!is_server_) {
     LOG(DFATAL) << "Framer called OnProtocolVersionMismatch for server. "
@@ -226,6 +221,11 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicTag received_version) {
 // Handles version negotiation for client connection.
 void QuicConnection::OnVersionNegotiationPacket(
     const QuicVersionNegotiationPacket& packet) {
+  if (address_migrating_) {
+    SendConnectionCloseWithDetails(
+        QUIC_ERROR_MIGRATING_ADDRESS,
+        "Address migration is not yet a supported feature");
+  }
   if (is_server_) {
     LOG(DFATAL) << "Framer parsed VersionNegotiationPacket for server."
                 << "Closing connection.";
@@ -268,6 +268,13 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     debug_visitor_->OnPacketHeader(header);
   }
 
+  if (address_migrating_) {
+    SendConnectionCloseWithDetails(
+        QUIC_ERROR_MIGRATING_ADDRESS,
+        "Address migration is not yet a supported feature");
+    return false;
+  }
+
   // Will be decrement below if we fall through to return true;
   ++stats_.packets_dropped;
 
@@ -281,7 +288,8 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
             last_header_.packet_sequence_number)) {
     DLOG(INFO) << ENDPOINT << "Packet " << header.packet_sequence_number
                << " out of bounds.  Discarding";
-    // TODO(alyssar) close the connection entirely.
+    SendConnectionCloseWithDetails(QUIC_INVALID_PACKET_HEADER,
+                                   "Packet sequence number out of bounds");
     return false;
   }
 
@@ -326,7 +334,9 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
 void QuicConnection::OnFecProtectedPayload(StringPiece payload) {
   DCHECK_NE(0u, last_header_.fec_group);
   QuicFecGroup* group = GetFecGroup();
-  group->Update(last_header_, payload);
+  if (group != NULL) {
+    group->Update(last_header_, payload);
+  }
 }
 
 bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
@@ -356,16 +366,9 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
-  // TODO(satyamshekhar): Not true if missing_packets.size() was actually
-  // kMaxUnackedPackets. This can result in a dead connection if all the
-  // missing packets get lost during retransmission. Now the new packets(or the
-  // older packets) will not be retransmitted due to RTO
-  // since received_truncated_ack_ is true and their sequence_number is >
-  // peer_largest_observed_packet. Fix either by resetting it in
-  // MaybeRetransmitPacketForRTO or keeping an explicit flag for ack truncation.
   received_truncated_ack_ =
       incoming_ack.received_info.missing_packets.size() >=
-      GetMaxUnackedPackets(last_header_.public_header.version_flag);
+      QuicFramer::GetMaxUnackedPackets(last_header_.public_header.version_flag);
 
   UpdatePacketInformationReceivedByPeer(incoming_ack);
   UpdatePacketInformationSentByPeer(incoming_ack);
@@ -422,7 +425,8 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
   // We can't have too many unacked packets, or our ack frames go over
   // kMaxPacketSize.
   DCHECK_LE(incoming_ack.received_info.missing_packets.size(),
-            GetMaxUnackedPackets(last_header_.public_header.version_flag));
+            QuicFramer::GetMaxUnackedPackets(
+                last_header_.public_header.version_flag));
 
   if (incoming_ack.sent_info.least_unacked < peer_least_packet_awaiting_ack_) {
     DLOG(ERROR) << ENDPOINT << "Peer's sent low least_unacked: "
@@ -581,8 +585,10 @@ void QuicConnection::UpdatePacketInformationSentByPeer(
 void QuicConnection::OnFecData(const QuicFecData& fec) {
   DCHECK_NE(0u, last_header_.fec_group);
   QuicFecGroup* group = GetFecGroup();
-  group->UpdateFec(last_header_.packet_sequence_number,
-                   last_header_.fec_entropy_flag, fec);
+  if (group != NULL) {
+    group->UpdateFec(last_header_.packet_sequence_number,
+                     last_header_.fec_entropy_flag, fec);
+  }
 }
 
 bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
@@ -618,8 +624,12 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
 }
 
 void QuicConnection::OnPacketComplete() {
-  // TODO(satyamshekhar): Don't do anything if this packet closed the
-  // connection.
+  // Don't do anything if this packet closed the connection.
+  if (!connected_) {
+    last_stream_frames_.clear();
+    return;
+  }
+
   if (!last_packet_revived_) {
     DLOG(INFO) << ENDPOINT << "Got packet "
                << last_header_.packet_sequence_number
@@ -717,8 +727,19 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   }
   last_packet_revived_ = false;
   last_size_ = packet.length();
-  last_self_address_ = self_address;
-  last_peer_address_ = peer_address;
+
+  address_migrating_ = false;
+
+  if (peer_address_.address().empty()) {
+    peer_address_ = peer_address;
+  }
+  if (self_address_.address().empty()) {
+    self_address_ = self_address;
+  }
+
+  if (!(peer_address == peer_address_) && (self_address == self_address_)) {
+    address_migrating_ = true;
+  }
 
   stats_.bytes_received += packet.length();
   ++stats_.packets_received;
@@ -826,12 +847,18 @@ bool QuicConnection::MaybeRetransmitPacketForRTO(
     return true;
   }
 
+  RetransmissionMap::iterator retransmission_it =
+      retransmission_map_.find(sequence_number);
   // If the packet hasn't been acked and we're getting truncated acks, ignore
   // any RTO for packets larger than the peer's largest observed packet; it may
   // have been received by the peer and just wasn't acked due to the ack frame
   // running out of space.
   if (received_truncated_ack_ &&
-      sequence_number > peer_largest_observed_packet_) {
+      sequence_number > peer_largest_observed_packet_ &&
+      // We allow retransmission of already retransmitted packets so that we
+      // retransmit packets that were retransmissions of the packet with
+      // sequence number < the largest observed field of the truncated ack.
+      retransmission_it->second.number_retransmissions == 0) {
     return false;
   } else {
     ++stats_.rto_count;
@@ -901,8 +928,7 @@ bool QuicConnection::CanWrite(Retransmission retransmission,
   QuicTime::Delta delay = congestion_manager_.TimeUntilSend(
       now, retransmission, retransmittable);
   if (delay.IsInfinite()) {
-    // TODO(pwestin): should be false but trigger other bugs see b/8350327.
-    return true;
+    return false;
   }
 
   // If the scheduler requires a delay, then we can not send this packet now.
@@ -983,20 +1009,23 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
 
   int error;
   QuicTime now = clock_->Now();
-  int rv = helper_->WritePacketToWire(*encrypted, &error);
-  if (rv == -1 && helper_->IsWriteBlocked(error)) {
-    // TODO(satyashekhar): It might be more efficient (fewer system calls), if
-    // all connections share this variable i.e this becomes a part of
-    // PacketWriterInterface.
-    write_blocked_ = true;
-    // If the socket buffers the the data, then the packet should not
-    // be queued and sent again, which would result in an unnecessary duplicate
-    // packet being sent.
-    return helper_->IsWriteBlockedDataBuffered();
+  if (helper_->WritePacketToWire(*encrypted, &error) == -1) {
+    if (helper_->IsWriteBlocked(error)) {
+      // TODO(satyashekhar): It might be more efficient (fewer system calls), if
+      // all connections share this variable i.e this becomes a part of
+      // PacketWriterInterface.
+      write_blocked_ = true;
+      // If the socket buffers the the data, then the packet should not
+      // be queued and sent again, which would result in an unnecessary
+      // duplicate packet being sent.
+      return helper_->IsWriteBlockedDataBuffered();
+    }
+    // We can't send an error as the socket is presumably borked.
+    CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
+    return false;
   }
   time_of_last_sent_packet_ = now;
   DVLOG(1) << "time of last sent packet: " << now.ToDebuggingValue();
-  // TODO(wtc): Is it correct to continue if the write failed.
 
   // Set the retransmit alarm only when we have sent the packet to the client
   // and not when it goes to the pending queue, otherwise we will end up adding
@@ -1113,7 +1142,7 @@ QuicTime QuicConnection::OnRetransmissionTimeout() {
   // want to set it to the RTO of B when we return from this function.
   handling_retransmission_timeout_ = true;
 
-  for (int i = 0; i < kMaxPacketsPerRetransmissionAlarm &&
+  for (size_t i = 0; i < max_packets_per_retransmission_alarm_ &&
            !retransmission_timeouts_.empty(); ++i) {
     RetransmissionInfo retransmission_info = retransmission_timeouts_.top();
     DCHECK(retransmission_info.scheduled_time.IsInitialized());
@@ -1206,7 +1235,16 @@ QuicFecGroup* QuicConnection::GetFecGroup() {
     return NULL;
   }
   if (group_map_.count(fec_group_num) == 0) {
-    // TODO(rch): limit the number of active FEC groups.
+    if (group_map_.size() >= kMaxFecGroups) {  // Too many groups
+      if (fec_group_num < group_map_.begin()->first) {
+        // The group being requested is a group we've seen before and deleted.
+        // Don't recreate it.
+        return NULL;
+      }
+      // Clear the lowest group number.
+      delete group_map_.begin()->second;
+      group_map_.erase(group_map_.begin());
+    }
     group_map_[fec_group_num] = new QuicFecGroup();
   }
   return group_map_[fec_group_num];

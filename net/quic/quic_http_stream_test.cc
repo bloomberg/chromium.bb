@@ -179,8 +179,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     crypto_config_.SetDefaults();
     session_.reset(new QuicClientSession(connection_, socket, NULL,
                                          &crypto_client_stream_factory_,
-                                         "www.google.com", &crypto_config_,
-                                         NULL));
+                                         "www.google.com", QuicConfig(),
+                                         &crypto_config_, NULL));
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
     QuicReliableClientStream* stream =
@@ -265,7 +265,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
   testing::StrictMock<MockConnectionVisitor> visitor_;
   scoped_ptr<QuicHttpStream> stream_;
   scoped_ptr<QuicClientSession> session_;
-  QuicConfig* config_;
   QuicCryptoClientConfig crypto_config_;
   TestCompletionCallback callback_;
   HttpRequestInfo request_;

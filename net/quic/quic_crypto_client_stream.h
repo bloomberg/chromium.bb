@@ -13,7 +13,6 @@
 
 namespace net {
 
-class QuicConfig;
 class QuicSession;
 
 namespace test {
@@ -23,7 +22,6 @@ class CryptoTestUtils;
 class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
  public:
   QuicCryptoClientStream(const string& server_hostname,
-                         const QuicConfig& config,
                          QuicSession* session,
                          QuicCryptoClientConfig* crypto_config);
   virtual ~QuicCryptoClientStream();
@@ -61,7 +59,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // connection has sent.
   int num_client_hellos_;
 
-  const QuicConfig& config_;
   QuicCryptoClientConfig* const crypto_config_;
 
   // Client's connection nonce (4-byte timestamp + 28 random bytes)

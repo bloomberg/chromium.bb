@@ -26,6 +26,10 @@ class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicStreamFactory;
 
+namespace test {
+class QuicClientSessionPeer;
+}  // namespace test
+
 class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
  public:
   // Constructs a new session which will own |connection| and |helper|, but
@@ -36,6 +40,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
                     QuicStreamFactory* stream_factory,
                     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
                     const std::string& server_hostname,
+                    const QuicConfig& config,
                     QuicCryptoClientConfig* crypto_config,
                     NetLog* net_log);
 
@@ -70,13 +75,11 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
       QuicStreamId id) OVERRIDE;
 
  private:
+  friend class test::QuicClientSessionPeer;
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
 
   base::WeakPtrFactory<QuicClientSession> weak_factory_;
-  // config_ contains non-crypto configuration options negotiated in the crypto
-  // handshake.
-  QuicConfig config_;
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
   scoped_ptr<DatagramClientSocket> socket_;

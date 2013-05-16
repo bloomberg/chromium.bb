@@ -107,7 +107,6 @@ QuicErrorCode CryptoHandshakeMessage::GetTaglist(QuicTag tag,
                                                  const QuicTag** out_tags,
                                                  size_t* out_len) const {
   QuicTagValueMap::const_iterator it = tag_value_map_.find(tag);
-  *out_len = 0;
   QuicErrorCode ret = QUIC_NO_ERROR;
 
   if (it == tag_value_map_.end()) {
@@ -221,40 +220,12 @@ QuicErrorCode CryptoHandshakeMessage::GetPOD(
   return ret;
 }
 
-// TagToString is a utility function for pretty-printing handshake messages
-// that converts a tag to a string. It will try to maintain the human friendly
-// name if possible (i.e. kABCD -> "ABCD"), or will just treat it as a number
-// if not.
-static string TagToString(QuicTag tag) {
-  char chars[4];
-  bool ascii = true;
-  const QuicTag orig_tag = tag;
-
-  for (size_t i = 0; i < sizeof(chars); i++) {
-    chars[i] = tag;
-    if (chars[i] == 0 && i == 3) {
-      chars[i] = ' ';
-    }
-    if (!isprint(static_cast<unsigned char>(chars[i]))) {
-      ascii = false;
-      break;
-    }
-    tag >>= 8;
-  }
-
-  if (ascii) {
-    return string(chars, sizeof(chars));
-  }
-
-  return base::UintToString(orig_tag);
-}
-
 string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
-  string ret = string(2 * indent, ' ') + TagToString(tag_) + "<\n";
+  string ret = string(2 * indent, ' ') + QuicUtils::TagToString(tag_) + "<\n";
   ++indent;
   for (QuicTagValueMap::const_iterator it = tag_value_map_.begin();
        it != tag_value_map_.end(); ++it) {
-    ret += string(2 * indent, ' ') + TagToString(it->first) + ": ";
+    ret += string(2 * indent, ' ') + QuicUtils::TagToString(it->first) + ": ";
 
     bool done = false;
     switch (it->first) {
@@ -280,7 +251,7 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
             if (j > 0) {
               ret += ",";
             }
-            ret += TagToString(tag);
+            ret += QuicUtils::TagToString(tag);
           }
           done = true;
         }
@@ -331,7 +302,7 @@ const char QuicCryptoConfig::kForwardSecureLabel[] =
 
 QuicCryptoConfig::QuicCryptoConfig()
     : version(0),
-      common_cert_set_(new CommonCertSetsQUIC) {
+      common_cert_sets(new CommonCertSetsQUIC) {
 }
 
 QuicCryptoConfig::~QuicCryptoConfig() {}
@@ -476,13 +447,19 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     out->SetStringPiece(kSourceAddressTokenTag, cached->source_address_token());
   }
 
-  out->SetTaglist(kPDMD, kX509, 0);
+  if (proof_verifier_.get()) {
+    out->SetTaglist(kPDMD, kX509, 0);
+  }
 
-  if (common_cert_set_.get()) {
-    out->SetStringPiece(kCCS, common_cert_set_->GetCommonHashes());
+  if (common_cert_sets.get()) {
+    out->SetStringPiece(kCCS, common_cert_sets->GetCommonHashes());
   }
 
   const vector<string>& certs = cached->certs();
+  // We save |certs| in the QuicCryptoNegotiatedParameters so that, if the
+  // client config is being used for multiple connections, another connection
+  // doesn't update the cached certificates and cause us to be unable to
+  // process the server's compressed certificate chain.
   out_params->cached_certs = certs;
   if (!certs.empty()) {
     vector<uint64> hashes;
@@ -492,10 +469,6 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
       hashes.push_back(QuicUtils::FNV1a_64_Hash(i->data(), i->size()));
     }
     out->SetVector(kCCRT, hashes);
-    // We save |certs| in the QuicCryptoNegotiatedParameters so that, if the
-    // client config is being used for multiple connections, another connection
-    // doesn't update the cached certificates and cause us to be unable to
-    // process the server's compressed certificate chain.
   }
 }
 
@@ -557,12 +530,12 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   }
 
   size_t key_exchange_index;
-  if (!CryptoUtils::FindMutualTag(aead, their_aeads, num_their_aeads,
-                                  CryptoUtils::PEER_PRIORITY, &out_params->aead,
-                                  NULL) ||
-      !CryptoUtils::FindMutualTag(
+  if (!QuicUtils::FindMutualTag(aead, their_aeads, num_their_aeads,
+                                QuicUtils::PEER_PRIORITY, &out_params->aead,
+                                NULL) ||
+      !QuicUtils::FindMutualTag(
           kexs, their_key_exchanges, num_their_key_exchanges,
-          CryptoUtils::PEER_PRIORITY, &out_params->key_exchange,
+          QuicUtils::PEER_PRIORITY, &out_params->key_exchange,
           &key_exchange_index)) {
     *error_details = "Unsupported AEAD or KEXS";
     return QUIC_CRYPTO_NO_SUPPORT;
@@ -667,7 +640,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
       rej.GetStringPiece(kCertificateTag, &cert_bytes)) {
     vector<string> certs;
     if (!CertCompressor::DecompressChain(cert_bytes, out_params->cached_certs,
-                                         common_cert_set_.get(), &certs)) {
+                                         common_cert_sets.get(), &certs)) {
       *error_details = "Certificate data invalid";
       return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
     }

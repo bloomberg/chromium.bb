@@ -76,6 +76,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   virtual uint32 ProcessData(const char* data, uint32 data_len) = 0;
 
   virtual bool OnDecompressedData(base::StringPiece data) OVERRIDE;
+  virtual void OnDecompressionError() OVERRIDE;
 
   // Called to close the stream from this end.
   virtual void Close(QuicRstStreamErrorCode error);

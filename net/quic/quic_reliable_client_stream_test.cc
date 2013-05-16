@@ -42,7 +42,6 @@ class QuicReliableClientStreamTest : public ::testing::Test {
   testing::StrictMock<MockDelegate> delegate_;
   MockSession session_;
   QuicReliableClientStream stream_;
-  QuicConfig config_;
   QuicCryptoClientConfig crypto_config_;
 };
 

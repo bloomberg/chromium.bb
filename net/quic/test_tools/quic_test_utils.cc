@@ -235,7 +235,7 @@ bool PacketSavingConnection::SendOrQueuePacket(
 }
 
 MockSession::MockSession(QuicConnection* connection, bool is_server)
-    : QuicSession(connection, is_server) {
+    : QuicSession(connection, QuicConfig(), is_server) {
   ON_CALL(*this, WriteData(_, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
@@ -243,8 +243,10 @@ MockSession::MockSession(QuicConnection* connection, bool is_server)
 MockSession::~MockSession() {
 }
 
-TestSession::TestSession(QuicConnection* connection, bool is_server)
-    : QuicSession(connection, is_server),
+TestSession::TestSession(QuicConnection* connection,
+                         const QuicConfig& config,
+                         bool is_server)
+    : QuicSession(connection, config, is_server),
       crypto_stream_(NULL) {
 }
 
@@ -402,6 +404,10 @@ QuicPacketEntropyHash TestEntropyCalculator::ReceivedEntropyHash(
 bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {
   data.AppendToString(&data_);
   return true;
+}
+
+void TestDecompressorVisitor::OnDecompressionError() {
+  error_ = true;
 }
 
 }  // namespace test

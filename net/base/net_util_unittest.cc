@@ -3171,6 +3171,14 @@ TEST(NetUtilTest, GetHostOrSpecFromURL) {
             GetHostOrSpecFromURL(GURL("file:///tmp/test.html")));
 }
 
+TEST(NetUtilTest, GetAddressFamily) {
+  IPAddressNumber number;
+  EXPECT_TRUE(ParseIPLiteralToNumber("192.168.0.1", &number));
+  EXPECT_EQ(ADDRESS_FAMILY_IPV4, GetAddressFamily(number));
+  EXPECT_TRUE(ParseIPLiteralToNumber("1:abcd::3:4:ff", &number));
+  EXPECT_EQ(ADDRESS_FAMILY_IPV6, GetAddressFamily(number));
+}
+
 // Test that invalid IP literals fail to parse.
 TEST(NetUtilTest, ParseIPLiteralToNumber_FailParse) {
   IPAddressNumber number;

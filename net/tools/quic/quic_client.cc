@@ -63,6 +63,8 @@ QuicClient::~QuicClient() {
 }
 
 bool QuicClient::Initialize() {
+  DCHECK(!initialized_);
+
   epoll_server_.set_timeout_in_us(50 * 1000);
   crypto_config_.SetDefaults();
   int address_family = server_address_.GetSockAddrFamily();
@@ -167,6 +169,7 @@ void QuicClient::Disconnect() {
   epoll_server_.UnregisterFD(fd_);
   close(fd_);
   fd_ = -1;
+  initialized_ = false;
 }
 
 void QuicClient::SendRequestsAndWaitForResponse(int argc, char *argv[]) {

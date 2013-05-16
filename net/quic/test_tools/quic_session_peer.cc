@@ -10,8 +10,14 @@ namespace net {
 namespace test {
 
 // static
-void QuicSessionPeer::SetNextStreamId(QuicStreamId id, QuicSession* session) {
+void QuicSessionPeer::SetNextStreamId(QuicSession* session, QuicStreamId id) {
   session->next_stream_id_ = id;
+}
+
+// static
+void QuicSessionPeer::SetMaxOpenStreams(QuicSession* session,
+                                        uint32 max_streams) {
+  session->max_open_streams_ = max_streams;
 }
 
 }  // namespace test

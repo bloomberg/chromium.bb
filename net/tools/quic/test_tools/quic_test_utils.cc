@@ -54,8 +54,14 @@ bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {
   return true;
 }
 
-TestSession::TestSession(QuicConnection* connection, bool is_server)
-    : QuicSession(connection, is_server),
+void TestDecompressorVisitor::OnDecompressionError() {
+  error_ = true;
+}
+
+TestSession::TestSession(QuicConnection* connection,
+                         const QuicConfig& config,
+                         bool is_server)
+    : QuicSession(connection, config, is_server),
       crypto_stream_(NULL) {
 }
 

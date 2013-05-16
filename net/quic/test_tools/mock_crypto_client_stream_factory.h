@@ -22,7 +22,6 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
 
   virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(
       const string& server_hostname,
-      const QuicConfig& config,
       QuicSession* session,
       QuicCryptoClientConfig* crypto_config) OVERRIDE;
 

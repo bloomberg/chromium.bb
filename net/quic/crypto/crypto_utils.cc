@@ -17,53 +17,6 @@ using std::string;
 
 namespace net {
 
-// static
-bool CryptoUtils::FindMutualTag(const QuicTagVector& our_tags_vector,
-                                const QuicTag* their_tags,
-                                size_t num_their_tags,
-                                Priority priority,
-                                QuicTag* out_result,
-                                size_t* out_index) {
-  if (our_tags_vector.empty()) {
-    return false;
-  }
-  const size_t num_our_tags = our_tags_vector.size();
-  const QuicTag* our_tags = &our_tags_vector[0];
-
-  size_t num_priority_tags, num_inferior_tags;
-  const QuicTag* priority_tags;
-  const QuicTag* inferior_tags;
-  if (priority == LOCAL_PRIORITY) {
-    num_priority_tags = num_our_tags;
-    priority_tags = our_tags;
-    num_inferior_tags = num_their_tags;
-    inferior_tags = their_tags;
-  } else {
-    num_priority_tags = num_their_tags;
-    priority_tags = their_tags;
-    num_inferior_tags = num_our_tags;
-    inferior_tags = our_tags;
-  }
-
-  for (size_t i = 0; i < num_priority_tags; i++) {
-    for (size_t j = 0; j < num_inferior_tags; j++) {
-      if (priority_tags[i] == inferior_tags[j]) {
-        *out_result = priority_tags[i];
-        if (out_index) {
-          if (priority == LOCAL_PRIORITY) {
-            *out_index = j;
-          } else {
-            *out_index = i;
-          }
-        }
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
 void CryptoUtils::GenerateNonce(QuicWallTime now,
                                 QuicRandom* random_generator,
                                 StringPiece orbit,

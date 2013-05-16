@@ -24,6 +24,10 @@
 namespace net {
 namespace tools {
 
+namespace test {
+class QuicClientPeer;
+}  // namespace test
+
 class QuicClient : public EpollCallbackInterface {
  public:
   QuicClient(IPEndPoint server_address, const std::string& server_hostname);
@@ -108,6 +112,8 @@ class QuicClient : public EpollCallbackInterface {
   int fd() { return fd_; }
 
  private:
+  friend class net::tools::test::QuicClientPeer;
+
   // Read a UDP packet and hand it to the framer.
   bool ReadAndProcessPacket();
 

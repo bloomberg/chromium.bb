@@ -30,6 +30,10 @@ class RetransmissionAlarm;
 class SendAlarm;
 class TimeoutAlarm;
 
+namespace test {
+class QuicEpollConnectionHelperPeer;
+}  // namespace test
+
 class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
  public:
   QuicEpollConnectionHelper(int fd, EpollServer* eps);
@@ -56,6 +60,7 @@ class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
 
  private:
   friend class QuicConnectionPeer;
+  friend class net::tools::test::QuicEpollConnectionHelperPeer;
 
   QuicPacketWriter* writer_;  // Not owned
   EpollServer* epoll_server_;  // Not owned.

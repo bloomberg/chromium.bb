@@ -365,6 +365,11 @@ bool ReliableQuicStream::OnDecompressedData(StringPiece data) {
   return true;
 }
 
+void ReliableQuicStream::OnDecompressionError() {
+  session_->connection()->SendConnectionClose(QUIC_DECOMPRESSION_FAILURE);
+}
+
+
 void ReliableQuicStream::CloseWriteSide() {
   if (write_side_closed_) {
     return;

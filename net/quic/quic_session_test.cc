@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "net/quic/quic_session.h"
-#include "net/quic/quic_connection.h"
 
 #include <set>
 
 #include "base/hash_tables.h"
 #include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/quic_connection.h"
+#include "net/quic/quic_protocol.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,6 +34,12 @@ class TestCryptoStream : public QuicCryptoStream {
       const CryptoHandshakeMessage& message) OVERRIDE {
     encryption_established_ = true;
     handshake_confirmed_ = true;
+    CryptoHandshakeMessage msg;
+    string error_details;
+    session()->config()->ToHandshakeMessage(&msg);
+    const QuicErrorCode error = session()->config()->ProcessClientHello(
+        msg, &error_details);
+    EXPECT_EQ(QUIC_NO_ERROR, error);
     session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
   }
 };
@@ -52,8 +60,9 @@ class TestStream : public ReliableQuicStream {
 class TestSession : public QuicSession {
  public:
   TestSession(QuicConnection* connection, bool is_server)
-      : QuicSession(connection, is_server),
+      : QuicSession(connection, QuicConfig(), is_server),
         crypto_stream_(this) {
+    config()->SetDefaults();
   }
 
   virtual QuicCryptoStream* GetCryptoStream() OVERRIDE {
@@ -84,6 +93,7 @@ class TestSession : public QuicSession {
   }
 
   TestCryptoStream crypto_stream_;
+  QuicConfig config_;
 };
 
 class QuicSessionTest : public ::testing::Test {
@@ -166,6 +176,16 @@ TEST_F(QuicSessionTest, StreamIdTooLarge) {
   session_.GetIncomingReliableStream(105);
 }
 
+TEST_F(QuicSessionTest, DecompressionError) {
+  ReliableQuicStream* stream = session_.GetIncomingReliableStream(3);
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_DECOMPRESSION_FAILURE));
+  const char data[] =
+      "\1\0\0\0"   // headers id
+      "\0\0\0\4"   // length
+      "abcd";      // invalid compressed data
+  stream->ProcessRawData(data, arraysize(data));
+}
+
 TEST_F(QuicSessionTest, OnCanWrite) {
   TestStream* stream2 = session_.CreateOutgoingReliableStream();
   TestStream* stream4 = session_.CreateOutgoingReliableStream();
@@ -211,6 +231,15 @@ TEST_F(QuicSessionTest, SendGoAway) {
 
   EXPECT_CALL(*connection_, SendRstStream(3u, QUIC_STREAM_PEER_GOING_AWAY));
   EXPECT_FALSE(session_.GetIncomingReliableStream(3u));
+}
+
+TEST_F(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
+  EXPECT_EQ(kDefaultInitialTimeoutSecs,
+            QuicConnectionPeer::GetTimeout(connection_).ToSeconds());
+  CryptoHandshakeMessage msg;
+  session_.crypto_stream_.OnHandshakeMessage(msg);
+  EXPECT_EQ(kDefaultTimeoutSecs,
+            QuicConnectionPeer::GetTimeout(connection_).ToSeconds());
 }
 
 }  // namespace

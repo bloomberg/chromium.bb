@@ -17,16 +17,22 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
+#include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_server.h"
+#include "net/tools/quic/quic_socket_utils.h"
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
+#include "net/tools/quic/test_tools/quic_client_peer.h"
+#include "net/tools/quic/test_tools/quic_epoll_connection_helper_peer.h"
 #include "net/tools/quic/test_tools/quic_test_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
 using base::WaitableEvent;
+using net::test::QuicConnectionPeer;
 using net::test::QuicSessionPeer;
 using net::test::ReliableQuicStreamPeer;
 using std::string;
@@ -209,7 +215,7 @@ TEST_F(EndToEndTest, SimpleRequestResponse) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
 TEST_F(EndToEndTest, SimpleRequestResponsev6) {
@@ -220,12 +226,12 @@ TEST_F(EndToEndTest, SimpleRequestResponsev6) {
   }
 
   IPAddressNumber ip;
-  CHECK(net::ParseIPLiteralToNumber("::", &ip));
+  CHECK(net::ParseIPLiteralToNumber("::1", &ip));
   server_address_ = IPEndPoint(ip, server_address_.port());
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
 TEST_F(EndToEndTest, SeparateFinPacket) {
@@ -247,7 +253,7 @@ TEST_F(EndToEndTest, SeparateFinPacket) {
 
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 
   request.AddBody("foo", true);
 
@@ -255,7 +261,7 @@ TEST_F(EndToEndTest, SeparateFinPacket) {
   client_->SendData(std::string(), true);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
 TEST_F(EndToEndTest, MultipleRequestResponse) {
@@ -268,9 +274,9 @@ TEST_F(EndToEndTest, MultipleRequestResponse) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
 TEST_F(EndToEndTest, MultipleClients) {
@@ -294,12 +300,12 @@ TEST_F(EndToEndTest, MultipleClients) {
   client_->SendData("bar", true);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 
   client2->SendData("eep", true);
   client2->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client2->response_body());
-  EXPECT_EQ(200ul, client2->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client2->response_headers()->parsed_response_code());
 }
 
 TEST_F(EndToEndTest, RequestOverMultiplePackets) {
@@ -329,7 +335,7 @@ TEST_F(EndToEndTest, RequestOverMultiplePackets) {
   // Make sure our request is too large to fit in one packet.
   EXPECT_GT(strlen(kLargeRequest), min_payload_size);
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest(kLargeRequest));
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
 TEST_F(EndToEndTest, MultipleFramesRandomOrder) {
@@ -360,7 +366,7 @@ TEST_F(EndToEndTest, MultipleFramesRandomOrder) {
   // Make sure our request is too large to fit in one packet.
   EXPECT_GT(strlen(kLargeRequest), min_payload_size);
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest(kLargeRequest));
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
 TEST_F(EndToEndTest, PostMissingBytes) {
@@ -382,7 +388,7 @@ TEST_F(EndToEndTest, PostMissingBytes) {
   // triggering an error response.
   client_->SendCustomSynchronousRequest(request);
   EXPECT_EQ("bad", client_->response_body());
-  EXPECT_EQ(500ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
 }
 
 TEST_F(EndToEndTest, LargePost) {
@@ -460,7 +466,7 @@ TEST_F(EndToEndTest, InvalidStream) {
   request.AddBody(body, true);
   // Force the client to write with a stream ID belonging to a nonexistant
   // server-side stream.
-  QuicSessionPeer::SetNextStreamId(2, client_->client()->session());
+  QuicSessionPeer::SetNextStreamId(client_->client()->session(), 2);
 
   client_->SendCustomSynchronousRequest(request);
 //  EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
@@ -505,6 +511,7 @@ TEST_F(EndToEndTest, MultipleTermination) {
 
 /*TEST_F(EndToEndTest, Timeout) {
   config_.set_idle_connection_state_lifetime(
+      QuicTime::Delta::FromMicroseconds(500),
       QuicTime::Delta::FromMicroseconds(500));
   // Note: we do NOT ASSERT_TRUE: we may time out during initial handshake:
   // that's enough to validate timeout in this case.
@@ -524,10 +531,58 @@ TEST_F(EndToEndTest, ResetConnection) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
   client_->ResetConnection();
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));
-  EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+}
+
+class WrongAddressWriter : public QuicPacketWriter {
+ public:
+  explicit WrongAddressWriter(int fd) : fd_(fd) {
+    IPAddressNumber ip;
+    CHECK(net::ParseIPLiteralToNumber("127.0.0.2", &ip));
+    self_address_ = IPEndPoint(ip, 0);
+  }
+
+  virtual int WritePacket(const char* buffer, size_t buf_len,
+                          const IPAddressNumber& real_self_address,
+                          const IPEndPoint& peer_address,
+                          QuicBlockedWriterInterface* blocked_writer,
+                          int* error) OVERRIDE {
+    return QuicSocketUtils::WritePacket(fd_, buffer, buf_len,
+                                        self_address_.address(), peer_address,
+                                        error);
+  }
+
+  IPEndPoint self_address_;
+  int fd_;
+};
+
+TEST_F(EndToEndTest, ConnectionMigration) {
+  // TODO(rtenneti): Delete this when NSS is supported.
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+
+  WrongAddressWriter writer(QuicClientPeer::GetFd(client_->client()));
+  QuicEpollConnectionHelper* helper =
+      reinterpret_cast<QuicEpollConnectionHelper*>(
+          QuicConnectionPeer::GetHelper(
+              client_->client()->session()->connection()));
+  QuicEpollConnectionHelperPeer::SetWriter(helper, &writer);
+
+  client_->SendSynchronousRequest("/bar");
+  QuicEpollConnectionHelperPeer::SetWriter(helper, NULL);
+
+  EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
+  EXPECT_EQ(QUIC_ERROR_MIGRATING_ADDRESS, client_->connection_error());
 }
 
 }  // namespace

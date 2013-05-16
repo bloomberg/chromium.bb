@@ -22,6 +22,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "net/base/address_family.h"
 #include "net/base/escape.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
@@ -457,6 +458,10 @@ NET_EXPORT IPv6SupportResult TestIPv6Support();
 // i.e. if only 127.0.0.1 and ::1 are routable.
 // Also returns false if it cannot determine this.
 bool HaveOnlyLoopbackAddresses();
+
+// Returns AddressFamily of the address.
+NET_EXPORT_PRIVATE AddressFamily GetAddressFamily(
+    const IPAddressNumber& address);
 
 // Parses an IP address literal (either IPv4 or IPv6) to its numeric value.
 // Returns true on success and fills |ip_number| with the numeric value.
