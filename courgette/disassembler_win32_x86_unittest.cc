@@ -4,11 +4,11 @@
 
 #include "courgette/disassembler_win32_x86.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "courgette/base_test_unittest.h"
 
 class DisassemblerWin32X86Test : public BaseTest {
  public:
-
   void TestExe() const;
   void TestExe64() const;
   void TestResourceDll() const;

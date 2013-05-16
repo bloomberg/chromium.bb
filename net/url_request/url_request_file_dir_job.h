@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/directory_lister.h"
@@ -32,7 +31,7 @@ class URLRequestFileDirJob
   virtual void Kill() OVERRIDE;
   virtual bool ReadRawData(IOBuffer* buf,
                            int buf_size,
-                           int *bytes_read) OVERRIDE;
+                           int* bytes_read) OVERRIDE;
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual bool GetCharset(std::string* charset) OVERRIDE;
 

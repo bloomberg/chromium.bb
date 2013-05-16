@@ -8,7 +8,6 @@
 #include <ctype.h>
 #include <algorithm>
 
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "net/base/sdch_manager.h"

@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "base/file_util.h"
-#include "base/threading/thread_restrictions.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 

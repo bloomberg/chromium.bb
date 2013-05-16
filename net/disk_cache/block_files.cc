@@ -5,7 +5,7 @@
 #include "net/disk_cache/block_files.h"
 
 #include "base/atomicops.h"
-#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"

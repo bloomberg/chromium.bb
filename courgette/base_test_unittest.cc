@@ -4,6 +4,7 @@
 
 #include "courgette/base_test_unittest.h"
 
+#include "base/file_util.h"
 #include "base/path_service.h"
 
 void BaseTest::SetUp() {
@@ -27,7 +28,6 @@ std::string BaseTest::FileContents(const char* file_name) const {
 }
 
 std::string BaseTest::FilesContents(std::list<std::string> file_names) const {
-
   std::string result;
 
   std::list<std::string>::iterator file_name = file_names.begin();

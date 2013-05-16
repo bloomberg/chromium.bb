@@ -4,8 +4,8 @@
 
 #include "net/disk_cache/disk_cache_test_util.h"
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "net/base/net_errors.h"

@@ -8,7 +8,7 @@
 #include <list>
 #include <string>
 
-#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class BaseTest : public testing::Test {

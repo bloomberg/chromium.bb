@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"

@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/base_paths.h"
-#include "base/file_util.h"
 #include "base/memory/aligned_memory.h"
 #include "base/path_service.h"
 #include "base/sync_socket.h"

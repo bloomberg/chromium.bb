@@ -10,7 +10,6 @@
 #include <mshtml.h>
 #include <shlobj.h>
 
-#include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

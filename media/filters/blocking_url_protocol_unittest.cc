@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "media/base/test_data_util.h"
 #include "media/ffmpeg/ffmpeg_common.h"

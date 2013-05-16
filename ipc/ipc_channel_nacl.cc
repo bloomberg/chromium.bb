@@ -13,7 +13,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/process_util.h"
