@@ -78,7 +78,6 @@
 #include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/css/WebKitCSSRegionRule.h"
 #include "core/css/resolver/FilterOperationResolver.h"
-#include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/Attribute.h"
@@ -2476,10 +2475,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     }
 
-    // Use the new StyleBuilder.
-    if (StyleBuilder::applyProperty(id, this, value, isInitial, isInherit))
-        return;
-
     CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
 
     float zoomFactor = state.style()->effectiveZoom();
@@ -3069,7 +3064,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyTransitionProperty:
     case CSSPropertyTransitionTimingFunction:
         return;
-    // These properties are implemented in the DeprecatedStyleBuilder lookup table or in the new StyleBuilder.
+    // These properties are implemented in the DeprecatedStyleBuilder lookup table.
     case CSSPropertyBackgroundAttachment:
     case CSSPropertyBackgroundBlendMode:
     case CSSPropertyBackgroundClip:
