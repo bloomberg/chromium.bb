@@ -34,6 +34,11 @@ template <size_t N> class EtwMofEvent: public EtwMofEventBase<N> {
  public:
   typedef EtwMofEventBase<N> Super;
 
+  // Clang and the C++ standard don't allow unqualified lookup into dependent
+  // bases, hence these using decls to explicitly pull the names out.
+  using EtwMofEventBase<N>::header;
+  using EtwMofEventBase<N>::fields;
+
   EtwMofEvent() {
     memset(static_cast<Super*>(this), 0, sizeof(Super));
   }
