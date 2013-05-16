@@ -211,11 +211,10 @@ TEST_F(EPKPChallengeMachineKeyTest, ExtensionNotWhitelisted) {
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
-TEST_F(EPKPChallengeMachineKeyTest, DomainsDontMatch) {
+TEST_F(EPKPChallengeMachineKeyTest, UserNotManaged) {
   prefs_->SetString(prefs::kGoogleServicesUsername, "test@chromium.org");
 
-  EXPECT_EQ(base::StringPrintf(EPKPChallengeKeyBase::kDomainsDontMatchError,
-                               "chromium.org", "google.com"),
+  EXPECT_EQ(EPKPChallengeKeyBase::kUserNotManaged,
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -332,11 +331,10 @@ TEST_F(EPKPChallengeUserKeyTest, ExtensionNotWhitelisted) {
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
-TEST_F(EPKPChallengeUserKeyTest, DomainsDontMatch) {
+TEST_F(EPKPChallengeUserKeyTest, UserNotManaged) {
   prefs_->SetString(prefs::kGoogleServicesUsername, "test@chromium.org");
 
-  EXPECT_EQ(base::StringPrintf(EPKPChallengeKeyBase::kDomainsDontMatchError,
-                               "chromium.org", "google.com"),
+  EXPECT_EQ(EPKPChallengeKeyBase::kUserNotManaged,
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -420,7 +418,7 @@ TEST_F(EPKPChallengeUserKeyTest, Success) {
   EXPECT_CALL(mock_async_method_caller_,
               TpmAttestationSignEnterpriseChallenge(
                   chromeos::attestation::KEY_USER, "attest-ent-user",
-                  "google.com", "device_id", _, "challenge", _))
+                  "test@google.com", "device_id", _, "challenge", _))
       .Times(1);
   // RegisterKey must be called exactly once.
   EXPECT_CALL(mock_async_method_caller_,
