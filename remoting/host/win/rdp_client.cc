@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/win/registry.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 #include "remoting/base/typed_buffer.h"
@@ -28,7 +29,12 @@ namespace {
 const int kMinLoopbackAddress = 0x7f000002;
 const int kMaxLoopbackAddress = 0x7ffffffe;
 
-const int kRdpPort = 3389;
+const int kDefaultRdpPort = 3389;
+
+// The port number used by RDP is stored in the registry.
+const wchar_t kRdpPortKeyName[] = L"SYSTEM\\CurrentControlSet\\Control\\"
+    L"Terminal Server\\WinStations\\RDP-Tcp";
+const wchar_t kRdpPortValueName[] = L"PortNumber";
 
 }  // namespace
 
@@ -155,10 +161,18 @@ void RdpClient::Core::Connect(const SkISize& screen_size) {
       GetProcAddress(iphlpapi_handle, "GetExtendedTcpTable"));
   CHECK(get_extended_tcp_table_);
 
+  // Read the port number used by RDP.
+  DWORD port;
+  base::win::RegKey key(HKEY_LOCAL_MACHINE, kRdpPortKeyName, KEY_READ);
+  if (!key.Valid() ||
+      (key.ReadValueDW(kRdpPortValueName, &port) != ERROR_SUCCESS)) {
+    port = kDefaultRdpPort;
+  }
+
   // Generate a random loopback address to connect to.
   memset(&server_address_, 0, sizeof(server_address_));
   server_address_.sin_family = AF_INET;
-  server_address_.sin_port = htons(kRdpPort);
+  server_address_.sin_port = htons(port);
   server_address_.sin_addr.S_un.S_addr = htonl(
       base::RandInt(kMinLoopbackAddress, kMaxLoopbackAddress));
 
