@@ -219,13 +219,6 @@ WebKit::WebGLId RenderWidgetHostViewAndroid::GetScaledContentTexture(
                                      texture_size_in_layer_,
                                      size,
                                      true);
-
-  // Flush the helper context here so we're sure the texture will be available
-  // for use by the next frame in a different context (for example the
-  // compositor).
-  WebKit::WebGraphicsContext3D* context =
-        ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-  context->flush();
 }
 
 bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
