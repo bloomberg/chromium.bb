@@ -11136,15 +11136,20 @@ other types of suffix sets.
   <int value="34" label="Continue prerender check priority too low"/>
   <int value="35" label="Continue prerender check urls identical but fragemet"/>
   <int value="36" label="Continue prerender check https"/>
-  <int value="37" label="Continue prerender root page"/>
+  <int value="37" label="Continue prerender check root page"/>
   <int value="38" label="Continue prerender check logout url"/>
   <int value="39" label="Continue prerender check login url"/>
-  <int value="40" label="Continue prerender not logged in"/>
-  <int value="41" label="Continue prerender fallthrough no prerender"/>
-  <int value="42" label="Continue prerender issuing prerender"/>
+  <int value="40" label="Continue prerender check not logged in"/>
+  <int value="41" label="Continue prerender check fallthrough no prerender"/>
+  <int value="42" label="Continue prerender check issuing prerender"/>
   <int value="43" label="Issuing prerender"/>
   <int value="44" label="No prerender candidates"/>
   <int value="45" label="Got history issuing lookup"/>
+  <int value="46" label="Tab Helper URL seen"/>
+  <int value="47" label="Tab Helper URL seen match"/>
+  <int value="48" label="Tab Helper URL seen namespace match"/>
+  <int value="49" label="URL lookup multiple source webcontents"/>
+  <int value="50" label="Continue prerender check side-effect free whitelist"/>
 </enum>
 
 <enum name="PrerenderLocalVisitCoreTransition" type="int">
