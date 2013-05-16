@@ -66,16 +66,10 @@ static v8::Handle<v8::Value> itemMethod(const v8::Arguments& args)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     V8TRYCATCH(int, index, toUInt32(args[0]));
-    if (UNLIKELY(index < 0)) {
-        ec = INDEX_SIZE_ERR;
-        goto fail;
-    }
+    if (UNLIKELY(index < 0))
+        return setDOMException(INDEX_SIZE_ERR, args.GetIsolate());
     return toV8(imp->item(index), args.Holder(), args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> itemMethodCallback(const v8::Arguments& args)
@@ -135,15 +129,11 @@ static v8::Handle<v8::Value> dispatchEventMethod(const v8::Arguments& args)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     V8TRYCATCH(Event*, evt, V8Event::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Event::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     bool result = imp->dispatchEvent(evt, ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     return v8Boolean(result, args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> dispatchEventMethodCallback(const v8::Arguments& args)

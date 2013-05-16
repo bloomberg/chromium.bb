@@ -2226,10 +2226,6 @@ END
     if ($raisesExceptions) {
         AddToImplIncludes("core/dom/ExceptionCode.h");
         $code .= "    ExceptionCode ec = 0;\n";
-        $code .= "    {\n";
-        # The brace here is needed to prevent the ensuing 'goto fail's from jumping past constructors
-        # of objects (like Strings) declared later, causing compile errors. The block scope ends
-        # right before the label 'fail:'.
     }
 
     if ($function->signature->extendedAttributes->{"CheckSecurityForNode"}) {
@@ -2244,13 +2240,6 @@ END
 
     # Build the function call string.
     $code .= GenerateFunctionCallString($function, $paramIndex, "    ", $interface, $forMainWorldSuffix, %replacements);
-
-    if ($raisesExceptions) {
-        $code .= "    }\n";
-        $code .= "    fail:\n";
-        $code .= "    return setDOMException(ec, args.GetIsolate());\n";
-    }
-
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
     $implementation{nameSpaceInternal}->add($code);
@@ -2388,10 +2377,8 @@ sub GenerateParametersCheck
         } elsif (TypeCanFailConversion($parameter)) {
             $parameterCheckString .= "    $nativeType $parameterName = " .
                  JSValueToNative($parameter, "args[$paramIndex]", "args.GetIsolate()") . ";\n";
-            $parameterCheckString .= "    if (UNLIKELY(!$parameterName)) {\n";
-            $parameterCheckString .= "        ec = TYPE_MISMATCH_ERR;\n";
-            $parameterCheckString .= "        goto fail;\n";
-            $parameterCheckString .= "    }\n";
+            $parameterCheckString .= "    if (UNLIKELY(!$parameterName))\n";
+            $parameterCheckString .= "        return setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());\n";
         } elsif ($parameter->isVariadic) {
             my $nativeElementType = GetNativeType($parameter->type);
             if ($nativeElementType =~ />$/) {
@@ -2453,10 +2440,8 @@ sub GenerateParametersCheck
         }
 
         if ($parameter->extendedAttributes->{"IsIndex"}) {
-            $parameterCheckString .= "    if (UNLIKELY($parameterName < 0)) {\n";
-            $parameterCheckString .= "        ec = INDEX_SIZE_ERR;\n";
-            $parameterCheckString .= "        goto fail;\n";
-            $parameterCheckString .= "    }\n";
+            $parameterCheckString .= "    if (UNLIKELY($parameterName < 0))\n";
+            $parameterCheckString .= "        return setDOMException(INDEX_SIZE_ERR, args.GetIsolate());\n";
         }
 
         $paramIndex++;
@@ -2570,22 +2555,16 @@ END
 
     if ($interface->extendedAttributes->{"RaisesException"}) {
         $code .= "    if (ec)\n";
-        $code .= "        goto fail;\n";
+        $code .= "        return setDOMException(ec, args.GetIsolate());\n";
     }
 
     $code .= <<END;
 
     V8DOMWrapper::associateObjectWithWrapper(impl.release(), &${v8ClassName}::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     return wrapper;
+}
+
 END
-
-    if ($raisesExceptions) {
-        $code .= "    fail:\n";
-        $code .= "    return setDOMException(ec, args.GetIsolate());\n";
-    }
-
-    $code .= "}\n";
-    $code .= "\n";
     $implementation{nameSpaceInternal}->add($code);
 }
 
@@ -2821,25 +2800,19 @@ END
 
     if ($interface->extendedAttributes->{"RaisesException"}) {
         $code .= "    if (ec)\n";
-        $code .= "        goto fail;\n";
+        $code .= "        return setDOMException(ec, args.GetIsolate());\n";
     }
 
     $code .= <<END;
 
     V8DOMWrapper::associateObjectWithWrapper(impl.release(), &${v8ClassName}Constructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     return wrapper;
+}
+
 END
-
-    if ($raisesExceptions) {
-        $code .= "    fail:\n";
-        $code .= "    return setDOMException(ec, args.GetIsolate());\n";
-    }
-
-    $code .= "}\n";
     $implementation{nameSpaceWebCore}->add($code);
 
     $code = <<END;
-
 v8::Persistent<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     static v8::Persistent<v8::FunctionTemplate> cachedTemplate;
@@ -4354,7 +4327,7 @@ sub GenerateFunctionCallString
 
     if ($function->signature->extendedAttributes->{"RaisesException"}) {
         $code .= $indent . "if (UNLIKELY(ec))\n";
-        $code .= $indent . "    goto fail;\n";
+        $code .= $indent . "    return setDOMException(ec, args.GetIsolate());\n";
     }
 
     if (ExtendedAttributeContains($callWith, "ScriptState")) {

@@ -2457,16 +2457,12 @@ static v8::Handle<v8::Value> methodThatRequiresAllArgsAndThrowsMethod(const v8::
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, strArg, args[0]);
     V8TRYCATCH(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
     RefPtr<TestObj> result = imp->methodThatRequiresAllArgsAndThrows(strArg, objArg, ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     return toV8(result.release(), args.Holder(), args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> methodThatRequiresAllArgsAndThrowsMethodCallback(const v8::Arguments& args)
@@ -2516,14 +2512,10 @@ static v8::Handle<v8::Value> methodWithExceptionMethod(const v8::Arguments& args
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     imp->methodWithException(ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     return v8Undefined();
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> methodWithExceptionMethodCallback(const v8::Arguments& args)
@@ -2620,23 +2612,19 @@ static v8::Handle<v8::Value> withScriptStateVoidExceptionMethod(const v8::Argume
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     ScriptState* currentState = ScriptState::current();
     if (!currentState)
         return v8Undefined();
     ScriptState& state = *currentState;
     imp->withScriptStateVoidException(&state, ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
         state.clearException();
         return throwError(exception, args.GetIsolate());
     }
     return v8Undefined();
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> withScriptStateVoidExceptionMethodCallback(const v8::Arguments& args)
@@ -2648,23 +2636,19 @@ static v8::Handle<v8::Value> withScriptStateObjExceptionMethod(const v8::Argumen
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     ScriptState* currentState = ScriptState::current();
     if (!currentState)
         return v8Undefined();
     ScriptState& state = *currentState;
     RefPtr<TestObj> result = imp->withScriptStateObjException(&state, ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
         state.clearException();
         return throwError(exception, args.GetIsolate());
     }
     return toV8(result.release(), args.Holder(), args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> withScriptStateObjExceptionMethodCallback(const v8::Arguments& args)
@@ -2711,7 +2695,6 @@ static v8::Handle<v8::Value> withScriptExecutionContextAndScriptStateObjExceptio
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     ScriptState* currentState = ScriptState::current();
     if (!currentState)
         return v8Undefined();
@@ -2719,16 +2702,13 @@ static v8::Handle<v8::Value> withScriptExecutionContextAndScriptStateObjExceptio
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
     RefPtr<TestObj> result = imp->withScriptExecutionContextAndScriptStateObjException(&state, scriptContext, ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
         state.clearException();
         return throwError(exception, args.GetIsolate());
     }
     return toV8(result.release(), args.Holder(), args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> withScriptExecutionContextAndScriptStateObjExceptionMethodCallback(const v8::Arguments& args)
@@ -3403,15 +3383,11 @@ static v8::Handle<v8::Value> stringArrayFunctionMethod(const v8::Arguments& args
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     V8TRYCATCH(Vector<String>, values, toNativeArray<String>(args[0]));
     Vector<String> result = imp->stringArrayFunction(values, ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     return v8Array(result, args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> stringArrayFunctionMethodCallback(const v8::Arguments& args)
@@ -3425,15 +3401,11 @@ static v8::Handle<v8::Value> domStringListFunctionMethod(const v8::Arguments& ar
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     V8TRYCATCH(RefPtr<DOMStringList>, values, toDOMStringList(args[0], args.GetIsolate()));
     RefPtr<DOMStringList> result = imp->domStringListFunction(values, ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     return toV8(result.release(), args.Holder(), args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> domStringListFunctionMethodCallback(const v8::Arguments& args)
@@ -3445,16 +3417,12 @@ static v8::Handle<v8::Value> getSVGDocumentMethod(const v8::Arguments& args)
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     if (!BindingSecurity::shouldAllowAccessToNode(imp->getSVGDocument(ec)))
         return v8::Handle<v8::Value>(v8Null(args.GetIsolate()));
     RefPtr<SVGDocument> result = imp->getSVGDocument(ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     return toV8(result.release(), args.Holder(), args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> getSVGDocumentMethodCallback(const v8::Arguments& args)
@@ -3562,17 +3530,13 @@ static v8::Handle<v8::Value> strictFunctionMethod(const v8::Arguments& args)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, str, args[0]);
     V8TRYCATCH(float, a, static_cast<float>(args[1]->NumberValue()));
     V8TRYCATCH(int, b, toInt32(args[2]));
     bool result = imp->strictFunction(str, a, b, ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     return v8Boolean(result, args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> strictFunctionMethodCallback(const v8::Arguments& args)

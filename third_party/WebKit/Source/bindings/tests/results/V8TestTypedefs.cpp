@@ -357,15 +357,11 @@ static v8::Handle<v8::Value> stringArrayFunctionMethod(const v8::Arguments& args
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     V8TRYCATCH(Vector<String>, values, toNativeArray<String>(args[0]));
     Vector<String> result = imp->stringArrayFunction(values, ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     return v8Array(result, args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> stringArrayFunctionMethodCallback(const v8::Arguments& args)
@@ -379,15 +375,11 @@ static v8::Handle<v8::Value> stringArrayFunction2Method(const v8::Arguments& arg
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     V8TRYCATCH(Vector<String>, values, toNativeArray<String>(args[0]));
     Vector<String> result = imp->stringArrayFunction2(values, ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     return v8Array(result, args.GetIsolate());
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> stringArrayFunction2MethodCallback(const v8::Arguments& args)
@@ -399,14 +391,10 @@ static v8::Handle<v8::Value> methodWithExceptionMethod(const v8::Arguments& args
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     ExceptionCode ec = 0;
-    {
     imp->methodWithException(ec);
     if (UNLIKELY(ec))
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
     return v8Undefined();
-    }
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 static v8::Handle<v8::Value> methodWithExceptionMethodCallback(const v8::Arguments& args)

@@ -87,12 +87,10 @@ static v8::Handle<v8::Value> V8TestNamedConstructorConstructorCallback(const v8:
     RefPtr<TestNamedConstructor> impl = TestNamedConstructor::createForJSConstructor(document, str1, str2, str3, ec);
     v8::Handle<v8::Object> wrapper = args.Holder();
     if (ec)
-        goto fail;
+        return setDOMException(ec, args.GetIsolate());
 
     V8DOMWrapper::associateObjectWithWrapper(impl.release(), &V8TestNamedConstructorConstructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     return wrapper;
-    fail:
-    return setDOMException(ec, args.GetIsolate());
 }
 
 v8::Persistent<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
