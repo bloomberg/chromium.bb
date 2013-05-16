@@ -368,7 +368,8 @@ bool InputImeEventRouter::RegisterIme(
       chromeos::InputMethodEngine::CreateEngine(
           observer, component.name.c_str(), extension_id.c_str(),
           component.id.c_str(), component.description.c_str(),
-          component.language.c_str(), layouts, &error);
+          component.language.c_str(), layouts, component.options_page_url,
+          &error);
   if (!engine) {
     delete observer;
     LOG(ERROR) << "RegisterIme: " << error;

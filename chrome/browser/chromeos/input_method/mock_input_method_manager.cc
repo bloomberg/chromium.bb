@@ -88,6 +88,7 @@ void MockInputMethodManager::AddInputMethodExtension(
     const std::string& name,
     const std::vector<std::string>& layouts,
     const std::string& language,
+    const GURL& options_url,
     InputMethodEngine* instance) {
 }
 

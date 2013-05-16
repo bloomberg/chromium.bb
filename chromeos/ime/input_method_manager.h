@@ -144,6 +144,7 @@ class CHROMEOS_EXPORT InputMethodManager {
                                        const std::string& name,
                                        const std::vector<std::string>& layouts,
                                        const std::string& language,
+                                       const GURL& options_url,
                                        InputMethodEngine* instance) = 0;
 
   // Removes an input method extension.

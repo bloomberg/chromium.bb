@@ -11,6 +11,7 @@
 
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "googleurl/src/gurl.h"
 
 namespace extensions {
 
@@ -37,6 +38,7 @@ struct InputComponentInfo {
   bool shortcut_alt;
   bool shortcut_ctrl;
   bool shortcut_shift;
+  GURL options_page_url;
 };
 
 struct InputComponents : public Extension::ManifestData {

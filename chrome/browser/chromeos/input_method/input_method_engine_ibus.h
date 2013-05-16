@@ -39,6 +39,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
       const char* description,
       const char* language,
       const std::vector<std::string>& layouts,
+      const GURL& options_page,
       std::string* error);
 
   // InputMethodEngine overrides.

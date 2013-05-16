@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/error_utils.h"
 
 namespace keys = extension_manifest_keys;
@@ -176,6 +177,8 @@ bool InputComponentsHandler::Parse(Extension* extension,
     info->input_components.back().shortcut_alt = shortcut_alt;
     info->input_components.back().shortcut_ctrl = shortcut_ctrl;
     info->input_components.back().shortcut_shift = shortcut_shift;
+    info->input_components.back().options_page_url =
+        extensions::ManifestURL::GetOptionsPage(extension);
   }
   extension->SetManifestData(keys::kInputComponents, info.release());
   return true;

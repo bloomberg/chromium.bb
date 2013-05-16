@@ -77,6 +77,7 @@ void InputMethodEngineIBus::Initialize(
     const char* description,
     const char* language,
     const std::vector<std::string>& layouts,
+    const GURL& options_page,
     std::string* error) {
   DCHECK(observer) << "Observer must not be null.";
 
@@ -109,7 +110,7 @@ void InputMethodEngineIBus::Initialize(
 
   component_->mutable_engine_description()->push_back(engine_desc);
   manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, language,
-                                   this);
+                                   options_page, this);
   // If connection is avaiable, register component. If there are no connection
   // to ibus-daemon, OnConnected callback will register component instead.
   if (IsConnected())

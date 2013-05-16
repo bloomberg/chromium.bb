@@ -443,6 +443,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     const std::string& name,
     const std::vector<std::string>& layouts,
     const std::string& language,
+    const GURL& options_url,
     InputMethodEngine* engine) {
   if (state_ == STATE_TERMINATING)
     return;
@@ -453,10 +454,8 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     return;
   }
 
-  // TODO(nona): Support options page for normal extension ime.
-  //             crbug.com/156283.
   extra_input_methods_[id] =
-      InputMethodDescriptor(id, name, layouts, language, GURL());
+      InputMethodDescriptor(id, name, layouts, language, options_url);
   if (Contains(enabled_extension_imes_, id) &&
       !ComponentExtensionIMEManager::IsComponentExtensionIMEId(id)) {
     if (!Contains(active_input_method_ids_, id)) {

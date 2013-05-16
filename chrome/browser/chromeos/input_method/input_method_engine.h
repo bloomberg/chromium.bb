@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+class GURL;
+
 namespace chromeos {
 
 namespace input_method {
@@ -230,6 +232,7 @@ class InputMethodEngine {
       const char* description,
       const char* language,
       const std::vector<std::string>& layouts,
+      const GURL& options_page,
       std::string* error);
 };
 
