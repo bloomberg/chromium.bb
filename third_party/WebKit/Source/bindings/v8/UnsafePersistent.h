@@ -40,13 +40,23 @@ namespace WebCore {
 // memory pointed by the it is not going away: 1) When GC cannot happen while
 // the UnsafePersistent is alive or 2) when there is a strong Persistent keeping
 // the memory alive while the UnsafePersistent is alive.
+
+// FIXME: assert that GC doesn't happen during the lifetime of UnsafePersistent.
 template<typename T> class UnsafePersistent {
 public:
     UnsafePersistent() : m_value(0) { }
-    explicit UnsafePersistent(T* value) : m_value(value) { }
-    explicit UnsafePersistent(v8::Persistent<T>& handle)
+    UnsafePersistent(T* value) : m_value(value) { }
+    UnsafePersistent(v8::Persistent<T>& handle)
     {
-        m_value = handle.ClearAndLeak();
+        m_value = *reinterpret_cast<T**>(&handle);
+    }
+
+    // The end result is generally unsafe to use, see the class level comment
+    // for when it's safe to use.
+    void copyTo(v8::Persistent<T>* handle) const
+    {
+        T** rawValue = reinterpret_cast<T**>(handle);
+        *rawValue = m_value;
     }
 
     T* value() const
@@ -54,25 +64,15 @@ public:
         return m_value;
     }
 
-    // This is incredibly unsafe: the handle is valid only when this
-    // UnsafePersistent is alive and valid (see class level comment).
-    v8::Persistent<T>* persistent()
-    {
-        v8::Persistent<T>* handle = reinterpret_cast<v8::Persistent<T>*>(&m_value);
-        return handle;
-    }
-
-    // FIXME: Remove this function, replace the usages with newLocal().
+    // FIXME: This is unsafe and this function will be removed. If you really
+    // need a persistent handle (which you shouldn't), use copyTo. Calls to this
+    // function will be replaced with constructing a local handle, once we have
+    // an efficient way for doing so.
     v8::Handle<v8::Object> handle()
     {
-        v8::Handle<T>* handle = reinterpret_cast<v8::Handle<T>*>(&m_value);
-        return *handle;
-    }
-
-    void dispose(v8::Isolate* isolate)
-    {
-        persistent()->Dispose(isolate);
-        m_value = 0;
+        v8::Persistent<v8::Object> handle;
+        copyTo(&handle);
+        return handle;
     }
 
 private:

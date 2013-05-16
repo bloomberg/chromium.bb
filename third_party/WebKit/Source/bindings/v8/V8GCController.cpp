@@ -194,9 +194,10 @@ private:
         for (; nodeIterator != nodeIteratorEnd; ++nodeIterator) {
             // This is safe because we know that GC won't happen before we
             // dispose the UnsafePersistent (we're just preparing a GC).
-            v8::Persistent<v8::Object>* wrapper = (*nodeIterator)->unsafePersistent().persistent();
-            wrapper->MarkPartiallyDependent(isolate);
-            isolate->SetObjectGroupId(*wrapper, id);
+            v8::Persistent<v8::Object> wrapper;
+            (*nodeIterator)->unsafePersistent().copyTo(&wrapper);
+            wrapper.MarkPartiallyDependent(isolate);
+            isolate->SetObjectGroupId(wrapper, id);
         }
     }
 
