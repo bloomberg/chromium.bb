@@ -23,8 +23,11 @@ namespace media {
 class Decryptor;
 class Demuxer;
 
-// Empty MD5 hash string.  Used to verify empty audio or video tracks.
-extern const char kNullHash[];
+// Empty MD5 hash string.  Used to verify empty video tracks.
+extern const char kNullVideoHash[];
+
+// Empty hash string.  Used to verify empty audio tracks.
+extern const char kNullAudioHash[];
 
 // Integration tests for Pipeline. Real demuxers, real decoders, and
 // base renderer implementations are used to verify pipeline functionality. The

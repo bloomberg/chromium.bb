@@ -44,7 +44,7 @@ static PixelFormat CdmVideoFormatToPixelFormat(cdm::VideoFormat video_format) {
   return PIX_FMT_NONE;
 }
 
-static CodecID CdmVideoCodecToCodecID(
+static AVCodecID CdmVideoCodecToCodecID(
     cdm::VideoDecoderConfig::VideoCodec video_codec) {
   switch (video_codec) {
     case cdm::VideoDecoderConfig::kCodecVp8:
@@ -282,7 +282,7 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
   }
   cdm_video_frame->FrameBuffer()->SetSize(space_required);
 
-  CopyPlane(av_frame_->base[cdm::VideoFrame::kYPlane],
+  CopyPlane(av_frame_->data[cdm::VideoFrame::kYPlane],
             av_frame_->linesize[cdm::VideoFrame::kYPlane],
             av_frame_->width,
             av_frame_->height,
@@ -291,14 +291,14 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
 
   const int uv_stride = av_frame_->width / 2;
   const int uv_rows = av_frame_->height / 2;
-  CopyPlane(av_frame_->base[cdm::VideoFrame::kUPlane],
+  CopyPlane(av_frame_->data[cdm::VideoFrame::kUPlane],
             av_frame_->linesize[cdm::VideoFrame::kUPlane],
             uv_stride,
             uv_rows,
             uv_stride,
             cdm_video_frame->FrameBuffer()->Data() + y_size);
 
-  CopyPlane(av_frame_->base[cdm::VideoFrame::kVPlane],
+  CopyPlane(av_frame_->data[cdm::VideoFrame::kVPlane],
             av_frame_->linesize[cdm::VideoFrame::kVPlane],
             uv_stride,
             uv_rows,

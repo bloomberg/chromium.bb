@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/ffmpeg/ffmpeg_common.h"
+#include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_h264_to_annex_b_bitstream_converter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -284,16 +285,13 @@ class FFmpegH264ToAnnexBBitstreamConverterTest : public testing::Test {
 TEST_F(FFmpegH264ToAnnexBBitstreamConverterTest, Conversion_Success) {
   FFmpegH264ToAnnexBBitstreamConverter converter(&test_context_);
 
-  AVPacket test_packet;
-  CreatePacket(&test_packet, kPacketDataOkWithFieldLen4,
+  ScopedAVPacket test_packet(new AVPacket());
+  CreatePacket(test_packet.get(), kPacketDataOkWithFieldLen4,
                sizeof(kPacketDataOkWithFieldLen4));
 
   // Try out the actual conversion (should be successful and allocate new
   // packet and destroy the old one).
-  EXPECT_TRUE(converter.ConvertPacket(&test_packet));
-
-  // Clean-up the test packet.
-  av_destruct_packet(&test_packet);
+  EXPECT_TRUE(converter.ConvertPacket(test_packet.get()));
 
   // Converter will be automatically cleaned up.
 }
@@ -302,18 +300,15 @@ TEST_F(FFmpegH264ToAnnexBBitstreamConverterTest, Conversion_SuccessBigPacket) {
   FFmpegH264ToAnnexBBitstreamConverter converter(&test_context_);
 
   // Create new packet with 1000 excess bytes.
-  AVPacket test_packet;
+  ScopedAVPacket test_packet(new AVPacket());
   static uint8 excess_data[sizeof(kPacketDataOkWithFieldLen4) + 1000] = {0};
   memcpy(excess_data, kPacketDataOkWithFieldLen4,
          sizeof(kPacketDataOkWithFieldLen4));
-  CreatePacket(&test_packet, excess_data, sizeof(excess_data));
+  CreatePacket(test_packet.get(), excess_data, sizeof(excess_data));
 
   // Try out the actual conversion (should be successful and allocate new
   // packet and destroy the old one as we do NOT support in place transform).
-  EXPECT_TRUE(converter.ConvertPacket(&test_packet));
-
-  // Clean-up the test packet.
-  av_destruct_packet(&test_packet);
+  EXPECT_TRUE(converter.ConvertPacket(test_packet.get()));
 
   // Converter will be automatically cleaned up.
 }
@@ -329,16 +324,13 @@ TEST_F(FFmpegH264ToAnnexBBitstreamConverterTest, Conversion_FailureNullParams) {
   EXPECT_FALSE(converter.ConvertPacket(NULL));
 
   // Create new packet to test actual conversion.
-  AVPacket test_packet;
-  CreatePacket(&test_packet, kPacketDataOkWithFieldLen4,
+  ScopedAVPacket test_packet(new AVPacket());
+  CreatePacket(test_packet.get(), kPacketDataOkWithFieldLen4,
                sizeof(kPacketDataOkWithFieldLen4));
 
   // Try out the actual conversion (should be successful and allocate new
   // packet and destroy the old one). This should fail due to missing extradata.
-  EXPECT_FALSE(converter.ConvertPacket(&test_packet));
-
-  // Clean-up the test packet.
-  av_destruct_packet(&test_packet);
+  EXPECT_FALSE(converter.ConvertPacket(test_packet.get()));
 
   // Converted will be automatically cleaned up.
 }

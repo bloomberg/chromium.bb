@@ -252,3 +252,14 @@
    ...
    fun:net::NetworkChangeNotifierWinTest::~NetworkChangeNotifierWinTest
 }
+
+{
+  bug_239350
+  ThreadSanitizer:Race
+  ...
+  fun:av_freep
+  fun:av_buffer_unref
+  fun:av_frame_unref
+  ...
+  fun:media::FFmpegVideoDecoder::Decode
+}

@@ -27,7 +27,7 @@ namespace webkit_media {
 // Maximum number of channels with defined layout in src/media.
 static const int kMaxChannels = 8;
 
-static CodecID CdmAudioCodecToCodecID(
+static AVCodecID CdmAudioCodecToCodecID(
     cdm::AudioDecoderConfig::AudioCodec audio_codec) {
   switch (audio_codec) {
     case cdm::AudioDecoderConfig::kCodecVorbis:
