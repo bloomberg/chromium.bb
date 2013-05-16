@@ -256,27 +256,6 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
   return coordinator;
 }
 
-int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
-                                            const nacl::string& url,
-                                            const nacl::string& component) {
-  PLUGIN_PRINTF(("PnaclCoordinator::GetLoadedFileDesc (pp_error=%"
-                 NACL_PRId32", url=%s, component=%s)\n", pp_error,
-                 url.c_str(), component.c_str()));
-  ErrorInfo error_info;
-  int32_t file_desc_ok_to_close = plugin_->GetPOSIXFileDesc(url);
-  if (pp_error != PP_OK || file_desc_ok_to_close == NACL_NO_FILE_DESC) {
-    if (pp_error == PP_ERROR_ABORTED) {
-      plugin_->ReportLoadAbort();
-    } else {
-      ReportPpapiError(ERROR_PNACL_RESOURCE_FETCH,
-                       pp_error,
-                       component + " load failed.");
-    }
-    return NACL_NO_FILE_DESC;
-  }
-  return file_desc_ok_to_close;
-}
-
 PnaclCoordinator::PnaclCoordinator(
     Plugin* plugin,
     const nacl::string& pexe_url,
