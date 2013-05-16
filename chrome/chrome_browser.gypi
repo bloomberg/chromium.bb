@@ -2108,6 +2108,8 @@
         'browser/sync_file_system/local_file_sync_service.h',
         'browser/sync_file_system/local_sync_operation_resolver.cc',
         'browser/sync_file_system/local_sync_operation_resolver.h',
+        'browser/sync_file_system/logger.cc',
+        'browser/sync_file_system/logger.h',
         'browser/sync_file_system/remote_change_handler.cc',
         'browser/sync_file_system/remote_change_handler.h',
         'browser/sync_file_system/remote_change_processor.h',

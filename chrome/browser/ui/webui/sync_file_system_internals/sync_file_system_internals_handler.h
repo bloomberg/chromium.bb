@@ -22,8 +22,12 @@ class SyncFileSystemInternalsHandler : public content::WebUIMessageHandler {
 
  private:
   void GetServiceStatus(const base::ListValue* args);
+  void GetLog(const base::ListValue* args);
 
   Profile* profile_;
+
+  // The last log ID sent to the JavaScript side.
+  int last_log_id_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemInternalsHandler);
 };

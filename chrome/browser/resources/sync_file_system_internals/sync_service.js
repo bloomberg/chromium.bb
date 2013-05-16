@@ -8,9 +8,11 @@
 var syncService = (function() {
 'use strict';
 
+function SyncService() {
+}
+
 /**
  * Request Sync Service Status.
- * Asynchronous, result via getServiceStatusResult.
  */
 function getServiceStatus() {
   chrome.send('getServiceStatus');
@@ -20,9 +22,42 @@ function getServiceStatus() {
  * Handles callback from getServiceStatus.
  * @param {string} Service status enum as a string.
  */
-function getServiceStatusResult(statusString) {
-  console.log('getServiceStatusResult', statusString);
+SyncService.prototype.getServiceStatusResult = function(statusString) {
   $('service-status').textContent = statusString;
+}
+
+/**
+ * Creates an element named |elementName| containing the content |text|.
+ * @param {string} elementName Name of the new element to be created.
+ * @param {string} text Text to be contained in the new element.
+ * @return {HTMLElement} The newly created HTML element.
+ */
+function createElementFromText(elementName, text) {
+  var element = document.createElement(elementName);
+  element.appendChild(document.createTextNode(text));
+  return element;
+}
+
+/**
+ * Request debug log.
+ */
+function getLog() {
+  chrome.send('getLog');
+}
+
+/**
+ * Handles callback from getUpdateLog.
+ * @param {Array} list List of dictionaries containing 'time' and 'logEvent'.
+ */
+SyncService.prototype.onGetLog = function(logEntries) {
+  var itemContainer = $('log-entries');
+  for (var i = 0; i < logEntries.length; i++) {
+    var logEntry = logEntries[i];
+    var tr = document.createElement('tr');
+    tr.appendChild(createElementFromText('td', logEntry.time));
+    tr.appendChild(createElementFromText('td', logEntry.logEvent));
+    itemContainer.appendChild(tr);
+  }
 }
 
 /**
@@ -31,13 +66,10 @@ function getServiceStatusResult(statusString) {
 function main() {
   cr.ui.decorate('tabbox', cr.ui.TabBox);
   getServiceStatus();
+  window.setInterval(getLog, 1000);
 }
 
 document.addEventListener('DOMContentLoaded', main);
-
-// Must export callbacks as they are called directly from C++ handler code.
-return {
-  getServiceStatusResult: getServiceStatusResult
-};
+return new SyncService;
 })();
 

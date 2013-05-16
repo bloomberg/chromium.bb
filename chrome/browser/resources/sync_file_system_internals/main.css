@@ -6,13 +6,21 @@ tabbox {
   min-height: 650px;
 }
 
+h3 {
+  margin: 2px 0;
+}
+
 th,
 td {
   padding-left: 0.5em;
   padding-right: 0.5em;
-  text-align: center;
+  text-align: left;
 }
 
-tr:nth-child(odd) {
+thead tr {
+  font-weight: bold;
+}
+
+tbody tr:nth-child(odd) {
   background: rgb(238, 238, 255);
 }

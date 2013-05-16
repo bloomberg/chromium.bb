@@ -119,6 +119,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   // google_apis::DriveNotificationObserver implementation.
   virtual void OnNotificationReceived() OVERRIDE;
+  virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
 
   // Called from DriveFileSyncTaskManager.
   // TODO: factor out as an interface.
