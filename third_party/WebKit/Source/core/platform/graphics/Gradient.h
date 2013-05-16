@@ -31,17 +31,20 @@
 
 #include "SkShader.h"
 #include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/Generator.h"
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
     class Color;
+    class FloatRect;
+    class GraphicsContext;
 
-    class Gradient : public Generator {
+    class Gradient : public RefCounted<Gradient> {
     public:
         static PassRefPtr<Gradient> create(const FloatPoint& p0, const FloatPoint& p1)
         {
@@ -51,13 +54,13 @@ namespace WebCore {
         {
             return adoptRef(new Gradient(p0, r0, p1, r1, aspectRatio));
         }
-        virtual ~Gradient();
+        ~Gradient();
 
         struct ColorStop;
         void addColorStop(const ColorStop&);
         void addColorStop(float, const Color&);
 
-        virtual bool hasAlpha() const OVERRIDE;
+        bool hasAlpha() const;
 
         bool isRadial() const { return m_radial; }
         bool isZeroSize() const { return m_p0.x() == m_p1.x() && m_p0.y() == m_p1.y() && (!m_radial || m_r0 == m_r1); }
@@ -130,10 +133,10 @@ namespace WebCore {
         void setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation);
         AffineTransform gradientSpaceTransform() { return m_gradientSpaceTransformation; }
 
-        virtual void fill(GraphicsContext*, const FloatRect&) OVERRIDE;
-        virtual void adjustParametersForTiledDrawing(IntSize&, FloatRect&) OVERRIDE;
+        void fill(GraphicsContext*, const FloatRect&);
+        void adjustParametersForTiledDrawing(IntSize&, FloatRect&);
 
-        virtual unsigned hash() const OVERRIDE;
+        unsigned hash() const;
         void invalidateHash() { m_cachedHash = 0; }
 
     private:

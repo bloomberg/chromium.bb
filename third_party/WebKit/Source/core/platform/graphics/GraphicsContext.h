@@ -29,7 +29,6 @@
 #define GraphicsContext_h
 
 #include "core/platform/chromium/TraceEvent.h"
-
 #include "core/platform/graphics/DashArray.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Font.h"
@@ -238,7 +237,7 @@ public:
 
     void fillRect(const FloatRect&);
     void fillRect(const FloatRect&, const Color&, ColorSpace);
-    void fillRect(const FloatRect&, Generator&);
+    void fillRect(const FloatRect&, Gradient&);
     void fillRect(const FloatRect&, const Color&, ColorSpace, CompositeOperator);
     void fillRoundedRect(const IntRect&, const IntSize& topLeft, const IntSize& topRight, const IntSize& bottomLeft, const IntSize& bottomRight, const Color&, ColorSpace);
     void fillRoundedRect(const RoundedRect&, const Color&, ColorSpace);

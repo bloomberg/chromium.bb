@@ -28,9 +28,8 @@
 
 #include "core/platform/graphics/Image.h"
 
-#include "core/platform/graphics/Generator.h"
 #include "core/platform/graphics/IntSize.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

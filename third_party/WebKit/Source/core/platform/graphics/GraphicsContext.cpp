@@ -29,7 +29,7 @@
 
 #include "core/platform/KURL.h"
 #include "core/platform/graphics/BitmapImage.h"
-#include "core/platform/graphics/Generator.h"
+#include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/RoundedRect.h"
@@ -1790,11 +1790,11 @@ AffineTransform GraphicsContext::getCTM(IncludeDeviceScale) const
                            SkScalarToDouble(m.getTranslateY()));
 }
 
-void GraphicsContext::fillRect(const FloatRect& rect, Generator& generator)
+void GraphicsContext::fillRect(const FloatRect& rect, Gradient& gradient)
 {
     if (paintingDisabled())
         return;
-    generator.fill(this, rect);
+    gradient.fill(this, rect);
 }
 
 void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, ColorSpace styleColorSpace, CompositeOperator op)
