@@ -99,6 +99,7 @@ Status ExecuteNewSession(
                   "failed to start a thread for the new session");
   }
   session->window = web_view_ids.front();
+  session->detach = capabilities.detach;
   out_value->reset(session->capabilities->DeepCopy());
   *out_session_id = new_id;
 

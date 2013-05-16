@@ -27,6 +27,11 @@ struct Capabilities {
 
   Status Parse(const base::DictionaryValue& desired_caps);
 
+  // Whether the lifetime of the started Chrome browser process should be
+  // bound to ChromeDriver's process. If true, Chrome will not quit if
+  // ChromeDriver dies.
+  bool detach;
+
   std::string android_package;
 
   std::string log_path;

@@ -191,7 +191,7 @@ void CommandExecutorImpl::Init() {
   session_command_map[CommandNames::kGetSessionCapabilities] =
       base::Bind(&ExecuteGetSessionCapabilities, &session_map_);
   session_command_map[CommandNames::kQuit] =
-      base::Bind(&ExecuteQuit, &session_map_);
+      base::Bind(&ExecuteQuit, false, &session_map_);
   session_command_map[CommandNames::kGetCurrentWindowHandle] =
       base::Bind(&ExecuteGetCurrentWindowHandle);
   session_command_map[CommandNames::kClose] =
@@ -260,7 +260,7 @@ void CommandExecutorImpl::Init() {
       CommandNames::kQuitAll,
       base::Bind(&ExecuteQuitAll,
                  base::Bind(execute_session_command,
-                            base::Bind(&ExecuteQuit, &session_map_)),
+                            base::Bind(&ExecuteQuit, true, &session_map_)),
                  &session_map_));
 }
 

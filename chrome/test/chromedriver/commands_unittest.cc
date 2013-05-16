@@ -90,11 +90,60 @@ TEST(CommandsTest, Quit) {
   scoped_ptr<base::Value> value;
   std::string out_session_id;
   ASSERT_EQ(kOk,
-            ExecuteSessionCommand(&map, base::Bind(ExecuteQuit, &map), params,
-                                  session.id, &value, &out_session_id).code());
+            ExecuteSessionCommand(&map, base::Bind(ExecuteQuit, false, &map),
+                                  params, session.id, &value,
+                                  &out_session_id).code());
   ASSERT_FALSE(map.Has(session.id));
   ASSERT_TRUE(session_accessor->IsSessionDeleted());
   ASSERT_FALSE(value.get());
+}
+
+namespace {
+
+class DetachChrome : public StubChrome {
+ public:
+  DetachChrome() : quit_called(false) {}
+  virtual ~DetachChrome() {}
+
+  bool IsQuitCalled() {
+    return quit_called;
+  }
+
+  // Overridden from Chrome:
+  virtual Status Quit() OVERRIDE {
+    quit_called = true;
+    return Status(kOk);
+  }
+
+ private:
+  bool quit_called;
+};
+
+}  // namespace
+
+TEST(CommandsTest, QuitWhenDetach) {
+  SessionMap map;
+  DetachChrome* chrome = new DetachChrome();
+  Session session("id", scoped_ptr<Chrome>(chrome));
+  session.detach = true;
+
+  scoped_refptr<FakeSessionAccessor> session_accessor(
+      new FakeSessionAccessor(&session));
+  base::DictionaryValue params;
+  scoped_ptr<base::Value> value;
+  std::string out_session_id;
+
+  map.Set(session.id, session_accessor);
+  ASSERT_EQ(kOk, ExecuteQuit(true, &map, &session, params, &value).code());
+  ASSERT_FALSE(map.Has(session.id));
+  ASSERT_FALSE(value.get());
+  ASSERT_FALSE(chrome->IsQuitCalled());
+
+  map.Set(session.id, session_accessor);
+  ASSERT_EQ(kOk, ExecuteQuit(false, &map, &session, params, &value).code());
+  ASSERT_FALSE(map.Has(session.id));
+  ASSERT_FALSE(value.get());
+  ASSERT_TRUE(chrome->IsQuitCalled());
 }
 
 namespace {
@@ -123,8 +172,9 @@ TEST(CommandsTest, QuitFails) {
   scoped_ptr<base::Value> value;
   std::string out_session_id;
   ASSERT_EQ(kUnknownError,
-            ExecuteSessionCommand(&map, base::Bind(ExecuteQuit, &map), params,
-                                  session.id, &value, &out_session_id).code());
+            ExecuteSessionCommand(&map, base::Bind(ExecuteQuit, false, &map),
+                                  params, session.id, &value,
+                                  &out_session_id).code());
   ASSERT_FALSE(map.Has(session.id));
   ASSERT_TRUE(session_accessor->IsSessionDeleted());
   ASSERT_FALSE(value.get());

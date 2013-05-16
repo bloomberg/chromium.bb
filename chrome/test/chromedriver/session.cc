@@ -23,6 +23,7 @@ FrameInfo::FrameInfo(const std::string& parent_frame_id,
 Session::Session(const std::string& id)
     : id(id),
       thread(("SessionThread_" + id).c_str()),
+      detach(false),
       sticky_modifiers(0),
       mouse_position(0, 0),
       implicit_wait(0),
@@ -33,6 +34,7 @@ Session::Session(const std::string& id)
 Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
     : id(id),
       thread(("SessionThread_" + id).c_str()),
+      detach(false),
       chrome(chrome.Pass()),
       sticky_modifiers(0),
       mouse_position(0, 0),

@@ -51,6 +51,7 @@ struct Session {
 
   const std::string id;
   base::Thread thread;
+  bool detach;
   scoped_ptr<Chrome> chrome;
   std::string window;
   int sticky_modifiers;

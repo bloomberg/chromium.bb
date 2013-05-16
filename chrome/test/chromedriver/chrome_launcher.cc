@@ -199,6 +199,8 @@ Status LaunchDesktopChrome(
                                             capabilities.log_path));
     options.environ = &environ;
   }
+  if (capabilities.detach)
+    options.new_process_group = true;
 #endif
 
   LOG(INFO) << "Launching chrome: " << command.GetCommandLineString();

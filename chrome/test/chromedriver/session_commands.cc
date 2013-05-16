@@ -98,11 +98,14 @@ Status ExecuteGetSessionCapabilities(
 }
 
 Status ExecuteQuit(
+    bool allow_detach,
     SessionMap* session_map,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   CHECK(session_map->Remove(session->id));
+  if (allow_detach && session->detach)
+    return Status(kOk);
   return session->chrome->Quit();
 }
 

@@ -44,6 +44,7 @@ Status ExecuteGetSessionCapabilities(
 
 // Quits a particular session.
 Status ExecuteQuit(
+    bool allow_detach,
     SessionMap* session_map,
     Session* session,
     const base::DictionaryValue& params,

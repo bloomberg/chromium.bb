@@ -17,6 +17,14 @@ namespace {
 
 typedef base::Callback<Status(const base::Value&, Capabilities*)> Parser;
 
+Status ParseDetach(
+    const base::Value& option,
+    Capabilities* capabilities) {
+  if (!option.GetAsBoolean(&capabilities->detach))
+    return Status(kUnknownError, "'detach' must be a boolean");
+  return Status(kOk);
+}
+
 Status ParseChromeBinary(
     const base::Value& option,
     Capabilities* capabilities) {
@@ -165,6 +173,7 @@ Status ParseDesktopChromeOption(
 
   std::map<std::string, Parser> parser_map;
 
+  parser_map["detach"] = base::Bind(&ParseDetach);
   parser_map["binary"] = base::Bind(&ParseChromeBinary);
   parser_map["logPath"] = base::Bind(&ParseLogPath);
   parser_map["args"] = base::Bind(&ParseArgs);
@@ -222,7 +231,9 @@ Status ParseLoggingPrefs(const base::DictionaryValue& desired_caps,
 
 }  // namespace
 
-Capabilities::Capabilities() : command(CommandLine::NO_PROGRAM) {}
+Capabilities::Capabilities()
+    : detach(false),
+      command(CommandLine::NO_PROGRAM) {}
 
 Capabilities::~Capabilities() {}
 
