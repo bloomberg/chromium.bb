@@ -326,10 +326,6 @@ TestingBrowserProcess::media_file_system_registry() {
 #endif
 }
 
-void TestingBrowserProcess::PlatformSpecificCommandLineProcessing(
-    const CommandLine& command_line) {
-}
-
 bool TestingBrowserProcess::created_local_state() const {
     return (local_state_ != NULL);
 }

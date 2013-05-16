@@ -20,7 +20,6 @@ class BackgroundModeManager;
 class BookmarkPromptController;
 class BrowserProcessPlatformPart;
 class ChromeNetLog;
-class CommandLine;
 class CRLSetFetcher;
 class ComponentUpdateService;
 class DownloadRequestLimiter;
@@ -213,15 +212,7 @@ class BrowserProcess {
 
   virtual chrome::MediaFileSystemRegistry* media_file_system_registry() = 0;
 
-  virtual void PlatformSpecificCommandLineProcessing(
-      const CommandLine& command_line) = 0;
-
   virtual bool created_local_state() const = 0;
-
-#if defined(OS_WIN) && defined(USE_AURA)
-  // Invoked when the ASH metro viewer process on Windows 8 exits.
-  virtual void OnMetroViewerProcessTerminated() = 0;
-#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

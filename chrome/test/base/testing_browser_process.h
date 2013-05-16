@@ -105,13 +105,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
   virtual chrome::MediaFileSystemRegistry*
       media_file_system_registry() OVERRIDE;
-  virtual void PlatformSpecificCommandLineProcessing(
-      const CommandLine& command_line) OVERRIDE;
   virtual bool created_local_state() const OVERRIDE;
-
-#if defined(OS_WIN) && defined(USE_AURA)
-  virtual void OnMetroViewerProcessTerminated() OVERRIDE {}
-#endif
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).
