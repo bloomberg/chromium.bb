@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
@@ -15,7 +16,6 @@
 #include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/fileapi/async_file_util_adapter.h"
 #include "webkit/fileapi/copy_or_move_file_validator.h"
-#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation_context.h"

@@ -173,30 +173,24 @@ GURL MockPluginDelegate::GetFileSystemRootUrl(
   return GURL();
 }
 
-bool MockPluginDelegate::OpenFileSystem(
-    const GURL& origin_url,
-    fileapi::FileSystemType type,
-    long long size,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
-  return false;
-}
-
 bool MockPluginDelegate::MakeDirectory(
     const GURL& path,
     bool recursive,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const StatusCallback& callback) {
   return false;
 }
 
 bool MockPluginDelegate::Query(
     const GURL& path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const MetadataCallback& success_callback,
+    const StatusCallback& error_callback) {
   return false;
 }
 
 bool MockPluginDelegate::ReadDirectoryEntries(
     const GURL& path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const ReadDirectoryCallback& success_callback,
+    const StatusCallback& error_callback) {
   return false;
 }
 
@@ -204,33 +198,34 @@ bool MockPluginDelegate::Touch(
     const GURL& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const StatusCallback& callback) {
   return false;
 }
 
 bool MockPluginDelegate::SetLength(
     const GURL& path,
     int64_t length,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const StatusCallback& callback) {
   return false;
 }
 
 bool MockPluginDelegate::Delete(
     const GURL& path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const StatusCallback& callback) {
   return false;
 }
 
 bool MockPluginDelegate::Rename(
     const GURL& file_path,
     const GURL& new_file_path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const StatusCallback& callback) {
   return false;
 }
 
 bool MockPluginDelegate::ReadDirectory(
     const GURL& directory_path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const ReadDirectoryCallback& success_callback,
+    const StatusCallback& error_callback) {
   return false;
 }
 

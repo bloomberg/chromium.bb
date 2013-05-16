@@ -15,8 +15,8 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_system_api.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/file_callbacks.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -90,6 +90,29 @@ std::string GetNameForVirtualFilePath(const std::string& path) {
 void IgnoreCloseCallback(base::PlatformFileError error_code) {
 }
 
+void PlatformFileInfoToPPFileInfo(
+    const base::PlatformFileInfo& file_info,
+    PP_FileSystemType file_system_type,
+    PP_FileInfo* info) {
+  DCHECK(info);
+
+  info->size = file_info.size;
+  info->system_type = file_system_type;
+  info->creation_time = ::ppapi::TimeToPPTime(file_info.creation_time);
+  info->last_access_time = ::ppapi::TimeToPPTime(file_info.last_accessed);
+  info->last_modified_time = ::ppapi::TimeToPPTime(file_info.last_modified);
+
+  if (file_info.is_symbolic_link) {
+    // Only external filesystem may have symbolic link files.
+    DCHECK_EQ(PP_FILESYSTEMTYPE_EXTERNAL, file_system_type);
+    info->type = PP_FILETYPE_OTHER;
+  } else if (file_info.is_directory) {
+    info->type = PP_FILETYPE_DIRECTORY;
+  } else {
+    info->type = PP_FILETYPE_REGULAR;
+  }
+}
+
 void GetFileInfoCallback(
     scoped_refptr<base::TaskRunner> task_runner,
     base::PlatformFile file,
@@ -104,21 +127,14 @@ void GetFileInfoCallback(
     return;
 
   int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
-  if (pp_error != PP_OK)
+  if (pp_error != PP_OK) {
     callback->Run(pp_error);
+    return;
+  }
 
-  info->size = file_info.size;
-  if (file_info.is_symbolic_link)
-    info->type = PP_FILETYPE_OTHER;
-  else if (file_info.is_directory)
-    info->type = PP_FILETYPE_DIRECTORY;
-  else
-    info->type = PP_FILETYPE_REGULAR;
+  PlatformFileInfoToPPFileInfo(
+      file_info, PP_FILESYSTEMTYPE_EXTERNAL, info.get());
 
-  info->system_type = PP_FILESYSTEMTYPE_EXTERNAL;
-  info->creation_time = file_info.creation_time.ToDoubleT();
-  info->last_access_time = file_info.last_accessed.ToDoubleT();
-  info->last_modified_time = file_info.last_modified.ToDoubleT();
   callback->Run(PP_OK);
 }
 
@@ -131,8 +147,10 @@ void QueryCallback(scoped_refptr<base::TaskRunner> task_runner,
     return;
 
   int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
-  if (pp_error != PP_OK)
+  if (pp_error != PP_OK) {
     callback->Run(pp_error);
+    return;
+  }
   base::PlatformFile file = passed_file.ReleaseValue();
 
   if (!base::FileUtilProxy::GetFileInfoFromPlatformFile(
@@ -143,6 +161,65 @@ void QueryCallback(scoped_refptr<base::TaskRunner> task_runner,
         task_runner, file, base::Bind(&IgnoreCloseCallback));
     callback->Run(PP_ERROR_FAILED);
   }
+}
+
+void DidReadMetadata(
+    scoped_refptr< ::ppapi::TrackedCallback> callback,
+    linked_ptr<PP_FileInfo> info,
+    PP_FileSystemType file_system_type,
+    const base::PlatformFileInfo& file_info,
+    const base::FilePath& unused) {
+  if (!TrackedCallback::IsPending(callback))
+    return;
+
+  PlatformFileInfoToPPFileInfo(file_info, file_system_type, info.get());
+  callback->Run(PP_OK);
+}
+
+void DidReadDirectory(
+    scoped_refptr< ::ppapi::TrackedCallback> callback,
+    PPB_FileRef_Impl* dir_ref,
+    linked_ptr<std::vector< ::ppapi::PPB_FileRef_CreateInfo> > dir_files,
+    linked_ptr<std::vector<PP_FileType> > dir_file_types,
+    const std::vector<base::FileUtilProxy::Entry>& entries,
+    bool has_more) {
+  if (!TrackedCallback::IsPending(callback))
+    return;
+
+  // The current filesystem backend always returns false.
+  DCHECK(!has_more);
+
+  DCHECK(dir_ref);
+  DCHECK(dir_files.get());
+  DCHECK(dir_file_types.get());
+
+  std::string dir_path = dir_ref->GetCreateInfo().path;
+  if (dir_path.empty() || dir_path[dir_path.size() - 1] != '/')
+    dir_path += '/';
+
+  for (size_t i = 0; i < entries.size(); ++i) {
+    const base::FileUtilProxy::Entry& entry = entries[i];
+    scoped_refptr<PPB_FileRef_Impl> file_ref(PPB_FileRef_Impl::CreateInternal(
+        dir_ref->pp_instance(),
+        dir_ref->file_system_resource(),
+        dir_path + fileapi::FilePathToString(base::FilePath(entry.name))));
+    dir_files->push_back(file_ref->GetCreateInfo());
+    dir_file_types->push_back(
+        entry.is_directory ? PP_FILETYPE_DIRECTORY : PP_FILETYPE_REGULAR);
+    // Add a ref count on behalf of the plugin side.
+    file_ref->GetReference();
+  }
+  CHECK_EQ(dir_files->size(), dir_file_types->size());
+
+  callback->Run(PP_OK);
+}
+
+void DidFinishFileOperation(
+    scoped_refptr< ::ppapi::TrackedCallback> callback,
+    base::PlatformFileError error_code) {
+  if (callback->completed())
+    return;
+  callback->Run(::ppapi::PlatformFileErrorToPepperError(error_code));
 }
 
 }  // namespace
@@ -250,7 +327,7 @@ int32_t PPB_FileRef_Impl::MakeDirectory(
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->MakeDirectory(
           GetFileSystemURL(), PP_ToBool(make_ancestors),
-          new FileCallbacks(this, callback)))
+          base::Bind(&DidFinishFileOperation, callback)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -268,7 +345,7 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
           GetFileSystemURL(),
           PPTimeToTime(last_access_time),
           PPTimeToTime(last_modified_time),
-          new FileCallbacks(this, callback)))
+          base::Bind(&DidFinishFileOperation, callback)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -282,7 +359,7 @@ int32_t PPB_FileRef_Impl::Delete(scoped_refptr<TrackedCallback> callback) {
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->Delete(
           GetFileSystemURL(),
-          new FileCallbacks(this, callback)))
+          base::Bind(&DidFinishFileOperation, callback)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -306,7 +383,7 @@ int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->Rename(
           GetFileSystemURL(), new_file_ref->GetFileSystemURL(),
-          new FileCallbacks(this, callback)))
+          base::Bind(&DidFinishFileOperation, callback)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -408,11 +485,12 @@ int32_t PPB_FileRef_Impl::QueryInHost(
     if (!delegate)
       return PP_ERROR_FAILED;
 
+    PP_FileSystemType file_system_type =
+        delegate->GetFileSystemType(pp_instance(), file_system_);
     if (!plugin_instance->delegate()->Query(
             GetFileSystemURL(),
-            new FileCallbacks(this, callback, info,
-                              delegate->GetFileSystemType(pp_instance(),
-                                                          file_system_))))
+            base::Bind(&DidReadMetadata, callback, info, file_system_type),
+            base::Bind(&DidFinishFileOperation, callback)))
       return PP_ERROR_FAILED;
 
   }
@@ -437,14 +515,13 @@ int32_t PPB_FileRef_Impl::ReadDirectoryEntriesInHost(
   if (!plugin_instance)
     return PP_ERROR_FAILED;
 
-  FileCallbacks::ReadDirectoryEntriesParams params;
-  params.dir_ref = this;
-  params.files = files;
-  params.file_types = file_types;
-
+  // TODO(yzshen): Passing base::Unretained(this) to the callback could
+  // be dangerous.
   if (!plugin_instance->delegate()->ReadDirectoryEntries(
           GetFileSystemURL(),
-          new FileCallbacks(this, callback, params)))
+          base::Bind(&DidReadDirectory,
+                     callback, base::Unretained(this), files, file_types),
+          base::Bind(&DidFinishFileOperation, callback)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }

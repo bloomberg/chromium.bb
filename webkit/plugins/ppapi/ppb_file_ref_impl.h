@@ -16,7 +16,6 @@
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/var.h"
-#include "webkit/plugins/ppapi/file_callbacks.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {

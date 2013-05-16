@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/fileapi/webfilesystem_callback_dispatcher.h"
+#include "content/common/fileapi/webfilesystem_callback_adapters.h"
 
 #include <string>
 #include <vector>
@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileInfo.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "webkit/base/file_path_string_conversions.h"
@@ -27,58 +26,52 @@ using WebKit::WebVector;
 
 namespace content {
 
-WebFileSystemCallbackDispatcher::WebFileSystemCallbackDispatcher(
-    WebFileSystemCallbacks* callbacks)
-    : callbacks_(callbacks) {
-  DCHECK(callbacks_);
+void FileStatusCallbackAdapter(
+    WebKit::WebFileSystemCallbacks* callbacks,
+    base::PlatformFileError error) {
+  if (error == base::PLATFORM_FILE_OK)
+    callbacks->didSucceed();
+  else
+    callbacks->didFail(::fileapi::PlatformFileErrorToWebFileError(error));
 }
 
-void WebFileSystemCallbackDispatcher::DidSucceed() {
-  callbacks_->didSucceed();
-}
-
-void WebFileSystemCallbackDispatcher::DidReadMetadata(
+void ReadMetadataCallbackAdapter(
+    WebKit::WebFileSystemCallbacks* callbacks,
     const base::PlatformFileInfo& file_info,
     const base::FilePath& platform_path) {
   WebFileInfo web_file_info;
   webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
   web_file_info.platformPath = webkit_base::FilePathToWebString(platform_path);
-  callbacks_->didReadMetadata(web_file_info);
+  callbacks->didReadMetadata(web_file_info);
 }
 
-void WebFileSystemCallbackDispatcher::DidCreateSnapshotFile(
+void CreateSnapshotFileCallbackAdapter(
+    WebKit::WebFileSystemCallbacks* callbacks,
     const base::PlatformFileInfo& file_info,
     const base::FilePath& platform_path) {
   WebFileInfo web_file_info;
   webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
   web_file_info.platformPath = webkit_base::FilePathToWebString(platform_path);
-  callbacks_->didCreateSnapshotFile(web_file_info);
+  callbacks->didCreateSnapshotFile(web_file_info);
 }
 
-void WebFileSystemCallbackDispatcher::DidReadDirectory(
-    const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
+void ReadDirectoryCallbackAdapater(
+    WebKit::WebFileSystemCallbacks* callbacks,
+    const std::vector<base::FileUtilProxy::Entry>& entries,
+    bool has_more) {
   WebVector<WebFileSystemEntry> file_system_entries(entries.size());
   for (size_t i = 0; i < entries.size(); i++) {
     file_system_entries[i].name =
         webkit_base::FilePathStringToWebString(entries[i].name);
     file_system_entries[i].isDirectory = entries[i].is_directory;
   }
-  callbacks_->didReadDirectory(file_system_entries, has_more);
+  callbacks->didReadDirectory(file_system_entries, has_more);
 }
 
-void WebFileSystemCallbackDispatcher::DidOpenFileSystem(
+void OpenFileSystemCallbackAdapter(
+    WebKit::WebFileSystemCallbacks* callbacks,
     const std::string& name, const GURL& root) {
-  callbacks_->didOpenFileSystem(UTF8ToUTF16(name), root);
-}
-
-void WebFileSystemCallbackDispatcher::DidFail(
-    base::PlatformFileError error_code) {
-    callbacks_->didFail(
-        fileapi::PlatformFileErrorToWebFileError(error_code));
-}
-
-void WebFileSystemCallbackDispatcher::DidWrite(int64 bytes, bool complete) {
-  NOTREACHED();
+  callbacks->didOpenFileSystem(UTF8ToUTF16(name), root);
 }
 
 }  // namespace content

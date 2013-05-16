@@ -30,6 +30,13 @@ class WEBKIT_STORAGE_EXPORT WebFileWriterBase
   virtual void cancel();
 
  protected:
+  // This calls DidSucceed() or DidFail() based on the value of |error_code|.
+  void DidFinish(base::PlatformFileError error_code);
+
+  void DidWrite(int64 bytes, bool complete);
+  void DidSucceed();
+  void DidFail(base::PlatformFileError error_code);
+
   // Derived classes must provide these methods to asynchronously perform
   // the requested operation, and they must call the appropiate DidSomething
   // method upon completion and as progress is made in the Write case.
@@ -37,10 +44,6 @@ class WEBKIT_STORAGE_EXPORT WebFileWriterBase
   virtual void DoWrite(const GURL& path, const GURL& blob_url,
                        int64 offset) = 0;
   virtual void DoCancel() = 0;
-
-  void DidSucceed();
-  void DidFail(base::PlatformFileError error_code);
-  void DidWrite(int64 bytes, bool complete);
 
  private:
   enum OperationType {

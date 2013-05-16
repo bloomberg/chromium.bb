@@ -63,6 +63,34 @@ void WebFileWriterBase::cancel() {
   DoCancel();
 }
 
+void WebFileWriterBase::DidFinish(base::PlatformFileError error_code) {
+  if (error_code == base::PLATFORM_FILE_OK)
+    DidSucceed();
+  else
+    DidFail(error_code);
+}
+
+void WebFileWriterBase::DidWrite(int64 bytes, bool complete) {
+  DCHECK(kOperationWrite == operation_);
+  switch (cancel_state_) {
+    case kCancelNotInProgress:
+      if (complete)
+        operation_ = kOperationNone;
+      client_->didWrite(bytes, complete);
+      break;
+    case kCancelSent:
+      // This is the success call of the write, which we'll eat, even though
+      // it succeeded before the cancel got there.  We accepted the cancel call,
+      // so the write will eventually return an error.
+      if (complete)
+        cancel_state_ = kCancelReceivedWriteResponse;
+      break;
+    case kCancelReceivedWriteResponse:
+    default:
+      NOTREACHED();
+  }
+}
+
 void WebFileWriterBase::DidSucceed() {
   // Write never gets a DidSucceed call, so this is either a cancel or truncate
   // response.
@@ -110,27 +138,6 @@ void WebFileWriterBase::DidFail(base::PlatformFileError error_code) {
       // write/truncate's response, and will now report that it was cancelled.
       FinishCancel();
       break;
-    default:
-      NOTREACHED();
-  }
-}
-
-void WebFileWriterBase::DidWrite(int64 bytes, bool complete) {
-  DCHECK(kOperationWrite == operation_);
-  switch (cancel_state_) {
-    case kCancelNotInProgress:
-      if (complete)
-        operation_ = kOperationNone;
-      client_->didWrite(bytes, complete);
-      break;
-    case kCancelSent:
-      // This is the success call of the write, which we'll eat, even though
-      // it succeeded before the cancel got there.  We accepted the cancel call,
-      // so the write will eventually return an error.
-      if (complete)
-        cancel_state_ = kCancelReceivedWriteResponse;
-      break;
-    case kCancelReceivedWriteResponse:
     default:
       NOTREACHED();
   }

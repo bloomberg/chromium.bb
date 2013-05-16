@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_util_proxy.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
@@ -51,10 +52,6 @@ class WebGraphicsContext3D;
 namespace base {
 class MessageLoopProxy;
 class Time;
-}
-
-namespace fileapi {
-class FileSystemCallbackDispatcher;
 }
 
 namespace gfx {
@@ -501,30 +498,42 @@ class PluginDelegate {
       int flags,
       const AsyncOpenFileSystemURLCallback& callback) = 0;
 
+  // Callback typedefs for FileSystem related methods.
+  typedef base::Callback<void (base::PlatformFileError)> StatusCallback;
+  typedef base::Callback<void(
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more)> ReadDirectoryCallback;
+  typedef base::Callback<void(
+      const base::PlatformFileInfo& file_info,
+      const base::FilePath& platform_path)> MetadataCallback;
+
   virtual bool MakeDirectory(
       const GURL& path,
       bool recursive,
-      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+      const StatusCallback& callback) = 0;
   virtual bool Query(const GURL& path,
-                     fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+                     const MetadataCallback& success_callback,
+                     const StatusCallback& error_callback) = 0;
   virtual bool ReadDirectoryEntries(
       const GURL& path,
-      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+      const ReadDirectoryCallback& success_callback,
+      const StatusCallback& error_callback) = 0;
   virtual bool Touch(const GURL& path,
                      const base::Time& last_access_time,
                      const base::Time& last_modified_time,
-                     fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+                     const StatusCallback& callback) = 0;
   virtual bool SetLength(const GURL& path,
                          int64_t length,
-                         fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+                         const StatusCallback& callback) = 0;
   virtual bool Delete(const GURL& path,
-                      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+                      const StatusCallback& callback) = 0;
   virtual bool Rename(const GURL& file_path,
                       const GURL& new_file_path,
-                      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+                      const StatusCallback& callback) = 0;
   virtual bool ReadDirectory(
       const GURL& directory_path,
-      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+      const ReadDirectoryCallback& success_callback,
+      const StatusCallback& error_callback) = 0;
 
   // For quota handlings for FileIO API.
   typedef base::Callback<void (int64)> AvailableSpaceCallback;

@@ -36,11 +36,11 @@ class PepperFileSystemHost :
   bool IsOpened() const { return opened_; }
   GURL GetRootUrl() const { return root_url_; }
 
-  // It's public only to allow PlatformCallbackAdaptor to access.
-  void OpenFileSystemReply(int32_t pp_error,
-                           const GURL& root);
-
  private:
+  // Callback for OpenFileSystem.
+  void DidOpenFileSystem(const std::string& name_unused, const GURL& root);
+  void DidFailOpenFileSystem(base::PlatformFileError error);
+
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
                         int64_t expected_size);
   int32_t OnHostMsgInitIsolatedFileSystem(

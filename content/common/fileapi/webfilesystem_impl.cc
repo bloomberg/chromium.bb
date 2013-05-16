@@ -4,9 +4,10 @@
 
 #include "content/common/fileapi/webfilesystem_impl.h"
 
+#include "base/bind.h"
 #include "content/common/child_thread.h"
 #include "content/common/fileapi/file_system_dispatcher.h"
-#include "content/common/fileapi/webfilesystem_callback_dispatcher.h"
+#include "content/common/fileapi/webfilesystem_callback_adapters.h"
 #include "content/common/fileapi/webfilewriter_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
@@ -33,7 +34,7 @@ void WebFileSystemImpl::move(const WebURL& src_path,
       ChildThread::current()->file_system_dispatcher();
   dispatcher->Move(GURL(src_path),
                    GURL(dest_path),
-                   new WebFileSystemCallbackDispatcher(callbacks));
+                   base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void WebFileSystemImpl::copy(const WebURL& src_path,
@@ -43,33 +44,37 @@ void WebFileSystemImpl::copy(const WebURL& src_path,
       ChildThread::current()->file_system_dispatcher();
   dispatcher->Copy(GURL(src_path),
                    GURL(dest_path),
-                   new WebFileSystemCallbackDispatcher(callbacks));
+                   base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void WebFileSystemImpl::remove(const WebURL& path,
                                WebFileSystemCallbacks* callbacks) {
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Remove(GURL(path),
-                     false /* recursive */,
-                     new WebFileSystemCallbackDispatcher(callbacks));
+  dispatcher->Remove(
+      GURL(path),
+      false /* recursive */,
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void WebFileSystemImpl::removeRecursively(const WebURL& path,
                                           WebFileSystemCallbacks* callbacks) {
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Remove(GURL(path),
-                     true /* recursive */,
-                     new WebFileSystemCallbackDispatcher(callbacks));
+  dispatcher->Remove(
+      GURL(path),
+      true /* recursive */,
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void WebFileSystemImpl::readMetadata(const WebURL& path,
                                      WebFileSystemCallbacks* callbacks) {
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->ReadMetadata(GURL(path),
-                           new WebFileSystemCallbackDispatcher(callbacks));
+  dispatcher->ReadMetadata(
+      GURL(path),
+      base::Bind(&ReadMetadataCallbackAdapter, callbacks),
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void WebFileSystemImpl::createFile(const WebURL& path,
@@ -77,8 +82,9 @@ void WebFileSystemImpl::createFile(const WebURL& path,
                                    WebFileSystemCallbacks* callbacks) {
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Create(GURL(path), exclusive, false,
-                     false, new WebFileSystemCallbackDispatcher(callbacks));
+  dispatcher->Create(
+      GURL(path), exclusive, false /* directory */, false /* recursive */,
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void WebFileSystemImpl::createDirectory(const WebURL& path,
@@ -86,32 +92,37 @@ void WebFileSystemImpl::createDirectory(const WebURL& path,
                                         WebFileSystemCallbacks* callbacks) {
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Create(GURL(path), exclusive, true,
-                     false, new WebFileSystemCallbackDispatcher(callbacks));
+  dispatcher->Create(
+      GURL(path), exclusive, true /* directory */, false /* recursive */,
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void WebFileSystemImpl::fileExists(const WebURL& path,
                                    WebFileSystemCallbacks* callbacks) {
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Exists(GURL(path), false,
-                     new WebFileSystemCallbackDispatcher(callbacks));
+  dispatcher->Exists(
+      GURL(path), false /* directory */,
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void WebFileSystemImpl::directoryExists(const WebURL& path,
                                         WebFileSystemCallbacks* callbacks) {
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Exists(GURL(path), true,
-                     new WebFileSystemCallbackDispatcher(callbacks));
+  dispatcher->Exists(
+      GURL(path), true /* directory */,
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void WebFileSystemImpl::readDirectory(const WebURL& path,
                                       WebFileSystemCallbacks* callbacks) {
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->ReadDirectory(GURL(path),
-                            new WebFileSystemCallbackDispatcher(callbacks));
+  dispatcher->ReadDirectory(
+      GURL(path),
+      base::Bind(&ReadDirectoryCallbackAdapater, callbacks),
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 WebKit::WebFileWriter* WebFileSystemImpl::createFileWriter(
@@ -125,7 +136,9 @@ void WebFileSystemImpl::createSnapshotFileAndReadMetadata(
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
   dispatcher->CreateSnapshotFile(
-      GURL(path), new WebFileSystemCallbackDispatcher(callbacks));
+      GURL(path),
+      base::Bind(&CreateSnapshotFileCallbackAdapter, callbacks),
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 }  // namespace content

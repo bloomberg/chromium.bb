@@ -180,8 +180,6 @@
     'renderer/password_form_conversion_utils.cc',
     'renderer/pepper/content_renderer_pepper_host_factory.cc',
     'renderer/pepper/content_renderer_pepper_host_factory.h',
-    'renderer/pepper/null_file_system_callback_dispatcher.cc',
-    'renderer/pepper/null_file_system_callback_dispatcher.h',
     'renderer/pepper/pepper_audio_input_host.cc',
     'renderer/pepper/pepper_audio_input_host.h',
     'renderer/pepper/pepper_broker_impl.cc',

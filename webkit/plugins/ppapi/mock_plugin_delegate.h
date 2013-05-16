@@ -77,35 +77,33 @@ class MockPluginDelegate : public PluginDelegate {
                                               PP_Resource resource) const;
   virtual GURL GetFileSystemRootUrl(PP_Instance instance,
                                     PP_Resource resource) const;
-  virtual bool OpenFileSystem(
-      const GURL& origin_url,
-      fileapi::FileSystemType type,
-      long long size,
-      fileapi::FileSystemCallbackDispatcher* dispatcher);
   virtual bool MakeDirectory(
       const GURL& path,
       bool recursive,
-      fileapi::FileSystemCallbackDispatcher* dispatcher);
+      const StatusCallback& callback);
   virtual bool Query(const GURL& path,
-                     fileapi::FileSystemCallbackDispatcher* dispatcher);
+                     const MetadataCallback& success_callback,
+                     const StatusCallback& error_callback);
   virtual bool ReadDirectoryEntries(
       const GURL& path,
-      fileapi::FileSystemCallbackDispatcher* dispatcher);
+      const ReadDirectoryCallback& success_callback,
+      const StatusCallback& error_callback);
   virtual bool Touch(const GURL& path,
                      const base::Time& last_access_time,
                      const base::Time& last_modified_time,
-                     fileapi::FileSystemCallbackDispatcher* dispatcher);
+                     const StatusCallback& callback);
   virtual bool SetLength(const GURL& path,
                          int64_t length,
-                         fileapi::FileSystemCallbackDispatcher* dispatcher);
+                         const StatusCallback& callback);
   virtual bool Delete(const GURL& path,
-                      fileapi::FileSystemCallbackDispatcher* dispatcher);
+                      const StatusCallback& callback);
   virtual bool Rename(const GURL& file_path,
                       const GURL& new_file_path,
-                      fileapi::FileSystemCallbackDispatcher* dispatcher);
+                      const StatusCallback& callback);
   virtual bool ReadDirectory(
       const GURL& directory_path,
-      fileapi::FileSystemCallbackDispatcher* dispatcher);
+      const ReadDirectoryCallback& success_callback,
+      const StatusCallback& error_callback);
   virtual void QueryAvailableSpace(const GURL& origin,
                                    quota::StorageType type,
                                    const AvailableSpaceCallback& callback);

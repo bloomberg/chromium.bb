@@ -90,7 +90,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/size.h"
-#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -268,70 +267,34 @@ void DoNotifyCloseFile(int file_open_id, base::PlatformFileError /* unused */) {
       file_open_id);
 }
 
-class AsyncOpenFileSystemURLCallbackTranslator
-    : public fileapi::FileSystemCallbackDispatcher {
- public:
-  AsyncOpenFileSystemURLCallbackTranslator(
-      const webkit::ppapi::PluginDelegate::AsyncOpenFileSystemURLCallback&
-          callback)
-    : callback_(callback) {
+void DidOpenFileSystemURL(
+    const webkit::ppapi::PluginDelegate::AsyncOpenFileSystemURLCallback&
+        callback,
+    base::PlatformFile file,
+    int file_open_id,
+    quota::QuotaLimitType quota_policy) {
+  callback.Run(base::PLATFORM_FILE_OK,
+               base::PassPlatformFile(&file),
+               quota_policy,
+               base::Bind(&DoNotifyCloseFile, file_open_id));
+  // Make sure we won't leak file handle if the requester has died.
+  if (file != base::kInvalidPlatformFileValue) {
+    base::FileUtilProxy::Close(
+        RenderThreadImpl::current()->GetFileThreadMessageLoopProxy(), file,
+        base::Bind(&DoNotifyCloseFile, file_open_id));
   }
+}
 
-  virtual ~AsyncOpenFileSystemURLCallbackTranslator() {}
-
-  virtual void DidSucceed() OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void DidReadMetadata(
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void DidCreateSnapshotFile(
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void DidReadDirectory(
-      const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool has_more) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void DidOpenFileSystem(const std::string& name,
-                                 const GURL& root) OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
-    base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
-    callback_.Run(error_code,
-                  base::PassPlatformFile(&invalid_file),
-                  quota::kQuotaLimitTypeUnknown,
-                  webkit::ppapi::PluginDelegate::NotifyCloseFileCallback());
-  }
-
-  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void DidOpenFile(base::PlatformFile file,
-                           int file_open_id,
-                           quota::QuotaLimitType quota_policy) OVERRIDE {
-    callback_.Run(base::PLATFORM_FILE_OK,
-                  base::PassPlatformFile(&file),
-                  quota_policy,
-                  base::Bind(&DoNotifyCloseFile, file_open_id));
-    // Make sure we won't leak file handle if the requester has died.
-    if (file != base::kInvalidPlatformFileValue) {
-      base::FileUtilProxy::Close(
-          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy(), file,
-          base::Bind(&DoNotifyCloseFile, file_open_id));
-    }
-  }
-
- private:
-  webkit::ppapi::PluginDelegate::AsyncOpenFileSystemURLCallback callback_;
-};
+void DidFailOpenFileSystemURL(
+    const webkit::ppapi::PluginDelegate::AsyncOpenFileSystemURLCallback&
+        callback,
+    base::PlatformFileError error_code) {
+  base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
+  callback.Run(error_code,
+               base::PassPlatformFile(&invalid_file),
+               quota::kQuotaLimitTypeUnknown,
+               webkit::ppapi::PluginDelegate::NotifyCloseFileCallback());
+}
 
 void CreateHostForInProcessModule(RenderViewImpl* render_view,
                                   webkit::ppapi::PluginModule* module,
@@ -1060,73 +1023,78 @@ GURL PepperPluginDelegateImpl::GetFileSystemRootUrl(
 bool PepperPluginDelegateImpl::MakeDirectory(
     const GURL& path,
     bool recursive,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   return file_system_dispatcher->Create(
-      path, false, true, recursive, dispatcher);
+      path, false, true, recursive, callback);
 }
 
 bool PepperPluginDelegateImpl::Query(
     const GURL& path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const MetadataCallback& success_callback,
+    const StatusCallback& error_callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->ReadMetadata(path, dispatcher);
+  return file_system_dispatcher->ReadMetadata(
+      path, success_callback, error_callback);
 }
 
 bool PepperPluginDelegateImpl::ReadDirectoryEntries(
     const GURL& path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const ReadDirectoryCallback& success_callback,
+    const StatusCallback& error_callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->ReadDirectory(path, dispatcher);
+  return file_system_dispatcher->ReadDirectory(
+      path, success_callback, error_callback);
 }
 
 bool PepperPluginDelegateImpl::Touch(
     const GURL& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   return file_system_dispatcher->TouchFile(path, last_access_time,
-                                           last_modified_time, dispatcher);
+                                           last_modified_time, callback);
 }
 
 bool PepperPluginDelegateImpl::SetLength(
     const GURL& path,
     int64_t length,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->Truncate(path, length, NULL, dispatcher);
+  return file_system_dispatcher->Truncate(path, length, NULL, callback);
 }
 
 bool PepperPluginDelegateImpl::Delete(
     const GURL& path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->Remove(path, false /* recursive */,
-                                        dispatcher);
+  return file_system_dispatcher->Remove(path, false /* recursive */, callback);
 }
 
 bool PepperPluginDelegateImpl::Rename(
     const GURL& file_path,
     const GURL& new_file_path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->Move(file_path, new_file_path, dispatcher);
+  return file_system_dispatcher->Move(file_path, new_file_path, callback);
 }
 
 bool PepperPluginDelegateImpl::ReadDirectory(
     const GURL& directory_path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    const ReadDirectoryCallback& success_callback,
+    const StatusCallback& error_callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->ReadDirectory(directory_path, dispatcher);
+  return file_system_dispatcher->ReadDirectory(
+      directory_path, success_callback, error_callback);
 }
 
 void PepperPluginDelegateImpl::QueryAvailableSpace(
@@ -1151,9 +1119,10 @@ bool PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
 
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->OpenFile(path, flags,
-      new AsyncOpenFileSystemURLCallbackTranslator(
-          callback));
+  return file_system_dispatcher->OpenFile(
+      path, flags,
+      base::Bind(&DidOpenFileSystemURL, callback),
+      base::Bind(&DidFailOpenFileSystemURL, callback));
 }
 
 void PepperPluginDelegateImpl::SyncGetFileSystemPlatformPath(

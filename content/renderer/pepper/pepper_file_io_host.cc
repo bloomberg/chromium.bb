@@ -11,7 +11,6 @@
 #include "base/files/file_util_proxy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/pepper/null_file_system_callback_dispatcher.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -19,7 +18,6 @@
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
-#include "webkit/plugins/ppapi/file_callbacks.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
@@ -46,27 +44,6 @@ namespace {
 static const int32_t kMaxReadSize = 32 * 1024 * 1024;  // 32MB
 
 typedef base::Callback<void (base::PlatformFileError)> PlatformGeneralCallback;
-
-class PlatformGeneralCallbackTranslator
-    : public NullFileSystemCallbackDispatcher {
- public:
-  explicit PlatformGeneralCallbackTranslator(
-      const PlatformGeneralCallback& callback)
-    : callback_(callback) {}
-
-  virtual ~PlatformGeneralCallbackTranslator() {}
-
-  virtual void DidSucceed() OVERRIDE {
-    callback_.Run(base::PLATFORM_FILE_OK);
-  }
-
-  virtual void DidFail(base::PlatformFileError platform_error) OVERRIDE {
-    callback_.Run(platform_error);
-  }
-
- private:
-  PlatformGeneralCallback callback_;
-};
 
 int32_t ErrorOrByteNumber(int32_t pp_error, int32_t byte_number) {
   // On the plugin side, some callbacks expect a parameter that means different
@@ -222,10 +199,9 @@ int32_t PepperFileIOHost::OnHostMsgTouch(
             file_system_url_,
             PPTimeToTime(last_access_time),
             PPTimeToTime(last_modified_time),
-            new PlatformGeneralCallbackTranslator(
-                base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
-                           weak_factory_.GetWeakPtr(),
-                           context->MakeReplyMessageContext()))))
+            base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
+                        weak_factory_.GetWeakPtr(),
+                        context->MakeReplyMessageContext())))
       return PP_ERROR_FAILED;
     state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
     return PP_OK_COMPLETIONPENDING;
@@ -327,10 +303,9 @@ int32_t PepperFileIOHost::OnHostMsgSetLength(
   if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
     if (!plugin_delegate_->SetLength(
             file_system_url_, length,
-            new PlatformGeneralCallbackTranslator(
-                base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
-                           weak_factory_.GetWeakPtr(),
-                           context->MakeReplyMessageContext()))))
+            base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
+                       weak_factory_.GetWeakPtr(),
+                       context->MakeReplyMessageContext())))
       return PP_ERROR_FAILED;
   } else {
     // TODO(nhiroki): fix a failure of FileIO.SetLength for an external

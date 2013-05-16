@@ -33,7 +33,7 @@
 #include "content/common/database_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/fileapi/file_system_dispatcher.h"
-#include "content/common/fileapi/webfilesystem_callback_dispatcher.h"
+#include "content/common/fileapi/webfilesystem_callback_adapters.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/java_bridge_messages.h"
@@ -4232,7 +4232,9 @@ void RenderViewImpl::openFileSystem(
 
   ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
       GURL(origin.toString()), static_cast<fileapi::FileSystemType>(type),
-      size, create, new WebFileSystemCallbackDispatcher(callbacks));
+      size, create,
+      base::Bind(&OpenFileSystemCallbackAdapter, callbacks),
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void RenderViewImpl::deleteFileSystem(
@@ -4251,7 +4253,7 @@ void RenderViewImpl::deleteFileSystem(
   ChildThread::current()->file_system_dispatcher()->DeleteFileSystem(
       GURL(origin.toString()),
       static_cast<fileapi::FileSystemType>(type),
-      new WebFileSystemCallbackDispatcher(callbacks));
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void RenderViewImpl::queryStorageUsageAndQuota(

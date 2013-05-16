@@ -17,8 +17,6 @@
       '../fileapi/file_permission_policy.cc',
       '../fileapi/file_permission_policy.h',
       '../fileapi/file_stream_writer.h',
-      '../fileapi/file_system_callback_dispatcher.cc',
-      '../fileapi/file_system_callback_dispatcher.h',
       '../fileapi/file_system_context.cc',
       '../fileapi/file_system_context.h',
       '../fileapi/file_system_dir_url_request_job.cc',
