@@ -360,7 +360,12 @@ Status ProcessExtensions(const std::vector<std::string>& extensions,
     Status status = UnpackAutomationExtension(temp_dir, &automation_extension);
     if (status.IsError())
       return status;
-    extension_paths.push_back(automation_extension.value());
+    if (command->HasSwitch("disable-extensions")) {
+      command->AppendSwitchNative("load-component-extension",
+                                  automation_extension.value());
+    } else {
+      extension_paths.push_back(automation_extension.value());
+    }
   }
 
   if (extension_paths.size()) {

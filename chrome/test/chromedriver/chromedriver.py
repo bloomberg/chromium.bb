@@ -82,14 +82,11 @@ class ChromeDriver(object):
       assert type(chrome_log_path) is str
       options['logPath'] = chrome_log_path
 
-    if options:
-      params = {
-        'desiredCapabilities': {
-          'chromeOptions': options
-        }
+    params = {
+      'desiredCapabilities': {
+        'chromeOptions': options
       }
-    else:
-      params = {}
+    }
 
     self._session_id = self._ExecuteCommand('newSession', params)['sessionId']
 
