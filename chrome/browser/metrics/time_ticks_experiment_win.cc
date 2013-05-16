@@ -39,7 +39,10 @@ void CollectTimeTicksStats() {
     return;
   }
 
-  DWORD_PTR current_mask = 1;
+  SYSTEM_INFO sys_info;
+  GetSystemInfo(&sys_info);
+  DWORD num_cores = sys_info.dwNumberOfProcessors;
+  DWORD current_core = 0;
   bool failed_to_change_cores = false;
 
   base::win::OSInfo* info = base::win::OSInfo::GetInstance();
@@ -61,30 +64,25 @@ void CollectTimeTicksStats() {
     }
     qpc_last = qpc_now;
 
-    // Change cores every 10 iterations.
-    if (i % 10 == 0) {
-      DWORD_PTR old_mask = current_mask;
-      current_mask <<= 1;
-      while ((current_mask & default_mask) == 0) {
-        current_mask <<= 1;
-        if (current_mask > default_mask) {
-          current_mask = 1;
-        } else if (current_mask == old_mask) {
-          break;
-        }
+    if (num_cores > 1 && (i % 100) == 0) {
+      ++current_core;
+      if (current_core > num_cores) {
+        current_core = 0;
       }
-      if (!SetThreadAffinityMask(GetCurrentThread(), current_mask)) {
+      if (!SetThreadAffinityMask(GetCurrentThread(), 1 << current_core)) {
         failed_to_change_cores = true;
         break;
       }
     }
   }
 
-  SetThreadAffinityMask(GetCurrentThread(), default_mask);
-  if (failed_to_change_cores) {
-    UMA_HISTOGRAM_ENUMERATION("WinTimeTicks.FailedToChangeCores",
-                              info->version(), base::win::VERSION_WIN_LAST);
-    return;
+  if (num_cores > 1) {
+    SetThreadAffinityMask(GetCurrentThread(), default_mask);
+    if (failed_to_change_cores) {
+      UMA_HISTOGRAM_ENUMERATION("WinTimeTicks.FailedToChangeCores",
+                                info->version(), base::win::VERSION_WIN_LAST);
+      return;
+    }
   }
 
   if (min_delta < 0) {
