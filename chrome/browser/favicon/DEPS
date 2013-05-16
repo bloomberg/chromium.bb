@@ -20,7 +20,6 @@
   "!chrome/browser/history/history_backend.h",
   "!chrome/browser/history/history_service.h",
   "!chrome/browser/history/history_service_factory.h",
-  "!chrome/browser/history/history_types.h",
   "!chrome/browser/history/select_favicon_frames.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_dependency_manager.h",
@@ -36,6 +35,7 @@ specific_include_rules = {
   'favicon_util\.(h|cc)': [
     "-chrome",
     "-chrome/browser",
+    "+chrome/browser/favicon/favicon_types.h",
     "+chrome/browser/favicon/favicon_util.h",
     "+chrome/common/icon_messages.h",
     "!chrome/browser/history/history_types.h",

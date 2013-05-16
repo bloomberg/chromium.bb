@@ -28,10 +28,12 @@ class TabRestoreService;
 @class HistoryMenuCocoaController;
 
 namespace {
-
 class HistoryMenuBridgeTest;
+}
 
-}  // namespace
+namespace chrome {
+struct FaviconImageResult;
+}
 
 // C++ bridge for the history menu; one per AppController (means there
 // is only one). This class observes various data sources, namely the
@@ -192,7 +194,7 @@ class HistoryMenuBridge : public content::NotificationObserver,
   // sets the image on the menu. Called on the same same thread that
   // GetFaviconForHistoryItem() was called on (UI thread).
   void GotFaviconData(HistoryItem* item,
-                      const history::FaviconImageResult& image_result);
+                      const chrome::FaviconImageResult& image_result);
 
   // Cancels a favicon load request for a given HistoryItem, if one is in
   // progress.

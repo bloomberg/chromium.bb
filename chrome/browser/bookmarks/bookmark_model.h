@@ -41,7 +41,7 @@ namespace bookmark_utils {
 struct TitleMatch;
 }
 
-namespace history {
+namespace chrome {
 struct FaviconImageResult;
 }
 
@@ -473,7 +473,7 @@ class BookmarkModel : public content::NotificationObserver,
   // Notification that a favicon has finished loading. If we can decode the
   // favicon, FaviconLoaded is invoked.
   void OnFaviconDataAvailable(BookmarkNode* node,
-                              const history::FaviconImageResult& image_result);
+                              const chrome::FaviconImageResult& image_result);
 
   // Invoked from the node to load the favicon. Requests the favicon from the
   // favicon service.

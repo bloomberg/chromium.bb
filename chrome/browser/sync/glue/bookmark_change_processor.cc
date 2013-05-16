@@ -789,7 +789,7 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
   gfx::Size pixel_size(gfx::kFaviconSize, gfx::kFaviconSize);
   favicon_service->MergeFavicon(bookmark_node->url(),
                                 icon_url,
-                                history::FAVICON,
+                                chrome::FAVICON,
                                 bitmap_data,
                                 pixel_size);
 }

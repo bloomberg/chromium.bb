@@ -25,6 +25,10 @@ namespace base {
 class FilePath;
 }
 
+namespace chrome {
+struct FaviconImageResult;
+}
+
 namespace content {
 class NotificationRegistrar;
 }
@@ -187,7 +191,7 @@ class JumpList : public TabRestoreServiceObserver,
   // is available.
   // To avoid file operations, this function just attaches the given data to
   // a ShellLinkItem object.
-  void OnFaviconDataAvailable(const history::FaviconImageResult& image_result);
+  void OnFaviconDataAvailable(const chrome::FaviconImageResult& image_result);
 
   // Callback for TopSites that notifies when the "Most
   // Visited" list is available. This function updates the ShellLinkItemList

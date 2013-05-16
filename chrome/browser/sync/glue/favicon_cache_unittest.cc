@@ -414,9 +414,9 @@ scoped_ptr<syncer::SyncErrorFactory> SyncFaviconCacheTest::
 
 void SyncFaviconCacheTest::OnCustomFaviconDataAvailable(
     const TestFaviconData& test_data) {
-  std::vector<history::FaviconBitmapResult> bitmap_results;
+  std::vector<chrome::FaviconBitmapResult> bitmap_results;
   if (!test_data.image_16.empty()) {
-    history::FaviconBitmapResult bitmap_result;
+    chrome::FaviconBitmapResult bitmap_result;
     bitmap_result.icon_url = test_data.icon_url;
     bitmap_result.pixel_size.set_width(16);
     bitmap_result.pixel_size.set_height(16);
@@ -426,7 +426,7 @@ void SyncFaviconCacheTest::OnCustomFaviconDataAvailable(
     bitmap_results.push_back(bitmap_result);
   }
   if (!test_data.image_32.empty()) {
-    history::FaviconBitmapResult bitmap_result;
+    chrome::FaviconBitmapResult bitmap_result;
     bitmap_result.icon_url = test_data.icon_url;
     bitmap_result.pixel_size.set_width(32);
     bitmap_result.pixel_size.set_height(32);
@@ -436,7 +436,7 @@ void SyncFaviconCacheTest::OnCustomFaviconDataAvailable(
     bitmap_results.push_back(bitmap_result);
   }
   if (!test_data.image_64.empty()) {
-    history::FaviconBitmapResult bitmap_result;
+    chrome::FaviconBitmapResult bitmap_result;
     bitmap_result.icon_url = test_data.icon_url;
     bitmap_result.pixel_size.set_width(64);
     bitmap_result.pixel_size.set_height(64);

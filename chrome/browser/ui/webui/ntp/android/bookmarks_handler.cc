@@ -393,8 +393,8 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
       FaviconService::FaviconForURLParams(
           profile,
           node->url(),
-          history::TOUCH_PRECOMPOSED_ICON | history::TOUCH_ICON |
-              history::FAVICON,
+          chrome::TOUCH_PRECOMPOSED_ICON | chrome::TOUCH_ICON |
+              chrome::FAVICON,
           0),  // request the largest icon.
       ui::SCALE_FACTOR_100P,  // density doesn't matter for the largest icon.
       base::Bind(&BookmarksHandler::OnShortcutFaviconDataAvailable,
@@ -405,7 +405,7 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
 
 void BookmarksHandler::OnShortcutFaviconDataAvailable(
     const BookmarkNode* node,
-    const history::FaviconBitmapResult& bitmap_result) {
+    const chrome::FaviconBitmapResult& bitmap_result) {
   SkColor color = SK_ColorWHITE;
   SkBitmap favicon_bitmap;
   if (bitmap_result.is_valid()) {

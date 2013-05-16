@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/list_selection_model.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"

@@ -47,7 +47,7 @@ struct BookmarkCacheRow {
   Time create_time_;
   Time last_visit_time_;
   bool bookmark_;
-  FaviconID favicon_id_;
+  chrome::FaviconID favicon_id_;
 };
 
 }  // namespace
@@ -248,14 +248,14 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   // Set favicon to url2.
   std::vector<unsigned char> data;
   data.push_back('1');
-  history::FaviconBitmapData bitmap_data_element;
+  chrome::FaviconBitmapData bitmap_data_element;
   bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
   bitmap_data_element.pixel_size = gfx::Size();
   bitmap_data_element.icon_url = GURL();
-  std::vector<history::FaviconBitmapData> favicon_bitmap_data;
+  std::vector<chrome::FaviconBitmapData> favicon_bitmap_data;
   favicon_bitmap_data.push_back(bitmap_data_element);
 
-  history_backend->SetFavicons(url2, FAVICON, favicon_bitmap_data);
+  history_backend->SetFavicons(url2, chrome::FAVICON, favicon_bitmap_data);
   history_backend->Closing();
   }
 
@@ -398,14 +398,14 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   // Set favicon to url2.
   std::vector<unsigned char> data;
   data.push_back('1');
-  history::FaviconBitmapData bitmap_data_element;
+  chrome::FaviconBitmapData bitmap_data_element;
   bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
   bitmap_data_element.pixel_size = gfx::Size();
   bitmap_data_element.icon_url = GURL();
-  std::vector<history::FaviconBitmapData> favicon_bitmap_data;
+  std::vector<chrome::FaviconBitmapData> favicon_bitmap_data;
   favicon_bitmap_data.push_back(bitmap_data_element);
 
-  history_backend->SetFavicons(url2, FAVICON, favicon_bitmap_data);
+  history_backend->SetFavicons(url2, chrome::FAVICON, favicon_bitmap_data);
   history_backend->Closing();
   }
 
@@ -1157,8 +1157,8 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
               delegate_.favicon_details()->urls.find(row1.url()));
 
   std::vector<IconMapping> icon_mappings;
-  EXPECT_TRUE(thumbnail_db_.GetIconMappingsForPageURL(row1.url(), FAVICON,
-                                                      &icon_mappings));
+  EXPECT_TRUE(thumbnail_db_.GetIconMappingsForPageURL(
+      row1.url(), chrome::FAVICON, &icon_mappings));
   EXPECT_EQ(1u, icon_mappings.size());
   std::vector<FaviconBitmap> favicon_bitmaps;
   EXPECT_TRUE(thumbnail_db_.GetFaviconBitmaps(icon_mappings[0].icon_id,
@@ -1186,8 +1186,8 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   ASSERT_TRUE(delegate_.favicon_details()->urls.end() !=
               delegate_.favicon_details()->urls.find(row1.url()));
 
-  EXPECT_FALSE(thumbnail_db_.GetIconMappingsForPageURL(row1.url(), FAVICON,
-                                                       NULL));
+  EXPECT_FALSE(thumbnail_db_.GetIconMappingsForPageURL(
+      row1.url(), chrome::FAVICON, NULL));
 }
 
 TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
@@ -1812,14 +1812,14 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   // Set favicon to url2.
   std::vector<unsigned char> data;
   data.push_back('1');
-  history::FaviconBitmapData bitmap_data_element;
+  chrome::FaviconBitmapData bitmap_data_element;
   bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
   bitmap_data_element.pixel_size = gfx::Size();
   bitmap_data_element.icon_url = GURL();
-  std::vector<history::FaviconBitmapData> favicon_bitmap_data;
+  std::vector<chrome::FaviconBitmapData> favicon_bitmap_data;
   favicon_bitmap_data.push_back(bitmap_data_element);
 
-  history_backend->SetFavicons(url2, FAVICON, favicon_bitmap_data);
+  history_backend->SetFavicons(url2, chrome::FAVICON, favicon_bitmap_data);
   history_backend->Closing();
   }
 

@@ -22,6 +22,10 @@ namespace browser_sync {
 class SessionModelAssociator;
 }
 
+namespace chrome {
+struct FaviconImageResult;
+}
+
 namespace gfx {
 class Image;
 }
@@ -80,7 +84,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
                         browser_sync::SyncedSession::DeviceType device_type);
   void AddTabFavicon(int model_index, int command_id, const GURL& url);
   void OnFaviconDataAvailable(int command_id,
-                              const history::FaviconImageResult& image_result);
+                              const chrome::FaviconImageResult& image_result);
   browser_sync::SessionModelAssociator* GetModelAssociator();
 
   Browser* browser_;  // Weak.

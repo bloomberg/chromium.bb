@@ -227,7 +227,7 @@ void SetFaviconImpl(Profile* profile,
     if (favicon_source == bookmarks_helper::FROM_UI) {
       favicon_service->SetFavicons(node->url(),
                                    icon_url,
-                                   history::FAVICON,
+                                   chrome::FAVICON,
                                    image);
     } else {
       browser_sync::BookmarkChangeProcessor::ApplyBookmarkFavicon(

@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/favicon_types.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -494,7 +495,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int model_index,
   favicon_service->GetFaviconImageForURL(
       FaviconService::FaviconForURLParams(browser_->profile(),
                                           url,
-                                          history::FAVICON,
+                                          chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -504,7 +505,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int model_index,
 
 void RecentTabsSubMenuModel::OnFaviconDataAvailable(
     int command_id,
-    const history::FaviconImageResult& image_result) {
+    const chrome::FaviconImageResult& image_result) {
   if (image_result.image.IsEmpty())
     return;
   DCHECK(!tab_navigation_items_.empty());

@@ -11,16 +11,16 @@
 
 class GURL;
 
+namespace chrome {
+struct FaviconBitmapResult;
+}
+
 namespace content {
 class RenderViewHost;
 }
 
 namespace gfx {
 class Image;
-}
-
-namespace history {
-struct FaviconBitmapResult;
 }
 
 // Utility class for common favicon related code.
@@ -37,7 +37,7 @@ class FaviconUtil {
   // Takes a vector of png-encoded frames, decodes them, and converts them to
   // a favicon of size favicon_size (in DIPs) at the desired ui scale factors.
   static gfx::Image SelectFaviconFramesFromPNGs(
-      const std::vector<history::FaviconBitmapResult>& png_data,
+      const std::vector<chrome::FaviconBitmapResult>& png_data,
       const std::vector<ui::ScaleFactor>& scale_factors,
       int favicon_size);
 

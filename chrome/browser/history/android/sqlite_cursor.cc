@@ -171,7 +171,7 @@ SQLiteCursor::~SQLiteCursor() {
                  base::Unretained(service_), statement_));
 }
 
-bool SQLiteCursor::GetFavicon(history::FaviconID id,
+bool SQLiteCursor::GetFavicon(chrome::FaviconID id,
                               std::vector<unsigned char>* image_data) {
   if (id) {
     BrowserThread::PostTask(
@@ -200,7 +200,7 @@ bool SQLiteCursor::GetFavicon(history::FaviconID id,
 }
 
 void SQLiteCursor::GetFaviconForIDInUIThread(
-    history::FaviconID id,
+    chrome::FaviconID id,
     const FaviconService::FaviconRawCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!tracker_.get())
@@ -210,7 +210,7 @@ void SQLiteCursor::GetFaviconForIDInUIThread(
 
 
 void SQLiteCursor::OnFaviconData(
-    const history::FaviconBitmapResult& bitmap_result) {
+    const chrome::FaviconBitmapResult& bitmap_result) {
   favicon_bitmap_result_ = bitmap_result;
   event_.Signal();
   if (test_observer_)

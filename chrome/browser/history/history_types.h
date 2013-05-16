@@ -17,6 +17,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/time.h"
+#include "chrome/browser/favicon/favicon_types.h"
 #include "chrome/browser/history/snippet.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/ref_counted_util.h"
@@ -42,7 +43,6 @@ typedef std::map<GURL, scoped_refptr<RefCountedVector<GURL> > > RedirectMap;
 typedef std::vector<GURL> RedirectList;
 
 typedef int64 DownloadID;   // Identifier for a download.
-typedef int64 FaviconID;  // For favicons.
 typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
 typedef int64 SegmentID;  // URL segments for the most visited view.
 typedef int64 SegmentDurationID;  // Unique identifier for segment_duration.
@@ -676,18 +676,6 @@ bool RowQualifiesAsSignificant(const URLRow& row, const base::Time& threshold);
 
 // Favicons -------------------------------------------------------------------
 
-// Defines the icon types. They are also stored in icon_type field of favicons
-// table.
-// The values of the IconTypes are used to select the priority in which favicon
-// data is returned in HistoryBackend and ThumbnailDatabase. Data for the
-// largest IconType takes priority if data for multiple IconTypes is available.
-enum IconType {
-  INVALID_ICON = 0x0,
-  FAVICON = 1 << 0,
-  TOUCH_ICON = 1 << 1,
-  TOUCH_PRECOMPOSED_ICON = 1 << 2
-};
-
 // Used for the mapping between the page and icon.
 struct IconMapping {
   IconMapping();
@@ -700,59 +688,13 @@ struct IconMapping {
   GURL page_url;
 
   // The unique id of the icon.
-  FaviconID icon_id;
+  chrome::FaviconID icon_id;
 
   // The url of the icon.
   GURL icon_url;
 
   // The type of icon.
-  IconType icon_type;
-};
-
-// Defines a favicon bitmap which best matches the desired DIP size and one of
-// the desired scale factors.
-struct FaviconBitmapResult {
-  FaviconBitmapResult();
-  ~FaviconBitmapResult();
-
-  // Returns true if |bitmap_data| contains a valid bitmap.
-  bool is_valid() const { return bitmap_data.get() && bitmap_data->size(); }
-
-  // Indicates whether |bitmap_data| is expired.
-  bool expired;
-
-  // The bits of the bitmap.
-  scoped_refptr<base::RefCountedMemory> bitmap_data;
-
-  // The pixel dimensions of |bitmap_data|.
-  gfx::Size pixel_size;
-
-  // The URL of the containing favicon.
-  GURL icon_url;
-
-  // The icon type of the containing favicon.
-  IconType icon_type;
-};
-
-// Define type with same structure as FaviconBitmapResult for passing data to
-// HistoryBackend::SetFavicons().
-typedef FaviconBitmapResult FaviconBitmapData;
-
-// Defines a gfx::Image of size desired_size_in_dip composed of image
-// representations for each of the desired scale factors.
-struct FaviconImageResult {
-  FaviconImageResult();
-  ~FaviconImageResult();
-
-  // The resulting image.
-  gfx::Image image;
-
-  // The URL of the favicon which contains all of the image representations of
-  // |image|.
-  // TODO(pkotwicz): Return multiple |icon_urls| to allow |image| to have
-  // representations from several favicons once content::FaviconStatus supports
-  // multiple URLs.
-  GURL icon_url;
+  chrome::IconType icon_type;
 };
 
 // FaviconSizes represents the sizes that the thumbnail database knows a
@@ -789,7 +731,7 @@ struct FaviconBitmap {
   FaviconBitmapID bitmap_id;
 
   // The id of the favicon to which the bitmap belongs to.
-  FaviconID icon_id;
+  chrome::FaviconID icon_id;
 
   // Time at which |bitmap_data| was last updated.
   base::Time last_updated;

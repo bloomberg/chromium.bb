@@ -807,7 +807,7 @@ bool AndroidProviderBackend::UpdateFavicon() {
   if (!thumbnail_db_)
     return true;
 
-  if (!thumbnail_db_->InitIconMappingEnumerator(FAVICON, &enumerator))
+  if (!thumbnail_db_->InitIconMappingEnumerator(chrome::FAVICON, &enumerator))
     return false;
 
   IconMapping icon_mapping;
@@ -982,7 +982,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
     return false;
   deleted_details->rows.push_back(old_url_row);
 
-  FaviconID favicon_id = statement->statement()->ColumnInt64(4);
+  chrome::FaviconID favicon_id = statement->statement()->ColumnInt64(4);
   if (favicon_id) {
     std::vector<FaviconBitmap> favicon_bitmaps;
     if (!thumbnail_db_ ||

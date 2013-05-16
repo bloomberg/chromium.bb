@@ -43,7 +43,7 @@ class FaviconWebUIHandler : public content::WebUIMessageHandler {
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(
       FaviconService::Handle request_handle,
-      const history::FaviconBitmapResult& bitmap_result);
+      const chrome::FaviconBitmapResult& bitmap_result);
 
   CancelableTaskTracker cancelable_task_tracker_;
 

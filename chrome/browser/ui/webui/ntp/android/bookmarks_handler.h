@@ -134,7 +134,7 @@ class BookmarksHandler : public content::WebUIMessageHandler,
   // and is available for use.
   void OnShortcutFaviconDataAvailable(
       const BookmarkNode* node,
-      const history::FaviconBitmapResult& bitmap_result);
+      const chrome::FaviconBitmapResult& bitmap_result);
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);
 };

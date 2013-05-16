@@ -221,7 +221,7 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
   GURL favicon_url = GetData(request_id)->extension->GetFullLaunchURL();
   favicon_service->GetRawFaviconForURL(
       FaviconService::FaviconForURLParams(
-          profile_, favicon_url, history::FAVICON, gfx::kFaviconSize),
+          profile_, favicon_url, chrome::FAVICON, gfx::kFaviconSize),
       ui::SCALE_FACTOR_100P,
       base::Bind(&ExtensionIconSource::OnFaviconDataAvailable,
                  base::Unretained(this), request_id),
@@ -230,7 +230,7 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
 
 void ExtensionIconSource::OnFaviconDataAvailable(
     int request_id,
-    const history::FaviconBitmapResult& bitmap_result) {
+    const chrome::FaviconBitmapResult& bitmap_result) {
   ExtensionIconRequest* request = GetData(request_id);
 
   // Fallback to the default icon if there wasn't a favicon.

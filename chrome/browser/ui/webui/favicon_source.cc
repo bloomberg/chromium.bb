@@ -68,16 +68,16 @@ FaviconSource::IconRequest::~IconRequest() {
 
 FaviconSource::FaviconSource(Profile* profile, IconType type)
     : profile_(profile->GetOriginalProfile()),
-      icon_types_(type == FAVICON ? history::FAVICON :
-          history::TOUCH_PRECOMPOSED_ICON | history::TOUCH_ICON |
-          history::FAVICON) {
+      icon_types_(type == FAVICON ? chrome::FAVICON :
+          chrome::TOUCH_PRECOMPOSED_ICON | chrome::TOUCH_ICON |
+          chrome::FAVICON) {
 }
 
 FaviconSource::~FaviconSource() {
 }
 
 std::string FaviconSource::GetSource() const {
-  return icon_types_ == history::FAVICON ?
+  return icon_types_ == chrome::FAVICON ?
       chrome::kChromeUIFaviconHost : chrome::kChromeUITouchIconHost;
 }
 
@@ -110,7 +110,7 @@ void FaviconSource::StartDataRequest(
     // IconType.
     favicon_service->GetRawFavicon(
         url,
-        history::FAVICON,
+        chrome::FAVICON,
         size_in_dip,
         scale_factor,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
@@ -234,7 +234,7 @@ bool FaviconSource::ParsePath(const std::string& raw_path,
     // - favicons of sizes "16 * scale factor" px of type FAVICON
     //   where scale factor is one of FaviconUtil::GetFaviconScaleFactors().
     // - the largest TOUCH_ICON / TOUCH_PRECOMPOSED_ICON
-    if (*size_in_dip != 16 && icon_types_ == history::FAVICON)
+    if (*size_in_dip != 16 && icon_types_ == chrome::FAVICON)
       return false;
 
     parsed_index = slash + 1;
@@ -268,7 +268,7 @@ bool FaviconSource::ParsePath(const std::string& raw_path,
 
 void FaviconSource::OnFaviconDataAvailable(
     const IconRequest& request,
-    const history::FaviconBitmapResult& bitmap_result) {
+    const chrome::FaviconBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
     // Forward the data along to the networking system.
     request.callback.Run(bitmap_result.bitmap_data);

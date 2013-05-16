@@ -4,7 +4,7 @@
 
 #include "chrome/browser/favicon/favicon_util.h"
 
-#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/favicon/favicon_types.h"
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "content/public/browser/render_view_host.h"
 #include "googleurl/src/gurl.h"
@@ -22,7 +22,7 @@ namespace {
 // |scale_factors| for which the image reps can be created without resizing
 // or decoding the bitmap data.
 std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
-    const std::vector<history::FaviconBitmapResult>& png_data,
+    const std::vector<chrome::FaviconBitmapResult>& png_data,
     const std::vector<ui::ScaleFactor>& scale_factors,
     int favicon_size) {
   std::vector<gfx::ImagePNGRep> png_reps;
@@ -106,7 +106,7 @@ std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
 
 // static
 gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
-      const std::vector<history::FaviconBitmapResult>& png_data,
+      const std::vector<chrome::FaviconBitmapResult>& png_data,
       const std::vector<ui::ScaleFactor>& scale_factors,
       int favicon_size) {
   // Create image reps for as many scale factors as possible without resizing

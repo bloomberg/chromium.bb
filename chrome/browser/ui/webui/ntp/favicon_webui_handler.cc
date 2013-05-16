@@ -114,7 +114,7 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
       FaviconService::FaviconForURLParams(
           Profile::FromWebUI(web_ui()),
           url,
-          history::FAVICON,
+          chrome::FAVICON,
           gfx::kFaviconSize),
       ui::SCALE_FACTOR_100P,
       base::Bind(&FaviconWebUIHandler::OnFaviconDataAvailable,
@@ -125,7 +125,7 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
 
 void FaviconWebUIHandler::OnFaviconDataAvailable(
     int id,
-    const history::FaviconBitmapResult& bitmap_result) {
+    const chrome::FaviconBitmapResult& bitmap_result) {
   scoped_ptr<StringValue> color_value;
 
   if (bitmap_result.is_valid())

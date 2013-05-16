@@ -13,7 +13,6 @@ include_rules = [
   "!chrome/browser/history/history_notifications.h",
   "!chrome/browser/history/history_service.h",
   "!chrome/browser/history/history_service_factory.h",
-  "!chrome/browser/history/history_types.h",
   "!chrome/browser/history/query_parser.h",
   "!chrome/browser/history/snippet.h",
   "!chrome/browser/history/url_database.h",

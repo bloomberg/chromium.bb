@@ -534,7 +534,7 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
           url1, base::Time::Now(), history::SOURCE_BROWSED);
   FaviconServiceFactory::GetForProfile(
       profile(), Profile::EXPLICIT_ACCESS)->SetFavicons(
-          url1, url1_favicon, history::FAVICON,
+          url1, url1_favicon, chrome::FAVICON,
           gfx::Image::CreateFrom1xBitmap(new_icon_bitmap));
 
   // Will return the current icon (default) but start an anync call

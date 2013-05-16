@@ -142,19 +142,18 @@ class SQLiteCursor {
   }
 
   // Get Favicon from history backend.
-  bool GetFavicon(history::FaviconID id,
+  bool GetFavicon(chrome::FaviconID id,
                   std::vector<unsigned char>* image_data);
 
   void GetFaviconForIDInUIThread(
-      history::FaviconID id,
+      chrome::FaviconID id,
       const FaviconService::FaviconRawCallback& callback);
 
   // The callback function of FaviconService::GetLargestRawFaviconForID().
-  void OnFaviconData(const history::FaviconBitmapResult& bitmap_result);
+  void OnFaviconData(const chrome::FaviconBitmapResult& bitmap_result);
 
   // The callback function of MoveTo().
-  void OnMoved(AndroidHistoryProviderService::Handle handle,
-               int pos);
+  void OnMoved(AndroidHistoryProviderService::Handle handle, int pos);
 
   // Used to cancel all request on the UI thread during shutdown.
   void CancelAllRequests(base::WaitableEvent* finished);
@@ -187,7 +186,7 @@ class SQLiteCursor {
   int count_;
 
   // The favicon image.
-  history::FaviconBitmapResult favicon_bitmap_result_;
+  chrome::FaviconBitmapResult favicon_bitmap_result_;
 
   TestObserver* test_observer_;
 

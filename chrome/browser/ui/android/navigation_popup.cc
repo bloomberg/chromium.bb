@@ -51,7 +51,7 @@ void NavigationPopup::FetchFaviconForUrl(JNIEnv* env,
   favicon_service->GetFaviconImageForURL(
       FaviconService::FaviconForURLParams(profile,
                                           url,
-                                          history::FAVICON,
+                                          chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&NavigationPopup::OnFaviconDataAvailable,
                  base::Unretained(this),
@@ -61,7 +61,7 @@ void NavigationPopup::FetchFaviconForUrl(JNIEnv* env,
 
 void NavigationPopup::OnFaviconDataAvailable(
     GURL navigation_entry_url,
-    const history::FaviconImageResult& image_result) {
+    const chrome::FaviconImageResult& image_result) {
   gfx::Image image(image_result.image);
   if (image.IsEmpty()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

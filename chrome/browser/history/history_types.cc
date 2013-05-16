@@ -380,28 +380,10 @@ bool RowQualifiesAsSignificant(const URLRow& row,
 IconMapping::IconMapping()
     : mapping_id(0),
       icon_id(0),
-      icon_type(INVALID_ICON) {
+      icon_type(chrome::INVALID_ICON) {
 }
 
 IconMapping::~IconMapping() {}
-
-// FaviconBitmapResult --------------------------------------------------------
-
-FaviconBitmapResult::FaviconBitmapResult()
-    : expired(false),
-      icon_type(history::INVALID_ICON) {
-}
-
-FaviconBitmapResult::~FaviconBitmapResult() {
-}
-
-// FaviconImageResult ---------------------------------------------------------
-
-FaviconImageResult::FaviconImageResult() {
-}
-
-FaviconImageResult::~FaviconImageResult() {
-}
 
 // FaviconSizes --------------------------------------------------------------
 

@@ -166,7 +166,7 @@ struct ExpireHistoryBackend::DeleteDependencies {
   // The list of all favicon IDs that the affected URLs had. Favicons will be
   // shared between all URLs with the same favicon, so this is the set of IDs
   // that we will need to check when the delete operations are complete.
-  std::set<FaviconID> affected_favicons;
+  std::set<chrome::FaviconID> affected_favicons;
 
   // The list of all favicon urls that were actually deleted from the thumbnail
   // db.
@@ -371,16 +371,16 @@ void ExpireHistoryBackend::StartArchivingOldStuff(
 }
 
 void ExpireHistoryBackend::DeleteFaviconsIfPossible(
-    const std::set<FaviconID>& favicon_set,
+    const std::set<chrome::FaviconID>& favicon_set,
     std::set<GURL>* expired_favicons) {
   if (!thumb_db_)
     return;
 
-  for (std::set<FaviconID>::const_iterator i = favicon_set.begin();
+  for (std::set<chrome::FaviconID>::const_iterator i = favicon_set.begin();
        i != favicon_set.end(); ++i) {
     if (!thumb_db_->HasMappingFor(*i)) {
       GURL icon_url;
-      IconType icon_type;
+      chrome::IconType icon_type;
       FaviconSizes favicon_sizes;
       if (thumb_db_->GetFaviconHeader(*i,
                                       &icon_url,
@@ -700,9 +700,9 @@ bool ExpireHistoryBackend::ArchiveSomeOldHistory(
 
   // Create a union of all affected favicons (we don't store favicons for
   // archived URLs) and delete them.
-  std::set<FaviconID> affected_favicons(
+  std::set<chrome::FaviconID> affected_favicons(
       archived_dependencies.affected_favicons);
-  for (std::set<FaviconID>::const_iterator i =
+  for (std::set<chrome::FaviconID>::const_iterator i =
            deleted_dependencies.affected_favicons.begin();
        i != deleted_dependencies.affected_favicons.end(); ++i) {
     affected_favicons.insert(*i);

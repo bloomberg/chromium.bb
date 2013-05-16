@@ -18,6 +18,10 @@
 
 class Browser;
 
+namespace chrome {
+struct FaviconImageResult;
+}
+
 namespace content {
 class NavigationEntry;
 class WebContents;
@@ -98,7 +102,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   // Callback from the favicon service.
   void OnFavIconDataAvailable(
       int navigation_entry_unique_id,
-      const history::FaviconImageResult& image_result);
+      const chrome::FaviconImageResult& image_result);
 
   // Allows the unit test to use its own dummy tab contents.
   void set_test_web_contents(content::WebContents* test_web_contents) {

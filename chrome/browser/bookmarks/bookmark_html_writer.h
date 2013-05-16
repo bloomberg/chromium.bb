@@ -19,7 +19,7 @@
 class BookmarkNode;
 class Profile;
 
-namespace history {
+namespace chrome {
 struct FaviconBitmapResult;
 }
 
@@ -69,8 +69,7 @@ class BookmarkFaviconFetcher: public content::NotificationObserver {
 
   // Favicon fetch callback. After all favicons are fetched executes
   // html output on the file thread.
-  void OnFaviconDataAvailable(
-      const history::FaviconBitmapResult& bitmap_result);
+  void OnFaviconDataAvailable(const chrome::FaviconBitmapResult& bitmap_result);
 
   // The Profile object used for accessing FaviconService, bookmarks model.
   Profile* profile_;

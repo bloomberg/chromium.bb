@@ -11,11 +11,14 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/common/content_settings.h"
 #include "ui/message_center/notifier_settings.h"
 
 class CancelableTaskTracker;
+
+namespace chrome {
+struct FaviconImageResult;
+}
 
 // The class to bridge between the settings UI of notifiers and the preference
 // storage.
@@ -46,7 +49,7 @@ class MessageCenterSettingsController
 
  private:
   void OnFaviconLoaded(const GURL& url,
-                       const history::FaviconImageResult& favicon_result);
+                       const chrome::FaviconImageResult& favicon_result);
 
   // The view displaying notifier settings. NULL if the settings are not
   // visible.

@@ -25,6 +25,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/favicon_types.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
@@ -685,7 +686,7 @@ void JumpList::StartLoadingFavicon() {
   task_id_ = favicon_service->GetFaviconImageForURL(
       FaviconService::FaviconForURLParams(profile_,
                                           url,
-                                          history::FAVICON,
+                                          chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&JumpList::OnFaviconDataAvailable,
                  base::Unretained(this)),
@@ -693,7 +694,7 @@ void JumpList::StartLoadingFavicon() {
 }
 
 void JumpList::OnFaviconDataAvailable(
-    const history::FaviconImageResult& image_result) {
+    const chrome::FaviconImageResult& image_result) {
   // If there is currently a favicon request in progress, it is now outdated,
   // as we have received another, so nullify the handle from the old request.
   task_id_ = CancelableTaskTracker::kBadTaskId;

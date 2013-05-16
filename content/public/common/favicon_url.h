@@ -12,7 +12,7 @@ namespace content {
 
 // The favicon url from the render.
 struct CONTENT_EXPORT FaviconURL {
-  // The icon type in a page. The definition must be same as history::IconType.
+  // The icon type in a page. The definition must be same as chrome::IconType.
   enum IconType {
     INVALID_ICON = 0x0,
     FAVICON = 1 << 0,

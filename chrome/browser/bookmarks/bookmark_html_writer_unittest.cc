@@ -207,7 +207,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
       AddPage(url1, base::Time::Now(), history::SOURCE_BROWSED);
   FaviconServiceFactory::GetForProfile(
       &profile, Profile::EXPLICIT_ACCESS)->SetFavicons(
-          url1, url1_favicon, history::FAVICON,
+          url1, url1_favicon, chrome::FAVICON,
           gfx::Image::CreateFrom1xBitmap(bitmap));
   message_loop.RunUntilIdle();
   const BookmarkNode* f2 = model->AddFolder(f1, 1, f2_title);
@@ -234,7 +234,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   // Clear favicon so that it would be read from file.
   FaviconServiceFactory::GetForProfile(
       &profile, Profile::EXPLICIT_ACCESS)->SetFavicons(
-          url1, url1_favicon, history::FAVICON, gfx::Image());
+          url1, url1_favicon, chrome::FAVICON, gfx::Image());
   message_loop.RunUntilIdle();
 
   // Read the bookmarks back in.

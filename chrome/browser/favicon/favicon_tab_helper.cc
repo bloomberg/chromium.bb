@@ -126,8 +126,8 @@ void FaviconTabHelper::SaveFavicon() {
       favicon.image.IsEmpty()) {
     return;
   }
-  service->SetFavicons(entry->GetURL(), favicon.url, history::FAVICON,
-                       favicon.image);
+  service->SetFavicons(
+      entry->GetURL(), favicon.url, chrome::FAVICON, favicon.image);
 }
 
 NavigationEntry* FaviconTabHelper::GetActiveEntry() {

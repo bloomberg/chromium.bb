@@ -128,7 +128,7 @@ class FaviconSource : public content::URLDataSource {
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(
       const IconRequest& request,
-      const history::FaviconBitmapResult& bitmap_result);
+      const chrome::FaviconBitmapResult& bitmap_result);
 
   // Sends the 16x16 DIP 1x default favicon.
   void SendDefaultResponse(
@@ -143,7 +143,7 @@ class FaviconSource : public content::URLDataSource {
   // database doesn't have a favicon for a webpage. Indexed by IconSize values.
   scoped_refptr<base::RefCountedMemory> default_favicons_[NUM_SIZES];
 
-  // The history::IconTypes of icon that this FaviconSource handles.
+  // The chrome::IconTypes of icon that this FaviconSource handles.
   int icon_types_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconSource);

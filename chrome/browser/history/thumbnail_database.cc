@@ -80,7 +80,7 @@ static void FillIconMapping(const sql::Statement& statement,
   icon_mapping->mapping_id = statement.ColumnInt64(0);
   icon_mapping->icon_id = statement.ColumnInt64(1);
   icon_mapping->icon_type =
-      static_cast<history::IconType>(statement.ColumnInt(2));
+      static_cast<chrome::IconType>(statement.ColumnInt(2));
   icon_mapping->icon_url = GURL(statement.ColumnString(3));
   icon_mapping->page_url = page_url;
 }
@@ -476,7 +476,7 @@ bool ThumbnailDatabase::ThumbnailScoreForId(URLID id,
 }
 
 bool ThumbnailDatabase::GetFaviconBitmapIDSizes(
-    FaviconID icon_id,
+    chrome::FaviconID icon_id,
     std::vector<FaviconBitmapIDSize>* bitmap_id_sizes) {
   DCHECK(icon_id);
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -499,7 +499,7 @@ bool ThumbnailDatabase::GetFaviconBitmapIDSizes(
 }
 
 bool ThumbnailDatabase::GetFaviconBitmaps(
-    FaviconID icon_id,
+    chrome::FaviconID icon_id,
     std::vector<FaviconBitmap>* favicon_bitmaps) {
   DCHECK(icon_id);
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -561,7 +561,7 @@ bool ThumbnailDatabase::GetFaviconBitmap(
 }
 
 FaviconBitmapID ThumbnailDatabase::AddFaviconBitmap(
-    FaviconID icon_id,
+    chrome::FaviconID icon_id,
     const scoped_refptr<base::RefCountedMemory>& icon_data,
     base::Time time,
     const gfx::Size& pixel_size) {
@@ -615,7 +615,8 @@ bool ThumbnailDatabase::SetFaviconBitmapLastUpdateTime(
   return statement.Run();
 }
 
-bool ThumbnailDatabase::DeleteFaviconBitmapsForFavicon(FaviconID icon_id) {
+bool ThumbnailDatabase::DeleteFaviconBitmapsForFavicon(
+    chrome::FaviconID icon_id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM favicon_bitmaps WHERE icon_id=?"));
   statement.BindInt64(0, icon_id);
@@ -629,7 +630,7 @@ bool ThumbnailDatabase::DeleteFaviconBitmap(FaviconBitmapID bitmap_id) {
   return statement.Run();
 }
 
-bool ThumbnailDatabase::SetFaviconSizes(FaviconID icon_id,
+bool ThumbnailDatabase::SetFaviconSizes(chrome::FaviconID icon_id,
                                         const FaviconSizes& favicon_sizes) {
   std::string favicon_sizes_as_string;
   FaviconSizesToDatabaseString(favicon_sizes, &favicon_sizes_as_string);
@@ -642,7 +643,7 @@ bool ThumbnailDatabase::SetFaviconSizes(FaviconID icon_id,
   return statement.Run();
 }
 
-bool ThumbnailDatabase::SetFaviconOutOfDate(FaviconID icon_id) {
+bool ThumbnailDatabase::SetFaviconOutOfDate(chrome::FaviconID icon_id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE favicon_bitmaps SET last_updated=? WHERE icon_id=?"));
   statement.BindInt64(0, 0);
@@ -651,9 +652,10 @@ bool ThumbnailDatabase::SetFaviconOutOfDate(FaviconID icon_id) {
   return statement.Run();
 }
 
-FaviconID ThumbnailDatabase::GetFaviconIDForFaviconURL(const GURL& icon_url,
-                                                       int required_icon_type,
-                                                       IconType* icon_type) {
+chrome::FaviconID ThumbnailDatabase::GetFaviconIDForFaviconURL(
+    const GURL& icon_url,
+    int required_icon_type,
+    chrome::IconType* icon_type) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, icon_type FROM favicons WHERE url=? AND (icon_type & ? > 0) "
       "ORDER BY icon_type DESC"));
@@ -664,15 +666,14 @@ FaviconID ThumbnailDatabase::GetFaviconIDForFaviconURL(const GURL& icon_url,
     return 0;  // not cached
 
   if (icon_type)
-    *icon_type = static_cast<IconType>(statement.ColumnInt(1));
+    *icon_type = static_cast<chrome::IconType>(statement.ColumnInt(1));
   return statement.ColumnInt64(0);
 }
 
-bool ThumbnailDatabase::GetFaviconHeader(
-    FaviconID icon_id,
-    GURL* icon_url,
-    IconType* icon_type,
-    FaviconSizes* favicon_sizes) {
+bool ThumbnailDatabase::GetFaviconHeader(chrome::FaviconID icon_id,
+                                         GURL* icon_url,
+                                         chrome::IconType* icon_type,
+                                         FaviconSizes* favicon_sizes) {
   DCHECK(icon_id);
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -685,16 +686,17 @@ bool ThumbnailDatabase::GetFaviconHeader(
   if (icon_url)
     *icon_url = GURL(statement.ColumnString(0));
   if (icon_type)
-    *icon_type = static_cast<history::IconType>(statement.ColumnInt(1));
+    *icon_type = static_cast<chrome::IconType>(statement.ColumnInt(1));
   if (favicon_sizes)
     DatabaseStringToFaviconSizes(statement.ColumnString(2), favicon_sizes);
 
   return true;
 }
 
-FaviconID ThumbnailDatabase::AddFavicon(const GURL& icon_url,
-                                        IconType icon_type,
-                                        const FaviconSizes& favicon_sizes) {
+chrome::FaviconID ThumbnailDatabase::AddFavicon(
+    const GURL& icon_url,
+    chrome::IconType icon_type,
+    const FaviconSizes& favicon_sizes) {
   std::string favicon_sizes_as_string;
   FaviconSizesToDatabaseString(favicon_sizes, &favicon_sizes_as_string);
 
@@ -709,21 +711,21 @@ FaviconID ThumbnailDatabase::AddFavicon(const GURL& icon_url,
   return db_.GetLastInsertRowId();
 }
 
-FaviconID ThumbnailDatabase::AddFavicon(
+chrome::FaviconID ThumbnailDatabase::AddFavicon(
     const GURL& icon_url,
-    IconType icon_type,
+    chrome::IconType icon_type,
     const FaviconSizes& favicon_sizes,
     const scoped_refptr<base::RefCountedMemory>& icon_data,
     base::Time time,
     const gfx::Size& pixel_size) {
-  FaviconID icon_id = AddFavicon(icon_url, icon_type, favicon_sizes);
+  chrome::FaviconID icon_id = AddFavicon(icon_url, icon_type, favicon_sizes);
   if (!icon_id || !AddFaviconBitmap(icon_id, icon_data, time, pixel_size))
     return 0;
 
   return icon_id;
 }
 
-bool ThumbnailDatabase::DeleteFavicon(FaviconID id) {
+bool ThumbnailDatabase::DeleteFavicon(chrome::FaviconID id) {
   sql::Statement statement;
   statement.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM favicons WHERE id = ?"));
@@ -791,12 +793,12 @@ bool ThumbnailDatabase::GetIconMappingsForPageURL(
 }
 
 IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,
-                                                FaviconID icon_id) {
+                                                chrome::FaviconID icon_id) {
   return AddIconMapping(page_url, icon_id, false);
 }
 
 bool ThumbnailDatabase::UpdateIconMapping(IconMappingID mapping_id,
-                                          FaviconID icon_id) {
+                                          chrome::FaviconID icon_id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE icon_mapping SET icon_id=? WHERE id=?"));
   statement.BindInt64(0, icon_id);
@@ -821,7 +823,7 @@ bool ThumbnailDatabase::DeleteIconMapping(IconMappingID mapping_id) {
   return statement.Run();
 }
 
-bool ThumbnailDatabase::HasMappingFor(FaviconID id) {
+bool ThumbnailDatabase::HasMappingFor(chrome::FaviconID id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT id FROM icon_mapping "
       "WHERE icon_id=?"));
@@ -854,7 +856,7 @@ bool ThumbnailDatabase::CloneIconMappings(const GURL& old_page_url,
 }
 
 bool ThumbnailDatabase::InitIconMappingEnumerator(
-    IconType type,
+    chrome::IconType type,
     IconMappingEnumerator* enumerator) {
   DCHECK(!enumerator->statement_.is_valid());
   enumerator->statement_.Assign(db_.GetCachedStatement(
@@ -922,12 +924,14 @@ bool ThumbnailDatabase::CommitTemporaryTables() {
 }
 
 IconMappingID ThumbnailDatabase::AddToTemporaryIconMappingTable(
-    const GURL& page_url, const FaviconID icon_id) {
+    const GURL& page_url,
+    const chrome::FaviconID icon_id) {
   return AddIconMapping(page_url, icon_id, true);
 }
 
-FaviconID ThumbnailDatabase::CopyFaviconAndFaviconBitmapsToTemporaryTables(
-    FaviconID source) {
+chrome::FaviconID
+ThumbnailDatabase::CopyFaviconAndFaviconBitmapsToTemporaryTables(
+    chrome::FaviconID source) {
   sql::Statement statement;
   statement.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO temp_favicons (url, icon_type, sizes) "
@@ -937,7 +941,7 @@ FaviconID ThumbnailDatabase::CopyFaviconAndFaviconBitmapsToTemporaryTables(
   if (!statement.Run())
     return 0;
 
-  FaviconID new_favicon_id = db_.GetLastInsertRowId();
+  chrome::FaviconID new_favicon_id = db_.GetLastInsertRowId();
 
   statement.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO temp_favicon_bitmaps (icon_id, last_updated, image_data, "
@@ -1065,7 +1069,7 @@ bool ThumbnailDatabase::InitIconMappingIndex() {
 }
 
 IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,
-                                                FaviconID icon_id,
+                                                chrome::FaviconID icon_id,
                                                 bool is_temporary) {
   const char* name = is_temporary ? "temp_icon_mapping" : "icon_mapping";
   const char* statement_name =

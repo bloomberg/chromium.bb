@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/favicon_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -257,7 +257,7 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
   favicon_service->GetFaviconImageForURL(
       FaviconService::FaviconForURLParams(browser_->profile(),
                                           entry->GetURL(),
-                                          history::FAVICON,
+                                          chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&BackForwardMenuModel::OnFavIconDataAvailable,
                  base::Unretained(this),
@@ -267,7 +267,7 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
 
 void BackForwardMenuModel::OnFavIconDataAvailable(
     int navigation_entry_unique_id,
-    const history::FaviconImageResult& image_result) {
+    const chrome::FaviconImageResult& image_result) {
   if (!image_result.image.IsEmpty()) {
     // Find the current model_index for the unique id.
     NavigationEntry* entry = NULL;

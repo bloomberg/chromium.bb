@@ -13,7 +13,7 @@
 
 class GURL;
 
-namespace history {
+namespace chrome {
 struct FaviconImageResult;
 }
 
@@ -27,7 +27,7 @@ class NavigationPopup {
   void FetchFaviconForUrl(JNIEnv* env, jobject obj, jstring jurl);
 
   void OnFaviconDataAvailable(GURL navigation_entry_url,
-                              const history::FaviconImageResult& image_result);
+                              const chrome::FaviconImageResult& image_result);
 
   static bool RegisterNavigationPopup(JNIEnv* env);
 
