@@ -49,7 +49,6 @@ struct CONTENT_EXPORT FileChooserParams {
 #if defined(OS_ANDROID)
   // Used to select items other than files, i.e. camera/mic. See
   // SelectFileDialog.java for more details.
-  // TODO(jrg): upstream SelectFileDialog.java!  Currently lives in chrome/.
   string16 capture;
 #endif
 };
