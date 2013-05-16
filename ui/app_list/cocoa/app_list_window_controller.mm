@@ -20,6 +20,10 @@
   return YES;
 }
 
+- (BOOL)canBecomeMainWindow {
+  return YES;
+}
+
 @end
 
 @implementation AppListWindowController;
@@ -40,12 +44,18 @@
     [[self window] setFrame:[[appListViewController_ view] bounds]
                     display:NO];
     [[self window] setContentView:[appListViewController_ view]];
+    [[self window] setDelegate:self];
   }
   return self;
 }
 
 - (AppListViewController*)appListViewController {
   return appListViewController_;
+}
+
+- (void)windowDidResignMain:(NSNotification*)notification {
+  if ([appListViewController_ delegate])
+    [appListViewController_ delegate]->Dismiss();
 }
 
 @end
