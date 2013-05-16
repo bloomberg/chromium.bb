@@ -29,12 +29,14 @@ my $preprocessor;
 my $idlFilesList;
 my $supplementalDependencyFile;
 my $windowConstructorsFile;
+my $writeFileOnlyIfChanged;
 
 GetOptions('defines=s' => \$defines,
            'preprocessor=s' => \$preprocessor,
            'idlFilesList=s' => \$idlFilesList,
            'supplementalDependencyFile=s' => \$supplementalDependencyFile,
-           'windowConstructorsFile=s' => \$windowConstructorsFile);
+           'windowConstructorsFile=s' => \$windowConstructorsFile,
+           'writeFileOnlyIfChanged=s' => \$writeFileOnlyIfChanged);
 
 die('Must specify an output file using --supplementalDependencyFile.') unless defined($supplementalDependencyFile);
 die('Must specify an output file using --windowConstructorsFile.') unless defined($windowConstructorsFile);
@@ -71,12 +73,8 @@ foreach my $idlFile (@idlFiles) {
     $supplementals{$fullPath} = [];
 }
 
-# Generate DOMWindow Constructors partial interface.
-open PARTIAL_WINDOW_FH, "> $windowConstructorsFile" or die "Cannot open $windowConstructorsFile\n";
-print PARTIAL_WINDOW_FH "partial interface DOMWindow {\n";
-print PARTIAL_WINDOW_FH $constructorAttributesCode;
-print PARTIAL_WINDOW_FH "};\n";
-close PARTIAL_WINDOW_FH;
+my $contents = "partial interface DOMWindow {\n$constructorAttributesCode};\n";
+WriteFileIfChanged($windowConstructorsFile, $contents);
 $supplementalDependencies{$windowConstructorsFile} = "DOMWindow" if $interfaceNameToIdlFile{"DOMWindow"};
 
 # Resolves partial interfaces dependencies.
@@ -99,12 +97,11 @@ foreach my $idlFile (keys %supplementalDependencies) {
 # Document.idl is supplemented by S.idl, and Event.idl is supplemented by no IDLs.
 # The IDL that supplements another IDL (e.g. P.idl) never appears in the dependency file.
 
-open FH, "> $supplementalDependencyFile" or die "Cannot open $supplementalDependencyFile\n";
-
+$contents = "";
 foreach my $idlFile (sort keys %supplementals) {
-    print FH $idlFile, " @{$supplementals{$idlFile}}\n";
+    $contents .= "$idlFile @{$supplementals{$idlFile}}\n";
 }
-close FH;
+WriteFileIfChanged($supplementalDependencyFile, $contents);
 
 sub GenerateConstructorAttribute
 {
@@ -192,4 +189,21 @@ sub getInterfaceExtendedAttributesFromIDL
     }
 
     return $extendedAttributes;
+}
+
+sub WriteFileIfChanged
+{
+    my $fileName = shift;
+    my $contents = shift;
+
+    if (-f $fileName && $writeFileOnlyIfChanged) {
+        open FH, "<", $fileName or die "Couldn't open $fileName: $!\n";
+        my @lines = <FH>;
+        my $oldContents = join "", @lines;
+        close FH;
+        return if $contents eq $oldContents;
+    }
+    open FH, ">", $fileName or die "Couldn't open $fileName: $!\n";
+    print FH $contents;
+    close FH;
 }

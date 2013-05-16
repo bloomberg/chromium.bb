@@ -4863,11 +4863,11 @@ sub WriteData
         $implementation{includes}->add("#endif\n");
     }
     $implementation{includes}->add("\n") unless $interface->isCallback;
-    WriteFileIfNeeded($implFileName, $implementation{root}->toString());
+    WriteFileIfChanged($implFileName, $implementation{root}->toString());
 
     %implIncludes = ();
 
-    WriteFileIfNeeded($headerFileName, $header{root}->toString());
+    WriteFileIfChanged($headerFileName, $header{root}->toString());
 }
 
 sub ConvertToV8StringResource
@@ -4921,7 +4921,7 @@ sub GetPassRefPtrType
     return "PassRefPtr<${v8ClassName}${angleBracketSpace}>";
 }
 
-sub WriteFileIfNeeded
+sub WriteFileIfChanged
 {
     my $fileName = shift;
     my $contents = shift;

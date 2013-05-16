@@ -127,6 +127,7 @@
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
          '--windowConstructorsFile',
          '<(SHARED_INTERMEDIATE_DIR)/DOMWindowConstructors.idl',
+         '<@(write_file_only_if_changed)',
        ],
        'message': 'Resolving partial interfaces dependencies in all IDL files',
       }]
