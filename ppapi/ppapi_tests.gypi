@@ -463,6 +463,16 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_video_effects',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/video_effects/video_effects.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_example_enumerate_devices',
       'dependencies': [
         'ppapi_example_skeleton',
