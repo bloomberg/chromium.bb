@@ -104,14 +104,6 @@
             '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
           'sources/': [['exclude', '_x11\\.cc$']],
-          'conditions': [
-            ['linux_use_tcmalloc == 1', {
-              'dependencies': [
-                # This is needed by ../extensions/v8/heap_profiler_extension.cc
-                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
         }],
         ['use_aura==1', {
           'sources!': [
