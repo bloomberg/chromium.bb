@@ -305,49 +305,40 @@ void FindBarView::Layout() {
                                    sz.width(),
                                    sz.height());
 
-  sz = find_text_->GetPreferredSize();
-  const int find_text_y = (height() - sz.height()) / 2 + 1;
-
   // Then the label showing the match count number.
   sz = match_count_text_->GetPreferredSize();
   // We extend the label bounds a bit to give the background highlighting a bit
   // of breathing room (margins around the text).
   sz.Enlarge(kMatchCountExtraWidth, 0);
-  sz.set_width(std::max(kMatchCountMinWidth, static_cast<int>(sz.width())));
-  int match_count_x = find_previous_button_->x() -
-                      kWhiteSpaceAfterMatchCountLabel -
-                      sz.width();
+  sz.ClampToMin(gfx::Size(kMatchCountMinWidth, 0));
+  int match_count_x =
+      find_previous_button_->x() - kWhiteSpaceAfterMatchCountLabel - sz.width();
+  int find_text_y = (height() - find_text_->GetPreferredSize().height()) / 2;
   match_count_text_->SetBounds(match_count_x,
                                find_text_y + find_text_->GetBaseline() -
                                    match_count_text_->GetBaseline(),
-                               sz.width(),
-                               sz.height());
+                               sz.width(), sz.height());
 
   // And whatever space is left in between, gets filled up by the find edit box.
-  sz = find_text_->GetPreferredSize();
-  sz.set_width(std::max(0, match_count_x - kMarginLeftOfFindTextfield));
-  int find_text_x = std::max(0, match_count_x - sz.width());
-  find_text_->SetBounds(find_text_x,
-                        (height() - sz.height()) / 2 + 1,
-                        sz.width(),
-                        sz.height());
+  int find_text_width = std::max(0, match_count_x - kMarginLeftOfFindTextfield);
+  find_text_->SetBounds(std::max(0, match_count_x - find_text_width),
+                        find_text_y, find_text_width,
+                        find_text_->GetPreferredSize().height());
 
   // The focus forwarder view is a hidden view that should cover the area
   // between the find text box and the find button so that when the user clicks
   // in that area we focus on the find text box.
   int find_text_edge = find_text_->x() + find_text_->width();
-  focus_forwarder_view_->SetBounds(find_text_edge,
-                                   find_previous_button_->y(),
-                                   find_previous_button_->x() -
-                                       find_text_edge,
-                                   find_previous_button_->height());
+  focus_forwarder_view_->SetBounds(
+      find_text_edge, find_previous_button_->y(),
+      find_previous_button_->x() - find_text_edge,
+      find_previous_button_->height());
 }
 
 void FindBarView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this) {
-    find_text_->SetHorizontalMargins(3, 3);  // Left and Right margins.
-    find_text_->SetVerticalMargins(0, 0);  // Top and bottom margins.
+    find_text_->SetHorizontalMargins(0, 2);  // Left and Right margins.
     find_text_->RemoveBorder();  // We draw our own border (a background image).
   }
 }
