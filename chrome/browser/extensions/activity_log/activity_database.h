@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_DATABASE_H_
-#define CHROME_BROWSER_EXTENSIONS_ACTIVITY_DATABASE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_DATABASE_H_
+#define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_DATABASE_H_
 
 #include <string>
 #include <vector>
@@ -12,9 +12,9 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/timer.h"
-#include "chrome/browser/extensions/api_actions.h"
-#include "chrome/browser/extensions/blocked_actions.h"
-#include "chrome/browser/extensions/dom_actions.h"
+#include "chrome/browser/extensions/activity_log/api_actions.h"
+#include "chrome/browser/extensions/activity_log/blocked_actions.h"
+#include "chrome/browser/extensions/activity_log/dom_actions.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/connection.h"
@@ -113,4 +113,4 @@ class ActivityDatabase {
 };
 
 }  // namespace extensions
-#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_DATABASE_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_DATABASE_H_

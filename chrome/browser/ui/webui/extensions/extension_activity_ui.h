@@ -7,8 +7,8 @@
 
 #include <string>
 #include <vector>
-#include "chrome/browser/extensions/activity_actions.h"
-#include "chrome/browser/extensions/activity_log.h"
+#include "chrome/browser/extensions/activity_log/activity_actions.h"
+#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace extensions {

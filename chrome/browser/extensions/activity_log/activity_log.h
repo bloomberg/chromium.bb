@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_H_
-#define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_H_
+#define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_H_
 
 #include <map>
 #include <string>
@@ -17,8 +17,8 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/extensions/activity_actions.h"
-#include "chrome/browser/extensions/activity_database.h"
+#include "chrome/browser/extensions/activity_log/activity_actions.h"
+#include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -257,4 +257,4 @@ class ActivityLogFactory : public ProfileKeyedServiceFactory {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_H_

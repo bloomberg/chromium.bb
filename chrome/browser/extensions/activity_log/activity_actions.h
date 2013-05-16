@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_ACTIONS_H_
-#define CHROME_BROWSER_EXTENSIONS_ACTIVITY_ACTIONS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_ACTIONS_H_
+#define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_ACTIONS_H_
 
 #include <string>
 #include "base/memory/ref_counted_memory.h"
@@ -27,11 +27,8 @@ class Action : public base::RefCountedThreadSafe<Action> {
   // Record the action in the database.
   virtual void Record(sql::Connection* db) = 0;
 
-  // Print an action with il8n substitutions for display.
-  virtual std::string PrettyPrintFori18n() = 0;
-
   // Print an action as a regular string for debugging purposes.
-  virtual std::string PrettyPrintForDebug() = 0;
+  virtual std::string PrintForDebug() = 0;
 
   const std::string& extension_id() const { return extension_id_; }
   const base::Time& time() const { return time_; }
@@ -57,4 +54,5 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_ACTIONS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_ACTIONS_H_
+

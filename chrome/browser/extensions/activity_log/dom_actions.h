@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_DOM_ACTIONS_H_
-#define CHROME_BROWSER_EXTENSIONS_DOM_ACTIONS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_DOM_ACTIONS_H_
+#define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_DOM_ACTIONS_H_
 
 #include "base/string16.h"
-#include "chrome/browser/extensions/activity_actions.h"
+#include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "googleurl/src/gurl.h"
 
 namespace extensions {
@@ -52,11 +52,8 @@ class DOMAction : public Action {
   // Record the action in the database.
   virtual void Record(sql::Connection* db) OVERRIDE;
 
-  // Print a DOMAction with il8n substitutions for display.
-  virtual std::string PrettyPrintFori18n() OVERRIDE;
-
   // Print a DOMAction as a regular string for debugging purposes.
-  virtual std::string PrettyPrintForDebug() OVERRIDE;
+  virtual std::string PrintForDebug() OVERRIDE;
 
   // Helper methods for retrieving the values.
   std::string VerbAsString() const;
@@ -85,5 +82,5 @@ class DOMAction : public Action {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_DOM_ACTIONS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_DOM_ACTIONS_H_
 

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/activity_log.h"
-
 #include <set>
 #include <vector>
 #include "base/command_line.h"
@@ -11,8 +9,9 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/extensions/api_actions.h"
-#include "chrome/browser/extensions/blocked_actions.h"
+#include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/activity_log/api_actions.h"
+#include "chrome/browser/extensions/activity_log/blocked_actions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -224,8 +223,6 @@ void ActivityLog::LogAPIActionInternal(const Extension* extension,
         extension->id(),
         base::Time::Now(),
         type,
-        APIAction::StringAsVerb(verb),
-        APIAction::StringAsTarget(manager),
         api_call,
         MakeArgList(args),
         extra);
@@ -247,7 +244,7 @@ void ActivityLog::LogAPIActionInternal(const Extension* extension,
       }
     }
     if (log_activity_to_stdout_)
-      LOG(INFO) << action->PrettyPrintForDebug();
+      LOG(INFO) << action->PrintForDebug();
   } else {
     LOG(ERROR) << "Unknown API call! " << api_call;
   }
@@ -314,7 +311,7 @@ void ActivityLog::LogBlockedAction(const Extension* extension,
                          blocked_str);
   }
   if (log_activity_to_stdout_)
-    LOG(INFO) << action->PrettyPrintForDebug();
+    LOG(INFO) << action->PrintForDebug();
 }
 
 void ActivityLog::LogDOMActionInternal(const Extension* extension,
@@ -344,7 +341,7 @@ void ActivityLog::LogDOMActionInternal(const Extension* extension,
       iter->second->Notify(&Observer::OnExtensionActivity,
                            extension,
                            ActivityLog::ACTIVITY_CONTENT_SCRIPT,
-                           action->PrettyPrintForDebug());
+                           action->PrintForDebug());
     } else {
       iter->second->Notify(&Observer::OnExtensionActivity,
                            extension,
@@ -353,7 +350,7 @@ void ActivityLog::LogDOMActionInternal(const Extension* extension,
     }
   }
   if (log_activity_to_stdout_)
-    LOG(INFO) << action->PrettyPrintForDebug();
+    LOG(INFO) << action->PrintForDebug();
 }
 
 void ActivityLog::LogDOMAction(const Extension* extension,
@@ -421,10 +418,10 @@ void ActivityLog::LogWebRequestAction(const Extension* extension,
     iter->second->Notify(&Observer::OnExtensionActivity,
                          extension,
                          ActivityLog::ACTIVITY_CONTENT_SCRIPT,
-                         action->PrettyPrintForDebug());
+                         action->PrintForDebug());
   }
   if (log_activity_to_stdout_)
-    LOG(INFO) << action->PrettyPrintForDebug();
+    LOG(INFO) << action->PrintForDebug();
 }
 
 void ActivityLog::GetActions(

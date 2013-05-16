@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/extensions/activity_log.h"
+#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
@@ -62,17 +62,16 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     scoped_refptr<Action> last = i->front();
     std::string noargs = "ID: odlameecjipmbmbejkplpemijjgpljce, CATEGORY: "
-      "CALL, VERB: UNKNOWN_VERB, TARGET: TABS, API: tabs.testMethod, ARGS: ";
-    ASSERT_EQ(noargs, last->PrettyPrintForDebug());
+      "CALL, API: tabs.testMethod, ARGS: ";
+    ASSERT_EQ(noargs, last->PrintForDebug());
   }
 
   static void Arguments_Present(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     scoped_refptr<Action> last = i->front();
     std::string args = "ID: odlameecjipmbmbejkplpemijjgpljce, CATEGORY: "
-      "CALL, VERB: UNKNOWN_VERB, TARGET: UNKNOWN_TARGET, API: "
-      "extension.connect, ARGS: \"hello\", \"world\"";
-    ASSERT_EQ(args, last->PrettyPrintForDebug());
+      "CALL, API: extension.connect, ARGS: \"hello\", \"world\"";
+    ASSERT_EQ(args, last->PrintForDebug());
   }
 
  protected:

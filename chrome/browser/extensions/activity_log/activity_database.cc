@@ -11,7 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
 #include "base/time/clock.h"
-#include "chrome/browser/extensions/activity_database.h"
+#include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/common/chrome_switches.h"
 #include "sql/transaction.h"
 

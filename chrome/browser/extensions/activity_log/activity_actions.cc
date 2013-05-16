@@ -5,7 +5,7 @@
 #include <string>
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/extensions/api_actions.h"
+#include "chrome/browser/extensions/activity_log/api_actions.h"
 
 namespace extensions {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_BLOCKED_ACTIONS_H_
-#define CHROME_BROWSER_EXTENSIONS_BLOCKED_ACTIONS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_BLOCKED_ACTIONS_H_
+#define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_BLOCKED_ACTIONS_H_
 
-#include "chrome/browser/extensions/activity_actions.h"
+#include "chrome/browser/extensions/activity_log/activity_actions.h"
 
 namespace extensions {
 
@@ -34,11 +34,8 @@ class BlockedAction : public Action {
   // Record the action in the database.
   virtual void Record(sql::Connection* db) OVERRIDE;
 
-  // Print a BlockedAction with il8n substitutions for display.
-  virtual std::string PrettyPrintFori18n() OVERRIDE;
-
-  // Print a BlockedAction as a regular string for debugging purposes.
-  virtual std::string PrettyPrintForDebug() OVERRIDE;
+  // Print a BlockedAction as a string for debugging purposes.
+  virtual std::string PrintForDebug() OVERRIDE;
 
   // Helper methods for recording the values into the db.
   const std::string& reason() const { return reason_; }
@@ -60,5 +57,5 @@ class BlockedAction : public Action {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_BLOCKED_ACTIONS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_BLOCKED_ACTIONS_H_
 

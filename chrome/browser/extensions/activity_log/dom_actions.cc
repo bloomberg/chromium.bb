@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/dom_actions.h"
+#include "chrome/browser/extensions/activity_log/dom_actions.h"
 #include "chrome/browser/history/url_database.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -84,13 +84,7 @@ void DOMAction::Record(sql::Connection* db) {
     LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
 }
 
-std::string DOMAction::PrettyPrintFori18n() {
-  // TODO(felt): implement this for real when the UI is redesigned.
-  return PrettyPrintForDebug();
-}
-
-std::string DOMAction::PrettyPrintForDebug() {
-  // TODO(felt): implement this for real when the UI is redesigned.
+std::string DOMAction::PrintForDebug() {
   if (verb_ == INSERTED)
     return "Injected scripts (" + args_ + ") onto "
       + std::string(url_.spec());

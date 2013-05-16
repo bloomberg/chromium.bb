@@ -10,10 +10,10 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time.h"
-#include "chrome/browser/extensions/activity_database.h"
-#include "chrome/browser/extensions/api_actions.h"
-#include "chrome/browser/extensions/blocked_actions.h"
-#include "chrome/browser/extensions/dom_actions.h"
+#include "chrome/browser/extensions/activity_log/activity_database.h"
+#include "chrome/browser/extensions/activity_log/api_actions.h"
+#include "chrome/browser/extensions/activity_log/blocked_actions.h"
+#include "chrome/browser/extensions/activity_log/dom_actions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
@@ -116,8 +116,6 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
       "punky",
       base::Time::Now(),
       APIAction::CALL,
-      APIAction::READ,
-      APIAction::BOOKMARK,
       "brewster",
       "woof",
       "extra");
@@ -134,10 +132,8 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
   ASSERT_TRUE(statement.Step());
   ASSERT_EQ("punky", statement.ColumnString(0));
   ASSERT_EQ("CALL", statement.ColumnString(2));
-  ASSERT_EQ("READ", statement.ColumnString(3));
-  ASSERT_EQ("BOOKMARK", statement.ColumnString(4));
-  ASSERT_EQ("brewster", statement.ColumnString(5));
-  ASSERT_EQ("woof", statement.ColumnString(6));
+  ASSERT_EQ("brewster", statement.ColumnString(3));
+  ASSERT_EQ("woof", statement.ColumnString(4));
 }
 
 // Check that blocked actions are recorded in the db.
@@ -198,8 +194,6 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
       APIAction::CALL,
-      APIAction::READ,
-      APIAction::BOOKMARK,
       "brewster",
       "woof",
       "extra");
@@ -226,14 +220,14 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
   activity_db->RecordAction(extra_dom_action);
 
   // Read them back
-  std::string api_print = "ID: punky, CATEGORY: CALL, VERB: READ, TARGET: "
-      "BOOKMARK, API: brewster, ARGS: woof";
+  std::string api_print = "ID: punky, CATEGORY: CALL, "
+      "API: brewster, ARGS: woof";
   std::string dom_print = "DOM API CALL: lets, ARGS: vamoose";
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 0);
   ASSERT_EQ(2, static_cast<int>(actions->size()));
-  ASSERT_EQ(dom_print, actions->at(0)->PrettyPrintForDebug());
-  ASSERT_EQ(api_print, actions->at(1)->PrettyPrintForDebug());
+  ASSERT_EQ(dom_print, actions->at(0)->PrintForDebug());
+  ASSERT_EQ(api_print, actions->at(1)->PrintForDebug());
 
   activity_db->Close();
 }
@@ -261,8 +255,6 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
       mock_clock.Now() - base::TimeDelta::FromDays(3)
           - base::TimeDelta::FromMinutes(40),
       APIAction::CALL,
-      APIAction::READ,
-      APIAction::BOOKMARK,
       "brewster",
       "woof",
       "extra");
@@ -299,14 +291,14 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
   activity_db->RecordAction(tooold_dom_action);
 
   // Read them back
-  std::string api_print = "ID: punky, CATEGORY: CALL, VERB: READ, TARGET: "
-      "BOOKMARK, API: brewster, ARGS: woof";
+  std::string api_print = "ID: punky, CATEGORY: CALL, "
+      "API: brewster, ARGS: woof";
   std::string dom_print = "DOM API CALL: lets, ARGS: vamoose";
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 3);
   ASSERT_EQ(2, static_cast<int>(actions->size()));
-  ASSERT_EQ(dom_print, actions->at(0)->PrettyPrintForDebug());
-  ASSERT_EQ(api_print, actions->at(1)->PrettyPrintForDebug());
+  ASSERT_EQ(dom_print, actions->at(0)->PrintForDebug());
+  ASSERT_EQ(api_print, actions->at(1)->PrintForDebug());
 
   activity_db->Close();
 }
@@ -334,8 +326,6 @@ TEST_F(ActivityDatabaseTest, BatchModeOff) {
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
       APIAction::CALL,
-      APIAction::READ,
-      APIAction::BOOKMARK,
       "brewster",
       "woof",
       "extra");
@@ -370,8 +360,6 @@ TEST_F(ActivityDatabaseTest, BatchModeOn) {
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
       APIAction::CALL,
-      APIAction::READ,
-      APIAction::BOOKMARK,
       "brewster",
       "woof",
       "extra");
@@ -405,8 +393,6 @@ TEST_F(ActivityDatabaseTest, InitFailure) {
       "punky",
       base::Time::Now(),
       APIAction::CALL,
-      APIAction::READ,
-      APIAction::BOOKMARK,
       "brewster",
       "woooof",
       "extra");

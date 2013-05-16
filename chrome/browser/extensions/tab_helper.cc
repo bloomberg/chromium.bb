@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/tab_helper.h"
 
-#include "chrome/browser/extensions/activity_log.h"
+#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
 #include "chrome/browser/extensions/crx_installer.h"

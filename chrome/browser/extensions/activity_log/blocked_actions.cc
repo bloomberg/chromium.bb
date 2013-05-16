@@ -4,7 +4,7 @@
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/extensions/blocked_actions.h"
+#include "chrome/browser/extensions/activity_log/blocked_actions.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -72,12 +72,7 @@ void BlockedAction::Record(sql::Connection* db) {
     LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
 }
 
-std::string BlockedAction::PrettyPrintFori18n() {
-  // TODO(felt): implement this for real when the UI is redesigned.
-  return PrettyPrintForDebug();
-}
-
-std::string BlockedAction::PrettyPrintForDebug() {
+std::string BlockedAction::PrintForDebug() {
   // TODO(felt): implement this for real when the UI is redesigned.
   return "ID: " + extension_id() + ", blocked action " + api_call_ +
       ", reason: " + reason_;

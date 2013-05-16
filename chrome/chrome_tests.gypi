@@ -1274,7 +1274,7 @@
         'browser/download/save_page_browsertest.cc',
         'browser/errorpage_browsertest.cc',
         'browser/extensions/active_tab_apitest.cc',
-        'browser/extensions/activity_log_browsertest.cc',
+        'browser/extensions/activity_log/activity_log_browsertest.cc',
         'browser/extensions/ad_view_browsertest.cc',
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',
