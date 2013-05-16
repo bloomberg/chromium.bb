@@ -29,6 +29,13 @@ function find_users_with_active_hosts {
     }'
 }
 
+function find_login_window_for_user {
+  # This function mimics the behaviour of pgrep, which may not be installed
+  # on Mac OS X.
+  local user=$1
+  ps -ec -u "$user" -o comm,pid | awk '$1 == "loginwindow" { print $2; exit }'
+}
+
 trap on_error ERR
 
 logger Running Chrome Remote Desktop preflight script @@VERSION@@
@@ -51,9 +58,12 @@ for uid in $(find_users_with_active_hosts); do
     else
       context="Aqua"
     fi
-    launchctl bsexec "$pid" sudo -u "#$uid" launchctl stop "$SERVICE_NAME"
-    launchctl bsexec "$pid" sudo -u "#$uid" launchctl unload -w -S "$context" \
-      "$PLIST"
+    pid="$(find_login_window_for_user "$uid")"
+    if [[ -n "$pid" ]]; then
+      launchctl bsexec "$pid" sudo -u "#$uid" launchctl stop "$SERVICE_NAME"
+      launchctl bsexec "$pid" sudo -u "#$uid" launchctl unload -w -S \
+        "$context" "$PLIST"
+    fi
   fi
 done
 
