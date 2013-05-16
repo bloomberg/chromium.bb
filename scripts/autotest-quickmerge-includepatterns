@@ -27,4 +27,3 @@ frontend/
 frontend/**
 
 global_config.ini
-shadow_config.ini

@@ -212,21 +212,16 @@ def UpdatePackageContents(change_report, package_cp, portage_root=None):
   vartree.dbapi.writeContentsToContentsFile(package, contents)
 
 
-def RemoveTestPackages(stale_packages, autotest_sysroot):
-  """Remove bzipped test packages from sysroot.
+def RemoveBzipPackages(autotest_sysroot):
+  """Remove all bzipped test/dep/profiler packages from sysroot autotest.
 
   Arguments:
-    stale_packages: List of test packages names to be removed.
-                    e.g. ['factory_Leds', 'login_UserPolicyKeys']
     autotest_sysroot: Absolute path of autotest in the sysroot,
                       e.g. '/build/lumpy/usr/local/autotest'
   """
-  for package in set(stale_packages):
-    package_filename = 'test-' + package + '.tar.bz2'
-    package_file_fullpath = os.path.join(autotest_sysroot, 'packages',
-                                         package_filename)
-    if osutils.SafeUnlink(package_file_fullpath):
-      logging.info('Removed stale %s', package_file_fullpath)
+  osutils.RmDir(os.path.join(autotest_sysroot, 'packages'),
+                             ignore_missing=True)
+  osutils.SafeUnlink(os.path.join(autotest_sysroot, 'packages.checksum'))
 
 
 def RsyncQuickmerge(source_path, sysroot_autotest_path,
@@ -339,13 +334,7 @@ def main(argv):
       if not DowngradePackageVersion(sysroot_path, ebuild):
         logging.warning('Unable to downgrade package %s version number.',
                         ebuild)
-    stale_packages = GetStalePackageNames(
-        change_report.new_files + change_report.modified_files,
-        sysroot_autotest_path)
-    RemoveTestPackages(stale_packages, sysroot_autotest_path)
-    osutils.SafeUnlink(os.path.join(sysroot_autotest_path, 'packages.checksum'))
-    osutils.SafeUnlink(os.path.join(sysroot_autotest_path, 'packages',
-                                    'packages.checksum'))
+    RemoveBzipPackages(sysroot_autotest_path)
 
   if args.pretend:
     logging.info('The following message is pretend only. No filesystem '
