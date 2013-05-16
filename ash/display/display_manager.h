@@ -39,11 +39,6 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   DisplayManager();
   virtual ~DisplayManager();
 
-  // Used to emulate display change when run in a desktop environment instead
-  // of on a device.
-  static void CycleDisplay();
-  static void ToggleDisplayScaleFactor();
-
   // Returns next valid UI scale.
   static float GetNextUIScale(const DisplayInfo& info, bool up);
 
@@ -166,6 +161,14 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& new_size) OVERRIDE;
 
+  // Change the mirror mode.
+  void SetMirrorMode(bool mirrored);
+
+  // Used to emulate display change when run in a desktop environment instead
+  // of on a device.
+  void AddRemoveDisplay();
+  void ToggleDisplayScaleFactor();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, TestNativeDisplaysChanged);
@@ -184,8 +187,6 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   }
 
   void Init();
-  void CycleDisplayImpl();
-  void ScaleDisplayImpl();
 
   gfx::Display& FindDisplayForRootWindow(const aura::RootWindow* root);
   gfx::Display& FindDisplayForId(int64 id);

@@ -121,10 +121,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
   DisplayManager* display_manager = GetDisplayManager();
   ash::DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
-  chromeos::OutputConfigurator* output_configurator =
-      ash::Shell::GetInstance()->output_configurator();
-  base::FundamentalValue mirroring(
-      output_configurator->output_state() == chromeos::STATE_DUAL_MIRROR);
+  base::FundamentalValue mirroring(display_manager->IsMirrored());
 
   int64 primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   base::ListValue display_info;
@@ -159,9 +156,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
 }
 
 void DisplayOptionsHandler::OnFadeOutForMirroringFinished(bool is_mirroring) {
-  chromeos::OutputState new_state =
-      is_mirroring ? STATE_DUAL_MIRROR : STATE_DUAL_EXTENDED;
-  ash::Shell::GetInstance()->output_configurator()->SetDisplayMode(new_state);
+  ash::Shell::GetInstance()->display_manager()->SetMirrorMode(is_mirroring);
   // Not necessary to start fade-in animation.  OutputConfigurator will do that.
 }
 

@@ -1205,26 +1205,38 @@ TEST_F(AcceleratorControllerTest, ReservedAccelerators) {
 
 #if defined(OS_CHROMEOS)
 TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
-  std::set<AcceleratorAction> allActions;
+  std::set<AcceleratorAction> all_actions;
   for (size_t i = 0 ; i < kAcceleratorDataLength; ++i)
-    allActions.insert(kAcceleratorData[i].action);
+    all_actions.insert(kAcceleratorData[i].action);
+#if !defined(NDEBUG)
+  std::set<AcceleratorAction> all_desktop_actions;
+  for (size_t i = 0 ; i < kDesktopAcceleratorDataLength; ++i)
+    all_desktop_actions.insert(kDesktopAcceleratorData[i].action);
+#endif
+
   std::set<AcceleratorAction> actionsAllowedAtModalWindow;
   for (size_t k = 0 ; k < kActionsAllowedAtModalWindowLength; ++k)
     actionsAllowedAtModalWindow.insert(kActionsAllowedAtModalWindow[k]);
   for (std::set<AcceleratorAction>::const_iterator it =
            actionsAllowedAtModalWindow.begin();
        it != actionsAllowedAtModalWindow.end(); ++it) {
-    EXPECT_FALSE(allActions.find(*it) == allActions.end())
+    EXPECT_TRUE(all_actions.find(*it) != all_actions.end()
+
+#if !defined(NDEBUG)
+                || all_desktop_actions.find(*it) != all_desktop_actions.end()
+#endif
+                )
         << " action from kActionsAllowedAtModalWindow"
-        << " not found in kAcceleratorData. action: " << *it;
+        << " not found in kAcceleratorData or kDesktopAcceleratorData. "
+        << "action: " << *it;
   }
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   const ui::Accelerator dummy;
   wm::ActivateWindow(window.get());
   Shell::GetInstance()->SimulateModalWindowOpenForTesting(true);
-  for (std::set<AcceleratorAction>::const_iterator it = allActions.begin();
-       it != allActions.end(); ++it) {
+  for (std::set<AcceleratorAction>::const_iterator it = all_actions.begin();
+       it != all_actions.end(); ++it) {
     if (actionsAllowedAtModalWindow.find(*it) ==
         actionsAllowedAtModalWindow.end()) {
       EXPECT_TRUE(GetController()->PerformAction(*it, dummy))
