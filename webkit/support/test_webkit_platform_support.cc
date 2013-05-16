@@ -375,22 +375,6 @@ TestWebKitPlatformSupport::createOffscreenGraphicsContext3D(
       attributes);
 }
 
-WebKit::WebGraphicsContext3D*
-TestWebKitPlatformSupport::sharedOffscreenGraphicsContext3D() {
-  main_thread_contexts_ =
-      webkit::gpu::TestContextProviderFactory::GetInstance()->
-          OffscreenContextProviderForMainThread();
-  if (!main_thread_contexts_)
-    return NULL;
-  return main_thread_contexts_->Context3d();
-}
-
-GrContext* TestWebKitPlatformSupport::sharedOffscreenGrContext() {
-  if (!main_thread_contexts_)
-    return NULL;
-  return main_thread_contexts_->GrContext();
-}
-
 WebKit::WebGraphicsContext3DProvider* TestWebKitPlatformSupport::
     createSharedOffscreenGraphicsContext3DProvider() {
   main_thread_contexts_ =

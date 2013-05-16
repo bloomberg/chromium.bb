@@ -883,33 +883,6 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
 
 //------------------------------------------------------------------------------
 
-WebKit::WebGraphicsContext3D* RendererWebKitPlatformSupportImpl::
-    sharedOffscreenGraphicsContext3D() {
-  if (!shared_offscreen_context_ ||
-      shared_offscreen_context_->DestroyedOnMainThread()) {
-    shared_offscreen_context_ =
-        RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
-  }
-  if (!shared_offscreen_context_)
-    return NULL;
-  return shared_offscreen_context_->Context3d();
-}
-
-WebKit::WebCompositorSupport*
-RendererWebKitPlatformSupportImpl::compositorSupport() {
-  return &compositor_support_;
-}
-
-//------------------------------------------------------------------------------
-
-GrContext* RendererWebKitPlatformSupportImpl::sharedOffscreenGrContext() {
-  if (!shared_offscreen_context_)
-    return NULL;
-  return shared_offscreen_context_->GrContext();
-}
-
-//------------------------------------------------------------------------------
-
 WebKit::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
     createSharedOffscreenGraphicsContext3DProvider() {
   if (!shared_offscreen_context_ ||
@@ -921,6 +894,13 @@ WebKit::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
     return NULL;
   return new webkit::gpu::WebGraphicsContext3DProviderImpl(
       shared_offscreen_context_);
+}
+
+//------------------------------------------------------------------------------
+
+WebKit::WebCompositorSupport*
+RendererWebKitPlatformSupportImpl::compositorSupport() {
+  return &compositor_support_;
 }
 
 }  // namespace content

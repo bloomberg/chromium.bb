@@ -116,8 +116,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       size_t* private_bytes, size_t* shared_bytes);
   virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
-  virtual WebKit::WebGraphicsContext3D* sharedOffscreenGraphicsContext3D();
-  virtual GrContext* sharedOffscreenGrContext();
   virtual WebKit::WebGraphicsContext3DProvider*
       createSharedOffscreenGraphicsContext3DProvider();
   virtual WebKit::WebCompositorSupport* compositorSupport();
