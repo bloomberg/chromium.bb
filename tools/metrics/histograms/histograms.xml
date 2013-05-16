@@ -1317,6 +1317,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MouseEventPrefetch.PreTapEventsFollowedByClick"
+    enum="PreTapEvents">
+  <summary>
+    The tap gesture events detected before click at HTML anchor-tag links'
+    default event handler.
+  </summary>
+</histogram>
+
 <histogram name="MouseEventPrefetch.TapDownDuration_Click" units="ms">
   <summary>
     Measures the time elapsed between when the user tapdown-ed a link and when
@@ -11199,6 +11207,13 @@ other types of suffix sets.
   <int value="4" label="Mainframe commit"/>
   <int value="5" label="Mainframe commit, logged in"/>
   <int value="6" label="Login action added"/>
+</enum>
+
+<enum name="PreTapEvents" type="int">
+  <int value="0" label="no event"/>
+  <int value="1" label="tapdown"/>
+  <int value="2" label="tapunconfirmed"/>
+  <int value="3" label="tapdown + tapunconfirmed"/>
 </enum>
 
 <enum name="ProtocolVersion" type="int">
