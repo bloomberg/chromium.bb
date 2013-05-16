@@ -3485,12 +3485,6 @@ void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum 
     // Otherwise, it will fall back to the normal SW path.
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
     if (GraphicsContext3D::TEXTURE_2D == target && texture) {
-        // FIXME: Currently we must make sure the target texture has the correct size before copying
-        // because of crbug.com/225781. Remove this once that bug is fixed.
-        if (texture->getWidth(target, level) != video->videoWidth() || texture->getHeight(target, level) != video->videoHeight()) {
-            m_context->texImage2D(target, level, internalformat, video->videoWidth(), video->videoHeight(), 0, format, type, 0);
-            texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), type);
-        }
         if (video->copyVideoTextureToPlatformTexture(m_context.get(), texture->object(), level, type, internalformat, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), type);
             return;
