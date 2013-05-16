@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_POWER_POWER_STATUS_VIEW_H_
-#define ASH_SYSTEM_POWER_POWER_STATUS_VIEW_H_
+#ifndef ASH_SYSTEM_CHROMEOS_POWER_POWER_STATUS_VIEW_H_
+#define ASH_SYSTEM_CHROMEOS_POWER_POWER_STATUS_VIEW_H_
 
-#include "ash/system/power/power_supply_status.h"
+#include "chromeos/dbus/power_supply_status.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -26,7 +26,7 @@ class PowerStatusView : public views::View {
   PowerStatusView(ViewType view_type, bool default_view_right_align);
   virtual ~PowerStatusView() {}
 
-  void UpdatePowerStatus(const PowerSupplyStatus& status);
+  void UpdatePowerStatus(const chromeos::PowerSupplyStatus& status);
   const base::string16& accessible_name() const { return accessible_name_; }
 
   // Overridden from views::View.
@@ -76,7 +76,7 @@ class PowerStatusView : public views::View {
 
   ViewType view_type_;
 
-  PowerSupplyStatus supply_status_;
+  chromeos::PowerSupplyStatus supply_status_;
 
   base::string16 accessible_name_;
 
@@ -86,4 +86,4 @@ class PowerStatusView : public views::View {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_POWER_POWER_STATUS_VIEW_H_
+#endif  // ASH_SYSTEM_CHROMEOS_POWER_POWER_STATUS_VIEW_H_

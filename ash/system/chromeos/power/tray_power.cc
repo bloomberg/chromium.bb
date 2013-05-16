@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/power/tray_power.h"
+#include "ash/system/chromeos/power/tray_power.h"
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
+#include "ash/system/chromeos/power/power_status_view.h"
 #include "ash/system/date/date_view.h"
-#include "ash/system/power/power_status_view.h"
-#include "ash/system/power/power_supply_status.h"
-#include "ash/system/tray/system_tray_delegate.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_utils.h"
@@ -18,6 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chromeos/dbus/power_supply_status.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/icu/public/i18n/unicode/fieldpos.h"
@@ -38,6 +37,9 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+using chromeos::PowerManagerHandler;
+using chromeos::PowerSupplyStatus;
 
 namespace ash {
 namespace internal {
@@ -104,7 +106,8 @@ class PowerTrayView : public views::ImageView {
     state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   }
 
-  void UpdatePowerStatus(const PowerSupplyStatus& status, bool battery_alert) {
+  void UpdatePowerStatus(const PowerSupplyStatus& status,
+                         bool battery_alert) {
     supply_status_ = status;
     // Sanitize.
     if (supply_status_.battery_is_full)
@@ -203,24 +206,27 @@ TrayPower::TrayPower(SystemTray* system_tray)
       power_tray_(NULL),
       notification_view_(NULL),
       notification_state_(NOTIFICATION_NONE) {
-  Shell::GetInstance()->system_tray_notifier()->AddPowerStatusObserver(this);
+  PowerManagerHandler::Get()->AddObserver(this);
 }
 
 TrayPower::~TrayPower() {
-  Shell::GetInstance()->system_tray_notifier()->RemovePowerStatusObserver(this);
+  if (PowerManagerHandler::IsInitialized())
+    PowerManagerHandler::Get()->RemoveObserver(this);
 }
 
 // static
 bool TrayPower::IsBatteryChargingUnreliable(
-    const PowerSupplyStatus& supply_status) {
+    const chromeos::PowerSupplyStatus& supply_status) {
   return
       supply_status.battery_state ==
-      PowerSupplyStatus::NEITHER_CHARGING_NOR_DISCHARGING ||
-      supply_status.battery_state == PowerSupplyStatus::CONNECTED_TO_USB;
+          PowerSupplyStatus::NEITHER_CHARGING_NOR_DISCHARGING ||
+      supply_status.battery_state ==
+          PowerSupplyStatus::CONNECTED_TO_USB;
 }
 
 // static
-int TrayPower::GetBatteryImageIndex(const PowerSupplyStatus& supply_status) {
+int TrayPower::GetBatteryImageIndex(
+    const chromeos::PowerSupplyStatus& supply_status) {
   int image_index = 0;
   if (supply_status.battery_percentage >= 100) {
     image_index = kNumPowerImages - 1;
@@ -235,7 +241,8 @@ int TrayPower::GetBatteryImageIndex(const PowerSupplyStatus& supply_status) {
 }
 
 // static
-int TrayPower::GetBatteryImageOffset(const PowerSupplyStatus& supply_status) {
+int TrayPower::GetBatteryImageOffset(
+    const chromeos::PowerSupplyStatus& supply_status) {
   if (IsBatteryChargingUnreliable(supply_status) ||
       !supply_status.line_power_on)
     return 0;
@@ -267,7 +274,7 @@ gfx::ImageSkia TrayPower::GetBatteryImage(int image_index,
 
 // static
 base::string16 TrayPower::GetAccessibleNameString(
-    const PowerSupplyStatus& supply_status) {
+    const chromeos::PowerSupplyStatus& supply_status) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (supply_status.line_power_on && supply_status.battery_is_full) {
     return rb.GetLocalizedString(
@@ -335,7 +342,7 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
   // there is a battery or not. So always create this, and adjust visibility as
   // necessary.
   PowerSupplyStatus power_status =
-      ash::Shell::GetInstance()->system_tray_delegate()->GetPowerSupplyStatus();
+      PowerManagerHandler::Get()->GetPowerSupplyStatus();
   CHECK(power_tray_ == NULL);
   power_tray_ = new tray::PowerTrayView();
   power_tray_->UpdatePowerStatus(power_status, false);
@@ -344,14 +351,14 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
   // Make sure icon status is up-to-date. (Also triggers stub activation).
-  ash::Shell::GetInstance()->system_tray_delegate()->RequestStatusUpdate();
+  RequestStatusUpdate();
   return NULL;
 }
 
 views::View* TrayPower::CreateNotificationView(user::LoginStatus status) {
   CHECK(notification_view_ == NULL);
   PowerSupplyStatus power_status =
-      ash::Shell::GetInstance()->system_tray_delegate()->GetPowerSupplyStatus();
+      PowerManagerHandler::Get()->GetPowerSupplyStatus();
   if (!power_status.battery_is_present)
     return NULL;
 
@@ -379,7 +386,8 @@ void TrayPower::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   SetTrayImageItemBorder(power_tray_, alignment);
 }
 
-void TrayPower::OnPowerStatusChanged(const PowerSupplyStatus& status) {
+void TrayPower::OnPowerStatusChanged(
+    const chromeos::PowerSupplyStatus& status) {
   bool battery_alert = UpdateNotificationState(status);
   if (power_tray_)
     power_tray_->UpdatePowerStatus(status, battery_alert);
@@ -392,7 +400,12 @@ void TrayPower::OnPowerStatusChanged(const PowerSupplyStatus& status) {
     HideNotificationView();
 }
 
-bool TrayPower::UpdateNotificationState(const PowerSupplyStatus& status) {
+void TrayPower::RequestStatusUpdate() const {
+  PowerManagerHandler::Get()->RequestStatusUpdate();
+}
+
+bool TrayPower::UpdateNotificationState(
+    const chromeos::PowerSupplyStatus& status) {
   if (!status.battery_is_present ||
       status.is_calculating_battery_time ||
       status.battery_state == PowerSupplyStatus::CHARGING) {

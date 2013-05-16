@@ -748,6 +748,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       return;
     }
     if (!timer_.IsRunning() && update_type == UPDATE_USER) {
+      Update();
       timer_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(1000),

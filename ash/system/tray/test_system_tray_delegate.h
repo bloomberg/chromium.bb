@@ -40,8 +40,6 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual const base::string16 GetLocallyManagedUserMessage() const OVERRIDE;
   virtual bool SystemShouldUpgrade() const OVERRIDE;
   virtual base::HourClockType GetHourClockType() const OVERRIDE;
-  virtual PowerSupplyStatus GetPowerSupplyStatus() const OVERRIDE;
-  virtual void RequestStatusUpdate() const OVERRIDE;
   virtual void ShowSettings() OVERRIDE;
   virtual void ShowDateSettings() OVERRIDE;
   virtual void ShowNetworkSettings() OVERRIDE;

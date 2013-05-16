@@ -23,7 +23,6 @@
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/logout_button/logout_button_observer.h"
-#include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -302,8 +301,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       AudioHandler::GetInstance()->AddVolumeObserver(this);
     }
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
-        PowerManagerClient::UPDATE_INITIAL);
     DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
@@ -496,15 +493,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual base::HourClockType GetHourClockType() const OVERRIDE {
     return clock_type_;
-  }
-
-  virtual PowerSupplyStatus GetPowerSupplyStatus() const OVERRIDE {
-    return power_supply_status_;
-  }
-
-  virtual void RequestStatusUpdate() const OVERRIDE {
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
-        PowerManagerClient::UPDATE_USER);
   }
 
   virtual void ShowSettings() OVERRIDE {
@@ -1255,11 +1243,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     GetSystemTrayNotifier()->NotifyBrightnessChanged(leveld, user_initiated);
   }
 
-  virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE {
-    power_supply_status_ = power_status;
-    GetSystemTrayNotifier()->NotifyPowerStatusChanged(power_status);
-  }
-
   // Overridden from PowerManagerClient::Observer:
   virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE {
     GetSystemTrayNotifier()->NotifyRefreshClock();
@@ -1601,7 +1584,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   PrefChangeRegistrar local_state_registrar_;
   scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
   std::string active_network_path_;
-  PowerSupplyStatus power_supply_status_;
   base::HourClockType clock_type_;
   int search_key_mapped_to_;
   bool screen_locked_;

@@ -6,7 +6,6 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_H_
 
 #include "ash/ash_export.h"
-#include "ash/system/power/power_supply_status.h"
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/user/login_status.h"
@@ -32,7 +31,6 @@ class DriveObserver;
 class IMEObserver;
 class LocaleObserver;
 class LogoutButtonObserver;
-class PowerStatusObserver;
 class SystemTrayDelegate;
 class UpdateObserver;
 class UserObserver;

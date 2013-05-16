@@ -139,13 +139,6 @@ base::HourClockType TestSystemTrayDelegate::GetHourClockType() const {
   return base::k24HourClock;
 }
 
-PowerSupplyStatus TestSystemTrayDelegate::GetPowerSupplyStatus() const {
-  return PowerSupplyStatus();
-}
-
-void TestSystemTrayDelegate::RequestStatusUpdate() const {
-}
-
 void TestSystemTrayDelegate::ShowSettings() {
 }
 

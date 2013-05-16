@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_POWER_TRAY_POWER_H_
-#define ASH_SYSTEM_POWER_TRAY_POWER_H_
+#ifndef ASH_SYSTEM_CHROMEOS_POWER_TRAY_POWER_H_
+#define ASH_SYSTEM_CHROMEOS_POWER_TRAY_POWER_H_
 
-#include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "chromeos/power/power_manager_handler.h"
 
 class SkBitmap;
 
@@ -28,7 +28,7 @@ enum IconSet {
 };
 
 class TrayPower : public SystemTrayItem,
-                  public PowerStatusObserver {
+                  public chromeos::PowerManagerHandler::Observer {
  public:
   explicit TrayPower(SystemTray* system_tray);
   virtual ~TrayPower();
@@ -39,16 +39,18 @@ class TrayPower : public SystemTrayItem,
   // charger power and power consumption, i.e usage. In this case we
   // do not want to show either a charging or discharging state.
   static bool IsBatteryChargingUnreliable(
-      const PowerSupplyStatus& supply_status);
+      const chromeos::PowerSupplyStatus& supply_status);
 
   // Gets the icon index in the battery icon array image based on
   // |supply_status|.  If |supply_status| is uncertain about the power state,
   // returns -1.
-  static int GetBatteryImageIndex(const PowerSupplyStatus& supply_status);
+  static int GetBatteryImageIndex(
+      const chromeos::PowerSupplyStatus& supply_status);
 
   // Gets the horizontal offset in the battery icon array image based on
   // |supply_status|.
-  static int GetBatteryImageOffset(const PowerSupplyStatus& supply_status);
+  static int GetBatteryImageOffset(
+      const chromeos::PowerSupplyStatus& supply_status);
 
   // Looks up the actual icon in the icon array image for |image_index|.
   static gfx::ImageSkia GetBatteryImage(int image_index,
@@ -58,7 +60,7 @@ class TrayPower : public SystemTrayItem,
 
   // Gets the battery accessible string for |supply_status|.
   static base::string16 GetAccessibleNameString(
-      const PowerSupplyStatus& supply_status);
+      const chromeos::PowerSupplyStatus& supply_status);
 
   // Gets rounded battery percentage for |battery_percentage|.
   static int GetRoundedBatteryPercentage(double battery_percentage);
@@ -82,11 +84,15 @@ class TrayPower : public SystemTrayItem,
   virtual void UpdateAfterShelfAlignmentChange(
       ShelfAlignment alignment) OVERRIDE;
 
-  // Overridden from PowerStatusObserver.
-  virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) OVERRIDE;
+  // Overridden from chromeos::PowerManagerHandler::Observer.
+  virtual void OnPowerStatusChanged(
+      const chromeos::PowerSupplyStatus& status) OVERRIDE;
+
+  // Requests a power status update.
+  void RequestStatusUpdate() const;
 
   // Sets |notification_state_|. Returns true if a notification should be shown.
-  bool UpdateNotificationState(const PowerSupplyStatus& status);
+  bool UpdateNotificationState(const chromeos::PowerSupplyStatus& status);
   bool UpdateNotificationStateForRemainingTime(int remaining_seconds);
   bool UpdateNotificationStateForRemainingPercentage(
       double remaining_percentage);
@@ -101,4 +107,4 @@ class TrayPower : public SystemTrayItem,
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_POWER_TRAY_POWER_H_
+#endif  // ASH_SYSTEM_CHROMEOS_POWER_TRAY_POWER_H_

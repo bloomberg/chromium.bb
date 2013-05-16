@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/power/power_status_view.h"
+#include "ash/system/chromeos/power/power_status_view.h"
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/system/power/tray_power.h"
+#include "ash/system/chromeos/power/tray_power.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/strings/string_number_conversions.h"
@@ -59,7 +59,8 @@ PowerStatusView::PowerStatusView(ViewType view_type,
   Update();
 }
 
-void PowerStatusView::UpdatePowerStatus(const PowerSupplyStatus& status) {
+void PowerStatusView::UpdatePowerStatus(
+    const chromeos::PowerSupplyStatus& status) {
   supply_status_ = status;
   // Sanitize.
   if (supply_status_.battery_is_full)

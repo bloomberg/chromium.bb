@@ -17,10 +17,7 @@
 #include "ash/system/locale/tray_locale.h"
 #include "ash/system/logout_button/tray_logout_button.h"
 #include "ash/system/monitor/tray_monitor.h"
-#include "ash/system/power/power_supply_status.h"
-#include "ash/system/power/tray_power.h"
 #include "ash/system/session_length_limit/tray_session_length_limit.h"
-#include "ash/system/settings/tray_settings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
@@ -56,7 +53,9 @@
 #include "ash/system/chromeos/network/tray_network.h"
 #include "ash/system/chromeos/network/tray_sms.h"
 #include "ash/system/chromeos/network/tray_vpn.h"
+#include "ash/system/chromeos/power/tray_power.h"
 #include "ash/system/chromeos/screen_capture/tray_screen_capture.h"
+#include "ash/system/chromeos/settings/tray_settings.h"
 #include "ash/system/chromeos/tray_display.h"
 #endif
 
@@ -148,7 +147,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new internal::TrayIME(this));
   tray_accessibility_ = new internal::TrayAccessibility(this);
   AddTrayItem(tray_accessibility_);
-#if !defined(OS_WIN)
+#if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayPower(this));
 #endif
 #if defined(OS_CHROMEOS)
@@ -170,7 +169,9 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new internal::TrayBrightness(this));
   AddTrayItem(new internal::TrayCapsLock(this));
 #endif
+#if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TraySettings(this));
+#endif
   AddTrayItem(new internal::TrayUpdate(this));
   AddTrayItem(new internal::TrayDate(this));
 

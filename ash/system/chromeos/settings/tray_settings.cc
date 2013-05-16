@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/settings/tray_settings.h"
+#include "ash/system/chromeos/settings/tray_settings.h"
 
 #include "ash/shell.h"
-#include "ash/system/power/power_status_view.h"
+#include "ash/system/chromeos/power/power_status_view.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -58,8 +58,8 @@ class SettingsDefaultView : public ActionableView {
       power_view_right_align = true;
     }
 
-    PowerSupplyStatus power_status = ash::Shell::GetInstance()->
-        system_tray_delegate()->GetPowerSupplyStatus();
+    chromeos::PowerSupplyStatus power_status =
+        chromeos::PowerManagerHandler::Get()->GetPowerSupplyStatus();
     if (power_status.battery_is_present) {
       power_status_view_ = new ash::internal::PowerStatusView(
           ash::internal::PowerStatusView::VIEW_DEFAULT, power_view_right_align);
@@ -70,7 +70,7 @@ class SettingsDefaultView : public ActionableView {
 
   virtual ~SettingsDefaultView() {}
 
-  void UpdatePowerStatus(const PowerSupplyStatus& status) {
+  void UpdatePowerStatus(const chromeos::PowerSupplyStatus& status) {
     if (!power_status_view_)
       return;
     power_status_view_->UpdatePowerStatus(status);
@@ -125,11 +125,12 @@ class SettingsDefaultView : public ActionableView {
 TraySettings::TraySettings(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       default_view_(NULL) {
-  Shell::GetInstance()->system_tray_notifier()->AddPowerStatusObserver(this);
+  chromeos::PowerManagerHandler::Get()->AddObserver(this);
 }
 
 TraySettings::~TraySettings() {
-  Shell::GetInstance()->system_tray_notifier()->RemovePowerStatusObserver(this);
+  if (chromeos::PowerManagerHandler::IsInitialized())
+    chromeos::PowerManagerHandler::Get()->RemoveObserver(this);
 }
 
 views::View* TraySettings::CreateTrayView(user::LoginStatus status) {
@@ -138,8 +139,9 @@ views::View* TraySettings::CreateTrayView(user::LoginStatus status) {
 
 views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
   if ((status == user::LOGGED_IN_NONE || status == user::LOGGED_IN_LOCKED) &&
-      (!ash::Shell::GetInstance()->system_tray_delegate()->
-          GetPowerSupplyStatus().battery_is_present))
+      (chromeos::PowerManagerHandler::IsInitialized() &&
+       !chromeos::PowerManagerHandler::Get()->
+           GetPowerSupplyStatus().battery_is_present))
     return NULL;
 
   CHECK(default_view_ == NULL);
@@ -165,8 +167,8 @@ void TraySettings::DestroyDetailedView() {
 void TraySettings::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-// Overridden from PowerStatusObserver.
-void TraySettings::OnPowerStatusChanged(const PowerSupplyStatus& status) {
+void TraySettings::OnPowerStatusChanged(
+    const chromeos::PowerSupplyStatus& status) {
   if (default_view_)
     default_view_->UpdatePowerStatus(status);
 }

@@ -19,7 +19,6 @@
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/locale/locale_observer.h"
 #include "ash/system/logout_button/logout_button_observer.h"
-#include "ash/system/power/power_status_observer.h"
 #include "ash/system/session_length_limit/session_length_limit_observer.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
@@ -68,9 +67,6 @@ public:
   void AddLogoutButtonObserver(LogoutButtonObserver* observer);
   void RemoveLogoutButtonObserver(LogoutButtonObserver* observer);
 
-  void AddPowerStatusObserver(PowerStatusObserver* observer);
-  void RemovePowerStatusObserver(PowerStatusObserver* observer);
-
   void AddSessionLengthLimitObserver(SessionLengthLimitObserver* observer);
   void RemoveSessionLengthLimitObserver(SessionLengthLimitObserver* observer);
 
@@ -116,7 +112,6 @@ public:
                            const std::string& cur_locale,
                            const std::string& from_locale,
                            const std::string& to_locale);
-  void NotifyPowerStatusChanged(const PowerSupplyStatus& power_status);
   void NotifySessionStartTimeChanged();
   void NotifySessionLengthLimitChanged();
   void NotifyUpdateRecommended(UpdateObserver::UpdateSeverity severity);
@@ -151,7 +146,6 @@ public:
   ObserverList<IMEObserver> ime_observers_;
   ObserverList<LocaleObserver> locale_observers_;
   ObserverList<LogoutButtonObserver> logout_button_observers_;
-  ObserverList<PowerStatusObserver> power_status_observers_;
   ObserverList<SessionLengthLimitObserver> session_length_limit_observers_;
   ObserverList<UpdateObserver> update_observers_;
   ObserverList<UserObserver> user_observers_;

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_SETTINGS_TRAY_SETTINGS_H_
-#define ASH_SYSTEM_SETTINGS_TRAY_SETTINGS_H_
+#ifndef ASH_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_
+#define ASH_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_
 
-#include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "chromeos/power/power_manager_handler.h"
 
 namespace ash {
 namespace internal {
@@ -16,7 +16,7 @@ class SettingsDefaultView;
 }
 
 class TraySettings : public SystemTrayItem,
-                     public PowerStatusObserver {
+                     public chromeos::PowerManagerHandler::Observer {
  public:
   explicit TraySettings(SystemTray* system_tray);
   virtual ~TraySettings();
@@ -31,8 +31,9 @@ class TraySettings : public SystemTrayItem,
   virtual void DestroyDetailedView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
 
-  // Overridden from PowerStatusObserver.
-  virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) OVERRIDE;
+  // Overridden from chromeos::PowerManagerHandler::Observer.
+  virtual void OnPowerStatusChanged(
+      const chromeos::PowerSupplyStatus& status) OVERRIDE;
 
   tray::SettingsDefaultView* default_view_;
 
@@ -42,4 +43,4 @@ class TraySettings : public SystemTrayItem,
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_SETTINGS_TRAY_SETTINGS_H_
+#endif  // ASH_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_

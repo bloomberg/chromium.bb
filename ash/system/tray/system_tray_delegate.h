@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/system/power/power_supply_status.h"
 #include "ash/system/user/login_status.h"
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
@@ -159,12 +158,6 @@ class SystemTrayDelegate {
 
   // Returns the desired hour clock type.
   virtual base::HourClockType GetHourClockType() const = 0;
-
-  // Gets the current power supply status.
-  virtual PowerSupplyStatus GetPowerSupplyStatus() const = 0;
-
-  // Requests a status update.
-  virtual void RequestStatusUpdate() const = 0;
 
   // Shows settings.
   virtual void ShowSettings() = 0;

@@ -89,16 +89,6 @@ void SystemTrayNotifier::RemoveLogoutButtonObserver(
   logout_button_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddPowerStatusObserver(
-    PowerStatusObserver* observer) {
-  power_status_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemovePowerStatusObserver(
-    PowerStatusObserver* observer) {
-  power_status_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddSessionLengthLimitObserver(
     SessionLengthLimitObserver* observer) {
   session_length_limit_observers_.AddObserver(observer);
@@ -261,13 +251,6 @@ void SystemTrayNotifier::NotifyLocaleChanged(
       LocaleObserver,
       locale_observers_,
       OnLocaleChanged(delegate, cur_locale, from_locale, to_locale));
-}
-
-void SystemTrayNotifier::NotifyPowerStatusChanged(
-    const PowerSupplyStatus& power_status) {
-  FOR_EACH_OBSERVER(PowerStatusObserver,
-                    power_status_observers_,
-                    OnPowerStatusChanged(power_status));
 }
 
 void SystemTrayNotifier::NotifySessionStartTimeChanged() {

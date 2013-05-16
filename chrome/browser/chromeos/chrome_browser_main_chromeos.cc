@@ -116,6 +116,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/power/power_manager_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/power_save_blocker.h"
@@ -505,6 +506,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
        AudioPrefHandler::Create(g_browser_process->local_state()));
   }
 
+  PowerManagerHandler::Initialize();
+
   if (!StartupUtils::IsOobeCompleted())
     system::StatisticsProvider::GetInstance()->LoadOemManifest();
 
@@ -818,6 +821,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   } else {
     AudioHandler::Shutdown();
   }
+
+  PowerManagerHandler::Shutdown();
 
   WebSocketProxyController::Shutdown();
 
