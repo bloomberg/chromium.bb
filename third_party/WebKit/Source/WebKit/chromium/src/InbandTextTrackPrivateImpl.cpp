@@ -45,12 +45,12 @@ InbandTextTrackPrivateImpl::InbandTextTrackPrivateImpl(WebInbandTextTrack* track
 
 InbandTextTrackPrivateImpl::~InbandTextTrackPrivateImpl()
 {
+    m_track->setClient(0);
 }
 
 void InbandTextTrackPrivateImpl::setClient(WebCore::InbandTextTrackPrivateClient* client)
 {
     InbandTextTrackPrivate::setClient(client);
-    m_track->setClient(this);
 }
 
 void InbandTextTrackPrivateImpl::setMode(Mode mode)
