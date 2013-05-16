@@ -227,7 +227,6 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
       has_keyword_suggested_relevance_(false),
       default_verbatim_relevance_(-1),
       keyword_verbatim_relevance_(-1),
-      have_suggest_results_(false),
       instant_finalized_(false),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),
@@ -649,7 +648,10 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   // have its results, or are allowed to keep running it, just do that, rather
   // than starting a new query.
   if (minimal_changes &&
-      (have_suggest_results_ ||
+      (!default_suggest_results_.empty() ||
+       !default_navigation_results_.empty() ||
+       !keyword_suggest_results_.empty() ||
+       !keyword_navigation_results_.empty() ||
        (!done_ &&
         input_.matches_requested() == AutocompleteInput::ALL_MATCHES)))
     return;
@@ -748,7 +750,6 @@ void SearchProvider::ClearAllResults() {
                &keyword_verbatim_relevance_, &has_keyword_suggested_relevance_);
   ClearResults(&default_suggest_results_, &default_navigation_results_,
                &default_verbatim_relevance_, &has_default_suggested_relevance_);
-  have_suggest_results_ = false;
 }
 
 // static
@@ -935,9 +936,6 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
 }
 
 bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
-  // TODO(pkasting): Fix |have_suggest_results_|; see http://crbug.com/130631
-  have_suggest_results_ = false;
-
   string16 query;
   ListValue* root_list = NULL;
   ListValue* results = NULL;
@@ -1034,7 +1032,6 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
                    comparator);
   std::stable_sort(navigation_results->begin(), navigation_results->end(),
                    comparator);
-  have_suggest_results_ = true;
   return true;
 }
 

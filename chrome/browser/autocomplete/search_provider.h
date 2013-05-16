@@ -487,9 +487,6 @@ class SearchProvider : public AutocompleteProvider,
   int default_verbatim_relevance_;
   int keyword_verbatim_relevance_;
 
-  // Whether suggest_results_ is valid.
-  bool have_suggest_results_;
-
   // Has FinalizeInstantQuery been invoked since the last |Start|?
   bool instant_finalized_;
 
