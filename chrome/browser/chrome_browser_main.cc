@@ -179,12 +179,6 @@
 #include "ui/base/win/dpi.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) && defined(USE_AURA)
-#include "chrome/browser/browser_process_platform_part_aurawin.h"
-#else
-#include "chrome/browser/browser_process_platform_part.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include <Security/Security.h>
 
@@ -441,8 +435,7 @@ bool ProcessSingletonNotificationCallback(
         base::Time::Now() - base::Time::FromInternalValue(remote_start_time));
   }
 
-  g_browser_process->platform_part()->PlatformSpecificCommandLineProcessing(
-      command_line);
+  g_browser_process->PlatformSpecificCommandLineProcessing(command_line);
 
   // TODO(erikwright): Consider removing this - AFAIK it is no longer used.
   // Handle the --uninstall-extension startup action. This needs to done here in

@@ -7,17 +7,10 @@
 
 #include "base/basictypes.h"
 
-class CommandLine;
-
 class BrowserProcessPlatformPart {
  public:
   BrowserProcessPlatformPart();
   virtual ~BrowserProcessPlatformPart();
-
-  // Called after creating the process singleton or when another chrome
-  // rendez-vous with this one.
-  virtual void PlatformSpecificCommandLineProcessing(
-      const CommandLine& command_line);
 
   // Called from BrowserProcessImpl::StartTearDown().
   virtual void StartTearDown();

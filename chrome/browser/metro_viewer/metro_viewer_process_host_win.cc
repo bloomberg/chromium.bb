@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_aurawin.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -88,7 +87,7 @@ void  MetroViewerProcessHost::OnChannelError() {
 
   // This will delete the MetroViewerProcessHost object. Don't access member
   // variables/functions after this call.
-  g_browser_process->platform_part()->OnMetroViewerProcessTerminated();
+  g_browser_process->OnMetroViewerProcessTerminated();
 }
 
 void MetroViewerProcessHost::OnSetTargetSurface(

@@ -99,6 +99,9 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/views/focus/view_storage.h"
+#if defined(USE_AURA)
+#include "chrome/browser/metro_viewer/metro_viewer_process_host_win.h"
+#endif
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #endif
@@ -109,8 +112,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#elif defined(OS_WIN) && defined(USE_AURA)
-#include "chrome/browser/browser_process_platform_part_aurawin.h"
 #else
 #include "chrome/browser/browser_process_platform_part.h"
 #endif  // defined(OS_CHROMEOS)
@@ -632,6 +633,12 @@ BrowserProcessImpl::media_file_system_registry() {
   return media_file_system_registry_.get();
 #endif
 }
+
+#if !defined(OS_WIN)
+void BrowserProcessImpl::PlatformSpecificCommandLineProcessing(
+    const CommandLine& command_line) {
+}
+#endif
 
 bool BrowserProcessImpl::created_local_state() const {
     return created_local_state_;

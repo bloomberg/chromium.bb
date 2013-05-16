@@ -273,10 +273,9 @@
         'browser/browser_process.h',
         'browser/browser_process_impl.cc',
         'browser/browser_process_impl.h',
+        'browser/browser_process_impl_win.cc',
         'browser/browser_process_platform_part.cc',
         'browser/browser_process_platform_part.h',
-        'browser/browser_process_platform_part_aurawin.cc',
-        'browser/browser_process_platform_part_aurawin.h',
         'browser/browser_process_platform_part_chromeos.cc',
         'browser/browser_process_platform_part_chromeos.h',
         'browser/browser_shutdown.cc',
@@ -2632,8 +2631,6 @@
               'sources/': [
                 ['exclude', '^browser/automation/automation_provider_aura.cc'],
                 ['exclude', '^browser/background/background_mode_manager_aura.cc'],
-                ['exclude', '^browser/browser_process_platform_part.cc'],
-                ['exclude', '^browser/browser_process_platform_part.h'],
                 ['exclude', '^browser/lifetime/application_lifetime_win.cc'],
               ],
               'dependencies': [
