@@ -2217,10 +2217,8 @@ void RenderWidget::resetInputMethod() {
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE) {
     // If a composition text exists, then we need to let the browser process
     // to cancel the input method's ongoing composition session.
-    handling_ime_event_ = true;
     if (webwidget_->confirmComposition())
       Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
-    handling_ime_event_ = false;
   }
 
   // Send an updated IME range with the current caret rect.
