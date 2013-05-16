@@ -36,7 +36,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -62,7 +61,7 @@ class HintInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
@@ -155,9 +154,8 @@ void HintInfoBarDelegate::InfoBarDismissed() {
   omnibox_hint_->DisableHint();
 }
 
-gfx::Image* HintInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-     IDR_INFOBAR_QUESTION_MARK);
+int HintInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_QUESTION_MARK;
 }
 
 InfoBarDelegate::Type HintInfoBarDelegate::GetInfoBarType() const {

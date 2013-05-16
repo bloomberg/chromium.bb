@@ -48,7 +48,7 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host);
 
   // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;

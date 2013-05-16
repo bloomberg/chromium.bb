@@ -22,7 +22,6 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include <shellapi.h>
@@ -74,9 +73,8 @@ void PluginInfoBarDelegate::LoadBlockedPlugins() {
   }
 }
 
-gfx::Image* PluginInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_PLUGIN_INSTALL);
+int PluginInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_PLUGIN_INSTALL;
 }
 
 string16 PluginInfoBarDelegate::GetLinkText() const {
@@ -391,9 +389,8 @@ PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
 PluginInstallerInfoBarDelegate::~PluginInstallerInfoBarDelegate() {
 }
 
-gfx::Image* PluginInstallerInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_PLUGIN_INSTALL);
+int PluginInstallerInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_PLUGIN_INSTALL;
 }
 
 string16 PluginInstallerInfoBarDelegate::GetMessageText() const {
@@ -502,9 +499,8 @@ PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
 PluginMetroModeInfoBarDelegate::~PluginMetroModeInfoBarDelegate() {
 }
 
-gfx::Image* PluginMetroModeInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_PLUGIN_INSTALL);
+int PluginMetroModeInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_PLUGIN_INSTALL;
 }
 
 string16 PluginMetroModeInfoBarDelegate::GetMessageText() const {

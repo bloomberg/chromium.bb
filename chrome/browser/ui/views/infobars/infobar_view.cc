@@ -216,10 +216,10 @@ void InfoBarView::ViewHierarchyChanged(
   View::ViewHierarchyChanged(details);
 
   if (details.is_add && (details.child == this) && (close_button_ == NULL)) {
-    gfx::Image* image = delegate()->GetIcon();
-    if (image) {
+    gfx::Image image = delegate()->GetIcon();
+    if (!image.IsEmpty()) {
       icon_ = new views::ImageView;
-      icon_->SetImage(image->ToImageSkia());
+      icon_->SetImage(image.ToImageSkia());
       AddChildView(icon_);
     }
 

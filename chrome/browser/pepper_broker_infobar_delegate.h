@@ -44,7 +44,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~PepperBrokerInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;

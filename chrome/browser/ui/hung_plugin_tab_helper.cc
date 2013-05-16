@@ -30,7 +30,6 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -148,7 +147,7 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~HungPluginInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
@@ -159,7 +158,6 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   string16 message_;
   string16 button_text_;
-  gfx::Image* icon_;
 };
 
 // static
@@ -185,15 +183,13 @@ HungPluginInfoBarDelegate::HungPluginInfoBarDelegate(
                                         plugin_name);
   button_text_ = l10n_util::GetStringUTF16(
       IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR_KILLBUTTON);
-  icon_ = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_PLUGIN_CRASHED);
 }
 
 HungPluginInfoBarDelegate::~HungPluginInfoBarDelegate() {
 }
 
-gfx::Image* HungPluginInfoBarDelegate::GetIcon() const {
-  return icon_;
+int HungPluginInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_PLUGIN_CRASHED;
 }
 
 string16 HungPluginInfoBarDelegate::GetMessageText() const {

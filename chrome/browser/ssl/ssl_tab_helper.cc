@@ -34,7 +34,6 @@
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 
 // SSLCertResultInfoBarDelegate -----------------------------------------------
@@ -59,7 +58,7 @@ class SSLCertResultInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~SSLCertResultInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
@@ -97,10 +96,9 @@ SSLCertResultInfoBarDelegate::SSLCertResultInfoBarDelegate(
 SSLCertResultInfoBarDelegate::~SSLCertResultInfoBarDelegate() {
 }
 
-gfx::Image* SSLCertResultInfoBarDelegate::GetIcon() const {
+int SSLCertResultInfoBarDelegate::GetIconID() const {
   // TODO(davidben): use a more appropriate icon.
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_SAVE_PASSWORD);
+  return IDR_INFOBAR_SAVE_PASSWORD;
 }
 
 InfoBarDelegate::Type SSLCertResultInfoBarDelegate::GetInfoBarType() const {

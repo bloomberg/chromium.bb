@@ -91,9 +91,9 @@ void InfoBarGtk::InitWidgets() {
   gtk_container_add(GTK_CONTAINER(bg_box_), padding);
 
   // Add the icon on the left, if any.
-  gfx::Image* icon = delegate()->GetIcon();
-  if (icon) {
-    GtkWidget* image = gtk_image_new_from_pixbuf(icon->ToGdkPixbuf());
+  gfx::Image icon = delegate()->GetIcon();
+  if (!icon.IsEmpty()) {
+    GtkWidget* image = gtk_image_new_from_pixbuf(icon.ToGdkPixbuf());
 
     gtk_misc_set_alignment(GTK_MISC(image), 0.5, 0.5);
 

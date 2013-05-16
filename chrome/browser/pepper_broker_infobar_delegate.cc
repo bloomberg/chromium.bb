@@ -21,7 +21,6 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(GOOGLE_TV)
@@ -150,9 +149,8 @@ PepperBrokerInfoBarDelegate::~PepperBrokerInfoBarDelegate() {
     callback_.Run(false);
 }
 
-gfx::Image* PepperBrokerInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_PLUGIN_INSTALL);
+int PepperBrokerInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_PLUGIN_INSTALL;
 }
 
 string16 PepperBrokerInfoBarDelegate::GetMessageText() const {

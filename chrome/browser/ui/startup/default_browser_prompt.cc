@@ -30,7 +30,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
 
@@ -74,7 +73,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   void AllowExpiry() { should_expire_ = true; }
 
   // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool NeedElevation(InfoBarButton button) const OVERRIDE;
@@ -135,9 +134,8 @@ DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
     UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.Ignored", 1);
 }
 
-gfx::Image* DefaultBrowserInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-     IDR_PRODUCT_LOGO_32);
+int DefaultBrowserInfoBarDelegate::GetIconID() const {
+  return IDR_PRODUCT_LOGO_32;
 }
 
 string16 DefaultBrowserInfoBarDelegate::GetMessageText() const {

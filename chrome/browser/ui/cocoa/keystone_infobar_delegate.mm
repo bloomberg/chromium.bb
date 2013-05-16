@@ -29,7 +29,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 class SkBitmap;
 
@@ -53,7 +52,7 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
   void SetCanExpire() { can_expire_ = true; }
 
   // ConfirmInfoBarDelegate
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
@@ -110,9 +109,8 @@ KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
 KeystonePromotionInfoBarDelegate::~KeystonePromotionInfoBarDelegate() {
 }
 
-gfx::Image* KeystonePromotionInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_PRODUCT_LOGO_32);
+int KeystonePromotionInfoBarDelegate::GetIconID() const {
+  return IDR_PRODUCT_LOGO_32;
 }
 
 string16 KeystonePromotionInfoBarDelegate::GetMessageText() const {

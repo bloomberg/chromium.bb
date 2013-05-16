@@ -473,7 +473,7 @@ void ManagedModeNavigationObserver::DidNavigateMainFrame(
     last_allowed_page_ = web_contents()->GetController().GetCurrentEntryIndex();
     SimpleAlertInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents()),
-        NULL,
+        InfoBarDelegate::kNoIconID,
         l10n_util::GetStringUTF16(IDS_MANAGED_MODE_ALREADY_ADDED_MESSAGE),
         true);
     return;

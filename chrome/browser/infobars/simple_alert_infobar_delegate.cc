@@ -9,21 +9,21 @@
 
 // static
 void SimpleAlertInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                        gfx::Image* icon,
+                                        int icon_id,
                                         const string16& message,
                                         bool auto_expire) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new SimpleAlertInfoBarDelegate(infobar_service, icon, message,
+      new SimpleAlertInfoBarDelegate(infobar_service, icon_id, message,
                                      auto_expire)));
 }
 
 SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
     InfoBarService* infobar_service,
-    gfx::Image* icon,
+    int icon_id,
     const string16& message,
     bool auto_expire)
     : ConfirmInfoBarDelegate(infobar_service),
-      icon_(icon),
+      icon_id_(icon_id),
       message_(message),
       auto_expire_(auto_expire) {
 }
@@ -31,8 +31,8 @@ SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
 SimpleAlertInfoBarDelegate::~SimpleAlertInfoBarDelegate() {
 }
 
-gfx::Image* SimpleAlertInfoBarDelegate::GetIcon() const {
-  return icon_;
+int SimpleAlertInfoBarDelegate::GetIconID() const {
+  return icon_id_;
 }
 
 string16 SimpleAlertInfoBarDelegate::GetMessageText() const {

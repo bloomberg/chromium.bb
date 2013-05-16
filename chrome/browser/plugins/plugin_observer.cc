@@ -31,7 +31,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -225,11 +224,9 @@ void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
   UMA_HISTOGRAM_COUNTS("Plugin.ShowCrashedInfobar", 1);
 #endif
 
-  gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_PLUGIN_CRASHED);
   SimpleAlertInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents()), icon, infobar_text,
-      true);
+      InfoBarService::FromWebContents(web_contents()),
+      IDR_INFOBAR_PLUGIN_CRASHED, infobar_text, true);
 }
 
 bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
@@ -382,8 +379,7 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
   SimpleAlertInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),
-      &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          IDR_INFOBAR_PLUGIN_CRASHED),
+      IDR_INFOBAR_PLUGIN_CRASHED,
       l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
                                  plugin_name),
       true  /* auto_expire */);

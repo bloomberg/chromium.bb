@@ -11,10 +11,13 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using content::NavigationEntry;
 
 // InfoBarDelegate ------------------------------------------------------------
+
+const int InfoBarDelegate::kNoIconID = 0;
 
 InfoBarDelegate::~InfoBarDelegate() {
 }
@@ -39,8 +42,8 @@ bool InfoBarDelegate::ShouldExpire(
 void InfoBarDelegate::InfoBarDismissed() {
 }
 
-gfx::Image* InfoBarDelegate::GetIcon() const {
-  return NULL;
+int InfoBarDelegate::GetIconID() const {
+  return kNoIconID;
 }
 
 InfoBarDelegate::Type InfoBarDelegate::GetInfoBarType() const {
@@ -89,6 +92,12 @@ ThreeDAPIInfoBarDelegate* InfoBarDelegate::AsThreeDAPIInfoBarDelegate() {
 
 TranslateInfoBarDelegate* InfoBarDelegate::AsTranslateInfoBarDelegate() {
   return NULL;
+}
+
+gfx::Image InfoBarDelegate::GetIcon() const {
+  int icon_id = GetIconID();
+  return (icon_id == kNoIconID) ? gfx::Image() :
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(icon_id);
 }
 
 InfoBarDelegate::InfoBarDelegate(InfoBarService* infobar_service)

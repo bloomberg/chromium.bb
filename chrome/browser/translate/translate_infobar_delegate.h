@@ -192,7 +192,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // InfoBarDelegate:
   virtual InfoBar* CreateInfoBar(InfoBarService* infobar_service) OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;
   virtual bool ShouldExpire(
        const content::LoadCommittedDetails& details) const OVERRIDE;

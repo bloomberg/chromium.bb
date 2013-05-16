@@ -14,25 +14,25 @@ class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a simple alert delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
-                     gfx::Image* icon,  // May be NULL.
+                     int icon_id,  // May be |kNoIconID| if no icon is shown.
                      const string16& message,
                      bool auto_expire);
 
  private:
   SimpleAlertInfoBarDelegate(InfoBarService* infobar_service,
-                             gfx::Image* icon,
+                             int icon_id,
                              const string16& message,
                              bool auto_expire);
   virtual ~SimpleAlertInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const OVERRIDE;
 
-  gfx::Image* icon_;
+  const int icon_id_;
   string16 message_;
   bool auto_expire_;  // Should it expire automatically on navigation?
 

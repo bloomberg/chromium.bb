@@ -8,7 +8,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 DownloadRequestInfoBarDelegate::FakeCreateCallback*
   DownloadRequestInfoBarDelegate::callback_ = NULL;
@@ -54,9 +53,8 @@ DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
       host_(host) {
 }
 
-gfx::Image* DownloadRequestInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_MULTIPLE_DOWNLOADS);
+int DownloadRequestInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_MULTIPLE_DOWNLOADS;
 }
 
 string16 DownloadRequestInfoBarDelegate::GetMessageText() const {

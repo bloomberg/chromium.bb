@@ -38,7 +38,6 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using content::NavigationController;
 using content::NotificationSource;
@@ -179,9 +178,8 @@ void AutoLoginInfoBarDelegate::InfoBarDismissed() {
   button_pressed_ = true;
 }
 
-gfx::Image* AutoLoginInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_AUTOLOGIN);
+int AutoLoginInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_AUTOLOGIN;
 }
 
 InfoBarDelegate::Type AutoLoginInfoBarDelegate::GetInfoBarType() const {

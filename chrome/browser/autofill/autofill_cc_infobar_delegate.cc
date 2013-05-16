@@ -15,7 +15,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 
 namespace autofill {
@@ -66,9 +65,8 @@ void AutofillCCInfoBarDelegate::InfoBarDismissed() {
   LogUserAction(AutofillMetrics::INFOBAR_DENIED);
 }
 
-gfx::Image* AutofillCCInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_AUTOFILL);
+int AutofillCCInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_AUTOFILL;
 }
 
 InfoBarDelegate::Type AutofillCCInfoBarDelegate::GetInfoBarType() const {

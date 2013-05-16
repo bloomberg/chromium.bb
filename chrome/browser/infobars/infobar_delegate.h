@@ -47,6 +47,9 @@ class InfoBarDelegate {
     UNKNOWN_INFOBAR,
   };
 
+  // Value to use when the InfoBar has no icon to show.
+  static const int kNoIconID;
+
   virtual ~InfoBarDelegate();
 
   virtual InfoBarAutomationType GetInfoBarAutomationType() const;
@@ -78,9 +81,9 @@ class InfoBarDelegate {
   // Called when the user clicks on the close button to dismiss the infobar.
   virtual void InfoBarDismissed();
 
-  // Return the icon to be shown for this InfoBar. If the returned Image is
-  // NULL, no icon is shown.
-  virtual gfx::Image* GetIcon() const;
+  // Return the resource ID of the icon to be shown for this InfoBar.  If the
+  // value is equal to |kNoIconID|, no icon is shown.
+  virtual int GetIconID() const;
 
   // Returns the type of the infobar.  The type determines the appearance (such
   // as background color) of the infobar.
@@ -98,6 +101,10 @@ class InfoBarDelegate {
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate();
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
+
+  // Return the icon to be shown for this InfoBar. If the returned Image is
+  // empty, no icon is shown.
+  gfx::Image GetIcon() const;
 
   content::WebContents* web_contents() {
     return owner_ ? owner_->web_contents() : NULL;

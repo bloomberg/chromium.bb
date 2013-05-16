@@ -41,7 +41,7 @@ class ContentSettingChangedInfoBarDelegate : public ConfirmInfoBarDelegate {
                                        int message_text);
 
   // ConfirmInfoBarDelegate overrides.
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;

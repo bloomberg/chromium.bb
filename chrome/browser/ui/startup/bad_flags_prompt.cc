@@ -45,7 +45,8 @@ void ShowBadFlagsPrompt(Browser* browser) {
     if (!web_contents)
       return;
     SimpleAlertInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(web_contents), NULL,
+        InfoBarService::FromWebContents(web_contents),
+        InfoBarDelegate::kNoIconID,
         l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
                                     UTF8ToUTF16(std::string("--") + bad_flag)),
         false);

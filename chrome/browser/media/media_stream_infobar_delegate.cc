@@ -14,7 +14,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 MediaStreamInfoBarDelegate::~MediaStreamInfoBarDelegate() {}
 
@@ -62,10 +61,9 @@ void MediaStreamInfoBarDelegate::InfoBarDismissed() {
   controller_->Deny(false);
 }
 
-gfx::Image* MediaStreamInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      controller_->has_video() ?
-          IDR_INFOBAR_MEDIA_STREAM_CAMERA : IDR_INFOBAR_MEDIA_STREAM_MIC);
+int MediaStreamInfoBarDelegate::GetIconID() const {
+  return controller_->has_video() ?
+      IDR_INFOBAR_MEDIA_STREAM_CAMERA : IDR_INFOBAR_MEDIA_STREAM_MIC;
 }
 
 InfoBarDelegate::Type MediaStreamInfoBarDelegate::GetInfoBarType() const {

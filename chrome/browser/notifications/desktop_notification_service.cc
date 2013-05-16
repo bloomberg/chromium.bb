@@ -118,7 +118,7 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~NotificationPermissionInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
@@ -190,9 +190,8 @@ NotificationPermissionInfoBarDelegate::
     host->DesktopNotificationPermissionRequestDone(callback_context_);
 }
 
-gfx::Image* NotificationPermissionInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_DESKTOP_NOTIFICATIONS);
+int NotificationPermissionInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_DESKTOP_NOTIFICATIONS;
 }
 
 InfoBarDelegate::Type

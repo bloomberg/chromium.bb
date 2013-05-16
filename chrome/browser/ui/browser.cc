@@ -819,7 +819,7 @@ void Browser::JSOutOfMemoryHelper(WebContents* web_contents) {
     return;
 
   SimpleAlertInfoBarDelegate::Create(
-      infobar_service, NULL,
+      infobar_service, InfoBarDelegate::kNoIconID,
       l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true);
 }
 
@@ -1476,7 +1476,7 @@ void Browser::RendererResponsive(WebContents* source) {
 
 void Browser::WorkerCrashed(WebContents* source) {
   SimpleAlertInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(source), NULL,
+      InfoBarService::FromWebContents(source), InfoBarDelegate::kNoIconID,
       l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true);
 }
 

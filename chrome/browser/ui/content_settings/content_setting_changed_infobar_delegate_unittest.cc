@@ -13,7 +13,6 @@
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 class ContentSettingChangedInfoBarDelegateTest :
     public ChromeRenderViewHostTestHarness {
@@ -70,8 +69,7 @@ TEST_F(ContentSettingChangedInfoBarDelegateTest, InfoBar) {
           message));
   ConfirmInfoBarDelegate* c_infobar = infobar.get();
 
-  EXPECT_EQ(&ResourceBundle::GetSharedInstance().GetNativeImageNamed(icon),
-            c_infobar->GetIcon());
+  EXPECT_EQ(icon, c_infobar->GetIconID());
   EXPECT_FALSE(c_infobar->GetMessageText().compare(
       l10n_util::GetStringUTF16(message)));
 

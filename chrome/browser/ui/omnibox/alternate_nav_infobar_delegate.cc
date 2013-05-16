@@ -10,7 +10,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 // static
 void AlternateNavInfoBarDelegate::Create(InfoBarService* infobar_service,
@@ -56,9 +55,8 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
   return true;
 }
 
-gfx::Image* AlternateNavInfoBarDelegate::GetIcon() const {
-  return &ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_ALT_NAV_URL);
+int AlternateNavInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_ALT_NAV_URL;
 }
 
 InfoBarDelegate::Type AlternateNavInfoBarDelegate::GetInfoBarType() const {

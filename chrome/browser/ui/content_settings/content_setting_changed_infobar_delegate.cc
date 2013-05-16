@@ -10,7 +10,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 // static
 void ContentSettingChangedInfoBarDelegate::Create(
@@ -35,8 +34,8 @@ ContentSettingChangedInfoBarDelegate::ContentSettingChangedInfoBarDelegate(
 ContentSettingChangedInfoBarDelegate::~ContentSettingChangedInfoBarDelegate() {
 }
 
-gfx::Image* ContentSettingChangedInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(icon_);
+int ContentSettingChangedInfoBarDelegate::GetIconID() const {
+  return icon_;
 }
 
 InfoBarDelegate::Type ContentSettingChangedInfoBarDelegate::GetInfoBarType()

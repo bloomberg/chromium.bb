@@ -20,7 +20,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 
 // static
@@ -105,11 +104,10 @@ ThemeInstalledInfoBarDelegate::~ThemeInstalledInfoBarDelegate() {
   theme_service_->OnInfobarDestroyed();
 }
 
-gfx::Image* ThemeInstalledInfoBarDelegate::GetIcon() const {
+int ThemeInstalledInfoBarDelegate::GetIconID() const {
   // TODO(aa): Reply with the theme's icon, but this requires reading it
   // asynchronously from disk.
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_THEME);
+  return IDR_INFOBAR_THEME;
 }
 
 InfoBarDelegate::Type ThemeInstalledInfoBarDelegate::GetInfoBarType() const {

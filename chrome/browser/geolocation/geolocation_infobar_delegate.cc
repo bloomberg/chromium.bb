@@ -15,7 +15,6 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/geolocation/geolocation_infobar_delegate_android.h"
@@ -65,9 +64,8 @@ void GeolocationInfoBarDelegate::SetPermission(bool update_content_setting,
                                update_content_setting, allowed);
 }
 
-gfx::Image* GeolocationInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_GEOLOCATION_INFOBAR_ICON);
+int GeolocationInfoBarDelegate::GetIconID() const {
+  return IDR_GEOLOCATION_INFOBAR_ICON;
 }
 
 InfoBarDelegate::Type GeolocationInfoBarDelegate::GetInfoBarType() const {

@@ -26,7 +26,6 @@
 #include "grit/theme_resources.h"
 #include "net/cert/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 
 // SavePasswordInfoBarDelegate ------------------------------------------------
@@ -57,7 +56,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~SavePasswordInfoBarDelegate();
 
   // ConfirmInfoBarDelegate
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
@@ -115,9 +114,8 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
                             infobar_response_, NUM_RESPONSE_TYPES);
 }
 
-gfx::Image* SavePasswordInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_SAVE_PASSWORD);
+int SavePasswordInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_SAVE_PASSWORD;
 }
 
 InfoBarDelegate::Type SavePasswordInfoBarDelegate::GetInfoBarType() const {

@@ -22,7 +22,6 @@
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "win8/util/win8_util.h"
 
 namespace chrome {
@@ -69,9 +68,8 @@ AppMetroInfoBarDelegateWin::AppMetroInfoBarDelegateWin(
 
 AppMetroInfoBarDelegateWin::~AppMetroInfoBarDelegateWin() {}
 
-gfx::Image* AppMetroInfoBarDelegateWin::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      chrome::GetAppListIconResourceId());
+int AppMetroInfoBarDelegateWin::GetIconID() const {
+  return chrome::GetAppListIconResourceId();
 }
 
 string16 AppMetroInfoBarDelegateWin::GetMessageText() const {

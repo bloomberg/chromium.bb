@@ -20,7 +20,6 @@
 #include "grit/theme_resources.h"
 #include "third_party/icu/public/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using content::NavigationEntry;
 
@@ -369,9 +368,8 @@ void TranslateInfoBarDelegate::InfoBarDismissed() {
   UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslateCloseInfobar", 1);
 }
 
-gfx::Image* TranslateInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_TRANSLATE);
+int TranslateInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_TRANSLATE;
 }
 
 InfoBarDelegate::Type TranslateInfoBarDelegate::GetInfoBarType() const {
