@@ -7,6 +7,11 @@
     {
       'target_name': 'libwebp_dec',
       'type': 'static_library',
+      'dependencies' : [
+        'libwebp_dsp',
+        'libwebp_dsp_neon',
+        'libwebp_utils',
+      ],
       'include_dirs': ['.'],
       'sources': [
         'dec/alpha.c',
