@@ -39,6 +39,7 @@ namespace WebCore {
 XMLHttpRequestUpload::XMLHttpRequestUpload(XMLHttpRequest* xmlHttpRequest)
     : m_xmlHttpRequest(xmlHttpRequest)
 {
+    ScriptWrappable::init(this);
 }
 
 const AtomicString& XMLHttpRequestUpload::interfaceName() const

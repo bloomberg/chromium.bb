@@ -20,25 +20,29 @@
 #ifndef XMLSerializer_h
 #define XMLSerializer_h
 
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-    typedef int ExceptionCode;
+typedef int ExceptionCode;
 
-    class Node;
+class Node;
 
-    class XMLSerializer : public RefCounted<XMLSerializer> {
-    public:
-        static PassRefPtr<XMLSerializer> create() { return adoptRef(new XMLSerializer); }
-        
-        String serializeToString(Node*, ExceptionCode&);
-        
-    private:
-        XMLSerializer()  { }        
-    };
+class XMLSerializer : public RefCounted<XMLSerializer>, public ScriptWrappable {
+public:
+    static PassRefPtr<XMLSerializer> create() { return adoptRef(new XMLSerializer); }
+
+    String serializeToString(Node*, ExceptionCode&);
+
+private:
+    XMLSerializer()
+    {
+        ScriptWrappable::init(this);
+    }
+};
 
 } // namespace WebCore
 

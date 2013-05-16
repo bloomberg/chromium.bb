@@ -5,13 +5,13 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -27,35 +27,39 @@
 #ifndef XPathExpression_h
 #define XPathExpression_h
 
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
-#include <wtf/PassRefPtr.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-    typedef int ExceptionCode;
+typedef int ExceptionCode;
 
-    class Node;
-    class XPathNSResolver;
-    class XPathResult;
+class Node;
+class XPathNSResolver;
+class XPathResult;
 
-    namespace XPath {
-        class Expression;
+namespace XPath {
+class Expression;
+}
+
+class XPathExpression : public RefCounted<XPathExpression>, public ScriptWrappable {
+public:
+    static PassRefPtr<XPathExpression> create() { return adoptRef(new XPathExpression); }
+    ~XPathExpression();
+
+    static PassRefPtr<XPathExpression> createExpression(const String& expression, XPathNSResolver*, ExceptionCode&);
+    PassRefPtr<XPathResult> evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionCode&);
+
+private:
+    XPathExpression()
+    {
+        ScriptWrappable::init(this);
     }
 
-    class XPathExpression : public RefCounted<XPathExpression> {
-    public:
-        static PassRefPtr<XPathExpression> create() { return adoptRef(new XPathExpression); }
-        ~XPathExpression();
-        
-        static PassRefPtr<XPathExpression> createExpression(const String& expression, XPathNSResolver*, ExceptionCode&);
-        PassRefPtr<XPathResult> evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionCode&);
-            
-    private:
-        XPathExpression() { }
-
-        XPath::Expression* m_topExpression;
-    };
+    XPath::Expression* m_topExpression;
+};
 
 }
 

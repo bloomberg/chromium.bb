@@ -42,6 +42,7 @@ XPathResult::XPathResult(Document* document, const Value& value)
     , m_nodeSetPosition(0)
     , m_domTreeVersion(0)
 {
+    ScriptWrappable::init(this);
     switch (m_value.type()) {
         case Value::BooleanValue:
             m_resultType = BOOLEAN_TYPE;

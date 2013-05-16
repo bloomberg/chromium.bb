@@ -27,31 +27,35 @@
 #ifndef XPathEvaluator_h
 #define XPathEvaluator_h
 
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
-#include <wtf/PassRefPtr.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-    typedef int ExceptionCode;
+typedef int ExceptionCode;
 
-    class Node;
-    class XPathExpression;
-    class XPathNSResolver;
-    class XPathResult;
+class Node;
+class XPathExpression;
+class XPathNSResolver;
+class XPathResult;
 
-    class XPathEvaluator : public RefCounted<XPathEvaluator> {
-    public:
-        static PassRefPtr<XPathEvaluator> create() { return adoptRef(new XPathEvaluator); }
-        
-        PassRefPtr<XPathExpression> createExpression(const String& expression, XPathNSResolver*, ExceptionCode&);
-        PassRefPtr<XPathNSResolver> createNSResolver(Node* nodeResolver);
-        PassRefPtr<XPathResult> evaluate(const String& expression, Node* contextNode,
-            XPathNSResolver*, unsigned short type, XPathResult*, ExceptionCode&);
+class XPathEvaluator : public RefCounted<XPathEvaluator>, public ScriptWrappable {
+public:
+    static PassRefPtr<XPathEvaluator> create() { return adoptRef(new XPathEvaluator); }
 
-    private:
-        XPathEvaluator() { }
-    };
+    PassRefPtr<XPathExpression> createExpression(const String& expression, XPathNSResolver*, ExceptionCode&);
+    PassRefPtr<XPathNSResolver> createNSResolver(Node* nodeResolver);
+    PassRefPtr<XPathResult> evaluate(const String& expression, Node* contextNode,
+        XPathNSResolver*, unsigned short type, XPathResult*, ExceptionCode&);
+
+private:
+    XPathEvaluator()
+    {
+        ScriptWrappable::init(this);
+    }
+};
 
 }
 

@@ -27,19 +27,23 @@
 #ifndef XPathNSResolver_h
 #define XPathNSResolver_h
 
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-    class XPathNSResolver : public RefCounted<XPathNSResolver> {
-    public:
-        virtual ~XPathNSResolver();
-        virtual String lookupNamespaceURI(const String& prefix) = 0;
-        
-    protected:
-        XPathNSResolver() { }
-    };
+class XPathNSResolver : public RefCounted<XPathNSResolver>, public ScriptWrappable {
+public:
+    virtual ~XPathNSResolver();
+    virtual String lookupNamespaceURI(const String& prefix) = 0;
+
+protected:
+    XPathNSResolver()
+    {
+        ScriptWrappable::init(this);
+    }
+};
 
 }
 

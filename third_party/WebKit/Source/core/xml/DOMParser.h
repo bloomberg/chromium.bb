@@ -19,22 +19,26 @@
 #ifndef DOMParser_h
 #define DOMParser_h
 
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class Document;
 
-class DOMParser : public RefCounted<DOMParser> {
+class DOMParser : public RefCounted<DOMParser>, public ScriptWrappable {
 public:
     static PassRefPtr<DOMParser> create() { return adoptRef(new DOMParser); }
 
     PassRefPtr<Document> parseFromString(const String&, const String& contentType);
 
 private:
-    DOMParser() { }
+    DOMParser()
+    {
+        ScriptWrappable::init(this);
+    }
 };
 
 }
