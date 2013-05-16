@@ -648,8 +648,6 @@ static void AdjustRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableGamepad(false);
   // input[type=week] in Android is incomplete. crbug.com/135938
   WebRuntimeFeatures::enableInputTypeWeek(false);
-  // Android does not have support for PagePopup
-  WebRuntimeFeatures::enablePagePopup(false);
 #endif
 }
 
