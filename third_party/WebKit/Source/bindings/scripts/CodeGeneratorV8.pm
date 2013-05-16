@@ -129,7 +129,7 @@ my $idlFiles;
 my $cachedInterfaces = {};
 
 my %implIncludes = ();
-my %headerIncludes = ();
+my %headerIncludeFiles = ();
 
 # Header code structure:
 # Root                    ... Copyright, include duplication check
@@ -265,6 +265,18 @@ sub IDLFileForInterface
     return $idlFiles->{$interfaceName};
 }
 
+sub HeaderFileForInterface
+{
+    my $interfaceName = shift;
+    my $implClassName = shift || $interfaceName;
+
+    my $idlFilename = IDLFileForInterface($interfaceName)
+        or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
+
+    my $idlRelPath= "bindings/" . File::Spec->abs2rel($idlFilename, $sourceRoot);
+    return dirname($idlRelPath) . "/" . $implClassName . ".h";
+}
+
 sub ParseInterface
 {
     my $interfaceName = shift;
@@ -393,11 +405,8 @@ sub AddToImplIncludes
 
 sub AddToHeaderIncludes
 {
-    my @includes = @_;
-
-    for my $include (@includes) {
-        $headerIncludes{$include} = 1;
-    }
+    my $header = shift;
+    $headerIncludeFiles{$header} = 1;
 }
 
 sub SkipIncludeHeader
@@ -434,25 +443,6 @@ sub AddIncludesForType
     if ($type eq "CSSStyleSheet") {
         AddToImplIncludes("core/css/CSSImportRule.h");
     }
-}
-
-sub HeaderFilesForInterface
-{
-    my $interfaceName = shift;
-    my $implClassName = shift;
-
-    my @includes = ();
-    if (IsTypedArrayType($interfaceName)) {
-        push(@includes, "wtf/${interfaceName}.h");
-    } elsif ($interfaceName =~ /SVGPathSeg/) {
-        $interfaceName =~ s/Abs|Rel//;
-        push(@includes, "core/svg/${interfaceName}.h");
-    } elsif (!SkipIncludeHeader($interfaceName)) {
-        my $idlFilename = IDLFileForInterface($interfaceName) or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
-        my $idlRelPath= "bindings/" . File::Spec->abs2rel($idlFilename, $sourceRoot);
-        push(@includes, dirname($idlRelPath) . "/" . $implClassName . ".h");
-    }
-    return @includes;
 }
 
 sub NeedsCustomOpaqueRootForGC
@@ -536,11 +526,17 @@ sub GetSVGPropertyTypes
     if ($svgNativeType =~ /SVGPropertyTearOff/) {
         $svgPropertyType = $svgWrappedNativeType;
         AddToImplIncludes("core/svg/properties/SVGAnimatedPropertyTearOff.h");
-    } elsif ($svgNativeType =~ /SVGListPropertyTearOff/ or $svgNativeType =~ /SVGStaticListPropertyTearOff/ or $svgNativeType =~ /SVGTransformListPropertyTearOff/) {
+    } elsif ($svgNativeType =~ /SVGListPropertyTearOff/ or $svgNativeType =~ /SVGStaticListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
         AddToHeaderIncludes("core/svg/properties/SVGAnimatedListPropertyTearOff.h");
+        AddToHeaderIncludes("core/svg/properties/SVGStaticListPropertyTearOff.h");
+    } elsif ($svgNativeType =~ /SVGTransformListPropertyTearOff/) {
+        $svgListPropertyType = $svgWrappedNativeType;
+        AddToHeaderIncludes("core/svg/properties/SVGAnimatedListPropertyTearOff.h");
+        AddToHeaderIncludes("core/svg/properties/SVGTransformListPropertyTearOff.h");
     } elsif ($svgNativeType =~ /SVGPathSegListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
+        AddToHeaderIncludes("core/svg/properties/SVGPathSegListPropertyTearOff.h");
     }
 
     if ($svgPropertyType) {
@@ -612,8 +608,6 @@ sub GenerateHeader
     # Ensure the IsDOMNodeType function is in sync.
     die("IsDOMNodeType is out of date with respect to $interfaceName") if IsDOMNodeType($interfaceName) != InheritsInterface($interface, "Node");
 
-    my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
-
     my $hasDependentLifetime = $interface->extendedAttributes->{"DependentLifetime"} || InheritsExtendedAttribute($interface, "ActiveDOMObject") || GetGenerateIsReachable($interface) || $v8ClassName =~ /SVG/;
     if (!$hasDependentLifetime) {
         foreach (@{$interface->parents}) {
@@ -625,10 +619,19 @@ sub GenerateHeader
     AddToHeaderIncludes("bindings/v8/WrapperTypeInfo.h");
     AddToHeaderIncludes("bindings/v8/V8Binding.h");
     AddToHeaderIncludes("bindings/v8/V8DOMWrapper.h");
-    AddToHeaderIncludes(HeaderFilesForInterface($interfaceName, $implClassName));
-    foreach my $headerInclude (sort keys(%headerIncludes)) {
-        $header{includes}->add("#include \"${headerInclude}\"\n");
+    AddToHeaderIncludes("v8.h");
+    AddToHeaderIncludes("wtf/HashMap.h");
+    AddToHeaderIncludes("wtf/text/StringHash.h");
+
+    my $headerClassInclude = GetHeaderClassInclude($interfaceName, $implClassName);
+    AddToHeaderIncludes($headerClassInclude) if $headerClassInclude;
+
+    my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
+
+    foreach my $headerInclude (sort keys(%headerIncludeFiles)) {
+        $header{includes}->add("#include \"${headerInclude}\"\n") unless $headerInclude =~ /v8\.h/;
     }
+    $header{includes}->add("#include \<v8.h\>\n") if $headerIncludeFiles{"v8.h"};
 
     $header{nameSpaceWebCore}->addHeader("\ntemplate<typename PropertyType> class SVGPropertyTearOff;\n") if $svgPropertyType;
     if ($svgNativeType) {
@@ -667,6 +670,7 @@ END
         my $separator = "";
         foreach (@{$interface->parents}) {
             my $parent = $_;
+            AddToHeaderIncludes("V8${parent}.h");
             $code .= "${separator}V8${parent}::hasDependentLifetime";
             $separator = " || ";
         }
@@ -980,6 +984,20 @@ sub GetInternalFields
         push(@customInternalFields, "eventListenerCacheIndex");
     }
     return @customInternalFields;
+}
+
+sub GetHeaderClassInclude
+{
+    my $interfaceName = shift;
+    my $implClassName = shift;
+
+    if ($interfaceName =~ /SVGPathSeg/) {
+        $interfaceName =~ s/Abs|Rel//;
+        return "core/svg/${interfaceName}.h";
+    }
+    return "wtf/${interfaceName}.h" if IsTypedArrayType($interfaceName);
+    return "" if (SkipIncludeHeader($interfaceName));
+    return HeaderFileForInterface($interfaceName, $implClassName);
 }
 
 sub GenerateHeaderCustomInternalFieldIndices
@@ -1447,7 +1465,7 @@ END
         push(@arguments, "ec") if $useExceptions;
         if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
             my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
-            AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedBy));
+            AddToImplIncludes(HeaderFileForInterface($implementedBy));
             unshift(@arguments, "imp") if !$attribute->isStatic;
             $functionName = "${implementedBy}::${functionName}";
         } elsif ($attribute->isStatic) {
@@ -1886,7 +1904,7 @@ END
             push(@arguments, "ec") if $useExceptions;
             if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
                 my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
-                AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedBy));
+                AddToImplIncludes(HeaderFileForInterface($implementedBy));
                 unshift(@arguments, "imp") if !$attribute->isStatic;
                 $functionName = "${implementedBy}::${functionName}";
             } elsif ($attribute->isStatic) {
@@ -3561,7 +3579,7 @@ END
         my $attrExt = $constant->extendedAttributes;
         my $implementedBy = $attrExt->{"ImplementedBy"};
         if ($implementedBy) {
-            AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedBy));
+            AddToImplIncludes(HeaderFileForInterface($implementedBy));
         }
         if ($attrExt->{"EnabledAtRuntime"}) {
             push(@constantsEnabledAtRuntime, $constant);
@@ -3972,15 +3990,17 @@ sub GenerateCallbackHeader
 
     $header{root}->addFooter("\n");
 
-    my @includes = ();
-    push(@includes, "bindings/v8/ActiveDOMCallback.h");
-    push(@includes, "bindings/v8/DOMWrapperWorld.h");
-    push(@includes, "bindings/v8/ScopedPersistent.h");
-    push(@includes, HeaderFilesForInterface($interfaceName, $implClassName));
-    for my $include (sort @includes) {
-        $header{includes}->add("#include \"$include\"\n");
-    }
-    $header{nameSpaceWebCore}->addHeader("\nclass ScriptExecutionContext;\n\n");
+    my @unsortedIncludes = ();
+    push(@unsortedIncludes, "#include \"bindings/v8/ActiveDOMCallback.h\"");
+    push(@unsortedIncludes, "#include \"bindings/v8/DOMWrapperWorld.h\"");
+    push(@unsortedIncludes, "#include \"bindings/v8/ScopedPersistent.h\"");
+    my $interfaceHeader = HeaderFileForInterface($interfaceName, $implClassName);
+    push(@unsortedIncludes, "#include \"$interfaceHeader\"");
+    push(@unsortedIncludes, "#include <v8.h>");
+    push(@unsortedIncludes, "#include \"wtf/Forward.h\"");
+    $header{includes}->add(join("\n", sort @unsortedIncludes));
+    unshift(@{$header{nameSpaceWebCore}->{header}}, "\n");
+    $header{nameSpaceWebCore}->addHeader("class ScriptExecutionContext;\n\n");
     $header{class}->addHeader("class $v8ClassName : public $implClassName, public ActiveDOMCallback {");
     $header{class}->addFooter("};\n");
 
@@ -4259,7 +4279,7 @@ sub GenerateFunctionCallString
     my $functionName;
     my $implementedBy = $function->signature->extendedAttributes->{"ImplementedBy"};
     if ($implementedBy) {
-        AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedBy));
+        AddToImplIncludes(HeaderFileForInterface($implementedBy));
         unshift(@arguments, "imp") if !$function->isStatic;
         $functionName = "${implementedBy}::${name}";
     } elsif ($function->isStatic) {
