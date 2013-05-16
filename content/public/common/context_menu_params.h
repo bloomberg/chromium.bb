@@ -42,7 +42,6 @@ struct CONTENT_EXPORT CustomContextMenuContext {
 //              could be used for more contextual actions.
 struct CONTENT_EXPORT ContextMenuParams {
   ContextMenuParams();
-  explicit ContextMenuParams(const WebKit::WebContextMenuData& data);
   ~ContextMenuParams();
 
   // This is the type of Context Node that the context menu was invoked on.

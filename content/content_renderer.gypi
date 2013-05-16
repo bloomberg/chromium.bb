@@ -248,6 +248,8 @@
     'renderer/browser_plugin/browser_plugin_manager_impl.cc',
     'renderer/browser_plugin/browser_plugin_compositing_helper.h',
     'renderer/browser_plugin/browser_plugin_compositing_helper.cc',
+    'renderer/context_menu_params_builder.cc',
+    'renderer/context_menu_params_builder.h',
     'renderer/date_time_formatter.cc',
     'renderer/date_time_formatter.h',
     'renderer/fetchers/alt_error_page_resource_fetcher.cc',

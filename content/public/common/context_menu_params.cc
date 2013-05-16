@@ -4,12 +4,6 @@
 
 #include "content/public/common/context_menu_params.h"
 
-#include "base/logging.h"
-#include "content/common/ssl_status_serialization.h"
-#include "webkit/glue/glue_serialize.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
-
 namespace content {
 
 const int32 CustomContextMenuContext::kCurrentRenderWidget = kint32max;
@@ -30,78 +24,19 @@ ContextMenuParams::ContextMenuParams()
       speech_input_enabled(false),
       spellcheck_enabled(false),
       is_editable(false),
+#if defined(OS_MACOSX)
+      writing_direction_default(
+          WebKit::WebContextMenuData::CheckableMenuItemDisabled),
+      writing_direction_left_to_right(
+          WebKit::WebContextMenuData::CheckableMenuItemEnabled),
+      writing_direction_right_to_left(
+          WebKit::WebContextMenuData::CheckableMenuItemEnabled),
+#endif  // OS_MACOSX
       edit_flags(0),
       referrer_policy(WebKit::WebReferrerPolicyDefault) {
 }
 
 ContextMenuParams::~ContextMenuParams() {
-}
-
-ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
-    : media_type(data.mediaType),
-      x(data.mousePosition.x),
-      y(data.mousePosition.y),
-      link_url(data.linkURL),
-      unfiltered_link_url(data.linkURL),
-      src_url(data.srcURL),
-      is_image_blocked(data.isImageBlocked),
-      page_url(data.pageURL),
-      keyword_url(data.keywordURL),
-      frame_url(data.frameURL),
-      frame_id(0),
-      media_flags(data.mediaFlags),
-      selection_text(data.selectedText),
-      misspelled_word(data.misspelledWord),
-      speech_input_enabled(data.isSpeechInputEnabled),
-      spellcheck_enabled(data.isSpellCheckingEnabled),
-      is_editable(data.isEditable),
-#if defined(OS_MACOSX)
-      writing_direction_default(data.writingDirectionDefault),
-      writing_direction_left_to_right(data.writingDirectionLeftToRight),
-      writing_direction_right_to_left(data.writingDirectionRightToLeft),
-#endif  // OS_MACOSX
-      edit_flags(data.editFlags),
-      frame_charset(data.frameEncoding.utf8()),
-      referrer_policy(data.referrerPolicy) {
-  for (size_t i = 0; i < data.dictionarySuggestions.size(); ++i)
-    dictionary_suggestions.push_back(data.dictionarySuggestions[i]);
-
-  custom_context.is_pepper_menu = false;
-  for (size_t i = 0; i < data.customItems.size(); ++i)
-    custom_items.push_back(WebMenuItem(data.customItems[i]));
-
-  if (!data.frameHistoryItem.isNull()) {
-    frame_content_state =
-        webkit_glue::HistoryItemToString(data.frameHistoryItem);
-  }
-
-  if (!link_url.is_empty()) {
-    WebKit::WebNode selectedNode = data.node;
-
-    // If there are other embedded tags (like <a ..>Some <b>text</b></a>)
-    // we need to extract the parent <a/> node.
-    while (!selectedNode.isLink() && !selectedNode.parentNode().isNull()) {
-      selectedNode = selectedNode.parentNode();
-    }
-
-    WebKit::WebElement selectedElement = selectedNode.to<WebKit::WebElement>();
-    if (selectedNode.isLink() && !selectedElement.isNull()) {
-      link_text = selectedElement.innerText();
-    } else {
-      LOG(ERROR) << "Creating a ContextMenuParams for a node that has a link"
-                 << "url but is not an ElementNode or does not have an"
-                 << "ancestor that is a link.";
-    }
-  }
-
-  // Deserialize the SSL info.
-  if (!data.securityInfo.isEmpty()) {
-    DeserializeSecurityInfo(data.securityInfo,
-                            &security_info.cert_id,
-                            &security_info.cert_status,
-                            &security_info.security_bits,
-                            &security_info.connection_status);
-  }
 }
 
 }  // namespace content

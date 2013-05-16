@@ -152,8 +152,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   // only include the developer tools.
   WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
-  WebKit::WebContextMenuData data;
-  content::ContextMenuParams params(data);
+  content::ContextMenuParams params;
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents, params));
   menu->Init();
@@ -177,8 +176,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   // separator and the developer tools, is all that should be in the menu.
   WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
-  WebKit::WebContextMenuData data;
-  content::ContextMenuParams params(data);
+  content::ContextMenuParams params;
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents, params));
   menu->Init();
@@ -205,8 +203,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, InstalledAppWithContextMenu) {
   // these are all that should be in the menu.
   WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
-  WebKit::WebContextMenuData data;
-  content::ContextMenuParams params(data);
+  content::ContextMenuParams params;
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents, params));
   menu->Init();
@@ -233,8 +230,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
   // separator and the developer tools, is all that should be in the menu.
   WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
-  WebKit::WebContextMenuData data;
-  content::ContextMenuParams params(data);
+  content::ContextMenuParams params;
   params.is_editable = true;
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents, params));
@@ -262,8 +258,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
   // separator and the developer tools, is all that should be in the menu.
   WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
-  WebKit::WebContextMenuData data;
-  content::ContextMenuParams params(data);
+  content::ContextMenuParams params;
   params.selection_text = ASCIIToUTF16("Hello World");
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents, params));
@@ -290,8 +285,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
   // Test that the menu item shows up
   WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
-  WebKit::WebContextMenuData data;
-  content::ContextMenuParams params(data);
+  content::ContextMenuParams params;
   params.page_url = GURL("http://foo.bar");
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents, params));

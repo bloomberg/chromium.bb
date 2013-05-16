@@ -68,6 +68,7 @@
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
+#include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/disambiguation_popup_helper.h"
@@ -2301,7 +2302,7 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(
 
 void RenderViewImpl::showContextMenu(
     WebFrame* frame, const WebContextMenuData& data) {
-  ContextMenuParams params(data);
+  ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
 
   // Plugins, e.g. PDF, don't currently update the render view when their
   // selected text changes, but the context menu params do contain the updated

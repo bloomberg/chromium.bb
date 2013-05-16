@@ -18,10 +18,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/context_menu_params.h"
 #include "net/dns/mock_host_resolver.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "ui/base/models/menu_model.h"
 
-using WebKit::WebContextMenuData;
 using content::WebContents;
 using extensions::MenuItem;
 using ui::MenuModel;
@@ -107,8 +105,7 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
                                         const GURL& frame_url) {
     WebContents* web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
-    WebContextMenuData data;
-    content::ContextMenuParams params(data);
+    content::ContextMenuParams params;
     params.page_url = page_url;
     params.link_url = link_url;
     params.frame_url = frame_url;

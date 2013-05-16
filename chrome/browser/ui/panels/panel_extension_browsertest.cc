@@ -152,13 +152,11 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
   content::WebContents* web_contents = panel->GetWebContents();
   ASSERT_TRUE(web_contents);
 
-  WebKit::WebContextMenuData data;
-
   // Verify basic menu contents. The basic extension does not add any
   // context menu items so the panel's menu should include only the
   // developer tools.
   {
-    content::ContextMenuParams params(data);
+    content::ContextMenuParams params;
     params.page_url = web_contents->GetURL();
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
     EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
@@ -178,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
 
   // Verify expected menu contents for editable item.
   {
-    content::ContextMenuParams params(data);
+    content::ContextMenuParams params;
     params.is_editable = true;
     params.page_url = web_contents->GetURL();
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
@@ -199,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
 
   // Verify expected menu contents for text selection.
   {
-    content::ContextMenuParams params(data);
+    content::ContextMenuParams params;
     params.page_url = web_contents->GetURL();
     params.selection_text = ASCIIToUTF16("Select me");
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
@@ -220,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
 
   // Verify expected menu contexts for a link.
   {
-    content::ContextMenuParams params(data);
+    content::ContextMenuParams params;
     params.page_url = web_contents->GetURL();
     params.unfiltered_link_url = GURL("http://google.com/");
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
@@ -257,8 +255,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, CustomContextMenu) {
   content::WebContents* web_contents = panel->GetWebContents();
   ASSERT_TRUE(web_contents);
 
-  WebKit::WebContextMenuData data;
-  content::ContextMenuParams params(data);
+  content::ContextMenuParams params;
   params.page_url = web_contents->GetURL();
 
   // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
