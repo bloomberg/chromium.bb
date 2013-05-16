@@ -362,6 +362,17 @@ int KernelProxy::getdents(int fd, void* buf, unsigned int count) {
   return cnt;
 }
 
+int KernelProxy::ftruncate(int fd, off_t length) {
+  KernelHandle* handle = AcquireHandle(fd);
+
+  // check if fd is valid and handle exists
+  if (NULL == handle) return -1;
+  int ret = handle->node_->FTruncate(length);
+
+  ReleaseHandle(handle);
+  return ret;
+}
+
 int KernelProxy::fsync(int fd) {
   KernelHandle* handle = AcquireHandle(fd);
 

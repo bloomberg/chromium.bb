@@ -42,6 +42,7 @@ ssize_t ki_read(int fd, void* buf, size_t nbyte);
 ssize_t ki_write(int fd, const void* buf, size_t nbyte);
 int ki_fstat(int fd, struct stat *buf);
 int ki_getdents(int fd, void* buf, unsigned int count);
+int ki_ftruncate(int fd, off_t length);
 int ki_fsync(int fd);
 int ki_isatty(int fd);
 int ki_close(int fd);

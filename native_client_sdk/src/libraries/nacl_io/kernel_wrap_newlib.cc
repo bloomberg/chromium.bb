@@ -81,6 +81,10 @@ int WRAP(fstat)(int fd, struct stat *buf) {
   return (ki_fstat(fd, buf) < 0) ? errno : 0;
 }
 
+int ftruncate(int fd, off_t length) {
+  return ki_ftruncate(fd, length);
+}
+
 int fsync(int fd) {
   return ki_fsync(fd);
 }

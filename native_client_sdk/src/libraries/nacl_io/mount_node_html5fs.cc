@@ -187,7 +187,7 @@ int MountNodeHtml5Fs::Read(size_t offs, void* buf, size_t count) {
   return result;
 }
 
-int MountNodeHtml5Fs::Truncate(size_t size) {
+int MountNodeHtml5Fs::FTruncate(off_t size) {
   int32_t result = mount_->ppapi()->GetFileIoInterface()->SetLength(
       fileio_resource_, size, PP_BlockUntilComplete());
   if (result != PP_OK) {

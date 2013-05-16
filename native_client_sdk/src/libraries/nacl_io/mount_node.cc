@@ -47,6 +47,11 @@ int MountNode::FSync() {
   return 0;
 }
 
+int MountNode::FTruncate(off_t length) {
+  errno = EINVAL;
+  return -1;
+}
+
 int MountNode::GetDents(size_t offs, struct dirent* pdir, size_t count) {
   errno = ENOTDIR;
   return -1;
@@ -64,11 +69,6 @@ int MountNode::Ioctl(int request, char* arg) {
 }
 
 int MountNode::Read(size_t offs, void* buf, size_t count) {
-  errno = EINVAL;
-  return -1;
-}
-
-int MountNode::Truncate(size_t size) {
   errno = EINVAL;
   return -1;
 }

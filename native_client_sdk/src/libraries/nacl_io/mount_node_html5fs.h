@@ -19,7 +19,7 @@ class MountNodeHtml5Fs : public MountNode {
   virtual int GetDents(size_t offs, struct dirent* pdir, size_t count);
   virtual int GetStat(struct stat* stat);
   virtual int Read(size_t offs, void* buf, size_t count);
-  virtual int Truncate(size_t size);
+  virtual int FTruncate(off_t size);
   virtual int Write(size_t offs, const void* buf, size_t count);
 
   virtual size_t GetSize();

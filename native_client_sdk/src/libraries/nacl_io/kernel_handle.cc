@@ -46,7 +46,7 @@ off_t KernelHandle::Seek(off_t offset, int whence) {
   // Seeking past the end of the file will zero out the space between the old
   // end and the new end.
   if (offs_ > node_size) {
-    if (node_->Truncate(offs_) < 0) {
+    if (node_->FTruncate(offs_) < 0) {
       errno = EINVAL;
       return -1;
     }

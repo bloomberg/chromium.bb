@@ -70,6 +70,7 @@ class KernelProxy : protected KernelObject {
   virtual int fchmod(int fd, int prot);
   virtual int fstat(int fd, struct stat *buf);
   virtual int getdents(int fd, void *buf, unsigned int count);
+  virtual int ftruncate(int fd, off_t length);
   virtual int fsync(int fd);
   virtual int isatty(int fd);
 

@@ -25,9 +25,9 @@ class MountNodeDir : public MountNode {
  public:
   typedef std::map<std::string, MountNode*> MountNodeMap_t;
 
+  virtual int FTruncate(off_t size);
   virtual int GetDents(size_t offs, struct dirent* pdir, size_t count);
   virtual int Read(size_t offs, void *buf, size_t count);
-  virtual int Truncate(size_t size);
   virtual int Write(size_t offs, void *buf, size_t count);
 
   // Adds a finds or adds a directory entry as an INO, updating the refcount

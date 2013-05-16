@@ -136,6 +136,11 @@ TEST_F(KernelWrapTest, fstat) {
   EXPECT_THAT(&in_statbuf, IsEqualToStatbuf(&out_statbuf));
 }
 
+TEST_F(KernelWrapTest, ftruncate) {
+  EXPECT_CALL(mock, ftruncate(456, 0)).Times(1);
+  ftruncate(456, 0);
+}
+
 TEST_F(KernelWrapTest, fsync) {
   EXPECT_CALL(mock, fsync(345)).Times(1);
   fsync(345);

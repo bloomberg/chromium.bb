@@ -62,7 +62,7 @@ class MountNodePassthrough : public MountNode {
     return static_cast<int>(nwrote);
   }
 
-  virtual int Truncate(size_t size) {
+  virtual int FTruncate(off_t size) {
     // TODO(binji): what to do here?
     return -1;
   }

@@ -50,6 +50,7 @@ struct stat;
 int fstat(int fd, struct stat* buf) NOTHROW;
 #endif
 int fsync(int fd);
+int ftruncate(int fd, off_t length) NOTHROW;
 char* NAME(getcwd)(char* buf, getcwd_size_t size) NOTHROW;
 char* getwd(char* buf) NOTHROW;
 int getdents(int fd, void* buf, unsigned int count) NOTHROW;

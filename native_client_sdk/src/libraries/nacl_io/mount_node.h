@@ -29,11 +29,11 @@ class MountNode : public RefObject {
   // directly so it must lock and unlock appropriately.  These functions
   // must not be called by the mount.
   virtual int FSync();
+  virtual int FTruncate(off_t length);
   virtual int GetDents(size_t offs, struct dirent* pdir, size_t count);
   virtual int GetStat(struct stat* stat);
   virtual int Ioctl(int request, char* arg);
   virtual int Read(size_t offs, void* buf, size_t count);
-  virtual int Truncate(size_t size);
   virtual int Write(size_t offs, const void* buf, size_t count);
   virtual void* MMap(void* addr, size_t length, int prot, int flags,
                      size_t offset);

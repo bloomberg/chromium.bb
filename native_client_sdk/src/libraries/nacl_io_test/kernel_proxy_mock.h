@@ -23,6 +23,7 @@ class KernelProxyMock : public KernelProxy {
   MOCK_METHOD1(close, int(int));
   MOCK_METHOD1(dup, int(int));
   MOCK_METHOD2(dup2, int(int, int));
+  MOCK_METHOD2(ftruncate, int(int, off_t));
   MOCK_METHOD2(fstat, int(int, struct stat*));
   MOCK_METHOD1(fsync, int(int));
   MOCK_METHOD2(getcwd, char*(char*, size_t));

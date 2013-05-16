@@ -27,7 +27,7 @@ int MountNodeDir::Read(size_t offs, void *buf, size_t count) {
   return -1;
 }
 
-int MountNodeDir::Truncate(size_t size) {
+int MountNodeDir::FTruncate(off_t size) {
   errno = EISDIR;
   return -1;
 }

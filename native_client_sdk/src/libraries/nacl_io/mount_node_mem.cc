@@ -41,7 +41,7 @@ int MountNodeMem::Write(size_t offs, const void *buf, size_t count) {
   if (count == 0) return 0;
 
   if (count + offs > GetSize()) {
-    Truncate(count + offs);
+    FTruncate(count + offs);
     count = GetSize() - offs;
   }
 
@@ -49,7 +49,7 @@ int MountNodeMem::Write(size_t offs, const void *buf, size_t count) {
   return static_cast<int>(count);
 }
 
-int MountNodeMem::Truncate(size_t size) {
+int MountNodeMem::FTruncate(off_t size) {
   size_t need = (size + BLOCK_MASK) & ~BLOCK_MASK;
 
   // If the current capacity is correct, just adjust and return

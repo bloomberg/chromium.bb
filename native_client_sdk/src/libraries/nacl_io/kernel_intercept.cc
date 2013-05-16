@@ -116,6 +116,10 @@ int ki_getdents(int fd, void *buf, unsigned int count) {
   return s_kp->getdents(fd, buf, count);
 }
 
+int ki_ftruncate(int fd, off_t length) {
+  return s_kp->ftruncate(fd, length);
+}
+
 int ki_fsync(int fd) {
   return s_kp->fsync(fd);
 }

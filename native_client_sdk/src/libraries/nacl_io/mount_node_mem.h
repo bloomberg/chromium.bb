@@ -18,7 +18,7 @@ class MountNodeMem : public MountNode {
   // Normal read/write operations on a file
   virtual int Read(size_t offs, void* buf, size_t count);
   virtual int Write(size_t offs, const void* buf, size_t count);
-  virtual int Truncate(size_t size);
+  virtual int FTruncate(off_t size);
 
  private:
   char* data_;

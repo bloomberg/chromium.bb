@@ -395,12 +395,12 @@ TEST_F(MountHtml5FsNodeSyncTest, GetStat) {
   EXPECT_EQ(creation_time, statbuf.st_ctime);
 }
 
-TEST_F(MountHtml5FsNodeSyncTest, Truncate) {
+TEST_F(MountHtml5FsNodeSyncTest, FTruncate) {
   const int size = 123;
   EXPECT_CALL(*fileio_, SetLength(fileio_resource_, size, _))
       .WillOnce(Return(int32_t(PP_OK)));
 
-  int result = node_->Truncate(size);
+  int result = node_->FTruncate(size);
   EXPECT_EQ(0, result);
 }
 
