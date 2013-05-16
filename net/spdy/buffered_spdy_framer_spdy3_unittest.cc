@@ -16,7 +16,7 @@ namespace {
 class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
  public:
   TestBufferedSpdyVisitor()
-      : buffered_spdy_framer_(3, true),
+      : buffered_spdy_framer_(SPDY3, true),
         error_count_(0),
         setting_count_(0),
         syn_frame_count_(0),
@@ -183,7 +183,7 @@ class BufferedSpdyFramerSpdy3Test : public PlatformTest {
 };
 
 TEST_F(BufferedSpdyFramerSpdy3Test, OnSetting) {
-  SpdyFramer framer(3);
+  SpdyFramer framer(SPDY3);
   framer.set_enable_compression(false);
   SettingsMap settings;
   settings[SETTINGS_UPLOAD_BANDWIDTH] =
@@ -205,7 +205,7 @@ TEST_F(BufferedSpdyFramerSpdy3Test, ReadSynStreamHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["aa"] = "vv";
   headers["bb"] = "ww";
-  BufferedSpdyFramer framer(3, true);
+  BufferedSpdyFramer framer(SPDY3, true);
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynStream(1,                        // stream_id
                              0,                        // associated_stream_id
@@ -231,7 +231,7 @@ TEST_F(BufferedSpdyFramerSpdy3Test, ReadSynReplyHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
-  BufferedSpdyFramer framer(3, true);
+  BufferedSpdyFramer framer(SPDY3, true);
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynReply(1,                        // stream_id
                             CONTROL_FLAG_NONE,
@@ -254,7 +254,7 @@ TEST_F(BufferedSpdyFramerSpdy3Test, ReadHeadersHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
-  BufferedSpdyFramer framer(3, true);
+  BufferedSpdyFramer framer(SPDY3, true);
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateHeaders(1,                        // stream_id
                            CONTROL_FLAG_NONE,

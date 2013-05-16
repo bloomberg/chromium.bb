@@ -98,7 +98,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
 class NET_EXPORT_PRIVATE BufferedSpdyFramer
     : public SpdyFramerVisitorInterface {
  public:
-  BufferedSpdyFramer(int version,
+  BufferedSpdyFramer(SpdyMajorVersion version,
                      bool enable_compression);
   virtual ~BufferedSpdyFramer();
 

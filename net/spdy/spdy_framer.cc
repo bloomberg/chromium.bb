@@ -51,8 +51,6 @@ const uint8 kNoFlags = 0;
 
 }  // namespace
 
-const int SpdyFramer::kMinSpdyVersion = kSpdyVersion2;
-const int SpdyFramer::kMaxSpdyVersion = kSpdyVersion4;
 const SpdyStreamId SpdyFramer::kInvalidStream = -1;
 const size_t SpdyFramer::kHeaderDataChunkMaxSize = 1024;
 // The size of the control frame buffer. Must be >= the minimum size of the
@@ -116,7 +114,7 @@ void SettingsFlagsAndId::ConvertFlagsAndIdForSpdy2(uint32* val) {
 SpdyCredential::SpdyCredential() : slot(0) {}
 SpdyCredential::~SpdyCredential() {}
 
-SpdyFramer::SpdyFramer(int version)
+SpdyFramer::SpdyFramer(SpdyMajorVersion version)
     : current_frame_buffer_(new char[kControlFrameBufferSize]),
       enable_compression_(true),
       visitor_(NULL),
@@ -125,8 +123,8 @@ SpdyFramer::SpdyFramer(int version)
       spdy_version_(version),
       syn_frame_processed_(false),
       probable_http_response_(false) {
-  DCHECK_GE(kMaxSpdyVersion, version);
-  DCHECK_LE(kMinSpdyVersion, version);
+  DCHECK_GE(spdy_version_, SPDY_MIN_VERSION);
+  DCHECK_LE(spdy_version_, SPDY_MAX_VERSION);
   Reset();
 }
 
@@ -163,10 +161,9 @@ size_t SpdyFramer::GetDataFrameMinimumSize() const {
 // Size, in bytes, of the control frame header.
 size_t SpdyFramer::GetControlFrameHeaderSize() const {
   switch (protocol_version()) {
-    case 2:
-    case 3:
-      return 8;
-    case 4:
+    case SPDY2:
+    case SPDY3:
+    case SPDY4:
       return 8;
   }
   LOG(DFATAL) << "Unhandled SPDY version.";

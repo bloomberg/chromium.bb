@@ -159,7 +159,7 @@ class SpdyHttpStreamSpdy3Test : public testing::Test {
   //
   // TODO(akalin): Find a less clunky way to do this once we unfork
   // the SPDY tests.
-  void RunSendChunkedPostTest(int spdy_version);
+  void RunSendChunkedPostTest(SpdyMajorVersion spdy_version);
 
  private:
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
@@ -317,7 +317,8 @@ TEST_F(SpdyHttpStreamSpdy3Test, LoadTimingTwoRequests) {
   TestLoadTimingReused(*http_stream2);
 }
 
-void SpdyHttpStreamSpdy3Test::RunSendChunkedPostTest(int spdy_version) {
+void SpdyHttpStreamSpdy3Test::RunSendChunkedPostTest(
+    SpdyMajorVersion spdy_version) {
   BufferedSpdyFramer framer(spdy_version, false);
 
   scoped_ptr<SpdyFrame> initial_window_update(
@@ -330,7 +331,7 @@ void SpdyHttpStreamSpdy3Test::RunSendChunkedPostTest(int spdy_version) {
       framer.CreateDataFrame(1, kUploadData, kUploadDataSize, DATA_FLAG_FIN));
   std::vector<MockWrite> writes;
   int seq = 0;
-  if (spdy_version == kSpdyVersion4) {
+  if (spdy_version == SPDY4) {
     writes.push_back(CreateMockWrite(*initial_window_update, seq++));
   }
   writes.push_back(CreateMockWrite(*req, seq++));
@@ -393,12 +394,12 @@ void SpdyHttpStreamSpdy3Test::RunSendChunkedPostTest(int spdy_version) {
 }
 
 TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost) {
-  RunSendChunkedPostTest(kSpdyVersion3);
+  RunSendChunkedPostTest(SPDY3);
 }
 
 TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost4) {
   session_deps_.protocol = kProtoSPDY4a2;
-  RunSendChunkedPostTest(kSpdyVersion4);
+  RunSendChunkedPostTest(SPDY4);
 }
 
 // Test to ensure the SpdyStream state machine does not get confused when a

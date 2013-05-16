@@ -152,7 +152,7 @@ SpdyFrame* ConstructSpdyPost(const char* url,
                              int extra_header_count);
 
 // Constructs a chunked transfer SPDY POST SYN frame.
-// |spdy_version| must be kSpdyVersion3 or kSpdyVersion4.
+// |spdy_version| must be SPDY3 or SPDY4.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
@@ -160,7 +160,7 @@ SpdyFrame* ConstructSpdyPost(const char* url,
 // TODO(akalin): Move this to a common area once
 // ConstructSpdyControlFrame() is also moved.
 SpdyFrame* ConstructChunkedSpdyPostWithVersion(
-    int spdy_version,
+    SpdyMajorVersion spdy_version,
     const char* const extra_headers[],
     int extra_header_count);
 
@@ -172,7 +172,7 @@ SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
                                     int extra_header_count);
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY POST.
-// |spdy_version| must be kSpdyVersion3 or kSpdyVersion4.
+// |spdy_version| must be SPDY3 or SPDY4.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
@@ -180,7 +180,7 @@ SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
 // TODO(akalin): Move this to a common area once
 // ConstructSpdyControlFrame() is also moved.
 SpdyFrame* ConstructSpdyPostSynReplyWithVersion(
-    int spdy_version,
+    SpdyMajorVersion spdy_version,
     const char* const extra_headers[],
     int extra_header_count);
 

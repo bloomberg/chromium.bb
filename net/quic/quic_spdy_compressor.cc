@@ -12,7 +12,7 @@ using std::string;
 namespace net {
 
 QuicSpdyCompressor::QuicSpdyCompressor()
-    : spdy_framer_(kSpdyVersion3),
+    : spdy_framer_(SPDY3),
       header_sequence_id_(1) {
   spdy_framer_.set_enable_compression(true);
 }

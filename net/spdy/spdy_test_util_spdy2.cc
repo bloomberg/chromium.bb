@@ -403,7 +403,7 @@ SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
 }
 
 SpdyFrame* ConstructSpdyBodyFrame(int stream_id, bool fin) {
-  SpdyFramer framer(2);
+  SpdyFramer framer(SPDY2);
   return framer.CreateDataFrame(
       stream_id, kUploadData, kUploadDataSize,
       fin ? DATA_FLAG_FIN : DATA_FLAG_NONE);
@@ -411,7 +411,7 @@ SpdyFrame* ConstructSpdyBodyFrame(int stream_id, bool fin) {
 
 SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
                                   uint32 len, bool fin) {
-  SpdyFramer framer(2);
+  SpdyFramer framer(SPDY2);
   return framer.CreateDataFrame(
       stream_id, data, len, fin ? DATA_FLAG_FIN : DATA_FLAG_NONE);
 }

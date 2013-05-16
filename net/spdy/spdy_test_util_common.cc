@@ -265,7 +265,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
 
 }  // namespace
 
-bool GetSpdyPriority(int version,
+bool GetSpdyPriority(SpdyMajorVersion version,
                      const SpdyFrame& frame,
                      SpdyPriority* priority) {
   BufferedSpdyFramer framer(version, false);
@@ -512,13 +512,13 @@ void SpdySessionPoolPeer::EnableSendingInitialSettings(bool enabled) {
   pool_->enable_sending_initial_settings_ = enabled;
 }
 
-NextProto NextProtoFromSpdyVersion(int spdy_version) {
+NextProto NextProtoFromSpdyVersion(SpdyMajorVersion spdy_version) {
   switch (spdy_version) {
-  case kSpdyVersion2:
+  case SPDY2:
     return kProtoSPDY2;
-  case kSpdyVersion3:
+  case SPDY3:
     return kProtoSPDY3;
-  case kSpdyVersion4:
+  case SPDY4:
     return kProtoSPDY4a2;
   default:
     NOTREACHED();
@@ -526,19 +526,19 @@ NextProto NextProtoFromSpdyVersion(int spdy_version) {
   }
 }
 
-int SpdyVersionFromNextProto(NextProto next_proto) {
+SpdyMajorVersion SpdyVersionFromNextProto(NextProto next_proto) {
   switch (next_proto) {
   case kProtoSPDY2:
   case kProtoSPDY21:
-    return kSpdyVersion2;
+    return SPDY2;
   case kProtoSPDY3:
   case kProtoSPDY31:
-    return kSpdyVersion3;
+    return SPDY3;
   case kProtoSPDY4a2:
-    return kSpdyVersion4;
+    return SPDY4;
   default:
     NOTREACHED();
-    return 0;
+    return SPDY2;
   }
 }
 

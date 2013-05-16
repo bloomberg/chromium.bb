@@ -323,7 +323,7 @@ TEST_F(SpdySessionSpdy2Test, DeleteExpiredPushStreams) {
   scoped_refptr<SpdySession> session = GetSession(pair_);
 
   // Give the session a SPDY2 framer.
-  session->buffered_spdy_framer_.reset(new BufferedSpdyFramer(2, false));
+  session->buffered_spdy_framer_.reset(new BufferedSpdyFramer(SPDY2, false));
 
   // Create the associated stream and add to active streams.
   scoped_ptr<SpdyHeaderBlock> request_headers(new SpdyHeaderBlock);
@@ -616,7 +616,7 @@ TEST_F(SpdySessionSpdy2Test, ClearSettings) {
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(new_settings));
   uint8 flags = SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS;
-  test::SetFrameFlags(settings_frame.get(), flags, kSpdyVersion3);
+  test::SetFrameFlags(settings_frame.get(), flags, SPDY3);
   MockRead reads[] = {
     CreateMockRead(*settings_frame),
     MockRead(SYNCHRONOUS, 0, 0)  // EOF
@@ -1763,7 +1763,7 @@ TEST_F(SpdySessionSpdy2Test, NeedsCredentials) {
 // then verifies that it has read all the available data without yielding.
 TEST_F(SpdySessionSpdy2Test, ReadDataWithoutYielding) {
   MockConnect connect_data(SYNCHRONOUS, OK);
-  BufferedSpdyFramer framer(2, false);
+  BufferedSpdyFramer framer(SPDY2, false);
 
   scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
   MockWrite writes[] = {
@@ -1856,7 +1856,7 @@ TEST_F(SpdySessionSpdy2Test, ReadDataWithoutYielding) {
 // (i.e, socket()->Read didn't return ERR_IO_PENDING during socket reads).
 TEST_F(SpdySessionSpdy2Test, TestYieldingDuringReadData) {
   MockConnect connect_data(SYNCHRONOUS, OK);
-  BufferedSpdyFramer framer(2, false);
+  BufferedSpdyFramer framer(SPDY2, false);
 
   scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
   MockWrite writes[] = {
@@ -1957,7 +1957,7 @@ TEST_F(SpdySessionSpdy2Test, TestYieldingDuringReadData) {
 // synchronously.
 TEST_F(SpdySessionSpdy2Test, TestYieldingDuringAsyncReadData) {
   MockConnect connect_data(SYNCHRONOUS, OK);
-  BufferedSpdyFramer framer(2, false);
+  BufferedSpdyFramer framer(SPDY2, false);
 
   scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
   MockWrite writes[] = {
@@ -2066,7 +2066,7 @@ TEST_F(SpdySessionSpdy2Test, TestYieldingDuringAsyncReadData) {
 // reference to SpdySession.
 TEST_F(SpdySessionSpdy2Test, GoAwayWhileInDoLoop) {
   MockConnect connect_data(SYNCHRONOUS, OK);
-  BufferedSpdyFramer framer(2, false);
+  BufferedSpdyFramer framer(SPDY2, false);
 
   scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
   MockWrite writes[] = {
@@ -2158,7 +2158,7 @@ TEST_F(SpdySessionSpdy2Test, ProtocolNegotiation) {
       http_session_.get(), session.get(), test_host_port_pair_);
 
   EXPECT_EQ(SpdySession::FLOW_CONTROL_NONE, session->flow_control_state());
-  EXPECT_EQ(kSpdyVersion2, session->buffered_spdy_framer_->protocol_version());
+  EXPECT_EQ(SPDY2, session->buffered_spdy_framer_->protocol_version());
   EXPECT_EQ(0, session->session_send_window_size_);
   EXPECT_EQ(0, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);

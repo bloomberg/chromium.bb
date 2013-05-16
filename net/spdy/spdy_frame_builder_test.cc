@@ -23,21 +23,14 @@ TEST(SpdyFrameBuilderTestVersionAgnostic, GetWritableBuffer) {
             base::StringPiece(frame->data(), builder_size));
 }
 
-enum SpdyFrameBuilderTestTypes {
-  SPDY2 = 2,
-  SPDY3 = 3,
-  SPDY4 = 4,
-};
-
-class SpdyFrameBuilderTest
-    : public ::testing::TestWithParam<SpdyFrameBuilderTestTypes> {
+class SpdyFrameBuilderTest : public ::testing::TestWithParam<SpdyMajorVersion> {
  protected:
   virtual void SetUp() {
     spdy_version_ = GetParam();
   }
 
-  // Version of SPDY protocol to be used.
-  unsigned char spdy_version_;
+  // Major version of SPDY protocol to be used.
+  SpdyMajorVersion spdy_version_;
 };
 
 // All tests are run with two different SPDY versions: SPDY/2 and SPDY/3.

@@ -160,7 +160,7 @@ SpdyFrame* ConstructSpdyWebSocketDataFrame(
     bool fin) {
 
   // Construct SPDY data frame.
-  BufferedSpdyFramer framer(3, false);
+  BufferedSpdyFramer framer(SPDY3, false);
   return framer.CreateDataFrame(
       stream_id,
       data,

@@ -405,7 +405,7 @@ TEST_F(SpdySessionSpdy3Test, DeleteExpiredPushStreams) {
   scoped_refptr<SpdySession> session = GetSession(pair_);
 
   // Give the session a SPDY3 framer.
-  session->buffered_spdy_framer_.reset(new BufferedSpdyFramer(3, false));
+  session->buffered_spdy_framer_.reset(new BufferedSpdyFramer(SPDY3, false));
 
   // Create the associated stream and add to active streams.
   scoped_ptr<SpdyHeaderBlock> request_headers(new SpdyHeaderBlock);
@@ -703,7 +703,7 @@ TEST_F(SpdySessionSpdy3Test, ClearSettings) {
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(new_settings));
   uint8 flags = SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS;
-  test::SetFrameFlags(settings_frame.get(), flags, kSpdyVersion3);
+  test::SetFrameFlags(settings_frame.get(), flags, SPDY3);
   MockRead reads[] = {
     CreateMockRead(*settings_frame),
     MockRead(SYNCHRONOUS, 0, 0)  // EOF
@@ -1995,7 +1995,7 @@ TEST_F(SpdySessionSpdy3Test, UpdateStreamsSendWindowSize) {
 // then verifies that it has read all the available data without yielding.
 TEST_F(SpdySessionSpdy3Test, ReadDataWithoutYielding) {
   MockConnect connect_data(SYNCHRONOUS, OK);
-  BufferedSpdyFramer framer(3, false);
+  BufferedSpdyFramer framer(SPDY3, false);
 
   scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
   MockWrite writes[] = {
@@ -2082,7 +2082,7 @@ TEST_F(SpdySessionSpdy3Test, ReadDataWithoutYielding) {
 // (i.e, socket()->Read didn't return ERR_IO_PENDING during socket reads).
 TEST_F(SpdySessionSpdy3Test, TestYieldingDuringReadData) {
   MockConnect connect_data(SYNCHRONOUS, OK);
-  BufferedSpdyFramer framer(3, false);
+  BufferedSpdyFramer framer(SPDY3, false);
 
   scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
   MockWrite writes[] = {
@@ -2178,7 +2178,7 @@ TEST_F(SpdySessionSpdy3Test, TestYieldingDuringReadData) {
 // synchronously.
 TEST_F(SpdySessionSpdy3Test, TestYieldingDuringAsyncReadData) {
   MockConnect connect_data(SYNCHRONOUS, OK);
-  BufferedSpdyFramer framer(3, false);
+  BufferedSpdyFramer framer(SPDY3, false);
 
   scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
   MockWrite writes[] = {
@@ -2281,7 +2281,7 @@ TEST_F(SpdySessionSpdy3Test, TestYieldingDuringAsyncReadData) {
 // reference to SpdySession.
 TEST_F(SpdySessionSpdy3Test, GoAwayWhileInDoLoop) {
   MockConnect connect_data(SYNCHRONOUS, OK);
-  BufferedSpdyFramer framer(3, false);
+  BufferedSpdyFramer framer(SPDY3, false);
 
   scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
   MockWrite writes[] = {
@@ -2368,7 +2368,7 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation) {
       http_session_.get(), session.get(), test_host_port_pair_);
 
   EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM, session->flow_control_state());
-  EXPECT_EQ(kSpdyVersion3, session->GetProtocolVersion());
+  EXPECT_EQ(SPDY3, session->GetProtocolVersion());
   EXPECT_EQ(0, session->session_send_window_size_);
   EXPECT_EQ(0, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
@@ -2403,7 +2403,7 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation31) {
 
   EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
             session->flow_control_state());
-  EXPECT_EQ(kSpdyVersion3, session->GetProtocolVersion());
+  EXPECT_EQ(SPDY3, session->GetProtocolVersion());
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
   EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
@@ -2441,7 +2441,7 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation4) {
 
   EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
             session->flow_control_state());
-  EXPECT_EQ(kSpdyVersion4, session->GetProtocolVersion());
+  EXPECT_EQ(SPDY4, session->GetProtocolVersion());
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
   EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);

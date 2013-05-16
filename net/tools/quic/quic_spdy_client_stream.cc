@@ -78,7 +78,7 @@ ssize_t QuicSpdyClientStream::SendRequest(const BalsaHeaders& headers,
 
 int QuicSpdyClientStream::ParseResponseHeaders() {
   size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
-  SpdyFramer framer(3);
+  SpdyFramer framer(SPDY3);
   SpdyHeaderBlock headers;
   char* data = read_buf_->StartOfBuffer();
   size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_->offset(),

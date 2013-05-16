@@ -75,7 +75,7 @@ bool SpdyFramerVisitor::OnControlFrameHeaderData(SpdyStreamId stream_id,
 }
 
 QuicSpdyDecompressor::QuicSpdyDecompressor()
-    : spdy_framer_(kSpdyVersion3),
+    : spdy_framer_(SPDY3),
       spdy_visitor_(new SpdyFramerVisitor(NULL)),
       current_header_id_(1),
       has_current_compressed_size_(false),

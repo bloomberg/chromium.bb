@@ -54,19 +54,19 @@ const SpdyStreamId kFirstStreamId = 1;
 // Minimum seconds that unclaimed pushed streams will be kept in memory.
 const int kMinPushedStreamLifetimeSeconds = 300;
 
-int NPNToSpdyVersion(NextProto next_proto) {
+SpdyMajorVersion NPNToSpdyVersion(NextProto next_proto) {
   switch (next_proto) {
     case kProtoSPDY2:
-      return kSpdyVersion2;
+      return SPDY2;
     case kProtoSPDY3:
     case kProtoSPDY31:
-      return kSpdyVersion3;
+      return SPDY3;
     case kProtoSPDY4a2:
-      return kSpdyVersion4;
+      return SPDY4;
     default:
       NOTREACHED();
   }
-  return kSpdyVersion2;
+  return SPDY2;
 }
 
 base::Value* NetLogSpdySynCallback(const SpdyHeaderBlock* headers,

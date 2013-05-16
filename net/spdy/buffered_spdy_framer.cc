@@ -8,7 +8,8 @@
 
 namespace net {
 
-BufferedSpdyFramer::BufferedSpdyFramer(int version, bool enable_compression)
+BufferedSpdyFramer::BufferedSpdyFramer(SpdyMajorVersion version,
+                                       bool enable_compression)
     : spdy_framer_(version),
       visitor_(NULL),
       header_buffer_used_(0),

@@ -289,12 +289,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     LAST_ERROR,  // Must be the last entry in the enum.
   };
 
-  // The minimum supported SPDY version that SpdyFramer can speak.
-  static const int kMinSpdyVersion;
-
-  // The maximum supported SPDY version that SpdyFramer can speak.
-  static const int kMaxSpdyVersion;
-
   // Constant for invalid (or unknown) stream IDs.
   static const SpdyStreamId kInvalidStream;
 
@@ -314,7 +308,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                     const SpdyHeaderBlock* headers);
 
   // Create a new Framer, provided a SPDY version.
-  explicit SpdyFramer(int version);
+  explicit SpdyFramer(SpdyMajorVersion version);
   virtual ~SpdyFramer();
 
   // Set callbacks to be called from the framer.  A visitor must be set, or
@@ -507,7 +501,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   static const char* StatusCodeToString(int status_code);
   static const char* FrameTypeToString(SpdyFrameType type);
 
-  int protocol_version() const { return spdy_version_; }
+  SpdyMajorVersion protocol_version() const { return spdy_version_; }
 
   bool probable_http_response() const { return probable_http_response_; }
 
@@ -616,10 +610,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     // The theoretical maximum for SPDY3 and earlier is (2^24 - 1) +
     // 8, since the length field does not count the size of the
     // header.
-    if (spdy_version_ == kSpdyVersion2) {
+    if (spdy_version_ == SPDY2) {
       return 64 * 1024;
     }
-    if (spdy_version_ == kSpdyVersion3) {
+    if (spdy_version_ == SPDY3) {
       return 16 * 1024 * 1024;
     }
     // The theoretical maximum for SPDY4 is 2^16 - 1, as the length
@@ -674,11 +668,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   std::string display_protocol_;
 
-  // The SPDY version to be spoken/understood by this framer. We support only
-  // integer versions here, as major version numbers indicate framer-layer
-  // incompatibility and minor version numbers indicate application-layer
-  // incompatibility.
-  const int spdy_version_;
+  // The major SPDY version to be spoken/understood by this framer.
+  const SpdyMajorVersion spdy_version_;
 
   // Tracks if we've ever gotten far enough in framing to see a control frame of
   // type SYN_STREAM or SYN_REPLY.

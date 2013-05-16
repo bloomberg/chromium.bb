@@ -386,13 +386,13 @@ int SpdyHttpStream::OnResponseReceived(const SpdyHeaderBlock& response,
       SSLClientSocket::NextProtoToString(protocol_negotiated);
   response_info_->request_time = stream_->GetRequestTime();
   switch (spdy_session_->GetProtocolVersion()) {
-    case kSpdyVersion2:
+    case SPDY2:
       response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY2;
       break;
-    case kSpdyVersion3:
+    case SPDY3:
       response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY3;
       break;
-    case kSpdyVersion4:
+    case SPDY4:
       response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY4;
       break;
     default:

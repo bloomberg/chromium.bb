@@ -664,7 +664,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, GetAtEachPriority) {
     MockWrite writes[] = { CreateMockWrite(*req) };
 
     SpdyPriority spdy_prio = 0;
-    EXPECT_TRUE(GetSpdyPriority(2, *req, &spdy_prio));
+    EXPECT_TRUE(GetSpdyPriority(SPDY2, *req, &spdy_prio));
     // this repeats the RequestPriority-->SpdyPriority mapping from
     // SpdyFramer::ConvertRequestPriorityToSpdyPriority to make
     // sure it's being done right.
@@ -1846,7 +1846,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, NullPost) {
   // expected to be 0.
   scoped_ptr<SpdyFrame> req(ConstructSpdyPost(kRequestUrl, 0, NULL, 0));
   // Set the FIN bit since there will be no body.
-  test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, kSpdyVersion2);
+  test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, SPDY2);
   MockWrite writes[] = {
     CreateMockWrite(*req),
   };
@@ -1887,7 +1887,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, EmptyPost) {
   scoped_ptr<SpdyFrame> req(
       ConstructSpdyPost(kRequestUrl, kContentLength, NULL, 0));
   // Set the FIN bit since there will be no body.
-  test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, kSpdyVersion2);
+  test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, SPDY2);
   MockWrite writes[] = {
     CreateMockWrite(*req),
   };
@@ -3578,10 +3578,10 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, CorruptFrameSessionError) {
   scoped_ptr<SpdyFrame> syn_reply_wrong_length(
       ConstructSpdyGetSynReply(NULL, 0, 1));
   size_t wrong_size = syn_reply_wrong_length->size() - 4;
-  BufferedSpdyFramer framer(kSpdyVersion2, false);
+  BufferedSpdyFramer framer(SPDY2, false);
   test::SetFrameLength(syn_reply_wrong_length.get(),
                        wrong_size - framer.GetControlFrameHeaderSize(),
-                       kSpdyVersion2);
+                       SPDY2);
 
   struct SynReplyTests {
     const SpdyFrame* syn_reply;
@@ -3779,7 +3779,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, NetLog) {
 // on the network, but issued a Read for only 5 of those bytes) that the data
 // flow still works correctly.
 TEST_P(SpdyNetworkTransactionSpdy2Test, BufferFull) {
-  BufferedSpdyFramer framer(2, false);
+  BufferedSpdyFramer framer(SPDY2, false);
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };
@@ -3872,7 +3872,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, BufferFull) {
 // at the same time, ensure that we don't notify a read completion for
 // each data frame individually.
 TEST_P(SpdyNetworkTransactionSpdy2Test, Buffering) {
-  BufferedSpdyFramer framer(2, false);
+  BufferedSpdyFramer framer(SPDY2, false);
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };
@@ -3966,7 +3966,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Buffering) {
 
 // Verify the case where we buffer data but read it after it has been buffered.
 TEST_P(SpdyNetworkTransactionSpdy2Test, BufferedAll) {
-  BufferedSpdyFramer framer(2, false);
+  BufferedSpdyFramer framer(SPDY2, false);
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };
@@ -3975,7 +3975,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, BufferedAll) {
   scoped_ptr<SpdyFrame> syn_reply(
       ConstructSpdyGetSynReply(NULL, 0, 1));
   // turn off FIN bit
-  test::SetFrameFlags(syn_reply.get(), CONTROL_FLAG_NONE, kSpdyVersion2);
+  test::SetFrameFlags(syn_reply.get(), CONTROL_FLAG_NONE, SPDY2);
   scoped_ptr<SpdyFrame> data_frame(
       framer.CreateDataFrame(1, "message", 7, DATA_FLAG_NONE));
   scoped_ptr<SpdyFrame> data_frame_fin(
@@ -4058,7 +4058,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, BufferedAll) {
 
 // Verify the case where we buffer data and close the connection.
 TEST_P(SpdyNetworkTransactionSpdy2Test, BufferedClosed) {
-  BufferedSpdyFramer framer(2, false);
+  BufferedSpdyFramer framer(SPDY2, false);
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };
@@ -4148,7 +4148,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, BufferedClosed) {
 
 // Verify the case where we buffer data and cancel the transaction.
 TEST_P(SpdyNetworkTransactionSpdy2Test, BufferedCancelled) {
-  BufferedSpdyFramer framer(2, false);
+  BufferedSpdyFramer framer(SPDY2, false);
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };

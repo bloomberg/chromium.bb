@@ -125,7 +125,7 @@ int CombineFrames(const SpdyFrame** frames, int num_frames,
 
 // Returns the SpdyPriority embedded in the given frame.  Returns true
 // and fills in |priority| on success.
-bool GetSpdyPriority(int version,
+bool GetSpdyPriority(SpdyMajorVersion version,
                      const SpdyFrame& frame,
                      SpdyPriority* priority);
 
@@ -269,8 +269,10 @@ class SpdySessionPoolPeer {
 
 // TODO(ttuttle): Move these somewhere more widely-accessible; surely this is
 // not the only place that needs such functions.
-NextProto NextProtoFromSpdyVersion(int spdy_version);
-int SpdyVersionFromNextProto(NextProto next_proto);
+NextProto NextProtoFromSpdyVersion(SpdyMajorVersion spdy_version);
+// TODO(akalin): Merge this with NPNToSpdyVersion() in
+// spdy_session.cc.
+SpdyMajorVersion SpdyVersionFromNextProto(NextProto next_proto);
 
 class SpdyTestUtil {
  public:
@@ -351,13 +353,13 @@ class SpdyTestUtil {
                                     SpdyRstStreamStatus status) const;
 
   NextProto protocol() const { return protocol_; }
-  int spdy_version() const { return spdy_version_; }
+  SpdyMajorVersion spdy_version() const { return spdy_version_; }
   bool is_spdy2() const { return protocol_ < kProtoSPDY3; }
   scoped_ptr<SpdyFramer> CreateFramer() const;
 
  private:
   const NextProto protocol_;
-  const int spdy_version_;
+  const SpdyMajorVersion spdy_version_;
 };
 
 }  // namespace net

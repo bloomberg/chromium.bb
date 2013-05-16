@@ -48,12 +48,11 @@ scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(base::StringPiece url,
   return util.ConstructPostHeaderBlock(url, content_length);
 }
 
-// Construct a SPDY frame. |spdy_version| must be kSpdyVersion3 or
-// kSpdyVersion4.
-SpdyFrame* ConstructSpdyFrameWithVersion(int spdy_version,
+// Construct a SPDY frame. |spdy_version| must be SPDY3 or SPDY4.
+SpdyFrame* ConstructSpdyFrameWithVersion(SpdyMajorVersion spdy_version,
                                          const SpdyHeaderInfo& header_info,
                                          scoped_ptr<SpdyHeaderBlock> headers) {
-  DCHECK(spdy_version == kSpdyVersion3 || spdy_version == kSpdyVersion4);
+  DCHECK(spdy_version == SPDY3 || spdy_version == SPDY4);
   SpdyTestUtil util(NextProtoFromSpdyVersion(spdy_version));
   return util.ConstructSpdyFrame(header_info, headers.Pass());
 }
@@ -68,7 +67,7 @@ SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
 // Construct a SPDY control frame. |spdy_version| must be
 // kSpdyVersion3 or kSpdyVersion4.
 SpdyFrame* ConstructSpdyControlFrameWithVersion(
-    int spdy_version,
+    SpdyMajorVersion spdy_verson,
     const char* const extra_headers[],
     int extra_header_count,
     bool compressed,
@@ -79,7 +78,7 @@ SpdyFrame* ConstructSpdyControlFrameWithVersion(
     const char* const* kHeaders,
     int kHeadersSize,
     SpdyStreamId associated_stream_id) {
-  SpdyTestUtil util(NextProtoFromSpdyVersion(spdy_version));
+  SpdyTestUtil util(NextProtoFromSpdyVersion(spdy_verson));
   return util.ConstructSpdyControlFrame(extra_headers,
                                         extra_header_count,
                                         compressed,
@@ -389,7 +388,7 @@ SpdyFrame* ConstructSpdyPost(const char* url,
     SYN_STREAM,                   // Kind = Syn
     stream_id,                    // Stream ID
     0,                            // Associated stream ID
-    ConvertRequestPriorityToSpdyPriority(priority, kSpdyVersion3),
+    ConvertRequestPriorityToSpdyPriority(priority, SPDY3),
                                   // Priority
     0,                            // Credential Slot
     CONTROL_FLAG_NONE,            // Control Flags
@@ -404,7 +403,7 @@ SpdyFrame* ConstructSpdyPost(const char* url,
 }
 
 SpdyFrame* ConstructChunkedSpdyPostWithVersion(
-    int spdy_version,
+    SpdyMajorVersion spdy_version,
     const char* const extra_headers[],
     int extra_header_count) {
   const char* post_headers[] = {
@@ -429,13 +428,13 @@ SpdyFrame* ConstructChunkedSpdyPostWithVersion(
 
 SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
                                     int extra_header_count) {
-  return ConstructChunkedSpdyPostWithVersion(kSpdyVersion3,
+  return ConstructChunkedSpdyPostWithVersion(SPDY3,
                                              extra_headers,
                                              extra_header_count);
 }
 
 SpdyFrame* ConstructSpdyPostSynReplyWithVersion(
-    int spdy_version,
+    SpdyMajorVersion spdy_version,
     const char* const extra_headers[],
     int extra_header_count) {
   static const char* const kStandardGetHeaders[] = {
@@ -460,14 +459,14 @@ SpdyFrame* ConstructSpdyPostSynReplyWithVersion(
 
 SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
                                      int extra_header_count) {
-  return ConstructSpdyPostSynReplyWithVersion(kSpdyVersion3,
+  return ConstructSpdyPostSynReplyWithVersion(SPDY3,
                                               extra_headers,
                                               extra_header_count);
 }
 
 // Constructs a single SPDY data frame with the default contents.
 SpdyFrame* ConstructSpdyBodyFrame(int stream_id, bool fin) {
-  BufferedSpdyFramer framer(3, false);
+  BufferedSpdyFramer framer(SPDY3, false);
   return framer.CreateDataFrame(
       stream_id, kUploadData, kUploadDataSize,
       fin ? DATA_FLAG_FIN : DATA_FLAG_NONE);
@@ -476,7 +475,7 @@ SpdyFrame* ConstructSpdyBodyFrame(int stream_id, bool fin) {
 // Constructs a single SPDY data frame with the given content.
 SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
                                   uint32 len, bool fin) {
-  BufferedSpdyFramer framer(3, false);
+  BufferedSpdyFramer framer(SPDY3, false);
   return framer.CreateDataFrame(
       stream_id, data, len, fin ? DATA_FLAG_FIN : DATA_FLAG_NONE);
 }

@@ -26,10 +26,17 @@
 
 namespace net {
 
-// TODO(akalin): Convert this to an enum.
-const int32 kSpdyVersion2 = 2;
-const int32 kSpdyVersion3 = 3;
-const int32 kSpdyVersion4 = 4;
+// The major versions of SPDY. Major version differences indicate
+// framer-layer incompatibility, as opposed to minor version numbers
+// which indicate application-layer incompatibility. It is guaranteed
+// that the enum value SPDYn maps to the integer n.
+enum SpdyMajorVersion {
+  SPDY2 = 2,
+  SPDY_MIN_VERSION = SPDY2,
+  SPDY3 = 3,
+  SPDY4 = 4,
+  SPDY_MAX_VERSION = SPDY4
+};
 
 // A SPDY stream id is a 31 bit entity.
 typedef uint32 SpdyStreamId;

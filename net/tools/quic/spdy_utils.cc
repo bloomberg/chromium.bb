@@ -157,9 +157,9 @@ string SpdyUtils::SerializeResponseHeaders(
 
 // static
 string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers) {
-  int length = SpdyFramer::GetSerializedLength(kSpdyVersion3, &headers);
+  int length = SpdyFramer::GetSerializedLength(SPDY3, &headers);
   SpdyFrameBuilder builder(length);
-  SpdyFramer::WriteHeaderBlock(&builder, kSpdyVersion3, &headers);
+  SpdyFramer::WriteHeaderBlock(&builder, SPDY3, &headers);
   scoped_ptr<SpdyFrame> block(builder.take());
   return string(block->data(), length);
 }
