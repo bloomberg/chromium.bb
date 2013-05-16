@@ -7,8 +7,12 @@
 
 namespace TranslateManagerMetrics {
 
+// An indexing type to query each UMA entry name via GetMetricsName() function.
+// Note: |kMetricsEntries| should be updated when a new entry is added here.
 enum MetricsNameIndex {
   UMA_INITIATION_STATUS,
+  UMA_LANGUAGE_DETECTION_ERROR,
+  UMA_SERVER_REPORTED_UNSUPPORTED_LANGUAGE,
   UMA_MAX,
 };
 
@@ -33,6 +37,12 @@ enum InitiationStatusType {
 // Called when Chrome Translate is initiated to report a reason of the next
 // browser action.
 void ReportInitiationStatus(InitiationStatusType type);
+
+// Called when Chrome opens the URL so that the user sends an error feedback.
+void ReportLanguageDetectionError();
+
+// Called when it turns out that translating page is in unsupported language.
+void ReportUnsupportedLanguage();
 
 // Provides UMA entry names for unit tests.
 const char* GetMetricsName(MetricsNameIndex index);

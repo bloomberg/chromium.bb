@@ -708,7 +708,7 @@ void TranslateManager::RevertTranslation(WebContents* web_contents) {
 }
 
 void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
-  UMA_HISTOGRAM_COUNTS("Translate.ReportLanguageDetectionError", 1);
+  TranslateManagerMetrics::ReportLanguageDetectionError();
   // We'll open the URL in a new tab so that the user can tell us more.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser) {
@@ -766,7 +766,7 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
     // TODO(jcivelli): http://crbug.com/9390 We should change the "after
     //                 translate" infobar to support unknown as the original
     //                 language.
-    UMA_HISTOGRAM_COUNTS("Translate.ServerReportedUnsupportedLanguage", 1);
+    TranslateManagerMetrics::ReportUnsupportedLanguage();
     details->error_type = TranslateErrors::UNSUPPORTED_LANGUAGE;
   }
   Profile* profile =

@@ -12,8 +12,7 @@
 namespace TranslateHelperMetrics {
 
 // An indexing type to query each UMA entry name via GetMetricsName() function.
-// Note: The implementation of GetMetricsName() should be updated when a new
-// entry is added here.
+// Note: |kMetricsEntries| should be updated when a new entry is added here.
 enum MetricsNameIndex {
   UMA_LANGUAGE_DETECTION,
   UMA_CONTENT_LANGUAGE,

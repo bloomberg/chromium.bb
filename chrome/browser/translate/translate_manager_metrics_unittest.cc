@@ -65,6 +65,16 @@ class MetricsRecorder {
         TranslateManagerMetrics::INITIATION_STATUS_SHOW_INFOBAR));
   }
 
+  HistogramBase::Count GetTotalCount() {
+    Snapshot();
+    if (!samples_.get())
+      return 0;
+    HistogramBase::Count count = samples_->TotalCount();
+    if (!base_samples_.get())
+      return count;
+    return count - base_samples_->TotalCount();
+  }
+
  private:
   void Snapshot() {
     HistogramBase* histogram = StatisticsRecorder::FindHistogram(key_);
@@ -126,4 +136,20 @@ TEST(TranslateManagerMetricsTest, ReportInitiationStatus) {
   TranslateManagerMetrics::ReportInitiationStatus(
       TranslateManagerMetrics::INITIATION_STATUS_SHOW_INFOBAR);
   recorder.CheckInitiationStatus(1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+}
+
+TEST(TranslateManagerMetricsTest, ReportLanguageDetectionError) {
+  MetricsRecorder recorder(TranslateManagerMetrics::GetMetricsName(
+      TranslateManagerMetrics::UMA_LANGUAGE_DETECTION_ERROR));
+  EXPECT_EQ(0, recorder.GetTotalCount());
+  TranslateManagerMetrics::ReportLanguageDetectionError();
+  EXPECT_EQ(1, recorder.GetTotalCount());
+}
+
+TEST(TranslateManagerMetricsTest, ReportedUnsupportedLanguage) {
+  MetricsRecorder recorder(TranslateManagerMetrics::GetMetricsName(
+      TranslateManagerMetrics::UMA_SERVER_REPORTED_UNSUPPORTED_LANGUAGE));
+  EXPECT_EQ(0, recorder.GetTotalCount());
+  TranslateManagerMetrics::ReportUnsupportedLanguage();
+  EXPECT_EQ(1, recorder.GetTotalCount());
 }

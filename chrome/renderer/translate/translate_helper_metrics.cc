@@ -4,11 +4,12 @@
 
 #include "chrome/renderer/translate/translate_helper_metrics.h"
 
+#include "base/basictypes.h"
 #include "base/metrics/histogram.h"
 
 namespace {
 
-// Constant string values to indicate UMA names. All entry should have
+// Constant string values to indicate UMA names. All entries should have
 // a corresponding index in MetricsNameIndex and an entry in |kMetricsEntries|.
 const char kRenderer4LanguageDetection[] = "Renderer4.LanguageDetection";
 const char kTranslateContentLanguage[] = "Translate.ContentLanguage";
@@ -22,7 +23,7 @@ struct MetricsEntry {
   const char* const name;
 };
 
-// This entry table should be updated when new UMA item is added.
+// This entry table should be updated when new UMA items are added.
 const MetricsEntry kMetricsEntries[] = {
   { TranslateHelperMetrics::UMA_LANGUAGE_DETECTION,
     kRenderer4LanguageDetection },
@@ -37,6 +38,9 @@ const MetricsEntry kMetricsEntries[] = {
   { TranslateHelperMetrics::UMA_TIME_TO_TRANSLATE,
     kTranslateTimeToTranslate },
 };
+
+COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateHelperMetrics::UMA_MAX,
+               arraysize_of_kMetricsEntries_should_be_UMA_MAX);
 
 }  // namespace
 
