@@ -24,7 +24,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "webkit/glue/image_decoder.h"
 
 namespace {
 
