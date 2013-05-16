@@ -91,8 +91,6 @@ public:
 
     virtual PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
 
-    virtual bool avoidScrollbarCreation() const;
-
     virtual void setContentsSize(const IntSize&);
 
     void layout(bool allowSubtree = true);
@@ -237,8 +235,6 @@ public:
     virtual void paintScrollbar(GraphicsContext*, Scrollbar*, const IntRect&) OVERRIDE;
 
     Color documentBackgroundColor() const;
-
-    bool isInChildFrameWithFrameFlattening() const;
 
     static double currentPaintTimeStamp() { return sCurrentPaintTimeStamp; } // returns 0 if not painting
     
@@ -431,8 +427,6 @@ private:
     virtual void updateScrollCorner();
 
     FrameView* parentFrameView() const;
-
-    bool doLayoutWithFrameFlattening(bool allowSubtree);
 
     virtual AXObjectCache* axObjectCache() const;
     void removeFromAXObjectCache();

@@ -480,23 +480,6 @@ void FrameView::setMarginHeight(LayoutUnit h)
     m_margins.setHeight(h);
 }
 
-bool FrameView::avoidScrollbarCreation() const
-{
-    ASSERT(m_frame);
-
-    // with frame flattening no subframe can have scrollbars
-    // but we also cannot turn scrollbars off as we determine
-    // our flattening policy using that.
-
-    if (!m_frame->ownerElement())
-        return false;
-
-    if (!m_frame->settings() || m_frame->settings()->frameFlatteningEnabled())
-        return true;
-
-    return false;
-}
-
 void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)
 {
     m_canHaveScrollbars = canHaveScrollbars;
@@ -692,7 +675,7 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
         RenderObject* rootRenderer = documentElement ? documentElement->renderer() : 0;
         Node* body = document->body();
         if (body && body->renderer()) {
-            if (body->hasTagName(framesetTag) && m_frame->settings() && !m_frame->settings()->frameFlatteningEnabled()) {
+            if (body->hasTagName(framesetTag)) {
                 vMode = ScrollbarAlwaysOff;
                 hMode = ScrollbarAlwaysOff;
             } else if (body->hasTagName(bodyTag)) {
@@ -898,13 +881,6 @@ void FrameView::layout(bool allowSubtree)
     // Every scroll that happens during layout is programmatic.
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
 
-    bool inChildFrameLayoutWithFrameFlattening = isInChildFrameWithFrameFlattening();
-
-    if (inChildFrameLayoutWithFrameFlattening) {
-        if (doLayoutWithFrameFlattening(allowSubtree))
-            return;
-    }
-
     m_layoutTimer.stop();
     m_delayedLayout = false;
     m_setNeedsLayoutWasDeferred = false;
@@ -937,7 +913,7 @@ void FrameView::layout(bool allowSubtree)
     {
         TemporaryChange<bool> changeSchedulingEnabled(m_layoutSchedulingEnabled, false);
 
-        if (!m_nestedLayoutCount && !m_inSynchronousPostLayout && m_postLayoutTasksTimer.isActive() && !inChildFrameLayoutWithFrameFlattening) {
+        if (!m_nestedLayoutCount && !m_inSynchronousPostLayout && m_postLayoutTasksTimer.isActive() && !frame()->document()->shouldDisplaySeamlesslyWithParent()) {
             // This is a new top-level layout. If there are any remaining tasks from the previous
             // layout, finish them now.
             m_inSynchronousPostLayout = true;
@@ -983,7 +959,7 @@ void FrameView::layout(bool allowSubtree)
             Document* document = m_frame->document();
             Node* body = document->body();
             if (body && body->renderer()) {
-                if (body->hasTagName(framesetTag) && m_frame->settings() && !m_frame->settings()->frameFlatteningEnabled()) {
+                if (body->hasTagName(framesetTag)) {
                     body->renderer()->setChildNeedsLayout(true);
                 } else if (body->hasTagName(bodyTag)) {
                     if (!m_firstLayout && m_size.height() != layoutHeight() && body->renderer()->enclosingBox()->stretchesToViewport())
@@ -1117,7 +1093,7 @@ void FrameView::layout(bool allowSubtree)
 
     if (!m_postLayoutTasksTimer.isActive()) {
         if (!m_inSynchronousPostLayout) {
-            if (inChildFrameLayoutWithFrameFlattening) {
+            if (frame()->document()->shouldDisplaySeamlesslyWithParent()) {
                 if (RenderView* renderView = this->renderView())
                     renderView->updateWidgetPositions();
             } else {
@@ -1127,9 +1103,9 @@ void FrameView::layout(bool allowSubtree)
                 m_inSynchronousPostLayout = false;
             }
         }
-        
-        if (!m_postLayoutTasksTimer.isActive() && (needsLayout() || m_inSynchronousPostLayout || inChildFrameLayoutWithFrameFlattening)) {
-            // If we need layout or are already in a synchronous call to postLayoutTasks(), 
+
+        if (!m_postLayoutTasksTimer.isActive() && (needsLayout() || m_inSynchronousPostLayout || frame()->document()->shouldDisplaySeamlesslyWithParent())) {
+            // If we need layout or are already in a synchronous call to postLayoutTasks(),
             // defer widget updates and event dispatch until after we return. postLayoutTasks()
             // can make us need to update again, and we can get stuck in a nasty cycle unless
             // we call it through the timer here.
@@ -1934,9 +1910,10 @@ void FrameView::scheduleRelayout()
     if (!m_frame->document()->shouldScheduleLayout())
         return;
     InspectorInstrumentation::didInvalidateLayout(m_frame.get());
-    // When frame flattening is enabled, the contents of the frame could affect the layout of the parent frames.
+
+    // When frame seamless is enabled, the contents of the frame could affect the layout of the parent frames.
     // Also invalidate parent frame starting from the owner element of this frame.
-    if (m_frame->ownerRenderer() && isInChildFrameWithFrameFlattening())
+    if (m_frame->ownerRenderer() && frame()->document()->shouldDisplaySeamlesslyWithParent())
         m_frame->ownerRenderer()->setNeedsLayout(true, MarkContainingBlockChain);
 
     int delay = m_frame->document()->minimumLayoutDelay();
@@ -2867,55 +2844,6 @@ FrameView* FrameView::parentFrameView() const
     return 0;
 }
 
-bool FrameView::isInChildFrameWithFrameFlattening() const
-{
-    if (!parent() || !m_frame->ownerElement())
-        return false;
-
-    // Frame flattening applies when the owner element is either in a frameset or
-    // an iframe with flattening parameters.
-    if (m_frame->ownerElement()->hasTagName(iframeTag)) {
-        RenderIFrame* iframeRenderer = toRenderIFrame(m_frame->ownerElement()->renderPart());
-        if (iframeRenderer->flattenFrame() || iframeRenderer->isSeamless())
-            return true;
-    }
-
-    if (!m_frame->settings() || !m_frame->settings()->frameFlatteningEnabled())
-        return false;
-
-    if (m_frame->ownerElement()->hasTagName(frameTag))
-        return true;
-
-    return false;
-}
-
-bool FrameView::doLayoutWithFrameFlattening(bool allowSubtree)
-{
-    // Try initiating layout from the topmost parent.
-    FrameView* parentView = parentFrameView();
-
-    if (!parentView)
-        return false;
-
-    // In the middle of parent layout, no need to restart from topmost.
-    if (parentView->m_nestedLayoutCount)
-        return false;
-
-    // Parent tree is clean. Starting layout from it would have no effect.
-    if (!parentView->needsLayout())
-        return false;
-
-    while (parentView->parentFrameView())
-        parentView = parentView->parentFrameView();
-
-    parentView->layout(allowSubtree);
-
-    RenderObject* root = m_layoutRoot ? m_layoutRoot : m_frame->document()->renderer();
-    ASSERT_UNUSED(root, !root->needsLayout());
-
-    return true;
-}
-
 void FrameView::updateControlTints()
 {
     // This is called when control tints are changed from aqua/graphite to clear and vice versa.
@@ -3110,7 +3038,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     // painting, so we need to flush out any deferred repaints too.
     flushDeferredRepaints();
 
-    // When frame flattening is on, child frame can mark parent frame dirty. In such case, child frame
+    // When seamless is on, child frame can mark parent frame dirty. In such case, child frame
     // needs to call layout on parent frame recursively.
     // This assert ensures that parent frames are clean, when child frames finished updating layout and style.
     ASSERT(!needsLayout());

@@ -309,7 +309,7 @@ void WebSettingsImpl::setEditableLinkBehaviorNeverLive()
 
 void WebSettingsImpl::setFrameFlatteningEnabled(bool enabled)
 {
-    m_settings->setFrameFlatteningEnabled(enabled);
+    // FIXME: Remove this once Chromium no longer tries to call it. http://crbug.com/231898
 }
 
 void WebSettingsImpl::setFontRenderingModeNormal()

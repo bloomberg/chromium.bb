@@ -32,11 +32,11 @@ namespace WebCore {
 
 // Base class for RenderFrame and RenderIFrame
 class RenderFrameBase : public RenderPart {
+
+// FIXME: Remove this file. http://crbug.com/231898
+
 protected:
     explicit RenderFrameBase(Element*);
-
-public:
-    void layoutWithFlattening(bool fixedWidth, bool fixedHeight);
 };
 
 } // namespace WebCore

@@ -96,35 +96,6 @@ RenderView* RenderIFrame::contentRootRenderer() const
     return childFrameView ? childFrameView->frame()->contentRenderer() : 0;
 }
 
-bool RenderIFrame::flattenFrame() const
-{
-    if (!node() || !node()->hasTagName(iframeTag))
-        return false;
-
-    HTMLIFrameElement* element = static_cast<HTMLIFrameElement*>(node());
-    Frame* frame = element->document()->frame();
-
-    if (isSeamless())
-        return false; // Seamless iframes are already "flat", don't try to flatten them.
-
-    bool enabled = frame && frame->settings() && frame->settings()->frameFlatteningEnabled();
-
-    if (!enabled || !frame->page())
-        return false;
-
-    if (style()->width().isFixed() && style()->height().isFixed()) {
-        // Do not flatten iframes with scrolling="no".
-        if (element->scrollingMode() == ScrollbarAlwaysOff)
-            return false;
-        if (style()->width().value() <= 0 || style()->height().value() <= 0)
-            return false;
-    }
-
-    // Do not flatten offscreen inner frames during frame flattening, as flattening might make them visible.
-    IntRect boundingRect = absoluteBoundingBoxRectIgnoringTransforms();
-    return boundingRect.maxX() > 0 && boundingRect.maxY() > 0;
-}
-
 void RenderIFrame::layoutSeamlessly()
 {
     updateLogicalWidth();
@@ -162,9 +133,6 @@ void RenderIFrame::layout()
         updateLogicalWidth();
         // No kids to layout as a replaced element.
         updateLogicalHeight();
-
-        if (flattenFrame())
-            layoutWithFlattening(style()->width().isFixed(), style()->height().isFixed());
     }
 
     m_overflow.clear();

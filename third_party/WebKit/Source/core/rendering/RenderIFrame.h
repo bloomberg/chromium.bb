@@ -36,7 +36,6 @@ class RenderIFrame FINAL : public RenderFrameBase {
 public:
     explicit RenderIFrame(Element*);
 
-    bool flattenFrame() const;
     bool isSeamless() const;
 
 private:
