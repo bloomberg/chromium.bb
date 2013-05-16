@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResource.h"
 
 #include "core/page/Frame.h"
@@ -216,6 +215,3 @@ void RenderSVGResource::markForLayoutAndParentResourceInvalidation(RenderObject*
 }
 
 }
-
-#endif
-

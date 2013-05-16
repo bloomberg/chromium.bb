@@ -20,7 +20,6 @@
 #ifndef RenderSVGResourceMarker_h
 #define RenderSVGResourceMarker_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatRect.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGMarkerElement.h"
@@ -77,6 +76,5 @@ private:
 };
 
 }
-#endif
 
 #endif

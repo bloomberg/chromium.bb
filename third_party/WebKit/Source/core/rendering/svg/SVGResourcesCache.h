@@ -20,7 +20,6 @@
 #ifndef SVGResourcesCache_h
 #define SVGResourcesCache_h
 
-#if ENABLE(SVG)
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -69,5 +68,4 @@ private:
 
 }
 
-#endif
 #endif

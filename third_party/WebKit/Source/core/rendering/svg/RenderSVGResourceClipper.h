@@ -20,7 +20,6 @@
 #ifndef RenderSVGResourceClipper_h
 #define RenderSVGResourceClipper_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -76,5 +75,4 @@ private:
 
 }
 
-#endif
 #endif

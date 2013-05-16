@@ -24,7 +24,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/SVGRenderingContext.h"
 
 #include "core/page/Frame.h"
@@ -350,5 +349,3 @@ bool SVGRenderingContext::bufferForeground(OwnPtr<ImageBuffer>& imageBuffer)
 }
 
 }
-
-#endif

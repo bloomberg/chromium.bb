@@ -24,7 +24,6 @@
 #ifndef RenderSVGResourceFilter_h
 #define RenderSVGResourceFilter_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
@@ -104,5 +103,4 @@ inline RenderSVGResourceFilter* toRenderSVGFilter(RenderObject* object)
 
 }
 
-#endif
 #endif

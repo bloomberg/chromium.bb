@@ -23,7 +23,6 @@
 // Set to a value > 0, to debug the resource cache.
 #define DEBUG_CYCLE_DETECTION 0
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
@@ -207,5 +206,3 @@ void SVGResourcesCycleSolver::breakCycle(RenderSVGResourceContainer* resourceLea
 }
 
 }
-
-#endif

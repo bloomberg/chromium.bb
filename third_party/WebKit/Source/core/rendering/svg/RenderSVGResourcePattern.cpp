@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 
 #include "core/page/FrameView.h"
@@ -275,5 +274,3 @@ PassOwnPtr<ImageBuffer> RenderSVGResourcePattern::createTileImage(const PatternA
 }
 
 }
-
-#endif

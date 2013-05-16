@@ -20,7 +20,6 @@
 #ifndef RenderSVGBlock_h
 #define RenderSVGBlock_h
 
-#if ENABLE(SVG)
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 
@@ -48,5 +47,4 @@ private:
 };
 
 }
-#endif
 #endif

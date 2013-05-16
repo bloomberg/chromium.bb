@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGBlock.h"
 
 #include "core/rendering/style/StyleInheritedData.h"
@@ -106,5 +105,3 @@ void RenderSVGBlock::styleDidChange(StyleDifference diff, const RenderStyle* old
 }
 
 }
-
-#endif

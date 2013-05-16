@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceRadialGradient.h"
 
 #include "core/svg/RadialGradientAttributes.h"
@@ -79,5 +78,3 @@ void RenderSVGResourceRadialGradient::buildGradient(GradientData* gradientData) 
 }
 
 }
-
-#endif

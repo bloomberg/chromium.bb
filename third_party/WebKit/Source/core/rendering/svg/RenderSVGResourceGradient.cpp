@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceGradient.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
@@ -189,5 +188,3 @@ GradientSpreadMethod RenderSVGResourceGradient::platformSpreadMethodFromSVGType(
 }
 
 }
-
-#endif

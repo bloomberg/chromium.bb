@@ -20,7 +20,6 @@
 #ifndef RenderSVGResourceSolidColor_h
 #define RenderSVGResourceSolidColor_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/rendering/svg/RenderSVGResource.h"
@@ -51,5 +50,4 @@ private:
 
 }
 
-#endif
 #endif

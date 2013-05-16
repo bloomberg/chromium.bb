@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
 #include "SVGNames.h"
@@ -371,4 +370,3 @@ FloatRect RenderSVGResourceFilter::drawingRegion(RenderObject* object) const
 }
 
 }
-#endif

@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -204,5 +203,3 @@ const RenderObject* RenderSVGForeignObject::pushMappingToContainer(const RenderL
 }
 
 }
-
-#endif

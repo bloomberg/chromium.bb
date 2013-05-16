@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
 
-#if ENABLE(SVG)
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/FloatConversion.h"
@@ -735,5 +734,3 @@ bool SVGInlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult&
 }
 
 } // namespace WebCore
-
-#endif

@@ -21,7 +21,6 @@
 #ifndef RenderSVGResourcePattern_h
 #define RenderSVGResourcePattern_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/Pattern.h"
@@ -75,5 +74,4 @@ private:
 
 }
 
-#endif
 #endif

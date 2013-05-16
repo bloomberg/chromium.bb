@@ -21,7 +21,6 @@
 #ifndef RenderSVGForeignObject_h
 #define RenderSVGForeignObject_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
@@ -73,5 +72,4 @@ private:
 
 }
 
-#endif
 #endif

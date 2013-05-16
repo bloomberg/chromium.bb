@@ -20,7 +20,6 @@
 #include "config.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 
-#if ENABLE(SVG)
 #include "HTMLNames.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/rendering/svg/SVGResources.h"
@@ -205,5 +204,3 @@ void SVGResourcesCache::resourceDestroyed(RenderSVGResourceContainer* resource)
 }
 
 }
-
-#endif

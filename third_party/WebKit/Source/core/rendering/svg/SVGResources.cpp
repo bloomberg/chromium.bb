@@ -20,7 +20,6 @@
 #include "config.h"
 #include "core/rendering/svg/SVGResources.h"
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
@@ -664,5 +663,3 @@ void SVGResources::dump(const RenderObject* object)
 #endif
 
 }
-
-#endif

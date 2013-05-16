@@ -20,7 +20,6 @@
 #include "config.h"
 #include "core/rendering/svg/SVGTextQuery.h"
 
-#if ENABLE(SVG)
 #include "core/editing/VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
 #include "core/rendering/InlineFlowBox.h"
@@ -556,5 +555,3 @@ int SVGTextQuery::characterNumberAtPosition(const FloatPoint& position) const
 }
 
 }
-
-#endif
