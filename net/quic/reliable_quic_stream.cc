@@ -150,6 +150,10 @@ const IPEndPoint& ReliableQuicStream::GetPeerAddress() const {
   return session_->peer_address();
 }
 
+QuicSpdyCompressor* ReliableQuicStream::compressor() {
+  return session_->compressor();
+}
+
 QuicConsumedData ReliableQuicStream::WriteData(StringPiece data, bool fin) {
   return WriteOrBuffer(data, fin);
 }
@@ -281,8 +285,8 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
   // If we are head-of-line blocked on decompression, then back up.
   if (current_header_id != headers_id_) {
     session_->MarkDecompressionBlocked(headers_id_, id());
-    DVLOG(1) << "Unable to decmpress header data for stream: " << id()
-               << " header_id: " << headers_id_;
+    DVLOG(1) << "Unable to decompress header data for stream: " << id()
+             << " header_id: " << headers_id_;
     return total_bytes_consumed;
   }
 

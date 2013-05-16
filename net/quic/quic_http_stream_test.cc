@@ -205,15 +205,12 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     headers[":status"] = status;
     headers[":version"] = "HTTP/1.1";
     headers["content-type"] = "text/plain";
-    response_data_ = session_->compressor()->CompressHeaders(headers) + body;
+    response_data_ = SerializeHeaderBlock(headers) + body;
   }
 
   std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers) {
-    size_t len = SpdyFramer::GetSerializedLength(3, &headers);
-    SpdyFrameBuilder builder(len);
-    SpdyFramer::WriteHeaderBlock(&builder, 3, &headers);
-    scoped_ptr<SpdyFrame> frame(builder.take());
-    return std::string(frame->data(), len);
+    QuicSpdyCompressor compressor;
+    return compressor.CompressHeaders(headers);
   }
 
   // Returns a newly created packet to send kData on stream 1.

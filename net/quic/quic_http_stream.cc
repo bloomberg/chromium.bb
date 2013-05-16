@@ -67,11 +67,7 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   SpdyHeaderBlock headers;
   CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
                                    &headers, 3, /*direct=*/true);
-  size_t len = SpdyFramer::GetSerializedLength(3, &headers);
-  SpdyFrameBuilder builder(len);
-  SpdyFramer::WriteHeaderBlock(&builder, 3, &headers);
-  scoped_ptr<SpdyFrame> frame(builder.take());
-  request_ = std::string(frame->data(), len);
+  request_ = stream_->compressor()->CompressHeaders(headers);
   // Log the actual request with the URL Request's net log.
   stream_net_log_.AddEvent(
       NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
