@@ -12,15 +12,12 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
+#include "chromeos/display/output_util.h"
 #include "chromeos/display/real_output_configurator_delegate.h"
 
 namespace chromeos {
 
 namespace {
-
-// Prefixes for the built-in displays.
-const char kInternal_LVDS[] = "LVDS";
-const char kInternal_eDP[] = "eDP";
 
 // The delay to perform configuration after RRNotify.  See the comment
 // in |Dispatch()|.
@@ -93,7 +90,8 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
       is_internal(false),
       is_aspect_preserving_scaling(false),
       touch_device_id(0),
-      index(0) {}
+      display_id(0),
+      has_display_id(false) {}
 
 OutputConfigurator::CoordinateTransformation::CoordinateTransformation()
   : x_scale(1.0),
@@ -140,11 +138,6 @@ bool OutputConfigurator::TestApi::SendOutputChangeEvents(bool connected) {
 
   configurator_->ConfigureOutputs();
   return true;
-}
-
-// static
-bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
-  return name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0;
 }
 
 OutputConfigurator::OutputConfigurator()
@@ -512,7 +505,14 @@ OutputState OutputConfigurator::GetOutputState(
       } else {
         // With either both outputs on or both outputs off, use one of the
         // dual modes.
-        return state_controller_->GetStateForOutputs(outputs);
+        std::vector<int64> display_ids;
+        for (size_t i = 0; i < outputs.size(); ++i) {
+          // If display id isn't available, switch to extended mode.
+          if (!outputs[i].has_display_id)
+            return STATE_DUAL_EXTENDED;
+          display_ids.push_back(outputs[i].display_id);
+        }
+        return state_controller_->GetStateForDisplayIds(display_ids);
       }
     }
     default:

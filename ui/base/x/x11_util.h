@@ -271,38 +271,6 @@ UI_EXPORT void PutARGBImage(Display* display,
 void FreePicture(Display* display, XID picture);
 void FreePixmap(Display* display, XID pixmap);
 
-// Gets some useful data from the specified output device, such like
-// manufacturer's ID, product code, and human readable name. Returns false if it
-// fails to get those data and doesn't touch manufacturer ID/product code/name.
-// NULL can be passed for unwanted output parameters.
-UI_EXPORT bool GetOutputDeviceData(XID output,
-                                   uint16* manufacturer_id,
-                                   uint16* product_code,
-                                   std::string* human_readable_name);
-
-// Gets the overscan flag from |output| and stores to |flag|. Returns true if
-// the flag is found. Otherwise returns false and doesn't touch |flag|. The
-// output will produce overscan if |flag| is set to true, but the output may
-// still produce overscan even though it returns true and |flag| is set to
-// false.
-UI_EXPORT bool GetOutputOverscanFlag(XID output, bool* flag);
-
-// Parses |prop| as EDID data and stores extracted data into |manufacturer_id|,
-// |product_code|, and |human_readable_name| and returns true. NULL can be
-// passed for unwanted output parameters. This is exported for
-// x11_util_unittest.cc.
-UI_EXPORT bool ParseOutputDeviceData(const unsigned char* prop,
-                                     unsigned long nitems,
-                                     uint16* manufacturer_id,
-                                     uint16* product_code,
-                                     std::string* human_readable_name);
-
-// Parses |prop| as EDID data and stores the overscan flag to |flag|. Returns
-// true if the flag is found. This is exported for x11_util_unittest.cc.
-UI_EXPORT bool ParseOutputOverscanFlag(const unsigned char* prop,
-                                       unsigned long nitems,
-                                       bool* flag);
-
 enum WindowManagerName {
   WM_UNKNOWN,
   WM_BLACKBOX,

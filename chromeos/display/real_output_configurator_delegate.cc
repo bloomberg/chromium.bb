@@ -17,6 +17,7 @@
 #include "base/message_pump_aurax11.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/display/output_util.h"
 
 namespace chromeos {
 
@@ -28,8 +29,7 @@ const float kDpi96 = 96.0;
 const float kPixelsToMmScale = kMmInInch / kDpi96;
 
 bool IsInternalOutput(const XRROutputInfo* output_info) {
-  return OutputConfigurator::IsInternalOutputName(
-      std::string(output_info->name));
+  return IsInternalOutputName(std::string(output_info->name));
 }
 
 RRMode GetOutputNativeMode(const XRROutputInfo* output_info) {
@@ -121,6 +121,8 @@ RealOutputConfiguratorDelegate::GetOutputs() {
     if (is_connected) {
       OutputConfigurator::OutputSnapshot to_populate;
       to_populate.output = this_id;
+      to_populate.has_display_id =
+          GetDisplayId(this_id, i, &to_populate.display_id);
       (outputs.empty() ? one_info : two_info) = output_info;
 
       // Now, look up the current CRTC and any related info.
@@ -147,7 +149,6 @@ RealOutputConfiguratorDelegate::GetOutputs() {
       to_populate.is_aspect_preserving_scaling =
           IsOutputAspectPreservingScaling(this_id);
       to_populate.touch_device_id = None;
-      to_populate.index = i;
 
       VLOG(1) << "Found display #" << outputs.size()
               << " with output " << to_populate.output

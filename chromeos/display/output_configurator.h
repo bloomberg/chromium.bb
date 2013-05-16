@@ -6,6 +6,7 @@
 #define CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -62,9 +63,10 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
     // XInput device ID or 0 if this output isn't a touchscreen.
     int touch_device_id;
 
-    // TODO(oshima): Move xrandr related functions to here
-    // from ui/base/x and replace this with display id.
-    int index;
+    // Display id for this output.
+    int64 display_id;
+
+    bool has_display_id;
   };
 
   struct CoordinateTransformation {
@@ -108,8 +110,8 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
     virtual ~StateController() {}
 
     // Called when displays are detected.
-    virtual OutputState GetStateForOutputs(
-        const std::vector<OutputSnapshot>& outputs) const = 0;
+    virtual OutputState GetStateForDisplayIds(
+        const std::vector<int64>& display_ids) const = 0;
   };
 
   // Interface for classes that perform actions on behalf of OutputController.
@@ -215,9 +217,6 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // need to use for the DPI calculation.
   // See crbug.com/130188 for initial discussion.
   static const int kVerticalGap = 60;
-
-  // Returns true if an output named |name| is an internal display.
-  static bool IsInternalOutputName(const std::string& name);
 
   OutputConfigurator();
   virtual ~OutputConfigurator();

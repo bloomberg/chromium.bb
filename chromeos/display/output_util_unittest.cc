@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include "chromeos/display/output_util.h"
+
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/x/x11_util.h"
 
-namespace ui {
+namespace chromeos {
 
 namespace {
 
@@ -75,7 +75,7 @@ const unsigned char kMisdetecedDisplay[] =
 
 }
 
-TEST(X11UtilTest, ParseEDID) {
+TEST(OutputUtilTest, ParseEDID) {
   uint16 manufacturer_id = 0;
   uint16 product_code = 0;
   std::string human_readable_name;
@@ -112,7 +112,7 @@ TEST(X11UtilTest, ParseEDID) {
   EXPECT_EQ("SAMSUNG", human_readable_name);
 }
 
-TEST(X11UtilTest, ParseBrokenEDID) {
+TEST(OutputUtilTest, ParseBrokenEDID) {
   uint16 manufacturer_id = 0;
   uint16 product_code = 0;
   std::string human_readable_name;
@@ -146,7 +146,7 @@ TEST(X11UtilTest, ParseBrokenEDID) {
   EXPECT_EQ(0x286cu, product_code);
 }
 
-TEST(X11UtilTest, ParseOverscanFlag) {
+TEST(OutputUtilTest, ParseOverscanFlag) {
   bool flag = false;
   EXPECT_FALSE(ParseOutputOverscanFlag(
       kNormalDisplay, charsize(kNormalDisplay), &flag));
@@ -177,7 +177,7 @@ TEST(X11UtilTest, ParseOverscanFlag) {
   EXPECT_FALSE(flag);
 }
 
-TEST(X11UtilTest, ParseBrokenOverscanData) {
+TEST(OutputUtilTest, ParseBrokenOverscanData) {
   // Do not fill valid data here because it anyway fails to parse the data.
   scoped_ptr<unsigned char[]> data(new unsigned char[126]);
   bool flag = false;
@@ -192,4 +192,17 @@ TEST(X11UtilTest, ParseBrokenOverscanData) {
   EXPECT_FALSE(ParseOutputOverscanFlag(data.get(), 150, &flag));
 }
 
+TEST(OutputUtilTest, IsInternalOutputName) {
+  EXPECT_TRUE(IsInternalOutputName("LVDS"));
+  EXPECT_TRUE(IsInternalOutputName("eDP"));
+  EXPECT_TRUE(IsInternalOutputName("LVDSxx"));
+  EXPECT_TRUE(IsInternalOutputName("eDPzz"));
+
+  EXPECT_FALSE(IsInternalOutputName("xyz"));
+  EXPECT_FALSE(IsInternalOutputName("abcLVDS"));
+  EXPECT_FALSE(IsInternalOutputName("cdeeDP"));
+  EXPECT_FALSE(IsInternalOutputName("LVD"));
+  EXPECT_FALSE(IsInternalOutputName("eD"));
 }
+
+}   // namespace chromeos

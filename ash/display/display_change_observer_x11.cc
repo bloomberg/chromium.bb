@@ -16,9 +16,9 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/message_pump_aurax11.h"
+#include "chromeos/display/output_util.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 
@@ -76,22 +76,10 @@ bool ShouldIgnoreSize(XRROutputInfo *output_info) {
   return false;
 }
 
-std::string GetDisplayName(XID output_id) {
-  std::string display_name;
-  ui::GetOutputDeviceData(output_id, NULL, NULL, &display_name);
-  return display_name;
-}
-
-int64 GetDisplayId(XID output_id, int output_index) {
-  uint16 manufacturer_id = 0;
-  uint16 product_code = 0;
-  if (ui::GetOutputDeviceData(
-          output_id, &manufacturer_id, &product_code, NULL) &&
-      manufacturer_id != 0) {
-    // An ID based on display's index will be assigned later if this call
-    // fails.
-    return gfx::Display::GetID(manufacturer_id, product_code, output_index);
-  }
+int64 GetDisplayId(XID output, size_t output_index) {
+  int64 display_id;
+  if (chromeos::GetDisplayId(output, output_index, &display_id))
+    return display_id;
   return gfx::Display::kInvalidDisplayID;
 }
 
@@ -112,7 +100,7 @@ DisplayChangeObserverX11::DisplayChangeObserverX11()
     XID output = screen_resources->outputs[output_index];
     XRROutputInfo *output_info =
         XRRGetOutputInfo(xdisplay_, screen_resources, output);
-    bool is_internal = chromeos::OutputConfigurator::IsInternalOutputName(
+    bool is_internal = chromeos::IsInternalOutputName(
         std::string(output_info->name));
     XRRFreeOutputInfo(output_info);
     if (is_internal) {
@@ -131,12 +119,10 @@ DisplayChangeObserverX11::~DisplayChangeObserverX11() {
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
-chromeos::OutputState DisplayChangeObserverX11::GetStateForOutputs(
-    const chromeos::OutputSnapshotList& outputs) const {
-  CHECK(outputs.size() == 2);
-  DisplayIdPair pair = std::make_pair(
-      GetDisplayId(outputs[0].output, outputs[0].index),
-      GetDisplayId(outputs[1].output, outputs[1].index));
+chromeos::OutputState DisplayChangeObserverX11::GetStateForDisplayIds(
+    const std::vector<int64>& display_ids) const {
+  CHECK_EQ(2U, display_ids.size());
+  DisplayIdPair pair = std::make_pair(display_ids[0], display_ids[1]);
   DisplayLayout layout = Shell::GetInstance()->display_controller()->
       GetRegisteredDisplayLayout(pair);
   return layout.mirrored ?
@@ -188,18 +174,18 @@ void DisplayChangeObserverX11::OnDisplayModeChanged() {
     gfx::Rect display_bounds(
         crtc_info->x, crtc_info->y, mode->width, mode->height);
 
-    bool is_internal = chromeos::OutputConfigurator::IsInternalOutputName(
+    bool is_internal = chromeos::IsInternalOutputName(
         std::string(output_info->name));
     XRRFreeOutputInfo(output_info);
 
     std::string name = is_internal ?
         l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME) :
-        GetDisplayName(output);
+        chromeos::GetDisplayName(output);
     if (name.empty())
       name = l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 
     bool has_overscan = false;
-    ui::GetOutputOverscanFlag(output, &has_overscan);
+    chromeos::GetOutputOverscanFlag(output, &has_overscan);
 
     int64 id = GetDisplayId(output, output_index);
 

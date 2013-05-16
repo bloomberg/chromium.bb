@@ -208,8 +208,8 @@ class TestStateController : public OutputConfigurator::StateController {
   void set_state(OutputState state) { state_ = state; }
 
   // OutputConfigurator::StateController overrides:
-  virtual OutputState GetStateForOutputs(
-      const OutputSnapshotList& outputs) const OVERRIDE { return state_; }
+  virtual OutputState GetStateForDisplayIds(
+      const std::vector<int64>& outputs) const OVERRIDE { return state_; }
 
  private:
   OutputState state_;
@@ -240,6 +240,7 @@ class OutputConfiguratorTest : public testing::Test {
     o->is_internal = true;
     o->is_aspect_preserving_scaling = true;
     o->touch_device_id = 0;
+    o->has_display_id = true;
 
     o = &outputs_[1];
     o->output = 2;
@@ -252,6 +253,7 @@ class OutputConfiguratorTest : public testing::Test {
     o->is_internal = false;
     o->is_aspect_preserving_scaling = true;
     o->touch_device_id = 0;
+    o->has_display_id = true;
 
     UpdateOutputs(2);
     delegate_->AddMode(kSmallModeId, kSmallModeWidth, kSmallModeHeight, false);
@@ -308,19 +310,6 @@ class OutputConfiguratorTest : public testing::Test {
 };
 
 }  // namespace
-
-TEST_F(OutputConfiguratorTest, IsInternalOutputName) {
-  EXPECT_TRUE(OutputConfigurator::IsInternalOutputName("LVDS"));
-  EXPECT_TRUE(OutputConfigurator::IsInternalOutputName("eDP"));
-  EXPECT_TRUE(OutputConfigurator::IsInternalOutputName("LVDSxx"));
-  EXPECT_TRUE(OutputConfigurator::IsInternalOutputName("eDPzz"));
-
-  EXPECT_FALSE(OutputConfigurator::IsInternalOutputName("xyz"));
-  EXPECT_FALSE(OutputConfigurator::IsInternalOutputName("abcLVDS"));
-  EXPECT_FALSE(OutputConfigurator::IsInternalOutputName("cdeeDP"));
-  EXPECT_FALSE(OutputConfigurator::IsInternalOutputName("LVD"));
-  EXPECT_FALSE(OutputConfigurator::IsInternalOutputName("eD"));
-}
 
 TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   InitWithSingleOutput();
@@ -592,6 +581,23 @@ TEST_F(OutputConfiguratorTest, InvalidOutputStates) {
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_SINGLE));
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
+}
+
+TEST_F(OutputConfiguratorTest, GetOutputStateForDisplays) {
+  outputs_[0].has_display_id = false;
+  UpdateOutputs(2);
+
+  configurator_.Init(false, 0);
+  configurator_.Start();
+
+  state_controller_.set_state(STATE_DUAL_MIRROR);
+  test_api_.SendOutputChangeEvents(true);
+  EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
+
+  outputs_[0].has_display_id = true;
+  UpdateOutputs(2);
+  test_api_.SendOutputChangeEvents(true);
+  EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
 }
 
 }  // namespace chromeos
