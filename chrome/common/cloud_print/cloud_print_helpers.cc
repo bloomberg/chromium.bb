@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/mime_util.h"
 
 namespace cloud_print {
 
@@ -188,26 +189,6 @@ scoped_ptr<base::DictionaryValue> ParseResponseJSON(
   return response_dict.Pass();
 }
 
-void AddMultipartValueForUpload(const std::string& value_name,
-                                const std::string& value,
-                                const std::string& mime_boundary,
-                                const std::string& content_type,
-                                std::string* post_data) {
-  DCHECK(post_data);
-  // First line is the boundary
-  post_data->append("--" + mime_boundary + "\r\n");
-  // Next line is the Content-disposition
-  post_data->append(base::StringPrintf("Content-Disposition: form-data; "
-                   "name=\"%s\"\r\n", value_name.c_str()));
-  if (!content_type.empty()) {
-    // If Content-type is specified, the next line is that
-    post_data->append(base::StringPrintf("Content-Type: %s\r\n",
-                      content_type.c_str()));
-  }
-  // Leave an empty line and append the value.
-  post_data->append(base::StringPrintf("\r\n%s\r\n", value.c_str()));
-}
-
 std::string GetMultipartMimeType(const std::string& mime_boundary) {
   return std::string("multipart/form-data; boundary=") + mime_boundary;
 }
@@ -241,14 +222,14 @@ std::string GetPostDataForPrinterTags(
     // All our tags have a special prefix to identify them as such.
     std::string msg = base::StringPrintf("%s%s=%s",
         proxy_tag_prefix.c_str(), it->first.c_str(), it->second.c_str());
-    AddMultipartValueForUpload(kPrinterTagValue, msg, mime_boundary,
+    net::AddMultipartValueForUpload(kPrinterTagValue, msg, mime_boundary,
         std::string(), &post_data);
   }
   std::string tags_hash_msg = base::StringPrintf("%s=%s",
       tags_hash_tag_name.c_str(),
       HashPrinterTags(printer_tags_prepared).c_str());
-  AddMultipartValueForUpload(kPrinterTagValue, tags_hash_msg, mime_boundary,
-      std::string(), &post_data);
+  net::AddMultipartValueForUpload(kPrinterTagValue, tags_hash_msg,
+      mime_boundary, std::string(), &post_data);
   return post_data;
 }
 

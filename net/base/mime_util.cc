@@ -987,4 +987,29 @@ bool IsSupportedCertificateMimeType(const std::string& mime_type) {
   return file_type != CERTIFICATE_MIME_TYPE_UNKNOWN;
 }
 
+void AddMultipartValueForUpload(const std::string& value_name,
+                                const std::string& value,
+                                const std::string& mime_boundary,
+                                const std::string& content_type,
+                                std::string* post_data) {
+  DCHECK(post_data);
+  // First line is the boundary.
+  post_data->append("--" + mime_boundary + "\r\n");
+  // Next line is the Content-disposition.
+  post_data->append("Content-Disposition: form-data; name=\"" +
+                    value_name + "\"\r\n");
+  if (!content_type.empty()) {
+    // If Content-type is specified, the next line is that.
+    post_data->append("Content-Type: " + content_type + "\r\n");
+  }
+  // Leave an empty line and append the value.
+  post_data->append("\r\n" + value + "\r\n");
+}
+
+void AddMultipartFinalDelimiterForUpload(const std::string& mime_boundary,
+                                         std::string* post_data) {
+  DCHECK(post_data);
+  post_data->append("--" + mime_boundary + "--\r\n");
+}
+
 }  // namespace net

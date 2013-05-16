@@ -45,6 +45,7 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -137,13 +138,13 @@ std::string GetContentType(ChromeToMobileService::JobType type) {
       "multipart/related" : "text/plain";
 }
 
-// Utility function to call cloud_print::AddMultipartValueForUpload.
+// Utility function to call net::AddMultipartValueForUpload.
 void AddValue(const std::string& value_name,
               const std::string& value,
               const std::string& mime_boundary,
               std::string* post_data) {
-  cloud_print::AddMultipartValueForUpload(value_name, value, mime_boundary,
-                                          std::string(), post_data);
+  net::AddMultipartValueForUpload(value_name, value, mime_boundary,
+                                  std::string(), post_data);
 }
 
 // Append the Chrome To Mobile client query parameter, used by cloud print.
@@ -583,10 +584,10 @@ void ChromeToMobileService::SendJobRequest(base::WeakPtr<Observer> observer,
   AddValue("contentType", GetContentType(data.type), bound, &post);
 
   // Add the snapshot or use dummy content to workaround a URL submission error.
-  cloud_print::AddMultipartValueForUpload("content",
+  net::AddMultipartValueForUpload("content",
       data.snapshot_content.empty() ? "content" : data.snapshot_content,
       bound, "text/mhtml", &post);
-  post.append("--" + bound + "--\r\n");
+  net::AddMultipartFinalDelimiterForUpload(bound, &post);
 
   LogMetric(data.type == SNAPSHOT ? SENDING_SNAPSHOT : SENDING_URL);
   net::URLFetcher* request = net::URLFetcher::Create(

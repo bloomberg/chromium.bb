@@ -63,13 +63,6 @@ scoped_ptr<base::DictionaryValue> ParseResponseJSON(
     const std::string& response_data,
     bool* succeeded);
 
-// Prepares one value as part of a multi-part upload request.
-void AddMultipartValueForUpload(const std::string& value_name,
-                                const std::string& value,
-                                const std::string& mime_boundary,
-                                const std::string& content_type,
-                                std::string* post_data);
-
 // Returns the MIME type of multipart with |mime_boundary|.
 std::string GetMultipartMimeType(const std::string& mime_boundary);
 

@@ -119,6 +119,18 @@ enum CertificateMimeType {
 NET_EXPORT CertificateMimeType GetCertificateMimeTypeForMimeType(
     const std::string& mime_type);
 
+// Prepares one value as part of a multi-part upload request.
+NET_EXPORT void AddMultipartValueForUpload(const std::string& value_name,
+                                           const std::string& value,
+                                           const std::string& mime_boundary,
+                                           const std::string& content_type,
+                                           std::string* post_data);
+
+// Adds the final delimiter to a multi-part upload request.
+NET_EXPORT void AddMultipartFinalDelimiterForUpload(
+    const std::string& mime_boundary,
+    std::string* post_data);
+
 }  // namespace net
 
 #endif  // NET_BASE_MIME_UTIL_H__

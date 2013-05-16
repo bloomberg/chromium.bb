@@ -18,6 +18,7 @@
 #include "chrome/service/cloud_print/job_status_updater.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "printing/backend/print_backend.h"
@@ -596,13 +597,13 @@ void PrinterJobHandler::OnReceivePrinterCaps(
       // Hashes don't match, we need to upload new capabilities (the defaults
       // go for free along with the capabilities)
       printer_info_cloud_.caps_hash = caps_hash;
-      AddMultipartValueForUpload(kPrinterCapsValue,
+      net::AddMultipartValueForUpload(kPrinterCapsValue,
           caps_and_defaults.printer_capabilities, mime_boundary,
           caps_and_defaults.caps_mime_type, &post_data);
-      AddMultipartValueForUpload(kPrinterDefaultsValue,
+      net::AddMultipartValueForUpload(kPrinterDefaultsValue,
           caps_and_defaults.printer_defaults, mime_boundary,
           caps_and_defaults.defaults_mime_type, &post_data);
-      AddMultipartValueForUpload(kPrinterCapsHashValue,
+      net::AddMultipartValueForUpload(kPrinterCapsHashValue,
           caps_hash, mime_boundary, std::string(), &post_data);
     }
   } else {
@@ -617,28 +618,27 @@ void PrinterJobHandler::OnReceivePrinterCaps(
     // Remove all the existing proxy tags.
     std::string cp_tag_wildcard(kCloudPrintServiceProxyTagPrefix);
     cp_tag_wildcard += ".*";
-    AddMultipartValueForUpload(kPrinterRemoveTagValue,
+    net::AddMultipartValueForUpload(kPrinterRemoveTagValue,
         cp_tag_wildcard, mime_boundary, std::string(), &post_data);
   }
 
   if (printer_info.printer_name != printer_info_.printer_name) {
-    AddMultipartValueForUpload(kPrinterNameValue,
+    net::AddMultipartValueForUpload(kPrinterNameValue,
         printer_info.printer_name, mime_boundary, std::string(), &post_data);
   }
   if (printer_info.printer_description != printer_info_.printer_description) {
-    AddMultipartValueForUpload(kPrinterDescValue,
+    net::AddMultipartValueForUpload(kPrinterDescValue,
       printer_info.printer_description, mime_boundary,
       std::string(), &post_data);
   }
   if (printer_info.printer_status != printer_info_.printer_status) {
-    AddMultipartValueForUpload(kPrinterStatusValue,
+    net::AddMultipartValueForUpload(kPrinterStatusValue,
         base::StringPrintf("%d", printer_info.printer_status), mime_boundary,
         std::string(), &post_data);
   }
   printer_info_ = printer_info;
   if (!post_data.empty()) {
-    // Terminate the request body
-    post_data.append("--" + mime_boundary + "--\r\n");
+    net::AddMultipartFinalDelimiterForUpload(mime_boundary, &post_data);
     std::string mime_type("multipart/form-data; boundary=");
     mime_type += mime_boundary;
     SetNextJSONHandler(&PrinterJobHandler::HandlePrinterUpdateResponse);

@@ -17,6 +17,7 @@
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "grit/generated_resources.h"
+#include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace cloud_print {
@@ -313,10 +314,9 @@ void CloudPrintConnector::ReportUserMessage(const std::string& message_id,
   CreateMimeBoundaryForUpload(&mime_boundary);
   GURL url = GetUrlForUserMessage(settings_.server_url(), message_id);
   std::string post_data;
-  AddMultipartValueForUpload(kMessageTextValue, failure_msg, mime_boundary,
-                             std::string(), &post_data);
-  // Terminate the request body
-  post_data.append("--" + mime_boundary + "--\r\n");
+  net::AddMultipartValueForUpload(kMessageTextValue, failure_msg, mime_boundary,
+                                  std::string(), &post_data);
+  net::AddMultipartFinalDelimiterForUpload(mime_boundary, &post_data);
   std::string mime_type("multipart/form-data; boundary=");
   mime_type += mime_boundary;
   user_message_request_ = CloudPrintURLFetcher::Create();
@@ -527,30 +527,28 @@ void CloudPrintConnector::OnReceivePrinterCaps(
   CreateMimeBoundaryForUpload(&mime_boundary);
   std::string post_data;
 
-  AddMultipartValueForUpload(kProxyIdValue,
+  net::AddMultipartValueForUpload(kProxyIdValue,
       settings_.proxy_id(), mime_boundary, std::string(), &post_data);
-  AddMultipartValueForUpload(kPrinterNameValue,
+  net::AddMultipartValueForUpload(kPrinterNameValue,
       info.printer_name, mime_boundary, std::string(), &post_data);
-  AddMultipartValueForUpload(kPrinterDescValue,
+  net::AddMultipartValueForUpload(kPrinterDescValue,
       info.printer_description, mime_boundary, std::string(), &post_data);
-  AddMultipartValueForUpload(kPrinterStatusValue,
+  net::AddMultipartValueForUpload(kPrinterStatusValue,
       base::StringPrintf("%d", info.printer_status),
       mime_boundary, std::string(), &post_data);
   post_data += GetPostDataForPrinterInfo(info, mime_boundary);
-  AddMultipartValueForUpload(kPrinterCapsValue,
+  net::AddMultipartValueForUpload(kPrinterCapsValue,
       caps_and_defaults.printer_capabilities, mime_boundary,
       caps_and_defaults.caps_mime_type, &post_data);
-  AddMultipartValueForUpload(kPrinterDefaultsValue,
+  net::AddMultipartValueForUpload(kPrinterDefaultsValue,
       caps_and_defaults.printer_defaults, mime_boundary,
       caps_and_defaults.defaults_mime_type, &post_data);
   // Send a hash of the printer capabilities to the server. We will use this
   // later to check if the capabilities have changed
-  AddMultipartValueForUpload(kPrinterCapsHashValue,
+  net::AddMultipartValueForUpload(kPrinterCapsHashValue,
       base::MD5String(caps_and_defaults.printer_capabilities),
       mime_boundary, std::string(), &post_data);
-
-  // Terminate the request body
-  post_data.append("--" + mime_boundary + "--\r\n");
+  net::AddMultipartFinalDelimiterForUpload(mime_boundary, &post_data);
   std::string mime_type("multipart/form-data; boundary=");
   mime_type += mime_boundary;
 
