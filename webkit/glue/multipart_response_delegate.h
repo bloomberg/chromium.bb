@@ -65,7 +65,7 @@ namespace webkit_glue {
 // Used by unit tests to access private members.
 class MultipartResponseDelegateTester;
 
-class MultipartResponseDelegate {
+class WEBKIT_GLUE_EXPORT MultipartResponseDelegate {
  public:
   MultipartResponseDelegate(WebKit::WebURLLoaderClient* client,
                             WebKit::WebURLLoader* loader,
