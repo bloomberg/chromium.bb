@@ -303,7 +303,7 @@ sub GenerateInterface
     %enumTypeHash = map { $_->name => $_->values } @{$idlDocument->enumerations};
     my $v8ClassName = GetV8ClassName($interface);
     my $defineName = $v8ClassName . "_h";
-    my $internalNamespace = GetImplClassName($interface) . "V8Internal";
+    my $internalNamespace = GetImplName($interface) . "V8Internal";
 
     my $conditionalString = GenerateConditionalString($interface);
     my $conditionalIf = "";
@@ -476,7 +476,7 @@ sub GetCustomIsReachable
 sub GenerateOpaqueRootForGC
 {
     my $interface = shift;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
     if (GetCustomIsReachable($interface)) {
@@ -561,19 +561,19 @@ sub GetIndexedGetterFunction
         return 0;
     }
 
-    return GetSpecialGetterFunctionForType($interface, "unsigned long");
+    return GetSpecialAccessorFunctionForType($interface, "getter", "unsigned long");
 }
 
 sub GetNamedGetterFunction
 {
     my $interface = shift;
-
-    return GetSpecialGetterFunctionForType($interface, "DOMString");
+    return GetSpecialAccessorFunctionForType($interface, "getter", "DOMString");
 }
 
-sub GetSpecialGetterFunctionForType
+sub GetSpecialAccessorFunctionForType
 {
     my $interface = shift;
+    my $special = shift;
     my $type = shift;
 
     my @interfaces = ($interface);
@@ -585,9 +585,9 @@ sub GetSpecialGetterFunctionForType
     foreach my $currentInterface (@interfaces) {
         foreach my $function (@{$currentInterface->functions}) {
             my $specials = $function->signature->specials;
-            my $getterExists = grep { $_ eq "getter" } @$specials;
+            my $specialExists = grep { $_ eq $special } @$specials;
             my $parameters = $function->parameters;
-            if ($getterExists and scalar(@$parameters) == 1 and $parameters->[0]->type eq $type) {
+            if ($specialExists and scalar(@$parameters) == 1 and $parameters->[0]->type eq $type) {
                 return $function;
             }
         }
@@ -602,7 +602,7 @@ sub GenerateHeader
     my $interface = shift;
 
     my $interfaceName = $interface->name;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
     # Copy contents of parent interfaces except the first parent.
@@ -1002,11 +1002,21 @@ END
 sub GenerateHeaderNamedAndIndexedPropertyAccessors
 {
     my $interface = shift;
-    my $hasIndexedGetter = GetIndexedGetterFunction($interface) || $interface->extendedAttributes->{"CustomIndexedGetter"};
+
+    my $indexedGetterFunction = GetIndexedGetterFunction($interface);
+    my $hasCustomIndexedGetter = $interface->extendedAttributes->{"CustomIndexedGetter"};
+    my $hasIndexedGetter = $indexedGetterFunction || $hasCustomIndexedGetter;
+
     my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
-    my $hasCustomNamedGetter = GetNamedGetterFunction($interface) || $interface->extendedAttributes->{"CustomNamedGetter"};
+
+    my $namedGetterFunction = GetNamedGetterFunction($interface);
+    my $hasCustomNamedGetter = $interface->extendedAttributes->{"CustomNamedGetter"};
+    my $hasNamedGetter = $namedGetterFunction || $hasCustomNamedGetter;
+
     my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
+
     my $hasCustomDeleters = $interface->extendedAttributes->{"CustomDeleteProperty"};
+
     my $hasCustomEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
 
     if ($hasIndexedGetter) {
@@ -1025,7 +1035,7 @@ END
     static v8::Handle<v8::Boolean> indexedPropertyDeleter(uint32_t, const v8::AccessorInfo&);
 END
     }
-    if ($hasCustomNamedGetter) {
+    if ($hasNamedGetter) {
         $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String>, const v8::AccessorInfo&);
 END
@@ -1127,10 +1137,10 @@ sub GetV8ClassName
     return "V8" . $interface->name;
 }
 
-sub GetImplClassName
+sub GetImplName
 {
-    my $interface = shift;
-    return $interface->extendedAttributes->{"ImplementedAs"} || $interface->name;
+    my $interfaceOrSignature = shift;
+    return $interfaceOrSignature->extendedAttributes->{"ImplementedAs"} || $interfaceOrSignature->name;
 }
 
 sub GenerateDomainSafeFunctionGetter
@@ -1138,7 +1148,7 @@ sub GenerateDomainSafeFunctionGetter
     my $function = shift;
     my $interface = shift;
 
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $funcName = $function->signature->name;
 
@@ -1195,7 +1205,7 @@ sub GenerateDomainSafeFunctionSetter
 {
     my $interface = shift;
 
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
     AddToImplIncludes("bindings/v8/BindingSecurity.h");
@@ -1218,7 +1228,7 @@ END
 sub GenerateConstructorGetter
 {
     my $interface = shift;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
 
     $implementation{nameSpaceInternal}->add(<<END);
 static v8::Handle<v8::Value> ${implClassName}ConstructorGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
@@ -1304,7 +1314,7 @@ sub GenerateNormalAttrGetterCallback
     my $interface = shift;
     my $forMainWorldSuffix = shift;
 
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $attrExt = $attribute->signature->extendedAttributes;
     my $attrName = $attribute->signature->name;
@@ -1338,7 +1348,7 @@ sub GenerateNormalAttrGetter
     my $forMainWorldSuffix = shift;
 
     my $interfaceName = $interface->name;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $attrExt = $attribute->signature->extendedAttributes;
     my $attrName = $attribute->signature->name;
@@ -1425,7 +1435,7 @@ END
     # Generate security checks if necessary
     if ($attribute->signature->extendedAttributes->{"CheckSecurityForNode"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . $attribute->signature->name . "()))\n        return v8::Handle<v8::Value>(v8Null(info.GetIsolate()));\n\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($attribute->signature) . "()))\n        return v8::Handle<v8::Value>(v8Null(info.GetIsolate()));\n\n";
     }
 
     my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"GetterRaisesException"};
@@ -1631,7 +1641,7 @@ sub ShouldKeepAttributeAlive
 sub GenerateReplaceableAttrSetterCallback
 {
     my $interface = shift;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
 
     my $code = "";
     $code .= "static void ${implClassName}ReplaceableAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n";
@@ -1650,7 +1660,7 @@ sub GenerateReplaceableAttrSetter
 {
     my $interface = shift;
 
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
     my $code = "";
@@ -1700,7 +1710,7 @@ sub GenerateNormalAttrSetterCallback
     my $interface = shift;
     my $forMainWorldSuffix = shift;
 
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $attrExt = $attribute->signature->extendedAttributes;
     my $attrName = $attribute->signature->name;
@@ -1733,7 +1743,7 @@ sub GenerateNormalAttrSetter
     my $forMainWorldSuffix = shift;
 
     my $interfaceName = $interface->name;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $attrName = $attribute->signature->name;
     my $attrExt = $attribute->signature->extendedAttributes;
@@ -1867,7 +1877,8 @@ END
             my $implSetterFunctionName = FirstLetterToUpperCase($attrName);
             AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
             if (!InheritsInterface($interface, "Node")) {
-                $code .= "    transferHiddenDependency(info.Holder(), imp->$attrName(), value, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
+                my $attrImplName = GetImplName($attribute->signature);
+                $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(), value, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
             }
             AddToImplIncludes("bindings/v8/V8EventListenerList.h");
             if ($interfaceName eq "WorkerContext" and $attribute->signature->name eq "onerror") {
@@ -2070,7 +2081,7 @@ sub GenerateFunctionCallback
     my $interface = shift;
     my $forMainWorldSuffix = shift;
 
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $name = $function->signature->name;
 
@@ -2107,9 +2118,10 @@ sub GenerateFunction
     my $forMainWorldSuffix = shift;
 
     my $interfaceName = $interface->name;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $name = $function->signature->name;
+    my $implName = GetImplName($function->signature);
     my $funcExt = $function->signature->extendedAttributes;
 
     if (HasCustomMethod($funcExt) || $name eq "") {
@@ -2137,7 +2149,7 @@ sub GenerateFunction
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFind${lookupType});
     if (listener) {
         V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<WithNullCheck>, stringResource, args[0]);
-        ${v8ClassName}::toNative(args.Holder())->${name}(stringResource, listener${passRefPtrHandling}, args[2]->BooleanValue());
+        ${v8ClassName}::toNative(args.Holder())->${implName}(stringResource, listener${passRefPtrHandling}, args[2]->BooleanValue());
 END
         if (!InheritsInterface($interface, "Node")) {
             $code .= <<END;
@@ -2222,7 +2234,7 @@ END
 
     if ($function->signature->extendedAttributes->{"CheckSecurityForNode"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . $function->signature->name . "(ec)))\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function->signature) . "(ec)))\n";
         $code .= "        return v8::Handle<v8::Value>(v8Null(args.GetIsolate()));\n";
 END
     }
@@ -2455,7 +2467,7 @@ sub GenerateParametersCheck
 sub GenerateOverloadedConstructorCallback
 {
     my $interface = shift;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
 
     my $code = "";
     $code .= <<END;
@@ -2486,7 +2498,7 @@ sub GenerateSingleConstructorCallback
     my $interface = shift;
     my $function = shift;
 
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $overloadedIndexString = "";
     if ($function->{overloadedIndex} > 0) {
@@ -2605,7 +2617,7 @@ sub GenerateConstructorCallback
 {
     my $interface = shift;
 
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $code = "";
     $code .= "v8::Handle<v8::Value> ${v8ClassName}::constructorCallback(const v8::Arguments& args)\n";
@@ -2639,7 +2651,7 @@ sub GenerateConstructor
 sub GenerateEventConstructor
 {
     my $interface = shift;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
     AddToImplIncludes("bindings/v8/Dictionary.h");
@@ -2698,7 +2710,7 @@ END
 sub GenerateTypedArrayConstructor
 {
     my $interface = shift;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
     my $viewType = GetTypeNameOfExternalTypedArray($interface);
@@ -2719,7 +2731,7 @@ sub GenerateNamedConstructor
     my $function = shift;
     my $interface = shift;
 
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
     if ($interface->extendedAttributes->{"RaisesException"}) {
@@ -2890,7 +2902,7 @@ sub GenerateSingleBatchedAttribute
     my $code = "";
     my $attrName = $attribute->signature->name;
     my $attrExt = $attribute->signature->extendedAttributes;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
 
     my $accessControl = "v8::DEFAULT";
     if ($attrExt->{"DoNotCheckSecurityOnGetter"}) {
@@ -3012,7 +3024,7 @@ sub GenerateNonStandardFunction
     my $function = shift;
     my $code = "";
 
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $attrExt = $function->signature->extendedAttributes;
     my $name = $function->signature->name;
 
@@ -3100,14 +3112,14 @@ sub GenerateImplementationIndexedProperty
 {
     my $interface = shift;
     my $interfaceName = $interface->name;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
-    my $indexedGetterfunction = GetIndexedGetterFunction($interface);
+    my $indexedGetterFunction = GetIndexedGetterFunction($interface);
     my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
     my $hasCustomIndexedGetter = $interface->extendedAttributes->{"CustomIndexedGetter"};
 
-    if (!$indexedGetterfunction && !$hasCustomIndexedGetter) {
+    if (!$indexedGetterFunction && !$hasCustomIndexedGetter) {
         return "";
     }
 
@@ -3141,10 +3153,9 @@ sub GenerateImplementationIndexedProperty
     $code .= ", nodeCollectionIndexedPropertyEnumerator<${implClassName}>" if $hasEnumerator;
     $code .= ");\n";
 
-    if ($indexedGetterfunction && !$hasCustomIndexedGetter) {
-        my $returnType = $indexedGetterfunction->signature->type;
-        my $methodName = $indexedGetterfunction->signature->name;
-        $methodName ||= $indexedGetterfunction->signature->extendedAttributes->{"ImplementedAs"};
+    if ($indexedGetterFunction && !$hasCustomIndexedGetter) {
+        my $returnType = $indexedGetterFunction->signature->type;
+        my $methodName = GetImplName($indexedGetterFunction->signature);
         AddToImplIncludes("bindings/v8/V8Collection.h");
         my $jsValue = "";
         my $nativeType = GetNativeType($returnType);
@@ -3153,10 +3164,10 @@ sub GenerateImplementationIndexedProperty
         if (IsRefPtrType($returnType)) {
             AddToImplIncludes("V8$returnType.h");
             $isNull = "!element";
-            $jsValue = NativeToJSValue($indexedGetterfunction->signature, "element.release()", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "");
+            $jsValue = NativeToJSValue($indexedGetterFunction->signature, "element.release()", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "");
         } else {
             $isNull = "element.isNull()";
-            $jsValue = NativeToJSValue($indexedGetterfunction->signature, "element", "info.Holder()", "info.GetIsolate()");
+            $jsValue = NativeToJSValue($indexedGetterFunction->signature, "element", "info.Holder()", "info.GetIsolate()");
         }
 
         $implementation{nameSpaceWebCore}->add(<<END);
@@ -3175,40 +3186,89 @@ END
     return $code;
 }
 
-sub GenerateImplementationNamedPropertyGetter
+sub GenerateImplementationNamedPropertyAccessors
 {
     my $interface = shift;
 
-    my $subCode = "";
     my $interfaceName = $interface->name;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
     my $namedGetterFunction = GetNamedGetterFunction($interface);
     my $hasCustomNamedGetter = $interface->extendedAttributes->{"CustomNamedGetter"};
-
+    my $hasGetter = $namedGetterFunction || $hasCustomNamedGetter;
     if ($namedGetterFunction && !$hasCustomNamedGetter) {
-        my $returnType = $namedGetterFunction->signature->type;
-        my $methodName = $namedGetterFunction->signature->name;
-        $methodName ||= $namedGetterFunction->signature->extendedAttributes->{"ImplementedAs"};
-        AddToImplIncludes("bindings/v8/V8Collection.h");
-        $subCode .= <<END;
-    desc->InstanceTemplate()->SetNamedPropertyHandler(${v8ClassName}::namedPropertyGetter, 0, 0, 0, 0);
-END
-        my $jsValue = "";
-        my $nativeType = GetNativeType($returnType);
-        my $isNull = "";
+        GenerateImplementationNamedPropertyGetter($interface, $namedGetterFunction);
+    }
 
-        if (IsRefPtrType($returnType)) {
-            AddToImplIncludes("V8$returnType.h");
-            $isNull = "!element";
-            $jsValue = NativeToJSValue($namedGetterFunction->signature, "element.release()", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "");
-        } else {
-            $isNull = "element.isNull()";
-            $jsValue = NativeToJSValue($namedGetterFunction->signature, "element", "info.Holder()", "info.GetIsolate()");
+    # FIXME: Support generated named setter bindings.
+    my $namedSetterFunction = 0;
+    my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
+    my $hasSetter = $namedSetterFunction || $hasCustomNamedSetter;
+
+    # FIXME: Support generated named deleter bindings.
+    my $namedDeleterFunction = 0;
+    my $hasCustomNamedDeleter = $interface->extendedAttributes->{"CustomDeleteProperty"};
+    my $hasDeleter = $namedDeleterFunction || $hasCustomNamedDeleter;
+
+    # FIXME: Support generated named enumerator bindings.
+    my $namedEnumeratorFunction = 0;
+    my $hasCustomNamedEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
+    my $hasEnumerator = $namedEnumeratorFunction || $hasCustomNamedEnumerator;
+
+    # FIXME: Support generated named query bindings.
+    my $namedQueryFunction = 0;
+    # If there is an enumerator, there MUST be a query method to properly communicate property attributes.
+    my $hasQuery = $namedQueryFunction || $hasEnumerator;
+
+    my $subCode = "";
+    if ($hasGetter || $hasSetter || $hasDeleter || $hasEnumerator || $hasQuery) {
+        my $setOn = "Instance";
+
+        # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on DOMWindow
+        # instead of deleters or enumerators. In addition, the getter should be set on prototype template, to
+        # get implementation straight out of the DOMWindow prototype regardless of what prototype is actually set
+        # on the object.
+        if ($interfaceName eq "DOMWindow") {
+            $setOn = "Prototype";
         }
 
-        $implementation{nameSpaceWebCore}->add(<<END);
+        $subCode .= "    desc->${setOn}Template()->SetNamedPropertyHandler(";
+        $subCode .= $hasGetter ? "${v8ClassName}::namedPropertyGetter, " : "0, ";
+        $subCode .= $hasSetter ? "${v8ClassName}::namedPropertySetter, " : "0, ";
+        $subCode .= $hasQuery ? "${v8ClassName}::namedPropertyQuery, " : "0, ";
+        $subCode .= $hasDeleter ? "${v8ClassName}::namedPropertyDeleter, " : "0, ";
+        $subCode .= $hasEnumerator ? "${v8ClassName}::namedPropertyEnumerator" : "0";
+        $subCode .= ");\n";
+    }
+
+    return $subCode;
+}
+
+sub GenerateImplementationNamedPropertyGetter
+{
+    my $interface = shift;
+    my $namedGetterFunction = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+    my $methodName = GetImplName($namedGetterFunction->signature);
+
+    AddToImplIncludes("bindings/v8/V8Collection.h");
+    my $returnType = $namedGetterFunction->signature->type;
+    my $nativeType = GetNativeType($returnType);
+    my $isNull = "";
+    my $jsValue = "";
+
+    if (IsRefPtrType($returnType)) {
+        AddToImplIncludes("V8$returnType.h");
+        $isNull = "!element";
+        $jsValue = NativeToJSValue($namedGetterFunction->signature, "element.release()", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "");
+    } else {
+        $isNull = "element.isNull()";
+        $jsValue = NativeToJSValue($namedGetterFunction->signature, "element", "info.Holder()", "info.GetIsolate()");
+    }
+
+    $implementation{nameSpaceWebCore}->add(<<END);
 v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
@@ -3226,32 +3286,6 @@ v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> 
 }
 
 END
-    }
-
-    if ($hasCustomNamedGetter) {
-        my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
-        my $hasDeleter = $interface->extendedAttributes->{"CustomDeleteProperty"};
-        my $hasEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
-        my $setOn = "Instance";
-
-        # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on DOMWindow
-        # instead of deleters or enumerators. In addition, the getter should be set on prototype template, to
-        # get implementation straight out of the DOMWindow prototype regardless of what prototype is actually set
-        # on the object.
-        if ($interfaceName eq "DOMWindow") {
-            $setOn = "Prototype";
-        }
-
-        $subCode .= "    desc->${setOn}Template()->SetNamedPropertyHandler(${v8ClassName}::namedPropertyGetter, ";
-        $subCode .= $hasCustomNamedSetter ? "${v8ClassName}::namedPropertySetter, " : "0, ";
-        # If there is a custom enumerator, there MUST be custom query to properly communicate property attributes.
-        $subCode .= $hasEnumerator ? "${v8ClassName}::namedPropertyQuery, " : "0, ";
-        $subCode .= $hasDeleter ? "${v8ClassName}::namedPropertyDeleter, " : "0, ";
-        $subCode .= $hasEnumerator ? "${v8ClassName}::namedPropertyEnumerator" : "0";
-        $subCode .= ");\n";
-    }
-
-    return $subCode;
 }
 
 sub GenerateImplementationCustomCall
@@ -3285,7 +3319,7 @@ sub GenerateImplementation
     my $interface = shift;
     my $interfaceName = $interface->name;
     my $visibleInterfaceName = GetVisibleInterfaceName($interface);
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $nativeType = GetNativeTypeForConversions($interface);
 
@@ -3723,7 +3757,7 @@ END
     }
 
     $code .= GenerateImplementationIndexedProperty($interface);
-    $code .= GenerateImplementationNamedPropertyGetter($interface);
+    $code .= GenerateImplementationNamedPropertyAccessors($interface);
     $code .= GenerateImplementationCustomCall($interface);
     $code .= GenerateImplementationMasqueradesAsUndefined($interface);
 
@@ -3968,7 +4002,7 @@ sub GenerateCallbackHeader
     my $interface = shift;
 
     my $interfaceName = $interface->name;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
     $header{root}->addFooter("\n");
@@ -4195,7 +4229,7 @@ END
 sub GenerateSecurityCheckFunctions
 {
     my $interface = shift;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
     AddToImplIncludes("bindings/v8/BindingSecurity.h");
@@ -4220,7 +4254,7 @@ END
 sub GetNativeTypeForConversions
 {
     my $interface = shift;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     $implClassName = GetSVGTypeNeedingTearOff($interface->name) if IsSVGTypeNeedingTearOff($interface->name);
     return $implClassName;
 }
@@ -4241,18 +4275,14 @@ sub GenerateFunctionCallString
     my %replacements = @_;
 
     my $interfaceName = $interface->name;
-    my $implClassName = GetImplClassName($interface);
-    my $name = $function->signature->name;
+    my $implClassName = GetImplName($interface);
+    my $name = GetImplName($function->signature);
     my $returnType = $function->signature->type;
     my $nativeReturnType = GetNativeType($returnType, 0);
     my $code = "";
 
     my $isSVGTearOffType = (IsSVGTypeNeedingTearOff($returnType) and not $interfaceName =~ /List$/);
     $nativeReturnType = GetSVGWrappedTypeNeedingTearOff($returnType) if $isSVGTearOffType;
-
-    if ($function->signature->extendedAttributes->{"ImplementedAs"}) {
-        $name = $function->signature->extendedAttributes->{"ImplementedAs"};
-    }
 
     my $index = 0;
 
@@ -4438,7 +4468,7 @@ sub GetNativeType
     # We need to check [ImplementedBy] extended attribute for wrapper types.
     if (IsWrapperType($type)) {
         my $interface = ParseInterface($type);
-        my $implClassName = GetImplClassName($interface);
+        my $implClassName = GetImplName($interface);
         return $isParameter ? "${implClassName}*" : "RefPtr<${implClassName}>";
     }
     return "RefPtr<${type}>" if IsRefPtrType($type) and not $isParameter;
@@ -5223,7 +5253,7 @@ sub AttributeNameForGetterAndSetter
 {
     my $attribute = shift;
 
-    my $attributeName = $attribute->signature->name;
+    my $attributeName = GetImplName($attribute->signature);
     if ($attribute->signature->extendedAttributes->{"ImplementedAs"}) {
         $attributeName = $attribute->signature->extendedAttributes->{"ImplementedAs"};
     }
@@ -5366,7 +5396,7 @@ sub GenerateConditionalStringFromAttributeValue
 sub GenerateCompileTimeCheckForEnumsIfNeeded
 {
     my $interface = shift;
-    my $implClassName = GetImplClassName($interface);
+    my $implClassName = GetImplName($interface);
     my @checks = ();
     # If necessary, check that all constants are available as enums with the same value.
     if (!$interface->extendedAttributes->{"DoNotCheckConstants"} && @{$interface->constants}) {

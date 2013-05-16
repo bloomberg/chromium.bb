@@ -28,9 +28,6 @@
 
 [
     CheckSecurity,
-    CustomNamedSetter,
-    CustomDeleteProperty,
-    CustomEnumerateProperty,
 ] interface Location {
     [DoNotCheckSecurityOnSetter, CustomSetter, Unforgeable] attribute DOMString href;
 

@@ -550,6 +550,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8:
     }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
+    desc->InstanceTemplate()->SetNamedPropertyHandler(0, V8TestInterface::namedPropertySetter, 0, 0, 0);
 
     // Custom Signature 'supplementalMethod2'
     const int supplementalMethod2Argc = 2;

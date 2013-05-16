@@ -19,11 +19,12 @@
 */
 
 #include "config.h"
-#include "V8TestCustomNamedGetter.h"
+#include "V8TestCustomAccessors.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Collection.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "core/dom/ContextFeatures.h"
@@ -39,20 +40,20 @@ namespace WebCore {
 // These prototypes do not pick up the surrounding namespace, so drop out of WebCore as a workaround.
 } // namespace WebCore
 using WebCore::ScriptWrappable;
-using WebCore::V8TestCustomNamedGetter;
-using WebCore::TestCustomNamedGetter;
+using WebCore::V8TestCustomAccessors;
+using WebCore::TestCustomAccessors;
 #endif
-void initializeScriptWrappableForInterface(TestCustomNamedGetter* object)
+void initializeScriptWrappableForInterface(TestCustomAccessors* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &V8TestCustomNamedGetter::info);
+        ScriptWrappable::setTypeInfoInObject(object, &V8TestCustomAccessors::info);
 }
 #if defined(OS_WIN)
 namespace WebCore {
 #endif
-WrapperTypeInfo V8TestCustomNamedGetter::info = { V8TestCustomNamedGetter::GetTemplate, V8TestCustomNamedGetter::derefObject, 0, 0, 0, V8TestCustomNamedGetter::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestCustomAccessors::info = { V8TestCustomAccessors::GetTemplate, V8TestCustomAccessors::derefObject, 0, 0, 0, V8TestCustomAccessors::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
-namespace TestCustomNamedGetterV8Internal {
+namespace TestCustomAccessorsV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
@@ -60,7 +61,7 @@ static v8::Handle<v8::Value> anotherFunctionMethod(const v8::Arguments& args)
 {
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
-    TestCustomNamedGetter* imp = V8TestCustomNamedGetter::toNative(args.Holder());
+    TestCustomAccessors* imp = V8TestCustomAccessors::toNative(args.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, str, args[0]);
     imp->anotherFunction(str);
     return v8Undefined();
@@ -68,36 +69,37 @@ static v8::Handle<v8::Value> anotherFunctionMethod(const v8::Arguments& args)
 
 static v8::Handle<v8::Value> anotherFunctionMethodCallback(const v8::Arguments& args)
 {
-    return TestCustomNamedGetterV8Internal::anotherFunctionMethod(args);
+    return TestCustomAccessorsV8Internal::anotherFunctionMethod(args);
 }
 
-} // namespace TestCustomNamedGetterV8Internal
+} // namespace TestCustomAccessorsV8Internal
 
-static const V8DOMConfiguration::BatchedMethod V8TestCustomNamedGetterMethods[] = {
-    {"anotherFunction", TestCustomNamedGetterV8Internal::anotherFunctionMethodCallback, 0, 1},
+static const V8DOMConfiguration::BatchedMethod V8TestCustomAccessorsMethods[] = {
+    {"anotherFunction", TestCustomAccessorsV8Internal::anotherFunctionMethodCallback, 0, 1},
 };
 
-static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestCustomNamedGetterTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestCustomAccessorsTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestCustomNamedGetter", v8::Persistent<v8::FunctionTemplate>(), V8TestCustomNamedGetter::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestCustomAccessors", v8::Persistent<v8::FunctionTemplate>(), V8TestCustomAccessors::internalFieldCount,
         0, 0,
-        V8TestCustomNamedGetterMethods, WTF_ARRAY_LENGTH(V8TestCustomNamedGetterMethods), isolate, currentWorldType);
+        V8TestCustomAccessorsMethods, WTF_ARRAY_LENGTH(V8TestCustomAccessorsMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
-    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestCustomNamedGetter::namedPropertyGetter, 0, 0, 0, 0);
+    desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestCustomAccessors::indexedPropertyGetter, V8TestCustomAccessors::indexedPropertySetter, 0, V8TestCustomAccessors::indexedPropertyDeleter, nodeCollectionIndexedPropertyEnumerator<TestCustomAccessors>);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestCustomAccessors::namedPropertyGetter, V8TestCustomAccessors::namedPropertySetter, V8TestCustomAccessors::namedPropertyQuery, V8TestCustomAccessors::namedPropertyDeleter, V8TestCustomAccessors::namedPropertyEnumerator);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
     return desc;
 }
 
-v8::Persistent<v8::FunctionTemplate> V8TestCustomNamedGetter::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Persistent<v8::FunctionTemplate> V8TestCustomAccessors::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&info);
@@ -106,17 +108,17 @@ v8::Persistent<v8::FunctionTemplate> V8TestCustomNamedGetter::GetTemplate(v8::Is
 
     v8::HandleScope handleScope;
     v8::Persistent<v8::FunctionTemplate> templ =
-        ConfigureV8TestCustomNamedGetterTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestCustomAccessorsTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&info, templ);
     return templ;
 }
 
-bool V8TestCustomNamedGetter::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8TestCustomAccessors::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&info, value, currentWorldType);
 }
 
-bool V8TestCustomNamedGetter::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+bool V8TestCustomAccessors::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
@@ -124,7 +126,7 @@ bool V8TestCustomNamedGetter::HasInstanceInAnyWorld(v8::Handle<v8::Value> value,
 }
 
 
-v8::Handle<v8::Object> V8TestCustomNamedGetter::createWrapper(PassRefPtr<TestCustomNamedGetter> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> V8TestCustomAccessors::createWrapper(PassRefPtr<TestCustomAccessors> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
     ASSERT(DOMDataStore::getWrapper(impl.get(), isolate).IsEmpty());
@@ -137,9 +139,9 @@ v8::Handle<v8::Object> V8TestCustomNamedGetter::createWrapper(PassRefPtr<TestCus
     V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, hasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
     return wrapper;
 }
-void V8TestCustomNamedGetter::derefObject(void* object)
+void V8TestCustomAccessors::derefObject(void* object)
 {
-    static_cast<TestCustomNamedGetter*>(object)->deref();
+    static_cast<TestCustomAccessors*>(object)->deref();
 }
 
 } // namespace WebCore
