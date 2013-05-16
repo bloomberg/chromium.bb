@@ -1442,6 +1442,13 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     // Presumably a background or a border exists if border-fit:lines was specified.
     if (!fullRepaint && style()->borderFit() == BorderFitLines)
         fullRepaint = true;
+    if (!fullRepaint && style()->hasBorderRadius()) {
+        // If a border-radius exists and width/height is smaller than
+        // radius width/height, we cannot use delta-repaint.
+        RoundedRect oldRoundedRect = style()->getRoundedBorderFor(oldBounds, v);
+        RoundedRect newRoundedRect = style()->getRoundedBorderFor(newBounds, v);
+        fullRepaint = oldRoundedRect.radii() != newRoundedRect.radii();
+    }
     if (!fullRepaint) {
         // This ASSERT fails due to animations.  See https://bugs.webkit.org/show_bug.cgi?id=37048
         // ASSERT(!newOutlineBoxRectPtr || *newOutlineBoxRectPtr == outlineBoundsForRepaint(repaintContainer));
