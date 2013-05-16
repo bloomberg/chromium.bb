@@ -404,7 +404,7 @@ bool DumpSymbols::LoadCommandDumper::SegmentCommand(const Segment &segment) {
   if (!reader_.MapSegmentSections(segment, &section_map))
     return false;
 
-  if (segment.name == "__TEXT" && symbol_data_ != NO_CFI) {
+  if (segment.name == "__TEXT") {
     module_->SetLoadAddress(segment.vmaddr);
     mach_o::SectionMap::const_iterator eh_frame =
         section_map.find("__eh_frame");
@@ -422,13 +422,11 @@ bool DumpSymbols::LoadCommandDumper::SegmentCommand(const Segment &segment) {
         return false;
       }
     }
-    if (symbol_data_ != NO_CFI) {
-      mach_o::SectionMap::const_iterator debug_frame
-          = section_map.find("__debug_frame");
-      if (debug_frame != section_map.end()) {
-        // If there is a problem reading this, don't treat it as a fatal error.
-        dumper_.ReadCFI(module_, reader_, debug_frame->second, false);
-      }
+    mach_o::SectionMap::const_iterator debug_frame
+        = section_map.find("__debug_frame");
+    if (debug_frame != section_map.end()) {
+      // If there is a problem reading this, don't treat it as a fatal error.
+      dumper_.ReadCFI(module_, reader_, debug_frame->second, false);
     }
   }
 
