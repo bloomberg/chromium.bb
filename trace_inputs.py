@@ -997,9 +997,10 @@ class ApiBase(object):
     """During it's lifetime, the tracing subsystem is enabled."""
     def __init__(self, logname):
       self._logname = logname
-      self._lock = threading.Lock()
+      self._lock = threading.RLock()
       self._traces = []
       self._initialized = True
+      self._script = None
 
     def trace(self, cmd, cwd, tracename, output):
       """Runs the OS-specific trace program on an executable.
@@ -1024,12 +1025,16 @@ class ApiBase(object):
       Must not be used manually when using 'with' construct.
       """
       with self._lock:
-        assert self._initialized
+        if not self._initialized:
+          raise TracingFailure(
+              'Called %s.close() on an unitialized object' %
+                  self.__class__.__name__,
+              None, None, None)
         try:
-          data = {
-            'traces': self._traces,
-          }
-          write_json(self._logname, data, False)
+          if self._script:
+            os.remove(self._script)
+            self._script = None
+          write_json(self._logname, self._gen_logdata(), False)
         finally:
           self._initialized = False
 
@@ -1039,6 +1044,12 @@ class ApiBase(object):
       Must not be used manually when using 'with' construct.
       """
       assert not self._initialized, 'Must stop tracing first.'
+
+    def _gen_logdata(self):
+      """Returns the data to be saved in the trace file."""
+      return  {
+        'traces': self._traces,
+      }
 
     def __enter__(self):
       """Enables 'with' statement."""
@@ -2402,7 +2413,6 @@ class Dtrace(ApiBase):
       finally:
         os.close(self._dummy_file_id)
         os.remove(self._dummy_file_name)
-        os.remove(self._script)
 
     def post_process_log(self):
       """Sorts the log back in order when each call occured.
@@ -3052,31 +3062,21 @@ class LogmanTrace(ApiBase):
       representation.
       """
       with self._lock:
-        if not self._initialized:
-          raise TracingFailure(
-              'Called Tracer.close() on an unitialized object',
-              None, None, None)
-        os.remove(self._script)
-        # Save metadata, add 'format' key..
-        data = {
-          'format': 'csv',
-          'traces': self._traces,
-        }
-        write_json(self._logname, data, False)
-
-        cmd_stop = [
-          'logman.exe',
-          'stop',
-          'NT Kernel Logger',
-          '-ets',  # Sends the command directly to the kernel.
-        ]
-        logging.debug('Running: %s' % cmd_stop)
-        subprocess.check_call(
-            cmd_stop,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-        self._initialized = False
+        try:
+          super(LogmanTrace.Tracer, self).close()
+        finally:
+          cmd_stop = [
+            'logman.exe',
+            'stop',
+            'NT Kernel Logger',
+            '-ets',  # Sends the command directly to the kernel.
+          ]
+          logging.debug('Running: %s' % cmd_stop)
+          subprocess.check_call(
+              cmd_stop,
+              stdin=subprocess.PIPE,
+              stdout=subprocess.PIPE,
+              stderr=subprocess.STDOUT)
 
     def post_process_log(self):
       """Converts the .etl file into .csv then into .json."""
@@ -3084,6 +3084,12 @@ class LogmanTrace(ApiBase):
       logformat = 'csv'
       self._convert_log(logformat)
       self._trim_log(logformat)
+
+    def _gen_logdata(self):
+      return  {
+        'format': 'csv',
+        'traces': self._traces,
+      }
 
     def _trim_log(self, logformat):
       """Reduces the amount of data in original log by generating a 'reduced'
