@@ -23,7 +23,6 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "SerializedScriptValue.h"
-#include "V8DOMStringList.h"
 #include "V8SVGPoint.h"
 #include "V8SerializedScriptValue.h"
 #include "V8TestCallback.h"
@@ -35,7 +34,6 @@
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
-#include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
