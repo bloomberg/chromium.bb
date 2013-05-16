@@ -351,6 +351,25 @@ void VertexShaderQuad::Init(WebGraphicsContext3D* context,
 }
 
 std::string VertexShaderQuad::GetShaderString() const {
+#if defined(OS_ANDROID)
+// TODO(epenner): Find the cause of this 'quad' uniform
+// being missing if we don't add dummy variables.
+// http://crbug.com/240602
+  return VERTEX_SHADER(
+    attribute TexCoordPrecision vec4 a_position;
+    attribute float a_index;
+    uniform mat4 matrix;
+    uniform TexCoordPrecision vec2 quad[4];
+    uniform TexCoordPrecision vec2 dummy_uniform;
+    varying TexCoordPrecision vec2 dummy_varying;
+    void main() {
+      vec2 pos = quad[int(a_index)];  // NOLINT
+      gl_Position = matrix * vec4(
+          pos.x, pos.y, a_position.z, a_position.w);
+      dummy_varying = dummy_uniform;
+    }
+  );  // NOLINT(whitespace/parens)
+#else
   return VERTEX_SHADER(
     attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
@@ -362,6 +381,7 @@ std::string VertexShaderQuad::GetShaderString() const {
           pos.x, pos.y, a_position.z, a_position.w);
     }
   );  // NOLINT(whitespace/parens)
+#endif
 }
 
 VertexShaderQuadTex::VertexShaderQuadTex()
