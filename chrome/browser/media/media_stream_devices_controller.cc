@@ -64,7 +64,12 @@ MediaStreamDevicesController::MediaStreamDevicesController(
   }
 }
 
-MediaStreamDevicesController::~MediaStreamDevicesController() {}
+MediaStreamDevicesController::~MediaStreamDevicesController() {
+  if (!callback_.is_null()) {
+    callback_.Run(content::MediaStreamDevices(),
+                  scoped_ptr<content::MediaStreamUI>());
+  }
+}
 
 // static
 void MediaStreamDevicesController::RegisterUserPrefs(
@@ -172,7 +177,9 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
         GetMediaStreamCaptureIndicator()->RegisterMediaStream(
             web_contents_, devices);
   }
-  callback_.Run(devices, ui.Pass());
+  content::MediaResponseCallback cb = callback_;
+  callback_.Reset();
+  cb.Run(devices, ui.Pass());
 }
 
 void MediaStreamDevicesController::Deny(bool update_content_setting) {
@@ -187,8 +194,9 @@ void MediaStreamDevicesController::Deny(bool update_content_setting) {
   if (update_content_setting)
     SetPermission(false);
 
-  callback_.Run(content::MediaStreamDevices(),
-                scoped_ptr<content::MediaStreamUI>());
+  content::MediaResponseCallback cb = callback_;
+  callback_.Reset();
+  cb.Run(content::MediaStreamDevices(), scoped_ptr<content::MediaStreamUI>());
 }
 
 MediaStreamDevicesController::DevicePolicy

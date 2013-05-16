@@ -9,6 +9,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
@@ -125,7 +126,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   MediaStreamManager* manager_;
 };
 
-class MockMediaStreamUI : public MediaStreamUI {
+class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
  public:
   MOCK_METHOD1(OnStarted, void(const base::Closure& stop));
 };
@@ -164,11 +165,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   virtual void SetupFakeUI(bool expect_started) {
-    scoped_ptr<MockMediaStreamUI> stream_ui(new MockMediaStreamUI());
+    scoped_ptr<MockMediaStreamUIProxy> stream_ui(new MockMediaStreamUIProxy());
     if (expect_started) {
       EXPECT_CALL(*stream_ui, OnStarted(_));
     }
-    media_stream_manager_->UseFakeUI(stream_ui.PassAs<MediaStreamUI>());
+    media_stream_manager_->UseFakeUI(stream_ui.PassAs<MediaStreamUIProxy>());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -333,10 +334,10 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   StreamOptions options(MEDIA_NO_SERVICE, MEDIA_DEVICE_VIDEO_CAPTURE);
 
   base::Closure close_callback;
-  scoped_ptr<MockMediaStreamUI> stream_ui(new MockMediaStreamUI());
+  scoped_ptr<MockMediaStreamUIProxy> stream_ui(new MockMediaStreamUIProxy());
   EXPECT_CALL(*stream_ui, OnStarted(_))
     .WillOnce(SaveArg<0>(&close_callback));
-  media_stream_manager_->UseFakeUI(stream_ui.PassAs<MediaStreamUI>());
+  media_stream_manager_->UseFakeUI(stream_ui.PassAs<MediaStreamUIProxy>());
 
   EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
   EXPECT_CALL(*host_, OnStreamGenerationFailed(kRenderId, kPageRequestId));
