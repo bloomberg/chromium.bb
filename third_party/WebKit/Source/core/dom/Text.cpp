@@ -25,6 +25,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeRenderingContext.h"
+#include "core/dom/ScopedEventQueue.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderText.h"
@@ -69,6 +70,7 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionCode& ec)
         return 0;
     }
 
+    EventQueueScope scope;
     String oldStr = data();
     RefPtr<Text> newText = cloneWithData(oldStr.substring(offset));
     setDataWithoutUpdate(oldStr.substring(0, offset));
