@@ -4,6 +4,8 @@
 
 #include "cc/output/gl_renderer.h"
 
+#include <set>
+
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
@@ -269,10 +271,70 @@ class GLRendererTest : public testing::Test {
 // declared above it.
 }  // namespace
 
+
+// Gives unique shader ids and unique program ids for tests that need them.
+class ShaderCreatorMockGraphicsContext : public TestWebGraphicsContext3D {
+ public:
+  ShaderCreatorMockGraphicsContext()
+      : next_program_id_number_(10000),
+        next_shader_id_number_(1) {}
+
+  bool hasShader(WebGLId shader) {
+    return shader_set_.find(shader) != shader_set_.end();
+  }
+
+  bool hasProgram(WebGLId program) {
+    return program_set_.find(program) != program_set_.end();
+  }
+
+  virtual WebGLId createProgram() {
+    unsigned program = next_program_id_number_;
+    program_set_.insert(program);
+    next_program_id_number_++;
+    return program;
+  }
+
+  virtual void deleteProgram(WebGLId program) {
+    ASSERT_TRUE(hasProgram(program));
+    program_set_.erase(program);
+  }
+
+  virtual void useProgram(WebGLId program) {
+    if (!program)
+      return;
+    ASSERT_TRUE(hasProgram(program));
+  }
+
+  virtual WebKit::WebGLId createShader(WebKit::WGC3Denum) {
+    unsigned shader = next_shader_id_number_;
+    shader_set_.insert(shader);
+    next_shader_id_number_++;
+    return shader;
+  }
+
+  virtual void deleteShader(WebKit::WebGLId shader) {
+    ASSERT_TRUE(hasShader(shader));
+    shader_set_.erase(shader);
+  }
+
+  virtual void attachShader(WebGLId program, WebGLId shader) {
+    ASSERT_TRUE(hasProgram(program));
+    ASSERT_TRUE(hasShader(shader));
+  }
+
+ protected:
+  unsigned next_program_id_number_;
+  unsigned next_shader_id_number_;
+  std::set<unsigned> program_set_;
+  std::set<unsigned> shader_set_;
+};
+
 class GLRendererShaderTest : public testing::Test {
  protected:
   GLRendererShaderTest()
-      : output_surface_(FakeOutputSurface::Create3d()),
+      : output_surface_(FakeOutputSurface::Create3d(
+            scoped_ptr<WebKit::WebGraphicsContext3D>(
+                new ShaderCreatorMockGraphicsContext()))),
         resource_provider_(ResourceProvider::Create(output_surface_.get(), 0)),
         renderer_(GLRenderer::Create(&mock_client_,
                                      output_surface_.get(),
@@ -1023,7 +1085,11 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
   renderer.DrawFrame(mock_client.render_passes_in_draw_order());
 }
 
-TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
+// This test was never actually working as intended. Before adding
+// ShaderCreatorMockGraphicsContext, all shader programs received the same
+// program identifier from the TestWebGraphicsContext3D, so it always passed
+// when checking which shader was used.
+TEST_F(GLRendererShaderTest, DISABLED_DrawRenderPassQuadShaderPermutations) {
   gfx::Rect viewport_rect(mock_client_.DeviceViewportSize());
   ScopedPtrVector<RenderPass>* render_passes =
       mock_client_.render_passes_in_draw_order();
