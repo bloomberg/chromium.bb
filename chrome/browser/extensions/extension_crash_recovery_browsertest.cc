@@ -189,7 +189,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest, Basic) {
             GetExtensionService()->terminated_extensions()->size());
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest, CloseAndReload) {
+// Flaky, http://crbug.com/241191.
+IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
+                       DISABLED_CloseAndReload) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   const size_t crash_size_before =
       GetExtensionService()->terminated_extensions()->size();
