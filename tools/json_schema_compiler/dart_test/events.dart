@@ -92,7 +92,7 @@ class EventsEventArgument extends ChromeObject {
     List<EventsEventArgumentElement> __proxy_elements = new List<EventsEventArgumentElement>();
     int count = JS('int', '#.elements.length', this._jsObject);
     for (int i = 0; i < count; i++) {
-      var item = JS('', '#.elements', this._jsObject);
+      var item = JS('', '#.elements[#]', this._jsObject, i);
       __proxy_elements.add(new EventsEventArgumentElement._proxy(item));
     }
     return __proxy_elements;
@@ -128,7 +128,7 @@ class EventsEventArgument extends ChromeObject {
     List<EventsEventArgumentElement> __proxy_optionalElements = new List<EventsEventArgumentElement>();
     int count = JS('int', '#.optionalElements.length', this._jsObject);
     for (int i = 0; i < count; i++) {
-      var item = JS('', '#.optionalElements', this._jsObject);
+      var item = JS('', '#.optionalElements[#]', this._jsObject, i);
       __proxy_optionalElements.add(new EventsEventArgumentElement._proxy(item));
     }
     return __proxy_optionalElements;

@@ -159,7 +159,7 @@ class DictionariesOuterType extends ChromeObject {
     List<DictionariesInnerType> __proxy_items = new List<DictionariesInnerType>();
     int count = JS('int', '#.items.length', this._jsObject);
     for (int i = 0; i < count; i++) {
-      var item = JS('', '#.items', this._jsObject);
+      var item = JS('', '#.items[#]', this._jsObject, i);
       __proxy_items.add(new DictionariesInnerType._proxy(item));
     }
     return __proxy_items;
@@ -174,7 +174,7 @@ class DictionariesOuterType extends ChromeObject {
     List<DictionariesInnerType> __proxy_oitems = new List<DictionariesInnerType>();
     int count = JS('int', '#.oitems.length', this._jsObject);
     for (int i = 0; i < count; i++) {
-      var item = JS('', '#.oitems', this._jsObject);
+      var item = JS('', '#.oitems[#]', this._jsObject, i);
       __proxy_oitems.add(new DictionariesInnerType._proxy(item));
     }
     return __proxy_oitems;

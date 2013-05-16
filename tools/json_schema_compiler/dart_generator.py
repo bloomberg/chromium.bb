@@ -217,7 +217,7 @@ class _Generator(object):
         .Append("int count = JS('int', '#.%s.length', this._jsObject);" %
             prop.name)
         .Sblock("for (int i = 0; i < count; i++) {")
-        .Append("var item = JS('', '#.%s', this._jsObject);" % prop.name)
+        .Append("var item = JS('', '#.%s[#]', this._jsObject, i);" % prop.name)
         .Append('__proxy_%s.add(new %s._proxy(item));' % (prop.name,
             self._GetDartType(prop.type_.item_type)))
         .Eblock('}')
