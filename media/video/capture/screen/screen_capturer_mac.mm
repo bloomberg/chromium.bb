@@ -24,11 +24,11 @@
 #include "media/video/capture/screen/mac/desktop_configuration.h"
 #include "media/video/capture/screen/mac/scoped_pixel_buffer_object.h"
 #include "media/video/capture/screen/mouse_cursor_shape.h"
-#include "media/video/capture/screen/screen_capture_data.h"
-#include "media/video/capture/screen/screen_capture_frame.h"
 #include "media/video/capture/screen/screen_capture_frame_queue.h"
 #include "media/video/capture/screen/screen_capturer_helper.h"
-#include "skia/ext/skia_utils_mac.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace media {
 
@@ -49,20 +49,13 @@ typedef CGLError (*CGLSetFullScreenFunc)(CGLContextObj);
 // consistency with Windows and Linux.
 const int kStandardDPI = 96;
 
-// skia/ext/skia_utils_mac.h only defines CGRectToSkRect().
-SkIRect CGRectToSkIRect(const CGRect& rect) {
-  SkIRect result;
-  gfx::CGRectToSkRect(rect).round(&result);
-  return result;
-}
-
-// Scales all coordinates of an SkRect by a specified factor.
-SkRect ScaleSkRect(const SkRect& rect, float scale) {
-  SkRect result = {
-    rect.left() * scale, rect.top() * scale,
-    rect.right() * scale, rect.bottom() * scale
-  };
-  return result;
+// Scales all coordinates of a rect by a specified factor.
+webrtc::DesktopRect ScaleAndRoundCGRect(const CGRect& rect, float scale) {
+  return webrtc::DesktopRect::MakeLTRB(
+    static_cast<int>(floor(rect.origin.x * scale)),
+    static_cast<int>(floor(rect.origin.y * scale)),
+    static_cast<int>(ceil((rect.origin.x + rect.size.width) * scale)),
+    static_cast<int>(ceil((rect.origin.y + rect.size.height) * scale)));
 }
 
 // Copy pixels in the |rect| from |src_place| to |dest_plane|.
@@ -71,7 +64,7 @@ void CopyRect(const uint8* src_plane,
               uint8* dest_plane,
               int dest_plane_stride,
               int bytes_per_pixel,
-              const SkIRect& rect) {
+              const webrtc::DesktopRect& rect) {
   // Get the address of the starting point.
   const int src_y_offset = src_plane_stride * rect.top();
   const int dest_y_offset = dest_plane_stride * rect.top();
@@ -92,24 +85,6 @@ void CopyRect(const uint8* src_plane,
 // The amount of time allowed for displays to reconfigure.
 const int64 kDisplayConfigurationEventTimeoutInSeconds = 10;
 
-// A class representing a full-frame pixel buffer.
-class ScreenCaptureFrameMac : public ScreenCaptureFrame {
- public:
-  explicit ScreenCaptureFrameMac(const MacDesktopConfiguration& desktop_config);
-  virtual ~ScreenCaptureFrameMac();
-
-  const SkIPoint& dpi() const { return dpi_; }
-
- private:
-  // Allocated pixel buffer.
-  scoped_ptr<uint8[]> data_;
-
-  // DPI settings for this buffer.
-  SkIPoint dpi_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenCaptureFrameMac);
-};
-
 // A class to perform video frame capturing for mac.
 class ScreenCapturerMac : public ScreenCapturer {
  public:
@@ -119,16 +94,21 @@ class ScreenCapturerMac : public ScreenCapturer {
   bool Init();
 
   // Overridden from ScreenCapturer:
-  virtual void Start(Delegate* delegate) OVERRIDE;
-  virtual void CaptureFrame() OVERRIDE;
+  virtual void Start(Callback* callback) OVERRIDE;
+  virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE;
+  virtual void SetMouseShapeObserver(
+      MouseShapeObserver* mouse_shape_observer) OVERRIDE;
 
  private:
   void CaptureCursor();
 
-  void GlBlitFast(const ScreenCaptureFrame& buffer, const SkRegion& region);
-  void GlBlitSlow(const ScreenCaptureFrame& buffer);
-  void CgBlitPreLion(const ScreenCaptureFrame& buffer, const SkRegion& region);
-  void CgBlitPostLion(const ScreenCaptureFrame& buffer, const SkRegion& region);
+  void GlBlitFast(const webrtc::DesktopFrame& frame,
+                  const webrtc::DesktopRegion& region);
+  void GlBlitSlow(const webrtc::DesktopFrame& frame);
+  void CgBlitPreLion(const webrtc::DesktopFrame& frame,
+                     const webrtc::DesktopRegion& region);
+  void CgBlitPostLion(const webrtc::DesktopFrame& frame,
+                      const webrtc::DesktopRegion& region);
 
   // Called when the screen configuration is changed.
   void ScreenConfigurationChanged();
@@ -155,7 +135,8 @@ class ScreenCapturerMac : public ScreenCapturer {
 
   void ReleaseBuffers();
 
-  Delegate* delegate_;
+  Callback* callback_;
+  MouseShapeObserver* mouse_shape_observer_;
 
   CGLContextObj cgl_context_;
   ScopedPixelBufferObject pixel_buffer_object_;
@@ -174,7 +155,7 @@ class ScreenCapturerMac : public ScreenCapturer {
   base::mac::ScopedCFTypeRef<CGImageRef> current_cursor_;
 
   // Contains an invalid region from the previous capture.
-  SkRegion last_invalid_region_;
+  webrtc::DesktopRegion last_invalid_region_;
 
   // Used to ensure that frame captures do not take place while displays
   // are being reconfigured.
@@ -201,26 +182,22 @@ class ScreenCapturerMac : public ScreenCapturer {
   DISALLOW_COPY_AND_ASSIGN(ScreenCapturerMac);
 };
 
-ScreenCaptureFrameMac::ScreenCaptureFrameMac(
+scoped_ptr<webrtc::DesktopFrame> CreateFrame(
     const MacDesktopConfiguration& desktop_config) {
-  SkISize size = SkISize::Make(desktop_config.pixel_bounds.width(),
-                               desktop_config.pixel_bounds.height());
-  set_bytes_per_row(size.width() * sizeof(uint32_t));
-  set_dimensions(size);
 
-  size_t buffer_size = size.width() * size.height() * sizeof(uint32_t);
-  data_.reset(new  uint8[buffer_size]);
-  set_pixels(data_.get());
+  webrtc::DesktopSize size(desktop_config.pixel_bounds.width(),
+                           desktop_config.pixel_bounds.height());
+  scoped_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(size));
 
-  dpi_ = SkIPoint::Make(kStandardDPI * desktop_config.dip_to_pixel_scale,
-                        kStandardDPI * desktop_config.dip_to_pixel_scale);
-}
-
-ScreenCaptureFrameMac::~ScreenCaptureFrameMac() {
+  frame->set_dpi(webrtc::DesktopVector(
+      kStandardDPI * desktop_config.dip_to_pixel_scale,
+      kStandardDPI * desktop_config.dip_to_pixel_scale));
+  return frame.Pass();
 }
 
 ScreenCapturerMac::ScreenCapturerMac()
-    : delegate_(NULL),
+    : callback_(NULL),
+      mouse_shape_observer_(NULL),
       cgl_context_(NULL),
       display_configuration_capture_event_(false, true),
       power_assertion_id_display_(kIOPMNullAssertionID),
@@ -228,8 +205,7 @@ ScreenCapturerMac::ScreenCapturerMac()
       cg_display_base_address_(NULL),
       cg_display_bytes_per_row_(NULL),
       cg_display_bits_per_pixel_(NULL),
-      cgl_set_full_screen_(NULL)
-{
+      cgl_set_full_screen_(NULL) {
 }
 
 ScreenCapturerMac::~ScreenCapturerMac() {
@@ -276,13 +252,14 @@ void ScreenCapturerMac::ReleaseBuffers() {
   // The buffers might be in use by the encoder, so don't delete them here.
   // Instead, mark them as "needs update"; next time the buffers are used by
   // the capturer, they will be recreated if necessary.
-  queue_.SetAllFramesNeedUpdate();
+  queue_.Reset();
 }
 
-void ScreenCapturerMac::Start(Delegate* delegate) {
-  DCHECK(delegate_ == NULL);
+void ScreenCapturerMac::Start(Callback* callback) {
+  DCHECK(!callback_);
+  DCHECK(callback);
 
-  delegate_ = delegate;
+  callback_ = callback;
 
   // Create power management assertions to wake the display and prevent it from
   // going to sleep on user idle.
@@ -300,11 +277,11 @@ void ScreenCapturerMac::Start(Delegate* delegate) {
                               &power_assertion_id_user_);
 }
 
-void ScreenCapturerMac::CaptureFrame() {
-  // Only allow captures when the display configuration is not occurring.
-  scoped_refptr<ScreenCaptureData> data;
-
+void ScreenCapturerMac::Capture(
+    const webrtc::DesktopRegion& region_to_capture) {
   base::Time capture_start_time = base::Time::Now();
+
+  queue_.MoveToNextFrame();
 
   // Wait until the display configuration is stable. If one or more displays
   // are reconfiguring then |display_configuration_capture_event_| will not be
@@ -314,65 +291,64 @@ void ScreenCapturerMac::CaptureFrame() {
       base::TimeDelta::FromSeconds(
           kDisplayConfigurationEventTimeoutInSeconds)));
 
-  SkRegion region;
-  helper_.SwapInvalidRegion(&region);
+  webrtc::DesktopRegion region;
+  helper_.TakeInvalidRegion(&region);
 
   // If the current buffer is from an older generation then allocate a new one.
   // Note that we can't reallocate other buffers at this point, since the caller
   // may still be reading from them.
-  if (queue_.current_frame_needs_update()) {
-    scoped_ptr<ScreenCaptureFrameMac> buffer(
-        new ScreenCaptureFrameMac(desktop_config_));
-    queue_.ReplaceCurrentFrame(buffer.PassAs<ScreenCaptureFrame>());
-  }
+  if (!queue_.current_frame())
+    queue_.ReplaceCurrentFrame(CreateFrame(desktop_config_));
 
-  ScreenCaptureFrame* current_buffer = queue_.current_frame();
+  webrtc::DesktopFrame* current_frame = queue_.current_frame();
 
   bool flip = false;  // GL capturers need flipping.
   if (base::mac::IsOSLionOrLater()) {
     // Lion requires us to use their new APIs for doing screen capture. These
     // APIS currently crash on 10.6.8 if there is no monitor attached.
-    CgBlitPostLion(*current_buffer, region);
+    CgBlitPostLion(*current_frame, region);
   } else if (cgl_context_) {
     flip = true;
     if (pixel_buffer_object_.get() != 0) {
-      GlBlitFast(*current_buffer, region);
+      GlBlitFast(*current_frame, region);
     } else {
       // See comment in ScopedPixelBufferObject::Init about why the slow
       // path is always used on 10.5.
-      GlBlitSlow(*current_buffer);
+      GlBlitSlow(*current_frame);
     }
   } else {
-    CgBlitPreLion(*current_buffer, region);
+    CgBlitPreLion(*current_frame, region);
   }
 
-  uint8* buffer = current_buffer->pixels();
-  int stride = current_buffer->bytes_per_row();
+  uint8* buffer = current_frame->data();
+  int stride = current_frame->stride();
   if (flip) {
     stride = -stride;
-    buffer += (current_buffer->dimensions().height() - 1) *
-        current_buffer->bytes_per_row();
+    buffer += (current_frame->size().height() - 1) * current_frame->stride();
   }
 
-  data = new ScreenCaptureData(buffer, stride, current_buffer->dimensions());
-  data->set_dpi(static_cast<ScreenCaptureFrameMac*>(current_buffer)->dpi());
-  data->mutable_dirty_region() = region;
+  webrtc::DesktopFrame* new_frame = queue_.current_frame()->Share();
+  *new_frame->mutable_updated_region() = region;
 
-  helper_.set_size_most_recent(data->size());
+  helper_.set_size_most_recent(new_frame->size());
 
   // Signal that we are done capturing data from the display framebuffer,
   // and accessing display structures.
   display_configuration_capture_event_.Signal();
 
-  // Capture the current cursor shape and notify |delegate_| if it has changed.
+  // Capture the current cursor shape and notify |callback_| if it has changed.
   CaptureCursor();
 
-  // Move the capture frame buffer queue on to the next buffer.
-  queue_.DoneWithCurrentFrame();
-
-  data->set_capture_time_ms(
+  new_frame->set_capture_time_ms(
       (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
-  delegate_->OnCaptureCompleted(data);
+  callback_->OnCaptureCompleted(new_frame);
+}
+
+void ScreenCapturerMac::SetMouseShapeObserver(
+      MouseShapeObserver* mouse_shape_observer) {
+  DCHECK(!mouse_shape_observer_);
+  DCHECK(mouse_shape_observer);
+  mouse_shape_observer_ = mouse_shape_observer;
 }
 
 void ScreenCapturerMac::CaptureCursor() {
@@ -448,16 +424,14 @@ void ScreenCapturerMac::CaptureCursor() {
   cursor_shape->hotspot.set(hotspot.x, hotspot.y);
   cursor_shape->data.assign(cursor_src_data, cursor_src_data + data_size);
 
-  delegate_->OnCursorShapeChanged(cursor_shape.Pass());
+  if (mouse_shape_observer_)
+    mouse_shape_observer_->OnCursorShapeChanged(cursor_shape.Pass());
 }
 
-void ScreenCapturerMac::GlBlitFast(const ScreenCaptureFrame& buffer,
-                                       const SkRegion& region) {
-  const int buffer_height = buffer.dimensions().height();
-  const int buffer_width = buffer.dimensions().width();
-
+void ScreenCapturerMac::GlBlitFast(const webrtc::DesktopFrame& frame,
+                                   const webrtc::DesktopRegion& region) {
   // Clip to the size of our current screen.
-  SkIRect clip_rect = SkIRect::MakeWH(buffer_width, buffer_height);
+  webrtc::DesktopRect clip_rect = webrtc::DesktopRect::MakeSize(frame.size());
   if (queue_.previous_frame()) {
     // We are doing double buffer for the capture data so we just need to copy
     // the invalid region from the previous capture in the current buffer.
@@ -467,15 +441,17 @@ void ScreenCapturerMac::GlBlitFast(const ScreenCaptureFrame& buffer,
 
     // Since the image obtained from OpenGL is upside-down, need to do some
     // magic here to copy the correct rectangle.
-    const int y_offset = (buffer_height - 1) * buffer.bytes_per_row();
-    for(SkRegion::Iterator i(last_invalid_region_); !i.done(); i.next()) {
-      SkIRect copy_rect = i.rect();
-      if (copy_rect.intersect(clip_rect)) {
-        CopyRect(queue_.previous_frame()->pixels() + y_offset,
-                 -buffer.bytes_per_row(),
-                 buffer.pixels() + y_offset,
-                 -buffer.bytes_per_row(),
-                 4,  // Bytes for pixel for RGBA.
+    const int y_offset = (frame.size().width() - 1) * frame.stride();
+    for (webrtc::DesktopRegion::Iterator i(last_invalid_region_);
+         !i.IsAtEnd(); i.Advance()) {
+      webrtc::DesktopRect copy_rect = i.rect();
+      copy_rect.IntersectWith(clip_rect);
+      if (!copy_rect.is_empty()) {
+        CopyRect(queue_.previous_frame()->data() + y_offset,
+                 -frame.stride(),
+                 frame.data() + y_offset,
+                 -frame.stride(),
+                 webrtc::DesktopFrame::kBytesPerPixel,
                  copy_rect);
       }
     }
@@ -484,7 +460,8 @@ void ScreenCapturerMac::GlBlitFast(const ScreenCaptureFrame& buffer,
 
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_object_.get());
-  glReadPixels(0, 0, buffer_width, buffer_height, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+  glReadPixels(0, 0, frame.size().height(), frame.size().width(), GL_BGRA,
+               GL_UNSIGNED_BYTE, 0);
   GLubyte* ptr = static_cast<GLubyte*>(
       glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
   if (ptr == NULL) {
@@ -494,16 +471,18 @@ void ScreenCapturerMac::GlBlitFast(const ScreenCaptureFrame& buffer,
   } else {
     // Copy only from the dirty rects. Since the image obtained from OpenGL is
     // upside-down we need to do some magic here to copy the correct rectangle.
-    const int y_offset = (buffer_height - 1) * buffer.bytes_per_row();
-    for(SkRegion::Iterator i(region); !i.done(); i.next()) {
-      SkIRect copy_rect = i.rect();
-      if (copy_rect.intersect(clip_rect)) {
+    const int y_offset = (frame.size().height() - 1) * frame.stride();
+    for (webrtc::DesktopRegion::Iterator i(region);
+         !i.IsAtEnd(); i.Advance()) {
+      webrtc::DesktopRect copy_rect = i.rect();
+      copy_rect.IntersectWith(clip_rect);
+      if (!copy_rect.is_empty()) {
         CopyRect(ptr + y_offset,
-           -buffer.bytes_per_row(),
-           buffer.pixels() + y_offset,
-           -buffer.bytes_per_row(),
-           4,  // Bytes for pixel for RGBA.
-           copy_rect);
+                 -frame.stride(),
+                 frame.data() + y_offset,
+                 -frame.stride(),
+                 webrtc::DesktopFrame::kBytesPerPixel,
+                 copy_rect);
       }
     }
   }
@@ -518,7 +497,7 @@ void ScreenCapturerMac::GlBlitFast(const ScreenCaptureFrame& buffer,
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 }
 
-void ScreenCapturerMac::GlBlitSlow(const ScreenCaptureFrame& buffer) {
+void ScreenCapturerMac::GlBlitSlow(const webrtc::DesktopFrame& frame) {
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glReadBuffer(GL_FRONT);
   glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
@@ -527,22 +506,20 @@ void ScreenCapturerMac::GlBlitSlow(const ScreenCaptureFrame& buffer) {
   glPixelStorei(GL_PACK_SKIP_ROWS, 0);
   glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
   // Read a block of pixels from the frame buffer.
-  glReadPixels(0, 0, buffer.dimensions().width(), buffer.dimensions().height(),
-               GL_BGRA, GL_UNSIGNED_BYTE, buffer.pixels());
+  glReadPixels(0, 0, frame.size().width(), frame.size().height(),
+               GL_BGRA, GL_UNSIGNED_BYTE, frame.data());
   glPopClientAttrib();
 }
 
-void ScreenCapturerMac::CgBlitPreLion(const ScreenCaptureFrame& buffer,
-                                          const SkRegion& region) {
-  const int buffer_height = buffer.dimensions().height();
-
+void ScreenCapturerMac::CgBlitPreLion(const webrtc::DesktopFrame& frame,
+                                      const webrtc::DesktopRegion& region) {
   // Copy the entire contents of the previous capture buffer, to capture over.
   // TODO(wez): Get rid of this as per crbug.com/145064, or implement
   // crbug.com/92354.
   if (queue_.previous_frame()) {
-    memcpy(buffer.pixels(),
-           queue_.previous_frame()->pixels(),
-           buffer.bytes_per_row() * buffer_height);
+    memcpy(frame.data(),
+           queue_.previous_frame()->data(),
+           frame.stride() * frame.size().height());
   }
 
   for (size_t i = 0; i < desktop_config_.displays.size(); ++i) {
@@ -559,63 +536,64 @@ void ScreenCapturerMac::CgBlitPreLion(const ScreenCaptureFrame& buffer,
         (*cg_display_bits_per_pixel_)(display_config.id) / 8;
 
     // Determine the display's position relative to the desktop, in pixels.
-    SkIRect display_bounds = display_config.pixel_bounds;
-    display_bounds.offset(-desktop_config_.pixel_bounds.left(),
-                          -desktop_config_.pixel_bounds.top());
+    webrtc::DesktopRect display_bounds = display_config.pixel_bounds;
+    display_bounds.Translate(-desktop_config_.pixel_bounds.left(),
+                             -desktop_config_.pixel_bounds.top());
 
     // Determine which parts of the blit region, if any, lay within the monitor.
-    SkRegion copy_region;
-    if (!copy_region.op(region, display_bounds, SkRegion::kIntersect_Op))
+    webrtc::DesktopRegion copy_region = region;
+    copy_region.IntersectWith(display_bounds);
+    if (copy_region.is_empty())
       continue;
 
     // Translate the region to be copied into display-relative coordinates.
-    copy_region.translate(-display_bounds.left(), -display_bounds.top());
+    copy_region.Translate(-display_bounds.left(), -display_bounds.top());
 
     // Calculate where in the output buffer the display's origin is.
-    uint8* out_ptr = buffer.pixels() +
+    uint8* out_ptr = frame.data() +
          (display_bounds.left() * src_bytes_per_pixel) +
-         (display_bounds.top() * buffer.bytes_per_row());
+         (display_bounds.top() * frame.stride());
 
     // Copy the dirty region from the display buffer into our desktop buffer.
-    for(SkRegion::Iterator i(copy_region); !i.done(); i.next()) {
+    for (webrtc::DesktopRegion::Iterator i(copy_region);
+         !i.IsAtEnd(); i.Advance()) {
       CopyRect(display_base_address,
                src_bytes_per_row,
                out_ptr,
-               buffer.bytes_per_row(),
+               frame.stride(),
                src_bytes_per_pixel,
                i.rect());
     }
   }
 }
 
-void ScreenCapturerMac::CgBlitPostLion(const ScreenCaptureFrame& buffer,
-                                       const SkRegion& region) {
-  const int buffer_height = buffer.dimensions().height();
-
+void ScreenCapturerMac::CgBlitPostLion(const webrtc::DesktopFrame& frame,
+                                       const webrtc::DesktopRegion& region) {
   // Copy the entire contents of the previous capture buffer, to capture over.
   // TODO(wez): Get rid of this as per crbug.com/145064, or implement
   // crbug.com/92354.
   if (queue_.previous_frame()) {
-    memcpy(buffer.pixels(),
-           queue_.previous_frame()->pixels(),
-           buffer.bytes_per_row() * buffer_height);
+    memcpy(frame.data(),
+           queue_.previous_frame()->data(),
+           frame.stride() * frame.size().height());
   }
 
   for (size_t i = 0; i < desktop_config_.displays.size(); ++i) {
     const MacDisplayConfiguration& display_config = desktop_config_.displays[i];
 
     // Determine the display's position relative to the desktop, in pixels.
-    SkIRect display_bounds = display_config.pixel_bounds;
-    display_bounds.offset(-desktop_config_.pixel_bounds.left(),
-                          -desktop_config_.pixel_bounds.top());
+    webrtc::DesktopRect display_bounds = display_config.pixel_bounds;
+    display_bounds.Translate(-desktop_config_.pixel_bounds.left(),
+                             -desktop_config_.pixel_bounds.top());
 
     // Determine which parts of the blit region, if any, lay within the monitor.
-    SkRegion copy_region;
-    if (!copy_region.op(region, display_bounds, SkRegion::kIntersect_Op))
+    webrtc::DesktopRegion copy_region = region;
+    copy_region.IntersectWith(display_bounds);
+    if (copy_region.is_empty())
       continue;
 
     // Translate the region to be copied into display-relative coordinates.
-    copy_region.translate(-display_bounds.left(), -display_bounds.top());
+    copy_region.Translate(-display_bounds.left(), -display_bounds.top());
 
     // Create an image containing a snapshot of the display.
     base::mac::ScopedCFTypeRef<CGImageRef> image(
@@ -635,16 +613,17 @@ void ScreenCapturerMac::CgBlitPostLion(const ScreenCaptureFrame& buffer,
     int src_bytes_per_pixel = CGImageGetBitsPerPixel(image) / 8;
 
     // Calculate where in the output buffer the display's origin is.
-    uint8* out_ptr = buffer.pixels() +
+    uint8* out_ptr = frame.data() +
         (display_bounds.left() * src_bytes_per_pixel) +
-        (display_bounds.top() * buffer.bytes_per_row());
+        (display_bounds.top() * frame.stride());
 
     // Copy the dirty region from the display buffer into our desktop buffer.
-    for (SkRegion::Iterator i(copy_region); !i.done(); i.next()) {
+    for (webrtc::DesktopRegion::Iterator i(copy_region);
+         !i.IsAtEnd(); i.Advance()) {
       CopyRect(display_base_address,
                src_bytes_per_row,
                out_ptr,
-               buffer.bytes_per_row(),
+               frame.stride(),
                src_bytes_per_pixel,
                i.rect());
     }
@@ -664,11 +643,11 @@ void ScreenCapturerMac::ScreenConfigurationChanged() {
 
   // Re-mark the entire desktop as dirty.
   helper_.InvalidateScreen(
-      SkISize::Make(desktop_config_.pixel_bounds.width(),
-                    desktop_config_.pixel_bounds.height()));
+      webrtc::DesktopSize(desktop_config_.pixel_bounds.width(),
+                          desktop_config_.pixel_bounds.height()));
 
   // Make sure the frame buffers will be reallocated.
-  queue_.SetAllFramesNeedUpdate();
+  queue_.Reset();
 
   // CgBlitPostLion uses CGDisplayCreateImage() to snapshot each display's
   // contents. Although the API exists in OS 10.6, it crashes the caller if
@@ -768,25 +747,23 @@ void ScreenCapturerMac::UnregisterRefreshAndMoveHandlers() {
 
 void ScreenCapturerMac::ScreenRefresh(CGRectCount count,
                                       const CGRect* rect_array) {
-  if (desktop_config_.pixel_bounds.isEmpty()) {
+  if (desktop_config_.pixel_bounds.is_empty())
     return;
-  }
-  SkIRect skirect_array[count];
+
+  webrtc::DesktopRegion region;
 
   for (CGRectCount i = 0; i < count; ++i) {
-    SkRect sk_rect = gfx::CGRectToSkRect(rect_array[i]);
-
     // Convert from Density-Independent Pixel to physical pixel coordinates.
-    sk_rect = ScaleSkRect(sk_rect, desktop_config_.dip_to_pixel_scale);
-    sk_rect.round(&skirect_array[i]);
+    webrtc::DesktopRect rect =
+      ScaleAndRoundCGRect(rect_array[i], desktop_config_.dip_to_pixel_scale);
 
     // Translate from local desktop to capturer framebuffer coordinates.
-    skirect_array[i].offset(-desktop_config_.pixel_bounds.left(),
-                            -desktop_config_.pixel_bounds.top());
+    rect.Translate(-desktop_config_.pixel_bounds.left(),
+                   -desktop_config_.pixel_bounds.top());
+
+    region.AddRect(rect);
   }
 
-  SkRegion region;
-  region.setRects(skirect_array, count);
   helper_.InvalidateRegion(region);
 }
 
@@ -835,11 +812,11 @@ void ScreenCapturerMac::DisplaysReconfigured(
 }
 
 void ScreenCapturerMac::ScreenRefreshCallback(CGRectCount count,
-                                                  const CGRect* rect_array,
-                                                  void* user_parameter) {
+                                              const CGRect* rect_array,
+                                              void* user_parameter) {
   ScreenCapturerMac* capturer = reinterpret_cast<ScreenCapturerMac*>(
       user_parameter);
-  if (capturer->desktop_config_.pixel_bounds.isEmpty()) {
+  if (capturer->desktop_config_.pixel_bounds.is_empty()) {
     capturer->ScreenConfigurationChanged();
   }
   capturer->ScreenRefresh(count, rect_array);
@@ -865,15 +842,6 @@ void ScreenCapturerMac::DisplaysReconfiguredCallback(
 }
 
 }  // namespace
-
-scoped_refptr<SharedBuffer> ScreenCapturer::Delegate::CreateSharedBuffer(
-    uint32 size) {
-  return scoped_refptr<SharedBuffer>();
-}
-
-void ScreenCapturer::Delegate::ReleaseSharedBuffer(
-    scoped_refptr<SharedBuffer> buffer) {
-}
 
 // static
 scoped_ptr<ScreenCapturer> ScreenCapturer::Create() {

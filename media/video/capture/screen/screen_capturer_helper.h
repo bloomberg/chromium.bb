@@ -9,6 +9,8 @@
 #include "base/synchronization/lock.h"
 #include "media/base/media_export.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace media {
 
@@ -25,28 +27,25 @@ class MEDIA_EXPORT ScreenCapturerHelper {
   void ClearInvalidRegion();
 
   // Invalidate the specified region.
-  void InvalidateRegion(const SkRegion& invalid_region);
+  void InvalidateRegion(const webrtc::DesktopRegion& invalid_region);
 
   // Invalidate the entire screen, of a given size.
-  void InvalidateScreen(const SkISize& size);
+  void InvalidateScreen(const webrtc::DesktopSize& size);
 
-  // Invalidate the entire screen, using the size of the most recently
-  // captured screen.
-  void InvalidateFullScreen();
-
-  // Swap the given region with the stored invalid region.
-  void SwapInvalidRegion(SkRegion* invalid_region);
+  // Copies current invalid region to |invalid_region| clears invalid region
+  // storage for the next frame.
+  void TakeInvalidRegion(webrtc::DesktopRegion* invalid_region);
 
   // Access the size of the most recently captured screen.
-  const SkISize& size_most_recent() const;
-  void set_size_most_recent(const SkISize& size);
+  const webrtc::DesktopSize& size_most_recent() const;
+  void set_size_most_recent(const webrtc::DesktopSize& size);
 
   // Lossy compression can result in color values leaking between pixels in one
   // block. If part of a block changes, then unchanged parts of that block can
   // be changed in the compressed output. So we need to re-render an entire
   // block whenever part of the block changes.
   //
-  // If |log_grid_size| is >= 1, then this function makes SwapInvalidRegion
+  // If |log_grid_size| is >= 1, then this function makes TakeInvalidRegion()
   // produce an invalid region expanded so that its vertices lie on a grid of
   // size 2 ^ |log_grid_size|. The expanded region is then clipped to the size
   // of the most recently captured screen, as previously set by
@@ -69,7 +68,7 @@ class MEDIA_EXPORT ScreenCapturerHelper {
   base::Lock invalid_region_lock_;
 
   // The size of the most recently captured screen.
-  SkISize size_most_recent_;
+  webrtc::DesktopSize size_most_recent_;
 
   // The log (base 2) of the size of the grid to which the invalid region is
   // expanded.

@@ -7,6 +7,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using webrtc::DesktopRect;
+using webrtc::DesktopRegion;
+using webrtc::DesktopSize;
+
 namespace media {
 
 class ScreenCapturerHelperTest : public testing::Test {
@@ -14,114 +18,120 @@ class ScreenCapturerHelperTest : public testing::Test {
   ScreenCapturerHelper capturer_helper_;
 };
 
+bool Equals(const DesktopRegion& region1, const DesktopRegion& region2) {
+  DesktopRegion::Iterator iter1(region1);
+  DesktopRegion::Iterator iter2(region2);
+  while (!iter1.IsAtEnd() && !iter1.IsAtEnd()) {
+    if (!iter1.rect().equals(iter2.rect())) {
+      return false;
+    }
+    iter1.Advance();
+    iter2.Advance();
+  }
+  return iter1.IsAtEnd() && iter2.IsAtEnd();
+}
+
 bool Equals(const SkRegion& region1, const SkRegion& region2) {
   SkRegion::Iterator iter1(region1);
   SkRegion::Iterator iter2(region2);
-  while (!iter1.done()) {
-    SkIRect rect1 = iter1.rect();
+  while (!iter1.done() && !iter2.done()) {
+    if (iter1.rect() != iter2.rect()) {
+      return false;
+    }
     iter1.next();
-    if (iter2.done()) {
-      return false;
-    }
-    SkIRect rect2 = iter2.rect();
     iter2.next();
-    if (rect1 != rect2) {
-      return false;
-    }
   }
-  if (!iter2.done()) {
-    return false;
-  }
-  return true;
+  return iter1.done() && iter2.done();
+}
+
+DesktopRegion RectToRegion(const DesktopRect& rect) {
+  webrtc::DesktopRegion result;
+  result.SetRect(rect);
+  return result;
 }
 
 TEST_F(ScreenCapturerHelperTest, ClearInvalidRegion) {
-  SkRegion region;
-  capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(1, 2, 3, 4)));
+  DesktopRegion region;
+  region.SetRect(DesktopRect::MakeXYWH(1, 2, 3, 4));
+  capturer_helper_.InvalidateRegion(region);
   capturer_helper_.ClearInvalidRegion();
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(region.isEmpty());
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(region.is_empty());
 }
 
 TEST_F(ScreenCapturerHelperTest, InvalidateRegion) {
-  SkRegion region;
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeEmpty()), region));
+  DesktopRegion region;
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(region.is_empty());
 
-  capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(1, 2, 3, 4)));
-  region.setEmpty();
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeXYWH(1, 2, 3, 4)), region));
+  region.SetRect(DesktopRect::MakeXYWH(1, 2, 3, 4));
+  capturer_helper_.InvalidateRegion(region);
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(Equals(RectToRegion(DesktopRect::MakeXYWH(1, 2, 3, 4)), region));
 
-  capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(1, 2, 3, 4)));
-  capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(4, 2, 3, 4)));
-  region.setEmpty();
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeXYWH(1, 2, 6, 4)), region));
+  capturer_helper_.InvalidateRegion(
+      RectToRegion(DesktopRect::MakeXYWH(1, 2, 3, 4)));
+  capturer_helper_.InvalidateRegion(
+      RectToRegion(DesktopRect::MakeXYWH(4, 2, 3, 4)));
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(Equals(RectToRegion(DesktopRect::MakeXYWH(1, 2, 6, 4)), region));
 }
 
 TEST_F(ScreenCapturerHelperTest, InvalidateScreen) {
-  SkRegion region;
-  capturer_helper_.InvalidateScreen(SkISize::Make(12, 34));
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeWH(12, 34)), region));
-}
-
-TEST_F(ScreenCapturerHelperTest, InvalidateFullScreen) {
-  SkRegion region;
-  capturer_helper_.set_size_most_recent(SkISize::Make(12, 34));
-  capturer_helper_.InvalidateFullScreen();
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeWH(12, 34)), region));
+  DesktopRegion region;
+  capturer_helper_.InvalidateScreen(DesktopSize(12, 34));
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(Equals(RectToRegion(DesktopRect::MakeWH(12, 34)), region));
 }
 
 TEST_F(ScreenCapturerHelperTest, SizeMostRecent) {
-  ASSERT_EQ(SkISize::Make(0, 0), capturer_helper_.size_most_recent());
-  capturer_helper_.set_size_most_recent(SkISize::Make(12, 34));
-  ASSERT_EQ(SkISize::Make(12, 34), capturer_helper_.size_most_recent());
+  ASSERT_TRUE(capturer_helper_.size_most_recent().is_empty());
+  capturer_helper_.set_size_most_recent(DesktopSize(12, 34));
+  ASSERT_TRUE(
+      DesktopSize(12, 34).equals(capturer_helper_.size_most_recent()));
 }
 
 TEST_F(ScreenCapturerHelperTest, SetLogGridSize) {
-  capturer_helper_.set_size_most_recent(SkISize::Make(10, 10));
+  capturer_helper_.set_size_most_recent(DesktopSize(10, 10));
 
-  SkRegion region;
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeEmpty()), region));
+  DesktopRegion region;
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(Equals(RectToRegion(DesktopRect()), region));
 
-  capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(7, 7, 1, 1)));
-  region.setEmpty();
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeXYWH(7, 7, 1, 1)), region));
+  capturer_helper_.InvalidateRegion(
+      RectToRegion(DesktopRect::MakeXYWH(7, 7, 1, 1)));
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(Equals(RectToRegion(DesktopRect::MakeXYWH(7, 7, 1, 1)), region));
 
   capturer_helper_.SetLogGridSize(-1);
-  capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(7, 7, 1, 1)));
-  region.setEmpty();
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeXYWH(7, 7, 1, 1)), region));
+  capturer_helper_.InvalidateRegion(
+      RectToRegion(DesktopRect::MakeXYWH(7, 7, 1, 1)));
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(Equals(RectToRegion(DesktopRect::MakeXYWH(7, 7, 1, 1)), region));
 
   capturer_helper_.SetLogGridSize(0);
-  capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(7, 7, 1, 1)));
-  region.setEmpty();
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeXYWH(7, 7, 1, 1)), region));
+  capturer_helper_.InvalidateRegion(
+      RectToRegion(DesktopRect::MakeXYWH(7, 7, 1, 1)));
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(Equals(RectToRegion(DesktopRect::MakeXYWH(7, 7, 1, 1)), region));
 
   capturer_helper_.SetLogGridSize(1);
-  capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(7, 7, 1, 1)));
-  region.setEmpty();
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeXYWH(6, 6, 2, 2)), region));
+  capturer_helper_.InvalidateRegion(
+      RectToRegion(DesktopRect::MakeXYWH(7, 7, 1, 1)));
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(Equals(RectToRegion(DesktopRect::MakeXYWH(6, 6, 2, 2)), region));
 
   capturer_helper_.SetLogGridSize(2);
-  capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(7, 7, 1, 1)));
-  region.setEmpty();
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeXYWH(4, 4, 4, 4)), region));
+  capturer_helper_.InvalidateRegion(
+      RectToRegion(DesktopRect::MakeXYWH(7, 7, 1, 1)));
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(Equals(RectToRegion(DesktopRect::MakeXYWH(4, 4, 4, 4)), region));
 
   capturer_helper_.SetLogGridSize(0);
-  capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(7, 7, 1, 1)));
-  region.setEmpty();
-  capturer_helper_.SwapInvalidRegion(&region);
-  ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeXYWH(7, 7, 1, 1)), region));
+  capturer_helper_.InvalidateRegion(
+      RectToRegion(DesktopRect::MakeXYWH(7, 7, 1, 1)));
+  capturer_helper_.TakeInvalidRegion(&region);
+  ASSERT_TRUE(Equals(RectToRegion(DesktopRect::MakeXYWH(7, 7, 1, 1)), region));
 }
 
 void TestExpandRegionToGrid(const SkRegion& region, int log_grid_size,

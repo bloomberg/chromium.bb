@@ -8,11 +8,10 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/video/capture/screen/mouse_cursor_shape.h"
 #include "net/base/ip_endpoint.h"
+#include "remoting/host/chromoting_param_traits.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/transport.h"
-#include "third_party/skia/include/core/SkPoint.h"
-#include "third_party/skia/include/core/SkRect.h"
-#include "third_party/skia/include/core/SkSize.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 #endif  // REMOTING_HOST_CHROMOTING_MESSAGES_H_
 
@@ -63,11 +62,6 @@ IPC_MESSAGE_CONTROL3(ChromotingDaemonNetworkMsg_DesktopAttached,
 // Asks the daemon to send Secure Attention Sequence (SAS) to the current
 // console session.
 IPC_MESSAGE_CONTROL0(ChromotingNetworkDaemonMsg_SendSasToConsole)
-
-IPC_STRUCT_TRAITS_BEGIN(remoting::ScreenResolution)
-  IPC_STRUCT_TRAITS_MEMBER(dimensions_)
-  IPC_STRUCT_TRAITS_MEMBER(dpi_)
-IPC_STRUCT_TRAITS_END()
 
 // Connects the terminal |terminal_id| (i.e. a remote client) to a desktop
 // session.
@@ -138,9 +132,7 @@ IPC_MESSAGE_CONTROL0(ChromotingDesktopDaemonMsg_InjectSas)
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the desktop to the network process.
 
-// Notifies the network process that a shared buffer has been created. Receipt
-// of this message must be confirmed by replying with
-// ChromotingNetworkDesktopMsg_SharedBufferCreated message.
+// Notifies the network process that a shared buffer has been created.
 IPC_MESSAGE_CONTROL3(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
                      int /* id */,
                      IPC::PlatformFileForTransit /* handle */,
@@ -150,31 +142,14 @@ IPC_MESSAGE_CONTROL3(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_ReleaseSharedBuffer,
                      int /* id */)
 
-IPC_STRUCT_TRAITS_BEGIN(SkIPoint)
-  IPC_STRUCT_TRAITS_MEMBER(fX)
-  IPC_STRUCT_TRAITS_MEMBER(fY)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(SkIRect)
-  IPC_STRUCT_TRAITS_MEMBER(fLeft)
-  IPC_STRUCT_TRAITS_MEMBER(fTop)
-  IPC_STRUCT_TRAITS_MEMBER(fRight)
-  IPC_STRUCT_TRAITS_MEMBER(fBottom)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(SkISize)
-  IPC_STRUCT_TRAITS_MEMBER(fWidth)
-  IPC_STRUCT_TRAITS_MEMBER(fHeight)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(media::MouseCursorShape)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(hotspot)
   IPC_STRUCT_TRAITS_MEMBER(data)
 IPC_STRUCT_TRAITS_END()
 
-// Serialized media::ScreenCaptureData structure.
-IPC_STRUCT_BEGIN(SerializedCapturedData)
+// Serialized webrtc::DesktopFrame.
+IPC_STRUCT_BEGIN(SerializedDesktopFrame)
   // ID of the shared memory buffer containing the pixels.
   IPC_STRUCT_MEMBER(int, shared_buffer_id)
 
@@ -182,10 +157,10 @@ IPC_STRUCT_BEGIN(SerializedCapturedData)
   IPC_STRUCT_MEMBER(int, bytes_per_row)
 
   // Captured region.
-  IPC_STRUCT_MEMBER(std::vector<SkIRect>, dirty_region)
+  IPC_STRUCT_MEMBER(std::vector<webrtc::DesktopRect>, dirty_region)
 
   // Dimensions of the buffer in pixels.
-  IPC_STRUCT_MEMBER(SkISize, dimensions)
+  IPC_STRUCT_MEMBER(webrtc::DesktopSize, dimensions)
 
   // Time spent in capture. Unit is in milliseconds.
   IPC_STRUCT_MEMBER(int, capture_time_ms)
@@ -194,12 +169,12 @@ IPC_STRUCT_BEGIN(SerializedCapturedData)
   IPC_STRUCT_MEMBER(int64, client_sequence_number)
 
   // DPI for this frame.
-  IPC_STRUCT_MEMBER(SkIPoint, dpi)
+  IPC_STRUCT_MEMBER(webrtc::DesktopVector, dpi)
 IPC_STRUCT_END()
 
 // Notifies the network process that a shared buffer has been created.
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CaptureCompleted,
-                     SerializedCapturedData /* capture_data */ )
+                     SerializedDesktopFrame /* frame */ )
 
 // Carries a cursor share update from the desktop session agent to the client.
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CursorShapeChanged,
@@ -227,12 +202,6 @@ IPC_MESSAGE_CONTROL3(ChromotingNetworkDesktopMsg_StartSessionAgent,
                      std::string /* authenticated_jid */,
                      remoting::ScreenResolution /* resolution */,
                      bool /* virtual_terminal */)
-
-// Notifies the desktop process that the shared memory buffer has been mapped to
-// the memory of the network process and so it can be safely dropped by
-// the network process at any time.
-IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_SharedBufferCreated,
-                     int /* id */)
 
 IPC_MESSAGE_CONTROL0(ChromotingNetworkDesktopMsg_CaptureFrame)
 

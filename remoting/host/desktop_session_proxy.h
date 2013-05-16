@@ -16,7 +16,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/video/capture/screen/screen_capturer.h"
-#include "media/video/capture/screen/shared_buffer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/screen_resolution.h"
@@ -33,7 +32,7 @@ class ChannelProxy;
 class Message;
 }  // namespace IPC
 
-struct SerializedCapturedData;
+struct SerializedDesktopFrame;
 
 namespace remoting {
 
@@ -124,10 +123,15 @@ class DesktopSessionProxy
  private:
   friend class base::DeleteHelper<DesktopSessionProxy>;
   friend struct DesktopSessionProxyTraits;
+
+  class IpcSharedBufferCore;
+  class IpcSharedBuffer;
+  typedef std::map<int, scoped_refptr<IpcSharedBufferCore> > SharedBuffers;
+
   virtual ~DesktopSessionProxy();
 
   // Returns a shared buffer from the list of known buffers.
-  scoped_refptr<media::SharedBuffer> GetSharedBuffer(int id);
+  scoped_refptr<IpcSharedBufferCore> GetSharedBufferCore(int id);
 
   // Handles AudioPacket notification from the desktop session agent.
   void OnAudioPacket(const std::string& serialized_packet);
@@ -141,7 +145,7 @@ class DesktopSessionProxy
   void OnReleaseSharedBuffer(int id);
 
   // Handles CaptureCompleted notification from the desktop session agent.
-  void OnCaptureCompleted(const SerializedCapturedData& serialized_data);
+  void OnCaptureCompleted(const SerializedDesktopFrame& serialized_frame);
 
   // Handles CursorShapeChanged notification from the desktop session agent.
   void OnCursorShapeChanged(const media::MouseCursorShape& cursor_shape);
@@ -150,9 +154,8 @@ class DesktopSessionProxy
   void OnInjectClipboardEvent(const std::string& serialized_event);
 
   // Posts OnCaptureCompleted() to |video_capturer_| on the video thread,
-  // passing |capture_data|.
-  void PostCaptureCompleted(
-      scoped_refptr<media::ScreenCaptureData> capture_data);
+  // passing |frame|.
+  void PostCaptureCompleted(scoped_ptr<webrtc::DesktopFrame> frame);
 
   // Posts OnCursorShapeChanged() to |video_capturer_| on the video thread,
   // passing |cursor_shape|.
@@ -197,7 +200,8 @@ class DesktopSessionProxy
 
   int pending_capture_frame_requests_;
 
-  typedef std::map<int, scoped_refptr<media::SharedBuffer> > SharedBuffers;
+  // Shared memory buffers by Id. Each buffer is owned by the corresponding
+  // frame.
   SharedBuffers shared_buffers_;
 
   // Keeps the desired screen resolution so it can be passed to a newly attached

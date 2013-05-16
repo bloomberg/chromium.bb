@@ -8,9 +8,10 @@
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "media/base/yuv_convert.h"
-#include "media/video/capture/screen/screen_capture_data.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 extern "C" {
 #define VPX_CODEC_DISABLE_COMPAT 1
@@ -49,7 +50,7 @@ void VideoEncoderVp8::Destroy() {
   }
 }
 
-bool VideoEncoderVp8::Init(const SkISize& size) {
+bool VideoEncoderVp8::Init(const webrtc::DesktopSize& size) {
   Destroy();
   codec_.reset(new vpx_codec_ctx_t());
   image_.reset(new vpx_image_t());
@@ -146,11 +147,9 @@ bool VideoEncoderVp8::Init(const SkISize& size) {
   return true;
 }
 
-void VideoEncoderVp8::PrepareImage(
-    scoped_refptr<media::ScreenCaptureData> capture_data,
-    SkRegion* updated_region) {
-  const SkRegion& region = capture_data->dirty_region();
-  if (region.isEmpty()) {
+void VideoEncoderVp8::PrepareImage(const webrtc::DesktopFrame* frame,
+                                   SkRegion* updated_region) {
+  if (frame->updated_region().is_empty()) {
     updated_region->setEmpty();
     return;
   }
@@ -159,8 +158,11 @@ void VideoEncoderVp8::PrepareImage(
   // This also ensures that all rectangles have even-aligned top-left, which
   // is required for ConvertRGBToYUVWithRect() to work.
   std::vector<SkIRect> aligned_rects;
-  for (SkRegion::Iterator r(region); !r.done(); r.next()) {
-    aligned_rects.push_back(AlignRect(r.rect()));
+  for (webrtc::DesktopRegion::Iterator r(frame->updated_region());
+       !r.IsAtEnd(); r.Advance()) {
+    const webrtc::DesktopRect& rect = r.rect();
+    aligned_rects.push_back(AlignRect(
+      SkIRect::MakeLTRB(rect.left(), rect.top(), rect.right(), rect.bottom())));
   }
   DCHECK(!aligned_rects.empty());
   updated_region->setRects(&aligned_rects[0], aligned_rects.size());
@@ -172,8 +174,8 @@ void VideoEncoderVp8::PrepareImage(
                      SkRegion::kIntersect_Op);
 
   // Convert the updated region to YUV ready for encoding.
-  const uint8* rgb_data = capture_data->data();
-  const int rgb_stride = capture_data->stride();
+  const uint8* rgb_data = frame->data();
+  const int rgb_stride = frame->stride();
   const int y_stride = image_->stride[0];
   DCHECK_EQ(image_->stride[1], image_->stride[2]);
   const int uv_stride = image_->stride[1];
@@ -213,17 +215,16 @@ void VideoEncoderVp8::PrepareActiveMap(const SkRegion& updated_region) {
 }
 
 void VideoEncoderVp8::Encode(
-    scoped_refptr<media::ScreenCaptureData> capture_data,
-    bool key_frame,
+    const webrtc::DesktopFrame* frame,
     const DataAvailableCallback& data_available_callback) {
-  DCHECK_LE(32, capture_data->size().width());
-  DCHECK_LE(32, capture_data->size().height());
+  DCHECK_LE(32, frame->size().width());
+  DCHECK_LE(32, frame->size().height());
 
   base::Time encode_start_time = base::Time::Now();
 
   if (!initialized_ ||
-      (capture_data->size() != SkISize::Make(image_->w, image_->h))) {
-    bool ret = Init(capture_data->size());
+      !frame->size().equals(webrtc::DesktopSize(image_->w, image_->h))) {
+    bool ret = Init(frame->size());
     // TODO(hclam): Handle error better.
     CHECK(ret) << "Initialization of encoder failed";
     initialized_ = ret;
@@ -231,7 +232,7 @@ void VideoEncoderVp8::Encode(
 
   // Convert the updated capture data ready for encode.
   SkRegion updated_region;
-  PrepareImage(capture_data, &updated_region);
+  PrepareImage(frame, &updated_region);
 
   // Update active map based on updated region.
   PrepareActiveMap(updated_region);
@@ -286,17 +287,15 @@ void VideoEncoderVp8::Encode(
   packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
   packet->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET |
                      VideoPacket::LAST_PARTITION);
-  packet->mutable_format()->set_screen_width(capture_data->size().width());
-  packet->mutable_format()->set_screen_height(capture_data->size().height());
-  packet->set_capture_time_ms(capture_data->capture_time_ms());
+  packet->mutable_format()->set_screen_width(frame->size().width());
+  packet->mutable_format()->set_screen_height(frame->size().height());
+  packet->set_capture_time_ms(frame->capture_time_ms());
   packet->set_encode_time_ms(
       (base::Time::Now() - encode_start_time).InMillisecondsRoundedUp());
-  packet->set_client_sequence_number(capture_data->client_sequence_number());
-  SkIPoint dpi(capture_data->dpi());
-  if (dpi.x())
-    packet->mutable_format()->set_x_dpi(dpi.x());
-  if (dpi.y())
-    packet->mutable_format()->set_y_dpi(dpi.y());
+  if (!frame->dpi().is_zero()) {
+    packet->mutable_format()->set_x_dpi(frame->dpi().x());
+    packet->mutable_format()->set_y_dpi(frame->dpi().y());
+  }
   for (SkRegion::Iterator r(updated_region); !r.done(); r.next()) {
     Rect* rect = packet->add_dirty_rects();
     rect->set_x(r.rect().x());

@@ -5,7 +5,7 @@
 #ifndef REMOTING_HOST_DESKTOP_SESSION_AGENT_H_
 #define REMOTING_HOST_DESKTOP_SESSION_AGENT_H_
 
-#include <list>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -16,11 +16,9 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/video/capture/screen/screen_capturer.h"
-#include "media/video/capture/screen/shared_buffer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/protocol/clipboard_stub.h"
-#include "third_party/skia/include/core/SkRect.h"
-#include "third_party/skia/include/core/SkSize.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace IPC {
 class ChannelProxy;
@@ -48,7 +46,8 @@ class InputEventTracker;
 class DesktopSessionAgent
     : public base::RefCountedThreadSafe<DesktopSessionAgent>,
       public IPC::Listener,
-      public media::ScreenCapturer::Delegate,
+      public webrtc::DesktopCapturer::Callback,
+      public media::ScreenCapturer::MouseShapeObserver,
       public ClientSessionControl {
  public:
   class Delegate {
@@ -75,13 +74,11 @@ class DesktopSessionAgent
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
-  // media::ScreenCapturer::Delegate implementation.
-  virtual scoped_refptr<media::SharedBuffer> CreateSharedBuffer(
-      uint32 size) OVERRIDE;
-  virtual void ReleaseSharedBuffer(
-      scoped_refptr<media::SharedBuffer> buffer) OVERRIDE;
-  virtual void OnCaptureCompleted(
-      scoped_refptr<media::ScreenCaptureData> capture_data) OVERRIDE;
+  // webrtc::DesktopCapturer::Callback implementation.
+  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
+  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
+
+  // media::ScreenCapturer::MouseShapeObserver implementation.
   virtual void OnCursorShapeChanged(
       scoped_ptr<media::MouseCursorShape> cursor_shape) OVERRIDE;
 
@@ -102,14 +99,14 @@ class DesktopSessionAgent
   void Stop();
 
  protected:
+  friend class base::RefCountedThreadSafe<DesktopSessionAgent>;
+
   DesktopSessionAgent(
       scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> input_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner);
-
-  friend class base::RefCountedThreadSafe<DesktopSessionAgent>;
   virtual ~DesktopSessionAgent();
 
   // ClientSessionControl interface.
@@ -186,6 +183,12 @@ class DesktopSessionAgent
   }
 
  private:
+  class SharedBuffer;
+  friend class SharedBuffer;
+
+  // Called by SharedBuffer when it's destroyed.
+  void OnSharedBufferDeleted(int id);
+
   // Closes |desktop_pipe_| if it is open.
   void CloseDesktopPipeHandle();
 
@@ -237,20 +240,23 @@ class DesktopSessionAgent
   IPC::PlatformFileForTransit desktop_pipe_;
 
   // Size of the most recent captured video frame.
-  SkISize current_size_;
+  webrtc::DesktopSize current_size_;
 
   // Next shared buffer ID to be used.
   int next_shared_buffer_id_;
 
-  // List of the shared buffers.
-  typedef std::list<scoped_refptr<media::SharedBuffer> > SharedBuffers;
-  SharedBuffers shared_buffers_;
+  // The number of currently allocated shared buffers.
+  int shared_buffers_;
 
   // True if the desktop session agent has been started.
   bool started_;
 
   // Captures the screen.
   scoped_ptr<media::ScreenCapturer> video_capturer_;
+
+  // Keep reference to the last frame sent to make sure shared buffer is alive
+  // before it's received.
+  scoped_ptr<webrtc::DesktopFrame> last_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionAgent);
 };

@@ -49,14 +49,15 @@ class DifferTest : public testing::Test {
     differ_->MarkDirtyBlocks(prev_buffer, curr_buffer);
   }
 
-  void MergeBlocks(SkRegion* dirty) {
+  void MergeBlocks(webrtc::DesktopRegion* dirty) {
     differ_->MergeBlocks(dirty);
   }
 
   // Convenience method to count rectangles in a region.
-  int RegionRectCount(const SkRegion& region) {
+  int RegionRectCount(const webrtc::DesktopRegion& region) {
     int count = 0;
-    for(SkRegion::Iterator iter(region); !iter.done(); iter.next()) {
+    for (webrtc::DesktopRegion::Iterator iter(region);
+         !iter.IsAtEnd(); iter.Advance()) {
       ++count;
     }
     return count;
@@ -144,15 +145,17 @@ class DifferTest : public testing::Test {
   // Verify that |region| contains a rectangle defined by |x|, |y|, |width| and
   // |height|.
   // |x|, |y|, |width| and |height| are specified in block (not pixel) units.
-  bool CheckDirtyRegionContainsRect(const SkRegion& region, int x, int y,
+  bool CheckDirtyRegionContainsRect(const webrtc::DesktopRegion& region,
+                                    int x, int y,
                                     int width, int height) {
-    SkIRect r = SkIRect::MakeXYWH(x * kBlockSize, y * kBlockSize,
-                                  width * kBlockSize, height * kBlockSize);
-    bool found = false;
-    for (SkRegion::Iterator i(region); !found && !i.done(); i.next()) {
-      found = (i.rect() == r);
+    webrtc::DesktopRect r =
+      webrtc::DesktopRect::MakeXYWH(x * kBlockSize, y * kBlockSize,
+                                    width * kBlockSize, height * kBlockSize);
+    for (webrtc::DesktopRegion::Iterator i(region); !i.IsAtEnd(); i.Advance()) {
+      if (i.rect().equals(r))
+        return true;
     }
-    return found;
+    return false;
   }
 
   // Mark the range of blocks specified and then verify that they are
@@ -163,15 +166,19 @@ class DifferTest : public testing::Test {
     ClearDiffInfo();
     MarkBlocks(x_origin, y_origin, width, height);
 
-    SkRegion dirty;
+    webrtc::DesktopRegion dirty;
     MergeBlocks(&dirty);
 
-    bool is_good = dirty.isRect();
-    if (is_good) {
-     is_good = CheckDirtyRegionContainsRect(dirty, x_origin, y_origin,
-                                            width, height);
-    }
-    return is_good;
+
+    webrtc::DesktopRect expected_rect = webrtc::DesktopRect::MakeXYWH(
+        x_origin * kBlockSize, y_origin * kBlockSize,
+        width * kBlockSize, height * kBlockSize);
+
+    // Verify that the region contains expected_rect and it's the only
+    // rectangle.
+    webrtc::DesktopRegion::Iterator it(dirty);
+    return !it.IsAtEnd() && expected_rect.equals(it.rect()) &&
+        (it.Advance(), it.IsAtEnd());
   }
 
   // The differ class we're testing.
@@ -369,10 +376,10 @@ TEST_F(DifferTest, MergeBlocks_Empty) {
   // +---+---+---+---+
   ClearDiffInfo();
 
-  SkRegion dirty;
+  webrtc::DesktopRegion dirty;
   MergeBlocks(&dirty);
 
-  EXPECT_TRUE(dirty.isEmpty());
+  EXPECT_TRUE(dirty.is_empty());
 }
 
 TEST_F(DifferTest, MergeBlocks_SingleBlock) {
@@ -525,7 +532,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRect) {
 // may need to be updated if we modify how we merge blocks.
 TEST_F(DifferTest, MergeBlocks_MultiRect) {
   InitDiffer(kScreenWidth, kScreenHeight);
-  SkRegion dirty;
+  webrtc::DesktopRegion dirty;
 
   // +---+---+---+---+      +---+---+---+
   // |   | X |   | _ |      |   | 0 |   |
@@ -541,7 +548,7 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(0, 1, 1, 1);
   MarkBlocks(2, 2, 1, 1);
 
-  dirty.setEmpty();
+  dirty.Clear();
   MergeBlocks(&dirty);
 
   ASSERT_EQ(3, RegionRectCount(dirty));
@@ -551,10 +558,10 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
 
   // +---+---+---+---+      +---+---+---+
   // |   |   | X | _ |      |   |   | 0 |
-  // +---+---+---+---+      +---+---+---+
-  // | X | X | X | _ |      | 1   1   1 |
-  // +---+---+---+---+  =>  +           +
-  // | X | X | X | _ |      | 1   1   1 |
+  // +---+---+---+---+      +---+---+   +
+  // | X | X | X | _ |      | 1   1 | 0 |
+  // +---+---+---+---+  =>  +       |   +
+  // | X | X | X | _ |      | 1   1 | 0 |
   // +---+---+---+---+      +---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
@@ -562,19 +569,19 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 0, 1, 1);
   MarkBlocks(0, 1, 3, 2);
 
-  dirty.setEmpty();
+  dirty.Clear();
   MergeBlocks(&dirty);
 
   ASSERT_EQ(2, RegionRectCount(dirty));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 0, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 3, 2));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 0, 1, 3));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 2, 2));
 
   // +---+---+---+---+      +---+---+---+
   // |   |   |   | _ |      |   |   |   |
   // +---+---+---+---+      +---+---+---+
   // | X |   | X | _ |      | 0 |   | 1 |
   // +---+---+---+---+  =>  +   +---+   +
-  // | X | X | X | _ |      | 2 | 2 | 2 |
+  // | X | X | X | _ |      | 0 | 2 | 1 |
   // +---+---+---+---+      +---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
@@ -583,20 +590,20 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 1, 1, 1);
   MarkBlocks(0, 2, 3, 1);
 
-  dirty.setEmpty();
+  dirty.Clear();
   MergeBlocks(&dirty);
 
   ASSERT_EQ(3, RegionRectCount(dirty));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 1, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 2, 3, 1));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 2));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 1, 1, 2));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 1, 2, 1, 1));
 
   // +---+---+---+---+      +---+---+---+
   // | X | X | X | _ |      | 0   0   0 |
   // +---+---+---+---+      +---+---+---+
   // | X |   | X | _ |      | 1 |   | 2 |
   // +---+---+---+---+  =>  +   +---+   +
-  // | X | X | X | _ |      | 3 | 3 | 3 |
+  // | X | X | X | _ |      | 1 | 3 | 2 |
   // +---+---+---+---+      +---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
@@ -606,14 +613,14 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 1, 1, 1);
   MarkBlocks(0, 2, 3, 1);
 
-  dirty.setEmpty();
+  dirty.Clear();
   MergeBlocks(&dirty);
 
   ASSERT_EQ(4, RegionRectCount(dirty));
   ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 0, 3, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 1, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 2, 3, 1));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 2));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 1, 1, 2));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 1, 2, 1, 1));
 
   // +---+---+---+---+      +---+---+---+
   // | X | X |   | _ |      | 0   0 |   |
@@ -628,7 +635,7 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(0, 0, 2, 2);
   MarkBlocks(1, 2, 1, 1);
 
-  dirty.setEmpty();
+  dirty.Clear();
   MergeBlocks(&dirty);
 
   ASSERT_EQ(2, RegionRectCount(dirty));

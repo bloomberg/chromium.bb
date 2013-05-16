@@ -116,15 +116,15 @@ void ResizingHostObserver::SetScreenResolution(
 
   // If the implementation returns any sizes, pick the best one according to
   // the algorithm described in CandidateSize::IsBetterThen.
-  std::list<SkISize> sizes =
-      desktop_resizer_->GetSupportedSizes(resolution.dimensions_);
-  if (sizes.empty()) {
+  SkISize dimentions = SkISize::Make(
+      resolution.dimensions().width(), resolution.dimensions().height());
+  std::list<SkISize> sizes = desktop_resizer_->GetSupportedSizes(dimentions);
+  if (sizes.empty())
     return;
-  }
-  CandidateSize best_size(sizes.front(), resolution.dimensions_);
+  CandidateSize best_size(sizes.front(), dimentions);
   for (std::list<SkISize>::const_iterator i = ++sizes.begin();
        i != sizes.end(); ++i) {
-    CandidateSize candidate_size(*i, resolution.dimensions_);
+    CandidateSize candidate_size(*i, dimentions);
     if (candidate_size.IsBetterThan(best_size)) {
       best_size = candidate_size;
     }

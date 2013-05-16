@@ -7,8 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
+#include "media/video/capture/screen/screen_capture_frame_queue.h"
 #include "media/video/capture/screen/screen_capturer.h"
-#include "media/video/capture/screen/screen_capturer_helper.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace media {
 
@@ -24,9 +25,13 @@ class MEDIA_EXPORT ScreenCapturerFake : public ScreenCapturer {
   ScreenCapturerFake();
   virtual ~ScreenCapturerFake();
 
-  // Overridden from ScreenCapturer:
-  virtual void Start(Delegate* delegate) OVERRIDE;
-  virtual void CaptureFrame() OVERRIDE;
+  // webrtc::DesktopCapturer interface.
+  virtual void Start(Callback* callback) OVERRIDE;
+  virtual void Capture(const webrtc::DesktopRegion& rect) OVERRIDE;
+
+  // ScreenCapturer interface.
+  virtual void SetMouseShapeObserver(
+      MouseShapeObserver* mouse_shape_observer) OVERRIDE;
 
  private:
   // Generates an image in the front buffer.
@@ -35,29 +40,17 @@ class MEDIA_EXPORT ScreenCapturerFake : public ScreenCapturer {
   // Called when the screen configuration is changed.
   void ScreenConfigurationChanged();
 
-  Delegate* delegate_;
+  Callback* callback_;
+  MouseShapeObserver* mouse_shape_observer_;
 
-  SkISize size_;
+  webrtc::DesktopSize size_;
   int bytes_per_row_;
   int box_pos_x_;
   int box_pos_y_;
   int box_speed_x_;
   int box_speed_y_;
 
-  ScreenCapturerHelper helper_;
-
-  // We have two buffers for the screen images as required by Capturer.
-  static const int kNumBuffers = 2;
-  uint8* buffers_[kNumBuffers];
-
-  // The current buffer with valid data for reading.
-  int current_buffer_;
-
-  // Used when |delegate_| implements CreateSharedBuffer().
-  scoped_refptr<SharedBuffer> shared_buffers_[kNumBuffers];
-
-  // Used when |delegate_| does not implement CreateSharedBuffer().
-  scoped_ptr<uint8[]> private_buffers_[kNumBuffers];
+  ScreenCaptureFrameQueue queue_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCapturerFake);
 };

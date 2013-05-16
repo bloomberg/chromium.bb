@@ -8,7 +8,7 @@
 #include "base/time.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/proto/video.pb.h"
-#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
@@ -24,17 +24,20 @@ class VideoEncoderVerbatim : public VideoEncoder {
 
   // VideoEncoder interface.
   virtual void Encode(
-      scoped_refptr<media::ScreenCaptureData> capture_data,
-      bool key_frame,
+      const webrtc::DesktopFrame* frame,
       const DataAvailableCallback& data_available_callback) OVERRIDE;
 
  private:
   // Encode a single dirty |rect|.
-  void EncodeRect(const SkIRect& rect, bool last);
+  void EncodeRect(const webrtc::DesktopFrame* frame,
+                  const webrtc::DesktopRect& rect,
+                  bool last);
 
   // Initializes first packet in a sequence of video packets to update screen
   // rectangle |rect|.
-  void PrepareUpdateStart(const SkIRect& rect, VideoPacket* packet);
+  void PrepareUpdateStart(const webrtc::DesktopFrame* frame,
+                          const webrtc::DesktopRect& rect,
+                          VideoPacket* packet);
 
   // Allocates a buffer of the specified |size| inside |packet| and returns the
   // pointer to it.
@@ -43,12 +46,11 @@ class VideoEncoderVerbatim : public VideoEncoder {
   // Submit |packet| to |callback_|.
   void SubmitMessage(VideoPacket* packet, size_t rect_index);
 
-  scoped_refptr<media::ScreenCaptureData> capture_data_;
   DataAvailableCallback callback_;
   base::Time encode_start_time_;
 
   // The most recent screen size.
-  SkISize screen_size_;
+  webrtc::DesktopSize screen_size_;
 
   int max_packet_size_;
 };

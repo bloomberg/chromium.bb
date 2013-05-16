@@ -5,17 +5,17 @@
 #include "remoting/codec/video_encoder_verbatim.h"
 
 #include "base/logging.h"
-#include "media/video/capture/screen/screen_capture_data.h"
+#include "base/stl_util.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {
 
 static const int kPacketSize = 1024 * 1024;
 
 VideoEncoderVerbatim::VideoEncoderVerbatim()
-    : screen_size_(SkISize::Make(0,0)),
-      max_packet_size_(kPacketSize) {
+    : max_packet_size_(kPacketSize) {
 }
 
 void VideoEncoderVerbatim::SetMaxPacketSize(int size) {
@@ -26,35 +26,33 @@ VideoEncoderVerbatim::~VideoEncoderVerbatim() {
 }
 
 void VideoEncoderVerbatim::Encode(
-    scoped_refptr<media::ScreenCaptureData> capture_data,
-    bool key_frame,
+    const webrtc::DesktopFrame* frame,
     const DataAvailableCallback& data_available_callback) {
-  capture_data_ = capture_data;
   callback_ = data_available_callback;
   encode_start_time_ = base::Time::Now();
 
-  const SkRegion& region = capture_data->dirty_region();
-  SkRegion::Iterator iter(region);
-  while (!iter.done()) {
-    SkIRect rect = iter.rect();
-    iter.next();
-    EncodeRect(rect, iter.done());
+  webrtc::DesktopRegion::Iterator iter(frame->updated_region());
+  while (!iter.IsAtEnd()) {
+    const webrtc::DesktopRect& rect = iter.rect();
+    iter.Advance();
+    EncodeRect(frame, rect, iter.IsAtEnd());
   }
 
-  capture_data_ = NULL;
   callback_.Reset();
 }
 
-void VideoEncoderVerbatim::EncodeRect(const SkIRect& rect, bool last) {
-  CHECK(capture_data_->data());
-  const int stride = capture_data_->stride();
+void VideoEncoderVerbatim::EncodeRect(const webrtc::DesktopFrame* frame,
+                                      const webrtc::DesktopRect& rect,
+                                      bool last) {
+  CHECK(frame->data());
+  const int stride = frame->stride();
   const int bytes_per_pixel = 4;
   const int row_size = bytes_per_pixel * rect.width();
 
   scoped_ptr<VideoPacket> packet(new VideoPacket());
-  PrepareUpdateStart(rect, packet.get());
-  const uint8* in = capture_data_->data() +
-      rect.fTop * stride + rect.fLeft * bytes_per_pixel;
+  PrepareUpdateStart(frame, rect, packet.get());
+  const uint8* in = frame->data() +
+      rect.top() * stride + rect.left() * bytes_per_pixel;
   // TODO(hclam): Fill in the sequence number.
   uint8* out = GetOutputBuffer(packet.get(), max_packet_size_);
   int filled = 0;
@@ -88,16 +86,14 @@ void VideoEncoderVerbatim::EncodeRect(const SkIRect& rect, bool last) {
 
       packet->mutable_data()->resize(filled);
       packet->set_flags(packet->flags() | VideoPacket::LAST_PACKET);
-      packet->set_capture_time_ms(capture_data_->capture_time_ms());
+
+      packet->set_capture_time_ms(frame->capture_time_ms());
       packet->set_encode_time_ms(
           (base::Time::Now() - encode_start_time_).InMillisecondsRoundedUp());
-      packet->set_client_sequence_number(
-          capture_data_->client_sequence_number());
-      SkIPoint dpi(capture_data_->dpi());
-      if (dpi.x())
-        packet->mutable_format()->set_x_dpi(dpi.x());
-      if (dpi.y())
-        packet->mutable_format()->set_y_dpi(dpi.y());
+      if (!frame->dpi().is_zero()) {
+        packet->mutable_format()->set_x_dpi(frame->dpi().x());
+        packet->mutable_format()->set_y_dpi(frame->dpi().y());
+      }
       if (last)
         packet->set_flags(packet->flags() | VideoPacket::LAST_PARTITION);
     }
@@ -110,18 +106,19 @@ void VideoEncoderVerbatim::EncodeRect(const SkIRect& rect, bool last) {
   }
 }
 
-void VideoEncoderVerbatim::PrepareUpdateStart(const SkIRect& rect,
+void VideoEncoderVerbatim::PrepareUpdateStart(const webrtc::DesktopFrame* frame,
+                                              const webrtc::DesktopRect& rect,
                                               VideoPacket* packet) {
   packet->set_flags(packet->flags() | VideoPacket::FIRST_PACKET);
 
   VideoPacketFormat* format = packet->mutable_format();
-  format->set_x(rect.fLeft);
-  format->set_y(rect.fTop);
+  format->set_x(rect.left());
+  format->set_y(rect.top());
   format->set_width(rect.width());
   format->set_height(rect.height());
   format->set_encoding(VideoPacketFormat::ENCODING_VERBATIM);
-  if (capture_data_->size() != screen_size_) {
-    screen_size_ = capture_data_->size();
+  if (frame->size().equals(screen_size_)) {
+    screen_size_ = frame->size();
     format->set_screen_width(screen_size_.width());
     format->set_screen_height(screen_size_.height());
   }
@@ -129,9 +126,7 @@ void VideoEncoderVerbatim::PrepareUpdateStart(const SkIRect& rect,
 
 uint8* VideoEncoderVerbatim::GetOutputBuffer(VideoPacket* packet, size_t size) {
   packet->mutable_data()->resize(size);
-  // TODO(ajwong): Is there a better way to do this at all???
-  return const_cast<uint8*>(reinterpret_cast<const uint8*>(
-      packet->mutable_data()->data()));
+  return reinterpret_cast<uint8*>(string_as_array(packet->mutable_data()));
 }
 
 }  // namespace remoting

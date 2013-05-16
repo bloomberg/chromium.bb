@@ -10,9 +10,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "media/video/capture/screen/mouse_cursor_shape.h"
-#include "media/video/capture/screen/screen_capture_data.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace media {
 
@@ -22,7 +22,7 @@ const int kBytesPerPixel = 4;
 
 class ScreenCaptureDevice::Core
     : public base::RefCountedThreadSafe<Core>,
-      public ScreenCapturer::Delegate {
+      public webrtc::DesktopCapturer::Callback {
  public:
   explicit Core(scoped_refptr<base::SequencedTaskRunner> task_runner);
 
@@ -39,16 +39,13 @@ class ScreenCaptureDevice::Core
   void Stop();
   void DeAllocate();
 
-  // ScreenCapturer::Delegate interface. Called by |screen_capturer_| on the
-  // |task_runner_|.
-  virtual void OnCaptureCompleted(
-      scoped_refptr<ScreenCaptureData> capture_data) OVERRIDE;
-  virtual void OnCursorShapeChanged(
-      scoped_ptr<MouseCursorShape> cursor_shape) OVERRIDE;
-
  private:
   friend class base::RefCountedThreadSafe<Core>;
   virtual ~Core();
+
+  // webrtc::DesktopCapturer::Callback interface
+  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
+  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
 
   // Helper methods that run on the |task_runner_|. Posted from the
   // corresponding public methods.
@@ -88,7 +85,7 @@ class ScreenCaptureDevice::Core
   // capture at least one frame. Once screen size is known it's stored in
   // |frame_size_|.
   bool waiting_for_frame_size_;
-  SkISize frame_size_;
+  webrtc::DesktopSize frame_size_;
   SkBitmap resized_bitmap_;
 
   // True between DoStart() and DoStop(). Can't just check |event_handler_|
@@ -152,16 +149,28 @@ void ScreenCaptureDevice::Core::DeAllocate() {
   task_runner_->PostTask(FROM_HERE, base::Bind(&Core::DoDeAllocate, this));
 }
 
+webrtc::SharedMemory*
+ScreenCaptureDevice::Core::CreateSharedMemory(size_t size) {
+  return NULL;
+}
+
 void ScreenCaptureDevice::Core::OnCaptureCompleted(
-    scoped_refptr<ScreenCaptureData> capture_data) {
+    webrtc::DesktopFrame* frame) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(capture_in_progress_);
-  DCHECK(!capture_data->size().isEmpty());
 
   capture_in_progress_ = false;
 
+  if (!frame) {
+    LOG(ERROR) << "Failed to capture a frame.";
+    event_handler_->OnError();
+    return;
+  }
+
+  scoped_ptr<webrtc::DesktopFrame> owned_frame(frame);
+
   if (waiting_for_frame_size_) {
-    frame_size_ = capture_data->size();
+    frame_size_ = frame->size();
     waiting_for_frame_size_ = false;
 
     // Inform the EventHandler of the video frame dimensions and format.
@@ -183,9 +192,9 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
     return;
 
   size_t buffer_size = frame_size_.width() * frame_size_.height() *
-      ScreenCaptureData::kBytesPerPixel;
+      webrtc::DesktopFrame::kBytesPerPixel;
 
-  if (capture_data->size() == frame_size_) {
+  if (frame->size().equals(frame_size_)) {
     // If the captured frame matches the requested size, we don't need to
     // resize it.
     resized_bitmap_.reset();
@@ -193,8 +202,7 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
     base::AutoLock auto_lock(event_handler_lock_);
     if (event_handler_) {
       event_handler_->OnIncomingCapturedFrame(
-          capture_data->data(), buffer_size, base::Time::Now(),
-          0, false, false);
+          frame->data(), buffer_size, base::Time::Now(), 0, false, false);
     }
     return;
   }
@@ -203,7 +211,7 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
   // is stored to |resized_bitmap_|. Only regions of the screen that are
   // changing are copied.
 
-  SkRegion dirty_region = capture_data->dirty_region();
+  webrtc::DesktopRegion dirty_region = frame->updated_region();
 
   if (resized_bitmap_.width() != frame_size_.width() ||
       resized_bitmap_.height() != frame_size_.height()) {
@@ -211,13 +219,13 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
                               frame_size_.width(), frame_size_.height());
     resized_bitmap_.setIsOpaque(true);
     resized_bitmap_.allocPixels();
-    dirty_region.setRect(SkIRect::MakeSize(frame_size_));
+    dirty_region.SetRect(webrtc::DesktopRect::MakeSize(frame_size_));
   }
 
   float scale_x = static_cast<float>(frame_size_.width()) /
-      capture_data->size().width();
+      frame->size().width();
   float scale_y = static_cast<float>(frame_size_.height()) /
-      capture_data->size().height();
+      frame->size().height();
   float scale;
   float x, y;
   // Center the image in case aspect ratio is different.
@@ -236,16 +244,17 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
   SkCanvas canvas(&device);
   canvas.scale(scale, scale);
 
-  int source_stride = capture_data->stride();
-  for (SkRegion::Iterator i(dirty_region); !i.done(); i.next()) {
+  int source_stride = frame->stride();
+  for (webrtc::DesktopRegion::Iterator i(dirty_region); !i.IsAtEnd();
+       i.Advance()) {
     SkBitmap source_bitmap;
     source_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                             i.rect().width(), i.rect().height(),
                             source_stride);
     source_bitmap.setIsOpaque(true);
     source_bitmap.setPixels(
-        capture_data->data() + i.rect().top() * source_stride +
-        i.rect().left() * ScreenCaptureData::kBytesPerPixel);
+        frame->data() + i.rect().top() * source_stride +
+        i.rect().left() * webrtc::DesktopFrame::kBytesPerPixel);
     canvas.drawBitmap(source_bitmap, i.rect().left() + x / scale,
                       i.rect().top() + y / scale, NULL);
   }
@@ -256,13 +265,6 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
         reinterpret_cast<uint8*>(resized_bitmap_.getPixels()), buffer_size,
         base::Time::Now(), 0, false, false);
   }
-}
-
-void ScreenCaptureDevice::Core::OnCursorShapeChanged(
-    scoped_ptr<MouseCursorShape> cursor_shape) {
-  // TODO(sergeyu): Store mouse cursor shape and then render it to each captured
-  // frame. crbug.com/173265 .
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 }
 
 void ScreenCaptureDevice::Core::DoAllocate(int frame_rate) {
@@ -338,16 +340,14 @@ void ScreenCaptureDevice::Core::OnCaptureTimer() {
 }
 
 void ScreenCaptureDevice::Core::DoCapture() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!capture_in_progress_);
 
   capture_in_progress_ = true;
-  screen_capturer_->CaptureFrame();
+  screen_capturer_->Capture(webrtc::DesktopRegion());
 
-  // Assume that ScreenCapturer always calls OnCaptureCompleted()
-  // callback before it returns.
-  //
-  // TODO(sergeyu): Fix ScreenCapturer to return video frame
-  // synchronously instead of using Delegate interface.
+  // Currently only synchronous implementations of DesktopCapturer are
+  // supported.
   DCHECK(!capture_in_progress_);
 }
 

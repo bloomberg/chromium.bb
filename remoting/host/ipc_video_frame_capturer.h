@@ -29,23 +29,31 @@ class IpcVideoFrameCapturer : public media::ScreenCapturer {
       scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
   virtual ~IpcVideoFrameCapturer();
 
-  // media::ScreenCapturer interface.
-  virtual void Start(Delegate* delegate) OVERRIDE;
-  virtual void CaptureFrame() OVERRIDE;
+  // webrtc::DesktopCapturer interface.
+  virtual void Start(Callback* callback) OVERRIDE;
+  virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE;
 
-  // Called when a video frame has been captured. |capture_data| describes
-  // a captured frame.
-  void OnCaptureCompleted(scoped_refptr<media::ScreenCaptureData> capture_data);
+  // media::ScreenCapturer interface.
+  virtual void SetMouseShapeObserver(
+      MouseShapeObserver* mouse_shape_observer) OVERRIDE;
+
+  // Called when a video |frame| has been captured.
+  void OnCaptureCompleted(scoped_ptr<webrtc::DesktopFrame> frame);
 
   // Called when the cursor shape has changed.
   void OnCursorShapeChanged(scoped_ptr<media::MouseCursorShape> cursor_shape);
 
  private:
-  // Points to the delegate passed to media::ScreenCapturer::Start().
-  media::ScreenCapturer::Delegate* delegate_;
+  // Points to the callback passed to media::ScreenCapturer::Start().
+  media::ScreenCapturer::Callback* callback_;
+
+  MouseShapeObserver* mouse_shape_observer_;
 
   // Wraps the IPC channel to the desktop session agent.
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;
+
+  // Set to true when a frame is being captured.
+  bool capture_pending_;
 
   // Used to cancel tasks pending on the capturer when it is stopped.
   base::WeakPtrFactory<IpcVideoFrameCapturer> weak_factory_;

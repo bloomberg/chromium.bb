@@ -7,22 +7,19 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "media/base/media_export.h"
-#include "third_party/skia/include/core/SkPoint.h"
-#include "third_party/skia/include/core/SkSize.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace media {
 
 // Type used to return mouse cursor shape from video capturers.
 struct MEDIA_EXPORT MouseCursorShape {
-  MouseCursorShape();
-  ~MouseCursorShape();
-
   // Size of the cursor in screen pixels.
-  SkISize size;
+  webrtc::DesktopSize size;
 
   // Coordinates of the cursor hotspot relative to upper-left corner.
-  SkIPoint hotspot;
+  webrtc::DesktopVector hotspot;
 
   // Cursor pixmap data in 32-bit BGRA format.
   std::string data;

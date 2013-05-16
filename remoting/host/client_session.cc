@@ -99,8 +99,13 @@ void ClientSession::NotifyClientResolution(
     const protocol::ClientResolution& resolution) {
   DCHECK(CalledOnValidThread());
 
-  if (!resolution.has_dips_width() || !resolution.has_dips_height())
+  // TODO(sergeyu): Move these checks to protocol layer.
+  if (!resolution.has_dips_width() || !resolution.has_dips_height() ||
+      resolution.dips_width() < 0 || resolution.dips_height() < 0 ||
+      resolution.width() <= 0 || resolution.height() <= 0) {
+    LOG(ERROR) << "Received invalid ClientResolution message.";
     return;
+  }
 
   VLOG(1) << "Received ClientResolution (dips_width="
           << resolution.dips_width() << ", dips_height="
@@ -110,12 +115,11 @@ void ClientSession::NotifyClientResolution(
     return;
 
   ScreenResolution client_resolution(
-      SkISize::Make(resolution.dips_width(), resolution.dips_height()),
-      SkIPoint::Make(kDefaultDPI, kDefaultDPI));
+      webrtc::DesktopSize(resolution.dips_width(), resolution.dips_height()),
+      webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
 
   // Try to match the client's resolution.
-  if (client_resolution.IsValid())
-    screen_controls_->SetScreenResolution(client_resolution);
+  screen_controls_->SetScreenResolution(client_resolution);
 }
 
 void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {

@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/video/capture/screen/screen_capture_data.h"
 #include "remoting/codec/codec_test.h"
 #include "remoting/proto/video.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace {
 
@@ -39,25 +39,21 @@ class VideoEncoderCallback {
 TEST(VideoEncoderVp8Test, TestSizeChangeNoLeak) {
   int height = 1000;
   int width = 1000;
-  const int kBytesPerPixel = 4;
 
   VideoEncoderVp8 encoder;
   VideoEncoderCallback callback;
 
-  std::vector<uint8> buffer(width * height * kBytesPerPixel);
-  scoped_refptr<media::ScreenCaptureData> capture_data(
-      new media::ScreenCaptureData(&buffer.front(), width * kBytesPerPixel,
-                                   SkISize::Make(width, height)));
-  encoder.Encode(capture_data, false,
-                 base::Bind(&VideoEncoderCallback::DataAvailable,
-                            base::Unretained(&callback)));
+  scoped_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(
+      webrtc::DesktopSize(width, height)));
+
+  encoder.Encode(frame.get(), base::Bind(&VideoEncoderCallback::DataAvailable,
+                                         base::Unretained(&callback)));
 
   height /= 2;
-  capture_data = new media::ScreenCaptureData(
-      &buffer.front(), width * kBytesPerPixel, SkISize::Make(width, height));
-  encoder.Encode(capture_data, false,
-                 base::Bind(&VideoEncoderCallback::DataAvailable,
-                            base::Unretained(&callback)));
+  frame.reset(new webrtc::BasicDesktopFrame(
+      webrtc::DesktopSize(width, height)));
+  encoder.Encode(frame.get(), base::Bind(&VideoEncoderCallback::DataAvailable,
+                                         base::Unretained(&callback)));
 }
 
 class VideoEncoderDpiCallback {
@@ -73,17 +69,14 @@ class VideoEncoderDpiCallback {
 TEST(VideoEncoderVp8Test, TestDpiPropagation) {
   int height = 32;
   int width = 32;
-  const int kBytesPerPixel = 4;
 
   VideoEncoderVp8 encoder;
   VideoEncoderDpiCallback callback;
 
-  std::vector<uint8> buffer(width * height * kBytesPerPixel);
-  scoped_refptr<media::ScreenCaptureData> capture_data(
-      new media::ScreenCaptureData(&buffer.front(), width * kBytesPerPixel,
-                                   SkISize::Make(width, height)));
-  capture_data->set_dpi(SkIPoint::Make(96, 97));
-  encoder.Encode(capture_data, false,
+  scoped_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(
+      webrtc::DesktopSize(width, height)));
+  frame->set_dpi(webrtc::DesktopVector(96, 97));
+  encoder.Encode(frame.get(),
                  base::Bind(&VideoEncoderDpiCallback::DataAvailable,
                             base::Unretained(&callback)));
 }

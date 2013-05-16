@@ -10,13 +10,13 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
-#include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace media {
 
 typedef uint8 DiffInfo;
 
-// TODO: Simplify differ now that we are working with SkRegions.
+// TODO: Simplify differ now that we are working with webrtc::DesktopRegion.
 // diff_info_ should no longer be needed, as we can put our data directly into
 // the region that we are calculating.
 // http://crbug.com/92379
@@ -37,7 +37,7 @@ class MEDIA_EXPORT Differ {
   // Given the previous and current screen buffer, calculate the dirty region
   // that encloses all of the changed pixels in the new screen.
   void CalcDirtyRegion(const void* prev_buffer, const void* curr_buffer,
-                       SkRegion* region);
+                       webrtc::DesktopRegion* region);
 
  private:
   // Allow tests to access our private parts.
@@ -49,7 +49,7 @@ class MEDIA_EXPORT Differ {
   // After the dirty blocks have been identified, this routine merges adjacent
   // blocks into a region.
   // The goal is to minimize the region that covers the dirty blocks.
-  void MergeBlocks(SkRegion* region);
+  void MergeBlocks(webrtc::DesktopRegion* region);
 
   // Check for diffs in upper-left portion of the block. The size of the portion
   // to check is specified by the |width| and |height| values.

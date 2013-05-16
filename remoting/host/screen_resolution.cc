@@ -7,20 +7,27 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/logging.h"
+
 namespace remoting {
 
 ScreenResolution::ScreenResolution()
-    : dimensions_(SkISize::Make(0, 0)),
-      dpi_(SkIPoint::Make(0, 0)) {
+    : dimensions_(webrtc::DesktopSize(0, 0)),
+      dpi_(webrtc::DesktopVector(0, 0)) {
 }
 
-ScreenResolution::ScreenResolution(const SkISize& dimensions,
-                                   const SkIPoint& dpi)
+ScreenResolution::ScreenResolution(const webrtc::DesktopSize& dimensions,
+                                   const webrtc::DesktopVector& dpi)
     : dimensions_(dimensions),
       dpi_(dpi) {
+  // Check that dimensions are not negative.
+  DCHECK(!dimensions.is_empty() || dimensions.equals(webrtc::DesktopSize()));
+  DCHECK_GE(dpi.x(), 0);
+  DCHECK_GE(dpi.y(), 0);
 }
 
-SkISize ScreenResolution::ScaleDimensionsToDpi(const SkIPoint& new_dpi) const {
+webrtc::DesktopSize ScreenResolution::ScaleDimensionsToDpi(
+    const webrtc::DesktopVector& new_dpi) const {
   int64 width = dimensions_.width();
   int64 height = dimensions_.height();
 
@@ -29,15 +36,11 @@ SkISize ScreenResolution::ScaleDimensionsToDpi(const SkIPoint& new_dpi) const {
                    static_cast<int64>(std::numeric_limits<int32>::max()));
   height = std::min(height * new_dpi.y() / dpi_.y(),
                     static_cast<int64>(std::numeric_limits<int32>::max()));
-  return SkISize::Make(static_cast<int32>(width), static_cast<int32>(height));
+  return webrtc::DesktopSize(width, height);
 }
 
 bool ScreenResolution::IsEmpty() const {
-  return dimensions_.isEmpty() || dpi_.x() <= 0 || dpi_.y() <= 0;
-}
-
-bool ScreenResolution::IsValid() const {
-  return !IsEmpty() || dimensions_.isZero();
+  return dimensions_.is_empty() || dpi_.is_zero();
 }
 
 }  // namespace remoting

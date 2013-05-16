@@ -5,4 +5,5 @@ include_rules = [
   "+google/protobuf",
   "+third_party/opus",
   "+third_party/speex",
+  "+third_party/webrtc",
 ]

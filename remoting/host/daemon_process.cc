@@ -29,9 +29,9 @@ namespace {
 const char kApplicationName[] = "chromoting";
 
 std::ostream& operator<<(std::ostream& os, const ScreenResolution& resolution) {
-  return os << resolution.dimensions_.width() << "x"
-            << resolution.dimensions_.height() << " at "
-            << resolution.dpi_.x() << "x" << resolution.dpi_.y() << " DPI";
+  return os << resolution.dimensions().width() << "x"
+            << resolution.dimensions().height() << " at "
+            << resolution.dpi().x() << "x" << resolution.dpi().y() << " DPI";
 }
 
 }  // namespace
@@ -188,13 +188,6 @@ void DaemonProcess::CreateDesktopSession(int terminal_id,
   // Terminal IDs cannot be reused. Update the expected next terminal ID.
   next_terminal_id_ = std::max(next_terminal_id_, terminal_id + 1);
 
-  // Validate |resolution| and restart the sender if it is not valid.
-  if (!resolution.IsValid()) {
-    LOG(ERROR) << "Invalid resolution specified: " << resolution;
-    CrashNetworkProcess(FROM_HERE);
-    return;
-  }
-
   // Create the desktop session.
   scoped_ptr<DesktopSession> session = DoCreateDesktopSession(
       terminal_id, resolution, virtual_terminal);
@@ -223,7 +216,7 @@ void DaemonProcess::SetScreenResolution(int terminal_id,
   }
 
   // Validate |resolution| and restart the sender if it is not valid.
-  if (!resolution.IsValid()) {
+  if (resolution.IsEmpty()) {
     LOG(ERROR) << "Invalid resolution specified: " << resolution;
     CrashNetworkProcess(FROM_HERE);
     return;

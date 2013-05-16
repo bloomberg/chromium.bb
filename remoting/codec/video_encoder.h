@@ -7,19 +7,19 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "media/base/data_buffer.h"
 
-namespace media {
-class ScreenCaptureData;
-}  // namespace media
+class SkRegion;
+
+namespace webrtc {
+class DesktopFrame;
+}  // namespace webrtc
 
 namespace remoting {
 
 class VideoPacket;
 
-// A class to perform the task of encoding a continous stream of
-// images.
-// This class operates asynchronously to enable maximum throughput.
+// A class to perform the task of encoding a continuous stream of images. The
+// interface is asynchronous to enable maximum throughput.
 class VideoEncoder {
  public:
 
@@ -29,15 +29,10 @@ class VideoEncoder {
 
   virtual ~VideoEncoder() {}
 
-  // Encode an image stored in |capture_data|.
-  //
-  // If |key_frame| is true, the encoder should not reference
-  // previous encode and encode the full frame.
-  //
-  // When encoded data is available, partial or full |data_available_callback|
-  // is called.
-  virtual void Encode(scoped_refptr<media::ScreenCaptureData> capture_data,
-                      bool key_frame,
+  // Encode an image stored in |frame|. Doesn't take ownership of |frame|. When
+  // encoded data is available, partial or full |data_available_callback| is
+  // called.
+  virtual void Encode(const webrtc::DesktopFrame* frame,
                       const DataAvailableCallback& data_available_callback) = 0;
 };
 

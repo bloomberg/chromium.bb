@@ -11,8 +11,7 @@
 
 #include "base/basictypes.h"
 #include "media/base/media_export.h"
-#include "third_party/skia/include/core/SkPoint.h"
-#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace media {
 
@@ -24,10 +23,10 @@ struct MEDIA_EXPORT MacDisplayConfiguration {
   CGDirectDisplayID id;
 
   // Bounds of this display in Density-Independent Pixels (DIPs).
-  SkIRect bounds;
+  webrtc::DesktopRect bounds;
 
   // Bounds of this display in physical pixels.
-  SkIRect pixel_bounds;
+  webrtc::DesktopRect pixel_bounds;
 
   // Scale factor from DIPs to physical pixels.
   float dip_to_pixel_scale;
@@ -49,10 +48,10 @@ struct MEDIA_EXPORT MacDesktopConfiguration {
   MEDIA_EXPORT static MacDesktopConfiguration GetCurrent(Origin origin);
 
   // Bounds of the desktop in Density-Independent Pixels (DIPs).
-  SkIRect bounds;
+  webrtc::DesktopRect bounds;
 
   // Bounds of the desktop in physical pixels.
-  SkIRect pixel_bounds;
+  webrtc::DesktopRect pixel_bounds;
 
   // Scale factor from DIPs to physical pixels.
   float dip_to_pixel_scale;

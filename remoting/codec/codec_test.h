@@ -6,8 +6,10 @@
 #define REMOTING_CODEC_CODEC_TEST_H_
 
 #include "base/memory/ref_counted.h"
-#include "media/base/video_frame.h"
-#include "media/video/capture/screen/screen_capture_data.h"
+
+namespace webrtc {
+class DesktopSize;
+}
 
 namespace remoting {
 
@@ -33,8 +35,8 @@ void TestVideoEncoderDecoder(VideoEncoder* encoder,
 // pair.
 void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
                                      VideoDecoder* decoder,
-                                     const SkISize& screen_size,
-                                     const SkISize& view_size,
+                                     const webrtc::DesktopSize& screen_size,
+                                     const webrtc::DesktopSize& view_size,
                                      double max_error_limit,
                                      double mean_error_limit);
 

@@ -6,22 +6,20 @@
 
 #include "media/video/capture/screen/screen_capturer.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace media {
 
-MockScreenCapturer::MockScreenCapturer() {
-}
+MockScreenCapturer::MockScreenCapturer() {}
+MockScreenCapturer::~MockScreenCapturer() {}
 
-MockScreenCapturer::~MockScreenCapturer() {
-}
+MockScreenCapturerCallback::MockScreenCapturerCallback() {}
+MockScreenCapturerCallback::~MockScreenCapturerCallback() {}
 
-MockScreenCapturerDelegate::MockScreenCapturerDelegate() {
-}
+MockMouseShapeObserver::MockMouseShapeObserver() {}
+MockMouseShapeObserver::~MockMouseShapeObserver() {}
 
-MockScreenCapturerDelegate::~MockScreenCapturerDelegate() {
-}
-
-void MockScreenCapturerDelegate::OnCursorShapeChanged(
+void MockMouseShapeObserver::OnCursorShapeChanged(
     scoped_ptr<MouseCursorShape> cursor_shape) {
   // Notify the mock method.
   OnCursorShapeChangedPtr(cursor_shape.get());

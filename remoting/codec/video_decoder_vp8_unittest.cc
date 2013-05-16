@@ -8,6 +8,7 @@
 #include "remoting/codec/codec_test.h"
 #include "remoting/codec/video_encoder_vp8.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
@@ -19,10 +20,11 @@ class VideoDecoderVp8Test : public testing::Test {
   void TestGradient(int screen_width, int screen_height,
                     int view_width, int view_height,
                     double max_error_limit, double mean_error_limit) {
-    TestVideoEncoderDecoderGradient(&encoder_, &decoder_,
-                                    SkISize::Make(screen_width, screen_height),
-                                    SkISize::Make(view_width, view_height),
-                                    max_error_limit, mean_error_limit);
+    TestVideoEncoderDecoderGradient(
+        &encoder_, &decoder_,
+        webrtc::DesktopSize(screen_width, screen_height),
+        webrtc::DesktopSize(view_width, view_height),
+        max_error_limit, mean_error_limit);
   }
 };
 

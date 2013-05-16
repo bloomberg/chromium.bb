@@ -369,20 +369,13 @@
         'video/capture/screen/differ.h',
         'video/capture/screen/differ_block.cc',
         'video/capture/screen/differ_block.h',
-        'video/capture/screen/x11/x_server_pixel_buffer.cc',
-        'video/capture/screen/x11/x_server_pixel_buffer.h',
-        'video/capture/screen/mac/desktop_configuration.mm',
         'video/capture/screen/mac/desktop_configuration.h',
+        'video/capture/screen/mac/desktop_configuration.mm',
         'video/capture/screen/mac/scoped_pixel_buffer_object.cc',
         'video/capture/screen/mac/scoped_pixel_buffer_object.h',
-        'video/capture/screen/mouse_cursor_shape.cc',
         'video/capture/screen/mouse_cursor_shape.h',
-        'video/capture/screen/screen_capture_data.cc',
-        'video/capture/screen/screen_capture_data.h',
         'video/capture/screen/screen_capture_device.cc',
         'video/capture/screen/screen_capture_device.h',
-        'video/capture/screen/screen_capture_frame.cc',
-        'video/capture/screen/screen_capture_frame.h',
         'video/capture/screen/screen_capture_frame_queue.cc',
         'video/capture/screen/screen_capture_frame_queue.h',
         'video/capture/screen/screen_capturer.h',
@@ -390,16 +383,18 @@
         'video/capture/screen/screen_capturer_fake.h',
         'video/capture/screen/screen_capturer_helper.cc',
         'video/capture/screen/screen_capturer_helper.h',
-        'video/capture/screen/screen_capturer_x11.cc',
         'video/capture/screen/screen_capturer_mac.mm',
         'video/capture/screen/screen_capturer_null.cc',
         'video/capture/screen/screen_capturer_win.cc',
-        'video/capture/screen/shared_buffer.cc',
-        'video/capture/screen/shared_buffer.h',
+        'video/capture/screen/screen_capturer_x11.cc',
+        'video/capture/screen/shared_desktop_frame.cc',
+        'video/capture/screen/shared_desktop_frame.h',
         'video/capture/screen/win/desktop.cc',
         'video/capture/screen/win/desktop.h',
         'video/capture/screen/win/scoped_thread_desktop.cc',
         'video/capture/screen/win/scoped_thread_desktop.h',
+        'video/capture/screen/x11/x_server_pixel_buffer.cc',
+        'video/capture/screen/x11/x_server_pixel_buffer.h',
         'video/capture/video_capture.h',
         'video/capture/video_capture_device.h',
         'video/capture/video_capture_device_dummy.cc',
@@ -848,7 +843,11 @@
             'mp4/track_run_iterator.h',
           ],
         }],
-        [ 'screen_capture_supported==0', {
+        [ 'screen_capture_supported==1', {
+          'dependencies': [
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+          ],
+        }, {
           'sources/': [
             ['exclude', '^video/capture/screen/'],
           ],
@@ -989,7 +988,6 @@
         'filters/video_renderer_base_unittest.cc',
         'video/capture/screen/differ_block_unittest.cc',
         'video/capture/screen/differ_unittest.cc',
-        'video/capture/screen/shared_buffer_unittest.cc',
         'video/capture/screen/screen_capture_device_unittest.cc',
         'video/capture/screen/screen_capturer_helper_unittest.cc',
         'video/capture/screen/screen_capturer_mac_unittest.cc',
@@ -1093,7 +1091,11 @@
             'media_sse',
           ],
         }],
-        ['screen_capture_supported == 0', {
+        ['screen_capture_supported==1', {
+          'dependencies': [
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+          ],
+        }, {
           'sources/': [
             ['exclude', '^video/capture/screen/'],
           ],
@@ -1148,7 +1150,11 @@
         'video/capture/screen/screen_capturer_mock_objects.h',
       ],
       'conditions': [
-        [ 'screen_capture_supported == 0', {
+        [ 'screen_capture_supported == 1', {
+          'dependencies': [
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+          ],
+        }, {
           'sources/': [
             ['exclude', '^video/capture/screen/'],
           ],

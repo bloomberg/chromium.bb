@@ -15,7 +15,6 @@
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "media/video/capture/screen/mouse_cursor_shape.h"
-#include "media/video/capture/screen/screen_capture_data.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/internal.pb.h"
@@ -24,12 +23,13 @@
 #include "remoting/protocol/message_decoder.h"
 #include "remoting/protocol/video_stub.h"
 #include "remoting/protocol/util.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {
 
 // Maximum number of frames that can be processed simultaneously.
 // TODO(hclam): Move this value to CaptureScheduler.
-static const int kMaxPendingCaptures = 2;
+static const int kMaxPendingFrames = 2;
 
 VideoScheduler::VideoScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
@@ -46,7 +46,8 @@ VideoScheduler::VideoScheduler(
       encoder_(encoder.Pass()),
       cursor_stub_(cursor_stub),
       video_stub_(video_stub),
-      pending_captures_(0),
+      pending_frames_(0),
+      capture_pending_(false),
       did_skip_frame_(false),
       is_paused_(false),
       sequence_number_(0) {
@@ -59,28 +60,31 @@ VideoScheduler::VideoScheduler(
 
 // Public methods --------------------------------------------------------------
 
-void VideoScheduler::OnCaptureCompleted(
-    scoped_refptr<media::ScreenCaptureData> capture_data) {
+webrtc::SharedMemory* VideoScheduler::CreateSharedMemory(size_t size) {
+  return NULL;
+}
+
+void VideoScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
-  // Do nothing if the scheduler is being stopped.
-  if (!capturer_)
-    return;
+  capture_pending_ = false;
 
-  if (capture_data) {
+  scoped_ptr<webrtc::DesktopFrame> owned_frame(frame);
+
+  if (frame) {
     scheduler_.RecordCaptureTime(
-        base::TimeDelta::FromMilliseconds(capture_data->capture_time_ms()));
-
-    // The best way to get this value is by binding the sequence number to
-    // the callback when calling CaptureInvalidRects(). However the callback
-    // system doesn't allow this. Reading from the member variable is
-    // accurate as long as capture is synchronous as the following statement
-    // will obtain the most recent sequence number received.
-    capture_data->set_client_sequence_number(sequence_number_);
+        base::TimeDelta::FromMilliseconds(frame->capture_time_ms()));
   }
 
   encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::EncodeFrame, this, capture_data));
+      FROM_HERE, base::Bind(&VideoScheduler::EncodeFrame, this,
+                            base::Passed(&owned_frame), sequence_number_));
+
+  // If a frame was skipped, try to capture it again.
+  if (did_skip_frame_) {
+    capture_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoScheduler::CaptureNextFrame, this));
+  }
 }
 
 void VideoScheduler::OnCursorShapeChanged(
@@ -163,6 +167,7 @@ void VideoScheduler::StartOnCaptureThread() {
   DCHECK(!capture_timer_);
 
   // Start the capturer and let it notify us if cursor shape changes.
+  capturer_->SetMouseShapeObserver(this);
   capturer_->Start(this);
 
   capture_timer_.reset(new base::OneShotTimer<VideoScheduler>());
@@ -174,17 +179,12 @@ void VideoScheduler::StartOnCaptureThread() {
 void VideoScheduler::StopOnCaptureThread() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
+  // This doesn't deleted already captured frames, so encoder can keep using the
+  // frames that were captured previously.
+  capturer_.reset();
+
   // |capture_timer_| must be destroyed on the thread on which it is used.
   capture_timer_.reset();
-
-  // Schedule deletion of |capturer_| once the encode thread is no longer
-  // processing capture data. See http://crbug.com/163641. This also clears
-  // |capturer_| pointer to prevent pending tasks from using it.
-  // TODO(wez): Make it safe to tear down capturer while buffers remain, and
-  // remove this work-around.
-  encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::StopOnEncodeThread, this,
-                            base::Passed(&capturer_)));
 }
 
 void VideoScheduler::ScheduleNextCapture() {
@@ -203,10 +203,10 @@ void VideoScheduler::CaptureNextFrame() {
   if (!capturer_ || is_paused_)
     return;
 
-  // Make sure we have at most two oustanding recordings. We can simply return
+  // Make sure we have at most two outstanding recordings. We can simply return
   // if we can't make a capture now, the next capture will be started by the
   // end of an encode operation.
-  if (pending_captures_ >= kMaxPendingCaptures) {
+  if (pending_frames_ >= kMaxPendingFrames || capture_pending_) {
     did_skip_frame_ = true;
     return;
   }
@@ -214,22 +214,24 @@ void VideoScheduler::CaptureNextFrame() {
   did_skip_frame_ = false;
 
   // At this point we are going to perform one capture so save the current time.
-  pending_captures_++;
-  DCHECK_LE(pending_captures_, kMaxPendingCaptures);
+  pending_frames_++;
+  DCHECK_LE(pending_frames_, kMaxPendingFrames);
 
   // Before doing a capture schedule for the next one.
   ScheduleNextCapture();
 
+  capture_pending_ = true;
+
   // And finally perform one capture.
-  capturer_->CaptureFrame();
+  capturer_->Capture(webrtc::DesktopRegion());
 }
 
 void VideoScheduler::FrameCaptureCompleted() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   // Decrement the pending capture count.
-  pending_captures_--;
-  DCHECK_GE(pending_captures_, 0);
+  pending_frames_--;
+  DCHECK_GE(pending_frames_, 0);
 
   // If we've skipped a frame capture because too we had too many captures
   // pending then schedule one now.
@@ -275,27 +277,34 @@ void VideoScheduler::SendCursorShape(
 // Encoder thread --------------------------------------------------------------
 
 void VideoScheduler::EncodeFrame(
-    scoped_refptr<media::ScreenCaptureData> capture_data) {
+    scoped_ptr<webrtc::DesktopFrame> frame,
+    int sequence_number) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
   // If there is nothing to encode then send an empty keep-alive packet.
-  if (!capture_data || capture_data->dirty_region().isEmpty()) {
+  if (!frame || frame->updated_region().is_empty()) {
     scoped_ptr<VideoPacket> packet(new VideoPacket());
     packet->set_flags(VideoPacket::LAST_PARTITION);
+    packet->set_sequence_number(sequence_number);
     network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&VideoScheduler::SendVideoPacket, this,
                               base::Passed(&packet)));
+    capture_task_runner_->DeleteSoon(FROM_HERE, frame.release());
     return;
   }
 
   encoder_->Encode(
-      capture_data, false,
-      base::Bind(&VideoScheduler::EncodedDataAvailableCallback, this));
+      frame.get(), base::Bind(&VideoScheduler::EncodedDataAvailableCallback,
+                              this, sequence_number));
+  capture_task_runner_->DeleteSoon(FROM_HERE, frame.release());
 }
 
 void VideoScheduler::EncodedDataAvailableCallback(
+    int sequence_number,
     scoped_ptr<VideoPacket> packet) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
+
+  packet->set_sequence_number(sequence_number);
 
   bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
   if (last) {
@@ -306,16 +315,6 @@ void VideoScheduler::EncodedDataAvailableCallback(
   network_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoScheduler::SendVideoPacket, this,
                             base::Passed(&packet)));
-}
-
-void VideoScheduler::StopOnEncodeThread(
-    scoped_ptr<media::ScreenCapturer> capturer) {
-  DCHECK(encode_task_runner_->BelongsToCurrentThread());
-
-  // This is posted by StopOnCaptureThread, so we know that by the time we
-  // process it there are no more encode tasks queued. Pass |capturer| for
-  // deletion on the capture thread.
-  capture_task_runner_->DeleteSoon(FROM_HERE, capturer.release());
 }
 
 }  // namespace remoting

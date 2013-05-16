@@ -23,7 +23,6 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace media {
-class ScreenCaptureData;
 class ScreenCapturer;
 }  // namespace media
 
@@ -74,7 +73,8 @@ class VideoStub;
 // too much CPU, or hogging the host's graphics subsystem.
 
 class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
-                       public media::ScreenCapturer::Delegate {
+                       public webrtc::DesktopCapturer::Callback,
+                       public media::ScreenCapturer::MouseShapeObserver {
  public:
   // Creates a VideoScheduler running capture, encode and network tasks on the
   // supplied TaskRunners.  Video and cursor shape updates will be pumped to
@@ -89,9 +89,11 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
       protocol::CursorShapeStub* cursor_stub,
       protocol::VideoStub* video_stub);
 
-  // media::ScreenCapturer::Delegate implementation.
-  virtual void OnCaptureCompleted(
-      scoped_refptr<media::ScreenCaptureData> capture_data) OVERRIDE;
+  // webrtc::DesktopCapturer::Callback implementation.
+  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
+  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
+
+  // media::ScreenCapturer::MouseShapeObserver implementation.
   virtual void OnCursorShapeChanged(
       scoped_ptr<media::MouseCursorShape> cursor_shape) OVERRIDE;
 
@@ -119,8 +121,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   // Starts the capturer on the capture thread.
   void StartOnCaptureThread();
 
-  // Stops scheduling frame captures on the capture thread, and posts
-  // StopOnEncodeThread() to the network thread when done.
+  // Stops scheduling frame captures on the capture thread.
   void StopOnCaptureThread();
 
   // Schedules the next call to CaptureNextFrame.
@@ -147,13 +148,11 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   // Encoder thread -----------------------------------------------------------
 
   // Encode a frame, passing generated VideoPackets to SendVideoPacket().
-  void EncodeFrame(scoped_refptr<media::ScreenCaptureData> capture_data);
+  void EncodeFrame(scoped_ptr<webrtc::DesktopFrame> frame,
+                   int sequence_number);
 
-  void EncodedDataAvailableCallback(scoped_ptr<VideoPacket> packet);
-
-  // Used to synchronize capture and encode thread teardown, notifying the
-  // network thread when done.
-  void StopOnEncodeThread(scoped_ptr<media::ScreenCapturer> capturer);
+  void EncodedDataAvailableCallback(int sequence_number,
+                                    scoped_ptr<VideoPacket> packet);
 
   // Task runners used by this class.
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
@@ -174,8 +173,13 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   // Timer used to schedule CaptureNextFrame().
   scoped_ptr<base::OneShotTimer<VideoScheduler> > capture_timer_;
 
-  // Count the number of recordings (i.e. capture or encode) happening.
-  int pending_captures_;
+  // The number of frames being processed, i.e. frames that we are currently
+  // capturing, encoding or sending. The value is capped at 2 to minimize
+  // latency.
+  int pending_frames_;
+
+  // Set when the capturer is capturing a frame.
+  bool capture_pending_;
 
   // True if the previous scheduled capture was skipped.
   bool did_skip_frame_;

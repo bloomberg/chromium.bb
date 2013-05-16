@@ -10,9 +10,10 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
-#include "media/video/capture/screen/screen_capture_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -51,33 +52,33 @@ class MockFrameObserver : public VideoCaptureDevice::EventHandler {
 class FakeScreenCapturer : public ScreenCapturer {
  public:
   FakeScreenCapturer()
-      : delegate_(NULL),
+      : callback_(NULL),
         frame_index_(0) {
-    buffer_.reset(new uint8[kBufferSize]);
-    frames_[0] = new ScreenCaptureData(
-        buffer_.get(), kTestFrameWidth1 * ScreenCaptureData::kBytesPerPixel,
-        SkISize::Make(kTestFrameWidth1, kTestFrameHeight1));
-    frames_[1] = new ScreenCaptureData(
-        buffer_.get(), kTestFrameWidth2 * ScreenCaptureData::kBytesPerPixel,
-        SkISize::Make(kTestFrameWidth2, kTestFrameHeight2));
   }
   virtual ~FakeScreenCapturer() {}
 
   // VideoFrameCapturer interface.
-  virtual void Start(Delegate* delegate) OVERRIDE {
-    delegate_ = delegate;
+  virtual void Start(Callback* callback) OVERRIDE {
+    callback_ = callback;
   }
-  virtual void CaptureFrame() OVERRIDE {
-    scoped_refptr<ScreenCaptureData> frame =
-        frames_[frame_index_ % arraysize(frames_)];
+
+  virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE {
+    webrtc::DesktopSize size;
+    if (frame_index_ % 2 == 0) {
+      size = webrtc::DesktopSize(kTestFrameWidth1, kTestFrameHeight1);
+    } else {
+      size = webrtc::DesktopSize(kTestFrameWidth2, kTestFrameHeight2);
+    }
     frame_index_++;
-    delegate_->OnCaptureCompleted(frame);
+    callback_->OnCaptureCompleted(new webrtc::BasicDesktopFrame(size));
+  }
+
+  virtual void SetMouseShapeObserver(
+      MouseShapeObserver* mouse_shape_observer) OVERRIDE {
   }
 
  private:
-  Delegate* delegate_;
-  scoped_ptr<uint8[]> buffer_;
-  scoped_refptr<ScreenCaptureData> frames_[2];
+  Callback* callback_;
   int frame_index_;
 };
 

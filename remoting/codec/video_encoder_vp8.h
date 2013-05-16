@@ -12,6 +12,10 @@
 typedef struct vpx_codec_ctx vpx_codec_ctx_t;
 typedef struct vpx_image vpx_image_t;
 
+namespace webrtc {
+class DesktopSize;
+}  // namespace webrtc
+
 namespace remoting {
 
 // A class that uses VP8 to perform encoding.
@@ -20,23 +24,25 @@ class VideoEncoderVp8 : public VideoEncoder {
   VideoEncoderVp8();
   virtual ~VideoEncoderVp8();
 
+  // VideoEncoder interface.
   virtual void Encode(
-      scoped_refptr<media::ScreenCaptureData> capture_data,
-      bool key_frame,
+      const webrtc::DesktopFrame* frame,
       const DataAvailableCallback& data_available_callback) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VideoEncoderVp8Test, AlignAndClipRect);
 
   // Initialize the encoder. Returns true if successful.
-  bool Init(const SkISize& size);
+  bool Init(const webrtc::DesktopSize& size);
 
   // Destroy the encoder.
   void Destroy();
 
   // Prepare |image_| for encoding. Write updated rectangles into
   // |updated_region|.
-  void PrepareImage(scoped_refptr<media::ScreenCaptureData> capture_data,
+  //
+  // TODO(sergeyu): Update this code to use webrtc::DesktopRegion.
+  void PrepareImage(const webrtc::DesktopFrame* frame,
                     SkRegion* updated_region);
 
   // Update the active map according to |updated_region|. Active map is then

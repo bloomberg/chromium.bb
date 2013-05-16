@@ -12,7 +12,6 @@
 namespace media {
 
 ScreenCapturerHelper::ScreenCapturerHelper() :
-    size_most_recent_(SkISize::Make(0, 0)),
     log_grid_size_(0) {
 }
 
@@ -25,33 +24,43 @@ void ScreenCapturerHelper::ClearInvalidRegion() {
 }
 
 void ScreenCapturerHelper::InvalidateRegion(
-    const SkRegion& invalid_region) {
+    const webrtc::DesktopRegion& invalid_region) {
   base::AutoLock auto_invalid_region_lock(invalid_region_lock_);
-  invalid_region_.op(invalid_region, SkRegion::kUnion_Op);
+  for (webrtc::DesktopRegion::Iterator it(invalid_region);
+       !it.IsAtEnd(); it.Advance()) {
+    invalid_region_.op(SkIRect::MakeLTRB(it.rect().left(), it.rect().top(),
+                                         it.rect().right(), it.rect().bottom()),
+                       SkRegion::kUnion_Op);
+  }
 }
 
-void ScreenCapturerHelper::InvalidateScreen(const SkISize& size) {
+void ScreenCapturerHelper::InvalidateScreen(const webrtc::DesktopSize& size) {
   base::AutoLock auto_invalid_region_lock(invalid_region_lock_);
   invalid_region_.op(SkIRect::MakeWH(size.width(), size.height()),
                      SkRegion::kUnion_Op);
 }
 
-void ScreenCapturerHelper::InvalidateFullScreen() {
-  if (!size_most_recent_.isZero())
-    InvalidateScreen(size_most_recent_);
-}
-
-void ScreenCapturerHelper::SwapInvalidRegion(SkRegion* invalid_region) {
+void ScreenCapturerHelper::TakeInvalidRegion(
+    webrtc::DesktopRegion* invalid_region) {
+  SkRegion sk_invalid_region;
   {
     base::AutoLock auto_invalid_region_lock(invalid_region_lock_);
-    invalid_region->swap(invalid_region_);
+    sk_invalid_region.swap(invalid_region_);
   }
+
   if (log_grid_size_ > 0) {
     scoped_ptr<SkRegion> expanded_region(
-        ExpandToGrid(*invalid_region, log_grid_size_));
-    invalid_region->swap(*expanded_region);
-    invalid_region->op(SkRegion(SkIRect::MakeSize(size_most_recent_)),
-                       SkRegion::kIntersect_Op);
+        ExpandToGrid(sk_invalid_region, log_grid_size_));
+    sk_invalid_region.swap(*expanded_region);
+    sk_invalid_region.op(SkIRect::MakeWH(size_most_recent_.width(),
+                                         size_most_recent_.height()),
+                         SkRegion::kIntersect_Op);
+  }
+  invalid_region->Clear();
+  for (SkRegion::Iterator it(sk_invalid_region); !it.done(); it.next()) {
+    invalid_region->AddRect(webrtc::DesktopRect::MakeLTRB(
+        it.rect().left(), it.rect().top(),
+        it.rect().right(), it.rect().bottom()));
   }
 }
 
@@ -59,11 +68,12 @@ void ScreenCapturerHelper::SetLogGridSize(int log_grid_size) {
   log_grid_size_ = log_grid_size;
 }
 
-const SkISize& ScreenCapturerHelper::size_most_recent() const {
+const webrtc::DesktopSize& ScreenCapturerHelper::size_most_recent() const {
   return size_most_recent_;
 }
 
-void ScreenCapturerHelper::set_size_most_recent(const SkISize& size) {
+void ScreenCapturerHelper::set_size_most_recent(
+    const webrtc::DesktopSize& size) {
   size_most_recent_ = size;
 }
 

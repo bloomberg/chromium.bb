@@ -6,7 +6,6 @@
 #define MEDIA_VIDEO_CAPTURE_SCREEN_SCREEN_CAPTURER_MOCK_OBJECTS_H_
 
 #include "media/video/capture/screen/mouse_cursor_shape.h"
-#include "media/video/capture/screen/screen_capture_data.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -17,29 +16,42 @@ class MockScreenCapturer : public ScreenCapturer {
   MockScreenCapturer();
   virtual ~MockScreenCapturer();
 
-  MOCK_METHOD1(Start, void(Delegate* delegate));
-  MOCK_METHOD0(CaptureFrame, void());
+  MOCK_METHOD1(Start, void(Callback* callback));
+  MOCK_METHOD1(Capture, void(const webrtc::DesktopRegion& region));
+  MOCK_METHOD1(SetMouseShapeObserver, void(
+      MouseShapeObserver* mouse_shape_observer));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockScreenCapturer);
 };
 
-class MockScreenCapturerDelegate : public ScreenCapturer::Delegate {
+class MockScreenCapturerCallback : public ScreenCapturer::Callback {
  public:
-  MockScreenCapturerDelegate();
-  virtual ~MockScreenCapturerDelegate();
+  MockScreenCapturerCallback();
+  virtual ~MockScreenCapturerCallback();
+
+  MOCK_METHOD1(CreateSharedMemory, webrtc::SharedMemory*(size_t));
+  MOCK_METHOD1(OnCaptureCompleted, void(webrtc::DesktopFrame*));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockScreenCapturerCallback);
+};
+
+class MockMouseShapeObserver : public ScreenCapturer::MouseShapeObserver {
+ public:
+  MockMouseShapeObserver();
+  virtual ~MockMouseShapeObserver();
 
   void OnCursorShapeChanged(scoped_ptr<MouseCursorShape> cursor_shape) OVERRIDE;
 
-  MOCK_METHOD1(CreateSharedBuffer, scoped_refptr<SharedBuffer>(uint32));
-  MOCK_METHOD1(ReleaseSharedBuffer, void(scoped_refptr<SharedBuffer>));
-  MOCK_METHOD1(OnCaptureCompleted, void(scoped_refptr<ScreenCaptureData>));
   MOCK_METHOD1(OnCursorShapeChangedPtr,
                void(MouseCursorShape* cursor_shape));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockScreenCapturerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockMouseShapeObserver);
+
 };
+
 
 }  // namespace media
 

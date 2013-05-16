@@ -27,16 +27,7 @@ Differ::Differ(int width, int height, int bpp, int stride) {
 Differ::~Differ() {}
 
 void Differ::CalcDirtyRegion(const void* prev_buffer, const void* curr_buffer,
-                             SkRegion* region) {
-  if (!region) {
-    return;
-  }
-  region->setEmpty();
-
-  if (!prev_buffer || !curr_buffer) {
-    return;
-  }
-
+                             webrtc::DesktopRegion* region) {
   // Identify all the blocks that contain changed pixels.
   MarkDirtyBlocks(prev_buffer, curr_buffer);
 
@@ -131,9 +122,8 @@ DiffInfo Differ::DiffPartialBlock(const uint8* prev_buffer,
   return 0;
 }
 
-void Differ::MergeBlocks(SkRegion* region) {
-  DCHECK(region);
-  region->setEmpty();
+void Differ::MergeBlocks(webrtc::DesktopRegion* region) {
+  region->Clear();
 
   uint8* diff_info_row_start = static_cast<uint8*>(diff_info_.get());
   int diff_info_stride = diff_info_width_ * sizeof(DiffInfo);
@@ -195,8 +185,8 @@ void Differ::MergeBlocks(SkRegion* region) {
         if (top + height > height_) {
           height = height_ - top;
         }
-        region->op(SkIRect::MakeXYWH(left, top, width, height),
-                   SkRegion::kUnion_Op);
+        region->AddRect(
+            webrtc::DesktopRect::MakeXYWH(left, top, width, height));
       }
 
       // Increment to next block in this row.

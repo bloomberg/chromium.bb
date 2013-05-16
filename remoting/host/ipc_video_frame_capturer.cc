@@ -5,40 +5,54 @@
 #include "remoting/host/ipc_video_frame_capturer.h"
 
 #include "media/video/capture/screen/mouse_cursor_shape.h"
-#include "media/video/capture/screen/screen_capture_data.h"
 #include "remoting/host/desktop_session_proxy.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {
 
 IpcVideoFrameCapturer::IpcVideoFrameCapturer(
     scoped_refptr<DesktopSessionProxy> desktop_session_proxy)
-    : delegate_(NULL),
+    : callback_(NULL),
+      mouse_shape_observer_(NULL),
       desktop_session_proxy_(desktop_session_proxy),
+      capture_pending_(false),
       weak_factory_(this) {
 }
 
 IpcVideoFrameCapturer::~IpcVideoFrameCapturer() {
 }
 
-void IpcVideoFrameCapturer::Start(Delegate* delegate) {
-  delegate_ = delegate;
+void IpcVideoFrameCapturer::Start(Callback* callback) {
+  DCHECK(!callback_);
+  DCHECK(callback);
+  callback_ = callback;
   desktop_session_proxy_->SetVideoCapturer(weak_factory_.GetWeakPtr());
 }
 
-void IpcVideoFrameCapturer::CaptureFrame() {
+void IpcVideoFrameCapturer::SetMouseShapeObserver(
+      MouseShapeObserver* mouse_shape_observer) {
+  DCHECK(!mouse_shape_observer_);
+  DCHECK(mouse_shape_observer);
+  mouse_shape_observer_ = mouse_shape_observer;
+}
+
+void IpcVideoFrameCapturer::Capture(const webrtc::DesktopRegion& region) {
+  DCHECK(!capture_pending_);
+  capture_pending_ = true;
   desktop_session_proxy_->CaptureFrame();
 }
 
 void IpcVideoFrameCapturer::OnCaptureCompleted(
-    scoped_refptr<media::ScreenCaptureData> capture_data) {
-  if (delegate_)
-    delegate_->OnCaptureCompleted(capture_data);
+    scoped_ptr<webrtc::DesktopFrame> frame) {
+  DCHECK(capture_pending_);
+  capture_pending_ = false;
+  callback_->OnCaptureCompleted(frame.release());
 }
 
 void IpcVideoFrameCapturer::OnCursorShapeChanged(
     scoped_ptr<media::MouseCursorShape> cursor_shape) {
-  if (delegate_)
-    delegate_->OnCursorShapeChanged(cursor_shape.Pass());
+  if (mouse_shape_observer_)
+    mouse_shape_observer_->OnCursorShapeChanged(cursor_shape.Pass());
 }
 
 }  // namespace remoting

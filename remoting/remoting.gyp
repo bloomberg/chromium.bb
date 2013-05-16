@@ -300,6 +300,7 @@
             '../google_apis/google_apis.gyp:google_apis',
             '../media/media.gyp:media',
             '../ipc/ipc.gyp:ipc',
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
           ],
           'defines': [
             'VERSION=<(version_full)',
@@ -326,6 +327,8 @@
             'host/chromoting_host_context.h',
             'host/chromoting_messages.cc',
             'host/chromoting_messages.h',
+            'host/chromoting_param_traits.cc',
+            'host/chromoting_param_traits.h',
             'host/client_session.cc',
             'host/client_session.h',
             'host/client_session_control.h',
@@ -358,7 +361,7 @@
             'host/dns_blackhole_checker.h',
             'host/heartbeat_sender.cc',
             'host/heartbeat_sender.h',
-            'host/host_change_notification_listener.cc', 
+            'host/host_change_notification_listener.cc',
             'host/host_change_notification_listener.h',
             'host/host_config.cc',
             'host/host_config.h',
@@ -1429,6 +1432,7 @@
             'remoting_me2me_host_static',
             'remoting_protocol',
             'remoting_version_resources',
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib.rc',
@@ -2263,6 +2267,7 @@
         'remoting_jingle_glue',
         'remoting_resources',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
@@ -2558,6 +2563,7 @@
         'remoting_jingle_glue',
         'remoting_protocol',
         'remoting_resources',
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
       ],
       'defines': [
         'VERSION=<(version_full)',

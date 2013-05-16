@@ -6,10 +6,10 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/shared_memory.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "media/video/capture/screen/screen_capture_data.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/audio_capturer.h"
@@ -24,7 +24,8 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
-#include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/shared_memory.h"
 
 namespace remoting {
 
@@ -62,6 +63,46 @@ void DesktopSesssionClipboardStub::InjectClipboardEvent(
 
 }  // namespace
 
+// webrtc::SharedMemory implementation that notifies creating
+// DesktopSessionAgent when it's deleted.
+class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
+ public:
+  static scoped_ptr<SharedBuffer> Create(DesktopSessionAgent* agent,
+                                         size_t size,
+                                         int id) {
+    scoped_ptr<base::SharedMemory> memory(new base::SharedMemory());
+    if (!memory->CreateAndMapAnonymous(size))
+      return scoped_ptr<SharedBuffer>();
+    return scoped_ptr<SharedBuffer>(
+        new SharedBuffer(agent, memory.Pass(), size, id));
+  }
+
+  virtual ~SharedBuffer() {
+    agent_->OnSharedBufferDeleted(id());
+  }
+
+ private:
+  SharedBuffer(DesktopSessionAgent* agent,
+               scoped_ptr<base::SharedMemory> memory,
+               size_t size,
+               int id)
+      : SharedMemory(memory->memory(), size,
+#if defined(OS_WIN)
+                     memory->handle(),
+#else
+                     memory->handle().fd,
+#endif
+                     id),
+        agent_(agent),
+        shared_memory_(memory.Pass()) {
+  }
+
+  DesktopSessionAgent* agent_;
+  scoped_ptr<base::SharedMemory> shared_memory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedBuffer);
+};
+
 DesktopSessionAgent::Delegate::~Delegate() {
 }
 
@@ -83,8 +124,6 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_BEGIN_MESSAGE_MAP(DesktopSessionAgent, message)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_CaptureFrame,
                           OnCaptureFrame)
-      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SharedBufferCreated,
-                          OnSharedBufferCreated)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectClipboardEvent,
                           OnInjectClipboardEvent)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectKeyEvent,
@@ -127,14 +166,13 @@ void DesktopSessionAgent::OnChannelError() {
     delegate_->OnNetworkProcessDisconnected();
 }
 
-scoped_refptr<media::SharedBuffer> DesktopSessionAgent::CreateSharedBuffer(
-    uint32 size) {
+webrtc::SharedMemory* DesktopSessionAgent::CreateSharedMemory(size_t size) {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
-  scoped_refptr<media::SharedBuffer> buffer = new media::SharedBuffer(size);
-  if (buffer->ptr() != NULL) {
-    buffer->set_id(next_shared_buffer_id_);
-    shared_buffers_.push_back(buffer);
+  scoped_ptr<SharedBuffer> buffer =
+      SharedBuffer::Create(this, size, next_shared_buffer_id_);
+  if (buffer) {
+    shared_buffers_++;
 
     // |next_shared_buffer_id_| starts from 1 and incrementing it by 2 makes
     // sure it is always odd and therefore zero is never used as a valid buffer
@@ -146,20 +184,17 @@ scoped_refptr<media::SharedBuffer> DesktopSessionAgent::CreateSharedBuffer(
     // speaking it never happens.
     next_shared_buffer_id_ += 2;
 
+    IPC::PlatformFileForTransit handle;
+#if defined(OS_WIN)
+    handle = buffer->handle();
+#else
+    handle = base::FileDescriptor(buffer->handle(), false);
+#endif
     SendToNetwork(new ChromotingDesktopNetworkMsg_CreateSharedBuffer(
-        buffer->id(), buffer->handle(), buffer->size()));
+        buffer->id(), handle, buffer->size()));
   }
 
-  return buffer;
-}
-
-void DesktopSessionAgent::ReleaseSharedBuffer(
-    scoped_refptr<media::SharedBuffer> buffer) {
-  DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
-  DCHECK(buffer->id() != 0);
-
-  SendToNetwork(
-      new ChromotingDesktopNetworkMsg_ReleaseSharedBuffer(buffer->id()));
+  return buffer.release();
 }
 
 const std::string& DesktopSessionAgent::client_jid() const {
@@ -241,26 +276,27 @@ void DesktopSessionAgent::OnStartSessionAgent(
       FROM_HERE, base::Bind(&DesktopSessionAgent::StartVideoCapturer, this));
 }
 
-void DesktopSessionAgent::OnCaptureCompleted(
-    scoped_refptr<media::ScreenCaptureData> capture_data) {
+void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
-  current_size_ = capture_data->size();
+  last_frame_.reset(frame);
 
-  // Serialize media::ScreenCaptureData
-  SerializedCapturedData serialized_data;
-  serialized_data.shared_buffer_id = capture_data->shared_buffer()->id();
-  serialized_data.bytes_per_row = capture_data->stride();
-  serialized_data.dimensions = capture_data->size();
-  serialized_data.capture_time_ms = capture_data->capture_time_ms();
-  serialized_data.client_sequence_number =
-      capture_data->client_sequence_number();
-  serialized_data.dpi = capture_data->dpi();
-  for (SkRegion::Iterator i(capture_data->dirty_region()); !i.done(); i.next())
-    serialized_data.dirty_region.push_back(i.rect());
+  current_size_ = frame->size();
+
+  // Serialize webrtc::DesktopFrame.
+  SerializedDesktopFrame serialized_frame;
+  serialized_frame.shared_buffer_id = frame->shared_memory()->id();
+  serialized_frame.bytes_per_row = frame->stride();
+  serialized_frame.dimensions = frame->size();
+  serialized_frame.capture_time_ms = frame->capture_time_ms();
+  serialized_frame.dpi = frame->dpi();
+  for (webrtc::DesktopRegion::Iterator i(frame->updated_region());
+       !i.IsAtEnd(); i.Advance()) {
+    serialized_frame.dirty_region.push_back(i.rect());
+  }
 
   SendToNetwork(
-      new ChromotingDesktopNetworkMsg_CaptureCompleted(serialized_data));
+      new ChromotingDesktopNetworkMsg_CaptureCompleted(serialized_frame));
 }
 
 void DesktopSessionAgent::OnCursorShapeChanged(
@@ -359,25 +395,7 @@ void DesktopSessionAgent::OnCaptureFrame() {
   // runner. If the client issues more requests, pixel data in captured frames
   // will likely be corrupted but stability of media::ScreenCapturer will not be
   // affected.
-  video_capturer_->CaptureFrame();
-}
-
-void DesktopSessionAgent::OnSharedBufferCreated(int id) {
-  if (!video_capture_task_runner()->BelongsToCurrentThread()) {
-    video_capture_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&DesktopSessionAgent::OnSharedBufferCreated, this, id));
-    return;
-  }
-
-  // Drop the cached reference to the buffer.
-  SharedBuffers::iterator i = shared_buffers_.begin();
-  for (; i != shared_buffers_.end(); ++i) {
-    if ((*i)->id() == id) {
-      shared_buffers_.erase(i);
-      break;
-    }
-  }
+  video_capturer_->Capture(webrtc::DesktopRegion());
 }
 
 void DesktopSessionAgent::OnInjectClipboardEvent(
@@ -434,7 +452,7 @@ void DesktopSessionAgent::SetScreenResolution(
     const ScreenResolution& resolution) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  if (screen_controls_ && resolution.IsValid())
+  if (screen_controls_ && resolution.IsEmpty())
     screen_controls_->SetScreenResolution(resolution);
 }
 
@@ -471,17 +489,20 @@ void DesktopSessionAgent::StopAudioCapturer() {
 void DesktopSessionAgent::StartVideoCapturer() {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
-  if (video_capturer_)
+  if (video_capturer_) {
+    video_capturer_->SetMouseShapeObserver(this);
     video_capturer_->Start(this);
+  }
 }
 
 void DesktopSessionAgent::StopVideoCapturer() {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
   video_capturer_.reset();
+  last_frame_.reset();
 
-  // Free any shared buffers left.
-  shared_buffers_.clear();
+  // Video capturer must delete all buffers.
+  DCHECK_EQ(shared_buffers_, 0);
 }
 
 DesktopSessionAgent::DesktopSessionAgent(
@@ -497,10 +518,19 @@ DesktopSessionAgent::DesktopSessionAgent(
       video_capture_task_runner_(video_capture_task_runner),
       control_factory_(this),
       desktop_pipe_(IPC::InvalidPlatformFileForTransit()),
-      current_size_(SkISize::Make(0, 0)),
       next_shared_buffer_id_(1),
+      shared_buffers_(0),
       started_(false) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+}
+
+void DesktopSessionAgent::OnSharedBufferDeleted(int id) {
+  DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
+  DCHECK(id != 0);
+
+  shared_buffers_--;
+  DCHECK_GE(shared_buffers_, 0);
+  SendToNetwork(new ChromotingDesktopNetworkMsg_ReleaseSharedBuffer(id));
 }
 
 void DesktopSessionAgent::CloseDesktopPipeHandle() {

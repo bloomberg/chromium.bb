@@ -60,7 +60,7 @@ namespace media {
 
 XServerPixelBuffer::XServerPixelBuffer()
     : display_(NULL), root_window_(0),
-      root_window_size_(SkISize::Make(0, 0)), x_image_(NULL),
+      x_image_(NULL),
       shm_segment_info_(NULL), shm_pixmap_(0), shm_gc_(NULL) {
 }
 
@@ -92,7 +92,7 @@ void XServerPixelBuffer::Release() {
 }
 
 void XServerPixelBuffer::Init(Display* display,
-                              const SkISize& screen_size) {
+                              const webrtc::DesktopSize& screen_size) {
   Release();
   display_ = display;
   root_window_size_ = screen_size;
@@ -102,10 +102,10 @@ void XServerPixelBuffer::Init(Display* display,
 }
 
 // static
-SkISize XServerPixelBuffer::GetRootWindowSize(Display* display) {
+webrtc::DesktopSize XServerPixelBuffer::GetRootWindowSize(Display* display) {
   XWindowAttributes root_attr;
   XGetWindowAttributes(display, DefaultRootWindow(display), &root_attr);
-  return SkISize::Make(root_attr.width, root_attr.height);
+  return webrtc::DesktopSize(root_attr.width, root_attr.height);
 }
 
 void XServerPixelBuffer::InitShm(int screen) {
@@ -211,22 +211,24 @@ void XServerPixelBuffer::Synchronize() {
   }
 }
 
-uint8* XServerPixelBuffer::CaptureRect(const SkIRect& rect) {
-  DCHECK(SkIRect::MakeSize(root_window_size_).contains(rect));
+uint8* XServerPixelBuffer::CaptureRect(const webrtc::DesktopRect& rect) {
+  DCHECK_LE(rect.right(), root_window_size_.width());
+  DCHECK_LE(rect.bottom(), root_window_size_.height());
+
   if (shm_segment_info_) {
     if (shm_pixmap_) {
       XCopyArea(display_, root_window_, shm_pixmap_, shm_gc_,
-                rect.fLeft, rect.fTop, rect.width(), rect.height(),
-                rect.fLeft, rect.fTop);
+                rect.left(), rect.top(), rect.width(), rect.height(),
+                rect.left(), rect.top());
       XSync(display_, False);
     }
     return reinterpret_cast<uint8*>(x_image_->data) +
-        rect.fTop * x_image_->bytes_per_line +
-        rect.fLeft * x_image_->bits_per_pixel / 8;
+        rect.top() * x_image_->bytes_per_line +
+        rect.left() * x_image_->bits_per_pixel / 8;
   } else {
     if (x_image_)
       XDestroyImage(x_image_);
-    x_image_ = XGetImage(display_, root_window_, rect.fLeft, rect.fTop,
+    x_image_ = XGetImage(display_, root_window_, rect.left(), rect.top(),
                          rect.width(), rect.height(), AllPlanes, ZPixmap);
     return reinterpret_cast<uint8*>(x_image_->data);
   }

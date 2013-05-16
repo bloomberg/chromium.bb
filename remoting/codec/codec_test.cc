@@ -14,27 +14,33 @@
 #include "remoting/codec/video_encoder.h"
 #include "remoting/base/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+
+using webrtc::DesktopRect;
+using webrtc::DesktopSize;
 
 namespace {
 
 const int kBytesPerPixel = 4;
 
 // Some sample rects for testing.
-std::vector<std::vector<SkIRect> > MakeTestRectLists(const SkISize& size) {
-  std::vector<std::vector<SkIRect> > rect_lists;
-  std::vector<SkIRect> rects;
-  rects.push_back(SkIRect::MakeXYWH(0, 0, size.width(), size.height()));
+std::vector<std::vector<DesktopRect> > MakeTestRectLists(DesktopSize size) {
+  std::vector<std::vector<DesktopRect> > rect_lists;
+  std::vector<DesktopRect> rects;
+  rects.push_back(DesktopRect::MakeXYWH(0, 0, size.width(), size.height()));
   rect_lists.push_back(rects);
   rects.clear();
-  rects.push_back(SkIRect::MakeXYWH(0, 0, size.width() / 2, size.height() / 2));
+  rects.push_back(DesktopRect::MakeXYWH(
+      0, 0, size.width() / 2, size.height() / 2));
   rect_lists.push_back(rects);
   rects.clear();
-  rects.push_back(SkIRect::MakeXYWH(size.width() / 2, size.height() / 2,
-                                    size.width() / 2, size.height() / 2));
+  rects.push_back(DesktopRect::MakeXYWH(
+      size.width() / 2, size.height() / 2,
+      size.width() / 2, size.height() / 2));
   rect_lists.push_back(rects);
   rects.clear();
-  rects.push_back(SkIRect::MakeXYWH(16, 16, 16, 16));
-  rects.push_back(SkIRect::MakeXYWH(128, 64, 32, 32));
+  rects.push_back(DesktopRect::MakeXYWH(16, 16, 16, 16));
+  rects.push_back(DesktopRect::MakeXYWH(128, 64, 32, 32));
   rect_lists.push_back(rects);
   return rect_lists;
 }
@@ -72,10 +78,10 @@ class VideoEncoderMessageTester {
       ++begin_rect_;
 
       if (strict_) {
-        SkIRect rect = rects_.front();
+        DesktopRect rect = rects_.front();
         rects_.pop_front();
-        EXPECT_EQ(rect.fLeft, packet->format().x());
-        EXPECT_EQ(rect.fTop, packet->format().y());
+        EXPECT_EQ(rect.left(), packet->format().x());
+        EXPECT_EQ(rect.top(), packet->format().y());
         EXPECT_EQ(rect.width(), packet->format().width());
         EXPECT_EQ(rect.height(), packet->format().height());
       }
@@ -107,7 +113,7 @@ class VideoEncoderMessageTester {
     strict_ = strict;
   }
 
-  void AddRects(const SkIRect* rects, int count) {
+  void AddRects(const DesktopRect* rects, int count) {
     rects_.insert(rects_.begin() + rects_.size(), rects, rects + count);
     added_rects_ += count;
   }
@@ -125,15 +131,16 @@ class VideoEncoderMessageTester {
   State state_;
   bool strict_;
 
-  std::deque<SkIRect> rects_;
+  std::deque<DesktopRect> rects_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderMessageTester);
 };
 
 class VideoDecoderTester {
  public:
-  VideoDecoderTester(VideoDecoder* decoder, const SkISize& screen_size,
-                     const SkISize& view_size)
+  VideoDecoderTester(VideoDecoder* decoder,
+                     const DesktopSize& screen_size,
+                     const DesktopSize& view_size)
       : screen_size_(screen_size),
         view_size_(view_size),
         strict_(false),
@@ -141,11 +148,12 @@ class VideoDecoderTester {
     image_data_.reset(new uint8[
         view_size_.width() * view_size_.height() * kBytesPerPixel]);
     EXPECT_TRUE(image_data_.get());
-    decoder_->Initialize(screen_size_);
+    decoder_->Initialize(
+        SkISize::Make(screen_size_.width(), screen_size_.height()));
   }
 
   void Reset() {
-    expected_region_.setEmpty();
+    expected_region_.Clear();
     update_region_.setEmpty();
   }
 
@@ -165,11 +173,12 @@ class VideoDecoderTester {
   }
 
   void RenderFrame() {
-    decoder_->RenderFrame(view_size_,
-                          SkIRect::MakeSize(view_size_),
-                          image_data_.get(),
-                          view_size_.width() * kBytesPerPixel,
-                          &update_region_);
+    decoder_->RenderFrame(
+        SkISize::Make(view_size_.width(), view_size_.height()),
+        SkIRect::MakeWH(view_size_.width(), view_size_.height()),
+        image_data_.get(),
+        view_size_.width() * kBytesPerPixel,
+        &update_region_);
   }
 
   void ReceivedScopedPacket(scoped_ptr<VideoPacket> packet) {
@@ -180,34 +189,46 @@ class VideoDecoderTester {
     strict_ = strict;
   }
 
-  void set_capture_data(scoped_refptr<media::ScreenCaptureData> data) {
-    capture_data_ = data;
+  void set_frame(webrtc::DesktopFrame* frame) {
+    frame_ = frame;
   }
 
-  void AddRects(const SkIRect* rects, int count) {
-    SkRegion new_rects;
-    new_rects.setRects(rects, count);
-    AddRegion(new_rects);
+  void AddRects(const DesktopRect* rects, int count) {
+    for (int i = 0; i < count; ++i) {
+      expected_region_.AddRect(rects[i]);
+    }
   }
 
-  void AddRegion(const SkRegion& region) {
-    expected_region_.op(region, SkRegion::kUnion_Op);
+  void AddRegion(const webrtc::DesktopRegion& region) {
+    expected_region_.AddRegion(region);
   }
 
   void VerifyResults() {
     if (!strict_)
       return;
 
-    ASSERT_TRUE(capture_data_.get());
+    ASSERT_TRUE(frame_);
 
     // Test the content of the update region.
-    EXPECT_EQ(expected_region_, update_region_);
+    //
+    // TODO(sergeyu): Change this to use DesktopRegion when it's capable of
+    // merging the rectangles.
+    SkRegion expected_region;
+    for (webrtc::DesktopRegion::Iterator it(expected_region_);
+         !it.IsAtEnd(); it.Advance()) {
+      expected_region.op(
+          SkIRect::MakeXYWH(it.rect().top(), it.rect().left(),
+                            it.rect().width(), it.rect().height()),
+      SkRegion::kUnion_Op);
+    }
+    EXPECT_EQ(expected_region, update_region_);
+
     for (SkRegion::Iterator i(update_region_); !i.done(); i.next()) {
       const int stride = view_size_.width() * kBytesPerPixel;
-      EXPECT_EQ(stride, capture_data_->stride());
+      EXPECT_EQ(stride, frame_->stride());
       const int offset =  stride * i.rect().top() +
           kBytesPerPixel * i.rect().left();
-      const uint8* original = capture_data_->data() + offset;
+      const uint8* original = frame_->data() + offset;
       const uint8* decoded = image_data_.get() + offset;
       const int row_size = kBytesPerPixel * i.rect().width();
       for (int y = 0; y < i.rect().height(); ++y) {
@@ -265,14 +286,14 @@ class VideoDecoderTester {
   }
 
  private:
-  SkISize screen_size_;
-  SkISize view_size_;
+  DesktopSize screen_size_;
+  DesktopSize view_size_;
   bool strict_;
-  SkRegion expected_region_;
+  webrtc::DesktopRegion expected_region_;
   SkRegion update_region_;
   VideoDecoder* decoder_;
   scoped_ptr<uint8[]> image_data_;
-  scoped_refptr<media::ScreenCaptureData> capture_data_;
+  webrtc::DesktopFrame* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderTester);
 };
@@ -301,7 +322,7 @@ class VideoEncoderTester {
     }
   }
 
-  void AddRects(const SkIRect* rects, int count) {
+  void AddRects(const DesktopRect* rects, int count) {
     message_tester_->AddRects(rects, count);
   }
 
@@ -317,34 +338,30 @@ class VideoEncoderTester {
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderTester);
 };
 
-scoped_refptr<media::ScreenCaptureData> PrepareEncodeData(
-    const SkISize& size,
-    scoped_ptr<uint8[]>* memory) {
-  int memory_size = size.width() * size.height() * kBytesPerPixel;
-
-  memory->reset(new uint8[memory_size]);
+scoped_ptr<webrtc::DesktopFrame> PrepareFrame(const DesktopSize& size) {
+  scoped_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(size));
 
   srand(0);
+  int memory_size = size.width() * size.height() * kBytesPerPixel;
   for (int i = 0; i < memory_size; ++i) {
-    (*memory)[i] = rand() % 256;
+    frame->data()[i] = rand() % 256;
   }
 
-  scoped_refptr<media::ScreenCaptureData> data = new media::ScreenCaptureData(
-      memory->get(), size.width() * kBytesPerPixel, size);
-  return data;
+  return frame.Pass();
 }
 
 static void TestEncodingRects(VideoEncoder* encoder,
                               VideoEncoderTester* tester,
-                              scoped_refptr<media::ScreenCaptureData> data,
-                              const SkIRect* rects, int count) {
-  data->mutable_dirty_region().setEmpty();
+                              webrtc::DesktopFrame* frame,
+                              const DesktopRect* rects,
+                              int count) {
+  frame->mutable_updated_region()->Clear();
   for (int i = 0; i < count; ++i) {
-    data->mutable_dirty_region().op(rects[i], SkRegion::kUnion_Op);
+    frame->mutable_updated_region()->AddRect(rects[i]);
   }
   tester->AddRects(rects, count);
 
-  encoder->Encode(data, true, base::Bind(
+  encoder->Encode(frame, base::Bind(
       &VideoEncoderTester::DataAvailable, base::Unretained(tester)));
 }
 
@@ -356,18 +373,15 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
 
   VideoEncoderTester tester(&message_tester);
 
-  scoped_ptr<uint8[]> memory;
-
   for (size_t xi = 0; xi < arraysize(kSizes); ++xi) {
     for (size_t yi = 0; yi < arraysize(kSizes); ++yi) {
-      SkISize size = SkISize::Make(kSizes[xi], kSizes[yi]);
-      scoped_refptr<media::ScreenCaptureData> data =
-          PrepareEncodeData(size, &memory);
-      std::vector<std::vector<SkIRect> > test_rect_lists =
+      DesktopSize size = DesktopSize(kSizes[xi], kSizes[yi]);
+      scoped_ptr<webrtc::DesktopFrame> frame = PrepareFrame(size);
+      std::vector<std::vector<DesktopRect> > test_rect_lists =
           MakeTestRectLists(size);
       for (size_t i = 0; i < test_rect_lists.size(); ++i) {
-        const std::vector<SkIRect>& test_rects = test_rect_lists[i];
-        TestEncodingRects(encoder, &tester, data,
+        const std::vector<DesktopRect>& test_rects = test_rect_lists[i];
+        TestEncodingRects(encoder, &tester, frame.get(),
                           &test_rects[0], test_rects.size());
       }
     }
@@ -377,68 +391,69 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
 static void TestEncodeDecodeRects(VideoEncoder* encoder,
                                   VideoEncoderTester* encoder_tester,
                                   VideoDecoderTester* decoder_tester,
-                                  scoped_refptr<media::ScreenCaptureData> data,
-                                  const SkIRect* rects, int count) {
-  data->mutable_dirty_region().setRects(rects, count);
+                                  webrtc::DesktopFrame* frame,
+                                  const DesktopRect* rects, int count) {
+  frame->mutable_updated_region()->Clear();
+  for (int i = 0; i < count; ++i) {
+    frame->mutable_updated_region()->AddRect(rects[i]);
+  }
   encoder_tester->AddRects(rects, count);
   decoder_tester->AddRects(rects, count);
 
   // Generate random data for the updated region.
   srand(0);
   for (int i = 0; i < count; ++i) {
-    const int bytes_per_pixel = 4;  // Because of RGB32 on previous line.
-    const int row_size = bytes_per_pixel * rects[i].width();
-    uint8* memory = data->data() +
-      data->stride() * rects[i].top() +
-      bytes_per_pixel * rects[i].left();
+    const int row_size =
+        webrtc::DesktopFrame::kBytesPerPixel * rects[i].width();
+    uint8* memory = frame->data() +
+      frame->stride() * rects[i].top() +
+      webrtc::DesktopFrame::kBytesPerPixel * rects[i].left();
     for (int y = 0; y < rects[i].height(); ++y) {
       for (int x = 0; x < row_size; ++x)
         memory[x] = rand() % 256;
-      memory += data->stride();
+      memory += frame->stride();
     }
   }
 
-  encoder->Encode(data, true, base::Bind(&VideoEncoderTester::DataAvailable,
-                                         base::Unretained(encoder_tester)));
+  encoder->Encode(frame, base::Bind(&VideoEncoderTester::DataAvailable,
+                                    base::Unretained(encoder_tester)));
   decoder_tester->VerifyResults();
   decoder_tester->Reset();
 }
 
 void TestVideoEncoderDecoder(
     VideoEncoder* encoder, VideoDecoder* decoder, bool strict) {
-  SkISize kSize = SkISize::Make(320, 240);
+  DesktopSize kSize = DesktopSize(320, 240);
 
   VideoEncoderMessageTester message_tester;
   message_tester.set_strict(strict);
 
   VideoEncoderTester encoder_tester(&message_tester);
 
-  scoped_ptr<uint8[]> memory;
-  scoped_refptr<media::ScreenCaptureData> data =
-      PrepareEncodeData(kSize, &memory);
+  scoped_ptr<webrtc::DesktopFrame> frame = PrepareFrame(kSize);
 
   VideoDecoderTester decoder_tester(decoder, kSize, kSize);
   decoder_tester.set_strict(strict);
-  decoder_tester.set_capture_data(data);
+  decoder_tester.set_frame(frame.get());
   encoder_tester.set_decoder_tester(&decoder_tester);
 
-  std::vector<std::vector<SkIRect> > test_rect_lists = MakeTestRectLists(kSize);
+  std::vector<std::vector<DesktopRect> > test_rect_lists =
+      MakeTestRectLists(kSize);
   for (size_t i = 0; i < test_rect_lists.size(); ++i) {
-    const std::vector<SkIRect> test_rects = test_rect_lists[i];
-    TestEncodeDecodeRects(encoder, &encoder_tester, &decoder_tester, data,
-                          &test_rects[0], test_rects.size());
+    const std::vector<DesktopRect> test_rects = test_rect_lists[i];
+    TestEncodeDecodeRects(encoder, &encoder_tester, &decoder_tester,
+                          frame.get(), &test_rects[0], test_rects.size());
   }
 }
 
-static void FillWithGradient(uint8* memory, const SkISize& frame_size,
-                             const SkIRect& rect) {
-  for (int j = rect.top(); j < rect.bottom(); ++j) {
-    uint8* p = memory + ((j * frame_size.width()) + rect.left()) * 4;
-    for (int i = rect.left(); i < rect.right(); ++i) {
-      *p++ = static_cast<uint8>((255.0 * i) / frame_size.width());
-      *p++ = static_cast<uint8>((164.0 * j) / frame_size.height());
-      *p++ = static_cast<uint8>((82.0 * (i + j)) /
-                                   (frame_size.width() + frame_size.height()));
+static void FillWithGradient(webrtc::DesktopFrame* frame) {
+  for (int j = 0; j < frame->size().height(); ++j) {
+    uint8* p = frame->data() + j * frame->stride();
+    for (int i = 0; i < frame->size().width(); ++i) {
+      *p++ = (255.0 * i) / frame->size().width();
+      *p++ = (164.0 * j) / frame->size().height();
+      *p++ = (82.0 * (i + j)) /
+          (frame->size().width() + frame->size().height());
       *p++ = 0;
     }
   }
@@ -446,42 +461,38 @@ static void FillWithGradient(uint8* memory, const SkISize& frame_size,
 
 void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
                                      VideoDecoder* decoder,
-                                     const SkISize& screen_size,
-                                     const SkISize& view_size,
+                                     const DesktopSize& screen_size,
+                                     const DesktopSize& view_size,
                                      double max_error_limit,
                                      double mean_error_limit) {
-  SkIRect screen_rect = SkIRect::MakeSize(screen_size);
-  scoped_ptr<uint8[]> screen_data(new uint8[
-      screen_size.width() * screen_size.height() * kBytesPerPixel]);
-  FillWithGradient(screen_data.get(), screen_size, screen_rect);
+  scoped_ptr<webrtc::BasicDesktopFrame> frame(
+      new webrtc::BasicDesktopFrame(screen_size));
+  FillWithGradient(frame.get());
+  frame->mutable_updated_region()->SetRect(DesktopRect::MakeSize(screen_size));
 
-  SkIRect view_rect = SkIRect::MakeSize(view_size);
-  scoped_ptr<uint8[]> expected_view_data(new uint8[
-      view_size.width() * view_size.height() * kBytesPerPixel]);
-  FillWithGradient(expected_view_data.get(), view_size, view_rect);
-
-  scoped_refptr<media::ScreenCaptureData> capture_data =
-      new media::ScreenCaptureData(
-          screen_data.get(), screen_size.width() * kBytesPerPixel, screen_size);
-  capture_data->mutable_dirty_region().op(screen_rect, SkRegion::kUnion_Op);
+  scoped_ptr<webrtc::BasicDesktopFrame> expected_result(
+      new webrtc::BasicDesktopFrame(view_size));
+  FillWithGradient(expected_result.get());
 
   VideoDecoderTester decoder_tester(decoder, screen_size, view_size);
-  decoder_tester.set_capture_data(capture_data);
-  decoder_tester.AddRegion(capture_data->dirty_region());
+  decoder_tester.set_frame(frame.get());
+  decoder_tester.AddRegion(frame->updated_region());
 
-  encoder->Encode(capture_data, true,
+  encoder->Encode(frame.get(),
                   base::Bind(&VideoDecoderTester::ReceivedScopedPacket,
                              base::Unretained(&decoder_tester)));
 
-  decoder_tester.VerifyResultsApprox(expected_view_data.get(),
+  decoder_tester.VerifyResultsApprox(expected_result->data(),
                                      max_error_limit, mean_error_limit);
 
   // Check that the decoder correctly re-renders the frame if its client
   // invalidates the frame.
   decoder_tester.ResetRenderedData();
-  decoder->Invalidate(view_size, SkRegion(view_rect));
+  decoder->Invalidate(
+      SkISize::Make(view_size.width(), view_size.height()),
+      SkRegion(SkIRect::MakeWH(view_size.width(), view_size.height())));
   decoder_tester.RenderFrame();
-  decoder_tester.VerifyResultsApprox(expected_view_data.get(),
+  decoder_tester.VerifyResultsApprox(expected_result->data(),
                                      max_error_limit, mean_error_limit);
 }
 

@@ -226,26 +226,22 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
     return false;
   }
 
-  // DaemonProcess::CreateDesktopSession() verifies that the resolution is
-  // valid.
-  DCHECK(resolution.IsValid());
-
   ScreenResolution local_resolution = resolution;
 
   // If the screen resolution is not specified, use the default screen
   // resolution.
   if (local_resolution.IsEmpty()) {
-    local_resolution.dimensions_.set(kDefaultRdpScreenWidth,
-                                     kDefaultRdpScreenHeight);
-    local_resolution.dpi_.set(kDefaultRdpDpi, kDefaultRdpDpi);
+    local_resolution = ScreenResolution(
+        webrtc::DesktopSize(kDefaultRdpScreenWidth, kDefaultRdpScreenHeight),
+        webrtc::DesktopVector(kDefaultRdpDpi, kDefaultRdpDpi));
   }
 
   // Get the screen dimensions assuming the default DPI.
-  SkISize host_size = local_resolution.ScaleDimensionsToDpi(
-      SkIPoint::Make(kDefaultRdpDpi, kDefaultRdpDpi));
+  webrtc::DesktopSize host_size = local_resolution.ScaleDimensionsToDpi(
+      webrtc::DesktopVector(kDefaultRdpDpi, kDefaultRdpDpi));
 
   // Make sure that the host resolution is within the limits supported by RDP.
-  host_size = SkISize::Make(
+  host_size = webrtc::DesktopSize(
       std::min(kMaxRdpScreenWidth,
                std::max(kMinRdpScreenWidth, host_size.width())),
       std::min(kMaxRdpScreenHeight,

@@ -4,8 +4,9 @@
 
 #include "media/video/capture/screen/screen_capturer_fake.h"
 
+#include "base/logging.h"
 #include "base/time.h"
-#include "media/video/capture/screen/screen_capture_data.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace media {
 
@@ -24,66 +25,73 @@ COMPILE_ASSERT((kBoxWidth % kSpeed == 0) && (kWidth % kSpeed == 0) &&
                sizes_must_be_multiple_of_kSpeed);
 
 ScreenCapturerFake::ScreenCapturerFake()
-    : size_(SkISize::Make(0, 0)),
+    : callback_(NULL),
+      mouse_shape_observer_(NULL),
       bytes_per_row_(0),
       box_pos_x_(0),
       box_pos_y_(0),
       box_speed_x_(kSpeed),
-      box_speed_y_(kSpeed),
-      current_buffer_(0) {
+      box_speed_y_(kSpeed) {
   ScreenConfigurationChanged();
 }
 
 ScreenCapturerFake::~ScreenCapturerFake() {
 }
 
-void ScreenCapturerFake::Start(Delegate* delegate) {
-  delegate_ = delegate;
-
-  // Create memory for the buffers.
-  int buffer_size = size_.height() * bytes_per_row_;
-  for (int i = 0; i < kNumBuffers; i++) {
-    shared_buffers_[i] = delegate_->CreateSharedBuffer(buffer_size);
-    if (shared_buffers_[i]) {
-      buffers_[i] = reinterpret_cast<uint8*>(shared_buffers_[i]->ptr());
-    } else {
-      private_buffers_[i].reset(new uint8[buffer_size]);
-      buffers_[i] = private_buffers_[i].get();
-    }
-  }
+void ScreenCapturerFake::Start(Callback* callback) {
+  DCHECK(!callback_);
+  DCHECK(callback);
+  callback_ = callback;
 }
 
-void ScreenCapturerFake::CaptureFrame() {
+void ScreenCapturerFake::Capture(const webrtc::DesktopRegion& region) {
   base::Time capture_start_time = base::Time::Now();
 
+  queue_.MoveToNextFrame();
+
+  if (!queue_.current_frame()) {
+    int buffer_size = size_.height() * bytes_per_row_;
+    webrtc::SharedMemory* shared_memory =
+        callback_->CreateSharedMemory(buffer_size);
+    scoped_ptr<webrtc::DesktopFrame> frame;
+    webrtc::DesktopSize frame_size(size_.width(), size_.height());
+    if (shared_memory) {
+      frame.reset(new webrtc::SharedMemoryDesktopFrame(
+          frame_size, bytes_per_row_, shared_memory));
+    } else {
+      frame.reset(new webrtc::BasicDesktopFrame(frame_size));
+    }
+    queue_.ReplaceCurrentFrame(frame.Pass());
+  }
+
+  DCHECK(queue_.current_frame());
   GenerateImage();
-  helper_.InvalidateScreen(size_);
 
-  SkRegion invalid_region;
-  helper_.SwapInvalidRegion(&invalid_region);
-
-  current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
-
-  scoped_refptr<ScreenCaptureData> capture_data(new ScreenCaptureData(
-      buffers_[current_buffer_], bytes_per_row_, size_));
-  capture_data->mutable_dirty_region() = invalid_region;
-
-  helper_.set_size_most_recent(size_);
-
-  capture_data->set_shared_buffer(shared_buffers_[current_buffer_]);
-
-  capture_data->set_capture_time_ms(
+  queue_.current_frame()->mutable_updated_region()->SetRect(
+      webrtc::DesktopRect::MakeSize(size_));
+  queue_.current_frame()->set_capture_time_ms(
       (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
-  delegate_->OnCaptureCompleted(capture_data);
+
+  callback_->OnCaptureCompleted(queue_.current_frame()->Share());
+}
+
+void ScreenCapturerFake::SetMouseShapeObserver(
+      MouseShapeObserver* mouse_shape_observer) {
+  DCHECK(!mouse_shape_observer_);
+  DCHECK(mouse_shape_observer);
+  mouse_shape_observer_ = mouse_shape_observer;
 }
 
 void ScreenCapturerFake::GenerateImage() {
-  memset(buffers_[current_buffer_], 0xff,
-         size_.width() * size_.height() * ScreenCaptureData::kBytesPerPixel);
+  webrtc::DesktopFrame* frame = queue_.current_frame();
 
-  uint8* row = buffers_[current_buffer_] +
-      (box_pos_y_ * size_.width() + box_pos_x_) *
-      ScreenCaptureData::kBytesPerPixel;
+  const int kBytesPerPixel = webrtc::DesktopFrame::kBytesPerPixel;
+
+  memset(frame->data(), 0xff,
+         size_.width() * size_.height() * kBytesPerPixel);
+
+  uint8* row = frame->data() +
+      (box_pos_y_ * size_.width() + box_pos_x_) * kBytesPerPixel;
 
   box_pos_x_ += box_speed_x_;
   if (box_pos_x_ + kBoxWidth >= size_.width() || box_pos_x_ == 0)
@@ -102,18 +110,19 @@ void ScreenCapturerFake::GenerateImage() {
       int r = x * 255 / kBoxWidth;
       int g = y * 255 / kBoxHeight;
       int b = 255 - (x * 255 / kBoxWidth);
-      row[x * ScreenCaptureData::kBytesPerPixel] = r;
-      row[x * ScreenCaptureData::kBytesPerPixel + 1] = g;
-      row[x * ScreenCaptureData::kBytesPerPixel + 2] = b;
-      row[x * ScreenCaptureData::kBytesPerPixel + 3] = 0xff;
+      row[x * kBytesPerPixel] = r;
+      row[x * kBytesPerPixel + 1] = g;
+      row[x * kBytesPerPixel + 2] = b;
+      row[x * kBytesPerPixel + 3] = 0xff;
     }
     row += bytes_per_row_;
   }
 }
 
 void ScreenCapturerFake::ScreenConfigurationChanged() {
-  size_ = SkISize::Make(kWidth, kHeight);
-  bytes_per_row_ = size_.width() * ScreenCaptureData::kBytesPerPixel;
+  size_.set(kWidth, kHeight);
+  queue_.Reset();
+  bytes_per_row_ = size_.width() * webrtc::DesktopFrame::kBytesPerPixel;
 }
 
 }  // namespace media

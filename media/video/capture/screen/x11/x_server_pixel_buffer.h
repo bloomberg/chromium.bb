@@ -8,7 +8,7 @@
 #define MEDIA_VIDEO_CAPTURE_SCREEN_X11_X_SERVER_PIXEL_BUFFER_H_
 
 #include "base/basictypes.h"
-#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 #include <X11/Xutil.h>
 #include <X11/extensions/XShm.h>
@@ -28,10 +28,10 @@ class XServerPixelBuffer {
   // assumed to be the current size of the root window.
   // |screen_size| should either come from GetRootWindowSize(), or
   // from a recent ConfigureNotify event on the root window.
-  void Init(Display* display, const SkISize& screen_size);
+  void Init(Display* display, const webrtc::DesktopSize& screen_size);
 
   // Request the current size of the root window from the X Server.
-  static SkISize GetRootWindowSize(Display* display);
+  static webrtc::DesktopSize GetRootWindowSize(Display* display);
 
   // If shared memory is being used without pixmaps, synchronize this pixel
   // buffer with the root window contents (otherwise, this is a no-op).
@@ -47,7 +47,7 @@ class XServerPixelBuffer {
   // simply returns the pointer without doing any more work.
   // The caller must ensure that |rect| is no larger than the screen size
   // supplied to Init().
-  uint8* CaptureRect(const SkIRect& rect);
+  uint8* CaptureRect(const webrtc::DesktopRect& rect);
 
   // Return information about the most recent capture. This is only guaranteed
   // to be valid between CaptureRect calls.
@@ -64,7 +64,7 @@ class XServerPixelBuffer {
 
   Display* display_;
   Window root_window_;
-  SkISize root_window_size_;
+  webrtc::DesktopSize root_window_size_;
   XImage* x_image_;
   XShmSegmentInfo* shm_segment_info_;
   Pixmap shm_pixmap_;
