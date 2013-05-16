@@ -438,6 +438,10 @@ virtual void* MapBufferCHROMIUM(GLuint target, GLenum access) OVERRIDE;
 
 virtual GLboolean UnmapBufferCHROMIUM(GLuint target) OVERRIDE;
 
+virtual void* MapImageCHROMIUM(GLuint image_id, GLenum access) OVERRIDE;
+
+virtual void UnmapImageCHROMIUM(GLuint image_id) OVERRIDE;
+
 virtual void* MapBufferSubDataCHROMIUM(
     GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) OVERRIDE;
 
@@ -467,6 +471,14 @@ virtual void GetProgramInfoCHROMIUM(
 virtual GLuint CreateStreamTextureCHROMIUM(GLuint texture) OVERRIDE;
 
 virtual void DestroyStreamTextureCHROMIUM(GLuint texture) OVERRIDE;
+
+virtual GLuint CreateImageCHROMIUM(
+    GLsizei width, GLsizei height, GLenum internalformat) OVERRIDE;
+
+virtual void DestroyImageCHROMIUM(GLuint image_id) OVERRIDE;
+
+virtual void GetImageParameterivCHROMIUM(
+    GLuint image_id, GLenum pname, GLint* params) OVERRIDE;
 
 virtual void GetTranslatedShaderSourceANGLE(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* source) OVERRIDE;

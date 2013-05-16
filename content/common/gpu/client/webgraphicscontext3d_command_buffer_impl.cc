@@ -368,7 +368,8 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
           share_group_context->GetImplementation()->share_group() : NULL,
       transfer_buffer_,
       attributes_.shareResources,
-      bind_generates_resources_);
+      bind_generates_resources_,
+      NULL);
   gl_ = real_gl_;
 
   if (!real_gl_->Initialize(

@@ -27,14 +27,18 @@
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
+#include "gpu/command_buffer/client/image_factory.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
 #include "webkit/gpu/gl_bindings_skia_cmd_buffer.h"
@@ -44,6 +48,9 @@ using gpu::CommandBuffer;
 using gpu::CommandBufferService;
 using gpu::gles2::GLES2CmdHelper;
 using gpu::gles2::GLES2Implementation;
+using gpu::gles2::ImageFactory;
+using gpu::gles2::ImageManager;
+using gpu::GpuMemoryBuffer;
 using gpu::GpuScheduler;
 using gpu::TransferBuffer;
 using gpu::TransferBufferManager;
@@ -51,6 +58,9 @@ using gpu::TransferBufferManagerInterface;
 
 namespace webkit {
 namespace gpu {
+namespace {
+class ImageFactoryInProcess;
+}
 
 class GLInProcessContext {
  public:
@@ -162,6 +172,10 @@ class GLInProcessContext {
 
   void OnContextLost();
 
+  ::gpu::gles2::ImageManager* GetImageManager();
+
+  scoped_refptr<ImageFactoryInProcess> GetImageFactory();
+
   base::Closure context_lost_callback_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<CommandBufferService> command_buffer_;
@@ -172,6 +186,7 @@ class GLInProcessContext {
   scoped_ptr<GLES2CmdHelper> gles2_helper_;
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<GLES2Implementation> gles2_implementation_;
+  scoped_refptr<ImageFactoryInProcess> image_factory_;
   scoped_ptr<WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback>
       signal_sync_point_callback_;
   Error last_error_;
@@ -285,6 +300,66 @@ AutoLockAndDecoderDetachThread::~AutoLockAndDecoderDetachThread() {
   std::for_each(contexts_.begin(),
                 contexts_.end(),
                 &DetachThread);
+}
+
+class ImageFactoryInProcess
+     : public ImageFactory,
+       public base::RefCountedThreadSafe<ImageFactoryInProcess> {
+ public:
+  explicit ImageFactoryInProcess(ImageManager* image_manager);
+
+  // methods from ImageFactory
+  virtual scoped_ptr<GpuMemoryBuffer> CreateGpuMemoryBuffer(
+      int width, int height, GLenum internalformat,
+      unsigned* image_id) OVERRIDE;
+  virtual void DeleteGpuMemoryBuffer(unsigned image_id) OVERRIDE;
+ private:
+  friend class base::RefCountedThreadSafe<ImageFactoryInProcess>;
+  virtual ~ImageFactoryInProcess();
+
+  // ImageManager is referred by the ContextGroup and the
+  // ContextGroup outlives the client.
+  ImageManager* image_manager_;
+  unsigned next_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageFactoryInProcess);
+};
+
+ImageFactoryInProcess::ImageFactoryInProcess(
+    ImageManager* image_manager) : image_manager_(image_manager),
+                                   next_id_(0) {
+}
+
+ImageFactoryInProcess::~ImageFactoryInProcess() {
+}
+
+scoped_ptr<GpuMemoryBuffer> ImageFactoryInProcess::CreateGpuMemoryBuffer(
+    int width, int height, GLenum internalformat, unsigned int* image_id) {
+  // We're taking the lock here because we're accessing the ContextGroup's
+  // shared ImageManager and next_id_.
+  AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
+                                      g_all_shared_contexts.Get());
+  // For Android WebView we assume the |internalformat| will always be
+  // GL_RGBA8_OES.
+  DCHECK_EQ(GL_RGBA8_OES, internalformat);
+  const GpuMemoryBuffer::Creator& create_gpu_memory_buffer_callback =
+      ::gpu::gles2::GetProcessDefaultGpuMemoryBufferFactory();
+  scoped_ptr<GpuMemoryBuffer> buffer =
+      create_gpu_memory_buffer_callback.Run(width, height);
+  scoped_refptr<gfx::GLImage> gl_image =
+      gfx::GLImage::CreateGLImageForGpuMemoryBuffer(buffer->GetNativeBuffer(),
+                                                    gfx::Size(width, height));
+  *image_id = ++next_id_;  // Valid image_ids start from 1.
+  image_manager_->AddImage(gl_image, *image_id);
+  return buffer.Pass();
+}
+
+void ImageFactoryInProcess::DeleteGpuMemoryBuffer(unsigned int image_id) {
+  // We're taking the lock here because we're accessing the ContextGroup's
+  // shared ImageManager.
+  AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
+                                      g_all_shared_contexts.Get());
+  image_manager_->RemoveImage(image_id);
 }
 
 }  // namespace
@@ -415,6 +490,14 @@ void GLInProcessContext::DisableShaderTranslation() {
 
 GLES2Implementation* GLInProcessContext::GetImplementation() {
   return gles2_implementation_.get();
+}
+
+::gpu::gles2::ImageManager* GLInProcessContext::GetImageManager() {
+  return decoder_->GetContextGroup()->image_manager();
+}
+
+scoped_refptr<ImageFactoryInProcess> GLInProcessContext::GetImageFactory() {
+  return image_factory_;
 }
 
 GLInProcessContext::GLInProcessContext(bool share_resources)
@@ -593,13 +676,30 @@ bool GLInProcessContext::Initialize(
   // Create a transfer buffer.
   transfer_buffer_.reset(new TransferBuffer(gles2_helper_.get()));
 
+  if (share_resources_) {
+    AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
+                                        g_all_shared_contexts.Get());
+    if (g_all_shared_contexts.Get().empty()) {
+      // Create the image factory for the first context.
+      image_factory_ = new ImageFactoryInProcess(GetImageManager());
+    }  else {
+      // Share the image factory created by the first context.
+      GLInProcessContext* first_context =  *g_all_shared_contexts.Get().begin();
+      image_factory_ = first_context->GetImageFactory();
+    }
+  } else {
+    // Create the image factory, this object retains its ownership.
+    image_factory_ = new ImageFactoryInProcess(GetImageManager());
+  }
+
   // Create the object exposing the OpenGL API.
   gles2_implementation_.reset(new GLES2Implementation(
       gles2_helper_.get(),
       context_group ? context_group->GetImplementation()->share_group() : NULL,
       transfer_buffer_.get(),
       true,
-      false));
+      false,
+      image_factory_));
 
   if (!gles2_implementation_->Initialize(
       kStartTransferBufferSize,
@@ -1094,6 +1194,13 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
     t1 a1, t2 a2, t3 a3) {                                              \
   ClearContext();                                                       \
   gl_->glname(a1, a2, a3);                                              \
+}
+
+#define DELEGATE_TO_GL_3R(name, glname, t1, t2, t3, rt)                 \
+rt WebGraphicsContext3DInProcessCommandBufferImpl::name(                \
+    t1 a1, t2 a2, t3 a3) {                                              \
+  ClearContext();                                                       \
+  return gl_->glname(a1, a2, a3);                                       \
 }
 
 #define DELEGATE_TO_GL_4(name, glname, t1, t2, t3, t4)                  \
@@ -1815,6 +1922,19 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {
     context_lost_callback_->onContextLost();
   }
 }
+
+DELEGATE_TO_GL_3R(createImageCHROMIUM, CreateImageCHROMIUM,
+                  WGC3Dsizei, WGC3Dsizei, WGC3Denum, WGC3Duint);
+
+DELEGATE_TO_GL_1(destroyImageCHROMIUM, DestroyImageCHROMIUM, WGC3Duint);
+
+DELEGATE_TO_GL_3(getImageParameterivCHROMIUM, GetImageParameterivCHROMIUM,
+                 WGC3Duint, WGC3Denum, GLint*);
+
+DELEGATE_TO_GL_2R(mapImageCHROMIUM, MapImageCHROMIUM,
+                  WGC3Duint, WGC3Denum, void*);
+
+DELEGATE_TO_GL_1(unmapImageCHROMIUM, UnmapImageCHROMIUM, WGC3Duint);
 
 DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)

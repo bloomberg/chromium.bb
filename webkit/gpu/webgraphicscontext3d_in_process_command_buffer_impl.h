@@ -474,7 +474,13 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   virtual void texStorage2DEXT(
       WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
       WGC3Dint width, WGC3Dint height);
-
+  virtual WGC3Duint createImageCHROMIUM(
+      WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat);
+  virtual void destroyImageCHROMIUM(WGC3Duint image_id);
+  virtual void getImageParameterivCHROMIUM(
+      WGC3Duint image_id, WGC3Denum pname, WGC3Dint* params);
+  virtual void* mapImageCHROMIUM(WGC3Duint image_id, WGC3Denum access);
+  virtual void unmapImageCHROMIUM(WGC3Duint image_id);
   virtual WebGLId createQueryEXT();
   virtual void deleteQueryEXT(WebGLId query);
   virtual WGC3Dboolean isQueryEXT(WebGLId query);
@@ -584,6 +590,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   std::vector<WGC3Denum> synthetic_errors_;
 
   std::vector<uint8> scanline_;
+
   void FlipVertically(uint8* framebuffer,
                       unsigned int width,
                       unsigned int height);

@@ -1,0 +1,107 @@
+Name
+
+    CHROMIUM_map_image
+
+Name Strings
+
+    GL_CHROMIUM_map_image
+
+Version
+
+    Last Modifed Date: May 9, 2013
+
+Dependencies
+
+    OpenGL ES 2.0 is required.
+
+Overview
+
+    This extension allows for more efficient uploading of texture data through
+    Chromium's OpenGL ES 2.0 implementation.
+
+    For security reasons Chromium accesses the GPU from a separate process. User
+    processes are not allowed to access the GPU directly. This multi-process
+    architechure has the advantage that GPU operations can be secured and
+    pipelined but it has the disadvantage that all data that is going to be
+    passed to GPU must first be made available to the separate GPU process.
+
+    This extension helps the application directly allocate and access texture
+    memory.
+
+Issues
+
+    None
+
+New Tokens
+
+    None
+
+New Procedures and Functions
+
+    GLuint CreateImageCHROMIUM (GLsizei width, GLsizei height,
+                                GLenum internalformat)
+
+    Allocate an image with width equal to <width> and height equal
+    to <height> stored in format <internalformat>.
+
+    Returns a unique identifier for the allocated image that could be used
+    in subsequent operations.
+
+    INVALID_VALUE is generated if <width> or <height> is nonpositive.
+
+    void DestroyImageCHROMIUM (GLuint image_id)
+
+    Frees the image previously allocated by a call to CreateImageCHROMIUM.
+
+    INVALID_OPERATION is generated if <image_id> is not a valid image id.
+
+    void* MapImageCHROMIUM (GLuint image_id, GLenum access)
+
+    Returns a pointer to in the user memory for the application to modify
+    the image. <access> parameter defines if the user will read or write the
+    pixels.
+
+    INVALID_OPERATION is generated if <image_id> is not a valid image id.
+
+    INVALID_OPERATION is generated if the image was already mapped by a previous
+    call to this method.
+
+    INVALID_ENUM is generated if <access> is not one of WRITE_ONLY, READ_ONLY
+    and READ_WRITE.
+
+    void UnmapImageCHROMIUM (GLuint image_id)
+
+    Removes the mapping created by a call to MapImageCHROMIUM.
+
+    Note that after calling UnmapImageCHROMIUM the application should assume
+    that the memory returned by MapImageCHROMIUM is off limits and is no longer
+    accessible by the application. Accessing it after calling
+    UnmapImageCHROMIUM will produce undefined results.
+
+    INVALID_OPERATION is generated if <image_id> is not a valid image id.
+
+    INVALID_OPERATION is generated if the image was not already mapped by a
+    previous call to MapImageCHROMIUM.
+
+    void GetImageParameterivCHROMIUM(GLuint image_id, GLenum pname,
+                                     GLint* params)
+
+    Sets <params> to the integer value of the parameter specified by <pname>
+    for the image specified by <image_id>. <params> is expected to be
+    properly allocated before calling this method.
+
+    INVALID_OPERATION is generated if <image_id> is not a valid image id.
+
+    INVALID_ENUM is generated if <pname> is not IMAGE_ROWBYTES_CHROMIUM.
+
+Errors
+
+    None.
+
+New State
+
+    None.
+
+Revision History
+
+    5/9/2013    Documented the extension

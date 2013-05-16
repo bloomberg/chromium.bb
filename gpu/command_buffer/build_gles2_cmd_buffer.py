@@ -1306,6 +1306,32 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoCopyTexSubImage2D',
     'defer_reads': True,
   },
+  'CreateImageCHROMIUM': {
+    'type': 'Manual',
+    'cmd_args': 'GLsizei width, GLsizei height, GLenum internalformat',
+    'result': ['GLuint'],
+    'client_test': False,
+    'gen_cmd': False,
+    'expectation': False,
+    'extension': True,
+    'chromium': True,
+  },
+  'DestroyImageCHROMIUM': {
+    'type': 'Manual',
+    'immediate': True,
+    'client_test': False,
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+  },
+  'GetImageParameterivCHROMIUM': {
+    'type': 'Manual',
+    'client_test': False,
+    'gen_cmd': False,
+    'expectation': False,
+    'extension': True,
+    'chromium': True,
+  },
   'CreateProgram': {
     'type': 'Create',
     'client_test': False,
@@ -1780,7 +1806,6 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
     'client_test': False,
-    'chromium': True,
   },
   'MapBufferSubDataCHROMIUM': {
     'gen_cmd': False,
@@ -1788,6 +1813,12 @@ _FUNCTION_INFO = {
     'chromium': True,
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
+  },
+  'MapImageCHROMIUM': {
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
   },
   'MapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,
@@ -2015,7 +2046,6 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
     'client_test': False,
-    'chromium': True,
   },
   'UnmapBufferSubDataCHROMIUM': {
     'gen_cmd': False,
@@ -2023,6 +2053,12 @@ _FUNCTION_INFO = {
     'chromium': True,
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
+  },
+  'UnmapImageCHROMIUM': {
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
   },
   'UnmapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,

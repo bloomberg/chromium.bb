@@ -230,7 +230,8 @@ EGLContext Display::CreateContext(EGLConfig config,
       NULL,
       transfer_buffer_.get(),
       share_resources,
-      true));
+      true,
+      NULL));
 
   if (!context_->Initialize(
       kTransferBufferSize,

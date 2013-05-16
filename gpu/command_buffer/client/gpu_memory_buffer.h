@@ -27,7 +27,7 @@ class GLES2_IMPL_EXPORT GpuMemoryBuffer {
   enum AccessMode {
     READ_ONLY,
     WRITE_ONLY,
-    READ_OR_WRITE,
+    READ_WRITE,
   };
 
   // Frees a previously allocated buffer. Freeing a buffer that is still

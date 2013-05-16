@@ -63,7 +63,7 @@ bool GpuMemoryBufferImpl::IsMapped() {
 void GpuMemoryBufferImpl::SetAwDrawGLFunctionTable(
     AwDrawGLFunctionTable* table) {
   g_gl_draw_functions = table;
-  gpu::SetProcessDefaultGpuMemoryBufferFactory(
+  gpu::gles2::SetProcessDefaultGpuMemoryBufferFactory(
       base::Bind(&CreateGpuMemoryBuffer));
 }
 

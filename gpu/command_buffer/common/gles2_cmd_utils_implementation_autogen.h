@@ -41,6 +41,7 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x0003, "GL_LINE_STRIP", },
   { 0x0000, "GL_POINTS", },
   { 0x0001, "GL_LINES", },
+  { 0x78F0, "GL_IMAGE_ROWBYTES_CHROMIUM", },
   { 0x88B8, "GL_READ_ONLY", },
   { 0x88B9, "GL_WRITE_ONLY_OES", },
   { 0x8211, "GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE_EXT", },

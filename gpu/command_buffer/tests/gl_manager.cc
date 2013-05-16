@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_context.h"
@@ -35,7 +36,9 @@ GLManager::Options::Options()
       share_mailbox_manager(NULL),
       virtual_manager(NULL),
       bind_generates_resource(false),
-      context_lost_allowed(false) {
+      context_lost_allowed(false),
+      image_manager(NULL),
+      image_factory(NULL) {
 }
 
 GLManager::GLManager()
@@ -127,7 +130,7 @@ void GLManager::Initialize(const GLManager::Options& options) {
 
   if (!context_group) {
     context_group = new gles2::ContextGroup(mailbox_manager_.get(),
-                                            NULL,
+                                            options.image_manager,
                                             NULL,
                                             options.bind_generates_resource);
   }
@@ -196,7 +199,8 @@ void GLManager::Initialize(const GLManager::Options& options) {
       client_share_group,
       transfer_buffer_.get(),
       kShareResources,
-      options.bind_generates_resource));
+      options.bind_generates_resource,
+      options.image_factory));
 
   ASSERT_TRUE(gles2_implementation_->Initialize(
       kStartTransferBufferSize,

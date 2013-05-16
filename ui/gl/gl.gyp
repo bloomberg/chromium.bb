@@ -301,6 +301,8 @@
         ],
       },
       'sources': [
+        'gl_image_mock.cc',
+        'gl_image_mock.h',
         'gl_mock.h',
         'gl_mock.cc',
         '<(gl_binding_output_dir)/gl_mock_autogen_gl.h',

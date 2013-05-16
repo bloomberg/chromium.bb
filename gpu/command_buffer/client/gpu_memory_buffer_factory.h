@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer.h"
 
 namespace gpu {
+namespace gles2 {
 
 // Getter and setter for a GpuMemoryBuffer factory for the current process.
 // Currently it is only used for Android Webview where both browser and
@@ -22,6 +23,7 @@ GLES2_IMPL_EXPORT const GpuMemoryBuffer::Creator&
 GLES2_IMPL_EXPORT void SetProcessDefaultGpuMemoryBufferFactory(
     const GpuMemoryBuffer::Creator& factory);
 
+}  // namespace gles2
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_FACTORY_H_

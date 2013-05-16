@@ -595,6 +595,12 @@ void* GLES2MapBufferCHROMIUM(GLuint target, GLenum access) {
 GLboolean GLES2UnmapBufferCHROMIUM(GLuint target) {
   return gles2::GetGLContext()->UnmapBufferCHROMIUM(target);
 }
+void* GLES2MapImageCHROMIUM(GLuint image_id, GLenum access) {
+  return gles2::GetGLContext()->MapImageCHROMIUM(image_id, access);
+}
+void GLES2UnmapImageCHROMIUM(GLuint image_id) {
+  gles2::GetGLContext()->UnmapImageCHROMIUM(image_id);
+}
 void* GLES2MapBufferSubDataCHROMIUM(
     GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) {
   return gles2::GetGLContext()->MapBufferSubDataCHROMIUM(
@@ -638,6 +644,18 @@ GLuint GLES2CreateStreamTextureCHROMIUM(GLuint texture) {
 }
 void GLES2DestroyStreamTextureCHROMIUM(GLuint texture) {
   gles2::GetGLContext()->DestroyStreamTextureCHROMIUM(texture);
+}
+GLuint GLES2CreateImageCHROMIUM(
+    GLsizei width, GLsizei height, GLenum internalformat) {
+  return gles2::GetGLContext()->CreateImageCHROMIUM(
+      width, height, internalformat);
+}
+void GLES2DestroyImageCHROMIUM(GLuint image_id) {
+  gles2::GetGLContext()->DestroyImageCHROMIUM(image_id);
+}
+void GLES2GetImageParameterivCHROMIUM(
+    GLuint image_id, GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetImageParameterivCHROMIUM(image_id, pname, params);
 }
 void GLES2GetTranslatedShaderSourceANGLE(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
@@ -1006,6 +1024,10 @@ NameToFunc g_gles2_function_table[] = {
       glMapBufferCHROMIUM), },
   { "glUnmapBufferCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glUnmapBufferCHROMIUM), },
+  { "glMapImageCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glMapImageCHROMIUM), },
+  { "glUnmapImageCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glUnmapImageCHROMIUM), },
   { "glMapBufferSubDataCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glMapBufferSubDataCHROMIUM), },
   { "glUnmapBufferSubDataCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
@@ -1028,6 +1050,12 @@ NameToFunc g_gles2_function_table[] = {
       glCreateStreamTextureCHROMIUM), },
   { "glDestroyStreamTextureCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glDestroyStreamTextureCHROMIUM), },
+  { "glCreateImageCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glCreateImageCHROMIUM), },
+  { "glDestroyImageCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glDestroyImageCHROMIUM), },
+  { "glGetImageParameterivCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glGetImageParameterivCHROMIUM), },
   { "glGetTranslatedShaderSourceANGLE", reinterpret_cast<GLES2FunctionPointer>(
       glGetTranslatedShaderSourceANGLE), },
   { "glPostSubBufferCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(

@@ -401,7 +401,8 @@ class GLES2ImplementationTest : public testing::Test {
           NULL,
           transfer_buffer_.get(),
           shared_resources,
-          bind_generates_resource));
+          bind_generates_resource,
+          NULL));
       ASSERT_TRUE(gl_->Initialize(
           kTransferBufferSize,
           kTransferBufferSize,
