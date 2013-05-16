@@ -248,7 +248,7 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 
   if (removeAt != NSNotFound) {
     // Remove any popups that are on screen but no longer fit.
-    while ([popups_ count] >= removeAt) {
+    while ([popups_ count] >= removeAt && [popups_ count]) {
       [[popups_ lastObject] close];
       [popups_ removeLastObject];
     }

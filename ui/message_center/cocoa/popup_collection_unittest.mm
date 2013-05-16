@@ -163,6 +163,36 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
                                   [popups objectAtIndex:1]));
 }
 
+TEST_F(PopupCollectionTest, TinyScreen) {
+  [collection_ setScreenFrame:NSMakeRect(0, 0, 800, 100)];
+
+  EXPECT_EQ(0u, [[collection_ popups] count]);
+  center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                           "1",
+                           ASCIIToUTF16("One"),
+                           ASCIIToUTF16("This is the first notification to"
+                                        " be displayed"),
+                           string16(),
+                           std::string(),
+                           NULL);
+  EXPECT_EQ(1u, [[collection_ popups] count]);
+
+  // Now give the notification a longer message so that it no longer fits.
+  center_->UpdateNotification("1",
+                              "1",
+                              ASCIIToUTF16("One"),
+                              ASCIIToUTF16("This is now a very very very very "
+                                           "very very very very very very very "
+                                           "very very very very very very very "
+                                           "very very very very very very very "
+                                           "very very very very very very very "
+                                           "very very very very very very very "
+                                           "very very very very very very very "
+                                           "long notification."),
+                              NULL);
+  EXPECT_EQ(0u, [[collection_ popups] count]);
+}
+
 TEST_F(PopupCollectionTest, UpdateIconAndBody) {
   AddThreeNotifications();
   NSArray* popups = [collection_ popups];
