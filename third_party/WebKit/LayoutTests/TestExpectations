@@ -1264,20 +1264,6 @@ crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Image
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/preserves3d-opacity.html [ ImageOnlyFailure ]
 
-# The following tests are new, and will need baselines.
-crbug.com/237518 css3/filters/effect-reference-subregion.html [ ImageOnlyFailure Failure Missing ]
-crbug.com/237518 css3/filters/effect-reference-subregion-nested.html [ ImageOnlyFailure Failure Missing ]
-
-# The following tests will need rebaselining.
-crbug.com/237518 css3/filters/effect-reference.html [ ImageOnlyFailure Failure ]
-crbug.com/237518 css3/filters/effect-reference-hw.html [ ImageOnlyFailure Failure ]
-crbug.com/237518 css3/filters/effect-reference-composite.html [ ImageOnlyFailure Failure ]
-crbug.com/237518 css3/filters/effect-reference-composite-hw.html [ ImageOnlyFailure Failure ]
-crbug.com/237518 css3/filters/effect-reference-ordering-hw.html [ ImageOnlyFailure Failure ]
-crbug.com/237518 css3/filters/filter-repaint-blur.html [ ImageOnlyFailure Failure ]
-crbug.com/237518 css3/filters/filter-repaint-child-layers.html [ ImageOnlyFailure Failure ]
-crbug.com/237518 css3/filters/filter-repaint-shadow.html [ ImageOnlyFailure Failure ]
-
 webkit.org/b/90488 [ Win ] http/tests/inspector/network-preflight-options.html [ Pass Timeout ]
 
 webkit.org/b/95588 [ Mac ] fast/dom/shadow/shadowdom-for-textarea-complex-shadow.html [ ImageOnlyFailure ]
