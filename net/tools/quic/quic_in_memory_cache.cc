@@ -15,10 +15,11 @@ using std::string;
 // Specifies the directory used during QuicInMemoryCache
 // construction to seed the cache. Cache directory can be
 // generated using `wget -p --save-headers <url>
-string FLAGS_quic_in_memory_cache_dir;
 
 namespace net {
 namespace tools {
+
+std::string FLAGS_quic_in_memory_cache_dir = "/tmp/quic-data";
 
 namespace {
 
@@ -164,7 +165,9 @@ QuicInMemoryCache::QuicInMemoryCache() {
       response_headers.RemoveAllOfHeader("X-Original-Url");
       // Remove the protocol so that the string is of the form host + path,
       // which is parsed properly below.
-      if (StringPieceUtils::StartsWithIgnoreCase(base, "http://")) {
+      if (StringPieceUtils::StartsWithIgnoreCase(base, "https://")) {
+        base.remove_prefix(8);
+      } else if (StringPieceUtils::StartsWithIgnoreCase(base, "http://")) {
         base.remove_prefix(7);
       }
     }

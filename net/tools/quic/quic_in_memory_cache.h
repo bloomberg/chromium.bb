@@ -18,6 +18,8 @@ template <typename T> struct DefaultSingletonTraits;
 namespace net {
 namespace tools {
 
+extern std::string FLAGS_quic_in_memory_cache_dir;
+
 class QuicServer;
 
 // In-memory cache for HTTP responses.
