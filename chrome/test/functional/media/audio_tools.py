@@ -39,6 +39,7 @@ else:
   _PESQ_PATH = os.path.join(_TOOLS_PATH, 'pesq')
   _SOX_PATH = commands.getoutput('which sox')
   _AUDIO_RECORDER = commands.getoutput('which arecord')
+  _PACMD_PATH = commands.getoutput('which pacmd')
 
 
 class AudioRecorderThread(threading.Thread):
@@ -130,3 +131,21 @@ def RemoveSilence(input_audio_file, output_audio_file):
   output, error = p.communicate()
   if p.returncode != 0:
     logging.error('Error removing silence from audio: %s\n%s', output, error)
+
+
+def ForceMicrophoneVolumeTo100Percent():
+  if WINDOWS:
+    logging.error('Volume forcing not implemented on Windows yet.')
+  else:
+    # The recording device id is machine-specific. We assume here it is called
+    # Monitor of render (which corresponds to the id render.monitor). You can
+    # list the available recording devices with pacmd list-sources.
+    RECORDING_DEVICE_ID = 'render.monitor'
+    HUNDRED_PERCENT_VOLUME = '65536'
+    cmd = [_PACMD_PATH, 'set-source-volume', RECORDING_DEVICE_ID,
+           HUNDRED_PERCENT_VOLUME]
+    logging.debug('Running command: %s', ' '.join(cmd))
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, error = p.communicate()
+    if p.returncode != 0:
+      logging.error('Error forcing mic volume to 100%%: %s\n%s', output, error)

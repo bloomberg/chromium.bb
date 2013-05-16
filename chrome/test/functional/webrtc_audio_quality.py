@@ -133,6 +133,8 @@ class WebrtcAudioQualityTest(webrtc_test_base.WebrtcTestBase):
 
   def _RecordAndVerify(self, record_duration_seconds, sound_producing_function,
                        verification_function):
+    audio_tools.ForceMicrophoneVolumeTo100Percent()
+
     # The two temp files that will be potentially used in the test.
     temp_file = None
     file_no_silence = None
