@@ -23,7 +23,6 @@
 #ifndef SVGAnimateTransformElement_h
 #define SVGAnimateTransformElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGTransform.h"
 
@@ -50,5 +49,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGAnimateTransformElement_h

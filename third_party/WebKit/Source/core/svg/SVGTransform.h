@@ -21,7 +21,6 @@
 #ifndef SVGTransform_h
 #define SVGTransform_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGMatrix.h"
 
@@ -96,5 +95,4 @@ inline bool operator!=(const SVGTransform& a, const SVGTransform& b)
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGNumberList.h"
 
 #include "core/svg/SVGParserUtilities.h"
@@ -60,5 +59,3 @@ String SVGNumberList::valueAsString() const
 }
 
 }
-
-#endif // ENABLE(SVG)

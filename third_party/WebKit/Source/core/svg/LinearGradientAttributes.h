@@ -20,7 +20,6 @@
 #ifndef LinearGradientAttributes_h
 #define LinearGradientAttributes_h
 
-#if ENABLE(SVG)
 #include "core/svg/GradientAttributes.h"
 
 namespace WebCore {
@@ -68,7 +67,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif
 
 // vim:ts=4:noet

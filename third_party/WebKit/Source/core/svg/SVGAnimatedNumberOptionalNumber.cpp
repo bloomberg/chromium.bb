@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 
 #include "core/svg/SVGAnimateElement.h"
@@ -104,5 +103,3 @@ float SVGAnimatedNumberOptionalNumberAnimator::calculateDistance(const String&, 
 }
 
 }
-
-#endif // ENABLE(SVG)

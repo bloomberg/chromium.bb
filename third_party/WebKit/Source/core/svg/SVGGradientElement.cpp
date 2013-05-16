@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGGradientElement.h"
 
 #include "SVGNames.h"
@@ -167,5 +166,3 @@ Vector<Gradient::ColorStop> SVGGradientElement::buildStops()
 }
 
 }
-
-#endif // ENABLE(SVG)

@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPreserveAspectRatio.h"
 
 #include "core/dom/ExceptionCode.h"
@@ -353,5 +352,3 @@ String SVGPreserveAspectRatio::valueAsString() const
 }
 
 }
-
-#endif // ENABLE(SVG)

@@ -27,7 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/graphics/SVGImage.h"
 
 #include "core/loader/DocumentLoader.h"
@@ -379,4 +378,3 @@ void SVGImage::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 
 }
 
-#endif // ENABLE(SVG)

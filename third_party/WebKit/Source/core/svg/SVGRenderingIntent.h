@@ -20,7 +20,6 @@
 #ifndef SVGRenderingIntent_h
 #define SVGRenderingIntent_h
 
-#if ENABLE(SVG)
 
 #include <wtf/RefCounted.h>
 
@@ -43,7 +42,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGRenderingIntent_h
-
-// vim:ts=4:noet

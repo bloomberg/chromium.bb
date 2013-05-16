@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGComponentTransferFunctionElement.h"
 
 #include "SVGNames.h"
@@ -152,5 +151,3 @@ ComponentTransferFunction SVGComponentTransferFunctionElement::transferFunction(
 }
 
 }
-
-#endif // ENABLE(SVG)

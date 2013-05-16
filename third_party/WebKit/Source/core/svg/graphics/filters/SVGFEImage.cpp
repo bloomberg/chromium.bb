@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/graphics/filters/SVGFEImage.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
@@ -158,5 +157,3 @@ TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

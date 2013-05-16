@@ -21,7 +21,6 @@
 #ifndef SVGPathTraversalStateBuilder_h
 #define SVGPathTraversalStateBuilder_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/PathTraversalState.h"
 #include "core/svg/SVGPathConsumer.h"
@@ -63,5 +62,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGPathTraversalStateBuilder_h

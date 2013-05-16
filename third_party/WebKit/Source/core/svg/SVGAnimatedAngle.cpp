@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedAngle.h"
 
 #include "core/svg/SVGAnimateElement.h"
@@ -158,5 +157,3 @@ float SVGAnimatedAngleAnimator::calculateDistance(const String& fromString, cons
 }
 
 }
-
-#endif // ENABLE(SVG)

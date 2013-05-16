@@ -20,7 +20,6 @@
 #ifndef SVGPathBlender_h
 #define SVGPathBlender_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPathSource.h"
 
@@ -70,5 +69,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGPathBlender_h

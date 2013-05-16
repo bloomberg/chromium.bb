@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGElement.h"
 
 #include "HTMLNames.h"
@@ -739,5 +738,3 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
 #endif
 
 }
-
-#endif // ENABLE(SVG)

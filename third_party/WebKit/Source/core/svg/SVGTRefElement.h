@@ -21,7 +21,6 @@
 #ifndef SVGTRefElement_h
 #define SVGTRefElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGTextPositioningElement.h"
 #include "core/svg/SVGURIReference.h"
 
@@ -66,5 +65,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

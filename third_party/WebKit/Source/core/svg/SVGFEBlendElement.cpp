@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFEBlendElement.h"
 
 #include "SVGNames.h"
@@ -144,5 +143,3 @@ PassRefPtr<FilterEffect> SVGFEBlendElement::build(SVGFilterBuilder* filterBuilde
 }
 
 }
-
-#endif // ENABLE(SVG)

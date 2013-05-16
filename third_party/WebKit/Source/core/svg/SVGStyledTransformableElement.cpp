@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGStyledTransformableElement.h"
 
 #include "SVGNames.h"
@@ -167,5 +166,3 @@ void SVGStyledTransformableElement::toClipPath(Path& path)
 }
 
 }
-
-#endif // ENABLE(SVG)

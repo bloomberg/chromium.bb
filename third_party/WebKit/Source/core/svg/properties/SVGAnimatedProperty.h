@@ -20,7 +20,6 @@
 #ifndef SVGAnimatedProperty_h
 #define SVGAnimatedProperty_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGElement.h"
 #include "core/svg/properties/SVGAnimatedPropertyDescription.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
@@ -125,5 +124,4 @@ protected:
 
 }
 
-#endif // ENABLE(SVG)
 #endif // SVGAnimatedProperty_h

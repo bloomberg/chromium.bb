@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeTraversal.h"
@@ -323,5 +322,3 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 }
 
 }
-
-#endif // ENABLE(SVG)

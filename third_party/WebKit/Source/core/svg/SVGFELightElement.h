@@ -22,7 +22,6 @@
 #ifndef SVGFELightElement_h
 #define SVGFELightElement_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/filters/LightSource.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGElement.h"
@@ -60,5 +59,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

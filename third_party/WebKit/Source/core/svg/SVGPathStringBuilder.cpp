@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathStringBuilder.h"
 #include <wtf/text/WTFString.h>
 
@@ -134,5 +133,3 @@ void SVGPathStringBuilder::closePath()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

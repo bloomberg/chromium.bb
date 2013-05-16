@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGPolygonElement.h"
 
@@ -39,5 +38,3 @@ PassRefPtr<SVGPolygonElement> SVGPolygonElement::create(const QualifiedName& tag
 }
 
 }
-
-#endif // ENABLE(SVG)

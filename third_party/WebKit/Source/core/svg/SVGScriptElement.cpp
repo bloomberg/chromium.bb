@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGScriptElement.h"
 
 #include "HTMLNames.h"
@@ -213,5 +212,3 @@ PassRefPtr<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren()
 }
 
 }
-
-#endif // ENABLE(SVG)

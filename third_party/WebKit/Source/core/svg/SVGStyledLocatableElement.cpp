@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGStyledLocatableElement.h"
 
 #include "core/platform/graphics/transforms/AffineTransform.h"
@@ -60,5 +59,3 @@ AffineTransform SVGStyledLocatableElement::getScreenCTM(StyleUpdateStrategy styl
 }
 
 }
-
-#endif // ENABLE(SVG)

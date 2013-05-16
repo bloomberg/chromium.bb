@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGTextElement.h"
 
 #include "SVGNames.h"
@@ -179,5 +178,3 @@ void SVGTextElement::svgAttributeChanged(const QualifiedName& attrName)
 }
 
 }
-
-#endif // ENABLE(SVG)

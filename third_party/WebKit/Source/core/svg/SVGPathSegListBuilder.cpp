@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathSegListBuilder.h"
 
 #include "core/dom/ExceptionCode.h"
@@ -147,5 +146,3 @@ void SVGPathSegListBuilder::closePath()
 }
 
 }
-
-#endif // ENABLE(SVG)

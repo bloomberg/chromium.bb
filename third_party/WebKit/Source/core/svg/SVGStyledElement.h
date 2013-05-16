@@ -21,7 +21,6 @@
 #ifndef SVGStyledElement_h
 #define SVGStyledElement_h
 
-#if ENABLE(SVG)
 #include "CSSPropertyNames.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGLocatable.h"
@@ -101,5 +100,4 @@ inline SVGStyledElement* toSVGStyledElement(Node* node)
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGStyledElement

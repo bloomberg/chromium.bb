@@ -20,7 +20,6 @@
 #ifndef SVGAnimatedColor_h
 #define SVGAnimatedColor_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 
 namespace WebCore {
@@ -43,8 +42,7 @@ public:
     virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*);
     virtual float calculateDistance(const String& fromString, const String& toString);
 };
-} // namespace WebCore
 
-#endif // ENABLE(SVG)
+} // namespace WebCore
 
 #endif

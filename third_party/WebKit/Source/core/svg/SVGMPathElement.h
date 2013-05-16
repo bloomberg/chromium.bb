@@ -20,7 +20,6 @@
 #ifndef SVGMPathElement_h
 #define SVGMPathElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -65,5 +64,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGMPathElement_h

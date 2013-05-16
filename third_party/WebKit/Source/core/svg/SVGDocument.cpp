@@ -19,7 +19,6 @@
  */
 
 #include "config.h"
-#if ENABLE(SVG)
 #include "core/svg/SVGDocument.h"
 
 #include "SVGNames.h"
@@ -103,6 +102,3 @@ bool SVGDocument::childShouldCreateRenderer(const NodeRenderingContext& childCon
 }
 
 }
-
-// vim:ts=4:noet
-#endif // ENABLE(SVG)

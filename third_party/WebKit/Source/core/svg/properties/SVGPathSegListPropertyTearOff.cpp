@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/properties/SVGPathSegListPropertyTearOff.h"
 
 #include "SVGNames.h"
@@ -137,5 +136,3 @@ bool SVGPathSegListPropertyTearOff::processIncomingListItemValue(const ListItemT
 }
 
 }
-
-#endif // ENABLE(SVG)

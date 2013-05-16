@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimateMotionElement.h"
 
 #include "SVGNames.h"
@@ -336,4 +335,3 @@ void SVGAnimateMotionElement::updateAnimationMode()
 }
 
 }
-#endif // ENABLE(SVG)

@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/svg/graphics/SVGImageCache.h"
 
-#if ENABLE(SVG)
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -96,5 +95,3 @@ Image* SVGImageCache::imageForRenderer(const RenderObject* renderer)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

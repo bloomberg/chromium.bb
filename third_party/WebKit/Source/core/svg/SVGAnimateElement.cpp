@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimateElement.h"
 
 #include "CSSPropertyNames.h"
@@ -429,5 +428,3 @@ SVGAnimatedTypeAnimator* SVGAnimateElement::ensureAnimator()
 }
 
 }
-
-#endif // ENABLE(SVG)

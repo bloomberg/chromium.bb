@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGClipPathElement.h"
 
 #include "SVGNames.h"
@@ -125,5 +124,3 @@ RenderObject* SVGClipPathElement::createRenderer(RenderArena* arena, RenderStyle
 }
 
 }
-
-#endif // ENABLE(SVG)

@@ -21,7 +21,6 @@
 #ifndef SVGPathElement_h
 #define SVGPathElement_h
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedNumber.h"
@@ -148,5 +147,4 @@ inline SVGPathElement* toSVGPathElement(SVGElement* element)
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

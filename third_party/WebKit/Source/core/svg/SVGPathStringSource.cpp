@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathStringSource.h"
 
 #include "core/platform/graphics/FloatPoint.h"
@@ -249,5 +248,3 @@ bool SVGPathStringSource::parseArcToSegment(float& rx, float& ry, float& angle, 
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(SVG)

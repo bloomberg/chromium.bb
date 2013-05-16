@@ -20,7 +20,6 @@
 #ifndef PatternAttributes_h
 #define PatternAttributes_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
@@ -163,5 +162,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

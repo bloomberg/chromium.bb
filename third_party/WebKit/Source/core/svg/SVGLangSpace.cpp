@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGLangSpace.h"
 
 #include "XMLNames.h"
@@ -85,5 +84,3 @@ void SVGLangSpace::addSupportedAttributes(HashSet<QualifiedName>& supportedAttri
 }
 
 }
-
-#endif // ENABLE(SVG)

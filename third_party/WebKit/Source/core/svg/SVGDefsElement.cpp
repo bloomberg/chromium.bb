@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGDefsElement.h"
 
 #include "SVGNames.h"
@@ -61,5 +60,3 @@ RenderObject* SVGDefsElement::createRenderer(RenderArena* arena, RenderStyle*)
 }
 
 }
-
-#endif // ENABLE(SVG)

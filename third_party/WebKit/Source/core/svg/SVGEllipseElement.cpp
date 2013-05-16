@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGEllipseElement.h"
 
 #include "SVGNames.h"
@@ -158,5 +157,3 @@ RenderObject* SVGEllipseElement::createRenderer(RenderArena* arena, RenderStyle*
 }
 
 }
-
-#endif // ENABLE(SVG)

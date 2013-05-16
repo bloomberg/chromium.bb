@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGAnimateColorElement.h"
 
@@ -55,5 +54,3 @@ void SVGAnimateColorElement::determinePropertyValueTypes(const String& from, con
 }
 
 }
-
-#endif // ENABLE(SVG)

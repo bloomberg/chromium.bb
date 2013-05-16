@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedType.h"
 
 #include "core/svg/SVGParserUtilities.h"
@@ -329,5 +328,3 @@ bool SVGAnimatedType::supportsAnimVal(AnimatedPropertyType type)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGRectElement.h"
 
 #include "SVGNames.h"
@@ -173,5 +172,3 @@ RenderObject* SVGRectElement::createRenderer(RenderArena* arena, RenderStyle*)
 }
 
 }
-
-#endif // ENABLE(SVG)

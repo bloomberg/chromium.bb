@@ -21,7 +21,6 @@
  
 #ifndef SVGZoomEvent_h
 #define SVGZoomEvent_h
-#if ENABLE(SVG)
 
 #include "core/dom/UIEvent.h"
 #include "core/platform/graphics/FloatRect.h"
@@ -61,7 +60,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGZoomEvent_h
-
-// vim:ts=4:noet

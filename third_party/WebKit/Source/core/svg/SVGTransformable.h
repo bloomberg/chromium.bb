@@ -21,7 +21,6 @@
 #ifndef SVGTransformable_h
 #define SVGTransformable_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGLocatable.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/SVGTransformList.h"
@@ -50,5 +49,4 @@ public:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGTransformable_h

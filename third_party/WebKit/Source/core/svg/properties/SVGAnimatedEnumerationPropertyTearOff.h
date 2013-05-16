@@ -20,7 +20,6 @@
 #ifndef SVGAnimatedEnumerationPropertyTearOff_h
 #define SVGAnimatedEnumerationPropertyTearOff_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGException.h"
 #include "core/svg/properties/SVGAnimatedStaticPropertyTearOff.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
@@ -62,5 +61,4 @@ private:
 
 }
 
-#endif // ENABLE(SVG)
 #endif // SVGAnimatedEnumerationPropertyTearOff_h

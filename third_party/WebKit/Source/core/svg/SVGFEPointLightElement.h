@@ -20,7 +20,6 @@
 #ifndef SVGFEPointLightElement_h
 #define SVGFEPointLightElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFELightElement.h"
 
 namespace WebCore {
@@ -37,5 +36,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFEImageElement.h"
 
 #include "SVGNames.h"
@@ -218,5 +217,3 @@ void SVGFEImageElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) con
 }
 
 }
-
-#endif // ENABLE(SVG)

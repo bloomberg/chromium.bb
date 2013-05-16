@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGParserUtilities.h"
 
 #include "core/dom/Document.h"
@@ -482,5 +481,3 @@ template bool parseFloatPoint3(const LChar*& current, const LChar* end, FloatPoi
 template bool parseFloatPoint3(const UChar*& current, const UChar* end, FloatPoint& point1, FloatPoint& point2, FloatPoint& point3);
 
 }
-
-#endif // ENABLE(SVG)

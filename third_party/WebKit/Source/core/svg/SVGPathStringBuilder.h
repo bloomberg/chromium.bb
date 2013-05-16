@@ -20,7 +20,6 @@
 #ifndef SVGPathStringBuilder_h
 #define SVGPathStringBuilder_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGPathConsumer.h"
 #include <wtf/text/StringBuilder.h>
@@ -55,5 +54,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGPathStringBuilder_h

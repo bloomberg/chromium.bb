@@ -20,7 +20,6 @@
 
 #ifndef SVGMetadataElement_h
 #define SVGMetadataElement_h
-#if ENABLE(SVG)
 
 #include "core/svg/SVGElement.h"
 
@@ -36,7 +35,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif
-
-// vim:ts=4:noet

@@ -21,7 +21,6 @@
 #ifndef SVGElementInstance_h
 #define SVGElementInstance_h
 
-#if ENABLE(SVG)
 #include "core/dom/EventTarget.h"
 #include "core/platform/TreeShared.h"
 #include "core/svg/SVGElement.h"
@@ -195,5 +194,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

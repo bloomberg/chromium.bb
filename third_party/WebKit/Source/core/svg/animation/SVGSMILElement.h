@@ -25,7 +25,7 @@
 
 #ifndef SVGSMILElement_h
 #define SVGSMILElement_h
-#if ENABLE(SVG)
+
 #include "core/svg/SVGElement.h"
 #include "core/svg/animation/SMILTime.h"
 
@@ -236,5 +236,4 @@ private:
 
 }
 
-#endif // ENABLE(SVG)
 #endif // SVGSMILElement_h

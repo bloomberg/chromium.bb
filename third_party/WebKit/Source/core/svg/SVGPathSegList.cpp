@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathSegList.h"
 
 #include "SVGNames.h"
@@ -46,5 +45,3 @@ void SVGPathSegList::commitChange(SVGElement* contextElement, ListModification l
 }
 
 }
-
-#endif // ENABLE(SVG)

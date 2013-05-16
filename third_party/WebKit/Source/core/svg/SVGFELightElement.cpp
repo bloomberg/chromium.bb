@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFELightElement.h"
 
 #include "SVGNames.h"
@@ -221,5 +220,3 @@ void SVGFELightElement::childrenChanged(bool changedByParser, Node* beforeChange
 }
 
 }
-
-#endif // ENABLE(SVG)

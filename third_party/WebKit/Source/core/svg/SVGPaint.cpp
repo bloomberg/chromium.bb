@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPaint.h"
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
@@ -124,5 +123,3 @@ void SVGPaint::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) c
 }
 
 }
-
-#endif // ENABLE(SVG)

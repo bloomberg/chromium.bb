@@ -21,7 +21,6 @@
 #ifndef SVGDefsElement_h
 #define SVGDefsElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGLangSpace.h"
@@ -56,5 +55,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

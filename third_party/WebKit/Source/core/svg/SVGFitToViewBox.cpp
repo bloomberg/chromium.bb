@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFitToViewBox.h"
 
 #include "SVGNames.h"
@@ -100,5 +99,3 @@ void SVGFitToViewBox::addSupportedAttributes(HashSet<QualifiedName>& supportedAt
 }
 
 }
-
-#endif // ENABLE(SVG)

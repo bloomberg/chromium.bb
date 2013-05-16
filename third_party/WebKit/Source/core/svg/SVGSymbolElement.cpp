@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGSymbolElement.h"
 
 #include "SVGNames.h"
@@ -108,5 +107,3 @@ RenderObject* SVGSymbolElement::createRenderer(RenderArena* arena, RenderStyle*)
 }
 
 }
-
-#endif // ENABLE(SVG)

@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGRadialGradientElement.h"
 
 #include "SVGNames.h"
@@ -225,5 +224,3 @@ bool SVGRadialGradientElement::selfHasRelativeLengths() const
 }
 
 }
-
-#endif // ENABLE(SVG)

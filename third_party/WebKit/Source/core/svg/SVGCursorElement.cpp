@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGCursorElement.h"
 
 #include "SVGNames.h"
@@ -143,5 +142,3 @@ void SVGCursorElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) cons
 }
 
 }
-
-#endif // ENABLE(SVG)

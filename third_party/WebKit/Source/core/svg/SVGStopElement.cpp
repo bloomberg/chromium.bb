@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGStopElement.h"
 
 #include "SVGNames.h"
@@ -125,5 +124,3 @@ Color SVGStopElement::stopColorIncludingOpacity() const
 }
 
 }
-
-#endif // ENABLE(SVG)

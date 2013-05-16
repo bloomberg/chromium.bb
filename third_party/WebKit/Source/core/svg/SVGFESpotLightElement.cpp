@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGFESpotLightElement.h"
 
@@ -48,7 +47,3 @@ PassRefPtr<LightSource> SVGFESpotLightElement::lightSource() const
 }
 
 }
-
-#endif // ENABLE(SVG)
-
-// vim:ts=4:noet

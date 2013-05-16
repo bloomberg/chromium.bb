@@ -22,7 +22,6 @@
 #ifndef SVGColor_h
 #define SVGColor_h
 
-#if ENABLE(SVG)
 #include "core/css/CSSValue.h"
 #include "core/platform/graphics/Color.h"
 #include <wtf/PassRefPtr.h>
@@ -97,5 +96,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGColor_h

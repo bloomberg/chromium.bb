@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFEDiffuseLightingElement.h"
 
 #include "SVGNames.h"
@@ -229,5 +228,3 @@ PassRefPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilterBuilder* fi
 }
 
 }
-
-#endif // ENABLE(SVG)

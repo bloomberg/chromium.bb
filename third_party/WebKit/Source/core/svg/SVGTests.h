@@ -21,7 +21,6 @@
 #ifndef SVGTests_h
 #define SVGTests_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGStringList.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "core/svg/properties/SVGAnimatedPropertyMacros.h"
@@ -72,5 +71,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGTests_h

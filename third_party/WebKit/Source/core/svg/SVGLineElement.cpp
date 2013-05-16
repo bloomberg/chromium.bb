@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGLineElement.h"
 
 #include "SVGNames.h"
@@ -152,5 +151,3 @@ bool SVGLineElement::selfHasRelativeLengths() const
 }
 
 }
-
-#endif // ENABLE(SVG)

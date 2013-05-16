@@ -21,7 +21,6 @@
 #ifndef SVGPointList_h
 #define SVGPointList_h
 
-#if ENABLE(SVG)
 #include "core/dom/QualifiedName.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
 #include <wtf/Vector.h>
@@ -45,5 +44,4 @@ struct SVGPropertyTraits<SVGPointList> {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

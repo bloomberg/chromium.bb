@@ -20,7 +20,6 @@
 #ifndef SVGAnimatedRect_h
 #define SVGAnimatedRect_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGRect.h"
 #include "core/svg/properties/SVGAnimatedPropertyMacros.h"
@@ -60,5 +59,4 @@ public:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

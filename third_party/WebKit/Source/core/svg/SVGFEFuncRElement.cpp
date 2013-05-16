@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGFEFuncRElement.h"
 
@@ -39,7 +38,3 @@ PassRefPtr<SVGFEFuncRElement> SVGFEFuncRElement::create(const QualifiedName& tag
 }
 
 }
-
-#endif // ENABLE(SVG)
-
-// vim:ts=4:noet

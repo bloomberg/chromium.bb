@@ -20,7 +20,6 @@
 #ifndef SVGRect_h
 #define SVGRect_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatRect.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
 #include <wtf/text/StringBuilder.h>
@@ -46,5 +45,4 @@ struct SVGPropertyTraits<FloatRect> {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGRect_h

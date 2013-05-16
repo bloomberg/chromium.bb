@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAElement.h"
 
 #include "SVGNames.h"
@@ -246,5 +245,3 @@ bool SVGAElement::childShouldCreateRenderer(const NodeRenderingContext& childCon
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

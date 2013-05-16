@@ -20,7 +20,6 @@
 
 #ifndef SVGDocument_h
 #define SVGDocument_h
-#if ENABLE(SVG)
 
 #include "core/dom/Document.h"
 #include "core/platform/graphics/FloatPoint.h"
@@ -73,7 +72,4 @@ void toSVGDocument(const SVGDocument*);
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGDocument_h
-
-// vim:ts=4:noet

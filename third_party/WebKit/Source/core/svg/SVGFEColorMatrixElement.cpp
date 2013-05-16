@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFEColorMatrixElement.h"
 
 #include "SVGNames.h"
@@ -174,5 +173,3 @@ PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filter
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

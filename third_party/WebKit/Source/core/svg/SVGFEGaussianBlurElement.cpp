@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFEGaussianBlurElement.h"
 
 #include "SVGNames.h"
@@ -143,5 +142,3 @@ PassRefPtr<FilterEffect> SVGFEGaussianBlurElement::build(SVGFilterBuilder* filte
 }
 
 }
-
-#endif // ENABLE(SVG)

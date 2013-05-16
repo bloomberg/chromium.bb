@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGSwitchElement.h"
 
 #include "SVGNames.h"
@@ -75,5 +74,3 @@ RenderObject* SVGSwitchElement::createRenderer(RenderArena* arena, RenderStyle*)
 }
 
 }
-
-#endif // ENABLE(SVG)

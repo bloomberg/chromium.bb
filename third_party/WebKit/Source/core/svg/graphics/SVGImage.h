@@ -27,8 +27,6 @@
 #ifndef SVGImage_h
 #define SVGImage_h
 
-#if ENABLE(SVG)
-
 #include "core/platform/graphics/Image.h"
 
 namespace WebCore {
@@ -99,5 +97,4 @@ private:
 };
 }
 
-#endif // ENABLE(SVG)
 #endif // SVGImage_h

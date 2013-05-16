@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGGElement.h"
 
 #include "SVGNames.h"
@@ -117,5 +116,3 @@ bool SVGGElement::rendererIsNeeded(const NodeRenderingContext&)
 }
 
 }
-
-#endif // ENABLE(SVG)

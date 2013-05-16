@@ -21,7 +21,6 @@
 #ifndef SVGPathStringSource_h
 #define SVGPathStringSource_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathSource.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
@@ -68,5 +67,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGPathStringSource_h

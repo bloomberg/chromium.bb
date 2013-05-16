@@ -21,7 +21,6 @@
 #ifndef SVGFEComponentTransferElement_h
 #define SVGFEComponentTransferElement_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/filters/FEComponentTransfer.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
@@ -46,5 +45,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

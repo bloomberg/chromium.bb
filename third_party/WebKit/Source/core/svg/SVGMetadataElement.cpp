@@ -19,7 +19,6 @@
  */
 
 #include "config.h"
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGMetadataElement.h"
 
@@ -38,5 +37,3 @@ PassRefPtr<SVGMetadataElement> SVGMetadataElement::create(const QualifiedName& t
 }
 
 }
-
-#endif // ENABLE(SVG)

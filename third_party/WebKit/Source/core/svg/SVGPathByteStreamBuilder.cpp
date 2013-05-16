@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathByteStreamBuilder.h"
 
 #include "core/svg/SVGPathParser.h"
@@ -113,5 +112,3 @@ void SVGPathByteStreamBuilder::closePath()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

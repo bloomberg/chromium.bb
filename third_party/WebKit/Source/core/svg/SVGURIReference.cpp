@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGURIReference.h"
 
 #include "core/dom/Attribute.h"
@@ -109,5 +108,3 @@ void SVGURIReference::addSupportedAttributes(HashSet<QualifiedName>& supportedAt
 }
 
 }
-
-#endif // ENABLE(SVG)

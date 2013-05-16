@@ -19,7 +19,6 @@
  */
 
 #include "config.h"
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGDescElement.h"
 
@@ -43,7 +42,3 @@ String SVGDescElement::description() const
 }
 
 }
-
-// vim:ts=4:noet
-#endif // ENABLE(SVG)
-

@@ -21,7 +21,6 @@
 #ifndef SVGTransformList_h
 #define SVGTransformList_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGTransform.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
 #include <wtf/Vector.h>
@@ -51,5 +50,4 @@ struct SVGPropertyTraits<SVGTransformList> {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGTransformList_h

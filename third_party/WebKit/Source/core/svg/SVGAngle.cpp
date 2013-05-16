@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAngle.h"
 
 #include "core/dom/ExceptionCode.h"
@@ -241,5 +240,3 @@ void SVGAngle::convertToSpecifiedUnits(unsigned short unitType, ExceptionCode& e
 }
 
 }
-
-#endif // ENABLE(SVG)

@@ -21,7 +21,6 @@
 #ifndef SVGTextContentElement_h
 #define SVGTextContentElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
@@ -138,5 +137,4 @@ inline SVGTextContentElement* toSVGTextContentElement(SVGElement* element)
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

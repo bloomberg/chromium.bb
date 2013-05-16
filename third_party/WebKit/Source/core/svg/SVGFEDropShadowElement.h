@@ -20,7 +20,6 @@
 #ifndef SVGFEDropShadowElement_h
 #define SVGFEDropShadowElement_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/filters/FEDropShadow.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
@@ -55,5 +54,4 @@ private:
     
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

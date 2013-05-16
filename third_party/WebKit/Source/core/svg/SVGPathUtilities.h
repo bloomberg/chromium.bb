@@ -20,7 +20,6 @@
 #ifndef SVGPathUtilities_h
 #define SVGPathUtilities_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPathSeg.h"
@@ -59,5 +58,4 @@ bool getPointAtLengthOfSVGPathByteStream(SVGPathByteStream*, float length, Float
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGPathUtilities_h

@@ -20,7 +20,6 @@
 #ifndef SVGViewSpec_h
 #define SVGViewSpec_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGFitToViewBox.h"
@@ -110,5 +109,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGTransform.h"
 
 #include "core/platform/FloatConversion.h"
@@ -203,5 +202,3 @@ String SVGTransform::valueAsString() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

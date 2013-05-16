@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 
 #include "core/dom/EventNames.h"
 #include "core/svg/SVGZoomEvent.h"
@@ -76,5 +75,3 @@ const AtomicString& SVGZoomEvent::interfaceName() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

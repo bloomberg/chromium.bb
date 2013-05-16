@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGElementInstanceList.h"
 
 namespace WebCore {
@@ -54,7 +53,3 @@ SVGElementInstance* SVGElementInstanceList::item(unsigned index)
 }
 
 }
-
-#endif // ENABLE(SVG)
-
-// vim:ts=4:noet

@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGColor.h"
 
 #include "core/css/CSSParser.h"
@@ -116,5 +115,3 @@ void SVGColor::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) c
 }
 
 }
-
-#endif // ENABLE(SVG)

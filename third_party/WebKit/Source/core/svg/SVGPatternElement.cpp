@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPatternElement.h"
 
 #include "SVGNames.h"
@@ -259,5 +258,3 @@ bool SVGPatternElement::selfHasRelativeLengths() const
 }
 
 }
-
-#endif // ENABLE(SVG)

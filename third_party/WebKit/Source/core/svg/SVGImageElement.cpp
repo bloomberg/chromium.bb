@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGImageElement.h"
 
 #include "CSSPropertyNames.h"
@@ -242,5 +241,3 @@ void SVGImageElement::didMoveToNewDocument(Document* oldDocument)
 }
 
 }
-
-#endif // ENABLE(SVG)

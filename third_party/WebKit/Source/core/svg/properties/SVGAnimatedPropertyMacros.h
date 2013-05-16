@@ -22,7 +22,6 @@
 #ifndef SVGAnimatedPropertyMacros_h
 #define SVGAnimatedPropertyMacros_h
 
-#if ENABLE(SVG)
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "core/svg/properties/SVGAttributeToPropertyMap.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
@@ -195,5 +194,4 @@ void detachAnimated##UpperProperty##ListWrappers(unsigned newListSize) \
 
 }
 
-#endif // ENABLE(SVG)
 #endif // SVGAnimatedPropertyMacros_h

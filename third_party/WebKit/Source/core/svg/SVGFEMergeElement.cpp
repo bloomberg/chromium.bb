@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFEMergeElement.h"
 
 #include "SVGNames.h"
@@ -62,5 +61,3 @@ PassRefPtr<FilterEffect> SVGFEMergeElement::build(SVGFilterBuilder* filterBuilde
 }
 
 }
-
-#endif // ENABLE(SVG)

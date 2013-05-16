@@ -20,8 +20,6 @@
 #ifndef SVGElementInstanceList_h
 #define SVGElementInstanceList_h
 
-#if ENABLE(SVG)
-
 #include "core/svg/SVGElementInstance.h"
 #include <wtf/RefCounted.h>
 
@@ -43,7 +41,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif
-
-// vim:ts=4:noet

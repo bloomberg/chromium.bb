@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathByteStreamSource.h"
 
 namespace WebCore {
@@ -111,5 +110,3 @@ bool SVGPathByteStreamSource::parseArcToSegment(float& rx, float& ry, float& ang
 }
 
 }
-
-#endif // ENABLE(SVG)

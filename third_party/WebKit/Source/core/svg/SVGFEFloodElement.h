@@ -21,7 +21,6 @@
 #ifndef SVGFEFloodElement_h
 #define SVGFEFloodElement_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/filters/FEFlood.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
@@ -40,5 +39,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

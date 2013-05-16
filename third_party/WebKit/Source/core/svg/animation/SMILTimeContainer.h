@@ -26,8 +26,6 @@
 #ifndef SMILTimeContainer_h
 #define SMILTimeContainer_h
 
-#if ENABLE(SVG)
-
 #include "core/dom/QualifiedName.h"
 #include "core/platform/Timer.h"
 #include "core/svg/animation/SMILTime.h"
@@ -98,5 +96,4 @@ private:
 };
 }
 
-#endif // ENABLE(SVG)
 #endif // SMILTimeContainer_h

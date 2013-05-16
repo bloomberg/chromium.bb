@@ -19,7 +19,6 @@
  */
 
 #include "config.h"
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGSetElement.h"
 
@@ -45,7 +44,3 @@ void SVGSetElement::updateAnimationMode()
 }
 
 }
-
-// vim:ts=4:noet
-#endif // ENABLE(SVG)
-

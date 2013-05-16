@@ -24,7 +24,6 @@
 #ifndef SVGPathConsumer_h
 #define SVGPathConsumer_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatPoint.h"
 #include <wtf/FastAllocBase.h>
 #include <wtf/Noncopyable.h>
@@ -69,5 +68,4 @@ protected:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGPathConsumer_h

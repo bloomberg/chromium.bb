@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGTRefElement.h"
 
 #include "SVGNames.h"
@@ -297,5 +296,3 @@ void SVGTRefElement::removedFrom(ContainerNode* rootParent)
 }
 
 }
-
-#endif // ENABLE(SVG)

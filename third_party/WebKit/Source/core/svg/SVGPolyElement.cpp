@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPolyElement.h"
 
 #include "SVGNames.h"
@@ -167,5 +166,3 @@ SVGListPropertyTearOff<SVGPointList>* SVGPolyElement::animatedPoints()
 }
 
 }
-
-#endif // ENABLE(SVG)

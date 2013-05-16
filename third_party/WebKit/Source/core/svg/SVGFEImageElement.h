@@ -21,7 +21,6 @@
 #ifndef SVGFEImageElement_h
 #define SVGFEImageElement_h
 
-#if ENABLE(SVG)
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -74,5 +73,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

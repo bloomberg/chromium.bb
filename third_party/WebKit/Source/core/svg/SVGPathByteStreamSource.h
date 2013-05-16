@@ -20,7 +20,6 @@
 #ifndef SVGPathByteStreamSource_h
 #define SVGPathByteStreamSource_h
 
-#if ENABLE(SVG)
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathSource.h"
@@ -99,5 +98,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGPathByteStreamSource_h

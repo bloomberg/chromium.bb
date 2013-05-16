@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGPolylineElement.h"
 
@@ -39,5 +38,3 @@ PassRefPtr<SVGPolylineElement> SVGPolylineElement::create(const QualifiedName& t
 }
 
 }
-
-#endif // ENABLE(SVG)

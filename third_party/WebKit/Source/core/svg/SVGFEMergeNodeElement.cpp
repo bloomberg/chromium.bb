@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFEMergeNodeElement.h"
 
 #include "SVGNames.h"
@@ -94,5 +93,3 @@ void SVGFEMergeNodeElement::svgAttributeChanged(const QualifiedName& attrName)
 }
 
 }
-
-#endif // ENABLE(SVG)

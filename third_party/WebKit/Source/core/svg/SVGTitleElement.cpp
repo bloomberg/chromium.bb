@@ -19,7 +19,6 @@
  */
 
 #include "config.h"
-#if ENABLE(SVG)
 #include "core/svg/SVGTitleElement.h"
 
 #include "SVGNames.h"
@@ -66,5 +65,3 @@ void SVGTitleElement::childrenChanged(bool changedByParser, Node* beforeChange, 
 }
 
 }
-
-#endif // ENABLE(SVG)

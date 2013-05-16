@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPointList.h"
 
 #include "core/platform/graphics/FloatPoint.h"
@@ -46,5 +45,3 @@ String SVGPointList::valueAsString() const
 }
 
 }
-
-#endif // ENABLE(SVG)

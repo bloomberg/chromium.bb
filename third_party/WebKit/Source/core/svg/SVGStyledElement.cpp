@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGStyledElement.h"
 
 #include "HTMLNames.h"
@@ -484,5 +483,3 @@ bool SVGStyledElement::isKeyboardFocusable(KeyboardEvent*) const
 }
 
 }
-
-#endif // ENABLE(SVG)

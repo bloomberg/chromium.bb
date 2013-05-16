@@ -21,7 +21,6 @@
 #ifndef SVGFEFuncAElement_h
 #define SVGFEFuncAElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGComponentTransferFunctionElement.h"
 
 namespace WebCore {
@@ -36,5 +35,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

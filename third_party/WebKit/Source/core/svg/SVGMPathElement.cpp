@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGMPathElement.h"
 
 #include "SVGNames.h"
@@ -169,5 +168,3 @@ void SVGMPathElement::notifyParentOfPathChange(ContainerNode* parent)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

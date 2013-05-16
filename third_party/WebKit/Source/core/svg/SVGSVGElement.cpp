@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGSVGElement.h"
 
 #include "HTMLNames.h"
@@ -782,5 +781,3 @@ Element* SVGSVGElement::getElementById(const AtomicString& id) const
 }
 
 }
-
-#endif // ENABLE(SVG)

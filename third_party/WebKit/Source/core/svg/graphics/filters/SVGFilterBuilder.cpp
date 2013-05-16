@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 #include "core/platform/graphics/filters/FilterEffect.h"
@@ -106,5 +105,3 @@ void SVGFilterBuilder::clearResultsRecursive(FilterEffect* effect)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

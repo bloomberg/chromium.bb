@@ -20,7 +20,6 @@
 
 #ifndef SVGTitleElement_h
 #define SVGTitleElement_h
-#if ENABLE(SVG)
 
 #include "core/svg/SVGLangSpace.h"
 #include "core/svg/SVGStyledElement.h"
@@ -44,7 +43,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif
-
-// vim:ts=4:noet

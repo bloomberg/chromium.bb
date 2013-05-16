@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGFETurbulenceElement.h"
 
 #include "SVGNames.h"
@@ -179,5 +178,3 @@ PassRefPtr<FilterEffect> SVGFETurbulenceElement::build(SVGFilterBuilder*, Filter
 }
 
 }
-
-#endif // ENABLE(SVG)

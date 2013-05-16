@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathSegListSource.h"
 
 #include "core/svg/SVGPathSegArc.h"
@@ -150,5 +149,3 @@ bool SVGPathSegListSource::parseArcToSegment(float& rx, float& ry, float& angle,
 }
 
 }
-
-#endif // ENABLE(SVG)

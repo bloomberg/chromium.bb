@@ -21,7 +21,6 @@
 #ifndef SVGPathSegCurvetoQuadraticSmooth_h
 #define SVGPathSegCurvetoQuadraticSmooth_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathSegWithContext.h"
 
 namespace WebCore {
@@ -62,5 +61,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

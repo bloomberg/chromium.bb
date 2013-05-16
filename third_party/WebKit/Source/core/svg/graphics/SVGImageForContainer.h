@@ -26,8 +26,6 @@
 #ifndef SVGImageForContainer_h
 #define SVGImageForContainer_h
 
-#if ENABLE(SVG)
-
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Image.h"
@@ -81,5 +79,4 @@ private:
 };
 }
 
-#endif // ENABLE(SVG)
 #endif // SVGImageForContainer_h

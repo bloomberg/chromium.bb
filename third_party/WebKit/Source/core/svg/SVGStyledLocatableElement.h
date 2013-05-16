@@ -21,7 +21,6 @@
 #ifndef SVGStyledLocatableElement_h
 #define SVGStyledLocatableElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGLocatable.h"
 #include "core/svg/SVGStyledElement.h"
 
@@ -56,5 +55,4 @@ inline SVGStyledLocatableElement* toSVGStyledLocatableElement(SVGElement* elemen
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGStyledLocatableElement_h

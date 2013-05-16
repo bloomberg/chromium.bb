@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGViewSpec.h"
 
 #include "SVGNames.h"
@@ -295,5 +294,3 @@ bool SVGViewSpec::parseViewSpec(const String& viewSpec)
 }
 
 }
-
-#endif // ENABLE(SVG)

@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedEnumeration.h"
 
 #include "SVGNames.h"
@@ -162,5 +161,3 @@ float SVGAnimatedEnumerationAnimator::calculateDistance(const String&, const Str
 }
 
 }
-
-#endif // ENABLE(SVG)

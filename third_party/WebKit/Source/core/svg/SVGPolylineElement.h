@@ -21,7 +21,6 @@
 #ifndef SVGPolylineElement_h
 #define SVGPolylineElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPolyElement.h"
 
 namespace WebCore {
@@ -36,5 +35,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGTests.h"
 
 #include "SVGNames.h"
@@ -219,5 +218,3 @@ SVGStringList& SVGTests::systemLanguage()
 }
 
 }
-
-#endif // ENABLE(SVG)

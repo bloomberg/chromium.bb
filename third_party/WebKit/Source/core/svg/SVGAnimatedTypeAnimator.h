@@ -20,7 +20,6 @@
 #ifndef SVGAnimatedTypeAnimator_h
 #define SVGAnimatedTypeAnimator_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedType.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
@@ -290,5 +289,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGAnimatedTypeAnimator_h

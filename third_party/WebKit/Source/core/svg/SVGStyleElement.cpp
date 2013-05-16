@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGStyleElement.h"
 
 #include "SVGNames.h"
@@ -158,5 +157,3 @@ void SVGStyleElement::childrenChanged(bool changedByParser, Node* beforeChange, 
 }
 
 }
-
-#endif // ENABLE(SVG)

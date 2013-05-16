@@ -23,8 +23,6 @@
 
 #include "core/dom/ExceptionBase.h"
 
-#if ENABLE(SVG)
-
 namespace WebCore {
 
 class SVGException : public ExceptionBase {
@@ -53,7 +51,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)
 
 #endif // SVGException_h

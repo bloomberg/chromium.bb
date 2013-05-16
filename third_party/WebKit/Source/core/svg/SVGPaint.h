@@ -23,7 +23,6 @@
 #ifndef SVGPaint_h
 #define SVGPaint_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGColor.h"
 #include <wtf/text/WTFString.h>
 
@@ -119,5 +118,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGPaint_h

@@ -21,7 +21,6 @@
 #ifndef SVGStyledTransformableElement_h
 #define SVGStyledTransformableElement_h
 
-#if ENABLE(SVG)
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGStyledLocatableElement.h"
 #include "core/svg/SVGTransformable.h"
@@ -78,5 +77,4 @@ inline SVGStyledTransformableElement* toSVGStyledTransformableElement(Node* node
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGStyledTransformableElement_h

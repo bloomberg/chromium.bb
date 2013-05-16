@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGTSpanElement.h"
 
 #include "SVGNames.h"
@@ -77,5 +76,3 @@ bool SVGTSpanElement::rendererIsNeeded(const NodeRenderingContext& context)
 }
 
 }
-
-#endif // ENABLE(SVG)

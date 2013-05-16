@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGExternalResourcesRequired.h"
 
 #include "SVGNames.h"
@@ -120,5 +119,3 @@ bool SVGExternalResourcesRequired::haveLoadedRequiredResources() const
 }
 
 }
-
-#endif // ENABLE(SVG)

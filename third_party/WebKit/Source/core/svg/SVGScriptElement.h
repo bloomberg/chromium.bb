@@ -21,7 +21,6 @@
 #ifndef SVGScriptElement_h
 #define SVGScriptElement_h
 
-#if ENABLE(SVG)
 #include "core/dom/ScriptElement.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedString.h"
@@ -88,5 +87,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif

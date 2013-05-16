@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/svg/SVGPathTraversalStateBuilder.h"
 
 namespace WebCore {
@@ -94,5 +93,3 @@ FloatPoint SVGPathTraversalStateBuilder::currentPoint()
 }
 
 }
-
-#endif // ENABLE(SVG)
