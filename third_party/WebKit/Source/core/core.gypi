@@ -2485,6 +2485,7 @@
             'platform/SharedTimer.h',
             'platform/Sound.h',
             'platform/SuddenTermination.h',
+            'platform/Task.h',
             'platform/Theme.cpp',
             'platform/ThreadGlobalData.cpp',
             'platform/ThreadTimers.cpp',

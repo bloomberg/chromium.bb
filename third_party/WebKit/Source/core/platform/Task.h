@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc.  All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,27 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLParserThread_h
-#define HTMLParserThread_h
+#ifndef Task_h
+#define Task_h
 
 #include "wtf/Functional.h"
-#include "wtf/OwnPtr.h"
 #include <public/WebThread.h>
 
 namespace WebCore {
 
-class HTMLParserThread {
+class Task : public WebKit::WebThread::Task {
 public:
-    static HTMLParserThread* shared();
-    void postTask(const Closure&);
+    explicit Task(const Closure& closure)
+        : m_closure(closure)
+    {
+    }
+
+    virtual void run() OVERRIDE
+    {
+        m_closure();
+    }
 
 private:
-    HTMLParserThread();
-    ~HTMLParserThread();
-
-    OwnPtr<WebKit::WebThread> m_thread;
+    Closure m_closure;
 };
 
 } // namespace WebCore
 
-#endif // HTMLParserThread_h
+#endif // Task_h

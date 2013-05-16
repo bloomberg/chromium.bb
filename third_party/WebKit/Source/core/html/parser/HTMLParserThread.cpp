@@ -31,65 +31,32 @@
 #include "config.h"
 #include "core/html/parser/HTMLParserThread.h"
 
+#include "core/platform/Task.h"
+#include "wtf/PassOwnPtr.h"
+#include <public/Platform.h>
+
 namespace WebCore {
 
 HTMLParserThread::HTMLParserThread()
-    : m_threadID(0)
+    : m_thread(adoptPtr(WebKit::Platform::current()->createThread("HTMLParserThread")))
 {
 }
 
 HTMLParserThread::~HTMLParserThread()
 {
-    ASSERT(m_queue.killed());
-}
-
-bool HTMLParserThread::start()
-{
-    MutexLocker lock(m_threadCreationMutex);
-    if (m_threadID)
-        return true;
-    m_threadID = createThread(HTMLParserThread::threadStart, this, "WebCore: HTMLParser");
-    return m_threadID;
-}
-
-void HTMLParserThread::stop()
-{
-    m_queue.kill();
-    waitForThreadCompletion(m_threadID);
 }
 
 HTMLParserThread* HTMLParserThread::shared()
 {
     static HTMLParserThread* thread;
-    if (!thread) {
-        thread = HTMLParserThread::create().leakPtr();
-        thread->start();
-    }
+    if (!thread)
+        thread = new HTMLParserThread;
     return thread;
 }
 
-void HTMLParserThread::postTask(const Closure& function)
+void HTMLParserThread::postTask(const Closure& closure)
 {
-    m_queue.append(adoptPtr(new Closure(function)));
-}
-
-void HTMLParserThread::threadStart(void* arg)
-{
-    HTMLParserThread* thread = static_cast<HTMLParserThread*>(arg);
-    thread->runLoop();
-}
-
-void HTMLParserThread::runLoop()
-{
-    {
-        // Wait for HTMLParserThread::start() to complete to have m_threadID
-        // established before starting the main loop.
-        MutexLocker lock(m_threadCreationMutex);
-    }
-    while (OwnPtr<Closure> function = m_queue.waitForMessage())
-        (*function)();
-
-    // stop() will wait to join the thread, so we do not detach here.
+    m_thread->postTask(new Task(closure));
 }
 
 } // namespace WebCore

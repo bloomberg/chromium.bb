@@ -774,9 +774,12 @@ Function<typename FunctionWrapper<FunctionType>::ResultType ()> bind(FunctionTyp
     return Function<typename FunctionWrapper<FunctionType>::ResultType ()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2, A3, A4, A5, A6)>(FunctionWrapper<FunctionType>(function), a1, a2, a3, a4, a5, a6)));
 }
 
+typedef Function<void()> Closure;
+
 }
 
 using WTF::Function;
 using WTF::bind;
+using WTF::Closure;
 
 #endif // WTF_Functional_h
