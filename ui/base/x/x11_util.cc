@@ -496,18 +496,11 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
 int CoalescePendingMotionEvents(const XEvent* xev,
                                 XEvent* last_event) {
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-  int num_coalesed = 0;
+  int num_coalesced = 0;
   Display* display = xev->xany.display;
   int event_type = xev->xgeneric.evtype;
 
-#if defined(USE_XI2_MT)
-  float tracking_id = -1;
-  if (event_type == XI_TouchUpdate) {
-    if (!ui::ValuatorTracker::GetInstance()->ExtractValuator(*xev,
-          ui::ValuatorTracker::VAL_TRACKING_ID, &tracking_id))
-      tracking_id = -1;
-  }
-#endif
+  DCHECK_EQ(event_type, XI_Motion);
 
   while (XPending(display)) {
     XEvent next_event;
@@ -515,7 +508,7 @@ int CoalescePendingMotionEvents(const XEvent* xev,
 
     // If we can't get the cookie, abort the check.
     if (!XGetEventData(next_event.xgeneric.display, &next_event.xcookie))
-      return num_coalesed;
+      return num_coalesced;
 
     // If this isn't from a valid device, throw the event away, as
     // that's what the message pump would do. Device events come in pairs
@@ -533,23 +526,10 @@ int CoalescePendingMotionEvents(const XEvent* xev,
         !ui::GetFlingData(&next_event, NULL, NULL, NULL, NULL, NULL)) {
       XIDeviceEvent* next_xievent =
           static_cast<XIDeviceEvent*>(next_event.xcookie.data);
-#if defined(USE_XI2_MT)
-      float next_tracking_id = -1;
-      if (event_type == XI_TouchUpdate) {
-        // If this is a touch motion event (as opposed to mouse motion event),
-        // then make sure the events are from the same touch-point.
-        if (!ui::ValuatorTracker::GetInstance()->ExtractValuator(next_event,
-              ui::ValuatorTracker::VAL_TRACKING_ID, &next_tracking_id))
-          next_tracking_id = -1;
-      }
-#endif
       // Confirm that the motion event is targeted at the same window
       // and that no buttons or modifiers have changed.
       if (xievent->event == next_xievent->event &&
           xievent->child == next_xievent->child &&
-#if defined(USE_XI2_MT)
-          (event_type == XI_Motion || tracking_id == next_tracking_id) &&
-#endif
           xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
           (memcmp(xievent->buttons.mask,
                   next_xievent->buttons.mask,
@@ -560,12 +540,12 @@ int CoalescePendingMotionEvents(const XEvent* xev,
           xievent->mods.effective == next_xievent->mods.effective) {
         XFreeEventData(display, &next_event.xcookie);
         // Free the previous cookie.
-        if (num_coalesed > 0)
+        if (num_coalesced > 0)
           XFreeEventData(display, &last_event->xcookie);
         // Get the event and its cookie data.
         XNextEvent(display, last_event);
         XGetEventData(display, &last_event->xcookie);
-        ++num_coalesed;
+        ++num_coalesced;
         continue;
       } else {
         // This isn't an event we want so free its cookie data.
@@ -575,21 +555,13 @@ int CoalescePendingMotionEvents(const XEvent* xev,
     break;
   }
 
-  if (num_coalesed > 0) {
+  if (num_coalesced > 0) {
     base::TimeDelta delta = ui::EventTimeFromNative(last_event) -
         ui::EventTimeFromNative(const_cast<XEvent*>(xev));
-    if (event_type == XI_Motion) {
-      UMA_HISTOGRAM_COUNTS_10000("Event.CoalescedCount.Mouse", num_coalesed);
-      UMA_HISTOGRAM_TIMES("Event.CoalescedLatency.Mouse", delta);
-    } else {
-#if defined(USE_XI2_MT)
-      DCHECK_EQ(event_type, XI_TouchUpdate);
-#endif
-      UMA_HISTOGRAM_COUNTS_10000("Event.CoalescedCount.Touch", num_coalesed);
-      UMA_HISTOGRAM_TIMES("Event.CoalescedLatency.Touch", delta);
-    }
+    UMA_HISTOGRAM_COUNTS_10000("Event.CoalescedCount.Mouse", num_coalesced);
+    UMA_HISTOGRAM_TIMES("Event.CoalescedLatency.Mouse", delta);
   }
-  return num_coalesed;
+  return num_coalesced;
 }
 #endif
 
