@@ -202,8 +202,7 @@ ImporterHost::~ImporterHost() {
 void ImporterHost::CheckForFirefoxLock(
     const importer::SourceProfile& source_profile,
     uint16 items) {
-  if (source_profile.importer_type == importer::TYPE_FIREFOX2 ||
-      source_profile.importer_type == importer::TYPE_FIREFOX3) {
+  if (source_profile.importer_type == importer::TYPE_FIREFOX3) {
     DCHECK(!firefox_lock_.get());
     firefox_lock_.reset(new FirefoxProfileLock(source_profile.source_path));
     if (!firefox_lock_->HasAcquired()) {

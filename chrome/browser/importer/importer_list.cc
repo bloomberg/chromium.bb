@@ -70,12 +70,10 @@ void DetectFirefoxProfiles(std::vector<importer::SourceProfile*>* profiles) {
   if (version < 2)
     GetFirefoxVersionAndPathFromProfile(profile_path, &version, &app_path);
 
-  if (version == 2) {
-    firefox_type = importer::TYPE_FIREFOX2;
-  } else if (version >= 3) {
+  if (version >= 3) {
     firefox_type = importer::TYPE_FIREFOX3;
   } else {
-    // Ignores other versions of firefox.
+    // Ignores old versions of firefox.
     return;
   }
 

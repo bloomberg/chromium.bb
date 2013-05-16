@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/importer/bookmarks_file_importer.h"
-#include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox3_importer.h"
 #include "chrome/browser/importer/toolbar_importer.h"
 
@@ -31,7 +30,7 @@ enum ImporterTypeMetrics {
 #if defined(OS_WIN)
   IMPORTER_METRICS_IE              = 1,
 #endif
-  IMPORTER_METRICS_FIREFOX2        = 2,
+  IMPORTER_METRICS_FIREFOX2        = 2,  // obsolete
   IMPORTER_METRICS_FIREFOX3        = 3,
 #if defined(OS_MACOSX)
   IMPORTER_METRICS_SAFARI          = 4,
@@ -55,8 +54,6 @@ Importer* CreateImporterByType(ImporterType type) {
 #endif
     case TYPE_BOOKMARKS_FILE:
       return new BookmarksFileImporter();
-    case TYPE_FIREFOX2:
-      return new Firefox2Importer();
     case TYPE_FIREFOX3:
       return new Firefox3Importer();
 #if defined(OS_MACOSX)
@@ -85,9 +82,6 @@ void LogImporterUseToMetrics(const std::string& metric_postfix,
       metrics_type = IMPORTER_METRICS_IE;
       break;
 #endif
-    case TYPE_FIREFOX2:
-      metrics_type = IMPORTER_METRICS_FIREFOX2;
-      break;
     case TYPE_FIREFOX3:
       metrics_type = IMPORTER_METRICS_FIREFOX3;
       break;

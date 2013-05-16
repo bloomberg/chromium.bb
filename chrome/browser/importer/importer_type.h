@@ -22,8 +22,8 @@ enum ImporterType {
 #if defined(OS_WIN)
   TYPE_IE              = 0,
 #endif
-  TYPE_FIREFOX2        = 1,
-  TYPE_FIREFOX3        = 2,  // Firefox 3 and later.
+  // Value 1 was the (now deleted) Firefox 2 profile importer.
+  TYPE_FIREFOX3        = 2,
 #if defined(OS_MACOSX)
   TYPE_SAFARI          = 3,
 #endif
