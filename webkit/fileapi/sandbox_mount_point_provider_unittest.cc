@@ -180,10 +180,10 @@ TEST(SandboxMountPointProviderTest, AccessPermissions) {
   EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
             provider.GetPermissionPolicy(CreateFileSystemURL(". "),
                                          kCreateFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
             provider.GetPermissionPolicy(CreateFileSystemURL(" .."),
                                          kCreateFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
             provider.GetPermissionPolicy(CreateFileSystemURL(".. "),
                                          kCreateFilePermissions));
   EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,

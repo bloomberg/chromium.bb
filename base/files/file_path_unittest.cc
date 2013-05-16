@@ -401,6 +401,9 @@ TEST_F(FilePathTest, IsAbsolute) {
     { FPL("//a"),    true },
     { FPL("c:a/b"),  false },
     { FPL("?:/a"),   false },
+    { FPL("/.. "),   false },
+    { FPL("/ .."),   false },
+    { FPL("/..."),   false },
 #if defined(FILE_PATH_USES_DRIVE_LETTERS)
     { FPL("/"),      false },
     { FPL("/a"),     false },
@@ -428,6 +431,9 @@ TEST_F(FilePathTest, IsAbsolute) {
     { FPL("//a"),    true },
     { FPL("c:a\\b"), false },
     { FPL("?:\\a"),  false },
+    { FPL("\\.. "),  false },
+    { FPL("\\ .."),  false },
+    { FPL("\\..."),  false },
 #if defined(FILE_PATH_USES_DRIVE_LETTERS)
     { FPL("\\"),     false },
     { FPL("\\a"),    false },
