@@ -338,7 +338,7 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 void WebViewImpl::setValidationMessageClient(WebValidationMessageClient* client)
 {
     ASSERT(client);
-    m_validationMessage = ValidationMessageClientImpl::create(*client);
+    m_validationMessage = ValidationMessageClientImpl::create(*this, *client);
     m_page->setValidationMessageClient(m_validationMessage.get());
 }
 

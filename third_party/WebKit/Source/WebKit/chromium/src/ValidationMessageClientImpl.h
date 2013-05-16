@@ -28,26 +28,40 @@
 
 #include "core/page/ValidationMessageClient.h"
 #include "core/platform/Timer.h"
+#include "core/platform/graphics/IntRect.h"
+#include "wtf/text/WTFString.h"
+
+namespace WebCore {
+class FrameView;
+}
 
 namespace WebKit {
 
 class WebValidationMessageClient;
+class WebViewImpl;
 
 class ValidationMessageClientImpl : public WebCore::ValidationMessageClient {
 public:
-    static PassOwnPtr<ValidationMessageClientImpl> create(WebValidationMessageClient&);
+    static PassOwnPtr<ValidationMessageClientImpl> create(WebViewImpl&, WebValidationMessageClient&);
     virtual ~ValidationMessageClientImpl();
 
 private:
-    explicit ValidationMessageClientImpl(WebValidationMessageClient&);
-    void hideCurrentValidationMessage(WebCore::Timer<ValidationMessageClientImpl>*);
+    ValidationMessageClientImpl(WebViewImpl&, WebValidationMessageClient&);
+    void askClientToShowValidationMessage();
+    void checkAnchorStatus(WebCore::Timer<ValidationMessageClientImpl>*);
+    WebCore::FrameView* currentView();
 
     virtual void showValidationMessage(const WebCore::Element& anchor, const String& message) OVERRIDE;
     virtual void hideValidationMessage(const WebCore::Element& anchor) OVERRIDE;
     virtual bool isValidationMessageVisible(const WebCore::Element& anchor) OVERRIDE;
 
+    WebViewImpl& m_webView;
     WebValidationMessageClient& m_client;
     const WebCore::Element* m_currentAnchor;
+    String m_message;
+    WebCore::IntRect m_lastAnchorRectInScreen;
+    float m_lastPageScaleFactor;
+    double m_finishTime;
     WebCore::Timer<ValidationMessageClientImpl> m_timer;
 };
 
