@@ -45,6 +45,9 @@ MESSAGE_CENTER_EXPORT
 
   // Body text of the message.
   scoped_nsobject<NSTextField> message_;
+
+  // Container for optional items at the bottom of the notification.
+  scoped_nsobject<NSView> bottomView_;
 }
 
 // Creates a new controller for a given notification.

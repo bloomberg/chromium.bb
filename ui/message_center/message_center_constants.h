@@ -52,6 +52,14 @@ extern const size_t kNotificationMaximumItems;     // For list notifications.
 extern const int kAutocloseDefaultDelaySeconds;
 extern const int kAutocloseHighPriorityDelaySeconds;
 
+// Buttons.
+const int kButtonHeight = 38;
+const int kButtonHorizontalPadding = 16;
+const int kButtonIconTopPadding = 11;
+const int kButtonIconToTitlePadding = 16;
+const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
+const SkColor kHoveredButtonBackgroundColor = SkColorSetRGB(243, 243, 243);
+
 // Around notifications ////////////////////////////////////////////////////////
 
 // Pixel dimensions (H = horizontal, V = vertical).

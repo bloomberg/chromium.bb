@@ -39,11 +39,7 @@ const int kTextLeftPadding = kIconSize + message_center::kIconToTextPadding;
 const int kTextBottomPadding = 12;
 const int kTextRightPadding = 23;
 const int kItemTitleToMessagePadding = 3;
-const int kButtonHeight = 38;
-const int kButtonHorizontalPadding = 16;
 const int kButtonVecticalPadding = 0;
-const int kButtonIconTopPadding = 11;
-const int kButtonIconToTitlePadding = 16;
 const int kButtonTitleTopPadding = 0;
 
 // Line limits.
@@ -65,8 +61,6 @@ const size_t kMessageCharacterLimit =
 const SkColor kRegularTextBackgroundColor = SK_ColorWHITE;
 const SkColor kDimTextColor = SkColorSetRGB(102, 102, 102);
 const SkColor kDimTextBackgroundColor = SK_ColorWHITE;
-const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
-const SkColor kHoveredButtonBackgroundColor = SkColorSetRGB(243, 243, 243);
 
 // static
 views::Background* MakeBackground(
@@ -275,10 +269,11 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
       title_(NULL) {
   set_focusable(true);
   set_request_focus_on_press(false);
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        kButtonHorizontalPadding,
-                                        kButtonVecticalPadding,
-                                        kButtonIconToTitlePadding));
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal,
+                           message_center::kButtonHorizontalPadding,
+                           kButtonVecticalPadding,
+                           message_center::kButtonIconToTitlePadding));
 }
 
 NotificationButton::~NotificationButton() {
@@ -296,7 +291,8 @@ void NotificationButton::SetIcon(const gfx::ImageSkia& image) {
     icon_->SetImage(image);
     icon_->SetHorizontalAlignment(views::ImageView::LEADING);
     icon_->SetVerticalAlignment(views::ImageView::LEADING);
-    icon_->set_border(MakeEmptyBorder(kButtonIconTopPadding, 0, 0, 0));
+    icon_->set_border(
+        MakeEmptyBorder(message_center::kButtonIconTopPadding, 0, 0, 0));
     AddChildViewAt(icon_, 0);
   }
 }
@@ -319,11 +315,12 @@ void NotificationButton::SetTitle(const string16& title) {
 }
 
 gfx::Size NotificationButton::GetPreferredSize() {
-  return gfx::Size(message_center::kNotificationWidth, kButtonHeight);
+  return gfx::Size(message_center::kNotificationWidth,
+                   message_center::kButtonHeight);
 }
 
 int NotificationButton::GetHeightForWidth(int width) {
-  return kButtonHeight;
+  return message_center::kButtonHeight;
 }
 
 void NotificationButton::OnFocus() {
@@ -339,10 +336,12 @@ void NotificationButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
 }
 
 void NotificationButton::StateChanged() {
-  if (state() == STATE_HOVERED || state() == STATE_PRESSED)
-    set_background(MakeBackground(kHoveredButtonBackgroundColor));
-  else
+  if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+    set_background(
+        MakeBackground(message_center::kHoveredButtonBackgroundColor));
+  } else {
     set_background(NULL);
+  }
 }
 
 }  // namespace

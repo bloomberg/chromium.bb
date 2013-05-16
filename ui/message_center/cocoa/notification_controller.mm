@@ -4,6 +4,7 @@
 
 #import "ui/message_center/cocoa/notification_controller.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -13,6 +14,77 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
+
+@interface MCNotificationButtonCell : NSButtonCell {
+  BOOL hovered_;
+}
+@end
+
+@implementation MCNotificationButtonCell
+- (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView {
+  // Else mouseEntered: and mouseExited: won't be called and hovered_ won't be
+  // valid.
+  DCHECK([self showsBorderOnlyWhileMouseInside]);
+
+  if (!hovered_)
+    return;
+  [gfx::SkColorToCalibratedNSColor(
+      message_center::kHoveredButtonBackgroundColor) set];
+  NSRectFill(frame);
+}
+
+- (void)drawImage:(NSImage*)image
+        withFrame:(NSRect)frame
+           inView:(NSView*)controlView {
+  if (!image)
+    return;
+  NSRect rect = NSMakeRect(message_center::kButtonHorizontalPadding,
+                           message_center::kButtonIconTopPadding,
+                           message_center::kNotificationButtonIconSize,
+                           message_center::kNotificationButtonIconSize);
+  [image drawInRect:rect
+            fromRect:NSZeroRect
+           operation:NSCompositeSourceOver
+            fraction:1.0
+      respectFlipped:YES
+               hints:nil];
+}
+
+- (NSRect)drawTitle:(NSAttributedString*)title
+          withFrame:(NSRect)frame
+             inView:(NSView*)controlView {
+  CGFloat offsetX = message_center::kButtonHorizontalPadding;
+  if ([base::mac::ObjCCastStrict<NSButton>(controlView) image]) {
+    offsetX += message_center::kNotificationButtonIconSize +
+               message_center::kButtonIconToTitlePadding;
+  }
+  frame.origin.x = offsetX;
+  frame.size.width -= offsetX;
+
+  NSDictionary* attributes = @{
+    NSFontAttributeName : [title attribute:NSFontAttributeName
+                                   atIndex:0
+                            effectiveRange:NULL],
+  };
+  [[title string] drawWithRect:frame
+                       options:(NSStringDrawingUsesLineFragmentOrigin |
+                                NSStringDrawingTruncatesLastVisibleLine)
+                    attributes:attributes];
+  return frame;
+}
+
+- (void)mouseEntered:(NSEvent*)event {
+  hovered_ = YES;
+
+  // Else the cell won't be repainted on hover.
+  [super mouseEntered:event];
+}
+
+- (void)mouseExited:(NSEvent*)event {
+  hovered_ = NO;
+  [super mouseExited:event];
+}
+@end
 
 @interface MCNotificationController (Private)
 // Configures a NSBox to be borderless, titleless, and otherwise appearance-
@@ -128,6 +200,56 @@
     messageFrame.origin.y += delta;
   }
 
+  // Add the bottom container view.
+  NSRect frame = rootFrame;
+  frame.size.height = 0;
+  [bottomView_ removeFromSuperview];
+  bottomView_.reset([[NSView alloc] initWithFrame:frame]);
+
+  // Create action buttons if appropriate, bottom-up.
+  std::vector<message_center::ButtonInfo> buttons = notification->buttons();
+  CGFloat y = 0;
+  for (int i = buttons.size() - 1; i >= 0; --i) {
+    message_center::ButtonInfo buttonInfo = buttons[i];
+    NSRect buttonFrame = frame;
+    buttonFrame.origin = NSMakePoint(0, y);
+    buttonFrame.size.height = message_center::kButtonHeight;
+    scoped_nsobject<NSButton> button(
+        [[NSButton alloc] initWithFrame:buttonFrame]);
+    scoped_nsobject<MCNotificationButtonCell> cell(
+        [[MCNotificationButtonCell alloc]
+            initTextCell:base::SysUTF16ToNSString(buttonInfo.title)]);
+    [cell setShowsBorderOnlyWhileMouseInside:YES];
+    [button setCell:cell];
+    [button setImage:buttonInfo.icon.AsNSImage()];
+    [button setBezelStyle:NSSmallSquareBezelStyle];
+    [button setImagePosition:NSImageLeft];
+    [button setTag:i];
+    [button setTarget:self];
+    [button setAction:@selector(buttonClicked:)];
+    y += NSHeight(buttonFrame);
+    frame.size.height += NSHeight(buttonFrame);
+    [bottomView_ addSubview:button];
+
+    NSRect separatorFrame = frame;
+    separatorFrame.origin = NSMakePoint(0, y);
+    separatorFrame.size.height = 1;
+    scoped_nsobject<NSBox> separator(
+        [[NSBox alloc] initWithFrame:separatorFrame]);
+    [self configureCustomBox:separator];
+    [separator setFillColor:gfx::SkColorToCalibratedNSColor(
+        message_center::kButtonSeparatorColor)];
+    y += NSHeight(separatorFrame);
+    frame.size.height += NSHeight(separatorFrame);
+    [bottomView_ addSubview:separator];
+  }
+  [bottomView_ setFrame:frame];
+  [[self view] addSubview:bottomView_];
+
+  rootFrame.size.height += NSHeight(frame);
+  titleFrame.origin.y += NSHeight(frame);
+  messageFrame.origin.y += NSHeight(frame);
+
   [[self view] setFrame:rootFrame];
   [title_ setFrame:titleFrame];
   [message_ setFrame:messageFrame];
@@ -137,6 +259,10 @@
 
 - (void)close:(id)sender {
   messageCenter_->RemoveNotification(notification_->id(), /*by_user=*/true);
+}
+
+- (void)buttonClicked:(id)button {
+  messageCenter_->ClickOnNotificationButton(notification_->id(), [button tag]);
 }
 
 - (const message_center::Notification*)notification {
