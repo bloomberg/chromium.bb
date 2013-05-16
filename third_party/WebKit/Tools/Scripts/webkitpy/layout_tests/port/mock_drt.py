@@ -49,7 +49,7 @@ if script_dir not in sys.path:
     sys.path.append(script_dir)
 
 from webkitpy.common.system.systemhost import SystemHost
-from webkitpy.layout_tests.port.driver import DriverInput, DriverOutput, DriverProxy
+from webkitpy.layout_tests.port.driver import DriverInput, DriverOutput
 from webkitpy.layout_tests.port.factory import PortFactory
 
 _log = logging.getLogger(__name__)
@@ -74,10 +74,8 @@ class MockDRTPort(object):
     def check_sys_deps(self, needs_http):
         return True
 
-    def create_driver(self, worker_number, no_timeout=False):
-        # The magic of the MockDRTPort is that we create a driver that has a
-        # cmd_line() method monkey-patched to invoke this script instead of DRT.
-        return DriverProxy(self, worker_number, self._mocked_driver_maker, pixel_tests=self.get_option('pixel_tests'), no_timeout=no_timeout)
+    def _driver_class(self):
+        return self._mocked_driver_maker
 
     @staticmethod
     def _mocked_driver_maker(port, worker_number, pixel_tests, no_timeout=False):

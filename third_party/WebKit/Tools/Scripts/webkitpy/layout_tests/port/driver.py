@@ -140,6 +140,7 @@ class Driver(object):
         self.error_from_test = str()
         self.err_seen_eof = False
         self._server_process = None
+        self._current_cmd_line = None
 
         self._measurements = {}
         if self._port.get_option("profile"):
@@ -161,6 +162,13 @@ class Driver(object):
 
         Returns a DriverOutput object.
         """
+        base = self._port.lookup_virtual_test_base(driver_input.test_name)
+        if base:
+            virtual_driver_input = copy.copy(driver_input)
+            virtual_driver_input.test_name = base
+            virtual_driver_input.args = self._port.lookup_virtual_test_args(driver_input.test_name)
+            return self.run_test(virtual_driver_input, stop_when_done)
+
         start_time = time.time()
         self.start(driver_input.should_run_pixel_test, driver_input.args)
         test_begin_time = time.time()
@@ -269,14 +277,8 @@ class Driver(object):
         return False
 
     def start(self, pixel_tests, per_test_args):
-        # FIXME: Callers shouldn't normally call this, since this routine
-        # may not be specifying the correct combination of pixel test and
-        # per_test args.
-        #
-        # The only reason we have this routine at all is so the perftestrunner
-        # can pause before running a test; it might be better to push that
-        # into run_test() directly.
-        if not self._server_process:
+        new_cmd_line = self.cmd_line(pixel_tests, per_test_args)
+        if not self._server_process or new_cmd_line != self._current_cmd_line:
             self._start(pixel_tests, per_test_args)
             self._run_post_start_tasks()
 
@@ -300,8 +302,10 @@ class Driver(object):
         environment = self._setup_environ_for_driver(environment)
         self._crashed_process_name = None
         self._crashed_pid = None
-        self._server_process = self._port._server_process_constructor(self._port, server_name, self.cmd_line(pixel_tests, per_test_args), environment)
+        cmd_line = self.cmd_line(pixel_tests, per_test_args)
+        self._server_process = self._port._server_process_constructor(self._port, server_name, cmd_line, environment)
         self._server_process.start()
+        self._current_cmd_line = cmd_line
 
     def _run_post_start_tasks(self):
         # Remote drivers may override this to delay post-start tasks until the server has ack'd.
@@ -322,6 +326,8 @@ class Driver(object):
         if self._driver_tempdir:
             self._port._filesystem.rmtree(str(self._driver_tempdir))
             self._driver_tempdir = None
+
+        self._current_cmd_line = None
 
     def cmd_line(self, pixel_tests, per_test_args):
         cmd = self._command_wrapper(self._port.get_option('wrapper'))
@@ -497,63 +503,3 @@ class ContentBlock(object):
             self.decoded_content = base64.b64decode(self.content)
         else:
             self.decoded_content = self.content
-
-class DriverProxy(object):
-    """A wrapper for managing two Driver instances, one with pixel tests and
-    one without. This allows us to handle plain text tests and ref tests with a
-    single driver."""
-
-    def __init__(self, port, worker_number, driver_instance_constructor, pixel_tests, no_timeout):
-        self._port = port
-        self._worker_number = worker_number
-        self._driver_instance_constructor = driver_instance_constructor
-        self._no_timeout = no_timeout
-
-        # FIXME: We shouldn't need to create a driver until we actually run a test.
-        self._driver = self._make_driver(pixel_tests)
-        self._driver_cmd_line = None
-
-    def _make_driver(self, pixel_tests):
-        return self._driver_instance_constructor(self._port, self._worker_number, pixel_tests, self._no_timeout)
-
-    # FIXME: this should be a @classmethod (or implemented on Port instead).
-    def is_http_test(self, test_name):
-        return self._driver.is_http_test(test_name)
-
-    # FIXME: this should be a @classmethod (or implemented on Port instead).
-    def test_to_uri(self, test_name):
-        return self._driver.test_to_uri(test_name)
-
-    # FIXME: this should be a @classmethod (or implemented on Port instead).
-    def uri_to_test(self, uri):
-        return self._driver.uri_to_test(uri)
-
-    def run_test(self, driver_input, stop_when_done):
-        base = self._port.lookup_virtual_test_base(driver_input.test_name)
-        if base:
-            virtual_driver_input = copy.copy(driver_input)
-            virtual_driver_input.test_name = base
-            virtual_driver_input.args = self._port.lookup_virtual_test_args(driver_input.test_name)
-            return self.run_test(virtual_driver_input, stop_when_done)
-
-        pixel_tests_needed = driver_input.should_run_pixel_test
-        cmd_line_key = self._cmd_line_as_key(pixel_tests_needed, driver_input.args)
-        if cmd_line_key != self._driver_cmd_line:
-            self._driver.stop()
-            self._driver = self._make_driver(pixel_tests_needed)
-            self._driver_cmd_line = cmd_line_key
-
-        return self._driver.run_test(driver_input, stop_when_done)
-
-    def has_crashed(self):
-        return self._driver.has_crashed()
-
-    def stop(self):
-        self._driver.stop()
-
-    # FIXME: this should be a @classmethod (or implemented on Port instead).
-    def cmd_line(self, pixel_tests=None, per_test_args=None):
-        return self._driver.cmd_line(pixel_tests, per_test_args or [])
-
-    def _cmd_line_as_key(self, pixel_tests, per_test_args):
-        return ' '.join(self.cmd_line(pixel_tests, per_test_args))

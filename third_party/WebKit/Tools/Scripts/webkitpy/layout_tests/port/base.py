@@ -906,7 +906,7 @@ class Port(object):
 
     def create_driver(self, worker_number, no_timeout=False):
         """Return a newly created Driver subclass for starting/stopping the test driver."""
-        return driver.DriverProxy(self, worker_number, self._driver_class(), pixel_tests=self.get_option('pixel_tests'), no_timeout=no_timeout)
+        return self._driver_class()(self, worker_number, pixel_tests=self.get_option('pixel_tests'), no_timeout=no_timeout)
 
     def start_helper(self):
         """If a port needs to reconfigure graphics settings or do other
