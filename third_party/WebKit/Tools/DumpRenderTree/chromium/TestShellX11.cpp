@@ -32,6 +32,7 @@
 #include "TestShell.h"
 
 #include <fontconfig/fontconfig.h>
+#include <unistd.h>
 
 #if USE(GTK)
 #include <gtk/gtk.h>
