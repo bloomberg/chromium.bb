@@ -1467,7 +1467,7 @@
     </event>
   </interface>
 
-  <interface name="wl_output" version="1">
+  <interface name="wl_output" version="2">
     <description summary="compositor output region">
       An output describes part of the compositor geometry.  The
       compositor works in the 'compositor coordinate system' and an
@@ -1564,6 +1564,16 @@
       <arg name="width" type="int" summary="width of the mode in pixels"/>
       <arg name="height" type="int" summary="height of the mode in pixels"/>
       <arg name="refresh" type="int" summary="vertical refresh rate in mHz"/>
+    </event>
+
+    <event name="done" since="2">
+      <description summary="sent all information about output">
+        This event is sent after all other properties has been
+        sent after binding to the output object and after any
+        other property changes done after that. This allows
+        changes to the output properties to be seen as
+        atomic, even if they happen via multiple events.
+      </description>
     </event>
   </interface>
 
