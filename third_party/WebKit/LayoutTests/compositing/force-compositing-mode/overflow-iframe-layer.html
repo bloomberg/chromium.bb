@@ -13,6 +13,7 @@
     }
     function doTest()
     {
+      document.getElementById('iframe').contentDocument.body.offsetWidth; // See wkbug.com/41999
       if (window.testRunner) {
         testRunner.dumpAsText(false);
         document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
@@ -23,7 +24,7 @@
 </head>
 <body>
   <!-- this should generate a layer due to overflow -->
-  <iframe src="resources/subframe-big.html"></iframe>
+  <iframe id="iframe" src="resources/subframe-big.html"></iframe>
   <pre id="layertree"></pre>
 </body>
 </html>
