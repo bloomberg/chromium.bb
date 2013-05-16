@@ -708,13 +708,15 @@ void RenderWidget::OnViewContextSwapBuffersComplete() {
 void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
                                       const cc::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
-  TRACE_EVENT0("renderer", "RenderWidget::OnHandleInputEvent");
-
   handling_input_event_ = true;
   if (!input_event) {
     handling_input_event_ = false;
     return;
   }
+
+  const char* const event_name = GetEventName(input_event->type);
+  TRACE_EVENT1("renderer", "RenderWidget::OnHandleInputEvent",
+               "event", event_name);
 
   if (compositor_)
     compositor_->SetLatencyInfo(latency_info);
@@ -726,12 +728,9 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
       (now.InSecondsF() - input_event->timeStampSeconds) *
           base::Time::kMicrosecondsPerSecond);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Renderer", delta, 0, 1000000, 100);
-  std::string name_for_event =
-      base::StringPrintf("Event.Latency.Renderer.%s",
-                         GetEventName(input_event->type));
   base::HistogramBase* counter_for_type =
       base::Histogram::FactoryGet(
-          name_for_event,
+          base::StringPrintf("Event.Latency.Renderer.%s", event_name),
           0,
           1000000,
           100,
