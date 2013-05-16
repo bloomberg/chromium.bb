@@ -12,6 +12,13 @@ namespace profiles {
 extern const int kAvatarIconWidth;
 extern const int kAvatarIconHeight;
 
+// Returns a version of |image| of a specific size and with a grey border.
+// Note that no checks are done on the width/height so make sure they're
+// reasonable values; in the range of 16-256 is probably best.
+gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
+                                        bool is_gaia_picture,
+                                        int width, int height);
+
 // Returns a version of |image| suitable for use in menus.
 gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
                                 bool is_gaia_picture);

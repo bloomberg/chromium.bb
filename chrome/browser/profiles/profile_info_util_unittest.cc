@@ -12,6 +12,23 @@
 
 namespace {
 
+TEST(ProfileInfoUtilTest, SizedMenuIcon) {
+  // Test that an avatar icon isn't changed.
+  const gfx::Image& profile_image(
+      ResourceBundle::GetSharedInstance().GetImageNamed(IDR_PROFILE_AVATAR_0));
+  gfx::Image result =
+      profiles::GetSizedAvatarIconWithBorder(profile_image, false, 50, 50);
+  EXPECT_FALSE(gfx::test::IsEmpty(result));
+  EXPECT_TRUE(gfx::test::IsEqual(profile_image, result));
+
+  // Test that a GAIA picture is changed.
+  gfx::Image gaia_picture(gfx::test::CreateImage());
+  gfx::Image result2 =
+      profiles::GetSizedAvatarIconWithBorder(gaia_picture, true, 50, 50);
+  EXPECT_FALSE(gfx::test::IsEmpty(result2));
+  EXPECT_FALSE(gfx::test::IsEqual(gaia_picture, result2));
+}
+
 TEST(ProfileInfoUtilTest, MenuIcon) {
   // Test that an avatar icon isn't changed.
   const gfx::Image& profile_image(

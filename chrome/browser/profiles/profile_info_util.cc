@@ -13,20 +13,20 @@ namespace profiles {
 const int kAvatarIconWidth = 38;
 const int kAvatarIconHeight = 31;
 
-gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
-                                bool is_gaia_picture) {
+gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
+                                        bool is_gaia_picture,
+                                        int width, int height) {
   if (!is_gaia_picture)
     return image;
 
-  int length = std::min(kAvatarIconWidth, kAvatarIconHeight) - 2;
+  int length = std::min(width, height) - 2;
   SkBitmap bmp = skia::ImageOperations::Resize(
       *image.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST, length, length);
-  gfx::Canvas canvas(gfx::Size(kAvatarIconWidth, kAvatarIconHeight),
-                     ui::SCALE_FACTOR_100P, false);
+  gfx::Canvas canvas(gfx::Size(width, height), ui::SCALE_FACTOR_100P, false);
 
   // Draw the icon centered on the canvas.
-  int x = (kAvatarIconWidth - length) / 2;
-  int y = (kAvatarIconHeight - length) / 2;
+  int x = (width - length) / 2;
+  int y = (height - length) / 2;
   canvas.DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bmp), x, y);
 
   // Draw a gray border on the inside of the icon.
@@ -34,6 +34,12 @@ gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
   canvas.DrawRect(gfx::Rect(x, y, length - 1, length - 1), color);
 
   return gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep()));
+}
+
+gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
+                                bool is_gaia_picture) {
+  return GetSizedAvatarIconWithBorder(
+      image, is_gaia_picture, kAvatarIconWidth, kAvatarIconHeight);
 }
 
 gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
