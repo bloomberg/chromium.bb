@@ -248,6 +248,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       resource_provider_->GraphicsContext3D();
   DCHECK(context);
 
+  bool mailbox_success = true;
   for (size_t i = 0; i < plane_resources.size(); ++i) {
     // Update each plane's resource id with its content.
     DCHECK_EQ(plane_resources[i].resource_format,
@@ -272,6 +273,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           resource_provider_, plane_resources[i].resource_id);
 
       GLC(context, context->genMailboxCHROMIUM(mailbox.name));
+      if (mailbox.IsZero()) {
+        mailbox_success = false;
+        break;
+      }
       GLC(context, context->bindTexture(GL_TEXTURE_2D, lock.texture_id()));
       GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D,
                                                    mailbox.name));
@@ -294,6 +299,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         TextureMailbox(mailbox,
                        callback_to_free_resource,
                        plane_resources[i].sync_point));
+  }
+
+  if (!mailbox_success) {
+    for (size_t i = 0; i < plane_resources.size(); ++i)
+      DeleteResource(plane_resources[i].resource_id);
+    return VideoFrameExternalResources();
   }
 
   external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;

@@ -409,6 +409,9 @@ bool CommandBufferProxyImpl::EnsureBackbuffer() {
 }
 
 uint32 CommandBufferProxyImpl::InsertSyncPoint() {
+  if (last_state_.error != gpu::error::kNoError)
+    return 0;
+
   uint32 sync_point = 0;
   Send(new GpuCommandBufferMsg_InsertSyncPoint(route_id_, &sync_point));
   return sync_point;
