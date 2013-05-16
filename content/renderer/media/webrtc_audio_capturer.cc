@@ -27,7 +27,7 @@ static int kValidInputRates[] = {96000, 48000, 44100, 32000, 16000, 8000};
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
 static int kValidInputRates[] = {48000, 44100};
 #elif defined(OS_ANDROID)
-static int kValidInputRates[] = {48000, 44100, 16000};
+static int kValidInputRates[] = {48000, 44100};
 #else
 static int kValidInputRates[] = {44100};
 #endif

@@ -52,6 +52,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   void SetAudioMode(int mode);
   void RegisterHeadsetReceiver();
   void UnregisterHeadsetReceiver();
+  int GetNativeOutputSampleRate();
 
   // Java AudioManager instance.
   base::android::ScopedJavaGlobalRef<jobject> j_audio_manager_;
