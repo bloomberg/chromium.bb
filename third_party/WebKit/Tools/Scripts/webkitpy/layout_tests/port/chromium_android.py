@@ -167,7 +167,7 @@ class DumpRenderTreeDriverDetails(SharedDriverDetails):
     def command_line_file(self):
         return '/data/local/tmp/chrome-native-tests-command-line'
     def additional_command_line_flags(self):
-        return ['--create-stdin-fifo', '--separate-stderr-fifo']
+        return ['--create-stdin-fifo', '--separate-stderr-fifo', '--disable-impl-side-painting']
     def device_directory(self):
         return DEVICE_SOURCE_ROOT_DIR + 'drt/'
 
