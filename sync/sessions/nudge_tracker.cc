@@ -21,12 +21,20 @@ NudgeTracker::NudgeTracker()
 
 NudgeTracker::~NudgeTracker() { }
 
+bool NudgeTracker::IsGetUpdatesRequired() {
+  if (!refresh_requested_counts_.empty()) {
+    return true;
+  } else if (!payload_list_map_.empty()) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 bool NudgeTracker::IsSyncRequired() {
   if (!local_nudge_counts_.empty()) {
     return true;
-  } else if (!refresh_requested_counts_.empty()) {
-    return true;
-  } else if (!payload_list_map_.empty()) {
+  } else if (IsGetUpdatesRequired()) {
     return true;
   } else {
     return false;

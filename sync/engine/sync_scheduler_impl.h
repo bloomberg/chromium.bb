@@ -172,10 +172,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Helper to restart waiting with |wait_interval_|'s timer.
   void RestartWaiting();
 
-  // Helper to adjust our wait interval when we expereince a transient failure.
-  void UpdateExponentialBackoff(
-      const sessions::ModelNeutralState& model_neutral_state);
-
   // Determines if we're allowed to contact the server right now.
   bool CanRunJobNow(JobPriority priority);
 
@@ -208,6 +204,9 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   // Transitions out of the THROTTLED WaitInterval then calls TryCanaryJob().
   void Unthrottle();
+
+  // Attempts to exit EXPONENTIAL_BACKOFF by calling TryCanaryJob().
+  void ExponentialBackoffRetry();
 
   // Called when the root cause of the current connection error is fixed.
   void OnServerConnectionErrorFixed();

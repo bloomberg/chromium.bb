@@ -225,6 +225,10 @@ class SyncSchedulerTest : public testing::Test {
 
   SyncSessionContext* context() { return context_.get(); }
 
+  ThrottledDataTypeTracker* throttled_data_type_tracker() {
+    return throttled_data_type_tracker_.get();
+  }
+
  private:
   syncable::Directory* directory() {
     return dir_maker_.directory();
@@ -774,6 +778,89 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromConfigure) {
 
   RunLoop();
   EXPECT_FALSE(scheduler()->IsSyncingCurrentlySilenced());
+
+  StopSyncScheduler();
+}
+
+TEST_F(SyncSchedulerTest, TypeThrottlingBlocksNudge) {
+  UseMockDelayProvider();
+  EXPECT_CALL(*delay(), GetDelay(_))
+      .WillRepeatedly(Return(zero()));
+
+  TimeDelta poll(TimeDelta::FromDays(1));
+  TimeDelta throttle1(TimeDelta::FromSeconds(60));
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
+
+  const ModelTypeSet types(BOOKMARKS);
+
+  ::testing::InSequence seq;
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(DoAll(
+          WithArg<0>(
+              sessions::test_util::SimulateTypesThrottled(types, throttle1)),
+          Return(true)))
+      .RetiresOnSaturation();
+
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
+  PumpLoop();
+  EXPECT_TRUE(throttled_data_type_tracker()->GetThrottledTypes().HasAll(types));
+
+  // This won't cause a sync cycle because the types are throttled.
+  scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
+  PumpLoop();
+
+  StopSyncScheduler();
+}
+
+TEST_F(SyncSchedulerTest, TypeThrottlingDoesntBlockOtherSources) {
+  UseMockDelayProvider();
+  EXPECT_CALL(*delay(), GetDelay(_))
+      .WillRepeatedly(Return(zero()));
+
+  SyncShareRecords records;
+  TimeDelta poll(TimeDelta::FromDays(1));
+  TimeDelta throttle1(TimeDelta::FromSeconds(60));
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
+
+  const ModelTypeSet throttled_types(BOOKMARKS);
+  const ModelTypeSet unthrottled_types(PREFERENCES);
+
+  ::testing::InSequence seq;
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(DoAll(
+          WithArg<0>(
+              sessions::test_util::SimulateTypesThrottled(
+                  throttled_types, throttle1)),
+          Return(true)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+                            WithArg<0>(RecordSyncShare(&records))));
+
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  scheduler()->ScheduleLocalNudge(zero(), throttled_types, FROM_HERE);
+  PumpLoop();
+  EXPECT_EQ(0U, records.snapshots.size());
+  EXPECT_TRUE(throttled_data_type_tracker()->GetThrottledTypes().HasAll(
+          throttled_types));
+
+  // This invalidaiton will cause a sync even though the types are throttled.
+  ModelTypeInvalidationMap invalidation_map =
+      ModelTypeSetToInvalidationMap(throttled_types, "test");
+  scheduler()->ScheduleInvalidationNudge(zero(), invalidation_map, FROM_HERE);
+  RunLoop();
+  EXPECT_EQ(1U, records.snapshots.size());
+
+  // Refresh requests will cause a sync, too.
+  scheduler()->ScheduleLocalRefreshRequest(zero(), throttled_types, FROM_HERE);
+  RunLoop();
+  EXPECT_EQ(2U, records.snapshots.size());
+
+  // Even local nudges for other data types will trigger a sync.
+  scheduler()->ScheduleLocalNudge(zero(), unthrottled_types, FROM_HERE);
+  RunLoop();
+  EXPECT_EQ(3U, records.snapshots.size());
 
   StopSyncScheduler();
 }

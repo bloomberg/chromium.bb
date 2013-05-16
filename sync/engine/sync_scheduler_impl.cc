@@ -334,13 +334,25 @@ bool SyncSchedulerImpl::CanRunNudgeJobNow(JobPriority priority) {
     return false;
   }
 
-  // If all types are throttled, do not continue.  Today, we don't treat a
-  // per-datatype "unthrottle" event as something that should force a canary
-  // job. For this reason, there's no good time to reschedule this job to run
-  // -- we'll lazily wait for an independent event to trigger a sync.
+  // Per-datatype throttling will prevent a sync cycle if the only reason to
+  // perform this cycle is to commit a local change.  If there is any other
+  // reason to perform the sync cycle (such as an invalidation for the throttled
+  // type or a local change to non-throttled type) then the cycle will be
+  // allowed to proceed.
+  //
+  // If the cycle is prevented, we will drop it without scheduling another.
+  // Unlike global throttling, we have no timer to tell us when to wake us up
+  // when a type is unthrottled.
+  //
+  // If the sync cycle is not prevented, the commit message will be filtered to
+  // prevent the commit of any items of the throttled data type.  However, if
+  // the sync cycle succeeds, the nudge tracker will be told to assume that all
+  // outstanding commits (including the ones for throttled types) were completed
+  // successfully.  It does not yet have the ability to selectively clear the
+  // uncommitted status of only some types.
   ModelTypeSet throttled_types =
       session_context_->throttled_data_type_tracker()->GetThrottledTypes();
-  if (!nudge_tracker_.GetLocallyModifiedTypes().Empty() &&
+  if (!nudge_tracker_.IsGetUpdatesRequired() &&
       throttled_types.HasAll(nudge_tracker_.GetLocallyModifiedTypes())) {
     // TODO(sync): Throttled types should be pruned from the sources list.
     SDVLOG(1) << "Not running a nudge because we're fully datatype throttled.";
@@ -378,7 +390,7 @@ void SyncSchedulerImpl::ScheduleLocalRefreshRequest(
   DCHECK(!types.Empty());
 
   SDVLOG_LOC(nudge_location, 2)
-      << "Scheduling sync because of local refresch request for "
+      << "Scheduling sync because of local refresh request for "
       << ModelTypeSetToString(types);
   nudge_tracker_.RecordLocalRefreshRequest(types);
   ScheduleNudgeImpl(desired_delay, nudge_location);
@@ -543,8 +555,12 @@ void SyncSchedulerImpl::HandleFailure(
   if (IsSyncingCurrentlySilenced()) {
     SDVLOG(2) << "Was throttled during previous sync cycle.";
     RestartWaiting();
-  } else {
-    UpdateExponentialBackoff(model_neutral_state);
+  } else if (!IsBackingOff()) {
+    // Setup our backoff if this is our first such failure.
+    TimeDelta length = delay_provider_->GetDelay(
+        delay_provider_->GetInitialDelay(model_neutral_state));
+    wait_interval_.reset(
+        new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF, length));
     SDVLOG(2) << "Sync cycle failed.  Will back off for "
         << wait_interval_->length.InMilliseconds() << "ms.";
     RestartWaiting();
@@ -638,20 +654,9 @@ void SyncSchedulerImpl::RestartWaiting() {
     pending_wakeup_timer_.Start(
         FROM_HERE,
         wait_interval_->length,
-        base::Bind(&SyncSchedulerImpl::TryCanaryJob,
+        base::Bind(&SyncSchedulerImpl::ExponentialBackoffRetry,
                    weak_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void SyncSchedulerImpl::UpdateExponentialBackoff(
-    const sessions::ModelNeutralState& model_neutral_state) {
-  DCHECK(CalledOnValidThread());
-
-  TimeDelta length = delay_provider_->GetDelay(
-      IsBackingOff() ? wait_interval_->length :
-          delay_provider_->GetInitialDelay(model_neutral_state));
-  wait_interval_.reset(new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF,
-                                        length));
 }
 
 void SyncSchedulerImpl::RequestStop(const base::Closure& callback) {
@@ -726,6 +731,22 @@ void SyncSchedulerImpl::Unthrottle() {
   // that we're careful to update routing info (etc) with such potentially
   // stale canary jobs.
   TryCanaryJob();
+}
+
+void SyncSchedulerImpl::ExponentialBackoffRetry() {
+  TryCanaryJob();
+
+  if (IsBackingOff()) {
+    // If we succeeded, our wait interval would have been cleared.  If it hasn't
+    // been cleared, then we should increase our backoff interval and schedule
+    // another retry.
+    TimeDelta length = delay_provider_->GetDelay(wait_interval_->length);
+    wait_interval_.reset(
+      new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF, length));
+    SDVLOG(2) << "Sync cycle failed.  Will back off for "
+        << wait_interval_->length.InMilliseconds() << "ms.";
+    RestartWaiting();
+  }
 }
 
 void SyncSchedulerImpl::Notify(SyncEngineEvent::EventCause cause) {

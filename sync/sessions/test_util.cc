@@ -4,6 +4,8 @@
 
 #include "sync/sessions/test_util.h"
 
+#include "sync/engine/throttled_data_type_tracker.h"
+
 namespace syncer {
 namespace sessions {
 namespace test_util {
@@ -62,6 +64,16 @@ void SimulateThrottledImpl(sessions::SyncSession* session,
   session->mutable_status_controller()->set_last_download_updates_result(
       SERVER_RETURN_THROTTLED);
   session->delegate()->OnSilencedUntil(base::TimeTicks::Now() + delta);
+}
+
+void SimulateTypesThrottledImpl(
+    sessions::SyncSession* session,
+    ModelTypeSet types,
+    const base::TimeDelta& delta) {
+  session->mutable_status_controller()->set_last_download_updates_result(
+      SERVER_RETURN_THROTTLED);
+  session->context()->throttled_data_type_tracker()->
+      SetUnthrottleTime(types, base::TimeTicks::Now() + delta);
 }
 
 void SimulatePollIntervalUpdateImpl(sessions::SyncSession* session,

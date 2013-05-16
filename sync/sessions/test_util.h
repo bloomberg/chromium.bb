@@ -27,6 +27,10 @@ void SimulateSuccess(sessions::SyncSession* session,
                      SyncerStep begin, SyncerStep end);
 void SimulateThrottledImpl(sessions::SyncSession* session,
     const base::TimeDelta& delta);
+void SimulateTypesThrottledImpl(
+    sessions::SyncSession* session,
+    ModelTypeSet types,
+    const base::TimeDelta& delta);
 void SimulatePollIntervalUpdateImpl(sessions::SyncSession* session,
     const base::TimeDelta& new_poll);
 void SimulateSessionsCommitDelayUpdateImpl(sessions::SyncSession* session,
@@ -34,6 +38,10 @@ void SimulateSessionsCommitDelayUpdateImpl(sessions::SyncSession* session,
 
 ACTION_P(SimulateThrottled, throttle) {
   SimulateThrottledImpl(arg0, throttle);
+}
+
+ACTION_P2(SimulateTypesThrottled, types, throttle) {
+  SimulateTypesThrottledImpl(arg0, types, throttle);
 }
 
 ACTION_P(SimulatePollIntervalUpdate, poll) {

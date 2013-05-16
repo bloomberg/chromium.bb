@@ -28,6 +28,11 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   NudgeTracker();
   ~NudgeTracker();
 
+  // Returns true if one of the main reasons for performing the sync cycle is to
+  // fetch updates.  This is true when we have pending invalidations or refresh
+  // requests.
+  bool IsGetUpdatesRequired();
+
   // Returns true if there is a good reason for performing a sync cycle.
   // This does not take into account whether or not this is a good *time* to
   // perform a sync cycle; that's the scheduler's job.
