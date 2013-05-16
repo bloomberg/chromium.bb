@@ -21,6 +21,10 @@
 
 #include <vector>
 
+#if defined(__arm__) && !defined(MAP_STACK)
+#define MAP_STACK 0x20000  // Daisy build environment has old headers.
+#endif
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
