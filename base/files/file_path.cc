@@ -553,15 +553,8 @@ bool FilePath::ReferencesParent() const {
   std::vector<StringType>::const_iterator it = components.begin();
   for (; it != components.end(); ++it) {
     const StringType& component = *it;
-    // Windows has odd, undocumented behavior with path components containing
-    // only whitespace and . characters. So, if all we see is . and
-    // whitespace, then we treat any .. sequence as referencing parent.
-    // For simplicity we enforce this on all platforms.
-    if (component.find_first_not_of(FILE_PATH_LITERAL(". \n\r\t")) ==
-            std::string::npos &&
-        component.find(kParentDirectory) != std::string::npos) {
+    if (component == kParentDirectory)
       return true;
-    }
   }
   return false;
 }
