@@ -411,15 +411,15 @@ class ImageRepCocoaTouch : public ImageRep {
     image_ = nil;
   }
 
-  virtual int Width() const {
+  virtual int Width() const OVERRIDE {
     return Size().width();
   }
 
-  virtual int Height() const {
+  virtual int Height() const OVERRIDE {
     return Size().height();
   }
 
-  virtual gfx::Size Size() const {
+  virtual gfx::Size Size() const OVERRIDE {
     return internal::UIImageSize(image_);
   }
 
