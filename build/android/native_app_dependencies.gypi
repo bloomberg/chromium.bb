@@ -25,12 +25,6 @@
 #
 
 {
-  'variables': {
-   'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
-   'ordered_libraries_file': '<(intermediate_dir)/native_libraries.json',
-   'stripped_libraries_dir%': '<(output_dir)',
-   'strip_stamp': '<(intermediate_dir)/strip.stamp',
-  },
   'copies': [
     {
       'destination': '<(output_dir)',
@@ -43,10 +37,8 @@
           '<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
         ],
         'variables': {
-         'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
-         'ordered_libraries_file': '<(intermediate_dir)/native_libraries.json',
-         'stripped_libraries_dir%': '<(output_dir)',
-         'strip_stamp': '<(intermediate_dir)/strip.stamp',
+          'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
+          'ordered_libraries_file': '<(intermediate_dir)/native_libraries.json',
         },
         'actions': [
           {
@@ -56,8 +48,11 @@
             'includes': ['../../build/android/write_ordered_libraries.gypi'],
           },
           {
+            'action_name': 'stripping native libraries',
             'variables': {
+              'stripped_libraries_dir%': '<(output_dir)',
               'input_paths': ['<(native_binary)'],
+              'stamp': '<(intermediate_dir)/strip.stamp',
             },
             'includes': ['../../build/android/strip_native_libraries.gypi'],
           },

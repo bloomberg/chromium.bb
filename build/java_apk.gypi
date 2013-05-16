@@ -217,9 +217,12 @@
           ],
         },
         {
+          'action_name': 'strip_native_libraries',
           'variables': {
+            'ordered_libraries_file%': '<(ordered_libraries_file)',
             'stripped_libraries_dir': '<(libraries_source_dir)',
             'input_paths': ['<@(native_libs_paths)'],
+            'stamp': '<(strip_stamp)'
           },
           'includes': ['../build/android/strip_native_libraries.gypi'],
         },
