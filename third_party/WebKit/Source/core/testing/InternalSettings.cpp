@@ -67,6 +67,7 @@ namespace WebCore {
 
 InternalSettings::Backup::Backup(Settings* settings)
     : m_originalCSSExclusionsEnabled(RuntimeEnabledFeatures::cssExclusionsEnabled())
+    , m_originalCSSVariablesEnabled(settings->cssVariablesEnabled())
     , m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
     , m_originalExperimentalShadowDOMEnabled(RuntimeEnabledFeatures::experimentalShadowDOMEnabled())
     , m_originalExperimentalWebSocketEnabled(settings->experimentalWebSocketEnabled())
@@ -91,6 +92,7 @@ InternalSettings::Backup::Backup(Settings* settings)
 void InternalSettings::Backup::restoreTo(Settings* settings)
 {
     RuntimeEnabledFeatures::setCSSExclusionsEnabled(m_originalCSSExclusionsEnabled);
+    settings->setCSSVariablesEnabled(m_originalCSSVariablesEnabled);
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
     RuntimeEnabledFeatures::setExperimentalShadowDOMEnabled(m_originalExperimentalShadowDOMEnabled);
     settings->setExperimentalWebSocketEnabled(m_originalExperimentalWebSocketEnabled);
@@ -277,6 +279,18 @@ void InternalSettings::setTextAutosizingFontScaleFactor(float fontScaleFactor, E
 void InternalSettings::setCSSExclusionsEnabled(bool enabled)
 {
     RuntimeEnabledFeatures::setCSSExclusionsEnabled(enabled);
+}
+
+void InternalSettings::setCSSVariablesEnabled(bool enabled, ExceptionCode& ec)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setCSSVariablesEnabled(enabled);
+}
+
+bool InternalSettings::cssVariablesEnabled(ExceptionCode& ec)
+{
+    InternalSettingsGuardForSettingsReturn(false);
+    return settings()->cssVariablesEnabled();
 }
 
 void InternalSettings::setEditingBehavior(const String& editingBehavior, ExceptionCode& ec)

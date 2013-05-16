@@ -112,6 +112,7 @@ public:
     bool parseQuotes(CSSPropertyID, bool important);
 
     static bool parseValue(StylePropertySet*, CSSPropertyID, const String&, bool important, Document*);
+    bool cssVariablesEnabled() const;
     void storeVariableDeclaration(const CSSParserString&, PassOwnPtr<CSSParserValueList>, bool important);
 
     PassRefPtr<CSSValue> parseAttr(CSSParserValueList* args);
