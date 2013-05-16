@@ -1805,11 +1805,7 @@ static inline void boundaryTextNodesSplit(RangeBoundaryPoint& boundary, Text* ol
     unsigned boundaryOffset = boundary.offset();
     if (boundaryOffset <= oldNode->length())
         return;
-    Node* next = oldNode->nextSibling();
-    if (!next || !next->isTextNode())
-        boundary.set(oldNode, oldNode->length(), 0);
-    else
-        boundary.set(next, std::min(boundaryOffset - oldNode->length(), toText(next)->length()), 0);
+    boundary.set(oldNode->nextSibling(), boundaryOffset - oldNode->length(), 0);
 }
 
 void Range::textNodeSplit(Text* oldNode)
@@ -1818,6 +1814,8 @@ void Range::textNodeSplit(Text* oldNode)
     ASSERT(oldNode->document() == m_ownerDocument);
     ASSERT(oldNode->parentNode());
     ASSERT(oldNode->isTextNode());
+    ASSERT(oldNode->nextSibling());
+    ASSERT(oldNode->nextSibling()->isTextNode());
     boundaryTextNodesSplit(m_start, oldNode);
     boundaryTextNodesSplit(m_end, oldNode);
 }
