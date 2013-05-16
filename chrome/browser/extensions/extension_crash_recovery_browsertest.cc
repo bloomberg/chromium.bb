@@ -307,8 +307,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 }
 
+// Flaky, http://crbug.com/241245.
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       TwoExtensionsCrashFirst) {
+                       DISABLED_TwoExtensionsCrashFirst) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
