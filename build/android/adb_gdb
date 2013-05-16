@@ -358,6 +358,46 @@ else
   fi
 fi
 
+# Detect the NDK system name, i.e. the name used to identify the host.
+# out: NDK system name (e.g. 'linux' or 'darwin')
+get_ndk_host_system () {
+  local HOST_OS
+  if [ -z "$NDK_HOST_SYSTEM" ]; then
+    HOST_OS=$(uname -s)
+    case $HOST_OS in
+      Linux) NDK_HOST_SYSTEM=linux;;
+      Darwin) NDK_HOST_SYSTEM=darwin;;
+      *) panic "You can't run this script on this system: $HOST_OS";;
+    esac
+  fi
+  echo "$NDK_HOST_SYSTEM"
+}
+
+# Detect the NDK host architecture name.
+# out: NDK arch name (e.g. 'x86' or 'x86_64')
+get_ndk_host_arch () {
+  local HOST_ARCH HOST_OS
+  if [ -z "$NDK_HOST_ARCH" ]; then
+    HOST_OS=$(get_ndk_host_system)
+    HOST_ARCH=$(uname -p)
+    case $HOST_ARCH in
+      i?86) NDK_HOST_ARCH=x86;;
+      x86_64|amd64) NDK_HOST_ARCH=x86_64;;
+      *) panic "You can't run this script on this host architecture: $HOST_ARCH";;
+    esac
+    # Darwin trick: "uname -p" always returns i386 on 64-bit installations.
+    if [ "$HOST_OS" = darwin -a "$NDK_HOST_ARCH" = "x86" ]; then
+      # Use '/usr/bin/file', not just 'file' to avoid buggy MacPorts
+      # implementations of the tool. See http://b.android.com/53769
+      HOST_64BITS=$(/usr/bin/file -L "$SHELL" | grep -e "x86[_-]64")
+      if [ "$HOST_64BITS" ]; then
+        NDK_HOST_ARCH=x86_64
+      fi
+    fi
+  fi
+  echo "$NDK_HOST_ARCH"
+}
+
 # Convert an NDK architecture name into a GNU configure triplet.
 # $1: NDK architecture name (e.g. 'arm')
 # Out: Android GNU configure triplet (e.g. 'arm-linux-androideabi')
@@ -413,6 +453,42 @@ get_ndk_toolchain_prebuilt () {
   echo "$FILE"
 }
 
+# Find the path to an NDK's toolchain full prefix for a given architecture
+# $1: NDK install path
+# $2: NDK target architecture name
+# Out: install path + binary prefix (e.g.
+#      ".../path/to/bin/arm-linux-androideabi-")
+get_ndk_toolchain_fullprefix () {
+  local NDK_DIR="$1"
+  local ARCH="$2"
+  local TARGET NAME HOST_OS HOST_ARCH GCC CONFIG
+
+  # NOTE: This will need to be updated if the NDK changes the names or moves
+  #        the location of its prebuilt toolchains.
+  #
+  GCC=
+  HOST_OS=$(get_ndk_host_system)
+  HOST_ARCH=$(get_ndk_host_arch)
+  CONFIG=$(get_arch_gnu_config $ARCH)
+  GCC=$(get_ndk_toolchain_prebuilt \
+        "$NDK_DIR" "$ARCH" "$HOST_OS-$HOST_ARCH/bin/$CONFIG-gcc")
+  if [ -z "$GCC" -a "$HOST_ARCH" = "x86_64" ]; then
+    GCC=$(get_ndk_toolchain_prebuilt \
+          "$NDK_DIR" "$ARCH" "$HOST_OS-x86/bin/$CONFIG-gcc")
+  fi
+  if [ ! -f "$GCC" -a "$ARCH" = "x86" ]; then
+    # Special case, the x86 toolchain used to be incorrectly
+    # named i686-android-linux-gcc!
+    GCC=$(get_ndk_toolchain_prebuilt \
+          "$NDK_DIR" "$ARCH" "$HOST_OS-x86/bin/i686-android-linux-gcc")
+  fi
+  if [ -z "$GCC" ]; then
+    panic "Cannot find Android NDK toolchain for '$ARCH' architecture. \
+Please verify your NDK installation!"
+  fi
+  echo "${GCC%%gcc}"
+}
+
 # $1: NDK install path
 # $2: target architecture.
 get_ndk_gdbserver () {
@@ -433,6 +509,9 @@ get_ndk_gdbserver () {
 # issues when both binaries do not speak the same wire protocol.
 #
 if [ -z "$TOOLCHAIN" ]; then
+  ANDROID_TOOLCHAIN=$(get_ndk_toolchain_fullprefix \
+                      "$ANDROID_NDK_ROOT" "$TARGET_ARCH")
+  ANDROID_TOOLCHAIN=$(dirname "$ANDROID_TOOLCHAIN")
   log "Auto-config: --toolchain=$ANDROID_TOOLCHAIN"
 else
   # Be flexible, allow one to specify either the install path or the bin
