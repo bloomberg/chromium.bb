@@ -35,7 +35,7 @@ def DoPush(options):
 
     def Push():
       if needs_directory:
-        adb.RunShellCommand('mkdir ' + options.device_dir)
+        adb.RunShellCommand('mkdir -p ' + options.device_dir)
         needs_directory[:] = [] # = False
       adb.PushIfNeeded(host_path, device_path)
 
