@@ -2222,7 +2222,7 @@ END
     my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
     if (!$raisesExceptions) {
         foreach my $parameter (@{$function->parameters}) {
-            if ((!IsCallbackInterface($parameter->type) and TypeCanFailConversion($parameter)) or $parameter->extendedAttributes->{"IsIndex"}) {
+            if (!IsCallbackInterface($parameter->type) or $parameter->extendedAttributes->{"IsIndex"}) {
                 $raisesExceptions = 1;
             }
         }
@@ -2390,13 +2390,6 @@ sub GenerateParametersCheck
             $parameterCheckString .= "    $nativeType $parameterName = SerializedScriptValue::create(args[$paramIndex], 0, 0, ${parameterName}DidThrow, args.GetIsolate());\n";
             $parameterCheckString .= "    if (${parameterName}DidThrow)\n";
             $parameterCheckString .= "        return v8Undefined();\n";
-        } elsif (TypeCanFailConversion($parameter)) {
-            $parameterCheckString .= "    $nativeType $parameterName = " .
-                 JSValueToNative($parameter, "args[$paramIndex]", "args.GetIsolate()") . ";\n";
-            $parameterCheckString .= "    if (UNLIKELY(!$parameterName)) {\n";
-            $parameterCheckString .= "        ec = TYPE_MISMATCH_ERR;\n";
-            $parameterCheckString .= "        goto fail;\n";
-            $parameterCheckString .= "    }\n";
         } elsif ($parameter->isVariadic) {
             my $nativeElementType = GetNativeType($parameter->type);
             if ($nativeElementType =~ />$/) {
@@ -2516,7 +2509,7 @@ sub GenerateSingleConstructorCallback
     }
     if (!$raisesExceptions) {
         foreach my $parameter (@{$function->parameters}) {
-            if ((!IsCallbackInterface($parameter->type) and TypeCanFailConversion($parameter)) or $parameter->extendedAttributes->{"IsIndex"}) {
+            if (!IsCallbackInterface($parameter->type) or $parameter->extendedAttributes->{"IsIndex"}) {
                 $raisesExceptions = 1;
             }
         }
@@ -2744,7 +2737,7 @@ sub GenerateNamedConstructor
     }
     if (!$raisesExceptions) {
         foreach my $parameter (@{$function->parameters}) {
-            if ((!IsCallbackInterface($parameter->type) and TypeCanFailConversion($parameter)) or $parameter->extendedAttributes->{"IsIndex"}) {
+            if (!IsCallbackInterface($parameter->type) or $parameter->extendedAttributes->{"IsIndex"}) {
                 $raisesExceptions = 1;
             }
         }
@@ -4484,16 +4477,6 @@ sub GetNativeTypeForCallbacks
 
     # Callbacks use raw pointers, so pass isParameter = 1
     return GetNativeType($type, 1);
-}
-
-sub TypeCanFailConversion
-{
-    my $signature = shift;
-    my $type = $signature->type;
-
-    AddToImplIncludes("core/dom/ExceptionCode.h") if $type eq "Attr";
-    return 1 if $type eq "Attr";
-    return 0;
 }
 
 sub JSValueToNative
