@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/css/MediaQueryExp.h"
 
+#include "CSSValueKeywords.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -46,7 +47,36 @@ static inline bool featureWithCSSValueID(const AtomicString& mediaFeature, const
 
     return mediaFeature == MediaFeatureNames::orientationMediaFeature
         || mediaFeature == MediaFeatureNames::viewModeMediaFeature
-        || mediaFeature == MediaFeatureNames::pointerMediaFeature;
+        || mediaFeature == MediaFeatureNames::pointerMediaFeature
+        || mediaFeature == MediaFeatureNames::scanMediaFeature;
+}
+
+static inline bool featureWithValidIdent(const AtomicString& mediaFeature, int ident)
+{
+    if (mediaFeature == MediaFeatureNames::orientationMediaFeature)
+        return ident == CSSValuePortrait || ident == CSSValueLandscape;
+
+    if (mediaFeature == MediaFeatureNames::viewModeMediaFeature) {
+        switch (ident) {
+        case CSSValueWindowed:
+        case CSSValueFloating:
+        case CSSValueFullscreen:
+        case CSSValueMaximized:
+        case CSSValueMinimized:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    if (mediaFeature == MediaFeatureNames::pointerMediaFeature)
+        return ident == CSSValueNone || ident == CSSValueCoarse || ident == CSSValueFine;
+
+    if (mediaFeature == MediaFeatureNames::scanMediaFeature)
+        return ident == CSSValueInterlace || ident == CSSValueProgressive;
+
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 static inline bool featureWithValidPositiveLenghtOrNumber(const AtomicString& mediaFeature, const CSSParserValue* value)
@@ -149,7 +179,8 @@ static inline bool featureWithoutValue(const AtomicString& mediaFeature)
         || mediaFeature == MediaFeatureNames::viewModeMediaFeature
         || mediaFeature == MediaFeatureNames::pointerMediaFeature
         || mediaFeature == MediaFeatureNames::devicePixelRatioMediaFeature
-        || mediaFeature == MediaFeatureNames::resolutionMediaFeature;
+        || mediaFeature == MediaFeatureNames::resolutionMediaFeature
+        || mediaFeature == MediaFeatureNames::scanMediaFeature;
 }
 
 bool MediaQueryExp::isViewportDependent() const
@@ -177,8 +208,11 @@ inline MediaQueryExp::MediaQueryExp(const AtomicString& mediaFeature, CSSParserV
             CSSParserValue* value = valueList->current();
 
             // Media features that use CSSValueIDs.
-            if (featureWithCSSValueID(mediaFeature, value))
+            if (featureWithCSSValueID(mediaFeature, value)) {
                 m_value = CSSPrimitiveValue::createIdentifier(value->id);
+                if (!featureWithValidIdent(mediaFeature, toCSSPrimitiveValue(m_value.get())->getIdent()))
+                    m_value.clear();
+            }
 
             // Media features that must have non-negative <density>, ie. dppx, dpi or dpcm.
             else if (featureWithValidDensity(mediaFeature, value))

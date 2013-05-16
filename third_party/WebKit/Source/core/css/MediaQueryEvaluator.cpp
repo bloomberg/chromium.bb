@@ -67,14 +67,6 @@ typedef bool (*EvalFunc)(CSSValue*, RenderStyle*, Frame*, MediaFeaturePrefix);
 typedef HashMap<AtomicStringImpl*, EvalFunc> FunctionMap;
 static FunctionMap* gFunctionMap;
 
-/*
- * FIXME: following media features are not implemented:  scan
- *
- * scan: The "scan" media feature describes the scanning process of
- * tv output devices. It's unknown how to retrieve this information from
- * the platform
- */
-
 MediaQueryEvaluator::MediaQueryEvaluator(bool mediaFeatureResult)
     : m_frame(0)
     , m_style(0)
@@ -658,6 +650,25 @@ static bool pointerMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame,
     return (pointer == NoPointer && id == CSSValueNone)
         || (pointer == TouchPointer && id == CSSValueCoarse)
         || (pointer == MousePointer && id == CSSValueFine);
+}
+
+static bool scanMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix)
+{
+    // Scan only applies to tv media.
+    if (!equalIgnoringCase(frame->view()->mediaType(), "tv"))
+        return false;
+
+    if (!value)
+        return true;
+
+    if (!value->isPrimitiveValue())
+        return false;
+
+    // If a platform interface supplies progressive/interlace info for TVs in the
+    // future, it needs to be handled here. For now, assume a modern TV with
+    // progressive display.
+    const int id = toCSSPrimitiveValue(value)->getIdent();
+    return id == CSSValueProgressive;
 }
 
 static void createFunctionMap()

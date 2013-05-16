@@ -995,3 +995,6 @@ span
 -webkit-each-line
 #endif
 
+// (scan:) media feature
+progressive
+interlace
