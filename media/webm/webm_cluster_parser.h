@@ -15,6 +15,7 @@
 #include "media/base/media_log.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/webm/webm_parser.h"
+#include "media/webm/webm_tracks_parser.h"
 
 namespace media {
 
@@ -74,7 +75,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   WebMClusterParser(int64 timecode_scale,
                     int audio_track_num,
                     int video_track_num,
-                    const std::set<int>& text_tracks,
+                    const WebMTracksParser::TextTracks& text_tracks,
                     const std::set<int64>& ignored_tracks,
                     const std::string& audio_encryption_key_id,
                     const std::string& video_encryption_key_id,

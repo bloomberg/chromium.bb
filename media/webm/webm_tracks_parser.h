@@ -5,6 +5,7 @@
 #ifndef MEDIA_WEBM_WEBM_TRACKS_PARSER_H_
 #define MEDIA_WEBM_WEBM_TRACKS_PARSER_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -22,7 +23,7 @@
 namespace media {
 
 // Parser for WebM Tracks element.
-class WebMTracksParser : public WebMParserClient {
+class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
  public:
   explicit WebMTracksParser(const LogCB& log_cb);
   virtual ~WebMTracksParser();
@@ -54,7 +55,15 @@ class WebMTracksParser : public WebMParserClient {
     return video_decoder_config_;
   }
 
-  const std::set<int>& text_tracks() const {
+  struct TextTrackInfo {
+    TextKind kind;
+    std::string name;
+    std::string language;
+  };
+
+  typedef std::map<int64, TextTrackInfo> TextTracks;
+
+  const TextTracks& text_tracks() const {
     return text_tracks_;
   }
 
@@ -69,13 +78,15 @@ class WebMTracksParser : public WebMParserClient {
 
   int64 track_type_;
   int64 track_num_;
+  std::string track_name_;
+  std::string track_language_;
   std::string codec_id_;
   std::vector<uint8> codec_private_;
   scoped_ptr<WebMContentEncodingsClient> track_content_encodings_client_;
 
   int64 audio_track_num_;
   int64 video_track_num_;
-  std::set<int> text_tracks_;
+  TextTracks text_tracks_;
   std::set<int64> ignored_tracks_;
   std::string audio_encryption_key_id_;
   std::string video_encryption_key_id_;
