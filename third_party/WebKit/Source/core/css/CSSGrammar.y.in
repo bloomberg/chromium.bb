@@ -1610,9 +1610,11 @@ declaration_recovery:
   ;
 
 property:
-    IDENT maybe_space {
-        $$ = cssPropertyID($1);
+    error_location IDENT maybe_space {
+        $$ = cssPropertyID($2);
         parser->setCurrentProperty($$);
+        if ($$ == CSSPropertyInvalid)
+            parser->reportError($1, CSSParser::InvalidPropertyError);
     }
   ;
 

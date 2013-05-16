@@ -607,30 +607,10 @@ CSSStyleRule* InspectorCSSAgent::asCSSStyleRule(CSSRule* rule)
     return static_cast<CSSStyleRule*>(rule);
 }
 
-static bool hasPrefix(const CSSParserString& string, const char* prefix)
+template <typename CharType>
+static bool hasVendorSpecificPrefix(const CharType* string, size_t stringLength)
 {
-    const size_t length = string.length();
-    static const int lowerCaseOffset = 'A' - 'a';
-    size_t index = 0;
-    while (prefix[index] && index < length) {
-        int c = prefix[index];
-        if (c >= 'A' && c <= 'Z')
-            c -= lowerCaseOffset;
-
-        if (c != string[index])
-            return false;
-        ++index;
-    }
-    return true;
-}
-
-static bool hasVendorSpecificPrefix(const CSSParserString& string)
-{
-    const size_t length = string.length();
-    if (length < 4 || string[0] != '-')
-        return false;
-
-    for (size_t i = 1; i < length; ++i) {
+    for (size_t i = 1; i < stringLength; ++i) {
         int c = string[i];
         if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z'))
             return i >= 2 && c == '-';
@@ -638,23 +618,54 @@ static bool hasVendorSpecificPrefix(const CSSParserString& string)
     return false;
 }
 
+static bool hasNonWebkitVendorSpecificPrefix(const CSSParserString& string)
+{
+    const size_t stringLength = string.length();
+    if (stringLength < 4 || string[0] != '-')
+        return false;
+
+    static const char webkitPrefix[] = "-webkit-";
+    if (stringLength > 8 && string.startsWithIgnoringCase(webkitPrefix))
+        return false;
+
+    return string.is8Bit() ? hasVendorSpecificPrefix(string.characters8(), stringLength) : hasVendorSpecificPrefix(string.characters16(), stringLength);
+}
+
 // static
 bool InspectorCSSAgent::cssErrorFilter(const CSSParserLocation& location, int propertyId, int errorType)
 {
     const size_t tokenLength = location.token.length();
     // Ignore errors like "*property: value". This trick is used for IE7: http://stackoverflow.com/questions/4563651/what-does-an-asterisk-do-in-a-css-property-name
-    if (errorType == CSSParser::PropertyDeclarationError && tokenLength > 0 && location.token[0] == '*')
+    if (errorType == CSSParser::PropertyDeclarationError && tokenLength && location.token[0] == '*')
         return false;
 
     // The "filter" property is commonly used instead of "opacity" for IE9.
     if (propertyId == CSSPropertyFilter && (errorType == CSSParser::PropertyDeclarationError || errorType == CSSParser::InvalidPropertyValueError))
         return false;
 
-    if (errorType == CSSParser::InvalidPropertyValueError && hasVendorSpecificPrefix(location.token) && !hasPrefix(location.token, "-webkit-"))
+    if (errorType == CSSParser::InvalidPropertyValueError && hasNonWebkitVendorSpecificPrefix(location.token))
         return false;
 
-    if (propertyId == CSSPropertyCursor && errorType == CSSParser::InvalidPropertyValueError && hasPrefix(location.token, "hand"))
+    if (propertyId == CSSPropertyCursor && errorType == CSSParser::InvalidPropertyValueError && location.token.equalIgnoringCase("hand"))
         return false;
+
+    // When errorType == CSSParser::InvalidPropertyError location.token is property name.
+    if (errorType == CSSParser::InvalidPropertyError) {
+        if (hasNonWebkitVendorSpecificPrefix(location.token))
+            return false;
+
+        // Another hack to make IE-only property.
+        if (tokenLength && location.token[0] == '_')
+            return false;
+
+        // IE-only set of properties.
+        if (location.token.startsWithIgnoringCase("scrollbar-"))
+            return false;
+
+        // Unsupported standard property.
+        if (location.token.equalIgnoringCase("font-size-adjust"))
+            return false;
+    }
 
     return true;
 }

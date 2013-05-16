@@ -10964,6 +10964,10 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
         builder.appendLiteral("Invalid CSS property value starting with: ");
         break;
 
+    case InvalidPropertyError:
+        builder.appendLiteral("Invalid CSS property name: ");
+        break;
+
     default:
         builder.appendLiteral("Unexpected CSS token: ");
     }

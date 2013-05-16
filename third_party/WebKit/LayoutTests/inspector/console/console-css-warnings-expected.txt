@@ -14,5 +14,8 @@ Unexpected CSS token: { console-css-warnings.html:39
 Unexpected CSS token: { console-css-warnings.html:40
 Unexpected CSS token: @ console-css-warnings.html:45
 Invalid CSS property value starting with: -webkit-linear-gradient( console-css-warnings.html:53
-Unexpected CSS token: @ console-css-warnings.html:65
+Invalid CSS property name: invalidproperty console-css-warnings.html:66
+Invalid CSS property declaration at: - console-css-warnings.html:67
+Invalid CSS property name: -webkit-invalidproperty console-css-warnings.html:70
+Unexpected CSS token: @ console-css-warnings.html:77
 

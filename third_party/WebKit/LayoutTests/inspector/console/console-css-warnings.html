@@ -62,6 +62,18 @@ x {
 }
 
 x {
+    /* To be reported. */
+    invalidproperty: blue;
+    --invalidproperty: blue;
+
+    /* To be ignored. */
+    -webkit-invalidproperty: blue;
+    -vendor-specific-property: blue;
+    scrollbar-arrow-color: fail;
+    SCROLLBAR-ARROW-COLOR: fail;
+}
+
+x {
     color: @;  /* Test simple error to ensure parsing recovered. */
 }
 

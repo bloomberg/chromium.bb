@@ -91,6 +91,19 @@ struct CSSParserString {
         return WTF::equalIgnoringCase(str, characters16(), length());
     }
 
+    template <size_t strLength>
+    bool startsWithIgnoringCase(const char (&str)[strLength]) const
+    {
+        return startsWithIgnoringCase(str, strLength - 1);
+    }
+
+    bool startsWithIgnoringCase(const char* str, size_t strLength) const
+    {
+        if (length() < strLength)
+            return false;
+        return is8Bit() ? WTF::equalIgnoringCase(str, characters8(), strLength) : WTF::equalIgnoringCase(str, characters16(), strLength);
+    }
+
     operator String() const { return is8Bit() ? String(m_data.characters8, m_length) : String(m_data.characters16, m_length); }
     operator AtomicString() const { return is8Bit() ? AtomicString(m_data.characters8, m_length) : AtomicString(m_data.characters16, m_length); }
 

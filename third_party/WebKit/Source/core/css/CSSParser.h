@@ -78,6 +78,7 @@ public:
         NoError,
         PropertyDeclarationError,
         InvalidPropertyValueError,
+        InvalidPropertyError,
         GeneralError
     };
 
