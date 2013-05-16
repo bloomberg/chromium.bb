@@ -15,13 +15,14 @@
 class BookmarkBarView;
 class Browser;
 class BrowserView;
+class BrowserViewLayoutDelegate;
 class ContentsContainer;
-class DownloadShelfView;
+class ImmersiveModeController;
 class InfoBarContainerView;
 class OverlayContainer;
 class TabContentsContainer;
 class TabStrip;
-class ToolbarView;
+class TopContainerView;
 class WebContentsModalDialogHost;
 
 namespace gfx {
@@ -42,19 +43,31 @@ class BrowserViewLayout : public views::LayoutManager {
   BrowserViewLayout();
   virtual ~BrowserViewLayout();
 
-  // Sets all the views to be managed. Tests may inject stubs or NULL.
-  void Init(Browser* browser,
+  // Sets all the views to be managed. Takes ownership of |delegate|.
+  // |browser_view| may be NULL in tests.
+  void Init(BrowserViewLayoutDelegate* delegate,
+            Browser* browser,
             BrowserView* browser_view,
+            views::View* top_container,
+            TabStrip* tab_strip,
+            views::View* toolbar,
             InfoBarContainerView* infobar_container,
-            views::SingleSplitView* contents_split,
+            views::View* contents_split,
             ContentsContainer* contents_container,
-            OverlayContainer* overlay_container);
+            OverlayContainer* overlay_container,
+            ImmersiveModeController* immersive_mode_controller);
 
   // Sets or updates views that are not available when |this| is initialized.
+  void set_window_switcher_button(views::View* button) {
+    window_switcher_button_ = button;
+  }
+  void set_tab_strip(TabStrip* tab_strip) {
+    tab_strip_ = tab_strip;
+  }
   void set_bookmark_bar(BookmarkBarView* bookmark_bar) {
     bookmark_bar_ = bookmark_bar;
   }
-  void set_download_shelf(DownloadShelfView* download_shelf) {
+  void set_download_shelf(views::View* download_shelf) {
     download_shelf_ = download_shelf;
   }
 
@@ -83,6 +96,7 @@ class BrowserViewLayout : public views::LayoutManager {
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, BrowserViewLayout);
   FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, Layout);
+  FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, LayoutDownloadShelf);
   class WebContentsModalDialogHostViews;
 
   enum InstantUIState {
@@ -99,7 +113,7 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // Layout the tab strip region, returns the coordinate of the bottom of the
   // TabStrip, for laying out subsequent controls.
-  int LayoutTabStripRegion();
+  int LayoutTabStripRegion(views::View* browser_view);
 
   // Layout the following controls, starting at |top|, returns the coordinate
   // of the bottom of the control, for laying out the next control.
@@ -140,19 +154,31 @@ class BrowserViewLayout : public views::LayoutManager {
   // Returns true if an infobar is showing.
   bool InfobarVisible() const;
 
+  // The delegate interface. May be a mock in tests.
+  scoped_ptr<BrowserViewLayoutDelegate> delegate_;
+
   // The browser from the owning BrowserView.
   Browser* browser_;
 
   // The owning BrowserView. May be NULL in tests.
+  // TODO(jamescook): Remove this, use the views::View passed in to Layout().
   BrowserView* browser_view_;
 
   // Child views that the layout manager manages.
+  // NOTE: If you add a view, try to add it as a views::View, which makes
+  // testing much easier.
+  views::View* top_container_;
+  TabStrip* tab_strip_;
+  views::View* toolbar_;
   BookmarkBarView* bookmark_bar_;
   InfoBarContainerView* infobar_container_;
-  views::SingleSplitView* contents_split_;
+  views::View* contents_split_;
   ContentsContainer* contents_container_;
   OverlayContainer* overlay_container_;
-  DownloadShelfView* download_shelf_;
+  views::View* window_switcher_button_;
+  views::View* download_shelf_;
+
+  ImmersiveModeController* immersive_mode_controller_;
 
   // The bounds within which the vertically-stacked contents of the BrowserView
   // should be laid out within. This is just the local bounds of the

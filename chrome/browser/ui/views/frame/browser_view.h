@@ -460,7 +460,9 @@ class BrowserView : public BrowserWindow,
   views::WebView* GetContentsWebViewForTest() { return contents_web_view_; }
 
  private:
-  friend class BrowserViewLayout;
+  // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
+  // interface to keep these two classes decoupled and testable.
+  friend class BrowserViewLayoutDelegateImpl;
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, BrowserView);
   FRIEND_TEST_ALL_PREFIXES(BrowserViewsAccessibilityTest,
                            TestAboutChromeViewAccObj);

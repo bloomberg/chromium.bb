@@ -10,8 +10,8 @@
 // static
 const char ContentsContainer::kViewClassName[] = "ContentsContainer";
 
-ContentsContainer::ContentsContainer(views::WebView* active)
-    : active_(active),
+ContentsContainer::ContentsContainer(views::View* active_web_view)
+    : active_(active_web_view),
       active_top_margin_(0) {
   AddChildView(active_);
 }

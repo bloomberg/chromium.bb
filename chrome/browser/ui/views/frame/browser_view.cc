@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
+#include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/instant_overlay_controller_views.h"
@@ -254,6 +255,48 @@ bool UseImmersiveFullscreenForUrl(const GURL& url) {
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
+
+// Delegate implementation for BrowserViewLayout. Usually just forwards calls
+// into BrowserView.
+class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
+ public:
+  explicit BrowserViewLayoutDelegateImpl(BrowserView* browser_view)
+      : browser_view_(browser_view) {}
+  virtual ~BrowserViewLayoutDelegateImpl() {}
+
+  // BrowserViewLayoutDelegate overrides:
+  virtual bool DownloadShelfNeedsLayout() const OVERRIDE {
+    DownloadShelfView* download_shelf = browser_view_->download_shelf_.get();
+    // Re-layout the shelf either if it is visible or if its close animation
+    // is currently running.
+    return download_shelf &&
+           (download_shelf->IsShowing() || download_shelf->IsClosing());
+  }
+
+  virtual bool IsTabStripVisible() const OVERRIDE {
+    return browser_view_->IsTabStripVisible();
+  }
+
+  virtual gfx::Rect GetBoundsForTabStrip(
+      views::View* tab_strip) const OVERRIDE {
+    return browser_view_->frame()->GetBoundsForTabStrip(tab_strip);
+  }
+
+  virtual bool IsToolbarVisible() const OVERRIDE {
+    return browser_view_->IsToolbarVisible();
+  }
+
+  virtual bool IsBookmarkBarVisible() const OVERRIDE {
+    return browser_view_->IsBookmarkBarVisible();
+  }
+
+ private:
+  BrowserView* browser_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserViewLayoutDelegateImpl);
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // BookmarkExtensionBackground, private:
 // This object serves as the views::Background object which is used to layout
 // and paint the bookmark bar.
@@ -442,15 +485,17 @@ BrowserView::~BrowserView() {
   // download views from the set of download observers (since the observed
   // downloads can be destroyed along with |browser_| and the observer
   // notifications will call back into deleted objects).
-  download_shelf_.reset();
   BrowserViewLayout* browser_view_layout = GetBrowserViewLayout();
   if (browser_view_layout)
     browser_view_layout->set_download_shelf(NULL);
+  download_shelf_.reset();
 
   // The TabStrip attaches a listener to the model. Make sure we shut down the
   // TabStrip first so that it can cleanly remove the listener.
   if (tabstrip_) {
     tabstrip_->parent()->RemoveChildView(tabstrip_);
+    if (browser_view_layout)
+      browser_view_layout->set_tab_strip(NULL);
     delete tabstrip_;
     tabstrip_ = NULL;
   }
@@ -897,6 +942,7 @@ void BrowserView::SetWindowSwitcherButton(views::Button* button) {
   if (window_switcher_button_)
     RemoveChildView(window_switcher_button_);
   window_switcher_button_ = button;
+  GetBrowserViewLayout()->set_window_switcher_button(button);
   AddChildView(button);
 }
 
@@ -1817,6 +1863,9 @@ void BrowserView::Layout() {
 
   views::View::Layout();
 
+  // TODO(jamescook): Why was this in the middle of layout code?
+  toolbar_->location_bar()->SetLocationEntryFocusable(IsToolbarVisible());
+
   // The status bubble position requires that all other layout finish first.
   LayoutStatusBubble();
 }
@@ -1875,9 +1924,6 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
     UpdateAcceleratorMetrics(accelerator, command_id);
   return chrome::ExecuteCommand(browser_.get(), command_id);
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// BrowserView, private
 
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   // NOTE: Keep this in sync with ToolbarView::OnPaint()!
@@ -1995,12 +2041,17 @@ void BrowserView::InitViews() {
       new InstantOverlayControllerViews(browser(), overlay_container_));
 
   BrowserViewLayout* browser_view_layout = new BrowserViewLayout;
-  browser_view_layout->Init(browser(),
+  browser_view_layout->Init(new BrowserViewLayoutDelegateImpl(this),
+                            browser(),
                             this,
+                            top_container_,
+                            tabstrip_,
+                            toolbar_,
                             infobar_container_,
                             contents_split_,
                             contents_container_,
-                            overlay_container_);
+                            overlay_container_,
+                            immersive_mode_controller_.get());
   SetLayoutManager(browser_view_layout);
 
 #if defined(OS_WIN) && !defined(USE_AURA)

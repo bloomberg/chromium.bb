@@ -32,7 +32,7 @@ class ContentsContainer : public views::View {
   // Internal class name
   static const char kViewClassName[];
 
-  explicit ContentsContainer(views::WebView* active);
+  explicit ContentsContainer(views::View* active);
   virtual ~ContentsContainer();
 
   // Makes the overlay view the active view and nulls out the old active view.
@@ -51,10 +51,10 @@ class ContentsContainer : public views::View {
   virtual const char* GetClassName() const OVERRIDE;
 
   // Testing interface:
-  views::WebView* GetActiveWebViewForTest() { return active_; }
+  views::View* GetActiveWebViewForTest() { return active_; }
 
  private:
-  views::WebView* active_;
+  views::View* active_;
 
   // The margin between the top and the active view. This is used to make the
   // overlay overlap the bookmark bar on the new tab page.
