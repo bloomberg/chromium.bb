@@ -43,8 +43,6 @@ namespace chromeos {
 
 namespace {
 
-const char kLogModule[] = "ManagedNetworkConfigurationHandler";
-
 // These are error strings used for error callbacks. None of these error
 // messages are user-facing: they should only appear in logs.
 const char kInvalidUserSettingsMessage[] = "User settings are invalid.";
@@ -78,7 +76,7 @@ void RunErrorCallback(const std::string& service_path,
                       const std::string& error_name,
                       const std::string& error_message,
                       const network_handler::ErrorCallback& error_callback) {
-  network_event_log::AddEntry(kLogModule, error_name, error_message);
+  NET_LOG_ERROR(error_name, error_message);
   error_callback.Run(
       error_name,
       make_scoped_ptr(

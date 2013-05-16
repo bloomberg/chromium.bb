@@ -26,14 +26,12 @@ namespace chromeos {
 
 namespace {
 
-const char kLogModule[] = "NetworkConnectionHandler";
-
 void InvokeErrorCallback(
     const std::string& service_path,
     const network_handler::ErrorCallback& error_callback,
     const std::string& error_name) {
   network_handler::ShillErrorCallbackFunction(
-      kLogModule, service_path, error_callback, error_name, "Connect Error");
+      service_path, error_callback, error_name, "Connect Error");
 }
 
 bool NetworkMayNeedCredentials(const NetworkState* network) {
@@ -218,7 +216,7 @@ void NetworkConnectionHandler::CallShillConnect(
   // TODO(stevenjb): Remove SetConnectingNetwork and use this class to maintain
   // the connecting network(s) once NetworkLibrary path is eliminated.
   NetworkStateHandler::Get()->SetConnectingNetwork(service_path);
-  network_event_log::AddEntry(kLogModule, "Connect Request", service_path);
+  NET_LOG_EVENT("Connect Request", service_path);
   DBusThreadManager::Get()->GetShillServiceClient()->Connect(
       dbus::ObjectPath(service_path),
       base::Bind(&NetworkConnectionHandler::HandleShillSuccess,
@@ -231,7 +229,7 @@ void NetworkConnectionHandler::CallShillDisconnect(
     const std::string& service_path,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
-  network_event_log::AddEntry(kLogModule, "Disconnect Request", service_path);
+  NET_LOG_EVENT("Disconnect Request", service_path);
   DBusThreadManager::Get()->GetShillServiceClient()->Disconnect(
       dbus::ObjectPath(service_path),
       base::Bind(&NetworkConnectionHandler::HandleShillSuccess,
@@ -291,7 +289,7 @@ void NetworkConnectionHandler::HandleShillSuccess(
   // point (or maybe call it twice, once indicating in-progress, then success
   // or failure).
   pending_requests_.erase(service_path);
-  network_event_log::AddEntry(kLogModule, "Connected", service_path);
+  NET_LOG_EVENT("Connected", service_path);
   success_callback.Run();
 }
 
@@ -303,7 +301,7 @@ void NetworkConnectionHandler::HandleShillFailure(
   pending_requests_.erase(service_path);
   std::string error = "Connect Failure: " + error_name + ": " + error_message;
   network_handler::ShillErrorCallbackFunction(
-      kLogModule, service_path, error_callback, error_name, error_message);
+      service_path, error_callback, error_name, error_message);
 }
 
 }  // namespace chromeos

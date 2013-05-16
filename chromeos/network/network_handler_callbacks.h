@@ -39,8 +39,7 @@ CHROMEOS_EXPORT base::DictionaryValue* CreateErrorData(
 
 // Callback for Shill errors. |path| may be blank if not relevant.
 // Logs an error and calls |error_callback| if not null.
-void ShillErrorCallbackFunction(const std::string& module,
-                                const std::string& path,
+void ShillErrorCallbackFunction(const std::string& path,
                                 const ErrorCallback& error_callback,
                                 const std::string& error_name,
                                 const std::string& error_message);

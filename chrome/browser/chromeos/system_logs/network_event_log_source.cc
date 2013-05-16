@@ -20,7 +20,10 @@ void NetworkEventLogSource::Fetch(const SysLogsSourceCallback& callback) {
   scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);
   const int kMaxNetworkEventsForAboutSystem = 200;
   (*response)[kNetworkEventLogEntry] = network_event_log::GetAsString(
-      network_event_log::OLDEST_FIRST, kMaxNetworkEventsForAboutSystem);
+      network_event_log::OLDEST_FIRST,
+      "time,file,desc",
+      network_event_log::kDefaultLogLevel,
+      kMaxNetworkEventsForAboutSystem);
   callback.Run(response.get());
 }
 

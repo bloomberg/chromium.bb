@@ -11,8 +11,6 @@
 namespace chromeos {
 namespace network_handler {
 
-const char kLogModule[] = "ShillError";
-
 // These are names of fields in the error data dictionary for ErrorCallback.
 const char kErrorName[] = "errorName";
 const char kErrorMessage[] = "errorMessage";
@@ -29,17 +27,16 @@ base::DictionaryValue* CreateErrorData(const std::string& service_path,
   return error_data;
 }
 
-void ShillErrorCallbackFunction(const std::string& module,
-                                const std::string& path,
+void ShillErrorCallbackFunction(const std::string& path,
                                 const ErrorCallback& error_callback,
                                 const std::string& error_name,
                                 const std::string& error_message) {
-  std::string error = "Shill Error in " + module;
+  std::string error = "Shill Error";
   if (!path.empty())
     error += " For " + path;
-  error += ": " + error_name + " : " + error_message;
-  LOG(ERROR) << error;
-  network_event_log::AddEntry(kLogModule, module, error);
+  error += ": " + error_name;
+  NET_LOG_ERROR(error, error_message);
+  LOG(ERROR) << error << " : " << error_message;
   if (error_callback.is_null())
     return;
   scoped_ptr<base::DictionaryValue> error_data(

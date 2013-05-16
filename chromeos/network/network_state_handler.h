@@ -205,8 +205,8 @@ class CHROMEOS_EXPORT NetworkStateHandler
       const std::string& key,
       const base::Value& value) OVERRIDE;
 
-  // Sends NetworkManagerChanged() to observers.
-  virtual void ManagerPropertyChanged() OVERRIDE;
+  // Sends NetworkManagerChanged() to observers and logs an event.
+  virtual void NotifyManagerPropertyChanged() OVERRIDE;
 
   // Called by |shill_property_handler_| when the service or device list has
   // changed and all entries have been updated. This updates the list and

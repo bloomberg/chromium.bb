@@ -23,8 +23,6 @@ namespace chromeos {
 
 namespace {
 
-const char kLogModule[] = "NetworkConfigurationHandler";
-
 NetworkConfigurationHandler* g_configuration_handler_instance = NULL;
 
 // None of these error messages are user-facing: they should only appear in
@@ -148,7 +146,7 @@ void NetworkConfigurationHandler::SetProperties(
       properties,
       base::Bind(&IgnoreObjectPathCallback, callback),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kLogModule, service_path, error_callback));
+                 service_path, error_callback));
 }
 
 void NetworkConfigurationHandler::ClearProperties(
@@ -165,7 +163,7 @@ void NetworkConfigurationHandler::ClearProperties(
                  callback,
                  error_callback),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kLogModule, service_path, error_callback));
+                 service_path, error_callback));
 }
 
 void NetworkConfigurationHandler::CreateConfiguration(
@@ -190,13 +188,13 @@ void NetworkConfigurationHandler::CreateConfiguration(
         properties,
         base::Bind(&RunCreateNetworkCallback, callback),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   kLogModule, "", error_callback));
+                   "", error_callback));
   } else {
     manager->GetService(
         properties,
         base::Bind(&RunCreateNetworkCallback, callback),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   kLogModule, "", error_callback));
+                   "", error_callback));
   }
 }
 
@@ -208,7 +206,7 @@ void NetworkConfigurationHandler::RemoveConfiguration(
       dbus::ObjectPath(service_path),
       callback,
       base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kLogModule, service_path, error_callback));
+                 service_path, error_callback));
 }
 
 NetworkConfigurationHandler::NetworkConfigurationHandler() {

@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -58,7 +59,7 @@ std::string GetHeaderHtmlInfo(int refresh) {
   return output;
 }
 
-std::string GetHeaderEventLogInfo() {
+std::string GetEventLogSection(bool debug) {
   std::string output;
   output.append(WrapWithH3(
       l10n_util::GetStringUTF8(IDS_ABOUT_NETWORK_EVENT_LOG)));
@@ -66,8 +67,14 @@ std::string GetHeaderEventLogInfo() {
                 "border-style:solid; border-width:1px; "
                 "overflow: auto; "
                 "height:200px;\">");
+  network_event_log::LogLevel log_level = debug
+      ? network_event_log::LOG_LEVEL_DEBUG
+      : network_event_log::LOG_LEVEL_EVENT;
+  std::string format = debug ? "file,time,desc,html" : "time,desc,html";
+  // network_event_log::GetAsString does HTML escaping.
   output.append(
-      network_event_log::GetAsString(network_event_log::NEWEST_FIRST, 0));
+      network_event_log::GetAsString(network_event_log::NEWEST_FIRST,
+                                     format, log_level, 0));
   output.append("</pre>");
   return output;
 }
@@ -290,11 +297,19 @@ std::string GetNetworkStateHtmlInfo() {
 namespace about_ui {
 
 std::string AboutNetwork(const std::string& query) {
-  int refresh;
-  base::StringToInt(query, &refresh);
+  base::StringTokenizer tok(query, "/");
+  int refresh = 0;
+  bool debug = false;
+  while (tok.GetNext()) {
+    std::string token = tok.token();
+    if (token == "debug")
+      debug = true;
+    else
+      base::StringToInt(token, &refresh);
+  }
   std::string output = GetHeaderHtmlInfo(refresh);
   if (network_event_log::IsInitialized())
-    output += GetHeaderEventLogInfo();
+    output += GetEventLogSection(debug);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kAshDisableNewNetworkStatusArea)) {
     output += GetNetworkStateHtmlInfo();

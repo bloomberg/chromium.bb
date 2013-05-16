@@ -12,7 +12,7 @@ namespace about_ui {
 
 // Returns the HTML for chrome://network for the chromeos networks.
 // |query| contains any text after 'chrome://network/', used to indicate the
-// refresh interval.
+// refresh interval and whether to include debug log entries.
 std::string AboutNetwork(const std::string& query);
 
 }  // namespace about_ui

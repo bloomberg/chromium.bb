@@ -67,7 +67,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     AddPropertyUpdate(flimflam::kDevicesProperty, device_path);
   }
 
-  virtual void ManagerPropertyChanged() OVERRIDE {
+  virtual void NotifyManagerPropertyChanged() OVERRIDE {
     ++manager_updates_;
   }
 

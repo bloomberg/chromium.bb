@@ -19,8 +19,10 @@
 #include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_certificate.h"
 
-#define ONC_LOG_WARNING(message) NET_LOG_WARNING("ONC", message)
-#define ONC_LOG_ERROR(message) NET_LOG_ERROR("ONC", message)
+#define ONC_LOG_WARNING(message)                                \
+  NET_LOG_DEBUG("ONC Certificate Import Warning", message)
+#define ONC_LOG_ERROR(message)                                  \
+  NET_LOG_ERROR("ONC Certificate Import Error", message)
 
 namespace {
 
@@ -297,8 +299,9 @@ bool CertificateImporter::ParseServerOrCaCertificate(
   }
 
   if (!failures.empty()) {
-    ONC_LOG_ERROR("Error (" + net::ErrorToString(failures[0].net_error) +
-            ") importing " + cert_type + " certificate");
+    ONC_LOG_ERROR(base::StringPrintf("Error ( %s ) importing %s certificate",
+                                     net::ErrorToString(failures[0].net_error),
+                                     cert_type.c_str()));
     return false;
   }
   if (!success) {
@@ -338,8 +341,9 @@ bool CertificateImporter::ParseClientCertificate(
   int import_result = cert_database->ImportFromPKCS12(
       module.get(), decoded_pkcs12, string16(), false, &imported_certs);
   if (import_result != net::OK) {
-    ONC_LOG_ERROR("Unable to import client certificate (error " +
-                  net::ErrorToString(import_result) + ").");
+    ONC_LOG_ERROR(
+        base::StringPrintf("Unable to import client certificate (error %s)",
+                           net::ErrorToString(import_result)));
     return false;
   }
 

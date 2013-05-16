@@ -24,8 +24,6 @@ using chromeos::NetworkStateHandler;
 
 namespace {
 
-const char kLogModule[] = "NetworkStateNotifier";
-
 const int kMinTimeBetweenOutOfCreditsNotifySeconds = 10 * 60;
 
 ash::NetworkObserver::NetworkType GetAshNetworkType(
@@ -158,8 +156,7 @@ void NetworkStateNotifier::NetworkConnectionStateChanged(
   if (network->path() != handler->connecting_network())
     return;  // Only show notifications for explicitly connected networks
 
-  chromeos::network_event_log::AddEntry(
-      kLogModule, "ConnectionFailure", network->path());
+  NET_LOG_EVENT("ConnectionFailure", network->path());
 
   std::vector<string16> no_links;
   ash::NetworkObserver::NetworkType network_type = GetAshNetworkType(network);

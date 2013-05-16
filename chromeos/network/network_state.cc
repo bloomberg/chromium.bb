@@ -16,8 +16,6 @@
 
 namespace {
 
-const char kLogModule[] = "NetworkState";
-
 bool ConvertListValueToStringVector(const base::ListValue& string_list,
                                     std::vector<std::string>* result) {
   for (size_t i = 0; i < string_list.GetSize(); ++i) {
@@ -196,9 +194,8 @@ void NetworkState::UpdateName() {
     std::string valid_ssid = ValidateUTF8(name());
     if (valid_ssid != name()) {
       set_name(valid_ssid);
-      network_event_log::AddEntry(
-          kLogModule, "UpdateName",
-          base::StringPrintf("%s: UTF8: %s", path().c_str(), name().c_str()));
+      NET_LOG_DEBUG("UpdateName", base::StringPrintf(
+          "%s: UTF8: %s", path().c_str(), name().c_str()));
     }
     return;
   }
@@ -210,7 +207,7 @@ void NetworkState::UpdateName() {
   } else {
     std::string desc = base::StringPrintf("%s: Error processing: %s",
                                           path().c_str(), hex_ssid_.c_str());
-    network_event_log::AddEntry(kLogModule, "UpdateName", desc);
+    NET_LOG_DEBUG("UpdateName", desc);
     LOG(ERROR) << desc;
     ssid = name();
   }
@@ -218,9 +215,8 @@ void NetworkState::UpdateName() {
   if (IsStringUTF8(ssid)) {
     if (ssid != name()) {
       set_name(ssid);
-      network_event_log::AddEntry(
-          kLogModule, "UpdateName",
-          base::StringPrintf("%s: UTF8: %s", path().c_str(), name().c_str()));
+      NET_LOG_DEBUG("UpdateName", base::StringPrintf(
+          "%s: UTF8: %s", path().c_str(), name().c_str()));
     }
     return;
   }
@@ -236,10 +232,9 @@ void NetworkState::UpdateName() {
     std::string utf8_ssid;
     if (base::ConvertToUtf8AndNormalize(ssid, encoding, &utf8_ssid)) {
       set_name(utf8_ssid);
-      network_event_log::AddEntry(
-          kLogModule, "UpdateName",
-          base::StringPrintf("%s: Encoding=%s: %s", path().c_str(),
-                             encoding.c_str(), name().c_str()));
+      NET_LOG_DEBUG("UpdateName", base::StringPrintf(
+          "%s: Encoding=%s: %s", path().c_str(),
+          encoding.c_str(), name().c_str()));
       return;
     }
   }
@@ -247,10 +242,9 @@ void NetworkState::UpdateName() {
   // Unrecognized encoding. Only use raw bytes if name_ is empty.
   if (name().empty())
     set_name(ssid);
-  network_event_log::AddEntry(
-      kLogModule, "UpdateName",
-      base::StringPrintf("%s: Unrecognized Encoding=%s: %s", path().c_str(),
-                         encoding.c_str(), name().c_str()));
+  NET_LOG_DEBUG("UpdateName", base::StringPrintf(
+      "%s: Unrecognized Encoding=%s: %s", path().c_str(),
+      encoding.c_str(), name().c_str()));
 }
 
 // static

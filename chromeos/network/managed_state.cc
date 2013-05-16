@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -22,7 +23,7 @@ ManagedState::~ManagedState() {
 }
 
 ManagedState* ManagedState::Create(ManagedType type, const std::string& path) {
-  switch(type) {
+  switch (type) {
     case MANAGED_TYPE_NETWORK:
       return new NetworkState(path);
     case MANAGED_TYPE_DEVICE:
@@ -61,7 +62,7 @@ bool ManagedState::GetBooleanValue(const std::string& key,
                                    bool* out_value) {
   bool new_value;
   if (!value.GetAsBoolean(&new_value)) {
-    LOG(WARNING) << "Failed to parse boolean value for:" << key;
+    NET_LOG_ERROR("Error parsing state value", path() + "." + key);
     return false;
   }
   if (*out_value == new_value)
@@ -75,7 +76,7 @@ bool ManagedState::GetIntegerValue(const std::string& key,
                                    int* out_value) {
   int new_value;
   if (!value.GetAsInteger(&new_value)) {
-    LOG(WARNING) << "Failed to parse integer value for:" << key;
+    NET_LOG_ERROR("Error parsing state value", path() + "." + key);
     return false;
   }
   if (*out_value == new_value)
@@ -89,7 +90,7 @@ bool ManagedState::GetStringValue(const std::string& key,
                                   std::string* out_value) {
   std::string new_value;
   if (!value.GetAsString(&new_value)) {
-    LOG(WARNING) << "Failed to parse string value for:" << key;
+    NET_LOG_ERROR("Error parsing state value", path() + "." + key);
     return false;
   }
   if (*out_value == new_value)
