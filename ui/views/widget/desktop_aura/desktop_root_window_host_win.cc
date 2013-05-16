@@ -608,7 +608,8 @@ bool DesktopRootWindowHostWin::WillProcessWorkAreaChange() const {
 
 int DesktopRootWindowHostWin::GetNonClientComponent(
     const gfx::Point& point) const {
-  return native_widget_delegate_->GetNonClientComponent(point);
+  gfx::Point dip_position = ui::win::ScreenToDIPPoint(point);
+  return native_widget_delegate_->GetNonClientComponent(dip_position);
 }
 
 void DesktopRootWindowHostWin::GetWindowMask(const gfx::Size& size,
