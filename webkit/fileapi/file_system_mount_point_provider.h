@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
-#define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
+#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
+#define WEBKIT_FILEAPI_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
 
 #include <string>
 #include <vector>
@@ -174,4 +174,4 @@ class ExternalFileSystemMountPointProvider
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
+#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_

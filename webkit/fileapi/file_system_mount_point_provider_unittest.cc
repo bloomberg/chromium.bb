@@ -102,8 +102,7 @@ const struct CheckValidPathTest {
 };
 
 // For External filesystem.
-const base::FilePath::CharType kMountPoint[] =
-    FILE_PATH_LITERAL("/tmp/testing");
+const base::FilePath::CharType kMountPoint[] = FILE_PATH_LITERAL("/tmp/testing");
 const base::FilePath::CharType kRootPath[] = FILE_PATH_LITERAL("/tmp");
 const base::FilePath::CharType kVirtualPath[] = FILE_PATH_LITERAL("testing");
 

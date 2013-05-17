@@ -10,10 +10,6 @@
     '../dom_storage/webkit_dom_storage.gypi',
     '../fileapi/webkit_fileapi.gypi',
     '../quota/webkit_quota.gypi',
-
-    # TODO(kinuko): Deprecate this when we have a new target for
-    # webkit_browser.  crbug.com/239710
-    '../browser/webkit_browser.gypi',
   ],
   'targets': [
     {
@@ -41,9 +37,6 @@
         '<@(webkit_dom_storage_sources)',
         '<@(webkit_fileapi_sources)',
         '<@(webkit_quota_sources)',
-        # TODO(kinuko): Deprecate this when we have a new target for
-        # webkit_browser.  crbug.com/239710
-        '<@(webkit_browser_storage_sources)',
       ],
       'conditions': [
         ['chromeos==1', {

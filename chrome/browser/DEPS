@@ -57,11 +57,6 @@ include_rules = [
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
   "+webkit/quota",
   "+webkit/user_agent",
-
-  # TODO(kinuko): Remove all other webkit/* dependencies after we cleaned
-  # up webkit/. crbug.com/239710
-  "+webkit/browser",
-
   # webkit/glue files are listed individually since they aren't conceptually
   # grouped like the other webkit/ files, and can therefore be tackled one at
   # a time.

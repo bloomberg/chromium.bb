@@ -6,7 +6,7 @@
 #define WEBKIT_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 
 namespace fileapi {
 
