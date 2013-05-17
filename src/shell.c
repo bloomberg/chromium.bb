@@ -1465,8 +1465,10 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 
 	if (shsurf->ping_timer->serial == serial) {
 		shsurf->unresponsive = 0;
-		wl_list_for_each(seat, &ec->seat_list, link)
-			end_busy_cursor(shsurf, seat->pointer);
+		wl_list_for_each(seat, &ec->seat_list, link) {
+			if(seat->pointer)
+				end_busy_cursor(shsurf, seat->pointer);
+		}
 		ping_timer_destroy(shsurf);
 	}
 }
