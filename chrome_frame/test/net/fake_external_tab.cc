@@ -37,6 +37,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/process_singleton.h"
+#include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -917,6 +918,11 @@ const char* IEVersionToString(IEVersion version) {
 
 content::BrowserMainParts* FakeContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
+  // Normally this would happen during browser startup, but for tests
+  // we need to trigger creation of Profile-related services.
+  ChromeBrowserMainExtraPartsProfiles::
+      EnsureProfileKeyedServiceFactoriesBuilt();
+
   // We never delete this, as the content module takes ownership.
   //
   // We must not construct this earlier, or we will have out-of-order

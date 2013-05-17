@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class ManagedUserRegistrationService;
+class Profile;
 
 class ManagedUserRegistrationServiceFactory
     : public ProfileKeyedServiceFactory {

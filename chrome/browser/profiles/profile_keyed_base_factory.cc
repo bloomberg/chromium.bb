@@ -5,10 +5,10 @@
 #include "chrome/browser/profiles/profile_keyed_base_factory.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 
 ProfileKeyedBaseFactory::ProfileKeyedBaseFactory(
     const char* name, ProfileDependencyManager* manager)
@@ -32,17 +32,15 @@ content::BrowserContext* ProfileKeyedBaseFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   DCHECK(CalledOnValidThread());
 
-  Profile* profile = static_cast<Profile*>(context);
-
 #ifndef NDEBUG
-  dependency_manager_->AssertProfileWasntDestroyed(profile);
+  dependency_manager_->AssertProfileWasntDestroyed(context);
 #endif
 
   // Safe default for the Incognito mode: no service.
-  if (profile->IsOffTheRecord())
+  if (context->IsOffTheRecord())
     return NULL;
 
-  return profile;
+  return context;
 }
 
 void ProfileKeyedBaseFactory::RegisterUserPrefsOnProfile(

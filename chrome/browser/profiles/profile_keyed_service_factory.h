@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile_keyed_base_factory.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
-class Profile;
 class ProfileDependencyManager;
 class ProfileKeyedService;
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class ChromeToMobileService;
+class Profile;
 
 class ChromeToMobileServiceFactory : public ProfileKeyedServiceFactory {
  public:

@@ -35,6 +35,7 @@
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -405,6 +406,11 @@ class LoginUtilsTest : public testing::Test,
   }
 
   void PrepareProfile(const std::string& username) {
+    // Normally this would happen during browser startup, but for tests
+    // we need to trigger creation of Profile-related services.
+    ChromeBrowserMainExtraPartsProfiles::
+        EnsureProfileKeyedServiceFactoriesBuilt();
+
     DeviceSettingsTestHelper device_settings_test_helper;
     DeviceSettingsService::Get()->SetSessionManager(
         &device_settings_test_helper, new MockOwnerKeyUtil());
