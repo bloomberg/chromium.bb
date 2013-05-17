@@ -696,7 +696,9 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, FileIO) {
 }
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileRef)
+// OutOfProcessPPAPITest.FileRef times out fairly often.
+// http://crbug.com/241646
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_FileRef)
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef) {
   RunTestViaHTTP(
       LIST_TEST(FileRef_Create)
