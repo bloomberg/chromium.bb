@@ -75,6 +75,8 @@ public:
     using RefCounted<WebKitMediaSource>::ref;
     using RefCounted<WebKitMediaSource>::deref;
 
+    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
+
 private:
     explicit WebKitMediaSource(ScriptExecutionContext*);
 

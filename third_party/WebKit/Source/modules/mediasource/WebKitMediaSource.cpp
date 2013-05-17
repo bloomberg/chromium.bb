@@ -331,4 +331,18 @@ void WebKitMediaSource::scheduleEvent(const AtomicString& eventName)
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
+void WebKitMediaSource::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+{
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
+    ScriptWrappable::reportMemoryUsage(memoryObjectInfo);
+    ActiveDOMObject::reportMemoryUsage(memoryObjectInfo);
+    info.addMember(m_eventTargetData, "eventTargetData");
+    info.addMember(m_readyState, "readyState");
+    info.addMember(m_private, "private");
+    info.addMember(m_sourceBuffers, "sourceBuffers");
+    info.addMember(m_activeSourceBuffers, "activeSourceBuffers");
+    info.addMember(m_asyncEventQueue, "asyncEventQueue");
+}
+
+
 } // namespace WebCore
