@@ -85,7 +85,10 @@
   <interface name="wl_subsurface" version="1">
     <description summary="sub-surface interface to a wl_surface">
       An additional interface to a wl_surface object, which has been
-      made a sub-surface. A sub-surface has one parent surface.
+      made a sub-surface. A sub-surface has one parent surface. A
+      sub-surface's size and position are not limited to that of the parent.
+      Particularly, a sub-surface is not automatically clipped to its
+      parent's area.
 
       A sub-surface becomes mapped, when a non-NULL wl_buffer is applied
       and the parent surface is mapped. The order of which one happens
@@ -97,8 +100,8 @@
       depends on the sub-surface's mode. The possible modes are
       synchronized and desynchronized, see methods
       wl_subsurface.set_sync and wl_subsurface.set_desync. Synchronized
-      mode caches wl_surface state to be applied on the next parent
-      surface's commit, and desynchronized mode applies the pending
+      mode caches the wl_surface state to be applied when the parent's
+      state gets applied, and desynchronized mode applies the pending
       wl_surface state directly. A sub-surface is initially in the
       synchronized mode.
 
@@ -111,15 +114,15 @@
       wl_surface state is applied, regardless of the sub-surface's mode.
       As the exception, set_sync and set_desync are effective immediately.
 
-      The main surface can thought to be always in desynchronized mode,
+      The main surface can be thought to be always in desynchronized mode,
       since it does not have a parent in the sub-surfaces sense.
 
       Even if a sub-surface is in desynchronized mode, it will behave as
       in synchronized mode, if its parent surface behaves as in
       synchronized mode. This rule is applied recursively throughout the
       tree of surfaces. This means, that one can set a sub-surface into
-      synchronized mode, and then assume that all its child sub-surfaces
-      are synchronized, too, without explicitly setting them.
+      synchronized mode, and then assume that all its child and grand-child
+      sub-surfaces are synchronized, too, without explicitly setting them.
 
       If the wl_surface associated with the wl_subsurface is destroyed, the
       wl_subsurface object becomes inert. Note, that destroying either object
@@ -151,7 +154,9 @@
       <description summary="reposition the sub-surface">
 	This schedules a sub-surface position change.
 	The sub-surface will be moved so, that its origin (top-left
-	corner pixel) will be at the location x, y of the parent surface.
+	corner pixel) will be at the location x, y of the parent surface
+	coordinate system. The coordinates are not restricted to the parent
+	surface area. Negative values are allowed.
 
 	The next wl_surface.commit on the parent surface will reset
 	the sub-surface's position to the scheduled coordinates.
@@ -174,6 +179,9 @@
 	The z-order is double-buffered state, and will be applied on the
 	next commit of the parent surface.
 	See wl_surface.commit and wl_subcompositor.get_subsurface.
+
+	A new sub-surface is initially added as the top-most in the stack
+	of its siblings and parent.
       </description>
 
       <arg name="sibling" type="object" interface="wl_surface"
@@ -198,9 +206,8 @@
 	In synchronized mode, wl_surface.commit on a sub-surface will
 	accumulate the committed state in a cache, but the state will
 	not be applied and hence will not change the compositor output.
-	The cached state is applied to the sub-surface when
-	wl_surface.commit is called on the parent surface, after the
-	parent surface's own state is applied. This ensures atomic
+	The cached state is applied to the sub-surface immediately after
+	the parent surface's state is applied. This ensures atomic
 	updates of the parent and all its synchronized sub-surfaces.
 	Applying the cached state will invalidate the cache, so further
 	parent surface commits do not (re-)apply old state.
