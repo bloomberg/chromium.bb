@@ -45,21 +45,15 @@ void EventTracer::initialize()
     traceSamplingState1 = WebKit::Platform::current()->getTraceSamplingState(1);
     traceSamplingState2 = WebKit::Platform::current()->getTraceSamplingState(2);
 }
-    
+
 const unsigned char* EventTracer::getTraceCategoryEnabledFlag(const char* categoryName)
 {
     return WebKit::Platform::current()->getTraceCategoryEnabledFlag(categoryName);
 }
-    
-void EventTracer::addTraceEvent(char phase,
-                                     const unsigned char* categoryEnabledFlag,
-                                     const char* name,
-                                     unsigned long long id,
-                                     int numArgs,
-                                     const char** argNames,
-                                     const unsigned char* argTypes,
-                                     const unsigned long long* argValues,
-                                     unsigned char flags)
+
+void EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
+    const char* name, unsigned long long id, int numArgs, const char** argNames,
+    const unsigned char* argTypes, const unsigned long long* argValues, unsigned char flags)
 {
     return WebKit::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, flags);
 }
