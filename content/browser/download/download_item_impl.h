@@ -104,6 +104,7 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual DownloadInterruptReason GetLastReason() const OVERRIDE;
   virtual bool IsPaused() const OVERRIDE;
   virtual bool IsTemporary() const OVERRIDE;
+  virtual bool CanResume() const OVERRIDE;
   virtual bool IsPartialDownload() const OVERRIDE;
   virtual bool IsInProgress() const OVERRIDE;
   virtual bool IsCancelled() const OVERRIDE;

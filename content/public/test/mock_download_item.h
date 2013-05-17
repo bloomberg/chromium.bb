@@ -36,6 +36,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
   MOCK_CONST_METHOD0(IsPaused, bool());
   MOCK_CONST_METHOD0(IsTemporary, bool());
+  MOCK_CONST_METHOD0(CanResume, bool());
   MOCK_CONST_METHOD0(IsPartialDownload, bool());
   MOCK_CONST_METHOD0(IsInProgress, bool());
   MOCK_CONST_METHOD0(IsCancelled, bool());

@@ -158,6 +158,11 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual bool IsPaused() const = 0;
   virtual bool IsTemporary() const = 0;
 
+  // Returns true if the download can be resumed. A download can be resumed if
+  // an in-progress download was paused or if an interrupted download requires
+  // user-interaction to resume.
+  virtual bool CanResume() const = 0;
+
   //    Convenience routines for accessing GetState() results conceptually -----
 
   // Returns true if the download needs more data.

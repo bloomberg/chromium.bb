@@ -78,6 +78,11 @@ static void DownloadFileCancel(scoped_ptr<DownloadFile> download_file) {
   download_file->Cancel();
 }
 
+bool IsDownloadResumptionEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableDownloadResumption);
+}
+
 }  // namespace
 
 const char DownloadItem::kEmptyFileHash[] = "";
@@ -472,6 +477,24 @@ bool DownloadItemImpl::IsPaused() const {
 
 bool DownloadItemImpl::IsTemporary() const {
   return is_temporary_;
+}
+
+bool DownloadItemImpl::CanResume() const {
+  if (IsInProgress() && IsPaused())
+    return true;
+
+  if (state_ != INTERRUPTED_INTERNAL)
+    return false;
+
+  // Downloads that don't have a WebContents should still be resumable, but this
+  // isn't currently the case. See ResumeInterruptedDownload().
+  if (!GetWebContents())
+    return false;
+
+  ResumeMode resume_mode = GetResumeMode();
+  return IsDownloadResumptionEnabled() &&
+      (resume_mode == RESUME_MODE_USER_RESTART ||
+       resume_mode == RESUME_MODE_USER_CONTINUE);
 }
 
 // TODO(rdsmith): Figure out whether or not we want this probe routine
@@ -1345,11 +1368,9 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
   // Cancel (delete file) if we're going to restart; no point in leaving
   // data around we aren't going to use.  Also cancel if resumption isn't
   // enabled for the same reason.
-  bool resumption_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDownloadResumption);
   ReleaseDownloadFile(resume_mode == RESUME_MODE_IMMEDIATE_RESTART ||
                       resume_mode == RESUME_MODE_USER_RESTART ||
-                      !resumption_enabled);
+                      !IsDownloadResumptionEnabled());
 
   // Reset all data saved, as even if we did save all the data we're going
   // to go through another round of downloading when we resume.
