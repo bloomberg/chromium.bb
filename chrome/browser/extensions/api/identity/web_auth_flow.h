@@ -58,6 +58,8 @@ class WebAuthFlow : public content::NotificationObserver,
     // Called on redirects and other navigations to see if the URL should stop
     // the flow.
     virtual void OnAuthFlowURLChange(const GURL& redirect_url) = 0;
+    // Called when the title of the current page changes.
+    virtual void OnAuthFlowTitleChange(const std::string& title) = 0;
 
    protected:
     virtual ~Delegate() {}

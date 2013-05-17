@@ -31,6 +31,7 @@ const char kOAuthRevokeTokenUrlSuffix[] = "/AuthSubRevokeToken";
 // API calls from accounts.google.com (LSO)
 const char kGetOAuthTokenUrlSuffix[] = "/o/oauth/GetOAuthToken/";
 const char kClientLoginToOAuth2UrlSuffix[] = "/o/oauth2/programmatic_auth";
+const char kOAuth2AuthUrlSuffix[] = "/o/oauth2/auth";
 const char kOAuth2RevokeUrlSuffix[] = "/o/oauth2/revoke";
 const char kOAuth2TokenUrlSuffix[] = "/o/oauth2/token";
 const char kClientOAuthUrlSuffix[] = "/ClientOAuth";
@@ -116,6 +117,7 @@ GaiaUrls::GaiaUrls() {
   get_oauth_token_url_ = lso_origin_url_ + kGetOAuthTokenUrlSuffix;
   std::string client_login_to_oauth2_url = lso_origin_url_ +
                                            kClientLoginToOAuth2UrlSuffix;
+  oauth2_auth_url_ = lso_origin_url_ + kOAuth2AuthUrlSuffix;
   std::string oauth2_token_url = lso_origin_url_ + kOAuth2TokenUrlSuffix;
   oauth2_revoke_url_ = lso_origin_url_ + kOAuth2RevokeUrlSuffix;
 
@@ -227,6 +229,10 @@ const std::string& GaiaUrls::oauth2_chrome_client_secret() {
 
 const std::string& GaiaUrls::client_login_to_oauth2_url() {
   return client_login_to_oauth2_url_;
+}
+
+const std::string& GaiaUrls::oauth2_auth_url() {
+  return oauth2_auth_url_;
 }
 
 const std::string& GaiaUrls::oauth2_token_url() {

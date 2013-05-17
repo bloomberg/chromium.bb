@@ -11,22 +11,23 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 
-class GetAuthTokenFunctionTest;
-class MockGetAuthTokenFunction;
 class GoogleServiceAuthError;
 class Profile;
 class SigninManagerBase;
 
 namespace extensions {
+
+class GetAuthTokenFunctionTest;
+class MockGetAuthTokenFunction;
 
 namespace identity_constants {
 extern const char kInvalidClientId[];
@@ -58,7 +59,7 @@ extern const char kOffTheRecord[];
 // new login token, there is a sign-in flow. If that flow completes
 // successfully, getAuthToken proceeds to the non-interactive flow.
 class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
-                                     public ExtensionInstallPrompt::Delegate,
+                                     public GaiaWebAuthFlow::Delegate,
                                      public IdentityMintRequestQueue::Request,
                                      public OAuth2MintTokenFlow::Delegate,
                                      public IdentitySigninFlow::Delegate {
@@ -102,9 +103,12 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   virtual void SigninSuccess(const std::string& token) OVERRIDE;
   virtual void SigninFailed() OVERRIDE;
 
-  // ExtensionInstallPrompt::Delegate implementation:
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+  // GaiaWebAuthFlow::Delegate implementation:
+  virtual void OnGaiaFlowFailure(GaiaWebAuthFlow::Failure failure,
+                                 GoogleServiceAuthError service_error,
+                                 const std::string& oauth_error) OVERRIDE;
+  virtual void OnGaiaFlowCompleted(const std::string& access_token,
+                                   const std::string& expiration) OVERRIDE;
 
   // Starts a mint token request to GAIA.
   void StartGaiaRequest(OAuth2MintTokenFlow::Mode mode);
@@ -119,6 +123,10 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   // Checks if there is a master login token to mint tokens for the extension.
   virtual bool HasLoginToken() const;
 
+  // Maps OAuth2 protocol errors to an error message returned to the
+  // developer in chrome.runtime.lastError.
+  std::string MapOAuth2ErrorToDescription(const std::string& error);
+
   bool should_prompt_for_scopes_;
   IdentityMintRequestQueue::MintType mint_token_flow_type_;
   scoped_ptr<OAuth2MintTokenFlow> mint_token_flow_;
@@ -128,7 +136,7 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   // When launched in interactive mode, and if there is no existing grant,
   // a permissions prompt will be popped up to the user.
   IssueAdviceInfo issue_advice_;
-  scoped_ptr<ExtensionInstallPrompt> install_ui_;
+  scoped_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
   scoped_ptr<IdentitySigninFlow> signin_flow_;
 };
 
@@ -163,6 +171,7 @@ class IdentityLaunchWebAuthFlowFunction : public AsyncExtensionFunction,
   // WebAuthFlow::Delegate implementation.
   virtual void OnAuthFlowFailure(WebAuthFlow::Failure failure) OVERRIDE;
   virtual void OnAuthFlowURLChange(const GURL& redirect_url) OVERRIDE;
+  virtual void OnAuthFlowTitleChange(const std::string& title) OVERRIDE {}
 
   // Helper to initialize final URL prefix.
   void InitFinalRedirectURLPrefix(const std::string& extension_id);

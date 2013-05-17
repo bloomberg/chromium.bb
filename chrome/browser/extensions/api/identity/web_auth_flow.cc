@@ -5,11 +5,13 @@
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 
 #include "base/location.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -72,6 +74,10 @@ void WebAuthFlow::Start() {
       this,
       content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       content::Source<WebContents>(contents_));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+      content::Source<WebContents>(contents_));
 
   controller->LoadURL(
       provider_url_,
@@ -127,6 +133,15 @@ void WebAuthFlow::Observe(int type,
           content::Details<ResourceRedirectDetails>(details).ptr();
       if (redirect_details != NULL)
         BeforeUrlLoaded(redirect_details->new_url);
+    }
+    break;
+    case content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED: {
+      std::pair<content::NavigationEntry*, bool>* title =
+          content::Details<
+            std::pair<content::NavigationEntry*, bool> >(details).ptr();
+
+      if (title->first)
+        delegate_->OnAuthFlowTitleChange(UTF16ToUTF8(title->first->GetTitle()));
     }
     break;
     default:

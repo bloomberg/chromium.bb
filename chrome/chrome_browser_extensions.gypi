@@ -235,6 +235,8 @@
         'browser/extensions/api/identity/experimental_identity_api.h',
         'browser/extensions/api/identity/experimental_web_auth_flow.cc',
         'browser/extensions/api/identity/experimental_web_auth_flow.h',
+        'browser/extensions/api/identity/gaia_web_auth_flow.cc',
+        'browser/extensions/api/identity/gaia_web_auth_flow.h',
         'browser/extensions/api/identity/identity_api.cc',
         'browser/extensions/api/identity/identity_api.h',
         'browser/extensions/api/identity/identity_mint_queue.cc',

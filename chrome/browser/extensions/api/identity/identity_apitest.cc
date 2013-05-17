@@ -193,25 +193,32 @@ ProfileKeyedService* IdentityAPITestFactory(content::BrowserContext* profile) {
 class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
  public:
   MockGetAuthTokenFunction() : login_ui_result_(true),
-                               install_ui_result_(false),
+                               scope_ui_result_(true),
                                login_ui_shown_(false),
-                               install_ui_shown_(false) {
+                               scope_ui_shown_(false) {
   }
 
   void set_login_ui_result(bool result) {
     login_ui_result_ = result;
   }
 
-  void set_install_ui_result(bool result) {
-    install_ui_result_ = result;
+  void set_scope_ui_failure(GaiaWebAuthFlow::Failure failure) {
+    scope_ui_result_ = false;
+    scope_ui_failure_ = failure;
+  }
+
+  void set_scope_ui_oauth_error(const std::string& oauth_error) {
+    scope_ui_result_ = false;
+    scope_ui_failure_ = GaiaWebAuthFlow::OAUTH_ERROR;
+    scope_ui_oauth_error_ = oauth_error;
   }
 
   bool login_ui_shown() const {
     return login_ui_shown_;
   }
 
-  bool install_ui_shown() const {
-    return install_ui_shown_;
+  bool scope_ui_shown() const {
+    return scope_ui_shown_;
   }
 
   virtual void ShowLoginPopup() OVERRIDE {
@@ -225,12 +232,17 @@ class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
 
   virtual void ShowOAuthApprovalDialog(
       const IssueAdviceInfo& issue_advice) OVERRIDE {
-    install_ui_shown_ = true;
-    // Call InstallUIProceed or InstallUIAbort based on the flag.
-    if (install_ui_result_)
-      InstallUIProceed();
-    else
-      InstallUIAbort(true);
+    scope_ui_shown_ = true;
+
+    if (scope_ui_result_) {
+      OnGaiaFlowCompleted(kAccessToken, "3600");
+    } else if (scope_ui_failure_ == GaiaWebAuthFlow::SERVICE_AUTH_ERROR) {
+      GoogleServiceAuthError error(GoogleServiceAuthError::CONNECTION_FAILED);
+      OnGaiaFlowFailure(scope_ui_failure_, error, "");
+    } else {
+      GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+      OnGaiaFlowFailure(scope_ui_failure_, error, scope_ui_oauth_error_);
+    }
   }
 
   MOCK_CONST_METHOD0(HasLoginToken, bool());
@@ -240,9 +252,11 @@ class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
  private:
   ~MockGetAuthTokenFunction() {}
   bool login_ui_result_;
-  bool install_ui_result_;
+  bool scope_ui_result_;
+  GaiaWebAuthFlow::Failure scope_ui_failure_;
+  std::string scope_ui_oauth_error_;
   bool login_ui_shown_;
-  bool install_ui_shown_;
+  bool scope_ui_shown_;
 };
 
 class MockQueuedMintRequest : public IdentityMintRequestQueue::Request {
@@ -290,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{}]", browser());
   EXPECT_EQ(std::string(errors::kInvalidClientId), error);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -301,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{}]", browser());
   EXPECT_EQ(std::string(errors::kInvalidScopes), error);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -313,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{}]", browser());
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -329,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{}]", browser());
   EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -346,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{}]", browser());
   EXPECT_EQ(std::string(errors::kNoGrant), error);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_ADVICE,
@@ -367,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{}]", browser());
   EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -387,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             id_api()->GetCachedToken(extension->id(),
                                      oauth2_info.scopes).status());
@@ -403,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
   EXPECT_TRUE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -420,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
   EXPECT_TRUE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -433,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
   EXPECT_TRUE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -450,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_TRUE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -469,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_TRUE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -482,65 +496,34 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
       TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
   EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
-  func->set_install_ui_result(false);
+  func->set_scope_ui_failure(GaiaWebAuthFlow::WINDOW_CLOSED);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_EQ(std::string(errors::kUserRejected), error);
   EXPECT_TRUE(func->login_ui_shown());
-  EXPECT_TRUE(func->install_ui_shown());
+  EXPECT_TRUE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
-                       InteractiveLoginSuccessApprovalDoneMintFailure) {
-  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
-  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
-  EXPECT_CALL(*func.get(), HasLoginToken())
-      .WillOnce(Return(false));
-  func->set_login_ui_result(true);
-  TestOAuth2MintTokenFlow* flow1 = new TestOAuth2MintTokenFlow(
-      TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
-  TestOAuth2MintTokenFlow* flow2 = new TestOAuth2MintTokenFlow(
-      TestOAuth2MintTokenFlow::MINT_TOKEN_FAILURE, func.get());
-  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_))
-      .WillOnce(Return(flow1))
-      .WillOnce(Return(flow2));
-
-  func->set_install_ui_result(true);
-  std::string error = utils::RunFunctionAndReturnError(
-      func.get(), "[{\"interactive\": true}]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
-  EXPECT_TRUE(func->login_ui_shown());
-  EXPECT_TRUE(func->install_ui_shown());
-}
-
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
-                       InteractiveLoginSuccessApprovalDoneMintSuccess) {
-  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+                       InteractiveLoginSuccessApprovalSuccess) {
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
   func->set_extension(extension);
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
   EXPECT_CALL(*func.get(), HasLoginToken())
       .WillOnce(Return(false));
   func->set_login_ui_result(true);
-  TestOAuth2MintTokenFlow* flow1 = new TestOAuth2MintTokenFlow(
+  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
       TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
-  TestOAuth2MintTokenFlow* flow2 = new TestOAuth2MintTokenFlow(
-      TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
   EXPECT_CALL(*func.get(), CreateMintTokenFlow(_))
-      .WillOnce(Return(flow1))
-      .WillOnce(Return(flow2));
+      .WillOnce(Return(flow));
 
-  func->set_install_ui_result(true);
   scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func.get(), "[{\"interactive\": true}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_TRUE(func->login_ui_shown());
-  EXPECT_TRUE(func->install_ui_shown());
-  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
-            id_api()->GetCachedToken(extension->id(),
-                                     oauth2_info.scopes).status());
+  EXPECT_TRUE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -552,58 +535,102 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
       TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
   EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
-  func->set_install_ui_result(false);
+  func->set_scope_ui_failure(GaiaWebAuthFlow::WINDOW_CLOSED);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_EQ(std::string(errors::kUserRejected), error);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_TRUE(func->install_ui_shown());
+  EXPECT_TRUE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
-                       InteractiveApprovalDoneMintSuccess) {
+                       InteractiveApprovalInvalidRedirect) {
   scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
   func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
   EXPECT_CALL(*func.get(), HasLoginToken())
       .WillOnce(Return(true));
-  TestOAuth2MintTokenFlow* flow1 = new TestOAuth2MintTokenFlow(
+  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
       TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
-  TestOAuth2MintTokenFlow* flow2 = new TestOAuth2MintTokenFlow(
-      TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
-  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_))
-      .WillOnce(Return(flow1))
-      .WillOnce(Return(flow2));
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
+  func->set_scope_ui_failure(GaiaWebAuthFlow::INVALID_REDIRECT);
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  EXPECT_EQ(std::string(errors::kInvalidRedirect), error);
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_TRUE(func->scope_ui_shown());
+}
 
-  func->set_install_ui_result(true);
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveApprovalConnectionFailure) {
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
+  EXPECT_CALL(*func.get(), HasLoginToken())
+      .WillOnce(Return(true));
+  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
+      TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
+  func->set_scope_ui_failure(GaiaWebAuthFlow::SERVICE_AUTH_ERROR);
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_TRUE(func->scope_ui_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveApprovalOAuthErrors) {
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+
+  std::map<std::string, std::string> error_map;
+  error_map.insert(std::make_pair("access_denied", errors::kUserRejected));
+  error_map.insert(std::make_pair("invalid_scope", errors::kInvalidScopes));
+  error_map.insert(std::make_pair(
+      "unmapped_error", std::string(errors::kAuthFailure) + "unmapped_error"));
+
+  for (std::map<std::string, std::string>::const_iterator
+           it = error_map.begin();
+       it != error_map.end();
+       ++it) {
+    scoped_refptr<MockGetAuthTokenFunction> func(
+        new MockGetAuthTokenFunction());
+    func->set_extension(extension);
+    EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+    TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
+        TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
+    ON_CALL(*func.get(), CreateMintTokenFlow(_)).WillByDefault(Return(flow));
+    func->set_scope_ui_oauth_error(it->first);
+    std::string error = utils::RunFunctionAndReturnError(
+        func.get(), "[{\"interactive\": true}]", browser());
+    EXPECT_EQ(it->second, error);
+    EXPECT_FALSE(func->login_ui_shown());
+    EXPECT_TRUE(func->scope_ui_shown());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveApprovalSuccess) {
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  func->set_extension(extension);
+  EXPECT_CALL(*func.get(), HasLoginToken())
+      .WillOnce(Return(true));
+  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
+      TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_))
+      .WillOnce(Return(flow));
+
   scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func.get(), "[{\"interactive\": true}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_TRUE(func->install_ui_shown());
-}
+  EXPECT_TRUE(func->scope_ui_shown());
 
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
-                       InteractiveApprovalDoneMintBadCredentials) {
-  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
-  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
-  EXPECT_CALL(*func.get(), HasLoginToken())
-      .WillOnce(Return(true));
-  TestOAuth2MintTokenFlow* flow1 = new TestOAuth2MintTokenFlow(
-      TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
-  TestOAuth2MintTokenFlow* flow2 = new TestOAuth2MintTokenFlow(
-      TestOAuth2MintTokenFlow::MINT_TOKEN_BAD_CREDENTIALS, func.get());
-  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_))
-      .WillOnce(Return(flow1))
-      .WillOnce(Return(flow2));
-
-  func->set_install_ui_result(true);
-  std::string error = utils::RunFunctionAndReturnError(
-      func.get(), "[{\"interactive\": true}]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
-  EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_TRUE(func->install_ui_shown());
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
+            id_api()->GetCachedToken(extension->id(),
+                                     oauth2_info.scopes).status());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveQueue) {
@@ -645,7 +672,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveQueue) {
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueue) {
@@ -677,15 +704,10 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueue) {
   RunFunctionAsync(func, "[{\"interactive\": true}]");
   // Verify that we have fetched the login token and run the first flow.
   testing::Mock::VerifyAndClearExpectations(func);
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 
-  // The UI will be displayed and the second flow will be created
-  // after the first queued request clears.
-  func->set_install_ui_result(true);
-  TestOAuth2MintTokenFlow* flow2 = new TestOAuth2MintTokenFlow(
-      TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
-  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow2));
-
+  // The UI will be displayed and a token retrieved after the first
+  // queued request clears.
   queue->RequestComplete(type, extension->id(), scopes, &queued_request);
 
   scoped_ptr<base::Value> value(WaitForSingleResult(func));
@@ -693,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueue) {
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_TRUE(func->install_ui_shown());
+  EXPECT_TRUE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -724,7 +746,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{}]", browser());
   EXPECT_EQ(std::string(errors::kNoGrant), error);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 
   queue->RequestComplete(type, extension->id(), scopes, &queued_request);
 }
@@ -750,7 +772,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -772,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{}]", browser());
   EXPECT_EQ(std::string(errors::kNoGrant), error);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -816,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_FALSE(func->install_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -836,22 +858,18 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_CALL(*func.get(), HasLoginToken())
       .WillOnce(Return(false));
   func->set_login_ui_result(true);
-  TestOAuth2MintTokenFlow* flow1 = new TestOAuth2MintTokenFlow(
+  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
       TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
-  TestOAuth2MintTokenFlow* flow2 = new TestOAuth2MintTokenFlow(
-      TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
   EXPECT_CALL(*func.get(), CreateMintTokenFlow(_))
-      .WillOnce(Return(flow1))
-      .WillOnce(Return(flow2));
+      .WillOnce(Return(flow));
 
-  func->set_install_ui_result(true);
   scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func.get(), "[{\"interactive\": true}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_TRUE(func->login_ui_shown());
-  EXPECT_TRUE(func->install_ui_shown());
+  EXPECT_TRUE(func->scope_ui_shown());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             id_api()->GetCachedToken(extension->id(),
                                      oauth2_info.scopes).status());
