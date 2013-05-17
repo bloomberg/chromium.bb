@@ -2110,20 +2110,21 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     // Initialize cached results for this test case.
-    provider_->default_verbatim_relevance_ = cases[i].verbatim_relevance;
-    provider_->default_navigation_results_.clear();
-    provider_->default_suggest_results_.clear();
+    provider_->default_results_.verbatim_relevance =
+        cases[i].verbatim_relevance;
+    provider_->default_results_.navigation_results.clear();
+    provider_->default_results_.suggest_results.clear();
     for (size_t j = 0; j < ARRAYSIZE_UNSAFE(cases[i].results); ++j) {
       const std::string& suggestion = cases[i].results[j].suggestion;
       if (suggestion == kNotApplicable)
         break;
       if (cases[i].results[j].is_navigation_result) {
-        provider_->default_navigation_results_.push_back(
+        provider_->default_results_.navigation_results.push_back(
             SearchProvider::NavigationResult(
                 *provider_, GURL(suggestion), string16(),
                 false, cases[i].results[j].relevance));
       } else {
-        provider_->default_suggest_results_.push_back(
+        provider_->default_results_.suggest_results.push_back(
             SearchProvider::SuggestResult(ASCIIToUTF16(suggestion), false,
                                           cases[i].results[j].relevance));
       }
@@ -2136,13 +2137,13 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
 
     // Check cached results.
     SearchProvider::SuggestResults::const_iterator sug_it =
-        provider_->default_suggest_results_.begin();
+        provider_->default_results_.suggest_results.begin();
     const SearchProvider::SuggestResults::const_iterator sug_end =
-        provider_->default_suggest_results_.end();
+        provider_->default_results_.suggest_results.end();
     SearchProvider::NavigationResults::const_iterator nav_it =
-        provider_->default_navigation_results_.begin();
+        provider_->default_results_.navigation_results.begin();
     const SearchProvider::NavigationResults::const_iterator nav_end =
-        provider_->default_navigation_results_.end();
+        provider_->default_results_.navigation_results.end();
     for (size_t j = 0; j < ARRAYSIZE_UNSAFE(cases[i].results); ++j) {
       const std::string& suggestion = cases[i].results[j].suggestion;
       if (suggestion == kNotApplicable)

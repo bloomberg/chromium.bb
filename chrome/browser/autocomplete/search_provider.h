@@ -279,6 +279,37 @@ class SearchProvider : public AutocompleteProvider,
 
   typedef std::vector<SuggestResult> SuggestResults;
   typedef std::vector<NavigationResult> NavigationResults;
+
+  // A simple structure bundling most of the information (including
+  // both SuggestResults and NavigationResults) returned by a call to
+  // the suggest server.
+  struct Results {
+    Results();
+    ~Results();
+
+    // Clears |suggest_results| and |navigation_results| and resets
+    // |has_suggested_relevance| and |verbatim_relevance| to default
+    // values (false and -1 (implies unset), respectively).
+    void Clear();
+
+    // Query suggestions sorted by relevance score.
+    SuggestResults suggest_results;
+
+    // Navigational suggestions sorted by relevance score.
+    NavigationResults navigation_results;
+
+    // Flag indicating server supplied relevance score.
+    bool has_suggested_relevance;
+
+    // The server supplied verbatim relevance scores. Negative values
+    // indicate that there is no suggested score; a value of 0
+    // suppresses the verbatim result.
+    int verbatim_relevance;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Results);
+  };
+
   typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
   typedef std::map<string16, AutocompleteMatch> MatchMap;
 
@@ -307,10 +338,6 @@ class SearchProvider : public AutocompleteProvider,
 
   // Clears the current results.
   void ClearAllResults();
-  static void ClearResults(SuggestResults* suggest_results,
-                           NavigationResults* navigation_results,
-                           int* verbatim_relevance,
-                           bool* has_suggested_relevance);
 
   // Removes non-inlineable results until either the top result can inline
   // autocomplete the current input or verbatim outscores the top result.
@@ -467,25 +494,9 @@ class SearchProvider : public AutocompleteProvider,
   scoped_ptr<net::URLFetcher> keyword_fetcher_;
   scoped_ptr<net::URLFetcher> default_fetcher_;
 
-  // Suggestions returned by the Suggest server for the input text, sorted
-  // by relevance score.
-  SuggestResults keyword_suggest_results_;
-  SuggestResults default_suggest_results_;
-
-  // Navigational suggestions returned by the server, sorted by relevance
-  // score.
-  NavigationResults keyword_navigation_results_;
-  NavigationResults default_navigation_results_;
-
-  // Flags indicating server supplied relevance scores.
-  bool has_default_suggested_relevance_;
-  bool has_keyword_suggested_relevance_;
-
-  // The server supplied verbatim relevance scores. Negative values
-  // indicate that there is no suggested score; a value of 0
-  // suppresses the verbatim result.
-  int default_verbatim_relevance_;
-  int keyword_verbatim_relevance_;
+  // Results from the default and keyword search providers.
+  Results default_results_;
+  Results keyword_results_;
 
   // Has FinalizeInstantQuery been invoked since the last |Start|?
   bool instant_finalized_;
