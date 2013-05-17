@@ -53,6 +53,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -1264,12 +1266,29 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
                                              GURL* alternate_nav_url) const {
   DCHECK(match != NULL);
 
-  // If there's temporary text and it has been set by Instant, we won't find it
-  // in the popup model, so create the match based on the type Instant told us
-  // (SWYT for queries and UWYT for URLs). We do this instead of classifying the
-  // text ourselves because the text may look like a URL, but Instant may expect
-  // it to be a search (e.g.: a query for "amazon.com").
-  if (is_temporary_text_set_by_instant_) {
+  if (!user_input_in_progress_ &&
+      view_->toolbar_model()->GetSearchTermsType() !=
+          ToolbarModel::NO_SEARCH_TERMS) {
+    // Any time the user hits enter on the unchanged omnibox, we should reload.
+    // When we're not extracting search terms, AcceptInput() will take care of
+    // this (see code referring to PAGE_TRANSITION_RELOAD there), but when we're
+    // extracting search terms, the conditionals there won't fire, so we
+    // explicitly set up a match that will reload here.
+
+    // It's important that we fetch the current visible URL to reload instead of
+    // just getting a "search what you typed" URL from
+    // SearchProvider::CreateSearchSuggestion(), since the user may be in a
+    // non-default search mode such as image search.
+    match->type = AutocompleteMatch::SEARCH_WHAT_YOU_TYPED;
+    match->destination_url =
+        delegate_->GetNavigationController().GetVisibleEntry()->GetURL();
+    match->transition = content::PAGE_TRANSITION_RELOAD;
+  } else if (is_temporary_text_set_by_instant_) {
+    // If there's temporary text and it has been set by Instant, we won't find
+    // it in the popup model, so create the match based on the type Instant told
+    // us (SWYT for queries and UWYT for URLs). We do this instead of
+    // classifying the text ourselves because the text may look like a URL, but
+    // Instant may expect it to be a search (e.g.: a query for "amazon.com").
     if (selected_instant_autocomplete_match_index_ !=
             OmniboxPopupModel::kNoMatch) {
       // Great, we know the exact match struct. Just use that.

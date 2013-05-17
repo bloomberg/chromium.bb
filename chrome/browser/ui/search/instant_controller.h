@@ -259,6 +259,11 @@ class InstantController : public InstantPage::Delegate,
                            MANUAL_BackspaceFromQueryToSelectedUrlAndNavigate);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OnDefaultSearchProviderChanged);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, SearchProviderForLocalNTP);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           AcceptingURLSearchDoesNotNavigate);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, AcceptingJSSearchDoesNotRunJS);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           ReloadSearchAfterBackReloadsCorrectQuery);
   FRIEND_TEST_ALL_PREFIXES(
       InstantExtendedFirstTabTest, RedirectToLocalOnLoadFailure);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LogDropdownShown);

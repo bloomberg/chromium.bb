@@ -887,45 +887,49 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   LocationBar* location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/?espv=1#q=foobar");
-  OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
-  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
-  EXPECT_EQ(ASCIIToUTF16("foobar"), model->CurrentMatch().contents);
+  EXPECT_NE(ToolbarModel::NO_SEARCH_TERMS,
+            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_EQ(ASCIIToUTF16("foobar"),
+            location_bar->GetLocationEntry()->GetText());
 
   // Verify that not using espv=1 does not do search term replacement.
   chrome::FocusLocationBar(browser());
   location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/?q=foobar");
-  model = location_bar->GetLocationEntry()->model();
-  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  EXPECT_EQ(ToolbarModel::NO_SEARCH_TERMS,
+            browser()->toolbar_model()->GetSearchTermsType());
   EXPECT_EQ(ASCIIToUTF16("https://www.google.com/?q=foobar"),
-            model->CurrentMatch().contents);
+            location_bar->GetLocationEntry()->GetText());
 
   // Verify that searching from the omnibox does search term replacement with
   // second URL pattern.
   chrome::FocusLocationBar(browser());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/search?espv=1#q=banana");
-  model = location_bar->GetLocationEntry()->model();
-  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
-  EXPECT_EQ(ASCIIToUTF16("banana"), model->CurrentMatch().contents);
+  EXPECT_NE(ToolbarModel::NO_SEARCH_TERMS,
+            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_EQ(ASCIIToUTF16("banana"),
+            location_bar->GetLocationEntry()->GetText());
 
   // Verify that searching from the omnibox does search term replacement with
   // standard search URL pattern.
   chrome::FocusLocationBar(browser());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/search?q=tractor+parts&espv=1");
-  model = location_bar->GetLocationEntry()->model();
-  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
-  EXPECT_EQ(ASCIIToUTF16("tractor parts"), model->CurrentMatch().contents);
+  EXPECT_NE(ToolbarModel::NO_SEARCH_TERMS,
+            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_EQ(ASCIIToUTF16("tractor parts"),
+            location_bar->GetLocationEntry()->GetText());
 
   // Verify that searching from the omnibox prioritizes hash over query.
   chrome::FocusLocationBar(browser());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/search?q=tractor+parts&espv=1#q=foobar");
-  model = location_bar->GetLocationEntry()->model();
-  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
-  EXPECT_EQ(ASCIIToUTF16("foobar"), model->CurrentMatch().contents);
+  EXPECT_NE(ToolbarModel::NO_SEARCH_TERMS,
+            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_EQ(ASCIIToUTF16("foobar"),
+            location_bar->GetLocationEntry()->GetText());
 }
 
 // The linux and win  bots can't create a GL context. http://crbug.com/103379

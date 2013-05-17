@@ -401,14 +401,19 @@ void OpenCurrentURL(Browser* browser) {
     return;
 
   content::PageTransition page_transition = location_bar->GetPageTransition();
+  content::PageTransition page_transition_without_qualifier(
+      PageTransitionStripQualifier(page_transition));
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
   // A PAGE_TRANSITION_TYPED means the user has typed a URL. We do not want to
   // open URLs with instant_controller since in some cases it disregards it
   // and performs a search instead. For example, when using CTRL-Enter, the
   // location_bar is aware of the URL but instant is not.
-  if (PageTransitionStripQualifier(page_transition) !=
-          content::PAGE_TRANSITION_TYPED &&
+  // Instant should also not handle PAGE_TRANSITION_RELOAD because its knowledge
+  // of the omnibox text may be stale if the user focuses in the omnibox and
+  // presses enter without typing anything.
+  if (page_transition_without_qualifier != content::PAGE_TRANSITION_TYPED &&
+      page_transition_without_qualifier != content::PAGE_TRANSITION_RELOAD &&
       browser->instant_controller() &&
       browser->instant_controller()->OpenInstant(open_disposition))
     return;
