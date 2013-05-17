@@ -36,11 +36,11 @@ using extensions::Extension;
 
 // Tests are timing out waiting for extension to crash.
 // http://crbug.com/174705
-#if defined(OS_MACOSX) || defined(USE_AURA)
+#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_LINUX)
 #define MAYBE_ExtensionCrashRecoveryTest DISABLED_ExtensionCrashRecoveryTest
 #else
 #define MAYBE_ExtensionCrashRecoveryTest ExtensionCrashRecoveryTest
-#endif  // defined(OS_MACOSX) || defined(USE_AURA)
+#endif  // defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_LINUX)
 
 class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
  protected:
