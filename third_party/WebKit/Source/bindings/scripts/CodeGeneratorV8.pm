@@ -482,7 +482,11 @@ END
 
         my $methodName;
         $methodName = "document" if (GetGenerateIsReachable($interface) eq "ImplDocument");
-        $methodName = "element" if (GetGenerateIsReachable($interface) eq "ImplElementRoot");
+        if (GetGenerateIsReachable($interface) eq "ImplElementRoot") {
+            $methodName = "element";
+            # Include Element.h so that the implicit cast from Element* to Node* compiles.
+            AddToImplIncludes("core/dom/Element.h");
+        }
         $methodName = "owner" if (GetGenerateIsReachable($interface) eq "ImplOwnerRoot");
         $methodName = "ownerNode" if (GetGenerateIsReachable($interface) eq "ImplOwnerNodeRoot");
 

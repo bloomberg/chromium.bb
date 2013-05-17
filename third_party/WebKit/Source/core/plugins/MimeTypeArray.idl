@@ -19,11 +19,10 @@
 */
 
 [
-    InterfaceName=PluginArray
-] interface DOMPluginArray {
+    ImplementedAs=DOMMimeTypeArray
+] interface MimeTypeArray {
     readonly attribute unsigned long length;
-    getter DOMPlugin item([Default=Undefined] optional unsigned long index);
-    getter DOMPlugin namedItem([Default=Undefined] optional DOMString name);
-    void refresh([Default=Undefined] optional boolean reload);
+    getter MimeType item([Default=Undefined] optional unsigned long index);
+    getter MimeType namedItem([Default=Undefined] optional DOMString name);
 };
 

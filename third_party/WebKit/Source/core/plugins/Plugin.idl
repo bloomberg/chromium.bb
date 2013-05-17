@@ -19,11 +19,13 @@
 */
 
 [
-    InterfaceName=MimeType
-] interface DOMMimeType {
-    readonly attribute DOMString type;
-    readonly attribute DOMString suffixes;
+    ImplementedAs=DOMPlugin
+] interface Plugin {
+    readonly attribute DOMString name;
+    readonly attribute DOMString filename;
     readonly attribute DOMString description;
-    readonly attribute DOMPlugin enabledPlugin;
+    readonly attribute unsigned long length;
+    getter MimeType item([Default=Undefined] optional unsigned long index);
+    getter MimeType namedItem([Default=Undefined] optional DOMString name);
 };
 
