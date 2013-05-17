@@ -472,10 +472,6 @@ bool StackedPanelCollection::IsPanelMinimized(const Panel* panel) const {
   return panel->expansion_state() != Panel::EXPANDED;
 }
 
-bool StackedPanelCollection::UsesAlwaysOnTopPanels() const {
-  return false;
-}
-
 void StackedPanelCollection::SavePanelPlacement(Panel* panel) {
   DCHECK(!saved_panel_placement_.panel);
   saved_panel_placement_.panel = panel;
@@ -618,6 +614,7 @@ void StackedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->set_attention_mode(
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
                                         Panel::USE_SYSTEM_ATTENTION));
+  panel->SetAlwaysOnTop(false);
   panel->ShowShadow(false);
   panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();

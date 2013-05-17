@@ -498,16 +498,14 @@ panel::Resizability Panel::CanResizeByMouse() const {
   return collection_->GetPanelResizability(this);
 }
 
-void Panel::Initialize(const GURL& url,
-                       const gfx::Rect& bounds,
-                       bool always_on_top) {
+void Panel::Initialize(const GURL& url, const gfx::Rect& bounds) {
   DCHECK(!initialized_);
   DCHECK(!collection_);  // Cannot be added to a collection until fully created.
   DCHECK_EQ(EXPANDED, expansion_state_);
   DCHECK(!bounds.IsEmpty());
   initialized_ = true;
   full_size_ = bounds.size();
-  native_panel_ = CreateNativePanel(this, bounds, always_on_top);
+  native_panel_ = CreateNativePanel(this, bounds);
 
   extension_window_controller_.reset(
       new panel_internal::PanelExtensionWindowController(this, profile_));

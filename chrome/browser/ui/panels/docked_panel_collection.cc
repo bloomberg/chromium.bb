@@ -421,10 +421,6 @@ bool DockedPanelCollection::IsPanelMinimized(const Panel* panel) const {
   return panel->expansion_state() != Panel::EXPANDED;
 }
 
-bool DockedPanelCollection::UsesAlwaysOnTopPanels() const {
-  return true;
-}
-
 void DockedPanelCollection::UpdateMinimizedPanelCount() {
   int prev_minimized_panel_count = minimized_panel_count_;
   minimized_panel_count_ = 0;
@@ -764,6 +760,7 @@ void DockedPanelCollection::CloseAll() {
 
 void DockedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
+  panel->SetAlwaysOnTop(true);
   panel->ShowShadow(true);
   panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
