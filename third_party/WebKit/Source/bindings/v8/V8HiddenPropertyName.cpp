@@ -48,7 +48,7 @@ v8::Handle<v8::String> V8HiddenPropertyName::name() \
 { \
     V8HiddenPropertyName* hiddenPropertyName = V8PerIsolateData::current()->hiddenPropertyName(); \
     if (hiddenPropertyName->m_##name.IsEmpty()) { \
-        hiddenPropertyName->m_##name = createString(V8_HIDDEN_PROPERTY_PREFIX V8_AS_STRING(name)); \
+        createString(V8_HIDDEN_PROPERTY_PREFIX V8_AS_STRING(name), &(hiddenPropertyName->m_##name)); \
     } \
     return hiddenPropertyName->m_##name; \
 }
@@ -70,10 +70,10 @@ void V8HiddenPropertyName::setNamedHiddenReference(v8::Handle<v8::Object> parent
     parent->SetHiddenValue(hiddenReferenceName(name, strlen(name)), child);
 }
 
-v8::Persistent<v8::String> V8HiddenPropertyName::createString(const char* key)
+void V8HiddenPropertyName::createString(const char* key, v8::Persistent<v8::String>* handle)
 {
     v8::HandleScope scope;
-    return v8::Persistent<v8::String>::New(v8::Isolate::GetCurrent(), v8::String::NewSymbol(key));
+    handle->Reset(v8::Isolate::GetCurrent(), v8::String::NewSymbol(key));
 }
 
 }  // namespace WebCore
