@@ -345,23 +345,23 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
     const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
     switch (event.key_code()) {
       case ui::VKEY_LEFT:
-        MoveSelected(0, -forward_dir, 0);
+        MoveSelected(0, -forward_dir);
         return true;
       case ui::VKEY_RIGHT:
-        MoveSelected(0, forward_dir, 0);
+        MoveSelected(0, forward_dir);
         return true;
       case ui::VKEY_UP:
-        MoveSelected(0, 0, -1);
+        MoveSelected(0, -cols_);
         return true;
       case ui::VKEY_DOWN:
-        MoveSelected(0, 0, 1);
+        MoveSelected(0, cols_);
         return true;
       case ui::VKEY_PRIOR: {
-        MoveSelected(-1, 0, 0);
+        MoveSelected(-1, 0);
         return true;
       }
       case ui::VKEY_NEXT: {
-        MoveSelected(1, 0, 0);
+        MoveSelected(1, 0);
         return true;
       }
       default:
@@ -492,41 +492,20 @@ views::View* AppsGridView::GetViewAtIndex(const Index& index) const {
   return view_model_.view_at(model_index);
 }
 
-void AppsGridView::MoveSelected(int page_delta,
-                                int slot_x_delta,
-                                int slot_y_delta) {
+void AppsGridView::MoveSelected(int page_delta, int slot_delta) {
   if (!selected_view_)
     return SetSelectedItemByIndex(Index(pagination_model_->selected_page(), 0));
 
   const Index& selected = GetIndexOfView(selected_view_);
-  int target_slot = selected.slot + slot_x_delta + slot_y_delta * cols_;
-
-  if (selected.slot % cols_ == 0 && slot_x_delta == -1) {
-    if (selected.page > 0) {
-      page_delta = -1;
-      target_slot = selected.slot + cols_ - 1;
-    } else {
-      target_slot = selected.slot;
-    }
-  }
-
-  if (selected.slot % cols_ == cols_ - 1 && slot_x_delta == 1) {
-    if (selected.page < pagination_model_->total_pages() - 1) {
-      page_delta = 1;
-      target_slot = selected.slot - cols_ + 1;
-    } else {
-      target_slot = selected.slot;
-    }
-  }
-
-  // Clamp the target slot to the last item if we are moving to the last page
-  // but our target slot is past the end of the item list.
-  if (page_delta &&
-      selected.page + page_delta == pagination_model_->total_pages() - 1) {
-    int last_item_slot = (view_model_.view_size() - 1) % tiles_per_page();
-    if (last_item_slot < target_slot) {
-      target_slot = last_item_slot;
-    }
+  int target_slot = selected.slot + slot_delta;
+  if (target_slot < 0) {
+    page_delta += (target_slot + 1) / tiles_per_page() - 1;
+    if (selected.page > 0)
+      target_slot = tiles_per_page() + (target_slot + 1) % tiles_per_page() - 1;
+  } else if (target_slot >= tiles_per_page()) {
+    page_delta += target_slot / tiles_per_page();
+    if (selected.page < pagination_model_->total_pages() - 1)
+      target_slot %= tiles_per_page();
   }
 
   int target_page = std::min(pagination_model_->total_pages() - 1,
