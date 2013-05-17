@@ -247,7 +247,7 @@ public class AutofillDialogView extends FrameLayout {
         }
 
         initializeSpinner(SECTION_SHIPPING, AutofillDialogConstants.ADDRESS_HOME_COUNTRY);
-        initializeSpinner(SECTION_BILLING, AutofillDialogConstants.ADDRESS_HOME_COUNTRY);
+        initializeSpinner(SECTION_BILLING, AutofillDialogConstants.ADDRESS_BILLING_COUNTRY);
         initializeSpinner(SECTION_CC, AutofillDialogConstants.CREDIT_CARD_EXP_MONTH);
         initializeSpinner(SECTION_CC, AutofillDialogConstants.CREDIT_CARD_EXP_4_DIGIT_YEAR);
     }
