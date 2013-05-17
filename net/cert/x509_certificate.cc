@@ -22,7 +22,7 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
-#include "googleurl/src/url_canon_ip.h"
+#include "googleurl/src/url_canon.h"
 #include "net/base/net_util.h"
 #include "net/cert/pem_tokenizer.h"
 

@@ -43,6 +43,45 @@ unsigned char paypal_null_fingerprint[] = {
   0x1f, 0xe8, 0x1b, 0xd6, 0xab, 0x7b, 0xe8, 0xd7
 };
 
+// Mock CertVerifyProc that will set |verify_result->is_issued_by_known_root|
+// for all certificates that are Verified.
+class WellKnownCaCertVerifyProc : public CertVerifyProc {
+ public:
+  // Initialize a CertVerifyProc that will set
+  // |verify_result->is_issued_by_known_root| to |is_well_known|.
+  explicit WellKnownCaCertVerifyProc(bool is_well_known)
+      : is_well_known_(is_well_known) {}
+
+  // CertVerifyProc implementation:
+  virtual bool SupportsAdditionalTrustAnchors() const OVERRIDE { return false; }
+
+ protected:
+  virtual ~WellKnownCaCertVerifyProc() {}
+
+ private:
+  virtual int VerifyInternal(X509Certificate* cert,
+                             const std::string& hostname,
+                             int flags,
+                             CRLSet* crl_set,
+                             const CertificateList& additional_trust_anchors,
+                             CertVerifyResult* verify_result) OVERRIDE;
+
+  const bool is_well_known_;
+
+  DISALLOW_COPY_AND_ASSIGN(WellKnownCaCertVerifyProc);
+};
+
+int WellKnownCaCertVerifyProc::VerifyInternal(
+    X509Certificate* cert,
+    const std::string& hostname,
+    int flags,
+    CRLSet* crl_set,
+    const CertificateList& additional_trust_anchors,
+    CertVerifyResult* verify_result) {
+  verify_result->is_issued_by_known_root = is_well_known_;
+  return OK;
+}
+
 }  // namespace
 
 class CertVerifyProcTest : public testing::Test {
@@ -68,8 +107,6 @@ class CertVerifyProcTest : public testing::Test {
   }
 
   const CertificateList empty_cert_list_;
-
- private:
   scoped_refptr<CertVerifyProc> verify_proc_;
 };
 
@@ -590,6 +627,35 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainBasic) {
                                             certs[2]->os_cert_handle()));
 }
 
+// Test that certificates issued for 'intranet' names (that is, containing no
+// known public registry controlled domain information) issued by well-known
+// CAs are flagged appropriately, while certificates that are issued by
+// internal CAs are not flagged.
+TEST_F(CertVerifyProcTest, IntranetHostsRejected) {
+  CertificateList cert_list = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "ok_cert.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, cert_list.size());
+  scoped_refptr<X509Certificate> cert(cert_list[0]);
+
+  CertVerifyResult verify_result;
+  int error = 0;
+
+  // Intranet names for public CAs should be flagged:
+  verify_proc_ = new WellKnownCaCertVerifyProc(true);
+  error = Verify(cert, "intranet", 0, NULL, empty_cert_list_,
+                 &verify_result);
+  EXPECT_EQ(OK, error);
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_NON_UNIQUE_NAME);
+
+  // However, if the CA is not well known, these should not be flagged:
+  verify_proc_ = new WellKnownCaCertVerifyProc(false);
+  error = Verify(cert, "intranet", 0, NULL, empty_cert_list_,
+                 &verify_result);
+  EXPECT_EQ(OK, error);
+  EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_NON_UNIQUE_NAME);
+}
+
 // Test that the certificate returned in CertVerifyResult is able to reorder
 // certificates that are not ordered from end-entity to root. While this is
 // a protocol violation if sent during a TLS handshake, if multiple sources
@@ -1078,5 +1144,73 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_VerifyMixed,
     CertVerifyProcWeakDigestTest,
     testing::ValuesIn(kVerifyMixedTestData));
+
+struct NonUniqueNameTestData {
+  bool is_unique;
+  const char* hostname;
+};
+
+// Google Test pretty-printer.
+void PrintTo(const NonUniqueNameTestData& data, std::ostream* os) {
+  ASSERT_TRUE(data.hostname);
+  *os << " hostname: " << testing::PrintToString(data.hostname)
+      << "; is_unique: " << testing::PrintToString(data.is_unique);
+}
+
+const NonUniqueNameTestData kNonUniqueNameTestData[] = {
+    // Domains under ICANN-assigned domains.
+    { true, "google.com" },
+    { true, "google.co.uk" },
+    // Domains under private registries.
+    { true, "appspot.com" },
+    { true, "test.appspot.com" },
+    // IPv4 addresses (in various forms).
+    { true, "8.8.8.8" },
+    { true, "1.2.3" },
+    { true, "14.15" },
+    { true, "676768" },
+    // IPv6 addresses.
+    { true, "FEDC:ba98:7654:3210:FEDC:BA98:7654:3210" },
+    { true, "::192.9.5.5" },
+    { true, "FEED::BEEF" },
+    // 'internal'/non-IANA assigned domains.
+    { false, "intranet" },
+    { false, "intranet." },
+    { false, "intranet.example" },
+    { false, "host.intranet.example" },
+    // gTLDs under discussion, but not yet assigned.
+    { false, "intranet.corp" },
+    { false, "example.tech" },
+    { false, "intranet.internal" },
+    // Invalid host names are treated as unique - but expected to be
+    // filtered out before then.
+    { true, "junk)(£)$*!@~#" },
+    { true, "w$w.example.com" },
+    { true, "nocolonsallowed:example" },
+    { true, "[::4.5.6.9]" },
+};
+
+class CertVerifyProcNonUniqueNameTest
+    : public testing::TestWithParam<NonUniqueNameTestData> {
+ public:
+  virtual ~CertVerifyProcNonUniqueNameTest() {}
+
+ protected:
+  bool IsUnique(const std::string& hostname) {
+    return !CertVerifyProc::IsHostnameNonUnique(hostname);
+  }
+};
+
+// Test that internal/non-unique names are properly identified as such, but
+// that IP addresses and hosts beneath registry-controlled domains are flagged
+// as unique names.
+TEST_P(CertVerifyProcNonUniqueNameTest, IsHostnameNonUnique) {
+  const NonUniqueNameTestData& test_data = GetParam();
+
+  EXPECT_EQ(test_data.is_unique, IsUnique(test_data.hostname));
+}
+
+INSTANTIATE_TEST_CASE_P(, CertVerifyProcNonUniqueNameTest,
+                        testing::ValuesIn(kNonUniqueNameTestData));
 
 }  // namespace net
