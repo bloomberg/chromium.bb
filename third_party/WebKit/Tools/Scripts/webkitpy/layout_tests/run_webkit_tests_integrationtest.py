@@ -915,7 +915,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 8)
+        self.assertEqual(len(file_list), 7)
         self.assertBaselines(file_list, "passes/image", [".txt", ".png"], err)
         self.assertBaselines(file_list, "failures/expected/missing_image", [".txt", ".png"], err)
 
@@ -931,7 +931,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 10)
+        self.assertEqual(len(file_list), 9)
         self.assertBaselines(file_list, "failures/unexpected/missing_text", [".txt"], err)
         self.assertBaselines(file_list, "platform/test/failures/unexpected/missing_image", [".png"], err)
         self.assertBaselines(file_list, "platform/test/failures/unexpected/missing_render_tree_dump", [".txt"], err)
@@ -945,7 +945,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 8)
+        self.assertEqual(len(file_list), 7)
         self.assertBaselines(file_list,
             "platform/test-mac-leopard/passes/image", [".txt", ".png"], err)
         self.assertBaselines(file_list,

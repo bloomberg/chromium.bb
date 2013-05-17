@@ -47,7 +47,7 @@ class BotTestExpectations(object):
     TESTS_KEY = 'tests'
     RESULTS_URL_PREFIX = 'http://test-results.appspot.com/testfile?master=ChromiumWebkit&testtype=layout-tests&name=results-small.json&builder='
 
-    # FIXME: This map should be generated from data in json_layout_results_generator.py and test_expectations.py.
+    # FIXME: This data is now in the results json. Get it from there.
     MAP_ENCODED_RESULT_STRING_TO_EXPECTATIONS_VALUE = {
         'P': 'Pass',
         'N': '', # No data

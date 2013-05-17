@@ -40,10 +40,10 @@ import random
 import sys
 import time
 
+from webkitpy.common.net.file_uploader import FileUploader
 from webkitpy.layout_tests.controllers.layout_test_finder import LayoutTestFinder
 from webkitpy.layout_tests.controllers.layout_test_runner import LayoutTestRunner
 from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
-from webkitpy.layout_tests.layout_package import json_layout_results_generator
 from webkitpy.layout_tests.layout_package import json_results_generator
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
@@ -235,7 +235,8 @@ class Manager(object):
 
         if not self._options.dry_run:
             self._port.print_leaks_summary()
-            self._upload_json_files(summarized_results, initial_results)
+            self._write_json_files(summarized_results, initial_results)
+            self._upload_json_files()
 
             results_path = self._filesystem.join(self._results_directory, "results.html")
             self._copy_results_html_file(results_path)
@@ -325,14 +326,7 @@ class Manager(object):
                     (result.type != test_expectations.MISSING) and
                     (result.type != test_expectations.CRASH or include_crashes))]
 
-    def _upload_json_files(self, summarized_results, initial_results):
-        """Writes the results of the test run as JSON files into the results
-        dir and upload the files to the appengine server.
-
-        Args:
-          summarized_results: dict of results
-          initial_results: full summary object
-        """
+    def _write_json_files(self, summarized_results, initial_results):
         _log.debug("Writing JSON files in %s." % self._results_directory)
 
         # FIXME: Upload stats.json to the server and delete times_ms.
@@ -348,28 +342,38 @@ class Manager(object):
         # We write full_results.json out as jsonp because we need to load it from a file url and Chromium doesn't allow that.
         json_results_generator.write_json(self._filesystem, summarized_results, full_results_path, callback="ADD_RESULTS")
 
-        generator = json_layout_results_generator.JSONLayoutResultsGenerator(
-            self._port, self._options.builder_name, self._options.build_name,
-            self._options.build_number, self._results_directory,
-            BUILDER_BASE_URL,
-            self._expectations, initial_results,
-            self._options.test_results_server,
-            "layout-tests",
-            self._options.master_name)
-
         _log.debug("Finished writing JSON files.")
 
+    def _upload_json_files(self):
+        if not self._options.test_results_server:
+            return
 
-        json_files = ["incremental_results.json", "full_results.json", "times_ms.json"]
+        if not self._options.master_name:
+            _log.error("--test-results-server was set, but --master-name was not.  Not uploading JSON files.")
+            return
 
-        generator.upload_json_files(json_files)
+        _log.debug("Uploading JSON files for builder: %s", self._options.builder_name)
+        attrs = [("builder", self._options.builder_name),
+                 ("testtype", "layout-tests"),
+                 ("master", self._options.master_name)]
 
-        incremental_results_path = self._filesystem.join(self._results_directory, "incremental_results.json")
+        files = [(file, self._filesystem.join(self._results_directory, file)) for file in ["full_results.json", "times_ms.json"]]
 
-        # Remove these files from the results directory so they don't take up too much space on the buildbot.
-        # The tools use the version we uploaded to the results server anyway.
-        self._filesystem.remove(times_json_path)
-        self._filesystem.remove(incremental_results_path)
+        url = "http://%s/testfile/upload" % self._options.test_results_server
+        # Set uploading timeout in case appengine server is having problems.
+        # 120 seconds are more than enough to upload test results.
+        uploader = FileUploader(url, 120)
+        try:
+            response = uploader.upload_as_multipart_form_data(self._filesystem, files, attrs)
+            if response:
+                if response.code == 200:
+                    _log.debug("JSON uploaded.")
+                else:
+                    _log.debug("JSON upload failed, %d: '%s'" % (response.code, response.read()))
+            else:
+                _log.error("JSON upload failed; no response returned")
+        except Exception, err:
+            _log.error("Upload failed: %s" % err)
 
     def _copy_results_html_file(self, destination_path):
         base_dir = self._port.path_from_webkit_base('LayoutTests', 'fast', 'harness')
