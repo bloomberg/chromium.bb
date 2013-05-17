@@ -510,26 +510,30 @@ void ProfileSyncService::StartUp(StartUpDeferredOption deferred_option) {
 
   DCHECK(IsSyncEnabledAndLoggedIn());
 
-  last_synced_time_ = sync_prefs_.GetLastSyncedTime();
-
-  DCHECK(start_up_time_.is_null());
-  start_up_time_ = base::Time::Now();
+  if (start_up_time_.is_null()) {
+    start_up_time_ = base::Time::Now();
+    last_synced_time_ = sync_prefs_.GetLastSyncedTime();
 
 #if defined(OS_CHROMEOS)
-  std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
-  if (bootstrap_token.empty()) {
-    sync_prefs_.SetEncryptionBootstrapToken(
-        sync_prefs_.GetSpareBootstrapToken());
-  }
+    std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
+    if (bootstrap_token.empty()) {
+      sync_prefs_.SetEncryptionBootstrapToken(
+          sync_prefs_.GetSpareBootstrapToken());
+    }
 #endif
 
-  if (!sync_global_error_) {
+    if (!sync_global_error_) {
 #if !defined(OS_ANDROID)
-    sync_global_error_.reset(new SyncGlobalError(this, signin()));
+      sync_global_error_.reset(new SyncGlobalError(this, signin()));
 #endif
-    GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
-        sync_global_error_.get());
-    AddObserver(sync_global_error_.get());
+      GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
+          sync_global_error_.get());
+      AddObserver(sync_global_error_.get());
+    }
+  } else {
+    // We don't care to prevent multiple calls to StartUp in deferred mode
+    // because it's fast and has no side effects.
+    DCHECK_EQ(STARTUP_BACKEND_DEFERRED, deferred_option);
   }
 
   if (deferred_option == STARTUP_BACKEND_DEFERRED &&
@@ -720,6 +724,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   weak_factory_.InvalidateWeakPtrs();
 
   // Clear various flags.
+  start_up_time_ = base::Time();
   expect_sync_configuration_aborted_ = false;
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
@@ -891,7 +896,6 @@ void ProfileSyncService::OnBackendInitialized(
   } else {
     UMA_HISTOGRAM_LONG_TIMES("Sync.BackendInitializeRestoreTime", delta);
   }
-  start_up_time_ = base::Time();
 
   if (!success) {
     // Something went unexpectedly wrong.  Play it safe: stop syncing at once

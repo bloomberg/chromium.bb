@@ -59,8 +59,8 @@ void InitSyncableServicesOnDBThread(
 WebDataServiceWrapper::WebDataServiceWrapper() {}
 
 WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
-  base::FilePath path = profile->GetPath();
-  path = path.Append(kWebDataFilename);
+  base::FilePath profile_path = profile->GetPath();
+  base::FilePath path = profile_path.Append(kWebDataFilename);
 
   web_database_ = new WebDatabaseService(path);
 
@@ -99,7 +99,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
       BrowserThread::DB, FROM_HERE,
       base::Bind(&InitSyncableServicesOnDBThread,
                  autofill_web_data_,
-                 sync_start_util::GetFlareForSyncableService(path),
+                 sync_start_util::GetFlareForSyncableService(profile_path),
                  g_browser_process->GetApplicationLocale()));
 }
 
