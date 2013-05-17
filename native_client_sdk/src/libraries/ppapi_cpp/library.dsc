@@ -44,7 +44,6 @@
           'view.cc',
           'websocket.cc',
 
-
           # Utility sources.
           'paint_aggregator.cc',
           'paint_manager.cc',

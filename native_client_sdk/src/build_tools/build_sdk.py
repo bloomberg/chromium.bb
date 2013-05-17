@@ -318,6 +318,24 @@ PPAPI_HEADER_MAP = [
   ('cpp/extensions/*.h',     'ppapi/cpp/extensions/'),
   ('cpp/dev/*.h',            'ppapi/cpp/dev/'),
   ('cpp/extensions/dev/*.h', 'ppapi/cpp/extensions/dev/'),
+
+  # Copy certain private headers (specifically these are the ones
+  # that are used by nacl-mounts)
+  ('cpp/private/ext_crx_file_system_private.h', 'ppapi/cpp/private/'),
+  ('cpp/private/net_address_private.h', 'ppapi/cpp/private/'),
+  ('cpp/private/tcp_server_socket_private.h', 'ppapi/cpp/private/'),
+  ('cpp/private/host_resolver_private.h', 'ppapi/cpp/private/'),
+  ('cpp/private/tcp_socket_private.h', 'ppapi/cpp/private/'),
+  ('cpp/private/udp_socket_private.h', 'ppapi/cpp/private/'),
+  ('cpp/private/x509_certificate_private.h', 'ppapi/cpp/private/'),
+
+  ('c/private/ppb_ext_crx_file_system_private.h', 'ppapi/c/private/'),
+  ('c/private/ppb_host_resolver_private.h', 'ppapi/c/private/'),
+  ('c/private/ppb_tcp_server_socket_private.h', 'ppapi/c/private/'),
+  ('c/private/ppb_net_address_private.h', 'ppapi/c/private/'),
+  ('c/private/ppb_tcp_socket_private.h', 'ppapi/c/private/'),
+  ('c/private/ppb_udp_socket_private.h', 'ppapi/c/private/'),
+  ('c/private/ppb_x509_certificate_private.h', 'ppapi/c/private/'),
 ]
 
 

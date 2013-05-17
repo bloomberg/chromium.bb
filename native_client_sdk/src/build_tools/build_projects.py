@@ -132,8 +132,7 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
                                        targets)
 
 
-def BuildProjectsBranch(pepperdir, platform, branch, deps=True, clean=False,
-                        config='Debug'):
+def BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config):
   make_dir = os.path.join(pepperdir, branch)
   print "\n\nMake: " + make_dir
   if platform == 'win':
@@ -175,11 +174,14 @@ def BuildProjects(pepperdir, platform, project_tree, deps=True,
 
 def main(args):
   parser = optparse.OptionParser()
-  parser.add_option('--clobber',
+  parser.add_option('-c', '--clobber',
       help='Clobber project directories before copying new files',
       action='store_true', default=False)
   parser.add_option('-b', '--build',
       help='Build the projects.', action='store_true')
+  parser.add_option('--config',
+      help='Choose configuration to build (Debug or Release).  Builds both '
+           'by default')
   parser.add_option('-x', '--experimental',
       help='Build experimental projects', action='store_true')
   parser.add_option('-t', '--toolchain',
@@ -193,10 +195,14 @@ def main(args):
       action='append')
   parser.add_option('-v', '--verbose', action='store_true')
 
-  options, files = parser.parse_args(args[1:])
-  if len(files):
-    parser.error('Not expecting files.')
-    return 1
+  options, args = parser.parse_args(args[1:])
+  if args:
+    parser.error('Not expecting any arguments.')
+
+  if 'NACL_SDK_ROOT' in os.environ:
+    # We don't want the currently configured NACL_SDK_ROOT to have any effect
+    # on the build.
+    del os.environ['NACL_SDK_ROOT']
 
   pepper_ver = str(int(build_version.ChromeMajorVersion()))
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
@@ -228,8 +234,15 @@ def main(args):
   UpdateHelpers(pepperdir, platform, clobber=options.clobber)
   UpdateProjects(pepperdir, platform, project_tree, options.toolchain,
                  clobber=options.clobber)
+
   if options.build:
-    BuildProjects(pepperdir, platform, project_tree)
+    if options.config:
+      configs = [options.config]
+    else:
+      configs = ['Debug', 'Release']
+    for config in configs:
+      BuildProjects(pepperdir, platform, project_tree, config=config)
+
   return 0
 
 
