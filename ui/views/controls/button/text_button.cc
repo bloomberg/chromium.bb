@@ -407,7 +407,7 @@ void TextButtonBase::GetExtraParams(
   params->button.classic_state = 0;
   params->button.background_color =
       GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonBackgroundColor);
+          ui::NativeTheme::kColorId_ButtonBackgroundColor);
 }
 
 gfx::Rect TextButtonBase::GetContentBounds(int extra_width) const {
@@ -522,19 +522,19 @@ const char* TextButtonBase::GetClassName() const {
 void TextButtonBase::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   if (use_enabled_color_from_theme_) {
     color_enabled_ = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextButtonEnabledColor);
+        ui::NativeTheme::kColorId_ButtonEnabledColor);
   }
   if (use_disabled_color_from_theme_) {
     color_disabled_ = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextButtonDisabledColor);
+        ui::NativeTheme::kColorId_ButtonDisabledColor);
   }
   if (use_highlight_color_from_theme_) {
     color_highlight_ = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextButtonHighlightColor);
+        ui::NativeTheme::kColorId_ButtonHighlightColor);
   }
   if (use_hover_color_from_theme_) {
     color_hover_ = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextButtonHoverColor);
+        ui::NativeTheme::kColorId_ButtonHoverColor);
   }
   UpdateColor();
 }

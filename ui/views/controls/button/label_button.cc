@@ -197,10 +197,10 @@ const char* LabelButton::GetClassName() const {
 void LabelButton::ResetColorsFromNativeTheme() {
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor colors[STATE_COUNT] = {
-    theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonEnabledColor),
-    theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonHoverColor),
-    theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonHoverColor),
-    theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonDisabledColor),
+    theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonEnabledColor),
+    theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonHoverColor),
+    theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonHoverColor),
+    theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonDisabledColor),
   };
 
   // Certain styles do not change text color when hovered or pressed.
@@ -333,7 +333,7 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.has_border = style() == STYLE_NATIVE_TEXTBUTTON;
   params->button.classic_state = 0;
   params->button.background_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextButtonBackgroundColor);
+      ui::NativeTheme::kColorId_ButtonBackgroundColor);
 }
 
 }  // namespace views

@@ -29,12 +29,12 @@ const SkColor kEnabledMenuButtonBorderColor = SkColorSetARGB(36, 0, 0, 0);
 const SkColor kFocusedMenuButtonBorderColor = SkColorSetARGB(72, 0, 0, 0);
 const SkColor kHoverMenuButtonBorderColor = SkColorSetARGB(72, 0, 0, 0);
 
-// TextButton:
-const SkColor kTextButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
-const SkColor kTextButtonEnabledColor = SkColorSetRGB(6, 45, 117);
-const SkColor kTextButtonDisabledColor = SkColorSetRGB(161, 161, 146);
-const SkColor kTextButtonHighlightColor = SkColorSetARGB(200, 255, 255, 255);
-const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
+// Button:
+const SkColor kButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
+const SkColor kButtonEnabledColor = SkColorSetRGB(6, 45, 117);
+const SkColor kButtonDisabledColor = SkColorSetRGB(161, 161, 146);
+const SkColor kButtonHighlightColor = SkColorSetARGB(200, 255, 255, 255);
+const SkColor kButtonHoverColor = kButtonEnabledColor;
 
 }  // namespace
 
@@ -80,17 +80,17 @@ SkColor NativeThemeGtk::GetSystemColor(ColorId color_id) const {
     case kColorId_HoverMenuButtonBorderColor:
       return kHoverMenuButtonBorderColor;
 
-    // TextButton:
-    case kColorId_TextButtonBackgroundColor:
-      return kTextButtonBackgroundColor;
-    case kColorId_TextButtonEnabledColor:
-      return kTextButtonEnabledColor;
-    case kColorId_TextButtonDisabledColor:
-      return kTextButtonDisabledColor;
-    case kColorId_TextButtonHighlightColor:
-      return kTextButtonHighlightColor;
-    case kColorId_TextButtonHoverColor:
-      return kTextButtonHoverColor;
+    // Button:
+    case kColorId_ButtonBackgroundColor:
+      return kButtonBackgroundColor;
+    case kColorId_ButtonEnabledColor:
+      return kButtonEnabledColor;
+    case kColorId_ButtonDisabledColor:
+      return kButtonDisabledColor;
+    case kColorId_ButtonHighlightColor:
+      return kButtonHighlightColor;
+    case kColorId_ButtonHoverColor:
+      return kButtonHoverColor;
 
     default:
       NOTREACHED() << "Invalid color_id: " << color_id;

@@ -36,7 +36,7 @@ static ui::NativeTheme::State WebButtonStateToGfx(
   extra->is_focused = false;
   extra->has_border = false;
   extra->background_color = ui::NativeTheme::instance()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextButtonBackgroundColor);
+      ui::NativeTheme::kColorId_ButtonBackgroundColor);
 
   if (part == BP_PUSHBUTTON) {
     switch (state) {

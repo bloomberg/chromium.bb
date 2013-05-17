@@ -75,7 +75,7 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
     case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
       *color = kEnabledMenuItemForegroundColor;
       break;
-    case NativeTheme::kColorId_TextButtonDisabledColor:
+    case NativeTheme::kColorId_ButtonDisabledColor:
       *color = kDisabledMenuItemForegroundColor;
       break;
     default:

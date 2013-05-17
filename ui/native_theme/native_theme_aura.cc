@@ -28,15 +28,15 @@ const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
 // FocusableBorder:
 const SkColor kFocusedBorderColor = SkColorSetRGB(0x4D, 0x90, 0xFE);
 const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
-// TextButton:
-const SkColor kTextButtonBackgroundColor = SkColorSetRGB(0xDE, 0xDE, 0xDE);
-const SkColor kTextButtonEnabledColor = SkColorSetRGB(0x22, 0x22, 0x22);
-const SkColor kTextButtonDisabledColor = SkColorSetRGB(0x99, 0x99, 0x99);
-const SkColor kTextButtonHighlightColor = SkColorSetRGB(0, 0, 0);
-const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
+// Button:
+const SkColor kButtonBackgroundColor = SkColorSetRGB(0xDE, 0xDE, 0xDE);
+const SkColor kButtonEnabledColor = SkColorSetRGB(0x22, 0x22, 0x22);
+const SkColor kButtonDisabledColor = SkColorSetRGB(0x99, 0x99, 0x99);
+const SkColor kButtonHighlightColor = SkColorSetRGB(0, 0, 0);
+const SkColor kButtonHoverColor = kButtonEnabledColor;
 // MenuItem:
-const SkColor kEnabledMenuItemForegroundColor = kTextButtonEnabledColor;
-const SkColor kDisabledMenuItemForegroundColor = kTextButtonDisabledColor;
+const SkColor kEnabledMenuItemForegroundColor = kButtonEnabledColor;
+const SkColor kDisabledMenuItemForegroundColor = kButtonDisabledColor;
 const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
 const SkColor kHoverMenuItemBackgroundColor =
     SkColorSetARGB(204, 255, 255, 255);
@@ -45,8 +45,8 @@ const SkColor kEnabledMenuButtonBorderColor = SkColorSetARGB(36, 0, 0, 0);
 const SkColor kFocusedMenuButtonBorderColor = SkColorSetARGB(72, 0, 0, 0);
 const SkColor kHoverMenuButtonBorderColor = SkColorSetARGB(72, 0, 0, 0);
 // Label:
-const SkColor kLabelEnabledColor = kTextButtonEnabledColor;
-const SkColor kLabelDisabledColor = kTextButtonDisabledColor;
+const SkColor kLabelEnabledColor = kButtonEnabledColor;
+const SkColor kLabelDisabledColor = kButtonDisabledColor;
 const SkColor kLabelBackgroundColor = SK_ColorWHITE;
 // Textfield:
 const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
@@ -116,17 +116,17 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
     case kColorId_UnfocusedBorderColor:
       return kUnfocusedBorderColor;
 
-    // TextButton
-    case kColorId_TextButtonBackgroundColor:
-      return kTextButtonBackgroundColor;
-    case kColorId_TextButtonEnabledColor:
-      return kTextButtonEnabledColor;
-    case kColorId_TextButtonDisabledColor:
-      return kTextButtonDisabledColor;
-    case kColorId_TextButtonHighlightColor:
-      return kTextButtonHighlightColor;
-    case kColorId_TextButtonHoverColor:
-      return kTextButtonHoverColor;
+    // Button
+    case kColorId_ButtonBackgroundColor:
+      return kButtonBackgroundColor;
+    case kColorId_ButtonEnabledColor:
+      return kButtonEnabledColor;
+    case kColorId_ButtonDisabledColor:
+      return kButtonDisabledColor;
+    case kColorId_ButtonHighlightColor:
+      return kButtonHighlightColor;
+    case kColorId_ButtonHoverColor:
+      return kButtonHoverColor;
 
     // MenuItem
     case kColorId_EnabledMenuItemForegroundColor:

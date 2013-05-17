@@ -193,16 +193,16 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
     case kColorId_LabelBackgroundColor:
       return GetWindowStyle()->bg[GTK_STATE_NORMAL];
 
-    // TextButton
-    case kColorId_TextButtonBackgroundColor:
+    // Button
+    case kColorId_ButtonBackgroundColor:
       return GetButtonStyle()->bg[GTK_STATE_NORMAL];
-    case kColorId_TextButtonEnabledColor:
+    case kColorId_ButtonEnabledColor:
       return GetButtonStyle()->text[GTK_STATE_NORMAL];
-    case kColorId_TextButtonDisabledColor:
+    case kColorId_ButtonDisabledColor:
       return GetButtonStyle()->text[GTK_STATE_INSENSITIVE];
-    case kColorId_TextButtonHighlightColor:
+    case kColorId_ButtonHighlightColor:
       return GetButtonStyle()->base[GTK_STATE_SELECTED];
-    case kColorId_TextButtonHoverColor:
+    case kColorId_ButtonHoverColor:
       return GetButtonStyle()->text[GTK_STATE_PRELIGHT];
 
     // Textfield
