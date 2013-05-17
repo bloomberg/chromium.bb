@@ -9,10 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
-
-class GURL;
 
 namespace base {
 class FilePath;
@@ -25,6 +22,7 @@ class ResourceEntry;
 
 namespace internal {
 class FileCache;
+class ResourceMetadata;
 }  // namespace internal
 
 namespace file_system {
@@ -36,76 +34,53 @@ class OperationObserver;
 // metadata to reflect the new state.
 class UpdateOperation {
  public:
-  UpdateOperation(internal::FileCache* cache,
-                  internal::ResourceMetadata* metadata,
+  UpdateOperation(OperationObserver* observer,
                   JobScheduler* scheduler,
-                  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-                  OperationObserver* observer);
-  virtual ~UpdateOperation();
+                  internal::ResourceMetadata* metadata,
+                  internal::FileCache* cache);
+  ~UpdateOperation();
 
   // Updates a file by the given |resource_id| on the Drive server by
   // uploading an updated version. Used for uploading dirty files. The file
   // should already be present in the cache.
   //
-  // TODO(satorux): As of now, the function only handles files with the dirty
-  // bit committed. We should eliminate the restriction. crbug.com/134558.
-  //
-  // Can only be called from UI thread.  |callback| must not be null.
-  virtual void UpdateFileByResourceId(
-      const std::string& resource_id,
-      DriveClientContext context,
-      const FileOperationCallback& callback);
+  // |callback| must not be null.
+  void UpdateFileByResourceId(const std::string& resource_id,
+                              DriveClientContext context,
+                              const FileOperationCallback& callback);
 
  private:
-  // Part of UpdateFileByResourceId(). Called when
-  // ResourceMetadata::GetResourceEntryById() is complete.
-  // |callback| must not be null.
-  void UpdateFileByEntryInfo(
-      DriveClientContext context,
-      const FileOperationCallback& callback,
-      FileError error,
-      const base::FilePath& drive_file_path,
-      scoped_ptr<ResourceEntry> entry);
+  void UpdateFileAfterGetEntryInfo(DriveClientContext context,
+                                   const FileOperationCallback& callback,
+                                   FileError error,
+                                   const base::FilePath& drive_file_path,
+                                   scoped_ptr<ResourceEntry> entry);
 
-  // Part of UpdateFileByResourceId().
-  // Called when FileCache::GetFileOnUIThread() is completed for
-  // UpdateFileByResourceId().
-  // |callback| must not be null.
-  void OnGetFileCompleteForUpdateFile(
-      DriveClientContext context,
-      const FileOperationCallback& callback,
-      const base::FilePath& drive_file_path,
-      scoped_ptr<ResourceEntry> entry,
-      FileError error,
-      const base::FilePath& cache_file_path);
+  void UpdateFileAfterGetFile(DriveClientContext context,
+                              const FileOperationCallback& callback,
+                              const base::FilePath& drive_file_path,
+                              scoped_ptr<ResourceEntry> entry,
+                              FileError error,
+                              const base::FilePath& cache_file_path);
 
-  // Part of UpdateFileByResourceId().
-  // Called when DriveUploader::UploadUpdatedFile() is completed for
-  // UpdateFileByResourceId().
-  // |callback| must not be null.
-  void OnUpdatedFileUploaded(
+  void UpdateFileAfterUpload(
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
-  // Part of UpdateFileByResourceId().
-  // |callback| must not be null.
-  void OnUpdatedFileRefreshed(const FileOperationCallback& callback,
+  void UpdateFileAfterRefresh(const FileOperationCallback& callback,
                               FileError error,
                               const base::FilePath& drive_file_path,
                               scoped_ptr<ResourceEntry> entry);
 
-  internal::FileCache* cache_;
-  internal::ResourceMetadata* metadata_;
-  JobScheduler* scheduler_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
+  JobScheduler* scheduler_;
+  internal::ResourceMetadata* metadata_;
+  internal::FileCache* cache_;
 
-  // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<UpdateOperation> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(UpdateOperation);
 };
 

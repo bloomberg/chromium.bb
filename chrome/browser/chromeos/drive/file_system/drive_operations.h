@@ -6,21 +6,20 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_DRIVE_OPERATIONS_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace drive {
 
-class FileSystemInterface;
 class JobScheduler;
 
 namespace internal {
 class FileCache;
+class ResourceMetadata;
 }  // namespace internal
 
 namespace file_system {
@@ -31,8 +30,8 @@ class CreateFileOperation;
 class MoveOperation;
 class OperationObserver;
 class RemoveOperation;
-class UpdateOperation;
 class SearchOperation;
+class UpdateOperation;
 
 // Callback for DriveOperations::Search.
 // On success, |error| is FILE_ERROR_OK, and remaining arguments are valid to
@@ -56,18 +55,12 @@ class DriveOperations {
   ~DriveOperations();
 
   // Allocates the operation objects and initializes the operation pointers.
-  void Init(JobScheduler* job_scheduler,
-            FileSystemInterface* file_system,
-            internal::FileCache* cache,
+  void Init(OperationObserver* observer,
+            JobScheduler* scheduler,
             internal::ResourceMetadata* metadata,
-            scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-            OperationObserver* observer);
-
-  // Initializes the operation pointers.  For testing only.
-  void InitForTesting(CopyOperation* copy_operation,
-                      MoveOperation* move_operation,
-                      RemoveOperation* remove_operation,
-                      UpdateOperation* update_operation);
+            internal::FileCache* cache,
+            FileSystemInterface* file_system,
+            base::SequencedTaskRunner* blocking_task_runner);
 
   // Wrapper function for create_directory_operation_.
   // |callback| must not be null.

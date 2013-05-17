@@ -234,12 +234,12 @@ void FileSystem::Initialize() {
   SetupChangeListLoader();
 
   // Allocate the drive operation handlers.
-  drive_operations_.Init(scheduler_,
-                         this,  // FileSystemInterface
-                         cache_,
+  drive_operations_.Init(this,  // OperationObserver
+                         scheduler_,
                          resource_metadata_,
-                         blocking_task_runner_,
-                         this);  // OperationObserver
+                         cache_,
+                         this,  // FileSystemInterface
+                         blocking_task_runner_);
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);

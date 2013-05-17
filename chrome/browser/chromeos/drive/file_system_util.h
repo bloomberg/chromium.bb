@@ -167,7 +167,7 @@ void ParseCacheFilePath(const base::FilePath& path,
                         std::string* md5,
                         std::string* extra_extension);
 
-// Callback type for PrepareWritablebase::FilePathAndRun.
+// Callback type for PrepareWritableFileAndRun.
 typedef base::Callback<void (FileError, const base::FilePath& path)>
     OpenFileCallback;
 

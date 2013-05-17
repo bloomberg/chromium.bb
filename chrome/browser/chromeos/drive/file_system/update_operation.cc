@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -17,17 +18,14 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
-UpdateOperation::UpdateOperation(
-    internal::FileCache* cache,
-    internal::ResourceMetadata* metadata,
-    JobScheduler* scheduler,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    OperationObserver* observer)
-    : cache_(cache),
-      metadata_(metadata),
+UpdateOperation::UpdateOperation(OperationObserver* observer,
+                                 JobScheduler* scheduler,
+                                 internal::ResourceMetadata* metadata,
+                                 internal::FileCache* cache)
+    : observer_(observer),
       scheduler_(scheduler),
-      blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      metadata_(metadata),
+      cache_(cache),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -43,17 +41,15 @@ void UpdateOperation::UpdateFileByResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(satorux): GetResourceEntryById() is called twice for
-  // UpdateFileByResourceId(). crbug.com/143873
   metadata_->GetResourceEntryByIdOnUIThread(
       resource_id,
-      base::Bind(&UpdateOperation::UpdateFileByEntryInfo,
+      base::Bind(&UpdateOperation::UpdateFileAfterGetEntryInfo,
                  weak_ptr_factory_.GetWeakPtr(),
                  context,
                  callback));
 }
 
-void UpdateOperation::UpdateFileByEntryInfo(
+void UpdateOperation::UpdateFileAfterGetEntryInfo(
     DriveClientContext context,
     const FileOperationCallback& callback,
     FileError error,
@@ -67,9 +63,9 @@ void UpdateOperation::UpdateFileByEntryInfo(
     return;
   }
 
-  DCHECK(entry.get());
+  DCHECK(entry);
   if (entry->file_info().is_directory()) {
-    callback.Run(FILE_ERROR_NOT_FOUND);
+    callback.Run(FILE_ERROR_NOT_A_FILE);
     return;
   }
 
@@ -78,7 +74,7 @@ void UpdateOperation::UpdateFileByEntryInfo(
   cache_->GetFileOnUIThread(
       entry_ptr->resource_id(),
       entry_ptr->file_specific_info().file_md5(),
-      base::Bind(&UpdateOperation::OnGetFileCompleteForUpdateFile,
+      base::Bind(&UpdateOperation::UpdateFileAfterGetFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  context,
                  callback,
@@ -86,7 +82,7 @@ void UpdateOperation::UpdateFileByEntryInfo(
                  base::Passed(&entry)));
 }
 
-void UpdateOperation::OnGetFileCompleteForUpdateFile(
+void UpdateOperation::UpdateFileAfterGetFile(
     DriveClientContext context,
     const FileOperationCallback& callback,
     const base::FilePath& drive_file_path,
@@ -108,12 +104,12 @@ void UpdateOperation::OnGetFileCompleteForUpdateFile(
       entry->file_specific_info().content_mime_type(),
       "",  // etag
       context,
-      base::Bind(&UpdateOperation::OnUpdatedFileUploaded,
+      base::Bind(&UpdateOperation::UpdateFileAfterUpload,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void UpdateOperation::OnUpdatedFileUploaded(
+void UpdateOperation::UpdateFileAfterUpload(
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
@@ -128,11 +124,11 @@ void UpdateOperation::OnUpdatedFileUploaded(
 
   metadata_->RefreshEntryOnUIThread(
       ConvertToResourceEntry(*resource_entry),
-      base::Bind(&UpdateOperation::OnUpdatedFileRefreshed,
+      base::Bind(&UpdateOperation::UpdateFileAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void UpdateOperation::OnUpdatedFileRefreshed(
+void UpdateOperation::UpdateFileAfterRefresh(
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& drive_file_path,
@@ -145,7 +141,7 @@ void UpdateOperation::OnUpdatedFileRefreshed(
     return;
   }
 
-  DCHECK(entry.get());
+  DCHECK(entry);
   DCHECK(entry->has_resource_id());
   DCHECK(entry->has_file_specific_info());
   DCHECK(entry->file_specific_info().has_file_md5());

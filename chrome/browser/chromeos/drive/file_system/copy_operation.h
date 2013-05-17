@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_COPY_OPERATION_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
@@ -26,6 +28,7 @@ class ResourceEntry;
 
 namespace internal {
 class FileCache;
+class ResourceMetadata;
 }  // namespace internal
 
 namespace file_system {
@@ -39,40 +42,37 @@ class OperationObserver;
 // metadata to reflect the new state.
 class CopyOperation {
  public:
-  CopyOperation(JobScheduler* job_scheduler,
-                FileSystemInterface* file_system,
+  CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
+                OperationObserver* observer,
+                JobScheduler* scheduler,
                 internal::ResourceMetadata* metadata,
                 internal::FileCache* cache,
-                scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-                OperationObserver* observer);
-  virtual ~CopyOperation();
+                FileSystemInterface* file_system);
+  ~CopyOperation();
 
   // Performs the copy operation on the file at drive path |src_file_path|
   // with a target of |dest_file_path|. Invokes |callback| when finished with
   // the result of the operation. |callback| must not be null.
-  virtual void Copy(const base::FilePath& src_file_path,
-                    const base::FilePath& dest_file_path,
-                    const FileOperationCallback& callback);
+  void Copy(const base::FilePath& src_file_path,
+            const base::FilePath& dest_file_path,
+            const FileOperationCallback& callback);
 
   // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
   // |remote_src_file_path| is the virtual source path on the Drive file system.
   // |local_dest_file_path| is the destination path on the local file system.
   //
-  // Must be called from *UI* thread. |callback| is run on the calling thread.
   // |callback| must not be null.
-  virtual void TransferFileFromRemoteToLocal(
-      const base::FilePath& remote_src_file_path,
-      const base::FilePath& local_dest_file_path,
-      const FileOperationCallback& callback);
+  void TransferFileFromRemoteToLocal(const base::FilePath& remote_src_file_path,
+                                     const base::FilePath& local_dest_file_path,
+                                     const FileOperationCallback& callback);
 
   // Initiates transfer of |local_src_file_path| to |remote_dest_file_path|.
   // |local_src_file_path| must be a file from the local file system.
   // |remote_dest_file_path| is the virtual destination path within Drive file
   // system.
   //
-  // Must be called from *UI* thread. |callback| is run on the calling thread.
   // |callback| must not be null.
-  virtual void TransferFileFromLocalToRemote(
+  void TransferFileFromLocalToRemote(
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback);
@@ -98,9 +98,6 @@ class CopyOperation {
   // TransferFileFromRemoteToLocal. If GetFileByPath reports no error, calls
   // CopyLocalFileOnBlockingPool to copy |local_file_path| to
   // |local_dest_file_path|.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
   void OnGetFileCompleteForTransferFile(
       const base::FilePath& local_dest_file_path,
       const FileOperationCallback& callback,
@@ -110,16 +107,12 @@ class CopyOperation {
 
   // Copies a hosted document with |resource_id| to the directory at |dir_path|
   // and names the copied document as |new_name|.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
   void CopyHostedDocumentToDirectory(const base::FilePath& dir_path,
                                      const std::string& resource_id,
                                      const base::FilePath::StringType& new_name,
                                      const FileOperationCallback& callback);
 
   // Callback for handling document copy attempt.
-  // |callback| must not be null.
   void OnCopyHostedDocumentCompleted(
       const base::FilePath& dir_path,
       const FileOperationCallback& callback,
@@ -129,16 +122,12 @@ class CopyOperation {
   // Moves a file or directory at |file_path| in the root directory to
   // another directory at |dir_path|. This function does nothing if
   // |dir_path| points to the root directory.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
   void MoveEntryFromRootDirectory(const base::FilePath& directory_path,
                                   const FileOperationCallback& callback,
                                   FileError error,
                                   const base::FilePath& file_path);
 
-  // Part of Copy(). Called after GetResourceEntryPairByPaths() is
-  // complete. |callback| must not be null.
+  // Part of Copy(). Called after GetResourceEntryPairByPaths() is complete.
   void CopyAfterGetResourceEntryPair(const base::FilePath& dest_file_path,
                                  const FileOperationCallback& callback,
                                  scoped_ptr<EntryInfoPairResult> result);
@@ -146,8 +135,6 @@ class CopyOperation {
   // Invoked upon completion of GetFileByPath initiated by Copy. If
   // GetFileByPath reports no error, calls TransferRegularFile to transfer
   // |local_file_path| to |remote_dest_file_path|.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
   void OnGetFileCompleteForCopy(const base::FilePath& remote_dest_file_path,
                                 const FileOperationCallback& callback,
                                 FileError error,
@@ -169,31 +156,26 @@ class CopyOperation {
   // Drive file system. If |resource_id| is a non-empty string, the transfer is
   // handled by CopyDocumentToDirectory. Otherwise, the transfer is handled by
   // TransferRegularFile.
-  //
-  // Must be called from *UI* thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
   void TransferFileForResourceId(const base::FilePath& local_file_path,
                                  const base::FilePath& remote_dest_file_path,
                                  const FileOperationCallback& callback,
                                  const std::string& resource_id);
 
-  JobScheduler* job_scheduler_;
-  FileSystemInterface* file_system_;
-  internal::ResourceMetadata* metadata_;
-  internal::FileCache* cache_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
+  JobScheduler* scheduler_;
+  internal::ResourceMetadata* metadata_;
+  internal::FileCache* cache_;
+  FileSystemInterface* file_system_;
 
   // Uploading a new file is internally implemented by creating a dirty file.
   scoped_ptr<CreateFileOperation> create_file_operation_;
   // Copying a hosted document is internally implemented by using a move.
   scoped_ptr<MoveOperation> move_operation_;
 
-  // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<CopyOperation> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(CopyOperation);
 };
 

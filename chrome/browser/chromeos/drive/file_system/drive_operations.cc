@@ -27,57 +27,35 @@ DriveOperations::~DriveOperations() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void DriveOperations::Init(
-    JobScheduler* job_scheduler,
-    FileSystemInterface* file_system,
-    internal::FileCache* cache,
-    internal::ResourceMetadata* metadata,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    OperationObserver* observer) {
+void DriveOperations::Init(OperationObserver* observer,
+                           JobScheduler* scheduler,
+                           internal::ResourceMetadata* metadata,
+                           internal::FileCache* cache,
+                           FileSystemInterface* file_system,
+                           base::SequencedTaskRunner* blocking_task_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  copy_operation_.reset(new file_system::CopyOperation(job_scheduler,
-                                                       file_system,
+  copy_operation_.reset(new file_system::CopyOperation(blocking_task_runner,
+                                                       observer,
+                                                       scheduler,
                                                        metadata,
                                                        cache,
-                                                       blocking_task_runner,
-                                                       observer));
+                                                       file_system));
   create_directory_operation_.reset(
-      new CreateDirectoryOperation(job_scheduler,
-                                   metadata,
-                                   observer));
-  create_file_operation_.reset(new CreateFileOperation(job_scheduler,
-                                                       cache,
+      new CreateDirectoryOperation(observer, scheduler, metadata));
+  create_file_operation_.reset(new CreateFileOperation(blocking_task_runner,
+                                                       observer,
+                                                       scheduler,
                                                        metadata,
-                                                       blocking_task_runner,
-                                                       observer));
-  move_operation_.reset(new MoveOperation(job_scheduler,
-                                          metadata,
-                                          observer));
-  remove_operation_.reset(new RemoveOperation(job_scheduler,
-                                              cache,
-                                              metadata,
-                                              observer));
-  update_operation_.reset(new UpdateOperation(cache,
-                                              metadata,
-                                              job_scheduler,
-                                              blocking_task_runner,
-                                              observer));
-  search_operation_.reset(new SearchOperation(blocking_task_runner,
-                                              job_scheduler,
-                                              metadata));
-}
-
-void DriveOperations::InitForTesting(CopyOperation* copy_operation,
-                                     MoveOperation* move_operation,
-                                     RemoveOperation* remove_operation,
-                                     UpdateOperation* update_operation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  copy_operation_.reset(copy_operation);
-  move_operation_.reset(move_operation);
-  remove_operation_.reset(remove_operation);
-  update_operation_.reset(update_operation);
+                                                       cache));
+  move_operation_.reset(
+      new MoveOperation(observer, scheduler, metadata));
+  remove_operation_.reset(
+      new RemoveOperation(observer, scheduler, metadata, cache));
+  update_operation_.reset(
+      new UpdateOperation(observer, scheduler, metadata, cache));
+  search_operation_.reset(
+      new SearchOperation(blocking_task_runner, scheduler, metadata));
 }
 
 void DriveOperations::Copy(const base::FilePath& src_file_path,
@@ -113,11 +91,10 @@ void DriveOperations::TransferFileFromLocalToRemote(
                                                  callback);
 }
 
-void DriveOperations::CreateDirectory(
-    const base::FilePath& directory_path,
-    bool is_exclusive,
-    bool is_recursive,
-    const FileOperationCallback& callback) {
+void DriveOperations::CreateDirectory(const base::FilePath& directory_path,
+                                      bool is_exclusive,
+                                      bool is_recursive,
+                                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 

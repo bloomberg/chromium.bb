@@ -12,12 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "googleurl/src/gurl.h"
 
 namespace google_apis {
-
 class ResourceEntry;
-
 }  // namespace google_apis
 
 namespace drive {
@@ -38,9 +35,9 @@ class OperationObserver;
 // local state and metadata to reflect the new state.
 class CreateDirectoryOperation {
  public:
-  CreateDirectoryOperation(JobScheduler* job_scheduler,
-                           internal::ResourceMetadata* metadata,
-                           OperationObserver* observer);
+  CreateDirectoryOperation(OperationObserver* observer,
+                           JobScheduler* scheduler,
+                           internal::ResourceMetadata* metadata);
   ~CreateDirectoryOperation();
 
   // Creates a new directory at |directory_path|.
@@ -144,15 +141,13 @@ class CreateDirectoryOperation {
       FileError error,
       scoped_ptr<ResourceEntry> entry);
 
-  JobScheduler* job_scheduler_;
-  internal::ResourceMetadata* metadata_;
   OperationObserver* observer_;
+  JobScheduler* scheduler_;
+  internal::ResourceMetadata* metadata_;
 
-  // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<CreateDirectoryOperation> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(CreateDirectoryOperation);
 };
 

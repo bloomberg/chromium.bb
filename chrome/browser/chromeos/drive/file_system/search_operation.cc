@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -71,10 +70,10 @@ FileError RefreshEntriesOnBlockingPool(
 SearchOperation::SearchOperation(
     base::SequencedTaskRunner* blocking_task_runner,
     JobScheduler* scheduler,
-    internal::ResourceMetadata* resource_metadata)
+    internal::ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
       scheduler_(scheduler),
-      resource_metadata_(resource_metadata),
+      metadata_(metadata),
       weak_ptr_factory_(this) {
 }
 
@@ -139,7 +138,7 @@ void SearchOperation::SearchAfterGetResourceList(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&RefreshEntriesOnBlockingPool,
-                 resource_metadata_,
+                 metadata_,
                  base::Passed(&resource_list),
                  is_update_needed,
                  result_ptr),

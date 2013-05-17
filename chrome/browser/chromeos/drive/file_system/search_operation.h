@@ -6,20 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_SEARCH_OPERATION_H_
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
-
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
 
 namespace google_apis {
 class ResourceEntry;
@@ -39,9 +34,9 @@ namespace file_system {
 // sending the request to the drive API.
 class SearchOperation {
  public:
-  SearchOperation(base::SequencedTaskRunner* blocking_task_runner_,
-                  JobScheduler* job_scheduler,
-                  internal::ResourceMetadata* resource_metadata);
+  SearchOperation(base::SequencedTaskRunner* blocking_task_runner,
+                  JobScheduler* scheduler,
+                  internal::ResourceMetadata* metadata);
   ~SearchOperation();
 
   // Performs server side content search operation for |search_query|.
@@ -72,8 +67,8 @@ class SearchOperation {
       FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  JobScheduler* scheduler_;  // Not owned.
-  internal::ResourceMetadata* resource_metadata_;  // Not owned.
+  JobScheduler* scheduler_;
+  internal::ResourceMetadata* metadata_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

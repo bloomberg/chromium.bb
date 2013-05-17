@@ -70,7 +70,7 @@ class CreateDirectoryOperationTest
     ASSERT_EQ(FILE_ERROR_OK, error);
 
     operation_.reset(
-        new CreateDirectoryOperation(scheduler_.get(), metadata_.get(), this));
+        new CreateDirectoryOperation(this, scheduler_.get(), metadata_.get()));
   }
 
   virtual void TearDown() OVERRIDE {

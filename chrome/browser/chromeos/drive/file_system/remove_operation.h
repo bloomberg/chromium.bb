@@ -11,15 +11,12 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
-class GURL;
-
 namespace base {
 class FilePath;
 }  // namespace base
 
 namespace drive {
 
-class FileSystem;
 class JobScheduler;
 class ResourceEntry;
 
@@ -37,52 +34,45 @@ class OperationObserver;
 // metadata to reflect the new state.
 class RemoveOperation {
  public:
-  RemoveOperation(JobScheduler* job_scheduler,
-                  internal::FileCache* cache,
+  RemoveOperation(OperationObserver* observer,
+                  JobScheduler* scheduler,
                   internal::ResourceMetadata* metadata,
-                  OperationObserver* observer);
-  virtual ~RemoveOperation();
+                  internal::FileCache* cache);
+  ~RemoveOperation();
 
   // Perform the remove operation on the file at drive path |file_path|.
   // Invokes |callback| when finished with the result of the operation.
   // |callback| must not be null.
-  virtual void Remove(const base::FilePath& file_path,
-                      bool is_recursive,
-                      const FileOperationCallback& callback);
+  void Remove(const base::FilePath& file_path,
+              bool is_recursive,
+              const FileOperationCallback& callback);
 
  private:
   // Part of Remove(). Called after GetResourceEntryByPath() is complete.
-  // |callback| must not be null.
-  void RemoveAfterGetResourceEntry(
-      const FileOperationCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
+  void RemoveAfterGetResourceEntry(const FileOperationCallback& callback,
+                                   FileError error,
+                                   scoped_ptr<ResourceEntry> entry);
 
   // Callback for DriveServiceInterface::DeleteResource. Removes the entry with
   // |resource_id| from the local snapshot of the filesystem and the cache.
-  // |callback| must not be null.
-  void RemoveResourceLocally(
-      const FileOperationCallback& callback,
-      const std::string& resource_id,
-      google_apis::GDataErrorCode status);
+  void RemoveResourceLocally(const FileOperationCallback& callback,
+                             const std::string& resource_id,
+                             google_apis::GDataErrorCode status);
 
   // Sends notification for directory changes. Notifies of directory changes,
-  // and runs |callback| with |error|. |callback| must not be null.
-  void NotifyDirectoryChanged(
-      const FileOperationCallback& callback,
-      FileError error,
-      const base::FilePath& directory_path);
+  // and runs |callback| with |error|.
+  void NotifyDirectoryChanged(const FileOperationCallback& callback,
+                              FileError error,
+                              const base::FilePath& directory_path);
 
-  JobScheduler* job_scheduler_;
-  internal::FileCache* cache_;
-  internal::ResourceMetadata* metadata_;
   OperationObserver* observer_;
+  JobScheduler* scheduler_;
+  internal::ResourceMetadata* metadata_;
+  internal::FileCache* cache_;
 
-  // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<RemoveOperation> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(RemoveOperation);
 };
 

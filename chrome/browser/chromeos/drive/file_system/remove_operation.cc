@@ -16,21 +16,14 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
-namespace {
-
-void EmptyFileOperationCallback(FileError error) {}
-
-}  // namespace
-
-RemoveOperation::RemoveOperation(
-    JobScheduler* job_scheduler,
-    internal::FileCache* cache,
-    internal::ResourceMetadata* metadata,
-    OperationObserver* observer)
-  : job_scheduler_(job_scheduler),
-    cache_(cache),
+RemoveOperation::RemoveOperation(OperationObserver* observer,
+                                 JobScheduler* scheduler,
+                                 internal::ResourceMetadata* metadata,
+                                 internal::FileCache* cache)
+  : observer_(observer),
+    scheduler_(scheduler),
     metadata_(metadata),
-    observer_(observer),
+    cache_(cache),
     weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -39,10 +32,9 @@ RemoveOperation::~RemoveOperation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void RemoveOperation::Remove(
-    const base::FilePath& file_path,
-    bool is_recursive,
-    const FileOperationCallback& callback) {
+void RemoveOperation::Remove(const base::FilePath& file_path,
+                             bool is_recursive,
+                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -66,9 +58,9 @@ void RemoveOperation::RemoveAfterGetResourceEntry(
     callback.Run(error);
     return;
   }
-  DCHECK(entry.get());
+  DCHECK(entry);
 
-  job_scheduler_->DeleteResource(
+  scheduler_->DeleteResource(
       entry->resource_id(),
       base::Bind(&RemoveOperation::RemoveResourceLocally,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -96,7 +88,7 @@ void RemoveOperation::RemoveResourceLocally(
                  callback));
 
   cache_->RemoveOnUIThread(resource_id,
-                           base::Bind(&EmptyFileOperationCallback));
+                           base::Bind(&util::EmptyFileOperationCallback));
 }
 
 void RemoveOperation::NotifyDirectoryChanged(

@@ -74,12 +74,12 @@ struct CreateDirectoryOperation::FindFirstMissingParentDirectoryParams {
 };
 
 CreateDirectoryOperation::CreateDirectoryOperation(
-    JobScheduler* job_scheduler,
-    internal::ResourceMetadata* metadata,
-    OperationObserver* observer)
-    : job_scheduler_(job_scheduler),
+    OperationObserver* observer,
+    JobScheduler* scheduler,
+    internal::ResourceMetadata* metadata)
+    : observer_(observer),
+      scheduler_(scheduler),
       metadata_(metadata),
-      observer_(observer),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -142,7 +142,7 @@ void CreateDirectoryOperation::CreateDirectoryAfterFindFirstMissingPath(
     return;
   }
 
-  job_scheduler_->AddNewDirectory(
+  scheduler_->AddNewDirectory(
       result.last_dir_resource_id,
       result.first_missing_parent_path.BaseName().AsUTF8Unsafe(),
       base::Bind(&CreateDirectoryOperation::AddNewDirectory,

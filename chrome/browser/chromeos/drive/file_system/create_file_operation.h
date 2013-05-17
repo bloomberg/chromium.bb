@@ -6,25 +6,29 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_CREATE_FILE_OPERATION_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "base/sequenced_task_runner.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace google_apis {
 class ResourceEntry;
-}
+}  // namespace google_apis
 
 namespace drive {
 
 namespace internal {
 class FileCache;
+class ResourceMetadata;
 }  // namespace internal
 
+struct EntryInfoPairResult;
 class JobScheduler;
 class ResourceEntry;
 
@@ -37,12 +41,11 @@ class OperationObserver;
 // metadata to reflect the new state.
 class CreateFileOperation {
  public:
-  CreateFileOperation(
-      JobScheduler* job_scheduler,
-      internal::FileCache* cache,
-      internal::ResourceMetadata* metadata,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-      OperationObserver* observer);
+  CreateFileOperation(base::SequencedTaskRunner* blocking_task_runner,
+                      OperationObserver* observer,
+                      JobScheduler* scheduler,
+                      internal::ResourceMetadata* metadata,
+                      internal::FileCache* cache);
   ~CreateFileOperation();
 
   // Creates an empty file at |file_path| in the remote server. When the file
@@ -77,11 +80,11 @@ class CreateFileOperation {
                                     FileError error,
                                     const base::FilePath& drive_path);
 
-  JobScheduler* job_scheduler_;
-  internal::FileCache* cache_;
-  internal::ResourceMetadata* metadata_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
+  JobScheduler* scheduler_;
+  internal::ResourceMetadata* metadata_;
+  internal::FileCache* cache_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

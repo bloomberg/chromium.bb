@@ -56,27 +56,24 @@ std::string GetDocumentResourceIdOnBlockingPool(
 
 }  // namespace
 
-CopyOperation::CopyOperation(
-    JobScheduler* job_scheduler,
-    FileSystemInterface* file_system,
-    internal::ResourceMetadata* metadata,
-    internal::FileCache* cache,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    OperationObserver* observer)
-  : job_scheduler_(job_scheduler),
-    file_system_(file_system),
+CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
+                             OperationObserver* observer,
+                             JobScheduler* scheduler,
+                             internal::ResourceMetadata* metadata,
+                             internal::FileCache* cache,
+                             FileSystemInterface* file_system)
+  : blocking_task_runner_(blocking_task_runner),
+    observer_(observer),
+    scheduler_(scheduler),
     metadata_(metadata),
     cache_(cache),
-    blocking_task_runner_(blocking_task_runner),
-    observer_(observer),
-    create_file_operation_(new CreateFileOperation(job_scheduler,
-                                                   cache,
+    file_system_(file_system),
+    create_file_operation_(new CreateFileOperation(blocking_task_runner,
+                                                   observer,
+                                                   scheduler,
                                                    metadata,
-                                                   blocking_task_runner,
-                                                   observer)),
-    move_operation_(new MoveOperation(job_scheduler,
-                                      metadata,
-                                      observer)),
+                                                   cache)),
+    move_operation_(new MoveOperation(observer, scheduler, metadata)),
     weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -222,7 +219,7 @@ void CopyOperation::CopyHostedDocumentToDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  job_scheduler_->CopyHostedDocument(
+  scheduler_->CopyHostedDocument(
       resource_id,
       base::FilePath(new_name).AsUTF8Unsafe(),
       base::Bind(&CopyOperation::OnCopyHostedDocumentCompleted,

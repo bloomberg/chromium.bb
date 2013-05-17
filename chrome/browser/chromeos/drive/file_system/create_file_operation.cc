@@ -34,16 +34,16 @@ void IgnoreError(const FileOperationCallback& callback, FileError error) {
 }  // namespace
 
 CreateFileOperation::CreateFileOperation(
-    JobScheduler* job_scheduler,
-    internal::FileCache* cache,
+    base::SequencedTaskRunner* blocking_task_runner,
+    OperationObserver* observer,
+    JobScheduler* scheduler,
     internal::ResourceMetadata* metadata,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    OperationObserver* observer)
-    : job_scheduler_(job_scheduler),
-      cache_(cache),
-      metadata_(metadata),
-      blocking_task_runner_(blocking_task_runner),
+    internal::FileCache* cache)
+    : blocking_task_runner_(blocking_task_runner),
       observer_(observer),
+      scheduler_(scheduler),
+      metadata_(metadata),
+      cache_(cache),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -129,7 +129,7 @@ void CreateFileOperation::CreateFileAfterGetMimeType(
     bool got_content_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  job_scheduler_->CreateFile(
+  scheduler_->CreateFile(
       parent_resource_id,
       file_path,
       file_path.BaseName().value(),
