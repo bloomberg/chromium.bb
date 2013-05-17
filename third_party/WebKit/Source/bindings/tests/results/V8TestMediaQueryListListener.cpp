@@ -134,7 +134,8 @@ v8::Handle<v8::Object> V8TestMediaQueryListListener::createWrapper(PassRefPtr<Te
         return wrapper;
 
     installPerContextProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, hasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
+    ASSERT(!deperecatedHasDependentLifetime);
+    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, deperecatedHasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
     return wrapper;
 }
 void V8TestMediaQueryListListener::derefObject(void* object)

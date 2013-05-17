@@ -184,7 +184,8 @@ v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> im
         return wrapper;
 
     installPerContextProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, hasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
+    ASSERT(!deperecatedHasDependentLifetime);
+    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, deperecatedHasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
     return wrapper;
 }
 void V8Float64Array::derefObject(void* object)

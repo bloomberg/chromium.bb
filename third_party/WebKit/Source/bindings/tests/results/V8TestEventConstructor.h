@@ -31,7 +31,7 @@ namespace WebCore {
 class Dictionary;
 class V8TestEventConstructor {
 public:
-    static const bool hasDependentLifetime = false;
+    static const bool deperecatedHasDependentLifetime = false;
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
     static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);

@@ -4413,7 +4413,8 @@ v8::Handle<v8::Object> V8TestObject::createWrapper(PassRefPtr<TestObj> impl, v8:
         return wrapper;
 
     installPerContextProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, hasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
+    ASSERT(!deperecatedHasDependentLifetime);
+    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, deperecatedHasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
     return wrapper;
 }
 void V8TestObject::derefObject(void* object)
