@@ -834,8 +834,6 @@ tools/getos.py
 tools/host_gcc.mk
 tools/host_vc.mk
 tools/httpd.py
-tools/irt_core_newlib_x32.nexe
-tools/irt_core_newlib_x64.nexe
 tools/irt_core_x86_32.nexe
 tools/irt_core_x86_64.nexe
 [win]tools/make.exe
@@ -845,9 +843,8 @@ tools/nacl_gcc.mk
 tools/nacl_llvm.mk
 [linux,mac]tools/ncval_arm
 [win]tools/ncval_arm.exe
-[linux]tools/ncval_mips32
-tools/ncval_x86_32
-tools/ncval_x86_64
+[linux,mac]tools/ncval_x86_32
+[linux]tools/ncval_x86_64
 [win]tools/ncval_x86_32.exe
 [win]tools/ncval_x86_64.exe
 tools/oshelpers.py
@@ -855,8 +852,7 @@ tools/oshelpers.pyc
 tools/quote.py
 tools/quote_test.py
 tools/run.py
-[linux]tools/sel_ldr_seccomp_x86_64
-tools/sel_ldr_x86_32
-tools/sel_ldr_x86_64
+[linux,mac]tools/sel_ldr_x86_32
+[linux]tools/sel_ldr_x86_64
 [win]tools/sel_ldr_x86_32.exe
 [win]tools/sel_ldr_x86_64.exe

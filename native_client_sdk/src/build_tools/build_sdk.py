@@ -78,12 +78,6 @@ def GetPNaClToolchain(os_platform, arch):
   return os.path.join(tcdir, tcname)
 
 
-def GetScons():
-  if sys.platform in ['cygwin', 'win32']:
-    return 'scons.bat'
-  return './scons'
-
-
 def GetArchName(arch, xarch=None):
   if xarch:
     return arch + '-' + str(xarch)
@@ -125,14 +119,16 @@ def GetSconsArgs(tcpath, outdir, arch, xarch=None):
 
   Only used for pnacl builds.
   """
-  scons = GetScons()
+  if sys.platform in ['cygwin', 'win32']:
+    scons = 'scons.bat'
+  else:
+    scons = './scons'
   mode = '--mode=opt-host,nacl'
   arch_name = GetArchName(arch, xarch)
   plat = 'platform=' + arch_name
   binarg = 'bindir=' + os.path.join(outdir, 'tools')
   lib = 'libdir=' + GetToolchainNaClLib('pnacl', tcpath, arch, xarch)
-  args = [scons, mode, plat, binarg, lib, '-j10',
-          'install_bin', 'install_lib', 'bitcode=1']
+  args = [scons, mode, plat, binarg, lib, '-j10', 'install_lib', 'bitcode=1']
 
   print "Building pnacl (%s): %s" % (arch, ' '.join(args))
   return args
@@ -432,8 +428,8 @@ def GypNinjaInstall(pepperdir, platform, toolchains):
     ['sel_ldr', 'sel_ldr_x86_32'],
     ['ncval_x86_32', 'ncval_x86_32'],
     ['ncval_arm', 'ncval_arm'],
-    ['irt_core_newlib_x32.nexe', 'irt_core_newlib_x32.nexe'],
-    ['irt_core_newlib_x64.nexe', 'irt_core_newlib_x64.nexe'],
+    ['irt_core_newlib_x32.nexe', 'irt_core_x86_32.nexe'],
+    ['irt_core_newlib_x64.nexe', 'irt_core_x86_64.nexe'],
   ]
 
   if platform != 'mac':
@@ -610,10 +606,8 @@ def BuildStepBuildToolchains(pepperdir, platform, toolchains):
     shell = platform == 'win'
     buildbot_common.Run(
         GetSconsArgs(pnacldir, pepperdir, 'x86', '32'),
-        cwd=NACL_DIR, shell=shell)
-    buildbot_common.Run(
-        GetSconsArgs(pnacldir, pepperdir, 'x86', '64'),
-        cwd=NACL_DIR, shell=shell)
+        cwd=NACL_DIR,
+        shell=shell)
 
     for arch in ('ia32', 'arm'):
       # Fill in the latest native pnacl shim library from the chrome build.
