@@ -1639,7 +1639,6 @@ crbug.com/237751 fast/css/percentage-non-integer.html [ Pass Failure ImageOnlyFa
 crbug.com/237751 svg/wicd/rightsizing-grid.xhtml [ Pass Failure ImageOnlyFailure ]
 crbug.com/237751 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ImageOnlyFailure ]
 
-crbug.com/239913 [ Win7 Debug ] media/track/track-cue-rendering-horizontal.html [ Crash ]
 
 # Webgl tests are flaky crashing on windows.
 crbug.com/239839 [ Win ] fast/canvas/webgl/ [ Pass Crash ]
