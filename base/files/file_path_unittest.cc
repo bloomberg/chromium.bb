@@ -1068,6 +1068,9 @@ TEST_F(FilePathTest, ReferencesParent) {
   const struct UnaryBooleanTestData cases[] = {
     { FPL("."),        false },
     { FPL(".."),       true },
+    { FPL(".. "),      true },
+    { FPL(" .."),      true },
+    { FPL("..."),      true },
     { FPL("a.."),      false },
     { FPL("..a"),      false },
     { FPL("../"),      true },
