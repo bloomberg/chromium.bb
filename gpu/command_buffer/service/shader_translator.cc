@@ -9,6 +9,7 @@
 
 #include "base/at_exit.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace {
 
@@ -139,10 +140,24 @@ bool ShaderTranslator::Init(
 
   compiler_ = ShConstructCompiler(
       shader_type, shader_spec, shader_output, resources);
+  compiler_options_ = *resources;
   implementation_is_glsl_es_ = (glsl_implementation_type == kGlslES);
   needs_built_in_function_emulation_ =
       (glsl_built_in_function_behavior == kGlslBuiltInFunctionEmulated);
   return compiler_ != NULL;
+}
+
+int ShaderTranslator::GetCompileOptions() const {
+  int compile_options =
+      SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS |
+      SH_MAP_LONG_VARIABLE_NAMES | SH_ENFORCE_PACKING_RESTRICTIONS;
+
+  compile_options |= SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
+
+  if (needs_built_in_function_emulation_)
+    compile_options |= SH_EMULATE_BUILT_IN_FUNCTIONS;
+
+  return compile_options;
 }
 
 bool ShaderTranslator::Translate(const char* shader) {
@@ -152,15 +167,7 @@ bool ShaderTranslator::Translate(const char* shader) {
   ClearResults();
 
   bool success = false;
-  int compile_options =
-      SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS |
-      SH_MAP_LONG_VARIABLE_NAMES | SH_ENFORCE_PACKING_RESTRICTIONS;
-
-  compile_options |= SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
-
-  if (needs_built_in_function_emulation_)
-    compile_options |= SH_EMULATE_BUILT_IN_FUNCTIONS;
-  if (ShCompile(compiler_, &shader, 1, compile_options)) {
+  if (ShCompile(compiler_, &shader, 1, GetCompileOptions())) {
     success = true;
     // Get translated shader.
     ANGLEGetInfoType obj_code_len = 0;
@@ -187,6 +194,56 @@ bool ShaderTranslator::Translate(const char* shader) {
   }
 
   return success;
+}
+
+std::string ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation()
+    const {
+  const size_t kNumIntFields = 13;
+  const size_t kNumEnumFields = 1;
+  const size_t kNumFunctionPointerFields = 1;
+  struct MustMatchShBuiltInResource {
+    typedef khronos_uint64_t (*FunctionPointer)(const char*, size_t);
+    enum Enum {
+      kFirst,
+    };
+    int int_fields[kNumIntFields];
+    FunctionPointer pointer_fields[kNumFunctionPointerFields];
+    Enum enum_fields[kNumEnumFields];
+  };
+  // If this assert fails most likely that means something below needs updating.
+  COMPILE_ASSERT(
+      sizeof(ShBuiltInResources) == sizeof(MustMatchShBuiltInResource),
+      Fields_Have_Changed_In_ShBuiltInResource_So_Update_Below);
+
+  return std::string(
+      ":CompileOptions:" +
+      base::IntToString(GetCompileOptions()) +
+      ":MaxVertexAttribs:" +
+      base::IntToString(compiler_options_.MaxVertexAttribs) +
+      ":MaxVertexUniformVectors:" +
+      base::IntToString(compiler_options_.MaxVertexUniformVectors) +
+      ":MaxVaryingVectors:" +
+      base::IntToString(compiler_options_.MaxVaryingVectors) +
+      ":MaxVertexTextureImageUnits:" +
+      base::IntToString(compiler_options_.MaxVertexTextureImageUnits) +
+      ":MaxCombinedTextureImageUnits:" +
+      base::IntToString(compiler_options_.MaxCombinedTextureImageUnits) +
+      ":MaxTextureImageUnits:" +
+      base::IntToString(compiler_options_.MaxTextureImageUnits) +
+      ":MaxFragmentUniformVectors:" +
+      base::IntToString(compiler_options_.MaxFragmentUniformVectors) +
+      ":MaxDrawBuffers:" +
+      base::IntToString(compiler_options_.MaxDrawBuffers) +
+      ":OES_standard_derivatives:" +
+      base::IntToString(compiler_options_.OES_standard_derivatives) +
+      ":OES_EGL_image_external:" +
+      base::IntToString(compiler_options_.OES_EGL_image_external) +
+      ":ARB_texture_rectangle:" +
+      base::IntToString(compiler_options_.ARB_texture_rectangle) +
+      ":EXT_draw_buffers:" +
+      base::IntToString(compiler_options_.EXT_draw_buffers) +
+      ":FragmentPrecisionHigh:" +
+      base::IntToString(compiler_options_.FragmentPrecisionHigh));
 }
 
 const char* ShaderTranslator::translated_shader() const {

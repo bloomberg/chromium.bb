@@ -1192,8 +1192,8 @@ class ProgramManagerWithCacheTest : public testing::Test {
   }
 
   void SetShadersCompiled() {
-    cache_->ShaderCompilationSucceeded(*vertex_shader_->source());
-    cache_->ShaderCompilationSucceeded(*fragment_shader_->source());
+    cache_->ShaderCompilationSucceeded(*vertex_shader_->source(), NULL);
+    cache_->ShaderCompilationSucceeded(*fragment_shader_->source(), NULL);
     vertex_shader_->SetStatus(true, NULL, NULL);
     fragment_shader_->SetStatus(true, NULL, NULL);
     vertex_shader_->FlagSourceAsCompiled(true);
@@ -1209,7 +1209,9 @@ class ProgramManagerWithCacheTest : public testing::Test {
   void SetProgramCached() {
     cache_->LinkedProgramCacheSuccess(
         vertex_shader_->source()->c_str(),
+        NULL,
         fragment_shader_->source()->c_str(),
+        NULL,
         &program_->bind_attrib_location_map());
   }
 
@@ -1226,7 +1228,9 @@ class ProgramManagerWithCacheTest : public testing::Test {
     EXPECT_CALL(*cache_.get(), SaveLinkedProgram(
         program->service_id(),
         vertex_shader,
+        NULL,
         fragment_shader,
+        NULL,
         &program->bind_attrib_location_map(),
         _)).Times(1);
   }
@@ -1244,7 +1248,9 @@ class ProgramManagerWithCacheTest : public testing::Test {
     EXPECT_CALL(*cache_.get(), SaveLinkedProgram(
         program->service_id(),
         vertex_shader,
+        NULL,
         fragment_shader,
+        NULL,
         &program->bind_attrib_location_map(),
         _)).Times(0);
   }
@@ -1266,7 +1272,9 @@ class ProgramManagerWithCacheTest : public testing::Test {
     EXPECT_CALL(*cache_.get(),
                 LoadLinkedProgram(service_program_id,
                                   vertex_shader,
+                                  NULL,
                                   fragment_shader,
+                                  NULL,
                                   &program->bind_attrib_location_map(),
                                   _))
         .WillOnce(Return(result));
@@ -1360,7 +1368,8 @@ TEST_F(ProgramManagerWithCacheTest, CacheSuccessAfterShaderCompile) {
   scoped_refptr<FeatureInfo> info(new FeatureInfo());
   manager_.DoCompileShader(vertex_shader_, NULL, info.get());
   EXPECT_EQ(ProgramCache::COMPILATION_SUCCEEDED,
-            cache_->GetShaderCompilationStatus(*vertex_shader_->source()));
+            cache_->GetShaderCompilationStatus(
+                *vertex_shader_->source(), NULL));
 }
 
 TEST_F(ProgramManagerWithCacheTest, CacheUnknownAfterShaderError) {
@@ -1368,11 +1377,12 @@ TEST_F(ProgramManagerWithCacheTest, CacheUnknownAfterShaderError) {
   scoped_refptr<FeatureInfo> info(new FeatureInfo());
   manager_.DoCompileShader(vertex_shader_, NULL, info.get());
   EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(*vertex_shader_->source()));
+            cache_->GetShaderCompilationStatus(
+                *vertex_shader_->source(), NULL));
 }
 
 TEST_F(ProgramManagerWithCacheTest, NoCompileWhenShaderCached) {
-  cache_->ShaderCompilationSucceeded(vertex_shader_->source()->c_str());
+  cache_->ShaderCompilationSucceeded(vertex_shader_->source()->c_str(), NULL);
   SetExpectationsForNoCompile(vertex_shader_);
   scoped_refptr<FeatureInfo> info(new FeatureInfo());
   manager_.DoCompileShader(vertex_shader_, NULL, info.get());

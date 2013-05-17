@@ -219,6 +219,43 @@ TEST_F(ShaderTranslatorTest, BuiltInFunctionEmulation) {
 }
 #endif
 
+TEST_F(ShaderTranslatorTest, OptionsString) {
+  scoped_refptr<ShaderTranslator> translator_1 = new ShaderTranslator();
+  scoped_refptr<ShaderTranslator> translator_2 = new ShaderTranslator();
+  scoped_refptr<ShaderTranslator> translator_3 = new ShaderTranslator();
+
+  ShBuiltInResources resources;
+  ShInitBuiltInResources(&resources);
+
+  ASSERT_TRUE(translator_1->Init(
+      SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
+      ShaderTranslatorInterface::kGlsl,
+      ShaderTranslatorInterface::kGlslBuiltInFunctionEmulated));
+  ASSERT_TRUE(translator_2->Init(
+      SH_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources,
+      ShaderTranslatorInterface::kGlsl,
+      ShaderTranslatorInterface::kGlslBuiltInFunctionOriginal));
+  resources.EXT_draw_buffers = 1;
+  ASSERT_TRUE(translator_3->Init(
+      SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
+      ShaderTranslatorInterface::kGlsl,
+      ShaderTranslatorInterface::kGlslBuiltInFunctionEmulated));
+
+  std::string options_1(
+      translator_1->GetStringForOptionsThatWouldEffectCompilation());
+  std::string options_2(
+      translator_1->GetStringForOptionsThatWouldEffectCompilation());
+  std::string options_3(
+      translator_2->GetStringForOptionsThatWouldEffectCompilation());
+  std::string options_4(
+      translator_3->GetStringForOptionsThatWouldEffectCompilation());
+
+  EXPECT_EQ(options_1, options_2);
+  EXPECT_NE(options_1, options_3);
+  EXPECT_NE(options_1, options_4);
+  EXPECT_NE(options_3, options_4);
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

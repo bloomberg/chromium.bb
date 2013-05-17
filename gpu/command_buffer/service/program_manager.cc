@@ -446,8 +446,8 @@ void ProgramManager::DoCompileShader(Shader* shader,
   TimeTicks before = TimeTicks::HighResNow();
   if (program_cache_ &&
       program_cache_->GetShaderCompilationStatus(
-          shader->source() ? *shader->source() : std::string()) ==
-          ProgramCache::COMPILATION_SUCCEEDED) {
+          shader->source() ? *shader->source() : std::string(),
+          translator) == ProgramCache::COMPILATION_SUCCEEDED) {
     shader->SetStatus(true, "", translator);
     shader->FlagSourceAsCompiled(false);
     UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -508,7 +508,8 @@ void ProgramManager::ForceCompileShader(const std::string* source,
     shader->SetStatus(true, "", translator);
     if (program_cache_) {
       const char* untranslated_source = source ? source->c_str() : "";
-      program_cache_->ShaderCompilationSucceeded(untranslated_source);
+      program_cache_->ShaderCompilationSucceeded(
+          untranslated_source, translator);
     }
   } else {
     // We cannot reach here if we are using the shader translator.
@@ -552,14 +553,18 @@ bool Program::Link(ShaderManager* manager,
   if (cache) {
     ProgramCache::LinkedProgramStatus status = cache->GetLinkedProgramStatus(
         *attached_shaders_[0]->deferred_compilation_source(),
+        vertex_translator,
         *attached_shaders_[1]->deferred_compilation_source(),
+        fragment_translator,
         &bind_attrib_location_map_);
 
     if (status == ProgramCache::LINK_SUCCEEDED) {
       ProgramCache::ProgramLoadResult success = cache->LoadLinkedProgram(
                   service_id(),
                   attached_shaders_[0],
+                  vertex_translator,
                   attached_shaders_[1],
+                  fragment_translator,
                   &bind_attrib_location_map_,
                   shader_callback);
       link = success != ProgramCache::PROGRAM_LOAD_SUCCESS;
@@ -606,7 +611,9 @@ bool Program::Link(ShaderManager* manager,
       if (cache) {
         cache->SaveLinkedProgram(service_id(),
                                  attached_shaders_[0],
+                                 vertex_translator,
                                  attached_shaders_[1],
+                                 fragment_translator,
                                  &bind_attrib_location_map_,
                                  shader_callback);
       }

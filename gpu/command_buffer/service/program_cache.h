@@ -18,6 +18,7 @@ namespace gpu {
 namespace gles2 {
 
 class Shader;
+class ShaderTranslator;
 
 // Program cache base class for caching linked gpu programs
 class GPU_EXPORT ProgramCache {
@@ -45,13 +46,17 @@ class GPU_EXPORT ProgramCache {
   virtual ~ProgramCache();
 
   CompiledShaderStatus GetShaderCompilationStatus(
-      const std::string& shader_src) const;
-  void ShaderCompilationSucceeded(const std::string& shader_src);
+      const std::string& shader_src,
+      const ShaderTranslatorInterface* translator) const;
+  void ShaderCompilationSucceeded(const std::string& shader_src,
+                                  const ShaderTranslatorInterface* translator);
   void ShaderCompilationSucceededSha(const std::string& sha_string);
 
   LinkedProgramStatus GetLinkedProgramStatus(
-      const std::string& untranslated_a,
-      const std::string& untranslated_b,
+      const std::string& untranslated_shader_a,
+      const ShaderTranslatorInterface* translator_a,
+      const std::string& untranslated_shader_b,
+      const ShaderTranslatorInterface* translator_b,
       const LocationMap* bind_attrib_location_map) const;
 
   // Loads the linked program from the cache.  If the program is not found or
@@ -59,7 +64,9 @@ class GPU_EXPORT ProgramCache {
   virtual ProgramLoadResult LoadLinkedProgram(
       GLuint program,
       Shader* shader_a,
+      const ShaderTranslatorInterface* translator_a,
       Shader* shader_b,
+      const ShaderTranslatorInterface* translator_b,
       const LocationMap* bind_attrib_location_map,
       const ShaderCacheCallback& shader_callback) const = 0;
 
@@ -68,7 +75,9 @@ class GPU_EXPORT ProgramCache {
   virtual void SaveLinkedProgram(
       GLuint program,
       const Shader* shader_a,
+      const ShaderTranslatorInterface* translator_a,
       const Shader* shader_b,
+      const ShaderTranslatorInterface* translator_b,
       const LocationMap* bind_attrib_location_map,
       const ShaderCacheCallback& shader_callback) = 0;
 
@@ -79,7 +88,9 @@ class GPU_EXPORT ProgramCache {
 
   // Only for testing
   void LinkedProgramCacheSuccess(const std::string& shader_a,
+                                 const ShaderTranslatorInterface* translator_a,
                                  const std::string& shader_b,
+                                 const ShaderTranslatorInterface* translator_b,
                                  const LocationMap* bind_attrib_location_map);
 
  protected:
@@ -90,6 +101,7 @@ class GPU_EXPORT ProgramCache {
 
   // result is not null terminated
   void ComputeShaderHash(const std::string& shader,
+                         const ShaderTranslatorInterface* translator,
                          char* result) const;
 
   // result is not null terminated.  hashed shaders are expected to be

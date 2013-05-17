@@ -107,13 +107,17 @@ void MemoryProgramCache::ClearBackend() {
 ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     GLuint program,
     Shader* shader_a,
+    const ShaderTranslatorInterface* translator_a,
     Shader* shader_b,
+    const ShaderTranslatorInterface* translator_b,
     const LocationMap* bind_attrib_location_map,
     const ShaderCacheCallback& shader_callback) const {
   char a_sha[kHashLength];
   char b_sha[kHashLength];
-  ComputeShaderHash(*shader_a->deferred_compilation_source(), a_sha);
-  ComputeShaderHash(*shader_b->deferred_compilation_source(), b_sha);
+  ComputeShaderHash(
+      *shader_a->deferred_compilation_source(), translator_a, a_sha);
+  ComputeShaderHash(
+      *shader_b->deferred_compilation_source(), translator_b, b_sha);
 
   char sha[kHashLength];
   ComputeProgramHash(a_sha,
@@ -160,7 +164,9 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
 void MemoryProgramCache::SaveLinkedProgram(
     GLuint program,
     const Shader* shader_a,
+    const ShaderTranslatorInterface* translator_a,
     const Shader* shader_b,
+    const ShaderTranslatorInterface* translator_b,
     const LocationMap* bind_attrib_location_map,
     const ShaderCacheCallback& shader_callback) {
   GLenum format;
@@ -179,8 +185,10 @@ void MemoryProgramCache::SaveLinkedProgram(
 
   char a_sha[kHashLength];
   char b_sha[kHashLength];
-  ComputeShaderHash(*shader_a->deferred_compilation_source(), a_sha);
-  ComputeShaderHash(*shader_b->deferred_compilation_source(), b_sha);
+  ComputeShaderHash(
+      *shader_a->deferred_compilation_source(), translator_a, a_sha);
+  ComputeShaderHash(
+      *shader_b->deferred_compilation_source(), translator_b, b_sha);
 
   char sha[kHashLength];
   ComputeProgramHash(a_sha,
