@@ -1952,24 +1952,52 @@ def CMDformat(parser, args):
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
+  # Generate diff for the current branch's changes.
+  diff_cmd = ['diff', '--no-ext-diff']
   if opts.full:
-    cmd = ['diff', '--name-only', '--'] + ['.*' + ext for ext in CLANG_EXTS]
-    files = RunGit(cmd).split()
+    # Only list the names of modified files.
+    diff_cmd.append('--name-only')
+  else:
+    # Only generate context-less patches.
+    diff_cmd.append('-U0')
+
+  # Grab the merge-base commit, i.e. the upstream commit of the current
+  # branch when it was created or the last time it was rebased. This is
+  # to cover the case where the user may have called "git fetch origin",
+  # moving the origin branch to a newer commit, but hasn't rebased yet.
+  upstream_commit = None
+  cl = Changelist()
+  upstream_branch = cl.GetUpstreamBranch()
+  if upstream_branch:
+    upstream_commit = RunGit(['merge-base', 'HEAD', upstream_branch])
+    upstream_commit = upstream_commit.strip()
+
+  if not upstream_commit:
+    DieWithError('Could not find base commit for this branch. '
+                 'Are you in detached state?')
+
+  diff_cmd.append(upstream_commit)
+
+  # Handle source file filtering.
+  diff_cmd.append('--')
+  diff_cmd += ['*' + ext for ext in CLANG_EXTS]
+  diff_output = RunGit(diff_cmd)
+
+  if opts.full:
+    # diff_output is a list of files to send to clang-format.
+    files = diff_output.splitlines()
     if not files:
       print "Nothing to format."
       return 0
-    RunCommand(['clang-format', '-i'] + files)
+    RunCommand(['clang-format', '-i', '-style', 'Chromium'] + files)
   else:
+    # diff_output is a patch to send to clang-format-diff.py
     cfd_path = os.path.join('/usr', 'lib', 'clang-format',
                             'clang-format-diff.py')
     if not os.path.exists(cfd_path):
-      print >> sys.stderr, 'Could not find clang-format-diff at %s.' % cfd_path
-      return 2
-    cmd = ['diff', '-U0', '@{u}', '--'] + ['.*' + ext for ext in CLANG_EXTS]
-    diff = RunGit(cmd)
-    cmd = [sys.executable, '/usr/lib/clang-format/clang-format-diff.py',
-           '-style', 'Chromium']
-    RunCommand(cmd, stdin=diff)
+      DieWithError('Could not find clang-format-diff at %s.' % cfd_path)
+    cmd = [sys.executable, cfd_path, '-style', 'Chromium']
+    RunCommand(cmd, stdin=diff_output)
 
   return 0
 
