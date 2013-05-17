@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 
 namespace chrome {
 namespace test {
@@ -56,13 +56,12 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
     std::string unique_id =
         "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
     unique_id[11] = device_path.value()[0];
-    chrome::MediaStorageUtil::Type type =
-        chrome::MediaStorageUtil::FIXED_MASS_STORAGE;
+    chrome::StorageInfo::Type type = chrome::StorageInfo::FIXED_MASS_STORAGE;
     if (path.value() != ASCIIToUTF16("N:\\") &&
         path.value() != ASCIIToUTF16("C:\\")) {
-      type = chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
+      type = chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
     }
-    info->device_id = chrome::MediaStorageUtil::MakeDeviceId(type, unique_id);
+    info->device_id = chrome::StorageInfo::MakeDeviceId(type, unique_id);
     info->name = path.Append(L" Drive").LossyDisplayName();
   }
 
@@ -122,7 +121,7 @@ bool TestVolumeMountWatcherWin::GetDeviceRemovable(
     bool* removable) const {
   StorageInfo info;
   bool success = GetMassStorageDeviceDetails(device_path, &info);
-  *removable = MediaStorageUtil::IsRemovableDevice(info.device_id);
+  *removable = StorageInfo::IsRemovableDevice(info.device_id);
   return success;
 }
 

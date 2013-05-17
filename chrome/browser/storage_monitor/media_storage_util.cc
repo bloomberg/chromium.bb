@@ -36,14 +36,6 @@ enum DeviceInfoHistogramBuckets {
   DEVICE_INFO_BUCKET_BOUNDARY
 };
 
-// Prefix constants for different device id spaces.
-const char kRemovableMassStorageWithDCIMPrefix[] = "dcim:";
-const char kRemovableMassStorageNoDCIMPrefix[] = "nodcim:";
-const char kFixedMassStoragePrefix[] = "path:";
-const char kMtpPtpPrefix[] = "mtp:";
-const char kMacImageCapture[] = "ic:";
-const char kITunes[] = "itunes:";
-
 #if !defined(OS_WIN)
 const char kRootPath[] = "/";
 #endif
@@ -86,14 +78,14 @@ void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
   for (MediaStorageUtil::DeviceIdSet::const_iterator it = devices->begin();
        it != devices->end();
        ++it) {
-    MediaStorageUtil::Type type;
+    StorageInfo::Type type;
     std::string unique_id;
-    if (!MediaStorageUtil::CrackDeviceId(*it, &type, &unique_id)) {
+    if (!StorageInfo::CrackDeviceId(*it, &type, &unique_id)) {
       missing_devices.insert(*it);
       continue;
     }
 
-    if (type == MediaStorageUtil::FIXED_MASS_STORAGE) {
+    if (type == StorageInfo::FIXED_MASS_STORAGE) {
       if (!file_util::PathExists(base::FilePath::FromUTF8Unsafe(unique_id)))
         missing_devices.insert(*it);
       continue;
@@ -165,92 +157,13 @@ string16 MediaStorageUtil::GetDisplayNameForDevice(uint64 storage_size_in_bytes,
 }
 
 // static
-std::string MediaStorageUtil::MakeDeviceId(Type type,
-                                           const std::string& unique_id) {
-  DCHECK(!unique_id.empty());
-  switch (type) {
-    case REMOVABLE_MASS_STORAGE_WITH_DCIM:
-      return std::string(kRemovableMassStorageWithDCIMPrefix) + unique_id;
-    case REMOVABLE_MASS_STORAGE_NO_DCIM:
-      return std::string(kRemovableMassStorageNoDCIMPrefix) + unique_id;
-    case FIXED_MASS_STORAGE:
-      return std::string(kFixedMassStoragePrefix) + unique_id;
-    case MTP_OR_PTP:
-      return std::string(kMtpPtpPrefix) + unique_id;
-    case MAC_IMAGE_CAPTURE:
-      return std::string(kMacImageCapture) + unique_id;
-    case ITUNES:
-      return std::string(kITunes) + unique_id;
-  }
-  NOTREACHED();
-  return std::string();
-}
-
-// static
-bool MediaStorageUtil::CrackDeviceId(const std::string& device_id,
-                                     Type* type, std::string* unique_id) {
-  size_t prefix_length = device_id.find_first_of(':');
-  std::string prefix = prefix_length != std::string::npos
-                           ? device_id.substr(0, prefix_length + 1)
-                           : std::string();
-
-  Type found_type;
-  if (prefix == kRemovableMassStorageWithDCIMPrefix) {
-    found_type = REMOVABLE_MASS_STORAGE_WITH_DCIM;
-  } else if (prefix == kRemovableMassStorageNoDCIMPrefix) {
-    found_type = REMOVABLE_MASS_STORAGE_NO_DCIM;
-  } else if (prefix == kFixedMassStoragePrefix) {
-    found_type = FIXED_MASS_STORAGE;
-  } else if (prefix == kMtpPtpPrefix) {
-    found_type = MTP_OR_PTP;
-  } else if (prefix == kMacImageCapture) {
-    found_type = MAC_IMAGE_CAPTURE;
-  } else if (prefix == kITunes) {
-    found_type = ITUNES;
-  } else {
-    NOTREACHED();
-    return false;
-  }
-  if (type)
-    *type = found_type;
-
-  if (unique_id)
-    *unique_id = device_id.substr(prefix_length + 1);
-  return true;
-}
-
-// static
-bool MediaStorageUtil::IsMediaDevice(const std::string& device_id) {
-  Type type;
-  return CrackDeviceId(device_id, &type, NULL) &&
-      (type == REMOVABLE_MASS_STORAGE_WITH_DCIM || type == MTP_OR_PTP ||
-       type == MAC_IMAGE_CAPTURE);
-}
-
-// static
-bool MediaStorageUtil::IsRemovableDevice(const std::string& device_id) {
-  Type type;
-  return CrackDeviceId(device_id, &type, NULL) && type != FIXED_MASS_STORAGE;
-}
-
-// static
-bool MediaStorageUtil::IsMassStorageDevice(const std::string& device_id) {
-  Type type;
-  return CrackDeviceId(device_id, &type, NULL) &&
-         (type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
-          type == REMOVABLE_MASS_STORAGE_NO_DCIM ||
-          type == FIXED_MASS_STORAGE ||
-          type == ITUNES);
-}
-
-// static
 bool MediaStorageUtil::CanCreateFileSystem(const std::string& device_id,
                                            const base::FilePath& path) {
-  Type type;
-  if (!CrackDeviceId(device_id, &type, NULL))
+  StorageInfo::Type type;
+  if (!StorageInfo::CrackDeviceId(device_id, &type, NULL))
     return false;
 
-  if (type == MAC_IMAGE_CAPTURE)
+  if (type == StorageInfo::MAC_IMAGE_CAPTURE)
     return true;
 
   return path.IsAbsolute() && !path.ReferencesParent();
@@ -259,14 +172,14 @@ bool MediaStorageUtil::CanCreateFileSystem(const std::string& device_id,
 // static
 void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
                                         const BoolCallback& callback) {
-  Type type;
+  StorageInfo::Type type;
   std::string unique_id;
-  if (!CrackDeviceId(device_id, &type, &unique_id)) {
+  if (!StorageInfo::CrackDeviceId(device_id, &type, &unique_id)) {
     callback.Run(false);
     return;
   }
 
-  if (type == FIXED_MASS_STORAGE || type == ITUNES) {
+  if (type == StorageInfo::FIXED_MASS_STORAGE || type == StorageInfo::ITUNES) {
     // For this type, the unique_id is the path.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
@@ -274,10 +187,10 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
                    base::FilePath::FromUTF8Unsafe(unique_id),
                    callback));
   } else {
-    DCHECK(type == MTP_OR_PTP ||
-           type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
-           type == REMOVABLE_MASS_STORAGE_NO_DCIM ||
-           type == MAC_IMAGE_CAPTURE);
+    DCHECK(type == StorageInfo::MTP_OR_PTP ||
+           type == StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM ||
+           type == StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM ||
+           type == StorageInfo::MAC_IMAGE_CAPTURE);
     // We should be able to find removable storage.
     callback.Run(IsRemovableStorageAttached(device_id));
   }
@@ -309,7 +222,7 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
   StorageMonitor* monitor = StorageMonitor::GetInstance();
   bool found_device = monitor->GetStorageInfoForPath(path, &info);
 
-  if (found_device && IsRemovableDevice(info.device_id)) {
+  if (found_device && StorageInfo::IsRemovableDevice(info.device_id)) {
     base::FilePath sub_folder_path;
     base::FilePath device_path(info.location);
     if (path != device_path) {
@@ -344,7 +257,8 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
   // good values from StorageMonitor.
   // TODO(gbillock): Make sure return values from that class are definitive,
   // and don't do this here.
-  info.device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
+  info.device_id = StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
+                                             path.AsUTF8Unsafe());
   info.name = path.BaseName().LossyDisplayName();
   if (device_info)
     *device_info = info;
@@ -356,27 +270,27 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
 // static
 base::FilePath MediaStorageUtil::FindDevicePathById(
     const std::string& device_id) {
-  Type type;
+  StorageInfo::Type type;
   std::string unique_id;
-  if (!CrackDeviceId(device_id, &type, &unique_id))
+  if (!StorageInfo::CrackDeviceId(device_id, &type, &unique_id))
     return base::FilePath();
 
-  if (type == FIXED_MASS_STORAGE || type == ITUNES) {
+  if (type == StorageInfo::FIXED_MASS_STORAGE || type == StorageInfo::ITUNES) {
     // For this type, the unique_id is the path.
     return base::FilePath::FromUTF8Unsafe(unique_id);
   }
 
   // For ImageCapture, the synthetic filesystem will be rooted at a fake
   // top-level directory which is the device_id.
-  if (type == MAC_IMAGE_CAPTURE) {
+  if (type == StorageInfo::MAC_IMAGE_CAPTURE) {
 #if !defined(OS_WIN)
     return base::FilePath(kRootPath + device_id);
 #endif
   }
 
-  DCHECK(type == MTP_OR_PTP ||
-         type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
-         type == REMOVABLE_MASS_STORAGE_NO_DCIM);
+  DCHECK(type == StorageInfo::MTP_OR_PTP ||
+         type == StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM ||
+         type == StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM);
   return base::FilePath(FindRemovableStorageLocationById(device_id));
 }
 

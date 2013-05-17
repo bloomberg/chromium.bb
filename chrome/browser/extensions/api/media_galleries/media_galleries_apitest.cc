@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -59,8 +59,8 @@ class PlatformAppMediaGalleriesBrowserTest : public PlatformAppBrowserTest {
   }
 
   void AttachFakeDevice() {
-    device_id_ = chrome::MediaStorageUtil::MakeDeviceId(
-        chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
+    device_id_ = chrome::StorageInfo::MakeDeviceId(
+        chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
 
     chrome::StorageMonitor::GetInstance()->receiver()->ProcessAttach(
         chrome::StorageInfo(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath,

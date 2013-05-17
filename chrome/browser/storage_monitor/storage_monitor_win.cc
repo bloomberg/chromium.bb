@@ -9,9 +9,9 @@
 #include <fileapi.h>
 
 #include "base/win/wrapped_window_proc.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/portable_device_watcher_win.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/volume_mount_watcher_win.h"
 
 namespace chrome {
@@ -107,16 +107,16 @@ bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
 void StorageMonitorWin::EjectDevice(
     const std::string& device_id,
     base::Callback<void(EjectStatus)> callback) {
-  MediaStorageUtil::Type type;
+  StorageInfo::Type type;
 
-  if (!MediaStorageUtil::CrackDeviceId(device_id, &type, NULL)) {
+  if (!StorageInfo::CrackDeviceId(device_id, &type, NULL)) {
     callback.Run(EJECT_FAILURE);
     return;
   }
 
-  if (type == MediaStorageUtil::MTP_OR_PTP)
+  if (type == StorageInfo::MTP_OR_PTP)
     portable_device_watcher_->EjectDevice(device_id, callback);
-  else if (MediaStorageUtil::IsRemovableDevice(device_id))
+  else if (StorageInfo::IsRemovableDevice(device_id))
     volume_mount_watcher_->EjectDevice(device_id, callback);
   else
     callback.Run(EJECT_FAILURE);
@@ -126,9 +126,9 @@ bool StorageMonitorWin::GetMTPStorageInfoFromDeviceId(
     const std::string& storage_device_id,
     string16* device_location,
     string16* storage_object_id) const {
-  MediaStorageUtil::Type type;
-  MediaStorageUtil::CrackDeviceId(storage_device_id, &type, NULL);
-  return ((type == MediaStorageUtil::MTP_OR_PTP) &&
+  StorageInfo::Type type;
+  StorageInfo::CrackDeviceId(storage_device_id, &type, NULL);
+  return ((type == StorageInfo::MTP_OR_PTP) &&
       portable_device_watcher_->GetMTPStorageInfoFromDeviceId(
           storage_device_id, device_location, storage_object_id));
 }

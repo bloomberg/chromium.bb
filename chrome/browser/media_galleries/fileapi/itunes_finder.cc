@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
@@ -56,10 +56,10 @@ void ITunesFinder::PostResultToUIThread(const std::string& unique_id) {
 void ITunesFinder::FinishOnUIThread(const std::string& unique_id) const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  using chrome::MediaStorageUtil;
   if (!unique_id.empty()) {
     callback_.Run(
-        MediaStorageUtil::MakeDeviceId(MediaStorageUtil::ITUNES, unique_id));
+        chrome::StorageInfo::MakeDeviceId(chrome::StorageInfo::ITUNES,
+                                          unique_id));
   }
 }
 

@@ -24,6 +24,7 @@
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
 #include "chrome/browser/storage_monitor/udev_util_linux.h"
 #include "chrome/common/chrome_switches.h"
@@ -186,18 +187,18 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
   }
   const bool is_removable = (value && atoi(value) == 1);
 
-  MediaStorageUtil::Type type = MediaStorageUtil::FIXED_MASS_STORAGE;
+  StorageInfo::Type type = StorageInfo::FIXED_MASS_STORAGE;
   if (is_removable) {
     if (MediaStorageUtil::HasDcim(mount_point))
-      type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
+      type = StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
     else
-      type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
+      type = StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
   }
 
   results_recorder.set_result(true);
 
   storage_info.reset(new StorageInfo(
-      MediaStorageUtil::MakeDeviceId(type, unique_id),
+      StorageInfo::MakeDeviceId(type, unique_id),
       string16(),
       mount_point.value(),
       volume_label,
@@ -390,7 +391,7 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
       DCHECK(priority != mount_priority_map_.end());
       ReferencedMountPoint::const_iterator has_priority =
           priority->second.find(mount_point);
-      if (MediaStorageUtil::IsRemovableDevice(
+      if (StorageInfo::IsRemovableDevice(
               old_iter->second.storage_info.device_id)) {
         DCHECK(has_priority != priority->second.end());
         if (has_priority->second) {
@@ -430,7 +431,7 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
 
     const StorageInfo& mount_info =
         mount_info_map_.find(mount_point)->second.storage_info;
-    DCHECK(MediaStorageUtil::IsRemovableDevice(mount_info.device_id));
+    DCHECK(StorageInfo::IsRemovableDevice(mount_info.device_id));
     receiver()->ProcessAttach(mount_info);
   }
 
@@ -498,7 +499,7 @@ void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
 
   DCHECK(!storage_info->device_id.empty());
 
-  bool removable = MediaStorageUtil::IsRemovableDevice(storage_info->device_id);
+  bool removable = StorageInfo::IsRemovableDevice(storage_info->device_id);
   const base::FilePath mount_point(storage_info->location);
 
   MountPointInfo mount_point_info;

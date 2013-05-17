@@ -11,8 +11,25 @@
 namespace chrome {
 
 struct StorageInfo {
+ public:
+  enum Type {
+    // A removable mass storage device with a DCIM directory.
+    REMOVABLE_MASS_STORAGE_WITH_DCIM,
+    // A removable mass storage device without a DCIM directory.
+    REMOVABLE_MASS_STORAGE_NO_DCIM,
+    // A fixed mass storage device.
+    FIXED_MASS_STORAGE,
+    // A MTP or PTP device.
+    MTP_OR_PTP,
+    // A Mac ImageCapture device.
+    MAC_IMAGE_CAPTURE,
+    // An iTunes library.
+    ITUNES,
+  };
+
   StorageInfo();
-  StorageInfo(const std::string& id,
+  // Note: |device_id_in| should be constructed with MakeDeviceId.
+  StorageInfo(const std::string& device_id_in,
               const string16& device_name,
               const base::FilePath::StringType& device_location,
               const string16& label,
@@ -20,6 +37,28 @@ struct StorageInfo {
               const string16& model,
               uint64 size_in_bytes);
   ~StorageInfo();
+
+  // Returns a device id given properties of the device. A prefix dependent on
+  // |type| is added so |unique_id| need only be unique within the given type.
+  // Returns an empty string if an invalid type is passed in.
+  static std::string MakeDeviceId(Type type, const std::string& unique_id);
+
+  // Extracts the device |type| and |unique_id| from |device_id|. Returns false
+  // if the device_id isn't properly formatted.
+  static bool CrackDeviceId(const std::string& device_id,
+                            Type* type, std::string* unique_id);
+
+  // Looks inside |device_id| to determine if it is a media device
+  // (type is REMOVABLE_MASS_STORAGE_WITH_DCIM or MTP_OR_PTP).
+  static bool IsMediaDevice(const std::string& device_id);
+
+  // Looks inside |device_id| to determine if it is a media device
+  // (type isn't FIXED_MASS_STORAGE).
+  static bool IsRemovableDevice(const std::string& device_id);
+
+  // Looks inside |device_id| to determine if it is a mass storage device
+  // (type isn't MTP_OR_PTP).
+  static bool IsMassStorageDevice(const std::string& device_id);
 
   // Unique device id - persists between device attachments.
   // This is the string that should be used as the label for a particular

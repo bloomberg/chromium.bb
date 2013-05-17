@@ -5,7 +5,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller_mock.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,8 +21,8 @@ MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId pref_id) {
   MediaGalleryPrefInfo gallery;
   gallery.pref_id = pref_id;
   gallery.device_id =
-      MediaStorageUtil::MakeDeviceId(MediaStorageUtil::FIXED_MASS_STORAGE,
-                                     base::Int64ToString(pref_id));
+      StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
+                                base::Int64ToString(pref_id));
   gallery.display_name = ASCIIToUTF16("name");
   return gallery;
 }

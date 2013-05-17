@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/image_capture_device_manager.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome {
@@ -34,12 +35,12 @@ string16 JoinName(const string16& name, const string16& addition) {
   return name + static_cast<char16>(' ') + addition;
 }
 
-MediaStorageUtil::Type GetDeviceType(bool is_removable, bool has_dcim) {
+StorageInfo::Type GetDeviceType(bool is_removable, bool has_dcim) {
   if (!is_removable)
-    return MediaStorageUtil::FIXED_MASS_STORAGE;
+    return StorageInfo::FIXED_MASS_STORAGE;
   if (has_dcim)
-    return MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
-  return MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
+    return StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
+  return StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
 }
 
 StorageInfo BuildStorageInfo(
@@ -97,9 +98,9 @@ StorageInfo BuildStorageInfo(
   // Checking for DCIM only matters on removable devices.
   bool has_dcim = is_removable &&
                   MediaStorageUtil::HasDcim(base::FilePath(info.location));
-  MediaStorageUtil::Type device_type = GetDeviceType(is_removable, has_dcim);
+  StorageInfo::Type device_type = GetDeviceType(is_removable, has_dcim);
   if (!unique_id.empty())
-    info.device_id = MediaStorageUtil::MakeDeviceId(device_type,
+    info.device_id = StorageInfo::MakeDeviceId(device_type,
                                                     unique_id);
 
   return info;
@@ -353,8 +354,8 @@ bool StorageMonitorMac::ShouldPostNotificationForDisk(
   return !info.device_id.empty() &&
          !info.location.empty() &&
          info.model_name != ASCIIToUTF16(kDiskImageModelName) &&
-         MediaStorageUtil::IsRemovableDevice(info.device_id) &&
-         MediaStorageUtil::IsMassStorageDevice(info.device_id);
+         StorageInfo::IsRemovableDevice(info.device_id) &&
+         StorageInfo::IsMassStorageDevice(info.device_id);
 }
 
 bool StorageMonitorMac::FindDiskWithMountPoint(

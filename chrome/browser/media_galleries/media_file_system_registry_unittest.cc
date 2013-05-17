@@ -27,8 +27,8 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/extensions/extension.h"
@@ -131,7 +131,7 @@ TestMediaFileSystemContext::TestMediaFileSystemContext(
 
 std::string TestMediaFileSystemContext::RegisterFileSystemForMassStorage(
     const std::string& device_id, const base::FilePath& path) {
-  CHECK(MediaStorageUtil::IsMassStorageDevice(device_id));
+  CHECK(StorageInfo::IsMassStorageDevice(device_id));
   return AddFSEntry(device_id, path);
 }
 
@@ -139,7 +139,7 @@ std::string TestMediaFileSystemContext::RegisterFileSystemForMassStorage(
 std::string TestMediaFileSystemContext::RegisterFileSystemForMTPDevice(
     const std::string& device_id, const base::FilePath& path,
     scoped_refptr<ScopedMTPDeviceMapEntry>* entry) {
-  CHECK(!MediaStorageUtil::IsMassStorageDevice(device_id));
+  CHECK(!StorageInfo::IsMassStorageDevice(device_id));
   DCHECK(entry);
   *entry = registry_->GetOrCreateScopedMTPDeviceMapEntry(path.value());
   return AddFSEntry(device_id, path);
@@ -309,12 +309,12 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 
   // Create a user added gallery based on the information passed and add it to
   // |profiles|. Returns the device id.
-  std::string AddUserGallery(MediaStorageUtil::Type type,
+  std::string AddUserGallery(StorageInfo::Type type,
                              const std::string& unique_id,
                              const base::FilePath& path);
 
   // Returns the device id.
-  std::string AttachDevice(MediaStorageUtil::Type type,
+  std::string AttachDevice(StorageInfo::Type type,
                            const std::string& unique_id,
                            const base::FilePath& location);
 
@@ -598,12 +598,12 @@ ProfileState* MediaFileSystemRegistryTest::GetProfileState(size_t i) {
 }
 
 std::string MediaFileSystemRegistryTest::AddUserGallery(
-    MediaStorageUtil::Type type,
+    StorageInfo::Type type,
     const std::string& unique_id,
     const base::FilePath& path) {
-  std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
+  std::string device_id = StorageInfo::MakeDeviceId(type, unique_id);
   string16 name = path.LossyDisplayName();
-  DCHECK(!MediaStorageUtil::IsMediaDevice(device_id));
+  DCHECK(!StorageInfo::IsMediaDevice(device_id));
 
   for (size_t i = 0; i < profile_states_.size(); ++i) {
     profile_states_[i]->GetMediaGalleriesPrefs()->AddGalleryWithName(
@@ -613,11 +613,11 @@ std::string MediaFileSystemRegistryTest::AddUserGallery(
 }
 
 std::string MediaFileSystemRegistryTest::AttachDevice(
-    MediaStorageUtil::Type type,
+    StorageInfo::Type type,
     const std::string& unique_id,
     const base::FilePath& location) {
-  std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
-  DCHECK(MediaStorageUtil::IsRemovableDevice(device_id));
+  std::string device_id = StorageInfo::MakeDeviceId(type, unique_id);
+  DCHECK(StorageInfo::IsRemovableDevice(device_id));
   string16 name = location.LossyDisplayName();
   ProcessAttach(device_id, name, location.value());
   MessageLoop::current()->RunUntilIdle();
@@ -625,7 +625,7 @@ std::string MediaFileSystemRegistryTest::AttachDevice(
 }
 
 void MediaFileSystemRegistryTest::DetachDevice(const std::string& device_id) {
-  DCHECK(MediaStorageUtil::IsRemovableDevice(device_id));
+  DCHECK(StorageInfo::IsRemovableDevice(device_id));
   ProcessDetach(device_id);
   MessageLoop::current()->RunUntilIdle();
 }
@@ -793,7 +793,7 @@ TEST_F(MediaFileSystemRegistryTest, UserAddedGallery) {
                                 auto_galleries);
 
   // Add a user gallery to the regular permission extension.
-  std::string device_id = AddUserGallery(MediaStorageUtil::FIXED_MASS_STORAGE,
+  std::string device_id = AddUserGallery(StorageInfo::FIXED_MASS_STORAGE,
                                          empty_dir().AsUTF8Unsafe(),
                                          empty_dir());
   SetGalleryPermission(profile_state,
@@ -847,7 +847,7 @@ TEST_F(MediaFileSystemRegistryTest,
 
   // Attach a device.
   const std::string device_id = AttachDevice(
-      MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+      StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
       "removable_dcim_fake_id",
       dcim_dir());
   EXPECT_EQ(gallery_count + 1, GetAutoAddedGalleries(profile_state).size());
@@ -902,7 +902,7 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameMTP) {
 #else
   base::FilePath location(FILE_PATH_LITERAL("/mtp_bogus"));
 #endif
-  AttachDevice(MediaStorageUtil::MTP_OR_PTP, "mtp_fake_id", location);
+  AttachDevice(StorageInfo::MTP_OR_PTP, "mtp_fake_id", location);
   CheckNewGalleryInfo(GetProfileState(0U), galleries_info, location,
                       true /*removable*/, true /* media device */);
 }
@@ -913,7 +913,7 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameDCIM) {
   FSInfoMap galleries_info;
   InitForGalleriesInfoTest(&galleries_info);
 
-  AttachDevice(MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+  AttachDevice(StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
                "removable_dcim_fake_id",
                dcim_dir());
   CheckNewGalleryInfo(GetProfileState(0U), galleries_info, dcim_dir(),
@@ -925,11 +925,11 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameNoDCIM) {
   InitForGalleriesInfoTest(&galleries_info);
 
   std::string device_id =
-      AttachDevice(MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM,
+      AttachDevice(StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM,
                    empty_dir().AsUTF8Unsafe(),
                    empty_dir());
   std::string device_id2 =
-      AddUserGallery(MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM,
+      AddUserGallery(StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM,
                      empty_dir().AsUTF8Unsafe(),
                      empty_dir());
   ASSERT_EQ(device_id, device_id2);
@@ -947,7 +947,7 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameUserAddedPath) {
   FSInfoMap galleries_info;
   InitForGalleriesInfoTest(&galleries_info);
 
-  std::string device_id = AddUserGallery(MediaStorageUtil::FIXED_MASS_STORAGE,
+  std::string device_id = AddUserGallery(StorageInfo::FIXED_MASS_STORAGE,
                                          empty_dir().AsUTF8Unsafe(),
                                          empty_dir());
   // Add permission for new non-default gallery.
@@ -962,7 +962,7 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameUserAddedPath) {
 
 TEST_F(MediaFileSystemRegistryTest, DetachedDeviceGalleryPath) {
   const std::string device_id = AttachDevice(
-      MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+      StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
       "removable_dcim_fake_id",
       dcim_dir());
 

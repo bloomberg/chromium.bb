@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/chrome_switches.h"
@@ -94,8 +94,8 @@ class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
   }
 
   static std::string GetDeviceId() {
-    return chrome::MediaStorageUtil::MakeDeviceId(
-        chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
+    return chrome::StorageInfo::MakeDeviceId(
+        chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
   }
 
  protected:

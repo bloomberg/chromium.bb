@@ -18,9 +18,9 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
 #include "content/public/test/test_browser_thread.h"
@@ -51,22 +51,22 @@ struct TestDeviceData {
   const char* device_path;
   const char* unique_id;
   const char* device_name;
-  MediaStorageUtil::Type type;
+  StorageInfo::Type type;
   uint64 partition_size_in_bytes;
 };
 
 const TestDeviceData kTestDeviceData[] = {
   { kDeviceDCIM1, "UUID:FFF0-000F", "TEST_USB_MODEL_1",
-    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, 88788 },
+    StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, 88788 },
   { kDeviceDCIM2, "VendorModelSerial:ComName:Model2010:8989",
-    "TEST_USB_MODEL_2", MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+    "TEST_USB_MODEL_2", StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
     8773 },
   { kDeviceDCIM3, "VendorModelSerial:::WEM319X792", "TEST_USB_MODEL_3",
-    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, 22837 },
+    StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, 22837 },
   { kDeviceNoDCIM, "UUID:ABCD-1234", "TEST_USB_MODEL_4",
-    MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, 512 },
+    StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM, 512 },
   { kDeviceFixed, "UUID:743A-2349", "743A-2349",
-    MediaStorageUtil::FIXED_MASS_STORAGE, 17282 },
+    StorageInfo::FIXED_MASS_STORAGE, 17282 },
 };
 
 scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
@@ -86,9 +86,9 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
     return storage_info.Pass();
   }
 
-  MediaStorageUtil::Type type = kTestDeviceData[i].type;
+  StorageInfo::Type type = kTestDeviceData[i].type;
   storage_info.reset(new StorageInfo(
-      MediaStorageUtil::MakeDeviceId(type, kTestDeviceData[i].unique_id),
+      StorageInfo::MakeDeviceId(type, kTestDeviceData[i].unique_id),
       string16(),
       mount_point.value(),
       ASCIIToUTF16("volume label"),
@@ -109,12 +109,12 @@ uint64 GetDevicePartitionSize(const std::string& device) {
 std::string GetDeviceId(const std::string& device) {
   for (size_t i = 0; i < arraysize(kTestDeviceData); ++i) {
     if (device == kTestDeviceData[i].device_path) {
-      return MediaStorageUtil::MakeDeviceId(kTestDeviceData[i].type,
+      return StorageInfo::MakeDeviceId(kTestDeviceData[i].type,
                                             kTestDeviceData[i].unique_id);
     }
   }
   if (device == kInvalidDevice) {
-    return MediaStorageUtil::MakeDeviceId(MediaStorageUtil::FIXED_MASS_STORAGE,
+    return StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
                                           kInvalidDevice);
   }
   return std::string();

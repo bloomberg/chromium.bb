@@ -472,11 +472,10 @@ void CreateMTPDeviceAsyncDelegate(
     const CreateMTPDeviceAsyncDelegateCallback& cb) {
   std::string device_name = base::FilePath(device_location).BaseName().value();
   std::string device_id;
-  MediaStorageUtil::Type type;
-  bool cracked = MediaStorageUtil::CrackDeviceId(device_name,
-                                                 &type, &device_id);
+  StorageInfo::Type type;
+  bool cracked = StorageInfo::CrackDeviceId(device_name, &type, &device_id);
   DCHECK(cracked);
-  DCHECK_EQ(MediaStorageUtil::MAC_IMAGE_CAPTURE, type);
+  DCHECK_EQ(StorageInfo::MAC_IMAGE_CAPTURE, type);
 
   cb.Run(new MTPDeviceDelegateImplMac(device_id, device_location));
 }

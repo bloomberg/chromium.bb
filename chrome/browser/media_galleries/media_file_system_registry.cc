@@ -332,7 +332,7 @@ class ExtensionGalleriesHost
         continue;
 
       std::string fsid;
-      if (MediaStorageUtil::IsMassStorageDevice(device_id)) {
+      if (StorageInfo::IsMassStorageDevice(device_id)) {
         fsid = file_system_context_->RegisterFileSystemForMassStorage(
             device_id, path);
       } else {
@@ -355,8 +355,8 @@ class ExtensionGalleriesHost
           fsid,
           pref_id,
           GetTransientIdForRemovableDeviceId(device_id),
-          MediaStorageUtil::IsRemovableDevice(device_id),
-          MediaStorageUtil::IsMediaDevice(device_id));
+          StorageInfo::IsRemovableDevice(device_id),
+          StorageInfo::IsMediaDevice(device_id));
       result.push_back(new_entry);
       new_galleries.insert(pref_id);
       pref_id_map_[pref_id] = new_entry;
@@ -373,7 +373,7 @@ class ExtensionGalleriesHost
   }
 
   std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
-    if (!MediaStorageUtil::IsRemovableDevice(device_id))
+    if (!StorageInfo::IsRemovableDevice(device_id))
       return std::string();
 
     // StorageMonitor may be NULL in unit tests.
@@ -488,7 +488,7 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
     return preferences;
   std::vector<StorageInfo> existing_devices = monitor->GetAttachedStorage();
   for (size_t i = 0; i < existing_devices.size(); i++) {
-    if (!MediaStorageUtil::IsMediaDevice(existing_devices[i].device_id))
+    if (!StorageInfo::IsMediaDevice(existing_devices[i].device_id))
       continue;
     if (!existing_devices[i].name.empty()) {
       preferences->AddGalleryWithName(existing_devices[i].device_id,
@@ -584,7 +584,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   virtual std::string RegisterFileSystemForMassStorage(
       const std::string& device_id, const base::FilePath& path) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    DCHECK(MediaStorageUtil::IsMassStorageDevice(device_id));
+    DCHECK(StorageInfo::IsMassStorageDevice(device_id));
 
     // Sanity checks for |path|.
     CHECK(path.IsAbsolute());
@@ -602,7 +602,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
       const std::string& device_id, const base::FilePath& path,
       scoped_refptr<ScopedMTPDeviceMapEntry>* entry) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    DCHECK(!MediaStorageUtil::IsMassStorageDevice(device_id));
+    DCHECK(!StorageInfo::IsMassStorageDevice(device_id));
 
     // Sanity checks for |path|.
     CHECK(MediaStorageUtil::CanCreateFileSystem(device_id, path));

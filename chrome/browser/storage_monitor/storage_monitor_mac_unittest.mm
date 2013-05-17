@@ -11,9 +11,9 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,8 +51,8 @@ class StorageMonitorMacTest : public testing::Test {
 
     unique_id_ = "test_id";
     mount_point_ = base::FilePath("/unused_test_directory");
-    device_id_ = MediaStorageUtil::MakeDeviceId(
-        MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, unique_id_);
+    device_id_ = StorageInfo::MakeDeviceId(
+        StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM, unique_id_);
     disk_info_ = CreateStorageInfo(device_id_, "",
                                    mount_point_, kTestSize);
   }
@@ -134,8 +134,8 @@ TEST_F(StorageMonitorMacTest, DCIM) {
       temp_dir.path().Append(kDCIMDirectoryName)));
 
   base::FilePath mount_point = temp_dir.path();
-  std::string device_id = MediaStorageUtil::MakeDeviceId(
-      MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id_);
+  std::string device_id = StorageInfo::MakeDeviceId(
+      StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id_);
   StorageInfo info = CreateStorageInfo(device_id, "", mount_point, kTestSize);
 
   UpdateDisk(info, StorageMonitorMac::UPDATE_DEVICE_ADDED);

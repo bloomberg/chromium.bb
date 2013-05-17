@@ -12,8 +12,8 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread.h"
@@ -32,8 +32,7 @@ const char kStorageWithValidInfo[] = "usb:2,2,88888";
 
 // Returns the mtp device id given the |unique_id|.
 std::string GetMtpDeviceId(const std::string& unique_id) {
-  return MediaStorageUtil::MakeDeviceId(MediaStorageUtil::MTP_OR_PTP,
-                                        unique_id);
+  return StorageInfo::MakeDeviceId(StorageInfo::MTP_OR_PTP, unique_id);
 }
 
 // Helper function to get the device storage details such as device id, label

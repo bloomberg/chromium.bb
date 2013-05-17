@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
@@ -53,8 +52,8 @@ uint64 kDevice2SizeInBytes = 212312;
 uint64 kSDCardSizeInBytes = 9000000;
 
 std::string GetDCIMDeviceId(const std::string& unique_id) {
-  return chrome::MediaStorageUtil::MakeDeviceId(
-      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+  return chrome::StorageInfo::MakeDeviceId(
+      chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
       chrome::kFSUniqueIdPrefix + unique_id);
 }
 
@@ -310,8 +309,8 @@ TEST_F(StorageMonitorCrosTest, NoDCIM) {
                                               mount_path.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  const std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
-      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM,
+  const std::string device_id = chrome::StorageInfo::MakeDeviceId(
+      chrome::StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM,
       chrome::kFSUniqueIdPrefix + kUniqueId);
   MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name,
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);

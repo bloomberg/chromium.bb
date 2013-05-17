@@ -1133,6 +1133,7 @@
         'browser/storage_monitor/media_transfer_protocol_device_observer_linux_unittest.cc',
         'browser/storage_monitor/mock_removable_storage_observer.cc',
         'browser/storage_monitor/mock_removable_storage_observer.h',
+        'browser/storage_monitor/storage_info_unittest.cc',
         'browser/storage_monitor/storage_monitor_chromeos_unittest.cc',
         'browser/storage_monitor/storage_monitor_linux_unittest.cc',
         'browser/storage_monitor/storage_monitor_mac_unittest.mm',

@@ -22,6 +22,7 @@
 #include "base/win/scoped_propvariant.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome {
@@ -249,8 +250,8 @@ bool ConstructDeviceStorageUniqueId(const string16& device_serial_num,
     return false;
 
   DCHECK(device_storage_id);
-  *device_storage_id = MediaStorageUtil::MakeDeviceId(
-       MediaStorageUtil::MTP_OR_PTP,
+  *device_storage_id = StorageInfo::MakeDeviceId(
+       StorageInfo::MTP_OR_PTP,
        UTF16ToUTF8(storage_id + L':' + device_serial_num));
   return true;
 }

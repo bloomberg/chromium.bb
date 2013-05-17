@@ -21,6 +21,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -152,8 +153,8 @@ bool GetDeviceDetails(const base::FilePath& device_path,
   if (device_type == FLOPPY) {
     VLOG(1) << "Returning floppy";
     if (info) {
-      info->device_id = chrome::MediaStorageUtil::MakeDeviceId(
-          chrome::MediaStorageUtil::FIXED_MASS_STORAGE, UTF16ToUTF8(guid));
+      info->device_id = chrome::StorageInfo::MakeDeviceId(
+          chrome::StorageInfo::FIXED_MASS_STORAGE, UTF16ToUTF8(guid));
     }
     return true;
   }
@@ -161,12 +162,12 @@ bool GetDeviceDetails(const base::FilePath& device_path,
   if (!info)
     return true;
 
-  chrome::MediaStorageUtil::Type type =
-      chrome::MediaStorageUtil::FIXED_MASS_STORAGE;
+  chrome::StorageInfo::Type type =
+      chrome::StorageInfo::FIXED_MASS_STORAGE;
   if (device_type == REMOVABLE) {
-    type = chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
+    type = chrome::StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
     if (chrome::MediaStorageUtil::HasDcim(base::FilePath(mount_point)))
-       type = chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
+       type = chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
   }
 
   // NOTE: experimentally, this function returns false if there is no volume
@@ -178,7 +179,7 @@ bool GetDeviceDetails(const base::FilePath& device_path,
 
   info->location = mount_point;
   info->total_size_in_bytes = GetVolumeSize(mount_point);
-  info->device_id = chrome::MediaStorageUtil::MakeDeviceId(
+  info->device_id = chrome::StorageInfo::MakeDeviceId(
       type, UTF16ToUTF8(guid));
 
   // TODO(gbillock): if volume_label.empty(), get the vendor/model information
@@ -505,7 +506,7 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
   DeviceCheckComplete(device_path);
 
   // Don't call removable storage observers for fixed volumes.
-  if (!MediaStorageUtil::IsRemovableDevice(info.device_id))
+  if (!StorageInfo::IsRemovableDevice(info.device_id))
     return;
 
   if (notifications_)

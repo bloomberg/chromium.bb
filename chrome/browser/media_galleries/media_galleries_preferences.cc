@@ -314,7 +314,7 @@ void MediaGalleriesPreferences::RemoveGalleryChangeObserver(
 
 void MediaGalleriesPreferences::OnRemovableStorageAttached(
     const StorageInfo& info) {
-  if (!MediaStorageUtil::IsMediaDevice(info.device_id))
+  if (!StorageInfo::IsMediaDevice(info.device_id))
     return;
 
   if (info.name.empty()) {
