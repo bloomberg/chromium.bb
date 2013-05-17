@@ -199,7 +199,7 @@ void SVGFEImageElement::notifyFinished(CachedResource*)
     if (!parent->hasTagName(SVGNames::filterTag) || !parent->renderer())
         return;
 
-    RenderSVGResource::markForLayoutAndParentResourceInvalidation(parent->renderer());
+    RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer());
 }
 
 PassRefPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)
