@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/sequenced_task_runner.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -29,7 +28,7 @@ namespace {
 
 // Refreshes entries of |resource_metadata| based on |resource_list|, and
 // returns the result. |is_update_needed| will be set to true, if an
-// inconsitency is found between |resource_list| and |resource_metadata|.
+// inconsistency is found between |resource_list| and |resource_metadata|.
 // Refreshed entries will be stored into |result|.
 FileError RefreshEntriesOnBlockingPool(
     internal::ResourceMetadata* resource_metadata,
@@ -122,8 +121,6 @@ void SearchOperation::SearchAfterGetResourceList(
   GURL next_feed;
   resource_list->GetNextFeedURL(&next_feed);
 
-  LOG(ERROR) << "Search Result: " << resource_list->entries().size();
-
   // The search results will be returned using virtual directory.
   // The directory is not really part of the file system, so it has no parent or
   // root.
@@ -170,9 +167,6 @@ void SearchOperation::SearchAfterRefreshEntry(
         error, false, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
     return;
   }
-
-  LOG(ERROR) << "Search Result2: " << result->size();
-  LOG(ERROR) << "Is update needed: " << (*is_update_needed ? "true" : "false");
 
   callback.Run(error, *is_update_needed, next_feed, result.Pass());
 }
