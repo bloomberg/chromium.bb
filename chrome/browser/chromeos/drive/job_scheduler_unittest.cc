@@ -549,8 +549,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
   std::string content;
   EXPECT_EQ(output_file_path, kOutputFilePath);
   ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
-  // The content is "x"s of the file size specified in root_feed.json.
-  EXPECT_EQ("xxxxxxxxxx", content);
+  EXPECT_EQ("This is some test content.", content);
 }
 
 TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
@@ -603,8 +602,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
   std::string content;
   EXPECT_EQ(output_file_path, kOutputFilePath);
   ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
-  // The content is "x"s of the file size specified in root_feed.json.
-  EXPECT_EQ("xxxxxxxxxx", content);
+  EXPECT_EQ("This is some test content.", content);
 }
 
 TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
@@ -649,8 +647,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
   std::string content;
   EXPECT_EQ(output_file_path, kOutputFilePath);
   ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
-  // The content is "x"s of the file size specified in root_feed.json.
-  EXPECT_EQ("xxxxxxxxxx", content);
+  EXPECT_EQ("This is some test content.", content);
 }
 
 TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
@@ -695,8 +692,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
   std::string content;
   EXPECT_EQ(output_file_path, kOutputFilePath);
   ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
-  // The content is "x"s of the file size specified in root_feed.json.
-  EXPECT_EQ("xxxxxxxxxx", content);
+  EXPECT_EQ("This is some test content.", content);
 }
 
 TEST_F(JobSchedulerTest, JobInfo) {
@@ -842,7 +838,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
   ASSERT_TRUE(!download_progress.empty());
   EXPECT_TRUE(base::STLIsSorted(download_progress));
   EXPECT_GE(download_progress.front(), 0);
-  EXPECT_LE(download_progress.back(), 10);
+  EXPECT_LE(download_progress.back(), 26);
 
   // Upload job.
   path = temp_dir.path().AppendASCII("new_file.txt");
@@ -866,7 +862,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
   ASSERT_TRUE(!upload_progress.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress));
   EXPECT_GE(upload_progress.front(), 0);
-  EXPECT_LE(upload_progress.back(), 5);
+  EXPECT_LE(upload_progress.back(), 13);
 }
 
 }  // namespace drive

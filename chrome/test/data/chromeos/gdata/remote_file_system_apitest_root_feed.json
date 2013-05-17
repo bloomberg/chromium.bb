@@ -299,8 +299,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "13"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "test_file.xul"
          },
@@ -395,8 +396,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "13"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "test_file.tiff"
          },
@@ -491,8 +493,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "13"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "test_file.xul.foo"
          },
@@ -587,8 +590,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "13"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "test_file.tiff.foo"
          },

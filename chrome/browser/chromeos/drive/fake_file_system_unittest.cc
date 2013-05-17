@@ -124,7 +124,7 @@ TEST_F(FakeFileSystemTest, GetFileContentByPath) {
   // The download should be happened so the |get_content_callback|
   // should have the actual data.
   std::string content = get_content_callback.GetConcatenatedData();
-  EXPECT_EQ(10U, content.size());
+  EXPECT_EQ(26U, content.size());
   EXPECT_EQ(FILE_ERROR_OK, completion_error);
 
   initialize_error = FILE_ERROR_FAILED;

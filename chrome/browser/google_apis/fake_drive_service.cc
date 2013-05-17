@@ -497,15 +497,16 @@ void FakeDriveService::DownloadFile(
   // TODO(satorux): To be correct, we should update docs$md5Checksum.$t here.
   int64 file_size = 0;
   if (base::StringToInt64(file_size_string, &file_size)) {
-    std::string content(file_size, 'x');
-    DCHECK_EQ(static_cast<size_t>(file_size), content.size());
+    std::string content_data;
+    entry->GetString("test$data", &content_data);
+    DCHECK_EQ(static_cast<size_t>(file_size), content_data.size());
 
     if (!get_content_callback.is_null()) {
       const int64 kBlockSize = 5;
       for (int64 i = 0; i < file_size; i += kBlockSize) {
         const int64 size = std::min(kBlockSize, file_size - i);
         scoped_ptr<std::string> content_for_callback(
-            new std::string(content.substr(i, size)));
+            new std::string(content_data.substr(i, size)));
         base::MessageLoopProxy::current()->PostTask(
             FROM_HERE,
             base::Bind(get_content_callback, HTTP_SUCCESS,
@@ -513,7 +514,7 @@ void FakeDriveService::DownloadFile(
       }
     }
 
-    if (test_util::WriteStringToFile(local_cache_path, content)) {
+    if (test_util::WriteStringToFile(local_cache_path, content_data)) {
       if (!progress_callback.is_null()) {
         // See also the comment in ResumeUpload(). For testing that clients
         // can handle the case progress_callback is called multiple times,
@@ -753,7 +754,7 @@ void FakeDriveService::AddNewDirectory(
 
   const char kContentType[] = "application/atom+xml;type=feed";
   const base::DictionaryValue* new_entry = AddNewEntry(kContentType,
-                                                       0,  // content_length
+                                                       "",  // content_data
                                                        parent_resource_id,
                                                        directory_name,
                                                        false,  // shared_with_me
@@ -792,7 +793,7 @@ void FakeDriveService::InitiateUploadNewFile(
   // Content length should be zero, as we'll create an empty file first. The
   // content will be added in ResumeUpload().
   const base::DictionaryValue* new_entry = AddNewEntry(content_type,
-                                                       0,  // content_length
+                                                       "",  // content_data
                                                        parent_resource_id,
                                                        title,
                                                        false,  // shared_with_me
@@ -977,7 +978,7 @@ void FakeDriveService::AuthorizeApp(const std::string& resource_id,
 }
 
 void FakeDriveService::AddNewFile(const std::string& content_type,
-                                  int64 content_length,
+                                  const std::string& content_data,
                                   const std::string& parent_resource_id,
                                   const std::string& title,
                                   bool shared_with_me,
@@ -1003,7 +1004,7 @@ void FakeDriveService::AddNewFile(const std::string& content_type,
     entry_kind = "file";
 
   const base::DictionaryValue* new_entry = AddNewEntry(content_type,
-                                                       content_length,
+                                                       content_data,
                                                        parent_resource_id,
                                                        title,
                                                        shared_with_me,
@@ -1160,7 +1161,7 @@ void FakeDriveService::AddNewChangestamp(base::DictionaryValue* entry) {
 
 const base::DictionaryValue* FakeDriveService::AddNewEntry(
     const std::string& content_type,
-    int64 content_length,
+    const std::string& content_data,
     const std::string& parent_resource_id,
     const std::string& title,
     bool shared_with_me,
@@ -1184,9 +1185,11 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
   new_entry->SetString("gd$resourceId.$t", resource_id);
   new_entry->SetString("title.$t", title);
   new_entry->SetString("docs$filename", title);
-  // Set the content size and MD5 for a file.
+  // Set the contents, size and MD5 for a file.
   if (entry_kind == "file") {
-    new_entry->SetString("docs$size.$t", base::Int64ToString(content_length));
+    new_entry->SetString("test$data", content_data);
+    new_entry->SetString("docs$size.$t",
+                         base::Int64ToString(content_data.size()));
     // TODO(satorux): Set the correct MD5 here.
     new_entry->SetString("docs$md5Checksum.$t",
                          "3b4385ebefec6e743574c76bbd0575de");

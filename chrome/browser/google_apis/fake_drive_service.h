@@ -187,7 +187,7 @@ class FakeDriveService : public DriveServiceInterface {
   // HTTP_CREATED with the parsed entry.
   // |callback| must not be null.
   void AddNewFile(const std::string& content_type,
-                  int64 content_length,
+                  const std::string& content_data,
                   const std::string& parent_resource_id,
                   const std::string& title,
                   bool shared_with_me,
@@ -225,7 +225,7 @@ class FakeDriveService : public DriveServiceInterface {
   // if failed.
   const base::DictionaryValue* AddNewEntry(
     const std::string& content_type,
-    int64 content_length,
+    const std::string& content_data,
     const std::string& parent_resource_id,
     const std::string& title,
     bool shared_with_me,

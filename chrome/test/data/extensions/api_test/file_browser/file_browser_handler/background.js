@@ -21,9 +21,9 @@
 
 // Initial content of handled files. The content is set in
 // external_filesystem_apitest.cc.
-var kInitialTestFileContent = 'xxxxxxxxxxxxx';
+var kInitialTestFileContent = 'This is some test content.';
 // Content written by write test.
-var kTextToWrite = '!!!';
+var kTextToWrite = ' Yay!';
 
 /**
  * Asserts that |value| equals |expectedValue|. If the assert fails, current

@@ -432,7 +432,7 @@ class DriveTestVolume : public TestVolume,
     scoped_ptr<google_apis::ResourceEntry> resource_entry;
     fake_drive_service_->AddNewFile(
         mime_type,
-        length,
+        std::string(length, 'x'),
         fake_drive_service_->GetRootResourceId(),
         name,
         shared_with_me,

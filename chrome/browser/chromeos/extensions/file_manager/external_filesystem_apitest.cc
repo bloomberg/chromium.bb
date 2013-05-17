@@ -73,15 +73,10 @@ const char kLocalMountPointName[] = "local";
 const char kRestrictedMountPointName[] = "restricted";
 
 // Default file content for the test files.
-// The content format is influenced by fake drive service implementation which
-// fills the file with 'x' characters until its size matches the size declared
-// in the root feed.
-// The size of the files in |kTestRootFeed| has to be set to the length of
-// |kTestFileContent| string.
-const char kTestFileContent[] = "xxxxxxxxxxxxx";
+const char kTestFileContent[] = "This is some test content.";
 
-// Contains feed for drive file system. The file system hiearchy is the same for
-// local and restricted file systems:
+// Contains feed for drive file system. The file system hierarchy is the same
+// for local and restricted file systems:
 //   test_dir/ - - subdir/
 //              |
 //               - empty_test_dir/

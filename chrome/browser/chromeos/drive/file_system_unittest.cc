@@ -1068,7 +1068,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  const std::string kExpectedContent = "xxxxxxxxxx";
+  const std::string kExpectedContent = "This is some test content.";
   std::string cache_file_data;
   EXPECT_TRUE(file_util::ReadFileToString(cache_file_path, &cache_file_data));
   EXPECT_EQ(kExpectedContent, cache_file_data);
@@ -2158,8 +2158,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(FILE_ERROR_IN_USE, error);
 
   // Verify that the file contents match the expected contents.
-  // The content is "x"s of the file size.
-  const std::string kExpectedContent = "xxxxxxxxxx";
+  const std::string kExpectedContent = "This is some test content.";
   std::string cache_file_data;
   EXPECT_TRUE(file_util::ReadFileToString(opened_file_path, &cache_file_data));
   EXPECT_EQ(kExpectedContent, cache_file_data);

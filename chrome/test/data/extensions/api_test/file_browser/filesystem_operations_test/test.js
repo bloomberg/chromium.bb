@@ -37,14 +37,14 @@
  * All files should initially have content: kInitialFileContent.
  */
 
-var kInitialFileContent = 'xxxxxxxxxxxxx';
-var kWriteOffset = 13;
-var kWriteData = '!!!';
-var kFileContentAfterWrite = 'xxxxxxxxxxxxx!!!';
-var kTruncateShortLength = 5;
-var kFileContentAfterTruncateShort = 'xxxxx';
-var kTruncateLongLength = 7;
-var kFileContentAfterTruncateLong = 'xxxxx\0\0';
+var kInitialFileContent = 'This is some test content.';
+var kWriteOffset = 26;
+var kWriteData = ' Yay!';
+var kFileContentAfterWrite = 'This is some test content. Yay!';
+var kTruncateShortLength = 4;
+var kFileContentAfterTruncateShort = 'This';
+var kTruncateLongLength = 6;
+var kFileContentAfterTruncateLong = 'This\0\0';
 
 function assertEqAndRunCallback(expectedValue, value, errorMessage,
                                 callback, callbackArg) {

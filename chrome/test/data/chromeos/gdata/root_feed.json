@@ -211,8 +211,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "10"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "SubDirectory File 1.txt"
          },
@@ -236,7 +237,7 @@
             "$t": "2012-01-01T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
-            "$t": "10"
+            "$t": "26"
          },
          "gd$resourceId": {
             "$t": "file:subdirectory_file_1_id"
@@ -315,8 +316,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "10"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "Shared To The Account Owner.txt"
          },
@@ -340,7 +342,7 @@
             "$t": "2012-01-01T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
-            "$t": "10"
+            "$t": "26"
          },
          "gd$resourceId": {
             "$t": "file:subdirectory_unowned_file_1_id"
@@ -571,8 +573,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "10"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "Orphan File 1.txt"
          },
@@ -596,7 +599,7 @@
             "$t": "2012-01-02T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
-            "$t": "10"
+            "$t": "26"
          },
          "gd$resourceId": {
             "$t": "file:1_orphanfile_resource_id"
@@ -667,8 +670,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "10"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "File 1.txt"
          },
@@ -692,7 +696,7 @@
             "$t": "2012-01-02T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
-            "$t": "10"
+            "$t": "26"
          },
          "gd$resourceId": {
             "$t": "file:2_file_resource_id"
@@ -767,8 +771,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "10"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "Slash / in file 1.txt"
          },
@@ -792,7 +797,7 @@
             "$t": "2012-01-03T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
-            "$t": "10"
+            "$t": "26"
          },
          "gd$resourceId": {
             "$t": "file:slash_file_resource_id"
@@ -863,8 +868,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "10"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "Duplicate Name.txt"
          },
@@ -888,7 +894,7 @@
             "$t": "2012-01-04T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
-            "$t": "10"
+            "$t": "26"
          },
          "gd$resourceId": {
             "$t": "file:3_file_resource_id"
@@ -959,8 +965,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "10"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "Duplicate Name.txt"
          },
@@ -984,7 +991,7 @@
             "$t": "2012-01-05T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
-            "$t": "10"
+            "$t": "26"
          },
          "gd$resourceId": {
             "$t": "file:4_file_resource_id"
@@ -1223,8 +1230,9 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "10"
+            "$t": "26"
          },
+         "test$data": "This is some test content.",
          "docs$suggestedFilename": {
             "$t": "Slash SubDir File.txt"
          },
@@ -1248,7 +1256,7 @@
             "$t": "2012-01-07T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
-            "$t": "10"
+            "$t": "26"
          },
          "gd$resourceId": {
             "$t": "file:slash_subdir_file"

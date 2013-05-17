@@ -800,11 +800,11 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
   std::string content;
   ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
   // The content is "x"s of the file size specified in root_feed.json.
-  EXPECT_EQ("xxxxxxxxxx", content);
+  EXPECT_EQ("This is some test content.", content);
   ASSERT_TRUE(!download_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(download_progress_values));
-  EXPECT_GE(download_progress_values.front().first, 0);
-  EXPECT_LE(download_progress_values.back().first, 10);
+  EXPECT_LE(0, download_progress_values.front().first);
+  EXPECT_GE(26, download_progress_values.back().first);
   EXPECT_EQ(content, get_content_callback.GetConcatenatedData());
 }
 
@@ -1653,8 +1653,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   EXPECT_FALSE(entry.get());
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
-  EXPECT_GE(upload_progress_values.front().first, 0);
-  EXPECT_LE(upload_progress_values.back().first, 13);
+  EXPECT_LE(0, upload_progress_values.front().first);
+  EXPECT_GE(13, upload_progress_values.back().first);
 
   upload_progress_values.clear();
   fake_service_.ResumeUpload(
@@ -1673,8 +1673,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   EXPECT_TRUE(Exists(entry->resource_id()));
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
-  EXPECT_GE(upload_progress_values.front().first, 0);
-  EXPECT_LE(upload_progress_values.back().first, 2);
+  EXPECT_LE(0, upload_progress_values.front().first);
+  EXPECT_GE(2, upload_progress_values.back().first);
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
@@ -1714,8 +1714,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   EXPECT_FALSE(entry.get());
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
-  EXPECT_GE(upload_progress_values.front().first, 0);
-  EXPECT_LE(upload_progress_values.back().first, 13);
+  EXPECT_LE(0, upload_progress_values.front().first);
+  EXPECT_GE(13, upload_progress_values.back().first);
 
   upload_progress_values.clear();
   fake_service_.ResumeUpload(
@@ -1734,8 +1734,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   EXPECT_TRUE(Exists(entry->resource_id()));
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
-  EXPECT_GE(upload_progress_values.front().first, 0);
-  EXPECT_LE(upload_progress_values.back().first, 2);
+  EXPECT_LE(0, upload_progress_values.front().first);
+  EXPECT_GE(2, upload_progress_values.back().first);
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
@@ -1747,14 +1747,14 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kContentType = "text/plain";
-  const int64 kContentSize = 123;
+  const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.AddNewFile(
       kContentType,
-      kContentSize,
+      kContentData,
       fake_service_.GetRootResourceId(),
       kTitle,
       false,  // shared_with_me
@@ -1765,7 +1765,8 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
   ASSERT_TRUE(resource_entry);
   EXPECT_TRUE(resource_entry->is_file());
   EXPECT_EQ(kContentType, resource_entry->content_mime_type());
-  EXPECT_EQ(kContentSize, resource_entry->file_size());
+  EXPECT_EQ(static_cast<int64>(kContentData.size()),
+            resource_entry->file_size());
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
   EXPECT_EQ(kTitle, resource_entry->title());
   EXPECT_TRUE(HasParent(resource_entry->resource_id(),
@@ -1784,14 +1785,14 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kContentType = "text/plain";
-  const int64 kContentSize = 123;
+  const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.AddNewFile(
       kContentType,
-      kContentSize,
+      kContentData,
       fake_service_.GetRootResourceId(),
       kTitle,
       false,  // shared_with_me
@@ -1802,7 +1803,8 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
   ASSERT_TRUE(resource_entry);
   EXPECT_TRUE(resource_entry->is_file());
   EXPECT_EQ(kContentType, resource_entry->content_mime_type());
-  EXPECT_EQ(kContentSize, resource_entry->file_size());
+  EXPECT_EQ(static_cast<int64>(kContentData.size()),
+            resource_entry->file_size());
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
   EXPECT_EQ(kTitle, resource_entry->title());
   EXPECT_TRUE(HasParent(resource_entry->resource_id(),
@@ -1821,7 +1823,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kContentType = "text/plain";
-  const int64 kContentSize = 123;
+  const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
   const std::string kParentResourceId = "folder:1_folder_resource_id";
 
@@ -1829,7 +1831,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.AddNewFile(
       kContentType,
-      kContentSize,
+      kContentData,
       kParentResourceId,
       kTitle,
       false,  // shared_with_me
@@ -1840,7 +1842,8 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
   ASSERT_TRUE(resource_entry);
   EXPECT_TRUE(resource_entry->is_file());
   EXPECT_EQ(kContentType, resource_entry->content_mime_type());
-  EXPECT_EQ(kContentSize, resource_entry->file_size());
+  EXPECT_EQ(static_cast<int64>(kContentData.size()),
+            resource_entry->file_size());
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
   EXPECT_EQ(kTitle, resource_entry->title());
   EXPECT_TRUE(HasParent(resource_entry->resource_id(), kParentResourceId));
@@ -1854,7 +1857,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonexistingDirectory) {
       "chromeos/gdata/root_feed.json"));
 
   const std::string kContentType = "text/plain";
-  const int64 kContentSize = 123;
+  const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
   const std::string kParentResourceId = "folder:nonexisting_resource_id";
 
@@ -1862,7 +1865,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonexistingDirectory) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.AddNewFile(
       kContentType,
-      kContentSize,
+      kContentData,
       kParentResourceId,
       kTitle,
       false,  // shared_with_me
@@ -1879,14 +1882,14 @@ TEST_F(FakeDriveServiceTest, AddNewFile_Offline) {
   fake_service_.set_offline(true);
 
   const std::string kContentType = "text/plain";
-  const int64 kContentSize = 123;
+  const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.AddNewFile(
       kContentType,
-      kContentSize,
+      kContentData,
       fake_service_.GetRootResourceId(),
       kTitle,
       false,  // shared_with_me
@@ -1904,7 +1907,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
       "chromeos/gdata/account_metadata.json"));
 
   const std::string kContentType = "text/plain";
-  const int64 kContentSize = 123;
+  const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
@@ -1913,7 +1916,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.AddNewFile(
       kContentType,
-      kContentSize,
+      kContentData,
       fake_service_.GetRootResourceId(),
       kTitle,
       true,  // shared_with_me
@@ -1924,7 +1927,8 @@ TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
   ASSERT_TRUE(resource_entry);
   EXPECT_TRUE(resource_entry->is_file());
   EXPECT_EQ(kContentType, resource_entry->content_mime_type());
-  EXPECT_EQ(kContentSize, resource_entry->file_size());
+  EXPECT_EQ(static_cast<int64>(kContentData.size()),
+            resource_entry->file_size());
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
   EXPECT_EQ(kTitle, resource_entry->title());
   EXPECT_TRUE(HasParent(resource_entry->resource_id(),

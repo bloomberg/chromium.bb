@@ -91,13 +91,15 @@ function launchedListener(launchData) {
   if (launchData.id == 'xulAction') {
     handlerTests.push(
       function readXulAction() {
-        readFileAndExpectContent(launchData.items[0].entry, 'xxxxxxxxxxxxx');
+        readFileAndExpectContent(launchData.items[0].entry,
+                                 'This is some test content.');
     });
     testPreRunStatus.gotXulAction = true;
   } else if (launchData.id == 'tiffAction') {
     handlerTests.push(
       function readTiffAction() {
-        readFileAndExpectContent(launchData.items[0].entry, 'xxxxxxxxxxxxx');
+        readFileAndExpectContent(launchData.items[0].entry,
+                                 'This is some test content.');
     });
     testPreRunStatus.gotTiffAction = true;
   } else {
