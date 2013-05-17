@@ -268,6 +268,9 @@ views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
   tray_label_ = new TrayItemView(this);
   tray_label_->CreateLabel();
   SetupLabelForTray(tray_label_->label());
+  // Hide IME tray when it is created, it will be updated when it is notified
+  // for IME refresh event.
+  tray_label_->SetVisible(false);
   return tray_label_;
 }
 
