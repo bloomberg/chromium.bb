@@ -127,24 +127,12 @@ class LocationBarView : public LocationBar,
     SECURITY_TEXT,
   };
 
-  // The modes reflect the different scenarios where a location bar can be used.
-  // The normal mode is the mode used in a regular browser window.
-  // In popup mode, the location bar view is read only and has a slightly
-  // different presentation (font size / color).
-  // In app launcher mode, the location bar is empty and no security states or
-  // page/browser actions are displayed.
-  enum Mode {
-    NORMAL = 0,
-    POPUP,
-    APP_LAUNCHER
-  };
-
   LocationBarView(Browser* browser,
                   Profile* profile,
                   CommandUpdater* command_updater,
                   ToolbarModel* model,
                   Delegate* delegate,
-                  Mode mode);
+                  bool is_popup_mode);
 
   virtual ~LocationBarView();
 
@@ -489,8 +477,8 @@ class LocationBarView : public LocationBar,
   // The action box button (plus).
   ActionBoxButtonView* action_box_button_view_;
 
-  // The mode that dictates how the bar shows.
-  Mode mode_;
+  // Whether we're in popup mode.
+  const bool is_popup_mode_;
 
   // True if we should show a focus rect while the location entry field is
   // focused. Used when the toolbar is in full keyboard accessibility mode.

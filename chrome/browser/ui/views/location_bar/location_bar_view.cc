@@ -166,7 +166,7 @@ LocationBarView::LocationBarView(Browser* browser,
                                  CommandUpdater* command_updater,
                                  ToolbarModel* model,
                                  Delegate* delegate,
-                                 Mode mode)
+                                 bool is_popup_mode)
     : browser_(browser),
       profile_(profile),
       command_updater_(command_updater),
@@ -189,14 +189,14 @@ LocationBarView::LocationBarView(Browser* browser,
       script_bubble_icon_view_(NULL),
       star_view_(NULL),
       action_box_button_view_(NULL),
-      mode_(mode),
+      is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
       animation_offset_(0) {
   if (!views::Textfield::IsViewsTextfieldEnabled())
     set_id(VIEW_ID_OMNIBOX);
 
-  if (mode_ == NORMAL) {
+  if (!is_popup_mode_) {
     background_painter_.reset(
         views::Painter::CreateImagePainter(
             *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -227,7 +227,7 @@ void LocationBarView::Init() {
   DCHECK(GetWidget());
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (mode_ == POPUP) {
+  if (is_popup_mode_) {
     font_ = rb.GetFont(ui::ResourceBundle::BaseFont);
   } else {
     // Use a larger version of the system font.
@@ -252,7 +252,7 @@ void LocationBarView::Init() {
 
   // Initialize the Omnibox view.
   location_entry_.reset(CreateOmniboxView(this, model_, profile_,
-      command_updater_, mode_ == POPUP, this));
+      command_updater_, is_popup_mode_, this));
   SetLocationEntryFocusable(true);
   location_entry_view_ = location_entry_->AddToView(this);
 
@@ -295,15 +295,14 @@ void LocationBarView::Init() {
   script_bubble_icon_view_->SetVisible(false);
   AddChildView(script_bubble_icon_view_);
 
-  if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
-    // Note: condition above means that the star icon is hidden in popups and in
-    // the app launcher.
+  // The star icon is hidden in popups.
+  if (browser_defaults::bookmarks_enabled && !is_popup_mode_) {
     star_view_ = new StarView(command_updater_);
     star_view_->SetVisible(true);
     AddChildView(star_view_);
   }
-  if (extensions::FeatureSwitch::action_box()->IsEnabled() &&
-      mode_ == NORMAL && browser_) {
+  if (extensions::FeatureSwitch::action_box()->IsEnabled() && !is_popup_mode_ &&
+      browser_) {
     if (star_view_)
       star_view_->SetVisible(false);
 
@@ -458,10 +457,8 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   // If |search_provider| is empty, |search_token_view_| is hidden.
   search_token_view_->SetText(search_provider);
 
-  // Don't Update in app launcher mode so that the location entry does not show
-  // a URL or security background.
-  if (mode_ != APP_LAUNCHER)
-    location_entry_->Update(tab_for_state_restoring);
+  location_entry_->Update(tab_for_state_restoring);
+
   OnChanged();
 }
 
@@ -519,7 +516,7 @@ void LocationBarView::OnFocus() {
 
 void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
                                                   bool preview_enabled) {
-  if (mode_ != NORMAL)
+  if (is_popup_mode_)
     return;
 
   DCHECK(page_action);
@@ -651,8 +648,8 @@ bool LocationBarView::IsLocationEntryFocusableInRootView() const {
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
-  int sizing_image_id = mode_ == POPUP ? IDR_LOCATIONBG_POPUPMODE_CENTER :
-                                         IDR_LOCATION_BAR_BORDER;
+  int sizing_image_id = is_popup_mode_ ?
+      IDR_LOCATIONBG_POPUPMODE_CENTER : IDR_LOCATION_BAR_BORDER;
   return gfx::Size(
       0, GetThemeProvider()->GetImageSkiaNamed(sizing_image_id)->height());
 }
@@ -676,8 +673,8 @@ void LocationBarView::Layout() {
   // edit's built-in space (so the apparent space will be the same).
   const int kItemEditPadding = GetItemPadding() - kEditInternalSpace;
   const int kEdgeEditPadding = GetEdgeItemPadding() - kEditInternalSpace;
-  const int kBubbleVerticalPadding = (mode_ == POPUP) ?
-      -1 : kBubbleHorizontalPadding;
+  const int kBubbleVerticalPadding =
+      is_popup_mode_ ? -1 : kBubbleHorizontalPadding;
   // The largest fraction of the omnibox that can be taken by resizable
   // bubble decorations such as the EV_SECURE decoration.
   const double kMaxBubbleFraction = 0.5;
@@ -897,9 +894,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 
   if (background_painter_.get()) {
     background_painter_->Paint(canvas, size());
-  } else if (mode_ == POPUP) {
-    // When used in the app launcher, don't draw a border, the LocationBarView
-    // has its own views::Border.
+  } else {
     const int kEdgeThickness = GetHorizontalEdgeThickness();
     canvas->TileImageInt(
         *GetThemeProvider()->GetImageSkiaNamed(IDR_LOCATIONBG_POPUPMODE_CENTER),
@@ -924,7 +919,9 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect bounds(GetContentsBounds());
   bounds.Inset(GetHorizontalEdgeThickness(), kVerticalEdgeThickness);
   SkColor color(GetColor(ToolbarModel::NONE, BACKGROUND));
-  if (mode_ == NORMAL) {
+  if (is_popup_mode_) {
+    canvas->FillRect(bounds, color);
+  } else {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
@@ -934,8 +931,6 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     paint.setColor(color);
     canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
     PaintPageActionBackgrounds(canvas);
-  } else {
-    canvas->FillRect(bounds, color);
   }
 
   // For non-InstantExtendedAPI cases, if necessary, show focus rect.
@@ -1090,7 +1085,7 @@ WebContents* LocationBarView::GetWebContents() const {
 }
 
 int LocationBarView::GetHorizontalEdgeThickness() const {
-  if (mode_ == NORMAL)
+  if (!is_popup_mode_)
     return kNormalHorizontalEdgeThickness;
 
   // In maximized popup mode, there isn't any edge.
@@ -1113,7 +1108,7 @@ void LocationBarView::DeletePageActionViews() {
 }
 
 void LocationBarView::RefreshPageActionViews() {
-  if (mode_ != NORMAL)
+  if (is_popup_mode_)
     return;
 
   // Remember the previous visibility of the page actions so that we can

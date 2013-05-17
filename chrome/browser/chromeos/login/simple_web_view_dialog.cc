@@ -186,12 +186,8 @@ void SimpleWebViewDialog::Init() {
   toolbar_model_.reset(new ToolbarModelImpl(this));
 
   // Location bar.
-  location_bar_ = new LocationBarView(NULL,
-                                      profile_,
-                                      command_updater_.get(),
-                                      toolbar_model_.get(),
-                                      this,
-                                      LocationBarView::POPUP);
+  location_bar_ = new LocationBarView(NULL, profile_, command_updater_.get(),
+                                      toolbar_model_.get(), this, true);
 
   // Reload button.
   reload_ = new ReloadButton(location_bar_, command_updater_.get());
@@ -302,9 +298,8 @@ void SimpleWebViewDialog::ShowWebsiteSettings(
 PageActionImageView* SimpleWebViewDialog::CreatePageActionImageView(
     LocationBarView* owner,
     ExtensionAction* action) {
-  // Notreached because SimpleWebViewDialog uses
-  // LocationBarView::POPUP type, and it doesn't create
-  // PageActionImageViews.
+  // Notreached because SimpleWebViewDialog uses a popup-mode LocationBarView,
+  // and it doesn't create PageActionImageViews.
   NOTREACHED();
   return NULL;
 }

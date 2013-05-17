@@ -215,8 +215,7 @@ void ToolbarView::Init() {
   location_bar_ = new LocationBarView(
       browser_, browser_->profile(),
       browser_->command_controller()->command_updater(), model_, this,
-      (display_mode_ == DISPLAYMODE_LOCATION) ?
-          LocationBarView::POPUP : LocationBarView::NORMAL);
+      display_mode_ == DISPLAYMODE_LOCATION);
 
   reload_ = new ReloadButton(location_bar_,
                              browser_->command_controller()->command_updater());
