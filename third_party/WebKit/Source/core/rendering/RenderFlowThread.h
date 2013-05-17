@@ -32,10 +32,10 @@
 
 
 #include "core/rendering/RenderBlock.h"
-#include <wtf/HashCountedSet.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/HashCountedSet.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 
@@ -65,6 +65,8 @@ public:
     // Always create a RenderLayer for the RenderFlowThread so that we 
     // can easily avoid drawing the children directly.
     virtual bool requiresLayer() const OVERRIDE FINAL { return true; }
+
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
     
     void removeFlowChildInfo(RenderObject*);
 #ifndef NDEBUG
