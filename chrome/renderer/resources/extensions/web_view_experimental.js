@@ -183,6 +183,7 @@ WebView.prototype.maybeSetupNewWindowEvent_ = function() {
       actionTaken = true;
       // The default action is to discard the window.
       objectNode['-internal-setPermission'](requestId, false);
+      console.warn('<webview>: A new window was blocked.');
     }
   });
 };
