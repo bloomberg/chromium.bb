@@ -413,7 +413,8 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
     if (item.location() == Manifest::COMPONENT)
       continue;  // Skip built-in extensions / apps;
     item_list.push_back(make_linked_ptr<developer::ItemInfo>(
-        CreateItemInfo(item, false).release()));
+        CreateItemInfo(
+            item, service->IsExtensionEnabled(item.id())).release()));
   }
 
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
