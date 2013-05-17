@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
@@ -87,14 +88,34 @@ class DevToolsClientImpl : public DevToolsClient {
       const ConditionalFunc& conditional_func) OVERRIDE;
 
  private:
-  typedef std::map<int, base::DictionaryValue*> ResponseMap;
+  enum ResponseState {
+    // The client is waiting for the response.
+    kWaiting,
+    // The command response will not be received because it is blocked by an
+    // alert that the command triggered.
+    kBlocked,
+    // The client no longer cares about the response.
+    kIgnored,
+    // The response has been received.
+    kReceived
+  };
+  struct ResponseInfo {
+    ResponseInfo();
+    ~ResponseInfo();
+
+    ResponseState state;
+    internal::InspectorCommandResponse response;
+  };
+  typedef std::map<int, linked_ptr<ResponseInfo> > ResponseInfoMap;
 
   Status SendCommandInternal(
       const std::string& method,
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result);
-  Status ReceiveNextMessage(int expected_id);
-  bool HasReceivedCommandResponse(int cmd_id);
+  Status ProcessNextMessage(int expected_id);
+  Status ProcessEvent(const internal::InspectorEvent& event);
+  Status ProcessCommandResponse(
+      const internal::InspectorCommandResponse& response);
   Status EnsureListenersNotifiedOfConnect();
   Status EnsureListenersNotifiedOfEvent();
 
@@ -106,8 +127,8 @@ class DevToolsClientImpl : public DevToolsClient {
   std::list<DevToolsEventListener*> listeners_;
   std::list<DevToolsEventListener*> unnotified_connect_listeners_;
   std::list<DevToolsEventListener*> unnotified_event_listeners_;
-  internal::InspectorEvent* unnotified_event_;
-  ResponseMap cmd_response_map_;
+  const internal::InspectorEvent* unnotified_event_;
+  ResponseInfoMap response_info_map_;
   int next_id_;
   int stack_count_;
 

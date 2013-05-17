@@ -289,6 +289,27 @@ Status ExecuteImplicitlyWait(
   return Status(kOk);
 }
 
+Status ExecuteAlertCommand(
+     const SessionCommand& alert_command,
+     Session* session,
+     const base::DictionaryValue& params,
+     scoped_ptr<base::Value>* value) {
+  WebView* web_view = NULL;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  status = web_view->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  status = web_view->WaitForPendingNavigations(session->GetCurrentFrameId());
+  if (status.IsError() && status.code() != kUnexpectedAlertOpen)
+    return status;
+
+  return alert_command.Run(session, params, value);
+}
+
 Status ExecuteGetAlert(
     Session* session,
     const base::DictionaryValue& params,
@@ -328,7 +349,7 @@ Status ExecuteSetAlertValue(
   if (!is_open)
     return Status(kNoAlertOpen);
 
-  session->prompt_text = text;
+  session->prompt_text.reset(new std::string(text));
   return Status(kOk);
 }
 
@@ -337,8 +358,8 @@ Status ExecuteAcceptAlert(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   Status status = session->chrome->HandleJavaScriptDialog(
-      true, session->prompt_text);
-  session->prompt_text = "";
+      true, session->prompt_text.get());
+  session->prompt_text.reset();
   return status;
 }
 
@@ -347,8 +368,8 @@ Status ExecuteDismissAlert(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   Status status = session->chrome->HandleJavaScriptDialog(
-      false, session->prompt_text);
-  session->prompt_text = "";
+      false, session->prompt_text.get());
+  session->prompt_text.reset();
   return status;
 }
 

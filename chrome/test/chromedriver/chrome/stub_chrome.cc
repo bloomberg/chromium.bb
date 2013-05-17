@@ -40,7 +40,7 @@ Status StubChrome::GetJavaScriptDialogMessage(std::string* message) {
 
 Status StubChrome::HandleJavaScriptDialog(
     bool accept,
-    const std::string& prompt_text) {
+    const std::string* prompt_text) {
   return Status(kOk);
 }
 

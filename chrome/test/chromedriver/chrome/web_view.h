@@ -101,6 +101,8 @@ class WebView {
 
   // Waits until all pending navigations have completed in the given frame.
   // If |frame_id| is "", waits for navigations on the main frame.
+  // If a modal dialog appears while waiting, kUnexpectedAlertOpen will be
+  // returned.
   virtual Status WaitForPendingNavigations(const std::string& frame_id) = 0;
 
   // Returns whether the frame is pending navigation.

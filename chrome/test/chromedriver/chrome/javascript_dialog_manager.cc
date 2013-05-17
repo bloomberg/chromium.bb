@@ -31,13 +31,14 @@ Status JavaScriptDialogManager::GetDialogMessage(std::string* message) {
 }
 
 Status JavaScriptDialogManager::HandleDialog(bool accept,
-                                             const std::string& text) {
+                                             const std::string* text) {
   if (!IsDialogOpen())
     return Status(kNoAlertOpen);
 
   base::DictionaryValue params;
   params.SetBoolean("accept", accept);
-  params.SetString("promptText", text);
+  if (text)
+    params.SetString("promptText", *text);
   Status status = client_->SendCommand("Page.handleJavaScriptDialog", params);
   if (status.IsError())
     return status;

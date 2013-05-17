@@ -87,6 +87,8 @@ class WebViewImpl : public WebView {
                                    bool is_user_supplied,
                                    const base::TimeDelta& timeout,
                                    scoped_ptr<base::Value>* result);
+  Status IsNotPendingNavigation(const std::string& frame_id,
+                                bool* is_not_pending);
   std::string id_;
   scoped_ptr<DomTracker> dom_tracker_;
   scoped_ptr<FrameTracker> frame_tracker_;

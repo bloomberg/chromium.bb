@@ -159,8 +159,11 @@ Status ExecuteWindowCommand(
   nav_status =
       web_view->WaitForPendingNavigations(session->GetCurrentFrameId());
   if (status.IsOk() && nav_status.IsError() &&
-      nav_status.code() != kDisconnected)
+      nav_status.code() != kDisconnected &&
+      nav_status.code() != kUnexpectedAlertOpen)
     return nav_status;
+  if (status.code() == kUnexpectedAlertOpen)
+    return Status(kOk);
   return status;
 }
 

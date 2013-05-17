@@ -207,15 +207,15 @@ void CommandExecutorImpl::Init() {
   session_command_map[CommandNames::kImplicitlyWait] =
       base::Bind(&ExecuteImplicitlyWait);
   session_command_map[CommandNames::kGetAlert] =
-      base::Bind(&ExecuteGetAlert);
+      base::Bind(&ExecuteAlertCommand, base::Bind(&ExecuteGetAlert));
   session_command_map[CommandNames::kGetAlertText] =
-      base::Bind(&ExecuteGetAlertText);
+      base::Bind(&ExecuteAlertCommand, base::Bind(&ExecuteGetAlertText));
   session_command_map[CommandNames::kSetAlertValue] =
-      base::Bind(&ExecuteSetAlertValue);
+      base::Bind(&ExecuteAlertCommand, base::Bind(&ExecuteSetAlertValue));
   session_command_map[CommandNames::kAcceptAlert] =
-      base::Bind(&ExecuteAcceptAlert);
+      base::Bind(&ExecuteAlertCommand, base::Bind(&ExecuteAcceptAlert));
   session_command_map[CommandNames::kDismissAlert] =
-      base::Bind(&ExecuteDismissAlert);
+      base::Bind(&ExecuteAlertCommand, base::Bind(&ExecuteDismissAlert));
   session_command_map[CommandNames::kIsLoading] =
       base::Bind(&ExecuteIsLoading);
   session_command_map[CommandNames::kGetLocation] =

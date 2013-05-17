@@ -95,6 +95,13 @@ Status ExecuteImplicitlyWait(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Executes an alert command.
+Status ExecuteAlertCommand(
+     const SessionCommand& alert_command,
+     Session* session,
+     const base::DictionaryValue& params,
+     scoped_ptr<base::Value>* value);
+
 // Returns whether an alert is open.
 Status ExecuteGetAlert(
     Session* session,

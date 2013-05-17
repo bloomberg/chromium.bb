@@ -36,6 +36,7 @@ class DevToolsClient {
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) = 0;
 
+  // Adds a listener. This must only be done when the client is disconnected.
   virtual void AddListener(DevToolsEventListener* listener) = 0;
 
   // Handles events until the given function reports the condition is met

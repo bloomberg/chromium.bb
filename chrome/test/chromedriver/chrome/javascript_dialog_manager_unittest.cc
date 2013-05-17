@@ -19,7 +19,7 @@ TEST(JavaScriptDialogManager, NoDialog) {
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_STREQ("HI", message.c_str());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
 }
 
 namespace {
@@ -52,10 +52,22 @@ TEST(JavaScriptDialogManager, HandleDialogPassesParams) {
   base::DictionaryValue params;
   params.SetString("message", "hi");
   manager.OnEvent(&client, "Page.javascriptDialogOpening", params);
-  ASSERT_EQ(kOk, manager.HandleDialog(false, "text").code());
+  std::string given_text("text");
+  ASSERT_EQ(kOk, manager.HandleDialog(false, &given_text).code());
   std::string text;
   client.params_.GetString("promptText", &text);
-  ASSERT_EQ("text", text);
+  ASSERT_EQ(given_text, text);
+  ASSERT_TRUE(client.params_.HasKey("accept"));
+}
+
+TEST(JavaScriptDialogManager, HandleDialogNullPrompt) {
+  RecorderDevToolsClient client;
+  JavaScriptDialogManager manager(&client);
+  base::DictionaryValue params;
+  params.SetString("message", "hi");
+  manager.OnEvent(&client, "Page.javascriptDialogOpening", params);
+  ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
+  ASSERT_FALSE(client.params_.HasKey("promptText"));
   ASSERT_TRUE(client.params_.HasKey("accept"));
 }
 
@@ -73,7 +85,7 @@ TEST(JavaScriptDialogManager, ReconnectClearsStateAndSendsEnable) {
   ASSERT_EQ("Page.enable", client.method_);
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
 }
 
 namespace {
@@ -125,10 +137,10 @@ TEST(JavaScriptDialogManager, OneDialog) {
   ASSERT_EQ("hi", message);
 
   client.set_closing_count(1);
-  ASSERT_EQ(kOk, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
 }
 
 TEST(JavaScriptDialogManager, TwoDialogs) {
@@ -145,16 +157,16 @@ TEST(JavaScriptDialogManager, TwoDialogs) {
   ASSERT_TRUE(manager.IsDialogOpen());
   ASSERT_EQ("1", message);
 
-  ASSERT_EQ(kOk, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
   ASSERT_TRUE(manager.IsDialogOpen());
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
   ASSERT_EQ("2", message);
 
   client.set_closing_count(2);
-  ASSERT_EQ(kOk, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
 }
 
 TEST(JavaScriptDialogManager, OneDialogManualClose) {
@@ -174,5 +186,5 @@ TEST(JavaScriptDialogManager, OneDialogManualClose) {
   manager.OnEvent(&client, "Page.javascriptDialogClosing", params);
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
 }

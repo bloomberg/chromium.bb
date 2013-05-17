@@ -37,7 +37,7 @@ class ChromeImpl : public Chrome {
   virtual Status GetJavaScriptDialogMessage(std::string* message) OVERRIDE;
   virtual Status HandleJavaScriptDialog(
       bool accept,
-      const std::string& prompt_text) OVERRIDE;
+      const std::string* prompt_text) OVERRIDE;
   virtual Status GetAutomationExtension(
       AutomationExtension** extension) OVERRIDE;
 

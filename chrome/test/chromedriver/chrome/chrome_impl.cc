@@ -121,7 +121,7 @@ Status ChromeImpl::GetJavaScriptDialogMessage(std::string* message) {
 }
 
 Status ChromeImpl::HandleJavaScriptDialog(bool accept,
-                                          const std::string& prompt_text) {
+                                          const std::string* prompt_text) {
   JavaScriptDialogManager* manager;
   Status status = GetDialogManagerForOpenDialog(&manager);
   if (status.IsError())

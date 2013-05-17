@@ -65,17 +65,6 @@ const char* GetAsString(MouseButton button) {
   }
 }
 
-Status IsNotPendingNavigation(NavigationTracker* tracker,
-                              const std::string& frame_id,
-                              bool* is_not_pending) {
-  bool is_pending;
-  Status status = tracker->IsPendingNavigation(frame_id, &is_pending);
-  if (status.IsError())
-    return status;
-  *is_not_pending = !is_pending;
-  return Status(kOk);
-}
-
 const char* GetAsString(KeyEventType type) {
   switch (type) {
     case kKeyDownEventType:
@@ -265,7 +254,7 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id) {
       return status;
   }
   return client_->HandleEventsUntil(
-      base::Bind(IsNotPendingNavigation, navigation_tracker_.get(),
+      base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
                  full_frame_id));
 }
 
@@ -413,6 +402,21 @@ Status WebViewImpl::CallAsyncFunctionInternal(const std::string& frame,
 
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   }
+}
+
+Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
+                                           bool* is_not_pending) {
+  bool is_pending;
+  Status status =
+      navigation_tracker_->IsPendingNavigation(frame_id, &is_pending);
+  if (status.IsError())
+    return status;
+  // An alert may block the pending navigation.
+  if (is_pending && dialog_manager_->IsDialogOpen())
+    return Status(kUnexpectedAlertOpen);
+
+  *is_not_pending = !is_pending;
+  return Status(kOk);
 }
 
 namespace internal {

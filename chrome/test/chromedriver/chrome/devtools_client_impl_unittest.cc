@@ -934,3 +934,116 @@ TEST(DevToolsClientImpl, Reconnect) {
   ASSERT_EQ(kOk, client.SendCommand("method", params).code());
   ASSERT_FALSE(is_called);
 }
+
+namespace {
+
+class MockSyncWebSocket6 : public SyncWebSocket {
+ public:
+  explicit MockSyncWebSocket6(std::list<std::string>* messages)
+      : messages_(messages) {}
+  virtual ~MockSyncWebSocket6() {}
+
+  virtual bool IsConnected() OVERRIDE { return true; }
+
+  virtual bool Connect(const GURL& url) OVERRIDE { return true; }
+
+  virtual bool Send(const std::string& message) OVERRIDE { return true; }
+
+  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
+    if (messages_->empty())
+      return false;
+    *message = messages_->front();
+    messages_->pop_front();
+    return true;
+  }
+
+  virtual bool HasNextMessage() OVERRIDE { return messages_->size(); }
+
+ private:
+  std::list<std::string>* messages_;
+};
+
+class MockDevToolsEventListener : public DevToolsEventListener {
+ public:
+  MockDevToolsEventListener() : id_(1) {}
+  virtual ~MockDevToolsEventListener() {}
+
+  virtual Status OnConnected(DevToolsClient* client) OVERRIDE {
+    return Status(kOk);
+  }
+
+  virtual void OnEvent(DevToolsClient* client,
+                       const std::string& method,
+                       const base::DictionaryValue& params) OVERRIDE {
+    id_++;
+    Status status = client->SendCommand("hello", params);
+    id_--;
+    if (id_ == 3) {
+      EXPECT_EQ(kUnexpectedAlertOpen, status.code());
+    } else {
+      EXPECT_EQ(kOk, status.code());
+    }
+  }
+
+ private:
+  int id_;
+};
+
+scoped_ptr<SyncWebSocket> CreateMockSyncWebSocket6(
+    std::list<std::string>* messages) {
+  return scoped_ptr<MockSyncWebSocket6>(new MockSyncWebSocket6(messages))
+      .PassAs<SyncWebSocket>();
+}
+
+}  // namespace
+
+TEST(DevToolsClientImpl, BlockedByAlert) {
+  std::list<std::string> msgs;
+  SyncWebSocketFactory factory = base::Bind(&CreateMockSyncWebSocket6, &msgs);
+  DevToolsClientImpl client(
+      factory, "http://url", "id", base::Bind(&CloserFunc));
+  msgs.push_back(
+      "{\"method\": \"Page.javascriptDialogOpening\", \"params\": {}}");
+  msgs.push_back("{\"id\": 2, \"result\": {}}");
+  base::DictionaryValue params;
+  ASSERT_EQ(kUnexpectedAlertOpen,
+            client.SendCommand("first", params).code());
+}
+
+TEST(DevToolsClientImpl, CorrectlyDeterminesWhichIsBlockedByAlert) {
+  // OUT                 | IN
+  //                       FirstEvent
+  // hello (id=1)
+  //                       SecondEvent
+  // hello (id=2)
+  //                       ThirdEvent
+  // hello (id=3)
+  //                       FourthEvent
+  // hello (id=4)
+  //                       response for 1
+  //                       alert
+  // hello (id=5)
+  // round trip command (id=6)
+  //                       response for 2
+  //                       response for 4
+  //                       response for 5
+  //                       response for 6
+  std::list<std::string> msgs;
+  SyncWebSocketFactory factory = base::Bind(&CreateMockSyncWebSocket6, &msgs);
+  DevToolsClientImpl client(
+      factory, "http://url", "id", base::Bind(&CloserFunc));
+  MockDevToolsEventListener listener;
+  client.AddListener(&listener);
+  msgs.push_back("{\"method\": \"FirstEvent\", \"params\": {}}");
+  msgs.push_back("{\"method\": \"SecondEvent\", \"params\": {}}");
+  msgs.push_back("{\"method\": \"ThirdEvent\", \"params\": {}}");
+  msgs.push_back("{\"method\": \"FourthEvent\", \"params\": {}}");
+  msgs.push_back("{\"id\": 1, \"result\": {}}");
+  msgs.push_back(
+      "{\"method\": \"Page.javascriptDialogOpening\", \"params\": {}}");
+  msgs.push_back("{\"id\": 2, \"result\": {}}");
+  msgs.push_back("{\"id\": 4, \"result\": {}}");
+  msgs.push_back("{\"id\": 5, \"result\": {}}");
+  msgs.push_back("{\"id\": 6, \"result\": {}}");
+  ASSERT_EQ(kOk, client.HandleReceivedEvents().code());
+}
