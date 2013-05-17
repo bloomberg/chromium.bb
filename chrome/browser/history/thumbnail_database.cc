@@ -8,10 +8,13 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/time.h"
@@ -20,6 +23,8 @@
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/url_database.h"
+#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/thumbnail_score.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -74,9 +79,11 @@
 //  width             Pixel width of |image_data|.
 //  height            Pixel height of |image_data|.
 
-static void FillIconMapping(const sql::Statement& statement,
-                            const GURL& page_url,
-                            history::IconMapping* icon_mapping) {
+namespace {
+
+void FillIconMapping(const sql::Statement& statement,
+                     const GURL& page_url,
+                     history::IconMapping* icon_mapping) {
   icon_mapping->mapping_id = statement.ColumnInt64(0);
   icon_mapping->icon_id = statement.ColumnInt64(1);
   icon_mapping->icon_type =
@@ -84,6 +91,67 @@ static void FillIconMapping(const sql::Statement& statement,
   icon_mapping->icon_url = GURL(statement.ColumnString(3));
   icon_mapping->page_url = page_url;
 }
+
+// TODO(shess): If this proves out, perhaps lift the code out to
+// chrome/browser/diagnostics/sqlite_diagnostics.{h,cc}.
+void DatabaseErrorCallback(sql::Connection* db,
+                           int error,
+                           sql::Statement* stmt) {
+  // TODO(shess): Assert that this is running on a safe thread.
+  // AFAICT, should be the history thread, but at this level I can't
+  // see how to reach that.
+
+  // Infrequently report information about the error up to the crash
+  // server.
+  static const uint64 kReportPercent = 5;
+
+  // TODO(shess): For now, don't report on beta or stable so as not to
+  // overwhelm the crash server.  Once the big fish are fried,
+  // consider reporting at a reduced rate on the bigger channels.
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+
+  // Since some/most errors will not resolve themselves, only report
+  // once per Chrome run.
+  static bool reported = false;
+
+  if (channel != chrome::VersionInfo::CHANNEL_STABLE &&
+      channel != chrome::VersionInfo::CHANNEL_BETA &&
+      !reported &&
+      base::RandGenerator(100) < kReportPercent) {
+    reported = true;
+
+    // Buffer for accumulating debugging info about the error.  Place
+    // more-relevant information earlier, in case things overflow the
+    // fixed-size buffer.
+    std::string debug_info;
+
+    // The error message from the failed statement (GetErrorCode()
+    // should be identical to error).
+    base::StringAppendF(&debug_info, "db error: %d/%d/%s\n",
+                        error, db->GetErrorCode(), db->GetErrorMessage());
+
+    // System errno information.
+    base::StringAppendF(&debug_info, "errno: %d\n", db->GetLastErrno());
+
+    // TODO(shess): Think of other things to log.  Not logging the
+    // statement text because the backtrace should suffice in most
+    // cases.  The database schema is a possibility, but the
+    // likelihood of recursive error callbacks makes that risky (same
+    // reasoning applies to other data fetched from the database).
+
+    // Attempt to pass 1000 bytes of |debug_info| into a crash dump.
+    char debug_buf[1000];
+    base::strlcpy(debug_buf, debug_info.c_str(), arraysize(debug_buf));
+    base::debug::Alias(&debug_buf);
+
+    logging::DumpWithoutCrashing();
+  }
+
+  // The default handling is to assert on debug and to ignore on release.
+  DLOG(FATAL) << db->GetErrorMessage();
+}
+
+}  // namespace
 
 namespace history {
 
@@ -219,6 +287,7 @@ sql::InitStatus ThumbnailDatabase::Init(
 sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
                                                 const base::FilePath& db_name) {
   db->set_histogram_tag("Thumbnail");
+  db->set_error_callback(base::Bind(&DatabaseErrorCallback, db));
 
   // Thumbnails db now only stores favicons, so we don't need that big a page
   // size or cache.

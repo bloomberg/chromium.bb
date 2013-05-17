@@ -736,6 +736,13 @@ int Connection::OnSqliteError(int err, sql::Statement *stmt) {
              << ", errno " << GetLastErrno()
              << ": " << GetErrorMessage();
 
+  if (!error_callback_.is_null()) {
+    error_callback_.Run(err, stmt);
+    return err;
+  }
+
+  // TODO(shess): Remove |error_delegate_| once everything is
+  // converted to |error_callback_|.
   if (error_delegate_.get())
     return error_delegate_->OnError(err, this, stmt);
 

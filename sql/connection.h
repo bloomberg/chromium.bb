@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -138,10 +139,32 @@ class SQL_EXPORT Connection {
   // This must be called before Open() to have an effect.
   void set_exclusive_locking() { exclusive_locking_ = true; }
 
+  // Set an error-handling callback.  On errors, the error number (and
+  // statement, if available) will be passed to the callback.
+  //
+  // If no callback is set, the default action is to crash in debug
+  // mode or return failure in release mode.
+  //
+  // TODO(shess): ErrorDelegate allowed for returning a different
+  // error.  Determine if this is necessary for the callback.  In my
+  // experience, this is not well-tested and probably not safe, and
+  // current clients always return the same error passed.
+  // Additionally, most errors don't admit to a clean way to retry the
+  // failed operation, so converting an error to SQLITE_OK is probably
+  // not feasible.
+  typedef base::Callback<void(int, Statement*)> ErrorCallback;
+  void set_error_callback(const ErrorCallback& callback) {
+    error_callback_ = callback;
+  }
+  void reset_error_callback() {
+    error_callback_.Reset();
+  }
+
   // Sets the object that will handle errors. Recomended that it should be set
   // before calling Open(). If not set, the default is to ignore errors on
   // release and assert on debug builds.
   // Takes ownership of |delegate|.
+  // NOTE(shess): Deprecated, use set_error_callback().
   void set_error_delegate(ErrorDelegate* delegate) {
     error_delegate_.reset(delegate);
   }
@@ -496,6 +519,8 @@ class SQL_EXPORT Connection {
   // databases (incorrect use of the API) from calls to once-valid
   // databases.
   bool poisoned_;
+
+  ErrorCallback error_callback_;
 
   // This object handles errors resulting from all forms of executing sqlite
   // commands or statements. It can be null which means default handling.
