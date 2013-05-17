@@ -31,7 +31,7 @@ ScrollbarLayerImpl::ScrollbarLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
     scoped_ptr<ScrollbarGeometryFixedThumb> geometry)
-    : ScrollbarLayerImplBase(tree_impl, id),
+    : LayerImpl(tree_impl, id),
       scrollbar_(this),
       back_track_resource_id_(0),
       fore_track_resource_id_(0),

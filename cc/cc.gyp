@@ -141,7 +141,6 @@
       'layers/scrollbar_layer.h',
       'layers/scrollbar_layer_impl.cc',
       'layers/scrollbar_layer_impl.h',
-      'layers/scrollbar_layer_impl_base.h',
       'layers/solid_color_layer.cc',
       'layers/solid_color_layer.h',
       'layers/solid_color_layer_impl.cc',

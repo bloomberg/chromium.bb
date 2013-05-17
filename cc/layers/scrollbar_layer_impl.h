@@ -6,16 +6,17 @@
 #define CC_LAYERS_SCROLLBAR_LAYER_IMPL_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/layers/scrollbar_geometry_fixed_thumb.h"
-#include "cc/layers/scrollbar_layer_impl_base.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
 namespace cc {
 
+class LayerTreeImpl;
 class ScrollView;
 
-class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
+class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
  public:
   static scoped_ptr<ScrollbarLayerImpl> Create(
       LayerTreeImpl* tree_impl,
@@ -47,15 +48,15 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
   }
 
   // ScrollbarLayerImplBase implementation.
-  virtual float CurrentPos() const OVERRIDE;
-  virtual int TotalSize() const OVERRIDE;
-  virtual int Maximum() const OVERRIDE;
+  virtual float CurrentPos() const;
+  virtual int TotalSize() const;
+  virtual int Maximum() const;
 
   void SetCurrentPos(float current_pos) { current_pos_ = current_pos; }
   void SetTotalSize(int total_size) { total_size_ = total_size; }
   void SetMaximum(int maximum) { maximum_ = maximum; }
 
-  virtual WebKit::WebScrollbar::Orientation Orientation() const OVERRIDE;
+  virtual WebKit::WebScrollbar::Orientation Orientation() const;
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
