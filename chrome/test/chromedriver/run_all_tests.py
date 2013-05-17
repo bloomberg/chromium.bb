@@ -38,8 +38,18 @@ def _AddToolsToSystemPathForWindows():
 
 def _GenerateTestCommand(script, chromedriver, chrome=None,
                          chrome_version=None, android_package=None):
+  python = sys.executable
+  if util.IsMac():
+    # In Mac, chromedriver2.so is a 32-bit build, so run with 32-bit python.
+    # /usr/bin/python* are universal binaries, meaning they have multiple
+    # binaries in one file.
+    # To force to run with i386, there are two options:
+    # 1) run a versioned python (e.g., 2.6) and use arch -i386.
+    # 2) set VERSIONER_PYTHON_PREFER_32_BIT=yes and run unversioned python
+    os.environ['VERSIONER_PYTHON_PREFER_32_BIT'] = 'yes'
+    python = 'python'
   cmd = [
-      sys.executable,
+      python,
       os.path.join(_THIS_DIR, script),
       '--chromedriver=' + chromedriver,
   ]
@@ -59,9 +69,6 @@ def RunPythonTests(chromedriver, chrome=None, chrome_version=None,
   if chrome_version_name:
     version_info = '(v%s)' % chrome_version_name
   print '@@@BUILD_STEP python_tests%s@@@' % version_info
-  if util.IsMac():
-    # In Mac, chromedriver2.so is a 32-bit build, so run with the 32-bit python.
-    os.environ['VERSIONER_PYTHON_PREFER_32_BIT'] = 'yes'
   code = util.RunCommand(
       _GenerateTestCommand('run_py_tests.py', chromedriver, chrome,
                            chrome_version, android_package))
