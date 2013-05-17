@@ -338,6 +338,10 @@ class Bundle(dict):
     """Add an archive to this bundle."""
     self[ARCHIVES_KEY].append(archive)
 
+  def RemoveAllArchives(self):
+    """Remove all archives from this Bundle."""
+    del self[ARCHIVES_KEY][:]
+
   def RemoveAllArchivesForHostOS(self, host_os_name):
     """Remove an archive from this Bundle."""
     if host_os_name == 'all':

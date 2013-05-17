@@ -217,6 +217,10 @@ class TestCommands(SdkToolsTestCase):
     output = self._Run(['update', 'pepper_23', '--force'])
     self.assertTrue('Updating bundle' in output)
 
+    cache_manifest = self._ReadCacheManifest()
+    num_archives = len(cache_manifest.GetBundle('pepper_23').GetArchives())
+    self.assertEqual(num_archives, 1)
+
   def testUpdateUnknownBundles(self):
     """The update command should ignore unknown bundles and notify the user."""
     self._WriteManifest()
@@ -316,6 +320,42 @@ class TestCommands(SdkToolsTestCase):
     self.assertTrue(os.path.exists(dummy_txt))
     with open(dummy_txt) as f:
       self.assertEqual(f.read(), 'Dummy stuff for pepper_23')
+
+    cache_manifest = self._ReadCacheManifest()
+    num_archives = len(cache_manifest.GetBundle('pepper_23').GetArchives())
+    self.assertEqual(num_archives, 1)
+
+  def testReinstallWithDuplicatedArchives(self):
+    """The reinstall command should only use the most recent archive if there
+    are duplicated archives.
+
+    NOTE: There was a bug where the sdk_cache/naclsdk_manifest2.json file was
+    duplicating archives from different revisions. Make sure that reinstall
+    ignores old archives in the bundle.
+    """
+    # First install the bundle.
+    self._AddDummyBundle(self.manifest, 'pepper_23')
+    self._WriteManifest()
+    self._Run(['update', 'pepper_23'])
+
+    manifest = self._ReadCacheManifest()
+    bundle = manifest.GetBundle('pepper_23')
+    self.assertEqual(len(bundle.GetArchives()), 1)
+
+    # Now add a bogus duplicate archive
+    archive2 = self._MakeDummyArchive('pepper_23', tarname='pepper_23',
+                                      filename='dummy2.txt')
+    bundle.AddArchive(archive2)
+    self._WriteCacheManifest(manifest)
+
+    output = self._Run(['reinstall', 'pepper_23'])
+    # When updating just one file, there is no (file 1/2 - "...") output.
+    self.assertFalse('file 1/' in output)
+    # Should be using the last archive.
+    self.assertFalse(os.path.exists(
+        os.path.join(self.basedir, 'nacl_sdk', 'pepper_23', 'dummy.txt')))
+    self.assertTrue(os.path.exists(
+        os.path.join(self.basedir, 'nacl_sdk', 'pepper_23', 'dummy2.txt')))
 
   def testReinstallDoesntUpdate(self):
     """The reinstall command should not update a bundle that has an update."""

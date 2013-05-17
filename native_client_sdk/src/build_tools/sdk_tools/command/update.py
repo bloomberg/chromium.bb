@@ -253,6 +253,25 @@ def Reinstall(delegate, local_manifest, bundle_names):
 
   for bundle_name in valid_bundles:
     bundle = copy.deepcopy(local_manifest.GetBundle(bundle_name))
+
+    # HACK(binji): There was a bug where we'd merge the bundles from the old
+    # archive and the new archive when updating. As a result, some users may
+    # have a cache manifest that contains duplicate archives. Remove all
+    # archives with the same basename except for the most recent.
+    # Because the archives are added to a list, we know the most recent is at
+    # the end.
+    archives = {}
+    for archive in bundle.GetArchives():
+      url = archive.url
+      path = urlparse.urlparse(url)[2]
+      basename = os.path.basename(path)
+      archives[basename] = archive
+
+    # Update the bundle with these new archives.
+    bundle.RemoveAllArchives()
+    for _, archive in archives.iteritems():
+      bundle.AddArchive(archive)
+
     _UpdateBundle(delegate, bundle, local_manifest)
 
 
@@ -351,7 +370,8 @@ def _UpdateBundle(delegate, bundle, local_manifest):
                            rename_to_dir)
 
   logging.info('Updating local manifest to include bundle %s' % (bundle.name))
-  local_manifest.MergeBundle(bundle)
+  local_manifest.RemoveBundle(bundle.name)
+  local_manifest.SetBundle(bundle)
   delegate.CleanupCache()
 
 

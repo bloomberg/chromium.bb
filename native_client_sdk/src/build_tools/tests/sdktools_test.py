@@ -47,7 +47,8 @@ class SdkToolsTestCase(unittest.TestCase):
     # is greater than the version we are attempting to update to.
     self.current_revision = self._GetSdkToolsBundleRevision()
     self._BuildUpdater(self.basedir, self.current_revision)
-    self._LoadCacheManifest()
+    self.manifest = self._ReadCacheManifest()
+    self.sdk_tools_bundle = self.manifest.GetBundle('sdk_tools')
     self.server = test_server.LocalHTTPServer(self.basedir)
 
   def _GetSdkToolsBundleRevision(self):
@@ -60,16 +61,6 @@ class SdkToolsTestCase(unittest.TestCase):
     manifest = manifest_util.SDKManifest()
     manifest.LoadDataFromString(open(manifest_filename, 'r').read())
     return manifest.GetBundle('sdk_tools').revision
-
-  def _LoadCacheManifest(self):
-    """Read the manifest from nacl_sdk/sdk_cache.
-
-    This manifest should only contain the sdk_tools bundle.
-    """
-    manifest_filename = os.path.join(self.cache_dir, MANIFEST_BASENAME)
-    self.manifest = manifest_util.SDKManifest()
-    self.manifest.LoadDataFromString(open(manifest_filename).read())
-    self.sdk_tools_bundle = self.manifest.GetBundle('sdk_tools')
 
   def _WriteConfig(self, config_data):
     config_filename = os.path.join(self.cache_dir, 'naclsdk_config.json')
@@ -84,6 +75,14 @@ class SdkToolsTestCase(unittest.TestCase):
     manifest_filename = os.path.join(self.cache_dir, MANIFEST_BASENAME)
     with open(manifest_filename, 'w') as stream:
       stream.write(manifest.GetDataAsString())
+
+  def _ReadCacheManifest(self):
+    """Read the manifest at nacl_sdk/sdk_cache."""
+    manifest_filename = os.path.join(self.cache_dir, MANIFEST_BASENAME)
+    manifest = manifest_util.SDKManifest()
+    with open(manifest_filename) as stream:
+      manifest.LoadDataFromString(stream.read())
+    return manifest
 
   def _WriteManifest(self):
     with open(os.path.join(self.basedir, MANIFEST_BASENAME), 'w') as stream:
