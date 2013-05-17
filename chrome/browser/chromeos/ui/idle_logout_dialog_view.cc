@@ -149,8 +149,8 @@ void IdleLogoutDialogView::Show() {
 
   UpdateCountdown();
 
-  views::Widget::CreateWindowWithContext(this,
-                                         ash::Shell::GetPrimaryRootWindow());
+  views::DialogDelegate::CreateDialogWidget(
+      this, ash::Shell::GetPrimaryRootWindow(), NULL);
   GetWidget()->SetAlwaysOnTop(true);
   GetWidget()->Show();
 
