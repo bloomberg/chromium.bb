@@ -12,54 +12,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: Some character other than {{{ }}} to print unescaped content?
+# TODO: Only have @ while in a loop, and only defined in the top context of
+#       the loop.
+# TODO: Consider trimming spaces around identifers like {{?t foo}}.
+# TODO: Only transfer global contexts into partials, not the top local.
+# TODO: Pragmas for asserting the presence of variables.
+# TODO: Escaping control characters somehow. e.g. \{{, \{{-.
+# TODO: Dump warnings-so-far into the output.
+
 import json
 import re
 
-""" Handlebar templates are mostly-logicless templates inspired by ctemplate
-(or more specifically mustache templates) then taken in their own direction
-because I found those to be inadequate.
+'''Handlebar templates are data binding templates more-than-loosely inspired by
+ctemplate. Use like:
 
-from handlebar import Handlebar
+  from handlebar import Handlebar
 
-template = Handlebar('hello {{#foo}}{{bar}}{{/}} world')
-input = {
-  'foo': [
-    { 'bar': 1 },
-    { 'bar': 2 },
-    { 'bar': 3 }
-  ]
-}
-print(template.render(input).text)
+  template = Handlebar('hello {{#foo}}{{bar}}{{/}} world')
+  input = {
+    'foo': [
+      { 'bar': 1 },
+      { 'bar': 2 },
+      { 'bar': 3 }
+    ]
+  }
+  print(template.render(input).text)
 
 Handlebar will use get() on contexts to return values, so to create custom
-getters (e.g. something that populates values lazily from keys) just add
-a get() method.
+getters (for example, something that populates values lazily from keys), just
+provide an object with a get() method.
 
-class CustomContext(object):
-  def get(self, key):
-    return 10
+  class CustomContext(object):
+    def get(self, key):
+      return 10
+  print(Handlebar('hello {{world}}').render(CustomContext()).text)
 
-# Any time {{ }} is used, will fill it with 10.
-print(Handlebar('hello {{world}}').render(CustomContext()).text)
-"""
+will print 'hello 10'.
+'''
 
 class ParseException(Exception):
-  """ Exception thrown while parsing the template.
-  """
-  def __init__(self, error, line):
-    Exception.__init__(self, "%s (line %s)" % (error, line.number))
+  '''The exception thrown while parsing a template.
+  '''
+  def __init__(self, error):
+    Exception.__init__(self, error)
 
 class RenderResult(object):
-  """ Result of a render operation.
-  """
+  '''The result of a render operation.
+  '''
   def __init__(self, text, errors):
     self.text = text;
     self.errors = errors
 
-class StringBuilder(object):
-  """ Mimics Java's StringBuilder for easy porting from the Java version of
-  this file to Python.
-  """
+  def __str__(self):
+    return self.text
+
+  def __repr__(self):
+    return '%s(text=%s, errors=%s)' % (
+        self.__class__.__name__, self.text, self.errors)
+
+class _StringBuilder(object):
+  '''Efficiently builds strings.
+  '''
   def __init__(self):
     self._buf = []
 
@@ -67,680 +81,843 @@ class StringBuilder(object):
     self._Collapse()
     return len(self._buf[0])
 
-  def append(self, string):
+  def Append(self, string):
+    if not isinstance(string, basestring):
+      string = str(string)
     self._buf.append(string)
 
-  def toString(self):
+  def ToString(self):
     self._Collapse()
     return self._buf[0]
 
   def __str__(self):
-    return self.toString()
+    return self.ToString()
 
   def _Collapse(self):
     self._buf = [u''.join(self._buf)]
 
-class RenderState(object):
-  """ The state of a render call.
-  """
-  def __init__(self, globalContexts, localContexts):
-    self.globalContexts = globalContexts
-    self.localContexts = localContexts
-    self.text = StringBuilder()
-    self.errors = []
-    self._errorsDisabled = False
+class _Contexts(object):
+  '''Tracks a stack of context objects, providing efficient key/value retrieval.
+  '''
+  class _Node(object):
+    '''A node within the stack. Wraps a real context and maintains the key/value
+    pairs seen so far.
+    '''
+    def __init__(self, value):
+      self._value = value
+      self._value_has_get = hasattr(value, 'get')
+      self._found = {}
 
-  def inSameContext(self):
-    return RenderState(self.globalContexts, self.localContexts)
+    def GetKeys(self):
+      '''Returns the list of keys that |_value| contains.
+      '''
+      return self._found.keys()
 
-  def getFirstContext(self):
-    if len(self.localContexts) > 0:
-      return self.localContexts[0]
-    if len(self.globalContexts) > 0:
-      return self.globalContexts[0]
-    return None
-
-  def disableErrors(self):
-    self._errorsDisabled = True
-    return self
-
-  def addError(self, *messages):
-    if self._errorsDisabled:
-      return self
-    buf = StringBuilder()
-    for message in messages:
-      buf.append(str(message))
-    self.errors.append(buf.toString())
-    return self
-
-  def getResult(self):
-    return RenderResult(self.text.toString(), self.errors);
-
-class Identifier(object):
-  """ An identifier of the form "@", "foo.bar.baz", or "@.foo.bar.baz".
-  """
-  def __init__(self, name, line):
-    self._isThis = (name == '@')
-    if self._isThis:
-      self._startsWithThis = False
-      self._path = []
-      return
-
-    thisDot = '@.'
-    self._startsWithThis = name.startswith(thisDot)
-    if self._startsWithThis:
-      name = name[len(thisDot):]
-
-    if not re.match('^[a-zA-Z0-9._\\-/]+$', name):
-      raise ParseException(name + " is not a valid identifier", line)
-    self._path = name.split('.')
-
-  def resolve(self, renderState):
-    if self._isThis:
-      return renderState.getFirstContext()
-
-    if self._startsWithThis:
-      return self._resolveFromContext(renderState.getFirstContext())
-
-    resolved = self._resolveFromContexts(renderState.localContexts)
-    if resolved is None:
-      resolved = self._resolveFromContexts(renderState.globalContexts)
-    if resolved is None:
-      renderState.addError("Couldn't resolve identifier ", self._path)
-    return resolved
-
-  def _resolveFromContexts(self, contexts):
-    for context in contexts:
-      resolved = self._resolveFromContext(context)
-      if resolved is not None:
-        return resolved
-    return None
-
-  def _resolveFromContext(self, context):
-    result = context
-    for next in self._path:
-      # Only require that contexts provide a get method, meaning that callers
-      # can provide dict-like contexts (for example, to populate values lazily).
-      if result is None or not getattr(result, "get", None):
+    def Get(self, key):
+      '''Returns the value for |key|, or None if not found (including if
+      |_value| doesn't support key retrieval).
+      '''
+      if not self._value_has_get:
         return None
-      result = result.get(next)
-    return result
+      value = self._found.get(key)
+      if value is not None:
+        return value
+      value = self._value.get(key)
+      if value is not None:
+        self._found[key] = value
+      return value
+
+  def __init__(self, globals_):
+    '''Initializes with the initial global contexts, listed in order from most
+    to least important.
+    '''
+    self._nodes = map(_Contexts._Node, globals_)
+    self._first_local = len(self._nodes)
+    self._value_info = {}
+
+  def CreateFromGlobals(self):
+    new = _Contexts([])
+    new._nodes = self._nodes[:self._first_local]
+    new._first_local = self._first_local
+    return new
+
+  def Push(self, context):
+    self._nodes.append(_Contexts._Node(context))
+
+  def Pop(self):
+    node = self._nodes.pop()
+    assert len(self._nodes) >= self._first_local
+    for found_key in node.GetKeys():
+      # [0] is the stack of nodes that |found_key| has been found in.
+      self._value_info[found_key][0].pop()
+
+  def GetTopLocal(self):
+    if len(self._nodes) == self._first_local:
+      return None
+    return self._nodes[-1]._value
+
+  def Resolve(self, path):
+    # This method is only efficient at finding |key|; if |tail| has a value (and
+    # |key| evaluates to an indexable value) we'll need to descend into that.
+    key, tail = path.split('.', 1) if '.' in path else (path, None)
+
+    if key == '@':
+      found = self._nodes[-1]._value
+    else:
+      found = self._FindNodeValue(key)
+
+    if tail is None:
+      return found
+
+    for part in tail.split('.'):
+      if not hasattr(found, 'get'):
+        return None
+      found = found.get(part)
+    return found
+
+  def _FindNodeValue(self, key):
+    # |found_node_list| will be all the nodes that |key| has been found in.
+    # |checked_node_set| are those that have been checked.
+    info = self._value_info.get(key)
+    if info is None:
+      info = ([], set())
+      self._value_info[key] = info
+    found_node_list, checked_node_set = info
+
+    # Check all the nodes not yet checked for |key|.
+    newly_found = []
+    for node in reversed(self._nodes):
+      if node in checked_node_set:
+        break
+      value = node.Get(key)
+      if value is not None:
+        newly_found.append(node)
+      checked_node_set.add(node)
+
+    # The nodes will have been found in reverse stack order. After extending
+    # the found nodes, the freshest value will be at the tip of the stack.
+    found_node_list.extend(reversed(newly_found))
+    if not found_node_list:
+      return None
+
+    return found_node_list[-1]._value[key]
+
+class _Stack(object):
+  class Entry(object):
+    def __init__(self, name, id_):
+      self.name = name
+      self.id_ = id_
+
+  def __init__(self, entries=[]):
+    self.entries = entries
+
+  def Descend(self, name, id_):
+    descended = list(self.entries)
+    descended.append(_Stack.Entry(name, id_))
+    return _Stack(entries=descended)
+
+class _RenderState(object):
+  '''The state of a render call.
+  '''
+  def __init__(self, name, contexts, _stack=_Stack()):
+    self.text = _StringBuilder()
+    self.contexts = contexts
+    self._name = name
+    self._errors = []
+    self._stack = _stack
+
+  def AddResolutionError(self, id_):
+    self._errors.append(
+        id_.CreateResolutionErrorMessage(self._name, stack=self._stack))
+
+  def Copy(self):
+    return _RenderState(
+        self._name, self.contexts, _stack=self._stack)
+
+  def ForkPartial(self, custom_name, id_):
+    name = custom_name or id_.name
+    return _RenderState(name,
+                        self.contexts.CreateFromGlobals(),
+                        _stack=self._stack.Descend(name, id_))
+
+  def Merge(self, render_state, text_transform=None):
+    self._errors.extend(render_state._errors)
+    text = render_state.text.ToString()
+    if text_transform is not None:
+      text = text_transform(text)
+    self.text.Append(text)
+
+  def GetResult(self):
+    return RenderResult(self.text.ToString(), self._errors);
+
+class _Identifier(object):
+  ''' An identifier of the form '@', 'foo.bar.baz', or '@.foo.bar.baz'.
+  '''
+  def __init__(self, name, line, column):
+    self.name = name
+    self.line = line
+    self.column = column
+    if name == '':
+      raise ParseException('Empty identifier %s' % self.GetDescription())
+    for part in name.split('.'):
+      if part != '@' and not re.match('^[a-zA-Z0-9_/-]+$', part):
+        raise ParseException('Invalid identifier %s' % self.GetDescription())
+
+  def GetDescription(self):
+    return '\'%s\' at line %s column %s' % (self.name, self.line, self.column)
+
+  def CreateResolutionErrorMessage(self, name, stack=None):
+    message = _StringBuilder()
+    message.Append('Failed to resolve %s in %s\n' % (self.GetDescription(),
+                                                     name))
+    if stack is not None:
+      for entry in stack.entries:
+        message.Append('  included as %s in %s\n' % (entry.id_.GetDescription(),
+                                                     entry.name))
+    return message.ToString()
 
   def __str__(self):
-    if self._isThis:
-      return '@'
-    name = '.'.join(self._path)
-    return ('@.' + name) if self._startsWithThis else name
+    raise ValueError()
 
-class Line(object):
+class _Line(object):
   def __init__(self, number):
     self.number = number
 
-class LeafNode(object):
-  def __init__(self, line):
-    self._line = line
+  def __str__(self):
+    return str(self.number)
 
-  def startsWithNewLine(self):
+class _LeafNode(object):
+  def __init__(self, start_line, end_line):
+    self._start_line = start_line
+    self._end_line = end_line
+
+  def StartsWithNewLine(self):
     return False
 
-  def trimStartingNewLine(self):
+  def TrimStartingNewLine(self):
     pass
 
-  def trimEndingSpaces(self):
+  def TrimEndingSpaces(self):
     return 0
 
-  def trimEndingNewLine(self):
+  def TrimEndingNewLine(self):
     pass
 
-  def endsWithEmptyLine(self):
+  def EndsWithEmptyLine(self):
     return False
 
-  def getStartLine(self):
-    return self._line
+  def GetStartLine(self):
+    return self._start_line
 
-  def getEndLine(self):
-    return self._line
+  def GetEndLine(self):
+    return self._end_line
 
-class DecoratorNode(object):
+class _DecoratorNode(object):
   def __init__(self, content):
     self._content = content
 
-  def startsWithNewLine(self):
-    return self._content.startsWithNewLine()
+  def StartsWithNewLine(self):
+    return self._content.StartsWithNewLine()
 
-  def trimStartingNewLine(self):
-    self._content.trimStartingNewLine()
+  def TrimStartingNewLine(self):
+    self._content.TrimStartingNewLine()
 
-  def trimEndingSpaces(self):
-    return self._content.trimEndingSpaces()
+  def TrimEndingSpaces(self):
+    return self._content.TrimEndingSpaces()
 
-  def trimEndingNewLine(self):
-    self._content.trimEndingNewLine()
+  def TrimEndingNewLine(self):
+    self._content.TrimEndingNewLine()
 
-  def endsWithEmptyLine(self):
-    return self._content.endsWithEmptyLine()
+  def EndsWithEmptyLine(self):
+    return self._content.EndsWithEmptyLine()
 
-  def getStartLine(self):
-    return self._content.getStartLine()
+  def GetStartLine(self):
+    return self._content.GetStartLine()
 
-  def getEndLine(self):
-    return self._content.getEndLine()
+  def GetEndLine(self):
+    return self._content.GetEndLine()
 
-class InlineNode(DecoratorNode):
+class _InlineNode(_DecoratorNode):
   def __init__(self, content):
-    DecoratorNode.__init__(self, content)
+    _DecoratorNode.__init__(self, content)
 
-  def render(self, renderState):
-    contentRenderState = renderState.inSameContext()
-    self._content.render(contentRenderState)
+  def Render(self, render_state):
+    content_render_state = render_state.Copy()
+    self._content.Render(content_render_state)
+    render_state.Merge(content_render_state,
+                       text_transform=lambda text: text.replace('\n', ''))
 
-    renderState.errors.extend(contentRenderState.errors)
-    renderState.text.append(
-        contentRenderState.text.toString().replace('\n', ''))
-
-class IndentedNode(DecoratorNode):
+class _IndentedNode(_DecoratorNode):
   def __init__(self, content, indentation):
-    DecoratorNode.__init__(self, content)
+    _DecoratorNode.__init__(self, content)
     self._indent_str = ' ' * indentation
 
-  def render(self, renderState):
-    contentRenderState = renderState.inSameContext()
-    self._content.render(contentRenderState)
+  def Render(self, render_state):
+    if isinstance(self._content, _CommentNode):
+      return
+    content_render_state = render_state.Copy()
+    self._content.Render(content_render_state)
+    def AddIndentation(text):
+      buf = _StringBuilder()
+      buf.Append(self._indent_str)
+      buf.Append(text.replace('\n', '\n%s' % self._indent_str))
+      buf.Append('\n')
+      return buf.ToString()
+    render_state.Merge(content_render_state, text_transform=AddIndentation)
 
-    renderState.errors.extend(contentRenderState.errors)
-    renderState.text.append(self._indent_str)
-    # TODO: this might introduce an extra \n at the end? need test.
-    renderState.text.append(
-        contentRenderState.text.toString().replace('\n',
-                                                   '\n' + self._indent_str))
-    renderState.text.append('\n')
-
-class BlockNode(DecoratorNode):
+class _BlockNode(_DecoratorNode):
   def __init__(self, content):
-    DecoratorNode.__init__(self, content)
-    content.trimStartingNewLine()
-    content.trimEndingSpaces()
+    _DecoratorNode.__init__(self, content)
+    content.TrimStartingNewLine()
+    content.TrimEndingSpaces()
 
-  def render(self, renderState):
-    self._content.render(renderState)
+  def Render(self, render_state):
+    self._content.Render(render_state)
 
-class NodeCollection(object):
+class _NodeCollection(object):
   def __init__(self, nodes):
-    if len(nodes) == 0:
-      raise ValueError()
+    assert nodes
     self._nodes = nodes
 
-  def render(self, renderState):
+  def Render(self, render_state):
     for node in self._nodes:
-      node.render(renderState)
+      node.Render(render_state)
 
-  def startsWithNewLine(self):
-    return self._nodes[0].startsWithNewLine()
+  def StartsWithNewLine(self):
+    return self._nodes[0].StartsWithNewLine()
 
-  def trimStartingNewLine(self):
-    self._nodes[0].trimStartingNewLine()
+  def TrimStartingNewLine(self):
+    self._nodes[0].TrimStartingNewLine()
 
-  def trimEndingSpaces(self):
-    return self._nodes[-1].trimEndingSpaces()
+  def TrimEndingSpaces(self):
+    return self._nodes[-1].TrimEndingSpaces()
 
-  def trimEndingNewLine(self):
-    self._nodes[-1].trimEndingNewLine()
+  def TrimEndingNewLine(self):
+    self._nodes[-1].TrimEndingNewLine()
 
-  def endsWithEmptyLine(self):
-    return self._nodes[-1].endsWithEmptyLine()
+  def EndsWithEmptyLine(self):
+    return self._nodes[-1].EndsWithEmptyLine()
 
-  def getStartLine(self):
-    return self._nodes[0].getStartLine()
+  def GetStartLine(self):
+    return self._nodes[0].GetStartLine()
 
-  def getEndLine(self):
-    return self._nodes[-1].getEndLine()
+  def GetEndLine(self):
+    return self._nodes[-1].GetEndLine()
 
-class StringNode(object):
-  """ Just a string.
-  """
-  def __init__(self, string, startLine, endLine):
+class _StringNode(object):
+  ''' Just a string.
+  '''
+  def __init__(self, string, start_line, end_line):
     self._string = string
-    self._startLine = startLine
-    self._endLine = endLine
+    self._start_line = start_line
+    self._end_line = end_line
 
-  def render(self, renderState):
-    renderState.text.append(self._string)
+  def Render(self, render_state):
+    render_state.text.Append(self._string)
 
-  def startsWithNewLine(self):
+  def StartsWithNewLine(self):
     return self._string.startswith('\n')
 
-  def trimStartingNewLine(self):
-    if self.startsWithNewLine():
+  def TrimStartingNewLine(self):
+    if self.StartsWithNewLine():
       self._string = self._string[1:]
 
-  def trimEndingSpaces(self):
-    originalLength = len(self._string)
-    self._string = self._string[:self._lastIndexOfSpaces()]
-    return originalLength - len(self._string)
+  def TrimEndingSpaces(self):
+    original_length = len(self._string)
+    self._string = self._string[:self._LastIndexOfSpaces()]
+    return original_length - len(self._string)
 
-  def trimEndingNewLine(self):
+  def TrimEndingNewLine(self):
     if self._string.endswith('\n'):
       self._string = self._string[:len(self._string) - 1]
 
-  def endsWithEmptyLine(self):
-    index = self._lastIndexOfSpaces()
+  def EndsWithEmptyLine(self):
+    index = self._LastIndexOfSpaces()
     return index == 0 or self._string[index - 1] == '\n'
 
-  def _lastIndexOfSpaces(self):
+  def _LastIndexOfSpaces(self):
     index = len(self._string)
     while index > 0 and self._string[index - 1] == ' ':
       index -= 1
     return index
 
-  def getStartLine(self):
-    return self._startLine
+  def GetStartLine(self):
+    return self._start_line
 
-  def getEndLine(self):
-    return self._endLine
+  def GetEndLine(self):
+    return self._end_line
 
-class EscapedVariableNode(LeafNode):
-  """ {{foo}}
-  """
-  def __init__(self, id, line):
-    LeafNode.__init__(self, line)
-    self._id = id
+class _EscapedVariableNode(_LeafNode):
+  ''' {{foo}}
+  '''
+  def __init__(self, id_):
+    _LeafNode.__init__(self, id_.line, id_.line)
+    self._id = id_
 
-  def render(self, renderState):
-    value = self._id.resolve(renderState)
+  def Render(self, render_state):
+    value = render_state.contexts.Resolve(self._id.name)
     if value is None:
+      render_state.AddResolutionError(self._id)
       return
-
     string = value if isinstance(value, basestring) else str(value)
-    renderState.text.append(string.replace('&', '&amp;')
-                                  .replace('<', '&lt;')
-                                  .replace('>', '&gt;'))
+    render_state.text.Append(string.replace('&', '&amp;')
+                                   .replace('<', '&lt;')
+                                   .replace('>', '&gt;'))
 
-class UnescapedVariableNode(LeafNode):
-  """ {{{foo}}}
-  """
-  def __init__(self, id, line):
-    LeafNode.__init__(self, line)
-    self._id = id
+class _UnescapedVariableNode(_LeafNode):
+  ''' {{{foo}}}
+  '''
+  def __init__(self, id_):
+    _LeafNode.__init__(self, id_.line, id_.line)
+    self._id = id_
 
-  def render(self, renderState):
-    value = self._id.resolve(renderState)
+  def Render(self, render_state):
+    value = render_state.contexts.Resolve(self._id.name)
     if value is None:
+      render_state.AddResolutionError(self._id)
       return
-    renderState.text.append(
-        value if isinstance(value, basestring) else str(value))
+    string = value if isinstance(value, basestring) else str(value)
+    render_state.text.Append(string)
 
-class SectionNode(DecoratorNode):
-  """ {{#foo}} ... {{/}}
-  """
-  def __init__(self, id, content):
-    DecoratorNode.__init__(self, content)
-    self._id = id
+class _CommentNode(_LeafNode):
+  '''{{- This is a comment -}}
+  An empty placeholder node for correct indented rendering behaviour.
+  '''
+  def __init__(self, start_line, end_line):
+    _LeafNode.__init__(self, start_line, end_line)
 
-  def render(self, renderState):
-    value = self._id.resolve(renderState)
-    if value is None:
-      return
+  def Render(self, render_state):
+    pass
 
+class _SectionNode(_DecoratorNode):
+  ''' {{#foo}} ... {{/}}
+  '''
+  def __init__(self, id_, content):
+    _DecoratorNode.__init__(self, content)
+    self._id = id_
+
+  def Render(self, render_state):
+    value = render_state.contexts.Resolve(self._id.name)
     if isinstance(value, list):
       for item in value:
-        renderState.localContexts.insert(0, item)
-        self._content.render(renderState)
-        renderState.localContexts.pop(0)
-    elif isinstance(value, dict):
-      renderState.localContexts.insert(0, value)
-      self._content.render(renderState)
-      renderState.localContexts.pop(0)
+        # Always push context, even if it's not "valid", since we want to
+        # be able to refer to items in a list such as [1,2,3] via @.
+        render_state.contexts.Push(item)
+        self._content.Render(render_state)
+        render_state.contexts.Pop()
+    elif hasattr(value, 'get'):
+      render_state.contexts.Push(value)
+      self._content.Render(render_state)
+      render_state.contexts.Pop()
     else:
-      renderState.addError("{{#", self._id,
-                           "}} cannot be rendered with a ", type(value))
+      render_state.AddResolutionError(self._id)
 
-class VertedSectionNode(DecoratorNode):
-  """ {{?foo}} ... {{/}}
-  """
-  def __init__(self, id, content):
-    DecoratorNode.__init__(self, content)
-    self._id = id
+class _VertedSectionNode(_DecoratorNode):
+  ''' {{?foo}} ... {{/}}
+  '''
+  def __init__(self, id_, content):
+    _DecoratorNode.__init__(self, content)
+    self._id = id_
 
-  def render(self, renderState):
-    value = self._id.resolve(renderState.inSameContext().disableErrors())
-    if _VertedSectionNodeShouldRender(value):
-      renderState.localContexts.insert(0, value)
-      self._content.render(renderState)
-      renderState.localContexts.pop(0)
+  def Render(self, render_state):
+    value = render_state.contexts.Resolve(self._id.name)
+    if _VertedSectionNode.ShouldRender(value):
+      render_state.contexts.Push(value)
+      self._content.Render(render_state)
+      render_state.contexts.Pop()
 
-def _VertedSectionNodeShouldRender(value):
-  if value is None:
-    return False
-  if isinstance(value, bool):
-    return value
-  if (isinstance(value, int) or
-      isinstance(value, long) or
-      isinstance(value, float)):
-    return True
-  if isinstance(value, basestring):
-    return True
-  if isinstance(value, list):
-    return len(value) > 0
-  if isinstance(value, dict):
-    return True
-  raise TypeError("Unhandled type %s" % type(value))
-
-class InvertedSectionNode(DecoratorNode):
-  """ {{^foo}} ... {{/}}
-  """
-  def __init__(self, id, content):
-    DecoratorNode.__init__(self, content)
-    self._id = id
-
-  def render(self, renderState):
-    value = self._id.resolve(renderState.inSameContext().disableErrors())
-    if not _VertedSectionNodeShouldRender(value):
-      self._content.render(renderState)
-
-class JsonNode(LeafNode):
-  """ {{*foo}}
-  """
-  def __init__(self, id, line):
-    LeafNode.__init__(self, line)
-    self._id = id
-
-  def render(self, renderState):
-    value = self._id.resolve(renderState)
+  @staticmethod
+  def ShouldRender(value):
     if value is None:
-      return
-    renderState.text.append(json.dumps(value, separators=(',',':')))
+      return False
+    if isinstance(value, bool):
+      return value
+    if isinstance(value, list):
+      return len(value) > 0
+    return True
 
-class PartialNode(LeafNode):
-  """ {{+foo}}
-  """
-  def __init__(self, id, line):
-    LeafNode.__init__(self, line)
-    self._id = id
+class _InvertedSectionNode(_DecoratorNode):
+  ''' {{^foo}} ... {{/}}
+  '''
+  def __init__(self, id_, content):
+    _DecoratorNode.__init__(self, content)
+    self._id = id_
+
+  def Render(self, render_state):
+    value = render_state.contexts.Resolve(self._id.name)
+    if not _VertedSectionNode.ShouldRender(value):
+      self._content.Render(render_state)
+
+class _JsonNode(_LeafNode):
+  ''' {{*foo}}
+  '''
+  def __init__(self, id_):
+    _LeafNode.__init__(self, id_.line, id_.line)
+    self._id = id_
+
+  def Render(self, render_state):
+    value = render_state.contexts.Resolve(self._id.name)
+    if value is None:
+      render_state.AddResolutionError(self._id)
+      return
+    render_state.text.Append(json.dumps(value, separators=(',',':')))
+
+class _PartialNode(_LeafNode):
+  ''' {{+foo}}
+  '''
+  def __init__(self, id_):
+    _LeafNode.__init__(self, id_.line, id_.line)
+    self._id = id_
     self._args = None
+    self._local_context_id = None
 
-  def render(self, renderState):
-    value = self._id.resolve(renderState)
+  def Render(self, render_state):
+    value = render_state.contexts.Resolve(self._id.name)
+    if value is None:
+      render_state.AddResolutionError(self._id)
+      return
     if not isinstance(value, Handlebar):
-      renderState.addError(self._id, " didn't resolve to a Handlebar")
+      render_state.AddResolutionError(self._id)
       return
 
-    argContext = []
-    if len(renderState.localContexts) > 0:
-      argContext.append(renderState.localContexts[0])
+    partial_render_state = render_state.ForkPartial(value._name, self._id)
 
-    if self._args:
-      argContextMap = {}
-      for key, valueId in self._args.items():
-        context = valueId.resolve(renderState)
-        if context:
-          argContextMap[key] = context
-      argContext.append(argContextMap)
+    # TODO: Don't do this. Force callers to do this by specifying an @ argument.
+    top_local = render_state.contexts.GetTopLocal()
+    if top_local is not None:
+      partial_render_state.contexts.Push(top_local)
 
-    partialRenderState = RenderState(renderState.globalContexts, argContext)
-    value._topNode.render(partialRenderState)
+    if self._args is not None:
+      arg_context = {}
+      for key, value_id in self._args.items():
+        context = render_state.contexts.Resolve(value_id.name)
+        if context is not None:
+          arg_context[key] = context
+      partial_render_state.contexts.Push(arg_context)
 
-    text = partialRenderState.text.toString()
-    if len(text) > 0 and text[-1] == '\n':
-      text = text[:-1]
+    if self._local_context_id is not None:
+      local_context = render_state.contexts.Resolve(self._local_context_id.name)
+      if local_context is not None:
+        partial_render_state.contexts.Push(local_context)
 
-    renderState.text.append(text)
-    renderState.errors.extend(partialRenderState.errors)
+    value._top_node.Render(partial_render_state)
 
-  def addArgument(self, key, valueId):
-    if not self._args:
+    render_state.Merge(
+        partial_render_state,
+        text_transform=lambda text: text[:-1] if text.endswith('\n') else text)
+
+  def AddArgument(self, key, id_):
+    if self._args is None:
       self._args = {}
-    self._args[key] = valueId
+    self._args[key] = id_
 
-# List of tokens in order of longest to shortest, to avoid any prefix matching
-# issues.
-TokenValues = []
+  def SetLocalContext(self, id_):
+    self._local_context_id = id_
 
-class Token(object):
-  """ The tokens that can appear in a template.
-  """
+_TOKENS = {}
+
+class _Token(object):
+  ''' The tokens that can appear in a template.
+  '''
   class Data(object):
     def __init__(self, name, text, clazz):
       self.name = name
       self.text = text
       self.clazz = clazz
-      TokenValues.append(self)
+      _TOKENS[text] = self
 
-    def elseNodeClass(self):
-      if self.clazz == VertedSectionNode:
-        return InvertedSectionNode
-      if self.clazz == InvertedSectionNode:
-        return VertedSectionNode
-      raise ValueError(self.clazz + " can not have an else clause.")
+    def ElseNodeClass(self):
+      if self.clazz == _VertedSectionNode:
+        return _InvertedSectionNode
+      if self.clazz == _InvertedSectionNode:
+        return _VertedSectionNode
+      raise ValueError('%s cannot have an else clause.' % self.clazz)
 
-  OPEN_START_SECTION          = Data("OPEN_START_SECTION"         , "{{#", SectionNode)
-  OPEN_START_VERTED_SECTION   = Data("OPEN_START_VERTED_SECTION"  , "{{?", VertedSectionNode)
-  OPEN_START_INVERTED_SECTION = Data("OPEN_START_INVERTED_SECTION", "{{^", InvertedSectionNode)
-  OPEN_START_JSON             = Data("OPEN_START_JSON"            , "{{*", JsonNode)
-  OPEN_START_PARTIAL          = Data("OPEN_START_PARTIAL"         , "{{+", PartialNode)
-  OPEN_ELSE                   = Data("OPEN_ELSE"                  , "{{:", None)
-  OPEN_END_SECTION            = Data("OPEN_END_SECTION"           , "{{/", None)
-  OPEN_UNESCAPED_VARIABLE     = Data("OPEN_UNESCAPED_VARIABLE"    , "{{{", UnescapedVariableNode)
-  CLOSE_MUSTACHE3             = Data("CLOSE_MUSTACHE3"            , "}}}", None)
-  OPEN_COMMENT                = Data("OPEN_COMMENT"               , "{{-", None)
-  CLOSE_COMMENT               = Data("CLOSE_COMMENT"              , "-}}", None)
-  OPEN_VARIABLE               = Data("OPEN_VARIABLE"              , "{{" , EscapedVariableNode)
-  CLOSE_MUSTACHE              = Data("CLOSE_MUSTACHE"             , "}}" , None)
-  CHARACTER                   = Data("CHARACTER"                  , "."  , None)
+    def __str__(self):
+      return '%s(%s)' % (self.name, self.text)
 
-class TokenStream(object):
-  """ Tokeniser for template parsing.
-  """
+  OPEN_START_SECTION          = Data('OPEN_START_SECTION'         , '{{#', _SectionNode)
+  OPEN_START_VERTED_SECTION   = Data('OPEN_START_VERTED_SECTION'  , '{{?', _VertedSectionNode)
+  OPEN_START_INVERTED_SECTION = Data('OPEN_START_INVERTED_SECTION', '{{^', _InvertedSectionNode)
+  OPEN_START_JSON             = Data('OPEN_START_JSON'            , '{{*', _JsonNode)
+  OPEN_START_PARTIAL          = Data('OPEN_START_PARTIAL'         , '{{+', _PartialNode)
+  OPEN_ELSE                   = Data('OPEN_ELSE'                  , '{{:', None)
+  OPEN_END_SECTION            = Data('OPEN_END_SECTION'           , '{{/', None)
+  INLINE_END_SECTION          = Data('INLINE_END_SECTION'         , '/}}', None)
+  OPEN_UNESCAPED_VARIABLE     = Data('OPEN_UNESCAPED_VARIABLE'    , '{{{', _UnescapedVariableNode)
+  CLOSE_MUSTACHE3             = Data('CLOSE_MUSTACHE3'            , '}}}', None)
+  OPEN_COMMENT                = Data('OPEN_COMMENT'               , '{{-', _CommentNode)
+  CLOSE_COMMENT               = Data('CLOSE_COMMENT'              , '-}}', None)
+  OPEN_VARIABLE               = Data('OPEN_VARIABLE'              , '{{' , _EscapedVariableNode)
+  CLOSE_MUSTACHE              = Data('CLOSE_MUSTACHE'             , '}}' , None)
+  CHARACTER                   = Data('CHARACTER'                  , '.'  , None)
+
+class _TokenStream(object):
+  ''' Tokeniser for template parsing.
+  '''
   def __init__(self, string):
-    self._remainder = string
+    self.next_token = None
+    self.next_line = _Line(1)
+    self.next_column = 0
+    self._string = string
+    self._cursor = 0
+    self.Advance()
 
-    self.nextToken = None
-    self.nextContents = None
-    self.nextLine = Line(1)
-    self.advance()
+  def HasNext(self):
+    return self.next_token is not None
 
-  def hasNext(self):
-    return self.nextToken is not None
+  def Advance(self):
+    if self._cursor > 0 and self._string[self._cursor - 1] == '\n':
+      self.next_line = _Line(self.next_line.number + 1)
+      self.next_column = 0
+    elif self.next_token is not None:
+      self.next_column += len(self.next_token.text)
 
-  def advance(self):
-    if self.nextContents == '\n':
-      self.nextLine = Line(self.nextLine.number + 1)
+    self.next_token = None
 
-    self.nextToken = None
-    self.nextContents = None
-
-    if self._remainder == '':
+    if self._cursor == len(self._string):
       return None
+    assert self._cursor < len(self._string)
 
-    for token in TokenValues:
-      if self._remainder.startswith(token.text):
-        self.nextToken = token
-        break
+    if (self._cursor + 1 < len(self._string) and
+        self._string[self._cursor + 1] in '{}'):
+      self.next_token = (
+          _TOKENS.get(self._string[self._cursor:self._cursor+3]) or
+          _TOKENS.get(self._string[self._cursor:self._cursor+2]))
 
-    if not self.nextToken:
-      self.nextToken = Token.CHARACTER
+    if self.next_token is None:
+      self.next_token = _Token.CHARACTER
 
-    self.nextContents = self._remainder[0:len(self.nextToken.text)]
-    self._remainder = self._remainder[len(self.nextToken.text):]
+    self._cursor += len(self.next_token.text)
     return self
 
-  def advanceOver(self, token):
-    if self.nextToken != token:
+  def AdvanceOver(self, token):
+    if self.next_token != token:
       raise ParseException(
-          "Expecting token " + token.name + " but got " + self.nextToken.name,
-          self.nextLine)
-    return self.advance()
+          'Expecting token %s but got %s at line %s' % (token.name,
+                                                        self.next_token.name,
+                                                        self.next_line))
+    return self.Advance()
 
-  def advanceOverNextString(self, excluded=''):
-    buf = StringBuilder()
-    while self.nextToken == Token.CHARACTER and \
-          excluded.find(self.nextContents) == -1:
-      buf.append(self.nextContents)
-      self.advance()
-    return buf.toString()
+  def AdvanceOverNextString(self, excluded=''):
+    start = self._cursor - len(self.next_token.text)
+    while (self.next_token is _Token.CHARACTER and
+           # Can use -1 here because token length of CHARACTER is 1.
+           self._string[self._cursor - 1] not in excluded):
+      self.Advance()
+    end = self._cursor - (len(self.next_token.text) if self.next_token else 0)
+    return self._string[start:end]
 
-  def advanceToNextWhitespace(self):
-    return self.advanceOverNextString(excluded=' \n\r\t')
+  def AdvanceToNextWhitespace(self):
+    return self.AdvanceOverNextString(excluded=' \n\r\t')
 
-  def skipWhitespace(self):
-    while len(self.nextContents) > 0 and \
-          ' \n\r\t'.find(self.nextContents) >= 0:
-      self.advance()
+  def SkipWhitespace(self):
+    while (self.next_token is _Token.CHARACTER and
+           # Can use -1 here because token length of CHARACTER is 1.
+           self._string[self._cursor - 1] in ' \n\r\t'):
+      self.Advance()
 
 class Handlebar(object):
-  """ A handlebar template.
-  """
-  def __init__(self, template):
+  ''' A handlebar template.
+  '''
+  def __init__(self, template, name=None):
     self.source = template
-    tokens = TokenStream(template)
-    self._topNode = self._parseSection(tokens)
-    if not self._topNode:
-      raise ParseException("Template is empty", tokens.nextLine)
-    if tokens.hasNext():
-      raise ParseException("There are still tokens remaining, "
-                           "was there an end-section without a start-section:",
-                           tokens.nextLine)
+    self._name = name
+    tokens = _TokenStream(template)
+    self._top_node = self._ParseSection(tokens)
+    if not self._top_node:
+      raise ParseException('Template is empty')
+    if tokens.HasNext():
+      raise ParseException('There are still tokens remaining at %s, '
+                           'was there an end-section without a start-section?'
+                           % tokens.next_line)
 
-  def _parseSection(self, tokens):
+  def _ParseSection(self, tokens):
     nodes = []
-    sectionEnded = False
-
-    while tokens.hasNext() and not sectionEnded:
-      token = tokens.nextToken
-
-      if token == Token.CHARACTER:
-        startLine = tokens.nextLine
-        string = tokens.advanceOverNextString()
-        nodes.append(StringNode(string, startLine, tokens.nextLine))
-      elif token == Token.OPEN_VARIABLE or \
-           token == Token.OPEN_UNESCAPED_VARIABLE or \
-           token == Token.OPEN_START_JSON:
-        id = self._openSectionOrTag(tokens)
-        nodes.append(token.clazz(id, tokens.nextLine))
-      elif token == Token.OPEN_START_PARTIAL:
-        tokens.advance()
-        id = Identifier(tokens.advanceToNextWhitespace(),
-                        tokens.nextLine)
-        partialNode = PartialNode(id, tokens.nextLine)
-
-        while tokens.nextToken == Token.CHARACTER:
-          tokens.skipWhitespace()
-          key = tokens.advanceOverNextString(excluded=':')
-          tokens.advance()
-          partialNode.addArgument(
-              key,
-              Identifier(tokens.advanceToNextWhitespace(),
-                         tokens.nextLine))
-
-        tokens.advanceOver(Token.CLOSE_MUSTACHE)
-        nodes.append(partialNode)
-      elif token == Token.OPEN_START_SECTION:
-        id = self._openSectionOrTag(tokens)
-        section = self._parseSection(tokens)
-        self._closeSection(tokens, id)
-        if section:
-          nodes.append(SectionNode(id, section))
-      elif token == Token.OPEN_START_VERTED_SECTION or \
-           token == Token.OPEN_START_INVERTED_SECTION:
-        id = self._openSectionOrTag(tokens)
-        section = self._parseSection(tokens)
-        elseSection = None
-        if tokens.nextToken == Token.OPEN_ELSE:
-          self._openElse(tokens, id)
-          elseSection = self._parseSection(tokens)
-        self._closeSection(tokens, id)
-        if section:
-          nodes.append(token.clazz(id, section))
-        if elseSection:
-          nodes.append(token.elseNodeClass()(id, elseSection))
-      elif token == Token.OPEN_COMMENT:
-        self._advanceOverComment(tokens)
-      elif token == Token.OPEN_END_SECTION or \
-           token == Token.OPEN_ELSE:
-        # Handled after running parseSection within the SECTION cases, so this is a
-        # terminating condition. If there *is* an orphaned OPEN_END_SECTION, it will be caught
-        # by noticing that there are leftover tokens after termination.
-        sectionEnded = True
-      elif Token.CLOSE_MUSTACHE:
-        raise ParseException("Orphaned " + tokens.nextToken.name,
-                             tokens.nextLine)
+    while tokens.HasNext():
+      if tokens.next_token in (_Token.OPEN_END_SECTION,
+                               _Token.OPEN_ELSE):
+        # Handled after running parseSection within the SECTION cases, so this
+        # is a terminating condition. If there *is* an orphaned
+        # OPEN_END_SECTION, it will be caught by noticing that there are
+        # leftover tokens after termination.
+        break
+      elif tokens.next_token in (_Token.CLOSE_MUSTACHE,
+                                 _Token.CLOSE_MUSTACHE3):
+        raise ParseException('Orphaned %s at line %s' % (tokens.next_token.name,
+                                                         tokens.next_line))
+      nodes += self._ParseNextOpenToken(tokens)
 
     for i, node in enumerate(nodes):
-      if isinstance(node, StringNode):
+      if isinstance(node, _StringNode):
         continue
 
-      previousNode = nodes[i - 1] if i > 0 else None
-      nextNode = nodes[i + 1] if i < len(nodes) - 1 else None
-      renderedNode = None
+      previous_node = nodes[i - 1] if i > 0 else None
+      next_node = nodes[i + 1] if i < len(nodes) - 1 else None
+      rendered_node = None
 
-      if node.getStartLine() != node.getEndLine():
-        renderedNode = BlockNode(node)
-        if previousNode:
-          previousNode.trimEndingSpaces()
-        if nextNode:
-          nextNode.trimStartingNewLine()
-      elif isinstance(node, LeafNode) and \
-           (not previousNode or previousNode.endsWithEmptyLine()) and \
-           (not nextNode or nextNode.startsWithNewLine()):
+      if node.GetStartLine() != node.GetEndLine():
+        rendered_node = _BlockNode(node)
+        if previous_node:
+          previous_node.TrimEndingSpaces()
+        if next_node:
+          next_node.TrimStartingNewLine()
+      elif (isinstance(node, _LeafNode) and
+            (not previous_node or previous_node.EndsWithEmptyLine()) and
+            (not next_node or next_node.StartsWithNewLine())):
         indentation = 0
-        if previousNode:
-          indentation = previousNode.trimEndingSpaces()
-        if nextNode:
-          nextNode.trimStartingNewLine()
-        renderedNode = IndentedNode(node, indentation)
+        if previous_node:
+          indentation = previous_node.TrimEndingSpaces()
+        if next_node:
+          next_node.TrimStartingNewLine()
+        rendered_node = _IndentedNode(node, indentation)
       else:
-        renderedNode = InlineNode(node)
+        rendered_node = _InlineNode(node)
 
-      nodes[i] = renderedNode
+      nodes[i] = rendered_node
 
     if len(nodes) == 0:
       return None
     if len(nodes) == 1:
       return nodes[0]
-    return NodeCollection(nodes)
+    return _NodeCollection(nodes)
 
-  def _advanceOverComment(self, tokens):
-    tokens.advanceOver(Token.OPEN_COMMENT)
+  def _ParseNextOpenToken(self, tokens):
+    next_token = tokens.next_token
+
+    if next_token is _Token.CHARACTER:
+      start_line = tokens.next_line
+      string = tokens.AdvanceOverNextString()
+      return [_StringNode(string, start_line, tokens.next_line)]
+    elif next_token in (_Token.OPEN_VARIABLE,
+                        _Token.OPEN_UNESCAPED_VARIABLE,
+                        _Token.OPEN_START_JSON):
+      id_, inline_value_id = self._OpenSectionOrTag(tokens)
+      if inline_value_id is not None:
+        raise ParseException(
+            '%s cannot have an inline value' % id_.GetDescription())
+      return [next_token.clazz(id_)]
+    elif next_token is _Token.OPEN_START_PARTIAL:
+      tokens.Advance()
+      column_start = tokens.next_column + 1
+      id_ = _Identifier(tokens.AdvanceToNextWhitespace(),
+                        tokens.next_line,
+                        column_start)
+      partial_node = _PartialNode(id_)
+      while tokens.next_token is _Token.CHARACTER:
+        tokens.SkipWhitespace()
+        key = tokens.AdvanceOverNextString(excluded=':')
+        tokens.Advance()
+        column_start = tokens.next_column + 1
+        id_ = _Identifier(tokens.AdvanceToNextWhitespace(),
+                          tokens.next_line,
+                          column_start)
+        if key == '@':
+          partial_node.SetLocalContext(id_)
+        else:
+          partial_node.AddArgument(key, id_)
+      tokens.AdvanceOver(_Token.CLOSE_MUSTACHE)
+      return [partial_node]
+    elif next_token is _Token.OPEN_START_SECTION:
+      id_, inline_node = self._OpenSectionOrTag(tokens)
+      nodes = []
+      if inline_node is None:
+        section = self._ParseSection(tokens)
+        self._CloseSection(tokens, id_)
+        nodes = []
+        if section is not None:
+          nodes.append(_SectionNode(id_, section))
+      else:
+        nodes.append(_SectionNode(id_, inline_node))
+      return nodes
+    elif next_token in (_Token.OPEN_START_VERTED_SECTION,
+                        _Token.OPEN_START_INVERTED_SECTION):
+      id_, inline_node = self._OpenSectionOrTag(tokens)
+      nodes = []
+      if inline_node is None:
+        section = self._ParseSection(tokens)
+        else_section = None
+        if tokens.next_token is _Token.OPEN_ELSE:
+          self._OpenElse(tokens, id_)
+          else_section = self._ParseSection(tokens)
+        self._CloseSection(tokens, id_)
+        if section:
+          nodes.append(next_token.clazz(id_, section))
+        if else_section:
+          nodes.append(next_token.ElseNodeClass()(id_, else_section))
+      else:
+        nodes.append(next_token.clazz(id_, inline_node))
+      return nodes
+    elif next_token is _Token.OPEN_COMMENT:
+      start_line = tokens.next_line
+      self._AdvanceOverComment(tokens)
+      return [_CommentNode(start_line, tokens.next_line)]
+
+  def _AdvanceOverComment(self, tokens):
+    tokens.AdvanceOver(_Token.OPEN_COMMENT)
     depth = 1
-    while tokens.hasNext() and depth > 0:
-      if tokens.nextToken == Token.OPEN_COMMENT:
+    while tokens.HasNext() and depth > 0:
+      if tokens.next_token is _Token.OPEN_COMMENT:
         depth += 1
-      elif tokens.nextToken == Token.CLOSE_COMMENT:
+      elif tokens.next_token is _Token.CLOSE_COMMENT:
         depth -= 1
-      tokens.advance()
+      tokens.Advance()
 
-  def _openSectionOrTag(self, tokens):
-    openToken = tokens.nextToken
-    tokens.advance()
-    id = Identifier(tokens.advanceOverNextString(), tokens.nextLine)
-    if openToken == Token.OPEN_UNESCAPED_VARIABLE:
-      tokens.advanceOver(Token.CLOSE_MUSTACHE3)
+  def _OpenSectionOrTag(self, tokens):
+    def NextIdentifierArgs():
+      tokens.SkipWhitespace()
+      line = tokens.next_line
+      column = tokens.next_column + 1
+      name = tokens.AdvanceToNextWhitespace()
+      tokens.SkipWhitespace()
+      return (name, line, column)
+    close_token = (_Token.CLOSE_MUSTACHE3
+                   if tokens.next_token is _Token.OPEN_UNESCAPED_VARIABLE else
+                   _Token.CLOSE_MUSTACHE)
+    tokens.Advance()
+    id_ = _Identifier(*NextIdentifierArgs())
+    if tokens.next_token is close_token:
+      tokens.AdvanceOver(close_token)
+      inline_node = None
     else:
-      tokens.advanceOver(Token.CLOSE_MUSTACHE)
-    return id
+      name, line, column = NextIdentifierArgs()
+      tokens.AdvanceOver(_Token.INLINE_END_SECTION)
+      # Support select other types of nodes, the most useful being partial.
+      clazz = _UnescapedVariableNode
+      if name.startswith('*'):
+        clazz = _JsonNode
+      elif name.startswith('+'):
+        clazz = _PartialNode
+      if clazz is not _UnescapedVariableNode:
+        name = name[1:]
+        column += 1
+      inline_node = clazz(_Identifier(name, line, column))
+    return (id_, inline_node)
 
-  def _closeSection(self, tokens, id):
-    tokens.advanceOver(Token.OPEN_END_SECTION)
-    nextString = tokens.advanceOverNextString()
-    if nextString != '' and nextString != str(id):
+  def _CloseSection(self, tokens, id_):
+    tokens.AdvanceOver(_Token.OPEN_END_SECTION)
+    next_string = tokens.AdvanceOverNextString()
+    if next_string != '' and next_string != id_.name:
       raise ParseException(
-          "Start section " + str(id) + " doesn't match end " + nextString)
-    tokens.advanceOver(Token.CLOSE_MUSTACHE)
+          'Start section %s doesn\'t match end %s' % (id_, next_string))
+    tokens.AdvanceOver(_Token.CLOSE_MUSTACHE)
 
-  def _openElse(self, tokens, id):
-    tokens.advanceOver(Token.OPEN_ELSE)
-    nextString = tokens.advanceOverNextString()
-    if nextString != '' and nextString != str(id):
+  def _OpenElse(self, tokens, id_):
+    tokens.AdvanceOver(_Token.OPEN_ELSE)
+    next_string = tokens.AdvanceOverNextString()
+    if next_string != '' and next_string != id_.name:
       raise ParseException(
-          "Start section " + str(id) + " doesn't match else " + nextString)
-    tokens.advanceOver(Token.CLOSE_MUSTACHE)
+          'Start section %s doesn\'t match else %s' % (id_, next_string))
+    tokens.AdvanceOver(_Token.CLOSE_MUSTACHE)
+
+  def Render(self, *contexts):
+    '''Renders this template given a variable number of contexts to read out
+    values from (such as those appearing in {{foo}}).
+    '''
+    name = self._name or '<root>'
+    render_state = _RenderState(name, _Contexts(contexts))
+    self._top_node.Render(render_state)
+    return render_state.GetResult()
 
   def render(self, *contexts):
-    """ Renders this template given a variable number of "contexts" to read
-    out values from (such as those appearing in {{foo}}).
-    """
-    globalContexts = []
-    for context in contexts:
-      globalContexts.append(context)
-    renderState = RenderState(globalContexts, [])
-    self._topNode.render(renderState)
-    return renderState.getResult()
+    return self.Render(*contexts)

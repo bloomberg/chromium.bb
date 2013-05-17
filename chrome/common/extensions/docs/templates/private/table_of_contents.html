@@ -18,11 +18,31 @@
         <a href="#apiReference">Reference</a>
         <ol>
           {{#api}}
-            {{?api.types}}<li>{{+partials.toc_types}}</li>{{/}}
-            {{?api.properties}}<li>{{+partials.toc_properties}}</li>{{/}}
-            {{?api.functions}}<li>{{+partials.toc_functions}}</li>{{/}}
-            {{?api.events}}<li>{{+partials.toc_events}}</li>{{/}}
-            {{?samples_list}}<li>{{+partials.toc_samples title:title}}</li>{{/}}
+          {{?types}}
+          <li>
+            {{+partials.toc_types types:types}}
+          </li>
+          {{/types}}
+          {{?properties}}
+          <li>
+            {{+partials.toc_properties properties:properties}}
+          </li>
+          {{/properties}}
+          {{?functions}}
+          <li>
+            {{+partials.toc_functions functions:functions}}
+          </li>
+          {{/functions}}
+          {{?events}}
+          <li>
+            {{+partials.toc_events events:events}}
+          </li>
+          {{/events}}
+          {{?samples_list}}
+          <li>
+            {{+partials.toc_samples title:title}}
+          </li>
+          {{/samples_list}}
           {{/api}}
         </ol>
       </li>

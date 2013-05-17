@@ -1,12 +1,12 @@
-Name: Handlebar, logic-less templating system
+Name: Handlebar, cross-platform data binding templates.
 Short Name: handlebar
 URL: https://github.com/kalman/templates
 Version: 0
 Date: July 13, 2012
-Revision: commit 8999739b363a9958b718f85257d912ed67b849d9
+Revision: commit cdfc90e58b7f16905d4b89f089b80295646a8034
 License: Apache 2.0
 License File: NOT_SHIPPED
 Security Critical: no
 
 Description:
-A python logic-less templating system, based on mustache.
+A data binding template language for Python inspired by ctemplate.
