@@ -359,7 +359,6 @@ void PNGImageDecoder::headerAvailable()
         // the color profile or we'd need to decode into a gray-scale image buffer and
         // hand that to CoreGraphics.
         ColorProfile colorProfile;
-        // FIXME: maybe readColorProfile() could return a color profile?
         readColorProfile(png, info, colorProfile);
         bool decodedImageHasAlpha = (colorType & PNG_COLOR_MASK_ALPHA) || trnsCount;
         m_reader->createColorTransform(colorProfile, decodedImageHasAlpha);
