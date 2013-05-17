@@ -273,8 +273,6 @@ bool PNGImageDecoder::setFailed()
 
 static void readColorProfile(png_structp png, png_infop info, ColorProfile& colorProfile)
 {
-    ASSERT(colorProfile.isEmpty());
-
 #ifdef PNG_iCCP_SUPPORTED
     char* profileName;
     int compressionType;
@@ -297,8 +295,13 @@ static void readColorProfile(png_structp png, png_infop info, ColorProfile& colo
     else if (!ImageDecoder::inputDeviceColorProfile(profileData, profileLength))
         ignoreProfile = true;
 
+    ASSERT(colorProfile.isEmpty());
     if (!ignoreProfile)
         colorProfile.append(profileData, profileLength);
+#else
+    UNUSED_PARAM(png);
+    UNUSED_PARAM(info);
+    UNUSED_PARAM(colorProfile);
 #endif
 }
 

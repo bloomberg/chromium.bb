@@ -205,14 +205,14 @@ static ImageOrientation readImageOrientation(jpeg_decompress_struct* info)
     return ImageOrientation();
 }
 
-static ColorProfile readColorProfile(jpeg_decompress_struct* info)
+static void readColorProfile(jpeg_decompress_struct* info, ColorProfile& colorProfile)
 {
 #if USE(ICCJPEG)
     JOCTET* profile;
     unsigned int profileLength;
 
     if (!read_icc_profile(info, &profile, &profileLength))
-        return ColorProfile();
+        return;
 
     // Only accept RGB color profiles from input class devices.
     bool ignoreProfile = false;
@@ -224,14 +224,13 @@ static ColorProfile readColorProfile(jpeg_decompress_struct* info)
     else if (!ImageDecoder::inputDeviceColorProfile(profileData, profileLength))
         ignoreProfile = true;
 
-    ColorProfile colorProfile;
+    ASSERT(colorProfile.isEmpty());
     if (!ignoreProfile)
         colorProfile.append(profileData, profileLength);
     free(profile);
-    return colorProfile;
 #else
     UNUSED_PARAM(info);
-    return ColorProfile();
+    UNUSED_PARAM(colorProfile);
 #endif
 }
 
@@ -384,7 +383,8 @@ public:
 #if USE(QCMSLIB)
             // Allow color management of the decoded RGBA pixels if possible.
             if (!m_decoder->ignoresGammaAndColorProfile()) {
-                ColorProfile colorProfile = readColorProfile(info());
+                ColorProfile colorProfile;
+                readColorProfile(info(), colorProfile);
                 createColorTransform(colorProfile, colorSpaceHasAlpha(m_info.out_color_space));
 #if defined(TURBO_JPEG_RGB_SWIZZLE)
                 // Input RGBA data to qcms. Note: restored to BGRA on output.
