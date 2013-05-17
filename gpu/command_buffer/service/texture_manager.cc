@@ -163,6 +163,24 @@ bool Texture::CanRender(const FeatureInfo* feature_info) const {
   if (target_ == 0) {
     return false;
   }
+
+  if (target_ == GL_TEXTURE_EXTERNAL_OES) {
+    if (!IsStreamTexture()) {
+      return false;
+    }
+  } else {
+    if (level_infos_.empty()) {
+      return false;
+    }
+
+    const Texture::LevelInfo& first_face = level_infos_[0][0];
+    if (first_face.width == 0 ||
+        first_face.height == 0 ||
+        first_face.depth == 0) {
+      return false;
+    }
+  }
+
   bool needs_mips = NeedsMips();
   if ((npot() && !feature_info->feature_flags().npot_ok) ||
       (target_ == GL_TEXTURE_RECTANGLE_ARB)) {
@@ -243,7 +261,8 @@ bool Texture::MarkMipmapsGenerated(
   return true;
 }
 
-void Texture::SetTarget(GLenum target, GLint max_levels) {
+void Texture::SetTarget(
+    const FeatureInfo* feature_info, GLenum target, GLint max_levels) {
   DCHECK_EQ(0u, target_);  // you can only set this once.
   target_ = target;
   size_t num_faces = (target == GL_TEXTURE_CUBE_MAP) ? 6 : 1;
@@ -260,6 +279,7 @@ void Texture::SetTarget(GLenum target, GLint max_levels) {
   if (target == GL_TEXTURE_EXTERNAL_OES) {
     immutable_ = true;
   }
+  Update(feature_info);
 }
 
 bool Texture::CanGenerateMipmaps(
@@ -517,7 +537,8 @@ GLenum Texture::SetParameter(
 
 void Texture::Update(const FeatureInfo* feature_info) {
   // Update npot status.
-  npot_ = false;
+  // Assume GL_TEXTURE_EXTERNAL_OES textures are npot, all others
+  npot_ = target_ == GL_TEXTURE_EXTERNAL_OES;
 
   if (level_infos_.empty()) {
     texture_complete_ = false;
@@ -831,7 +852,19 @@ void TextureManager::SetTarget(Texture* texture, GLenum target) {
     DCHECK_NE(0, num_unrenderable_textures_);
     --num_unrenderable_textures_;
   }
-  texture->SetTarget(target, MaxLevelsForTarget(target));
+  texture->SetTarget(feature_info_, target, MaxLevelsForTarget(target));
+  if (!texture->CanRender(feature_info_)) {
+    ++num_unrenderable_textures_;
+  }
+}
+
+void TextureManager::SetStreamTexture(Texture* texture, bool stream_texture) {
+  DCHECK(texture);
+  if (!texture->CanRender(feature_info_)) {
+    DCHECK_NE(0, num_unrenderable_textures_);
+    --num_unrenderable_textures_;
+  }
+  texture->SetStreamTexture(stream_texture);
   if (!texture->CanRender(feature_info_)) {
     ++num_unrenderable_textures_;
   }

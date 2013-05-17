@@ -484,10 +484,23 @@ TEST_F(TextureTest, SetTargetTextureExternalOES) {
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture_));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_));
-  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
-  EXPECT_TRUE(manager_->CanRender(texture_));
+  EXPECT_TRUE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_TRUE(texture_->SafeToRenderFrom());
   EXPECT_TRUE(texture_->IsImmutable());
+  manager_->SetStreamTexture(texture_, true);
+  EXPECT_TRUE(manager_->CanRender(texture_));
+}
+
+TEST_F(TextureTest, ZeroSizeCanNotRender) {
+  manager_->SetTarget(texture_, GL_TEXTURE_2D);
+  EXPECT_FALSE(manager_->CanRender(texture_));
+  manager_->SetLevelInfo(texture_,
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
+  EXPECT_TRUE(manager_->CanRender(texture_));
+  manager_->SetLevelInfo(texture_,
+      GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
+  EXPECT_FALSE(manager_->CanRender(texture_));
 }
 
 TEST_F(TextureTest, EstimatedSize) {
@@ -1485,7 +1498,7 @@ TEST_F(SaveRestoreTextureTest, SaveRestoreClearRectangle) {
 TEST_F(SaveRestoreTextureTest, SaveRestoreStreamTexture) {
   manager_->SetTarget(texture_, GL_TEXTURE_EXTERNAL_OES);
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), texture_->target());
-  texture_->SetStreamTexture(true);
+  manager_->SetStreamTexture(texture_, true);
   GLuint service_id = texture_->service_id();
   scoped_ptr<TextureDefinition> definition(Save(texture_));
   EXPECT_FALSE(texture_->IsStreamTexture());

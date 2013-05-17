@@ -5638,6 +5638,7 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
   if (!texture_manager()->HaveUnrenderableTextures()) {
     return false;
   }
+  LOCAL_PERFORMANCE_WARNING("Some textures are unrenderable.");
   bool textures_set = false;
   const Program::SamplerIndices& sampler_indices =
      state_.current_program->sampler_indices();
@@ -9368,7 +9369,7 @@ error::Error GLES2DecoderImpl::HandleCreateStreamTextureCHROMIUM(
       texture->service_id(), client_id);
 
   if (object_id) {
-    texture->SetStreamTexture(true);
+    texture_manager()->SetStreamTexture(texture, true);
   } else {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY,
@@ -9389,7 +9390,7 @@ error::Error GLES2DecoderImpl::HandleDestroyStreamTextureCHROMIUM(
       return error::kInvalidArguments;
 
     stream_texture_manager_->DestroyStreamTexture(texture->service_id());
-    texture->SetStreamTexture(false);
+    texture_manager()->SetStreamTexture(texture, false);
   } else {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,

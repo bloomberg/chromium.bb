@@ -139,11 +139,7 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
     --framebuffer_attachment_count_;
   }
 
-  void SetStreamTexture(bool stream_texture) {
-    stream_texture_ = stream_texture;
-  }
-
-  bool IsStreamTexture() {
+  bool IsStreamTexture() const {
     return stream_texture_;
   }
 
@@ -162,7 +158,7 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
     immutable_ = immutable;
   }
 
-  bool IsImmutable() {
+  bool IsImmutable() const {
     return immutable_;
   }
 
@@ -170,7 +166,7 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
   bool IsLevelCleared(GLenum target, GLint level) const;
 
   // Whether the texture has been defined
-  bool IsDefined() {
+  bool IsDefined() const {
     return estimated_size() > 0;
   }
 
@@ -232,6 +228,10 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
     return npot_;
   }
 
+  void SetStreamTexture(bool stream_texture) {
+    stream_texture_ = stream_texture;
+  }
+
   // Marks a particular level as cleared or uncleared.
   void SetLevelCleared(GLenum target, GLint level, bool cleared);
 
@@ -275,7 +275,8 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
   //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP or
   //           GL_TEXTURE_EXTERNAL_OES or GL_TEXTURE_RECTANGLE_ARB
   //   max_levels: The maximum levels this type of target can have.
-  void SetTarget(GLenum target, GLint max_levels);
+  void SetTarget(
+      const FeatureInfo* feature_info, GLenum target, GLint max_levels);
 
   // Update info about this texture.
   void Update(const FeatureInfo* feature_info);
@@ -435,6 +436,9 @@ class GPU_EXPORT TextureManager {
   void SetTarget(
       Texture* texture,
       GLenum target);
+
+  // Marks a texture as a stream texture.
+  void SetStreamTexture(Texture* texture, bool stream_texture);
 
   // Set the info for a particular level in a TexureInfo.
   void SetLevelInfo(

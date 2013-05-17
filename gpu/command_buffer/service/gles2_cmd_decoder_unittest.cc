@@ -5716,7 +5716,7 @@ TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUMAlreadySet) {
       true);   // bind generates resource
 
   Texture* texture = GetTexture(client_texture_id_);
-  texture->SetStreamTexture(true);
+  group().texture_manager()->SetStreamTexture(texture, true);
 
   CreateStreamTextureCHROMIUM cmd;
   cmd.Init(client_texture_id_, shared_memory_id_, shared_memory_offset_);
@@ -5740,7 +5740,7 @@ TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUM) {
   decoder_->SetStreamTextureManager(&manager);
 
   Texture* texture = GetTexture(client_texture_id_);
-  texture->SetStreamTexture(true);
+  group().texture_manager()->SetStreamTexture(texture, true);
 
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kServiceTextureId))
       .Times(1)
@@ -5770,7 +5770,7 @@ TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUMInvalid) {
       true);   // bind generates resource
 
   Texture* texture = GetTexture(client_texture_id_);
-  texture->SetStreamTexture(true);
+  group().texture_manager()->SetStreamTexture(texture, true);
 
   BindTexture cmd;
   cmd.Init(GL_TEXTURE_2D, client_texture_id_);
@@ -5798,7 +5798,7 @@ TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUM) {
   decoder_->SetStreamTextureManager(&manager);
 
   Texture* texture = GetTexture(client_texture_id_);
-  texture->SetStreamTexture(true);
+  group().texture_manager()->SetStreamTexture(texture, true);
 
   EXPECT_CALL(manager, DestroyStreamTexture(kServiceTextureId))
       .Times(1)
@@ -5824,7 +5824,7 @@ TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUMInvalid) {
       true);   // bind generates resource
 
   Texture* texture = GetTexture(client_texture_id_);
-  texture->SetStreamTexture(false);
+  group().texture_manager()->SetStreamTexture(texture, false);
 
   DestroyStreamTextureCHROMIUM cmd;
   cmd.Init(client_texture_id_);
@@ -5866,7 +5866,7 @@ TEST_F(GLES2DecoderManualInitTest, StreamTextureCHROMIUMNullMgr) {
   GetGLError(); // ignore internal error
 
   Texture* texture = GetTexture(client_texture_id_);
-  texture->SetStreamTexture(true);
+  group().texture_manager()->SetStreamTexture(texture, true);
 
   DestroyStreamTextureCHROMIUM cmd2;
   cmd2.Init(client_texture_id_);
@@ -5905,7 +5905,7 @@ TEST_F(GLES2DecoderManualInitTest, ReCreateStreamTextureCHROMIUM) {
       .RetiresOnSaturation();
 
   Texture* texture = GetTexture(client_texture_id_);
-  texture->SetStreamTexture(true);
+  group().texture_manager()->SetStreamTexture(texture, true);
 
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -5939,7 +5939,7 @@ TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
   decoder_->SetStreamTextureManager(&manager);
 
   Texture* texture = GetTexture(client_texture_id_);
-  texture->SetStreamTexture(true);
+  group().texture_manager()->SetStreamTexture(texture, true);
 
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kServiceTextureId))
       .Times(1)
