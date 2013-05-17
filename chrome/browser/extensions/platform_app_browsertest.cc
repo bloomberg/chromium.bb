@@ -850,8 +850,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
       extension_service()->extension_prefs();
 
   // Clear the registered events to ensure they are updated.
-  extension_prefs->SetRegisteredEvents(extension->id(),
-                                       std::set<std::string>());
+  extensions::ExtensionSystem::Get(browser()->profile())->event_router()->
+      SetRegisteredEvents(extension->id(), std::set<std::string>());
 
   const base::StringValue old_version("1");
   std::string pref_path("extensions.settings.");

@@ -28,6 +28,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -36,7 +37,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
-using base::Value;
+using base::DictionaryValue;
+using base::ListValue;
 using content::BrowserThread;
 
 namespace extensions {
@@ -67,7 +69,13 @@ void DispatchOnInstalledEvent(
 
 void DoNothing(ExtensionHost* host) {}
 
+// A dictionary of event names to lists of filters that this extension has
+// registered from its lazy background page.
+const char kFilteredEvents[] = "filtered_events";
+
 }  // namespace
+
+const char EventRouter::kRegisteredEvents[] = "events";
 
 struct EventRouter::ListenerProcess {
   content::RenderProcessHost* process;
@@ -190,8 +198,7 @@ EventRouter::EventRouter(Profile* profile, ExtensionPrefs* extension_prefs)
   if (extension_prefs) {
     // Check if registered events are up-to-date. We can only do this once
     // per profile, since it updates internal state when called.
-    dispatch_chrome_updated_event_ =
-        !extension_prefs->CheckRegisteredEventsUpToDate();
+    dispatch_chrome_updated_event_ = !CheckRegisteredEventsUpToDate();
   }
 }
 
@@ -289,11 +296,10 @@ void EventRouter::AddLazyEventListener(const std::string& event_name,
   bool is_new = listeners_.AddListener(listener.Pass());
 
   if (is_new) {
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
-    std::set<std::string> events = prefs->GetRegisteredEvents(extension_id);
+    std::set<std::string> events = GetRegisteredEvents(extension_id);
     bool prefs_is_new = events.insert(event_name).second;
     if (prefs_is_new)
-      prefs->SetRegisteredEvents(extension_id, events);
+      SetRegisteredEvents(extension_id, events);
   }
 }
 
@@ -304,11 +310,10 @@ void EventRouter::RemoveLazyEventListener(const std::string& event_name,
   bool did_exist = listeners_.RemoveListener(&listener);
 
   if (did_exist) {
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
-    std::set<std::string> events = prefs->GetRegisteredEvents(extension_id);
+    std::set<std::string> events = GetRegisteredEvents(extension_id);
     bool prefs_did_exist = events.erase(event_name) > 0;
     DCHECK(prefs_did_exist);
-    prefs->SetRegisteredEvents(extension_id, events);
+    SetRegisteredEvents(extension_id, events);
   }
 }
 
@@ -326,10 +331,8 @@ void EventRouter::AddFilteredEventListener(const std::string& event_name,
         new EventListener(event_name, extension_id, NULL,
         scoped_ptr<DictionaryValue>(filter.DeepCopy()))));
 
-    if (added) {
-      ExtensionPrefs::Get(profile_)->AddFilterToEvent(
-          event_name, extension_id, &filter);
-    }
+    if (added)
+      AddFilterToEvent(event_name, extension_id, &filter);
   }
 }
 
@@ -348,10 +351,8 @@ void EventRouter::RemoveFilteredEventListener(
     listener.process = NULL;
     bool removed = listeners_.RemoveListener(&listener);
 
-    if (removed) {
-      ExtensionPrefs::Get(profile_)->RemoveFilterFromEvent(
-          event_name, extension_id, &filter);
-    }
+    if (removed)
+      RemoveFilterFromEvent(event_name, extension_id, &filter);
   }
 }
 
@@ -381,6 +382,115 @@ bool EventRouter::HasEventListenerImpl(const ListenerMap& listener_map,
       return true;
   }
   return false;
+}
+
+std::set<std::string> EventRouter::GetRegisteredEvents(
+    const std::string& extension_id) {
+  std::set<std::string> events;
+  const ListValue* events_value = NULL;
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
+
+  if (!prefs ||
+      !prefs->ReadPrefAsList(extension_id, kRegisteredEvents, &events_value)) {
+    return events;
+  }
+
+  for (size_t i = 0; i < events_value->GetSize(); ++i) {
+    std::string event;
+    if (events_value->GetString(i, &event))
+      events.insert(event);
+  }
+  return events;
+}
+
+void EventRouter::SetRegisteredEvents(const std::string& extension_id,
+                                      const std::set<std::string>& events) {
+  ListValue* events_value = new ListValue;
+  for (std::set<std::string>::const_iterator iter = events.begin();
+       iter != events.end(); ++iter) {
+    events_value->Append(new StringValue(*iter));
+  }
+  ExtensionPrefs::Get(profile_)->UpdateExtensionPref(
+      extension_id,
+      kRegisteredEvents,
+      events_value);
+}
+
+bool EventRouter::CheckRegisteredEventsUpToDate() {
+  // If we're running inside a test, then assume prefs are all up-to-date.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+    return true;
+
+  base::Version version;
+  PrefService* pref_service = profile_->GetPrefs();
+  if (pref_service->HasPrefPath(ExtensionPrefs::kExtensionsLastChromeVersion)) {
+    std::string version_str =
+        pref_service->GetString(ExtensionPrefs::kExtensionsLastChromeVersion);
+    version = Version(version_str);
+  }
+
+  chrome::VersionInfo current_version_info;
+  std::string current_version = current_version_info.Version();
+  pref_service->SetString(ExtensionPrefs::kExtensionsLastChromeVersion,
+                          current_version);
+
+  // If there was no version string in prefs, assume we're out of date.
+  if (!version.IsValid() || version.IsOlderThan(current_version))
+    return false;
+
+  return true;
+}
+
+void EventRouter::AddFilterToEvent(const std::string& event_name,
+                                   const std::string& extension_id,
+                                   const DictionaryValue* filter) {
+  ExtensionPrefs::ScopedDictionaryUpdate update(
+      ExtensionPrefs::Get(profile_),
+      extension_id,
+      kFilteredEvents);
+  DictionaryValue* filtered_events = update.Get();
+  if (!filtered_events)
+    filtered_events = update.Create();
+
+  ListValue* filter_list = NULL;
+  if (!filtered_events->GetList(event_name, &filter_list)) {
+    filter_list = new ListValue;
+    filtered_events->SetWithoutPathExpansion(event_name, filter_list);
+  }
+
+  filter_list->Append(filter->DeepCopy());
+}
+
+void EventRouter::RemoveFilterFromEvent(const std::string& event_name,
+                                        const std::string& extension_id,
+                                        const DictionaryValue* filter) {
+  ExtensionPrefs::ScopedDictionaryUpdate update(
+      ExtensionPrefs::Get(profile_),
+      extension_id,
+      kFilteredEvents);
+  DictionaryValue* filtered_events = update.Get();
+  ListValue* filter_list = NULL;
+  if (!filtered_events ||
+      !filtered_events->GetListWithoutPathExpansion(event_name, &filter_list)) {
+    return;
+  }
+
+  for (size_t i = 0; i < filter_list->GetSize(); i++) {
+    DictionaryValue* filter = NULL;
+    CHECK(filter_list->GetDictionary(i, &filter));
+    if (filter->Equals(filter)) {
+      filter_list->Remove(i, NULL);
+      break;
+    }
+  }
+}
+
+const DictionaryValue* EventRouter::GetFilteredEvents(
+    const std::string& extension_id) {
+  const DictionaryValue* events = NULL;
+  ExtensionPrefs::Get(profile_)->ReadPrefAsDictionary(
+      extension_id, kFilteredEvents, &events);
+  return events;
 }
 
 void EventRouter::BroadcastEvent(scoped_ptr<Event> event) {
@@ -625,13 +735,12 @@ void EventRouter::Observe(int type,
       // Add all registered lazy listeners to our cache.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
       std::set<std::string> registered_events =
-          prefs->GetRegisteredEvents(extension->id());
+          GetRegisteredEvents(extension->id());
       listeners_.LoadUnfilteredLazyListeners(extension->id(),
                                              registered_events);
       const DictionaryValue* filtered_events =
-          prefs->GetFilteredEvents(extension->id());
+          GetFilteredEvents(extension->id());
       if (filtered_events)
         listeners_.LoadFilteredLazyListeners(extension->id(), *filtered_events);
 

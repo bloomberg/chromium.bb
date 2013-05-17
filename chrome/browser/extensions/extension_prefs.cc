@@ -4,15 +4,14 @@
 
 #include "chrome/browser/extensions/extension_prefs.h"
 
-#include "base/command_line.h"
 #include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/value_conversions.h"
-#include "base/version.h"
 #include "chrome/browser/extensions/admin_policy.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_sorting.h"
@@ -20,7 +19,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -195,19 +193,8 @@ const char kPrefContentSettings[] = "content_settings";
 // A preference that contains extension-set content settings.
 const char kPrefIncognitoContentSettings[] = "incognito_content_settings";
 
-// A list of event names that this extension has registered from its lazy
-// background page.
-const char kRegisteredEvents[] = "events";
-
-// A dictionary of event names to lists of filters that this extension has
-// registered from its lazy background page.
-const char kFilteredEvents[] = "filtered_events";
-
 // Key for Geometry Cache preference.
 const char kPrefGeometryCache[] = "geometry_cache";
-
-// Key for what version chrome was last time the extension prefs were loaded.
-const char kExtensionsLastChromeVersion[] = "extensions.last_chrome_version";
 
 // Key for the path of the directory of the file last chosen by the user in
 // response to a chrome.fileSystem.chooseEntry() call.
@@ -429,6 +416,9 @@ ExtensionPrefs* ExtensionPrefs::Get(Profile* profile) {
 
 // static
 const char ExtensionPrefs::kExtensionsPref[] = "extensions.settings";
+// static
+const char ExtensionPrefs::kExtensionsLastChromeVersion[] =
+    "extensions.last_chrome_version";
 
 static base::FilePath::StringType MakePathRelative(const base::FilePath& parent,
                                              const base::FilePath& child) {
@@ -1046,106 +1036,6 @@ void ExtensionPrefs::SetActivePermissions(
     const PermissionSet* permissions) {
   SetExtensionPrefPermissionSet(
       extension_id, kPrefActivePermissions, permissions);
-}
-
-bool ExtensionPrefs::CheckRegisteredEventsUpToDate() {
-  // If we're running inside a test, then assume prefs are all up-to-date.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
-    return true;
-
-  Version version;
-  if (prefs_->HasPrefPath(kExtensionsLastChromeVersion)) {
-    std::string version_str = prefs_->GetString(kExtensionsLastChromeVersion);
-    version = Version(version_str);
-  }
-
-  chrome::VersionInfo current_version_info;
-  std::string current_version = current_version_info.Version();
-  prefs_->SetString(kExtensionsLastChromeVersion, current_version);
-
-  // If there was no version string in prefs, assume we're out of date.
-  if (!version.IsValid() || version.IsOlderThan(current_version))
-    return false;
-
-  return true;
-}
-
-std::set<std::string> ExtensionPrefs::GetRegisteredEvents(
-    const std::string& extension_id) {
-  std::set<std::string> events;
-  const DictionaryValue* extension = GetExtensionPref(extension_id);
-  if (!extension)
-    return events;
-
-  const ListValue* value = NULL;
-  if (!extension->GetList(kRegisteredEvents, &value))
-    return events;
-
-  for (size_t i = 0; i < value->GetSize(); ++i) {
-    std::string event;
-    if (value->GetString(i, &event))
-      events.insert(event);
-  }
-  return events;
-}
-
-void ExtensionPrefs::AddFilterToEvent(const std::string& event_name,
-                                      const std::string& extension_id,
-                                      const DictionaryValue* filter) {
-  ScopedDictionaryUpdate update(this, extension_id, kFilteredEvents);
-  DictionaryValue* filtered_events = update.Get();
-  if (!filtered_events)
-    filtered_events = update.Create();
-
-  ListValue* filter_list = NULL;
-  if (!filtered_events->GetList(event_name, &filter_list)) {
-    filter_list = new ListValue;
-    filtered_events->SetWithoutPathExpansion(event_name, filter_list);
-  }
-
-  filter_list->Append(filter->DeepCopy());
-}
-
-void ExtensionPrefs::RemoveFilterFromEvent(const std::string& event_name,
-                                           const std::string& extension_id,
-                                           const DictionaryValue* filter) {
-  ScopedDictionaryUpdate update(this, extension_id, kFilteredEvents);
-  DictionaryValue* filtered_events = update.Get();
-  ListValue* filter_list = NULL;
-  if (!filtered_events ||
-      !filtered_events->GetListWithoutPathExpansion(event_name, &filter_list)) {
-    return;
-  }
-
-  for (size_t i = 0; i < filter_list->GetSize(); i++) {
-    DictionaryValue* filter = NULL;
-    CHECK(filter_list->GetDictionary(i, &filter));
-    if (filter->Equals(filter)) {
-      filter_list->Remove(i, NULL);
-      break;
-    }
-  }
-}
-
-const DictionaryValue* ExtensionPrefs::GetFilteredEvents(
-    const std::string& extension_id) const {
-  const DictionaryValue* extension = GetExtensionPref(extension_id);
-  if (!extension)
-    return NULL;
-  const DictionaryValue* result = NULL;
-  if (!extension->GetDictionary(kFilteredEvents, &result))
-    return NULL;
-  return result;
-}
-
-void ExtensionPrefs::SetRegisteredEvents(
-    const std::string& extension_id, const std::set<std::string>& events) {
-  ListValue* value = new ListValue();
-  for (std::set<std::string>::const_iterator it = events.begin();
-       it != events.end(); ++it) {
-    value->Append(new StringValue(*it));
-  }
-  UpdateExtensionPref(extension_id, kRegisteredEvents, value);
 }
 
 void ExtensionPrefs::SetExtensionRunning(const std::string& extension_id,
@@ -2171,7 +2061,7 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
   extension_dict->Remove(kDelayedInstallInfo, NULL);
 
   // Clear state that may be registered from a previous install.
-  extension_dict->Remove(kRegisteredEvents, NULL);
+  extension_dict->Remove(EventRouter::kRegisteredEvents, NULL);
 
   // FYI, all code below here races on sudden shutdown because
   // |extension_dict|, |extension_sorting_|, |extension_pref_value_map_|,

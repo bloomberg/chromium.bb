@@ -59,6 +59,9 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // extension ids.
   static const char kExtensionsPref[];
 
+  // Key for what version chrome was last time the extension prefs were loaded.
+  static const char kExtensionsLastChromeVersion[];
+
   typedef std::vector<linked_ptr<ExtensionInfo> > ExtensionsInfo;
 
   // Vector containing identifiers for preferences.
@@ -342,30 +345,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Sets the active |permissions| for the extension with |extension_id|.
   void SetActivePermissions(const std::string& extension_id,
                             const PermissionSet* permissions);
-
-  // Returns true if registered events are from this version of Chrome. Else,
-  // clear them, and return false.
-  bool CheckRegisteredEventsUpToDate();
-
-  // Returns the list of events that the given extension has registered for.
-  std::set<std::string> GetRegisteredEvents(const std::string& extension_id);
-  void SetRegisteredEvents(const std::string& extension_id,
-                           const std::set<std::string>& events);
-
-  // Adds a filter to an event.
-  void AddFilterToEvent(const std::string& event_name,
-                        const std::string& extension_id,
-                        const base::DictionaryValue* filter);
-
-  // Removes a filter from an event.
-  void RemoveFilterFromEvent(const std::string& event_name,
-                             const std::string& extension_id,
-                             const base::DictionaryValue* filter);
-
-  // Returns the dictionary of event filters that the given extension has
-  // registered.
-  const base::DictionaryValue* GetFilteredEvents(
-      const std::string& extension_id) const;
 
   // Records whether or not this extension is currently running.
   void SetExtensionRunning(const std::string& extension_id, bool is_running);

@@ -50,6 +50,10 @@ class EventRouter : public content::NotificationObserver,
     USER_GESTURE_NOT_ENABLED = 2,
   };
 
+  // The pref key for the list of event names for which an extension has
+  // registered from its lazy background page.
+  static const char kRegisteredEvents[];
+
   // Observers register interest in events with a particular name and are
   // notified when a listener is added or removed for that |event_name|.
   class Observer {
@@ -126,6 +130,12 @@ class EventRouter : public content::NotificationObserver,
   // Returns true if the extension is listening to the given event.
   bool ExtensionHasEventListener(const std::string& extension_id,
                                  const std::string& event_name);
+
+  // Return or set the list of events for which the given extension has
+  // registered.
+  std::set<std::string> GetRegisteredEvents(const std::string& extension_id);
+  void SetRegisteredEvents(const std::string& extension_id,
+                           const std::set<std::string>& events);
 
   // Broadcasts an event to every listener registered for that event.
   virtual void BroadcastEvent(scoped_ptr<Event> event);
@@ -214,6 +224,25 @@ class EventRouter : public content::NotificationObserver,
       Profile* profile,
       const Extension* extension,
       const linked_ptr<Event>& event);
+
+  // Returns true if registered events are from this version of Chrome. Else,
+  // clear them, and return false.
+  bool CheckRegisteredEventsUpToDate();
+
+  // Adds a filter to an event.
+  void AddFilterToEvent(const std::string& event_name,
+                        const std::string& extension_id,
+                        const base::DictionaryValue* filter);
+
+  // Removes a filter from an event.
+  void RemoveFilterFromEvent(const std::string& event_name,
+                             const std::string& extension_id,
+                             const base::DictionaryValue* filter);
+
+  // Returns the dictionary of event filters that the given extension has
+  // registered.
+  const base::DictionaryValue* GetFilteredEvents(
+      const std::string& extension_id);
 
   // Track of the number of dispatched events that have not yet sent an
   // ACK from the renderer.
