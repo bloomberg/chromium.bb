@@ -32,6 +32,9 @@ enum QuotaLimitType {
   kQuotaLimitTypeUnlimited,
 };
 
+struct UsageInfo;
+typedef std::vector<UsageInfo> UsageInfoEntries;
+
 // Common callback types that are used throughout in the quota module.
 typedef base::Callback<void(StorageType status,
                             int64 usage,
@@ -42,6 +45,7 @@ typedef base::Callback<void(QuotaStatusCode, int64)> AvailableSpaceCallback;
 typedef base::Callback<void(QuotaStatusCode)> StatusCallback;
 typedef base::Callback<void(const std::set<GURL>& origins,
                             StorageType type)> GetOriginsCallback;
+typedef base::Callback<void(const UsageInfoEntries&)> GetUsageInfoCallback;
 
 // Simple template wrapper for a callback queue.
 template <typename CallbackType>

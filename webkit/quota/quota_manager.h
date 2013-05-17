@@ -87,6 +87,16 @@ class WEBKIT_STORAGE_EXPORT QuotaEvictionHandler {
   virtual ~QuotaEvictionHandler() {}
 };
 
+struct UsageInfo {
+  UsageInfo(const std::string& host, StorageType type, int64 usage)
+      : host(host),
+        type(type),
+        usage(usage) {}
+  std::string host;
+  StorageType type;
+  int64 usage;
+};
+
 // The quota manager class.  This class is instantiated per profile and
 // held by the profile.  With the exception of the constructor and the
 // proxy() method, all methods should only be called on the IO thread.
@@ -111,6 +121,9 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
 
   // Returns a proxy object that can be used on any thread.
   QuotaManagerProxy* proxy() { return proxy_.get(); }
+
+  // Called by clients or webapps. Returns usage per host.
+  void GetUsageInfo(const GetUsageInfoCallback& callback);
 
   // Called by Web Apps.
   // This method is declared as virtual to allow test code to override it.
@@ -238,6 +251,7 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
   friend class QuotaTemporaryStorageEvictor;
   friend struct QuotaManagerDeleter;
 
+  class GetUsageInfoTask;
   class UsageAndQuotaDispatcherTask;
   class UsageAndQuotaDispatcherTaskForTemporary;
   class UsageAndQuotaDispatcherTaskForPersistent;
