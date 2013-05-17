@@ -8,7 +8,6 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-     "background",
      "tabs"
   ]
 }
