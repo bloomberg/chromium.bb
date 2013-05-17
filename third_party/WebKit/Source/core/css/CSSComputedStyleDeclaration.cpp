@@ -1067,11 +1067,11 @@ static PassRefPtr<CSSValue> valueForGridPosition(const GridPosition& position)
     if (position.isSpan()) {
         list->append(cssValuePool().createIdentifierValue(CSSValueSpan));
         list->append(cssValuePool().createValue(position.spanPosition(), CSSPrimitiveValue::CSS_NUMBER));
-    } else {
+    } else
         list->append(cssValuePool().createValue(position.integerPosition(), CSSPrimitiveValue::CSS_NUMBER));
-        if (!position.namedGridLine().isNull())
-            list->append(cssValuePool().createValue(position.namedGridLine(), CSSPrimitiveValue::CSS_STRING));
-    }
+
+    if (!position.namedGridLine().isNull())
+        list->append(cssValuePool().createValue(position.namedGridLine(), CSSPrimitiveValue::CSS_STRING));
     return list;
 }
 static PassRefPtr<CSSValue> createTransitionPropertyValue(const CSSAnimationData* animation)

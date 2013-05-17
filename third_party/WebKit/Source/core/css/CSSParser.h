@@ -161,6 +161,7 @@ public:
 
     bool cssGridLayoutEnabled() const;
     PassRefPtr<CSSValue> parseGridPosition();
+    bool parseIntegerOrStringFromGridPosition(RefPtr<CSSPrimitiveValue>& numericValue, RefPtr<CSSPrimitiveValue>& gridLineName);
     bool parseGridItemPositionShorthand(CSSPropertyID, bool important);
     bool parseGridTrackList(CSSPropertyID, bool important);
     PassRefPtr<CSSPrimitiveValue> parseGridTrackSize();

@@ -65,10 +65,11 @@ public:
     // 'span' values cannot be negative, yet we reuse the <integer> position which can
     // be. This means that we have to convert the span position to an integer, losing
     // some precision here. It shouldn't be an issue in practice though.
-    void setSpanPosition(int position)
+    void setSpanPosition(int position, const String& namedGridLine)
     {
         m_type = SpanPosition;
         m_integerPosition = position;
+        m_namedGridLine = namedGridLine;
     }
 
     int integerPosition() const
@@ -79,7 +80,7 @@ public:
 
     String namedGridLine() const
     {
-        ASSERT(type() == ExplicitPosition);
+        ASSERT(type() == ExplicitPosition || type() == SpanPosition);
         return m_namedGridLine;
     }
 

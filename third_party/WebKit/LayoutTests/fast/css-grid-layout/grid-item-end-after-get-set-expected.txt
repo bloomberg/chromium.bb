@@ -52,18 +52,18 @@ PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end') is grid
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-row') is gridRowValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-before') is gridBeforeValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-after') is gridAfterValue
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-column') should be auto / span 1 first. Was auto / auto.
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-column') is gridColumnValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-start') is gridStartValue
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end') should be span 1 first. Was auto.
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-row') should be auto / span 1 last. Was auto / auto.
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end') is gridEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-row') is gridRowValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-before') is gridBeforeValue
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-after') should be span 1 last. Was auto.
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-column') should be auto / span 2 first. Was auto / auto.
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-after') is gridAfterValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-column') is gridColumnValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-start') is gridStartValue
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end') should be span 2 first. Was auto.
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-row') should be auto / span 3 last. Was auto / auto.
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end') is gridEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-row') is gridRowValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-before') is gridBeforeValue
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-after') should be span 3 last. Was auto.
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-after') is gridAfterValue
 
 Test the initial value
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-end') is 'auto'
@@ -96,12 +96,12 @@ PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end') is grid
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-row') is gridRowValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-before') is gridBeforeValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-after') is gridAfterValue
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-column') should be auto / span 1 first. Was auto / auto.
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-column') is gridColumnValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-start') is gridStartValue
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end') should be span 1 first. Was auto.
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-row') should be auto / span 1 last. Was auto / auto.
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end') is gridEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-row') is gridRowValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-before') is gridBeforeValue
-FAIL getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-after') should be span 1 last. Was auto.
+PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-after') is gridAfterValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-column') is gridColumnValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-start') is gridStartValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end') is gridEndValue

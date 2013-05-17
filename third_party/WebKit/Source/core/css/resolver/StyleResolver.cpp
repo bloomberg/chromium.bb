@@ -2369,11 +2369,9 @@ static bool createGridPosition(CSSValue* value, GridPosition& position)
     }
 
     ASSERT(!it.hasMore());
-    if (isSpanPosition) {
-        // FIXME: Implement named line with 'span'.
-        ASSERT(gridLineName.isNull());
-        position.setSpanPosition(gridLineNumber);
-    } else
+    if (isSpanPosition)
+        position.setSpanPosition(gridLineNumber, gridLineName);
+    else
         position.setExplicitPosition(gridLineNumber, gridLineName);
 
     return true;
