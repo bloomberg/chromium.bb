@@ -44,7 +44,7 @@ class CC_EXPORT WorkerPoolClient {
 
 // A worker thread pool that runs rendering tasks and guarantees completion
 // of all pending tasks at shutdown.
-class WorkerPool {
+class CC_EXPORT WorkerPool {
  public:
   typedef base::Callback<void()> Callback;
 

@@ -18,6 +18,7 @@
       'base/region_unittest.cc',
       'base/tiling_data_unittest.cc',
       'base/util_unittest.cc',
+      'base/worker_pool_unittest.cc',
       'input/top_controls_manager_unittest.cc',
       'layers/content_layer_unittest.cc',
       'layers/contents_scaling_layer_unittest.cc',
