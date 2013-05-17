@@ -515,4 +515,9 @@ void RenderWidgetHostViewBase::EndFrameSubscription() {
   render_process_host->EndFrameSubscription(impl->GetRoutingID());
 }
 
+void RenderWidgetHostViewBase::OnOverscrolled(
+    gfx::Vector2dF accumulated_overscroll,
+    gfx::Vector2dF current_fling_velocity) {
+}
+
 }  // namespace content

@@ -390,6 +390,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnCompositorSurfaceBuffersSwapped)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
                                 msg_is_ok = OnSwapCompositorFrame(msg))
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidOverscroll, OnOverscrolled)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(InputHostMsg_HandleInputEvent_ACK, OnInputEventAck)
@@ -1693,6 +1694,13 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     SendSwapCompositorFrameAck(routing_id_, process_->GetID(), ack);
   }
   return true;
+}
+
+void RenderWidgetHostImpl::OnOverscrolled(
+    gfx::Vector2dF accumulated_overscroll,
+    gfx::Vector2dF current_fling_velocity) {
+  if (view_)
+    view_->OnOverscrolled(accumulated_overscroll, current_fling_velocity);
 }
 
 void RenderWidgetHostImpl::OnUpdateRect(

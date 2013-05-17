@@ -77,6 +77,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void EndFrameSubscription() OVERRIDE;
   virtual void OnSwapCompositorFrame(
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE {}
+  virtual void OnOverscrolled(gfx::Vector2dF accumulated_overscroll,
+                              gfx::Vector2dF current_fling_velocity) OVERRIDE;
 
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
