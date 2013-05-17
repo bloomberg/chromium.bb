@@ -165,26 +165,19 @@ loader.Loader.prototype = {
     {
         var builds = JSON.parse(fileData);
 
-        var json_version = builds['version'];
-        for (var builderName in builds) {
-            if (builderName == 'version')
-                continue;
+        // If a test suite stops being run on a given builder, we don't want to show it.
+        // Assume any builder without a run in two weeks for a given test suite isn't
+        // running that suite anymore.
+        // FIXME: Grab which bots run which tests directly from the buildbot JSON instead.
+        var lastRunSeconds = builds[builderName].secondsSinceEpoch[0];
+        if ((Date.now() / 1000) - lastRunSeconds > ONE_WEEK_SECONDS)
+            return;
 
-            // If a test suite stops being run on a given builder, we don't want to show it.
-            // Assume any builder without a run in two weeks for a given test suite isn't
-            // running that suite anymore.
-            // FIXME: Grab which bots run which tests directly from the buildbot JSON instead.
-            var lastRunSeconds = builds[builderName].secondsSinceEpoch[0];
-            if ((Date.now() / 1000) - lastRunSeconds > ONE_WEEK_SECONDS)
-                continue;
+        if ((Date.now() / 1000) - lastRunSeconds > ONE_DAY_SECONDS)
+            this._staleBuilders.push(builderName);
 
-            if ((Date.now() / 1000) - lastRunSeconds > ONE_DAY_SECONDS)
-                this._staleBuilders.push(builderName);
-
-            if (json_version >= 4)
-                builds[builderName][TESTS_KEY] = loader.Loader._flattenTrie(builds[builderName][TESTS_KEY]);
-            g_resultsByBuilder[builderName] = builds[builderName];
-        }
+        builds[builderName][TESTS_KEY] = loader.Loader._flattenTrie(builds[builderName][TESTS_KEY]);
+        g_resultsByBuilder[builderName] = builds[builderName];
     },
     _handleResultsFileLoadError: function(builderName)
     {

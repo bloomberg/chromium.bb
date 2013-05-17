@@ -67,7 +67,7 @@ test('results files loading', 11, function() {
     loader.request = function(url, successCallback, errorCallback) {
         var builderName = /builder=([\w ().]+)&/.exec(url)[1];
         loadedBuilders.push(builderName);
-        successCallback({responseText: '{"version": 4, "' + builderName + '": {"secondsSinceEpoch": [' + Date.now() + '], "tests": {}}}'});
+        successCallback({responseText: '{"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT"},"version":4,"' + builderName + '":{"secondsSinceEpoch":[' + Date.now() + '],"tests":{}}}'});
     }
 
     loadBuildersList('@ToT - chromium.org', 'layout-tests');
