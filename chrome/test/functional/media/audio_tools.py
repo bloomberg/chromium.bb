@@ -92,6 +92,10 @@ def RunPESQ(audio_file_ref, audio_file_test, sample_rate=16000):
     A tuple of float values representing PESQ scores of the audio_file_ref and
     audio_file_test consecutively.
   """
+  # Work around a bug in PESQ when the ref file path is > 128 chars. PESQ will
+  # compute an incorrect score then (!), and the relative path to the ref file
+  # should be a lot shorter than the absolute one.
+  audio_file_ref = os.path.relpath(audio_file_ref)
   cmd = [_PESQ_PATH, '+%d' % sample_rate, audio_file_ref, audio_file_test]
   logging.debug('Running command: %s', ' '.join(cmd))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
