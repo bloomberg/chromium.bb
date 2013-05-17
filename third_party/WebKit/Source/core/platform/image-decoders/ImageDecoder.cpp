@@ -91,23 +91,24 @@ inline bool matchesCURSignature(char* contents)
 
 PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
 {
-    static const unsigned lengthOfLongestSignature = 14; // To wit: "RIFF????WEBPVP"
-    char contents[lengthOfLongestSignature];
-    unsigned length = copyFromSharedBuffer(contents, lengthOfLongestSignature, data, 0);
-    if (length < lengthOfLongestSignature)
+    static const unsigned longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
+    ASSERT(longestSignatureLength == 14);
+
+    char contents[longestSignatureLength];
+    if (copyFromSharedBuffer(contents, longestSignatureLength, data, 0) < longestSignatureLength)
         return nullptr;
 
-    if (matchesGIFSignature(contents))
-        return adoptPtr(new GIFImageDecoder(alphaOption, gammaAndColorProfileOption));
+    if (matchesJPEGSignature(contents))
+        return adoptPtr(new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption));
 
     if (matchesPNGSignature(contents))
         return adoptPtr(new PNGImageDecoder(alphaOption, gammaAndColorProfileOption));
 
+    if (matchesGIFSignature(contents))
+        return adoptPtr(new GIFImageDecoder(alphaOption, gammaAndColorProfileOption));
+
     if (matchesICOSignature(contents) || matchesCURSignature(contents))
         return adoptPtr(new ICOImageDecoder(alphaOption, gammaAndColorProfileOption));
-
-    if (matchesJPEGSignature(contents))
-        return adoptPtr(new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption));
 
     if (matchesWebPSignature(contents))
         return adoptPtr(new WEBPImageDecoder(alphaOption, gammaAndColorProfileOption));
@@ -145,6 +146,10 @@ void ImageDecoder::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_scaledColumns, "scaledColumns");
     info.addMember(m_scaledRows, "scaledRows");
 }
+
+// FIXME: don't add any more code below this line: the code below is related to
+// ENABLE(IMAGE_DECODER_DOWN_SAMPLING), a feature chrome does not use, and does
+// test, and does not need. It is therefore earmarked for removal.
 
 enum MatchType {
     Exact,
