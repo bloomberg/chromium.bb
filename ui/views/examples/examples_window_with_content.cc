@@ -18,14 +18,13 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/examples/bubble_example.h"
 #include "ui/views/examples/button_example.h"
+#include "ui/views/examples/checkbox_example.h"
 #include "ui/views/examples/combobox_example.h"
 #include "ui/views/examples/double_split_view_example.h"
 #include "ui/views/examples/label_example.h"
 #include "ui/views/examples/link_example.h"
 #include "ui/views/examples/menu_example.h"
 #include "ui/views/examples/message_box_example.h"
-#include "ui/views/examples/native_theme_button_example.h"
-#include "ui/views/examples/native_theme_checkbox_example.h"
 #include "ui/views/examples/progress_bar_example.h"
 #include "ui/views/examples/radio_button_example.h"
 #include "ui/views/examples/scroll_view_example.h"
@@ -166,14 +165,13 @@ class ExamplesWindowContents : public WidgetDelegateView,
     // Please keep this list in alphabetical order!
     combobox_model_.AddExample(new BubbleExample);
     combobox_model_.AddExample(new ButtonExample);
+    combobox_model_.AddExample(new CheckboxExample);
     combobox_model_.AddExample(new ComboboxExample);
     combobox_model_.AddExample(new DoubleSplitViewExample);
     combobox_model_.AddExample(new LabelExample);
     combobox_model_.AddExample(new LinkExample);
     combobox_model_.AddExample(new MenuExample);
     combobox_model_.AddExample(new MessageBoxExample);
-    combobox_model_.AddExample(new NativeThemeButtonExample);
-    combobox_model_.AddExample(new NativeThemeCheckboxExample);
     combobox_model_.AddExample(new ProgressBarExample);
     combobox_model_.AddExample(new RadioButtonExample);
     combobox_model_.AddExample(new ScrollViewExample);
