@@ -103,7 +103,6 @@ bool DownloadResourceHandler::OnUploadProgress(int request_id,
   return true;
 }
 
-// Not needed, as this event handler ought to be the final resource.
 bool DownloadResourceHandler::OnRequestRedirected(
     int request_id,
     const GURL& url,
