@@ -128,8 +128,7 @@
                shortcut="U+0056-Ctrl">
       <command id="rename" i18n-values="label:RENAME_BUTTON_LABEL"
                shortcut="Enter-Ctrl">
-      <command id="delete" i18n-values="label:DELETE_BUTTON_LABEL"
-               shortcut="U+007F">
+      <command id="delete" shortcut="U+007F">
       <command id="newfolder" i18n-values="label:NEW_FOLDER_BUTTON_LABEL"
                shortcut="U+0045-Ctrl">
       <command id="newwindow" i18n-values="label:NEW_WINDOW_BUTTON_LABEL">
@@ -171,7 +170,7 @@
       <menuitem command="#paste" visibleif="full-page"></menuitem>
       <hr visibleif="full-page">
       <menuitem command="#rename"></menuitem>
-      <menuitem command="#delete"></menuitem>
+      <menuitem command="#delete" i18n-content=DELETE_BUTTON_LABEL></menuitem>
       <menuitem command="#zip-selection"></menuitem>
       <hr visibleif="saveas-file full-page">
       <menuitem command="#newfolder"
@@ -314,7 +313,8 @@
               <button id="tasks" class="combobutton" menu="#tasks-menu"
                       tabindex="2">
               </button>
-              <button id="delete-button" command="#delete" tabindex="3"></button>
+              <button id="delete-button" command="#delete" tabindex="3"
+                      i18n-values="aria-label:DELETE_BUTTON_LABEL"></button>
             </div>
           </div>
           <div id="unmounted-panel"></div>

@@ -1702,7 +1702,18 @@ body[new-ui] #list-container li.table-row {
   -webkit-box-flex: 1;
 }
 
-#delete-button[disabled] {
+body[new-ui] #delete-button {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/onbutton_trash.png') 1x,
+    url('../images/files/ui/new-ui/2x/onbutton_trash.png') 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+  min-width: 27px;  /* overrride */
+  padding: 0;  /* overrride */
+  width: 27px;
+}
+
+body #delete-button[disabled] {
   display: none;
 }
 
