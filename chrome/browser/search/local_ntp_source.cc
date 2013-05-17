@@ -38,6 +38,7 @@ const struct Resource{
   { "images/close_2.png", IDR_CLOSE_2, "image/png" },
   { "images/close_2_hover.png", IDR_CLOSE_2_H, "image/png" },
   { "images/close_2_active.png", IDR_CLOSE_2_P, "image/png" },
+  { "images/close_2_white.png", IDR_CLOSE_2_MASK, "image/png" },
   { "images/page_icon.png", IDR_LOCAL_OMNIBOX_POPUP_IMAGES_PAGE_ICON_PNG,
     "image/png" },
   { "images/2x/page_icon.png",

@@ -98,10 +98,16 @@ body.fakebox-animate #fakebox {
 #cursor {
   background: #333;
   bottom: 5px;
+  left: 9px;
   position: absolute;
   top: 5px;
   visibility: hidden;
   width: 1px;
+}
+
+body.rtl #cursor {
+  left: auto;
+  right: 9px;
 }
 
 @-webkit-keyframes blink {
@@ -199,9 +205,11 @@ body.fakebox-focused #cursor {
 .mv-page-ready {
   border: 1px solid #c0c0c0;
   cursor: pointer;
+  outline: none;
 }
 
-.mv-page-ready:hover {
+.mv-page-ready:hover,
+.mv-page-ready:focus {
   border-color: #7f7f7f
 }
 
@@ -237,11 +245,19 @@ body.fakebox-focused #cursor {
   width: 16px;
 }
 
-.mv-x:hover {
+body.custom-theme #mv-notice-x {
+  background: transparent url(images/close_2_white.png);
+}
+
+.mv-x:hover,
+body.custom-theme #mv-notice-x:hover,
+#mv-notice-x:focus,
+body.custom-theme #mv-notice-x:focus {
   background: transparent url(images/close_2_hover.png);
 }
 
-.mv-x:active {
+.mv-x:active,
+body.custom-theme #mv-notice-x:active {
   background: transparent url(images/close_2_active.png);
 }
 
@@ -251,6 +267,11 @@ body.fakebox-focused #cursor {
   position: absolute;
   right: 2px;
   top: 2px;
+}
+
+body.rtl .mv-page .mv-x {
+  left: 2px;
+  right: auto;
 }
 
 .mv-page-ready:hover .mv-x {
@@ -291,15 +312,18 @@ body.fakebox-focused #cursor {
   -webkit-margin-start: 6px;
   color: rgb(17, 85, 204);
   cursor: pointer;
+  outline: none;
   padding: 0 4px;
 }
 
-#mv-notice-links span:hover {
+#mv-notice-links span:hover,
+#mv-notice-links span:focus {
   text-decoration: underline;
 }
 
 #mv-notice-links .mv-x {
   -webkit-margin-start: 8px;
+  outline: none;
   vertical-align: top;
 }
 

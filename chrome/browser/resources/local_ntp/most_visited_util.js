@@ -57,6 +57,9 @@ function createMostVisitedLink(params, href, title, text) {
     link.ping = '/log.html?pos=' + params.pos;
   link.title = title;
   link.target = '_top';
+  // Exclude links from the tab order.  The tabIndex is added to the thumbnail
+  // parent container instead.
+  link.tabIndex = '-1';
   if (text)
     link.textContent = text;
   return link;

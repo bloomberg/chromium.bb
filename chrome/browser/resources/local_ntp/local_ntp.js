@@ -47,6 +47,7 @@ var CLASSES = {
   PAGE: 'mv-page', // page tiles
   PAGE_READY: 'mv-page-ready',  // page tile when ready
   ROW: 'mv-row',  // tile row
+  RTL: 'rtl',  // sets element alignments for an RTL language
   SEARCH: 'search',
   SELECTED: 'selected', // a selected suggestion (if any)
   SUGGESTION: 'suggestion',
@@ -81,6 +82,20 @@ var IDS = {
   TILES: 'mv-tiles',
   TOP_MARGIN: 'mv-top-margin',
   UNDO_LINK: 'mv-undo'
+};
+
+
+/**
+ * Enum for keycodes.
+ * @enum {number}
+ * @const
+ */
+var KEYCODE = {
+  DELETE: 46,
+  DOWN_ARROW: 40,
+  ENTER: 13,
+  ESC: 27,
+  UP_ARROW: 38
 };
 
 // =============================================================================
@@ -423,13 +438,20 @@ function createTile(page, position) {
     var rid = page.rid;
     tileElement.classList.add(CLASSES.PAGE);
 
-    // The click handler for navigating to the page identified by the RID.
-    tileElement.addEventListener('click', function() {
+    var navigateFunction = function() {
       ntpApiHandle.navigateContentWindow(rid);
-    });
+    };
+
+    // The click handler for navigating to the page identified by the RID.
+    tileElement.addEventListener('click', navigateFunction);
+
+    // Make thumbnails tab-accessible.
+    tileElement.setAttribute('tabindex', '1');
+    registerKeyHandler(tileElement, KEYCODE.ENTER, navigateFunction);
 
     // The iframe which renders the page title.
     var titleElement = document.createElement('iframe');
+    titleElement.tabIndex = '-1';
     var usingCustomTheme = document.body.classList.contains(
         CLASSES.CUSTOM_THEME);
 
@@ -445,6 +467,7 @@ function createTile(page, position) {
 
     // The iframe which renders either a thumbnail or domain element.
     var thumbnailElement = document.createElement('iframe');
+    thumbnailElement.tabIndex = '-1';
     thumbnailElement.src = getMostVisitedIframeUrl(
         MOST_VISITED_THUMBNAIL_IFRAME, rid, MOST_VISITED_COLOR,
         MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, false, position);
@@ -459,8 +482,12 @@ function createTile(page, position) {
     // The button used to blacklist this page.
     var blacklistButton = createAndAppendElement(
         tileElement, 'div', CLASSES.BLACKLIST_BUTTON);
-    blacklistButton.addEventListener('click', generateBlacklistFunction(rid));
+    var blacklistFunction = generateBlacklistFunction(rid);
+    blacklistButton.addEventListener('click', blacklistFunction);
     blacklistButton.title = templateData.removeThumbnailTooltip;
+
+    // When a tile is focused, have delete also blacklist the page.
+    registerKeyHandler(tileElement, KEYCODE.DELETE, blacklistFunction);
 
     // The page favicon, if any.
     var faviconUrl = page.faviconUrl;
@@ -778,29 +805,6 @@ var VERBATIM_SEARCH_TYPE = 'search-what-you-typed';
 
 
 /**
- * "Up" arrow keycode.
- * @type {number}
- * @const
- */
-var KEY_UP_ARROW = 38;
-
-
-/**
- * "Down" arrow keycode.
- * @type {number}
- * @const
- */
-var KEY_DOWN_ARROW = 40;
-
-
-/**
- * "Esc" keycode.
- * @type {number}
- * @const
- */
-var KEY_ESC = 27;
-
-/**
  * Pixels of padding inside a suggestion div for displaying its icon.
  * @type {number}
  * @const
@@ -928,6 +932,7 @@ IframePool.prototype = {
       iframe.id = IDS.SUGGESTION_TEXT_PREFIX + i;
       iframe.src = 'chrome-search://suggestion/result.html';
       iframe.style.top = OFF_SCREEN;
+      iframe.tabIndex = '-1';
       iframe.addEventListener('mouseover', function(e) {
         if (activeBox)
           activeBox.hover(e.currentTarget.id);
@@ -1488,15 +1493,15 @@ function setSuggestionStyles() {
  */
 function handleKeyPress(e) {
   switch (e.keyCode) {
-    case KEY_UP_ARROW:
+    case KEYCODE.UP_ARROW:
       if (activeBox)
         activeBox.selectPrevious();
       break;
-    case KEY_DOWN_ARROW:
+    case KEYCODE.DOWN_ARROW:
       if (activeBox)
         activeBox.selectNext();
       break;
-    case KEY_ESC:
+    case KEYCODE.ESC:
       if (activeBox && activeBox.hasSelectedSuggestion())
         activeBox.clearSelection();
       else
@@ -1591,6 +1596,19 @@ function removeChildren(node) {
 
 
 /**
+ * @param {!Element} element The element to register the handler for.
+ * @param {number} keycode The keycode of the key to register.
+ * @param {!Function} handler The key handler to register.
+ */
+function registerKeyHandler(element, keycode, handler) {
+  element.addEventListener('keydown', function(event) {
+    if (event.keyCode == keycode)
+      handler(event);
+  });
+}
+
+
+/**
  * @return {Object} the handle to the embeddedSearch API.
  */
 function getEmbeddedSearchApiHandle() {
@@ -1653,9 +1671,11 @@ function init() {
   notificationMessage.textContent = templateData.thumbnailRemovedNotification;
   var undoLink = $(IDS.UNDO_LINK);
   undoLink.addEventListener('click', onUndo);
+  registerKeyHandler(undoLink, KEYCODE.ENTER, onUndo);
   undoLink.textContent = templateData.undoThumbnailRemove;
   var restoreAllLink = $(IDS.RESTORE_ALL_LINK);
   restoreAllLink.addEventListener('click', onRestoreAll);
+  registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onUndo);
   restoreAllLink.textContent = templateData.restoreThumbnailsShort;
   attribution.textContent = templateData.attributionIntro;
 
@@ -1702,9 +1722,13 @@ function init() {
     searchboxApiHandle.onkeycapturechange = function() {
       setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
     };
+  }
 
-    // Set the cursor alignment based on language directionality.
-    $(IDS.CURSOR).style[searchboxApiHandle.rtl ? 'right' : 'left'] = '9px';
+  if (searchboxApiHandle.rtl) {
+    $(IDS.NOTIFICATION).dir = 'rtl';
+    // Add class for setting alignments based on language directionality.
+    document.body.classList.add('rtl');
+    $(IDS.TILES).dir = 'rtl';
   }
 }
 
