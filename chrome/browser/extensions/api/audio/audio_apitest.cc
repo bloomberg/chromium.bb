@@ -17,8 +17,10 @@ class AudioApiTest: public ExtensionApiTest {
   virtual ~AudioApiTest() {}
 };
 
+#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AudioApiTest, Audio) {
-  // TODO: implement this test.
+  EXPECT_TRUE(RunExtensionTest("audio")) << message_;
 }
+#endif
 
 } // namespace extensions

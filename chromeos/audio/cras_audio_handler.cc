@@ -103,8 +103,22 @@ bool CrasAudioHandler::IsOutputMuted() {
   return output_mute_on_;
 }
 
+bool CrasAudioHandler::IsOutputMutedForDevice(uint64 device_id) {
+  if (device_id == active_output_node_id_)
+    return output_mute_on_;
+  else
+    return audio_pref_handler_->GetMuteValue(device_id);
+}
+
 bool CrasAudioHandler::IsInputMuted() {
   return input_mute_on_;
+}
+
+bool CrasAudioHandler::IsInputMutedForDevice(uint64 device_id) {
+  if (device_id == active_input_node_id_)
+    return input_mute_on_;
+  else
+    return audio_pref_handler_->GetMuteValue(device_id);
 }
 
 int CrasAudioHandler::GetOutputVolumePercent() {
@@ -165,11 +179,6 @@ void CrasAudioHandler::SetOutputVolumePercent(int volume_percent) {
   if (volume_percent <= kMuteThresholdPercent)
     volume_percent = 0;
   SetOutputVolumeInternal(volume_percent);
-
-  if (IsOutputMuted() && volume_percent > 0)
-    SetOutputMute(false);
-  if (!IsOutputMuted() && volume_percent == 0)
-    SetOutputMute(true);
 }
 
 void CrasAudioHandler::SetInputGainPercent(int gain_percent) {
@@ -177,11 +186,6 @@ void CrasAudioHandler::SetInputGainPercent(int gain_percent) {
   if (gain_percent <= kMuteThresholdPercent)
     gain_percent = 0;
   SetInputGainInternal(gain_percent);
-
-  if (IsInputMuted() && gain_percent > 0)
-    SetInputMute(false);
-  if (!IsInputMuted() && gain_percent == 0)
-    SetInputMute(true);
 }
 
 void CrasAudioHandler::AdjustOutputVolumeByPercent(int adjust_by_percent) {
@@ -192,6 +196,7 @@ void CrasAudioHandler::SetOutputMute(bool mute_on) {
   if (output_mute_locked_)
     return;
 
+  output_mute_on_ = mute_on;
   audio_pref_handler_->SetMuteValue(active_output_node_id_, mute_on);
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetOutputMute(mute_on);
@@ -209,6 +214,7 @@ void CrasAudioHandler::SetInputMute(bool mute_on) {
   if (input_mute_locked_)
     return;
 
+  input_mute_on_ = mute_on;
   audio_pref_handler_->SetMuteValue(active_input_node_id_, mute_on);
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetInputMute(mute_on);

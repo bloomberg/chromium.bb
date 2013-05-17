@@ -96,8 +96,14 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Returns true if audio output is muted.
   virtual bool IsOutputMuted();
 
+  // Returns true if audio output is muted for a device.
+  virtual bool IsOutputMutedForDevice(uint64 device_id);
+
   // Returns true if audio input is muted.
   virtual bool IsInputMuted();
+
+  // Returns true if audio input is muted for a device.
+  virtual bool IsInputMutedForDevice(uint64 device_id);
 
   // Gets volume level in 0-100% range (0 being pure silence) for the current
   // active node.

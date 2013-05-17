@@ -174,6 +174,7 @@ void AudioServiceImpl::OnGetNodes(const GetInfoCallback& callback,
         info->is_active = iter->active;
         info->volume = cras_audio_handler_->GetOutputVolumePercentForDevice(
             iter->id);
+        info->is_muted = cras_audio_handler_->IsOutputMutedForDevice(iter->id);
         output_info.push_back(info);
       } else {
         linked_ptr<InputDeviceInfo> info(new InputDeviceInfo());
@@ -182,6 +183,7 @@ void AudioServiceImpl::OnGetNodes(const GetInfoCallback& callback,
         info->is_active = iter->active;
         info->gain = cras_audio_handler_->GetInputGainPercentForDevice(
             iter->id);
+        info->is_muted = cras_audio_handler_->IsInputMutedForDevice(iter->id);
         input_info.push_back(info);
       }
     }
