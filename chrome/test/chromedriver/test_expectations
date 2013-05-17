@@ -47,6 +47,8 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'ExecutingJavascriptTest.testShouldThrowAnExceptionWithMessageAndStacktraceWhenTheJavascriptIsBad',
     'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
     'FrameSwitchingTest.testShouldNotBeAbleToDoAnythingTheFrameIsDeletedFromUnderUs',
+    # Disabled until https://code.google.com/p/chromedriver/issues/detail?id=345 is fixed.
+    'I18nTest.*',
     'I18nTest.testShouldBeAbleToActivateIMEEngine',
     # Broken because AddWebStorage.java is broken.
     'LocalStorageTest.*',
@@ -74,6 +76,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'TextHandlingTest.testShouldNotReturnLtrMarks',
     'TextPagesTest.testShouldBeAbleToLoadASimplePageOfText',
     'TextPagesTest.testShouldThrowExceptionWhenAddingCookieToAPageThatIsNotHtml',
+    'TypingTest.testGenerateKeyPressEventEvenWhenElementPreventsDefault',
     'TypingTest.testNonPrintableCharactersShouldWorkWithContentEditableOrDesignModeSet',
     'TypingTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
     'TypingTest.testShouldNotTypeIntoElementsThatPreventKeyDownEvents',
