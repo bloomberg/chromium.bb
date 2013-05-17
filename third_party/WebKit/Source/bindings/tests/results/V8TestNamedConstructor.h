@@ -36,7 +36,6 @@ public:
 
 class V8TestNamedConstructor {
 public:
-    static const bool deperecatedHasDependentLifetime = true;
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
     static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);

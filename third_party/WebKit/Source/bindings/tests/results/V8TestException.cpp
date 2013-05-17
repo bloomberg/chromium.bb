@@ -125,8 +125,7 @@ v8::Handle<v8::Object> V8TestException::createWrapper(PassRefPtr<TestException> 
         return wrapper;
 
     installPerContextProperties(wrapper, impl.get(), isolate);
-    ASSERT(!deperecatedHasDependentLifetime);
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, deperecatedHasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
 void V8TestException::derefObject(void* object)

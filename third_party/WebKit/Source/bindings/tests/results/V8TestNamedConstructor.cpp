@@ -168,8 +168,7 @@ v8::Handle<v8::Object> V8TestNamedConstructor::createWrapper(PassRefPtr<TestName
         return wrapper;
 
     installPerContextProperties(wrapper, impl.get(), isolate);
-    ASSERT(deperecatedHasDependentLifetime);
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, deperecatedHasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
 }
 void V8TestNamedConstructor::derefObject(void* object)

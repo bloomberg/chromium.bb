@@ -21,7 +21,6 @@
 #ifndef V8Float64Array_h
 #define V8Float64Array_h
 
-#include "V8ArrayBufferView.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
@@ -31,7 +30,6 @@ namespace WebCore {
 
 class V8Float64Array {
 public:
-    static const bool deperecatedHasDependentLifetime = V8ArrayBufferView::deperecatedHasDependentLifetime;
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
     static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);

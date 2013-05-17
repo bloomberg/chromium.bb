@@ -244,6 +244,7 @@ static void TestTypedefsReplaceableAttrSetterCallback(v8::Local<v8::String> name
 static v8::Handle<v8::Value> funcMethod(const v8::Arguments& args)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
+    ExceptionCode ec = 0;
     if (args.Length() <= 0) {
         imp->func();
         return v8Undefined();
@@ -263,6 +264,7 @@ static v8::Handle<v8::Value> setShadowMethod(const v8::Arguments& args)
     if (args.Length() < 3)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
+    ExceptionCode ec = 0;
     V8TRYCATCH(float, width, static_cast<float>(args[0]->NumberValue()));
     V8TRYCATCH(float, height, static_cast<float>(args[1]->NumberValue()));
     V8TRYCATCH(float, blur, static_cast<float>(args[2]->NumberValue()));
@@ -290,6 +292,7 @@ static v8::Handle<v8::Value> methodWithSequenceArgMethod(const v8::Arguments& ar
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
+    ExceptionCode ec = 0;
     V8TRYCATCH(Vector<RefPtr<SerializedScriptValue> >, sequenceArg, (toRefPtrNativeArray<SerializedScriptValue, V8SerializedScriptValue>(args[0], args.GetIsolate())));
     return v8::Number::New(static_cast<double>(imp->methodWithSequenceArg(sequenceArg)));
 }
@@ -304,6 +307,7 @@ static v8::Handle<v8::Value> nullableArrayArgMethod(const v8::Arguments& args)
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
+    ExceptionCode ec = 0;
     V8TRYCATCH(Vector<String>, arrayArg, toNativeArray<String>(args[0]));
     imp->nullableArrayArg(arrayArg);
     return v8Undefined();
@@ -319,6 +323,7 @@ static v8::Handle<v8::Value> funcWithClampMethod(const v8::Arguments& args)
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
+    ExceptionCode ec = 0;
     unsigned long long arg1 = 0;
     V8TRYCATCH(double, arg1NativeValue, args[0]->NumberValue());
     if (!std::isnan(arg1NativeValue))
@@ -406,6 +411,8 @@ static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
 {
     if (args.Length() < 2)
         return throwNotEnoughArgumentsError(args.GetIsolate());
+
+    ExceptionCode ec = 0;
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, hello, args[0]);
     if (args.Length() <= 1 || !args[1]->IsFunction())
         return throwTypeError(0, args.GetIsolate());
@@ -518,8 +525,7 @@ v8::Handle<v8::Object> V8TestTypedefs::createWrapper(PassRefPtr<TestTypedefs> im
         return wrapper;
 
     installPerContextProperties(wrapper, impl.get(), isolate);
-    ASSERT(!deperecatedHasDependentLifetime);
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, deperecatedHasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
 void V8TestTypedefs::derefObject(void* object)

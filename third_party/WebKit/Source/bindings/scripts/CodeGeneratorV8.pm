@@ -603,14 +603,11 @@ sub GenerateHeader
 
     my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
 
-    my $deperecatedHasDependentLifetime = $interface->extendedAttributes->{"DependentLifetime"} || InheritsExtendedAttribute($interface, "ActiveDOMObject") || GetGenerateIsReachable($interface) || $v8ClassName =~ /SVG/;
-    if (!$deperecatedHasDependentLifetime) {
-        foreach (@{$interface->parents}) {
-            my $parent = $_;
+    if ($v8ClassName !~ /SVG/) {
+        for my $parent (@{$interface->parents}) {
             AddToHeaderIncludes("V8${parent}.h");
         }
     }
-
     AddToHeaderIncludes("bindings/v8/WrapperTypeInfo.h");
     AddToHeaderIncludes("bindings/v8/V8Binding.h");
     AddToHeaderIncludes("bindings/v8/V8DOMWrapper.h");
@@ -645,25 +642,6 @@ END
 
     $header{class}->addHeader("class $v8ClassName {");
     $header{class}->addFooter("};");
-
-    my $code = "";
-    $code .= "    static const bool deperecatedHasDependentLifetime = ";
-    if ($deperecatedHasDependentLifetime) {
-        $code .= "true;\n";
-    } elsif (@{$interface->parents}) {
-        # Even if this type doesn't have the [DependentLifetime] attribute its parents may.
-        # Let the compiler statically determine this for us.
-        my $separator = "";
-        foreach (@{$interface->parents}) {
-            my $parent = $_;
-            $code .= "${separator}V8${parent}::deperecatedHasDependentLifetime";
-            $separator = " || ";
-        }
-        $code .= ";\n";
-    } else {
-        $code .= "false;\n";
-    }
-    $header{classPublic}->add($code);
 
     my $fromFunctionOpening = "";
     my $fromFunctionClosing = "";
@@ -4144,13 +4122,14 @@ sub GenerateToV8Converters
 
     # FIXME: Do we really need to treat "GenerateIsReachable", "CustomIsReachable" and /SVG/
     # as dependent DOM objects?
-    my $hasDependentLifetime = InheritsExtendedAttribute($interface, "ActiveDOMObject")
+    my $wrapperConfiguration = "WrapperConfiguration::Independent";
+    if (InheritsExtendedAttribute($interface, "ActiveDOMObject")
         || InheritsExtendedAttribute($interface, "DependentLifetime")
         || InheritsExtendedAttribute($interface, "GenerateIsReachable")
         || InheritsExtendedAttribute($interface, "CustomIsReachable")
-        || $v8ClassName =~ /SVG/;
-    # FIXME: This assertion will be removed soon.
-    my $assertAboutHasDependentLifetime = $hasDependentLifetime ? "ASSERT(deperecatedHasDependentLifetime)" : "ASSERT(!deperecatedHasDependentLifetime)";
+        || $v8ClassName =~ /SVG/) {
+        $wrapperConfiguration = "WrapperConfiguration::Dependent";
+    }
 
     my $code = "";
     $code .= <<END;
@@ -4185,8 +4164,7 @@ END
         return wrapper;
 
     installPerContextProperties(wrapper, impl.get(), isolate);
-    $assertAboutHasDependentLifetime;
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, deperecatedHasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, $wrapperConfiguration);
     return wrapper;
 }
 END
