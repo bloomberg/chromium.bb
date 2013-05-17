@@ -45,96 +45,99 @@ class AdbError(Exception):
             (self.message, self.cmd, self.output))
 
 
-def RunAdbCommand(args):
-  """Executes an ADB command and returns its output.
+class AdbClient(object):
+  def __init__(self, device=None):
+    self._device = device
 
-  Args:
-    args: A sequence of program arguments supplied to adb.
+  def RunAdbCommand(self, args):
+    """Executes an ADB command and returns its output.
 
-  Returns:
-    output of the command (stdout + stderr).
+    Args:
+      args: A sequence of program arguments supplied to adb.
 
-  Raises:
-    AdbError: if exit code is non-zero.
-  """
-  args = ['adb'] + args
-  try:
-    p = subprocess.Popen(args, stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT)
-    out, _ = p.communicate()
-    if p.returncode:
-      raise AdbError('Command failed.', out, args)
-    return out
-  except OSError as e:
-    print 'Make sure adb command is in PATH.'
-    raise e
+    Returns:
+      output of the command (stdout + stderr).
 
+    Raises:
+      AdbError: if exit code is non-zero.
+    """
+    cmd = ['adb']
+    if self._device:
+      cmd.extend(['-s', self._device])
+    cmd.extend(args)
+    try:
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT)
+      out, _ = p.communicate()
+      if p.returncode:
+        raise AdbError('Command failed.', out.strip(), cmd)
+      return out
+    except OSError as e:
+      print 'Make sure adb command is in PATH.'
+      raise e
 
-def SetChromeFlags():
-  """Sets the command line flags file on device.
+  def SetChromeFlags(self):
+    """Sets the command line flags file on device.
 
-  Raises:
-    AdbError: If failed to write the flags file to device.
-  """
-  cmd = [
-      'shell',
-      'echo chrome --disable-fre --metrics-recording-only '
-      '--enable-remote-debugging > /data/local/chrome-command-line;'
-      'echo $?'
-      ]
-  out = RunAdbCommand(cmd).strip()
-  if out != '0':
-    raise AdbError('Failed to set the command line flags.', out, cmd)
+    Raises:
+      AdbError: If failed to write the flags file to device.
+    """
+    cmd = [
+        'shell',
+        'echo chrome --disable-fre --metrics-recording-only '
+        '--enable-remote-debugging > /data/local/chrome-command-line;'
+        'echo $?'
+        ]
+    out = self.RunAdbCommand(cmd).strip()
+    if out != '0':
+      raise AdbError('Failed to set the command line flags.', out, cmd)
 
+  def ClearAppData(self, package):
+    """Clears the app data.
 
-def ClearAppData(package):
-  """Clears the app data.
+    Args:
+      package: Application package name.
 
-  Args:
-    package: Application package name.
+    Raises:
+      AdbError: if any step fails.
+    """
+    cmd = ['shell', 'pm clear %s' % package]
+    # am/pm package do not return valid exit codes.
+    out = self.RunAdbCommand(cmd)
+    if 'Success' not in out:
+      raise AdbError('Failed to clear the profile.', out, cmd)
 
-  Raises:
-    AdbError: if any step fails.
-  """
-  cmd = ['shell', 'pm clear %s' % package]
-  # am/pm package do not return valid exit codes.
-  out = RunAdbCommand(cmd)
-  if 'Success' not in out:
-    raise AdbError('Failed to clear the profile.', out, cmd)
+  def StartActivity(self, package):
+    """Start the activity in the package.
 
+    Args:
+      package: Application package name.
 
-def StartActivity(package):
-  """Start the activity in the package.
+    Raises:
+      AdbError: if any step fails.
+    """
+    cmd = [
+        'shell',
+        'am start -a android.intent.action.VIEW -S -W -n %s/%s '
+        '-d "data:text/html;charset=utf-8,"' %
+        (package, PACKAGE_INFO[package].activity)]
+    out = self.RunAdbCommand(cmd)
+    if 'Complete' not in out:
+      raise AdbError('Failed to start the activity. %s', out, cmd)
 
-  Args:
-    package: Application package name.
+  def Forward(self, package, host_port):
+    """Forward host socket to devtools socket on the device.
 
-  Raises:
-    AdbError: if any step fails.
-  """
-  cmd = [
-      'shell',
-      'am start -a android.intent.action.VIEW -S -W -n %s/%s '
-      '-d "data:text/html;charset=utf-8,"' %
-      (package, PACKAGE_INFO[package].activity)]
-  out = RunAdbCommand(cmd)
-  if 'Complete' not in out:
-    raise AdbError('Failed to start the activity. %s', out, cmd)
+    Args:
+      package: Application package name.
+      host_port: Port on host to forward.
 
-
-def Forward(package, host_port):
-  """Forward host socket to devtools socket on the device.
-
-  Args:
-    package: Application package name.
-    host_port: Port on host to forward.
-
-  Raises:
-    AdbError: if command fails.
-  """
-  cmd = ['forward', 'tcp:%d' % host_port,
-         'localabstract:%s' % PACKAGE_INFO[package].socket]
-  RunAdbCommand(cmd)
+    Raises:
+      AdbError: if command fails.
+    """
+    cmd = ['forward', 'tcp:%d' % host_port,
+           'localabstract:%s' % PACKAGE_INFO[package].socket]
+    self.RunAdbCommand(cmd)
 
 
 if __name__ == '__main__':
@@ -148,6 +151,10 @@ if __name__ == '__main__':
     parser.add_option(
         '', '--port', type='int', default=33081,
         help='Host port to forward for launch operation [default: %default].')
+    parser.add_option(
+        '', '--device',
+        help='Device serial number. This is mandatory if there are multiple '
+             'devices attached.')
     options, _ = parser.parse_args()
 
     if not options.package:
@@ -158,10 +165,11 @@ if __name__ == '__main__':
                       PACKAGE_INFO.keys())
 
     if options.launch:
-      SetChromeFlags()
-      ClearAppData(options.package)
-      StartActivity(options.package)
-      Forward(options.package, options.port)
+      adb = AdbClient(options.device)
+      adb.SetChromeFlags()
+      adb.ClearAppData(options.package)
+      adb.StartActivity(options.package)
+      adb.Forward(options.package, options.port)
     else:
       raise Exception('No options provided.')
   except:

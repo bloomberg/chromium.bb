@@ -33,6 +33,7 @@ struct Capabilities {
   bool detach;
 
   std::string android_package;
+  std::string device_serial;
 
   std::string log_path;
   CommandLine command;

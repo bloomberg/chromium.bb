@@ -210,6 +210,15 @@ Status ParseAndroidChromeCapabilities(const base::DictionaryValue& desired_caps,
                       "'androidPackage' must be a non-empty string");
       }
     }
+
+    const base::Value* device_serial_value;
+    if (chrome_options_dict->Get("deviceSerial", &device_serial_value)) {
+      if (!device_serial_value->GetAsString(&capabilities->device_serial) ||
+          capabilities->device_serial.empty()) {
+        return Status(kUnknownError,
+                      "'deviceSerial' must be a non-empty string");
+      }
+    }
   }
   return Status(kOk);
 }

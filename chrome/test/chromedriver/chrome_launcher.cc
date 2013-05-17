@@ -266,9 +266,11 @@ Status LaunchAndroidChrome(
   // make this work for all platforms.
   base::FilePath adb_commands(FILE_PATH_LITERAL("adb_commands.py"));
   CommandLine command(adb_commands);
-  command.AppendSwitchASCII("package", capabilities.android_package);
   command.AppendSwitch("launch");
   command.AppendSwitchASCII("port", base::IntToString(port));
+  command.AppendSwitchASCII("package", capabilities.android_package);
+  if (!capabilities.device_serial.empty())
+    command.AppendSwitchASCII("device", capabilities.device_serial);
 
   std::string output;
   if (!base::GetAppOutput(command, &output)) {
