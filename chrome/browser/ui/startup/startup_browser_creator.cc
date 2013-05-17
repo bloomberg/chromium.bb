@@ -336,8 +336,14 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
   if (is_first_run && SessionStartupPref::TypeIsDefault(prefs))
     pref.type = SessionStartupPref::DEFAULT;
 
-  if (command_line.HasSwitch(switches::kRestoreLastSession) ||
-      StartupBrowserCreator::WasRestarted()) {
+  // The switches::kRestoreLastSession command line switch is used to restore
+  // sessions after a browser self restart (e.g. after a Chrome upgrade).
+  // However, new profiles can be created from a browser process that has this
+  // switch so do not set the session pref to SessionStartupPref::LAST for
+  // those as there is nothing to restore.
+  if ((command_line.HasSwitch(switches::kRestoreLastSession) ||
+       StartupBrowserCreator::WasRestarted()) &&
+      !profile->IsNewProfile()) {
     pref.type = SessionStartupPref::LAST;
   }
   if (pref.type == SessionStartupPref::LAST &&

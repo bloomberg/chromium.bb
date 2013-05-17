@@ -624,12 +624,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   EXPECT_EQ(urls2[0], tab_strip->GetWebContentsAt(0)->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
-  // Make StartupBrowserCreator::WasRestarted() return true.
-  StartupBrowserCreator::was_restarted_read_ = false;
-  PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetBoolean(prefs::kWasRestarted, true);
-
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
+  // Simulate a browser restart by creating the profiles in the PRE_ part.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   // Create two profiles.
@@ -660,6 +656,29 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
   SessionStartupPref pref2(SessionStartupPref::URLS);
   pref2.urls = urls2;
   SessionStartupPref::SetStartupPref(profile2, pref2);
+
+  profile1->GetPrefs()->CommitPendingWrite();
+  profile2->GetPrefs()->CommitPendingWrite();
+}
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
+  // Make StartupBrowserCreator::WasRestarted() return true.
+  StartupBrowserCreator::was_restarted_read_ = false;
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kWasRestarted, true);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Open the two profiles.
+  base::FilePath dest_path = profile_manager->user_data_dir();
+
+  Profile* profile1 = profile_manager->GetProfile(
+      dest_path.Append(FILE_PATH_LITERAL("New Profile 1")));
+  ASSERT_TRUE(profile1);
+
+  Profile* profile2 = profile_manager->GetProfile(
+      dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
+  ASSERT_TRUE(profile2);
 
   // Simulate a launch after a browser update.
   CommandLine dummy(CommandLine::NO_PROGRAM);
