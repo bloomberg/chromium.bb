@@ -110,6 +110,11 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   // Returns the appropriate AsyncFileUtil instance for the given |type|.
   AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) const;
 
+  // Returns the appropriate FileUtil instance for the given |type|.
+  // This may return NULL if it is given an invalid type or the filesystem
+  // does not support synchronous file operations.
+  FileSystemFileUtil* GetFileUtil(FileSystemType type) const;
+
   // Returns the appropriate CopyOrMoveFileValidatorFactory for the given
   // |type|.  If |error_code| is PLATFORM_FILE_OK and the result is NULL,
   // then no validator is required.
@@ -230,21 +235,11 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   typedef std::map<FileSystemType, FileSystemMountPointProvider*>
       MountPointProviderMap;
 
-  // Friended for GetFileUtil.
   // These classes know the target filesystem (i.e. sandbox filesystem)
   // supports synchronous FileUtil.
   friend class LocalFileSystemOperation;
   friend class sync_file_system::LocalFileChangeTracker;
   friend class sync_file_system::LocalFileSyncContext;
-
-  // Friended for GetFileUtil.
-  // Test classes that rely on synchronous FileUtils.
-  friend class webkit_blob::BlobURLRequestJobTest;
-  friend class FileSystemQuotaClientTest;
-  friend class LocalFileSystemTestOriginHelper;
-  friend class chrome::NativeMediaFileUtilTest;
-  friend class FileSystemURLRequestJobTest;
-  friend class UploadFileSystemFileElementReaderTest;
 
   // Deleters.
   friend struct DefaultContextDeleter;
@@ -263,11 +258,6 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   // If the original url does not point to an isolated or external filesystem,
   // returns the original url, without attempting to crack it.
   FileSystemURL CrackFileSystemURL(const FileSystemURL& url) const;
-
-  // Returns the appropriate FileUtil instance for the given |type|.
-  // This may return NULL if it is given an invalid type or the filesystem
-  // does not support synchronous file operations.
-  FileSystemFileUtil* GetFileUtil(FileSystemType type) const;
 
   // For initial provider_map construction. This must be called only from
   // the constructor.

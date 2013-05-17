@@ -152,6 +152,15 @@ AsyncFileUtil* FileSystemContext::GetAsyncFileUtil(
   return mount_point_provider->GetAsyncFileUtil(type);
 }
 
+FileSystemFileUtil* FileSystemContext::GetFileUtil(
+    FileSystemType type) const {
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  if (!mount_point_provider)
+    return NULL;
+  return mount_point_provider->GetFileUtil(type);
+}
+
 CopyOrMoveFileValidatorFactory*
 FileSystemContext::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type, base::PlatformFileError* error_code) const {
@@ -379,15 +388,6 @@ FileSystemURL FileSystemContext::CrackFileSystemURL(
     current = cracked;
   }
   return current;
-}
-
-FileSystemFileUtil* FileSystemContext::GetFileUtil(
-    FileSystemType type) const {
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(type);
-  if (!mount_point_provider)
-    return NULL;
-  return mount_point_provider->GetFileUtil(type);
 }
 
 void FileSystemContext::RegisterMountPointProvider(
