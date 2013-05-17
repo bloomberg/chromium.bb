@@ -421,7 +421,8 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       content_rect,
       contents_opaque() ? content_rect : gfx::Rect(),
       tiling->contents_scale(),
-      id()));
+      id(),
+      layer_tree_impl()->source_frame_number()));
 }
 
 void PictureLayerImpl::UpdatePile(Tile* tile) {

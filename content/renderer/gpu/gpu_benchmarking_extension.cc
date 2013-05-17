@@ -129,6 +129,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  native function SetNeedsDisplayOnAllLayers();"
           "  return SetNeedsDisplayOnAllLayers();"
           "};"
+          "chrome.gpuBenchmarking.setRasterizeOnlyVisibleContent = function() {"
+          "  native function SetRasterizeOnlyVisibleContent();"
+          "  return SetRasterizeOnlyVisibleContent();"
+          "};"
           "chrome.gpuBenchmarking.renderingStats = function() {"
           "  native function GetRenderingStats();"
           "  return GetRenderingStats();"
@@ -166,6 +170,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       v8::Handle<v8::String> name) OVERRIDE {
     if (name->Equals(v8::String::New("SetNeedsDisplayOnAllLayers")))
       return v8::FunctionTemplate::New(SetNeedsDisplayOnAllLayers);
+    if (name->Equals(v8::String::New("SetRasterizeOnlyVisibleContent")))
+      return v8::FunctionTemplate::New(SetRasterizeOnlyVisibleContent);
     if (name->Equals(v8::String::New("GetRenderingStats")))
       return v8::FunctionTemplate::New(GetRenderingStats);
     if (name->Equals(v8::String::New("PrintToSkPicture")))
@@ -199,6 +205,29 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::Undefined();
 
     compositor->SetNeedsDisplayOnAllLayers();
+
+    return v8::Undefined();
+  }
+
+  static v8::Handle<v8::Value> SetRasterizeOnlyVisibleContent(
+      const v8::Arguments& args) {
+    WebFrame* web_frame = WebFrame::frameForCurrentContext();
+    if (!web_frame)
+      return v8::Undefined();
+
+    WebView* web_view = web_frame->view();
+    if (!web_view)
+      return v8::Undefined();
+
+    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
+    if (!render_view_impl)
+      return v8::Undefined();
+
+    RenderWidgetCompositor* compositor = render_view_impl->compositor();
+    if (!compositor)
+      return v8::Undefined();
+
+    compositor->SetRasterizeOnlyVisibleContent();
 
     return v8::Undefined();
   }

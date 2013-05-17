@@ -114,6 +114,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       TileResolution tile_resolution;
       int layer_id;
       const void* tile_id;
+      int source_frame_number;
   };
 
   RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;

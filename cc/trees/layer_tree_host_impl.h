@@ -248,6 +248,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void SetNeedsCommit() { client_->SetNeedsCommitOnImplThread(); }
   void SetNeedsRedraw() { client_->SetNeedsRedrawOnImplThread(); }
 
+  ManagedMemoryPolicy ActualManagedMemoryPolicy() const;
+
   size_t memory_allocation_limit_bytes() const {
     return managed_memory_policy_.bytes_limit_when_visible;
   }

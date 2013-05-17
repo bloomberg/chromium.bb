@@ -72,6 +72,10 @@ class RasterizeAndPaintMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     self._metrics = smoothness_metrics.SmoothnessMetrics(tab)
 
+    # Rasterize only what's visible
+    tab.ExecuteJavaScript(
+        'chrome.gpuBenchmarking.setRasterizeOnlyVisibleContent();')
+
     # Wait until the page has loaded and come to a somewhat steady state
     # (empirical wait time)
     time.sleep(5)

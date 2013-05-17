@@ -320,6 +320,12 @@ void RenderWidgetCompositor::SetNeedsDisplayOnAllLayers() {
   layer_tree_host_->SetNeedsDisplayOnAllLayers();
 }
 
+void RenderWidgetCompositor::SetRasterizeOnlyVisibleContent() {
+  cc::LayerTreeDebugState current = layer_tree_host_->debug_state();
+  current.rasterize_only_visible_content = true;
+  layer_tree_host_->SetDebugState(current);
+}
+
 void RenderWidgetCompositor::GetRenderingStats(cc::RenderingStats* stats) {
   layer_tree_host_->CollectRenderingStats(stats);
 }

@@ -47,6 +47,7 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
                   rect,
                   gfx::Rect(),
                   1,
+                  0,
                   0);
 }
 

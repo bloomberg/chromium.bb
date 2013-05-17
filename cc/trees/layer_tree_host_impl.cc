@@ -909,6 +909,7 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
 
 void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
+
   bool evicted_resources = client_->ReduceContentsTextureMemoryOnImplThread(
       visible_ ? policy.bytes_limit_when_visible
                : policy.bytes_limit_when_not_visible,
@@ -996,10 +997,10 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
     // In single-thread mode, this can be called on the main thread by
     // GLRenderer::OnMemoryAllocationChanged.
     DebugScopedSetImplThread impl_thread(proxy_);
-    EnforceManagedMemoryPolicy(managed_memory_policy_);
+    EnforceManagedMemoryPolicy(ActualManagedMemoryPolicy());
   } else {
     DCHECK(proxy_->IsImplThread());
-    EnforceManagedMemoryPolicy(managed_memory_policy_);
+    EnforceManagedMemoryPolicy(ActualManagedMemoryPolicy());
   }
 
   if (needs_commit)
@@ -1345,12 +1346,24 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
     return;
   visible_ = visible;
   DidVisibilityChange(this, visible_);
-  EnforceManagedMemoryPolicy(managed_memory_policy_);
+  EnforceManagedMemoryPolicy(ActualManagedMemoryPolicy());
 
   if (!renderer_)
     return;
 
   renderer_->SetVisible(visible);
+}
+
+ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
+  if (!debug_state_.rasterize_only_visible_content)
+    return managed_memory_policy_;
+
+  ManagedMemoryPolicy actual = managed_memory_policy_;
+  actual.priority_cutoff_when_not_visible =
+      ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
+  actual.priority_cutoff_when_visible =
+      ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY;
+  return actual;
 }
 
 bool LayerTreeHostImpl::InitializeRenderer(
@@ -1389,7 +1402,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
                                         settings_.num_raster_threads,
                                         settings_.use_color_estimator,
                                         rendering_stats_instrumentation_));
-    UpdateTileManagerMemoryPolicy(managed_memory_policy_);
+    UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   }
 
   if (output_surface->capabilities().has_parent_compositor) {

@@ -70,6 +70,7 @@ TEST(TileManagerTest, OOM) {
                         gfx::Rect(),
                         gfx::Rect(),
                         1.0,
+                        0,
                         0));
         tile->SetPriority(PENDING_TREE, TilePriority());
         tile->SetPriority(ACTIVE_TREE, eventual_prio);
@@ -84,6 +85,7 @@ TEST(TileManagerTest, OOM) {
                         gfx::Rect(),
                         gfx::Rect(),
                         1.0,
+                        0,
                         0));
         tile->SetPriority(PENDING_TREE, now_prio);
         tile->SetPriority(ACTIVE_TREE, TilePriority());

@@ -748,6 +748,7 @@ TileManager::RasterTaskMetadata TileManager::GetRasterTaskMetadata(
   metadata.tile_resolution = mts.resolution;
   metadata.layer_id = tile.layer_id();
   metadata.tile_id = &tile;
+  metadata.source_frame_number = tile.source_frame_number();
   return metadata;
 }
 
