@@ -15,13 +15,13 @@ body {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   -webkit-tap-highlight-color: transparent;
-  -webkit-transition: opacity 70ms linear;
   -webkit-user-select: none;
   cursor: default;
   display: -webkit-box;
   height: 100%;
   margin: 0;
   padding: 0;
+  transition: opacity 70ms linear;
   width: 100%;
 }
 
@@ -57,7 +57,6 @@ body[new-ui] .scrollbar-vertical {
 }
 
 body[new-ui] .scrollbar-button {
-  -webkit-transition: opacity 100ms;
   background-color: black;
   border: 1px solid #ccc;
   border-radius: 3px;
@@ -66,6 +65,7 @@ body[new-ui] .scrollbar-button {
   margin-right: 2px;
   opacity: 0;
   position: absolute;
+  transition: opacity 100ms;
   width: 8px;
 }
 
@@ -97,14 +97,13 @@ body[new-ui] #butter-bar-container {
 }
 
 body:not([new-ui]) #butter-bar {
-  -webkit-border-radius: 2px;
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  -webkit-transition: opacity 130ms;
   background-color: #e3e3e3;
   border: 1px solid #d4d4d4;
+  border-radius: 2px;
   border-top-width: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   color: #222;
   display: -webkit-box;
   margin-top: 2px;
@@ -113,6 +112,7 @@ body:not([new-ui]) #butter-bar {
   padding: 0 1em;
   pointer-events: auto;
   top: 1px;
+  transition: opacity 130ms;
   width: 30%;
   z-index: 2;
 }
@@ -202,10 +202,10 @@ body:not([new-ui]) #butter-bar .progress-track {
 
 /* The top title of the dialog. */
 .dialog-title {
-  -webkit-box-sizing: border-box;
   -webkit-padding-start: 15px;
-  background-image: -webkit-linear-gradient(top, #fff, #f6f6f6);
+  background-image: linear-gradient(top, #fff, #f6f6f6);
   border-bottom: 1px rgb(214, 217, 227) solid;
+  box-sizing: border-box;
   color: rgb(66, 80, 108);
   font-size: 15px;
   font-weight: bold;
@@ -226,7 +226,7 @@ body:not([new-ui]) #butter-bar .progress-track {
 }
 
 body[new-ui] .dialog-container {
-  -webkit-border-radius: 2px;
+  border-radius: 2px;
 }
 
 /* List/grid and preview are inside this container. */
@@ -372,9 +372,9 @@ body[new-ui] #directory-tree {
 }
 
 #directory-tree .tree-row {
-  -webkit-border-radius: 0;
   background-image: none;
   border: none;
+  border-radius: 0;
   display: -webkit-box;
   line-height: 39px;
   margin: 0;
@@ -485,7 +485,7 @@ body[new-ui] #directory-tree:focus:hover .tree-row[anchor]:hover {
 body[new-ui] #volume-list .root-item > div.root-eject,
 body:not([new-ui]) #directory-tree .tree-row > div.root-eject {
   /* The transition commented out to work around crbug.com/157813 */
-  /*-webkit-transition: opacity 70ms linear;*/
+  /* transition: opacity 70ms linear; */
   background-image: -webkit-image-set(
     url('../images/files/ui/eject.png') 1x,
     url('../images/files/ui/2x/eject.png') 2x);
@@ -519,8 +519,8 @@ body:not([new-ui]) #directory-tree .tree-row > div.root-eject {
 .dialog-header {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  -webkit-transition: all 180ms ease;
   display: -webkit-box;
+  transition: all 180ms ease;
 }
 
 body:not([new-ui]) .dialog-header {
@@ -584,11 +584,11 @@ body[maximized][type='full-page'] .dialog-header {
 .dialog-body {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
-  -webkit-transition: all 180ms ease;
   border-top: 1px solid #d4d4d4;
   display: -webkit-box;
   overflow: hidden;
   position: relative;
+  transition: all 180ms ease;
 }
 
 body[new-ui] .dialog-body {
@@ -666,13 +666,13 @@ body[new-ui] .dialog-footer {
 .offline-icon {
   -webkit-margin-end: 0;
   -webkit-margin-start: 10px;
-  -webkit-transition-property: opacity;
   background-image: -webkit-image-set(
     url('../images/files/ui/offline.png') 1x,
     url('../images/files/ui/2x/offline.png') 2x);
   height: 16px;
   opacity: 0;
   transition-duration: 200ms;
+  transition-property: opacity;
   transition-timing-function: ease-out;
   width: 16px;
 }
@@ -682,8 +682,8 @@ body[new-ui] .dialog-footer {
 .offline-icon-space {
   -webkit-margin-end: 0;
   -webkit-margin-start: -26px; /* Clear width of .offline-icon */
-  -webkit-transition-property: width;
   transition-duration: 200ms;
+  transition-property: width;
   transition-timing-function: ease-out;
   width: 0;
 }
@@ -788,7 +788,6 @@ body[new-ui] .dialog-header button:not(:hover):not(focus) {
   -webkit-padding-before: 1px;
   -webkit-padding-end: 24px;
   -webkit-padding-start: 23px;
-  -webkit-transition: max-width 200ms;
   background: -webkit-image-set(
     url('../images/files/ui/icon_search.png') 1x,
     url('../images/files/ui/2x/icon_search.png') 2x);
@@ -800,6 +799,7 @@ body[new-ui] .dialog-header button:not(:hover):not(focus) {
   height: 29px;
   line-height: 27px;
   max-width: 150px;
+  transition: max-width 200ms;
   width: 100%;
 }
 
@@ -813,7 +813,6 @@ body[new-ui] #search-box {
   -webkit-padding-before: 0;
   -webkit-padding-end: 26px;
   -webkit-padding-start: 46px;
-  -webkit-transition: width 0;
   background: -webkit-image-set(
     url('../images/files/ui/new-ui/search_icon_inactive.png') 1x,
     url('../images/files/ui/new-ui/2x/search_icon_inactive.png') 2x);
@@ -824,6 +823,7 @@ body[new-ui] #search-box {
   line-height: 1em;
   max-width: none;
   position: relative;
+  transition: width 0;
   width: 58px;
 }
 
@@ -1029,15 +1029,14 @@ body:not([new-ui]) button#detail-view:not([disabled]) {
 }
 
 #spinner-with-text[hidden] {
-  -webkit-transition: opacity 200ms ease-in;
   display: block;
   opacity: 0;
+  transition: opacity 200ms ease-in;
 }
 
 .downloads-warning {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  -webkit-transition: height 70ms linear;
   background-color: #f0f0f0;
   background-image: -webkit-image-set(
     url('../images/files/ui/warning_icon_square.png') 1x,
@@ -1050,6 +1049,7 @@ body:not([new-ui]) button#detail-view:not([disabled]) {
   height: 57px;
   overflow: hidden;
   padding-left: 57px;  /* Make space for the icon. */
+  transition: height 70ms linear;
 }
 
 .downloads-warning[hidden] {
@@ -1395,8 +1395,8 @@ input.rename {
 
 /* Text box used for renaming in the thumbnail list. */
 .thumbnail-grid input.rename {
-  -webkit-box-sizing: border-box;
   -webkit-margin-start: -1px;
+  box-sizing: border-box;
   height: 20px;
   width: 114px;
 }
@@ -1431,8 +1431,8 @@ body[new-ui] .preview-panel {
 .preview-panel[visibility=hiding] {
   /* Using all seems to cause preview panel and checkbox flicking issue. */
   -webkit-transform: translate(0, 5px);
-  -webkit-transition: opacity 220ms ease;
-   opacity: 0;
+  opacity: 0;
+  transition: opacity 220ms ease;
 }
 
 .preview-panel[visibility=hidden] {
@@ -1451,9 +1451,9 @@ body[new-ui] .preview-thumbnails {
 }
 
 .preview-thumbnails > .thumbnail {
-  -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   background-color: #f2f2f2;
   border: 1px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   height: 45px;
   margin: 0 0 0 -39px;  /* Show 7 pixels of the overlapped image */
   position: relative;
@@ -1461,8 +1461,8 @@ body[new-ui] .preview-thumbnails {
 }
 
 body[new-ui] .preview-thumbnails > .thumbnail {
-  -webkit-box-shadow: 0 1px 1px rgba(80, 80, 80, 0.5);
   border: 1px solid #fff;
+  box-shadow: 0 1px 1px rgba(80, 80, 80, 0.5);
   height: 35px;
   margin: 0 0 0 -25px;  /* Overlapped images. */
   width: 35px;
@@ -1481,9 +1481,9 @@ body[new-ui] .preview-thumbnails > .thumbnail {
 }
 
 body[new-ui] .preview-thumbnails > .thumbnail > .img-container {
-  -webkit-box-sizing: border-box;
   background-size: 35px 35px;
   border: 1px solid white;
+  box-sizing: border-box;
   height: 35px;
   width: 35px;
 }
@@ -1516,8 +1516,8 @@ body[new-ui] .preview-thumbnails > .thumbnail > .img-container {
 }
 
 .preview-thumbnails > * {
-  -webkit-transition: all 180ms ease-in;
-  -webkit-transition-delay: 300ms;
+  transition: all 180ms ease-in;
+  transition-delay: 300ms;
 }
 
 .preview-thumbnails.has-zoom:hover > .popup {
@@ -1548,9 +1548,9 @@ body[new-ui] .table-header-splitter {
 
 /* Container for a table header. */
 .table-header {
-  -webkit-box-sizing: border-box;
   background-color: #f5f5f5;
   border-bottom: 1px #d2d2d2 solid;
+  box-sizing: border-box;
   height: 27px;
 }
 
@@ -1841,15 +1841,15 @@ body[overlay-visible] > :not(.overlay-pane) {
 }
 
 #drag-container .drag-contents {
-  -webkit-border-radius: 3px;
   -webkit-box-orient: horizontal;
-  -webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .2);
-  -webkit-transition: opacity 200ms ease-in;
   background-color: #fafafa;
   border: 1px solid #bbb;
+  border-radius: 3px;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .2);
   display: -webkit-box;
   margin-bottom: 5px;
   padding: 6px;
+  transition: opacity 200ms ease-in;
 }
 
 #drag-container .thumbnail-item {
@@ -1918,7 +1918,7 @@ div.offline > * {
 }
 
 div.shade {
-  /* -webkit-transition: opacity 1000ms linear; */
+  /* transition: opacity 1000ms linear; */
   background-color: rgba(255, 255, 255, 0.8);
   bottom: 0;
   left: 0;
@@ -2053,11 +2053,10 @@ body:not([new-ui]) #gear-button span.disclosureindicator {
 
 /* Tooltips */
 .tooltip {
-  -webkit-border-radius: 0;
-  -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  -webkit-box-sizing: border-box;
   background: #2d2d2d;
+  border-radius: 0;
   box-shadow: 1px 2px 4px #ccc;
+  box-sizing: border-box;
   color: white;
   display: block;
   font-size: 11px;
@@ -2155,7 +2154,7 @@ body:not([new-ui]) #volume-space-info-bar[pending] {
   -webkit-animation-name: bg;
   -webkit-animation-timing-function: linear;
   background-color: rgb(192, 192, 192);
-  background-image: -webkit-linear-gradient(315deg, transparent,
+  background-image: linear-gradient(315deg, transparent,
       transparent 33%, rgba(0, 0, 0, 0.12) 33%, rgba(0, 0, 0, 0.12) 66%,
       transparent 66%, transparent);
   background-position: 0 0;
@@ -2213,9 +2212,9 @@ button:focus {
 }
 
 body:not([new-ui]) list.autocomplete-suggestions {
-  -webkit-border-radius: 2px;
   background-color: white;
   border: 1px solid #aaa;
+  border-radius: 2px;
   box-sizing: border-box;  /* To match the width with the search box's. */
   min-height: 0;
   position: fixed;
@@ -2223,11 +2222,11 @@ body:not([new-ui]) list.autocomplete-suggestions {
 }
 
 body[new-ui] list.autocomplete-suggestions {
-  -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
   -webkit-margin-start: 10px;
   background-color: rgb(250, 250, 250);
   border: 1px solid rgb(255, 255, 255);
   border-radius: 3px;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
   box-sizing: border-box;  /* To match the width with the search box's. */
   color: rgb(34, 34, 34);
   overflow: hidden;
@@ -2237,8 +2236,8 @@ body[new-ui] list.autocomplete-suggestions {
 }
 
 list.autocomplete-suggestions > li {
-  -webkit-border-radius: 0;
   -webkit-box-align: center;
+  border-radius: 0;
   display: -webkit-box;
   margin: 0;  /* To prevent vertical overflow. */
   padding: 3px 0;

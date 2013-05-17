@@ -9,11 +9,11 @@
 }
 
 .media-button > div {
-  -webkit-transition: opacity 100ms linear;
   height: 100%;
   opacity: 0;
   pointer-events: none;
   position: absolute;
+  transition: opacity 100ms linear;
   width: 100%;
 }
 
@@ -115,7 +115,7 @@
 
 .custom-slider > .bar > .filled,
 .custom-slider > .bar > .cap.left {
-  background-image: -webkit-linear-gradient(#c3c3c3, #d9d9d9);
+  background-image: linear-gradient(#c3c3c3, #d9d9d9);
   border-color: #d9d9d9;
 }
 
@@ -162,7 +162,6 @@
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-transition: opacity 150ms ease;
   background: #202020;
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;
@@ -175,6 +174,7 @@
   opacity: 0;
   overflow: hidden;
   position: absolute;
+  transition: opacity 150ms ease;
 }
 
 .custom-slider > .bar > .seek-mark.visible > .seek-label {

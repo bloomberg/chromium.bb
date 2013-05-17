@@ -65,7 +65,7 @@ video {
 }
 
 .tool {
-  -webkit-transition: opacity 180ms linear;
+  transition: opacity 180ms linear;
 }
 
 #error-wrapper {

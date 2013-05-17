@@ -121,10 +121,10 @@ body[new-ui] .tools .gallery > .back-button {
 }
 
 .gallery .image-container > .image {
-  /* Duration and timing function are set in Javascript. */
-  -webkit-transition-property: -webkit-transform, opacity;
   pointer-events: none;
   position: absolute;
+  /* Duration and timing function are set in Javascript. */
+  transition-property: -webkit-transform, opacity;
 }
 
 .gallery .image-container > .image[fade] {
@@ -175,7 +175,6 @@ body[new-ui] .gallery > .header,
   -webkit-box-align: stretch;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
-  -webkit-transition: opacity 300ms ease;
   background-color: rgba(18, 18, 18, 0.875);
   display: -webkit-box;
   left: 0;
@@ -184,6 +183,7 @@ body[new-ui] .gallery > .header,
   pointer-events: none;
   position: absolute;
   right: 0;
+  transition: opacity 300ms ease;
 }
 
 body[new-ui] .gallery > .header,
@@ -221,7 +221,7 @@ body[new-ui] .gallery[tools]:not([slideshow]) > .header,
 
 /* Hide immediately when entering the slideshow. */
 .gallery[tools][slideshow] > .toolbar {
-  -webkit-transition-duration: 0;
+  transition-duration: 0;
 }
 
 .gallery[tools][locked] > .toolbar {
@@ -321,10 +321,10 @@ body[new-ui] .gallery[tools][editing] *[dimmed] {
 }
 
 .gallery .filename-spacer > * {
-  -webkit-transition: visibility 0 linear 180ms, all 180ms linear;
   background-color: transparent;
   overflow: hidden;
   position: absolute;
+  transition: visibility 0 linear 180ms, all 180ms linear;
   width: 260px;
 }
 
@@ -391,13 +391,13 @@ body[new-ui] .gallery[tools][editing] *[dimmed] {
 
 .gallery .filename-spacer .saved,
 .gallery .filename-spacer .overwrite-original {
-  -webkit-transition: all linear 120ms;
   cursor: inherit;
   font-size: 90%;
   margin-left: 3px;
   margin-right: 18px;
   opacity: 0;
   pointer-events: none;
+  transition: all linear 120ms;
 }
 
 .gallery[editing] .filename-spacer .saved {
@@ -469,17 +469,16 @@ body[new-ui] .gallery[tools][editing] *[dimmed] {
   -webkit-box-flex: 0;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
-  -webkit-transition: opacity 180ms linear,
-                      visibility 0 linear;
   display: -webkit-box;
   height: 100%;
   overflow: hidden;
+  transition: opacity 180ms linear, visibility 0 linear;
   z-index: 0;
 }
 
 .gallery[editing] .toolbar .ribbon {
-  -webkit-transition-delay: 0, 180ms;
   opacity: 0;
+  transition-delay: 0, 180ms;
   visibility: hidden;
 }
 
@@ -487,13 +486,13 @@ body[new-ui] .gallery[tools][editing] *[dimmed] {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-transition: all 180ms linear;
   border: 2px solid rgba(255, 255, 255, 0);  /* transparent white */
   cursor: pointer;
   display: -webkit-box;
   height: 47px;
   margin: 2px;
   overflow: hidden;
+  transition: all 180ms linear;
   width: 47px;
 }
 
@@ -510,20 +509,20 @@ body[new-ui] .gallery[tools][editing] *[dimmed] {
 }
 
 .gallery .toolbar .ribbon.fade-left {
-  -webkit-mask-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0) 0,
-                                                    rgba(0, 0, 0, 1) 40px);
+  -webkit-mask-image: linear-gradient(left, rgba(0, 0, 0, 0) 0,
+                                            rgba(0, 0, 0, 1) 40px);
 }
 
 .gallery .toolbar .ribbon.fade-right {
-  -webkit-mask-image: -webkit-linear-gradient(right, rgba(0, 0, 0, 0) 0,
-                                                     rgba(0, 0, 0, 1) 40px);
+  -webkit-mask-image: linear-gradient(right, rgba(0, 0, 0, 0) 0,
+                                             rgba(0, 0, 0, 1) 40px);
 }
 
 .gallery .toolbar .ribbon.fade-left.fade-right {
-  -webkit-mask-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0) 0,
-                                                    rgba(0, 0, 0, 1) 40px,
-                                                    rgba(0, 0, 0, 1) 230px,
-                                                    rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: linear-gradient(left, rgba(0, 0, 0, 0) 0,
+                                            rgba(0, 0, 0, 1) 40px,
+                                            rgba(0, 0, 0, 1) 230px,
+                                            rgba(0, 0, 0, 0) 100%);
 }
 
 .gallery .image-wrapper {
@@ -549,13 +548,13 @@ body[new-ui] .gallery .image-wrapper > img:not(.cached) {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-transition: opacity 180ms linear, visibility 0 linear 180ms;
   display: -webkit-box;
   height: 100%;
   left: 280px;
   opacity: 0;
   position: absolute;
   right: 280px;
+  transition: opacity 180ms linear, visibility 0 linear 180ms;
   visibility: hidden;
 }
 
@@ -569,9 +568,9 @@ body[new-ui] .gallery .image-wrapper > img:not(.cached) {
 }
 
 .gallery[editing] .edit-bar-spacer {
-  -webkit-transition-delay: 100ms, 100ms;
   opacity: 1.0;
   pointer-events: auto;
+  transition-delay: 100ms, 100ms;
   visibility: visible;
 }
 
@@ -583,11 +582,11 @@ body .gallery .toolbar button[disabled] {
   -webkit-box-flex: 0;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
-  -webkit-box-shadow: none;
   background-color: rgba(0, 0, 0, 0);
   background-position: center;
   background-repeat: no-repeat;
   border: none;
+  box-shadow: none;
   color: white;
   cursor: pointer;
   display: -webkit-box;
@@ -921,8 +920,8 @@ body .gallery > .toolbar > button.share[disabled] {
 }
 
 .gallery .crop-frame div {
-  -webkit-box-shadow: 0 0 3px rgba(0, 0, 0, 0.75);
   background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.75);
   position: absolute;
 }
 
@@ -1001,14 +1000,13 @@ body .gallery > .toolbar > button.share[disabled] {
 }
 
 .gallery .prompt-wrapper > div.dimmable {
-  -webkit-transition: opacity 220ms ease;
   opacity: 1;
+  transition: opacity 220ms ease;
 }
 
 .gallery .prompt {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  -webkit-transition: all 180ms ease;
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
   display: -webkit-box;
@@ -1018,6 +1016,7 @@ body .gallery > .toolbar > button.share[disabled] {
   padding: 0 20px;
   position: relative;
   top: 5px;
+  transition: all 180ms ease;
 }
 
 .gallery .prompt[state='fadein'] {
@@ -1053,19 +1052,19 @@ body .gallery > .toolbar > button.share[disabled] {
 }
 
 .gallery .share-menu {
-  -webkit-border-radius: 1px;
   -webkit-box-align: stretch;
   -webkit-box-orient: vertical;
   -webkit-box-pack: start;
-  -webkit-transition: opacity 500ms ease-in-out;
   background-color: white;
   border: 1px solid #7f7f7f;
+  border-radius: 1px;
   bottom: 60px;
   display: -webkit-box;
   opacity: 1.0;
   padding: 8px;
   position: absolute;
   right: 10px;
+  transition: opacity 500ms ease-in-out;
 }
 
 .gallery .share-menu .bubble-point {
@@ -1171,7 +1170,7 @@ body .gallery > .toolbar > button.share[disabled] {
 .gallery[video] .video-controls-spacer {
   /* Animate opacity on 'tools' attribute toggle. */
   /* Change opacity immediately on 'video' attribute change. */
-  -webkit-transition: opacity 280ms ease;
+  transition: opacity 280ms ease;
 }
 
 .gallery[video][tools] .video-controls-spacer {
@@ -1194,10 +1193,6 @@ body .gallery > .toolbar > button.share[disabled] {
 
 /* Mosaic view. */
 .mosaic {
-  /* -webkit-transition-duration is set in Javascript. */
-  -webkit-transition-property: -webkit-transform;
-  -webkit-transition-timing-function: linear;
-
   bottom: 55px;  /* Toolbar height. */
   left: 0;
   overflow-x: scroll;
@@ -1205,6 +1200,10 @@ body .gallery > .toolbar > button.share[disabled] {
   position: absolute;
   right: 0;
   top: 0;
+
+  /* transition-duration is set in Javascript. */
+  transition-property: -webkit-transform;
+  transition-timing-function: linear;
 }
 
 .mosaic::-webkit-scrollbar {
@@ -1220,10 +1219,10 @@ body .gallery > .toolbar > button.share[disabled] {
 }
 
 .mosaic-tile {
+  position: absolute;
   /* Tile's zoom factor is animated on hover. We apply the transform to
   the entire tile so that the image outline is included into the animation. */
-  -webkit-transition: -webkit-transform 150ms linear;
-  position: absolute;
+  transition: -webkit-transform 150ms linear;
 }
 
 /* Mosaic tile's opacity is controlled by |visible| attribute which changes
@@ -1235,7 +1234,7 @@ body .gallery > .toolbar > button.share[disabled] {
 /* Animate tile's opacity, except for the selected tile which should show/hide
   instantly (this looks better when zooming to/from the slide mode). */
 .mosaic-tile:not([selected]) .img-border {
-  -webkit-transition: opacity 350ms linear;
+  transition: opacity 350ms linear;
 }
 
 /* Must be in sync with mosaic_mode.js.

@@ -152,14 +152,14 @@ body {
  * we see some fading because the background transpires). */
 .track-stack > .track:not(.selected) .data,
 .track-stack > .track:not(.visible) .art {
-  -webkit-transition: opacity 220ms ease-out;
   opacity: 0;
+  transition: opacity 220ms ease-out;
 }
 
 /* Track data. */
 
 .track .art {
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   height: 48px;
   margin: 4px 0 6px 4px;
   position: relative;
@@ -360,22 +360,22 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  -webkit-box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.10),
-                      inset 0 -1px 0  rgba(0, 0, 0, 0.07);
   background-clip: padding-box;
   background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.10),
+              inset 0 -1px 0  rgba(0, 0, 0, 0.07);
   min-height: 28px;
   padding-top: 100px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  -webkit-box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.25);
   background-color: rgba(255,255,255,0.20);
+  box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.25);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.35);
   background-color: rgba(255, 255, 255, 0.25);
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 ::-webkit-scrollbar-thumb:vertical {
@@ -386,14 +386,14 @@ body {
 }
 
 ::-webkit-scrollbar-track:hover {
-  -webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.10);
   background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.10);
 }
 
 ::-webkit-scrollbar-track:active {
-  -webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.14),
-                      inset -1px -1px 0 rgba(0, 0, 0, 0.07);
   background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.14),
+              inset -1px -1px 0 rgba(0, 0, 0, 0.07);
 }
 
 ::-webkit-scrollbar-track:vertical {

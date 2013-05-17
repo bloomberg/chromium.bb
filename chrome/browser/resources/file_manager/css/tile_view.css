@@ -13,11 +13,11 @@
 }
 
 .tile-box {
-  -webkit-transition: all ease 300ms;
   background: gray;
   border: solid 1px red;
   display: block;
   position: absolute;
+  transition: all ease 300ms;
 }
 
 .tile-box > img {

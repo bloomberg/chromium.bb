@@ -95,8 +95,8 @@ button:focus {
 
 .previews {
   -webkit-box-orient: horizontal;
-  -webkit-mask-image: -webkit-linear-gradient(right, rgba(0, 0, 0, 0) 0,
-                                                     rgba(0, 0, 0, 1) 80px);
+  -webkit-mask-image: linear-gradient(right, rgba(0, 0, 0, 0) 0,
+                                             rgba(0, 0, 0, 1) 80px);
   display: -webkit-box;
   position: relative;
   width: 100%;
