@@ -74,6 +74,8 @@ PassRefPtr<HTMLTrackElement> HTMLTrackElement::create(const QualifiedName& tagNa
 
 Node::InsertionNotificationRequest HTMLTrackElement::insertedInto(ContainerNode* insertionPoint)
 {
+    LOG(Media, "HTMLTrackElement::insertedInto");
+
     // Since we've moved to a new parent, we may now be able to load.
     scheduleLoad();
 
@@ -189,6 +191,8 @@ bool HTMLTrackElement::isURLAttribute(const Attribute& attribute) const
 
 void HTMLTrackElement::scheduleLoad()
 {
+    LOG(Media, "HTMLTrackElement::scheduleLoad");
+
     // 1. If another occurrence of this algorithm is already running for this text track and its track element,
     // abort these steps, letting that other algorithm take care of this element.
     if (m_loadTimer.isActive())
@@ -213,6 +217,8 @@ void HTMLTrackElement::loadTimerFired(Timer<HTMLTrackElement>*)
 {
     if (!fastHasAttribute(srcAttr))
         return;
+
+    LOG(Media, "HTMLTrackElement::loadTimerFired");
 
     // 6. Set the text track readiness state to loading.
     setReadyState(HTMLTrackElement::LOADING);

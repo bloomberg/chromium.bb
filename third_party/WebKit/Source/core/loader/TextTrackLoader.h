@@ -64,6 +64,10 @@ public:
     
     bool load(const KURL&, const String& crossOriginMode);
     void cancelLoad();
+
+    enum State { Idle, Loading, Finished, Failed };
+    State loadState() { return m_state; }
+
     void getNewCues(Vector<RefPtr<TextTrackCue> >& outputCues);
 #if ENABLE(WEBVTT_REGIONS)
     void getNewRegions(Vector<RefPtr<TextTrackRegion> >& outputRegions);
@@ -87,8 +91,6 @@ private:
     void cueLoadTimerFired(Timer<TextTrackLoader>*);
     void corsPolicyPreventedLoad();
 
-    enum State { Idle, Loading, Finished, Failed };
-    
     TextTrackLoaderClient* m_client;
     OwnPtr<WebVTTParser> m_cueParser;
     CachedResourceHandle<CachedTextTrack> m_cachedCueData;

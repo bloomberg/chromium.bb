@@ -56,14 +56,23 @@ void LoadableTextTrack::clearClient()
 
 void LoadableTextTrack::scheduleLoad(const KURL& url)
 {
-    if (url == m_url)
+    if (url == m_url) {
+        // If loading of the resource from this URL is in progress, return early.
+        ASSERT(m_loader && m_trackElement);
+        if (m_loader->loadState() < TextTrackLoader::Finished)
+            return;
+
+        // The track element might have changed its state to HTMLTrackElement::Loading
+        // waiting for a call to didCompleteLoad to continue.
+        cueLoadingCompleted(m_loader.get(), m_loader->loadState() == TextTrackLoader::Failed);
         return;
+    }
 
     // 4.8.10.12.3 Sourcing out-of-band text tracks (continued)
 
     // 2. Let URL be the track URL of the track element.
     m_url = url;
-    
+
     // 3. Asynchronously run the remaining steps, while continuing with whatever task 
     // was responsible for creating the text track or changing the text track mode.
     if (!m_loadTimer.isActive())

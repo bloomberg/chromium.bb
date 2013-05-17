@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Test that video is playing after media element is re-added</title>
+
+        <script src=../video-test.js></script>
+        <script src=../media-file.js></script>
+        <script>
+            if (window.testRunner)
+                testRunner.waitUntilDone();
+
+            function endTest()
+            {
+                consoleWrite("<br>** Succesfully played the video **");
+
+                if (window.testRunner)
+                    testRunner.notifyDone();
+            }
+
+            function canplaythrough()
+            {
+                video.removeEventListener('canplaythrough', canplaythrough);
+                track = document.querySelector('track');
+
+                consoleWrite("** Track should have error as ready state **");
+                testExpected("track.readyState == HTMLTrackElement.ERROR", true);
+
+                consoleWrite("");
+                consoleWrite("** Remove the video element from body **");
+                document.body.removeChild(video);
+
+                consoleWrite("** Reset the video src attribute to re-trigger resource selection for tracks **");
+                video.src = findMediaFile('video', '../content/test');
+
+                consoleWrite("** Append the video element back to the body **");
+                document.body.appendChild(video);
+
+                consoleWrite("<br>** The video should start playing **");
+                testExpected("track.readyState == HTMLTrackElement.ERROR", true);
+
+                video.addEventListener('playing', endTest);
+                video.play();
+            }
+
+            function start()
+            {
+                video = document.getElementsByTagName('video')[0];
+                video.src = findMediaFile('video', '../content/test');
+                video.addEventListener('canplaythrough', canplaythrough);
+            }
+
+        </script>
+    </head>
+
+    <body onload="start()">
+        <p>Tests that re-adding a media element to the document, having a child track that failed
+        loading doesn't block video from playing</p>
+
+        <video width="320" height="240" controls>
+            <track src="captions-webvtt/tc004-no-webvtt.vtt" kind="captions" default>
+        </video>
+    </body>
+</html>
