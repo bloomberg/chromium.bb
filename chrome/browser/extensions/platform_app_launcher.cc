@@ -14,6 +14,8 @@
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -402,9 +404,27 @@ void RestartPlatformAppWithFileEntries(
     Profile* profile,
     const Extension* extension,
     const std::vector<SavedFileEntry>& file_entries) {
-  scoped_refptr<SavedFileEntryLauncher> launcher = new SavedFileEntryLauncher(
-      profile, extension, file_entries);
-  launcher->Launch();
+  extensions::EventRouter* event_router =
+      ExtensionSystem::Get(profile)->event_router();
+  bool listening_to_restart = event_router->
+      ExtensionHasEventListener(extension->id(), event_names::kOnRestarted);
+
+  if (listening_to_restart) {
+    scoped_refptr<SavedFileEntryLauncher> launcher = new SavedFileEntryLauncher(
+        profile, extension, file_entries);
+    launcher->Launch();
+    return;
+  }
+
+  ExtensionPrefs* extension_prefs = ExtensionSystem::Get(profile)->
+      extension_service()->extension_prefs();
+  bool had_windows = extension_prefs->HasWindows(extension->id());
+  extension_prefs->SetHasWindows(extension->id(), false);
+  bool listening_to_launch = event_router->
+      ExtensionHasEventListener(extension->id(), event_names::kOnLaunched);
+
+  if (listening_to_launch && had_windows)
+    LaunchPlatformAppWithNoData(profile, extension);
 }
 
 }  // namespace extensions

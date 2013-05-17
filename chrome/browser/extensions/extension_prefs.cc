@@ -53,6 +53,9 @@ namespace {
 // Whether this extension was running when chrome last shutdown.
 const char kPrefRunning[] = "running";
 
+// Whether this extension had windows when it was last running.
+const char kHasWindows[] = "has_windows";
+
 // Where an extension was installed from. (see Manifest::Location)
 const char kPrefLocation[] = "location";
 
@@ -1158,6 +1161,21 @@ bool ExtensionPrefs::IsExtensionRunning(const std::string& extension_id) {
   bool running = false;
   extension->GetBoolean(kPrefRunning, &running);
   return running;
+}
+
+void ExtensionPrefs::SetHasWindows(const std::string& extension_id,
+                                   bool has_windows) {
+  Value* value = Value::CreateBooleanValue(has_windows);
+  UpdateExtensionPref(extension_id, kHasWindows, value);
+}
+
+bool ExtensionPrefs::HasWindows(const std::string& extension_id) {
+  const DictionaryValue* extension = GetExtensionPref(extension_id);
+  if (!extension)
+    return false;
+  bool has_windows = false;
+  extension->GetBoolean(kHasWindows, &has_windows);
+  return has_windows;
 }
 
 bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {
