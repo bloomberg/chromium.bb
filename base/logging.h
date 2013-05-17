@@ -447,11 +447,7 @@ const LogSeverity LOG_0 = LOG_ERROR;
 #define PLOG_IF(severity, condition) \
   LAZY_STREAM(PLOG_STREAM(severity), LOG_IS_ON(severity) && (condition))
 
-// http://crbug.com/16512 is open for a real fix for this.  For now, Windows
-// uses OFFICIAL_BUILD and other platforms use the branding flag when NDEBUG is
-// defined.
-#if ( defined(OS_WIN) && defined(OFFICIAL_BUILD)) || \
-    (!defined(OS_WIN) && defined(NDEBUG) && defined(GOOGLE_CHROME_BUILD))
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
 #define LOGGING_IS_OFFICIAL_BUILD 1
 #else
 #define LOGGING_IS_OFFICIAL_BUILD 0
