@@ -117,7 +117,7 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
-  if (!wm::IsWindowNormal(window))
+  if (key == aura::client::kShowStateKey && !wm::IsWindowNormal(window))
     handler_->CompleteDrag(DRAG_COMPLETE, 0);
 }
 

@@ -199,10 +199,11 @@ void EventGenerator::PressTouch() {
 }
 
 void EventGenerator::MoveTouch(const gfx::Point& point) {
-  TestTouchEvent touchev(ui::ET_TOUCH_MOVED, point, flags_);
+  current_location_ = point;
+  TestTouchEvent touchev(
+      ui::ET_TOUCH_MOVED, GetLocationInCurrentRoot(), flags_);
   Dispatch(&touchev);
 
-  current_location_ = point;
   if (!grab_)
     UpdateCurrentRootWindow(point);
 }
