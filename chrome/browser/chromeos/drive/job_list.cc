@@ -30,6 +30,8 @@ std::string JobTypeToString(JobType type) {
       return "TYPE_GET_RESOURCE_ENTRY";
     case TYPE_DELETE_RESOURCE:
       return "TYPE_DELETE_RESOURCE";
+    case TYPE_COPY_RESOURCE:
+      return "TYPE_COPY_RESOURCE";
     case TYPE_COPY_HOSTED_DOCUMENT:
       return "TYPE_COPY_HOSTED_DOCUMENT";
     case TYPE_RENAME_RESOURCE:
