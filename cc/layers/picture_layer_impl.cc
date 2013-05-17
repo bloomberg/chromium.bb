@@ -31,6 +31,7 @@ namespace cc {
 
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
+      twin_layer_(NULL),
       pile_(PicturePileImpl::Create(true)),
       last_content_scale_(0),
       is_mask_(false),
@@ -76,6 +77,11 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   LayerImpl::PushPropertiesTo(base_layer);
 
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
+
+  // When the pending tree pushes to the active tree, the pending twin
+  // disappears.
+  layer_impl->twin_layer_ = NULL;
+  twin_layer_ = NULL;
 
   layer_impl->SetIsMask(is_mask_);
   layer_impl->TransferTilingSet(tilings_.Pass());
@@ -436,14 +442,12 @@ const Region* PictureLayerImpl::GetInvalidation() {
 const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
     const PictureLayerTiling* tiling) {
 
-  const PictureLayerImpl* other_layer = layer_tree_impl()->IsActiveTree() ?
-      PendingTwin() : ActiveTwin();
-  if (!other_layer)
+  if (!twin_layer_)
     return NULL;
-  for (size_t i = 0; i < other_layer->tilings_->num_tilings(); ++i)
-    if (other_layer->tilings_->tiling_at(i)->contents_scale() ==
+  for (size_t i = 0; i < twin_layer_->tilings_->num_tilings(); ++i)
+    if (twin_layer_->tilings_->tiling_at(i)->contents_scale() ==
         tiling->contents_scale())
-      return other_layer->tilings_->tiling_at(i);
+      return twin_layer_->tilings_->tiling_at(i);
   return NULL;
 }
 
@@ -502,8 +506,8 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
 void PictureLayerImpl::SyncFromActiveLayer() {
   DCHECK(layer_tree_impl()->IsPendingTree());
 
-  if (PictureLayerImpl* active_twin = ActiveTwin())
-    SyncFromActiveLayer(active_twin);
+  if (twin_layer_)
+    SyncFromActiveLayer(twin_layer_);
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
@@ -566,6 +570,15 @@ void PictureLayerImpl::SyncTiling(
     UpdateTilePriorities();
 }
 
+void PictureLayerImpl::UpdateTwinLayer() {
+  DCHECK(layer_tree_impl()->IsPendingTree());
+
+  twin_layer_ = static_cast<PictureLayerImpl*>(
+      layer_tree_impl()->FindActiveTreeLayerById(id()));
+  if (twin_layer_)
+    twin_layer_->twin_layer_ = this;
+}
+
 void PictureLayerImpl::SetIsMask(bool is_mask) {
   if (is_mask_ == is_mask)
     return;
@@ -615,7 +628,7 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
       layer_tree_impl()->animationRegistrar()->
           active_animation_controllers().empty();
 
-  if (PictureLayerImpl* twin = ActiveTwin()) {
+  if (PictureLayerImpl* twin = twin_layer_) {
     float twin_min_acceptable_scale =
         std::min(twin->ideal_contents_scale_, twin->raster_contents_scale_);
     // Ignore 0 scale in case CalculateContentsScale() has never been
@@ -660,10 +673,8 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   const Region& recorded = pile_->recorded_region();
   DCHECK(!recorded.IsEmpty());
 
-  PictureLayerImpl* twin =
-      layer_tree_impl()->IsPendingTree() ? ActiveTwin() : PendingTwin();
-  if (twin)
-    twin->SyncTiling(tiling);
+  if (twin_layer_)
+    twin_layer_->SyncTiling(tiling);
 
   return tiling;
 }
@@ -821,7 +832,7 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   float max_acceptable_high_res_scale = std::max(
       raster_contents_scale_, ideal_contents_scale_);
 
-  PictureLayerImpl* twin = PendingTwin();
+  PictureLayerImpl* twin = twin_layer_;
   if (twin) {
     min_acceptable_high_res_scale = std::min(
         min_acceptable_high_res_scale,
@@ -866,26 +877,6 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   }
 }
 
-PictureLayerImpl* PictureLayerImpl::PendingTwin() const {
-  DCHECK(layer_tree_impl()->IsActiveTree());
-
-  PictureLayerImpl* twin = static_cast<PictureLayerImpl*>(
-      layer_tree_impl()->FindPendingTreeLayerById(id()));
-  if (twin)
-    DCHECK_EQ(id(), twin->id());
-  return twin;
-}
-
-PictureLayerImpl* PictureLayerImpl::ActiveTwin() const {
-  DCHECK(layer_tree_impl()->IsPendingTree());
-
-  PictureLayerImpl* twin = static_cast<PictureLayerImpl*>(
-      layer_tree_impl()->FindActiveTreeLayerById(id()));
-  if (twin)
-    DCHECK_EQ(id(), twin->id());
-  return twin;
-}
-
 float PictureLayerImpl::MinimumContentsScale() const {
   float setting_min = layer_tree_impl()->settings().minimum_contents_scale;
 
@@ -914,7 +905,7 @@ void PictureLayerImpl::UpdateLCDTextStatus() {
   // don't ever update the active tree's resources in place.  Instead,
   // update lcd text on the pending tree.  If this is the active tree and
   // there is no pending twin, then call set needs commit to create one.
-  if (layer_tree_impl()->IsActiveTree() && !PendingTwin()) {
+  if (layer_tree_impl()->IsActiveTree() && !twin_layer_) {
     // TODO(enne): Handle this by updating these resources in-place instead.
     layer_tree_impl()->SetNeedsCommit();
     return;
@@ -923,7 +914,7 @@ void PictureLayerImpl::UpdateLCDTextStatus() {
   // The heuristic of never switching back to lcd text enabled implies that
   // this property needs to be synchronized to the pending tree right now.
   PictureLayerImpl* pending_layer =
-      layer_tree_impl()->IsActiveTree() ? PendingTwin() : this;
+      layer_tree_impl()->IsActiveTree() ? twin_layer_ : this;
   if (layer_tree_impl()->IsActiveTree() &&
       pending_layer->is_using_lcd_text_ == is_using_lcd_text_)
     return;

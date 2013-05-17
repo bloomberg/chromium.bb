@@ -37,6 +37,9 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   Layer::PushPropertiesTo(base_layer);
 
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
+  // This should be first so others can use it.
+  layer_impl->UpdateTwinLayer();
+
   layer_impl->SetIsMask(is_mask_);
   layer_impl->CreateTilingSet();
   // Unlike other properties, invalidation must always be set on layer_impl.

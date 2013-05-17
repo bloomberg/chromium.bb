@@ -61,9 +61,10 @@ class CC_EXPORT PictureLayerImpl
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) OVERRIDE;
 
-  // PushPropertiesTo active tree => pending tree
+  // PushPropertiesTo active tree => pending tree.
   void SyncFromActiveLayer();
   void SyncTiling(const PictureLayerTiling* tiling);
+  void UpdateTwinLayer();
 
   void CreateTilingSet();
   void TransferTilingSet(scoped_ptr<PictureLayerTilingSet> tilings);
@@ -90,8 +91,6 @@ class CC_EXPORT PictureLayerImpl
       float* low_res_raster_contents_scale) const;
   void CleanUpTilingsOnActiveLayer(
       std::vector<PictureLayerTiling*> used_tilings);
-  PictureLayerImpl* PendingTwin() const;
-  PictureLayerImpl* ActiveTwin() const;
   float MinimumContentsScale() const;
   void UpdateLCDTextStatus();
   void ResetRasterScale();
@@ -102,6 +101,8 @@ class CC_EXPORT PictureLayerImpl
   virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
   virtual void AsValueInto(base::DictionaryValue* dict) const OVERRIDE;
+
+  PictureLayerImpl* twin_layer_;
 
   scoped_ptr<PictureLayerTilingSet> tilings_;
   scoped_refptr<PicturePileImpl> pile_;
