@@ -38,6 +38,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/hwnd_util.h"
 
+#if defined(USE_AURA)
+#include "chrome/browser/browser_process_platform_part_aurawin.h"
+#else
+#include "chrome/browser/browser_process_platform_part.h"
+#endif
+
 namespace {
 
 const char kLockfile[] = "lockfile";
@@ -406,7 +412,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
     if (result == PROCESS_NONE)
       result = PROFILE_IN_USE;
   } else {
-    g_browser_process->PlatformSpecificCommandLineProcessing(
+    g_browser_process->platform_part()->PlatformSpecificCommandLineProcessing(
         *CommandLine::ForCurrentProcess());
   }
   return result;

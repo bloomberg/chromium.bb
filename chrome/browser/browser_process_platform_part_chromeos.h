@@ -9,6 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 
+class CommandLine;
+
 namespace chromeos {
 class OomPriorityManager;
 class ProfileHelper;
@@ -18,6 +20,11 @@ class BrowserProcessPlatformPart : public base::NonThreadSafe {
  public:
   BrowserProcessPlatformPart();
   virtual ~BrowserProcessPlatformPart();
+
+  // Called after creating the process singleton or when another chrome
+  // rendez-vous with this one.
+  virtual void PlatformSpecificCommandLineProcessing(
+      const CommandLine& command_line);
 
   // Called from BrowserProcessImpl::StartTearDown().
   virtual void StartTearDown();

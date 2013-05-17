@@ -41,10 +41,6 @@ class BrowserPolicyConnector;
 class PolicyService;
 };
 
-#if defined(OS_WIN) && defined(USE_AURA)
-class MetroViewerProcessHost;
-#endif
-
 #if defined(OS_MACOSX)
 class AppShimHostManager;
 #endif
@@ -132,12 +128,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
   virtual chrome::MediaFileSystemRegistry*
       media_file_system_registry() OVERRIDE;
-  virtual void PlatformSpecificCommandLineProcessing(
-      const CommandLine& command_line) OVERRIDE;
   virtual bool created_local_state() const OVERRIDE;
-#if defined(OS_WIN) && defined(USE_AURA)
-  virtual void OnMetroViewerProcessTerminated() OVERRIDE;
-#endif
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -290,14 +281,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   scoped_refptr<PluginsResourceService> plugins_resource_service_;
-#endif
-
-#if defined(OS_WIN) && defined(USE_AURA)
-  void PerformInitForWindowsAura(const CommandLine& command_line);
-
-  // Hosts the channel for the Windows 8 metro viewer process which runs in
-  // the ASH environment.
-  scoped_ptr<MetroViewerProcessHost> metro_viewer_process_host_;
 #endif
 
 #if defined(OS_MACOSX)

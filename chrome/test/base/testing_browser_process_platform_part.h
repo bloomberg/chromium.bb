@@ -5,7 +5,11 @@
 #ifndef CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_PLATFORM_PART_H_
 #define CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_PLATFORM_PART_H_
 
+#if defined(OS_WIN) && defined(USE_AURA)
+#include "chrome/browser/browser_process_platform_part_aurawin.h"
+#else
 #include "chrome/browser/browser_process_platform_part.h"
+#endif
 
 class TestingBrowserProcessPlatformPart : public BrowserProcessPlatformPart {
  public:
