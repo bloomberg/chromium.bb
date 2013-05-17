@@ -699,6 +699,14 @@ void ContentViewCoreImpl::SetVSyncNotificationEnabled(bool enabled) {
       env, obj.obj(), static_cast<jboolean>(enabled));
 }
 
+void ContentViewCoreImpl::SetNeedsAnimate() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_setNeedsAnimate(env, obj.obj());
+}
+
 ui::ViewAndroid* ContentViewCoreImpl::GetViewAndroid() const {
   // view_android_ should never be null for Chrome.
   DCHECK(view_android_);
@@ -1237,6 +1245,15 @@ void ContentViewCoreImpl::OnVSync(JNIEnv* env, jobject /* obj */,
     return;
 
   view->SendVSync(base::TimeTicks::FromInternalValue(frame_time_micros));
+}
+
+jboolean ContentViewCoreImpl::OnAnimate(JNIEnv* env, jobject /* obj */,
+                                        jlong frame_time_micros) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  if (!view)
+    return false;
+
+  return view->Animate(base::TimeTicks::FromInternalValue(frame_time_micros));
 }
 
 jboolean ContentViewCoreImpl::PopulateBitmapFromCompositor(JNIEnv* env,

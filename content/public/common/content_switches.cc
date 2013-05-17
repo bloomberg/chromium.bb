@@ -755,6 +755,9 @@ const char kNetworkCountryIso[] = "network-country-iso";
 
 // Set to enable compatibility with legacy WebView synchronous APIs.
 const char kEnableWebViewSynchronousAPIs[] = "enable-webview-synchronous-apis";
+
+// Disable overscroll edge effects like those found in Android views.
+const char kDisableOverscrollEdgeEffect[] = "disable-overscroll-edge-effect";
 #endif
 
 #if defined(OS_CHROMEOS)

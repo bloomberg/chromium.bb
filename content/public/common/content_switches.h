@@ -232,6 +232,7 @@ extern const char kDisableMediaHistoryLogging[];
 extern const char kDisableGestureRequirementForMediaPlayback[];
 extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kEnableWebViewSynchronousAPIs[];
+CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];
 #endif
 
 #if defined(OS_CHROMEOS)

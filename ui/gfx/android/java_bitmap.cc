@@ -68,6 +68,9 @@ static ScopedJavaLocalRef<jobject> CreateJavaBitmapFromResource(
 }
 
 static SkBitmap ConvertToSkBitmap(ScopedJavaLocalRef<jobject> jbitmap) {
+  if (jbitmap.is_null())
+    return SkBitmap();
+
   JavaBitmap src_lock(jbitmap.obj());
   DCHECK_EQ(src_lock.format(), ANDROID_BITMAP_FORMAT_RGBA_8888);
 
