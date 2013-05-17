@@ -234,7 +234,7 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
     // Start client registration. Either OnRegistrationStateChanged() or
     // OnClientError() will be called back.
     client()->Register(em::DeviceRegisterRequest::USER,
-                       policy_token, std::string(), false);
+                       policy_token, std::string(), false, std::string());
   }
 
   token_fetcher_.reset();

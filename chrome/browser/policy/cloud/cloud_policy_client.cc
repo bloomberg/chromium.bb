@@ -84,7 +84,8 @@ void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
 void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
                                  const std::string& auth_token,
                                  const std::string& client_id,
-                                 bool is_auto_enrollement) {
+                                 bool is_auto_enrollement,
+                                 const std::string& requisition) {
   DCHECK(service_);
   DCHECK(!auth_token.empty());
   DCHECK(!is_registered());
@@ -114,6 +115,8 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
     request->set_machine_model(machine_model_);
   if (is_auto_enrollement)
     request->set_auto_enrolled(true);
+  if (!requisition.empty())
+    request->set_requisition(requisition);
 
   request_job_->SetRetryCallback(
       base::Bind(&CloudPolicyClient::OnRetryRegister, base::Unretained(this)));

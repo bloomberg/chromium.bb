@@ -86,6 +86,10 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   void EnrollmentCompleted(const EnrollmentCallback& callback,
                            EnrollmentStatus status);
 
+  // Requisition parameter to send to the server that indicates the intended
+  // purpose for the device.
+  std::string requisition_;
+
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.
   scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_store_;

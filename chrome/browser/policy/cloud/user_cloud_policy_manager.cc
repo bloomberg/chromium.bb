@@ -63,7 +63,7 @@ void UserCloudPolicyManager::RegisterClient(const std::string& access_token) {
   if (!client()->is_registered()) {
     DVLOG(1) << "Registering client with access token: " << access_token;
     client()->Register(em::DeviceRegisterRequest::BROWSER,
-                       access_token, std::string(), false);
+                       access_token, std::string(), false, std::string());
   }
 }
 

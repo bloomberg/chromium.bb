@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_constants.h"
 
 namespace em = enterprise_management;
 
@@ -48,6 +49,18 @@ const char* kMachineInfoSerialNumberKeys[] = {
   "Product_SN",     // Mario
   "sn",             // old ZGB devices (more recent ones use serial_number)
 };
+
+// Fetches a machine statics from StatisticsProvider, returns an empty string on
+// failure.
+std::string GetMachineStatistic(const std::string& key) {
+  std::string value;
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  if (!provider->GetMachineStatistic(key, &value))
+    LOG(WARNING) << "Failed to get machine statistic " << key;
+
+  return value;
+}
 
 }  // namespace
 
@@ -88,11 +101,14 @@ void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
   CHECK(device_management_service_);
   core()->Disconnect();
 
+  if (requisition_.empty())
+    requisition_ = GetMachineStatistic(chromeos::kOemDeviceRequisitionKey);
+
   enrollment_handler_.reset(
       new EnrollmentHandlerChromeOS(
           device_store_.get(), install_attributes_, CreateClient(), auth_token,
           install_attributes_->GetDeviceId(), is_auto_enrollment,
-          allowed_device_modes,
+          requisition_, allowed_device_modes,
           base::Bind(&DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted,
                      base::Unretained(this), callback)));
   enrollment_handler_->StartEnrollment();
@@ -138,13 +154,7 @@ std::string DeviceCloudPolicyManagerChromeOS::GetMachineID() {
 
 // static
 std::string DeviceCloudPolicyManagerChromeOS::GetMachineModel() {
-  std::string machine_model;
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  if (!provider->GetMachineStatistic(kMachineInfoSystemHwqual, &machine_model))
-    LOG(WARNING) << "Failed to get machine model.";
-
-  return machine_model;
+  return GetMachineStatistic(kMachineInfoSystemHwqual);
 }
 
 scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {

@@ -204,7 +204,7 @@ void CloudPolicyClientRegistrationHelper::OnGetUserInfoSuccess(
   // Kick off registration of the CloudPolicyClient with our newly minted
   // oauth_access_token_.
   client_->Register(em::DeviceRegisterRequest::BROWSER, oauth_access_token_,
-                    std::string(), false);
+                    std::string(), false, std::string());
 }
 
 void CloudPolicyClientRegistrationHelper::OnRegistrationStateChanged(

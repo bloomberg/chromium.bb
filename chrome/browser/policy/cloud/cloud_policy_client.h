@@ -101,7 +101,8 @@ class CloudPolicyClient {
       enterprise_management::DeviceRegisterRequest::Type registration_type,
       const std::string& auth_token,
       const std::string& client_id,
-      bool is_auto_enrollment);
+      bool is_auto_enrollment,
+      const std::string& requisition);
 
   // Requests a policy fetch. The client being registered is a prerequisite to
   // this operation and this call will CHECK if the client is not in registered
