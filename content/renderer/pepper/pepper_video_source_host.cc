@@ -199,7 +199,13 @@ void PepperVideoSourceHost::SendGetFrameReply() {
 
   reply_context_.params.set_result(PP_OK);
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(TOOLKIT_GTK)
+  // For GTK, we pass the SysV shared memory key in the message.
+  PpapiPluginMsg_VideoSource_GetFrameReply reply_msg(host_resource,
+                                                     image_desc,
+                                                     image_handle.fd,
+                                                     timestamp);
+#elif defined(OS_POSIX) || defined(OS_WIN)
   ppapi::proxy::SerializedHandle serialized_handle;
   PpapiPluginMsg_VideoSource_GetFrameReply reply_msg(host_resource,
                                                      image_desc,
@@ -207,12 +213,6 @@ void PepperVideoSourceHost::SendGetFrameReply() {
                                                      timestamp);
   serialized_handle.set_shmem(image_handle, byte_count);
   reply_context_.params.AppendHandle(serialized_handle);
-#elif defined(OS_LINUX)
-  // For Linux, we pass the SysV shared memory key in the message.
-  PpapiPluginMsg_VideoSource_GetFrameReply reply_msg(host_resource,
-                                                     image_desc,
-                                                     image_handle.fd,
-                                                     timestamp);
 #else
   // Not supported on other platforms.
   // This is a stub reply_msg to not break the build.

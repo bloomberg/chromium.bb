@@ -430,20 +430,20 @@ void ImageData::RecycleToPlugin(bool zero_contents) {
 ImageHandle ImageData::NullHandle() {
 #if defined(OS_WIN)
   return NULL;
-#elif defined(OS_MACOSX) || defined(OS_ANDROID)
-  return ImageHandle();
-#else
+#elif defined(TOOLKIT_GTK)
   return 0;
+#else
+  return ImageHandle();
 #endif
 }
 
 ImageHandle ImageData::HandleFromInt(int32_t i) {
 #if defined(OS_WIN)
     return reinterpret_cast<ImageHandle>(i);
-#elif defined(OS_MACOSX) || defined(OS_ANDROID)
-    return ImageHandle(i, false);
-#else
+#elif defined(TOOLKIT_GTK)
     return static_cast<ImageHandle>(i);
+#else
+    return ImageHandle(i, false);
 #endif
 }
 #endif  // !defined(OS_NACL)
@@ -566,14 +566,14 @@ PP_Resource PPB_ImageData_Proxy::CreateImageData(
 #if defined(OS_WIN)
   *image_handle = dispatcher->ShareHandleWithRemote(
       reinterpret_cast<HANDLE>(static_cast<intptr_t>(local_fd)), false);
-#elif defined(OS_MACOSX) || defined(OS_ANDROID)
-  *image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
-#elif defined(OS_POSIX)
+#elif defined(TOOLKIT_GTK)
   // On X Windows, a non-nacl handle is a SysV shared memory key.
   if (is_nacl_plugin)
     *image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
   else
     *image_handle = IPC::PlatformFileForTransit(local_fd, false);
+#elif defined(OS_POSIX)
+  *image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
 #else
   #error Not implemented.
 #endif
@@ -602,11 +602,11 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
   if (resource) {
     image_data_desc->resize(sizeof(PP_ImageDataDesc));
     memcpy(&(*image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
-    *result_image_handle = image_handle;
-#else
+#if defined(TOOLKIT_GTK)
     // On X Windows ImageHandle is a SysV shared memory key.
     *result_image_handle = image_handle.fd;
+#else
+    *result_image_handle = image_handle;
 #endif
   } else {
     image_data_desc->clear();

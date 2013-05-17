@@ -523,7 +523,7 @@ void WebPluginProxy::SetWindowlessBuffers(
                                   &windowless_contexts_[1]);
 }
 
-#elif defined(USE_X11)
+#elif defined(TOOLKIT_GTK)
 
 void WebPluginProxy::CreateDIBAndCanvasFromHandle(
     const TransportDIB::Handle& dib_handle,
@@ -589,7 +589,7 @@ void WebPluginProxy::SetWindowlessBuffers(
   }
 }
 
-#elif defined(OS_ANDROID)
+#else
 
 void WebPluginProxy::SetWindowlessBuffers(
     const TransportDIB::Handle& windowless_buffer0,

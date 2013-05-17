@@ -5,8 +5,7 @@
 #include "ui/surface/transport_dib.h"
 
 // Desktop GTK Linux builds use the old-style SYSV SHM based DIBs.
-// Linux Aura and Chrome OS do too. This will change very soon.
-#if !defined(TOOLKIT_GTK) && !(defined(OS_LINUX) && defined(USE_AURA))
+#if !defined(TOOLKIT_GTK)
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -114,5 +113,5 @@ TransportDIB::Handle TransportDIB::handle() const {
   return shared_memory_.handle();
 }
 
-#endif  // !defined(TOOLKIT_GTK) && !(defined(OS_LINUX) && defined(USE_AURA))
+#endif  // !defined(TOOLKIT_GTK)
 

@@ -133,7 +133,7 @@ class RenderWidgetHelper
   // created by CreateNewWindow which initially blocked the requests.
   void ResumeRequestsForView(int route_id);
 
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
   // Given the id of a transport DIB, return a mapping to it or NULL on error.
   TransportDIB* MapTransportDIB(TransportDIB::Id dib_id);
 #endif
@@ -156,7 +156,7 @@ class RenderWidgetHelper
                        int* surface_id);
   void CreateNewFullscreenWidget(int opener_id, int* route_id, int* surface_id);
 
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
   // Called on the IO thread to handle the allocation of a TransportDIB.  If
   // |cache_in_browser| is |true|, then a copy of the shmem is kept by the
   // browser, and it is the caller's repsonsibility to call
@@ -213,11 +213,11 @@ class RenderWidgetHelper
   // not received as expected.
   void OnSimulateSwapOutACK(const ViewMsg_SwapOut_Params& params);
 
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
   // Called on destruction to release all allocated transport DIBs
   void ClearAllocatedDIBs();
 
-  // On OSX we keep file descriptors to all the allocated DIBs around until
+  // On POSIX we keep file descriptors to all the allocated DIBs around until
   // the renderer frees them.
   base::Lock allocated_dibs_lock_;
   std::map<TransportDIB::Id, int> allocated_dibs_;

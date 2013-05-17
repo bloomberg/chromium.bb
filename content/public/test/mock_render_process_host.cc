@@ -122,15 +122,15 @@ TransportDIB* MockRenderProcessHost::MapTransportDIB(TransportDIB::Id dib_id) {
   DuplicateHandle(GetCurrentProcess(), dib_id.handle, GetCurrentProcess(),
                   &duped, 0, TRUE, DUPLICATE_SAME_ACCESS);
   return TransportDIB::Map(duped);
-#elif defined(OS_MACOSX)
-  // On Mac, TransportDIBs are always created in the browser, so we cannot map
-  // one from a dib_id.
-  return TransportDIB::Create(100 * 100 * 4, 0);
+#elif defined(TOOLKIT_GTK)
+  return TransportDIB::Map(dib_id.shmkey);
 #elif defined(OS_ANDROID)
   // On Android, Handles and Ids are the same underlying type.
   return TransportDIB::Map(dib_id);
-#elif defined(OS_POSIX)
-  return TransportDIB::Map(dib_id.shmkey);
+#else
+  // On POSIX, TransportDIBs are always created in the browser, so we cannot map
+  // one from a dib_id.
+  return TransportDIB::Create(100 * 100 * 4, 0);
 #endif
 }
 

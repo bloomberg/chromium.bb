@@ -5,8 +5,6 @@
 #include "ui/surface/transport_dib.h"
 
 // Desktop GTK Linux builds use the old-style SYSV SHM based DIBs.
-// Linux Aura and Chrome OS do too. This will change very soon.
-#if defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
 
 #include <errno.h>
 #include <stdlib.h>
@@ -157,6 +155,4 @@ void TransportDIB::Detach() {
   if (!inflight_counter_)
     delete this;
 }
-
-#endif
 

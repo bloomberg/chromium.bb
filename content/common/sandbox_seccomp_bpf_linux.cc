@@ -93,6 +93,14 @@ inline bool IsArchitectureArm() {
 #endif
 }
 
+inline bool IsUsingToolKitGtk() {
+#if defined(TOOLKIT_GTK)
+  return true;
+#else
+  return false;
+#endif
+}
+
 intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
   int syscall = args.nr;
   if (syscall >= 1024)
@@ -1447,15 +1455,16 @@ ErrorCode RendererOrWorkerProcessPolicy(Sandbox *sandbox, int sysno, void *) {
     case __NR_prlimit64:
       return ErrorCode(EPERM);  // See crbug.com/160157.
     default:
-      // These need further tightening.
+      if (IsUsingToolKitGtk()) {
 #if defined(__x86_64__) || defined(__arm__)
-      if (IsSystemVSharedMemory(sysno))
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        if (IsSystemVSharedMemory(sysno))
+          return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
 #if defined(__i386__)
-      if (IsSystemVIpc(sysno))
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        if (IsSystemVIpc(sysno))
+          return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
+      }
 
       // Default on the baseline policy.
       return BaselinePolicy(sandbox, sysno);
@@ -1477,15 +1486,16 @@ ErrorCode FlashProcessPolicy(Sandbox *sandbox, int sysno, void *) {
     case __NR_ioctl:
       return ErrorCode(ENOTTY);  // Flash Access.
     default:
-      // These need further tightening.
+      if (IsUsingToolKitGtk()) {
 #if defined(__x86_64__) || defined(__arm__)
-      if (IsSystemVSharedMemory(sysno))
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        if (IsSystemVSharedMemory(sysno))
+          return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
 #if defined(__i386__)
-      if (IsSystemVIpc(sysno))
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        if (IsSystemVIpc(sysno))
+          return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
+      }
 
       // Default on the baseline policy.
       return BaselinePolicy(sandbox, sysno);

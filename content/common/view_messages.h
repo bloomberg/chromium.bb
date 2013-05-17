@@ -2261,7 +2261,25 @@ IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LoadFont,
                            base::SharedMemoryHandle /* font data */,
                            uint32 /* font id */)
 
-// On OSX, we cannot allocated shared memory from within the sandbox, so
+// Informs the browser that a plugin has gained or lost focus.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
+                    bool, /* focused */
+                    int /* plugin_id */)
+
+// Instructs the browser to start plugin IME.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
+
+#elif defined(OS_WIN)
+// Request that the given font characters be loaded by the browser so it's
+// cached by the OS. Please see RenderMessageFilter::OnPreCacheFontCharacters
+// for details.
+IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_PreCacheFontCharacters,
+                            LOGFONT /* font_data */,
+                            string16 /* characters */)
+#endif
+
+#if defined(OS_POSIX)
+// On POSIX, we cannot allocated shared memory from within the sandbox, so
 // this call exists for the renderer to ask the browser to allocate memory
 // on its behalf. We return a file descriptor to the POSIX shared memory.
 // If the |cache_in_browser| flag is |true|, then a copy of the shmem is kept
@@ -2279,22 +2297,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllocTransportDIB,
 // renderer is finished with them.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
                      TransportDIB::Id /* DIB id */)
-
-// Informs the browser that a plugin has gained or lost focus.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
-                    bool, /* focused */
-                    int /* plugin_id */)
-
-// Instructs the browser to start plugin IME.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
-
-#elif defined(OS_WIN)
-// Request that the given font characters be loaded by the browser so it's
-// cached by the OS. Please see RenderMessageFilter::OnPreCacheFontCharacters
-// for details.
-IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_PreCacheFontCharacters,
-                            LOGFONT /* font_data */,
-                            string16 /* characters */)
 #endif
 
 // Adding a new message? Stick to the sort order above: first platform

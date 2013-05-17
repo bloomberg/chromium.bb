@@ -113,12 +113,8 @@ int RenderProcessImpl::GetEnabledBindings() const {
 // Platform specific code for dealing with bitmap transport...
 
 TransportDIB* RenderProcessImpl::CreateTransportDIB(size_t size) {
-#if defined(OS_WIN) || defined(OS_LINUX) || \
-    defined(OS_OPENBSD) || defined(OS_ANDROID)
-  // Windows and Linux create transport DIBs inside the renderer
-  return TransportDIB::Create(size, transport_dib_next_sequence_number_++);
-#elif defined(OS_MACOSX)
-  // Mac creates transport DIBs in the browser, so we need to do a sync IPC to
+#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+  // POSIX creates transport DIBs in the browser, so we need to do a sync IPC to
   // get one.  The TransportDIB is cached in the browser.
   TransportDIB::Handle handle;
   IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, true, &handle);
@@ -127,15 +123,19 @@ TransportDIB* RenderProcessImpl::CreateTransportDIB(size_t size) {
   if (handle.fd < 0)
     return NULL;
   return TransportDIB::Map(handle);
-#endif  // defined(OS_MACOSX)
+#else
+  // Windows, legacy GTK and Android create transport DIBs inside the
+  // renderer.
+  return TransportDIB::Create(size, transport_dib_next_sequence_number_++);
+#endif
 }
 
 void RenderProcessImpl::FreeTransportDIB(TransportDIB* dib) {
   if (!dib)
     return;
 
-#if defined(OS_MACOSX)
-  // On Mac we need to tell the browser that it can drop a reference to the
+#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+  // On POSIX we need to tell the browser that it can drop a reference to the
   // shared memory.
   IPC::Message* msg = new ViewHostMsg_FreeTransportDIB(dib->id());
   main_thread()->Send(msg);

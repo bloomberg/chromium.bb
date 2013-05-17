@@ -19,9 +19,9 @@ PepperPlatformImage2DImpl::PepperPlatformImage2DImpl(int width,
       dib_(dib) {
 }
 
-// On Mac, we have to tell the browser to free the transport DIB.
+// On POSIX, we have to tell the browser to free the transport DIB.
 PepperPlatformImage2DImpl::~PepperPlatformImage2DImpl() {
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
   if (dib_) {
     RenderThreadImpl::current()->Send(
         new ViewHostMsg_FreeTransportDIB(dib_->id()));
@@ -35,7 +35,7 @@ PepperPlatformImage2DImpl* PepperPlatformImage2DImpl::Create(int width,
   uint32 buffer_size = width * height * 4;
 
   // Allocate the transport DIB and the PlatformCanvas pointing to it.
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
   // On the Mac, shared memory has to be created in the browser in order to
   // work in the sandbox.  Do this by sending a message to the browser
   // requesting a TransportDIB (see also
@@ -72,10 +72,10 @@ intptr_t PepperPlatformImage2DImpl::GetSharedMemoryHandle(
   *byte_count = dib_->size();
 #if defined(OS_WIN)
   return reinterpret_cast<intptr_t>(dib_->handle());
-#elif defined(OS_MACOSX) || defined(OS_ANDROID)
-  return static_cast<intptr_t>(dib_->handle().fd);
-#elif defined(OS_POSIX)
+#elif defined(TOOLKIT_GTK)
   return static_cast<intptr_t>(dib_->handle());
+#else
+  return static_cast<intptr_t>(dib_->handle().fd);
 #endif
 }
 

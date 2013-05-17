@@ -318,18 +318,18 @@ int32_t PepperPDFHost::OnHostMsgGetResourceImage(
 
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(TOOLKIT_GTK)
+  // For GTK, we pass the SysV shared memory key in the message.
+  PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(host_resource,
+                                                     image_data_desc,
+                                                     image_handle.fd);
+#elif defined(OS_POSIX) || defined(OS_WIN)
   ppapi::proxy::SerializedHandle serialized_handle;
   PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(host_resource,
                                                      image_data_desc,
                                                      0);
   serialized_handle.set_shmem(image_handle, byte_count);
   reply_context.params.AppendHandle(serialized_handle);
-#elif defined(OS_LINUX)
-  // For Linux, we pass the SysV shared memory key in the message.
-  PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(host_resource,
-                                                     image_data_desc,
-                                                     image_handle.fd);
 #else
   // Not supported on the other platforms.
   // This is a stub reply_msg not to break the build.

@@ -120,11 +120,11 @@ struct PPPDecryptor_Buffer {
 // TODO(raymes): Make ImageHandle compatible with SerializedHandle.
 #if defined(OS_WIN)
 typedef HANDLE ImageHandle;
-#elif defined(OS_MACOSX) || defined(OS_ANDROID)
-typedef base::SharedMemoryHandle ImageHandle;
-#else
-// On X Windows this is a SysV shared memory key.
+#elif defined(TOOLKIT_GTK)
+// On legacy X Windows this is a SysV shared memory key.
 typedef int ImageHandle;
+#else
+typedef base::SharedMemoryHandle ImageHandle;
 #endif
 
 }  // namespace proxy

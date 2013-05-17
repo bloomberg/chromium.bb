@@ -182,13 +182,13 @@ PP_Resource PDFResource::GetResourceImageForScale(PP_ResourceImage image_id,
 #if defined(OS_ANDROID)
   // This is compiled into android for tests only.
   return 0;
-#elif defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(TOOLKIT_GTK)
+  return (new ImageData(resource, image_desc, fd))->GetReference();
+#elif defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
   base::SharedMemoryHandle handle;
   if (!reply_params.TakeSharedMemoryHandleAtIndex(0, &handle))
     return 0;
   return (new ImageData(resource, image_desc, handle))->GetReference();
-#elif defined(OS_LINUX)
-  return (new ImageData(resource, image_desc, fd))->GetReference();
 #else
 #error Not implemented.
 #endif
