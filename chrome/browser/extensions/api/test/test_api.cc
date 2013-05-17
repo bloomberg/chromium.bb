@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/test.h"
 #include "content/public/browser/notification_service.h"
 
 namespace {
@@ -31,6 +32,11 @@ const char kNotTestProcessError[] =
 }  // namespace
 
 namespace extensions {
+
+namespace CreateIncognitoTab = api::test::CreateIncognitoTab;
+namespace Log = api::test::Log;
+namespace NotifyFail = api::test::NotifyFail;
+namespace PassMessage = api::test::PassMessage;
 
 TestExtensionFunction::~TestExtensionFunction() {}
 
@@ -56,21 +62,21 @@ bool TestNotifyPassFunction::RunImpl() {
 TestNotifyFailFunction::~TestNotifyFailFunction() {}
 
 bool TestNotifyFailFunction::RunImpl() {
-  std::string message;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
+  scoped_ptr<NotifyFail::Params> params(NotifyFail::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
       content::Source<Profile>(dispatcher()->profile()),
-      content::Details<std::string>(&message));
+      content::Details<std::string>(&params->message));
   return true;
 }
 
 TestLogFunction::~TestLogFunction() {}
 
 bool TestLogFunction::RunImpl() {
-  std::string message;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
-  VLOG(1) << message;
+  scoped_ptr<Log::Params> params(Log::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  VLOG(1) << params->message;
   return true;
 }
 
@@ -88,23 +94,26 @@ TestCreateIncognitoTabFunction::
    ~TestCreateIncognitoTabFunction() {}
 
 bool TestCreateIncognitoTabFunction::RunImpl() {
-  std::string url;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
-  chrome::OpenURLOffTheRecord(profile(), GURL(url),
+  scoped_ptr<CreateIncognitoTab::Params> params(
+      CreateIncognitoTab::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  chrome::OpenURLOffTheRecord(profile(), GURL(params->url),
                               chrome::HOST_DESKTOP_TYPE_NATIVE);
   return true;
 }
 
 bool TestSendMessageFunction::RunImpl() {
-  std::string message;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
+  scoped_ptr<PassMessage::Params> params(
+      PassMessage::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   AddRef();  // balanced in Reply
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
       content::Source<TestSendMessageFunction>(this),
-      content::Details<std::string>(&message));
+      content::Details<std::string>(&params->message));
   return true;
 }
+
 TestSendMessageFunction::~TestSendMessageFunction() {}
 
 void TestSendMessageFunction::Reply(const std::string& message) {

@@ -316,6 +316,11 @@ class _Generator(object):
     c = Code()
     # TODO(kalman): Use function.unix_name not Classname here.
     function_namespace = cpp_util.Classname(function.name)
+    """Windows has a #define for SendMessage, so to avoid any issues, we need
+    to not use the name.
+    """
+    if function_namespace == 'SendMessage':
+      function_namespace = 'PassMessage'
     (c.Append('namespace %s {' % function_namespace)
       .Append()
       .Cblock(self._GenerateFunctionParams(function))
