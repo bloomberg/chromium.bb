@@ -30,12 +30,12 @@
 #ifndef GOOGLE_BREAKPAD_COMMON_MEMORY_H_
 #define GOOGLE_BREAKPAD_COMMON_MEMORY_H_
 
+#include <memory>
+#include <vector>
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/mman.h>
-
-#include <algorithm>
 
 #ifdef __APPLE__
 #define sys_mmap mmap
@@ -133,83 +133,42 @@ class PageAllocator {
   unsigned page_offset_;
 };
 
-// A wasteful vector is like a normal std::vector, except that it's very much
-// simplier and it allocates memory from a PageAllocator. It's wasteful
-// because, when resizing, it always allocates a whole new array since the
-// PageAllocator doesn't support realloc.
+// Wrapper to use with STL containers
+template <typename T>
+struct PageStdAllocator: public std::allocator<T> {
+  typedef typename std::allocator<T>::pointer pointer;
+  typedef typename std::allocator<T>::size_type size_type;
+
+  PageStdAllocator(PageAllocator& allocator): allocator_(allocator) {}
+  template <class Other> PageStdAllocator(const PageStdAllocator<Other>& other):
+    allocator_(other.allocator_) {}
+
+  inline pointer allocator(size_type n, const void* = 0) {
+    return allocator_.Alloc(sizeof(T) * n);
+  }
+
+  inline void deallocate(pointer, size_type) {
+    // The PageAllocator doesn't free.
+  }
+
+  template <typename U> struct rebind {
+    typedef PageStdAllocator<U> other;
+  };
+
+private:
+  PageAllocator& allocator_;
+};
+
+// A wasteful vector is a std::vector, except that it allocates memory from a
+// PageAllocator. It's wasteful because, when resizing, it always allocates a
+// whole new array since the PageAllocator doesn't support realloc.
 template<class T>
-class wasteful_vector {
+class wasteful_vector: public std::vector<T, PageStdAllocator<T> > {
  public:
-  wasteful_vector(PageAllocator *allocator, unsigned size_hint = 16)
-      : allocator_(allocator),
-        a_((T*) allocator->Alloc(sizeof(T) * size_hint)),
-        allocated_(size_hint),
-        used_(0) {
+  wasteful_vector(PageAllocator* allocator, unsigned size_hint = 16)
+      : std::vector<T, PageStdAllocator<T> >(PageStdAllocator<T>(*allocator)) {
+    std::vector<T, PageStdAllocator<T> >::reserve(size_hint);
   }
-
-  T& back() {
-    return a_[used_ - 1];
-  }
-
-  const T& back() const {
-    return a_[used_ - 1];
-  }
-
-  bool empty() const {
-    return used_ == 0;
-  }
-
-  void push_back(const T& new_element) {
-    if (used_ == allocated_)
-      Realloc(std::max(allocated_ * 2, 1u));
-    a_[used_++] = new_element;
-  }
-
-  size_t size() const {
-    return used_;
-  }
-
-  void resize(unsigned sz, T c = T()) {
-    // No need to test "sz >= 0", as "sz" is unsigned.
-    if (sz <= used_) {
-      used_ = sz;
-    } else {
-      unsigned a = allocated_;
-      if (sz > a) {
-        while (sz > a) {
-          a *= 2;
-        }
-        Realloc(a);
-      }
-      while (sz > used_) {
-        a_[used_++] = c;
-      }
-    }
-  }
-
-  T& operator[](size_t index) {
-    return a_[index];
-  }
-
-  const T& operator[](size_t index) const {
-    return a_[index];
-  }
-
- private:
-  void Realloc(unsigned new_size) {
-    T *new_array =
-        reinterpret_cast<T*>(allocator_->Alloc(sizeof(T) * new_size));
-    if (new_size > 0) {
-      memcpy(new_array, a_, used_ * sizeof(T));
-    }
-    a_ = new_array;
-    allocated_ = new_size;
-  }
-
-  PageAllocator *const allocator_;
-  T *a_;  // pointer to an array of |allocated_| elements.
-  unsigned allocated_;  // size of |a_|, in elements.
-  unsigned used_;  // number of used slots in |a_|.
 };
 
 }  // namespace google_breakpad
