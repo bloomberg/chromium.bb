@@ -222,52 +222,19 @@ void ConflictResolver::ResolveConflicts(
     const std::set<syncable::Id>& simple_conflict_ids,
     sessions::StatusController* status) {
   // Iterate over simple conflict items.
-  set<Id>::const_iterator conflicting_item_it;
-  set<Id> processed_items;
-  for (conflicting_item_it = simple_conflict_ids.begin();
-       conflicting_item_it != simple_conflict_ids.end();
-       ++conflicting_item_it) {
-    Id id = *conflicting_item_it;
-    if (processed_items.count(id) > 0)
-      continue;
-
+  set<Id>::const_iterator it;
+  for (it = simple_conflict_ids.begin();
+       it != simple_conflict_ids.end();
+       ++it) {
     // We don't resolve conflicts for control types here.
-    Entry conflicting_node(trans, syncable::GET_BY_ID, id);
+    Entry conflicting_node(trans, syncable::GET_BY_ID, *it);
     CHECK(conflicting_node.good());
     if (IsControlType(
         GetModelTypeFromSpecifics(conflicting_node.Get(syncable::SPECIFICS)))) {
       continue;
     }
 
-    // We have a simple conflict. In order check if positions have changed,
-    // we need to process conflicting predecessors before successors. Traverse
-    // backwards through all continuous conflicting predecessors, building a
-    // stack of items to resolve in predecessor->successor order, then process
-    // each item individually.
-    list<Id> predecessors;
-    Id prev_id = id;
-    do {
-      predecessors.push_back(prev_id);
-      Entry entry(trans, syncable::GET_BY_ID, prev_id);
-      // Any entry in conflict must be valid.
-      CHECK(entry.good());
-
-      // We can't traverse over a delete item.
-      if (entry.Get(syncable::IS_DEL))
-        break;
-
-      Id new_prev_id = entry.GetPredecessorId();
-      if (new_prev_id == prev_id)
-        break;
-      prev_id = new_prev_id;
-    } while (processed_items.count(prev_id) == 0 &&
-             simple_conflict_ids.count(prev_id) > 0);  // Excludes root.
-    while (!predecessors.empty()) {
-      id = predecessors.back();
-      predecessors.pop_back();
-      ProcessSimpleConflict(trans, id, cryptographer, status);
-      processed_items.insert(id);
-    }
+    ProcessSimpleConflict(trans, *it, cryptographer, status);
   }
   return;
 }
