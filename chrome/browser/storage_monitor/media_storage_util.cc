@@ -84,7 +84,8 @@ void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
       continue;
     }
 
-    if (type == StorageInfo::FIXED_MASS_STORAGE) {
+    if (type == StorageInfo::FIXED_MASS_STORAGE ||
+        type == StorageInfo::ITUNES) {
       if (!file_util::PathExists(base::FilePath::FromUTF8Unsafe(unique_id)))
         missing_devices.insert(*it);
       continue;

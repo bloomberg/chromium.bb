@@ -107,7 +107,11 @@ bool StorageInfo::IsMediaDevice(const std::string& device_id) {
 // static
 bool StorageInfo::IsRemovableDevice(const std::string& device_id) {
   Type type;
-  return CrackDeviceId(device_id, &type, NULL) && type != FIXED_MASS_STORAGE;
+  return CrackDeviceId(device_id, &type, NULL) &&
+         (type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
+          type == REMOVABLE_MASS_STORAGE_NO_DCIM ||
+          type == MTP_OR_PTP ||
+          type == MAC_IMAGE_CAPTURE);
 }
 
 // static
