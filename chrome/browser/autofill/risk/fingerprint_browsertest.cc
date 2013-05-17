@@ -10,6 +10,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/browser/risk/proto/fingerprint.pb.h"
+#include "content/public/browser/geolocation_provider.h"
+#include "content/public/common/geoposition.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScreenInfo.h"
@@ -22,6 +25,12 @@ const int64 kGaiaId = GG_INT64_C(99194853094755497);
 const char kCharset[] = "UTF-8";
 const char kAcceptLanguages[] = "en-US,en";
 const int kScreenColorDepth = 53;
+
+const double kLatitude = -42.0;
+const double kLongitude = 17.3;
+const double kAltitude = 123.4;
+const double kAccuracy = 73.7;
+const int kGeolocationTime = 87;
 
 class AutofillRiskFingerprintTest : public InProcessBrowserTest {
  public:
@@ -75,6 +84,18 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
     ASSERT_TRUE(transient_state.outer_window_size().has_width());
     ASSERT_TRUE(transient_state.outer_window_size().has_height());
 
+    ASSERT_TRUE(fingerprint->has_user_characteristics());
+    const Fingerprint_UserCharacteristics& user_characteristics =
+        fingerprint->user_characteristics();
+    ASSERT_TRUE(user_characteristics.has_location());
+    const Fingerprint_UserCharacteristics_Location& location =
+        user_characteristics.location();
+    ASSERT_TRUE(location.has_altitude());
+    ASSERT_TRUE(location.has_latitude());
+    ASSERT_TRUE(location.has_longitude());
+    ASSERT_TRUE(location.has_accuracy());
+    ASSERT_TRUE(location.has_time_in_ms());
+
     ASSERT_TRUE(fingerprint->has_metadata());
     ASSERT_TRUE(fingerprint->metadata().has_timestamp_ms());
     ASSERT_TRUE(fingerprint->metadata().has_gaia_id());
@@ -102,6 +123,11 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
     EXPECT_EQ(kWindowBounds.height(),
               transient_state.outer_window_size().height());
     EXPECT_EQ(kGaiaId, fingerprint->metadata().gaia_id());
+    EXPECT_EQ(kAltitude, location.altitude());
+    EXPECT_EQ(kLatitude, location.latitude());
+    EXPECT_EQ(kLongitude, location.longitude());
+    EXPECT_EQ(kAccuracy, location.accuracy());
+    EXPECT_EQ(kGeolocationTime, location.time_in_ms());
 
     message_loop_.Quit();
   }
@@ -123,6 +149,20 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
 #endif
 // Test that getting a fingerprint works on some basic level.
 IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, MAYBE_GetFingerprint) {
+  content::Geoposition position;
+  position.latitude = kLatitude;
+  position.longitude = kLongitude;
+  position.altitude = kAltitude;
+  position.accuracy = kAccuracy;
+  position.timestamp =
+      base::Time::UnixEpoch() +
+      base::TimeDelta::FromMilliseconds(kGeolocationTime);
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  content::GeolocationProvider::OverrideLocationForTesting(
+      position, runner->QuitClosure());
+  runner->Run();
+
   WebKit::WebScreenInfo screen_info;
   screen_info.depth = kScreenColorDepth;
   screen_info.rect = WebKit::WebRect(kScreenBounds);

@@ -173,9 +173,9 @@ message Fingerprint {
       optional double longitude = 3;
       // Accuracy in meters. 95% probability of being in this radius of
       // lat / long.
-      optional float accuracy = 4;
+      optional double accuracy = 4;
       // Milliseconds since epoch since measurement.
-      optional double time_in_ms = 5;
+      optional int64 time_in_ms = 5;
     }
 
     // Average force by finger presses. TouchEvent.force
