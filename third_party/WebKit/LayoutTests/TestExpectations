@@ -1639,6 +1639,9 @@ crbug.com/237270 http/tests/history/replacestate-post-to-get.html [ Pass Timeout
 crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
 
+# New test, needs baselines.
+Bug(fmalita) fast/backgrounds/background-clip-text-composited.html [ Pass Missing ]
+
 # Needs rebaselines once bots cyclce.
 crbug.com/237751 fast/css/getComputedStyle/getComputedStyle-margin-percentage.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/237751 fast/css/percentage-non-integer.html [ Pass Failure ImageOnlyFailure ]
