@@ -129,7 +129,10 @@ EXTRA_ENV = {
   # Append additional non-default flags here.
   'LLC_FLAGS_EXTRA' : '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST}} ' +
                       '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
-                      '${OPT_LEVEL == 0 ? -disable-fp-elim}',
+                      '${OPT_LEVEL == 0 ? -disable-fp-elim} ' +
+  # TODO(dschuff): re-enable global merge once it's fixed for alignments.
+  # see https://code.google.com/p/nativeclient/issues/detail?id=3437
+                      '${ARCH == ARM ? -global-merge=0}',
 
   # Opt level from command line (if any)
   'OPT_LEVEL' : '',
