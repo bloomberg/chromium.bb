@@ -10,19 +10,46 @@ body {
   overflow-x: hidden;
 }
 
-body.hide-ntp {
+body.user-typed {
   overflow: hidden;
 }
 
 #ntp-contents {
+  position: absolute;
   text-align: -webkit-center;
+  top: 125px;
+  width: 100%;
 }
 
-body.hide-ntp #ntp-contents {
+body.google-page #ntp-contents {
+  top: 0;
+}
+
+body.hide-ntp #ntp-contents,
+body.hide-ntp #attribution {
   display: none;
 }
 
-body.fakebox-animate #ntp-contents {
+body.user-typed #ntp-contents {
+  top: 164px;
+}
+
+body.user-typed.google-page #ntp-contents {
+  top: 39px;
+}
+
+body.user-typed #fakebox {
+  border-color: rgba(185, 185, 185, 0.5);
+  border-top-color: rgba(160, 160, 160, 0.5);
+  cursor: default;
+}
+
+body.user-typed #fakebox > input {
+  cursor: default;
+}
+
+body.fakebox-animate #ntp-contents,
+body.fakebox-animate #attribution {
   -webkit-transition: opacity 100ms linear;
   opacity: 0.2;
 }
@@ -60,11 +87,11 @@ body.custom-theme #logo {
 #fakebox {
   /* Use GPU compositing if available. */
   -webkit-transform: translate3d(0, 0, 0);
-  -webkit-transition: -webkit-transform 100ms linear;
+  -webkit-transition: -webkit-transform 100ms linear, border-color 100ms linear;
   background-color: #fff;
-  border: 1px solid #b9b9b9;
+  border: 1px solid rgb(185, 185, 185);
   border-radius: 1px;
-  border-top-color: #a0a0a0;
+  border-top-color: rgb(160, 160, 160);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
   cursor: text;
   font-size: 18px;
@@ -74,8 +101,8 @@ body.custom-theme #logo {
 }
 
 #fakebox:hover {
-  border: 1px solid #a9a9a9;
-  border-top-color: #909090;
+  border: 1px solid rgb(169, 169, 169);
+  border-top-color: rgb(144, 144, 144);
 }
 
 body.fakebox-focused #fakebox {
@@ -354,6 +381,7 @@ body.rtl .mv-page .mv-x {
 }
 
 .suggestions-box {
+  background-color: #fff;
   border-bottom: 1px #d9d9d9 solid;
   padding-bottom: 6px;
   padding-top: 6px;

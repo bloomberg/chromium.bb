@@ -54,6 +54,9 @@ var CLASSES = {
   SUGGESTION_CONTENTS: 'suggestion-contents',
   SUGGESTIONS_BOX: 'suggestions-box',
   THUMBNAIL: 'mv-thumb',
+  // Applied when user types. Makes fakebox non-interactive and hides
+  // scrollbars. Removed on ESC.
+  USER_TYPED: 'user-typed',
   TILE: 'mv-tile',
   TITLE: 'mv-title'
 };
@@ -80,7 +83,6 @@ var IDS = {
   SUGGESTION_STYLE: 'suggestion-style',
   SUGGESTION_TEXT_PREFIX: 'suggestion-text-',
   TILES: 'mv-tiles',
-  TOP_MARGIN: 'mv-top-margin',
   UNDO_LINK: 'mv-undo'
 };
 
@@ -101,14 +103,6 @@ var KEYCODE = {
 // =============================================================================
 //  NTP implementation
 // =============================================================================
-
-
-/**
- * The element used to vertically position the most visited section on
- * window resize.
- * @type {Element}
- */
-var topMarginElement;
 
 
 /**
@@ -209,14 +203,6 @@ var TILE_WIDTH = 140;
  * @const
  */
 var TILE_MARGIN_START = 20;
-
-
-/**
- * The height of the most visited section.
- * @type {number}
- * @const
- */
-var MOST_VISITED_HEIGHT = 296;
 
 
 /** @type {number} @const */
@@ -582,17 +568,9 @@ function onRestoreAll() {
 
 
 /**
- * Handles a resize by vertically centering the most visited section
- * and re-rendering the tiles if the number of columns has changed.
+ * Re-renders the tiles if the number of columns has changed.
  */
 function onResize() {
-  // The Google page uses a fixed layout instead.
-  if (!isGooglePage) {
-    var clientHeight = document.documentElement.clientHeight;
-    topMarginElement.style.marginTop =
-        Math.max(0, (clientHeight - MOST_VISITED_HEIGHT) / 2) + 'px';
-  }
-
   var tileRequiredWidth = TILE_WIDTH + TILE_MARGIN_START;
   // Adds margin-start to the available width to compensate the extra margin
   // counted above for the first tile (which does not have a margin-start).
@@ -624,9 +602,11 @@ function getTileByRid(rid) {
 
 
 /**
- * Hides the NTP.
+ * Handles when the user first types by animating or disabling the fakebox and
+ * hiding the scrollbars.
  */
-function hideNtp() {
+function updateNtpOnUserInput() {
+  document.body.classList.add(CLASSES.USER_TYPED);
   if (fakebox && isFakeboxFocused() &&
       !document.body.classList.contains(CLASSES.FAKEBOX_ANIMATE)) {
     // The user has typed in the fakebox - initiate the fakebox animation,
@@ -634,22 +614,18 @@ function hideNtp() {
     setFakeboxFocus(false);
     fakebox.addEventListener('webkitTransitionEnd', fakeboxAnimationDone);
     document.body.classList.add(CLASSES.FAKEBOX_ANIMATE);
-  } else if (!fakebox ||
-      !document.body.classList.contains(CLASSES.FAKEBOX_ANIMATE)) {
-    // The user has typed in the omnibox - hide the NTP immediately.
-    document.body.classList.add(CLASSES.HIDE_NTP);
-    clearCustomTheme();
   }
 }
 
 
 /**
- * Shows the NTP (destroys the activeBox if exists, reloads the custom
- * theme and shows the top visible bars).
+ * Restores the NTP (destroys the activeBox if exists, reloads the custom
+ * theme, shows the top visible bars, re-enables the fakebox and scrollbars).
  */
-function showNtp() {
+function restoreNtp() {
   hideActiveSuggestions();
   searchboxApiHandle.showBars();
+  document.body.classList.remove(CLASSES.USER_TYPED);
   document.body.classList.remove(CLASSES.HIDE_NTP);
   onThemeChange();
 }
@@ -688,10 +664,11 @@ function isFakeboxFocused() {
 
 /**
  * @param {!Event} event The click event.
- * @return {boolean} True if the click occurred in the fakebox.
+ * @return {boolean} True if the click occurred in an enabled fakebox.
  */
 function isFakeboxClick(event) {
-  return fakebox.contains(event.target);
+  return fakebox.contains(event.target) &&
+      !document.body.classList.contains(CLASSES.USER_TYPED);
 }
 
 
@@ -1423,10 +1400,16 @@ function updateSuggestions() {
   }
   var inputValue = searchboxApiHandle.value;
 
-  // Hide the NTP if input has made it into the omnibox or the input is
-  // undefined, which signifies a sensitive query.
-  if (inputValue != '' && isNtpVisible())
-    hideNtp();
+  // Update the NTP as necessary if input has made it into the omnibox or the
+  // input is undefined, which signifies a sensitive query.
+  if (inputValue != '' && !document.body.classList.contains(CLASSES.USER_TYPED))
+    updateNtpOnUserInput();
+  // Re-enable the fakebox if the user typed in the omnibox then backspaced away
+  // their query.
+  else if (inputValue == '' && isNtpVisible() &&
+      document.body.classList.contains(CLASSES.USER_TYPED)) {
+    restoreNtp();
+  }
 
   if (inputValue != '' && suggestions.length) {
     pendingBox = new SuggestionsBox(inputValue,
@@ -1505,7 +1488,7 @@ function handleKeyPress(e) {
       if (activeBox && activeBox.hasSelectedSuggestion())
         activeBox.clearSelection();
       else
-        showNtp();
+        restoreNtp();
       break;
   }
 }
@@ -1639,7 +1622,6 @@ function init() {
     callDeferredUpdateSuggestions();
   };
 
-  topMarginElement = $(IDS.TOP_MARGIN);
   tilesContainer = $(IDS.TILES);
   notification = $(IDS.NOTIFICATION);
   attribution = $(IDS.ATTRIBUTION);
