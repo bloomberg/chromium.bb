@@ -37,6 +37,103 @@ from django.utils import simplejson
 
 import unittest
 
+FULL_RESULT_EXAMPLE = """ADD_RESULTS({
+    "seconds_since_epoch": 1368146629,
+    "tests": {
+        "media": {
+            "encrypted-media": {
+                "encrypted-media-v2-events.html": {
+                    "expected": "TIMEOUT",
+                    "actual": "TIMEOUT",
+                    "time": 6.0
+                },
+                "encrypted-media-v2-syntax.html": {
+                    "expected": "TIMEOUT",
+                    "actual": "TIMEOUT"
+                }
+            },
+            "progress-events-generated-correctly.html": {
+                  "expected": "PASS FAIL IMAGE TIMEOUT CRASH MISSING",
+                  "actual": "TIMEOUT",
+                  "time": 6.0
+            },
+            "W3C": {
+                "audio": {
+                    "src": {
+                        "src_removal_does_not_trigger_loadstart.html": {
+                              "expected": "PASS",
+                              "actual": "PASS",
+                              "time": 3.5
+                        }
+                    }
+                },
+                "video": {
+                    "src": {
+                        "src_removal_does_not_trigger_loadstart.html": {
+                              "expected": "PASS",
+                              "actual": "PASS",
+                              "time": 1.1
+                        }
+                    }
+                }
+            },
+            "media-document-audio-repaint.html": {
+                "expected": "IMAGE",
+                "image_diff_percent": 0,
+                "actual": "IMAGE",
+                "time": 0.1
+            }
+        }
+    },
+    "skipped": 2,
+    "num_regressions": 0,
+    "build_number": "3",
+    "interrupted": false,
+    "num_missing": 0,
+    "uses_expectations_file": true,
+    "layout_tests_dir": "\/tmp\/cr\/src\/third_party\/WebKit\/LayoutTests",
+    "version": 3,
+    "builder_name": "Webkit",
+    "num_passes": 10,
+    "pixel_tests_enabled": true,
+    "blink_revision": "1234",
+    "has_pretty_patch": true,
+    "fixable": 25,
+    "num_flaky": 0,
+    "num_failures_by_type": {
+        "CRASH": 3,
+        "MISSING": 0,
+        "TEXT": 3,
+        "IMAGE": 1,
+        "PASS": 10,
+        "SKIP": 2,
+        "TIMEOUT": 16,
+        "IMAGE+TEXT": 0,
+        "FAIL": 0,
+        "AUDIO": 0
+    },
+    "has_wdiff": true,
+    "chromium_revision": "5678"
+});"""
+
+JSON_RESULTS_OLD_TEMPLATE = (
+    '{"Webkit":{'
+    '"allFixableCount":[[TESTDATA_COUNT]],'
+    '"blinkRevision":[[TESTDATA_WEBKITREVISION]],'
+    '"webkitRevision":[[TESTDATA_WEBKITREVISION]],'
+    '"buildNumbers":[[TESTDATA_BUILDNUMBERS]],'
+    '"chromeRevision":[[TESTDATA_CHROMEREVISION]],'
+    '"deferredCounts":[[TESTDATA_COUNTS]],'
+    '"fixableCount":[[TESTDATA_COUNT]],'
+    '"fixableCounts":[[TESTDATA_COUNTS]],'
+    '"num_failures_by_type":{"AUDIO":[[TESTDATA_COUNT]],"CRASH":[[TESTDATA_COUNT]],"FAIL":[[TESTDATA_COUNT]],"IMAGE":[[TESTDATA_COUNT]],"IMAGE+TEXT":[[TESTDATA_COUNT]],"MISSING":[[TESTDATA_COUNT]],"PASS":[[TESTDATA_COUNT]],"SKIP":[[TESTDATA_COUNT]],"TEXT":[[TESTDATA_COUNT]],"TIMEOUT":[[TESTDATA_COUNT]]},'
+    '"secondsSinceEpoch":[[TESTDATA_TIMES]],'
+    '"tests":{[TESTDATA_TESTS]},'
+    '"wontfixCounts":[[TESTDATA_COUNTS]]'
+    '},'
+    '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Z":"IMAGE+TEXT"},'
+    '"version":[VERSION]'
+    '}')
 
 JSON_RESULTS_TEMPLATE = (
     '{"Webkit":{'
@@ -44,13 +141,13 @@ JSON_RESULTS_TEMPLATE = (
     '"blinkRevision":[[TESTDATA_WEBKITREVISION]],'
     '"buildNumbers":[[TESTDATA_BUILDNUMBERS]],'
     '"chromeRevision":[[TESTDATA_CHROMEREVISION]],'
-    '"deferredCounts":[[TESTDATA_COUNTS]],'
     '"fixableCount":[[TESTDATA_COUNT]],'
     '"fixableCounts":[[TESTDATA_COUNTS]],'
+    '"num_failures_by_type":{"AUDIO":[[TESTDATA_COUNT]],"CRASH":[[TESTDATA_COUNT]],"FAIL":[[TESTDATA_COUNT]],"IMAGE":[[TESTDATA_COUNT]],"IMAGE+TEXT":[[TESTDATA_COUNT]],"MISSING":[[TESTDATA_COUNT]],"PASS":[[TESTDATA_COUNT]],"SKIP":[[TESTDATA_COUNT]],"TEXT":[[TESTDATA_COUNT]],"TIMEOUT":[[TESTDATA_COUNT]]},'
     '"secondsSinceEpoch":[[TESTDATA_TIMES]],'
-    '"tests":{[TESTDATA_TESTS]},'
-    '"wontfixCounts":[[TESTDATA_COUNTS]]'
+    '"tests":{[TESTDATA_TESTS]}'
     '},'
+    '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Z":"IMAGE+TEXT"},'
     '"version":[VERSION]'
     '}')
 
@@ -85,7 +182,7 @@ class JsonResultsTest(unittest.TestCase):
         self.assertEqual(JsonResults._strip_prefix_suffix("ADD_RESULTS(" + json + ");"), json)
         self.assertEqual(JsonResults._strip_prefix_suffix(json), json)
 
-    def _make_test_json(self, test_data):
+    def _make_test_json(self, test_data, json_string=JSON_RESULTS_TEMPLATE):
         if not test_data:
             return ""
 
@@ -93,8 +190,6 @@ class JsonResultsTest(unittest.TestCase):
         tests = test_data["tests"]
         if not builds or not tests:
             return ""
-
-        json = JSON_RESULTS_TEMPLATE
 
         counts = []
         build_numbers = []
@@ -108,22 +203,22 @@ class JsonResultsTest(unittest.TestCase):
             chrome_revision.append("3000%s" % build)
             times.append("100000%s000" % build)
 
-        json = json.replace("[TESTDATA_COUNTS]", ",".join(counts))
-        json = json.replace("[TESTDATA_COUNT]", ",".join(builds))
-        json = json.replace("[TESTDATA_BUILDNUMBERS]", ",".join(build_numbers))
-        json = json.replace("[TESTDATA_WEBKITREVISION]", ",".join(webkit_revision))
-        json = json.replace("[TESTDATA_CHROMEREVISION]", ",".join(chrome_revision))
-        json = json.replace("[TESTDATA_TIMES]", ",".join(times))
+        json_string = json_string.replace("[TESTDATA_COUNTS]", ",".join(counts))
+        json_string = json_string.replace("[TESTDATA_COUNT]", ",".join(builds))
+        json_string = json_string.replace("[TESTDATA_BUILDNUMBERS]", ",".join(build_numbers))
+        json_string = json_string.replace("[TESTDATA_WEBKITREVISION]", ",".join(webkit_revision))
+        json_string = json_string.replace("[TESTDATA_CHROMEREVISION]", ",".join(chrome_revision))
+        json_string = json_string.replace("[TESTDATA_TIMES]", ",".join(times))
 
         version = str(test_data["version"]) if "version" in test_data else "4"
-        json = json.replace("[VERSION]", version)
-        json = json.replace("{[TESTDATA_TESTS]}", simplejson.dumps(tests, separators=(',', ':'), sort_keys=True))
-        return json
+        json_string = json_string.replace("[VERSION]", version)
+        json_string = json_string.replace("{[TESTDATA_TESTS]}", simplejson.dumps(tests, separators=(',', ':'), sort_keys=True))
+        return json_string
 
     def _test_merge(self, aggregated_data, incremental_data, expected_data, max_builds=jsonresults.JSON_RESULTS_MAX_BUILDS):
         aggregated_results = self._make_test_json(aggregated_data)
         incremental_results = self._make_test_json(incremental_data)
-        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, max_builds, sort_keys=True)
+        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, is_full_results_format=False, num_runs=max_builds, sort_keys=True)
 
         if expected_data:
             expected_results = self._make_test_json(expected_data)
@@ -136,6 +231,107 @@ class JsonResultsTest(unittest.TestCase):
         expected_results = JSON_RESULTS_TEST_LIST_TEMPLATE.replace("{[TESTDATA_TESTS]}", simplejson.dumps(expected_data, separators=(',', ':')))
         actual_results = JsonResults.get_test_list(self._builder, input_results)
         self.assertEqual(actual_results, expected_results)
+
+    def test_merge_with_empty_aggregated_results(self):
+        incremental_data = {
+            "builds": ["2", "1"],
+            "tests": {
+                "001.html": {
+                    "results": [[200, "F"]],
+                    "times": [[200, 0]],
+                }
+            }
+        }
+        incremental_results = self._make_test_json(incremental_data)
+        aggregated_results = ""
+        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, is_full_results_format=False, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
+        self.assertEqual(merged_results, incremental_results)
+
+    def test_old_keys_deleted(self):
+        aggregated_results = self._make_test_json({
+            "builds": ["2", "1"],
+            "tests": {
+                "001.html": {
+                    "results": [[100, "F"]],
+                    "times": [[100, 0]],
+                }
+            }
+        }, json_string=JSON_RESULTS_OLD_TEMPLATE)
+        incremental_results = self._make_test_json({
+            "builds": ["3"],
+            "tests": {
+                "001.html": {
+                    "results": [[1, "F"]],
+                    "times": [[1, 0]],
+                }
+            }
+        })
+        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, is_full_results_format=False, num_runs=200, sort_keys=True)
+        self.assertEqual(merged_results, self._make_test_json({
+            "builds": ["3", "2", "1"],
+            "tests": {
+                "001.html": {
+                    "results": [[101, "F"]],
+                    "times": [[101, 0]],
+                }
+            }
+        }))
+
+    def test_merge_full_results_format(self):
+        expected_incremental_results = ('{"Webkit":{'
+            '"allFixableCount":[35],'
+            '"blinkRevision":["1234"],'
+            '"buildNumbers":["3"],'
+            '"chromeRevision":["5678"],'
+            '"fixableCount":[25],'
+            '"fixableCounts":[{"A":0,"C":3,"F":3,"I":1,"O":0,"P":10,"T":16,"X":2,"Z":0}],'
+            '"num_failures_by_type":{"AUDIO":[0],"CRASH":[3],"IMAGE":[1],"IMAGE+TEXT":[0],"MISSING":[0],"PASS":[10],"SKIP":[2],"TEXT":[3],"TIMEOUT":[16]},'
+            '"secondsSinceEpoch":[1368146629],'
+            '"tests":{'
+                '"media":{'
+                    '"W3C":{'
+                        '"audio":{'
+                            '"src":{'
+                                '"src_removal_does_not_trigger_loadstart.html":{'
+                                    '"results":[[1,"P"]],'
+                                    '"times":[[1,4]]'
+                                '}'
+                            '}'
+                        '},'
+                        # FIXME: _normalize_results doesn't strip newly emptied directories.
+                        '"video":{"src":{}}'
+                    '},'
+                    '"encrypted-media":{'
+                        '"encrypted-media-v2-events.html":{'
+                            '"expected":"TIMEOUT",'
+                            '"results":[[1,"T"]],'
+                            '"times":[[1,6]]'
+                        '},'
+                        '"encrypted-media-v2-syntax.html":{'
+                            '"expected":"TIMEOUT",'
+                            '"results":[[1,"T"]],'
+                            '"times":[[1,0]]'
+                        '}'
+                    '},'
+                    '"media-document-audio-repaint.html":{'
+                        '"expected":"IMAGE",'
+                        '"results":[[1,"I"]],'
+                        '"times":[[1,0]]'
+                    '},'
+                    '"progress-events-generated-correctly.html":{'
+                        '"expected":"PASS FAIL IMAGE TIMEOUT CRASH MISSING",'
+                        '"results":[[1,"T"]],'
+                        '"times":[[1,6]]'
+                    '}'
+                '}'
+            '}'
+        '},'
+        '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Z":"IMAGE+TEXT"},'
+        '"version":4}')
+
+        aggregated_results = ""
+        merged_results = JsonResults.merge("Webkit", aggregated_results, FULL_RESULT_EXAMPLE, is_full_results_format=True, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
+        self.assertEqual(merged_results, expected_incremental_results)
 
     def test_merge_null_incremental_results(self):
         # Empty incremental results json.

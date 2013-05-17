@@ -46,7 +46,6 @@ PARAM_FILE = "file"
 PARAM_NAME = "name"
 PARAM_KEY = "key"
 PARAM_TEST_TYPE = "testtype"
-PARAM_INCREMENTAL = "incremental"
 PARAM_TEST_LIST_JSON = "testlistjson"
 PARAM_CALLBACK = "callback"
 
@@ -226,7 +225,6 @@ class Upload(webapp.RequestHandler):
 
         master = self.request.get(PARAM_MASTER)
         test_type = self.request.get(PARAM_TEST_TYPE)
-        incremental = self.request.get(PARAM_INCREMENTAL)
 
         logging.debug(
             "Processing upload request, master: %s, builder: %s, test_type: %s.",
@@ -244,14 +242,18 @@ class Upload(webapp.RequestHandler):
 
         errors = []
         for file in files:
-            filename = file.filename.lower()
-            if ((incremental and filename == "results.json") or
-                (filename == "incremental_results.json")):
-                # Merge incremental json results.
-                update_succeeded = JsonResults.update(master, builder, test_type, file.value)
+            if file.filename == "incremental_results.json":
+                # FIXME: Remove this check once we stop uploading incremental_results.json files for layout tests.
+                if test_type == "layout-tests":
+                    update_succeeded = True
+                else:
+                    update_succeeded = JsonResults.update(master, builder, test_type, file.value, is_full_results_format=False)
             else:
-                update_succeeded = TestFile.add_file(
-                    master, builder, test_type, file.filename, file.value)
+                update_succeeded = bool(TestFile.add_file(master, builder, test_type, file.filename, file.value))
+                # FIXME: Upload full_results.json files for non-layout tests as well and stop supporting the
+                # incremental_results.json file format.
+                if file.filename == "full_results.json" and test_type == "layout-tests":
+                    update_succeeded |= JsonResults.update(master, builder, test_type, file.value, is_full_results_format=True)
 
             if not update_succeeded:
                 errors.append(
