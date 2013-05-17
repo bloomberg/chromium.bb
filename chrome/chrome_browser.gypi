@@ -2328,7 +2328,6 @@
             '../ui/surface/surface.gyp:surface',
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:glue_common',
             '../webkit/support/webkit_support.gyp:plugins',
             '../webkit/support/webkit_support.gyp:plugins_common',
