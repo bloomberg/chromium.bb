@@ -61,8 +61,7 @@ ContentPluginClient* ContentMainDelegate::CreateContentPluginClient() {
 }
 
 ContentRendererClient* ContentMainDelegate::CreateContentRendererClient() {
-  // TODO(scottmg): http://crbug.com/237249 Need split for chrome_child.dll.
-#if defined(OS_IOS) || defined(CHROME_SPLIT_DLL)
+#if defined(OS_IOS)
   return NULL;
 #else
   return new ContentRendererClient();
@@ -70,8 +69,7 @@ ContentRendererClient* ContentMainDelegate::CreateContentRendererClient() {
 }
 
 ContentUtilityClient* ContentMainDelegate::CreateContentUtilityClient() {
-  // TODO(scottmg): http://crbug.com/237249 Need split for chrome_child.dll.
-#if defined(OS_IOS) || defined(CHROME_SPLIT_DLL)
+#if defined(OS_IOS)
   return NULL;
 #else
   return new ContentUtilityClient();

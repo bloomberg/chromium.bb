@@ -165,8 +165,7 @@ namespace content {
 
 base::LazyInstance<ContentBrowserClient>
     g_empty_content_browser_client = LAZY_INSTANCE_INITIALIZER;
-// TODO(scottmg): http://crbug.com/237249 Split into browser and child.
-#if !defined(OS_IOS) && !defined(CHROME_SPLIT_DLL)
+#if !defined(OS_IOS)
 base::LazyInstance<ContentPluginClient>
     g_empty_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentRendererClient>
@@ -298,13 +297,9 @@ class ContentClientInitializer {
         process_type == switches::kPpapiPluginProcess) {
       if (delegate)
         content_client->plugin_ = delegate->CreateContentPluginClient();
-      // TODO(scottmg): http://crbug.com/237249 Should be in _child.
-#if !defined(CHROME_SPLIT_DLL)
       if (!content_client->plugin_)
         content_client->plugin_ = &g_empty_content_plugin_client.Get();
-#endif
       // Single process not supported in split dll mode.
-#if !defined(CHROME_SPLIT_DLL)
     } else if (process_type == switches::kRendererProcess ||
                CommandLine::ForCurrentProcess()->HasSwitch(
                    switches::kSingleProcess)) {
@@ -312,15 +307,12 @@ class ContentClientInitializer {
         content_client->renderer_ = delegate->CreateContentRendererClient();
       if (!content_client->renderer_)
         content_client->renderer_ = &g_empty_content_renderer_client.Get();
-#endif
     } else if (process_type == switches::kUtilityProcess) {
       if (delegate)
         content_client->utility_ = delegate->CreateContentUtilityClient();
       // TODO(scottmg): http://crbug.com/237249 Should be in _child.
-#if !defined(CHROME_SPLIT_DLL)
       if (!content_client->utility_)
         content_client->utility_ = &g_empty_content_utility_client.Get();
-#endif
     }
 #endif  // !OS_IOS
   }
@@ -412,21 +404,13 @@ int RunNamedProcessTypeMain(
   static const MainFunction kMainFunctions[] = {
     { "",                            BrowserMain },
 #if defined(ENABLE_PLUGINS)
-    // TODO(scottmg): http://crbug.com/237249 This will have to be split into
-    // content_main_runner_browser and content_main_runner_child.
-#if !defined(CHROME_SPLIT_DLL)
     { switches::kPluginProcess,      PluginMain },
     { switches::kWorkerProcess,      WorkerMain },
-#endif
     { switches::kPpapiPluginProcess, PpapiPluginMain },
     { switches::kPpapiBrokerProcess, PpapiBrokerMain },
 #endif
-    // TODO(scottmg): http://crbug.com/237249 This will have to be split into
-    // content_main_runner_browser and content_main_runner_child.
-#if !defined(CHROME_SPLIT_DLL)
     { switches::kUtilityProcess,     UtilityMain },
     { switches::kRendererProcess,    RendererMain },
-#endif
     { switches::kGpuProcess,         GpuMain },
   };
 
