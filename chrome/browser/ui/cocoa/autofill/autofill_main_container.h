@@ -8,16 +8,21 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 
 @class AutofillAccountChooser;
 @class AutofillDetailsContainer;
 @class AutofillDialogWindowController;
+@class AutofillSectionContainer;
 @class GTMWidthBasedTweaker;
 
 namespace autofill {
   class AutofillDialogController;
 }
 
+// NSViewController for the main portion of the autofill dialog. Contains
+// account chooser, details for current payment instruments, OK/Cancel.
+// Might dynamically add and remove other elements.
 @interface AutofillMainContainer : NSViewController {
  @private
   scoped_nsobject<AutofillAccountChooser> accountChooser_;
@@ -29,8 +34,14 @@ namespace autofill {
 
 @property(assign, nonatomic) AutofillDialogWindowController* target;
 
+// Designated initializer.
 - (id)initWithController:(autofill::AutofillDialogController*)controller;
+
+// Returns the account chooser.
 - (AutofillAccountChooser*)accountChooser;
+
+// Returns the view controller responsible for |section|.
+- (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section;
 
 @end
 

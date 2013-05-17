@@ -17,7 +17,6 @@
 @interface AutofillMainContainer (Private)
 - (void)buildWindowButtonsForFrame:(NSRect)frame;
 - (void)layoutButtons;
-- (void)closeSheet:(id)sender;
 @end
 
 @implementation AutofillMainContainer
@@ -76,8 +75,8 @@
       [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
   [button setTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)];
   [button setKeyEquivalent:kKeyEquivalentEscape];
-  [button setTarget:self];
-  [button setAction:@selector(closeSheet:)];
+  [button setTarget:target_];
+  [button setAction:@selector(cancel:)];
   [button sizeToFit];
   [buttonContainer_ addSubview:button];
 
@@ -87,8 +86,8 @@
   [button  setTitle:l10n_util::GetNSStringWithFixup(
        IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON)];
   [button setKeyEquivalent:kKeyEquivalentReturn];
-  [button setTarget:self];
-  [button setAction:@selector(closeSheet:)];
+  [button setTarget:target_];
+  [button setAction:@selector(accept:)];
   [button sizeToFit];
   [buttonContainer_ addSubview:button];
 
@@ -109,10 +108,9 @@
   return accountChooser_;
 }
 
-- (void)closeSheet:(id)sender {
-  [target_ closeSheet:sender];
+- (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section {
+  return [detailsContainer_ sectionForId:section];
 }
-
 
 @end
 

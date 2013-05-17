@@ -113,7 +113,8 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogCocoaBrowserTest, MAYBE_DisplayUI) {
   controller()->Show();
-  controller()->GetView()->PerformClose();
+  controller()->OnCancel();
+  controller()->Hide();
 
   controller()->RunMessageLoop();
 }

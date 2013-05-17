@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
@@ -45,7 +46,9 @@ void AutofillDialogCocoa::Show() {
       new ConstrainedWindowMac(this, controller_->web_contents(), sheet));
 }
 
+// Closes the sheet and ends the modal loop. Triggers cleanup sequence.
 void AutofillDialogCocoa::Hide() {
+  constrained_window_->CloseWebContentsModalDialog();
 }
 
 void AutofillDialogCocoa::UpdateAccountChooser() {
@@ -70,6 +73,7 @@ void AutofillDialogCocoa::FillSection(DialogSection section,
 
 void AutofillDialogCocoa::GetUserInput(DialogSection section,
                                        DetailOutputMap* output) {
+  [sheet_controller_ getInputs:output forSection:section];
 }
 
 string16 AutofillDialogCocoa::GetCvc() {
@@ -97,11 +101,6 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   constrained_window_.reset();
   // |this| belongs to |controller_|, so no self-destruction here.
   controller_->ViewClosed();
-}
-
-void AutofillDialogCocoa::PerformClose() {
-  controller_->OnCancel();
-  constrained_window_->CloseWebContentsModalDialog();
 }
 
 }  // autofill
@@ -151,6 +150,17 @@ void AutofillDialogCocoa::PerformClose() {
   return self;
 }
 
+- (IBAction)accept:(id)sender {
+  // TODO(groby): Validation goes here.
+  autofillDialog_->controller()->OnAccept();
+}
+
+- (IBAction)cancel:(id)sender {
+  // TODO(groby): Validation goes here.
+  autofillDialog_->controller()->OnCancel();
+  autofillDialog_->Hide();
+}
+
 - (void)updateAccountChooser {
   [[mainContainer_ accountChooser] update];
 }
@@ -163,14 +173,14 @@ void AutofillDialogCocoa::PerformClose() {
   return [signInContainer_ navigationController];
 }
 
+- (void)getInputs:(autofill::DetailOutputMap*)output
+       forSection:(autofill::DialogSection)section {
+  [[mainContainer_ sectionForId:section] getInputs:output];
+}
+
 - (void)hideSignIn {
   [[signInContainer_ view] setHidden:YES];
   [[mainContainer_ view] setHidden:NO];
-}
-
-
-- (IBAction)closeSheet:(id)sender {
-  autofillDialog_->PerformClose();
 }
 
 @end

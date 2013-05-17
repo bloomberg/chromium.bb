@@ -35,13 +35,21 @@
   [self setView:[[NSView alloc] init]];
 
   NSRect rect = NSZeroRect;
-  for(AutofillSectionContainer* container in
+  for (AutofillSectionContainer* container in
       [details_ reverseObjectEnumerator]) {
     [[container view] setFrameOrigin:NSMakePoint(0, NSMaxY(rect))];
     rect = NSUnionRect(rect, [[container view] frame]);
     [[self view] addSubview:[container view]];
   }
   [[self view] setFrame:rect];
+}
+
+- (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section {
+  for (AutofillSectionContainer* details in details_.get()) {
+    if ([details section] == section)
+      return details;
+  }
+  return nil;
 }
 
 @end

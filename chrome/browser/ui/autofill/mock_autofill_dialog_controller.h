@@ -34,10 +34,10 @@ class MockAutofillDialogController : public AutofillDialogController {
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual const std::vector<ui::Range>& LegalDocumentLinks() OVERRIDE;
   virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
-  virtual const DetailInputs& RequestedFieldsForSection(
-      DialogSection section) const OVERRIDE;
-  virtual ui::ComboboxModel* ComboboxModelForAutofillType(
-      AutofillFieldType type) OVERRIDE;
+  MOCK_CONST_METHOD1(RequestedFieldsForSection,
+                     const DetailInputs&(DialogSection));
+  MOCK_METHOD1(ComboboxModelForAutofillType,
+               ui::ComboboxModel*(AutofillFieldType));
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) OVERRIDE;
   virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
   virtual SuggestionState SuggestionStateForSection(
@@ -78,8 +78,8 @@ class MockAutofillDialogController : public AutofillDialogController {
   MOCK_METHOD0(profile, Profile*());
   virtual content::WebContents* web_contents() OVERRIDE;
  private:
+  DetailInputs default_inputs_;
   std::vector<ui::Range> range_;
-  DetailInputs inputs_;
 };
 
 }  // namespace autofill

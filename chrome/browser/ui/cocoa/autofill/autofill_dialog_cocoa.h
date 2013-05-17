@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
@@ -54,6 +55,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
       ConstrainedWindowMac* window) OVERRIDE;
 
   AutofillDialogController* controller() { return controller_; }
+
   void PerformClose();
 
  private:
@@ -81,11 +83,17 @@ class AutofillDialogCocoa : public AutofillDialogView,
 - (id)initWithWebContents:(content::WebContents*)webContents
       autofillDialog:(autofill::AutofillDialogCocoa*)autofillDialog;
 
-// Closes the sheet and ends the modal loop. This will also clean up the memory.
-- (IBAction)closeSheet:(id)sender;
+// Validate data. If it is valid, notify the controller that the user would
+// like to use the data.
+- (IBAction)accept:(id)sender;
+
+// User cancels dialog.
+- (IBAction)cancel:(id)sender;
 
 // Forwarding AutofillDialogView calls.
 - (void)updateAccountChooser;
+- (void)getInputs:(autofill::DetailOutputMap*)outputs
+       forSection:(autofill::DialogSection)section;
 - (content::NavigationController*)showSignIn;
 - (void)hideSignIn;
 

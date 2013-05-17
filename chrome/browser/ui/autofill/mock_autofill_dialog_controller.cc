@@ -3,11 +3,19 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill {
 
-MockAutofillDialogController::MockAutofillDialogController() {}
-MockAutofillDialogController::~MockAutofillDialogController() {}
+MockAutofillDialogController::MockAutofillDialogController() {
+  testing::DefaultValue<const DetailInputs&>::Set(default_inputs_);
+  testing::DefaultValue<ui::ComboboxModel*>::Set(NULL);
+}
+
+MockAutofillDialogController::~MockAutofillDialogController() {
+  testing::DefaultValue<ui::ComboboxModel*>::Clear();
+  testing::DefaultValue<const DetailInputs&>::Clear();
+}
 
 string16 MockAutofillDialogController::DialogTitle() const {
   return string16();
@@ -82,16 +90,6 @@ const std::vector<ui::Range>&
 bool MockAutofillDialogController::SectionIsActive(
     DialogSection section) const {
   return false;
-}
-
-const DetailInputs& MockAutofillDialogController::RequestedFieldsForSection(
-     DialogSection section) const {
-  return inputs_;
-}
-
-ui::ComboboxModel* MockAutofillDialogController::ComboboxModelForAutofillType(
-     AutofillFieldType type) {
-  return NULL;
 }
 
 ui::MenuModel* MockAutofillDialogController::MenuModelForSection(

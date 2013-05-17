@@ -8,10 +8,13 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 
 namespace autofill {
 class AutofillDialogController;
 }
+
+@class AutofillSectionContainer;
 
 // UI controller for details for current payment instrument.
 @interface AutofillDetailsContainer : NSViewController {
@@ -20,8 +23,11 @@ class AutofillDialogController;
   autofill::AutofillDialogController* controller_;  // Not owned.
 }
 
+// Designated initializer.
 - (id)initWithController:(autofill::AutofillDialogController*)controller;
 
+// Retrieve the container for the specified |section|.
+- (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DETAILS_CONTAINER_H_

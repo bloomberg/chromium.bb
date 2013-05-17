@@ -52,11 +52,23 @@ const int kRelatedControlVerticalSpacing = 8;
   return self;
 }
 
+- (void)getInputs:(autofill::DetailOutputMap*)output {
+  for (id input in [inputs_ subviews]) {
+    const autofill::DetailInput* detailInput =
+        reinterpret_cast<autofill::DetailInput*>([input tag]);
+    DCHECK(detailInput);
+    NSString* value = [input isKindOfClass:[NSPopUpButton class]] ?
+        [input titleOfSelectedItem] : [input stringValue];
+    output->insert(
+        std::make_pair(detailInput,base::SysNSStringToUTF16(value)));
+  }
+}
+
 - (void)loadView {
-  scoped_nsobject<LayoutView> inputs([[self makeInputControls] retain]);
+  inputs_.reset([[self makeInputControls] retain]);
   string16 labelText = controller_->LabelForSection(section_);
   [self setView:[self makeSectionView:base::SysUTF16ToNSString(labelText)
-                         withControls:inputs]];
+                         withControls:inputs_]];
 }
 
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText {
@@ -153,6 +165,7 @@ const int kRelatedControlVerticalSpacing = 8;
       }
       [popup selectItemWithTitle:base::SysUTF16ToNSString(input.initial_value)];
       [popup sizeToFit];
+      [popup setTag:reinterpret_cast<NSInteger>(&input)];
       layout->AddView(popup);
     } else {
       scoped_nsobject<AutofillTextField> field(
@@ -164,11 +177,27 @@ const int kRelatedControlVerticalSpacing = 8;
               input.type, input.initial_value).AsNSImage()];
       [[field cell] setInvalid:YES];
       [field sizeToFit];
+      [field setTag:reinterpret_cast<NSInteger>(&input)];
       layout->AddView(field);
     }
   }
 
   return view.autorelease();
+}
+
+@end
+
+@implementation AutofillSectionContainer (ForTesting)
+
+- (NSControl*)getField:(autofill::AutofillFieldType)type {
+  for (NSControl* control in [inputs_ subviews]) {
+    const autofill::DetailInput* detailInput =
+        reinterpret_cast<autofill::DetailInput*>([control tag]);
+    DCHECK(detailInput);
+    if (detailInput->type == type)
+      return control;
+  }
+  return nil;
 }
 
  @end
