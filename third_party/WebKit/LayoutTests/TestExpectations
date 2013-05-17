@@ -1686,6 +1686,9 @@ crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-padding-shor
 # A result of crbug.com/237701 and r150365.
 Bug(ojan) virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ Pass Failure ImageOnlyFailure ]
 
+# New test, requires rebaseline
+crbug.com/236269 media/video-remove-insert-repaints.html [ ImageOnlyFailure Failure Missing ]
+
 # IDB backend migration fixes this test; will need rebasing after that lands.
 crbug.com/234278 storage/indexeddb/transaction-error.html [ Pass Failure ]
 
