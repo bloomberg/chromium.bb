@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/special_storage_policy.h"
 #include "webkit/storage/webkit_storage_export.h"

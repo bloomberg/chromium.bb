@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_file_system_config.h"
-#include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 
 namespace fileapi {
 class AsyncFileUtilAdapter;
