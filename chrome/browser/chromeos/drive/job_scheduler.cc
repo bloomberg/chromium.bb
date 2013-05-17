@@ -100,6 +100,12 @@ bool JobScheduler::JobEntry::Less(const JobEntry& left, const JobEntry& right) {
   return (left.context.type < right.context.type);
 }
 
+struct JobScheduler::ResumeUploadParams {
+  base::FilePath drive_file_path;
+  base::FilePath local_file_path;
+  std::string content_type;
+};
+
 JobScheduler::JobScheduler(
     Profile* profile,
     google_apis::DriveServiceInterface* drive_service)
@@ -498,9 +504,16 @@ void JobScheduler::UploadNewFile(
   params.local_file_path = local_file_path;
   params.title = title;
   params.content_type = content_type;
+
+  ResumeUploadParams resume_params;
+  resume_params.drive_file_path = params.drive_file_path;
+  resume_params.local_file_path = params.local_file_path;
+  resume_params.content_type = params.content_type;
+
   params.callback = base::Bind(&JobScheduler::OnUploadCompletionJobDone,
                                weak_ptr_factory_.GetWeakPtr(),
                                new_job->job_info.job_id,
+                               resume_params,
                                callback);
   params.progress_callback = base::Bind(&JobScheduler::UpdateProgress,
                                         weak_ptr_factory_.GetWeakPtr(),
@@ -530,9 +543,16 @@ void JobScheduler::UploadExistingFile(
   params.local_file_path = local_file_path;
   params.content_type = content_type;
   params.etag = etag;
+
+  ResumeUploadParams resume_params;
+  resume_params.drive_file_path = params.drive_file_path;
+  resume_params.local_file_path = params.local_file_path;
+  resume_params.content_type = params.content_type;
+
   params.callback = base::Bind(&JobScheduler::OnUploadCompletionJobDone,
                                weak_ptr_factory_.GetWeakPtr(),
                                new_job->job_info.job_id,
+                               resume_params,
                                callback);
   params.progress_callback = base::Bind(&JobScheduler::UpdateProgress,
                                         weak_ptr_factory_.GetWeakPtr(),
@@ -561,9 +581,16 @@ void JobScheduler::CreateFile(
   params.local_file_path = base::FilePath(util::kSymLinkToDevNull);
   params.title = title;
   params.content_type = content_type;
+
+  ResumeUploadParams resume_params;
+  resume_params.drive_file_path = params.drive_file_path;
+  resume_params.local_file_path = params.local_file_path;
+  resume_params.content_type = params.content_type;
+
   params.callback = base::Bind(&JobScheduler::OnUploadCompletionJobDone,
                                weak_ptr_factory_.GetWeakPtr(),
                                new_job->job_info.job_id,
+                               resume_params,
                                callback);
   params.progress_callback = google_apis::ProgressCallback();
 
@@ -835,12 +862,37 @@ void JobScheduler::OnDownloadActionJobDone(
 
 void JobScheduler::OnUploadCompletionJobDone(
     JobID job_id,
+    const ResumeUploadParams& resume_params,
     const google_apis::GetResourceEntryCallback& callback,
     google_apis::GDataErrorCode error,
     const GURL& upload_location,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (!upload_location.is_empty()) {
+    // If upload_location is available, update the task to resume the
+    // upload process from the terminated point.
+    // When we need to retry, the error code should be HTTP_SERVICE_UNAVAILABLE
+    // so OnJobDone called below will be in charge to re-queue the job.
+    JobEntry* job_entry = job_map_.Lookup(job_id);
+    DCHECK(job_entry);
+    job_entry->task = base::Bind(
+        &google_apis::DriveUploaderInterface::ResumeUploadFile,
+        base::Unretained(uploader_.get()),
+        upload_location,
+        resume_params.drive_file_path,
+        resume_params.local_file_path,
+        resume_params.content_type,
+        base::Bind(&JobScheduler::OnUploadCompletionJobDone,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   job_id,
+                   resume_params,
+                   callback),
+        base::Bind(&JobScheduler::UpdateProgress,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   job_id));
+  }
 
   if (OnJobDone(job_id, error))
     callback.Run(error, resource_entry.Pass());

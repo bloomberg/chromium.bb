@@ -183,6 +183,9 @@ class JobScheduler
     base::Closure task;
   };
 
+  // Parameters for DriveUploader::ResumeUploadFile.
+  struct ResumeUploadParams;
+
   // Creates a new job and add it to the job map.
   JobEntry* CreateNewJob(JobType type);
 
@@ -259,6 +262,7 @@ class JobScheduler
   // Callback for job finishing with a UploadCompletionCallback.
   void OnUploadCompletionJobDone(
       JobID job_id,
+      const ResumeUploadParams& resume_params,
       const google_apis::GetResourceEntryCallback& callback,
       google_apis::GDataErrorCode error,
       const GURL& upload_location,
