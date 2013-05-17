@@ -21,7 +21,9 @@
 
 # Ignore locations where third-party tools are placed during bootstrapping.
 /python_bin
+/python_274
 /git_bin
+/git-1.8.0_bin
 /svn_bin
 
 # Ignore ctags/cscope index files

@@ -126,8 +126,8 @@ goto :END
 :PYTHON_INSTALL
 echo Installing python ...
 :: Cleanup python directory if it was existing.
-if exist "%WIN_TOOLS_ROOT_DIR%\python_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python_bin"
-call svn co -q %WIN_TOOLS_ROOT_URL%/third_party/python_26 "%WIN_TOOLS_ROOT_DIR%\python_bin"
+if exist "%WIN_TOOLS_ROOT_DIR%\python_274\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python_274"
+call svn co -q %WIN_TOOLS_ROOT_URL%/third_party/python_274 "%WIN_TOOLS_ROOT_DIR%\python_274"
 if errorlevel 1 goto :PYTHON_FAIL
 :: Create the batch files.
 call copy /y "%~dp0python.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
@@ -138,7 +138,7 @@ goto :END
 
 :PYTHON_FAIL
 echo ... Failed to checkout python automatically.
-echo Please visit http://python.org to download the latest python 2.x client before
+echo Please visit http://python.org to download the latest python 2.7.x client before
 echo continuing.
 echo You can also get the "prebacked" version used at %WIN_TOOLS_ROOT_URL%/third_party/
 set ERRORLEVEL=1
