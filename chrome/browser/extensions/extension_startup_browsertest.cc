@@ -42,21 +42,13 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   }
 
  protected:
-  // The extension paths for the load-extension argument can be separated
-  // by either commas or semicolons, and this method will be overriden
-  // so we can test for both.
-  virtual base::FilePath::StringType JoinExtensions(
-      const std::vector<base::FilePath::StringType>& extensions) const {
-    return JoinString(extensions, ',');
-  }
-
   // InProcessBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     if (!enable_extensions_)
       command_line->AppendSwitch(switches::kDisableExtensions);
 
     if (!load_extensions_.empty()) {
-      base::FilePath::StringType paths = JoinExtensions(load_extensions_);
+      base::FilePath::StringType paths = JoinString(load_extensions_, ',');
       command_line->AppendSwitchNative(switches::kLoadExtension,
                                        paths);
       command_line->AppendSwitch(switches::kDisableExtensionsFileAccessCheck);
@@ -243,7 +235,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Test) {
 // ExtensionsLoadMultipleTest
 // Ensures that we can startup the browser with multiple extensions
 // via --load-extension=X1,X2,X3.
-
 class ExtensionsLoadMultipleTest : public ExtensionStartupTestBase {
  public:
   ExtensionsLoadMultipleTest() {
@@ -281,62 +272,7 @@ class ExtensionsLoadMultipleTest : public ExtensionStartupTestBase {
   }
 };
 
-// ExtensionsLoadMultipleTestSemicolon
-// Ensures that we can startup the browser with multiple extensions
-// when the extension paths are delimited by semicolons
-// eg. --load-extension=X1;X2;X3
-
-class ExtensionsLoadMultipleTestSemicolon
-    : public ExtensionsLoadMultipleTest {
- protected:
-  virtual base::FilePath::StringType JoinExtensions(
-      const std::vector<base::FilePath::StringType>&
-      extensions) const OVERRIDE {
-    return JoinString(extensions, ';');
-  }
-};
-
-// ExtensionsLoadMultipleTestMixedDelimited
-// Ensures that we can startup the browser with multiple extensions
-// when the extension paths are delimited by a mixture of commas and semicolons
-// eg. --load-extension=X1,X2;X3,X4
-
-class ExtensionsLoadMultipleTestMixedDelimited
-    : public ExtensionsLoadMultipleTest {
- protected:
-  virtual base::FilePath::StringType JoinExtensions(
-      const std::vector<base::FilePath::StringType>&
-      extensions) const OVERRIDE {
-    if (extensions.empty()) {
-      return base::FilePath::StringType();
-    }
-
-    std::vector<base::FilePath::StringType>::const_iterator it
-         = extensions.begin();
-    base::FilePath::StringType result = *it;
-    int count = 0;
-    for (it = extensions.begin();
-        it != extensions.end(); ++count, ++it) {
-      char delimiter = count % 2 == 0 ? ',' : ';';
-      result += delimiter;
-      result += *it;
-    }
-
-    return result;
-  }
-};
-
 IN_PROC_BROWSER_TEST_F(ExtensionsLoadMultipleTest, Test) {
-  WaitForServicesToStart(4, true);
-  TestInjection(true, true);
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionsLoadMultipleTestSemicolon, Test) {
-  WaitForServicesToStart(4, true);
-  TestInjection(true, true);
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionsLoadMultipleTestMixedDelimited, Test) {
   WaitForServicesToStart(4, true);
   TestInjection(true, true);
 }

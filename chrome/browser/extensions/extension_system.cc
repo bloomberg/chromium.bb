@@ -182,13 +182,9 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     if (command_line->HasSwitch(switches::kLoadExtension)) {
       CommandLine::StringType path_list = command_line->GetSwitchValueNative(
           switches::kLoadExtension);
-      // Due to an issue with the dbus-send program, we cannot have
-      // commas inside an array of strings. We need to use dbus-send to set up
-      // the browser arguments on CrOS, so we work around this by delimiting
-      // the extension list with both commas and semicolons.
       base::StringTokenizerT<CommandLine::StringType,
           CommandLine::StringType::const_iterator> t(path_list,
-                                                     FILE_PATH_LITERAL(",;"));
+                                                     FILE_PATH_LITERAL(","));
       while (t.GetNext()) {
         UnpackedInstaller::Create(extension_service_.get())->
             LoadFromCommandLine(base::FilePath(t.token()), false);
