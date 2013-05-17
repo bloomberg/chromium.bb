@@ -64,6 +64,7 @@ gfx::Display GetDisplayForScreen(NSScreen* screen, bool is_primary) {
                     visible_frame.size.height);
     display.set_work_area(work_area);
   } else {
+    display.set_bounds(ConvertCoordinateSystem(frame));
     display.set_work_area(ConvertCoordinateSystem(visible_frame));
   }
   CGFloat scale;
@@ -145,6 +146,7 @@ class ScreenMac : public gfx::Screen {
 
     NSArray* screens = [NSScreen screens];
     NSScreen* primary = [screens objectAtIndex:0];
+    ns_point.y = NSMaxY([primary frame]) - ns_point.y;
     for (NSScreen* screen in screens) {
       if (NSMouseInRect(ns_point, [screen frame], NO))
         return GetDisplayForScreen(screen, screen == primary);
