@@ -437,7 +437,6 @@ static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
 {
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
-
     ExceptionCode ec = 0;
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, str1, args[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, str2, args[1]);

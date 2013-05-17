@@ -2183,7 +2183,7 @@ END
     my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
     if (!$raisesExceptions) {
         foreach my $parameter (@{$function->parameters}) {
-            if (!IsCallbackInterface($parameter->type) or $parameter->extendedAttributes->{"IsIndex"}) {
+            if ($parameter->extendedAttributes->{"IsIndex"}) {
                 $raisesExceptions = 1;
             }
         }
@@ -2457,7 +2457,7 @@ sub GenerateSingleConstructorCallback
     }
     if (!$raisesExceptions) {
         foreach my $parameter (@{$function->parameters}) {
-            if (!IsCallbackInterface($parameter->type) or $parameter->extendedAttributes->{"IsIndex"}) {
+            if ($parameter->extendedAttributes->{"IsIndex"}) {
                 $raisesExceptions = 1;
             }
         }
@@ -2477,7 +2477,6 @@ END
 
     if ($raisesExceptions) {
         AddToImplIncludes("core/dom/ExceptionCode.h");
-        $code .= "\n";
         $code .= "    ExceptionCode ec = 0;\n";
     }
 
@@ -2679,7 +2678,7 @@ sub GenerateNamedConstructor
     }
     if (!$raisesExceptions) {
         foreach my $parameter (@{$function->parameters}) {
-            if (!IsCallbackInterface($parameter->type) or $parameter->extendedAttributes->{"IsIndex"}) {
+            if ($parameter->extendedAttributes->{"IsIndex"}) {
                 $raisesExceptions = 1;
             }
         }
@@ -2729,7 +2728,6 @@ END
 
     if ($raisesExceptions) {
         AddToImplIncludes("core/dom/ExceptionCode.h");
-        $code .= "\n";
         $code .= "    ExceptionCode ec = 0;\n";
     }
 
