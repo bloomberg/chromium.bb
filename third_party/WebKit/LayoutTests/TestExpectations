@@ -1597,6 +1597,8 @@ crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html
 crbug.com/237270 [ Win7 Debug ] inspector/profiler/heap-snapshot-comparison-show-all.html [ Crash Timeout ]
 crbug.com/237270 [ Win7 Debug ] inspector/profiler/heap-snapshot-summary-sorting-instances.html [ Crash Timeout ]
 
+crbug.com/241851 [ SnowLeopard Lion Linux Debug ] fast/speechsynthesis/speech-synthesis-cancel.html [ Pass Crash Timeout ]
+
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
 crbug.com/14885 [ Debug ] fast/js/JSON-stringify.html [ Failure ]
 
