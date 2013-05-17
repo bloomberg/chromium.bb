@@ -4,10 +4,6 @@
 
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
 
-#if defined(OS_MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
-#endif  // OS_MACOSX
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -18,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/version.h"
+#include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_control_list_jsons.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_util.h"
@@ -37,9 +34,15 @@
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/plugin_switches.h"
 
+#if defined(OS_MACOSX)
+#include <ApplicationServices/ApplicationServices.h>
+#endif  // OS_MACOSX
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#endif
+#endif  // OS_WIN
+#if defined(OS_ANDROID)
+#include "ui/gfx/android/device_display_info.h"
+#endif  // OS_ANDROID
 
 namespace content {
 namespace {
@@ -83,6 +86,78 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
   }
 }
 #endif  // OS_MACOSX
+
+#if defined(OS_ANDROID)
+void ApplyAndroidWorkarounds(const GPUInfo& gpu_info,
+                             CommandLine* command_line) {
+  std::string vendor(StringToLowerASCII(gpu_info.gl_vendor));
+  std::string renderer(StringToLowerASCII(gpu_info.gl_renderer));
+  bool is_img =
+      gpu_info.gl_vendor.find("Imagination") != std::string::npos;
+  bool is_arm =
+      gpu_info.gl_vendor.find("ARM") != std::string::npos;
+  bool is_qualcomm =
+      gpu_info.gl_vendor.find("Qualcomm") != std::string::npos;
+  bool is_mali_t604 = is_arm &&
+      gpu_info.gl_renderer.find("Mali-T604") != std::string::npos;
+
+  bool is_vivante =
+      gpu_info.gl_extensions.find("GL_VIV_shader_binary") !=
+      std::string::npos;
+
+  bool is_nexus7 =
+      gpu_info.machine_model.find("Nexus 7") != std::string::npos;
+  bool is_nexus10 =
+      gpu_info.machine_model.find("Nexus 10") != std::string::npos;
+
+  // IMG: avoid context switching perf problems, crashes with share groups
+  // Mali-T604: http://crbug.com/154715
+  // QualComm, NVIDIA: Crashes with share groups
+  if (is_vivante || is_img || is_mali_t604 || is_nexus7 || is_qualcomm)
+    command_line->AppendSwitch(switches::kEnableVirtualGLContexts);
+
+  gfx::DeviceDisplayInfo info;
+  int default_tile_size = 256;
+
+  // For very high resolution displays (eg. Nexus 10), set the default
+  // tile size to be 512. This should be removed in favour of a generic
+  // hueristic that works across all platforms and devices, once that
+  // exists: http://crbug.com/159524. This switches to 512 for screens
+  // containing 40 or more 256x256 tiles, such that 1080p devices do
+  // not use 512x512 tiles (eg. 1920x1280 requires 37.5 tiles)
+  int numTiles = (info.GetDisplayWidth() *
+                  info.GetDisplayHeight()) / (256 * 256);
+  if (numTiles >= 40)
+    default_tile_size = 512;
+
+  // IMG: Fast async texture uploads only work with non-power-of-two,
+  // but still multiple-of-eight sizes.
+  // http://crbug.com/168099
+  if (is_img)
+    default_tile_size -= 8;
+
+  // Set the command line if it isn't already set and we changed
+  // the default tile size.
+  if (default_tile_size != 256 &&
+      !command_line->HasSwitch(switches::kDefaultTileWidth) &&
+      !command_line->HasSwitch(switches::kDefaultTileHeight)) {
+    std::stringstream size;
+    size << default_tile_size;
+    command_line->AppendSwitchASCII(
+        switches::kDefaultTileWidth, size.str());
+    command_line->AppendSwitchASCII(
+        switches::kDefaultTileHeight, size.str());
+  }
+
+  // Increase the resolution of low resolution tiles for Nexus tablets.
+  if ((is_nexus7 || is_nexus10) &&
+      !command_line->HasSwitch(
+          cc::switches::kLowResolutionContentsScaleFactor)) {
+    command_line->AppendSwitchASCII(
+        cc::switches::kLowResolutionContentsScaleFactor, "0.25");
+  }
+}
+#endif  // OS_ANDROID
 
 // Block all domains' use of 3D APIs for this many milliseconds if
 // approaching a threshold where system stability might be compromised.
@@ -328,16 +403,6 @@ void GpuDataManagerImplPrivate::Initialize() {
                  gpu_switching_list_string,
                  gpu_driver_bug_list_string,
                  gpu_info);
-  // We pass down the list to GPU command buffer through commandline
-  // switches at GPU process launch. However, in situations where we don't
-  // have a GPU process, we append the browser process commandline.
-  if (command_line->HasSwitch(switches::kSingleProcess) ||
-      command_line->HasSwitch(switches::kInProcessGPU)) {
-    if (!gpu_driver_bugs_.empty()) {
-      command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
-                                      IntSetToString(gpu_driver_bugs_));
-    }
-  }
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuInfo(const GPUInfo& gpu_info) {
@@ -747,6 +812,21 @@ void GpuDataManagerImplPrivate::InitializeImpl(
   UpdateGpuInfo(gpu_info);
   UpdateGpuSwitchingManager(gpu_info);
   UpdatePreliminaryBlacklistedFeatures();
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  // We pass down the list to GPU command buffer through commandline
+  // switches at GPU process launch. However, in situations where we don't
+  // have a GPU process, we append the browser process commandline.
+  if (command_line->HasSwitch(switches::kSingleProcess) ||
+      command_line->HasSwitch(switches::kInProcessGPU)) {
+    if (!gpu_driver_bugs_.empty()) {
+      command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
+                                      IntSetToString(gpu_driver_bugs_));
+    }
+  }
+#if defined(OS_ANDROID)
+  ApplyAndroidWorkarounds(gpu_info, command_line);
+#endif  // OS_ANDROID
 }
 
 void GpuDataManagerImplPrivate::UpdateBlacklistedFeatures(
