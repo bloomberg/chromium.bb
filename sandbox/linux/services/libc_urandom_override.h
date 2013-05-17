@@ -7,11 +7,7 @@
 
 namespace sandbox {
 
-#if !defined(CHROMIUM_SELINUX)
-
 void InitLibcUrandomOverrides();
-
-#endif  // !CHROMIUM_SELINUX
 
 }  // namespace sandbox
 

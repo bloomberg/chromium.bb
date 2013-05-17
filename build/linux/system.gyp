@@ -623,19 +623,6 @@
       ],
     },
     {
-      'target_name': 'selinux',
-      'type': 'none',
-      'conditions': [
-        ['_toolset=="target"', {
-          'link_settings': {
-            'libraries': [
-              '-lselinux',
-            ],
-          },
-        }],
-      ],
-    },
-    {
       'target_name': 'gnome_keyring',
       'type': 'none',
       'conditions': [

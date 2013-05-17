@@ -177,7 +177,7 @@
             '../webkit/support/webkit_support.gyp:webkit_support_common',
           ],
         }],
-        ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
+        ['OS == "win" or toolkit_uses_gtk == 1', {
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
           ],

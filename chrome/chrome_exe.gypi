@@ -443,11 +443,6 @@
                 'linux_installer_configs',
               ],
             }],
-            ['selinux==0', {
-              'dependencies': [
-                '../sandbox/sandbox.gyp:sandbox',
-              ],
-            }],
             # For now, do not build nacl_helper when disable_nacl=1
             # http://code.google.com/p/gyp/issues/detail?id=239
             ['disable_nacl==0 and coverage==0', {
@@ -456,6 +451,9 @@
                 'nacl_helper',
                 ],
             }],
+          ],
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
         ['OS=="win"', {

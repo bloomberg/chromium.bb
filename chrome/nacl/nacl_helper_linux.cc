@@ -38,7 +38,7 @@ namespace {
 // The child must mimic the behavior of zygote_main_linux.cc on the child
 // side of the fork. See zygote_main_linux.cc:HandleForkRequest from
 //   if (!child) {
-// Note: this code doesn't attempt to support SELINUX or the SECCOMP sandbox.
+// Note: this code doesn't attempt to support the SECCOMP sandbox.
 void BecomeNaClLoader(const std::vector<int>& child_fds,
                       size_t prereserved_sandbox_size) {
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
@@ -217,10 +217,8 @@ int main(int argc, char* argv[]) {
   CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
   base::RandUint64();  // acquire /dev/urandom fd before sandbox is raised
-#if !defined(CHROMIUM_SELINUX)
   // Allows NSS to fopen() /dev/urandom.
   sandbox::InitLibcUrandomOverrides();
-#endif
 #if defined(USE_NSS)
   // Configure NSS for use inside the NaCl process.
   // The fork check has not caused problems for NaCl, but this appears to be

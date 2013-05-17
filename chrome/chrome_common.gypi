@@ -531,11 +531,6 @@
             ],
           },
         }],
-        ['OS=="linux" and selinux==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:selinux',
-          ],
-        }],
         ['chromeos==1', {
           'sources!': [
             'common/chrome_version_info_linux.cc',

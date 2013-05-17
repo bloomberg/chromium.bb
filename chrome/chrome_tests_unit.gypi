@@ -2063,11 +2063,6 @@
         }],
         ['toolkit_uses_gtk == 1', {
           'conditions': [
-            ['selinux==0', {
-              'dependencies': [
-                '../sandbox/sandbox.gyp:*',
-              ],
-            }],
             ['toolkit_views==1', {
               'sources!': [
                 'browser/ui/gtk/accelerators_gtk_unittest.cc',
@@ -2096,6 +2091,7 @@
             '../build/linux/system.gyp:dbus',
             '../build/linux/system.gyp:gtk',
             '../dbus/dbus.gyp:dbus_test_support',
+            '../sandbox/sandbox.gyp:*',
           ],
           'sources!': [
             'browser/printing/print_job_unittest.cc',

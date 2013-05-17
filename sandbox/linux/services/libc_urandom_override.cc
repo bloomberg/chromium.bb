@@ -18,10 +18,6 @@
 
 namespace sandbox {
 
-// With SELinux we can carve out a precise sandbox, so we don't have to play
-// with intercepting libc calls.
-#if !defined(CHROMIUM_SELINUX)
-
 static bool g_override_urandom = false;
 
 void InitLibcUrandomOverrides() {
@@ -161,7 +157,5 @@ int xstat64_override(int version, const char *path, struct stat64 *buf) {
 }
 
 #endif  // !ADDRESS_SANITIZER
-
-#endif  // !CHROMIUM_SELINUX
 
 }  // namespace content

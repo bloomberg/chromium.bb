@@ -55,10 +55,6 @@ namespace content {
 
 // See http://code.google.com/p/chromium/wiki/LinuxZygote
 
-// With SELinux we can carve out a precise sandbox, so we don't have to play
-// with intercepting libc calls.
-#if !defined(CHROMIUM_SELINUX)
-
 static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
                                         char* timezone_out,
                                         size_t timezone_out_len) {
@@ -250,8 +246,6 @@ struct tm* localtime64_r_override(const time_t* timep, struct tm* result) {
   }
 }
 
-#endif  // !CHROMIUM_SELINUX
-
 // This function triggers the static and lazy construction of objects that need
 // to be created before imposing the sandbox.
 static void PreSandboxInit() {
@@ -287,7 +281,6 @@ static void PreSandboxInit() {
 #endif
 }
 
-#if !defined(CHROMIUM_SELINUX)
 // Do nothing here
 static void SIGCHLDHandler(int signal) {
 }
@@ -433,30 +426,11 @@ static bool EnterSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
 
   return true;
 }
-#else  // CHROMIUM_SELINUX
-
-static bool EnterSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
-                         bool* using_suid_sandbox, bool* has_started_new_init) {
-  *using_suid_sandbox = false;
-  *has_started_new_init = false;
-
-  if (!setuid_sandbox)
-    return false;
-
-  PreSandboxInit();
-  SkFontConfigInterface::SetGlobal(
-      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor))->unref();
-  return true;
-}
-
-#endif  // CHROMIUM_SELINUX
 
 bool ZygoteMain(const MainFunctionParams& params,
                 ZygoteForkDelegate* forkdelegate) {
-#if !defined(CHROMIUM_SELINUX)
   g_am_zygote_or_renderer = true;
   sandbox::InitLibcUrandomOverrides();
-#endif
 
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
   // This will pre-initialize the various sandboxes that need it.
@@ -472,7 +446,7 @@ bool ZygoteMain(const MainFunctionParams& params,
     VLOG(1) << "ZygoteMain: fork delegate is NULL";
   }
 
-  // Turn on the SELinux or SUID sandbox.
+  // Turn on the sandbox.
   bool using_suid_sandbox = false;
   bool has_started_new_init = false;
 

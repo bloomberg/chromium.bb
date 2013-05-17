@@ -921,9 +921,6 @@
     # sandbox the zygote process and, thus, all renderer processes.
     'linux_sandbox_path%': '',
 
-    # Set this to true to enable SELinux support.
-    'selinux%': 0,
-
     # Clang stuff.
     'clang%': '<(clang)',
     'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
@@ -2004,9 +2001,6 @@
       ['dcheck_always_on!=0', {
         'defines': ['DCHECK_ALWAYS_ON=1'],
       }],  # dcheck_always_on!=0
-      ['selinux==1', {
-        'defines': ['CHROMIUM_SELINUX=1'],
-      }],
       ['win_use_allocator_shim==0', {
         'conditions': [
           ['OS=="win"', {

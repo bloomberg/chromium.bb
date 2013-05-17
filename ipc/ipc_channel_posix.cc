@@ -841,11 +841,6 @@ bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
                  << " channel:" << this
                  << " message-type:" << msg->type()
                  << " header()->num_fds:" << header_fds;
-#if defined(CHROMIUM_SELINUX)
-    LOG(WARNING) << "In the case of SELinux this can be caused when "
-                    "using a --user-data-dir to which the default "
-                    "policy doesn't give the renderer access to. ";
-#endif  // CHROMIUM_SELINUX
     // Abort the connection.
     ClearInputFDs();
     return false;
