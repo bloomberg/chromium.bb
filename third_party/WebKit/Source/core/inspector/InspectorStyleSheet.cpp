@@ -143,7 +143,8 @@ namespace WebCore {
 
 static PassOwnPtr<CSSParser> createCSSParser(Document* document)
 {
-    return adoptPtr(new CSSParser(document ? CSSParserContext(document) : strictCSSParserContext()));
+    UseCounter* counter = 0;
+    return adoptPtr(new CSSParser(document ? CSSParserContext(document) : strictCSSParserContext(), counter));
 }
 
 namespace {
