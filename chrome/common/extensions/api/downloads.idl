@@ -263,17 +263,17 @@ namespace downloads {
     boolean? exists;
   };
 
-  [inline_doc] dictionary DownloadStringDiff {
+  dictionary StringDelta {
     DOMString? previous;
     DOMString? current;
   };
 
-  [inline_doc] dictionary DownloadLongDiff {
+  dictionary LongDelta {
     long? previous;
     long? current;
   };
 
-  [inline_doc] dictionary DownloadBooleanDiff {
+  dictionary BooleanDelta {
     boolean? previous;
     boolean? current;
   };
@@ -285,43 +285,43 @@ namespace downloads {
     long id;
 
     // The change in <code>url</code>, if any.
-    DownloadStringDiff? url;
+    StringDelta? url;
 
     // The change in <code>filename</code>, if any.
-    DownloadStringDiff? filename;
+    StringDelta? filename;
 
     // The change in <code>danger</code>, if any.
-    DownloadStringDiff? danger;
+    StringDelta? danger;
 
     // The change in <code>dangerAccepted</code>, if any.
-    DownloadBooleanDiff? dangerAccepted;
+    BooleanDelta? dangerAccepted;
 
     // The change in <code>mime</code>, if any.
-    DownloadStringDiff? mime;
+    StringDelta? mime;
 
     // The change in <code>startTime</code>, if any.
-    DownloadStringDiff? startTime;
+    StringDelta? startTime;
 
     // The change in <code>endTime</code>, if any.
-    DownloadStringDiff? endTime;
+    StringDelta? endTime;
 
     // The change in <code>state</code>, if any.
-    DownloadStringDiff? state;
+    StringDelta? state;
 
     // The change in <code>paused</code>, if any.
-    DownloadBooleanDiff? paused;
+    BooleanDelta? paused;
 
     // The change in <code>error</code>, if any.
-    DownloadLongDiff? error;
+    LongDelta? error;
 
     // The change in <code>totalBytes</code>, if any.
-    DownloadLongDiff? totalBytes;
+    LongDelta? totalBytes;
 
     // The change in <code>fileSize</code>, if any.
-    DownloadLongDiff? fileSize;
+    LongDelta? fileSize;
 
     // The change in <code>exists</code>, if any.
-    DownloadBooleanDiff? exists;
+    BooleanDelta? exists;
   };
 
   [inline_doc] dictionary GetFileIconOptions {
