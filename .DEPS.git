@@ -11,12 +11,12 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@bd20fb808be87945738f7231effe3af41e89128d'
+         '@f231a3ccba2a5db11dd0d18481310a532339fde6'
 }
 
 deps = {
     'src/breakpad/src':
-        Var('git_url') + '/external/google-breakpad/src.git@36052a2d83f67b28f976719921a642374679d6ce',
+        Var('git_url') + '/external/google-breakpad/src.git@1db182dbc2d31c730a2076d675a2e3fd1e106453',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
         Var('git_url') + '/native_client/src/native_client/tests/prebuilt.git@3e17365176c94624f46cace174f61834b7f3c35d',
     'src/chrome/test/data/perf/canvas_bench':
