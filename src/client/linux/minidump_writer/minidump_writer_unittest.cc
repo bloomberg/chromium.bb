@@ -84,7 +84,7 @@ TEST(MinidumpWriterTest, SetupWithPath) {
   AutoTempDir temp_dir;
   string templ = temp_dir.path() + kMDWriterUnitTestFileName;
   // Set a non-zero tid to avoid tripping asserts.
-  context.tid = 1;
+  context.tid = child;
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child, &context, sizeof(context)));
   struct stat st;
   ASSERT_EQ(0, stat(templ.c_str(), &st));
@@ -114,7 +114,7 @@ TEST(MinidumpWriterTest, SetupWithFD) {
   string templ = temp_dir.path() + kMDWriterUnitTestFileName;
   int fd = open(templ.c_str(), O_CREAT | O_WRONLY, S_IRWXU);
   // Set a non-zero tid to avoid tripping asserts.
-  context.tid = 1;
+  context.tid = child;
   ASSERT_TRUE(WriteMinidump(fd, child, &context, sizeof(context)));
   struct stat st;
   ASSERT_EQ(0, stat(templ.c_str(), &st));
@@ -391,7 +391,7 @@ TEST(MinidumpWriterTest, DeletedBinary) {
 
   string templ = temp_dir.path() + kMDWriterUnitTestFileName;
   // Set a non-zero tid to avoid tripping asserts.
-  context.tid = 1;
+  context.tid = child_pid;
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child_pid, &context,
                             sizeof(context)));
   kill(child_pid, SIGKILL);

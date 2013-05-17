@@ -73,7 +73,7 @@ LinuxDumper::LinuxDumper(pid_t pid)
     : pid_(pid),
       crash_address_(0),
       crash_signal_(0),
-      crash_thread_(0),
+      crash_thread_(pid),
       threads_(&allocator_, 8),
       mappings_(&allocator_),
       auxv_(&allocator_, AT_MAX + 1) {
