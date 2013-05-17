@@ -152,10 +152,6 @@ void X509Certificate::GetSubjectAltName(
   x509_util::GetSubjectAltName(cert_handle_, dns_names, ip_addrs);
 }
 
-bool X509Certificate::VerifyNameMatch(const std::string& hostname) const {
-  return CERT_VerifyCertName(cert_handle_, hostname.c_str()) == SECSuccess;
-}
-
 bool X509Certificate::IsIssuedByEncoded(
     const std::vector<std::string>& valid_issuers) {
   // Get certificate chain as scoped list of CERTCertificate objects.

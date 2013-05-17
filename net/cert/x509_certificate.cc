@@ -24,6 +24,7 @@
 #include "base/time.h"
 #include "googleurl/src/url_canon.h"
 #include "net/base/net_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/pem_tokenizer.h"
 
 namespace net {
@@ -552,10 +553,35 @@ bool X509Certificate::VerifyHostname(
   bool allow_wildcards = false;
   if (!reference_domain.empty()) {
     DCHECK(reference_domain.starts_with("."));
-    // We required at least 3 components (i.e. 2 dots) as a basic protection
-    // against too-broad wild-carding.
-    // Also we don't attempt wildcard matching on a purely numerical hostname.
-    allow_wildcards = reference_domain.rfind('.') != 0 &&
+
+    // Do not allow wildcards for public/ICANN registry controlled domains -
+    // that is, prevent *.com or *.co.uk as valid presented names, but do not
+    // prevent *.appspot.com (a private registry controlled domain).
+    // In addition, unknown top-level domains (such as 'intranet' domains or
+    // new TLDs/gTLDs not yet added to the registry controlled domain dataset)
+    // are also implicitly prevented.
+    // Because |reference_domain| must contain at least one name component that
+    // is not registry controlled, this ensures that all reference domains
+    // contain at least three domain components when using wildcards.
+    size_t registry_length =
+        registry_controlled_domains::GetRegistryLength(
+            reference_name,
+            registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
+            registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+
+    // Because |reference_name| was already canonicalized, the following
+    // should never happen.
+    CHECK_NE(std::string::npos, registry_length);
+
+    // Account for the leading dot in |reference_domain|.
+    bool is_registry_controlled =
+        registry_length != 0 &&
+        registry_length == (reference_domain.size() - 1);
+
+    // Additionally, do not attempt wildcard matching for purely numeric
+    // hostnames.
+    allow_wildcards =
+        !is_registry_controlled &&
         reference_name.find_first_not_of("0123456789.") != std::string::npos;
   }
 
@@ -622,13 +648,11 @@ bool X509Certificate::VerifyHostname(
   return false;
 }
 
-#if !defined(USE_NSS)
 bool X509Certificate::VerifyNameMatch(const std::string& hostname) const {
   std::vector<std::string> dns_names, ip_addrs;
   GetSubjectAltName(&dns_names, &ip_addrs);
   return VerifyHostname(hostname, subject_.common_name, dns_names, ip_addrs);
 }
-#endif
 
 // static
 bool X509Certificate::GetPEMEncoded(OSCertHandle cert_handle,
