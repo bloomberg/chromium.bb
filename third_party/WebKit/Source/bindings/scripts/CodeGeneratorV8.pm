@@ -161,6 +161,19 @@ my %primitiveTypeHash = ( "boolean" => 1,
                           "float" => 1,
                           "double" => 1);
 
+my %typedArrayHash = ("ArrayBuffer" => 1,
+                      "ArrayBufferView" => 1,
+                      "Uint8Array" => 1,
+                      "Uint8ClampedArray" => 1,
+                      "Uint16Array" => 1,
+                      "Uint32Array" => 1,
+                      "Int8Array" => 1,
+                      "Int16Array" => 1,
+                      "Int32Array" => 1,
+                      "Float32Array" => 1,
+                      "Float64Array" => 1,
+                     );
+
 my %enumTypeHash = ();
 
 my %svgAnimatedTypeHash = ("SVGAnimatedAngle" => 1, "SVGAnimatedBoolean" => 1,
@@ -268,8 +281,6 @@ sub IDLFileForInterface
 sub ParseInterface
 {
     my $interfaceName = shift;
-
-    return undef if $interfaceName eq 'Object';
 
     if (exists $cachedInterfaces->{$interfaceName}) {
         return $cachedInterfaces->{$interfaceName};
@@ -595,7 +606,7 @@ sub GenerateHeader
 
     # Copy contents of parent interfaces except the first parent.
     my @parents;
-    AddMethodsConstantsAndAttributesFromParentInterfaces($interface, \@parents, 1);
+    AddMethodsConstantsAndAttributesFromParentInterfaces($interface, \@parents);
     LinkOverloadedFunctions($interface);
 
     # Ensure the IsDOMNodeType function is in sync.
@@ -2263,20 +2274,6 @@ sub GenerateArgumentsCountCheck
         $argumentsCountCheckString .= "        return throwNotEnoughArgumentsError(args.GetIsolate());\n";
     }
     return $argumentsCountCheckString;
-}
-
-sub GetIndexOf
-{
-    my $paramName = shift;
-    my @paramList = @_;
-    my $index = 0;
-    foreach my $param (@paramList) {
-        if ($paramName eq $param) {
-            return $index;
-        }
-        $index++;
-    }
-    return -1;
 }
 
 sub GenerateParametersCheck
@@ -3968,16 +3965,10 @@ END
     if ($numFunctions > 0) {
         $header{classPublic}->add("    // Functions\n");
         foreach my $function (@{$interface->functions}) {
-            my $code = "";
-            my @params = @{$function->parameters};
-            if (!$function->signature->extendedAttributes->{"Custom"} &&
-                !(GetNativeType($function->signature->type) eq "bool")) {
-                    $code .= "    COMPILE_ASSERT(false)";
-            }
-
-            $code .= "    virtual " . GetNativeTypeForCallbacks($function->signature->type) . " " . $function->signature->name . "(";
+            my $code = "    virtual " . GetNativeTypeForCallbacks($function->signature->type) . " " . $function->signature->name . "(";
 
             my @args = ();
+            my @params = @{$function->parameters};
             foreach my $param (@params) {
                 push(@args, GetNativeTypeForCallbacks($param->type) . " " . $param->name);
             }
@@ -4035,12 +4026,10 @@ END
         foreach my $function (@{$interface->functions}) {
             my $code = "";
             my @params = @{$function->parameters};
-            if ($function->signature->extendedAttributes->{"Custom"} ||
-                !(GetNativeTypeForCallbacks($function->signature->type) eq "bool")) {
-                next;
-            }
+            next if $function->signature->extendedAttributes->{"Custom"};
 
             AddIncludesForType($function->signature->type);
+            die "We don't yet support callbacks that return non-boolean values.\n" if $function->signature->type ne "boolean";
             $code .= "\n" . GetNativeTypeForCallbacks($function->signature->type) . " ${v8ClassName}::" . $function->signature->name . "(";
 
             my @args = ();
@@ -4449,7 +4438,6 @@ sub JSValueToNative
     my $type = $signature->type;
     my $intConversion = $signature->extendedAttributes->{"EnforceRange"} ? "EnforceRange" : "NormalConversion";
 
-    return "$value" if $type eq "JSObject";
     return "$value->BooleanValue()" if $type eq "boolean";
     return "static_cast<$type>($value->NumberValue())" if $type eq "float" or $type eq "double";
 
@@ -4924,16 +4912,13 @@ sub AddMethodsConstantsAndAttributesFromParentInterfaces
     # Add to $interface all of its inherited interface members, except for those
     # inherited through $interface's first listed parent.  If an array reference
     # is passed in as $parents, the names of all ancestor interfaces visited
-    # will be appended to the array.  If $collectDirectParents is true, then
-    # even the names of $interface's first listed parent and its ancestors will
-    # be appended to $parents.
+    # will be appended to the array. The names of $interface's first listed parent
+    # and its ancestors will also be appended to $parents.
 
     my $interface = shift;
     my $parents = shift;
-    my $collectDirectParents = shift;
 
     my $first = 1;
-
     ForAllParents($interface, sub {
         my $currentInterface = shift;
 
@@ -4941,17 +4926,13 @@ sub AddMethodsConstantsAndAttributesFromParentInterfaces
             # Ignore first parent class, already handled by the generation itself.
             $first = 0;
 
-            if ($collectDirectParents) {
-                # Just collect the names of the direct ancestor interfaces,
-                # if necessary.
+            # Just collect the names of the direct ancestor interfaces,
+            # if necessary.
+            push(@$parents, $currentInterface->name);
+            ForAllParents($currentInterface, sub {
+                my $currentInterface = shift;
                 push(@$parents, $currentInterface->name);
-                ForAllParents($currentInterface, sub {
-                    my $currentInterface = shift;
-                    push(@$parents, $currentInterface->name);
-                }, undef);
-            }
-
-            # Prune the recursion here.
+            });
             return 'prune';
         }
 
@@ -5001,7 +4982,7 @@ sub IsEnumType
 {
     my $type = shift;
 
-    return 1 if exists $enumTypeHash{$type};
+    return 1 if $enumTypeHash{$type};
     return 0;
 }
 
@@ -5016,7 +4997,7 @@ sub IsSVGTypeNeedingTearOff
 {
     my $type = shift;
 
-    return 1 if exists $svgTypeNeedingTearOff{$type};
+    return 1 if $svgTypeNeedingTearOff{$type};
     return 0;
 }
 
@@ -5031,10 +5012,7 @@ sub IsSVGTypeWithWritablePropertiesNeedingTearOff
 sub IsTypedArrayType
 {
     my $type = shift;
-    return 1 if (($type eq "ArrayBuffer") or ($type eq "ArrayBufferView"));
-    return 1 if (($type eq "Uint8Array") or ($type eq "Uint8ClampedArray") or ($type eq "Uint16Array") or ($type eq "Uint32Array"));
-    return 1 if (($type eq "Int8Array") or ($type eq "Int16Array") or ($type eq "Int32Array"));
-    return 1 if (($type eq "Float32Array") or ($type eq "Float64Array"));
+    return 1 if $typedArrayHash{$type};
     return 0;
 }
 
@@ -5141,7 +5119,6 @@ sub ToMethodName
     return $ret;
 }
 
-# Return the C++ namespace that a given attribute name string is defined in.
 sub NamespaceForAttributeName
 {
     my ($interfaceName, $attributeName) = @_;
@@ -5207,11 +5184,7 @@ sub ContentAttributeName
 sub CanUseFastAttribute
 {
     my $attribute = shift;
-    my $attributeType = $attribute->signature->type;
-    # HTMLNames::styleAttr cannot be used with fast{Get,Has}Attribute but we do not [Reflect] the
-    # style attribute.
-
-    return !IsSVGAnimatedType($attributeType);
+    return !IsSVGAnimatedType($attribute->signature->type);
 }
 
 sub GetterExpression
@@ -5228,7 +5201,6 @@ sub GetterExpression
     if ($attribute->signature->extendedAttributes->{"URL"}) {
         $functionName = "getURLAttribute";
     } elsif ($attribute->signature->type eq "boolean") {
-        my $namespace = NamespaceForAttributeName($interfaceName, $contentAttributeName);
         if (CanUseFastAttribute($attribute)) {
             $functionName = "fastHasAttribute";
         } else {
