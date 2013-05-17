@@ -372,23 +372,7 @@ sub GenerateInterface
 sub AddToImplIncludes
 {
     my $header = shift;
-    my $conditional = shift;
-
-    if (not $conditional) {
-        $implIncludes{$header} = 1;
-    } elsif (not exists($implIncludes{$header})) {
-        $implIncludes{$header} = $conditional;
-    } else {
-        my $oldValue = $implIncludes{$header};
-        if ($oldValue ne 1) {
-            my %newValue = ();
-            $newValue{$conditional} = 1;
-            foreach my $condition (split(/\|/, $oldValue)) {
-                $newValue{$condition} = 1;
-            }
-            $implIncludes{$header} = join("|", sort keys %newValue);
-        }
-    }
+    $implIncludes{$header} = 1;
 }
 
 sub AddToHeaderIncludes
@@ -1408,7 +1392,7 @@ END
         my $url = $attribute->signature->extendedAttributes->{"URL"};
         if ($getterStringUsesImp && $reflect && !$url && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {
             # Generate super-compact call for regular attribute getter:
-            my ($functionName, @arguments) = GetterExpression(\%implIncludes, $interfaceName, $attribute);
+            my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
             $code .= "    return v8String(imp->${functionName}(" . join(", ", @arguments) . "), info.GetIsolate(), ReturnUnsafeHandle);\n";
             $code .= "}\n\n";
@@ -1453,7 +1437,7 @@ END
     my $getterString;
 
     if ($getterStringUsesImp) {
-        my ($functionName, @arguments) = GetterExpression(\%implIncludes, $interfaceName, $attribute);
+        my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
         push(@arguments, "isNull") if $isNullable;
         push(@arguments, "ec") if $useExceptions;
         if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
@@ -1893,7 +1877,7 @@ END
             $code .= ", ec" if $useExceptions;
             $code .= ");\n";
         } else {
-            my ($functionName, @arguments) = SetterExpression(\%implIncludes, $interfaceName, $attribute);
+            my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
             push(@arguments, $expression);
             push(@arguments, "ec") if $useExceptions;
             if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
@@ -2923,7 +2907,7 @@ sub GenerateSingleBatchedAttribute
         # We do not generate the header file for NamedConstructor of class XXXX,
         # since we generate the NamedConstructor declaration into the header file of class XXXX.
         if ($constructorType !~ /Constructor$/ || $attribute->signature->extendedAttributes->{"CustomConstructor"}) {
-            AddToImplIncludes("V8${constructorType}.h", $attribute->signature->extendedAttributes->{"Conditional"});
+            AddToImplIncludes("V8${constructorType}.h");
         }
         $data = "&V8${constructorType}::info";
         $getter = "${implClassName}V8Internal::${implClassName}ConstructorGetter";
@@ -4845,33 +4829,14 @@ sub WriteData
     my $implFileName = "$outputDirectory/V8$name.cpp";
 
     my @includes = ();
-    my %implIncludeConditions = ();
     foreach my $include (keys %implIncludes) {
-        my $condition = $implIncludes{$include};
-        my $checkType = $include;
-        $checkType =~ s/\.h//;
-        next if IsSVGAnimatedType($checkType);
-
-        $include = "\"$include\"";
-
-        if ($condition eq 1) {
-            push @includes, $include;
-        } else {
-            push @{$implIncludeConditions{$condition}}, $include;
-        }
+        push @includes, "\"$include\"";
     }
 
     #FIXME: do not treat main header special
     my $mainInclude = "\"V8$name.h\"";
     foreach my $include (sort @includes) {
         $implementation{includes}->add("#include $include\n") unless $include eq $mainInclude;
-    }
-    foreach my $condition (sort keys %implIncludeConditions) {
-        $implementation{includes}->add("\n#if " . GenerateConditionalStringFromAttributeValue($condition) . "\n");
-        foreach my $include (sort @{$implIncludeConditions{$condition}}) {
-            $implementation{includes}->add("#include $include\n");
-        }
-        $implementation{includes}->add("#endif\n");
     }
     $implementation{includes}->add("\n") unless $interface->isCallback;
     WriteFileIfChanged($implFileName, $implementation{root}->toString());
@@ -5246,7 +5211,7 @@ sub AttributeNameForGetterAndSetter
 
 sub ContentAttributeName
 {
-    my ($implIncludes, $interfaceName, $attribute) = @_;
+    my ($interfaceName, $attribute) = @_;
 
     my $contentAttributeName = $attribute->signature->extendedAttributes->{"Reflect"};
     return undef if !$contentAttributeName;
@@ -5271,9 +5236,9 @@ sub CanUseFastAttribute
 
 sub GetterExpression
 {
-    my ($implIncludes, $interfaceName, $attribute) = @_;
+    my ($interfaceName, $attribute) = @_;
 
-    my $contentAttributeName = ContentAttributeName($implIncludes, $interfaceName, $attribute);
+    my $contentAttributeName = ContentAttributeName($interfaceName, $attribute);
 
     if (!$contentAttributeName) {
         return (ToMethodName(AttributeNameForGetterAndSetter($attribute)));
@@ -5315,9 +5280,9 @@ sub GetterExpression
 
 sub SetterExpression
 {
-    my ($implIncludes, $interfaceName, $attribute) = @_;
+    my ($interfaceName, $attribute) = @_;
 
-    my $contentAttributeName = ContentAttributeName($implIncludes, $interfaceName, $attribute);
+    my $contentAttributeName = ContentAttributeName($interfaceName, $attribute);
 
     if (!$contentAttributeName) {
         return ("set" . FirstLetterToUpperCase(AttributeNameForGetterAndSetter($attribute)));

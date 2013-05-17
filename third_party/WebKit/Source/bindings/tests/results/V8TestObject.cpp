@@ -32,6 +32,9 @@
 #include "V8ScriptProfile.h"
 #include "V8TestCallback.h"
 #include "V8TestNode.h"
+#include "V8TestObjectectA.h"
+#include "V8TestObjectectB.h"
+#include "V8TestObjectectC.h"
 #include "V8TestSubObj.h"
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/Dictionary.h"
@@ -59,18 +62,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/Vector.h"
-
-#if ENABLE(Condition1)
-#include "V8TestObjectectA.h"
-#endif
-
-#if ENABLE(Condition1) && ENABLE(Condition2)
-#include "V8TestObjectectB.h"
-#endif
-
-#if ENABLE(Condition1) || ENABLE(Condition2)
-#include "V8TestObjectectC.h"
-#endif
 
 namespace WebCore {
 
