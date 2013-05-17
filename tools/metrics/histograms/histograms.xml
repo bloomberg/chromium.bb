@@ -8532,6 +8532,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UMA.Perf.GetData" enum="GetPerfDataOutcome">
+  <summary>
+    A count of successes and various failure modes related to collecting and
+    processing performance data obtained through &quot;perf&quot; on ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
   <summary>
     A count of the number of times we hit the code where a field trial is
@@ -11083,6 +11090,33 @@ other types of suffix sets.
   <int value="16385" label="FOLDER"/>
   <int value="32769" label="FILE"/>
   <int value="32770" label="PDF"/>
+</enum>
+
+<enum name="GetPerfDataOutcome" type="int">
+  <int value="0" label="Success.">
+    Perf data was collected, parsed and attached to the UMA protobuf
+    successfully.
+  </int>
+  <int value="1" label="No perf data ready to be uploaded.">
+    Could not add perf data to the UMA protobuf because no perf data was ready
+    to be uploaded.
+  </int>
+  <int value="2" label="Collection timer triggered but have data already.">
+    Perf timer triggered but the perf provider already had a perf data proto to
+    be added to the UMA protobuf.
+  </int>
+  <int value="3"
+      label="Collection timer triggered but incognito window active.">
+    Perf timer triggered but an incognito window was open.
+  </int>
+  <int value="4" label="Incognito window launched during collection.">
+    Perf data was collected but an incognito window was opened during the
+    collection.
+  </int>
+  <int value="5" label="Protobuf returned by debugd not deserialized.">
+    Perf data was collected and sent to Chrome as a serialized protobuf but it
+    could be deserialized by Chrome.
+  </int>
 </enum>
 
 <enum name="GoogleNowEvent" type="int">
