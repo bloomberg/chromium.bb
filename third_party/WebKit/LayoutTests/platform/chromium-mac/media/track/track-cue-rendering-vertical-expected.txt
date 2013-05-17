@@ -6,18 +6,22 @@ layer at (0,0) size 800x332
       RenderBlock (anonymous) at (0,0) size 784x244
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {DIV} at (0,244) size 784x72
-        RenderText {#text} at (0,0) size 368x18
-          text run at (0,0) width 368: "Rendering vertical line-positioned cues with Japanese text."
-        RenderBR {BR} at (368,0) size 0x18
-        RenderText {#text} at (0,18) size 162x18
-          text run at (0,18) width 162: "EVENT(canplaythrough)"
-        RenderBR {BR} at (162,18) size 0x18
-        RenderText {#text} at (0,36) size 107x18
-          text run at (0,36) width 107: "EVENT(seeked)"
-        RenderBR {BR} at (107,36) size 0x18
-        RenderText {#text} at (0,54) size 102x18
-          text run at (0,54) width 102: "END OF TEST"
-        RenderBR {BR} at (102,54) size 0x18
+        RenderInline {SPAN} at (0,0) size 368x18
+          RenderText {#text} at (0,0) size 368x18
+            text run at (0,0) width 368: "Rendering vertical line-positioned cues with Japanese text."
+          RenderBR {BR} at (368,0) size 0x18
+        RenderInline {SPAN} at (0,0) size 162x18
+          RenderText {#text} at (0,18) size 162x18
+            text run at (0,18) width 162: "EVENT(canplaythrough)"
+          RenderBR {BR} at (162,18) size 0x18
+        RenderInline {SPAN} at (0,0) size 107x18
+          RenderText {#text} at (0,36) size 107x18
+            text run at (0,36) width 107: "EVENT(seeked)"
+          RenderBR {BR} at (107,36) size 0x18
+        RenderInline {SPAN} at (0,0) size 102x18
+          RenderText {#text} at (0,54) size 102x18
+            text run at (0,54) width 102: "END OF TEST"
+          RenderBR {BR} at (102,54) size 0x18
 layer at (8,8) size 320x240
   RenderVideo {VIDEO} at (0,0) size 320x240
 layer at (8,8) size 320x240
