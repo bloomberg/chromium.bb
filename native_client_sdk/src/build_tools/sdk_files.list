@@ -850,7 +850,6 @@ tools/nacl_llvm.mk
 tools/oshelpers.py
 tools/oshelpers.pyc
 tools/quote.py
-tools/quote_test.py
 tools/run.py
 [linux,mac]tools/sel_ldr_x86_32
 [linux]tools/sel_ldr_x86_64

@@ -4,9 +4,16 @@
 # found in the LICENSE file.
 
 import optparse
-import quote
+import os
 import sys
 import unittest
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.dirname(SCRIPT_DIR)
+
+sys.path.append(PARENT_DIR)
+
+import quote
 
 verbose = False
 
@@ -136,4 +143,3 @@ def main(argv):
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
-

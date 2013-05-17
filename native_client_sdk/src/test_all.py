@@ -13,16 +13,18 @@ sys.path.append(os.path.join(SCRIPT_DIR, 'tools', 'tests'))
 sys.path.append(os.path.join(SCRIPT_DIR, 'build_tools', 'tests'))
 
 TEST_MODULES = [
+    'getos_test',
     'create_nmf_test',
     'easy_template_test',
     'getos_test',
     'httpd_test',
     'oshelpers_test',
     'parse_dsc_test',
-    'sdktools_commands_test',
     'sdktools_test',
+    'sdktools_commands_test',
+    'sdktools_config_test',
     'update_nacl_manifest_test',
-    'verify_filelist_test'
+    'quote_test',
 ]
 
 def main():
