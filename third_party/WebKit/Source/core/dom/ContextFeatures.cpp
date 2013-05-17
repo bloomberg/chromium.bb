@@ -66,14 +66,9 @@ bool ContextFeatures::styleScopedEnabled(Document* document)
 
 bool ContextFeatures::pagePopupEnabled(Document* document)
 {
-#if ENABLE(PAGE_POPUP)
     if (!document)
         return false;
     return document->contextFeatures()->isEnabled(document, PagePopup, false);
-#else
-    UNUSED_PARAM(document);
-    return false;
-#endif
 }
 
 bool ContextFeatures::htmlNotificationsEnabled(Document* document)

@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/page/PagePopupController.h"
 
-#if ENABLE(PAGE_POPUP)
 #include "core/page/PagePopupClient.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/text/PlatformLocale.h"
@@ -105,4 +104,3 @@ void PagePopupController::histogramEnumeration(const String& name, int sample, i
 }
 
 }
-#endif

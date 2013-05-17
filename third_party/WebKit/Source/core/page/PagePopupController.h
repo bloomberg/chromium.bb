@@ -31,8 +31,6 @@
 #ifndef PagePopupController_h
 #define PagePopupController_h
 
-#if ENABLE(PAGE_POPUP)
-
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 
@@ -61,5 +59,4 @@ private:
 };
 
 }
-#endif
 #endif

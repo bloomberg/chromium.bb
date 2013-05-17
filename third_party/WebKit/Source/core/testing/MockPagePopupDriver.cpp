@@ -26,7 +26,6 @@
 #include "config.h"
 #include "MockPagePopupDriver.h"
 
-#if ENABLE(PAGE_POPUP)
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "WebCoreTestSupport.h"
@@ -144,4 +143,3 @@ void MockPagePopupDriver::closePagePopup(PagePopup* popup)
 }
 
 }
-#endif

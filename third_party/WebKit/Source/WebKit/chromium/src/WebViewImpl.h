@@ -123,9 +123,7 @@ class WebViewBenchmarkSupport;
 class WebViewImpl : public WebView
     , public RefCounted<WebViewImpl>
     , public WebGestureCurveTarget
-#if ENABLE(PAGE_POPUP)
     , public WebCore::PagePopupDriver
-#endif
     , public PageWidgetEventHandler {
 public:
     enum AutoZoomType {
@@ -504,11 +502,9 @@ public:
     // Notification that a popup was opened/closed.
     void popupOpened(WebCore::PopupContainer* popupContainer);
     void popupClosed(WebCore::PopupContainer* popupContainer);
-#if ENABLE(PAGE_POPUP)
     // PagePopupDriver functions.
     virtual WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect& originBoundsInRootView) OVERRIDE;
     virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
-#endif
 
     void hideAutofillPopup();
 
@@ -539,11 +535,7 @@ public:
     virtual void setVisibilityState(WebPageVisibilityState, bool);
 
     WebCore::PopupContainer* selectPopup() const { return m_selectPopup.get(); }
-#if ENABLE(PAGE_POPUP)
     bool hasOpenedPopup() const { return m_selectPopup || m_pagePopup; }
-#else
-    bool hasOpenedPopup() const { return m_selectPopup; }
-#endif
 
     // Returns true if the event leads to scrolling.
     static bool mapKeyCodeForScroll(int keyCode,
@@ -792,10 +784,8 @@ private:
     // The popup associated with a select element.
     RefPtr<WebCore::PopupContainer> m_selectPopup;
 
-#if ENABLE(PAGE_POPUP)
     // The popup associated with an input element.
     RefPtr<WebPagePopupImpl> m_pagePopup;
-#endif
 
     OwnPtr<WebDevToolsAgentPrivate> m_devToolsAgent;
     OwnPtr<PageOverlayList> m_pageOverlays;

@@ -31,8 +31,6 @@
 #include "config.h"
 #include "core/page/PagePopupClient.h"
 
-#if ENABLE(PAGE_POPUP)
-
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {
@@ -113,4 +111,3 @@ void PagePopupClient::addProperty(const char* name, const IntRect& rect, Documen
 
 } // namespace WebCore
 
-#endif // ENABLE(PAGE_POPUP)

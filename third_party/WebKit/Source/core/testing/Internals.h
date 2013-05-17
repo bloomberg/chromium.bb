@@ -127,9 +127,7 @@ public:
     Vector<String> formControlStateOfPreviousHistoryItem(ExceptionCode&);
     void setFormControlStateOfPreviousHistoryItem(const Vector<String>&, ExceptionCode&);
     void setEnableMockPagePopup(bool, ExceptionCode&);
-#if ENABLE(PAGE_POPUP)
     PassRefPtr<PagePopupController> pagePopupController();
-#endif
 
     PassRefPtr<ClientRect> absoluteCaretBounds(ExceptionCode&);
 

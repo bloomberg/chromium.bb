@@ -25,7 +25,7 @@
 #ifndef ColorChooserPopupUIController_h
 #define ColorChooserPopupUIController_h
 
-#if ENABLE(INPUT_TYPE_COLOR) && ENABLE(PAGE_POPUP)
+#if ENABLE(INPUT_TYPE_COLOR)
 #include "ColorChooserUIController.h"
 #include "core/page/PagePopupClient.h"
 #include <wtf/OwnPtr.h>
@@ -68,6 +68,6 @@ private:
 };
 }
 
-#endif // ENABLE(INPUT_TYPE_COLOR) && ENABLE(PAGE_POPUP)
+#endif // ENABLE(INPUT_TYPE_COLOR)
 
 #endif // ColorChooserPopupUIController_h

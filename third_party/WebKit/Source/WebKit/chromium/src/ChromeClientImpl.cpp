@@ -37,16 +37,14 @@
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "core/platform/ColorChooser.h"
 #include "core/platform/ColorChooserClient.h"
-#if ENABLE(PAGE_POPUP)
 #include "ColorChooserPopupUIController.h"
-#else
 #include "ColorChooserUIController.h"
-#endif
 #endif
 #include "DateTimeChooserImpl.h"
 #include "ExternalDateTimeChooser.h"
 #include "ExternalPopupMenu.h"
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "WebAccessibilityObject.h"
 #include "WebAutofillClient.h"
 #include "bindings/v8/ScriptController.h"
@@ -144,9 +142,7 @@ ChromeClientImpl::ChromeClientImpl(WebViewImpl* webView)
     , m_menubarVisible(true)
     , m_resizable(true)
     , m_nextNewWindowNavigationPolicy(WebNavigationPolicyIgnore)
-#if ENABLE(PAGE_POPUP)
     , m_pagePopupDriver(webView)
-#endif
 {
 }
 
@@ -692,11 +688,10 @@ void ChromeClientImpl::print(Frame* frame)
 PassOwnPtr<ColorChooser> ChromeClientImpl::createColorChooser(ColorChooserClient* chooserClient, const Color&)
 {
     OwnPtr<ColorChooserUIController> controller;
-#if ENABLE(PAGE_POPUP)
-    controller = adoptPtr(new ColorChooserPopupUIController(this, chooserClient));
-#else
-    controller = adoptPtr(new ColorChooserUIController(this, chooserClient));
-#endif
+    if (RuntimeEnabledFeatures::pagePopupEnabled())
+        controller = adoptPtr(new ColorChooserPopupUIController(this, chooserClient));
+    else
+        controller = adoptPtr(new ColorChooserUIController(this, chooserClient));
     controller->openUI();
     return controller.release();
 }
@@ -977,7 +972,6 @@ PassRefPtr<PopupMenu> ChromeClientImpl::createPopupMenu(PopupMenuClient* client)
     return adoptRef(new PopupMenuChromium(client));
 }
 
-#if ENABLE(PAGE_POPUP)
 PagePopup* ChromeClientImpl::openPagePopup(PagePopupClient* client, const IntRect& originBoundsInRootView)
 {
     ASSERT(m_pagePopupDriver);
@@ -1000,7 +994,6 @@ void ChromeClientImpl::resetPagePopupDriver()
 {
     m_pagePopupDriver = m_webView;
 }
-#endif
 
 bool ChromeClientImpl::willAddTextFieldDecorationsTo(HTMLInputElement* input)
 {

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "ColorChooserPopupUIController.h"
 
-#if ENABLE(INPUT_TYPE_COLOR) && ENABLE(PAGE_POPUP)
+#if ENABLE(INPUT_TYPE_COLOR)
 #include "ChromeClientImpl.h"
 #include "ColorSuggestionPicker.h"
 #include "PickerCommon.h"
@@ -151,4 +151,4 @@ void ColorChooserPopupUIController::closePopup()
 }
 
 }
-#endif // ENABLE(INPUT_TYPE_COLOR) && ENABLE(PAGE_POPUP)
+#endif // ENABLE(INPUT_TYPE_COLOR)

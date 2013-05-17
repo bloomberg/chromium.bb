@@ -31,8 +31,6 @@
 #ifndef WebPagePopupImpl_h
 #define WebPagePopupImpl_h
 
-#if ENABLE(PAGE_POPUP)
-
 #include "PageWidgetDelegate.h"
 #include "WebPagePopup.h"
 #include "core/page/PagePopup.h"
@@ -98,5 +96,4 @@ private:
 };
 
 } // namespace WebKit
-#endif // ENABLE(PAGE_POPUP)
 #endif // WebPagePopupImpl_h

@@ -110,10 +110,7 @@
 #include "modules/battery/BatteryController.h"
 #endif
 
-#if ENABLE(PAGE_POPUP)
 #include "core/page/PagePopupController.h"
-#endif
-
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
@@ -134,9 +131,7 @@
 
 namespace WebCore {
 
-#if ENABLE(PAGE_POPUP)
 static MockPagePopupDriver* s_pagePopupDriver = 0;
-#endif
 
 using namespace HTMLNames;
 
@@ -205,12 +200,10 @@ void Internals::resetToConsistentState(Page* page)
     TextRun::setAllowsRoundingHacks(false);
     WebCore::overrideUserPreferredLanguages(Vector<String>());
     WebCore::Settings::setUsesOverlayScrollbars(false);
-#if ENABLE(PAGE_POPUP)
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
     if (page->chrome())
         page->chrome()->client()->resetPagePopupDriver();
-#endif
     if (page->inspectorController())
         page->inspectorController()->setProfilerEnabled(false);
     page->group().captionPreferences()->setTestingMode(false);
@@ -740,7 +733,6 @@ void Internals::enableMockSpeechSynthesizer()
 
 void Internals::setEnableMockPagePopup(bool enabled, ExceptionCode& ec)
 {
-#if ENABLE(PAGE_POPUP)
     Document* document = contextDocument();
     if (!document || !document->page() || !document->page()->chrome())
         return;
@@ -752,18 +744,12 @@ void Internals::setEnableMockPagePopup(bool enabled, ExceptionCode& ec)
     if (!s_pagePopupDriver)
         s_pagePopupDriver = MockPagePopupDriver::create(page->mainFrame()).leakPtr();
     page->chrome()->client()->setPagePopupDriver(s_pagePopupDriver);
-#else
-    UNUSED_PARAM(enabled);
-    UNUSED_PARAM(ec);
-#endif
 }
 
-#if ENABLE(PAGE_POPUP)
 PassRefPtr<PagePopupController> Internals::pagePopupController()
 {
     return s_pagePopupDriver ? s_pagePopupDriver->pagePopupController() : 0;
 }
-#endif
 
 PassRefPtr<ClientRect> Internals::absoluteCaretBounds(ExceptionCode& ec)
 {

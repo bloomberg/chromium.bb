@@ -170,12 +170,10 @@ public:
 
     virtual bool hasOpenedPopup() const OVERRIDE;
     virtual PassRefPtr<WebCore::PopupMenu> createPopupMenu(WebCore::PopupMenuClient*) const;
-#if ENABLE(PAGE_POPUP)
     virtual WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect&) OVERRIDE;
     virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
     virtual void setPagePopupDriver(WebCore::PagePopupDriver*) OVERRIDE;
     virtual void resetPagePopupDriver() OVERRIDE;
-#endif
     virtual bool willAddTextFieldDecorationsTo(WebCore::HTMLInputElement*) OVERRIDE;
     virtual void addTextFieldDecorationsTo(WebCore::HTMLInputElement*) OVERRIDE;
 
@@ -204,9 +202,7 @@ private:
 
     // The policy for how the next webview to be created will be shown.
     WebNavigationPolicy m_nextNewWindowNavigationPolicy;
-#if ENABLE(PAGE_POPUP)
     WebCore::PagePopupDriver* m_pagePopupDriver;
-#endif
 };
 
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)

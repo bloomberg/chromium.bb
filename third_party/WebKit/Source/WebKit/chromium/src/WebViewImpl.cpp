@@ -534,19 +534,13 @@ void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
     // popup). We also save it so we can prevent a click on an element from immediately
     // reopening the same popup.
     RefPtr<WebCore::PopupContainer> selectPopup;
-#if ENABLE(PAGE_POPUP)
     RefPtr<WebPagePopupImpl> pagePopup;
-#endif
     if (event.button == WebMouseEvent::ButtonLeft) {
         selectPopup = m_selectPopup;
-#if ENABLE(PAGE_POPUP)
         pagePopup = m_pagePopup;
-#endif
         hidePopups();
         ASSERT(!m_selectPopup);
-#if ENABLE(PAGE_POPUP)
         ASSERT(!m_pagePopup);
-#endif
     }
 
     m_lastMouseDownPoint = WebPoint(event.x, event.y);
@@ -574,13 +568,11 @@ void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
         hideSelectPopup();
     }
 
-#if ENABLE(PAGE_POPUP)
     if (m_pagePopup && pagePopup && m_pagePopup->hasSamePopupClient(pagePopup.get())) {
         // That click triggered a page popup that is the same as the one we just closed.
         // It needs to be closed.
         closePagePopup(m_pagePopup.get());
     }
-#endif
 
     // Dispatch the contextmenu event regardless of if the click was swallowed.
     // On Windows, we handle it on mouse up, not down.
@@ -941,7 +933,6 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     // not the page.
     if (m_selectPopup)
         return m_selectPopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
-#if ENABLE(PAGE_POPUP)
     if (m_pagePopup) {
         m_pagePopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
         // We need to ignore the next Char event after this otherwise pressing
@@ -950,7 +941,6 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
             m_suppressNextKeypressEvent = true;
         return true;
     }
-#endif
 
     // Give Autocomplete a chance to consume the key events it is interested in.
     if (autocompleteHandleKeyEvent(event))
@@ -1063,10 +1053,8 @@ bool WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
     // not the page.
     if (m_selectPopup)
         return m_selectPopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
-#if ENABLE(PAGE_POPUP)
     if (m_pagePopup)
         return m_pagePopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
-#endif
 
     Frame* frame = focusedWebCoreFrame();
     if (!frame)
@@ -1515,7 +1503,6 @@ void  WebViewImpl::popupClosed(WebCore::PopupContainer* popupContainer)
     }
 }
 
-#if ENABLE(PAGE_POPUP)
 PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client, const IntRect& originBoundsInRootView)
 {
     ASSERT(client);
@@ -1543,7 +1530,6 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
     m_pagePopup->closePopup();
     m_pagePopup = 0;
 }
-#endif
 
 void WebViewImpl::hideAutofillPopup()
 {
@@ -3519,10 +3505,8 @@ void WebViewImpl::hidePopups()
 {
     hideSelectPopup();
     hideAutofillPopup();
-#if ENABLE(PAGE_POPUP)
     if (m_pagePopup)
         closePagePopup(m_pagePopup.get());
-#endif
 }
 
 void WebViewImpl::performCustomContextMenuAction(unsigned action)

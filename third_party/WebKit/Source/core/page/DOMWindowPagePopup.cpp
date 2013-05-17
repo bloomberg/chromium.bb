@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/page/DOMWindowPagePopup.h"
 
-#if ENABLE(PAGE_POPUP)
 #include "core/page/DOMWindow.h"
 #include "core/page/PagePopupController.h"
 
@@ -74,4 +73,3 @@ void DOMWindowPagePopup::uninstall(DOMWindow* window)
 }
 
 }
-#endif

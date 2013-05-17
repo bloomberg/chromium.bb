@@ -31,7 +31,6 @@
 #ifndef PagePopup_h
 #define PagePopup_h
 
-#if ENABLE(PAGE_POPUP)
 namespace WebCore {
 
 // A PagePopup object is created by ChromeClient::openPagePopup(), and deleted
@@ -42,5 +41,4 @@ protected:
 };
 
 }
-#endif
 #endif

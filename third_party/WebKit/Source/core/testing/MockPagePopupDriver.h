@@ -30,7 +30,6 @@
 #include "core/page/PagePopupDriver.h"
 #include <wtf/RefPtr.h>
 
-#if ENABLE(PAGE_POPUP)
 namespace WebCore {
 
 class Frame;
@@ -58,5 +57,4 @@ private:
 };
 
 }
-#endif
 #endif

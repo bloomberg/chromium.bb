@@ -31,8 +31,6 @@
 #ifndef PagePopupClient_h
 #define PagePopupClient_h
 
-#if ENABLE(PAGE_POPUP)
-
 #include "core/loader/DocumentWriter.h"
 #include "core/platform/graphics/IntRect.h"
 #include <wtf/text/WTFString.h>
@@ -89,5 +87,4 @@ inline void PagePopupClient::addString(const String& str, DocumentWriter& writer
 }
 
 }
-#endif
 #endif

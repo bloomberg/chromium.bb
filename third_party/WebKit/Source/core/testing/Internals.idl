@@ -81,9 +81,7 @@
     [RaisesException] DOMString[] formControlStateOfPreviousHistoryItem();
     [RaisesException] void setFormControlStateOfPreviousHistoryItem(sequence<DOMString> values);
     [RaisesException] void setEnableMockPagePopup(boolean enabled);
-#if defined(ENABLE_PAGE_POPUP) && ENABLE_PAGE_POPUP
     readonly attribute PagePopupController pagePopupController;
-#endif
 
     [RaisesException] ClientRect absoluteCaretBounds();
 

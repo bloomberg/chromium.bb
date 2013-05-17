@@ -31,7 +31,6 @@
 #ifndef DOMWindowPagePopup_h
 #define DOMWindowPagePopup_h
 
-#if ENABLE(PAGE_POPUP)
 #include "core/platform/Supplementable.h"
 
 namespace WebCore {
@@ -55,5 +54,4 @@ private:
 };
 
 }
-#endif
 #endif
