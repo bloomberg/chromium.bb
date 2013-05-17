@@ -2295,6 +2295,14 @@ subcompositor_get_subsurface(struct wl_client *client,
 		return;
 	}
 
+	if (weston_surface_get_main_surface(parent) == surface) {
+		wl_resource_post_error(resource,
+			WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE,
+			"%s%d: wl_surface@%d is an ancestor of parent",
+			where, id, surface_resource->object.id);
+		return;
+	}
+
 	/* make sure the parent is in its own list */
 	if (wl_list_empty(&parent->subsurface_list)) {
 		if (!weston_subsurface_create_for_parent(parent)) {
