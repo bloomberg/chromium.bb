@@ -247,6 +247,8 @@ void fd_bo_del(struct fd_bo *bo)
 		};
 		pthread_mutex_lock(&table_lock);
 		drmHashDelete(bo->dev->handle_table, bo->handle);
+		if (bo->name)
+			drmHashDelete(bo->dev->name_table, bo->name);
 		drmIoctl(bo->dev->fd, DRM_IOCTL_GEM_CLOSE, &req);
 		pthread_mutex_unlock(&table_lock);
 	}
