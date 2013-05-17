@@ -43,6 +43,12 @@ class TestPostMessage : public TestCase {
   // at the time of invocation.
   int WaitForMessages();
 
+  // Verifies that the given javascript assertions are true of the message
+  // (|test_data|) passed via PostMessage().
+  std::string CheckMessageProperties(
+      const pp::Var& test_data,
+      const std::vector<std::string>& properties_to_check);
+
   // Test that we can send a message from Instance::Init. Note the actual
   // message is sent in TestPostMessage::Init, and this test simply makes sure
   // we got it.
@@ -54,6 +60,15 @@ class TestPostMessage : public TestCase {
 
   // Test sending ArrayBuffer vars in both directions.
   std::string TestSendingArrayBuffer();
+
+  // Test sending Array vars in both directions.
+  std::string TestSendingArray();
+
+  // Test sending Dictionary vars in both directions.
+  std::string TestSendingDictionary();
+
+  // Test sending a complex var with references and cycles in both directions.
+  std::string TestSendingComplexVar();
 
   // Test the MessageEvent object that JavaScript received to make sure it is
   // of the right type and has all the expected fields.
