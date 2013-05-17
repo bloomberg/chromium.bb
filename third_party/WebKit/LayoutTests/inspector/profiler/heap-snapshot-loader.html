@@ -21,13 +21,13 @@ function test()
         var panel = WebInspector.panels.profiles;
         panel._reset();
 
+        panel._createTemporaryProfile("HEAP");
         dispatcher.addProfileHeader({
             typeId: WebInspector.HeapSnapshotProfileType.TypeId,
             title: "heapSnapshotSaveToFileTest",
             uid: 42,
             maxJSObjectId: 6
         });
-
         var profileHeader = panel.getProfileType("HEAP").getProfiles()[0];
 
         function getHeapSnapshotMock(uid) {
