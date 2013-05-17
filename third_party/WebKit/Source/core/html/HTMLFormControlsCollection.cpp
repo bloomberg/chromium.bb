@@ -161,4 +161,20 @@ void HTMLFormControlsCollection::updateNameCache() const
     setHasNameCache();
 }
 
+void HTMLFormControlsCollection::namedGetter(const AtomicString& name, RefPtr<RadioNodeList>& returnValue1, RefPtr<Node>& returnValue2)
+{
+    Vector<RefPtr<Node> > namedItems;
+    this->namedItems(name, namedItems);
+
+    if (!namedItems.size())
+        return;
+
+    if (namedItems.size() == 1) {
+        returnValue2 = namedItems.at(0);
+        return;
+    }
+
+    returnValue1 = this->ownerNode()->radioNodeList(name);
+}
+
 }

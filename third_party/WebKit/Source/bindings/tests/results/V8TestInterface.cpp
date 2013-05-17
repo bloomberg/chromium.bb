@@ -24,10 +24,12 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8Node.h"
+#include "V8NodeList.h"
 #include "V8TestObject.h"
 #include "bindings/bindings/tests/idls/TestPartialInterface.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Collection.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8ObjectConstructor.h"
@@ -518,6 +520,26 @@ v8::Handle<v8::Value> V8TestInterface::constructorCallback(const v8::Arguments& 
     return TestInterfaceV8Internal::constructor(args);
 }
 
+v8::Handle<v8::Value> V8TestInterface::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
+        return v8Undefined();
+    if (info.Holder()->HasRealNamedCallbackProperty(name))
+        return v8Undefined();
+
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
+    TestInterface* collection = toNative(info.Holder());
+    AtomicString propertyName = toWebCoreAtomicString(name);
+    RefPtr<Node> elementMember1;
+    RefPtr<NodeList> elementMember2;
+    collection->getItem(propertyName, elementMember1, elementMember2);
+    if (!!elementMember1)
+        return toV8Fast(elementMember1.release(), info, collection);
+    if (!!elementMember2)
+        return toV8Fast(elementMember2.release(), info, collection);
+    return v8Undefined();
+}
+
 static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -543,7 +565,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8:
     }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
-    desc->InstanceTemplate()->SetNamedPropertyHandler(0, V8TestInterface::namedPropertySetter, 0, 0, 0);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestInterface::namedPropertyGetter, V8TestInterface::namedPropertySetter, 0, 0, 0);
 
     // Custom Signature 'supplementalMethod2'
     const int supplementalMethod2Argc = 2;

@@ -64,7 +64,7 @@ struct( domFunction => {
 
 # Used to represent domInterface contents (name of attribute, signature)
 struct( domAttribute => {
-    type => '$',              # Attribute type (including namespace)
+    type => '$',              # Attribute type (including namespace) (string or UnionType)
     isStatic => '$',
     isReadOnly => '$',
     signature => '$',         # Attribute signature
@@ -75,7 +75,7 @@ struct( domAttribute => {
 # Used to represent a map of 'variable name' <-> 'variable type'
 struct( domSignature => {
     name => '$',      # Variable name
-    type => '$',      # Variable type
+    type => '$',      # Variable type (string or UnionType)
     specials => '@',  # Specials
     extendedAttributes => '$', # Extended attributes
     isOptional => '$', # Is variable optional (optional T)
@@ -105,6 +105,10 @@ struct( Token => {
 struct( Typedef => {
     extendedAttributes => '$', # Extended attributes
     type => '$', # Type of data
+});
+
+struct( UnionType => {
+    unionMemberTypes => '@', # (UnionType or string)[]
 });
 
 # Maps 'typedef name' -> Typedef
@@ -1751,9 +1755,10 @@ sub parseType
     my $self = shift;
     my $next = $self->nextToken();
     if ($next->value() eq "(") {
-        $self->parseUnionType();
-        $self->parseTypeSuffix();
-        return;
+        my $unionType = $self->parseUnionType();
+        my $suffix = $self->parseTypeSuffix();
+        die "Suffix after UnionType is not supported." if $suffix ne "";
+        return $unionType;
     }
     if ($next->type() == IdentifierToken || $next->value() =~ /$nextType_1/) {
         return $self->parseSingleType();
@@ -1780,36 +1785,38 @@ sub parseUnionType
     my $self = shift;
     my $next = $self->nextToken();
     if ($next->value() eq "(") {
+        my $unionType = UnionType->new();
         $self->assertTokenValue($self->getToken(), "(", __LINE__);
-        $self->parseUnionMemberType();
+        push @{$unionType->unionMemberTypes}, $self->parseUnionMemberType();
         $self->assertTokenValue($self->getToken(), "or", __LINE__);
-        $self->parseUnionMemberType();
-        $self->parseUnionMemberTypes();
+        push @{$unionType->unionMemberTypes}, $self->parseUnionMemberType();
+        push @{$unionType->unionMemberTypes}, $self->parseUnionMemberTypes();
         $self->assertTokenValue($self->getToken(), ")", __LINE__);
-        return;
+        return $unionType;
     }
     $self->assertUnexpectedToken($next->value(), __LINE__);
 }
 
+# Returns UnionType or string
 sub parseUnionMemberType
 {
     my $self = shift;
     my $next = $self->nextToken();
     if ($next->value() eq "(") {
-        $self->parseUnionType();
-        $self->parseTypeSuffix();
-        return;
+        my $unionType = $self->parseUnionType();
+        my $suffix = $self->parseTypeSuffix();
+        die "Suffix after UnionType is not supported." if $suffix ne "";
+        return $unionType;
     }
     if ($next->value() eq "any") {
-        $self->assertTokenValue($self->getToken(), "any", __LINE__);
-        $self->assertTokenValue($self->getToken(), "[", __LINE__);
-        $self->assertTokenValue($self->getToken(), "]", __LINE__);
-        $self->parseTypeSuffix();
-        return;
+        my $type = $self->assertTokenValue($self->getToken(), "any", __LINE__);
+        $type .= $self->assertTokenValue($self->getToken(), "[", __LINE__);
+        $type .= $self->assertTokenValue($self->getToken(), "]", __LINE__);
+        $type .= $self->parseTypeSuffix();
+        return $type;
     }
     if ($next->type() == IdentifierToken || $next->value() =~ /$nextSingleType_1/) {
-        $self->parseNonAnyType();
-        return;
+        return $self->parseNonAnyType();
     }
     $self->assertUnexpectedToken($next->value(), __LINE__);
 }
@@ -1817,12 +1824,14 @@ sub parseUnionMemberType
 sub parseUnionMemberTypes
 {
     my $self = shift;
+    my @types = ();
     my $next = $self->nextToken();
     if ($next->value() eq "or") {
         $self->assertTokenValue($self->getToken(), "or", __LINE__);
-        $self->parseUnionMemberType();
-        $self->parseUnionMemberTypes();
+        push @types, $self->parseUnionMemberType();
+        push @types, $self->parseUnionMemberTypes();
     }
+    return @types;
 }
 
 sub parseNonAnyType

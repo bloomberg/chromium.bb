@@ -54,17 +54,6 @@ static v8::Handle<v8::Value> getNamedItems(HTMLFormControlsCollection* collectio
     return toV8Fast(collection->ownerNode()->radioNodeList(name).get(), holder, collection);
 }
 
-v8::Handle<v8::Value> V8HTMLFormControlsCollection::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return v8Undefined();
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return v8Undefined();
-
-    HTMLFormControlsCollection* imp = V8HTMLFormControlsCollection::toNative(info.Holder());
-    return getNamedItems(imp, toWebCoreAtomicString(name), info);
-}
-
 v8::Handle<v8::Value> V8HTMLFormControlsCollection::namedItemMethodCustom(const v8::Arguments& args)
 {
     HTMLFormControlsCollection* imp = V8HTMLFormControlsCollection::toNative(args.Holder());

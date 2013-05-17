@@ -1573,7 +1573,7 @@ END
     return value;
 END
     } else {
-        $code .= NativeToJSValue($attribute->signature, $expression, "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix) . "\n";
+        $code .= NativeToJSValue($attribute->signature->type, $attribute->signature->extendedAttributes, $expression, "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix) . "\n";
     }
 
     $code .= "}\n\n";  # end of getter
@@ -3037,6 +3037,28 @@ END
     return $code;
 }
 
+sub GenerateIsNullExpression
+{
+    my $type = shift;
+    my $variableName = shift;
+    if (IsUnionType($type)) {
+        my $types = $type->unionMemberTypes;
+        my @expression = ();
+        for my $i (0 .. scalar(@$types)-1) {
+            my $unionMemberType = $types->[$i];
+            my $unionMemberVariable = $variableName . $i;
+            my $isNull = GenerateIsNullExpression($unionMemberType, $unionMemberVariable);
+            push @expression, $isNull;
+        }
+        return join " && ", @expression;
+    }
+    if (IsRefPtrType($type)) {
+        return "!${variableName}";
+    } else {
+        return "${variableName}.isNull()";
+    }
+}
+
 sub GenerateImplementationIndexedProperty
 {
     my $interface = shift;
@@ -3084,33 +3106,31 @@ sub GenerateImplementationIndexedProperty
 
     if ($indexedGetterFunction && !$hasCustomIndexedGetter) {
         my $returnType = $indexedGetterFunction->signature->type;
+        my $nativeType = GetNativeType($returnType);
         my $methodName = GetImplName($indexedGetterFunction->signature);
         AddToImplIncludes("bindings/v8/V8Collection.h");
-        my $returnJSValueCode = "";
-        my $nativeType = GetNativeType($returnType);
-        my $isNull = "";
-
-        if (IsRefPtrType($returnType)) {
-            AddToImplIncludes("V8$returnType.h");
-            $isNull = "!element";
-            $returnJSValueCode = NativeToJSValue($indexedGetterFunction->signature, "element.release()", "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "");
-        } else {
-            $isNull = "element.isNull()";
-            $returnJSValueCode = NativeToJSValue($indexedGetterFunction->signature, "element", "    ", "return", "info.Holder()", "info.GetIsolate()");
-        }
-
-        $implementation{nameSpaceWebCore}->add(<<END);
+        my $nativeValue = "element";
+        $nativeValue .= ".release()" if (IsRefPtrType($returnType));
+        my $isNull = GenerateIsNullExpression($returnType, "element");
+        my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->signature->type, $indexedGetterFunction->signature->extendedAttributes, $nativeValue, "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "collection");
+        my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index");
+        my $getterCode = <<END;
 v8::Handle<v8::Value> ${v8ClassName}::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
 {
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     ${implClassName}* collection = toNative(info.Holder());
-    $nativeType element = collection->$methodName(index);
-    if ($isNull)
-        return v8Undefined();
-${returnJSValueCode}
-}
-
+${methodCallCode}
 END
+        if (IsUnionType($returnType)) {
+            $getterCode .= "${returnJSValueCode}\n";
+            $getterCode .= "    return v8Undefined();\n";
+        } else {
+            $getterCode .= "    if (${isNull})\n";
+            $getterCode .= "        return v8Undefined();\n";
+            $getterCode .= $returnJSValueCode . "\n";
+        }
+        $getterCode .= "}\n\n";
+        $implementation{nameSpaceWebCore}->add($getterCode);
     }
     return $code;
 }
@@ -3174,6 +3194,31 @@ sub GenerateImplementationNamedPropertyAccessors
     return $subCode;
 }
 
+sub GenerateMethodCall
+{
+    my $returnType = shift; # string or UnionType
+    my $returnName = shift;
+    my $functionExpression = shift;
+    my $firstArgument = shift;
+    if (IsUnionType($returnType)) {
+        my $code = "";
+        my @extraArguments = ();
+        for my $i (0..scalar(@{$returnType->unionMemberTypes})-1) {
+            my $unionMemberType = $returnType->unionMemberTypes->[$i];
+            my $nativeType = GetNativeType($unionMemberType);
+            my $unionMemberVariable = $returnName . $i;
+            $code .= "    ${nativeType} ${unionMemberVariable};\n";
+            push @extraArguments, $unionMemberVariable;
+        }
+        $code .= "    ${functionExpression}(${firstArgument}, " . (join ", ", @extraArguments) . ");";
+        return $code;
+    } else {
+        my $nativeType = GetNativeType($returnType);
+        return "    ${nativeType} element = ${functionExpression}(${firstArgument});"
+    }
+}
+
+
 sub GenerateImplementationNamedPropertyGetter
 {
     my $interface = shift;
@@ -3184,20 +3229,13 @@ sub GenerateImplementationNamedPropertyGetter
 
     AddToImplIncludes("bindings/v8/V8Collection.h");
     my $returnType = $namedGetterFunction->signature->type;
-    my $nativeType = GetNativeType($returnType);
-    my $isNull = "";
-    my $returnJSValueCode = "";
+    my $isNull = GenerateIsNullExpression($returnType, "element");
+    my $nativeValue = "element";
+    $nativeValue .= ".release()" if (IsRefPtrType($returnType));
+    my $returnJSValueCode = NativeToJSValue($namedGetterFunction->signature->type, $namedGetterFunction->signature->extendedAttributes, $nativeValue, "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "collection");
+    my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "propertyName");
 
-    if (IsRefPtrType($returnType)) {
-        AddToImplIncludes("V8$returnType.h");
-        $isNull = "!element";
-        $returnJSValueCode = NativeToJSValue($namedGetterFunction->signature, "element.release()", "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "");
-    } else {
-        $isNull = "element.isNull()";
-        $returnJSValueCode = NativeToJSValue($namedGetterFunction->signature, "element", "    ", "return", "info.Holder()", "info.GetIsolate()");
-    }
-
-    $implementation{nameSpaceWebCore}->add(<<END);
+    my $code = <<END;
 v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
@@ -3208,13 +3246,18 @@ v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> 
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     ${implClassName}* collection = toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
-    ${nativeType} element = collection->${methodName}(propertyName);
-    if (${isNull})
-        return v8Undefined();
-${returnJSValueCode}
-}
-
+${methodCallCode}
 END
+        if (IsUnionType($returnType)) {
+            $code .= "${returnJSValueCode}\n";
+            $code .= "    return v8Undefined();\n";
+        } else {
+            $code .= "    if (${isNull})\n";
+            $code .= "        return v8Undefined();\n";
+            $code .= $returnJSValueCode . "\n";
+        }
+        $code .= "}\n\n";
+    $implementation{nameSpaceWebCore}->add($code);
 }
 
 sub GenerateImplementationCustomCall
@@ -4055,7 +4098,7 @@ END
             @args = ();
             foreach my $param (@params) {
                 my $paramName = $param->name;
-                $code .= NativeToJSValue($param, $paramName, "    ", "v8::Handle<v8::Value> ${paramName}Handle =", "v8::Handle<v8::Object>()", "v8Context->GetIsolate()", "") . "\n";
+                $code .= NativeToJSValue($param->type, $param->extendedAttributes, $paramName, "    ", "v8::Handle<v8::Value> ${paramName}Handle =", "v8::Handle<v8::Object>()", "v8Context->GetIsolate()", "") . "\n";
                 $code .= "    if (${paramName}Handle.IsEmpty()) {\n";
                 $code .= "        if (!isScriptControllerTerminating())\n";
                 $code .= "            CRASH();\n";
@@ -4320,9 +4363,9 @@ sub GenerateFunctionCallString
     my $nativeValue;
     # FIXME: Update for all ScriptWrappables.
     if (IsDOMNodeType($interfaceName)) {
-        $nativeValue = NativeToJSValue($function->signature, $return, $indent, "return", "args.Holder()", "args.GetIsolate()", "args", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix);
+        $nativeValue = NativeToJSValue($function->signature->type, $function->signature->extendedAttributes, $return, $indent, "return", "args.Holder()", "args.GetIsolate()", "args", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix);
     } else {
-        $nativeValue = NativeToJSValue($function->signature, $return, $indent, "return", "args.Holder()", "args.GetIsolate()", 0, 0, "ReturnUnsafeHandle", $forMainWorldSuffix);
+        $nativeValue = NativeToJSValue($function->signature->type, $function->signature->extendedAttributes, $return, $indent, "return", "args.Holder()", "args.GetIsolate()", 0, 0, "ReturnUnsafeHandle", $forMainWorldSuffix);
     }
 
     $code .= $nativeValue . "\n";
@@ -4396,6 +4439,8 @@ sub GetNativeType
     return "RefPtr<NodeFilter>" if $type eq "NodeFilter";
     return "RefPtr<SerializedScriptValue>" if $type eq "SerializedScriptValue";
     return "RefPtr<XPathNSResolver>" if $type eq "XPathNSResolver";
+
+    die "UnionType is not supported" if IsUnionType($type);
 
     # We need to check [ImplementedBy] extended attribute for wrapper types.
     if (IsWrapperType($type)) {
@@ -4618,6 +4663,15 @@ my %non_wrapper_types = (
     'void' => 1
 );
 
+sub IsUnionType
+{
+    my $type = shift; # string or UnionType
+    if(ref($type) eq "UnionType") {
+        die "Currently only 2 values of non-union type is supported as union type.\n" unless @{$type->unionMemberTypes} == 2;
+        return 1;
+    }
+    return 0;
+}
 
 sub IsWrapperType
 {
@@ -4694,22 +4748,40 @@ sub IsDOMNodeType
 
 sub NativeToJSValue
 {
-    my $signature = shift;
+    my $type = shift;
+    my $extendedAttributes = shift;
     my $nativeValue = shift;
     my $indent = shift;  # added before every line
     my $receiver = shift;  # "return" or "<variableName> ="
     my $getCreationContext = shift;
     my $getIsolate = shift;
     die "An Isolate is mandatory for native value => JS value conversion." unless $getIsolate;
-    my $getHolderContainer = shift;
+    my $getHolderContainer = shift || "";
     my $getHolderContainerArg = $getHolderContainer ? ", $getHolderContainer" : "";
-    my $getScriptWrappable = shift;
+    my $getScriptWrappable = shift || "";
     my $getScriptWrappableArg = $getScriptWrappable ? ", $getScriptWrappable" : "";
-    my $returnHandleType = shift;
+    my $returnHandleType = shift || "";
     my $returnHandleTypeArg = $returnHandleType ? ", $returnHandleType" : "";
-    my $forMainWorldSuffix = shift;
+    my $forMainWorldSuffix = shift || "";
 
-    my $type = $signature->type;
+    if (IsUnionType($type)) {
+        my $types = $type->unionMemberTypes;
+        my @codes = ();
+        for my $i (0 .. scalar(@$types)-1) {
+            my $unionMemberType = $types->[$i];
+            my $unionMemberNumber = $i + 1;
+            my $unionMemberVariable = $nativeValue . $i;
+            my $unionMemberNativeValue = $unionMemberVariable;
+            $unionMemberNativeValue .= ".release()" if (IsRefPtrType($unionMemberType));
+            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getHolderContainer, $getScriptWrappable, $returnHandleType, $forMainWorldSuffix);
+            my $isNotNull = "!" . GenerateIsNullExpression($unionMemberType, $unionMemberVariable);
+            my $code = "";
+            $code .= "${indent}if (${isNotNull})\n";
+            $code .= "${returnJSValueCode}";
+            push @codes, $code;
+        }
+        return join "\n", @codes;
+    }
 
     return "$indent$receiver v8Boolean($nativeValue, $getIsolate);" if $type eq "boolean";
     return "$indent$receiver v8Undefined();" if $type eq "void";     # equivalent to v8Undefined()
@@ -4717,7 +4789,7 @@ sub NativeToJSValue
     # HTML5 says that unsigned reflected attributes should be in the range
     # [0, 2^31). When a value isn't in this range, a default value (or 0)
     # should be returned instead.
-    if ($signature->extendedAttributes->{"Reflect"} and ($type eq "unsigned long" or $type eq "unsigned short")) {
+    if ($extendedAttributes->{"Reflect"} and ($type eq "unsigned long" or $type eq "unsigned short")) {
         $nativeValue =~ s/getUnsignedIntegralAttribute/getIntegralAttribute/g;
         return "$indent$receiver v8UnsignedInteger(std::max(0, " . $nativeValue . "), $getIsolate);";
     }
@@ -4735,7 +4807,7 @@ sub NativeToJSValue
     return "$indent$receiver $nativeValue.v8Value();" if $nativeType eq "ScriptValue";
 
     if ($type eq "DOMString" or IsEnumType($type)) {
-        my $conv = $signature->extendedAttributes->{"TreatReturnedNullStringAs"};
+        my $conv = $extendedAttributes->{"TreatReturnedNullStringAs"};
         if (defined $conv) {
             return "$indent$receiver v8StringOrNull($nativeValue, $getIsolate$returnHandleTypeArg);" if $conv eq "Null";
             return "$indent$receiver v8StringOrUndefined($nativeValue, $getIsolate$returnHandleTypeArg);" if $conv eq "Undefined";
@@ -5025,6 +5097,7 @@ sub IsRefPtrType
     return 0 if GetSequenceType($type);
     return 0 if $type eq "DOMString";
     return 0 if IsEnumType($type);
+    return 0 if IsUnionType($type);
 
     return 1;
 }

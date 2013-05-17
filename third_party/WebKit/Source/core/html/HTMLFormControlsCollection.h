@@ -24,6 +24,7 @@
 #define HTMLFormControlsCollection_h
 
 #include "core/html/HTMLCollection.h"
+#include "core/html/RadioNodeList.h"
 
 namespace WebCore {
 
@@ -42,6 +43,7 @@ public:
     virtual ~HTMLFormControlsCollection();
 
     virtual Node* namedItem(const AtomicString& name) const;
+    void namedGetter(const AtomicString& name, RefPtr<RadioNodeList>&, RefPtr<Node>&);
 
 private:
     HTMLFormControlsCollection(Node*);

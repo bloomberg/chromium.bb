@@ -36,4 +36,5 @@
     Constructor(DOMString str1, [Default=Undefined] optional DOMString str2),
     RaisesException
 ] interface TestInterface {
+    [ImplementedAs=getItem] getter (Node or NodeList)(DOMString name);
 };
