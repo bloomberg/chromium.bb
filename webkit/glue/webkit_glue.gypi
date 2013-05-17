@@ -228,6 +228,8 @@
         'webdropdata.cc',
         'webdropdata_win.cc',
         'webdropdata.h',
+        'webfallbackthemeengine_impl.cc',
+        'webfallbackthemeengine_impl.h',
         'webfileutilities_impl.cc',
         'webfileutilities_impl.h',
         'webkit_glue.cc',
