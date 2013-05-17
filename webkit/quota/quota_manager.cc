@@ -483,73 +483,6 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
   DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaDispatcherTask);
 };
 
-class QuotaManager::GetUsageInfoTask : public QuotaTask {
- private:
-  typedef QuotaManager::GetUsageInfoTask self_type;
-
- public:
-  GetUsageInfoTask(
-      QuotaManager* manager,
-      const GetUsageInfoCallback& callback)
-      : QuotaTask(manager),
-        callback_(callback),
-        weak_factory_(this) {
-  }
-
- protected:
-  virtual void Run() OVERRIDE {
-    remaining_trackers_ = 3;
-    // This will populate cached hosts and usage info.
-    manager()->GetUsageTracker(kStorageTypeTemporary)->GetGlobalUsage(
-        base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
-                   weak_factory_.GetWeakPtr()));
-    manager()->GetUsageTracker(kStorageTypePersistent)->GetGlobalUsage(
-        base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
-                   weak_factory_.GetWeakPtr()));
-    manager()->GetUsageTracker(kStorageTypeSyncable)->GetGlobalUsage(
-        base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
-                   weak_factory_.GetWeakPtr()));
-  }
-
-  virtual void Completed() OVERRIDE {
-    callback_.Run(entries_);
-    DeleteSoon();
-  }
-
-  virtual void Aborted() OVERRIDE {
-    callback_.Run(UsageInfoEntries());
-    DeleteSoon();
-  }
-
- private:
-  void AddEntries(StorageType type, UsageTracker* tracker) {
-    std::map<std::string, int64> host_usage;
-    tracker->GetCachedHostsUsage(&host_usage);
-    for (std::map<std::string, int64>::const_iterator iter = host_usage.begin();
-         iter != host_usage.end();
-         ++iter) {
-      entries_.push_back(UsageInfo(iter->first, type, iter->second));
-    }
-    if (--remaining_trackers_ == 0)
-      CallCompleted();
-  }
-
-  void DidGetGlobalUsage(StorageType type, int64, int64) {
-    AddEntries(type, manager()->GetUsageTracker(type));
-  }
-
-  QuotaManager* manager() const {
-    return static_cast<QuotaManager*>(observer());
-  }
-
-  GetUsageInfoCallback callback_;
-  UsageInfoEntries entries_;
-  base::WeakPtrFactory<GetUsageInfoTask> weak_factory_;
-  int remaining_trackers_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetUsageInfoTask);
-};
-
 class QuotaManager::UsageAndQuotaDispatcherTaskForTemporary
     : public QuotaManager::UsageAndQuotaDispatcherTask {
  public:
@@ -967,12 +900,6 @@ QuotaManager::QuotaManager(bool is_incognito,
     special_storage_policy_(special_storage_policy),
     weak_factory_(this),
     get_disk_space_fn_(&CallSystemGetAmountOfFreeDiskSpace) {
-}
-
-void QuotaManager::GetUsageInfo(const GetUsageInfoCallback& callback) {
-  LazyInitialize();
-  GetUsageInfoTask* get_usage_info = new GetUsageInfoTask(this, callback);
-  get_usage_info->Start();
 }
 
 void QuotaManager::GetUsageAndQuotaForWebApps(
