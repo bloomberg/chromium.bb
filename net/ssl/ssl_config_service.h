@@ -88,7 +88,7 @@ struct NET_EXPORT SSLConfig {
   std::vector<uint16> disabled_cipher_suites;
 
   bool cached_info_enabled;  // True if TLS cached info extension is enabled.
-  bool channel_id_enabled;  // True if TLS channel ID extension is enabled.
+  bool channel_id_enabled;   // True if TLS channel ID extension is enabled.
   bool false_start_enabled;  // True if we'll use TLS False Start.
 
   // If |unrestricted_ssl3_fallback_enabled| is true, SSL 3.0 fallback will be

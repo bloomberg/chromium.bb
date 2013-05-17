@@ -118,6 +118,20 @@ bool NetworkDelegate::CanThrottleRequest(const URLRequest& request) const {
   return OnCanThrottleRequest(request);
 }
 
+bool NetworkDelegate::CanEnablePrivacyMode(
+    const GURL& url,
+    const GURL& first_party_for_cookies) const {
+  DCHECK(CalledOnValidThread());
+  return OnCanEnablePrivacyMode(url, first_party_for_cookies);
+}
+
+bool NetworkDelegate::OnCanEnablePrivacyMode(
+    const GURL& url,
+    const GURL& first_party_for_cookies) const {
+  // Default implementation disables privacy mode.
+  return false;
+}
+
 int NetworkDelegate::NotifyBeforeSocketStreamConnect(
     SocketStream* socket,
     const CompletionCallback& callback) {

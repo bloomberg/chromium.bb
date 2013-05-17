@@ -227,6 +227,9 @@ class NET_EXPORT URLRequestJob
   bool CanSetCookie(const std::string& cookie_line,
                     CookieOptions* options) const;
 
+  // Delegates to URLRequest::Delegate.
+  bool CanEnablePrivacyMode() const;
+
   // Notifies the job that headers have been received.
   void NotifyHeadersComplete();
 

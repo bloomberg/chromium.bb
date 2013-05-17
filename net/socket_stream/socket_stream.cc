@@ -99,6 +99,7 @@ SocketStream::SocketStream(const GURL& url, Delegate* delegate)
       proxy_mode_(kDirectConnection),
       proxy_url_(url),
       pac_request_(NULL),
+      privacy_mode_(kPrivacyModeDisabled),
       // Unretained() is required; without it, Bind() creates a circular
       // dependency and the SocketStream object will not be freed.
       io_callback_(base::Bind(&SocketStream::OnIOCompleted,
@@ -162,6 +163,17 @@ void SocketStream::set_context(const URLRequestContext* context) {
   }
 }
 
+void SocketStream::CheckPrivacyMode() {
+  if (context_ && context_->network_delegate()) {
+    bool enable = context_->network_delegate()->CanEnablePrivacyMode(url_,
+                                                                     url_);
+    privacy_mode_ = enable ? kPrivacyModeEnabled : kPrivacyModeDisabled;
+    // Disable Channel ID if privacy mode is enabled.
+    if (enable)
+      server_ssl_config_.channel_id_enabled = false;
+  }
+}
+
 void SocketStream::Connect() {
   DCHECK(MessageLoop::current()) <<
       "The current MessageLoop must exist";
@@ -171,6 +183,8 @@ void SocketStream::Connect() {
     ssl_config_service()->GetSSLConfig(&server_ssl_config_);
     proxy_ssl_config_ = server_ssl_config_;
   }
+  CheckPrivacyMode();
+
   DCHECK_EQ(next_state_, STATE_NONE);
 
   AddRef();  // Released in Finish()

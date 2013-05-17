@@ -390,6 +390,10 @@ void WebSocketJob::AddCookieHeaderAndSend() {
 
 void WebSocketJob::LoadCookieCallback(const std::string& cookie) {
   if (!cookie.empty())
+    // TODO(tyoshino): Sending cookie means that connection doesn't need
+    // kPrivacyModeEnabled as cookies may be server-bound and channel id
+    // wouldn't negatively affect privacy anyway. Need to restart connection
+    // or refactor to determine cookie status prior to connecting.
     handshake_request_->AppendHeaderIfMissing("Cookie", cookie);
   DoSendData();
 }
@@ -589,15 +593,16 @@ int WebSocketJob::TrySpdyStream() {
   if (!session.get())
     return OK;
   SpdySessionPool* spdy_pool = session->spdy_session_pool();
-  const HostPortProxyPair pair(HostPortPair::FromURL(socket_->url()),
-                               socket_->proxy_server());
-  if (!spdy_pool->HasSession(pair))
+  PrivacyMode privacy_mode = socket_->privacy_mode();
+  const SpdySessionKey key(HostPortPair::FromURL(socket_->url()),
+                               socket_->proxy_server(), privacy_mode);
+  if (!spdy_pool->HasSession(key))
     return OK;
 
   // Forbid wss downgrade to SPDY without SSL.
   // TODO(toyoshim): Does it realize the same policy with HTTP?
   scoped_refptr<SpdySession> spdy_session =
-      spdy_pool->Get(pair, *socket_->net_log());
+      spdy_pool->Get(key, *socket_->net_log());
   SSLInfo ssl_info;
   bool was_npn_negotiated;
   NextProto protocol_negotiated = kProtoUnknown;

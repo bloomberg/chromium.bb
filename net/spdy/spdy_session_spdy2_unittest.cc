@@ -54,7 +54,8 @@ class SpdySessionSpdy2Test : public PlatformTest {
         spdy_session_pool_(NULL),
         test_url_(kTestUrl),
         test_host_port_pair_(kTestHost, kTestPort),
-        pair_(test_host_port_pair_, ProxyServer::Direct()) {
+        key_(test_host_port_pair_, ProxyServer::Direct(),
+             kPrivacyModeDisabled) {
   }
 
   virtual ~SpdySessionSpdy2Test() {
@@ -82,17 +83,17 @@ class SpdySessionSpdy2Test : public PlatformTest {
     spdy_session_pool_ = http_session_->spdy_session_pool();
   }
 
-  scoped_refptr<SpdySession> GetSession(const HostPortProxyPair& pair) {
-    EXPECT_FALSE(spdy_session_pool_->HasSession(pair));
+  scoped_refptr<SpdySession> GetSession(const SpdySessionKey& key) {
+    EXPECT_FALSE(spdy_session_pool_->HasSession(key));
     scoped_refptr<SpdySession> session =
-        spdy_session_pool_->Get(pair, BoundNetLog());
-    EXPECT_TRUE(spdy_session_pool_->HasSession(pair));
+        spdy_session_pool_->Get(key, BoundNetLog());
+    EXPECT_TRUE(spdy_session_pool_->HasSession(key));
     return session;
   }
 
-  // Creates an initialized session to |pair_|.
+  // Creates an initialized session to |key_|.
   scoped_refptr<SpdySession> CreateInitializedSession() {
-    scoped_refptr<SpdySession> session = GetSession(pair_);
+    scoped_refptr<SpdySession> session = GetSession(key_);
     EXPECT_EQ(
         OK,
         InitializeSession(
@@ -128,7 +129,7 @@ class SpdySessionSpdy2Test : public PlatformTest {
   SpdySessionPool* spdy_session_pool_;
   GURL test_url_;
   HostPortPair test_host_port_pair_;
-  HostPortProxyPair pair_;
+  SpdySessionKey key_;
 };
 
 TEST_F(SpdySessionSpdy2Test, GoAway) {
@@ -189,17 +190,17 @@ TEST_F(SpdySessionSpdy2Test, GoAway) {
   EXPECT_EQ(1u, spdy_stream1->stream_id());
   EXPECT_EQ(3u, spdy_stream2->stream_id());
 
-  EXPECT_TRUE(spdy_session_pool_->HasSession(pair_));
+  EXPECT_TRUE(spdy_session_pool_->HasSession(key_));
 
   // Read and process the GOAWAY frame.
   data.RunFor(1);
 
-  EXPECT_FALSE(spdy_session_pool_->HasSession(pair_));
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_));
 
   EXPECT_TRUE(session->IsStreamActive(1));
   EXPECT_FALSE(session->IsStreamActive(3));
 
-  scoped_refptr<SpdySession> session2 = GetSession(pair_);
+  scoped_refptr<SpdySession> session2 = GetSession(key_);
 
   spdy_stream1->Close();
   EXPECT_EQ(NULL, spdy_stream1.get());
@@ -263,7 +264,7 @@ TEST_F(SpdySessionSpdy2Test, ClientPing) {
   EXPECT_FALSE(session->check_ping_status_pending());
   EXPECT_GE(session->last_activity_time(), before_ping_time);
 
-  EXPECT_FALSE(spdy_session_pool_->HasSession(pair_));
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_));
 
   // Delete the first session.
   session = NULL;
@@ -304,7 +305,7 @@ TEST_F(SpdySessionSpdy2Test, ServerPing) {
   // Flush the SpdySession::OnReadComplete() task.
   MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_FALSE(spdy_session_pool_->HasSession(pair_));
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_));
 
   // Delete the session.
   session = NULL;
@@ -320,7 +321,7 @@ TEST_F(SpdySessionSpdy2Test, DeleteExpiredPushStreams) {
 
   CreateNetworkSession();
 
-  scoped_refptr<SpdySession> session = GetSession(pair_);
+  scoped_refptr<SpdySession> session = GetSession(key_);
 
   // Give the session a SPDY2 framer.
   session->buffered_spdy_framer_.reset(new BufferedSpdyFramer(SPDY2, false));
@@ -411,7 +412,7 @@ TEST_F(SpdySessionSpdy2Test, FailedPing) {
   // Assert session is not closed.
   EXPECT_FALSE(session->IsClosed());
   EXPECT_LT(0u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_TRUE(spdy_session_pool_->HasSession(pair_));
+  EXPECT_TRUE(spdy_session_pool_->HasSession(key_));
 
   // We set last time we have received any data in 1 sec less than now.
   // CheckPingStatus will trigger timeout because hung interval is zero.
@@ -422,7 +423,7 @@ TEST_F(SpdySessionSpdy2Test, FailedPing) {
   EXPECT_TRUE(session->IsClosed());
   EXPECT_EQ(0u, session->num_active_streams());
   EXPECT_EQ(0u, session->num_unclaimed_pushed_streams());
-  EXPECT_FALSE(spdy_session_pool_->HasSession(pair_));
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_));
 
   // Delete the first session.
   session = NULL;
@@ -444,8 +445,9 @@ TEST_F(SpdySessionSpdy2Test, CloseIdleSessions) {
   // Set up session 1
   const std::string kTestHost1("http://www.a.com");
   HostPortPair test_host_port_pair1(kTestHost1, 80);
-  HostPortProxyPair pair1(test_host_port_pair1, ProxyServer::Direct());
-  scoped_refptr<SpdySession> session1 = GetSession(pair1);
+  SpdySessionKey key1(test_host_port_pair1, ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session1 = GetSession(key1);
   EXPECT_EQ(
       OK,
       InitializeSession(
@@ -459,8 +461,9 @@ TEST_F(SpdySessionSpdy2Test, CloseIdleSessions) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   const std::string kTestHost2("http://www.b.com");
   HostPortPair test_host_port_pair2(kTestHost2, 80);
-  HostPortProxyPair pair2(test_host_port_pair2, ProxyServer::Direct());
-  scoped_refptr<SpdySession> session2 = GetSession(pair2);
+  SpdySessionKey key2(test_host_port_pair2, ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session2 = GetSession(key2);
   EXPECT_EQ(
       OK,
       InitializeSession(
@@ -474,8 +477,9 @@ TEST_F(SpdySessionSpdy2Test, CloseIdleSessions) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   const std::string kTestHost3("http://www.c.com");
   HostPortPair test_host_port_pair3(kTestHost3, 80);
-  HostPortProxyPair pair3(test_host_port_pair3, ProxyServer::Direct());
-  scoped_refptr<SpdySession> session3 = GetSession(pair3);
+  SpdySessionKey key3(test_host_port_pair3, ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session3 = GetSession(key3);
   EXPECT_EQ(
       OK,
       InitializeSession(
@@ -843,7 +847,7 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
     std::string url;
     std::string name;
     std::string iplist;
-    HostPortProxyPair pair;
+    SpdySessionKey key;
     AddressList addresses;
   } test_hosts[] = {
     { "http:://www.foo.com",
@@ -873,9 +877,10 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
         info, &test_hosts[i].addresses, CompletionCallback(), NULL,
         BoundNetLog());
 
-    // Setup a HostPortProxyPair
-    test_hosts[i].pair = HostPortProxyPair(
-        HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct());
+    // Setup a SpdySessionKey
+    test_hosts[i].key = SpdySessionKey(
+        HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
+        kPrivacyModeDisabled);
   }
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -895,10 +900,10 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
 
   // Setup the first session to the first host.
   SpdySessionPool* spdy_session_pool(http_session->spdy_session_pool());
-  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[0].pair));
+  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[0].key));
   scoped_refptr<SpdySession> session =
-      spdy_session_pool->Get(test_hosts[0].pair, BoundNetLog());
-  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[0].pair));
+      spdy_session_pool->Get(test_hosts[0].key, BoundNetLog());
+  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[0].key));
 
   HostPortPair test_host_port_pair(test_hosts[0].name, kTestPort);
 
@@ -915,59 +920,60 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
   // TODO(rtenneti): MockClientSocket::GetPeerAddress return's 0 as the port
   // number. Fix it to return port 80 and then use GetPeerAddress to AddAlias.
   SpdySessionPoolPeer pool_peer(spdy_session_pool);
-  pool_peer.AddAlias(test_hosts[0].addresses.front(), test_hosts[0].pair);
+  pool_peer.AddAlias(test_hosts[0].addresses.front(), test_hosts[0].key);
 
   // Flush the SpdySession::OnReadComplete() task.
   MessageLoop::current()->RunUntilIdle();
 
   // The third host has no overlap with the first, so it can't pool IPs.
-  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[2].pair));
+  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[2].key));
 
   // The second host overlaps with the first, and should IP pool.
-  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[1].pair));
+  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[1].key));
 
   // Verify that the second host, through a proxy, won't share the IP.
-  HostPortProxyPair proxy_pair(test_hosts[1].pair.first,
-      ProxyServer::FromPacString("HTTP http://proxy.foo.com/"));
-  EXPECT_FALSE(spdy_session_pool->HasSession(proxy_pair));
+  SpdySessionKey proxy_key(test_hosts[1].key.host_port_pair(),
+      ProxyServer::FromPacString("HTTP http://proxy.foo.com/"),
+      kPrivacyModeDisabled);
+  EXPECT_FALSE(spdy_session_pool->HasSession(proxy_key));
 
   // Overlap between 2 and 3 does is not transitive to 1.
-  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[2].pair));
+  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[2].key));
 
   // Create a new session to host 2.
   scoped_refptr<SpdySession> session2 =
-      spdy_session_pool->Get(test_hosts[2].pair, BoundNetLog());
+      spdy_session_pool->Get(test_hosts[2].key, BoundNetLog());
 
   // Verify that we have sessions for everything.
-  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[0].pair));
-  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[1].pair));
-  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[2].pair));
+  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[0].key));
+  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[1].key));
+  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[2].key));
 
   // Initialize session for host 2.
   session_deps.socket_factory->AddSocketDataProvider(&data);
-  IPPoolingInitializedSession(test_hosts[2].pair.first.ToString(),
+  IPPoolingInitializedSession(test_hosts[2].key.host_port_pair().ToString(),
                               transport_params, http_session, session2);
 
   // Grab the session to host 1 and verify that it is the same session
   // we got with host 0, and that is a different than host 2's session.
   scoped_refptr<SpdySession> session1 =
-      spdy_session_pool->Get(test_hosts[1].pair, BoundNetLog());
+      spdy_session_pool->Get(test_hosts[1].key, BoundNetLog());
   EXPECT_EQ(session.get(), session1.get());
   EXPECT_NE(session2.get(), session1.get());
 
   // Initialize session for host 1.
   session_deps.socket_factory->AddSocketDataProvider(&data);
-  IPPoolingInitializedSession(test_hosts[2].pair.first.ToString(),
+  IPPoolingInitializedSession(test_hosts[2].key.host_port_pair().ToString(),
                               transport_params, http_session, session2);
 
   // Remove the aliases and observe that we still have a session for host1.
-  pool_peer.RemoveAliases(test_hosts[0].pair);
-  pool_peer.RemoveAliases(test_hosts[1].pair);
-  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[1].pair));
+  pool_peer.RemoveAliases(test_hosts[0].key);
+  pool_peer.RemoveAliases(test_hosts[1].key);
+  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[1].key));
 
   // Expire the host cache
   session_deps.host_resolver->GetHostCache()->clear();
-  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[1].pair));
+  EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[1].key));
 
   // Cleanup the sessions.
   switch (close_sessions_type) {
@@ -1025,9 +1031,9 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
   }
 
   // Verify that the map is all cleaned up.
-  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[0].pair));
-  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[1].pair));
-  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[2].pair));
+  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[0].key));
+  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[1].key));
+  EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[2].key));
 }
 
 }  // namespace
@@ -1083,15 +1089,15 @@ TEST_F(SpdySessionSpdy2Test, CloseSessionOnError) {
 
   CapturingBoundNetLog log;
   scoped_refptr<SpdySession> session =
-      spdy_session_pool_->Get(pair_, log.bound());
-  EXPECT_TRUE(spdy_session_pool_->HasSession(pair_));
+      spdy_session_pool_->Get(key_, log.bound());
+  EXPECT_TRUE(spdy_session_pool_->HasSession(key_));
 
   InitializeSession(http_session_.get(), session.get(), test_host_port_pair_);
 
   // Flush the SpdySession::OnReadComplete() task.
   MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_FALSE(spdy_session_pool_->HasSession(pair_));
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_));
 
   // Check that the NetLog was filled reasonably.
   net::CapturingNetLog::CapturedEntryList entries;
@@ -1376,7 +1382,7 @@ TEST_F(SpdySessionSpdy2Test, VerifyDomainAuthentication) {
 
   CreateDeterministicNetworkSession();
 
-  scoped_refptr<SpdySession> session = GetSession(pair_);
+  scoped_refptr<SpdySession> session = GetSession(key_);
 
   SSLConfig ssl_config;
   scoped_refptr<TransportSocketParams> transport_params(
@@ -1445,7 +1451,7 @@ TEST_F(SpdySessionSpdy2Test, ConnectionPooledWithTlsChannelId) {
 
   CreateDeterministicNetworkSession();
 
-  scoped_refptr<SpdySession> session = GetSession(pair_);
+  scoped_refptr<SpdySession> session = GetSession(key_);
 
   SSLConfig ssl_config;
   scoped_refptr<TransportSocketParams> transport_params(
@@ -1718,9 +1724,10 @@ TEST_F(SpdySessionSpdy2Test, NeedsCredentials) {
   const std::string kTestHost("www.foo.com");
   const int kTestPort = 80;
   HostPortPair test_host_port_pair(kTestHost, kTestPort);
-  HostPortProxyPair pair(test_host_port_pair, ProxyServer::Direct());
+  SpdySessionKey key(test_host_port_pair, ProxyServer::Direct(),
+                     kPrivacyModeDisabled);
 
-  scoped_refptr<SpdySession> session = GetSession(pair);
+  scoped_refptr<SpdySession> session = GetSession(key);
 
   SSLConfig ssl_config;
   scoped_refptr<TransportSocketParams> transport_params(
@@ -2146,7 +2153,7 @@ TEST_F(SpdySessionSpdy2Test, ProtocolNegotiation) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   CreateNetworkSession();
-  scoped_refptr<SpdySession> session = GetSession(pair_);
+  scoped_refptr<SpdySession> session = GetSession(key_);
 
   EXPECT_EQ(SpdySession::FLOW_CONTROL_NONE, session->flow_control_state());
   EXPECT_TRUE(session->buffered_spdy_framer_ == NULL);
@@ -2188,11 +2195,13 @@ TEST_F(SpdySessionSpdy2Test, CloseOneIdleConnection) {
           HttpNetworkSession::NORMAL_SOCKET_POOL);
 
   // Create an idle SPDY session.
-  HostPortProxyPair pair1(HostPortPair("1.com", 80), ProxyServer::Direct());
-  scoped_refptr<SpdySession> session1 = GetSession(pair1);
+  SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session1 = GetSession(key1);
   EXPECT_EQ(
       OK,
-      InitializeSession(http_session_.get(), session1.get(), pair1.first));
+      InitializeSession(http_session_.get(), session1.get(),
+                        key1.host_port_pair()));
   EXPECT_FALSE(pool->IsStalled());
   // Release the pointer to the session so it can be closed.
   session1 = NULL;
@@ -2240,11 +2249,13 @@ TEST_F(SpdySessionSpdy2Test, CloseOneIdleConnectionSessionStillHeld) {
           HttpNetworkSession::NORMAL_SOCKET_POOL);
 
   // Create an idle SPDY session.
-  HostPortProxyPair pair1(HostPortPair("1.com", 80), ProxyServer::Direct());
-  scoped_refptr<SpdySession> session1 = GetSession(pair1);
+  SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session1 = GetSession(key1);
   EXPECT_EQ(
       OK,
-      InitializeSession(http_session_.get(), session1.get(), pair1.first));
+      InitializeSession(http_session_.get(), session1.get(),
+                        key1.host_port_pair()));
   EXPECT_FALSE(pool->IsStalled());
 
   // Trying to create a new connection should cause the pool to be stalled, and
@@ -2305,12 +2316,13 @@ TEST_F(SpdySessionSpdy2Test, CloseOneIdleConnectionFailsWhenSessionInUse) {
 
   // Create a SPDY session.
   GURL url1("http://www.google.com");
-  HostPortProxyPair pair1(HostPortPair(url1.host(), 80),
-                          ProxyServer::Direct());
-  scoped_refptr<SpdySession> session1 = GetSession(pair1);
+  SpdySessionKey key1(HostPortPair(url1.host(), 80),
+                      ProxyServer::Direct(), kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session1 = GetSession(key1);
   EXPECT_EQ(
       OK,
-      InitializeSession(http_session_.get(), session1.get(), pair1.first));
+      InitializeSession(http_session_.get(), session1.get(),
+                        key1.host_port_pair()));
   EXPECT_FALSE(pool->IsStalled());
 
   // Create a stream using the session, and send a request.

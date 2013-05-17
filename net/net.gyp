@@ -917,6 +917,8 @@
         'spdy/spdy_read_queue.h',
         'spdy/spdy_session.cc',
         'spdy/spdy_session.h',
+        'spdy/spdy_session_key.cc',
+        'spdy/spdy_session_key.h',
         'spdy/spdy_session_pool.cc',
         'spdy/spdy_session_pool.h',
         'spdy/spdy_stream.cc',

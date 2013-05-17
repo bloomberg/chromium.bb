@@ -145,8 +145,7 @@ void SSLConfigServicePref::SetNewSSLConfig(
 class SSLConfigServiceManagerPref
     : public SSLConfigServiceManager {
  public:
-  SSLConfigServiceManagerPref(PrefService* local_state,
-                              PrefService* user_prefs);
+  explicit SSLConfigServiceManagerPref(PrefService* local_state);
   virtual ~SSLConfigServiceManagerPref() {}
 
   // Register local_state SSL preferences.
@@ -168,11 +167,7 @@ class SSLConfigServiceManagerPref
   // cached list of parsed SSL/TLS cipher suites that are disabled.
   void OnDisabledCipherSuitesChange(PrefService* local_state);
 
-  // Processes changes to the default cookie settings.
-  void OnDefaultContentSettingsChange(PrefService* user_prefs);
-
   PrefChangeRegistrar local_state_change_registrar_;
-  PrefChangeRegistrar user_prefs_change_registrar_;
 
   // The local_state prefs (should only be accessed from UI thread)
   BooleanPrefMember rev_checking_enabled_;
@@ -185,24 +180,14 @@ class SSLConfigServiceManagerPref
   // The cached list of disabled SSL cipher suites.
   std::vector<uint16> disabled_cipher_suites_;
 
-  // The user_prefs prefs (should only be accessed from UI thread).
-  // |have_user_prefs_| will be false if no user_prefs are associated with this
-  // instance.
-  bool have_user_prefs_;
-  BooleanPrefMember block_third_party_cookies_;
-
-  // Cached value of if cookies are disabled by default.
-  bool cookies_disabled_;
-
   scoped_refptr<SSLConfigServicePref> ssl_config_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLConfigServiceManagerPref);
 };
 
 SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
-    PrefService* local_state, PrefService* user_prefs)
-    : have_user_prefs_(!!user_prefs),
-      ssl_config_service_(new SSLConfigServicePref()) {
+    PrefService* local_state)
+    : ssl_config_service_(new SSLConfigServicePref()) {
   DCHECK(local_state);
 
   PrefChangeRegistrar::NamedChangeCallback local_state_callback = base::Bind(
@@ -229,20 +214,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
       prefs::kCipherSuiteBlacklist, local_state_callback);
 
   OnDisabledCipherSuitesChange(local_state);
-
-  if (user_prefs) {
-    PrefChangeRegistrar::NamedChangeCallback user_prefs_callback = base::Bind(
-        &SSLConfigServiceManagerPref::OnPreferenceChanged,
-        base::Unretained(this),
-        user_prefs);
-    block_third_party_cookies_.Init(
-        prefs::kBlockThirdPartyCookies, user_prefs, user_prefs_callback);
-    user_prefs_change_registrar_.Init(user_prefs);
-    user_prefs_change_registrar_.Add(
-        prefs::kDefaultContentSettings, user_prefs_callback);
-
-    OnDefaultContentSettingsChange(user_prefs);
-  }
 
   // Initialize from UI thread.  This is okay as there shouldn't be anything on
   // the IO thread trying to access it yet.
@@ -282,8 +253,6 @@ void SSLConfigServiceManagerPref::OnPreferenceChanged(
   DCHECK(prefs);
   if (pref_name_in == prefs::kCipherSuiteBlacklist)
     OnDisabledCipherSuitesChange(prefs);
-  else if (pref_name_in == prefs::kDefaultContentSettings)
-    OnDefaultContentSettingsChange(prefs);
 
   net::SSLConfig new_config;
   GetSSLConfigFromPrefs(&new_config);
@@ -324,9 +293,6 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   }
   config->disabled_cipher_suites = disabled_cipher_suites_;
   config->channel_id_enabled = channel_id_enabled_.GetValue();
-  if (have_user_prefs_ &&
-      (cookies_disabled_ || block_third_party_cookies_.GetValue()))
-    config->channel_id_enabled = false;
   // disabling False Start also happens to disable record splitting.
   config->false_start_enabled = !ssl_record_splitting_disabled_.GetValue();
   config->unrestricted_ssl3_fallback_enabled =
@@ -340,26 +306,13 @@ void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(
   disabled_cipher_suites_ = ParseCipherSuites(ListValueToStringVector(value));
 }
 
-void SSLConfigServiceManagerPref::OnDefaultContentSettingsChange(
-    PrefService* user_prefs) {
-  const DictionaryValue* value = user_prefs->GetDictionary(
-      prefs::kDefaultContentSettings);
-  int default_cookie_settings = -1;
-  cookies_disabled_ = (
-      value &&
-      value->GetInteger(
-          content_settings::GetTypeName(CONTENT_SETTINGS_TYPE_COOKIES),
-          &default_cookie_settings) &&
-      default_cookie_settings == CONTENT_SETTING_BLOCK);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //  SSLConfigServiceManager
 
 // static
 SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
-    PrefService* local_state, PrefService* user_prefs) {
-  return new SSLConfigServiceManagerPref(local_state, user_prefs);
+    PrefService* local_state) {
+  return new SSLConfigServiceManagerPref(local_state);
 }
 
 // static

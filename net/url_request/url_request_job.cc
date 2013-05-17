@@ -266,6 +266,13 @@ bool URLRequestJob::CanSetCookie(const std::string& cookie_line,
   return request_->CanSetCookie(cookie_line, options);
 }
 
+bool URLRequestJob::CanEnablePrivacyMode() const {
+  if (!request_)
+    return false;  // The request was destroyed, so there is no more work to do.
+
+  return request_->CanEnablePrivacyMode();
+}
+
 void URLRequestJob::NotifyHeadersComplete() {
   if (!request_ || !request_->has_delegate())
     return;  // The request was destroyed, so there is no more work to do.

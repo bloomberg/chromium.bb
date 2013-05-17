@@ -82,7 +82,8 @@ void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) const {
   // main frame request - way back in RenderViewHost::Navigate.  So only handle
   // predictions now for subresources or for redirected hosts.
   if ((request->load_flags() & net::LOAD_SUB_FRAME) || redirected_host)
-    predictor_->PredictFrameSubresources(request_scheme_host);
+    predictor_->PredictFrameSubresources(request_scheme_host,
+                                         request->first_party_for_cookies());
   return;
 }
 

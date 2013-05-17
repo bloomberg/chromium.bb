@@ -734,6 +734,21 @@ bool ChromeNetworkDelegate::OnCanThrottleRequest(
       extensions::kExtensionScheme;
 }
 
+bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
+    const GURL& url,
+    const GURL& first_party_for_cookies) const {
+  // NULL during tests, or when we're running in the system context.
+  if (!cookie_settings_)
+    return false;
+
+  bool reading_cookie_allowed = cookie_settings_->IsReadingCookieAllowed(
+      url, first_party_for_cookies);
+  bool setting_cookie_allowed = cookie_settings_->IsSettingCookieAllowed(
+      url, first_party_for_cookies);
+  bool privacy_mode = !(reading_cookie_allowed && setting_cookie_allowed);
+  return privacy_mode;
+}
+
 int ChromeNetworkDelegate::OnBeforeSocketStreamConnect(
     net::SocketStream* socket,
     const net::CompletionCallback& callback) {

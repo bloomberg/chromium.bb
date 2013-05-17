@@ -49,9 +49,9 @@ HttpStreamFactoryImpl::Request::~Request() {
 }
 
 void HttpStreamFactoryImpl::Request::SetSpdySessionKey(
-    const HostPortProxyPair& spdy_session_key) {
+    const SpdySessionKey& spdy_session_key) {
   DCHECK(!spdy_session_key_.get());
-  spdy_session_key_.reset(new HostPortProxyPair(spdy_session_key));
+  spdy_session_key_.reset(new SpdySessionKey(spdy_session_key));
   RequestSet& request_set =
       factory_->spdy_session_request_map_[spdy_session_key];
   DCHECK(!ContainsKey(request_set, this));

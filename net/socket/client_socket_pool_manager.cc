@@ -77,6 +77,7 @@ int InitSocketPoolHelper(const GURL& request_url,
                          const SSLConfig& ssl_config_for_origin,
                          const SSLConfig& ssl_config_for_proxy,
                          bool force_tunnel,
+                         PrivacyMode privacy_mode,
                          const BoundNetLog& net_log,
                          int num_preconnect_streams,
                          ClientSocketHandle* socket_handle,
@@ -227,6 +228,10 @@ int InitSocketPoolHelper(const GURL& request_url,
                             load_flags,
                             force_spdy_over_ssl,
                             want_spdy_over_npn);
+    // Change group name if privacy mode is enabled.
+    if (privacy_mode == kPrivacyModeEnabled)
+      connection_group = "pm/" + connection_group;
+
     SSLClientSocketPool* ssl_pool = NULL;
     if (proxy_info.is_direct()) {
       ssl_pool = session->GetSSLSocketPool(
@@ -375,6 +380,7 @@ int InitSocketHandleForHttpRequest(
     bool want_spdy_over_npn,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
+    PrivacyMode privacy_mode,
     const BoundNetLog& net_log,
     ClientSocketHandle* socket_handle,
     const OnHostResolutionCallback& resolution_callback,
@@ -383,8 +389,8 @@ int InitSocketHandleForHttpRequest(
   return InitSocketPoolHelper(
       request_url, request_extra_headers, request_load_flags, request_priority,
       session, proxy_info, force_spdy_over_ssl, want_spdy_over_npn,
-      ssl_config_for_origin, ssl_config_for_proxy, false, net_log, 0,
-      socket_handle, resolution_callback, callback);
+      ssl_config_for_origin, ssl_config_for_proxy, false, privacy_mode, net_log,
+      0, socket_handle, resolution_callback, callback);
 }
 
 int InitSocketHandleForRawConnect(
@@ -393,6 +399,7 @@ int InitSocketHandleForRawConnect(
     const ProxyInfo& proxy_info,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
+    PrivacyMode privacy_mode,
     const BoundNetLog& net_log,
     ClientSocketHandle* socket_handle,
     const CompletionCallback& callback) {
@@ -406,7 +413,7 @@ int InitSocketHandleForRawConnect(
   return InitSocketPoolHelper(
       request_url, request_extra_headers, request_load_flags, request_priority,
       session, proxy_info, false, false, ssl_config_for_origin,
-      ssl_config_for_proxy, true, net_log, 0, socket_handle,
+      ssl_config_for_proxy, true, privacy_mode, net_log, 0, socket_handle,
       OnHostResolutionCallback(), callback);
 }
 
@@ -421,12 +428,13 @@ int PreconnectSocketsForHttpRequest(
     bool want_spdy_over_npn,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
+    PrivacyMode privacy_mode,
     const BoundNetLog& net_log,
     int num_preconnect_streams) {
   return InitSocketPoolHelper(
       request_url, request_extra_headers, request_load_flags, request_priority,
       session, proxy_info, force_spdy_over_ssl, want_spdy_over_npn,
-      ssl_config_for_origin, ssl_config_for_proxy, false, net_log,
+      ssl_config_for_origin, ssl_config_for_proxy, false, privacy_mode, net_log,
       num_preconnect_streams, NULL, OnHostResolutionCallback(),
       CompletionCallback());
 }

@@ -131,7 +131,7 @@ class PredictorBrowserTest : public InProcessBrowserTest {
 
   void PrepareFrameSubresources(const GURL& url) {
     Predictor* predictor = browser()->profile()->GetNetworkPredictor();
-    predictor->PredictFrameSubresources(url);
+    predictor->PredictFrameSubresources(url, GURL());
   }
 
   void GetListFromPrefsAsString(const char* list_path,

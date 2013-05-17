@@ -201,9 +201,10 @@ int HttpProxyConnectJob::DoTransportConnectComplete(int result) {
 
 int HttpProxyConnectJob::DoSSLConnect() {
   if (params_->tunnel()) {
-    HostPortProxyPair pair(params_->destination().host_port_pair(),
-                           ProxyServer::Direct());
-    if (params_->spdy_session_pool()->HasSession(pair)) {
+    SpdySessionKey key(params_->destination().host_port_pair(),
+                       ProxyServer::Direct(),
+                       kPrivacyModeDisabled);
+    if (params_->spdy_session_pool()->HasSession(key)) {
       using_spdy_ = true;
       next_state_ = STATE_SPDY_PROXY_CREATE_STREAM;
       return OK;
@@ -297,23 +298,23 @@ int HttpProxyConnectJob::DoHttpProxyConnectComplete(int result) {
 int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   DCHECK(using_spdy_);
   DCHECK(params_->tunnel());
-
-  HostPortProxyPair pair(params_->destination().host_port_pair(),
-                         ProxyServer::Direct());
+  SpdySessionKey key(params_->destination().host_port_pair(),
+                     ProxyServer::Direct(),
+                     kPrivacyModeDisabled);
   SpdySessionPool* spdy_pool = params_->spdy_session_pool();
   scoped_refptr<SpdySession> spdy_session;
   // It's possible that a session to the proxy has recently been created
-  if (spdy_pool->HasSession(pair)) {
+  if (spdy_pool->HasSession(key)) {
     if (transport_socket_handle_.get()) {
       if (transport_socket_handle_->socket())
         transport_socket_handle_->socket()->Disconnect();
       transport_socket_handle_->Reset();
     }
-    spdy_session = spdy_pool->Get(pair, net_log());
+    spdy_session = spdy_pool->Get(key, net_log());
   } else {
     // Create a session direct to the proxy itself
     int rv = spdy_pool->GetSpdySessionFromSocket(
-        pair, transport_socket_handle_.release(),
+        key, transport_socket_handle_.release(),
         net_log(), OK, &spdy_session, /*using_ssl_*/ true);
     if (rv < 0)
       return rv;

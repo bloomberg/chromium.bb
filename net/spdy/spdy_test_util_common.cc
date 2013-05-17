@@ -491,12 +491,12 @@ SpdySessionPoolPeer::SpdySessionPoolPeer(SpdySessionPool* pool) : pool_(pool) {
 
 void SpdySessionPoolPeer::AddAlias(
     const IPEndPoint& address,
-    const HostPortProxyPair& pair) {
-  pool_->AddAlias(address, pair);
+    const SpdySessionKey& key) {
+  pool_->AddAlias(address, key);
 }
 
-void SpdySessionPoolPeer::RemoveAliases(const HostPortProxyPair& pair) {
-  pool_->RemoveAliases(pair);
+void SpdySessionPoolPeer::RemoveAliases(const SpdySessionKey& key) {
+  pool_->RemoveAliases(key);
 }
 
 void SpdySessionPoolPeer::RemoveSpdySession(

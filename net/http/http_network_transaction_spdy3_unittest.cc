@@ -8787,9 +8787,10 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   // Set up an initial SpdySession in the pool to reuse.
   HostPortPair host_port_pair("www.google.com", 443);
-  HostPortProxyPair pair(host_port_pair, ProxyServer::Direct());
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     kPrivacyModeDisabled);
   scoped_refptr<SpdySession> spdy_session =
-      session->spdy_session_pool()->Get(pair, BoundNetLog());
+      session->spdy_session_pool()->Get(key, BoundNetLog());
   scoped_refptr<TransportSocketParams> transport_params(
       new TransportSocketParams(host_port_pair, MEDIUM, false, false,
                                 OnHostResolutionCallback()));
@@ -9949,9 +9950,10 @@ TEST_F(HttpNetworkTransactionSpdy3Test, PreconnectWithExistingSpdySession) {
 
   // Set up an initial SpdySession in the pool to reuse.
   HostPortPair host_port_pair("www.google.com", 443);
-  HostPortProxyPair pair(host_port_pair, ProxyServer::Direct());
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     kPrivacyModeDisabled);
   scoped_refptr<SpdySession> spdy_session =
-      session->spdy_session_pool()->Get(pair, BoundNetLog());
+      session->spdy_session_pool()->Get(key, BoundNetLog());
   scoped_refptr<TransportSocketParams> transport_params(
       new TransportSocketParams(host_port_pair, MEDIUM, false, false,
                                 OnHostResolutionCallback()));
@@ -11236,10 +11238,10 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CloseIdleSpdySessionToOpenNewOne) {
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   HostPortPair host_port_pair_a("www.a.com", 443);
-  HostPortProxyPair host_port_proxy_pair_a(
-      host_port_pair_a, ProxyServer::Direct());
+  SpdySessionKey spdy_session_key_a(
+      host_port_pair_a, ProxyServer::Direct(), kPrivacyModeDisabled);
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(host_port_proxy_pair_a));
+      session->spdy_session_pool()->HasSession(spdy_session_key_a));
 
   TestCompletionCallback callback;
   HttpRequestInfo request1;
@@ -11265,13 +11267,13 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CloseIdleSpdySessionToOpenNewOne) {
   EXPECT_EQ("hello!", response_data);
   trans.reset();
   EXPECT_TRUE(
-      session->spdy_session_pool()->HasSession(host_port_proxy_pair_a));
+      session->spdy_session_pool()->HasSession(spdy_session_key_a));
 
   HostPortPair host_port_pair_b("www.b.com", 443);
-  HostPortProxyPair host_port_proxy_pair_b(
-      host_port_pair_b, ProxyServer::Direct());
+  SpdySessionKey spdy_session_key_b(
+      host_port_pair_b, ProxyServer::Direct(), kPrivacyModeDisabled);
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(host_port_proxy_pair_b));
+      session->spdy_session_pool()->HasSession(spdy_session_key_b));
   HttpRequestInfo request2;
   request2.method = "GET";
   request2.url = GURL("https://www.b.com/");
@@ -11291,15 +11293,15 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CloseIdleSpdySessionToOpenNewOne) {
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello!", response_data);
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(host_port_proxy_pair_a));
+      session->spdy_session_pool()->HasSession(spdy_session_key_a));
   EXPECT_TRUE(
-      session->spdy_session_pool()->HasSession(host_port_proxy_pair_b));
+      session->spdy_session_pool()->HasSession(spdy_session_key_b));
 
   HostPortPair host_port_pair_a1("www.a.com", 80);
-  HostPortProxyPair host_port_proxy_pair_a1(
-      host_port_pair_a1, ProxyServer::Direct());
+  SpdySessionKey spdy_session_key_a1(
+      host_port_pair_a1, ProxyServer::Direct(), kPrivacyModeDisabled);
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(host_port_proxy_pair_a1));
+      session->spdy_session_pool()->HasSession(spdy_session_key_a1));
   HttpRequestInfo request3;
   request3.method = "GET";
   request3.url = GURL("http://www.a.com/");
@@ -11319,9 +11321,9 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CloseIdleSpdySessionToOpenNewOne) {
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello!", response_data);
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(host_port_proxy_pair_a));
+      session->spdy_session_pool()->HasSession(spdy_session_key_a));
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(host_port_proxy_pair_b));
+      session->spdy_session_pool()->HasSession(spdy_session_key_b));
 
   HttpStreamFactory::SetNextProtos(std::vector<std::string>());
 }

@@ -66,7 +66,7 @@ void ChromeRenderViewHostObserver::Navigate(const GURL& url) {
     return;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame) &&
      (url.SchemeIs(chrome::kHttpScheme) || url.SchemeIs(chrome::kHttpsScheme)))
-    predictor_->PreconnectUrlAndSubresources(url);
+    predictor_->PreconnectUrlAndSubresources(url, GURL());
 }
 
 bool ChromeRenderViewHostObserver::OnMessageReceived(

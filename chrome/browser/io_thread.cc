@@ -391,7 +391,7 @@ IOThread::IOThread(
       NULL,
       local_state);
   ssl_config_service_manager_.reset(
-      SSLConfigServiceManager::CreateDefaultManager(local_state, NULL));
+      SSLConfigServiceManager::CreateDefaultManager(local_state));
 
   base::Value* dns_client_enabled_default = new base::FundamentalValue(
       chrome_browser_net::ConfigureAsyncDnsFieldTrial());

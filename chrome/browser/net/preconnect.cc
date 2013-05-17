@@ -23,6 +23,7 @@ namespace chrome_browser_net {
 
 void PreconnectOnUIThread(
     const GURL& url,
+    const GURL& first_party_for_cookies,
     UrlInfo::ResolutionMotivation motivation,
     int count,
     net::URLRequestContextGetter* getter) {
@@ -30,14 +31,15 @@ void PreconnectOnUIThread(
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&PreconnectOnIOThread, url, motivation, count,
-                 make_scoped_refptr(getter)));
+      base::Bind(&PreconnectOnIOThread, url, first_party_for_cookies,
+                 motivation, count, make_scoped_refptr(getter)));
   return;
 }
 
 
 void PreconnectOnIOThread(
     const GURL& url,
+    const GURL& first_party_for_cookies,
     UrlInfo::ResolutionMotivation motivation,
     int count,
     net::URLRequestContextGetter* getter) {
@@ -60,6 +62,11 @@ void PreconnectOnIOThread(
   request_info.method = "GET";
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                        context->GetUserAgent(url));
+
+  net::NetworkDelegate* delegate = context->network_delegate();
+  if (delegate->CanEnablePrivacyMode(url, first_party_for_cookies))
+    request_info.privacy_mode = net::kPrivacyModeEnabled;
+
   // It almost doesn't matter whether we use net::LOWEST or net::HIGHEST
   // priority here, as we won't make a request, and will surrender the created
   // socket to the pool as soon as we can.  However, we would like to mark the

@@ -731,6 +731,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   bool CanGetCookies(const CookieList& cookie_list) const;
   bool CanSetCookie(const std::string& cookie_line,
                     CookieOptions* options) const;
+  bool CanEnablePrivacyMode() const;
 
   // Called when the delegate blocks or unblocks this request when intercepting
   // certain requests.

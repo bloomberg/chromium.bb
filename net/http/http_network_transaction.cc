@@ -177,6 +177,12 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
     proxy_ssl_config_.rev_checking_enabled = false;
   }
 
+  // Channel ID is enabled unless --disable-tls-channel-id flag is set,
+  // or if privacy mode is enabled.
+  bool channel_id_enabled = server_ssl_config_.channel_id_enabled &&
+      (request_->privacy_mode == kPrivacyModeDisabled);
+  server_ssl_config_.channel_id_enabled = channel_id_enabled;
+
   next_state_ = STATE_CREATE_STREAM;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)

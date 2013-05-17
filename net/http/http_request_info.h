@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_export.h"
+#include "net/base/privacy_mode.h"
 #include "net/http/http_request_headers.h"
 
 namespace net {
@@ -51,6 +52,10 @@ struct NET_EXPORT HttpRequestInfo {
   // An optional globally unique identifier for this request for use by the
   // consumer. 0 is invalid.
   uint64 request_id;
+
+  // If enabled, then request must be sent over connection that cannot be
+  // tracked by the server (e.g. without channel id).
+  PrivacyMode privacy_mode;
 };
 
 }  // namespace net

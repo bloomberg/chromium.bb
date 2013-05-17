@@ -315,6 +315,16 @@ void URLRequestHttpJob::Start() {
   request_info_.method = request_->method();
   request_info_.load_flags = request_->load_flags();
   request_info_.request_id = request_->identifier();
+  // Enable privacy mode if cookie settings or flags tell us not send or
+  // save cookies.
+  bool enable_privacy_mode =
+      (request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES) ||
+      (request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) ||
+      CanEnablePrivacyMode();
+  // Privacy mode could still be disabled in OnCookiesLoaded if we are going
+  // to send previously saved cookies.
+  request_info_.privacy_mode = enable_privacy_mode ?
+      kPrivacyModeEnabled : kPrivacyModeDisabled;
 
   // Strip Referer from request_info_.extra_headers to prevent, e.g., plugins
   // from overriding headers that are controlled using other means. Otherwise a
@@ -624,6 +634,8 @@ void URLRequestHttpJob::OnCookiesLoaded(const std::string& cookie_line) {
   if (!cookie_line.empty()) {
     request_info_.extra_headers.SetHeader(
         HttpRequestHeaders::kCookie, cookie_line);
+    // Disable privacy mode as we are sending cookies anyway.
+    request_info_.privacy_mode = kPrivacyModeDisabled;
   }
   DoStartTransaction();
 }

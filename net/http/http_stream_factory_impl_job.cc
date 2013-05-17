@@ -252,15 +252,19 @@ void HttpStreamFactoryImpl::Job::GetSSLInfo() {
   ssl_socket->GetSSLInfo(&ssl_info_);
 }
 
-HostPortProxyPair HttpStreamFactoryImpl::Job::GetSpdySessionKey() const {
+SpdySessionKey HttpStreamFactoryImpl::Job::GetSpdySessionKey() const {
   // In the case that we're using an HTTPS proxy for an HTTP url,
   // we look for a SPDY session *to* the proxy, instead of to the
   // origin server.
+  PrivacyMode privacy_mode = request_info_.privacy_mode;
   if (IsHttpsProxyAndHttpUrl()) {
-    return HostPortProxyPair(proxy_info_.proxy_server().host_port_pair(),
-                             ProxyServer::Direct());
+    return SpdySessionKey(proxy_info_.proxy_server().host_port_pair(),
+                          ProxyServer::Direct(),
+                          privacy_mode);
   } else {
-    return HostPortProxyPair(origin_, proxy_info_.proxy_server());
+    return SpdySessionKey(origin_,
+                          proxy_info_.proxy_server(),
+                          privacy_mode);
   }
 }
 
@@ -377,7 +381,7 @@ void HttpStreamFactoryImpl::Job::OnPreconnectsComplete() {
 // static
 int HttpStreamFactoryImpl::Job::OnHostResolution(
     SpdySessionPool* spdy_session_pool,
-    const HostPortProxyPair& spdy_session_key,
+    const SpdySessionKey& spdy_session_key,
     const AddressList& addresses,
     const BoundNetLog& net_log) {
   // It is OK to dereference spdy_session_pool, because the
@@ -704,7 +708,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
 
   // Check first if we have a spdy session for this group.  If so, then go
   // straight to using that.
-  HostPortProxyPair spdy_session_key = GetSpdySessionKey();
+  SpdySessionKey spdy_session_key = GetSpdySessionKey();
   scoped_refptr<SpdySession> spdy_session =
       session_->spdy_session_pool()->GetIfExists(spdy_session_key, net_log_);
   if (spdy_session && CanUseExistingSpdySession()) {
@@ -779,6 +783,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
         want_spdy_over_npn,
         server_ssl_config_,
         proxy_ssl_config_,
+        request_info_.privacy_mode,
         net_log_,
         num_streams_);
   } else {
@@ -791,7 +796,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     return InitSocketHandleForHttpRequest(
         origin_url_, request_info_.extra_headers, request_info_.load_flags,
         priority_, session_, proxy_info_, ShouldForceSpdySSL(),
-        want_spdy_over_npn, server_ssl_config_, proxy_ssl_config_, net_log_,
+        want_spdy_over_npn, server_ssl_config_, proxy_ssl_config_,
+        request_info_.privacy_mode, net_log_,
         connection_.get(), resolution_callback, io_callback_);
   }
 }
@@ -805,7 +811,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   if (result == ERR_SPDY_SESSION_ALREADY_EXISTS) {
     // We found a SPDY connection after resolving the host.  This is
     // probably an IP pooled connection.
-    HostPortProxyPair spdy_session_key = GetSpdySessionKey();
+    SpdySessionKey spdy_session_key = GetSpdySessionKey();
     existing_spdy_session_ =
         session_->spdy_session_pool()->GetIfExists(spdy_session_key, net_log_);
     if (existing_spdy_session_) {
@@ -997,12 +1003,15 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 
   bool direct = true;
   const ProxyServer& proxy_server = proxy_info_.proxy_server();
-  HostPortProxyPair pair(origin_, proxy_server);
+  PrivacyMode privacy_mode = request_info_.privacy_mode;
+  SpdySessionKey spdy_session_key(origin_, proxy_server, privacy_mode);
   if (IsHttpsProxyAndHttpUrl()) {
     // If we don't have a direct SPDY session, and we're using an HTTPS
     // proxy, then we might have a SPDY session to the proxy.
-    pair = HostPortProxyPair(proxy_server.host_port_pair(),
-                             ProxyServer::Direct());
+    // We never use privacy mode for connection to proxy server.
+    spdy_session_key = SpdySessionKey(proxy_server.host_port_pair(),
+                                      ProxyServer::Direct(),
+                                      kPrivacyModeDisabled);
     direct = false;
   }
 
@@ -1015,14 +1024,14 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     spdy_session.swap(existing_spdy_session_);
   } else {
     SpdySessionPool* spdy_pool = session_->spdy_session_pool();
-    spdy_session = spdy_pool->GetIfExists(pair, net_log_);
+    spdy_session = spdy_pool->GetIfExists(spdy_session_key, net_log_);
     if (!spdy_session) {
       int error = spdy_pool->GetSpdySessionFromSocket(
-          pair, connection_.release(), net_log_, spdy_certificate_error_,
-          &new_spdy_session_, using_ssl_);
+          spdy_session_key, connection_.release(), net_log_,
+          spdy_certificate_error_, &new_spdy_session_, using_ssl_);
       if (error != OK)
         return error;
-      const HostPortPair& host_port_pair = pair.first;
+      const HostPortPair& host_port_pair = spdy_session_key.host_port_pair();
       HttpServerProperties* http_server_properties =
           session_->http_server_properties();
       if (http_server_properties)
@@ -1171,6 +1180,10 @@ void HttpStreamFactoryImpl::Job::InitSSLConfig(
 
   if (request_info_.load_flags & LOAD_VERIFY_EV_CERT)
     ssl_config->verify_ev_cert = true;
+
+  // Disable Channel ID if privacy mode is enabled.
+  if (request_info_.privacy_mode == kPrivacyModeEnabled)
+    ssl_config->channel_id_enabled = false;
 }
 
 

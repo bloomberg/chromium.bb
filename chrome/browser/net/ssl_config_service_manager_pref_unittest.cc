@@ -67,7 +67,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
                           Value::CreateBooleanValue(false));
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(&local_state, NULL));
+      SSLConfigServiceManager::CreateDefaultManager(&local_state));
   ASSERT_TRUE(config_manager.get());
   scoped_refptr<SSLConfigService> config_service(config_manager->Get());
   ASSERT_TRUE(config_service.get());
@@ -85,70 +85,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
   EXPECT_TRUE(config.channel_id_enabled);
 }
 
-// Test channel id with user prefs.
-TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithUserPrefs) {
-  TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-  local_state.SetUserPref(prefs::kEnableOriginBoundCerts,
-                          Value::CreateBooleanValue(false));
-
-  TestingProfile testing_profile;
-  TestingPrefServiceSyncable* user_prefs =
-      testing_profile.GetTestingPrefService();
-  SetCookiePref(&testing_profile, CONTENT_SETTING_BLOCK);
-  user_prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
-                          Value::CreateBooleanValue(true));
-
-  scoped_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(&local_state, user_prefs));
-  ASSERT_TRUE(config_manager.get());
-  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
-  ASSERT_TRUE(config_service.get());
-
-  // channelid=false, cookies=block, 3rdpartycookies=block
-  EXPECT_FALSE(IsChannelIdEnabled(config_service));
-
-  // channelid=false, cookies=block, 3rdpartycookies=allow
-  user_prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
-                          Value::CreateBooleanValue(false));
-  EXPECT_FALSE(IsChannelIdEnabled(config_service));
-
-  // channelid=false, cookies=allow, 3rdpartycookies=block
-  SetCookiePref(&testing_profile, CONTENT_SETTING_ALLOW);
-  user_prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
-                          Value::CreateBooleanValue(true));
-  EXPECT_FALSE(IsChannelIdEnabled(config_service));
-
-  // channelid=false, cookies=allow, 3rdpartycookies=allow
-  user_prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
-                          Value::CreateBooleanValue(false));
-  EXPECT_FALSE(IsChannelIdEnabled(config_service));
-
-  // channelid=true, cookies=block, 3rdpartycookies=block
-  local_state.SetUserPref(prefs::kEnableOriginBoundCerts,
-                          Value::CreateBooleanValue(true));
-  SetCookiePref(&testing_profile, CONTENT_SETTING_BLOCK);
-  user_prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
-                          Value::CreateBooleanValue(true));
-  EXPECT_FALSE(IsChannelIdEnabled(config_service));
-
-  // channelid=true, cookies=block, 3rdpartycookies=allow
-  user_prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
-                          Value::CreateBooleanValue(false));
-  EXPECT_FALSE(IsChannelIdEnabled(config_service));
-
-  // channelid=true, cookies=allow, 3rdpartycookies=block
-  SetCookiePref(&testing_profile, CONTENT_SETTING_ALLOW);
-  user_prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
-                          Value::CreateBooleanValue(true));
-  EXPECT_FALSE(IsChannelIdEnabled(config_service));
-
-  // channelid=true, cookies=allow, 3rdpartycookies=allow
-  user_prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
-                          Value::CreateBooleanValue(false));
-  EXPECT_TRUE(IsChannelIdEnabled(config_service));
-}
-
 // Test that cipher suites can be disabled. "Good" refers to the fact that
 // every value is expected to be successfully parsed into a cipher suite.
 TEST_F(SSLConfigServiceManagerPrefTest, GoodDisabledCipherSuites) {
@@ -156,7 +92,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, GoodDisabledCipherSuites) {
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(&local_state, NULL));
+      SSLConfigServiceManager::CreateDefaultManager(&local_state));
   ASSERT_TRUE(config_manager.get());
   scoped_refptr<SSLConfigService> config_service(config_manager->Get());
   ASSERT_TRUE(config_service.get());
@@ -191,7 +127,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(&local_state, NULL));
+      SSLConfigServiceManager::CreateDefaultManager(&local_state));
   ASSERT_TRUE(config_manager.get());
   scoped_refptr<SSLConfigService> config_service(config_manager->Get());
   ASSERT_TRUE(config_service.get());
@@ -238,7 +174,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   SSLConfigServiceManager::RegisterPrefs(registry);
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(local_state.get(), NULL));
+      SSLConfigServiceManager::CreateDefaultManager(local_state.get()));
   ASSERT_TRUE(config_manager.get());
   scoped_refptr<SSLConfigService> config_service(config_manager->Get());
   ASSERT_TRUE(config_service.get());
@@ -290,7 +226,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, CommandLinePrefs) {
   SSLConfigServiceManager::RegisterPrefs(registry);
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(local_state.get(), NULL));
+      SSLConfigServiceManager::CreateDefaultManager(local_state.get()));
   ASSERT_TRUE(config_manager.get());
   scoped_refptr<SSLConfigService> config_service(config_manager->Get());
   ASSERT_TRUE(config_service.get());

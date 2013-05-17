@@ -276,15 +276,16 @@ class MockHttpTransactionFactory : public HttpTransactionFactory {
         SpdySessionDependencies::SpdyCreateSession(session_deps_.get());
     host_port_pair_.set_host("example.com");
     host_port_pair_.set_port(80);
-    host_port_proxy_pair_.first = host_port_pair_;
-    host_port_proxy_pair_.second = ProxyServer::Direct();
+    spdy_session_key_ = SpdySessionKey(host_port_pair_,
+                                            ProxyServer::Direct(),
+                                            kPrivacyModeDisabled);
     SpdySessionPool* spdy_session_pool =
         http_session_->spdy_session_pool();
     DCHECK(spdy_session_pool);
-    EXPECT_FALSE(spdy_session_pool->HasSession(host_port_proxy_pair_));
+    EXPECT_FALSE(spdy_session_pool->HasSession(spdy_session_key_));
     session_ =
-        spdy_session_pool->Get(host_port_proxy_pair_, BoundNetLog());
-    EXPECT_TRUE(spdy_session_pool->HasSession(host_port_proxy_pair_));
+        spdy_session_pool->Get(spdy_session_key_, BoundNetLog());
+    EXPECT_TRUE(spdy_session_pool->HasSession(spdy_session_key_));
 
     transport_params_ =
         new TransportSocketParams(host_port_pair_,
@@ -323,7 +324,7 @@ class MockHttpTransactionFactory : public HttpTransactionFactory {
   scoped_refptr<TransportSocketParams> transport_params_;
   scoped_refptr<SpdySession> session_;
   HostPortPair host_port_pair_;
-  HostPortProxyPair host_port_proxy_pair_;
+  SpdySessionKey spdy_session_key_;
 };
 
 }  // namespace

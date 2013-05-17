@@ -515,12 +515,13 @@ class SpdyNetworkTransactionSpdy2Test
     const GURL& url = helper.request().url;
     int port = helper.test_type() == SPDYNPN ? 443 : 80;
     HostPortPair host_port_pair(url.host(), port);
-    HostPortProxyPair pair(host_port_pair, ProxyServer::Direct());
+    SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                       kPrivacyModeDisabled);
     BoundNetLog log;
     const scoped_refptr<HttpNetworkSession>& session = helper.session();
     SpdySessionPool* pool(session->spdy_session_pool());
-    EXPECT_TRUE(pool->HasSession(pair));
-    scoped_refptr<SpdySession> spdy_session(pool->Get(pair, log));
+    EXPECT_TRUE(pool->HasSession(key));
+    scoped_refptr<SpdySession> spdy_session(pool->Get(key, log));
     ASSERT_TRUE(spdy_session.get() != NULL);
     EXPECT_EQ(0u, spdy_session->num_active_streams());
     EXPECT_EQ(0u, spdy_session->num_unclaimed_pushed_streams());
@@ -4656,12 +4657,13 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, DirectConnectProxyReconnect) {
 
   // Check that the SpdySession is still in the SpdySessionPool.
   HostPortPair host_port_pair("www.google.com", helper.port());
-  HostPortProxyPair session_pool_key_direct(
-      host_port_pair, ProxyServer::Direct());
+  SpdySessionKey session_pool_key_direct(
+      host_port_pair, ProxyServer::Direct(), kPrivacyModeDisabled);
   EXPECT_TRUE(spdy_session_pool->HasSession(session_pool_key_direct));
-  HostPortProxyPair session_pool_key_proxy(
+  SpdySessionKey session_pool_key_proxy(
       host_port_pair,
-      ProxyServer::FromURI("www.foo.com", ProxyServer::SCHEME_HTTP));
+      ProxyServer::FromURI("www.foo.com", ProxyServer::SCHEME_HTTP),
+      kPrivacyModeDisabled);
   EXPECT_FALSE(spdy_session_pool->HasSession(session_pool_key_proxy));
 
   // Set up data for the proxy connection.

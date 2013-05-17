@@ -18,6 +18,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
+#include "net/base/privacy_mode.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request.h"
@@ -129,6 +130,10 @@ class NET_EXPORT SocketStream
 
   const URLRequestContext* context() const { return context_; }
   void set_context(const URLRequestContext* context);
+
+  const SSLConfig& server_ssl_config() const { return server_ssl_config_; }
+  PrivacyMode privacy_mode() const { return privacy_mode_; }
+  void CheckPrivacyMode();
 
   BoundNetLog* net_log() { return &net_log_; }
 
@@ -366,6 +371,7 @@ class NET_EXPORT SocketStream
 
   SSLConfig server_ssl_config_;
   SSLConfig proxy_ssl_config_;
+  PrivacyMode privacy_mode_;
 
   CompletionCallback io_callback_;
 

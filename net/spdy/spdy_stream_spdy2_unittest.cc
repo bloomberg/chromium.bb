@@ -46,9 +46,10 @@ class SpdyStreamSpdy2Test : public testing::Test {
         session_deps_(kProtoSPDY2) {}
 
   scoped_refptr<SpdySession> CreateSpdySession() {
-    HostPortProxyPair pair(host_port_pair_, ProxyServer::Direct());
+    SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
+                       kPrivacyModeDisabled);
     scoped_refptr<SpdySession> session(
-        session_->spdy_session_pool()->Get(pair, BoundNetLog()));
+        session_->spdy_session_pool()->Get(key, BoundNetLog()));
     return session;
   }
 

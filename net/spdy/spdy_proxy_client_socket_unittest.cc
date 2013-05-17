@@ -128,7 +128,7 @@ class SpdyProxyClientSocketTest
   HostPortPair proxy_host_port_;
   HostPortPair endpoint_host_port_pair_;
   ProxyServer proxy_;
-  HostPortProxyPair endpoint_host_port_proxy_pair_;
+  SpdySessionKey endpoint_spdy_session_key_;
   scoped_refptr<TransportSocketParams> transport_params_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyProxyClientSocketTest);
@@ -153,7 +153,8 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
       proxy_host_port_(kProxyHost, kProxyPort),
       endpoint_host_port_pair_(kOriginHost, kOriginPort),
       proxy_(ProxyServer::SCHEME_HTTPS, proxy_host_port_),
-      endpoint_host_port_proxy_pair_(endpoint_host_port_pair_, proxy_),
+      endpoint_spdy_session_key_(endpoint_host_port_pair_, proxy_,
+                                 kPrivacyModeDisabled),
       transport_params_(new TransportSocketParams(proxy_host_port_,
                                                   LOWEST,
                                                   false,
@@ -190,7 +191,7 @@ void SpdyProxyClientSocketTest::Initialize(MockRead* reads,
 
   // Creates a new spdy session.
   spdy_session_ =
-      session_->spdy_session_pool()->Get(endpoint_host_port_proxy_pair_,
+      session_->spdy_session_pool()->Get(endpoint_spdy_session_key_,
                                          net_log_.bound());
 
   // Perform the TCP connect.

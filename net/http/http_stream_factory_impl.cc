@@ -222,8 +222,8 @@ void HttpStreamFactoryImpl::OnSpdySessionReady(
     NextProto protocol_negotiated,
     bool using_spdy,
     const BoundNetLog& net_log) {
-  const HostPortProxyPair& spdy_session_key =
-      spdy_session->host_port_proxy_pair();
+  const SpdySessionKey& spdy_session_key =
+      spdy_session->spdy_session_key();
   while (!spdy_session->IsClosed()) {
     // Each iteration may empty out the RequestSet for |spdy_session_key_ in
     // |spdy_session_request_map_|. So each time, check for RequestSet and use

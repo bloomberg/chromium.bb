@@ -1010,6 +1010,14 @@ bool URLRequest::CanSetCookie(const std::string& cookie_line,
   return g_default_can_use_cookies;
 }
 
+bool URLRequest::CanEnablePrivacyMode() const {
+  if (network_delegate_) {
+    return network_delegate_->CanEnablePrivacyMode(url(),
+                                                   first_party_for_cookies_);
+  }
+  return !g_default_can_use_cookies;
+}
+
 
 void URLRequest::NotifyReadCompleted(int bytes_read) {
   // Notify in case the entire URL Request has been finished.

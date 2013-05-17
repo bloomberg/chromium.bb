@@ -21,6 +21,7 @@
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/next_proto.h"
+#include "net/spdy/spdy_session_key.h"
 #include "net/ssl/ssl_config_service.h"
 
 namespace net {
@@ -68,12 +69,12 @@ class NET_EXPORT SpdySessionPool
   // Either returns an existing SpdySession or creates a new SpdySession for
   // use.
   scoped_refptr<SpdySession> Get(
-      const HostPortProxyPair& host_port_proxy_pair,
+      const SpdySessionKey& spdy_session_key,
       const BoundNetLog& net_log);
 
   // Only returns a SpdySession if it already exists.
   scoped_refptr<SpdySession> GetIfExists(
-      const HostPortProxyPair& host_port_proxy_pair,
+      const SpdySessionKey& spdy_session_key,
       const BoundNetLog& net_log);
 
   // Builds a SpdySession from an existing SSL socket.  Users should try
@@ -87,7 +88,7 @@ class NET_EXPORT SpdySessionPool
   // Returns OK on success, and the |spdy_session| will be provided.
   // Returns an error on failure, and |spdy_session| will be NULL.
   net::Error GetSpdySessionFromSocket(
-      const HostPortProxyPair& host_port_proxy_pair,
+      const SpdySessionKey& spdy_session_key,
       ClientSocketHandle* connection,
       const BoundNetLog& net_log,
       int certificate_error_code,
@@ -99,7 +100,7 @@ class NET_EXPORT SpdySessionPool
   // using the HostCache, if HasSession() returns true at one point, it does not
   // imply the SpdySessionPool will still have a matching session in the near
   // future, since the HostCache's entry may have expired.
-  bool HasSession(const HostPortProxyPair& host_port_proxy_pair) const;
+  bool HasSession(const SpdySessionKey& spdy_session_key) const;
 
   // Close all SpdySessions, including any new ones created in the process of
   // closing the current ones.
@@ -148,47 +149,49 @@ class NET_EXPORT SpdySessionPool
                            WindowUpdateOverflow);
 
   typedef std::list<scoped_refptr<SpdySession> > SpdySessionList;
-  typedef std::map<HostPortProxyPair, SpdySessionList*> SpdySessionsMap;
-  typedef std::map<IPEndPoint, HostPortProxyPair> SpdyAliasMap;
+  typedef std::map<SpdySessionKey, SpdySessionList*> SpdySessionsMap;
+  typedef std::map<IPEndPoint, SpdySessionKey> SpdyAliasMap;
 
 
   scoped_refptr<SpdySession> GetInternal(
-      const HostPortProxyPair& host_port_proxy_pair,
+      const SpdySessionKey& spdy_session_key,
       const BoundNetLog& net_log,
       bool only_use_existing_sessions);
   scoped_refptr<SpdySession> GetExistingSession(
       SpdySessionList* list,
       const BoundNetLog& net_log) const;
   scoped_refptr<SpdySession> GetFromAlias(
-      const HostPortProxyPair& host_port_proxy_pair,
+      const SpdySessionKey& spdy_session_key,
       const BoundNetLog& net_log,
       bool record_histograms) const;
 
   // Helper functions for manipulating the lists.
-  const HostPortProxyPair& NormalizeListPair(
-      const HostPortProxyPair& host_port_proxy_pair) const;
+  const SpdySessionKey& NormalizeListKey(
+      const SpdySessionKey& spdy_session_key) const;
   SpdySessionList* AddSessionList(
-      const HostPortProxyPair& host_port_proxy_pair);
+      const SpdySessionKey& spdy_session_key);
   SpdySessionList* GetSessionList(
-      const HostPortProxyPair& host_port_proxy_pair) const;
-  void RemoveSessionList(const HostPortProxyPair& host_port_proxy_pair);
+      const SpdySessionKey& spdy_session_key) const;
+  void RemoveSessionList(const SpdySessionKey& spdy_session_key);
 
-  // Does a DNS cache lookup for |pair|, and returns the |addresses| found.
+  // Does a DNS cache lookup for |spdy_session_key|, and returns
+  // the |addresses| found.
   // Returns true if addresses found, false otherwise.
-  bool LookupAddresses(const HostPortProxyPair& pair,
+  bool LookupAddresses(const SpdySessionKey& spdy_session_key,
                        const BoundNetLog& net_log,
                        AddressList* addresses) const;
 
-  // Add |address| as an IP-equivalent address for |pair|.
-  void AddAlias(const IPEndPoint& address, const HostPortProxyPair& pair);
+  // Add |address| as an IP-equivalent address for |spdy_session_key|.
+  void AddAlias(const IPEndPoint& address,
+                const SpdySessionKey& spdy_session_key);
 
-  // Remove all aliases for |pair| from the aliases table.
-  void RemoveAliases(const HostPortProxyPair& pair);
+  // Remove all aliases for |spdy_session_key| from the aliases table.
+  void RemoveAliases(const SpdySessionKey& spdy_session_key);
 
-  // Removes |session| from the session list associated with |pair|.
+  // Removes |session| from the session list associated with |spdy_session_key|.
   // Returns true if the session was removed, false otherwise.
   bool RemoveFromSessionList(const scoped_refptr<SpdySession>& session,
-                             const HostPortProxyPair& pair);
+                             const SpdySessionKey& spdy_session_key);
 
   HttpServerProperties* const http_server_properties_;
 

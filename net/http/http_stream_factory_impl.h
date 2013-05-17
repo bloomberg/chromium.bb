@@ -16,6 +16,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/spdy/spdy_session_key.h"
 
 namespace net {
 
@@ -57,7 +58,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
 
   typedef std::set<Request*> RequestSet;
   typedef std::vector<Request*> RequestVector;
-  typedef std::map<HostPortProxyPair, RequestSet> SpdySessionRequestMap;
+  typedef std::map<SpdySessionKey, RequestSet> SpdySessionRequestMap;
   typedef std::map<HttpPipelinedHost::Key,
                    RequestVector> HttpPipeliningRequestMap;
 

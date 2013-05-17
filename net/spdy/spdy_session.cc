@@ -308,7 +308,7 @@ void SpdyStreamRequest::Reset() {
   callback_.Reset();
 }
 
-SpdySession::SpdySession(const HostPortProxyPair& host_port_proxy_pair,
+SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
                          SpdySessionPool* spdy_session_pool,
                          HttpServerProperties* http_server_properties,
                          bool verify_domain_authentication,
@@ -324,7 +324,7 @@ SpdySession::SpdySession(const HostPortProxyPair& host_port_proxy_pair,
                          const HostPortPair& trusted_spdy_proxy,
                          NetLog* net_log)
     : weak_factory_(this),
-      host_port_proxy_pair_(host_port_proxy_pair),
+      spdy_session_key_(spdy_session_key),
       spdy_session_pool_(spdy_session_pool),
       http_server_properties_(http_server_properties),
       connection_(new ClientSocketHandle),
@@ -383,7 +383,7 @@ SpdySession::SpdySession(const HostPortProxyPair& host_port_proxy_pair,
   DCHECK(HttpStreamFactory::spdy_enabled());
   net_log_.BeginEvent(
       NetLog::TYPE_SPDY_SESSION,
-      base::Bind(&NetLogSpdySessionCallback, &host_port_proxy_pair_));
+      base::Bind(&NetLogSpdySessionCallback, &host_port_proxy_pair()));
   next_unclaimed_push_stream_sweep_time_ = time_func_() +
       base::TimeDelta::FromSeconds(kMinPushedStreamLifetimeSeconds);
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
@@ -501,9 +501,8 @@ bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
   return !ssl_info.client_cert_sent &&
       (enable_credential_frames_ || !ssl_info.channel_id_sent ||
        ServerBoundCertService::GetDomainForHost(domain) ==
-       ServerBoundCertService::GetDomainForHost(
-           host_port_proxy_pair_.first.host())) &&
-      ssl_info.cert->VerifyNameMatch(domain);
+       ServerBoundCertService::GetDomainForHost(host_port_pair().host())) &&
+       ssl_info.cert->VerifyNameMatch(domain);
 }
 
 int SpdySession::GetPushStream(
@@ -664,8 +663,8 @@ bool SpdySession::NeedsCredentials() const {
   return ssl_socket->WasChannelIDSent();
 }
 
-void SpdySession::AddPooledAlias(const HostPortProxyPair& alias) {
-  pooled_aliases_.insert(alias);
+void SpdySession::AddPooledAlias(const SpdySessionKey& alias_key) {
+  pooled_aliases_.insert(alias_key);
 }
 
 int SpdySession::GetProtocolVersion() const {
@@ -1333,17 +1332,18 @@ base::Value* SpdySession::GetInfoAsValue() const {
 
   dict->SetInteger("source_id", net_log_.source().id);
 
-  dict->SetString("host_port_pair", host_port_proxy_pair_.first.ToString());
+  dict->SetString("host_port_pair", host_port_pair().ToString());
   if (!pooled_aliases_.empty()) {
     base::ListValue* alias_list = new base::ListValue();
-    for (std::set<HostPortProxyPair>::const_iterator it =
+    for (std::set<SpdySessionKey>::const_iterator it =
              pooled_aliases_.begin();
          it != pooled_aliases_.end(); it++) {
-      alias_list->Append(new base::StringValue(it->first.ToString()));
+      alias_list->Append(new base::StringValue(
+          it->host_port_pair().ToString()));
     }
     dict->Set("aliases", alias_list);
   }
-  dict->SetString("proxy", host_port_proxy_pair_.second.ToURI());
+  dict->SetString("proxy", host_port_proxy_pair().second.ToURI());
 
   dict->SetInteger("active_streams", active_streams_.size());
 

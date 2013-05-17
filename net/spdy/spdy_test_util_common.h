@@ -255,8 +255,8 @@ class SpdySessionPoolPeer {
  public:
   explicit SpdySessionPoolPeer(SpdySessionPool* pool);
 
-  void AddAlias(const IPEndPoint& address, const HostPortProxyPair& pair);
-  void RemoveAliases(const HostPortProxyPair& pair);
+  void AddAlias(const IPEndPoint& address, const SpdySessionKey& key);
+  void RemoveAliases(const SpdySessionKey& key);
   void RemoveSpdySession(const scoped_refptr<SpdySession>& session);
   void DisableDomainAuthenticationVerification();
   void EnableSendingInitialSettings(bool enabled);

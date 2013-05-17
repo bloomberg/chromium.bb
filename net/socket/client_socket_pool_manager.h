@@ -100,6 +100,7 @@ int InitSocketHandleForHttpRequest(
     bool want_spdy_over_npn,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
+    PrivacyMode privacy_mode,
     const BoundNetLog& net_log,
     ClientSocketHandle* socket_handle,
     const OnHostResolutionCallback& resolution_callback,
@@ -115,6 +116,7 @@ NET_EXPORT int InitSocketHandleForRawConnect(
     const ProxyInfo& proxy_info,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
+    PrivacyMode privacy_mode,
     const BoundNetLog& net_log,
     ClientSocketHandle* socket_handle,
     const CompletionCallback& callback);
@@ -132,6 +134,7 @@ int PreconnectSocketsForHttpRequest(
     bool want_spdy_over_npn,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
+    PrivacyMode privacy_mode,
     const BoundNetLog& net_log,
     int num_preconnect_streams);
 

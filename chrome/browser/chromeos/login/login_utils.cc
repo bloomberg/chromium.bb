@@ -756,8 +756,10 @@ class WarmingObserver : public ConnectivityStateHelperObserver,
     ConnectivityStateHelper* csh = ConnectivityStateHelper::Get();
     if (csh->IsConnected()) {
       const int kConnectionsNeeded = 1;
+      GURL url(GaiaUrls::GetInstance()->client_login_url());
       chrome_browser_net::PreconnectOnUIThread(
-          GURL(GaiaUrls::GetInstance()->client_login_url()),
+          url,
+          url,
           chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
           kConnectionsNeeded,
           url_request_context_getter_);
@@ -798,8 +800,10 @@ void LoginUtilsImpl::PrewarmAuthentication() {
   ConnectivityStateHelper* csh = ConnectivityStateHelper::Get();
   if (csh->IsConnected()) {
     const int kConnectionsNeeded = 1;
+    GURL url(GaiaUrls::GetInstance()->client_login_url());
     chrome_browser_net::PreconnectOnUIThread(
-        GURL(GaiaUrls::GetInstance()->client_login_url()),
+        url,
+        url,
         chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
         kConnectionsNeeded,
         url_request_context_getter_);

@@ -26,11 +26,6 @@ enum SpdySessionGetTypes {
   SPDY_SESSION_GET_MAX        = 4
 };
 
-bool HostPortProxyPairsAreEqual(const HostPortProxyPair& a,
-                                const HostPortProxyPair& b) {
-  return a.first.Equals(b.first) && a.second == b.second;
-}
-
 }
 
 // The maximum number of sessions to open to a single domain.
@@ -89,26 +84,26 @@ SpdySessionPool::~SpdySessionPool() {
 }
 
 scoped_refptr<SpdySession> SpdySessionPool::Get(
-    const HostPortProxyPair& host_port_proxy_pair,
+    const SpdySessionKey& spdy_session_key,
     const BoundNetLog& net_log) {
-  return GetInternal(host_port_proxy_pair, net_log, false);
+  return GetInternal(spdy_session_key, net_log, false);
 }
 
 scoped_refptr<SpdySession> SpdySessionPool::GetIfExists(
-    const HostPortProxyPair& host_port_proxy_pair,
+    const SpdySessionKey& spdy_session_key,
     const BoundNetLog& net_log) {
-  return GetInternal(host_port_proxy_pair, net_log, true);
+  return GetInternal(spdy_session_key, net_log, true);
 }
 
 scoped_refptr<SpdySession> SpdySessionPool::GetInternal(
-    const HostPortProxyPair& host_port_proxy_pair,
+    const SpdySessionKey& spdy_session_key,
     const BoundNetLog& net_log,
     bool only_use_existing_sessions) {
   scoped_refptr<SpdySession> spdy_session;
-  SpdySessionList* list = GetSessionList(host_port_proxy_pair);
+  SpdySessionList* list = GetSessionList(spdy_session_key);
   if (!list) {
     // Check if we have a Session through a domain alias.
-    spdy_session = GetFromAlias(host_port_proxy_pair, net_log, true);
+    spdy_session = GetFromAlias(spdy_session_key, net_log, true);
     if (spdy_session) {
       UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet",
                                 FOUND_EXISTING_FROM_IP_POOL,
@@ -117,14 +112,14 @@ scoped_refptr<SpdySession> SpdySessionPool::GetInternal(
           NetLog::TYPE_SPDY_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
           spdy_session->net_log().source().ToEventParametersCallback());
       // Add this session to the map so that we can find it next time.
-      list = AddSessionList(host_port_proxy_pair);
+      list = AddSessionList(spdy_session_key);
       list->push_back(spdy_session);
-      spdy_session->AddPooledAlias(host_port_proxy_pair);
+      spdy_session->AddPooledAlias(spdy_session_key);
       return spdy_session;
     } else if (only_use_existing_sessions) {
       return NULL;
     }
-    list = AddSessionList(host_port_proxy_pair);
+    list = AddSessionList(spdy_session_key);
   }
 
   DCHECK(list);
@@ -141,7 +136,7 @@ scoped_refptr<SpdySession> SpdySessionPool::GetInternal(
 
   DCHECK(!only_use_existing_sessions);
 
-  spdy_session = new SpdySession(host_port_proxy_pair, this,
+  spdy_session = new SpdySession(spdy_session_key, this,
                                  http_server_properties_,
                                  verify_domain_authentication_,
                                  enable_sending_initial_settings_,
@@ -167,7 +162,7 @@ scoped_refptr<SpdySession> SpdySessionPool::GetInternal(
 }
 
 net::Error SpdySessionPool::GetSpdySessionFromSocket(
-    const HostPortProxyPair& host_port_proxy_pair,
+    const SpdySessionKey& spdy_session_key,
     ClientSocketHandle* connection,
     const BoundNetLog& net_log,
     int certificate_error_code,
@@ -177,7 +172,7 @@ net::Error SpdySessionPool::GetSpdySessionFromSocket(
                             IMPORTED_FROM_SOCKET,
                             SPDY_SESSION_GET_MAX);
   // Create the SPDY session and add it to the pool.
-  *spdy_session = new SpdySession(host_port_proxy_pair, this,
+  *spdy_session = new SpdySession(spdy_session_key, this,
                                   http_server_properties_,
                                   verify_domain_authentication_,
                                   enable_sending_initial_settings_,
@@ -191,9 +186,9 @@ net::Error SpdySessionPool::GetSpdySessionFromSocket(
                                   time_func_,
                                   trusted_spdy_proxy_,
                                   net_log.net_log());
-  SpdySessionList* list = GetSessionList(host_port_proxy_pair);
+  SpdySessionList* list = GetSessionList(spdy_session_key);
   if (!list)
-    list = AddSessionList(host_port_proxy_pair);
+    list = AddSessionList(spdy_session_key);
   DCHECK(list->empty());
   list->push_back(*spdy_session);
 
@@ -206,10 +201,11 @@ net::Error SpdySessionPool::GetSpdySessionFromSocket(
   // potentially be pooled with this one. Because GetPeerAddress() reports the
   // proxy's address instead of the origin server, check to see if this is a
   // direct connection.
-  if (enable_ip_pooling_  && host_port_proxy_pair.second.is_direct()) {
+  if (enable_ip_pooling_  &&
+      spdy_session_key.proxy_server().is_direct()) {
     IPEndPoint address;
     if (connection->socket()->GetPeerAddress(&address) == OK)
-      AddAlias(address, host_port_proxy_pair);
+      AddAlias(address, spdy_session_key);
   }
 
   // Now we can initialize the session with the SSL socket.
@@ -218,25 +214,25 @@ net::Error SpdySessionPool::GetSpdySessionFromSocket(
 }
 
 bool SpdySessionPool::HasSession(
-    const HostPortProxyPair& host_port_proxy_pair) const {
-  if (GetSessionList(host_port_proxy_pair))
+    const SpdySessionKey& spdy_session_key) const {
+  if (GetSessionList(spdy_session_key))
     return true;
 
   // Check if we have a session via an alias.
   scoped_refptr<SpdySession> spdy_session =
-      GetFromAlias(host_port_proxy_pair, BoundNetLog(), false);
+      GetFromAlias(spdy_session_key, BoundNetLog(), false);
   return spdy_session.get() != NULL;
 }
 
 void SpdySessionPool::Remove(const scoped_refptr<SpdySession>& session) {
-  bool ok = RemoveFromSessionList(session, session->host_port_proxy_pair());
+  bool ok = RemoveFromSessionList(session, session->spdy_session_key());
   DCHECK(ok);
   session->net_log().AddEvent(
       NetLog::TYPE_SPDY_SESSION_POOL_REMOVE_SESSION,
       session->net_log().source().ToEventParametersCallback());
 
-  const std::set<HostPortProxyPair>& aliases = session->pooled_aliases();
-  for (std::set<HostPortProxyPair>::const_iterator it = aliases.begin();
+  const std::set<SpdySessionKey>& aliases = session->pooled_aliases();
+  for (std::set<SpdySessionKey>::const_iterator it = aliases.begin();
        it != aliases.end(); ++it) {
     ok = RemoveFromSessionList(session, *it);
     DCHECK(ok);
@@ -245,13 +241,13 @@ void SpdySessionPool::Remove(const scoped_refptr<SpdySession>& session) {
 
 bool SpdySessionPool::RemoveFromSessionList(
     const scoped_refptr<SpdySession>& session,
-    const HostPortProxyPair& pair) {
-  SpdySessionList* list = GetSessionList(pair);
+    const SpdySessionKey& spdy_session_key) {
+  SpdySessionList* list = GetSessionList(spdy_session_key);
   if (!list)
     return false;
   list->remove(session);
   if (list->empty())
-    RemoveSessionList(pair);
+    RemoveSessionList(spdy_session_key);
   return true;
 }
 
@@ -265,9 +261,9 @@ Value* SpdySessionPool::SpdySessionPoolInfoToValue() const {
          session != sessions->end(); ++session) {
       // Only add the session if the key in the map matches the main
       // host_port_proxy_pair (not an alias).
-      const HostPortProxyPair& key = it->first;
-      const HostPortProxyPair& pair = session->get()->host_port_proxy_pair();
-      if (key.first.Equals(pair.first) && key.second == pair.second)
+      const SpdySessionKey& key = it->first;
+      const SpdySessionKey& session_key = session->get()->spdy_session_key();
+      if (key.Equals(session_key))
         list->Append(session->get()->GetInfoAsValue());
     }
   }
@@ -298,17 +294,17 @@ scoped_refptr<SpdySession> SpdySessionPool::GetExistingSession(
 }
 
 scoped_refptr<SpdySession> SpdySessionPool::GetFromAlias(
-      const HostPortProxyPair& host_port_proxy_pair,
+      const SpdySessionKey& spdy_session_key,
       const BoundNetLog& net_log,
       bool record_histograms) const {
   // We should only be checking aliases when there is no direct session.
-  DCHECK(!GetSessionList(host_port_proxy_pair));
+  DCHECK(!GetSessionList(spdy_session_key));
 
   if (!enable_ip_pooling_)
     return NULL;
 
   AddressList addresses;
-  if (!LookupAddresses(host_port_proxy_pair, net_log, &addresses))
+  if (!LookupAddresses(spdy_session_key, net_log, &addresses))
     return NULL;
   for (AddressList::const_iterator iter = addresses.begin();
        iter != addresses.end();
@@ -318,13 +314,15 @@ scoped_refptr<SpdySession> SpdySessionPool::GetFromAlias(
       continue;
 
     // We found an alias.
-    const HostPortProxyPair& alias_pair = alias_iter->second;
+    const SpdySessionKey& alias_key = alias_iter->second;
 
-    // If the proxy settings match, we can reuse this session.
-    if (!(alias_pair.second == host_port_proxy_pair.second))
+    // If the proxy and privacy settings match, we can reuse this session.
+    if (!(alias_key.proxy_server() == spdy_session_key.proxy_server()) ||
+        !(alias_key.privacy_mode() ==
+            spdy_session_key.privacy_mode()))
       continue;
 
-    SpdySessionList* list = GetSessionList(alias_pair);
+    SpdySessionList* list = GetSessionList(alias_key);
     if (!list) {
       NOTREACHED();  // It shouldn't be in the aliases table if we can't get it!
       continue;
@@ -334,7 +332,7 @@ scoped_refptr<SpdySession> SpdySessionPool::GetFromAlias(
     // If the SPDY session is a secure one, we need to verify that the server
     // is authenticated to serve traffic for |host_port_proxy_pair| too.
     if (!spdy_session->VerifyDomainAuthentication(
-            host_port_proxy_pair.first.host())) {
+         spdy_session_key.host_port_pair().host())) {
       if (record_histograms)
         UMA_HISTOGRAM_ENUMERATION("Net.SpdyIPPoolDomainMatch", 0, 2);
       continue;
@@ -358,74 +356,76 @@ void SpdySessionPool::OnCertTrustChanged(const X509Certificate* cert) {
   CloseCurrentSessions(ERR_NETWORK_CHANGED);
 }
 
-const HostPortProxyPair& SpdySessionPool::NormalizeListPair(
-    const HostPortProxyPair& host_port_proxy_pair) const {
+const SpdySessionKey& SpdySessionPool::NormalizeListKey(
+    const SpdySessionKey& spdy_session_key) const {
   if (!force_single_domain_)
-    return host_port_proxy_pair;
+    return spdy_session_key;
 
-  static HostPortProxyPair* single_domain_pair = NULL;
-  if (!single_domain_pair) {
+  static SpdySessionKey* single_domain_key = NULL;
+  if (!single_domain_key) {
     HostPortPair single_domain = HostPortPair("singledomain.com", 80);
-    single_domain_pair = new HostPortProxyPair(single_domain,
-                                               ProxyServer::Direct());
+    single_domain_key = new SpdySessionKey(single_domain,
+                                           ProxyServer::Direct(),
+                                           kPrivacyModeDisabled);
   }
-  return *single_domain_pair;
+  return *single_domain_key;
 }
 
 SpdySessionPool::SpdySessionList*
     SpdySessionPool::AddSessionList(
-        const HostPortProxyPair& host_port_proxy_pair) {
-  const HostPortProxyPair& pair = NormalizeListPair(host_port_proxy_pair);
-  DCHECK(sessions_.find(pair) == sessions_.end());
+        const SpdySessionKey& spdy_session_key) {
+  const SpdySessionKey& key = NormalizeListKey(spdy_session_key);
+  DCHECK(sessions_.find(key) == sessions_.end());
   SpdySessionPool::SpdySessionList* list = new SpdySessionList();
-  sessions_[pair] = list;
+  sessions_[spdy_session_key] = list;
   return list;
 }
 
 SpdySessionPool::SpdySessionList*
     SpdySessionPool::GetSessionList(
-        const HostPortProxyPair& host_port_proxy_pair) const {
-  const HostPortProxyPair& pair = NormalizeListPair(host_port_proxy_pair);
-  SpdySessionsMap::const_iterator it = sessions_.find(pair);
+        const SpdySessionKey& spdy_session_key) const {
+  const SpdySessionKey& key = NormalizeListKey(spdy_session_key);
+  SpdySessionsMap::const_iterator it = sessions_.find(key);
   if (it != sessions_.end())
     return it->second;
   return NULL;
 }
 
 void SpdySessionPool::RemoveSessionList(
-    const HostPortProxyPair& host_port_proxy_pair) {
-  const HostPortProxyPair& pair = NormalizeListPair(host_port_proxy_pair);
-  SpdySessionList* list = GetSessionList(pair);
+    const SpdySessionKey& spdy_session_key) {
+  const SpdySessionKey& key = NormalizeListKey(spdy_session_key);
+  SpdySessionList* list = GetSessionList(key);
   if (list) {
     delete list;
-    sessions_.erase(pair);
+    sessions_.erase(key);
   } else {
     DCHECK(false) << "removing orphaned session list";
   }
-  RemoveAliases(host_port_proxy_pair);
+  RemoveAliases(spdy_session_key);
 }
 
-bool SpdySessionPool::LookupAddresses(const HostPortProxyPair& pair,
+bool SpdySessionPool::LookupAddresses(const SpdySessionKey& spdy_session_key,
                                       const BoundNetLog& net_log,
                                       AddressList* addresses) const {
-  net::HostResolver::RequestInfo resolve_info(pair.first);
+  net::HostResolver::RequestInfo resolve_info(
+      spdy_session_key.host_port_pair());
   int rv = resolver_->ResolveFromCache(resolve_info, addresses, net_log);
   DCHECK_NE(ERR_IO_PENDING, rv);
   return rv == OK;
 }
 
 void SpdySessionPool::AddAlias(const IPEndPoint& endpoint,
-                               const HostPortProxyPair& pair) {
+                               const SpdySessionKey& spdy_session_key) {
   DCHECK(enable_ip_pooling_);
-  aliases_[endpoint] = pair;
+  aliases_[endpoint] = spdy_session_key;
 }
 
-void SpdySessionPool::RemoveAliases(const HostPortProxyPair& pair) {
+void SpdySessionPool::RemoveAliases(const SpdySessionKey& spdy_session_key) {
   // Walk the aliases map, find references to this pair.
   // TODO(mbelshe):  Figure out if this is too expensive.
   SpdyAliasMap::iterator alias_it = aliases_.begin();
   while (alias_it != aliases_.end()) {
-    if (HostPortProxyPairsAreEqual(alias_it->second, pair)) {
+    if (alias_it->second.Equals(spdy_session_key)) {
       aliases_.erase(alias_it);
       alias_it = aliases_.begin();  // Iterator was invalidated.
       continue;
@@ -491,7 +491,7 @@ void SpdySessionPool::CloseIdleSessions() {
       continue;
     }
 
-    HostPortProxyPair key = map_it->first;
+    SpdySessionKey key(map_it->first);
     session->CloseSessionOnError(
         net::ERR_ABORTED, true, "Closing idle sessions.");
     // CloseSessionOnError can invalidate the iterator.

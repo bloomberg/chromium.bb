@@ -22,6 +22,7 @@ namespace chrome_browser_net {
 // |count| may be used to request more than one connection be established in
 // parallel.
 void PreconnectOnUIThread(const GURL& url,
+                          const GURL& first_party_for_cookies,
                           UrlInfo::ResolutionMotivation motivation,
                           int count,
                           net::URLRequestContextGetter* getter);
@@ -30,6 +31,7 @@ void PreconnectOnUIThread(const GURL& url,
 // needs a connection. |count| may be used to request more than one connection
 // be established in parallel.
 void PreconnectOnIOThread(const GURL& url,
+                          const GURL& first_party_for_cookies,
                           UrlInfo::ResolutionMotivation motivation,
                           int count,
                           net::URLRequestContextGetter* getter);

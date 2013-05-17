@@ -192,7 +192,8 @@ void ProxyResolvingClientSocket::ProcessProxyResolveDone(int status) {
   // Now that we have resolved the proxy, we need to connect.
   status = net::InitSocketHandleForRawConnect(
       dest_host_port_pair_, network_session_.get(), proxy_info_, ssl_config_,
-      ssl_config_, bound_net_log_, transport_.get(), connect_callback_);
+      ssl_config_, net::kPrivacyModeDisabled, bound_net_log_, transport_.get(),
+      connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     // Since this method is always called asynchronously. it is OK to call
     // ProcessConnectDone synchronously.

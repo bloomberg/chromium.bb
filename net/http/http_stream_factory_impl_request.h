@@ -11,6 +11,7 @@
 #include "net/base/net_log.h"
 #include "net/http/http_stream_factory_impl.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/spdy/spdy_session_key.h"
 
 namespace net {
 
@@ -27,9 +28,9 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
 
   // Called when the Job determines the appropriate |spdy_session_key| for the
   // Request. Note that this does not mean that SPDY is necessarily supported
-  // for this HostPortProxyPair, since we may need to wait for NPN to complete
+  // for this SpdySessionKey, since we may need to wait for NPN to complete
   // before knowing if SPDY is available.
-  void SetSpdySessionKey(const HostPortProxyPair& spdy_session_key);
+  void SetSpdySessionKey(const SpdySessionKey& spdy_session_key);
 
   // Called when the Job determines the appropriate |http_pipelining_key| for
   // the Request. Registers this Request with the factory, so that if an
@@ -113,7 +114,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   // At the point where Job is irrevocably tied to the Request, we set this.
   scoped_ptr<Job> bound_job_;
   std::set<HttpStreamFactoryImpl::Job*> jobs_;
-  scoped_ptr<const HostPortProxyPair> spdy_session_key_;
+  scoped_ptr<const SpdySessionKey> spdy_session_key_;
   scoped_ptr<const HttpPipelinedHost::Key> http_pipelining_key_;
 
   bool completed_;

@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_member.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -280,3 +281,112 @@ TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearchOff) {
   CheckAddedParameters("http://google.com/search?q=google&safe=active",
                        "q=google&safe=active");
 }
+
+// Privacy Mode disables Channel Id if cookies are blocked (cr223191)
+class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
+ public:
+  ChromeNetworkDelegatePrivacyModeTest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        io_thread_(content::BrowserThread::IO, &message_loop_),
+        forwarder_(new extensions::EventRouterForwarder()),
+        cookie_settings_(CookieSettings::Factory::GetForProfile(&profile_)),
+        kBlockedSite("http://ads.thirdparty.com"),
+        kAllowedSite("http://good.allays.com"),
+        kFirstPartySite("http://cool.things.com"),
+        kBlockedFirstPartySite("http://no.thirdparties.com") {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    ChromeNetworkDelegate::InitializePrefsOnUIThread(
+        &enable_referrers_, NULL, NULL,
+        profile_.GetTestingPrefService());
+  }
+
+ protected:
+  scoped_ptr<ChromeNetworkDelegate> CreateNetworkDelegate() {
+    scoped_ptr<ChromeNetworkDelegate> network_delegate(
+        new ChromeNetworkDelegate(forwarder_.get(), &enable_referrers_));
+    network_delegate->set_cookie_settings(cookie_settings_);
+    return network_delegate.Pass();
+  }
+
+  void SetDelegate(net::NetworkDelegate* delegate) {
+    network_delegate_ = delegate;
+    context_.set_network_delegate(network_delegate_);
+  }
+
+ protected:
+  MessageLoopForIO message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
+  scoped_refptr<extensions::EventRouterForwarder> forwarder_;
+  TestingProfile profile_;
+  CookieSettings* cookie_settings_;
+  BooleanPrefMember enable_referrers_;
+  scoped_ptr<net::URLRequest> request_;
+  net::TestURLRequestContext context_;
+  net::NetworkDelegate* network_delegate_;
+
+  const GURL kBlockedSite;
+  const GURL kAllowedSite;
+  const GURL kEmptyFirstPartySite;
+  const GURL kFirstPartySite;
+  const GURL kBlockedFirstPartySite;
+};
+
+TEST_F(ChromeNetworkDelegatePrivacyModeTest, DisablePrivacyIfCookiesAllowed) {
+  scoped_ptr<ChromeNetworkDelegate> delegate(CreateNetworkDelegate());
+  SetDelegate(delegate.get());
+
+  EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
+                                                       kEmptyFirstPartySite));
+}
+
+
+TEST_F(ChromeNetworkDelegatePrivacyModeTest, EnablePrivacyIfCookiesBlocked) {
+  scoped_ptr<ChromeNetworkDelegate> delegate(CreateNetworkDelegate());
+  SetDelegate(delegate.get());
+
+  EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kBlockedSite,
+                                                       kEmptyFirstPartySite));
+
+  cookie_settings_->SetCookieSetting(
+      ContentSettingsPattern::FromURL(kBlockedSite),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTING_BLOCK);
+  EXPECT_TRUE(network_delegate_->CanEnablePrivacyMode(kBlockedSite,
+                                                      kEmptyFirstPartySite));
+}
+
+TEST_F(ChromeNetworkDelegatePrivacyModeTest, EnablePrivacyIfThirdPartyBlocked) {
+  scoped_ptr<ChromeNetworkDelegate> delegate(CreateNetworkDelegate());
+  SetDelegate(delegate.get());
+
+  EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
+                                                       kFirstPartySite));
+
+  profile_.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  EXPECT_TRUE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
+                                                      kFirstPartySite));
+  profile_.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, false);
+  EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
+                                                       kFirstPartySite));
+}
+
+TEST_F(ChromeNetworkDelegatePrivacyModeTest,
+       DisablePrivacyIfOnlyFirstPartyBlocked) {
+  scoped_ptr<ChromeNetworkDelegate> delegate(CreateNetworkDelegate());
+  SetDelegate(delegate.get());
+
+  EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
+                                                       kBlockedFirstPartySite));
+
+  cookie_settings_->SetCookieSetting(
+      ContentSettingsPattern::FromURL(kBlockedFirstPartySite),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTING_BLOCK);
+  // Privacy mode is disabled as kAllowedSite is still getting cookies
+  EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
+                                                       kBlockedFirstPartySite));
+}
+

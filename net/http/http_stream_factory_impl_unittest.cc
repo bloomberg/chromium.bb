@@ -14,6 +14,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
+#include "net/http/http_network_transaction.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
@@ -74,6 +75,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     if (waiting_for_stream_)
       MessageLoop::current()->Quit();
     stream_.reset(stream);
+    used_ssl_config_ = used_ssl_config;
   }
 
   virtual void OnStreamFailed(
@@ -106,10 +108,20 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     }
   }
 
+  const SSLConfig& used_ssl_config() const {
+    return used_ssl_config_;
+  }
+
+  HttpStreamBase* stream() {
+    return stream_.get();
+  }
+
+
  private:
   bool waiting_for_stream_;
   bool stream_done_;
   scoped_ptr<HttpStreamBase> stream_;
+  SSLConfig used_ssl_config_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamRequestWaiter);
 };
@@ -380,9 +392,10 @@ TEST(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
 
     // Set an existing SpdySession in the pool.
     HostPortPair host_port_pair("www.google.com", 443);
-    HostPortProxyPair pair(host_port_pair, ProxyServer::Direct());
+    SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                       kPrivacyModeDisabled);
     scoped_refptr<SpdySession> spdy_session =
-        session->spdy_session_pool()->Get(pair, BoundNetLog());
+        session->spdy_session_pool()->Get(key, BoundNetLog());
 
     CapturePreconnectsTransportSocketPool* transport_conn_pool =
         new CapturePreconnectsTransportSocketPool(
@@ -468,6 +481,109 @@ TEST(HttpStreamFactoryTest, JobNotifiesProxy) {
   EXPECT_EQ(1u, retry_info.size());
   ProxyRetryInfoMap::const_iterator iter = retry_info.find("bad:99");
   EXPECT_TRUE(iter != retry_info.end());
+}
+
+TEST(HttpStreamFactoryTest, PrivacyModeDisablesChannelId) {
+  SessionDependencies session_deps(ProxyService::CreateDirect());
+
+  StaticSocketDataProvider socket_data;
+  socket_data.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps.socket_factory.AddSocketDataProvider(&socket_data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
+
+  // Set an existing SpdySession in the pool.
+  HostPortPair host_port_pair("www.google.com", 443);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     kPrivacyModeEnabled);
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+  request_info.load_flags = 0;
+  request_info.privacy_mode = kPrivacyModeDisabled;
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter;
+  scoped_ptr<HttpStreamRequest> request(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config,
+          &waiter, BoundNetLog()));
+  waiter.WaitForStream();
+
+  // The stream shouldn't come from spdy as we are using different privacy mode
+  EXPECT_FALSE(request->using_spdy());
+
+  SSLConfig used_ssl_config = waiter.used_ssl_config();
+  EXPECT_EQ(used_ssl_config.channel_id_enabled, ssl_config.channel_id_enabled);
+}
+
+namespace {
+// Return count of distinct groups in given socket pool.
+int GetSocketPoolGroupCount(ClientSocketPool* pool) {
+  int count = 0;
+  scoped_ptr<base::DictionaryValue> dict(pool->GetInfoAsValue("", "", false));
+  EXPECT_TRUE(dict != NULL);
+  base::DictionaryValue* groups = NULL;
+  if (dict->GetDictionary("groups", &groups) && (groups != NULL)) {
+    count = static_cast<int>(groups->size());
+  }
+  return count;
+}
+};
+
+TEST(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
+  SessionDependencies session_deps(ProxyService::CreateDirect());
+
+  StaticSocketDataProvider socket_data;
+  socket_data.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps.socket_factory.AddSocketDataProvider(&socket_data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
+  SSLClientSocketPool* ssl_pool = session->GetSSLSocketPool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL);
+
+  EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 0);
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+  request_info.load_flags = 0;
+  request_info.privacy_mode = kPrivacyModeDisabled;
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter;
+
+  scoped_ptr<HttpStreamRequest> request1(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config,
+          &waiter, BoundNetLog()));
+  waiter.WaitForStream();
+
+  EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 1);
+
+  scoped_ptr<HttpStreamRequest> request2(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config,
+          &waiter, BoundNetLog()));
+  waiter.WaitForStream();
+
+  EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 1);
+
+  request_info.privacy_mode = kPrivacyModeEnabled;
+  scoped_ptr<HttpStreamRequest> request3(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config,
+          &waiter, BoundNetLog()));
+  waiter.WaitForStream();
+
+  EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 2);
 }
 
 }  // namespace
