@@ -507,6 +507,11 @@ void WebSettingsImpl::setAcceleratedCompositingForFixedPositionEnabled(bool enab
     m_settings->setAcceleratedCompositingForFixedPositionEnabled(enabled);
 }
 
+void WebSettingsImpl::setAcceleratedCompositingForTransitionEnabled(bool enabled)
+{
+    m_settings->setAcceleratedCompositingForTransitionEnabled(enabled);
+}
+
 void WebSettingsImpl::setMinimumAccelerated2dCanvasSize(int numPixels)
 {
     m_settings->setMinimumAccelerated2dCanvasSize(numPixels);

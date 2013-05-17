@@ -1,0 +1,82 @@
+<html>
+<head>
+<style>
+    #notransition {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 50px;
+        height: 50px;
+        background-color: red;
+    }
+
+    #opacitytransition {
+        position: absolute;
+        top: 0px;
+        left: 60px;
+        height: 50px;
+        width: 50px;
+        background-color: green;
+        transition: opacity 1s;
+    }
+
+    #transformtransition {
+        position: absolute;
+        left: 120px;
+        top: 0px;
+        width: 50px;
+        height: 50px;
+        background-color: green;
+        transition: -webkit-transform 1s;
+    }
+
+    #filtertransition {
+        position: absolute;
+        left: 180px;
+        top: 0px;
+        width: 50px;
+        height: 50px;
+        background-color: green;
+        transition: -webkit-filter 1s;
+    }
+
+    #layertree {
+        position: absolute;
+        left: 10000px;
+        top: 0px;
+    }
+</style>
+
+<script>
+    if (window.internals)
+        window.internals.settings.setAcceleratedCompositingForTransitionEnabled(true);
+
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    window.addEventListener('load', function() {
+        if (window.testRunner) {
+            document.getElementById("layertree").innerText = window.internals.layerTreeAsText(document);
+            testRunner.notifyDone();
+        }
+    }, false);
+</script>
+
+<body>
+    <!-- The red square shouldn't composite.  -->
+    <div id="notransition"></div>
+
+    <!-- This green square should composite because it has a transition on opacity. -->
+    <div id="opacitytransition"></div>
+
+    <!-- This green square should composite because it has a transition on transform. -->
+    <div id="transformtransition"></div>
+
+    <!-- This green square should composite because it has a transition on filter. -->
+    <div id="filtertransition"></div>
+
+    <pre id="layertree"></pre>
+</body>
+</html>

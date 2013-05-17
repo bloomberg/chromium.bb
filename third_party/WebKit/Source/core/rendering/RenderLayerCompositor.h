@@ -271,6 +271,8 @@ private:
 
     // Whether a running transition or animation enforces the need for a compositing layer.
     bool requiresCompositingForAnimation(RenderObject*) const;
+    // Whether a (not necessarily running) transition enforces the need for a compositing layer.
+    bool requiresCompositingForTransition(RenderObject*) const;
     bool requiresCompositingForTransform(RenderObject*) const;
     bool requiresCompositingForVideo(RenderObject*) const;
     bool requiresCompositingForCanvas(RenderObject*) const;

@@ -68,6 +68,7 @@ acceleratedCompositingForCanvasEnabled initial=true
 acceleratedCompositingForAnimationEnabled initial=true
 acceleratedCompositingForFixedPositionEnabled initial=false
 acceleratedCompositingForOverflowScrollEnabled initial=false
+acceleratedCompositingForTransitionEnabled initial=false
 
 # Works only in conjunction with forceCompositingMode.
 acceleratedCompositingForScrollableFramesEnabled initial=false

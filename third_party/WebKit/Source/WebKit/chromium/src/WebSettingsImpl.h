@@ -55,6 +55,7 @@ public:
     virtual void setAcceleratedCompositingForCanvasEnabled(bool);
     virtual void setAcceleratedCompositingForFixedPositionEnabled(bool);
     virtual void setAcceleratedCompositingForOverflowScrollEnabled(bool);
+    virtual void setAcceleratedCompositingForTransitionEnabled(bool);
     virtual void setAcceleratedCompositingForPluginsEnabled(bool);
     virtual void setAcceleratedCompositingForScrollableFramesEnabled(bool);
     virtual void setAcceleratedCompositingForVideoEnabled(bool);

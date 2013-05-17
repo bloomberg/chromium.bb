@@ -1527,6 +1527,7 @@ bool RenderLayerCompositor::requiresOwnBackingStore(const RenderLayer* layer, co
         || requiresCompositingForFrame(renderer)
         || requiresCompositingForBackfaceVisibilityHidden(renderer)
         || requiresCompositingForAnimation(renderer)
+        || requiresCompositingForTransition(renderer)
         || requiresCompositingForFilters(renderer)
         || requiresCompositingForBlending(renderer)
         || requiresCompositingForPosition(renderer, layer)
@@ -1574,6 +1575,9 @@ CompositingReasons RenderLayerCompositor::directReasonsForCompositing(const Rend
 
     if (requiresCompositingForAnimation(renderer))
         directReasons |= CompositingReasonAnimation;
+
+    if (requiresCompositingForTransition(renderer))
+        directReasons |= CompositingReasonTransition;
 
     if (requiresCompositingForFilters(renderer))
         directReasons |= CompositingReasonFilters;
@@ -1628,6 +1632,9 @@ const char* RenderLayerCompositor::logReasonsForCompositing(const RenderLayer* l
 
     if (reasons & CompositingReasonAnimation)
         return "animation";
+
+    if (reasons & CompositingReasonTransition)
+        return "transition";
 
     if (reasons & CompositingReasonFilters)
         return "filters";
@@ -1840,6 +1847,21 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
             || animController->isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitTransform);
     }
     return false;
+}
+
+bool RenderLayerCompositor::requiresCompositingForTransition(RenderObject* renderer) const
+{
+    if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
+        return false;
+
+    if (Settings* settings = m_renderView->document()->settings()) {
+        if (!settings->acceleratedCompositingForTransitionEnabled())
+            return false;
+    }
+
+    return renderer->style()->transitionForProperty(CSSPropertyOpacity)
+        || renderer->style()->transitionForProperty(CSSPropertyWebkitFilter)
+        || renderer->style()->transitionForProperty(CSSPropertyWebkitTransform);
 }
 
 CompositingReasons RenderLayerCompositor::subtreeReasonsForCompositing(RenderObject* renderer, bool hasCompositedDescendants, bool has3DTransformedDescendants) const

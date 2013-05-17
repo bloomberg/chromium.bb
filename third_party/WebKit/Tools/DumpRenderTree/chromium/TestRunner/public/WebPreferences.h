@@ -89,6 +89,7 @@ struct WEBTESTRUNNER_EXPORT WebPreferences {
     bool acceleratedCompositingForVideoEnabled;
     bool acceleratedCompositingForFixedPositionEnabled;
     bool acceleratedCompositingForOverflowScrollEnabled;
+    bool acceleratedCompositingForTransitionEnabled;
     bool acceleratedCompositingEnabled;
     bool forceCompositingMode;
     bool threadedHTMLParser;

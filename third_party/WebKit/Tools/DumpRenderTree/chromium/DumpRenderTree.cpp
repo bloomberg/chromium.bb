@@ -62,6 +62,7 @@ static const char optionEnableAccelerated2DCanvas[] = "--enable-accelerated-2d-c
 static const char optionEnableAcceleratedCompositingForVideo[] = "--enable-accelerated-video";
 static const char optionEnableAcceleratedFixedPosition[] = "--enable-accelerated-fixed-position";
 static const char optionEnableAcceleratedOverflowScroll[] = "--enable-accelerated-overflow-scroll";
+static const char optionEnableAcceleratedTransition[] = "--enable-accelerated-transition";
 static const char optionEnablePerTilePainting[] = "--enable-per-tile-painting";
 static const char optionEnableDeferredImageDecoding[] = "--enable-deferred-image-decoding";
 static const char optionDisableThreadedHTMLParser[] = "--disable-threaded-html-parser";
@@ -132,6 +133,7 @@ int main(int argc, char* argv[])
     bool acceleratedCompositingForVideoEnabled = false;
     bool acceleratedCompositingForFixedPositionEnabled = false;
     bool acceleratedCompositingForOverflowScrollEnabled = false;
+    bool acceleratedCompositingForTransitionEnabled = false;
     bool softwareCompositingEnabled = false;
     bool threadedCompositingEnabled = false;
     bool forceCompositingMode = false;
@@ -171,6 +173,8 @@ int main(int argc, char* argv[])
             acceleratedCompositingForFixedPositionEnabled = true;
         else if (argument == optionEnableAcceleratedOverflowScroll)
             acceleratedCompositingForOverflowScrollEnabled = true;
+        else if (argument == optionEnableAcceleratedTransition)
+            acceleratedCompositingForTransitionEnabled = true;
         else if (argument == optionEnableSoftwareCompositing)
             softwareCompositingEnabled = true;
         else if (argument == optionEnableThreadedCompositing)
@@ -219,6 +223,7 @@ int main(int argc, char* argv[])
         shell.setAcceleratedCompositingForVideoEnabled(acceleratedCompositingForVideoEnabled);
         shell.setAcceleratedCompositingForFixedPositionEnabled(acceleratedCompositingForFixedPositionEnabled);
         shell.setAcceleratedCompositingForOverflowScrollEnabled(acceleratedCompositingForOverflowScrollEnabled);
+        shell.setAcceleratedCompositingForTransitionEnabled(acceleratedCompositingForTransitionEnabled);
         shell.setSoftwareCompositingEnabled(softwareCompositingEnabled);
         shell.setThreadedCompositingEnabled(threadedCompositingEnabled);
         shell.setForceCompositingMode(forceCompositingMode);

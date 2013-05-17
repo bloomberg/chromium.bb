@@ -116,6 +116,7 @@ void WebPreferences::reset()
     acceleratedCompositingForVideoEnabled = false;
     acceleratedCompositingForFixedPositionEnabled = false;
     acceleratedCompositingForOverflowScrollEnabled = false;
+    acceleratedCompositingForTransitionEnabled = false;
     acceleratedCompositingEnabled = false;
     accelerated2dCanvasEnabled = false;
     forceCompositingMode = false;
@@ -182,6 +183,7 @@ void WebPreferences::applyTo(WebView* webView)
     settings->setAcceleratedCompositingForVideoEnabled(acceleratedCompositingForVideoEnabled);
     settings->setAcceleratedCompositingForFixedPositionEnabled(acceleratedCompositingForFixedPositionEnabled);
     settings->setAcceleratedCompositingForOverflowScrollEnabled(acceleratedCompositingForOverflowScrollEnabled);
+    settings->setAcceleratedCompositingForTransitionEnabled(acceleratedCompositingForTransitionEnabled);
     settings->setFixedPositionCreatesStackingContext(acceleratedCompositingForFixedPositionEnabled);
     settings->setForceCompositingMode(forceCompositingMode);
     settings->setThreadedHTMLParser(threadedHTMLParser);
