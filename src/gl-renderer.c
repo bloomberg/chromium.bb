@@ -44,6 +44,7 @@ struct gl_shader {
 	GLint tex_uniforms[3];
 	GLint alpha_uniform;
 	GLint color_uniform;
+	const char *vertex_source, *fragment_source;
 };
 
 #define BUFFER_DAMAGE_COUNT 2
@@ -717,13 +718,26 @@ use_output(struct weston_output *output)
 	return 0;
 }
 
+static int
+shader_init(struct gl_shader *shader, struct gl_renderer *gr,
+		   const char *vertex_source, const char *fragment_source);
+
 static void
-use_shader(struct gl_renderer *gr,
-			     struct gl_shader *shader)
+use_shader(struct gl_renderer *gr, struct gl_shader *shader)
 {
+	if (!shader->program) {
+		int ret;
+
+		ret =  shader_init(shader, gr,
+				   shader->vertex_source,
+				   shader->fragment_source);
+
+		if (ret < 0)
+			weston_log("warning: failed to compile shader\n");
+	}
+
 	if (gr->current_shader == shader)
 		return;
-
 	glUseProgram(shader->program);
 	gr->current_shader = shader;
 }
@@ -1453,14 +1467,13 @@ compile_shader(GLenum type, int count, const char **sources)
 }
 
 static int
-shader_init(struct gl_shader *shader, struct weston_compositor *ec,
+shader_init(struct gl_shader *shader, struct gl_renderer *renderer,
 		   const char *vertex_source, const char *fragment_source)
 {
 	char msg[512];
 	GLint status;
 	int count;
 	const char *sources[3];
-	struct gl_renderer *renderer = get_renderer(ec);
 
 	shader->vertex_shader =
 		compile_shader(GL_VERTEX_SHADER, 1, &vertex_source);
@@ -1844,28 +1857,29 @@ compile_shaders(struct weston_compositor *ec)
 {
 	struct gl_renderer *gr = get_renderer(ec);
 
-	if (shader_init(&gr->texture_shader_rgba, ec,
-			     vertex_shader, texture_fragment_shader_rgba) < 0)
-		return -1;
-	if (shader_init(&gr->texture_shader_rgbx, ec,
-			     vertex_shader, texture_fragment_shader_rgbx) < 0)
-		return -1;
-	if (gr->has_egl_image_external &&
-			shader_init(&gr->texture_shader_egl_external, ec,
-				vertex_shader, texture_fragment_shader_egl_external) < 0)
-		return -1;
-	if (shader_init(&gr->texture_shader_y_uv, ec,
-			       vertex_shader, texture_fragment_shader_y_uv) < 0)
-		return -1;
-	if (shader_init(&gr->texture_shader_y_u_v, ec,
-			       vertex_shader, texture_fragment_shader_y_u_v) < 0)
-		return -1;
-	if (shader_init(&gr->texture_shader_y_xuxv, ec,
-			       vertex_shader, texture_fragment_shader_y_xuxv) < 0)
-		return -1;
-	if (shader_init(&gr->solid_shader, ec,
-			     vertex_shader, solid_fragment_shader) < 0)
-		return -1;
+	gr->texture_shader_rgba.vertex_source = vertex_shader;
+	gr->texture_shader_rgba.fragment_source = texture_fragment_shader_rgba;
+
+	gr->texture_shader_rgbx.vertex_source = vertex_shader;
+	gr->texture_shader_rgbx.fragment_source = texture_fragment_shader_rgbx;
+
+	gr->texture_shader_egl_external.vertex_source = vertex_shader;
+	gr->texture_shader_egl_external.fragment_source =
+		texture_fragment_shader_egl_external;
+
+	gr->texture_shader_y_uv.vertex_source = vertex_shader;
+	gr->texture_shader_y_uv.fragment_source = texture_fragment_shader_y_uv;
+
+	gr->texture_shader_y_u_v.vertex_source = vertex_shader;
+	gr->texture_shader_y_u_v.fragment_source =
+		texture_fragment_shader_y_u_v;
+
+	gr->texture_shader_y_u_v.vertex_source = vertex_shader;
+	gr->texture_shader_y_xuxv.fragment_source =
+		texture_fragment_shader_y_xuxv;
+
+	gr->solid_shader.vertex_source = vertex_shader;
+	gr->solid_shader.fragment_source = solid_fragment_shader;
 
 	return 0;
 }
@@ -1887,8 +1901,6 @@ fragment_debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 	shader_release(&gr->texture_shader_y_u_v);
 	shader_release(&gr->texture_shader_y_xuxv);
 	shader_release(&gr->solid_shader);
-
-	compile_shaders(ec);
 
 	/* Force use_shader() to call glUseProgram(), since we need to use
 	 * the recompiled version of the shader. */
