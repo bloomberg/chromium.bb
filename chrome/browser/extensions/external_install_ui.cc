@@ -20,9 +20,11 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
@@ -372,8 +374,17 @@ bool AddExternalInstallError(ExtensionService* service,
     return false;
 
   if (UseBubbleInstall(extension, is_new_profile)) {
-    error_service->AddGlobalError(
-        new ExternalInstallGlobalError(service, extension));
+    ExternalInstallGlobalError* error_bubble = new ExternalInstallGlobalError(
+        service, extension);
+    error_service->AddGlobalError(error_bubble);
+    // Show bubble immediately if possible.
+#if !defined(OS_ANDROID)
+    Browser* browser = chrome::FindTabbedBrowser(service->profile(),
+                                                 true,
+                                                 chrome::GetActiveDesktop());
+    if (browser)
+      error_bubble->ShowBubbleView(browser);
+#endif
   } else {
     error_service->AddGlobalError(
         new ExternalInstallMenuAlert(service, extension));
