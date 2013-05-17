@@ -60,6 +60,8 @@
 
 #include "weston-launch.h"
 
+#define MAX_ARGV_SIZE 256
+
 struct weston_launch {
 	struct pam_conv pc;
 	pam_handle_t *ph;
@@ -523,8 +525,9 @@ main(int argc, char *argv[])
 	struct weston_launch wl;
 	char **env;
 	int i, c;
-	char **child_argv;
+	char *child_argv[MAX_ARGV_SIZE];
 	char *tty = NULL, *new_user = NULL;
+	char *term;
 	int sleep_fork = 0;
 	struct option opts[] = {
 		{ "user",    required_argument, NULL, 'u' },
@@ -562,8 +565,8 @@ main(int argc, char *argv[])
 		}
 	}
 
-	child_argv = &argv[optind-1];
-	child_argv[0] = BINDIR "/weston";
+	if ((argc - optind) > (MAX_ARGV_SIZE - 5))
+		error(1, E2BIG, "Too many arguments to pass to weston");
 
 	if (new_user)
 		wl.pw = getpwnam(new_user);
@@ -572,7 +575,17 @@ main(int argc, char *argv[])
 	if (wl.pw == NULL)
 		error(1, errno, "failed to get username");
 
+	child_argv[0] = wl.pw->pw_shell;
+	child_argv[1] = "-l";
+	child_argv[2] = "-c";
+	child_argv[3] = BINDIR "/weston \"$@\"";
+	child_argv[4] = "weston";
+	for (i = 0; i < (argc - optind); ++i)
+		child_argv[5+i] = argv[optind+i];
+
+	term = getenv("TERM");
 	clearenv();
+	setenv("TERM", term, 1);
 	setenv("USER", wl.pw->pw_name, 1);
 	setenv("LOGNAME", wl.pw->pw_name, 1);
 	setenv("HOME", wl.pw->pw_dir, 1);
