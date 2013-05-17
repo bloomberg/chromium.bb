@@ -2701,6 +2701,101 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   EXPECT_FALSE(delegate->scroll_end());
 }
 
+// Tests the behavior of 2F scroll when all the touch-move events are consumed.
+TEST_F(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
+  scoped_ptr<ConsumesTouchMovesDelegate> delegate(
+      new ConsumesTouchMovesDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 100;
+  const int kTouchId1 = 2;
+  const int kTouchId2 = 3;
+  TimedEvents tes;
+
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  delegate->Reset();
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                        kTouchId1, tes.Now());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  tes.SendScrollEvent(root_window(), 131, 231, kTouchId1, delegate.get());
+
+  // First finger touches down and moves.
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  delegate->Reset();
+  // Second finger touches down and moves.
+  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(130, 201),
+                        kTouchId2, tes.LeapForward(50));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  tes.SendScrollEvent(root_window(), 161, 231, kTouchId2, delegate.get());
+
+  // PinchBegin & ScrollBegin were sent even though the touch-move events
+  // were consumed. This seems reasonable, as long as we don't send PinchUpdate
+  // ScrollUpdate when touch-move are consumed.
+  EXPECT_TRUE(delegate->pinch_begin());
+  EXPECT_TRUE(delegate->scroll_begin());
+
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->two_finger_tap());
+
+  // Should be no PinchUpdate & ScrollUpdate.
+  EXPECT_FALSE(delegate->pinch_update());
+  EXPECT_FALSE(delegate->pinch_end());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  delegate->Reset();
+  // Moves First finger again, no PinchUpdate & ScrollUpdate.
+  tes.SendScrollEvent(root_window(), 161, 261, kTouchId1, delegate.get());
+
+  EXPECT_FALSE(delegate->pinch_update());
+  EXPECT_FALSE(delegate->pinch_end());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  // Stops consuming touch-move.
+  delegate->set_consume_touch_move(false);
+
+  delegate->Reset();
+  // Making a pinch gesture.
+  tes.SendScrollEvent(root_window(), 161, 251, kTouchId1, delegate.get());
+  tes.SendScrollEvent(root_window(), 161, 241, kTouchId2, delegate.get());
+
+  // Now we see PinchUpdate & ScrollUpdate.
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_TRUE(delegate->pinch_update());
+  EXPECT_FALSE(delegate->pinch_end());
+
+  delegate->Reset();
+  ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                          kTouchId1, tes.Now());
+  ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(130, 201),
+                          kTouchId2, tes.Now());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->two_finger_tap());
+
+  // Should see PinchEnd & ScrollEnd.
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_TRUE(delegate->scroll_end());
+
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_FALSE(delegate->pinch_update());
+  EXPECT_TRUE(delegate->pinch_end());
+}
+
 // Like as GestureEventTouchMoveConsumed but tests the different behavior
 // depending on whether the events were consumed before or after the scroll
 // started.
