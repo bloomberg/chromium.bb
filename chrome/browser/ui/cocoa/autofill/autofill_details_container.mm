@@ -52,4 +52,9 @@
   return nil;
 }
 
+- (void)modelChanged {
+  for (AutofillSectionContainer* details in details_.get())
+    [details modelChanged];
+}
+
 @end

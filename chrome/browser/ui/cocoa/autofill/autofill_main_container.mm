@@ -112,5 +112,8 @@
   return [detailsContainer_ sectionForId:section];
 }
 
-@end
+- (void)modelChanged {
+  [detailsContainer_ modelChanged];
+}
 
+@end

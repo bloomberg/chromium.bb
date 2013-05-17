@@ -10,11 +10,13 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/layout_view.h"
+#import "chrome/browser/ui/cocoa/menu_button.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/models/simple_menu_model.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
 namespace {
@@ -52,7 +54,18 @@ TEST_F(AutofillSectionContainerTest, HasSubviews) {
 
   bool hasLayoutView = false;
   bool hasTextField = false;
+  bool hasSuggestButton = false;
+
+  NSView* sectionView = nil;
   for (NSView* view in [[container_ view] subviews]) {
+    if ([view isKindOfClass:[MenuButton class]])
+      hasSuggestButton = true;
+    else
+      sectionView = view;
+  }
+
+  ASSERT_EQ(2U, [[sectionView subviews] count]);
+  for (NSView* view in [sectionView subviews]) {
     if ([view isKindOfClass:[NSTextField class]]) {
       hasTextField = true;
     } else if ([view isKindOfClass:[LayoutView class]]) {
@@ -60,6 +73,7 @@ TEST_F(AutofillSectionContainerTest, HasSubviews) {
     }
   }
 
+  EXPECT_TRUE(hasSuggestButton);
   EXPECT_TRUE(hasLayoutView);
   EXPECT_TRUE(hasTextField);
 }
@@ -125,4 +139,32 @@ TEST_F(AutofillSectionContainerTest, OutputMatchesDefinition) {
   ASSERT_EQ(inputs.size(), output.size());
   EXPECT_EQ(ASCIIToUTF16("magic@example.org"), output[&inputs[0]]);
   EXPECT_EQ(ASCIIToUTF16("02"), output[&inputs[1]]);
+}
+
+TEST_F(AutofillSectionContainerTest, SuggestionsPopulatedByController) {
+  ui::SimpleMenuModel model(NULL);
+  model.AddItem(10, ASCIIToUTF16("a"));
+  model.AddItem(11, ASCIIToUTF16("b"));
+
+  using namespace autofill;
+  using namespace testing;
+
+  EXPECT_CALL(controller_, MenuModelForSection(autofill::SECTION_CC))
+      .WillOnce(Return(&model));
+
+  ResetContainer();
+  MenuButton* button = nil;
+  for (id item in [[container_ view] subviews]) {
+    if ([item isKindOfClass:[MenuButton class]]) {
+      button = item;
+      break;
+    }
+  }
+
+  NSMenu* menu = [button attachedMenu];
+  // Expect _three_ items - popup menus need an empty first item.
+  ASSERT_EQ(3, [menu numberOfItems]);
+
+  EXPECT_NSEQ(@"a", [[menu itemAtIndex:1] title]);
+  EXPECT_NSEQ(@"b", [[menu itemAtIndex:2] title]);
 }

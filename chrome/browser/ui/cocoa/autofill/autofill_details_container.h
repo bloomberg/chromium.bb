@@ -28,6 +28,10 @@ class AutofillDialogController;
 
 // Retrieve the container for the specified |section|.
 - (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section;
+
+// Called when the controller-maintained suggestions model has changed.
+- (void)modelChanged;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DETAILS_CONTAINER_H_

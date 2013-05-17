@@ -92,11 +92,6 @@ bool MockAutofillDialogController::SectionIsActive(
   return false;
 }
 
-ui::MenuModel* MockAutofillDialogController::MenuModelForSection(
-    DialogSection section) {
-  return NULL;
-}
-
 string16 MockAutofillDialogController::LabelForSection(
     DialogSection section) const {
   return string16();

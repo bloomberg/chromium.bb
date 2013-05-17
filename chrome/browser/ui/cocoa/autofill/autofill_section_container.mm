@@ -9,8 +9,13 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 #import "chrome/browser/ui/cocoa/autofill/layout_view.h"
 #include "chrome/browser/ui/cocoa/autofill/simple_grid_layout.h"
+#import "chrome/browser/ui/cocoa/image_button_cell.h"
+#import "chrome/browser/ui/cocoa/menu_button.h"
+#import "chrome/browser/ui/cocoa/menu_controller.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -23,6 +28,21 @@ const int kRelatedControlHorizontalSpacing = 8;
 // Vertical spacing between controls that are logically related.
 const int kRelatedControlVerticalSpacing = 8;
 
+// TODO(estade): pull out these constants, and figure out better values
+// for them. Note: These are duplicated from Views code.
+
+// Fixed width for the section label.
+const int kLabelWidth = 180;
+
+// Padding between section label and section input.
+const int kPadding = 30;
+
+// Fixed width for the details section.
+const int kDetailsWidth = 300;
+
+// Top/bottom inset for contents of a detail section.
+const size_t kDetailSectionInset = 10;
+
 }
 
 @interface AutofillSectionContainer (Internal)
@@ -33,6 +53,9 @@ const int kRelatedControlVerticalSpacing = 8;
 // Create NSView containing inputs & labelling. Autoreleased.
 - (NSView*)makeSectionView:(NSString*)labelText
              withControls:(LayoutView*)controls;
+
+// Create a button offering input suggestions.
+- (MenuButton*)makeSuggestionButton;
 
 // Create a view with all inputs requested by |controller_|. Autoreleased.
 - (LayoutView*)makeInputControls;
@@ -64,11 +87,38 @@ const int kRelatedControlVerticalSpacing = 8;
   }
 }
 
+- (void)modelChanged {
+  ui::MenuModel* suggestionModel = controller_->MenuModelForSection(section_);
+  menuController_.reset([[MenuController alloc] initWithModel:suggestionModel
+                                       useWithPopUpButtonCell:YES]);
+  NSMenu* menu = [menuController_ menu];
+
+  const BOOL hasSuggestions = [menu numberOfItems] > 0;
+  [suggestButton_ setHidden:!hasSuggestions];
+
+  [suggestButton_ setAttachedMenu:menu];
+}
+
 - (void)loadView {
   inputs_.reset([[self makeInputControls] retain]);
   string16 labelText = controller_->LabelForSection(section_);
-  [self setView:[self makeSectionView:base::SysUTF16ToNSString(labelText)
-                         withControls:inputs_]];
+
+  scoped_nsobject<NSView> sectionView(
+      [[self makeSectionView:base::SysUTF16ToNSString(labelText)
+                withControls:inputs_] retain]);
+  suggestButton_.reset([[self makeSuggestionButton] retain]);
+
+  NSRect buttonFrame = [suggestButton_ frame];
+  buttonFrame.origin.x = NSMaxX([sectionView frame]);
+  NSRect frame = NSUnionRect(buttonFrame, [sectionView frame]);
+  DCHECK(NSHeight(frame) >= NSHeight(buttonFrame) + 2 * kDetailSectionInset);
+  buttonFrame.origin.y =
+      NSMaxY(frame) - NSHeight(buttonFrame) - kDetailSectionInset;
+  [suggestButton_ setFrame:buttonFrame];
+  [self modelChanged];
+
+  [self setView:[[[NSView alloc] initWithFrame:frame] autorelease]];
+  [[self view] setSubviews:@[sectionView, suggestButton_]];
 }
 
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText {
@@ -86,13 +136,6 @@ const int kRelatedControlVerticalSpacing = 8;
 
 - (NSView*)makeSectionView:(NSString*)labelText
              withControls:(LayoutView*)controls {
-  // TODO(estade): pull out these constants, and figure out better values
-  // for them. Note: These are duplicated from Views code.
-  const int kLabelWidth = 180;
-  const int kPadding = 30;
-  const int kDetailsWidth = 300;
-  const size_t kDetailSectionInset = 10;
-
   scoped_nsobject<NSTextField> label(
       [[self makeDetailSectionLabel:labelText] retain]);
 
@@ -120,6 +163,35 @@ const int kRelatedControlVerticalSpacing = 8;
 
   [section_container setSubviews:@[label, controls]];
   return section_container.autorelease();
+}
+
+- (MenuButton*)makeSuggestionButton {
+  scoped_nsobject<MenuButton> button([[MenuButton alloc] init]);
+
+  [button setOpenMenuOnClick:YES];
+  [button setBordered:NO];
+  [button setShowsBorderOnlyWhileMouseInside:YES];
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  NSImage* image =
+      rb.GetNativeImageNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON).ToNSImage();
+  [[button cell] setImage:image
+             forButtonState:image_button_cell::kDefaultState];
+  image = rb.GetNativeImageNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_H).
+      ToNSImage();
+  [[button cell] setImage:image
+             forButtonState:image_button_cell::kHoverState];
+  image = rb.GetNativeImageNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_P).
+      ToNSImage();
+  [[button cell] setImage:image
+             forButtonState:image_button_cell::kPressedState];
+  image = rb.GetNativeImageNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_D).
+      ToNSImage();
+  [[button cell] setImage:image
+             forButtonState:image_button_cell::kDisabledState];
+
+  [button sizeToFit];
+  return button.autorelease();
 }
 
 // TODO(estade): we should be using Chrome-style constrained window padding

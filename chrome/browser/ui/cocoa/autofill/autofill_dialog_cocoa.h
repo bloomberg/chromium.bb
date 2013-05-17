@@ -96,6 +96,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
        forSection:(autofill::DialogSection)section;
 - (content::NavigationController*)showSignIn;
 - (void)hideSignIn;
+- (void)modelChanged;
 
 @end
 

@@ -94,7 +94,9 @@ void AutofillDialogCocoa::HideSignIn() {
 
 void AutofillDialogCocoa::UpdateProgressBar(double value) {}
 
-void AutofillDialogCocoa::ModelChanged() {}
+void AutofillDialogCocoa::ModelChanged() {
+  [sheet_controller_ modelChanged];
+}
 
 void AutofillDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
@@ -181,6 +183,10 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 - (void)hideSignIn {
   [[signInContainer_ view] setHidden:YES];
   [[mainContainer_ view] setHidden:NO];
+}
+
+- (void)modelChanged {
+  [mainContainer_ modelChanged];
 }
 
 @end

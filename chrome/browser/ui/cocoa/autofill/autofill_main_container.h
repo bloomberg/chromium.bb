@@ -43,6 +43,9 @@ namespace autofill {
 // Returns the view controller responsible for |section|.
 - (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section;
 
+// Called when the controller-maintained suggestions model has changed.
+- (void)modelChanged;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_MAIN_CONTAINER_H_

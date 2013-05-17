@@ -38,7 +38,7 @@ class MockAutofillDialogController : public AutofillDialogController {
                      const DetailInputs&(DialogSection));
   MOCK_METHOD1(ComboboxModelForAutofillType,
                ui::ComboboxModel*(AutofillFieldType));
-  virtual ui::MenuModel* MenuModelForSection(DialogSection section) OVERRIDE;
+  MOCK_METHOD1(MenuModelForSection, ui::MenuModel*(DialogSection));
   virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
   virtual SuggestionState SuggestionStateForSection(
       DialogSection section) OVERRIDE;

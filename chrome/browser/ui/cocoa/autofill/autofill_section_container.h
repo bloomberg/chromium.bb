@@ -15,6 +15,8 @@ namespace autofill {
 }
 
 @class LayoutView;
+@class MenuButton;
+@class MenuController;
 
 // View controller for a section of the payment details. Contains a label
 // describing the section as well as associated inputs and controls. Built
@@ -22,6 +24,8 @@ namespace autofill {
 @interface AutofillSectionContainer : NSViewController {
  @private
   scoped_nsobject<LayoutView> inputs_;
+  scoped_nsobject<MenuButton> suggestButton_;
+  scoped_nsobject<MenuController> menuController_;
   autofill::DialogSection section_;
   autofill::AutofillDialogController* controller_;  // Not owned.
 }
@@ -35,6 +39,9 @@ namespace autofill {
 
 // Populates |output| with mappings from field identification to input value.
 - (void)getInputs:(autofill::DetailOutputMap*)output;
+
+// Called when the controller-maintained suggestions model has changed.
+- (void)modelChanged;
 
 @end
 
