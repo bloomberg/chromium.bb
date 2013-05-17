@@ -537,23 +537,6 @@ class PinDriveFileFunction : public FileBrowserFunction {
   void OnPinStateSet(drive::FileError error);
 };
 
-// Get file locations for the given list of file URLs. Returns a list of
-// location identifiers, like ['drive', 'local'], where 'drive' means the
-// file is on gdata, and 'local' means the file is on the local drive.
-class GetFileLocationsFunction : public FileBrowserFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getFileLocations",
-                             FILEBROWSERPRIVATE_GETFILELOCATIONS)
-
-  GetFileLocationsFunction();
-
- protected:
-  virtual ~GetFileLocationsFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
 // Get gdata files for the given list of file URLs. Initiate downloading of
 // gdata files if these are not cached. Return a list of local file names.
 // This function puts empty strings instead of local paths for files could

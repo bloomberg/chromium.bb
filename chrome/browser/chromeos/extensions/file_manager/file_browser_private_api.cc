@@ -573,7 +573,6 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<ViewFilesFunction>();
   registry->RegisterFunction<GetDriveEntryPropertiesFunction>();
   registry->RegisterFunction<PinDriveFileFunction>();
-  registry->RegisterFunction<GetFileLocationsFunction>();
   registry->RegisterFunction<GetDriveFilesFunction>();
   registry->RegisterFunction<CancelFileTransfersFunction>();
   registry->RegisterFunction<TransferFileFunction>();
@@ -2472,42 +2471,6 @@ void PinDriveFileFunction::OnPinStateSet(drive::FileError error) {
     error_ = drive::FileErrorToString(error);
     SendResponse(false);
   }
-}
-
-GetFileLocationsFunction::GetFileLocationsFunction() {
-}
-
-GetFileLocationsFunction::~GetFileLocationsFunction() {
-}
-
-bool GetFileLocationsFunction::RunImpl() {
-  ListValue* file_urls_as_strings = NULL;
-  if (!args_->GetList(0, &file_urls_as_strings))
-    return false;
-
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
-  // Convert the list of strings to a list of GURLs.
-  scoped_ptr<ListValue> locations(new ListValue);
-  for (size_t i = 0; i < file_urls_as_strings->GetSize(); ++i) {
-    std::string file_url_as_string;
-    if (!file_urls_as_strings->GetString(i, &file_url_as_string))
-      return false;
-
-    fileapi::FileSystemURL url(
-        file_system_context->CrackURL(GURL(file_url_as_string)));
-    if (url.type() == fileapi::kFileSystemTypeDrive)
-      locations->Append(new base::StringValue("drive"));
-    else
-      locations->Append(new base::StringValue("local"));
-  }
-
-  SetResult(locations.release());
-  SendResponse(true);
-  return true;
 }
 
 GetDriveFilesFunction::GetDriveFilesFunction()
