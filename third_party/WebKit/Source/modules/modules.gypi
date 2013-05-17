@@ -57,6 +57,7 @@
       'indexeddb/IDBTransaction.idl',
       'indexeddb/IDBVersionChangeEvent.idl',
       'indexeddb/WorkerContextIndexedDatabase.idl',
+      'mediasource/DOMWindowMediaSource.idl',
       'mediasource/WebKitMediaSource.idl',
       'mediasource/WebKitSourceBuffer.idl',
       'mediasource/WebKitSourceBufferList.idl',

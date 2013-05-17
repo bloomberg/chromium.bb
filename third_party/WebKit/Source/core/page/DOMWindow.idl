@@ -299,10 +299,6 @@
     attribute IDBRequestConstructor webkitIDBRequest;
     attribute IDBTransactionConstructor webkitIDBTransaction;
 
-    [EnabledAtRuntime=webKitMediaSource] attribute WebKitMediaSourceConstructor WebKitMediaSource;
-    [EnabledAtRuntime=webKitMediaSource] attribute WebKitSourceBufferConstructor WebKitSourceBuffer;
-    [EnabledAtRuntime=webKitMediaSource] attribute WebKitSourceBufferListConstructor WebKitSourceBufferList;
-
     // Constructors enabled at runtime but whose interface does not have EnabledAtRuntime
     // extended attribute.
     // FIXME: Remove these.
