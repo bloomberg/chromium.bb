@@ -454,7 +454,7 @@ bool SingleThreadProxy::DoComposite(
     bool start_ready_animations = true;
     layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
 
-    layer_tree_host_impl_->BeginNextFrame();
+    layer_tree_host_impl_->ResetCurrentFrameTimeForNextFrame();
   }
 
   if (lost_output_surface) {

@@ -976,8 +976,6 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   if (draw_frame)
     CheckOutputSurfaceStatusOnImplThread();
 
-  layer_tree_host_impl_->BeginNextFrame();
-
   return result;
 }
 
@@ -1034,6 +1032,7 @@ void ThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
   if (current_resource_update_controller_on_impl_thread_)
     current_resource_update_controller_on_impl_thread_
         ->PerformMoreUpdates(time);
+  layer_tree_host_impl_->ResetCurrentFrameTimeForNextFrame();
 }
 
 void ThreadProxy::ReadyToFinalizeTextureUpdates() {

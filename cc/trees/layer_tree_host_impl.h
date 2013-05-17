@@ -349,7 +349,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void SetTreePriority(TreePriority priority);
 
-  void BeginNextFrame();
+  void ResetCurrentFrameTimeForNextFrame();
   base::TimeTicks CurrentFrameTimeTicks();
   base::Time CurrentFrameTime();
 

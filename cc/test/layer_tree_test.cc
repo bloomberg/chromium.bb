@@ -38,7 +38,7 @@ bool TestHooks::PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
   return true;
 }
 
-bool TestHooks::CanActivatePendingTree() {
+bool TestHooks::CanActivatePendingTree(LayerTreeHostImpl* host_impl) {
   return true;
 }
 
@@ -113,7 +113,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     if (!pending_tree())
       return false;
 
-    if (!test_hooks_->CanActivatePendingTree())
+    if (!test_hooks_->CanActivatePendingTree(this))
       return false;
 
     bool activated = LayerTreeHostImpl::ActivatePendingTreeIfNeeded();

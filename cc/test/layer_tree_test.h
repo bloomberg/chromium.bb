@@ -62,7 +62,7 @@ class TestHooks : public WebKit::WebAnimationDelegate {
   virtual void DidCompleteSwapBuffers() {}
   virtual void ScheduleComposite() {}
   virtual void DidDeferCommit() {}
-  virtual bool CanActivatePendingTree();
+  virtual bool CanActivatePendingTree(LayerTreeHostImpl* host_impl);
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}
 

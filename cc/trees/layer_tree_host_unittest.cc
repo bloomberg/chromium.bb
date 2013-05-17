@@ -626,6 +626,107 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestCommit);
 
+// This test verifies that LayerTreeHostImpl's current frame time gets
+// updated in consecutive frames when it doesn't draw due to tree
+// activation failure.
+class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
+    : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestFrameTimeUpdatesAfterActivationFails() : frame_(0) {}
+
+  virtual void BeginTest() OVERRIDE {
+    layer_tree_host()->SetViewportSize(gfx::Size(20, 20));
+    layer_tree_host()->set_background_color(SK_ColorGRAY);
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    if (frame_ >= 1) {
+      EXPECT_NE(first_frame_time_, impl->CurrentFrameTimeTicks());
+      EndTest();
+      return;
+    }
+
+    EXPECT_FALSE(impl->settings().impl_side_painting);
+    EndTest();
+  }
+
+  virtual bool CanActivatePendingTree(LayerTreeHostImpl* impl) OVERRIDE {
+    frame_++;
+    if (frame_ == 1) {
+      first_frame_time_ = impl->CurrentFrameTimeTicks();
+
+      // Since base::TimeTicks::Now() uses a low-resolution clock on
+      // Windows, we need to make sure that the clock has incremented past
+      // first_frame_time_.
+      while (first_frame_time_ == base::TimeTicks::Now()) {}
+
+      return false;
+    }
+
+    return true;
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  int frame_;
+  base::TimeTicks first_frame_time_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestFrameTimeUpdatesAfterActivationFails);
+
+// This test verifies that LayerTreeHostImpl's current frame time gets
+// updated in consecutive frames when it draws in each frame.
+class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestFrameTimeUpdatesAfterDraw() : frame_(0) {}
+
+  virtual void BeginTest() OVERRIDE {
+    layer_tree_host()->SetViewportSize(gfx::Size(20, 20));
+    layer_tree_host()->set_background_color(SK_ColorGRAY);
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    frame_++;
+    if (frame_ == 1) {
+      first_frame_time_ = impl->CurrentFrameTimeTicks();
+      impl->SetNeedsRedraw();
+
+      // Since base::TimeTicks::Now() uses a low-resolution clock on
+      // Windows, we need to make sure that the clock has incremented past
+      // first_frame_time_.
+      while (first_frame_time_ == base::TimeTicks::Now()) {}
+
+      return;
+    }
+
+    EXPECT_NE(first_frame_time_, impl->CurrentFrameTimeTicks());
+    EndTest();
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    // Ensure there isn't a commit between the two draws, to ensure that a
+    // commit isn't required for updating the current frame time. We can
+    // only check for this in the multi-threaded case, since in the single-
+    // threaded case there will always be a commit between consecutive draws.
+    if (ImplThread())
+      EXPECT_EQ(0, frame_);
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  int frame_;
+  base::TimeTicks first_frame_time_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameTimeUpdatesAfterDraw);
+
 // Verifies that StartPageScaleAnimation events propagate correctly
 // from LayerTreeHost to LayerTreeHostImpl in the MT compositor.
 class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {

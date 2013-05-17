@@ -601,7 +601,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
     }
   }
 
-  virtual bool CanActivatePendingTree() OVERRIDE {
+  virtual bool CanActivatePendingTree(LayerTreeHostImpl* impl) OVERRIDE {
     return can_activate_;
   }
 

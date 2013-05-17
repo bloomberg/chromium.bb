@@ -112,7 +112,7 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
     layer_tree_host_impl_->UpdateBackgroundAnimateTicking(true);
     bool start_ready_animations = true;
     layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
-    layer_tree_host_impl_->BeginNextFrame();
+    layer_tree_host_impl_->ResetCurrentFrameTimeForNextFrame();
   }
 
   void SetActive(bool active) {
@@ -2097,7 +2097,7 @@ void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
   tile_manager_->SetGlobalState(new_state);
 }
 
-void LayerTreeHostImpl::BeginNextFrame() {
+void LayerTreeHostImpl::ResetCurrentFrameTimeForNextFrame() {
   current_frame_timeticks_ = base::TimeTicks();
   current_frame_time_ = base::Time();
 }
