@@ -8,9 +8,20 @@
 {
   'conditions': [
     ['android_webview_build == 1', {
+      # This is specified twice intentionally: Android provides include paths
+      # to targets automatically if they depend on libraries, so we add this
+      # library to every target that includes this .gypi to make the headers
+      # available, then also add it to targets that link those targets via
+      # link_settings to ensure it ends up being linked even if the main target
+      # doesn't include this .gypi.
       'libraries': [
-        'cpufeatures.a'
+        'cpufeatures.a',
       ],
+      'link_settings': {
+        'libraries': [
+          'cpufeatures.a',
+        ],
+      },
     }, {
       'dependencies': [
         '<(android_ndk_root)/android_tools_ndk.gyp:cpu_features',

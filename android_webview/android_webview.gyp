@@ -23,16 +23,6 @@
       'sources': [
         'lib/main/webview_entry_point.cc',
       ],
-      'conditions': [
-        ['android_webview_build == 1', {
-          'libraries': [
-            # The "android" gyp backend doesn't quite handle static libraries'
-            # dependencies correctly; force this to be linked as a workaround.
-            'cpufeatures.a',
-            '-lcutils',
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'android_webview_pak',

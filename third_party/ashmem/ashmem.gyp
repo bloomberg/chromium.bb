@@ -21,6 +21,11 @@
           'includes': [
             '../../build/shim_headers.gypi',
           ],
+          'link_settings': {
+            'libraries': [
+              '-lcutils',
+            ],
+          },
         }, {
           'type': 'static_library',
           'sources': [
