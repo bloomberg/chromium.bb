@@ -115,6 +115,7 @@
             '../build/temp_gyp/googleurl.gyp:googleurl',
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
+            '../google_apis/google_apis.gyp:google_apis',
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
             '../sql/sql.gyp:sql',
