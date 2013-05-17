@@ -53,6 +53,7 @@
                   'chrome/browser/sync/glue/autofill_|'\
                   'chrome/browser/ui/android/autofill/|'\
                   'chrome/browser/ui/autofill/|'\
+                  'chrome/browser/ui/cocoa/autofill/|'\
                   'chrome/browser/ui/gtk/autofill/|'\
                   'chrome/browser/ui/views/autofill/|'\
                   'chrome/browser/ui/webui/options/autofill_|'\
