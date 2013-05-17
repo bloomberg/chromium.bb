@@ -3,5 +3,5 @@ dbeam@chromium.org
 estade@chromium.org
 jhawkins@chromium.org
 
-# component_extension_resources.grd
-dgozman@chromium.org
+per-file component_extension_resources.grd=dgozman@chromium.org
+per-file sync_setup_overlay.*=rsimha@chromium.org

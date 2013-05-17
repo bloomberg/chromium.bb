@@ -79,6 +79,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, ShowSyncSetupWhenNotSignedIn);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SuccessfullySetPassphrase);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncEverything);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncNothing);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncAllManually);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestPassphraseStillRequired);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncIndividualTypes);
@@ -193,7 +194,8 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // If a wizard already exists, focus it and return true.
   bool FocusExistingWizardIfPresent();
 
-  // Invokes the javascript call to close the setup overlay.
+  // Invokes the javascript call to close the setup overlay, and terminates the
+  // sync setup flow.
   void CloseOverlay();
 
 #if !defined(OS_CHROMEOS)

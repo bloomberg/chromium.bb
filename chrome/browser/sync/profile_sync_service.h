@@ -185,6 +185,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                                             // types and clicking OK.
     // Events resulting in the stoppage of sync service.
     STOP_FROM_OPTIONS = 20,  // Sync was stopped from Wrench->Options.
+    STOP_FROM_ADVANCED_DIALOG = 21,  // Sync was stopped via advanced settings.
 
     // Miscellaneous events caused by sync service.
 

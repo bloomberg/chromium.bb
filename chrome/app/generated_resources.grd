@@ -13248,11 +13248,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
         Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_SYNC_SETUP_BUTTON_LABEL" desc="The label that appears on the sync setup button in the options dialog when sync has been disabled by the user on Chrome OS.">
-          Set up Sync
-        </message>
-      </if>
+      <message name="IDS_SYNC_SETUP_BUTTON_LABEL" desc="The label that appears on the sync setup button in the options dialog when sync has been disabled by the user.">
+        Set up sync...
+      </message>
       <message name="IDS_SYNC_SETUP_ERROR" desc="The message displayed when an unspecified but unrecoverable error occurs during sync setup.">
         An error occurred while trying to set up sync.
       </message>
@@ -13262,8 +13260,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SIGNED_IN_WITH_SYNC_DISABLED" desc="The message that appears in the options dialog indicating that user is signed in with the given email address, but sync is not enabled.">
         Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Sync is disabled by your administrator.
       </message>
-      <message name="IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED" desc="The message that appears in the options dialog indicating that user is signed in with the given email address, but sync was stopped via the Google Dashboard.">
-        Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Sync has been stopped via the Google Dashboard.
+      <message name="IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED" desc="The message that appears in the options dialog indicating that user is signed in with the given email address, but sync has been stopped.">
+        Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Sync has been stopped on this device.
       </message>
       <message name="IDS_SYNC_ACCOUNT_SYNCING_TO_USER" desc="The message that appears in the options dialog indicating that account is syncing to a user with the given email address.">
         Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>.
@@ -13455,11 +13453,14 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS" desc="Text explaining the 'Choose Datatypes' dialog.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> securely syncs your data with your Google account. Keep everything synced or customize synced data types and encryption settings.
       </message>
-      <message name="IDS_SYNC_EVERYTHING" desc="A radio button for users who want to sync all data types.">
+      <message name="IDS_SYNC_EVERYTHING" desc="A drop-down menu item for users who want to sync all data types.">
         Sync everything
       </message>
-      <message name="IDS_SYNC_CHOOSE_DATATYPES" desc="A radio button for users who want to select some datatypes to sync">
+      <message name="IDS_SYNC_CHOOSE_DATATYPES" desc="A drop-down menu item for users who want to select some datatypes to sync.">
         Choose what to sync
+      </message>
+      <message name="IDS_SYNC_NOTHING" desc="A drop-down menu item for users who want to remain signed in to Chrome, but not sync any datatypes.">
+        Sync nothing
       </message>
       <message name="IDS_SYNC_ZERO_DATA_TYPES_ERROR" desc="Error message if you try to sync, but uncheck all the data type choices.">
         You must select at least one data type to sync.

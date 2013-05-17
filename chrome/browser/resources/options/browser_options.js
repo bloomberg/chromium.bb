@@ -22,9 +22,7 @@ cr.define('options', function() {
     __proto__: options.OptionsPage.prototype,
 
     /**
-     * Keeps track of the state of |start-stop-button|. On chrome, the value is
-     * true when the user is signed in, and on chromeos, when sync setup has
-     * been completed.
+     * Keeps track of whether the user is signed in or not.
      * @type {boolean}
      * @private
      */
@@ -708,39 +706,44 @@ cr.define('options', function() {
 
       $('sync-section').hidden = false;
 
-      if (cr.isChromeOS)
-        this.signedIn_ = syncData.setupCompleted;
-      else
-        this.signedIn_ = syncData.signedIn;
+      // If the user gets signed out while the advanced sync settings dialog is
+      // visible, say, due to a dashboard clear, close the dialog.
+      if (this.signedIn_ && !syncData.signedIn)
+        SyncSetupOverlay.closeOverlay();
 
-      // Display the "setup sync" button if we're signed in and sync is not
-      // managed/disabled.
-      $('customize-sync').hidden = !this.signedIn_ ||
+      this.signedIn_ = syncData.signedIn;
+
+      // Display the "advanced settings" button if we're signed in and sync is
+      // not managed/disabled. If the user is signed in, but sync is disabled,
+      // this button is used to re-enable sync.
+      var customizeSyncButton = $('customize-sync');
+      customizeSyncButton.hidden = !this.signedIn_ ||
                                    syncData.managed ||
                                    !syncData.syncSystemEnabled;
+      customizeSyncButton.textContent = syncData.setupCompleted ?
+          loadTimeData.getString('customizeSync') :
+          loadTimeData.getString('syncButtonTextStart');
 
-      var startStopButton = $('start-stop-sync');
-      // Disable the "start/stop syncing" button if we're currently signing in,
-      // or if we're already signed in and signout is not allowed.
-      startStopButton.disabled = syncData.setupInProgress ||
-                                 !syncData.signoutAllowed;
+      // Disable the "sign in" button if we're currently signing in, or if we're
+      // already signed in and signout is not allowed.
+      var signInButton = $('start-stop-sync');
+      signInButton.disabled = syncData.setupInProgress ||
+                              !syncData.signoutAllowed;
       if (!syncData.signoutAllowed)
         $('start-stop-sync-indicator').setAttribute('controlled-by', 'policy');
       else
         $('start-stop-sync-indicator').removeAttribute('controlled-by');
 
-      // Hide the "start/stop syncing" button on Chrome OS if sync has already
-      // been set up, or if it is managed or disabled.
-      startStopButton.hidden = cr.isChromeOS && (syncData.setupCompleted ||
-                                                 syncData.isManaged ||
-                                                 !syncData.syncSystemEnabled);
-      startStopButton.textContent =
+      // Hide the "sign in" button on Chrome OS, and show it on desktop Chrome.
+      signInButton.hidden = cr.isChromeOS;
+
+      signInButton.textContent =
           this.signedIn_ ?
               loadTimeData.getString('syncButtonTextStop') :
               syncData.setupInProgress ?
                   loadTimeData.getString('syncButtonTextInProgress') :
-                  loadTimeData.getString('syncButtonTextStart');
-      $('start-stop-sync-indicator').hidden = startStopButton.hidden;
+                  loadTimeData.getString('syncButtonTextSignIn');
+      $('start-stop-sync-indicator').hidden = signInButton.hidden;
 
       // TODO(estade): can this just be textContent?
       $('sync-status-text').innerHTML = syncData.statusText;
@@ -768,7 +771,7 @@ cr.define('options', function() {
       else
         $('sync-status').classList.remove('sync-error');
 
-      $('customize-sync').disabled = syncData.hasUnrecoverableError;
+      customizeSyncButton.disabled = syncData.hasUnrecoverableError;
       // Move #enable-auto-login-checkbox to a different location on CrOS.
       if (cr.isChromeOs) {
         $('sync-general').insertBefore($('sync-status').nextSibling,

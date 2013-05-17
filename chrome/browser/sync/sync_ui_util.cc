@@ -55,6 +55,7 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
       return l10n_util::GetStringFUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED,
                                         user_name);
     } else if (service->IsStartSuppressed()) {
+      // User is signed in, but sync has been stopped.
       return l10n_util::GetStringFUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
                                         user_name);
     }
@@ -226,10 +227,10 @@ MessageType GetStatusInfo(ProfileSyncService* service,
         }
       } else if (auth_error.state() != AuthError::NONE &&
                  auth_error.state() != AuthError::TWO_FACTOR) {
-        if (status_label) {
+        if (status_label && link_label) {
           status_label->clear();
           signin_ui_util::GetStatusLabelsForAuthError(
-              signin, status_label, NULL);
+              signin, status_label, link_label);
         }
         result_type = SYNC_ERROR;
       }
@@ -244,6 +245,15 @@ MessageType GetStatusInfo(ProfileSyncService* service,
         }
       } else if (status_label) {
         status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_SETUP_ERROR));
+      }
+    } else if (!signin.GetAuthenticatedUsername().empty()) {
+      // The user is signed in, but sync has been stopped.
+      if (status_label) {
+        string16 label = l10n_util::GetStringFUTF16(
+                             IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
+                             UTF8ToUTF16(signin.GetAuthenticatedUsername()));
+        status_label->assign(label);
+        result_type = PRE_SYNCED;
       }
     }
   }

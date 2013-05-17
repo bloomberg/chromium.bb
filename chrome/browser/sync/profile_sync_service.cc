@@ -736,6 +736,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   encrypt_everything_ = false;
   encrypted_types_ = syncer::SyncEncryptionHandler::SensitiveTypes();
   passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
+  start_up_time_ = base::Time();
   // Revert to "no auth error".
   if (last_auth_error_.state() != GoogleServiceAuthError::NONE)
     UpdateAuthErrorState(GoogleServiceAuthError::AuthErrorNone());
@@ -1089,21 +1090,8 @@ void ProfileSyncService::OnConnectionStatusChange(
 }
 
 void ProfileSyncService::OnStopSyncingPermanently() {
-  UpdateAuthErrorState(AuthError(AuthError::SERVICE_UNAVAILABLE));
   sync_prefs_.SetStartSuppressed(true);
   DisableForUser();
-
-  // Signout doesn't exist as a concept on Chrome OS. It currently does
-  // on other auto-start platforms (like Android, though we should probably
-  // use SigninManagerBase there as well), but we don't want to sign the
-  // user out on auto-start platforms if sync was disabled.
-  // TODO(tim): Platform specific refactoring here is bug 237866.
-#if !defined(OS_CHROMEOS)
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
-
-  if (!auto_start_enabled_)  // Skip signout on ChromeOS/Android.
-    signin->SignOut();
-#endif
 }
 
 void ProfileSyncService::OnPassphraseRequired(
@@ -1228,6 +1216,8 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       break;
     case syncer::DISABLE_SYNC_ON_CLIENT:
       OnStopSyncingPermanently();
+      // TODO(rsimha): Re-evaluate whether to also sign out the user here after
+      // a dashboard clear. See http://crbug.com/240436.
       break;
     default:
       NOTREACHED();

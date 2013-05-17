@@ -35,6 +35,32 @@ cr.define('options', function() {
   // email address.
   var lastEmailAddress_ = '';
 
+  // An object used as a cache of the arguments passed in while initially
+  // displaying the advanced sync settings dialog. Used to switch between the
+  // options in the main drop-down menu. Reset when the dialog is closed.
+  var syncConfigureArgs_ = null;
+
+  // A dictionary that maps the sync data type checkbox names to their checked
+  // state. Initialized when the advanced settings dialog is first brought up,
+  // updated any time a box is checked / unchecked, and reset when the dialog is
+  // closed. Used to restore checkbox state while switching between the options
+  // in the main drop-down menu. All checkboxes are checked and disabled when
+  // the "Sync everything" menu-item is selected, and unchecked and disabled
+  // when "Sync nothing" is selected. When "Choose what to sync" is selected,
+  // the boxes are restored to their most recent checked state from this cache.
+  var dataTypeBoxes_ = {};
+
+  /**
+   * The user's selection in the synced data type drop-down menu, as an index.
+   * @enum {number}
+   * @const
+   */
+  var DataTypeSelection = {
+    SYNC_EVERYTHING: 0,
+    CHOOSE_WHAT_TO_SYNC: 1,
+    SYNC_NOTHING: 2
+  };
+
   /**
    * SyncSetupOverlay class
    * Encapsulated handling of the 'Sync Setup' overlay page.
@@ -95,6 +121,8 @@ cr.define('options', function() {
     },
 
     closeOverlay_: function() {
+      this.syncConfigureArgs_ = null;
+      this.dataTypeBoxes_ = {};
       OptionsPage.closeOverlay();
     },
 
@@ -145,16 +173,45 @@ cr.define('options', function() {
       $('sync-custom-passphrase').hidden = !visible;
     },
 
-    checkAllDataTypeCheckboxes_: function() {
-      // Only check the visible ones (since there's no way to uncheck
-      // the invisible ones).
+    /**
+     * Sets the checked state of the individual sync data type checkboxes in the
+     * advanced sync settings dialog.
+     * @param {boolean} value True for checked, false for unchecked.
+     * @private
+     */
+    checkAllDataTypeCheckboxes_: function(value) {
+      // Only check / uncheck the visible ones (since there's no way to uncheck
+      // / check the invisible ones).
       var checkboxes = $('choose-data-types-body').querySelectorAll(
           '.sync-type-checkbox:not([hidden]) input');
       for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = true;
+        checkboxes[i].checked = value;
       }
     },
 
+    /**
+     * Restores the checked states of the sync data type checkboxes in the
+     * advanced sync settings dialog. Called when "Choose what to sync" is
+     * selected. Required because all the checkboxes are checked when
+     * "Sync everything" is selected, and unchecked when "Sync nothing" is
+     * selected. Note: We only restore checkboxes for data types that are
+     * actually visible and whose old values are found in the cache, since it's
+     * possible for some data types to not be registered, and therefore, their
+     * checkboxes remain hidden, and never get cached.
+     * @private
+     */
+    restoreDataTypeCheckboxes_: function() {
+      for (dataType in dataTypeBoxes_) {
+        $(dataType).checked = dataTypeBoxes_[dataType];
+      }
+    },
+
+    /**
+     * Enables / grays out the sync data type checkboxes in the advanced
+     * settings dialog.
+     * @param {boolean} enabled True for enabled, false for grayed out.
+     * @private
+     */
     setDataTypeCheckboxesEnabled_: function(enabled) {
       var checkboxes = $('choose-data-types-body').querySelectorAll('input');
       for (var i = 0; i < checkboxes.length; i++) {
@@ -162,10 +219,22 @@ cr.define('options', function() {
       }
     },
 
-    setCheckboxesToKeepEverythingSynced_: function(value) {
-      this.setDataTypeCheckboxesEnabled_(!value);
-      if (value)
-        this.checkAllDataTypeCheckboxes_();
+    /**
+     * Sets the state of the sync data type checkboxes based on whether "Sync
+     * everything", "Choose what to sync", or "Sync nothing" are selected in the
+     * drop-down menu of the advanced settings dialog.
+     * @param {cr.DataTypeSelection} selectedIndex Index of user's selection.
+     * @private
+     */
+    setDataTypeCheckboxes_: function(selectedIndex) {
+      if (selectedIndex == DataTypeSelection.CHOOSE_WHAT_TO_SYNC) {
+        this.setDataTypeCheckboxesEnabled_(true);
+        this.restoreDataTypeCheckboxes_();
+      } else {
+        this.setDataTypeCheckboxesEnabled_(false);
+        this.checkAllDataTypeCheckboxes_(selectedIndex ==
+                                         DataTypeSelection.SYNC_EVERYTHING);
+      }
     },
 
     // Returns true if none of the visible checkboxes are checked.
@@ -208,8 +277,9 @@ cr.define('options', function() {
       // Trying to submit, so hide previous errors.
       $('error-text').hidden = true;
 
-      var syncAll = $('sync-select-datatypes').selectedIndex == 0;
-      if (!syncAll && this.noDataTypesChecked_()) {
+      var chooseWhatToSync = $('sync-select-datatypes').selectedIndex ==
+                             DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
+      if (chooseWhatToSync && this.noDataTypesChecked_()) {
         $('error-text').hidden = false;
         return;
       }
@@ -257,8 +327,13 @@ cr.define('options', function() {
 
       // These values need to be kept in sync with where they are read in
       // SyncSetupFlow::GetDataTypeChoiceData().
+      var syncAll = $('sync-select-datatypes').selectedIndex ==
+                    DataTypeSelection.SYNC_EVERYTHING;
+      var syncNothing = $('sync-select-datatypes').selectedIndex ==
+                        DataTypeSelection.SYNC_NOTHING;
       var result = JSON.stringify({
         'syncAllDataTypes': syncAll,
+        'syncNothing': syncNothing,
         'bookmarksSynced': syncAll || $('bookmarks-checkbox').checked,
         'preferencesSynced': syncAll || $('preferences-checkbox').checked,
         'themesSynced': syncAll || $('themes-checkbox').checked,
@@ -293,7 +368,7 @@ cr.define('options', function() {
 
       var self = this;
       this.animateDisableLink_($('customize-link'), disabled, function() {
-        self.showCustomizePage_(null, true);
+        self.showCustomizePage_(null, DataTypeSelection.SYNC_EVERYTHING);
       });
     },
 
@@ -325,57 +400,89 @@ cr.define('options', function() {
     },
 
     /**
-     * Shows or hides the Sync data type checkboxes in the advanced
-     * configuration screen.
+     * Shows or hides the sync data type checkboxes in the advanced sync
+     * settings dialog. Also initializes |dataTypeBoxes_| with their values, and
+     * makes their onclick handlers update |dataTypeBoxes_|.
      * @param {Object} args The configuration data used to show/hide UI.
      * @private
      */
     setChooseDataTypesCheckboxes_: function(args) {
       var datatypeSelect = $('sync-select-datatypes');
-      datatypeSelect.selectedIndex = args.syncAllDataTypes ? 0 : 1;
+      datatypeSelect.selectedIndex = args.syncAllDataTypes ?
+                                         DataTypeSelection.SYNC_EVERYTHING :
+                                         DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
 
       $('bookmarks-checkbox').checked = args.bookmarksSynced;
+      dataTypeBoxes_['bookmarks-checkbox'] = args.bookmarksSynced;
+      $('bookmarks-checkbox').onclick = this.handleDataTypeClick_;
+
       $('preferences-checkbox').checked = args.preferencesSynced;
+      dataTypeBoxes_['preferences-checkbox'] = args.preferencesSynced;
+      $('preferences-checkbox').onclick = this.handleDataTypeClick_;
+
       $('themes-checkbox').checked = args.themesSynced;
+      dataTypeBoxes_['themes-checkbox'] = args.themesSynced;
+      $('themes-checkbox').onclick = this.handleDataTypeClick_;
 
       if (args.passwordsRegistered) {
         $('passwords-checkbox').checked = args.passwordsSynced;
+        dataTypeBoxes_['passwords-checkbox'] = args.passwordsSynced;
+        $('passwords-checkbox').onclick = this.handleDataTypeClick_;
         $('passwords-item').hidden = false;
       } else {
         $('passwords-item').hidden = true;
       }
       if (args.autofillRegistered) {
         $('autofill-checkbox').checked = args.autofillSynced;
+        dataTypeBoxes_['autofill-checkbox'] = args.autofillSynced;
+        $('autofill-checkbox').onclick = this.handleDataTypeClick_;
         $('autofill-item').hidden = false;
       } else {
         $('autofill-item').hidden = true;
       }
       if (args.extensionsRegistered) {
         $('extensions-checkbox').checked = args.extensionsSynced;
+        dataTypeBoxes_['extensions-checkbox'] = args.extensionsSynced;
+        $('extensions-checkbox').onclick = this.handleDataTypeClick_;
         $('extensions-item').hidden = false;
       } else {
         $('extensions-item').hidden = true;
       }
       if (args.typedUrlsRegistered) {
         $('typed-urls-checkbox').checked = args.typedUrlsSynced;
+        dataTypeBoxes_['typed-urls-checkbox'] = args.typedUrlsSynced;
+        $('typed-urls-checkbox').onclick = this.handleDataTypeClick_;
         $('omnibox-item').hidden = false;
       } else {
         $('omnibox-item').hidden = true;
       }
       if (args.appsRegistered) {
         $('apps-checkbox').checked = args.appsSynced;
+        dataTypeBoxes_['apps-checkbox'] = args.appsSynced;
+        $('apps-checkbox').onclick = this.handleDataTypeClick_;
         $('apps-item').hidden = false;
       } else {
         $('apps-item').hidden = true;
       }
       if (args.tabsRegistered) {
         $('tabs-checkbox').checked = args.tabsSynced;
+        dataTypeBoxes_['tabs-checkbox'] = args.tabsSynced;
+        $('tabs-checkbox').onclick = this.handleDataTypeClick_;
         $('tabs-item').hidden = false;
       } else {
         $('tabs-item').hidden = true;
       }
 
-      this.setCheckboxesToKeepEverythingSynced_(args.syncAllDataTypes);
+      this.setDataTypeCheckboxes_(datatypeSelect.selectedIndex);
+    },
+
+    /**
+     * Updates the cached values of the sync data type checkboxes stored in
+     * |dataTypeBoxes_|. Used as an onclick handler for each data type checkbox.
+     * @private
+     */
+    handleDataTypeClick_: function() {
+      dataTypeBoxes_[this.id] = this.checked;
     },
 
     setEncryptionRadios_: function(args) {
@@ -417,9 +524,31 @@ cr.define('options', function() {
     showConfigure_: function(args) {
       var datatypeSelect = $('sync-select-datatypes');
       var self = this;
+
+      // Cache the sync config args so they can be reused when we transition
+      // between the drop-down menu items in the advanced settings dialog.
+      if (args)
+        this.syncConfigureArgs_ = args;
+
+      // Once the advanced sync settings dialog is visible, we transition
+      // between its drop-down menu items as follows:
+      // "Sync everything": Show encryption and passphrase sections, and disable
+      // and check all data type checkboxes.
+      // "Sync everything": Hide encryption and passphrase sections, and disable
+      // and uncheck all data type checkboxes.
+      // "Choose what to sync": Show encryption and passphrase sections, enable
+      // data type checkboxes, and restore their checked state to the last time
+      // the "Choose what to sync" was selected while the dialog was still up.
       datatypeSelect.onchange = function() {
-        var syncAll = this.selectedIndex == 0;
-        self.setCheckboxesToKeepEverythingSynced_(syncAll);
+        if (this.selectedIndex == DataTypeSelection.SYNC_NOTHING) {
+          self.showSyncNothingPage_();
+        } else {
+          self.showCustomizePage_(self.syncConfigureArgs_, this.selectedIndex);
+          if (this.selectedIndex == DataTypeSelection.SYNC_EVERYTHING)
+            self.checkAllDataTypeCheckboxes_(true);
+          else
+            self.restoreDataTypeCheckboxes_();
+        }
       };
 
       this.resetPage_('sync-setup-configure');
@@ -437,14 +566,16 @@ cr.define('options', function() {
 
         this.useEncryptEverything_ = args.encryptAllData;
 
-        // Whether to display the 'Sync everything' confirmation page or the
-        // customize data types page.
-        var syncAllDataTypes = args.syncAllDataTypes;
+        // Determine whether to display the 'OK, sync everything' confirmation
+        // dialog or the advanced sync settings dialog.
         this.usePassphrase_ = args.usePassphrase;
         this.keystoreEncryptionEnabled_ = args.keystoreEncryptionEnabled;
         if (args.showSyncEverythingPage == false || this.usePassphrase_ ||
-            syncAllDataTypes == false || args.showPassphrase) {
-          this.showCustomizePage_(args, syncAllDataTypes);
+            args.syncAllDataTypes == false || args.showPassphrase) {
+          var index = args.syncAllDataTypes ?
+                          DataTypeSelection.SYNC_EVERYTHING :
+                          DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
+          this.showCustomizePage_(args, index);
         } else {
           this.showSyncEverythingPage_();
         }
@@ -469,7 +600,7 @@ cr.define('options', function() {
       $('sync-select-datatypes').selectedIndex = 0;
 
       // The default state is to sync everything.
-      this.setCheckboxesToKeepEverythingSynced_(true);
+      this.setDataTypeCheckboxes_(DataTypeSelection.SYNC_EVERYTHING);
 
       // Encrypt passwords is the default, but don't set it if the previously
       // synced account is already set to encrypt everything.
@@ -487,6 +618,30 @@ cr.define('options', function() {
         $('basic-encryption-option').checked = true;
 
       $('confirm-everything-ok').focus();
+    },
+
+    /**
+     * Reveals the UI for when the user chooses not to sync any data types.
+     * This happens when the user signs in and selects "Sync nothing" in the
+     * advanced sync settings dialog.
+     * @private
+     */
+    showSyncNothingPage_: function() {
+      // Reset the selection to 'Sync nothing'.
+      $('sync-select-datatypes').selectedIndex = DataTypeSelection.SYNC_NOTHING;
+
+      // Uncheck and disable the individual data type checkboxes.
+      this.checkAllDataTypeCheckboxes_(false);
+      this.setDataTypeCheckboxesEnabled_(false);
+
+      // Hide the encryption section.
+      $('customize-sync-encryption').hidden = true;
+      $('customize-sync-encryption-new').hidden = true;
+      $('sync-custom-passphrase-container').hidden = true;
+      $('sync-existing-passphrase-container').hidden = true;
+
+      // Hide the "use default settings" link.
+      $('use-default-link').hidden = true;
     },
 
     /**
@@ -528,8 +683,13 @@ cr.define('options', function() {
       $('passphrase').focus();
     },
 
-    /** @private */
-    showCustomizePage_: function(args, syncEverything) {
+    /**
+     * Displays the advanced sync setting dialog, and pre-selects either the
+     * "Sync everything" or the "Choose what to sync" drop-down menu item.
+     * @param {cr.DataTypeSelection} index Index of item to pre-select.
+     * @private
+     */
+    showCustomizePage_: function(args, index) {
       $('confirm-sync-preferences').hidden = true;
       $('customize-sync-preferences').hidden = false;
 
@@ -548,12 +708,9 @@ cr.define('options', function() {
 
       $('sync-existing-passphrase-container').hidden = true;
 
-      // If the user has selected the 'Customize' page on initial set up, it's
-      // likely he intends to change the data types. Select the
-      // 'Choose data types' option in this case.
-      var index = syncEverything ? 0 : 1;
       $('sync-select-datatypes').selectedIndex = index;
-      this.setDataTypeCheckboxesEnabled_(!syncEverything);
+      this.setDataTypeCheckboxesEnabled_(
+          index == DataTypeSelection.CHOOSE_WHAT_TO_SYNC);
 
       // The passphrase input may need to take over focus from the OK button, so
       // set focus before that logic.
@@ -1019,6 +1176,10 @@ cr.define('options', function() {
   };
 
   // These methods are for general consumption.
+  SyncSetupOverlay.closeOverlay = function() {
+    SyncSetupOverlay.getInstance().closeOverlay_();
+  };
+
   SyncSetupOverlay.showErrorUI = function() {
     SyncSetupOverlay.getInstance().showErrorUI_();
   };

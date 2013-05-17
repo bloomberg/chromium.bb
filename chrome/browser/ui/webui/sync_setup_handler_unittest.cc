@@ -58,7 +58,8 @@ syncer::ModelTypeSet GetAllTypes() {
 
 enum SyncAllDataConfig {
   SYNC_ALL_DATA,
-  CHOOSE_WHAT_TO_SYNC
+  CHOOSE_WHAT_TO_SYNC,
+  SYNC_NOTHING
 };
 
 enum EncryptAllConfig {
@@ -78,6 +79,7 @@ std::string GetConfiguration(const DictionaryValue* extra_values,
   if (extra_values)
     result.MergeDictionary(extra_values);
   result.SetBoolean("syncAllDataTypes", sync_all == SYNC_ALL_DATA);
+  result.SetBoolean("syncNothing", sync_all == SYNC_NOTHING);
   result.SetBoolean("encryptAllData", encrypt_all == ENCRYPT_ALL_DATA);
   result.SetBoolean("usePassphrase", !passphrase.empty());
   if (!passphrase.empty())
@@ -182,6 +184,7 @@ void CheckConfigDataTypeArguments(DictionaryValue* dictionary,
                                   SyncAllDataConfig config,
                                   syncer::ModelTypeSet types) {
   CheckBool(dictionary, "syncAllDataTypes", config == SYNC_ALL_DATA);
+  CheckBool(dictionary, "syncNothing", config == SYNC_NOTHING);
   CheckBool(dictionary, "appsSynced", types.Has(syncer::APPS));
   CheckBool(dictionary, "autofillSynced", types.Has(syncer::AUTOFILL));
   CheckBool(dictionary, "bookmarksSynced", types.Has(syncer::BOOKMARKS));
@@ -452,6 +455,8 @@ TEST_P(SyncSetupHandlerTest, DisplayBasicLogin) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
+  const GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   handler_->HandleStartSignin(NULL);
@@ -931,6 +936,20 @@ TEST_P(SyncSetupHandlerTest, TestSyncEverything) {
   // Ensure that we navigated to the "done" state since we don't need a
   // passphrase.
   ExpectDone();
+}
+
+TEST_P(SyncSetupHandlerTest, TestSyncNothing) {
+  std::string args = GetConfiguration(
+      NULL, SYNC_NOTHING, GetAllTypes(), std::string(), ENCRYPT_PASSWORDS);
+  ListValue list_args;
+  list_args.Append(new StringValue(args));
+  EXPECT_CALL(*mock_pss_, DisableForUser());
+  SetupInitializedProfileSyncService();
+  handler_->HandleConfigure(&list_args);
+
+  // Ensure that the sync setup dialog was closed.
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  EXPECT_EQ("OptionsPage.closeOverlay", data.function_name);
 }
 
 TEST_P(SyncSetupHandlerTest, TurnOnEncryptAll) {

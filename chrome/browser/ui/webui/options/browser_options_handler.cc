@@ -394,9 +394,10 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_OPTIONS_SYSTEM_ENABLE_HARDWARE_ACCELERATION_MODE_RESTART },
     // Strings with product-name substitutions.
     { "syncOverview", IDS_SYNC_OVERVIEW, IDS_PRODUCT_NAME },
-    { "syncButtonTextStart", IDS_SYNC_START_SYNC_BUTTON_LABEL,
-      IDS_SHORT_PRODUCT_NAME },
+    { "syncButtonTextStart", IDS_SYNC_SETUP_BUTTON_LABEL },
 #endif
+    { "syncButtonTextSignIn", IDS_SYNC_START_SYNC_BUTTON_LABEL,
+      IDS_SHORT_PRODUCT_NAME },
     { "profilesSingleUser", IDS_PROFILES_SINGLE_USER_MESSAGE,
       IDS_PRODUCT_NAME },
     { "defaultBrowserUnknown", IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
