@@ -378,6 +378,7 @@ namespace WebCore {
         bool isCurrentlyDisplayedInFrame() const;
 
         void willDetachDocumentFromFrame();
+        DOMWindow* anonymousIndexedGetter(uint32_t);
 
     private:
         explicit DOMWindow(Document*);

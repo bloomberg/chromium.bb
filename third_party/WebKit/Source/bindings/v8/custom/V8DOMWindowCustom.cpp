@@ -425,24 +425,6 @@ v8::Handle<v8::Value> V8DOMWindow::openMethodCustom(const v8::Arguments& args)
     return toV8Fast(openedWindow.release(), args, impl);
 }
 
-v8::Handle<v8::Value> V8DOMWindow::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
-{
-
-    DOMWindow* window = V8DOMWindow::toNative(info.Holder());
-    if (!window)
-        return v8Undefined();
-
-    Frame* frame = window->frame();
-    if (!frame)
-        return v8Undefined();
-
-    Frame* child = frame->tree()->scopedChild(index);
-    if (child)
-        return toV8Fast(child->document()->domWindow(), info, window);
-
-    return v8Undefined();
-}
-
 v8::Handle<v8::Value> V8DOMWindow::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
 

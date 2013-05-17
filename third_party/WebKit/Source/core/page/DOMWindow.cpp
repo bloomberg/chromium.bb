@@ -1869,4 +1869,18 @@ void DOMWindow::showModalDialog(const String& urlString, const String& dialogFea
     dialogFrame->page()->chrome()->runModal();
 }
 
+DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index)
+{
+    Frame* frame = this->frame();
+    if (!frame)
+        return 0;
+
+    Frame* child = frame->tree()->scopedChild(index);
+    if (child)
+        return child->document()->domWindow();
+
+    return 0;
+}
+
+
 } // namespace WebCore

@@ -30,7 +30,6 @@
     CustomToV8,
     CustomNamedGetter,
     DoNotGenerateWrap,
-    CustomIndexedGetter,
     InterfaceName=Window
 ] interface DOMWindow {
     // DOM Level 0
@@ -338,5 +337,7 @@
 
     // window.toString() requires special handling in V8
     [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
+
+    [ImplementedAs=anonymousIndexedGetter] getter DOMWindow(unsigned long index);
 };
 
