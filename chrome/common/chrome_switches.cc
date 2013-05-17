@@ -1461,10 +1461,6 @@ const char kViewerConnection[]              = "viewer-connection";
 // Cycle through a series of URLs listed in the specified file.
 const char kVisitURLs[]                     = "visit-urls";
 
-// Enable the "native services" feature of web-intents.
-const char kWebIntentsNativeServicesEnabled[] =
-    "web-intents-native-services-enabled";
-
 // Adds the given extension ID to all the permission whitelists.
 const char kWhitelistedExtensionID[]        = "whitelisted-extension-id";
 

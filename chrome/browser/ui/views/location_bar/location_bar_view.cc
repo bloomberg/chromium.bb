@@ -153,12 +153,6 @@ static const int kSelectedKeywordBackgroundImages[] = {
   IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R,
 };
 
-static const int kWIBubbleBackgroundImages[] = {
-  IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_L,
-  IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_C,
-  IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_R,
-};
-
 // LocationBarView -----------------------------------------------------------
 
 LocationBarView::LocationBarView(Browser* browser,
