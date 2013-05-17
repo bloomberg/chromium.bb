@@ -270,7 +270,7 @@ Panel* PanelManager::CreatePanel(const std::string& app_name,
       adjusted_requested_bounds);
   bounds.AdjustToFit(work_area);
 
-  panel->Initialize(url, bounds);
+  panel->Initialize(url, bounds, collection->UsesAlwaysOnTopPanels());
 
   // Auto resizable feature is enabled only if no initial size is requested.
   if (auto_sizing_enabled() && requested_bounds.width() == 0 &&
@@ -488,6 +488,7 @@ void PanelManager::MovePanelToCollection(
 
   target_collection->AddPanel(panel, positioning_mask);
   target_collection->UpdatePanelOnCollectionChange(panel);
+  panel->SetAlwaysOnTop(target_collection->UsesAlwaysOnTopPanels());
 }
 
 bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {

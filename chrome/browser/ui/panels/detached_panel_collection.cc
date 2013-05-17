@@ -190,6 +190,10 @@ bool DetachedPanelCollection::IsPanelMinimized(const Panel* panel) const {
   return false;
 }
 
+bool DetachedPanelCollection::UsesAlwaysOnTopPanels() const {
+  return false;
+}
+
 void DetachedPanelCollection::SavePanelPlacement(Panel* panel) {
   DCHECK(!saved_panel_placement_.panel);
   saved_panel_placement_.panel = panel;
@@ -234,7 +238,6 @@ void DetachedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->set_attention_mode(
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
                                         Panel::USE_SYSTEM_ATTENTION));
-  panel->SetAlwaysOnTop(false);
   panel->ShowShadow(true);
   panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();

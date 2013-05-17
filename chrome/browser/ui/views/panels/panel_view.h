@@ -37,7 +37,7 @@ class PanelView : public NativePanel,
   // The size of inside area used for mouse resizing.
   static const int kResizeInsideBoundsSize = 5;
 
-  PanelView(Panel* panel, const gfx::Rect& bounds);
+  PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top);
   virtual ~PanelView();
 
   // Overridden from NativePanel:
