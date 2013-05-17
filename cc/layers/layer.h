@@ -56,7 +56,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
                         public LayerAnimationValueObserver {
  public:
   enum LayerIdLabels {
-    PINCH_ZOOM_ROOT_SCROLL_LAYER_ID = -2,
     INVALID_ID = -1,
   };
 

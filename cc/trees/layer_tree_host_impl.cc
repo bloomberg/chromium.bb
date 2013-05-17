@@ -1506,7 +1506,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     if (status == ScrollOnMainThread) {
       rendering_stats_instrumentation_->IncrementMainThreadScrolls();
       UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
-      active_tree()->DidBeginScroll();
       return ScrollOnMainThread;
     }
 
@@ -1520,7 +1519,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     if (status == ScrollOnMainThread) {
       rendering_stats_instrumentation_->IncrementMainThreadScrolls();
       UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
-      active_tree()->DidBeginScroll();
       return ScrollOnMainThread;
     }
 
@@ -1545,7 +1543,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     rendering_stats_instrumentation_->IncrementImplThreadScrolls();
     client_->RenewTreePriority();
     UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
-    active_tree()->DidBeginScroll();
     return ScrollStarted;
   }
   return ScrollIgnored;
@@ -1707,7 +1704,6 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
       break;
   }
 
-  active_tree()->DidUpdateScroll();
   if (did_scroll) {
     client_->SetNeedsCommitOnImplThread();
     client_->SetNeedsRedrawOnImplThread();
@@ -1746,7 +1742,6 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(
     gfx::Vector2dF applied_delta = ScrollLayerWithLocalDelta(layer_impl, delta);
 
     if (!applied_delta.IsZero()) {
-      active_tree()->DidUpdateScroll();
       client_->SetNeedsCommitOnImplThread();
       client_->SetNeedsRedrawOnImplThread();
       client_->RenewTreePriority();
@@ -1781,7 +1776,6 @@ void LayerTreeHostImpl::ScrollEnd() {
   if (top_controls_manager_)
     top_controls_manager_->ScrollEnd();
   ClearCurrentlyScrollingLayer();
-  active_tree()->DidEndScroll();
   StartScrollbarAnimation(CurrentFrameTimeTicks());
 }
 

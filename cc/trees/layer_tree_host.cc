@@ -19,9 +19,6 @@
 #include "cc/base/thread.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
-#include "cc/input/pinch_zoom_scrollbar.h"
-#include "cc/input/pinch_zoom_scrollbar_geometry.h"
-#include "cc/input/pinch_zoom_scrollbar_painter.h"
 #include "cc/input/top_controls_manager.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
@@ -359,14 +356,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
       sync_tree->ResetContentsTexturesPurged();
   }
 
-  sync_tree->SetPinchZoomHorizontalLayerId(
-      pinch_zoom_scrollbar_horizontal_ ?
-          pinch_zoom_scrollbar_horizontal_->id() : Layer::INVALID_ID);
-
-  sync_tree->SetPinchZoomVerticalLayerId(
-      pinch_zoom_scrollbar_vertical_ ?
-          pinch_zoom_scrollbar_vertical_->id() : Layer::INVALID_ID);
-
   if (!settings_.impl_side_painting) {
     // If we're not in impl-side painting, the tree is immediately
     // considered active.
@@ -376,79 +365,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   commit_number_++;
 }
 
-gfx::Size LayerTreeHost::PinchZoomScrollbarSize(
-    WebKit::WebScrollbar::Orientation orientation) const {
-  gfx::Size viewport_size = gfx::ToCeiledSize(
-      gfx::ScaleSize(device_viewport_size(), 1.f / device_scale_factor()));
-  gfx::Size size;
-  int track_width = PinchZoomScrollbarGeometry::kTrackWidth;
-  if (orientation == WebKit::WebScrollbar::Horizontal)
-    size = gfx::Size(viewport_size.width() - track_width, track_width);
-  else
-    size = gfx::Size(track_width, viewport_size.height() - track_width);
-  return size;
-}
-
-void LayerTreeHost::SetPinchZoomScrollbarsBoundsAndPosition() {
-  if (!pinch_zoom_scrollbar_horizontal_ || !pinch_zoom_scrollbar_vertical_)
-    return;
-
-  gfx::Size horizontal_size =
-      PinchZoomScrollbarSize(WebKit::WebScrollbar::Horizontal);
-  gfx::Size vertical_size =
-      PinchZoomScrollbarSize(WebKit::WebScrollbar::Vertical);
-
-  pinch_zoom_scrollbar_horizontal_->SetBounds(horizontal_size);
-  pinch_zoom_scrollbar_horizontal_->SetPosition(
-      gfx::PointF(0, vertical_size.height()));
-  pinch_zoom_scrollbar_vertical_->SetBounds(vertical_size);
-  pinch_zoom_scrollbar_vertical_->SetPosition(
-      gfx::PointF(horizontal_size.width(), 0));
-}
-
-static scoped_refptr<ScrollbarLayer> CreatePinchZoomScrollbar(
-    WebKit::WebScrollbar::Orientation orientation,
-    LayerTreeHost* owner) {
-  scoped_refptr<ScrollbarLayer> scrollbar_layer = ScrollbarLayer::Create(
-      make_scoped_ptr(new PinchZoomScrollbar(orientation, owner)).
-          PassAs<WebKit::WebScrollbar>(),
-      scoped_ptr<ScrollbarThemePainter>(new PinchZoomScrollbarPainter).Pass(),
-      scoped_ptr<WebKit::WebScrollbarThemeGeometry>(
-          new PinchZoomScrollbarGeometry).Pass(),
-      Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID);
-  scrollbar_layer->SetIsDrawable(true);
-  scrollbar_layer->SetOpacity(0.f);
-  return scrollbar_layer;
-}
-
-void LayerTreeHost::CreateAndAddPinchZoomScrollbars() {
-  bool needs_properties_updated = false;
-
-  if (!pinch_zoom_scrollbar_horizontal_ || !pinch_zoom_scrollbar_vertical_) {
-    pinch_zoom_scrollbar_horizontal_ =
-        CreatePinchZoomScrollbar(WebKit::WebScrollbar::Horizontal, this);
-    pinch_zoom_scrollbar_vertical_ =
-        CreatePinchZoomScrollbar(WebKit::WebScrollbar::Vertical, this);
-    needs_properties_updated = true;
-  }
-
-  DCHECK(pinch_zoom_scrollbar_horizontal_ && pinch_zoom_scrollbar_vertical_);
-
-  if (!pinch_zoom_scrollbar_horizontal_->parent())
-    root_layer_->AddChild(pinch_zoom_scrollbar_horizontal_);
-
-  if (!pinch_zoom_scrollbar_vertical_->parent())
-    root_layer_->AddChild(pinch_zoom_scrollbar_vertical_);
-
-  if (needs_properties_updated)
-    SetPinchZoomScrollbarsBoundsAndPosition();
-}
-
 void LayerTreeHost::WillCommit() {
   client_->WillCommit();
-
-  if (settings().use_pinch_zoom_scrollbars)
-    CreateAndAddPinchZoomScrollbars();
 }
 
 void LayerTreeHost::UpdateHudLayer() {
@@ -626,12 +544,6 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
   if (hud_layer_)
     hud_layer_->RemoveFromParent();
 
-  if (pinch_zoom_scrollbar_horizontal_)
-    pinch_zoom_scrollbar_horizontal_->RemoveFromParent();
-
-  if (pinch_zoom_scrollbar_vertical_)
-    pinch_zoom_scrollbar_vertical_->RemoveFromParent();
-
   SetNeedsFullTreeSync();
 }
 
@@ -656,7 +568,6 @@ void LayerTreeHost::SetViewportSize(gfx::Size device_viewport_size) {
 
   device_viewport_size_ = device_viewport_size;
 
-  SetPinchZoomScrollbarsBoundsAndPosition();
   SetNeedsCommit();
 }
 
@@ -759,10 +670,6 @@ static Layer* FindFirstScrollableLayer(Layer* layer) {
   }
 
   return NULL;
-}
-
-const Layer* LayerTreeHost::RootScrollLayer() const {
-  return FindFirstScrollableLayer(root_layer_.get());
 }
 
 void LayerTreeHost::UpdateLayers(Layer* root_layer,
