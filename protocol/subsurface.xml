@@ -229,6 +229,9 @@
 	Note: even if a sub-surface is set to desynchronized, a parent
 	sub-surface may override it to behave as synchronized. For details,
 	see wl_subsurface.
+
+	If a surface's parent surface behaves as desynchronized, then
+	the cached state is applied on set_desync.
       </description>
     </request>
 

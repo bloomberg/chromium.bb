@@ -1851,20 +1851,10 @@ weston_subsurface_commit(struct weston_subsurface *sub)
 }
 
 static void
-weston_subsurface_parent_commit(struct weston_subsurface *sub,
-				int parent_is_synchronized)
+weston_subsurface_synchronized_commit(struct weston_subsurface *sub)
 {
 	struct weston_surface *surface = sub->surface;
 	struct weston_subsurface *tmp;
-
-	if (sub->position.set) {
-		weston_surface_set_position(sub->surface,
-					    sub->position.x, sub->position.y);
-		sub->position.set = 0;
-	}
-
-	if (!parent_is_synchronized && !sub->synchronized)
-		return;
 
 	/* From now on, commit_from_cache the whole sub-tree, regardless of
 	 * the synchronized mode of each child. This sub-surface or some
@@ -1879,6 +1869,20 @@ weston_subsurface_parent_commit(struct weston_subsurface *sub,
 		if (tmp->surface != surface)
 			weston_subsurface_parent_commit(tmp, 1);
 	}
+}
+
+static void
+weston_subsurface_parent_commit(struct weston_subsurface *sub,
+				int parent_is_synchronized)
+{
+	if (sub->position.set) {
+		weston_surface_set_position(sub->surface,
+					    sub->position.x, sub->position.y);
+		sub->position.set = 0;
+	}
+
+	if (parent_is_synchronized || sub->synchronized)
+		weston_subsurface_synchronized_commit(sub);
 }
 
 static void
@@ -2050,8 +2054,13 @@ subsurface_set_desync(struct wl_client *client, struct wl_resource *resource)
 {
 	struct weston_subsurface *sub = resource->data;
 
-	if (sub)
+	if (sub && sub->synchronized) {
 		sub->synchronized = 0;
+
+		/* If sub became effectively desynchronized, flush. */
+		if (!weston_subsurface_is_synchronized(sub))
+			weston_subsurface_synchronized_commit(sub);
+	}
 }
 
 static void
