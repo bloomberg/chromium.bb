@@ -162,20 +162,6 @@ void EventTarget::uncaughtExceptionInEventHandler()
 {
 }
 
-static PassRefPtr<Event> createMatchingPrefixedEvent(const Event* event)
-{
-    if (event->type() == eventNames().transitionendEvent) {
-        const TransitionEvent* transitionEvent = static_cast<const TransitionEvent*>(event);
-        RefPtr<Event> prefixedEvent = TransitionEvent::create(eventNames().webkitTransitionEndEvent, transitionEvent->propertyName(), transitionEvent->elapsedTime(), transitionEvent->pseudoElement());
-        prefixedEvent->setTarget(event->target());
-        prefixedEvent->setCurrentTarget(event->currentTarget());
-        prefixedEvent->setEventPhase(event->eventPhase());
-        return prefixedEvent.release();
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 static AtomicString prefixedType(const Event* event)
 {
     if (event->type() == eventNames().transitionendEvent)
@@ -202,8 +188,12 @@ bool EventTarget::fireEventListeners(Event* event)
 
     if (listenerUnprefixedVector)
         fireEventListeners(event, d, *listenerUnprefixedVector);
-    else if (listenerPrefixedVector)
-        fireEventListeners(createMatchingPrefixedEvent(event).get(), d, *listenerPrefixedVector);
+    else if (listenerPrefixedVector) {
+        AtomicString unprefixedTypeName = event->type();
+        event->setType(prefixedTypeName);
+        fireEventListeners(event, d, *listenerPrefixedVector);
+        event->setType(unprefixedTypeName);
+    }
 
     if (!prefixedTypeName.isEmpty()) {
         ScriptExecutionContext* context = scriptExecutionContext();
