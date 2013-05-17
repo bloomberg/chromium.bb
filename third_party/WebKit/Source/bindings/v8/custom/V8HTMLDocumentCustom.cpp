@@ -39,7 +39,6 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWindowShell.h"
-#include "bindings/v8/V8RecursionScope.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
@@ -51,38 +50,6 @@
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
-
-v8::Local<v8::Object> V8HTMLDocument::wrapInShadowObject(v8::Local<v8::Object> wrapper, Node* impl, v8::Isolate* isolate)
-{
-    // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static const char* shadowTemplateUniqueKey = "wrapInShadowObjectShadowTemplate";
-    WrapperWorldType currentWorldType = worldType(isolate);
-    v8::Persistent<v8::FunctionTemplate> shadowTemplate;
-    if (!V8PerIsolateData::from(isolate)->hasPrivateTemplate(currentWorldType, &shadowTemplateUniqueKey)) {
-        shadowTemplate.Reset(isolate, v8::FunctionTemplate::New());
-        if (shadowTemplate.IsEmpty())
-            return v8::Local<v8::Object>();
-        shadowTemplate->SetClassName(v8::String::NewSymbol("HTMLDocument"));
-        shadowTemplate->Inherit(V8HTMLDocument::GetTemplate(isolate, currentWorldType));
-        shadowTemplate->InstanceTemplate()->SetInternalFieldCount(V8HTMLDocument::internalFieldCount);
-    } else {
-        shadowTemplate = V8PerIsolateData::from(isolate)->privateTemplate(currentWorldType, &shadowTemplateUniqueKey, 0, v8::Handle<v8::Value>(), v8::Handle<v8::Signature>());
-    }
-    v8::Local<v8::Function> shadowConstructor = shadowTemplate->GetFunction();
-    if (shadowConstructor.IsEmpty())
-        return v8::Local<v8::Object>();
-
-    v8::Local<v8::Object> shadow;
-    {
-        V8RecursionScope::MicrotaskSuppression scope;
-        shadow = shadowConstructor->NewInstance();
-    }
-    if (shadow.IsEmpty())
-        return v8::Local<v8::Object>();
-    shadow->SetPrototype(wrapper);
-    V8DOMWrapper::setNativeInfo(wrapper, &V8HTMLDocument::info, impl);
-    return shadow;
-}
 
 // HTMLDocument ----------------------------------------------------------------
 

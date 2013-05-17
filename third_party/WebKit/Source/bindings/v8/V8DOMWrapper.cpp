@@ -39,6 +39,7 @@
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8PerContextData.h"
+#include "bindings/v8/V8RecursionScope.h"
 
 namespace WebCore {
 
@@ -77,6 +78,38 @@ private:
     v8::Handle<v8::Context> m_context;
 };
 
+static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper, Node* impl, v8::Isolate* isolate)
+{
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static const char* shadowTemplateUniqueKey = "wrapInShadowTemplate";
+    WrapperWorldType currentWorldType = worldType(isolate);
+    v8::Persistent<v8::FunctionTemplate> shadowTemplate;
+    if (!V8PerIsolateData::from(isolate)->hasPrivateTemplate(currentWorldType, &shadowTemplateUniqueKey)) {
+        shadowTemplate.Reset(isolate, v8::FunctionTemplate::New());
+        if (shadowTemplate.IsEmpty())
+            return v8::Local<v8::Object>();
+        shadowTemplate->SetClassName(v8::String::NewSymbol("HTMLDocument"));
+        shadowTemplate->Inherit(V8HTMLDocument::GetTemplate(isolate, currentWorldType));
+        shadowTemplate->InstanceTemplate()->SetInternalFieldCount(V8HTMLDocument::internalFieldCount);
+    } else
+        shadowTemplate = V8PerIsolateData::from(isolate)->privateTemplate(currentWorldType, &shadowTemplateUniqueKey, 0, v8::Handle<v8::Value>(), v8::Handle<v8::Signature>());
+
+    v8::Local<v8::Function> shadowConstructor = shadowTemplate->GetFunction();
+    if (shadowConstructor.IsEmpty())
+        return v8::Local<v8::Object>();
+
+    v8::Local<v8::Object> shadow;
+    {
+        V8RecursionScope::MicrotaskSuppression scope;
+        shadow = shadowConstructor->NewInstance();
+    }
+    if (shadow.IsEmpty())
+        return v8::Local<v8::Object>();
+    shadow->SetPrototype(wrapper);
+    V8DOMWrapper::setNativeInfo(wrapper, &V8HTMLDocument::info, impl);
+    return shadow;
+}
+
 v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creationContext, WrapperTypeInfo* type, void* impl, v8::Isolate* isolate)
 {
     V8WrapperInstantiationScope scope(creationContext);
@@ -85,7 +118,7 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creatio
     v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->getTemplate(isolate, worldTypeInMainThread(isolate))->GetFunction());
 
     if (type == &V8HTMLDocument::info && !wrapper.IsEmpty())
-        wrapper = V8HTMLDocument::wrapInShadowObject(wrapper, static_cast<Node*>(impl), isolate);
+        wrapper = wrapInShadowTemplate(wrapper, static_cast<Node*>(impl), isolate);
 
     return wrapper;
 }
