@@ -31,6 +31,7 @@ class QuicClientSessionTest : public ::testing::Test {
         connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)),
         session_(connection_, NULL, NULL, NULL, kServerHostname,
                  QuicConfig(), &crypto_config_, &net_log_) {
+    session_.config()->SetDefaults();
     crypto_config_.SetDefaults();
     QuicClientSessionPeer::SetMaxOpenStreams(&session_, 1, 1);
   }

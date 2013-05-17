@@ -388,6 +388,7 @@ QuicClientSession* QuicStreamFactory::CreateSession(
                             quic_crypto_client_stream_factory_,
                             host_port_proxy_pair.first.host(), QuicConfig(),
                             crypto_config, net_log.net_log());
+  session->config()->SetDefaults();
   all_sessions_.insert(session);  // owning pointer
   return session;
 }

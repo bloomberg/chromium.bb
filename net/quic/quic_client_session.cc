@@ -36,7 +36,6 @@ QuicClientSession::QuicClientSession(
       num_total_streams_(0),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
       logger_(net_log_) {
-  QuicSession::config()->SetDefaults();
   crypto_stream_.reset(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(

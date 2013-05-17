@@ -181,6 +181,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
                                          &crypto_client_stream_factory_,
                                          "www.google.com", QuicConfig(),
                                          &crypto_config_, NULL));
+    session_->config()->SetDefaults();
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
     QuicReliableClientStream* stream =

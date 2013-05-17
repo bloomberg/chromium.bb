@@ -64,6 +64,7 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
         session_(connection_, QuicConfig(), true),
         crypto_config_(QuicCryptoServerConfig::TESTING),
         stream_(crypto_config_, &session_) {
+    config_.SetDefaults();
     session_.config()->SetDefaults();
     session_.SetCryptoStream(&stream_);
     // We advance the clock initially because the default time is zero and the
@@ -148,9 +149,9 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
   server_conn->AdvanceTime(QuicTime::Delta::FromSeconds(100000));
 
   QuicConfig client_config;
+  client_config.SetDefaults();
   scoped_ptr<TestSession> client_session(
       new TestSession(client_conn, client_config, false));
-  client_session->config()->SetDefaults();
   QuicCryptoClientConfig client_crypto_config;
   client_crypto_config.SetDefaults();
 
@@ -165,7 +166,6 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
 
   scoped_ptr<TestSession> server_session(
       new TestSession(server_conn, config_, true));
-  server_session->config()->SetDefaults();
   scoped_ptr<QuicCryptoServerStream> server(
       new QuicCryptoServerStream(crypto_config_, server_session.get()));
   server_session->SetCryptoStream(server.get());
@@ -188,9 +188,7 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
   // strike-register from rejecting the repeated nonce.
   client_conn->random_generator()->Reseed(NULL, 0);
   client_session.reset(new TestSession(client_conn, client_config, false));
-  client_session->config()->SetDefaults();
   server_session.reset(new TestSession(server_conn, config_, true));
-  server_session->config()->SetDefaults();
   client.reset(new QuicCryptoClientStream(
         "test.example.com", client_session.get(), &client_crypto_config));
   client_session->SetCryptoStream(client.get());
