@@ -31,7 +31,6 @@
 #include "SkDevice.h"
 #include "SkSurface.h"
 #include "core/platform/chromium/TraceEvent.h"
-#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
@@ -167,7 +166,7 @@ unsigned Canvas2DLayerBridge::prepareTexture(WebTextureUpdater& updater)
 
 WebGraphicsContext3D* Canvas2DLayerBridge::context()
 {
-    return GraphicsContext3DPrivate::extractWebGraphicsContext3D(m_context.get());
+    return m_context->webContext();
 }
 
 bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox)

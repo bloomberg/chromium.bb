@@ -30,7 +30,7 @@
 #include <gtest/gtest.h>
 #include "FakeWebGraphicsContext3D.h"
 #include "SkDevice.h"
-#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 #include <public/Platform.h>
 #include <public/WebThread.h>
 
@@ -99,7 +99,7 @@ protected:
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 10);
         {
-            RefPtr<GraphicsContext3D> context = GraphicsContext3DPrivate::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
+            RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
             OwnPtr<SkDeferredCanvas> canvas1 = createCanvas(context.get());
             FakeCanvas2DLayerBridge layer1(context, canvas1.get());
             EXPECT_EQ((size_t)0, manager.m_bytesAllocated);
@@ -126,7 +126,7 @@ protected:
 
     void evictionTest()
     {
-        RefPtr<GraphicsContext3D> context = GraphicsContext3DPrivate::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
+        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 5);
         OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
@@ -143,7 +143,7 @@ protected:
 
     void flushEvictionTest()
     {
-        RefPtr<GraphicsContext3D> context = GraphicsContext3DPrivate::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
+        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 5);
         OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
@@ -194,7 +194,7 @@ protected:
 
     void deferredFrameTest()
     {
-        RefPtr<GraphicsContext3D> context = GraphicsContext3DPrivate::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
+        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
         Canvas2DLayerManager::get().init(10, 10);
         OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
         FakeCanvas2DLayerBridge fakeLayer(context, canvas.get());

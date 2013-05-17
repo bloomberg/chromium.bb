@@ -28,26 +28,40 @@
 #include "config.h"
 
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include "core/platform/graphics/cpu/arm/GraphicsContext3DNEON.h"
 
+#include "GrContext.h"
+#include "GrGLInterface.h"
 #include "SkTypes.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CheckedInt.h"
-#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/ImageObserver.h"
+#include "core/platform/graphics/cpu/arm/GraphicsContext3DNEON.h"
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
+#include "wtf/ArrayBufferView.h"
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/PassOwnArrayPtr.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 #include <public/Platform.h>
 #include <public/WebGraphicsContext3D.h>
-#include <wtf/ArrayBufferView.h>
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/PassOwnArrayPtr.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
+#include <public/WebGraphicsContext3DProvider.h>
+#include <public/WebGraphicsMemoryAllocation.h>
+
+namespace {
+
+// The limit of the number of textures we hold in the GrContext's bitmap->texture cache.
+const int maxGaneshTextureCacheCount = 2048;
+// The limit of the bytes allocated toward textures in the GrContext's bitmap->texture cache.
+const size_t maxGaneshTextureCacheBytes = 96 * 1024 * 1024;
+
+}
 
 namespace WebCore {
 
@@ -274,135 +288,194 @@ unsigned short convertFloatToHalfFloat(float f)
 
 } // anonymous namespace
 
+GraphicsContext3D::GraphicsContext3D(PassOwnPtr<WebKit::WebGraphicsContext3D> webContext, bool preserveDrawingBuffer)
+    : m_impl(webContext.get())
+    , m_ownedWebContext(webContext)
+    , m_initializedAvailableExtensions(false)
+    , m_layerComposited(false)
+    , m_preserveDrawingBuffer(preserveDrawingBuffer)
+    , m_resourceSafety(ResourceSafetyUnknown)
+    , m_grContext(0)
+{
+}
+
+GraphicsContext3D::GraphicsContext3D(PassOwnPtr<WebKit::WebGraphicsContext3DProvider> provider, bool preserveDrawingBuffer)
+    : m_provider(provider)
+    , m_impl(m_provider->context3d())
+    , m_initializedAvailableExtensions(false)
+    , m_layerComposited(false)
+    , m_preserveDrawingBuffer(preserveDrawingBuffer)
+    , m_resourceSafety(ResourceSafetyUnknown)
+    , m_grContext(m_provider->grContext())
+{
+}
+
+GraphicsContext3D::~GraphicsContext3D()
+{
+    setContextLostCallback(nullptr);
+    setErrorMessageCallback(nullptr);
+
+    if (m_ownedGrContext) {
+        m_ownedWebContext->setMemoryAllocationChangedCallbackCHROMIUM(0);
+        m_ownedGrContext->contextDestroyed();
+    }
+}
+
 // Macros to assist in delegating from GraphicsContext3D to
 // WebGraphicsContext3D.
 
 #define DELEGATE_TO_WEBCONTEXT(name) \
 void GraphicsContext3D::name() \
 { \
-    m_private->webContext()->name(); \
+    m_impl->name(); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_R(name, rt) \
 rt GraphicsContext3D::name() \
 { \
-    return m_private->webContext()->name(); \
+    return m_impl->name(); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_1(name, t1) \
 void GraphicsContext3D::name(t1 a1) \
 { \
-    m_private->webContext()->name(a1); \
+    m_impl->name(a1); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_1R(name, t1, rt) \
 rt GraphicsContext3D::name(t1 a1) \
 { \
-    return m_private->webContext()->name(a1); \
+    return m_impl->name(a1); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_2(name, t1, t2) \
 void GraphicsContext3D::name(t1 a1, t2 a2) \
 { \
-    m_private->webContext()->name(a1, a2); \
+    m_impl->name(a1, a2); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_2R(name, t1, t2, rt) \
 rt GraphicsContext3D::name(t1 a1, t2 a2) \
 { \
-    return m_private->webContext()->name(a1, a2); \
+    return m_impl->name(a1, a2); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_3(name, t1, t2, t3) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3) \
 { \
-    m_private->webContext()->name(a1, a2, a3); \
+    m_impl->name(a1, a2, a3); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_3R(name, t1, t2, t3, rt) \
 rt GraphicsContext3D::name(t1 a1, t2 a2, t3 a3) \
 { \
-    return m_private->webContext()->name(a1, a2, a3); \
+    return m_impl->name(a1, a2, a3); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_4(name, t1, t2, t3, t4) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4) \
 { \
-    m_private->webContext()->name(a1, a2, a3, a4); \
+    m_impl->name(a1, a2, a3, a4); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_4R(name, t1, t2, t3, t4, rt) \
 rt GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4) \
 { \
-    return m_private->webContext()->name(a1, a2, a3, a4); \
+    return m_impl->name(a1, a2, a3, a4); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_5(name, t1, t2, t3, t4, t5) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5) \
 { \
-    m_private->webContext()->name(a1, a2, a3, a4, a5); \
+    m_impl->name(a1, a2, a3, a4, a5); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_6(name, t1, t2, t3, t4, t5, t6) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6) \
 { \
-    m_private->webContext()->name(a1, a2, a3, a4, a5, a6); \
+    m_impl->name(a1, a2, a3, a4, a5, a6); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_6R(name, t1, t2, t3, t4, t5, t6, rt) \
 rt GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6) \
 { \
-    return m_private->webContext()->name(a1, a2, a3, a4, a5, a6); \
+    return m_impl->name(a1, a2, a3, a4, a5, a6); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_7(name, t1, t2, t3, t4, t5, t6, t7) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7) \
 { \
-    m_private->webContext()->name(a1, a2, a3, a4, a5, a6, a7); \
+    m_impl->name(a1, a2, a3, a4, a5, a6, a7); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_7R(name, t1, t2, t3, t4, t5, t6, t7, rt) \
 rt GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7) \
 { \
-    return m_private->webContext()->name(a1, a2, a3, a4, a5, a6, a7); \
+    return m_impl->name(a1, a2, a3, a4, a5, a6, a7); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_8(name, t1, t2, t3, t4, t5, t6, t7, t8) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8) \
 { \
-    m_private->webContext()->name(a1, a2, a3, a4, a5, a6, a7, a8); \
+    m_impl->name(a1, a2, a3, a4, a5, a6, a7, a8); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_9(name, t1, t2, t3, t4, t5, t6, t7, t8, t9) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8, t9 a9) \
 { \
-    m_private->webContext()->name(a1, a2, a3, a4, a5, a6, a7, a8, a9); \
+    m_impl->name(a1, a2, a3, a4, a5, a6, a7, a8, a9); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_9R(name, t1, t2, t3, t4, t5, t6, t7, t8, t9, rt) \
 rt GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8, t9 a9) \
 { \
-    return m_private->webContext()->name(a1, a2, a3, a4, a5, a6, a7, a8, a9); \
+    return m_impl->name(a1, a2, a3, a4, a5, a6, a7, a8, a9); \
 }
 
-GraphicsContext3D::GraphicsContext3D()
-{
-}
+class GraphicsContext3DContextLostCallbackAdapter : public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+public:
+    GraphicsContext3DContextLostCallbackAdapter(PassOwnPtr<GraphicsContext3D::ContextLostCallback> callback)
+        : m_contextLostCallback(callback) { }
+    virtual ~GraphicsContext3DContextLostCallbackAdapter() { }
 
-GraphicsContext3D::~GraphicsContext3D()
-{
-    m_private->setContextLostCallback(nullptr);
-    m_private->setErrorMessageCallback(nullptr);
-}
+    virtual void onContextLost()
+    {
+        if (m_contextLostCallback)
+            m_contextLostCallback->onContextLost();
+    }
+private:
+    OwnPtr<GraphicsContext3D::ContextLostCallback> m_contextLostCallback;
+};
+
+class GraphicsContext3DErrorMessageCallbackAdapter : public WebKit::WebGraphicsContext3D::WebGraphicsErrorMessageCallback {
+public:
+    GraphicsContext3DErrorMessageCallbackAdapter(PassOwnPtr<GraphicsContext3D::ErrorMessageCallback> callback)
+        : m_errorMessageCallback(callback) { }
+    virtual ~GraphicsContext3DErrorMessageCallbackAdapter() { }
+
+    virtual void onErrorMessage(const WebKit::WebString& message, WebKit::WGC3Dint id)
+    {
+        if (m_errorMessageCallback)
+            m_errorMessageCallback->onErrorMessage(message, id);
+    }
+private:
+    OwnPtr<GraphicsContext3D::ErrorMessageCallback> m_errorMessageCallback;
+};
 
 void GraphicsContext3D::setContextLostCallback(PassOwnPtr<GraphicsContext3D::ContextLostCallback> callback)
 {
-    m_private->setContextLostCallback(callback);
+    if (m_ownedWebContext) {
+        m_contextLostCallbackAdapter = adoptPtr(new GraphicsContext3DContextLostCallbackAdapter(callback));
+        m_ownedWebContext->setContextLostCallback(m_contextLostCallbackAdapter.get());
+    }
 }
 
 void GraphicsContext3D::setErrorMessageCallback(PassOwnPtr<GraphicsContext3D::ErrorMessageCallback> callback)
 {
-    m_private->setErrorMessageCallback(callback);
+    if (m_ownedWebContext) {
+        m_errorMessageCallbackAdapter = adoptPtr(new GraphicsContext3DErrorMessageCallbackAdapter(callback));
+        m_ownedWebContext->setErrorMessageCallback(m_errorMessageCallbackAdapter.get());
+    }
 }
 
 PassRefPtr<GraphicsContext3D> GraphicsContext3D::create(GraphicsContext3D::Attributes attrs)
@@ -422,19 +495,84 @@ PassRefPtr<GraphicsContext3D> GraphicsContext3D::create(GraphicsContext3D::Attri
     if (!webContext)
         return 0;
 
-    return GraphicsContext3DPrivate::createGraphicsContextFromWebContext(webContext.release(), attrs.preserveDrawingBuffer);
+    return GraphicsContext3D::createGraphicsContextFromWebContext(webContext.release(), attrs.preserveDrawingBuffer);
+}
+
+PassRefPtr<GraphicsContext3D> GraphicsContext3D::createGraphicsContextFromProvider(PassOwnPtr<WebKit::WebGraphicsContext3DProvider> provider, bool preserveDrawingBuffer)
+{
+    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(provider, preserveDrawingBuffer));
+    return context.release();
+}
+
+PassRefPtr<GraphicsContext3D> GraphicsContext3D::createGraphicsContextFromWebContext(PassOwnPtr<WebKit::WebGraphicsContext3D> webContext, bool preserveDrawingBuffer)
+{
+    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(webContext, preserveDrawingBuffer));
+    return context.release();
+}
+
+class GrMemoryAllocationChangedCallbackAdapter : public WebKit::WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM {
+public:
+    GrMemoryAllocationChangedCallbackAdapter(GrContext* context)
+        : m_context(context)
+    {
+    }
+
+    virtual void onMemoryAllocationChanged(WebKit::WebGraphicsMemoryAllocation allocation) OVERRIDE
+    {
+        if (!m_context)
+            return;
+
+        if (!allocation.gpuResourceSizeInBytes) {
+            m_context->freeGpuResources();
+            m_context->setTextureCacheLimits(0, 0);
+        } else
+            m_context->setTextureCacheLimits(maxGaneshTextureCacheCount, maxGaneshTextureCacheBytes);
+    }
+
+private:
+    GrContext* m_context;
+};
+
+namespace {
+void bindWebGraphicsContext3DGLContextCallback(const GrGLInterface* interface)
+{
+    reinterpret_cast<WebKit::WebGraphicsContext3D*>(interface->fCallbackData)->makeContextCurrent();
+}
 }
 
 GrContext* GraphicsContext3D::grContext()
 {
-    return m_private->grContext();
+    if (m_grContext)
+        return m_grContext;
+    if (!m_ownedWebContext)
+        return 0;
+
+    SkAutoTUnref<GrGLInterface> interface(m_ownedWebContext->createGrGLInterface());
+    if (!interface)
+        return 0;
+
+    interface->fCallback = bindWebGraphicsContext3DGLContextCallback;
+    interface->fCallbackData = reinterpret_cast<GrGLInterfaceCallbackData>(m_ownedWebContext.get());
+
+    m_ownedGrContext.reset(GrContext::Create(kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(interface.get())));
+    m_grContext = m_ownedGrContext;
+    if (!m_grContext)
+        return 0;
+
+    m_grContext->setTextureCacheLimits(maxGaneshTextureCacheCount, maxGaneshTextureCacheBytes);
+    m_grContextMemoryAllocationCallbackAdapter = adoptPtr(new GrMemoryAllocationChangedCallbackAdapter(m_grContext));
+    m_ownedWebContext->setMemoryAllocationChangedCallbackCHROMIUM(m_grContextMemoryAllocationCallbackAdapter.get());
+
+    return m_grContext;
 }
 
 DELEGATE_TO_WEBCONTEXT_R(makeContextCurrent, bool)
 
 bool GraphicsContext3D::isResourceSafe()
 {
-    return m_private->isResourceSafe();
+    if (m_resourceSafety == ResourceSafetyUnknown)
+        m_resourceSafety = getExtensions()->isEnabled("GL_CHROMIUM_resource_safe") ? ResourceSafe : ResourceUnsafe;
+    return m_resourceSafety == ResourceSafe;
 }
 
 DELEGATE_TO_WEBCONTEXT_1(activeTexture, GC3Denum)
@@ -442,7 +580,7 @@ DELEGATE_TO_WEBCONTEXT_2(attachShader, Platform3DObject, Platform3DObject)
 
 void GraphicsContext3D::bindAttribLocation(Platform3DObject program, GC3Duint index, const String& name)
 {
-    m_private->webContext()->bindAttribLocation(program, index, name.utf8().data());
+    m_impl->bindAttribLocation(program, index, name.utf8().data());
 }
 
 DELEGATE_TO_WEBCONTEXT_2(bindBuffer, GC3Denum, Platform3DObject)
@@ -497,7 +635,7 @@ DELEGATE_TO_WEBCONTEXT_1(generateMipmap, GC3Denum)
 bool GraphicsContext3D::getActiveAttrib(Platform3DObject program, GC3Duint index, ActiveInfo& info)
 {
     WebKit::WebGraphicsContext3D::ActiveInfo webInfo;
-    if (!m_private->webContext()->getActiveAttrib(program, index, webInfo))
+    if (!m_impl->getActiveAttrib(program, index, webInfo))
         return false;
     info.name = webInfo.name;
     info.type = webInfo.type;
@@ -508,7 +646,7 @@ bool GraphicsContext3D::getActiveAttrib(Platform3DObject program, GC3Duint index
 bool GraphicsContext3D::getActiveUniform(Platform3DObject program, GC3Duint index, ActiveInfo& info)
 {
     WebKit::WebGraphicsContext3D::ActiveInfo webInfo;
-    if (!m_private->webContext()->getActiveUniform(program, index, webInfo))
+    if (!m_impl->getActiveUniform(program, index, webInfo))
         return false;
     info.name = webInfo.name;
     info.type = webInfo.type;
@@ -520,7 +658,7 @@ DELEGATE_TO_WEBCONTEXT_4(getAttachedShaders, Platform3DObject, GC3Dsizei, GC3Dsi
 
 GC3Dint GraphicsContext3D::getAttribLocation(Platform3DObject program, const String& name)
 {
-    return m_private->webContext()->getAttribLocation(program, name.utf8().data());
+    return m_impl->getAttribLocation(program, name.utf8().data());
 }
 
 DELEGATE_TO_WEBCONTEXT_2(getBooleanv, GC3Denum, GC3Dboolean*)
@@ -528,14 +666,14 @@ DELEGATE_TO_WEBCONTEXT_3(getBufferParameteriv, GC3Denum, GC3Denum, GC3Dint*)
 
 GraphicsContext3D::Attributes GraphicsContext3D::getContextAttributes()
 {
-    WebKit::WebGraphicsContext3D::Attributes webAttributes = m_private->webContext()->getContextAttributes();
+    WebKit::WebGraphicsContext3D::Attributes webAttributes = m_impl->getContextAttributes();
     GraphicsContext3D::Attributes attributes;
     attributes.alpha = webAttributes.alpha;
     attributes.depth = webAttributes.depth;
     attributes.stencil = webAttributes.stencil;
     attributes.antialias = webAttributes.antialias;
     attributes.premultipliedAlpha = webAttributes.premultipliedAlpha;
-    attributes.preserveDrawingBuffer = m_private->preserveDrawingBuffer();
+    attributes.preserveDrawingBuffer = m_preserveDrawingBuffer;
     attributes.preferDiscreteGPU = webAttributes.preferDiscreteGPU;
     return attributes;
 }
@@ -559,7 +697,7 @@ DELEGATE_TO_WEBCONTEXT_3(getUniformiv, Platform3DObject, GC3Dint, GC3Dint*)
 
 GC3Dint GraphicsContext3D::getUniformLocation(Platform3DObject program, const String& name)
 {
-    return m_private->webContext()->getUniformLocation(program, name.utf8().data());
+    return m_impl->getUniformLocation(program, name.utf8().data());
 }
 
 DELEGATE_TO_WEBCONTEXT_3(getVertexAttribfv, GC3Duint, GC3Denum, GC3Dfloat*)
@@ -588,7 +726,7 @@ DELEGATE_TO_WEBCONTEXT_4(scissor, GC3Dint, GC3Dint, GC3Dsizei, GC3Dsizei)
 
 void GraphicsContext3D::shaderSource(Platform3DObject shader, const String& string)
 {
-    m_private->webContext()->shaderSource(shader, string.utf8().data());
+    m_impl->shaderSource(shader, string.utf8().data());
 }
 
 DELEGATE_TO_WEBCONTEXT_3(stencilFunc, GC3Denum, GC3Dint, GC3Duint)
@@ -640,33 +778,33 @@ DELEGATE_TO_WEBCONTEXT_4(viewport, GC3Dint, GC3Dint, GC3Dsizei, GC3Dsizei)
 
 void GraphicsContext3D::reshape(int width, int height)
 {
-    if (width == m_private->webContext()->width() && height == m_private->webContext()->height())
+    if (width == m_impl->width() && height == m_impl->height())
         return;
 
-    m_private->webContext()->reshape(width, height);
+    m_impl->reshape(width, height);
 }
 
 void GraphicsContext3D::markContextChanged()
 {
-    m_private->markContextChanged();
+    m_layerComposited = false;
 }
 
 bool GraphicsContext3D::layerComposited() const
 {
-    return m_private->layerComposited();
+    return m_layerComposited;
 }
 
 void GraphicsContext3D::markLayerComposited()
 {
-    m_private->markLayerComposited();
+    m_layerComposited = true;
 }
 
 void GraphicsContext3D::paintRenderingResultsToCanvas(ImageBuffer* imageBuffer, DrawingBuffer* drawingBuffer)
 {
     Platform3DObject framebufferId;
     int width, height;
-    getDrawingParameters(drawingBuffer, m_private->webContext(), &framebufferId, &width, &height);
-    m_private->paintFramebufferToCanvas(framebufferId, width, height, !getContextAttributes().premultipliedAlpha, imageBuffer);
+    getDrawingParameters(drawingBuffer, m_impl, &framebufferId, &width, &height);
+    paintFramebufferToCanvas(framebufferId, width, height, !getContextAttributes().premultipliedAlpha, imageBuffer);
 }
 
 PassRefPtr<ImageData> GraphicsContext3D::paintRenderingResultsToImageData(DrawingBuffer* drawingBuffer)
@@ -676,13 +814,13 @@ PassRefPtr<ImageData> GraphicsContext3D::paintRenderingResultsToImageData(Drawin
 
     Platform3DObject framebufferId;
     int width, height;
-    getDrawingParameters(drawingBuffer, m_private->webContext(), &framebufferId, &width, &height);
+    getDrawingParameters(drawingBuffer, m_impl, &framebufferId, &width, &height);
 
     RefPtr<ImageData> imageData = ImageData::create(IntSize(width, height));
     unsigned char* pixels = imageData->data()->data();
     size_t bufferSize = 4 * width * height;
 
-    m_private->webContext()->readBackFramebuffer(pixels, bufferSize, framebufferId, width, height);
+    m_impl->readBackFramebuffer(pixels, bufferSize, framebufferId, width, height);
 
 #if (SK_R32_SHIFT == 16) && !SK_B32_SHIFT
     // If the implementation swapped the red and blue channels, un-swap them.
@@ -691,11 +829,6 @@ PassRefPtr<ImageData> GraphicsContext3D::paintRenderingResultsToImageData(Drawin
 #endif
 
     return imageData.release();
-}
-
-bool GraphicsContext3D::paintCompositedResultsToCanvas(ImageBuffer*)
-{
-    return false;
 }
 
 DELEGATE_TO_WEBCONTEXT_R(createBuffer, Platform3DObject)
@@ -716,7 +849,9 @@ DELEGATE_TO_WEBCONTEXT_1(synthesizeGLError, GC3Denum)
 
 Extensions3D* GraphicsContext3D::getExtensions()
 {
-    return m_private->getExtensions();
+    if (!m_extensions)
+        m_extensions = adoptPtr(new Extensions3D(this));
+    return m_extensions.get();
 }
 
 bool GraphicsContext3D::texImage2DResourceSafe(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, GC3Dint unpackAlignment)
@@ -2313,6 +2448,127 @@ unsigned GraphicsContext3D::getChannelBitsByFormat(GC3Denum format)
     default:
         return 0;
     }
+}
+
+void GraphicsContext3D::paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer* imageBuffer)
+{
+    unsigned char* pixels = 0;
+    size_t bufferSize = 4 * width * height;
+
+    const SkBitmap* canvasBitmap = imageBuffer->context()->bitmap();
+    const SkBitmap* readbackBitmap = 0;
+    ASSERT(canvasBitmap->config() == SkBitmap::kARGB_8888_Config);
+    if (canvasBitmap->width() == width && canvasBitmap->height() == height) {
+        // This is the fastest and most common case. We read back
+        // directly into the canvas's backing store.
+        readbackBitmap = canvasBitmap;
+        m_resizingBitmap.reset();
+    } else {
+        // We need to allocate a temporary bitmap for reading back the
+        // pixel data. We will then use Skia to rescale this bitmap to
+        // the size of the canvas's backing store.
+        if (m_resizingBitmap.width() != width || m_resizingBitmap.height() != height) {
+            m_resizingBitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+            if (!m_resizingBitmap.allocPixels())
+                return;
+        }
+        readbackBitmap = &m_resizingBitmap;
+    }
+
+    // Read back the frame buffer.
+    SkAutoLockPixels bitmapLock(*readbackBitmap);
+    pixels = static_cast<unsigned char*>(readbackBitmap->getPixels());
+
+    m_impl->readBackFramebuffer(pixels, 4 * width * height, framebuffer, width, height);
+
+    if (premultiplyAlpha) {
+        for (size_t i = 0; i < bufferSize; i += 4) {
+            pixels[i + 0] = std::min(255, pixels[i + 0] * pixels[i + 3] / 255);
+            pixels[i + 1] = std::min(255, pixels[i + 1] * pixels[i + 3] / 255);
+            pixels[i + 2] = std::min(255, pixels[i + 2] * pixels[i + 3] / 255);
+        }
+    }
+
+    readbackBitmap->notifyPixelsChanged();
+    if (m_resizingBitmap.readyToDraw()) {
+        // We need to draw the resizing bitmap into the canvas's backing store.
+        SkCanvas canvas(*canvasBitmap);
+        SkRect dst;
+        dst.set(SkIntToScalar(0), SkIntToScalar(0), SkIntToScalar(canvasBitmap->width()), SkIntToScalar(canvasBitmap->height()));
+        canvas.drawBitmapRect(m_resizingBitmap, 0, dst);
+    }
+}
+
+namespace {
+
+void splitStringHelper(const String& str, HashSet<String>& set)
+{
+    Vector<String> substrings;
+    str.split(" ", substrings);
+    for (size_t i = 0; i < substrings.size(); ++i)
+        set.add(substrings[i]);
+}
+
+String mapExtensionName(const String& name)
+{
+    if (name == "GL_ANGLE_framebuffer_blit"
+        || name == "GL_ANGLE_framebuffer_multisample")
+        return "GL_CHROMIUM_framebuffer_multisample";
+    return name;
+}
+
+} // anonymous namespace
+
+void GraphicsContext3D::initializeExtensions()
+{
+    if (m_initializedAvailableExtensions)
+        return;
+
+    m_initializedAvailableExtensions = true;
+    bool success = m_impl->makeContextCurrent();
+    ASSERT(success);
+    if (!success)
+        return;
+
+    String extensionsString = m_impl->getString(GraphicsContext3D::EXTENSIONS);
+    splitStringHelper(extensionsString, m_enabledExtensions);
+
+    String requestableExtensionsString = m_impl->getRequestableExtensionsCHROMIUM();
+    splitStringHelper(requestableExtensionsString, m_requestableExtensions);
+}
+
+
+bool GraphicsContext3D::supportsExtension(const String& name)
+{
+    initializeExtensions();
+    String mappedName = mapExtensionName(name);
+    return m_enabledExtensions.contains(mappedName) || m_requestableExtensions.contains(mappedName);
+}
+
+bool GraphicsContext3D::ensureExtensionEnabled(const String& name)
+{
+    initializeExtensions();
+
+    String mappedName = mapExtensionName(name);
+    if (m_enabledExtensions.contains(mappedName))
+        return true;
+
+    if (m_requestableExtensions.contains(mappedName)) {
+        m_impl->requestExtensionCHROMIUM(mappedName.ascii().data());
+        m_enabledExtensions.clear();
+        m_requestableExtensions.clear();
+        m_initializedAvailableExtensions = false;
+    }
+
+    initializeExtensions();
+    return m_enabledExtensions.contains(mappedName);
+}
+
+bool GraphicsContext3D::isExtensionEnabled(const String& name)
+{
+    initializeExtensions();
+    String mappedName = mapExtensionName(name);
+    return m_enabledExtensions.contains(mappedName);
 }
 
 } // namespace WebCore

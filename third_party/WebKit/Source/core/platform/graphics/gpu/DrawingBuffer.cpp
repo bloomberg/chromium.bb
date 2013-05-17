@@ -36,7 +36,6 @@
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/platform/chromium/TraceEvent.h"
-#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
@@ -177,7 +176,7 @@ WebKit::WebGraphicsContext3D* DrawingBuffer::context()
 {
     if (!m_context)
         return 0;
-    return GraphicsContext3DPrivate::extractWebGraphicsContext3D(m_context.get());
+    return m_context->webContext();
 }
 
 bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox)

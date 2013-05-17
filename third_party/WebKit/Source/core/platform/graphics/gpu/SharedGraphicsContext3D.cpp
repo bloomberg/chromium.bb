@@ -28,8 +28,8 @@
 
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 
-#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 #include <public/Platform.h>
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebGraphicsContext3DProvider.h>
@@ -56,13 +56,13 @@ public:
         }
 
         if (webContext && grContext) {
-            WebKit::WebGraphicsContext3D* oldWebContext = m_context ? GraphicsContext3DPrivate::extractWebGraphicsContext3D(m_context.get()) : 0;
+            WebKit::WebGraphicsContext3D* oldWebContext = m_context ? m_context->webContext() : 0;
             GrContext* oldGrContext = m_context ? m_context->grContext() : 0;
             if (webContext != oldWebContext || grContext != oldGrContext)
                 m_context.clear();
 
             if (!m_context) {
-                m_context = GraphicsContext3DPrivate::createGraphicsContextFromProvider(provider.release());
+                m_context = GraphicsContext3D::createGraphicsContextFromProvider(provider.release());
                 wasCreated = true;
             }
         }

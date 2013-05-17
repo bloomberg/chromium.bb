@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class GraphicsContext3DPrivate;
+class GraphicsContext3D;
 class ImageBuffer;
 
 // The supported extensions are defined below.
@@ -329,11 +329,11 @@ public:
 private:
     // Instances of this class are strictly owned by the GraphicsContext3D implementation and do not
     // need to be instantiated by any other code.
-    friend class GraphicsContext3DPrivate;
-    explicit Extensions3D(GraphicsContext3DPrivate*);
+    friend class GraphicsContext3D;
+    explicit Extensions3D(GraphicsContext3D*);
 
-    // Weak pointer back to GraphicsContext3DPrivate
-    GraphicsContext3DPrivate* m_private;
+    // Weak pointer back to GraphicsContext3D.
+    GraphicsContext3D* m_context;
 };
 
 } // namespace WebCore

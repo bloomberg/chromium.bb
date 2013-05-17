@@ -26,18 +26,22 @@
 #ifndef GraphicsContext3D_h
 #define GraphicsContext3D_h
 
+#include "SkBitmap.h"
 #include "core/platform/KURL.h"
+#include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/PlatformLayer.h"
-#include <wtf/HashMap.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/PassOwnArrayPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnArrayPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 // FIXME: Find a better way to avoid the name confliction for NO_ERROR.
 #if OS(WINDOWS)
@@ -46,9 +50,17 @@
 
 class GrContext;
 
+namespace WebKit {
+class WebGraphicsContext3D;
+class WebGraphicsContext3DProvider;
+}
+
 namespace WebCore {
 class DrawingBuffer;
 class Extensions3D;
+class GraphicsContext3DContextLostCallbackAdapter;
+class GraphicsContext3DErrorMessageCallbackAdapter;
+class GrMemoryAllocationChangedCallbackAdapter;
 class Image;
 class ImageBuffer;
 class ImageData;
@@ -60,8 +72,6 @@ struct ActiveInfo {
     GC3Denum type;
     GC3Dint size;
 };
-
-class GraphicsContext3DPrivate;
 
 class GraphicsContext3D : public RefCounted<GraphicsContext3D> {
 public:
@@ -422,10 +432,18 @@ public:
     void setErrorMessageCallback(PassOwnPtr<ErrorMessageCallback>);
 
     static PassRefPtr<GraphicsContext3D> create(Attributes);
-    static PassRefPtr<GraphicsContext3D> createForCurrentGLContext();
+
+    // Callers must make the context current before using it AND check that the context was created successfully
+    // via ContextLost before using the context in any way. Once made current on a thread, the context cannot
+    // be used on any other thread.
+    static PassRefPtr<GraphicsContext3D> createGraphicsContextFromWebContext(PassOwnPtr<WebKit::WebGraphicsContext3D>, bool preserveDrawingBuffer = false);
+    static PassRefPtr<GraphicsContext3D> createGraphicsContextFromProvider(PassOwnPtr<WebKit::WebGraphicsContext3DProvider>, bool preserveDrawingBuffer = false);
+
     ~GraphicsContext3D();
 
     GrContext* grContext();
+    WebKit::WebGraphicsContext3D* webContext() const { return m_impl; }
+
     bool makeContextCurrent();
 
     // Helper to texImage2D with pixel==0 case: pixels are initialized to 0.
@@ -678,7 +696,6 @@ public:
 
     void paintRenderingResultsToCanvas(ImageBuffer*, DrawingBuffer*);
     PassRefPtr<ImageData> paintRenderingResultsToImageData(DrawingBuffer*);
-    bool paintCompositedResultsToCanvas(ImageBuffer*);
 
     // Support for buffer creation and deletion
     Platform3DObject createBuffer();
@@ -781,7 +798,10 @@ public:
     };
 
 private:
-    GraphicsContext3D();
+    friend class Extensions3D;
+
+    GraphicsContext3D(PassOwnPtr<WebKit::WebGraphicsContext3D>, bool preserveDrawingBuffer);
+    GraphicsContext3D(PassOwnPtr<WebKit::WebGraphicsContext3DProvider>, bool preserveDrawingBuffer);
 
     // Helper for packImageData/extractImageData/extractTextureData which implement packing of pixel
     // data into the specified OpenGL destination format and type.
@@ -790,10 +810,48 @@ private:
     // Destination data will have no gaps between rows.
     static bool packPixels(const uint8_t* sourceData, DataFormat sourceDataFormat, unsigned width, unsigned height, unsigned sourceUnpackAlignment, unsigned destinationFormat, unsigned destinationType, AlphaOp, void* destinationData, bool flipY);
 
+    void paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer*);
+
+    // Extensions3D support.
+    bool supportsExtension(const String& name);
+    bool ensureExtensionEnabled(const String& name);
+    bool isExtensionEnabled(const String& name);
+
+    void initializeExtensions();
+
     bool isResourceSafe();
 
-    friend class GraphicsContext3DPrivate;
-    OwnPtr<GraphicsContext3DPrivate> m_private;
+    bool preserveDrawingBuffer() const { return m_preserveDrawingBuffer; }
+
+    OwnPtr<WebKit::WebGraphicsContext3DProvider> m_provider;
+    WebKit::WebGraphicsContext3D* m_impl;
+    OwnPtr<WebKit::WebGraphicsContext3D> m_ownedWebContext;
+    OwnPtr<Extensions3D> m_extensions;
+    OwnPtr<GraphicsContext3DContextLostCallbackAdapter> m_contextLostCallbackAdapter;
+    OwnPtr<GraphicsContext3DErrorMessageCallbackAdapter> m_errorMessageCallbackAdapter;
+    OwnPtr<GrMemoryAllocationChangedCallbackAdapter> m_grContextMemoryAllocationCallbackAdapter;
+    bool m_initializedAvailableExtensions;
+    HashSet<String> m_enabledExtensions;
+    HashSet<String> m_requestableExtensions;
+    bool m_layerComposited;
+    bool m_preserveDrawingBuffer;
+
+    enum ResourceSafety {
+        ResourceSafetyUnknown,
+        ResourceSafe,
+        ResourceUnsafe
+    };
+    ResourceSafety m_resourceSafety;
+
+    // If the width and height of the Canvas's backing store don't
+    // match those that we were given in the most recent call to
+    // reshape(), then we need an intermediate bitmap to read back the
+    // frame buffer into. This seems to happen when CSS styles are
+    // used to resize the Canvas.
+    SkBitmap m_resizingBitmap;
+
+    GrContext* m_grContext;
+    SkAutoTUnref<GrContext> m_ownedGrContext;
 };
 
 } // namespace WebCore

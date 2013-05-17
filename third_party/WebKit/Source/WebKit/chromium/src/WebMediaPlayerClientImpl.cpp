@@ -23,7 +23,6 @@
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/AudioSourceProvider.h"
 #include "core/platform/audio/AudioSourceProviderClient.h"
-#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/MediaPlayer.h"
@@ -605,7 +604,7 @@ bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebCore::Graphi
     if (!extensions || !extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy")
         || !extensions->canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
         return false;
-    WebGraphicsContext3D* webGraphicsContext3D = GraphicsContext3DPrivate::extractWebGraphicsContext3D(context);
+    WebGraphicsContext3D* webGraphicsContext3D = context->webContext();
     return m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, texture, level, internalFormat, type, premultiplyAlpha, flipY);
 }
 
@@ -762,7 +761,7 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
     }
 
     // Copy video texture to bitmap texture.
-    WebGraphicsContext3D* webGraphicsContext3D = GraphicsContext3DPrivate::extractWebGraphicsContext3D(context3D);
+    WebGraphicsContext3D* webGraphicsContext3D = GraphicsContext3D::extractWebGraphicsContext3D(context3D);
     WebCanvas* canvas = context->canvas();
     unsigned int textureId = static_cast<unsigned int>(m_texture->getTextureHandle());
     if (!m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, textureId, 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE, true, false))

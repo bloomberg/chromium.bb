@@ -140,7 +140,6 @@
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/chromium/PopupContainer.h"
 #include "core/platform/chromium/TraceEvent.h"
-#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/chromium/support/WebActiveGestureAnimation.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/ColorSpace.h"

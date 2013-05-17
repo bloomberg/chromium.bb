@@ -28,15 +28,14 @@
 #include "core/platform/graphics/Extensions3D.h"
 
 #include "core/platform/NotImplemented.h"
-#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/text/CString.h>
 
 namespace WebCore {
 
-Extensions3D::Extensions3D(GraphicsContext3DPrivate* priv)
-    : m_private(priv)
+Extensions3D::Extensions3D(GraphicsContext3D* context)
+    : m_context(context)
 {
 }
 
@@ -46,133 +45,133 @@ Extensions3D::~Extensions3D()
 
 bool Extensions3D::supports(const String& name)
 {
-    return m_private->supportsExtension(name);
+    return m_context->supportsExtension(name);
 }
 
 void Extensions3D::ensureEnabled(const String& name)
 {
-    bool result = m_private->ensureExtensionEnabled(name);
+    bool result = m_context->ensureExtensionEnabled(name);
     ASSERT_UNUSED(result, result);
 }
 
 bool Extensions3D::isEnabled(const String& name)
 {
-    return m_private->isExtensionEnabled(name);
+    return m_context->isExtensionEnabled(name);
 }
 
 int Extensions3D::getGraphicsResetStatusARB()
 {
-    return static_cast<int>(m_private->webContext()->getGraphicsResetStatusARB());
+    return static_cast<int>(m_context->webContext()->getGraphicsResetStatusARB());
 }
 
 void Extensions3D::blitFramebuffer(long srcX0, long srcY0, long srcX1, long srcY1, long dstX0, long dstY0, long dstX1, long dstY1, unsigned long mask, unsigned long filter)
 {
-    m_private->webContext()->blitFramebufferCHROMIUM(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+    m_context->webContext()->blitFramebufferCHROMIUM(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 }
 
 void Extensions3D::renderbufferStorageMultisample(unsigned long target, unsigned long samples, unsigned long internalformat, unsigned long width, unsigned long height)
 {
-    m_private->webContext()->renderbufferStorageMultisampleCHROMIUM(target, samples, internalformat, width, height);
+    m_context->webContext()->renderbufferStorageMultisampleCHROMIUM(target, samples, internalformat, width, height);
 }
 
 void* Extensions3D::mapBufferSubDataCHROMIUM(unsigned target, int offset, int size, unsigned access)
 {
-    return m_private->webContext()->mapBufferSubDataCHROMIUM(target, offset, size, access);
+    return m_context->webContext()->mapBufferSubDataCHROMIUM(target, offset, size, access);
 }
 
 void Extensions3D::unmapBufferSubDataCHROMIUM(const void* data)
 {
-    m_private->webContext()->unmapBufferSubDataCHROMIUM(data);
+    m_context->webContext()->unmapBufferSubDataCHROMIUM(data);
 }
 
 void* Extensions3D::mapTexSubImage2DCHROMIUM(unsigned target, int level, int xoffset, int yoffset, int width, int height, unsigned format, unsigned type, unsigned access)
 {
-    return m_private->webContext()->mapTexSubImage2DCHROMIUM(target, level, xoffset, yoffset, width, height, format, type, access);
+    return m_context->webContext()->mapTexSubImage2DCHROMIUM(target, level, xoffset, yoffset, width, height, format, type, access);
 }
 
 void Extensions3D::unmapTexSubImage2DCHROMIUM(const void* data)
 {
-    m_private->webContext()->unmapTexSubImage2DCHROMIUM(data);
+    m_context->webContext()->unmapTexSubImage2DCHROMIUM(data);
 }
 
 Platform3DObject Extensions3D::createVertexArrayOES()
 {
-    return m_private->webContext()->createVertexArrayOES();
+    return m_context->webContext()->createVertexArrayOES();
 }
 
 void Extensions3D::deleteVertexArrayOES(Platform3DObject array)
 {
-    m_private->webContext()->deleteVertexArrayOES(array);
+    m_context->webContext()->deleteVertexArrayOES(array);
 }
 
 GC3Dboolean Extensions3D::isVertexArrayOES(Platform3DObject array)
 {
-    return m_private->webContext()->isVertexArrayOES(array);
+    return m_context->webContext()->isVertexArrayOES(array);
 }
 
 void Extensions3D::bindVertexArrayOES(Platform3DObject array)
 {
-    m_private->webContext()->bindVertexArrayOES(array);
+    m_context->webContext()->bindVertexArrayOES(array);
 }
 
 String Extensions3D::getTranslatedShaderSourceANGLE(Platform3DObject shader)
 {
-    return m_private->webContext()->getTranslatedShaderSourceANGLE(shader);
+    return m_context->webContext()->getTranslatedShaderSourceANGLE(shader);
 }
 
 void Extensions3D::rateLimitOffscreenContextCHROMIUM()
 {
-    m_private->webContext()->rateLimitOffscreenContextCHROMIUM();
+    m_context->webContext()->rateLimitOffscreenContextCHROMIUM();
 }
 
 void Extensions3D::paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer* imageBuffer)
 {
-    m_private->paintFramebufferToCanvas(framebuffer, width, height, premultiplyAlpha, imageBuffer);
+    m_context->paintFramebufferToCanvas(framebuffer, width, height, premultiplyAlpha, imageBuffer);
 }
 
 void Extensions3D::texImageIOSurface2DCHROMIUM(unsigned target, int width, int height, uint32_t ioSurfaceId, unsigned plane)
 {
-    m_private->webContext()->texImageIOSurface2DCHROMIUM(target, width, height, ioSurfaceId, plane);
+    m_context->webContext()->texImageIOSurface2DCHROMIUM(target, width, height, ioSurfaceId, plane);
 }
 
 void Extensions3D::texStorage2DEXT(unsigned int target, int levels, unsigned int internalFormat, int width, int height)
 {
-    m_private->webContext()->texStorage2DEXT(target, levels, internalFormat, width, height);
+    m_context->webContext()->texStorage2DEXT(target, levels, internalFormat, width, height);
 }
 
 Platform3DObject Extensions3D::createQueryEXT()
 {
-    return m_private->webContext()->createQueryEXT();
+    return m_context->webContext()->createQueryEXT();
 }
 
 void Extensions3D::deleteQueryEXT(Platform3DObject query)
 {
-    m_private->webContext()->deleteQueryEXT(query);
+    m_context->webContext()->deleteQueryEXT(query);
 }
 
 GC3Dboolean Extensions3D::isQueryEXT(Platform3DObject query)
 {
-    return m_private->webContext()->isQueryEXT(query);
+    return m_context->webContext()->isQueryEXT(query);
 }
 
 void Extensions3D::beginQueryEXT(GC3Denum target, Platform3DObject query)
 {
-    m_private->webContext()->beginQueryEXT(target, query);
+    m_context->webContext()->beginQueryEXT(target, query);
 }
 
 void Extensions3D::endQueryEXT(GC3Denum target)
 {
-    m_private->webContext()->endQueryEXT(target);
+    m_context->webContext()->endQueryEXT(target);
 }
 
 void Extensions3D::getQueryivEXT(GC3Denum target, GC3Denum pname, GC3Dint* params)
 {
-    m_private->webContext()->getQueryivEXT(target, pname, params);
+    m_context->webContext()->getQueryivEXT(target, pname, params);
 }
 
 void Extensions3D::getQueryObjectuivEXT(Platform3DObject query, GC3Denum pname, GC3Duint* params)
 {
-    m_private->webContext()->getQueryObjectuivEXT(query, pname, params);
+    m_context->webContext()->getQueryObjectuivEXT(query, pname, params);
 }
 
 bool Extensions3D::canUseCopyTextureCHROMIUM(GC3Denum destFormat, GC3Denum destType, GC3Dint level)
@@ -188,12 +187,12 @@ bool Extensions3D::canUseCopyTextureCHROMIUM(GC3Denum destFormat, GC3Denum destT
 
 void Extensions3D::copyTextureCHROMIUM(GC3Denum target, Platform3DObject sourceId, Platform3DObject destId, GC3Dint level, GC3Denum internalFormat, GC3Denum destType)
 {
-    m_private->webContext()->copyTextureCHROMIUM(target, sourceId, destId, level, internalFormat, destType);
+    m_context->webContext()->copyTextureCHROMIUM(target, sourceId, destId, level, internalFormat, destType);
 }
 
 void Extensions3D::shallowFlushCHROMIUM()
 {
-    return m_private->webContext()->shallowFlushCHROMIUM();
+    return m_context->webContext()->shallowFlushCHROMIUM();
 }
 
 void Extensions3D::readnPixelsEXT(int x, int y, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, GC3Dsizei bufSize, void *data)
@@ -213,22 +212,22 @@ void Extensions3D::getnUniformivEXT(GC3Duint program, int location, GC3Dsizei bu
 
 void Extensions3D::insertEventMarkerEXT(const String& marker)
 {
-    m_private->webContext()->insertEventMarkerEXT(marker.utf8().data());
+    m_context->webContext()->insertEventMarkerEXT(marker.utf8().data());
 }
 
 void Extensions3D::pushGroupMarkerEXT(const String& marker)
 {
-    m_private->webContext()->pushGroupMarkerEXT(marker.utf8().data());
+    m_context->webContext()->pushGroupMarkerEXT(marker.utf8().data());
 }
 
 void Extensions3D::popGroupMarkerEXT(void)
 {
-    m_private->webContext()->popGroupMarkerEXT();
+    m_context->webContext()->popGroupMarkerEXT();
 }
 
 void Extensions3D::drawBuffersEXT(GC3Dsizei n, const GC3Denum* bufs)
 {
-    m_private->webContext()->drawBuffersEXT(n, bufs);
+    m_context->webContext()->drawBuffersEXT(n, bufs);
 }
 
 } // namespace WebCore

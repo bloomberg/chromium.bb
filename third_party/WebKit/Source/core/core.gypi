@@ -3586,8 +3586,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.h',
         ],
         'webcore_platform_support_files': [
-            'platform/chromium/support/GraphicsContext3DPrivate.cpp',
-            'platform/chromium/support/GraphicsContext3DPrivate.h',
             'platform/chromium/support/Platform.cpp',
             'platform/chromium/support/WebActiveGestureAnimation.cpp',
             'platform/chromium/support/WebActiveGestureAnimation.h',

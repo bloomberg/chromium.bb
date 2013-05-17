@@ -33,7 +33,7 @@
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 
 #include "FakeWebGraphicsContext3D.h"
-#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 #include <public/Platform.h>
 
 #include <gmock/gmock.h>
@@ -65,7 +65,7 @@ protected:
     virtual void SetUp()
     {
         RefPtr<FakeContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager());
-        RefPtr<GraphicsContext3D> context = GraphicsContext3DPrivate::createGraphicsContextFromWebContext(adoptPtr(new FakeWebGraphicsContext3D));
+        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new FakeWebGraphicsContext3D));
         const IntSize size(100, 100);
         m_drawingBuffer = DrawingBuffer::create(context.get(), size, DrawingBuffer::Discard, contextEvictionManager.release());
     }
