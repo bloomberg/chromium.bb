@@ -918,6 +918,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
     switches::kNoReferrers,
     switches::kNoSandbox,
+    switches::kEnableVtune,
     switches::kPpapiInProcess,
     switches::kRegisterPepperPlugins,
     switches::kRendererAssertTest,

@@ -603,6 +603,9 @@ const char kRendererCmdPrefix[]             = "renderer-cmd-prefix";
 // Causes the process to run as renderer instead of as browser.
 const char kRendererProcess[]               = "renderer";
 
+// Enable the Vtune profiler support.
+const char kEnableVtune[]                   = "enable-vtune-support";
+
 // Overrides the default/calculated limit to the number of renderer processes.
 // Very high values for this setting can lead to high memory/resource usage
 // or instability.

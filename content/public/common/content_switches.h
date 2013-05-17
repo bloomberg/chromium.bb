@@ -184,6 +184,7 @@ CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];
 CONTENT_EXPORT extern const char kRendererAssertTest[];
 extern const char kRendererCmdPrefix[];
 CONTENT_EXPORT extern const char kRendererProcess[];
+CONTENT_EXPORT extern const char kEnableVtune[];
 extern const char kRendererProcessLimit[];
 extern const char kRendererStartupDialog[];
 extern const char kEnableAcceleratedOverflowScroll[];

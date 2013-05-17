@@ -5,6 +5,7 @@
 {
   'variables': {
     'chromium_code': 1,  # Use higher warning level.
+    'chromium_enable_vtune_jit_for_v8%': 0,  # enable the vtune support for V8 engine.
     'directxsdk_exists': '<!(python <(DEPTH)/build/dir_exists.py ../third_party/directxsdk)',
   },
   'target_defaults': {
@@ -188,6 +189,13 @@
                 'content_common',
                 'content_resources.gyp:content_resources',
               ],
+              'conditions': [
+                ['chromium_enable_vtune_jit_for_v8==1', {
+                  'dependencies': [
+                    '../v8/src/third_party/vtune/v8vtune.gyp:v8_vtune',
+                  ],
+                }],
+              ],
             },
             {
               'target_name': 'content_utility',
@@ -228,6 +236,11 @@
             ['OS=="mac"', {
               'dependencies': [
                 '<(DEPTH)/third_party/mach_override/mach_override.gyp:mach_override',
+              ],
+            }],
+            ['chromium_enable_vtune_jit_for_v8==1', {
+              'dependencies': [
+                '../v8/src/third_party/vtune/v8vtune.gyp:v8_vtune',
               ],
             }],
           ],

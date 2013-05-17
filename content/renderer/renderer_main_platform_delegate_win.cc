@@ -18,6 +18,10 @@
 #include "third_party/icu/public/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
+#ifdef ENABLE_VTUNE_JIT_INTERFACE
+#include "v8/src/third_party/vtune/v8-vtune.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -79,9 +83,15 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
 
   InitExitInterceptions();
 
+  const CommandLine& command_line = parameters_.command_line;
+
+#ifdef ENABLE_VTUNE_JIT_INTERFACE
+  if (command_line.HasSwitch(switches::kEnableVtune))
+    vTune::InitializeVtuneForV8();
+#endif
+
   // Be mindful of what resources you acquire here. They can be used by
   // malicious code if the renderer gets compromised.
-  const CommandLine& command_line = parameters_.command_line;
   bool no_sandbox = command_line.HasSwitch(switches::kNoSandbox);
 
   if (!no_sandbox) {
