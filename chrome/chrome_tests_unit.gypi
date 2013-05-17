@@ -471,6 +471,7 @@
       },
       'sources': [
         '../apps/app_shim/app_shim_host_mac_unittest.cc',
+        '../apps/shell_window_geometry_cache_unittest.cc',
         '../extensions/browser/file_reader_unittest.cc',
         '../extensions/common/event_filter_unittest.cc',
         '../extensions/common/extension_resource_unittest.cc',
@@ -809,7 +810,6 @@
         'browser/extensions/sandboxed_unpacker_unittest.cc',
         'browser/extensions/script_badge_controller_unittest.cc',
         'browser/extensions/script_bubble_controller_unittest.cc',
-        'browser/extensions/shell_window_geometry_cache_unittest.cc',
         'browser/extensions/token_cache/token_cache_service_unittest.cc',
         'browser/extensions/standard_management_policy_provider_unittest.cc',
         'browser/extensions/updater/extension_updater_unittest.cc',

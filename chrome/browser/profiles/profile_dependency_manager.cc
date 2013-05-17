@@ -9,6 +9,7 @@
 #include <iterator>
 
 #include "apps/app_restore_service_factory.h"
+#include "apps/shell_window_geometry_cache.h"
 #include "apps/shortcut_manager_factory.h"
 #include "chrome/browser/autofill/autocheckout_whitelist_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -268,6 +269,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   DownloadServiceFactory::GetInstance();
 #if defined(ENABLE_EXTENSIONS)
   apps::AppRestoreServiceFactory::GetInstance();
+  apps::ShellWindowGeometryCache::Factory::GetInstance();
   apps::ShortcutManagerFactory::GetInstance();
   autofill::autocheckout::WhitelistManagerFactory::GetInstance();
   extensions::ActivityLogFactory::GetInstance();

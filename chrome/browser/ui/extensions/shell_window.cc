@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/extensions/shell_window.h"
 
+#include "apps/shell_window_geometry_cache.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/app_window_contents.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/image_loader.h"
-#include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -136,9 +136,9 @@ void ShellWindow::Init(const GURL& url,
   if (!params.window_key.empty()) {
     window_key_ = params.window_key;
 
-    extensions::ShellWindowGeometryCache* cache =
-        extensions::ExtensionSystem::Get(profile())->
-          shell_window_geometry_cache();
+    apps::ShellWindowGeometryCache* cache =
+        apps::ShellWindowGeometryCache::Get(profile());
+
     gfx::Rect cached_bounds;
     if (cache->GetGeometry(extension()->id(), params.window_key,
                            &cached_bounds, &cached_state)) {
@@ -568,9 +568,8 @@ void ShellWindow::SaveWindowPosition() {
   if (!native_app_window_)
     return;
 
-  extensions::ShellWindowGeometryCache* cache =
-      extensions::ExtensionSystem::Get(profile())->
-          shell_window_geometry_cache();
+  apps::ShellWindowGeometryCache* cache =
+      apps::ShellWindowGeometryCache::Get(profile());
 
   gfx::Rect bounds = native_app_window_->GetRestoredBounds();
   bounds.Inset(native_app_window_->GetFrameInsets());

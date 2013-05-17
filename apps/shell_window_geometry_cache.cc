@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/shell_window_geometry_cache.h"
+#include "apps/shell_window_geometry_cache.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_prefs_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
@@ -21,10 +25,10 @@ const int kSyncTimeoutMilliseconds = 1000;
 
 } // namespace
 
-namespace extensions {
+namespace apps {
 
-ShellWindowGeometryCache::ShellWindowGeometryCache(Profile* profile,
-                                                   ExtensionPrefs* prefs)
+ShellWindowGeometryCache::ShellWindowGeometryCache(
+    Profile* profile, extensions::ExtensionPrefs* prefs)
     : prefs_(prefs),
       sync_delay_(base::TimeDelta::FromMilliseconds(kSyncTimeoutMilliseconds)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -34,7 +38,12 @@ ShellWindowGeometryCache::ShellWindowGeometryCache(Profile* profile,
 }
 
 ShellWindowGeometryCache::~ShellWindowGeometryCache() {
-  SyncToStorage();
+}
+
+// static
+ShellWindowGeometryCache* ShellWindowGeometryCache::Get(
+    content::BrowserContext* context) {
+  return Factory::GetForContext(context, true /* create */);
 }
 
 void ShellWindowGeometryCache::SaveGeometry(
@@ -137,19 +146,23 @@ bool ShellWindowGeometryCache::GetGeometry(
   return true;
 }
 
+void ShellWindowGeometryCache::Shutdown() {
+  SyncToStorage();
+}
+
 void ShellWindowGeometryCache::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       std::string extension_id =
-          content::Details<const Extension>(details).ptr()->id();
+          content::Details<const extensions::Extension>(details).ptr()->id();
       OnExtensionLoaded(extension_id);
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       std::string extension_id =
-          content::Details<const UnloadedExtensionInfo>(details).
+          content::Details<const extensions::UnloadedExtensionInfo>(details).
               ptr()->extension->id();
       OnExtensionUnloaded(extension_id);
       break;
@@ -216,4 +229,47 @@ void ShellWindowGeometryCache::OnExtensionUnloaded(
   cache_.erase(extension_id);
 }
 
-} // namespace extensions
+///////////////////////////////////////////////////////////////////////////////
+// Factory boilerplate
+
+// static
+ShellWindowGeometryCache* ShellWindowGeometryCache::Factory::GetForContext(
+    content::BrowserContext* context, bool create) {
+  return static_cast<ShellWindowGeometryCache*>(
+      GetInstance()->GetServiceForProfile(context, create));
+}
+
+ShellWindowGeometryCache::Factory*
+ShellWindowGeometryCache::Factory::GetInstance() {
+  return Singleton<ShellWindowGeometryCache::Factory>::get();
+}
+
+ShellWindowGeometryCache::Factory::Factory()
+    : ProfileKeyedServiceFactory("ShellWindowGeometryCache",
+                                 ProfileDependencyManager::GetInstance()) {
+  DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
+}
+
+ShellWindowGeometryCache::Factory::~Factory() {
+}
+
+ProfileKeyedService*
+ShellWindowGeometryCache::Factory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new ShellWindowGeometryCache(
+      profile,
+      extensions::ExtensionPrefs::Get(profile));
+}
+
+bool ShellWindowGeometryCache::Factory::ServiceIsNULLWhileTesting() const {
+  return false;
+}
+
+content::BrowserContext*
+ShellWindowGeometryCache::Factory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
+}
+
+} // namespace apps

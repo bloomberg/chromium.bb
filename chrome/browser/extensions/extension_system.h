@@ -36,7 +36,6 @@ class ManagementPolicy;
 class MessageService;
 class NavigationObserver;
 class RulesRegistryService;
-class ShellWindowGeometryCache;
 class StandardManagementPolicyProvider;
 class StateStore;
 class UserScriptMaster;
@@ -84,9 +83,6 @@ class ExtensionSystem : public ProfileKeyedService {
 
   // The rules store is created at startup.
   virtual StateStore* rules_store() = 0;
-
-  // The ShellWindowGeometryCache is created at startup.
-  virtual ShellWindowGeometryCache* shell_window_geometry_cache() = 0;
 
   // Returns the IO-thread-accessible extension data.
   virtual ExtensionInfoMap* info_map() = 0;
@@ -156,8 +152,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;  // shared
   virtual StateStore* rules_store() OVERRIDE;  // shared
-  virtual ShellWindowGeometryCache* shell_window_geometry_cache()
-      OVERRIDE;  // shared
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
@@ -200,7 +194,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     StateStore* state_store();
     StateStore* rules_store();
-    ShellWindowGeometryCache* shell_window_geometry_cache();
     ExtensionService* extension_service();
     ManagementPolicy* management_policy();
     UserScriptMaster* user_script_master();
@@ -217,7 +210,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     scoped_ptr<StateStore> state_store_;
     scoped_ptr<StateStore> rules_store_;
-    scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
     // LazyBackgroundTaskQueue is a dependency of
     // MessageService and EventRouter.
     scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;

@@ -29,7 +29,6 @@
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/navigation_observer.h"
-#include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -100,9 +99,6 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
       profile_,
       profile_->GetPath().AppendASCII(ExtensionService::kRulesStoreName),
       false));
-
-  shell_window_geometry_cache_.reset(new ShellWindowGeometryCache(
-      profile_, ExtensionPrefs::Get(profile_)));
 
   blacklist_.reset(new Blacklist(ExtensionPrefs::Get(profile_)));
 
@@ -245,11 +241,6 @@ StateStore* ExtensionSystemImpl::Shared::rules_store() {
   return rules_store_.get();
 }
 
-ShellWindowGeometryCache* ExtensionSystemImpl::Shared::
-    shell_window_geometry_cache() {
-  return shell_window_geometry_cache_.get();
-}
-
 ExtensionService* ExtensionSystemImpl::Shared::extension_service() {
   return extension_service_.get();
 }
@@ -365,10 +356,6 @@ StateStore* ExtensionSystemImpl::state_store() {
 
 StateStore* ExtensionSystemImpl::rules_store() {
   return shared_->rules_store();
-}
-
-ShellWindowGeometryCache* ExtensionSystemImpl::shell_window_geometry_cache() {
-  return shared_->shell_window_geometry_cache();
 }
 
 ExtensionInfoMap* ExtensionSystemImpl::info_map() {

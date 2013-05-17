@@ -42,6 +42,8 @@
         'pref_names.h',
         'prefs.cc',
         'prefs.h',
+        'shell_window_geometry_cache.cc',
+        'shell_window_geometry_cache.h',
         'shortcut_manager.cc',
         'shortcut_manager.h',
         'shortcut_manager_factory.cc',

@@ -10,10 +10,12 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
@@ -22,20 +24,46 @@
 class Profile;
 
 namespace extensions {
-
 class ExtensionPrefs;
+}
+
+namespace apps {
 
 // A cache for persisted geometry of shell windows, both to not have to wait
 // for IO when creating a new window, and to not cause IO on every window
 // geometry change.
 class ShellWindowGeometryCache
-    : public base::SupportsWeakPtr<ShellWindowGeometryCache>,
+    : public ProfileKeyedService,
       public content::NotificationObserver {
  public:
+  class Factory : public ProfileKeyedServiceFactory {
+   public:
+    static ShellWindowGeometryCache* GetForContext(
+        content::BrowserContext* context,
+        bool create);
+
+    static Factory* GetInstance();
+   private:
+    friend struct DefaultSingletonTraits<Factory>;
+
+    Factory();
+    virtual ~Factory();
+
+    // ProfileKeyedServiceFactory
+    virtual ProfileKeyedService* BuildServiceInstanceFor(
+        content::BrowserContext* context) const OVERRIDE;
+    virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+    virtual content::BrowserContext* GetBrowserContextToUse(
+        content::BrowserContext* context) const OVERRIDE;
+  };
+
   ShellWindowGeometryCache(Profile* profile,
-                           ExtensionPrefs* prefs);
+                           extensions::ExtensionPrefs* prefs);
 
   virtual ~ShellWindowGeometryCache();
+
+  // Returns the instance for the given browsing context.
+  static ShellWindowGeometryCache* Get(content::BrowserContext* context);
 
   // Save the geometry and state associated with |extension_id| and |window_id|.
   void SaveGeometry(const std::string& extension_id,
@@ -50,6 +78,9 @@ class ShellWindowGeometryCache
                    const std::string& window_id,
                    gfx::Rect* bounds,
                    ui::WindowShowState* state) const;
+
+  // ProfileKeyedService
+  virtual void Shutdown() OVERRIDE;
 
   // Maximum number of windows we'll cache the geometry for per app.
   static const size_t kMaxCachedWindows = 100;
@@ -84,7 +115,7 @@ class ShellWindowGeometryCache
   void SyncToStorage();
 
   // Preferences storage.
-  ExtensionPrefs* prefs_;
+  extensions::ExtensionPrefs* prefs_;
 
   // Cached data
   std::map<std::string, ExtensionData> cache_;
@@ -101,6 +132,6 @@ class ShellWindowGeometryCache
   content::NotificationRegistrar registrar_;
 };
 
-}  // namespace extensions
+}  // namespace apps
 
 #endif  // CHROME_BROWSER_EXTENSIONS_SHELL_WINDOW_GEOMETRY_CACHE_H_

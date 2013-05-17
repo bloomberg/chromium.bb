@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/management_policy.h"
-#include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/user_script_master.h"
@@ -86,9 +85,7 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   if (!ExtensionPrefs::Get(profile_))
     CreateExtensionPrefs(command_line, install_directory);
   state_store_.reset(new StateStore(profile_, new TestingValueStore()));
-  shell_window_geometry_cache_.reset(
-      new ShellWindowGeometryCache(profile_, ExtensionPrefs::Get(profile_)));
-      blacklist_.reset(new Blacklist(ExtensionPrefs::Get(profile_)));
+  blacklist_.reset(new Blacklist(ExtensionPrefs::Get(profile_)));
   standard_management_policy_provider_.reset(
       new StandardManagementPolicyProvider(ExtensionPrefs::Get(profile_)));
   management_policy_.reset(new ManagementPolicy());
@@ -131,10 +128,6 @@ StateStore* TestExtensionSystem::state_store() {
 
 StateStore* TestExtensionSystem::rules_store() {
   return state_store_.get();
-}
-
-ShellWindowGeometryCache* TestExtensionSystem::shell_window_geometry_cache() {
-  return shell_window_geometry_cache_.get();
 }
 
 ExtensionInfoMap* TestExtensionSystem::info_map() {

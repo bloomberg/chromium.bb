@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/shell_window_geometry_cache.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/mock_pref_change_callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -23,14 +22,15 @@ namespace {
 
 using content::BrowserThread;
 
-namespace extensions {
+namespace apps {
 
 // Base class for tests.
 class ShellWindowGeometryCacheTest : public testing::Test {
  public:
   ShellWindowGeometryCacheTest() :
         ui_thread_(BrowserThread::UI, &ui_message_loop_) {
-    prefs_.reset(new TestExtensionPrefs(ui_message_loop_.message_loop_proxy()));
+    prefs_.reset(new extensions::TestExtensionPrefs(
+        ui_message_loop_.message_loop_proxy()));
     cache_.reset(
         new ShellWindowGeometryCache(&profile_, prefs_->prefs()));
     cache_->SetSyncDelayForTests(0);
@@ -53,7 +53,7 @@ class ShellWindowGeometryCacheTest : public testing::Test {
   TestingProfile profile_;
   MessageLoopForUI ui_message_loop_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<TestExtensionPrefs> prefs_;
+  scoped_ptr<extensions::TestExtensionPrefs> prefs_;
   scoped_ptr<ShellWindowGeometryCache> cache_;
 };
 
