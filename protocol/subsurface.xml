@@ -60,8 +60,6 @@
     <enum name="error">
       <entry name="bad_surface" value="0"
              summary="the to-be sub-surface is invalid"/>
-      <entry name="bad_parent" value="1"
-             summary="the given parent is a sub-surface"/>
     </enum>
 
     <request name="get_subsurface">
