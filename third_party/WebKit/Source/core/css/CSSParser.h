@@ -32,7 +32,6 @@
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/MediaQuery.h"
-#include "core/page/UseCounter.h"
 #include "core/platform/graphics/Color.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
@@ -83,7 +82,7 @@ public:
         GeneralError
     };
 
-    CSSParser(const CSSParserContext&, UseCounter* = 0);
+    CSSParser(const CSSParserContext&);
 
     ~CSSParser();
 
@@ -620,8 +619,6 @@ private:
     bool isCalculation(CSSParserValue*);
 
     inline unsigned safeUserStringTokenOffset();
-
-    UseCounter* m_useCounter;
 
     friend class TransformOperationInfo;
     friend class FilterOperationInfo;

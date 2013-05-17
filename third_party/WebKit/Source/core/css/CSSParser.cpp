@@ -276,7 +276,7 @@ bool operator==(const CSSParserContext& a, const CSSParserContext& b)
         && a.needsSiteSpecificQuirks == b.needsSiteSpecificQuirks;
 }
 
-CSSParser::CSSParser(const CSSParserContext& context, UseCounter* counter)
+CSSParser::CSSParser(const CSSParserContext& context)
     : m_context(context)
     , m_important(false)
     , m_id(CSSPropertyInvalid)
@@ -310,7 +310,6 @@ CSSParser::CSSParser(const CSSParserContext& context, UseCounter* counter)
 #if ENABLE(CSS_DEVICE_ADAPTATION)
     , m_inViewport(false)
 #endif
-    , m_useCounter(counter)
 {
 #if YYDEBUG > 0
     cssyydebug = 1;
@@ -1220,7 +1219,7 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
     if (parseKeywordValue(declaration, propertyID, string, important, context))
         return true;
 
-    CSSParser parser(context, UseCounter::getFrom(document));
+    CSSParser parser(context);
     return parser.parseValue(declaration, propertyID, string, important, static_cast<StyleSheetContents*>(0));
 }
 
@@ -1250,9 +1249,6 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
 bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, StyleSheetContents* contextStyleSheet)
 {
     // FIXME: Check RuntimeCSSEnabled::isPropertyEnabled or isValueEnabledForProperty.
-
-    if (m_useCounter)
-        m_useCounter->count(propertyID);
 
     setStyleSheet(contextStyleSheet);
 
@@ -1341,10 +1337,9 @@ void CSSParser::parseSelector(const String& string, CSSSelectorList& selectorLis
 
 PassRefPtr<StylePropertySet> CSSParser::parseInlineStyleDeclaration(const String& string, Element* element)
 {
-    Document* document = element->document();
-    CSSParserContext context = document->elementSheet()->contents()->parserContext();
-    context.mode = strictToCSSParserMode(element->isHTMLElement() && !document->inQuirksMode());
-    return CSSParser(context, UseCounter::getFrom(document)).parseDeclaration(string, document->elementSheet()->contents());
+    CSSParserContext context = element->document()->elementSheet()->contents()->parserContext();
+    context.mode = strictToCSSParserMode(element->isHTMLElement() && !element->document()->inQuirksMode());
+    return CSSParser(context).parseDeclaration(string, element->document()->elementSheet()->contents());
 }
 
 PassRefPtr<StylePropertySet> CSSParser::parseDeclaration(const String& string, StyleSheetContents* contextStyleSheet)
@@ -1705,9 +1700,6 @@ void CSSParser::setCurrentProperty(CSSPropertyID propId)
 
 bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 {
-    if (m_useCounter)
-        m_useCounter->count(propId);
-
     if (!m_valueList)
         return false;
 

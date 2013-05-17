@@ -69,8 +69,8 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
         return 0;
     }
 
+    CSSParser parser(parserContext());
     CSSStyleSheet* styleSheet = parentStyleSheet();
-    CSSParser parser(parserContext(), UseCounter::getFrom(styleSheet));
     RefPtr<StyleRuleBase> newRule = parser.parseRule(styleSheet ? styleSheet->contents() : 0, ruleString);
     if (!newRule) {
         // SYNTAX_ERR: Raised if the specified rule has a syntax error and is unparsable.

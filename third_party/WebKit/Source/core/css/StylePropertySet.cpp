@@ -300,8 +300,7 @@ void StylePropertySet::parseDeclaration(const String& styleDeclaration, StyleShe
         context = contextStyleSheet->parserContext();
         context.mode = cssParserMode();
     }
-
-    CSSParser parser(context, UseCounter::getFrom(contextStyleSheet));
+    CSSParser parser(context);
     parser.parseDeclaration(this, styleDeclaration, 0, contextStyleSheet);
 }
 
