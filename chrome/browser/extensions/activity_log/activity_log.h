@@ -95,7 +95,7 @@ class ActivityLog : public ProfileKeyedService,
   void LogBlockedAction(const Extension* extension,
                         const std::string& blocked_call,  // e.g., tabs.get
                         ListValue* args,                  // argument values
-                        const char* reason,               // why it's blocked
+                        const BlockedAction::Reason reason,  // why it's blocked
                         const std::string& extra);        // extra logging info
 
   // Log an interaction between an extension and a URL.

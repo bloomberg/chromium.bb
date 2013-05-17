@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/activity_log/blocked_actions.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -45,9 +46,6 @@ using WebKit::WebSecurityOrigin;
 
 namespace {
 
-const char kAccessDenied[] = "access denied";
-const char kQuotaExceeded[] = "quota exceeded";
-
 void LogSuccess(const Extension* extension,
                 const std::string& api_name,
                 scoped_ptr<ListValue> args,
@@ -72,7 +70,7 @@ void LogSuccess(const Extension* extension,
 void LogFailure(const Extension* extension,
                 const std::string& api_name,
                 scoped_ptr<ListValue> args,
-                const char* reason,
+                extensions::BlockedAction::Reason reason,
                 Profile* profile) {
   // The ActivityLog can only be accessed from the main (UI) thread.  If we're
   // running on the wrong thread, re-dispatch from the main thread.
@@ -264,7 +262,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     LogFailure(extension,
                params.name,
                args.Pass(),
-               kAccessDenied,
+               extensions::BlockedAction::ACCESS_DENIED,
                profile_cast);
     return;
   }
@@ -284,7 +282,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     LogFailure(extension,
                params.name,
                args.Pass(),
-               kAccessDenied,
+               extensions::BlockedAction::ACCESS_DENIED,
                profile_cast);
     return;
   }
@@ -304,7 +302,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     LogFailure(extension,
                params.name,
                args.Pass(),
-               kQuotaExceeded,
+               extensions::BlockedAction::QUOTA_EXCEEDED,
                profile_cast);
     function->OnQuotaExceeded(violation_error);
   }
@@ -369,7 +367,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
     LogFailure(extension,
                params.name,
                args.Pass(),
-               kAccessDenied,
+               extensions::BlockedAction::ACCESS_DENIED,
                profile());
     return;
   }
@@ -389,7 +387,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
     LogFailure(extension,
                params.name,
                args.Pass(),
-               kAccessDenied,
+               extensions::BlockedAction::ACCESS_DENIED,
                profile());
     return;
   }
@@ -408,7 +406,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
     LogFailure(extension,
                params.name,
                args.Pass(),
-               kQuotaExceeded,
+               extensions::BlockedAction::QUOTA_EXCEEDED,
                profile());
     function->OnQuotaExceeded(violation_error);
   }

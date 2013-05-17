@@ -1425,6 +1425,8 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
         "You do not have permission to use '%s'. Be sure to declare"
         " in your manifest what permissions you need.";
     std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
+    APIActivityLogger::LogBlockedCall(context->extension()->id(),
+                                      function_name);
     v8::ThrowException(
         v8::Exception::Error(v8::String::New(error_msg.c_str())));
     return false;

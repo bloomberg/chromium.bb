@@ -152,7 +152,7 @@ TEST_F(ActivityDatabaseTest, RecordBlockedAction) {
       base::Time::Now(),
       "do.evilThings",
       "1, 2",
-      "because i said so",
+      BlockedAction::ACCESS_DENIED,
       "extra");
   activity_db->RecordAction(action);
   activity_db->Close();
@@ -168,7 +168,7 @@ TEST_F(ActivityDatabaseTest, RecordBlockedAction) {
   ASSERT_EQ("punky", statement.ColumnString(0));
   ASSERT_EQ("do.evilThings", statement.ColumnString(2));
   ASSERT_EQ("1, 2", statement.ColumnString(3));
-  ASSERT_EQ("because i said so", statement.ColumnString(4));
+  ASSERT_EQ("access denied", statement.ColumnString(4));
   ASSERT_EQ("extra", statement.ColumnString(5));
 }
 

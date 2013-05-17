@@ -35,7 +35,12 @@ class APIActivityLogger : public ChromeV8Extension {
   //    arg3 - any extra logging info as a string (optional)
   static v8::Handle<v8::Value> LogEvent(const v8::Arguments& args);
 
+  // This is for the Dispatcher to use to log blocked API calls.
+  static void LogBlockedCall(const std::string& extension_id,
+                             const std::string& function_name);
+
  private:
+   // Used to distinguish API calls & events from each other in LogInternal.
    enum CallType {
      APICALL,
      EVENT

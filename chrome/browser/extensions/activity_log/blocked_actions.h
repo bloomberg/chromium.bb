@@ -13,6 +13,12 @@ namespace extensions {
 // See APIActions for API calls that succeeded.
 class BlockedAction : public Action {
  public:
+  enum Reason {
+      UNKNOWN,
+      ACCESS_DENIED,
+      QUOTA_EXCEEDED,
+  };
+
   static const char* kTableName;
   static const char* kTableContentFields[];
 
@@ -25,7 +31,7 @@ class BlockedAction : public Action {
                 const base::Time& time,
                 const std::string& api_call,          // the blocked API call
                 const std::string& args,              // the arguments
-                const std::string& reason,            // the reason it's blocked
+                const Reason reason,                  // the reason it's blocked
                 const std::string& extra);            // any extra logging info
 
   // Create a new BlockedAction from a database row.
@@ -38,10 +44,13 @@ class BlockedAction : public Action {
   virtual std::string PrintForDebug() OVERRIDE;
 
   // Helper methods for recording the values into the db.
-  const std::string& reason() const { return reason_; }
   const std::string& api_call() const { return api_call_; }
   const std::string& args() const { return args_; }
   const std::string& extra() const { return extra_; }
+
+  // Helper methods for handling the Reason.
+  std::string ReasonAsString() const;
+  static Reason StringAsReason(const std::string& reason);
 
  protected:
   virtual ~BlockedAction();
@@ -49,7 +58,7 @@ class BlockedAction : public Action {
  private:
   std::string api_call_;
   std::string args_;
-  std::string reason_;
+  Reason reason_;
   std::string extra_;
 
   DISALLOW_COPY_AND_ASSIGN(BlockedAction);

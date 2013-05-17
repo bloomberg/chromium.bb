@@ -13,6 +13,7 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/activity_log/blocked_actions.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -80,11 +81,36 @@ void AddAPIActionToExtensionActivityLog(
   } else {
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
-    if (activity_log && activity_log->IsLogEnabled()) {
+    if (activity_log->IsLogEnabled()) {
       if (call_type == ACTIVITYAPI)
         activity_log->LogAPIAction(extension, api_call, args.get(), extra);
       else if (call_type == ACTIVITYEVENT)
         activity_log->LogEventAction(extension, api_call, args.get(), extra);
+    }
+  }
+}
+
+void AddBlockedActionToExtensionActivityLog(
+    Profile* profile,
+    const extensions::Extension* extension,
+    const std::string& api_call) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&AddBlockedActionToExtensionActivityLog,
+                                       profile,
+                                       extension,
+                                       api_call));
+  } else {
+    extensions::ActivityLog* activity_log =
+        extensions::ActivityLog::GetInstance(profile);
+    if (activity_log->IsLogEnabled()) {
+      scoped_ptr<ListValue> empty_args(new ListValue());
+      activity_log->LogBlockedAction(extension,
+                                     api_call,
+                                     empty_args.get(),
+                                     extensions::BlockedAction::ACCESS_DENIED,
+                                     "");
     }
   }
 }
@@ -113,7 +139,7 @@ void AddDOMActionToExtensionActivityLog(
   } else {
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
-    if (activity_log && activity_log->IsLogEnabled())
+    if (activity_log->IsLogEnabled())
       activity_log->LogDOMAction(extension, url, url_title,
                                  api_call, args.get(), extra);
   }
@@ -191,6 +217,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnAddAPIActionToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddDOMActionToActivityLog,
                         OnAddDOMActionToExtensionActivityLog);
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddBlockedCallToActivityLog,
+                        OnAddBlockedCallToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddEventToActivityLog,
                         OnAddEventToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
@@ -643,6 +671,16 @@ void ChromeRenderMessageFilter::OnAddEventToExtensionActivityLog(
   AddAPIActionToExtensionActivityLog(profile_, ACTIVITYEVENT, extension,
                                      params.api_call, args.Pass(),
                                      params.extra);
+}
+
+void ChromeRenderMessageFilter::OnAddBlockedCallToExtensionActivityLog(
+    const std::string& extension_id,
+    const std::string& function_name) {
+  const extensions::Extension* extension =
+      extension_info_map_->extensions().GetByID(extension_id);
+  AddBlockedActionToExtensionActivityLog(profile_,
+                                         extension,
+                                         function_name);
 }
 
 void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,

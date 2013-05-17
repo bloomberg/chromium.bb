@@ -71,6 +71,14 @@ void APIActivityLogger::LogInternal(const CallType call_type,
   }
 }
 
+// static
+void APIActivityLogger::LogBlockedCall(const std::string& extension_id,
+                                       const std::string& function_name) {
+  content::RenderThread::Get()->Send(
+      new ExtensionHostMsg_AddBlockedCallToActivityLog(extension_id,
+                                                       function_name));
+}
+
 
 }  // namespace extensions
 

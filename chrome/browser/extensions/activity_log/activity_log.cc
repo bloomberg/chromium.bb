@@ -288,7 +288,7 @@ void ActivityLog::LogEventAction(const Extension* extension,
 void ActivityLog::LogBlockedAction(const Extension* extension,
                                    const std::string& blocked_call,
                                    ListValue* args,
-                                   const char* reason,
+                                   BlockedAction::Reason reason,
                                    const std::string& extra) {
   if (!IsLogEnabled()) return;
   if (!testing_mode_ &&
@@ -298,7 +298,7 @@ void ActivityLog::LogBlockedAction(const Extension* extension,
                                                           base::Time::Now(),
                                                           blocked_call,
                                                           MakeArgList(args),
-                                                          std::string(reason),
+                                                          reason,
                                                           extra);
   ScheduleAndForget(&ActivityDatabase::RecordAction, action);
   // Display the action.
