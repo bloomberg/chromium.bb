@@ -72,6 +72,12 @@ class WebrtcAudioQualityTest(webrtc_test_base.WebrtcTestBase):
     javascript, connect the WebAudio buffer node to the peer connection and play
     it out on the other side (in a video tag).
 
+    We originally got the input file by playing a file through this test and
+    using the resulting file. The purpose is to lessen the impact on the score
+    from known distortions such as comfort noise. You can do such a rebase on
+    the _REFERENCE_FILE by setting REBASE=1 before running the test. The file
+    will end up in the system temp folder and will end with _webrtc.wav.
+
     We then record what Chrome plays out. We give it plenty of time to play
     the whole file over the connection, and then we trim silence on both ends.
     That is finally fed into PESQ for comparison.
@@ -110,11 +116,13 @@ class WebrtcAudioQualityTest(webrtc_test_base.WebrtcTestBase):
     self.CreatePeerConnection(tab_index=0)
     self.AddWebAudioFile(tab_index=0, input_relative_path=input_relative_path)
 
-    # Note: it COULD be that the media flow isn't necessarily established on
-    # the connection just because the ready state is ok on both sides. In that
-    # case we could need a small sleep between call establishment and playing
-    # to avoid cutting of the beginning of the audio file.
     self.EstablishCall(from_tab_with_index=0, to_tab_with_index=1)
+
+    # Note: the media flow isn't necessarily established on the connection just
+    # because the ready state is ok on both sides. We sleep a bit between call
+    # establishment and playing to avoid cutting of the beginning of the audio
+    # file.
+    time.sleep(2)
     self.PlayWebAudioFile(tab_index=0)
 
     # Keep the call up while we detect audio.
@@ -134,6 +142,7 @@ class WebrtcAudioQualityTest(webrtc_test_base.WebrtcTestBase):
   def _RecordAndVerify(self, record_duration_seconds, sound_producing_function,
                        verification_function):
     audio_tools.ForceMicrophoneVolumeTo100Percent()
+    rebase = 'REBASE' in os.environ
 
     # The two temp files that will be potentially used in the test.
     temp_file = None
@@ -141,7 +150,8 @@ class WebrtcAudioQualityTest(webrtc_test_base.WebrtcTestBase):
     try:
       temp_file = self._CreateTempFile()
       record_thread = audio_tools.AudioRecorderThread(record_duration_seconds,
-                                                      temp_file)
+                                                      temp_file,
+                                                      record_mono=True)
       record_thread.start()
       sound_producing_function()
       record_thread.join()
@@ -156,7 +166,7 @@ class WebrtcAudioQualityTest(webrtc_test_base.WebrtcTestBase):
       # Delete the temporary files used by the test.
       if temp_file:
         os.remove(temp_file)
-      if file_no_silence:
+      if file_no_silence and not rebase:
         os.remove(file_no_silence)
 
   def _CreateTempFile(self):

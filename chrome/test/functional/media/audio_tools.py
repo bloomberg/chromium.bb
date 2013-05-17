@@ -45,15 +45,19 @@ else:
 class AudioRecorderThread(threading.Thread):
   """A thread that records audio out of the default audio output."""
 
-  def __init__(self, duration, output_file):
+  def __init__(self, duration, output_file, record_mono=False):
     threading.Thread.__init__(self)
     self.error = ''
     self._duration = duration
     self._output_file = output_file
+    self._record_mono = record_mono
 
   def run(self):
     """Starts audio recording."""
     if WINDOWS:
+      if record_mono:
+        raise Exception("Mono recording not supported on Windows yet!")
+
       duration = time.strftime('%H:%M:%S', time.gmtime(self._duration))
       cmd = [_AUDIO_RECORDER, '/FILE', self._output_file, '/DURATION',
              duration]
@@ -61,8 +65,9 @@ class AudioRecorderThread(threading.Thread):
       ctypes.windll.kernel32.Wow64DisableWow64FsRedirection(
           ctypes.byref(ctypes.c_long()))
     else:
-      cmd = [_AUDIO_RECORDER, '-d', self._duration, '-f', 'dat',
-             self._output_file]
+      num_channels = 1 if self._record_mono else 2
+      cmd = [_AUDIO_RECORDER, '-d', self._duration, '-f', 'dat', '-c',
+             str(num_channels), self._output_file]
 
     cmd = [str(s) for s in cmd]
     logging.debug('Running command: %s', ' '.join(cmd))
