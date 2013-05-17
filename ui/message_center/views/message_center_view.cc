@@ -192,7 +192,6 @@ RichMessageCenterButtonBar::RichMessageCenterButtonBar(
       IDS_MESSAGE_CENTER_FOOTER_TITLE));
   notification_label->SetAutoColorReadabilityEnabled(false);
   notification_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  notification_label->SetElideBehavior(views::Label::ELIDE_AT_END);
   notification_label->SetEnabledColor(kRegularTextColor);
   AddChildView(notification_label);
 

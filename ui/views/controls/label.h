@@ -132,7 +132,7 @@ class VIEWS_EXPORT Label : public View {
   void SetAllowCharacterBreak(bool allow_character_break);
 
   // Sets whether the label text should be elided in the middle or end (if
-  // necessary). The default is to not elide at all.
+  // necessary). The default is to elide at the end.
   // NOTE: Eliding in the middle is not supported for multi-line strings.
   void SetElideBehavior(ElideBehavior elide_behavior);
 

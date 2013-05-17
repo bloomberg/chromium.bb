@@ -304,8 +304,9 @@ TEST(LabelTest, AutoDetectDirectionality) {
   gfx::Rect text_bounds;
   int flags;
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_EQ(gfx::Canvas::FORCE_RTL_DIRECTIONALITY |
-            gfx::Canvas::TEXT_ALIGN_CENTER, flags);
+  EXPECT_EQ(gfx::Canvas::FORCE_RTL_DIRECTIONALITY,
+            flags & (gfx::Canvas::FORCE_RTL_DIRECTIONALITY |
+                     gfx::Canvas::FORCE_LTR_DIRECTIONALITY));
 
   // Test text starts with LTR character.
   test_text = (WideToUTF16(L"ltr \x5d0\x5d1\x5d2 abc"));
@@ -317,8 +318,9 @@ TEST(LabelTest, AutoDetectDirectionality) {
                   required_size.height() + extra.height());
 
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY |
-            gfx::Canvas::TEXT_ALIGN_CENTER, flags);
+  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY,
+            flags & (gfx::Canvas::FORCE_RTL_DIRECTIONALITY |
+                     gfx::Canvas::FORCE_LTR_DIRECTIONALITY));
 }
 
 TEST(LabelTest, DrawSingleLineString) {
@@ -351,8 +353,10 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY |
-            gfx::Canvas::TEXT_ALIGN_CENTER, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_CENTER,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
   // Left aligned text.
   label.SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -365,8 +369,10 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY |
-            gfx::Canvas::TEXT_ALIGN_LEFT, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_LEFT,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
   // Right aligned text.
   label.SetHorizontalAlignment(gfx::ALIGN_RIGHT);
@@ -379,8 +385,10 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY |
-            gfx::Canvas::TEXT_ALIGN_RIGHT, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_RIGHT,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
   // Test single line drawing with a border.
   gfx::Insets border(39, 34, 8, 96);
@@ -410,8 +418,10 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY |
-            gfx::Canvas::TEXT_ALIGN_CENTER, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_CENTER,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
   // Left aligned text with border.
   label.SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -424,8 +434,10 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY |
-            gfx::Canvas::TEXT_ALIGN_LEFT, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_LEFT,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
   // Right aligned text.
   label.SetHorizontalAlignment(gfx::ALIGN_RIGHT);
@@ -438,8 +450,10 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY |
-            gfx::Canvas::TEXT_ALIGN_RIGHT, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_RIGHT,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 }
 
 // On Linux the underlying pango routines require a max height in order to
@@ -615,7 +629,10 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_CENTER, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_CENTER,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
   // ALIGN_LEFT label.
   label.SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -628,7 +645,10 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_RIGHT, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_RIGHT,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
   // ALIGN_RIGHT label.
   label.SetHorizontalAlignment(gfx::ALIGN_RIGHT);
@@ -641,7 +661,10 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_LEFT, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_LEFT,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
 
   // Test single line drawing with a border.
@@ -672,7 +695,10 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_CENTER, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_CENTER,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
   // ALIGN_LEFT text with border.
   label.SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -685,7 +711,10 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_RIGHT, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_RIGHT,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
   // ALIGN_RIGHT text.
   label.SetHorizontalAlignment(gfx::ALIGN_RIGHT);
@@ -698,7 +727,10 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_LEFT, flags);
+  EXPECT_EQ(gfx::Canvas::TEXT_ALIGN_LEFT,
+            flags & (gfx::Canvas::TEXT_ALIGN_LEFT |
+                     gfx::Canvas::TEXT_ALIGN_CENTER |
+                     gfx::Canvas::TEXT_ALIGN_RIGHT));
 
   // Reset locale.
   base::i18n::SetICUDefaultLocale(locale);

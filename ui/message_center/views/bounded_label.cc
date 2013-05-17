@@ -75,7 +75,6 @@ InnerBoundedLabel::InnerBoundedLabel(const BoundedLabel& owner)
       wrapped_text_lines_(0) {
   SetMultiLine(true);
   SetAllowCharacterBreak(true);
-  SetElideBehavior(views::Label::ELIDE_AT_END);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   set_collapse_when_hidden(true);
 }

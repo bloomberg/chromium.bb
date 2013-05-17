@@ -178,7 +178,6 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   // gfx::Canvas::NO_SUBPIXEL_RENDERING flag and avoid some visual artifacts.
   window_title_->SetBackgroundColor(0x00000000);
   window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  window_title_->SetElideBehavior(views::Label::ELIDE_AT_END);
   AddChildView(window_title_);
 
   UpdateAvatarInfo();

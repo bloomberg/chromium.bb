@@ -137,7 +137,6 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   views::Label* title = new views::Label(item.title);
   title->set_collapse_when_hidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title->SetElideBehavior(views::Label::ELIDE_AT_END);
   title->SetEnabledColor(message_center::kRegularTextColor);
   title->SetBackgroundColor(kRegularTextBackgroundColor);
   AddChildView(title);
@@ -145,7 +144,6 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   views::Label* message = new views::Label(item.message);
   message->set_collapse_when_hidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message->SetElideBehavior(views::Label::ELIDE_AT_END);
   message->SetEnabledColor(kDimTextColor);
   message->SetBackgroundColor(kDimTextBackgroundColor);
   AddChildView(message);
@@ -305,7 +303,6 @@ void NotificationButton::SetTitle(const string16& title) {
   } else {
     title_ = new views::Label(title);
     title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    title_->SetElideBehavior(views::Label::ELIDE_AT_END);
     title_->SetEnabledColor(message_center::kRegularTextColor);
     title_->SetBackgroundColor(kRegularTextBackgroundColor);
     title_->set_border(MakeEmptyBorder(kButtonTitleTopPadding, 0, 0, 0));

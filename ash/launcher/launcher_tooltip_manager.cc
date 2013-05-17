@@ -103,7 +103,6 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
   label_ = new views::Label;
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_->SetEnabledColor(kTooltipTextColor);
-  label_->SetElideBehavior(views::Label::ELIDE_AT_END);
   AddChildView(label_);
   views::BubbleDelegateView::CreateBubble(this);
 }

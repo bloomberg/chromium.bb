@@ -366,7 +366,7 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   line_height_ = 0;
   is_multi_line_ = false;
   allow_character_break_ = false;
-  elide_behavior_ = NO_ELIDE;
+  elide_behavior_ = ELIDE_AT_END;
   collapse_when_hidden_ = false;
   directionality_mode_ = USE_UI_DIRECTIONALITY;
   has_focus_border_ = false;
@@ -478,9 +478,10 @@ void Label::CalculateDrawStringParams(string16* paint_text,
                                       int* flags) const {
   DCHECK(paint_text && text_bounds && flags);
 
-  // TODO(msw): Use ElideRectangleText to support eliding multi-line text.
-  if (elide_behavior_ == ELIDE_AS_EMAIL) {
-    *paint_text = ui::ElideEmail(text_, font_, GetAvailableRect().width());
+  // TODO(msw): Use ElideRectangleText to support eliding multi-line text.  Once
+  // this is done, we can set NO_ELLIPSIS unconditionally at the bottom.
+  if (is_multi_line_ || (elide_behavior_ == NO_ELIDE)) {
+    *paint_text = text_;
   } else if (elide_behavior_ == ELIDE_IN_MIDDLE) {
     *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),
                                 ui::ELIDE_IN_MIDDLE);
@@ -488,11 +489,14 @@ void Label::CalculateDrawStringParams(string16* paint_text,
     *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),
                                 ui::ELIDE_AT_END);
   } else {
-    *paint_text = text_;
+    DCHECK_EQ(ELIDE_AS_EMAIL, elide_behavior_);
+    *paint_text = ui::ElideEmail(text_, font_, GetAvailableRect().width());
   }
 
   *text_bounds = GetTextBounds();
   *flags = ComputeDrawStringFlags();
+  if (!is_multi_line_ || (elide_behavior_ == NO_ELIDE))
+     *flags |= gfx::Canvas::NO_ELLIPSIS;
 }
 
 void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
