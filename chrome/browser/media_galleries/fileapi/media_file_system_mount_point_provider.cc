@@ -35,8 +35,9 @@
 #endif
 
 using fileapi::FileSystemContext;
-using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
+// 'using fileapi::FileSystemType' doesn't work because it conflicts with
+// winnt.h's FileSystemType enum value in global scope.
 
 namespace chrome {
 
@@ -65,7 +66,7 @@ MediaFileSystemMountPointProvider::~MediaFileSystemMountPointProvider() {
 }
 
 bool MediaFileSystemMountPointProvider::CanHandleType(
-    FileSystemType type) const {
+    fileapi::FileSystemType type) const {
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
     case fileapi::kFileSystemTypeDeviceMedia:
@@ -78,7 +79,7 @@ bool MediaFileSystemMountPointProvider::CanHandleType(
 
 void MediaFileSystemMountPointProvider::ValidateFileSystemRoot(
     const GURL& origin_url,
-    FileSystemType type,
+    fileapi::FileSystemType type,
     bool create,
     const ValidateFileSystemCallback& callback) {
   // We never allow opening a new isolated FileSystem via usual OpenFileSystem.
@@ -97,7 +98,7 @@ MediaFileSystemMountPointProvider::GetFileSystemRootPathOnFileThread(
 }
 
 fileapi::FileSystemFileUtil* MediaFileSystemMountPointProvider::GetFileUtil(
-    FileSystemType type) {
+    fileapi::FileSystemType type) {
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
       return native_media_file_util_->sync_file_util();
@@ -108,7 +109,7 @@ fileapi::FileSystemFileUtil* MediaFileSystemMountPointProvider::GetFileUtil(
 }
 
 fileapi::AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
-    FileSystemType type) {
+    fileapi::FileSystemType type) {
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
       return native_media_file_util_.get();
@@ -126,7 +127,7 @@ fileapi::AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
 
 fileapi::CopyOrMoveFileValidatorFactory*
 MediaFileSystemMountPointProvider::GetCopyOrMoveFileValidatorFactory(
-    FileSystemType type, base::PlatformFileError* error_code) {
+    fileapi::FileSystemType type, base::PlatformFileError* error_code) {
   DCHECK(error_code);
   *error_code = base::PLATFORM_FILE_OK;
   switch (type) {
@@ -145,7 +146,7 @@ MediaFileSystemMountPointProvider::GetCopyOrMoveFileValidatorFactory(
 
 void
 MediaFileSystemMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
-    FileSystemType type,
+    fileapi::FileSystemType type,
     scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory) {
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
@@ -217,7 +218,7 @@ MediaFileSystemMountPointProvider::GetQuotaUtil() {
 
 void MediaFileSystemMountPointProvider::DeleteFileSystem(
     const GURL& origin_url,
-    FileSystemType type,
+    fileapi::FileSystemType type,
     FileSystemContext* context,
     const DeleteFileSystemCallback& callback) {
   NOTREACHED();
