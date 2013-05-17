@@ -7,6 +7,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/common/common_param_traits.h"
 
@@ -42,8 +43,9 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
   scoped_refptr<Extension> extension =
       Extension::Create(path, location, *manifest, creation_flags, error);
   if (extension) {
-    extension->SetActivePermissions(
-          new PermissionSet(apis, explicit_hosts, scriptable_hosts));
+    extensions::PermissionsData::SetActivePermissions(
+        extension,
+        new PermissionSet(apis, explicit_hosts, scriptable_hosts));
   }
   return extension;
 }

@@ -1005,7 +1005,7 @@ void ExtensionService::GrantPermissions(const Extension* extension) {
 
 // static
 void ExtensionService::RecordPermissionMessagesHistogram(
-    const Extension* e, const char* histogram) {
+    const Extension* extension, const char* histogram) {
   // Since this is called from multiple sources, and since the histogram macros
   // use statics, we need to manually lookup the histogram ourselves.
   base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
@@ -1015,7 +1015,8 @@ void ExtensionService::RecordPermissionMessagesHistogram(
       PermissionMessage::kEnumBoundary + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 
-  PermissionMessages permissions = e->GetPermissionMessages();
+  PermissionMessages permissions =
+      extensions::PermissionsData::GetPermissionMessages(extension);
   if (permissions.empty()) {
     counter->Add(PermissionMessage::kNone);
   } else {
@@ -1076,7 +1077,8 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // If the extension has permission to load chrome://favicon/ resources we need
   // to make sure that the FaviconSource is registered with the
   // ChromeURLDataManager.
-  if (extension->HasHostPermission(GURL(chrome::kChromeUIFaviconURL))) {
+  if (extensions::PermissionsData::HasHostPermission(
+          extension, GURL(chrome::kChromeUIFaviconURL))) {
     FaviconSource* favicon_source = new FaviconSource(profile_,
                                                       FaviconSource::FAVICON);
     content::URLDataSource::Add(profile_, favicon_source);
@@ -1084,14 +1086,16 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 
 #if !defined(OS_ANDROID)
   // Same for chrome://theme/ resources.
-  if (extension->HasHostPermission(GURL(chrome::kChromeUIThemeURL))) {
+  if (extensions::PermissionsData::HasHostPermission(
+          extension, GURL(chrome::kChromeUIThemeURL))) {
     ThemeSource* theme_source = new ThemeSource(profile_);
     content::URLDataSource::Add(profile_, theme_source);
   }
 #endif
 
   // Same for chrome://thumb/ resources.
-  if (extension->HasHostPermission(GURL(chrome::kChromeUIThumbnailURL))) {
+  if (extensions::PermissionsData::HasHostPermission(
+          extension, GURL(chrome::kChromeUIThumbnailURL))) {
     ThumbnailSource* thumbnail_source = new ThumbnailSource(profile_);
     content::URLDataSource::Add(profile_, thumbnail_source);
   }
@@ -2206,8 +2210,8 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   bool is_privilege_increase = false;
   // We only need to compare the granted permissions to the current permissions
   // if the extension is not allowed to silently increase its permissions.
-  if (!(extension->CanSilentlyIncreasePermissions() ||
-        is_default_app_install)) {
+  if (!extensions::PermissionsData::CanSilentlyIncreasePermissions(extension) &&
+      !is_default_app_install) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
     scoped_refptr<PermissionSet> granted_permissions =

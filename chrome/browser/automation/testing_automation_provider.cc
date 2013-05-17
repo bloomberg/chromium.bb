@@ -119,6 +119,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -3627,10 +3628,12 @@ namespace {
 
 ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
   extensions::URLPatternSet pattern_set;
-  if (effective_perm)
-    pattern_set = ext->GetEffectiveHostPermissions();
-  else
+  if (effective_perm) {
+    pattern_set =
+        extensions::PermissionsData::GetEffectiveHostPermissions(ext);
+  } else {
     pattern_set = ext->GetActivePermissions()->explicit_hosts();
+  }
 
   ListValue* permissions = new ListValue;
   for (extensions::URLPatternSet::const_iterator perm = pattern_set.begin();

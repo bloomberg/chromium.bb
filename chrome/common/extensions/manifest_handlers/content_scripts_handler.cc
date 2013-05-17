@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_resource.h"
@@ -136,7 +137,7 @@ bool LoadUserScriptFromDictionary(const DictionaryValue* content_script,
     }
 
     URLPattern pattern(UserScript::ValidUserScriptSchemes(
-        extension->CanExecuteScriptEverywhere()));
+        PermissionsData::CanExecuteScriptEverywhere(extension)));
 
     URLPattern::ParseResult parse_result = pattern.Parse(match_str);
     if (parse_result != URLPattern::PARSE_SUCCESS) {
@@ -149,7 +150,7 @@ bool LoadUserScriptFromDictionary(const DictionaryValue* content_script,
     }
 
     // TODO(aboxhall): check for webstore
-    if (!extension->CanExecuteScriptEverywhere() &&
+    if (!PermissionsData::CanExecuteScriptEverywhere(extension) &&
         pattern.scheme() != chrome::kChromeUIScheme) {
       // Exclude SCHEME_CHROMEUI unless it's been explicitly requested.
       // If the --extensions-on-chrome-urls flag has not been passed, requesting
@@ -160,7 +161,7 @@ bool LoadUserScriptFromDictionary(const DictionaryValue* content_script,
     }
 
     if (pattern.MatchesScheme(chrome::kFileScheme) &&
-        !extension->CanExecuteScriptEverywhere()) {
+        !PermissionsData::CanExecuteScriptEverywhere(extension)) {
       extension->set_wants_file_access(true);
       if (!(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS)) {
         pattern.SetValidSchemes(
@@ -193,7 +194,7 @@ bool LoadUserScriptFromDictionary(const DictionaryValue* content_script,
       }
 
       int valid_schemes = UserScript::ValidUserScriptSchemes(
-          extension->CanExecuteScriptEverywhere());
+          PermissionsData::CanExecuteScriptEverywhere(extension));
       URLPattern pattern(valid_schemes);
 
       URLPattern::ParseResult parse_result = pattern.Parse(match_str);

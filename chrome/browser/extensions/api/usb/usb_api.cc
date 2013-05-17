@@ -14,6 +14,7 @@
 #include "chrome/browser/usb/usb_service.h"
 #include "chrome/browser/usb/usb_service_factory.h"
 #include "chrome/common/extensions/api/usb.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
 
 namespace BulkTransfer = extensions::api::usb::BulkTransfer;
@@ -329,8 +330,8 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
   const uint16_t vendor_id = parameters_->options.vendor_id;
   const uint16_t product_id = parameters_->options.product_id;
   UsbDevicePermission::CheckParam param(vendor_id, product_id);
-  if (!GetExtension()->CheckAPIPermissionWithParam(
-        APIPermission::kUsbDevice, &param)) {
+  if (!PermissionsData::CheckAPIPermissionWithParam(
+          GetExtension(), APIPermission::kUsbDevice, &param)) {
     LOG(WARNING) << "Insufficient permissions to access device.";
     CompleteWithError(kErrorPermissionDenied);
     return;

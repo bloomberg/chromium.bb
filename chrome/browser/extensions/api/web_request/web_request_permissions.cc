@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/common/constants.h"
@@ -24,7 +25,7 @@ namespace {
 // to check for updates, extension blacklisting, etc.
 bool IsSensitiveURL(const GURL& url) {
   // TODO(battre) Merge this, CanExtensionAccessURL and
-  // Extension::CanExecuteScriptOnPage into one function.
+  // PermissionsData::CanExecuteScriptOnPage into one function.
   bool sensitive_chrome_url = false;
   const std::string host = url.host();
   const char kGoogleCom[] = ".google.com";
@@ -118,12 +119,13 @@ bool WebRequestPermissions::CanExtensionAccessURL(
       // about: URLs are not covered in host permissions, but are allowed
       // anyway.
       if (!((url.SchemeIs(chrome::kAboutScheme) ||
-             extension->HasHostPermission(url) ||
-             url.GetOrigin() == extension->url())))
+             extensions::PermissionsData::HasHostPermission(extension, url) ||
+             url.GetOrigin() == extension->url()))) {
         return false;
+      }
       break;
     case REQUIRE_ALL_URLS:
-      if (!extension->HasEffectiveAccessToAllHosts())
+      if (!extensions::PermissionsData::HasEffectiveAccessToAllHosts(extension))
         return false;
       break;
   }

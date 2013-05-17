@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/dom_activity_logger.h"
@@ -179,11 +180,13 @@ void UserScriptScheduler::ExecuteCodeImpl(
       // For child frames, we just skip ones the extension doesn't have access
       // to and carry on.
       if (!params.is_web_view &&
-          !extension->CanExecuteScriptOnPage(child_frame->document().url(),
-                                             frame_->document().url(),
-                                             extension_helper->tab_id(),
-                                             NULL,
-                                             NULL)) {
+          !PermissionsData::CanExecuteScriptOnPage(
+              extension,
+              child_frame->document().url(),
+              frame_->document().url(),
+              extension_helper->tab_id(),
+              NULL,
+              NULL)) {
         if (child_frame->parent()) {
           continue;
         } else {

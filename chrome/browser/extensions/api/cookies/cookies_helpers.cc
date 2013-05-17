@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
@@ -134,7 +135,7 @@ void AppendMatchingCookiesToVector(const net::CookieList& all_cookies,
     // Ignore any cookie whose domain doesn't match the extension's
     // host permissions.
     GURL cookie_domain_url = GetURLFromCanonicalCookie(*it);
-    if (!extension->HasHostPermission(cookie_domain_url))
+    if (!PermissionsData::HasHostPermission(extension, cookie_domain_url))
       continue;
     // Filter the cookie using the match filter.
     cookies_helpers::MatchFilter filter(details);

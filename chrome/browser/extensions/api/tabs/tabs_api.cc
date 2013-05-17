@@ -60,6 +60,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/message_bundle.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -1399,7 +1400,8 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
   // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
   // we need to check host permissions before allowing them.
   if (url.SchemeIs(chrome::kJavaScriptScheme)) {
-    if (!GetExtension()->CanExecuteScriptOnPage(
+    if (!PermissionsData::CanExecuteScriptOnPage(
+            GetExtension(),
             web_contents_->GetURL(),
             web_contents_->GetURL(),
             tab_id,
@@ -1743,9 +1745,11 @@ bool TabsCaptureVisibleTabFunction::RunImpl() {
       web_contents->GetController().GetLastCommittedEntry();
   GURL last_committed_url = last_committed_entry ?
       last_committed_entry->GetURL() : GURL();
-  if (!GetExtension()->CanCaptureVisiblePage(last_committed_url,
-                                             SessionID::IdForTab(web_contents),
-                                             &error_)) {
+  if (!PermissionsData::CanCaptureVisiblePage(
+          GetExtension(),
+          last_committed_url,
+          SessionID::IdForTab(web_contents),
+          &error_)) {
     return false;
   }
 
@@ -1957,8 +1961,8 @@ ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {}
 
 bool ExecuteCodeInTabFunction::HasPermission() {
   if (Init() &&
-      extension_->HasAPIPermissionForTab(execute_tab_id_,
-                                         APIPermission::kTab)) {
+      PermissionsData::HasAPIPermissionForTab(
+          extension_, execute_tab_id_, APIPermission::kTab)) {
     return true;
   }
   return ExtensionFunction::HasPermission();
@@ -1980,11 +1984,12 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
 
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  if (!GetExtension()->CanExecuteScriptOnPage(contents->GetURL(),
-                                              contents->GetURL(),
-                                              execute_tab_id_,
-                                              NULL,
-                                              &error_)) {
+  if (!PermissionsData::CanExecuteScriptOnPage(GetExtension(),
+                                               contents->GetURL(),
+                                               contents->GetURL(),
+                                               execute_tab_id_,
+                                               NULL,
+                                               &error_)) {
     return false;
   }
 

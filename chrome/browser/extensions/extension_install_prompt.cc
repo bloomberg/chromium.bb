@@ -31,6 +31,7 @@
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -678,7 +679,9 @@ void ExtensionInstallPrompt::OnMintTokenFailure(
 
 void ExtensionInstallPrompt::ShowConfirmation() {
   if (permissions_ &&
-      (!extension_ || !extension_->ShouldSkipPermissionWarnings())) {
+      (!extension_ ||
+       !extensions::PermissionsData::ShouldSkipPermissionWarnings(
+           extension_))) {
     Manifest::Type extension_type = extension_ ?
         extension_->GetType() : Manifest::TYPE_UNKNOWN;
     prompt_.SetPermissions(permissions_->GetWarningMessages(extension_type));

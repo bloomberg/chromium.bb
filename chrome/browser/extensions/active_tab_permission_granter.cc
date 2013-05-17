@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
@@ -57,7 +58,9 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   scoped_refptr<const PermissionSet> new_permissions =
       new PermissionSet(new_apis, new_hosts, URLPatternSet());
 
-  extension->UpdateTabSpecificPermissions(tab_id_, new_permissions);
+  PermissionsData::UpdateTabSpecificPermissions(extension,
+                                                tab_id_,
+                                                new_permissions);
   granted_extensions_.Insert(extension);
   Send(new ExtensionMsg_UpdateTabSpecificPermissions(GetPageID(),
                                                      tab_id_,
@@ -103,7 +106,7 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
 
   for (ExtensionSet::const_iterator it = granted_extensions_.begin();
        it != granted_extensions_.end(); ++it) {
-    (*it)->ClearTabSpecificPermissions(tab_id_);
+    PermissionsData::ClearTabSpecificPermissions(*it, tab_id_);
     extension_ids.push_back((*it)->id());
   }
 

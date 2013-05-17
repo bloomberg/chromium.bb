@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/pref_names.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -146,8 +147,8 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
   }
   MediaGalleriesPermission::CheckParam read_param(
       MediaGalleriesPermission::kReadPermission);
-  bool has_read_permission = GetExtension()->CheckAPIPermissionWithParam(
-      APIPermission::kMediaGalleries, &read_param);
+  bool has_read_permission = PermissionsData::CheckAPIPermissionWithParam(
+      GetExtension(), APIPermission::kMediaGalleries, &read_param);
 
   const int child_id = rvh->GetProcess()->GetID();
   base::ListValue* list = new base::ListValue();

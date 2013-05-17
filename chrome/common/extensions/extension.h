@@ -247,58 +247,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static void SetScriptingWhitelist(const ScriptingWhitelist& whitelist);
   static const ScriptingWhitelist* GetScriptingWhitelist();
 
-  // Returns true if this extension has the given permission. Prefer
-  // IsExtensionWithPermissionOrSuggestInConsole when developers may be using an
-  // api that requires a permission they didn't know about, e.g. open web apis.
+  // DEPRECATED: These methods have been moved to PermissionsData.
+  // TODO(rdevlin.cronin): remove these once all calls have been updated.
   bool HasAPIPermission(APIPermission::ID permission) const;
   bool HasAPIPermission(const std::string& function_name) const;
-  bool HasAPIPermissionForTab(int tab_id, APIPermission::ID permission) const;
-
-  bool CheckAPIPermissionWithParam(
-      APIPermission::ID permission,
-      const APIPermission::CheckParam* param) const;
-
-  const URLPatternSet& GetEffectiveHostPermissions() const;
-
-  // Returns true if the extension can silently increase its permission level.
-  // Users must approve permissions for unpacked and packed extensions in the
-  // following situations:
-  //  - when installing or upgrading packed extensions
-  //  - when installing unpacked extensions that have NPAPI plugins
-  //  - when either type of extension requests optional permissions
-  bool CanSilentlyIncreasePermissions() const;
-
-  // Whether the extension has access to the given URL.
-  bool HasHostPermission(const GURL& url) const;
-
-  // Whether the extension has effective access to all hosts. This is true if
-  // there is a content script that matches all hosts, if there is a host
-  // permission grants access to all hosts (like <all_urls>) or an api
-  // permission that effectively grants access to all hosts (e.g. proxy,
-  // network, etc.)
-  bool HasEffectiveAccessToAllHosts() const;
-
-  // Whether the extension effectively has all permissions (for example, by
-  // having an NPAPI plugin).
-  bool HasFullPermissions() const;
-
-  // Returns the full list of permission messages that this extension
-  // should display at install time.
-  PermissionMessages GetPermissionMessages() const;
-
-  // Returns the full list of permission messages that this extension
-  // should display at install time. The messages are returned as strings
-  // for convenience.
-  std::vector<string16> GetPermissionMessageStrings() const;
-
-  // Returns true if the extension does not require permission warnings
-  // to be displayed at install time.
-  bool ShouldSkipPermissionWarnings() const;
-
-  // Sets the active |permissions|.
-  void SetActivePermissions(const PermissionSet* permissions) const;
-
-  // Gets the extension's active permission set.
   scoped_refptr<const PermissionSet> GetActivePermissions() const;
 
   // Whether context menu should be shown for page and browser actions.
@@ -306,31 +258,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;
-
-  // Returns true if this extension can execute script on a page. If a
-  // UserScript object is passed, permission to run that specific script is
-  // checked (using its matches list). Otherwise, permission to execute script
-  // programmatically is checked (using the extension's host permission).
-  //
-  // This method is also aware of certain special pages that extensions are
-  // usually not allowed to run script on.
-  bool CanExecuteScriptOnPage(const GURL& document_url,
-                              const GURL& top_document_url,
-                              int tab_id,
-                              const UserScript* script,
-                              std::string* error) const;
-
-  // Returns true if this extension is a COMPONENT extension, or if it is
-  // on the whitelist of extensions that can script all pages.
-  bool CanExecuteScriptEverywhere() const;
-
-  // Returns true if this extension is allowed to obtain the contents of a
-  // page as an image.  Since a page may contain sensitive information, this
-  // is restricted to the extension's host permissions as well as the
-  // extension page itself.
-  bool CanCaptureVisiblePage(const GURL& page_url,
-                             int tab_id,
-                             std::string* error) const;
 
   // Returns true if this extension updates itself using the extension
   // gallery.
@@ -358,20 +285,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the extension should be displayed in the extension
   // settings page (i.e. chrome://extensions).
   bool ShouldDisplayInExtensionSettings() const;
-
-  // Gets the tab-specific host permissions of |tab_id|, or NULL if there
-  // aren't any.
-  scoped_refptr<const PermissionSet> GetTabSpecificPermissions(int tab_id)
-      const;
-
-  // Updates the tab-specific permissions of |tab_id| to include those from
-  // |permissions|.
-  void UpdateTabSpecificPermissions(
-      int tab_id,
-      scoped_refptr<const PermissionSet> permissions) const;
-
-  // Clears the tab-specific permissions of |tab_id|.
-  void ClearTabSpecificPermissions(int tab_id) const;
 
   // Get the manifest data associated with the key, or NULL if there is none.
   // Can only be called after InitValue is finished.
@@ -455,32 +368,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
  private:
   friend class base::RefCountedThreadSafe<Extension>;
 
-  class RuntimeData {
-   public:
-    RuntimeData();
-    explicit RuntimeData(const PermissionSet* active);
-    ~RuntimeData();
-
-    void SetActivePermissions(const PermissionSet* active);
-    scoped_refptr<const PermissionSet> GetActivePermissions() const;
-
-    scoped_refptr<const PermissionSet> GetTabSpecificPermissions(int tab_id)
-        const;
-    void UpdateTabSpecificPermissions(
-        int tab_id,
-        scoped_refptr<const PermissionSet> permissions);
-    void ClearTabSpecificPermissions(int tab_id);
-
-   private:
-    friend class base::RefCountedThreadSafe<RuntimeData>;
-
-    scoped_refptr<const PermissionSet> active_permissions_;
-
-    typedef std::map<int, scoped_refptr<const PermissionSet> >
-        TabPermissionsMap;
-    TabPermissionsMap tab_specific_permissions_;
-  };
-
   // Chooses the extension ID for an extension based on a variety of criteria.
   // The chosen ID will be set in |manifest|.
   static bool InitExtensionID(extensions::Manifest* manifest,
@@ -488,9 +375,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                               const std::string& explicit_id,
                               int creation_flags,
                               string16* error);
-
-  // Returns true if this extension id is from a trusted provider.
-  static bool IsTrustedId(const std::string& id);
 
   Extension(const base::FilePath& path,
             scoped_ptr<extensions::Manifest> manifest);
@@ -566,10 +450,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Defines the set of URLs in the extension's web content.
   URLPatternSet extent_;
-
-  // The extension runtime data.
-  mutable base::Lock runtime_data_lock_;
-  mutable RuntimeData runtime_data_;
 
   scoped_ptr<PermissionsData> permissions_data_;
 

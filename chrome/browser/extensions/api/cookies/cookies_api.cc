@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/error_utils.h"
@@ -149,7 +150,8 @@ bool CookiesFunction::ParseUrl(const std::string& url_string, GURL* url,
     return false;
   }
   // Check against host permissions if needed.
-  if (check_host_permissions && !GetExtension()->HasHostPermission(*url)) {
+  if (check_host_permissions &&
+      !PermissionsData::HasHostPermission(GetExtension(), *url)) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoHostPermissionsError, url->spec());
     return false;

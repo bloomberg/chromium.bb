@@ -16,12 +16,17 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
+#include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/url_pattern_set.h"
+#include "googleurl/src/gurl.h"
 
 namespace keys = extension_manifest_keys;
 namespace errors = extension_manifest_errors;
@@ -92,7 +97,7 @@ bool CanSpecifyHostPermission(const Extension* extension,
     }
 
     // Component extensions can have access to all of chrome://*.
-    if (extension->CanExecuteScriptEverywhere())
+    if (PermissionsData::CanExecuteScriptEverywhere(extension))
       return true;
 
     if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -184,7 +189,8 @@ bool ParseHelper(Extension* extension,
   }
 
   // Parse host pattern permissions.
-  const int kAllowedSchemes = extension->CanExecuteScriptEverywhere() ?
+  const int kAllowedSchemes =
+      PermissionsData::CanExecuteScriptEverywhere(extension) ?
       URLPattern::SCHEME_ALL : Extension::kValidHostPermissionSchemes;
 
   for (std::vector<std::string>::const_iterator iter = host_data.begin();
@@ -200,14 +206,14 @@ bool ParseHelper(Extension* extension,
       pattern.SetPath("/*");
       int valid_schemes = pattern.valid_schemes();
       if (pattern.MatchesScheme(chrome::kFileScheme) &&
-          !extension->CanExecuteScriptEverywhere()) {
+          !PermissionsData::CanExecuteScriptEverywhere(extension)) {
         extension->set_wants_file_access(true);
         if (!(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS))
           valid_schemes &= ~URLPattern::SCHEME_FILE;
       }
 
       if (pattern.scheme() != chrome::kChromeUIScheme &&
-          !extension->CanExecuteScriptEverywhere()) {
+          !PermissionsData::CanExecuteScriptEverywhere(extension)) {
         // Keep chrome:// in allowed schemes only if it's explicitly requested
         // or CanExecuteScriptEverywhere is true. If the
         // extensions_on_chrome_urls flag is not set, CanSpecifyHostPermission
@@ -254,6 +260,12 @@ bool ParseHelper(Extension* extension,
   return true;
 }
 
+// Returns true if this extension id is from a trusted provider.
+bool IsTrustedId(const std::string& extension_id) {
+  // See http://b/4946060 for more details.
+  return extension_id == std::string("nckgahadagoaajjgafhacjanaoiihapd");
+}
+
 }  // namespace
 
 struct PermissionsData::InitialPermissions {
@@ -291,6 +303,269 @@ APIPermissionSet* PermissionsData::GetInitialAPIPermissions(
     Extension* extension) {
   return &extension->permissions_data()->
       initial_required_permissions_->api_permissions;
+}
+
+// static
+void PermissionsData::SetActivePermissions(const Extension* extension,
+                                           const PermissionSet* permissions) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  extension->permissions_data()->active_permissions_ = permissions;
+}
+
+// static
+scoped_refptr<const PermissionSet> PermissionsData::GetActivePermissions(
+    const Extension* extension) {
+  return extension->permissions_data()->active_permissions_;
+}
+
+// static
+scoped_refptr<const PermissionSet> PermissionsData::GetTabSpecificPermissions(
+    const Extension* extension,
+    int tab_id) {
+  CHECK_GE(tab_id, 0);
+  TabPermissionsMap::const_iterator iter =
+      extension->permissions_data()->tab_specific_permissions_.find(tab_id);
+  return
+      (iter != extension->permissions_data()->tab_specific_permissions_.end())
+          ? iter->second
+          : NULL;
+}
+
+// static
+void PermissionsData::UpdateTabSpecificPermissions(
+    const Extension* extension,
+    int tab_id,
+    scoped_refptr<const PermissionSet> permissions) {
+  CHECK_GE(tab_id, 0);
+  TabPermissionsMap* tab_permissions =
+      &extension->permissions_data()->tab_specific_permissions_;
+  if (tab_permissions->count(tab_id)) {
+    (*tab_permissions)[tab_id] = PermissionSet::CreateUnion(
+        (*tab_permissions)[tab_id],
+        permissions.get());
+  } else {
+    (*tab_permissions)[tab_id] = permissions;
+  }
+}
+
+// static
+void PermissionsData::ClearTabSpecificPermissions(
+    const Extension* extension,
+    int tab_id) {
+  CHECK_GE(tab_id, 0);
+  extension->permissions_data()->tab_specific_permissions_.erase(tab_id);
+}
+
+// static
+bool PermissionsData::HasAPIPermission(const Extension* extension,
+                                       APIPermission::ID permission) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  return GetActivePermissions(extension)->HasAPIPermission(permission);
+}
+
+// static
+bool PermissionsData::HasAPIPermission(const Extension* extension,
+                                       const std::string& function_name) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  return GetActivePermissions(extension)->HasAccessToFunction(
+      function_name, true);  // include implicit
+}
+
+// static
+bool PermissionsData::HasAPIPermissionForTab(
+    const Extension* extension,
+    int tab_id,
+    APIPermission::ID permission) {
+  if (HasAPIPermission(extension, permission))
+    return true;
+
+  // Place autolock below the HasAPIPermission() check, since HasAPIPermission
+  // also acquires the lock.
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  scoped_refptr<const PermissionSet> tab_permissions =
+      GetTabSpecificPermissions(extension, tab_id);
+  return tab_permissions.get() && tab_permissions->HasAPIPermission(permission);
+}
+
+// static
+bool PermissionsData::CheckAPIPermissionWithParam(
+    const Extension* extension,
+    APIPermission::ID permission,
+    const APIPermission::CheckParam* param) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  return GetActivePermissions(extension)->CheckAPIPermissionWithParam(
+      permission, param);
+}
+
+// static
+const URLPatternSet& PermissionsData::GetEffectiveHostPermissions(
+    const Extension* extension) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  return GetActivePermissions(extension)->effective_hosts();
+}
+
+// static
+bool PermissionsData::CanSilentlyIncreasePermissions(
+    const Extension* extension) {
+  return extension->location() != Manifest::INTERNAL;
+}
+
+// static
+bool PermissionsData::ShouldSkipPermissionWarnings(const Extension* extension) {
+  return IsTrustedId(extension->id());
+}
+
+// static
+bool PermissionsData::HasHostPermission(const Extension* extension,
+                                        const GURL& url) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  return GetActivePermissions(extension)->HasExplicitAccessToOrigin(url);
+}
+
+// static
+bool PermissionsData::HasEffectiveAccessToAllHosts(const Extension* extension) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  return GetActivePermissions(extension)->HasEffectiveAccessToAllHosts();
+}
+
+// static
+PermissionMessages PermissionsData::GetPermissionMessages(
+    const Extension* extension) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  if (ShouldSkipPermissionWarnings(extension)) {
+    return PermissionMessages();
+  } else {
+    return GetActivePermissions(extension)->GetPermissionMessages(
+        extension->GetType());
+  }
+}
+
+// static
+std::vector<string16> PermissionsData::GetPermissionMessageStrings(
+    const Extension* extension) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  if (ShouldSkipPermissionWarnings(extension)) {
+    return std::vector<string16>();
+  } else {
+    return GetActivePermissions(extension)->GetWarningMessages(
+        extension->GetType());
+  }
+}
+
+// static
+bool PermissionsData::CanExecuteScriptOnPage(const Extension* extension,
+                                             const GURL& document_url,
+                                             const GURL& top_frame_url,
+                                             int tab_id,
+                                             const UserScript* script,
+                                             std::string* error) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  // The gallery is special-cased as a restricted URL for scripting to prevent
+  // access to special JS bindings we expose to the gallery (and avoid things
+  // like extensions removing the "report abuse" link).
+  // TODO(erikkay): This seems like the wrong test.  Shouldn't we we testing
+  // against the store app extent?
+  GURL store_url(extension_urls::GetWebstoreLaunchURL());
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  bool can_execute_everywhere = CanExecuteScriptEverywhere(extension);
+
+  if ((document_url.host() == store_url.host()) &&
+      !can_execute_everywhere &&
+      !command_line->HasSwitch(switches::kAllowScriptingGallery)) {
+    if (error)
+      *error = errors::kCannotScriptGallery;
+    return false;
+  }
+
+  if (!command_line->HasSwitch(switches::kExtensionsOnChromeURLs)) {
+    if (document_url.SchemeIs(chrome::kChromeUIScheme) &&
+        !can_execute_everywhere) {
+      if (error)
+        *error = errors::kCannotAccessChromeUrl;
+      return false;
+    }
+  }
+
+  if (top_frame_url.SchemeIs(extensions::kExtensionScheme) &&
+      top_frame_url.GetOrigin() !=
+          Extension::GetBaseURLFromExtensionId(extension->id()).GetOrigin() &&
+      !can_execute_everywhere) {
+    if (error)
+      *error = errors::kCannotAccessExtensionUrl;
+    return false;
+  }
+
+  // If a tab ID is specified, try the tab-specific permissions.
+  if (tab_id >= 0) {
+    scoped_refptr<const PermissionSet> tab_permissions =
+        GetTabSpecificPermissions(extension, tab_id);
+    if (tab_permissions.get() &&
+        tab_permissions->explicit_hosts().MatchesSecurityOrigin(document_url)) {
+      return true;
+    }
+  }
+
+  bool can_access = false;
+
+  if (script) {
+    // If a script is specified, use its matches.
+    can_access = script->MatchesURL(document_url);
+  } else {
+    // Otherwise, see if this extension has permission to execute script
+    // programmatically on pages.
+    can_access = GetActivePermissions(extension)->
+        HasExplicitAccessToOrigin(document_url);
+  }
+
+  if (!can_access && error) {
+    *error = ErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
+                                            document_url.spec());
+  }
+
+  return can_access;
+}
+
+// static
+bool PermissionsData::CanExecuteScriptEverywhere(const Extension* extension) {
+  if (extension->location() == Manifest::COMPONENT)
+    return true;
+
+  const Extension::ScriptingWhitelist* whitelist =
+      Extension::GetScriptingWhitelist();
+
+  for (Extension::ScriptingWhitelist::const_iterator iter = whitelist->begin();
+       iter != whitelist->end(); ++iter) {
+    if (extension->id() == *iter)
+      return true;
+  }
+
+  return false;
+}
+
+// static
+bool PermissionsData::CanCaptureVisiblePage(const Extension* extension,
+                                            const GURL& page_url,
+                                            int tab_id,
+                                            std::string* error) {
+  if (tab_id >= 0) {
+    scoped_refptr<const PermissionSet> tab_permissions =
+        GetTabSpecificPermissions(extension, tab_id);
+    if (tab_permissions.get() &&
+        tab_permissions->explicit_hosts().MatchesSecurityOrigin(page_url)) {
+      return true;
+    }
+  }
+
+  if (HasHostPermission(extension, page_url) ||
+      page_url.GetOrigin() == extension->url()) {
+    return true;
+  }
+
+  if (error) {
+    *error = ErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
+                                            page_url.spec());
+  }
+  return false;
 }
 
 bool PermissionsData::ParsePermissions(Extension* extension, string16* error) {
@@ -349,10 +624,10 @@ void PermissionsData::FinalizePermissions(Extension* extension) {
   URLPatternSet scriptable_hosts =
       ContentScriptsInfo::GetScriptableHosts(extension);
 
-  extension->SetActivePermissions(new PermissionSet(
+  active_permissions_ = new PermissionSet(
       initial_required_permissions_->api_permissions,
       initial_required_permissions_->host_permissions,
-      scriptable_hosts));
+      scriptable_hosts);
 
   required_permission_set_ = new PermissionSet(
       initial_required_permissions_->api_permissions,

@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -375,8 +376,8 @@ bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
   const bluetooth::ConnectOptions& options = params->options;
 
   BluetoothDevicePermission::CheckParam param(options.device.address);
-  if (!GetExtension()->CheckAPIPermissionWithParam(
-        APIPermission::kBluetoothDevice, &param)) {
+  if (!PermissionsData::CheckAPIPermissionWithParam(
+          GetExtension(), APIPermission::kBluetoothDevice, &param)) {
     SetError(kDevicePermissionDenied);
     SendResponse(false);
     return false;

@@ -38,6 +38,7 @@
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/utility_process_host.h"
@@ -76,7 +77,8 @@ AutoConfirmForTest auto_confirm_for_test = DO_NOT_SKIP;
 
 std::vector<std::string> CreateWarningsList(const Extension* extension) {
   std::vector<std::string> warnings_list;
-  PermissionMessages warnings = extension->GetPermissionMessages();
+  PermissionMessages warnings =
+      PermissionsData::GetPermissionMessages(extension);
   for (PermissionMessages::const_iterator iter = warnings.begin();
        iter != warnings.end(); ++iter) {
     warnings_list.push_back(UTF16ToUTF8(iter->message()));

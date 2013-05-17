@@ -47,6 +47,7 @@
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/downloads.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
@@ -806,7 +807,8 @@ bool DownloadsDownloadFunction::RunImpl() {
   if (!download_url.is_valid() ||
       (!download_url.SchemeIs("data") &&
        download_url.GetOrigin() != GetExtension()->url().GetOrigin() &&
-       !GetExtension()->HasHostPermission(download_url))) {
+       !extensions::PermissionsData::HasHostPermission(GetExtension(),
+                                                       download_url))) {
     error_ = download_extension_errors::kInvalidURLError;
     return false;
   }

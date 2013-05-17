@@ -43,6 +43,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -1997,7 +1998,8 @@ bool WebRequestAddEventListener::RunImpl() {
   // http://www.example.com/bar/*.
   // For this reason we do only a coarse check here to warn the extension
   // developer if he does something obviously wrong.
-  if (extension->GetEffectiveHostPermissions().is_empty()) {
+  if (extensions::PermissionsData::GetEffectiveHostPermissions(
+          extension).is_empty()) {
     error_ = keys::kHostPermissionsRequired;
     return false;
   }

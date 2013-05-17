@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/api_activity_logger.h"
@@ -1275,7 +1276,7 @@ void Dispatcher::OnUpdatePermissions(int reason_id,
       break;
   }
 
-  extension->SetActivePermissions(new_active);
+  PermissionsData::SetActivePermissions(extension, new_active);
   AddOrRemoveOriginPermissions(reason, extension, explicit_hosts);
 }
 
@@ -1297,7 +1298,8 @@ void Dispatcher::OnUpdateTabSpecificPermissions(
   if (!extension)
     return;
 
-  extension->UpdateTabSpecificPermissions(
+  PermissionsData::UpdateTabSpecificPermissions(
+      extension,
       tab_id,
       new PermissionSet(APIPermissionSet(), origin_set, URLPatternSet()));
 }
@@ -1309,7 +1311,7 @@ void Dispatcher::OnClearTabSpecificPermissions(
        it != extension_ids.end(); ++it) {
     const Extension* extension = extensions_.GetByID(*it);
     if (extension)
-      extension->ClearTabSpecificPermissions(tab_id);
+      PermissionsData::ClearTabSpecificPermissions(extension, tab_id);
   }
 }
 

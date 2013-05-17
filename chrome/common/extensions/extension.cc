@@ -405,89 +405,15 @@ const Extension::ScriptingWhitelist* Extension::GetScriptingWhitelist() {
 }
 
 bool Extension::HasAPIPermission(APIPermission::ID permission) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->HasAPIPermission(permission);
+  return PermissionsData::HasAPIPermission(this, permission);
 }
 
 bool Extension::HasAPIPermission(const std::string& function_name) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->
-      HasAccessToFunction(function_name, true);
-}
-
-bool Extension::HasAPIPermissionForTab(int tab_id,
-                                       APIPermission::ID permission) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  if (runtime_data_.GetActivePermissions()->HasAPIPermission(permission))
-    return true;
-  scoped_refptr<const PermissionSet> tab_specific_permissions =
-      runtime_data_.GetTabSpecificPermissions(tab_id);
-  return tab_specific_permissions.get() &&
-         tab_specific_permissions->HasAPIPermission(permission);
-}
-
-bool Extension::CheckAPIPermissionWithParam(APIPermission::ID permission,
-    const APIPermission::CheckParam* param) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->
-      CheckAPIPermissionWithParam(permission, param);
-}
-
-const URLPatternSet& Extension::GetEffectiveHostPermissions() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->effective_hosts();
-}
-
-bool Extension::CanSilentlyIncreasePermissions() const {
-  return location() != Manifest::INTERNAL;
-}
-
-bool Extension::HasHostPermission(const GURL& url) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->
-      HasExplicitAccessToOrigin(url);
-}
-
-bool Extension::HasEffectiveAccessToAllHosts() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->HasEffectiveAccessToAllHosts();
-}
-
-bool Extension::HasFullPermissions() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->HasEffectiveFullAccess();
-}
-
-PermissionMessages Extension::GetPermissionMessages() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  if (IsTrustedId(id())) {
-    return PermissionMessages();
-  } else {
-    return runtime_data_.GetActivePermissions()->GetPermissionMessages(
-        GetType());
-  }
-}
-
-std::vector<string16> Extension::GetPermissionMessageStrings() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  if (IsTrustedId(id()))
-    return std::vector<string16>();
-  else
-    return runtime_data_.GetActivePermissions()->GetWarningMessages(GetType());
-}
-
-bool Extension::ShouldSkipPermissionWarnings() const {
-  return IsTrustedId(id());
-}
-
-void Extension::SetActivePermissions(const PermissionSet* permissions) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  runtime_data_.SetActivePermissions(permissions);
+  return PermissionsData::HasAPIPermission(this, function_name);
 }
 
 scoped_refptr<const PermissionSet> Extension::GetActivePermissions() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions();
+  return PermissionsData::GetActivePermissions(this);
 }
 
 bool Extension::ShowConfigureContextMenus() const {
@@ -501,114 +427,6 @@ bool Extension::ShowConfigureContextMenus() const {
 GURL Extension::GetFullLaunchURL() const {
   return launch_local_path().empty() ? GURL(launch_web_url()) :
                                        url().Resolve(launch_local_path());
-}
-
-bool Extension::CanExecuteScriptOnPage(const GURL& document_url,
-                                       const GURL& top_frame_url,
-                                       int tab_id,
-                                       const UserScript* script,
-                                       std::string* error) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  // The gallery is special-cased as a restricted URL for scripting to prevent
-  // access to special JS bindings we expose to the gallery (and avoid things
-  // like extensions removing the "report abuse" link).
-  // TODO(erikkay): This seems like the wrong test.  Shouldn't we we testing
-  // against the store app extent?
-  GURL store_url(extension_urls::GetWebstoreLaunchURL());
-  if ((document_url.host() == store_url.host()) &&
-      !CanExecuteScriptEverywhere() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowScriptingGallery)) {
-    if (error)
-      *error = errors::kCannotScriptGallery;
-    return false;
-  }
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kExtensionsOnChromeURLs)) {
-    if (document_url.SchemeIs(chrome::kChromeUIScheme) &&
-        !CanExecuteScriptEverywhere()) {
-      if (error)
-        *error = errors::kCannotAccessChromeUrl;
-      return false;
-    }
-  }
-
-  if (top_frame_url.SchemeIs(extensions::kExtensionScheme) &&
-      top_frame_url.GetOrigin() !=
-          GetBaseURLFromExtensionId(id()).GetOrigin() &&
-      !CanExecuteScriptEverywhere()) {
-    if (error)
-      *error = errors::kCannotAccessExtensionUrl;
-    return false;
-  }
-
-  // If a tab ID is specified, try the tab-specific permissions.
-  if (tab_id >= 0) {
-    scoped_refptr<const PermissionSet> tab_permissions =
-        runtime_data_.GetTabSpecificPermissions(tab_id);
-    if (tab_permissions.get() &&
-        tab_permissions->explicit_hosts().MatchesSecurityOrigin(document_url)) {
-      return true;
-    }
-  }
-
-  bool can_access = false;
-
-  if (script) {
-    // If a script is specified, use its matches.
-    can_access = script->MatchesURL(document_url);
-  } else {
-    // Otherwise, see if this extension has permission to execute script
-    // programmatically on pages.
-    can_access = runtime_data_.GetActivePermissions()->
-        HasExplicitAccessToOrigin(document_url);
-  }
-
-  if (!can_access && error) {
-    *error = ErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
-                                            document_url.spec());
-  }
-
-  return can_access;
-}
-
-bool Extension::CanExecuteScriptEverywhere() const {
-  if (location() == Manifest::COMPONENT)
-    return true;
-
-  ScriptingWhitelist* whitelist = ExtensionConfig::GetInstance()->whitelist();
-
-  for (ScriptingWhitelist::const_iterator it = whitelist->begin();
-       it != whitelist->end(); ++it) {
-    if (id() == *it) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool Extension::CanCaptureVisiblePage(const GURL& page_url,
-                                      int tab_id,
-                                      std::string* error) const {
-  if (tab_id >= 0) {
-    scoped_refptr<const PermissionSet> tab_permissions =
-        GetTabSpecificPermissions(tab_id);
-    if (tab_permissions.get() &&
-        tab_permissions->explicit_hosts().MatchesSecurityOrigin(page_url)) {
-      return true;
-    }
-  }
-
-  if (HasHostPermission(page_url) || page_url.GetOrigin() == url())
-    return true;
-
-  if (error) {
-    *error = ErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
-                                            page_url.spec());
-  }
-  return false;
 }
 
 bool Extension::UpdatesFromGallery() const {
@@ -732,24 +550,6 @@ bool Extension::ShouldDisplayInExtensionSettings() const {
   return true;
 }
 
-scoped_refptr<const PermissionSet> Extension::GetTabSpecificPermissions(
-    int tab_id) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetTabSpecificPermissions(tab_id);
-}
-
-void Extension::UpdateTabSpecificPermissions(
-    int tab_id,
-    scoped_refptr<const PermissionSet> permissions) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  runtime_data_.UpdateTabSpecificPermissions(tab_id, permissions);
-}
-
-void Extension::ClearTabSpecificPermissions(int tab_id) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  runtime_data_.ClearTabSpecificPermissions(tab_id);
-}
-
 Extension::ManifestData* Extension::GetManifestData(const std::string& key)
     const {
   DCHECK(finished_parsing_manifest_ || thread_checker_.CalledOnValidThread());
@@ -820,46 +620,6 @@ bool Extension::is_theme() const {
   return manifest()->is_theme();
 }
 
-Extension::RuntimeData::RuntimeData() {}
-Extension::RuntimeData::RuntimeData(const PermissionSet* active)
-    : active_permissions_(active) {}
-Extension::RuntimeData::~RuntimeData() {}
-
-void Extension::RuntimeData::SetActivePermissions(
-    const PermissionSet* active) {
-  active_permissions_ = active;
-}
-
-scoped_refptr<const PermissionSet>
-    Extension::RuntimeData::GetActivePermissions() const {
-  return active_permissions_;
-}
-
-scoped_refptr<const PermissionSet>
-    Extension::RuntimeData::GetTabSpecificPermissions(int tab_id) const {
-  CHECK_GE(tab_id, 0);
-  TabPermissionsMap::const_iterator it = tab_specific_permissions_.find(tab_id);
-  return (it != tab_specific_permissions_.end()) ? it->second : NULL;
-}
-
-void Extension::RuntimeData::UpdateTabSpecificPermissions(
-    int tab_id,
-    scoped_refptr<const PermissionSet> permissions) {
-  CHECK_GE(tab_id, 0);
-  if (tab_specific_permissions_.count(tab_id)) {
-    tab_specific_permissions_[tab_id] = PermissionSet::CreateUnion(
-        tab_specific_permissions_[tab_id],
-        permissions.get());
-  } else {
-    tab_specific_permissions_[tab_id] = permissions;
-  }
-}
-
-void Extension::RuntimeData::ClearTabSpecificPermissions(int tab_id) {
-  CHECK_GE(tab_id, 0);
-  tab_specific_permissions_.erase(tab_id);
-}
-
 // static
 bool Extension::InitExtensionID(extensions::Manifest* manifest,
                                 const base::FilePath& path,
@@ -899,12 +659,6 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
     manifest->set_extension_id(extension_id);
     return true;
   }
-}
-
-// static
-bool Extension::IsTrustedId(const std::string& id) {
-  // See http://b/4946060 for more details.
-  return id == std::string("nckgahadagoaajjgafhacjanaoiihapd");
 }
 
 Extension::Extension(const base::FilePath& path,
@@ -963,9 +717,10 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (!LoadSharedFeatures(error))
     return false;
 
-  if (manifest_->HasKey(keys::kConvertedFromUserScript))
+  if (manifest_->HasKey(keys::kConvertedFromUserScript)) {
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
                           &converted_from_user_script_);
+  }
 
   if (HasMultipleUISurfaces()) {
     *error = ASCIIToUTF16(errors::kOneUISurfaceOnly);

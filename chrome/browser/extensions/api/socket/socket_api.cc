@@ -8,8 +8,6 @@
 
 #include "base/bind.h"
 #include "base/hash_tables.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
@@ -17,6 +15,9 @@
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
+#include "chrome/common/extensions/permissions/socket_permission.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -205,8 +206,8 @@ void SocketConnectFunction::AsyncWorkStart() {
   }
 
   SocketPermission::CheckParam param(operation_type, hostname_, port_);
-  if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
-        &param)) {
+  if (!PermissionsData::CheckAPIPermissionWithParam(
+          GetExtension(), APIPermission::kSocket, &param)) {
     error_ = kPermissionError;
     SetResult(Value::CreateIntegerValue(-1));
     AsyncWorkCompleted();
@@ -269,8 +270,10 @@ void SocketBindFunction::Work() {
   if (socket->GetSocketType() == Socket::TYPE_UDP) {
     SocketPermission::CheckParam param(
         SocketPermissionRequest::UDP_BIND, address_, port_);
-    if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
-          &param)) {
+    if (!PermissionsData::CheckAPIPermissionWithParam(
+            GetExtension(),
+            APIPermission::kSocket,
+            &param)) {
       error_ = kPermissionError;
       SetResult(Value::CreateIntegerValue(result));
       return;
@@ -304,8 +307,10 @@ void SocketListenFunction::Work() {
   if (socket) {
     SocketPermission::CheckParam param(
         SocketPermissionRequest::TCP_LISTEN, params_->address, params_->port);
-    if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
-          &param)) {
+    if (!PermissionsData::CheckAPIPermissionWithParam(
+            GetExtension(),
+            APIPermission::kSocket,
+            &param)) {
       error_ = kPermissionError;
       SetResult(Value::CreateIntegerValue(result));
       return;
@@ -515,8 +520,10 @@ void SocketSendToFunction::AsyncWorkStart() {
   if (socket_->GetSocketType() == Socket::TYPE_UDP) {
     SocketPermission::CheckParam param(SocketPermissionRequest::UDP_SEND_TO,
         hostname_, port_);
-    if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
-          &param)) {
+    if (!PermissionsData::CheckAPIPermissionWithParam(
+            GetExtension(),
+            APIPermission::kSocket,
+            &param)) {
       error_ = kPermissionError;
       SetResult(Value::CreateIntegerValue(-1));
       AsyncWorkCompleted();
@@ -721,8 +728,8 @@ void SocketJoinGroupFunction::Work() {
       kWildcardAddress,
       kWildcardPort);
 
-  if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
-                                                   &param)) {
+  if (!PermissionsData::CheckAPIPermissionWithParam(
+          GetExtension(), APIPermission::kSocket, &param)) {
     error_ = kPermissionError;
     SetResult(Value::CreateIntegerValue(result));
     return;
@@ -767,8 +774,9 @@ void SocketLeaveGroupFunction::Work() {
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-  if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
-                                                   &param)) {
+  if (!PermissionsData::CheckAPIPermissionWithParam(GetExtension(),
+                                                    APIPermission::kSocket,
+                                                    &param)) {
     error_ = kPermissionError;
     SetResult(Value::CreateIntegerValue(result));
     return;
@@ -876,8 +884,10 @@ void SocketGetJoinedGroupsFunction::Work() {
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-  if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
-        &param)) {
+  if (!PermissionsData::CheckAPIPermissionWithParam(
+          GetExtension(),
+          APIPermission::kSocket,
+          &param)) {
     error_ = kPermissionError;
     SetResult(Value::CreateIntegerValue(result));
     return;

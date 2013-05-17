@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/error_utils.h"
 #include "net/url_request/url_request.h"
 
@@ -339,7 +340,7 @@ bool WebRequestRulesRegistry::HostPermissionsChecker(
     const Extension* extension,
     const WebRequestActionSet* actions,
     std::string* error) {
-  if (extension->HasEffectiveAccessToAllHosts())
+  if (PermissionsData::HasEffectiveAccessToAllHosts(extension))
     return true;
 
   // Without the permission for all URLs, actions with the STRATEGY_DEFAULT

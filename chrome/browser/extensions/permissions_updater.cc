@@ -16,6 +16,7 @@
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -23,7 +24,6 @@
 
 using content::RenderProcessHost;
 using extensions::permissions_api_helpers::PackPermissionSet;
-using extensions::PermissionSet;
 
 namespace extensions {
 
@@ -90,7 +90,7 @@ void PermissionsUpdater::UpdateActivePermissions(
     const Extension* extension, const PermissionSet* permissions) {
   ExtensionPrefs::Get(profile_)->SetActivePermissions(
       extension->id(), permissions);
-  extension->SetActivePermissions(permissions);
+  PermissionsData::SetActivePermissions(extension, permissions);
 }
 
 void PermissionsUpdater::DispatchEvent(

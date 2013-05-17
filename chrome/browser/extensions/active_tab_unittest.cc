@@ -16,6 +16,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_thread.h"
@@ -83,8 +84,10 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
   bool IsAllowed(const scoped_refptr<const Extension>& extension,
                  const GURL& url,
                  int tab_id) {
-    return extension->CanExecuteScriptOnPage(url, url, tab_id, NULL, NULL) &&
-           extension->CanCaptureVisiblePage(url, tab_id, NULL) &&
+    return PermissionsData::CanExecuteScriptOnPage(
+               extension, url, url, tab_id, NULL, NULL) &&
+           PermissionsData::CanCaptureVisiblePage(
+               extension, url, tab_id, NULL) &&
            HasTabsPermission(extension, tab_id);
   }
 
@@ -97,8 +100,10 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                  const GURL& url,
                  int tab_id) {
     // Note: can't check HasTabsPermission because it isn't URL specific.
-    return !extension->CanExecuteScriptOnPage(url, url, tab_id, NULL, NULL) &&
-           !extension->CanCaptureVisiblePage(url, tab_id, NULL);
+    return !PermissionsData::CanExecuteScriptOnPage(
+               extension, url, url, tab_id, NULL, NULL) &&
+           !PermissionsData::CanCaptureVisiblePage(
+               extension, url, tab_id, NULL);
   }
 
   bool HasTabsPermission(const scoped_refptr<const Extension>& extension) {
@@ -107,7 +112,8 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
 
   bool HasTabsPermission(const scoped_refptr<const Extension>& extension,
                          int tab_id) {
-    return extension->HasAPIPermissionForTab(tab_id, APIPermission::kTab);
+    return PermissionsData::HasAPIPermissionForTab(
+        extension.get(), tab_id, APIPermission::kTab);
   }
 
   // An extension with the activeTab permission.

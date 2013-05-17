@@ -27,6 +27,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
@@ -184,8 +185,8 @@ DictionaryValue* CreateGalleryPrefInfoDictionary(
 bool HasAutoDetectedGalleryPermission(const extensions::Extension& extension) {
   extensions::MediaGalleriesPermission::CheckParam param(
       extensions::MediaGalleriesPermission::kAllAutoDetectedPermission);
-  return extension.CheckAPIPermissionWithParam(
-      extensions::APIPermission::kMediaGalleries, &param);
+  return extensions::PermissionsData::CheckAPIPermissionWithParam(
+      &extension, extensions::APIPermission::kMediaGalleries, &param);
 }
 
 }  // namespace
