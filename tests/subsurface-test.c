@@ -24,6 +24,7 @@
 
 #include "weston-test-client-helper.h"
 #include "subsurface-client-protocol.h"
+#include <stdio.h>
 
 #define NUM_SUBSURFACES 3
 
@@ -322,4 +323,205 @@ TEST(test_subsurface_destroy_protocol)
 	wl_subsurface_destroy(com.sub[1]);
 
 	client_roundtrip(client);
+}
+
+static void
+create_subsurface_tree(struct client *client, struct wl_surface **surfs,
+		       struct wl_subsurface **subs, int n)
+{
+	struct wl_subcompositor *subco;
+	int i;
+
+	subco = get_subcompositor(client);
+
+	for (i = 0; i < n; i++)
+		surfs[i] = wl_compositor_create_surface(client->wl_compositor);
+
+	/*
+	 * The tree of sub-surfaces:
+	 *                            0
+	 *                           / \
+	 *                          1   2 - 10
+	 *                         / \  |\
+	 *                        3   5 9 6
+	 *                       /       / \
+	 *                      4       7   8
+	 * Surface 0 has no wl_subsurface, others do.
+	 */
+
+	switch (n) {
+	default:
+		assert(0);
+		break;
+
+#define SUB_LINK(s,p) \
+	subs[s] = wl_subcompositor_get_subsurface(subco, surfs[s], surfs[p])
+
+	case 11:
+		SUB_LINK(10, 2);
+	case 10:
+		SUB_LINK(9, 2);
+	case 9:
+		SUB_LINK(8, 6);
+	case 8:
+		SUB_LINK(7, 6);
+	case 7:
+		SUB_LINK(6, 2);
+	case 6:
+		SUB_LINK(5, 1);
+	case 5:
+		SUB_LINK(4, 3);
+	case 4:
+		SUB_LINK(3, 1);
+	case 3:
+		SUB_LINK(2, 0);
+	case 2:
+		SUB_LINK(1, 0);
+
+#undef SUB_LINK
+	};
+}
+
+static void
+destroy_subsurface_tree(struct wl_surface **surfs,
+			struct wl_subsurface **subs, int n)
+{
+	int i;
+
+	for (i = n; i-- > 0; ) {
+		if (surfs[i])
+			wl_surface_destroy(surfs[i]);
+
+		if (subs[i])
+			wl_subsurface_destroy(subs[i]);
+	}
+}
+
+static int
+has_dupe(int *cnt, int n)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		if (cnt[i] == cnt[n])
+			return 1;
+
+	return 0;
+}
+
+/* Note: number of permutations to test is: set_size! / (set_size - NSTEPS)!
+ */
+#define NSTEPS 3
+
+struct permu_state {
+	int set_size;
+	int cnt[NSTEPS];
+};
+
+static void
+permu_init(struct permu_state *s, int set_size)
+{
+	int i;
+
+	s->set_size = set_size;
+	for (i = 0; i < NSTEPS; i++)
+		s->cnt[i] = 0;
+}
+
+static int
+permu_next(struct permu_state *s)
+{
+	int k;
+
+	s->cnt[NSTEPS - 1]++;
+
+	while (1) {
+		if (s->cnt[0] >= s->set_size) {
+			return -1;
+		}
+
+		for (k = 1; k < NSTEPS; k++) {
+			if (s->cnt[k] >= s->set_size) {
+				s->cnt[k - 1]++;
+				s->cnt[k] = 0;
+				break;
+			}
+
+			if (has_dupe(s->cnt, k)) {
+				s->cnt[k]++;
+				break;
+			}
+		}
+
+		if (k == NSTEPS)
+			return 0;
+	}
+}
+
+static void
+destroy_permu_object(struct wl_surface **surfs,
+		     struct wl_subsurface **subs, int i)
+{
+	int h = (i + 1) / 2;
+
+	if (i & 1) {
+		fprintf(stderr, " [sub  %2d]", h);
+		wl_subsurface_destroy(subs[h]);
+		subs[h] = NULL;
+	} else {
+		fprintf(stderr, " [surf %2d]", h);
+		wl_surface_destroy(surfs[h]);
+		surfs[h] = NULL;
+	}
+}
+
+TEST(test_subsurface_destroy_permutations)
+{
+	/*
+	 * Test wl_surface and wl_subsurface destruction orders in a
+	 * complex tree of sub-surfaces.
+	 *
+	 * In the tree of sub-surfaces, go through every possible
+	 * permutation of destroying all wl_surface and wl_subsurface
+	 * objects. Execpt, to limit running time to a reasonable level,
+	 * execute only the first NSTEPS destructions from each
+	 * permutation, and ignore identical cases.
+	 */
+
+	const int test_size = 11;
+	struct client *client;
+	struct wl_surface *surfs[test_size];
+	struct wl_subsurface *subs[test_size];
+	struct permu_state per;
+	int counter = 0;
+	int i;
+
+	client = client_create(100, 50, 123, 77);
+	assert(client);
+
+	permu_init(&per, test_size * 2 - 1);
+	while (permu_next(&per) != -1) {
+		/* for each permutation of NSTEPS out of test_size */
+		memset(surfs, 0, sizeof surfs);
+		memset(subs, 0, sizeof subs);
+
+		create_subsurface_tree(client, surfs, subs, test_size);
+
+		fprintf(stderr, "permu");
+
+		for (i = 0; i < NSTEPS; i++)
+			fprintf(stderr, " %2d", per.cnt[i]);
+
+		for (i = 0; i < NSTEPS; i++)
+			destroy_permu_object(surfs, subs, per.cnt[i]);
+
+		fprintf(stderr, "\n");
+		client_roundtrip(client);
+
+		destroy_subsurface_tree(surfs, subs, test_size);
+		counter++;
+	}
+
+	client_roundtrip(client);
+	fprintf(stderr, "tried %d destroy permutations\n", counter);
 }
