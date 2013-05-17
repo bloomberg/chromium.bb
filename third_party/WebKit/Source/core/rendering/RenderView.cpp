@@ -87,6 +87,12 @@ bool RenderView::hitTest(const HitTestRequest& request, HitTestResult& result)
 
 bool RenderView::hitTest(const HitTestRequest& request, const HitTestLocation& location, HitTestResult& result)
 {
+    // We have to recursively update layout/style here because otherwise, when the hit test recurses
+    // into a child document, it could trigger a layout on the parent document, which can destroy RenderLayers
+    // that are higher up in the call stack, leading to crashes.
+    // Note that Document::updateLayout calls its parent's updateLayout.
+    // FIXME: It should be the caller's responsibility to ensure an up-to-date layout.
+    frameView()->updateLayoutAndStyleIfNeededRecursive();
     return layer()->hitTest(request, location, result);
 }
 
