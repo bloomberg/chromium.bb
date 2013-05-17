@@ -100,6 +100,8 @@ SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
       path_(path),
       key_(key),
       entry_hash_(entry_hash),
+      last_used_(Time::Now()),
+      last_modified_(last_used_),
       open_count_(0),
       state_(STATE_UNINITIALIZED),
       synchronous_entry_(NULL) {
