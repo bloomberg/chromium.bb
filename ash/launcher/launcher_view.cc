@@ -30,6 +30,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1189,6 +1190,11 @@ void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 views::FocusTraversable* LauncherView::GetPaneFocusTraversable() {
   return this;
+}
+
+void LauncherView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_TOOLBAR;
+  state->name = l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_ACCESSIBLE_NAME);
 }
 
 void LauncherView::OnGestureEvent(ui::GestureEvent* event) {
