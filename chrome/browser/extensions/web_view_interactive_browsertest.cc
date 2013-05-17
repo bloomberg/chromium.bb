@@ -351,7 +351,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommands) {
   ASSERT_TRUE(copy_listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow) {
+// Disabled due to timeouts/crashing on several platforms. crbug.com/241912
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_NewWindow) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/newwindow"))
       << message_;
