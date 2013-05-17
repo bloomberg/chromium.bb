@@ -62,7 +62,7 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
       type = chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
     }
     info->device_id = chrome::StorageInfo::MakeDeviceId(type, unique_id);
-    info->name = path.Append(L" Drive").LossyDisplayName();
+    info->storage_label = path.Append(L" Drive").LossyDisplayName();
   }
 
   return true;

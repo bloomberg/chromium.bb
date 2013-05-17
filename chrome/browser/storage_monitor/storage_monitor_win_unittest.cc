@@ -272,7 +272,7 @@ TEST_F(StorageMonitorWinTest, DevicesAttached) {
   EXPECT_EQ(ASCIIToUTF16("F:\\"), info.location);
   EXPECT_EQ("dcim:\\\\?\\Volume{F0000000-0000-0000-0000-000000000000}\\",
             info.device_id);
-  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.name);
+  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.storage_label);
 
   EXPECT_FALSE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("G:\\")), &info));
@@ -284,9 +284,9 @@ TEST_F(StorageMonitorWinTest, DevicesAttached) {
   StorageInfo info2;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\subdir\\sub")), &info2));
-  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.name);
-  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info1.name);
-  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info2.name);
+  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.storage_label);
+  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info1.storage_label);
+  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info2.storage_label);
 }
 
 TEST_F(StorageMonitorWinTest, PathMountDevices) {
@@ -307,7 +307,8 @@ TEST_F(StorageMonitorWinTest, PathMountDevices) {
   StorageInfo info;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\dir")), &info));
-  EXPECT_EQ(L"F:\\ Drive", info.name);
+  EXPECT_EQ(L"", info.name);
+  EXPECT_EQ(L"F:\\ Drive", info.storage_label);
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\mount1")), &info));
   EXPECT_EQ(L"mount1", info.name);

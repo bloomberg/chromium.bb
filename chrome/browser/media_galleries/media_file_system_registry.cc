@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_galleries/media_file_system_context.h"
+#include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
 #include "chrome/browser/profiles/profile.h"
@@ -350,7 +351,8 @@ class ExtensionGalleriesHost
       DCHECK(!fsid.empty());
 
       MediaFileSystemInfo new_entry(
-          gallery_info.display_name,
+          MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
+              gallery_info),
           path,
           fsid,
           pref_id,

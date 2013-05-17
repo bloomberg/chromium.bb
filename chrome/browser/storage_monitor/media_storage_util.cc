@@ -15,7 +15,6 @@
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/text/bytes_formatting.h"
 
 using content::BrowserThread;
 
@@ -103,17 +102,6 @@ void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
   }
 }
 
-// For a device with |device_name| and a relative path |sub_folder|, construct
-// a display name. If |sub_folder| is empty, then just return |device_name|.
-string16 GetDisplayNameForSubFolder(const string16& device_name,
-                                    const base::FilePath& sub_folder) {
-  if (sub_folder.empty())
-    return device_name;
-  return (sub_folder.BaseName().LossyDisplayName() +
-          ASCIIToUTF16(" - ") +
-          device_name);
-}
-
 }  // namespace
 
 // static
@@ -132,31 +120,6 @@ bool MediaStorageUtil::HasDcim(const base::FilePath& mount_point) {
 }
 
 // static
-string16 MediaStorageUtil::GetFullProductName(const std::string& vendor_name,
-                                              const std::string& model_name) {
-  if (vendor_name.empty() && model_name.empty())
-    return string16();
-
-  std::string product_name;
-  if (vendor_name.empty())
-    product_name = model_name;
-  else if (model_name.empty())
-    product_name = vendor_name;
-  else
-    product_name = vendor_name + ", " + model_name;
-  return IsStringUTF8(product_name) ?
-      UTF8ToUTF16("(" + product_name + ")") : string16();
-}
-
-// static
-string16 MediaStorageUtil::GetDisplayNameForDevice(uint64 storage_size_in_bytes,
-                                                   const string16& name) {
-  DCHECK(!name.empty());
-  return (storage_size_in_bytes == 0) ?
-      name : ui::FormatBytes(storage_size_in_bytes) + ASCIIToUTF16(" ") + name;
-}
-
-// static
 bool MediaStorageUtil::CanCreateFileSystem(const std::string& device_id,
                                            const base::FilePath& path) {
   StorageInfo::Type type;
@@ -167,33 +130,6 @@ bool MediaStorageUtil::CanCreateFileSystem(const std::string& device_id,
     return true;
 
   return path.IsAbsolute() && !path.ReferencesParent();
-}
-
-// static
-void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
-                                        const BoolCallback& callback) {
-  StorageInfo::Type type;
-  std::string unique_id;
-  if (!StorageInfo::CrackDeviceId(device_id, &type, &unique_id)) {
-    callback.Run(false);
-    return;
-  }
-
-  if (type == StorageInfo::FIXED_MASS_STORAGE || type == StorageInfo::ITUNES) {
-    // For this type, the unique_id is the path.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ValidatePathOnFileThread,
-                   base::FilePath::FromUTF8Unsafe(unique_id),
-                   callback));
-  } else {
-    DCHECK(type == StorageInfo::MTP_OR_PTP ||
-           type == StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM ||
-           type == StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM ||
-           type == StorageInfo::MAC_IMAGE_CAPTURE);
-    // We should be able to find removable storage.
-    callback.Run(IsRemovableStorageAttached(device_id));
-  }
 }
 
 // static
@@ -230,13 +166,6 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
       DCHECK(success);
     }
 
-// TODO(gbillock): Don't do this. Leave for clients to do.
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)  // Implies OS_CHROMEOS
-    info.name = GetDisplayNameForDevice(
-        info.total_size_in_bytes,
-        GetDisplayNameForSubFolder(info.name, sub_folder_path));
-#endif
-
     if (device_info)
       *device_info = info;
     if (relative_path)
@@ -248,6 +177,9 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
   // TODO(vandebo) Check to see if the path points to an iTunes library file.
 
   // On Posix systems, there's one root so any absolute path could be valid.
+  // TODO(gbillock): Delete this stanza? Posix systems should have the root
+  // volume information. If not, we should move the below into the
+  // right GetStorageInfoForPath implementations.
 #if !defined(OS_POSIX)
   if (!found_device)
     return false;
@@ -259,7 +191,6 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
   // and don't do this here.
   info.device_id = StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
                                              path.AsUTF8Unsafe());
-  info.name = path.BaseName().LossyDisplayName();
   if (device_info)
     *device_info = info;
   if (relative_path)

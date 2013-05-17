@@ -32,22 +32,9 @@ class MediaStorageUtil {
   // if additional OS X heuristic is implemented.
   static bool HasDcim(const base::FilePath& mount_point);
 
-  // Constructs the device product name from |vendor_name| and |model_name|.
-  static string16 GetFullProductName(const std::string& vendor_name,
-                                     const std::string& model_name);
-
-  // Constructs the display name for device from |storage_size_in_bytes| and
-  // |name|.
-  static string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
-                                          const string16& name);
-
   // Returns true if we will be able to create a filesystem for this device.
   static bool CanCreateFileSystem(const std::string& device_id,
                                   const base::FilePath& path);
-
-  // Determines if the device is attached to the computer.
-  static void IsDeviceAttached(const std::string& device_id,
-                               const BoolCallback& callback);
 
   // Removes disconnected devices from |devices| and then calls |done|.
   static void FilterAttachedDevices(DeviceIdSet* devices,

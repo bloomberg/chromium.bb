@@ -440,6 +440,13 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
 
     bool update_gallery_type =
         user_added && (existing.type == MediaGalleryPrefInfo::kBlackListed);
+    // TODO(gbillock): Once we have all updates adding the device metadata,
+    // we'll change this to always update the gallery name if we have device
+    // metadata.
+    // Status quo: In M27 and M28, galleries added manually use version 0,
+    // and galleries added automatically (including default galleries) use
+    // version 1. The name override is used by default galleries as well
+    // as all device attach events.
     bool update_gallery_name = existing.display_name != display_name;
     bool update_gallery_metadata = volume_metadata_valid &&
         ((existing.volume_label != volume_label) ||
