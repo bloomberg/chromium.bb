@@ -163,15 +163,16 @@ class ResourceMetadata {
   // Synchronous version of SetLargestChangestampOnUIThread.
   FileError SetLargestChangestamp(int64 value);
 
-  // Adds |entry| to the metadata tree, based on its parent_resource_id.
+  // Runs AddEntry() on blocking pool. Upon completion, the |callback| will be
+  // called with the new file path.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void AddEntryOnUIThread(const ResourceEntry& entry,
                           const FileMoveCallback& callback);
 
-  // Synchronous version of AddEntryOnUIThread.
-  FileError AddEntry(const ResourceEntry& entry,
-                     base::FilePath* out_file_path);
+  // Adds |entry| to the metadata tree based on its parent_resource_id
+  // synchronously.
+  FileError AddEntry(const ResourceEntry& entry);
 
   // Moves entry specified by |file_path| to the directory specified by
   // |directory_path| and calls the callback asynchronously. Removes the entry

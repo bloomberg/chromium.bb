@@ -114,6 +114,17 @@ void PostFileMoveTask(
       base::Bind(&RunFileMoveCallback, callback, base::Owned(file_path)));
 }
 
+FileError AddEntryWithFilePath(internal::ResourceMetadata* metadata,
+                               const ResourceEntry& entry,
+                               base::FilePath* out_file_path) {
+  DCHECK(metadata);
+  DCHECK(out_file_path);
+  FileError error = metadata->AddEntry(entry);
+  if (error == FILE_ERROR_OK)
+    *out_file_path = metadata->GetFilePath(entry.resource_id());
+  return error;
+}
+
 }  // namespace
 
 std::string DirectoryFetchInfo::ToString() const {
@@ -285,14 +296,13 @@ void ResourceMetadata::AddEntryOnUIThread(const ResourceEntry& entry,
   DCHECK(!callback.is_null());
 
   PostFileMoveTask(blocking_task_runner_,
-                   base::Bind(&ResourceMetadata::AddEntry,
+                   base::Bind(&AddEntryWithFilePath,
                               base::Unretained(this),
                               entry),
                    callback);
 }
 
-FileError ResourceMetadata::AddEntry(const ResourceEntry& entry,
-                                     base::FilePath* out_file_path) {
+FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
@@ -310,9 +320,6 @@ FileError ResourceMetadata::AddEntry(const ResourceEntry& entry,
 
   if (!PutEntryUnderDirectory(entry))
     return FILE_ERROR_FAILED;
-
-  if (out_file_path)
-    *out_file_path = GetFilePath(entry.resource_id());
 
   return FILE_ERROR_OK;
 }

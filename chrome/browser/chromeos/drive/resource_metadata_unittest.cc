@@ -81,7 +81,7 @@ bool AddResourceEntry(ResourceMetadata* resource_metadata,
   ResourceEntry entry = CreateResourceEntry(sequence_id,
                                             is_directory,
                                             parent_resource_id);
-  return resource_metadata->AddEntry(entry, NULL) == FILE_ERROR_OK;
+  return resource_metadata->AddEntry(entry) == FILE_ERROR_OK;
 }
 
 // Creates the following files/directories
@@ -98,7 +98,7 @@ bool AddResourceEntry(ResourceMetadata* resource_metadata,
 void SetUpEntries(ResourceMetadata* resource_metadata) {
   // Create mydrive root directory.
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      util::CreateMyDriveRootEntry(kTestRootResourceId), NULL));
+      util::CreateMyDriveRootEntry(kTestRootResourceId)));
 
   int sequence_id = 1;
   ASSERT_TRUE(AddResourceEntry(
