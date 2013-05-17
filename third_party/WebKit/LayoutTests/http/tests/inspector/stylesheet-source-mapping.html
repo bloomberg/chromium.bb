@@ -15,15 +15,15 @@ function test()
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
     InspectorTest.addMockUISourceCodeToWorkspace("http://localhost:8000/inspector/resources/example.css", WebInspector.resourceTypes.Stylesheet, "");
-    var event = { data: createMockStyleSheetResource("http://localhost:8000/inspector/resources/example.css", "text/css",
+    var resource = createMockStyleSheetResource("http://localhost:8000/inspector/resources/example.css", "text/css",
         "/* Comment */\n" +
         "a {\n" +
         "  foo: bar;\n" +
         "  /* SOME COMMENT */\n" +
         "  font-size: 12px; }\n\n" +
-        "/*@ sourceMappingURL=example.css.map */") };
-    stylesSourceMapping._resourceAdded(event);
-    mapping._resourceAdded(event);
+        "/*@ sourceMappingURL=example.css.map */");
+    stylesSourceMapping.addResource(resource);
+    mapping.addResource(resource);
     afterStyleSheetAdded();
 
     function createMockStyleSheetResource(url, mimeType, content)

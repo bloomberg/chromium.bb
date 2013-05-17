@@ -31,7 +31,7 @@ function test()
         function callback(resource)
         {
             if (resource.url.endsWith(".css")) {
-                sassMapping._resourceAdded(new WebInspector.Event(WebInspector.resourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, resource));
+                sassMapping.addResource(resource);
                 return true;
             }
         }
