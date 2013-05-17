@@ -56,29 +56,12 @@ private:
     OwnPtr<ScriptDebugServer::Task> m_task;
 };
 
-class RecursionScopeSuppression {
-public:
-    RecursionScopeSuppression()
-    {
-#ifndef NDEBUG
-        V8PerIsolateData::current()->incrementInternalScriptRecursionLevel();
-#endif
-    }
-
-    ~RecursionScopeSuppression()
-    {
-#ifndef NDEBUG
-        V8PerIsolateData::current()->decrementInternalScriptRecursionLevel();
-#endif
-    }
-};
-
 }
 
 v8::Local<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* functionName, int argc, v8::Handle<v8::Value> argv[])
 {
     v8::Handle<v8::Function> function = v8::Local<v8::Function>::Cast(m_debuggerScript.get()->Get(v8::String::NewSymbol(functionName)));
-    V8RecursionScope::MicrotaskSuppression scope;
+    V8RecursionScope::MicrotaskSuppression recursionScope;
     return function->Call(m_debuggerScript.get(), argc, argv);
 }
 
@@ -104,7 +87,7 @@ public:
 
         if (tryCatch.HasCaught())
             return;
-        RecursionScopeSuppression suppressionScope;
+        V8RecursionScope::MicrotaskSuppression recursionScope;
         v8::Handle<v8::Value> preprocessorFunction = script->Run();
 
         if (tryCatch.HasCaught() || !preprocessorFunction->IsFunction())
@@ -129,7 +112,7 @@ public:
         v8::Handle<v8::Value> argv[] = { sourceCodeString, sourceNameString };
 
         v8::TryCatch tryCatch;
-        RecursionScopeSuppression suppressionScope;
+        V8RecursionScope::MicrotaskSuppression recursionScope;
         v8::Handle<v8::Value> resultValue = m_preprocessorFunction->Call(context->Global(), 2, argv);
 
         if (tryCatch.HasCaught())
