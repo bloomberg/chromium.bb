@@ -1621,6 +1621,9 @@ public:
     static GridTrackSize initialGridAutoColumns() { return GridTrackSize(Auto); }
     static GridTrackSize initialGridAutoRows() { return GridTrackSize(Auto); }
 
+    static NamedGridLinesMap initialNamedGridColumnLines() { return NamedGridLinesMap(); }
+    static NamedGridLinesMap initialNamedGridRowLines() { return NamedGridLinesMap(); }
+
     // 'auto' is the default.
     static GridPosition initialGridStart() { return GridPosition(); }
     static GridPosition initialGridEnd() { return GridPosition(); }

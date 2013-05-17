@@ -251,3 +251,43 @@ element.style.webkitGridColumns = "none";
 element.style.webkitGridRows = "none";
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
+
+function testInherit()
+{
+    var parentElement = document.createElement("div");
+    document.body.appendChild(parentElement);
+    parentElement.style.webkitGridColumns = "50px 'last'";
+    parentElement.style.webkitGridRows = "'first' 101%";
+
+    element = document.createElement("div");
+    parentElement.appendChild(element);
+    element.style.webkitGridColumns = "inherit";
+    element.style.webkitGridRows = "inherit";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'50px last'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'first 101%'");
+
+    document.body.removeChild(parentElement);
+}
+debug("");
+debug("Test setting grid-auto-columns and grid-auto-rows to 'inherit' through JS");
+testInherit();
+
+function testInitial()
+{
+    element = document.createElement("div");
+    document.body.appendChild(element);
+    element.style.webkitGridColumns = "150% 'last'";
+    element.style.webkitGridRows = "'first' 1fr";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'150% last'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'first 1fr'");
+
+    element.style.webkitGridColumns = "initial";
+    element.style.webkitGridRows = "initial";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
+
+    document.body.removeChild(element);
+}
+debug("");
+debug("Test setting grid-auto-columns and grid-auto-rows to 'initial' through JS");
+testInitial();

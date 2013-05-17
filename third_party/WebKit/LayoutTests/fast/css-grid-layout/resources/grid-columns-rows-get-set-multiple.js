@@ -168,3 +168,43 @@ element.style.webkitGridColumns = "auto minmax(16px, auto)";
 element.style.webkitGridRows = "minmax(auto, 15%) 10vw";
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
+
+function testInherit()
+{
+    var parentElement = document.createElement("div");
+    document.body.appendChild(parentElement);
+    parentElement.style.webkitGridColumns = "50px 1fr 'last'";
+    parentElement.style.webkitGridRows = "101% 'middle' 45px";
+
+    element = document.createElement("div");
+    parentElement.appendChild(element);
+    element.style.webkitGridColumns = "inherit";
+    element.style.webkitGridRows = "inherit";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'50px 1fr last'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'101% middle 45px'");
+
+    document.body.removeChild(parentElement);
+}
+debug("");
+debug("Test setting grid-auto-columns and grid-auto-rows to 'inherit' through JS");
+testInherit();
+
+function testInitial()
+{
+    element = document.createElement("div");
+    document.body.appendChild(element);
+    element.style.webkitGridColumns = "150% 'middle' 55px";
+    element.style.webkitGridRows = "1fr 'line' 2fr 'line'";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'150% middle 55px'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'1fr line 2fr line'");
+
+    element.style.webkitGridColumns = "initial";
+    element.style.webkitGridRows = "initial";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
+
+    document.body.removeChild(element);
+}
+debug("");
+debug("Test setting grid-auto-columns and grid-auto-rows to 'initial' through JS");
+testInitial();

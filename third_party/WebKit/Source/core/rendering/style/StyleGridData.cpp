@@ -36,6 +36,8 @@ StyleGridData::StyleGridData()
     , m_gridAutoFlow(RenderStyle::initialGridAutoFlow())
     , m_gridAutoRows(RenderStyle::initialGridAutoRows())
     , m_gridAutoColumns(RenderStyle::initialGridAutoColumns())
+    , m_namedGridColumnLines(RenderStyle::initialNamedGridColumnLines())
+    , m_namedGridRowLines(RenderStyle::initialNamedGridRowLines())
 {
 }
 
