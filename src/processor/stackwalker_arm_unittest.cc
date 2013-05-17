@@ -62,6 +62,7 @@ using google_breakpad::test_assembler::Label;
 using google_breakpad::test_assembler::Section;
 using std::vector;
 using testing::_;
+using testing::AnyNumber;
 using testing::Return;
 using testing::SetArgumentPointee;
 using testing::Test;
@@ -92,6 +93,10 @@ class StackwalkerARMFixture {
     // SetModuleSymbols to override this.
     EXPECT_CALL(supplier, GetCStringSymbolData(_, _, _, _))
       .WillRepeatedly(Return(MockSymbolSupplier::NOT_FOUND));
+
+    // Avoid GMOCK WARNING "Uninteresting mock function call - returning
+    // directly" for FreeSymbolData().
+    EXPECT_CALL(supplier, FreeSymbolData(_)).Times(AnyNumber());
   }
 
   // Set the Breakpad symbol information that supplier should return for

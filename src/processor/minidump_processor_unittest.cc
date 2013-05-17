@@ -139,6 +139,7 @@ using google_breakpad::scoped_ptr;
 using google_breakpad::SymbolSupplier;
 using google_breakpad::SystemInfo;
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::Mock;
 using ::testing::Ne;
@@ -340,6 +341,9 @@ TEST_F(MinidumpProcessorTest, TestSymbolSupplierLookupCounts) {
       Property(&google_breakpad::CodeModule::code_file,
                Ne("c:\\test_app.exe")),
       _, _, _)).WillRepeatedly(Return(SymbolSupplier::NOT_FOUND));
+  // Avoid GMOCK WARNING "Uninteresting mock function call - returning
+  // directly" for FreeSymbolData().
+  EXPECT_CALL(supplier, FreeSymbolData(_)).Times(AnyNumber());
   ASSERT_EQ(processor.Process(minidump_file, &state),
             google_breakpad::PROCESS_OK);
 
@@ -355,6 +359,9 @@ TEST_F(MinidumpProcessorTest, TestSymbolSupplierLookupCounts) {
       Property(&google_breakpad::CodeModule::code_file,
                Ne("c:\\test_app.exe")),
       _, _, _)).WillRepeatedly(Return(SymbolSupplier::NOT_FOUND));
+  // Avoid GMOCK WARNING "Uninteresting mock function call - returning
+  // directly" for FreeSymbolData().
+  EXPECT_CALL(supplier, FreeSymbolData(_)).Times(AnyNumber());
   ASSERT_EQ(processor.Process(minidump_file, &state),
             google_breakpad::PROCESS_OK);
 }
