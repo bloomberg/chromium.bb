@@ -327,15 +327,21 @@ class NewTabButton : public views::ImageButton {
   // The offset used to paint the background image.
   gfx::Point background_offset_;
 
+  // were we destroyed?
+  bool* destroyed_;
+
   DISALLOW_COPY_AND_ASSIGN(NewTabButton);
 };
 
 NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
     : views::ImageButton(listener),
-      tab_strip_(tab_strip) {
+      tab_strip_(tab_strip),
+      destroyed_(NULL) {
 }
 
 NewTabButton::~NewTabButton() {
+  if (destroyed_)
+    *destroyed_ = true;
 }
 
 bool NewTabButton::HasHitTestMask() const {
@@ -371,8 +377,13 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyRightMouseButton()) {
     gfx::Point point = event.location();
     views::View::ConvertPointToScreen(this, &point);
+    bool destroyed = false;
+    destroyed_ = &destroyed;
     ui::ShowSystemMenuAtPoint(GetWidget()->GetNativeView(), point);
-    SetState(views::CustomButton::STATE_NORMAL);
+    if (!destroyed_) {
+      SetState(views::CustomButton::STATE_NORMAL);
+      destroyed_ = NULL;
+    }
     return;
   }
   views::ImageButton::OnMouseReleased(event);
