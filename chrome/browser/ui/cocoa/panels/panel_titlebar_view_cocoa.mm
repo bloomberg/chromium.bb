@@ -289,11 +289,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
                  pressedImage:(NSImage*)pressedImage
                       toolTip:(NSString*)toolTip {
   [button setDefaultImage:image];
-  [button setDefaultOpacity:1.0];
   [button setHoverImage:hoverImage];
-  [button setHoverOpacity:1.0];
   [button setPressedImage:pressedImage];
-  [button setPressedOpacity:1.0];
   [button setToolTip:toolTip];
   [[button cell] setHighlightsBy:NSNoCellMask];
 }

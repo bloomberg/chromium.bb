@@ -310,13 +310,10 @@
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   [closeButton_ setDefaultImage:
       rb.GetNativeImageNamed(IDR_NOTIFICATION_CLOSE).ToNSImage()];
-  [closeButton_ setDefaultOpacity:1];
   [closeButton_ setHoverImage:
       rb.GetNativeImageNamed(IDR_NOTIFICATION_CLOSE_HOVER).ToNSImage()];
-  [closeButton_ setHoverOpacity:1];
   [closeButton_ setPressedImage:
       rb.GetNativeImageNamed(IDR_NOTIFICATION_CLOSE_PRESSED).ToNSImage()];
-  [closeButton_ setPressedOpacity:1];
   [[closeButton_ cell] setHighlightsBy:NSOnState];
   [closeButton_ setTrackingEnabled:YES];
   [closeButton_ setBordered:NO];

@@ -44,20 +44,4 @@ TEST_F(HoverImageButtonTest, ImageSwap) {
   EXPECT_EQ([button_ image], image);
 }
 
-// Test mouse events.
-TEST_F(HoverImageButtonTest, Opacity) {
-  NSImage* image = [NSImage imageNamed:NSImageNameStatusAvailable];
-  [button_ setDefaultImage:image];
-  [button_ setDefaultOpacity:0.5];
-  [button_ setHoverImage:image];
-  [button_ setHoverOpacity:1.0];
-
-  [button_ mouseEntered:nil];
-  DrawRect();
-  EXPECT_EQ([button_ alphaValue], 1.0);
-  [button_ mouseExited:nil];
-  DrawRect();
-  EXPECT_EQ([button_ alphaValue], 0.5);
-}
-
 }  // namespace

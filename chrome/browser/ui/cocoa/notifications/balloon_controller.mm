@@ -63,13 +63,10 @@ const int kRightMargin = 2;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   [optionsButton_ setDefaultImage:
       rb.GetNativeImageNamed(IDR_BALLOON_WRENCH).ToNSImage()];
-  [optionsButton_ setDefaultOpacity:1.0];
   [optionsButton_ setHoverImage:
       rb.GetNativeImageNamed(IDR_BALLOON_WRENCH_H).ToNSImage()];
-  [optionsButton_ setHoverOpacity:1.0];
   [optionsButton_ setPressedImage:
       rb.GetNativeImageNamed(IDR_BALLOON_WRENCH_P).ToNSImage()];
-  [optionsButton_ setPressedOpacity:1.0];
   [[optionsButton_ cell] setHighlightsBy:NSNoCellMask];
 
   NSString* sourceLabelText = l10n_util::GetNSStringF(
