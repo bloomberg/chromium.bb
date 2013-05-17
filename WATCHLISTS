@@ -370,6 +370,9 @@
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
         'chrome/common/plugin|webkit/glue/webplugin|webkit/glue/plugins/',
     },
+    'policy_templates': {
+      'filepath': 'chrome/app/policy/policy_templates.json',
+    },
     'predictors': {
       'filepath': 'predictors',
     },
@@ -648,6 +651,7 @@
     'perf': ['chrome-speed-team+watch@google.com'],
     'plugin': ['jam@chromium.org',
                'stuartmorgan+watch@chromium.org'],
+    'policy_templates': ['joaodasilva+watch@chromium.org'],
     'predictors': ['dominich+watch@chromium.org', 'shishir+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
                   'dominich+watch@chromium.org', 'gavinp+prer@chromium.org'],
