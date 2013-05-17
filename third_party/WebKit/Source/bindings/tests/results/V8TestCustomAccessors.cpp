@@ -62,7 +62,6 @@ static v8::Handle<v8::Value> anotherFunctionMethod(const v8::Arguments& args)
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestCustomAccessors* imp = V8TestCustomAccessors::toNative(args.Holder());
-    ExceptionCode ec = 0;
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, str, args[0]);
     imp->anotherFunction(str);
     return v8Undefined();

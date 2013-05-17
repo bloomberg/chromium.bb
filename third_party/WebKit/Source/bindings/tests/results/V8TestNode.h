@@ -21,6 +21,7 @@
 #ifndef V8TestNode_h
 #define V8TestNode_h
 
+#include "V8Node.h"
 #include "bindings/bindings/tests/idls/TestNode.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"

@@ -21,6 +21,7 @@
 #ifndef V8Float64Array_h
 #define V8Float64Array_h
 
+#include "V8ArrayBufferView.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"

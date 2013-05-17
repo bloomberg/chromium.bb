@@ -69,7 +69,6 @@ static v8::Handle<v8::Value> fooMethod(const v8::Arguments& args)
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     Float64Array* imp = V8Float64Array::toNative(args.Holder());
-    ExceptionCode ec = 0;
     V8TRYCATCH(Float32Array*, array, V8Float32Array::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Float32Array::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     return toV8(imp->foo(array), args.Holder(), args.GetIsolate());
 }

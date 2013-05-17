@@ -112,7 +112,6 @@ static v8::Handle<v8::Value> func1Method(const v8::Arguments& args)
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(args.Holder());
-    ExceptionCode ec = 0;
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, a, args[0]);
     return v8String(imp->func1(a), args.GetIsolate(), ReturnUnsafeHandle);
 }
@@ -127,7 +126,6 @@ static v8::Handle<v8::Value> funcTestInterfaceImplementedAsParamMethod(const v8:
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(args.Holder());
-    ExceptionCode ec = 0;
     V8TRYCATCH(RealClass*, orange, V8TestInterfaceImplementedAs::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     return v8String(imp->funcTestInterfaceImplementedAsParam(orange), args.GetIsolate(), ReturnUnsafeHandle);
 }

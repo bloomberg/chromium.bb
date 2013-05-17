@@ -82,7 +82,6 @@ static v8::Handle<v8::Value> namedItemMethod(const v8::Arguments& args)
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
-    ExceptionCode ec = 0;
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, name, args[0]);
     return toV8(imp->namedItem(name), args.Holder(), args.GetIsolate());
 }

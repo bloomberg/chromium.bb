@@ -530,13 +530,13 @@ v8::Handle<v8::Value> V8TestInterface::namedPropertyGetter(v8::Local<v8::String>
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestInterface* collection = toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
-    RefPtr<Node> elementMember1;
-    RefPtr<NodeList> elementMember2;
-    collection->getItem(propertyName, elementMember1, elementMember2);
-    if (!!elementMember1)
-        return toV8Fast(elementMember1.release(), info, collection);
-    if (!!elementMember2)
-        return toV8Fast(elementMember2.release(), info, collection);
+    RefPtr<Node> element0;
+    RefPtr<NodeList> element1;
+    collection->getItem(propertyName, element0, element1);
+    if (!!element0)
+        return toV8Fast(element0.release(), info, collection);
+    if (!!element1)
+        return toV8Fast(element1.release(), info, collection);
     return v8Undefined();
 }
 

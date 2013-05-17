@@ -62,8 +62,6 @@ template <typename T> void V8_USE(T) { }
 
 static v8::Handle<v8::Value> constructor1(const v8::Arguments& args)
 {
-
-    ExceptionCode ec = 0;
     V8TRYCATCH(ArrayBuffer*, arrayBuffer, V8ArrayBuffer::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
 
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(arrayBuffer);
@@ -75,8 +73,6 @@ static v8::Handle<v8::Value> constructor1(const v8::Arguments& args)
 
 static v8::Handle<v8::Value> constructor2(const v8::Arguments& args)
 {
-
-    ExceptionCode ec = 0;
     V8TRYCATCH(ArrayBufferView*, arrayBufferView, V8ArrayBufferView::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
 
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(arrayBufferView);
@@ -88,8 +84,6 @@ static v8::Handle<v8::Value> constructor2(const v8::Arguments& args)
 
 static v8::Handle<v8::Value> constructor3(const v8::Arguments& args)
 {
-
-    ExceptionCode ec = 0;
     V8TRYCATCH(Blob*, blob, V8Blob::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Blob::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
 
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(blob);
@@ -101,8 +95,6 @@ static v8::Handle<v8::Value> constructor3(const v8::Arguments& args)
 
 static v8::Handle<v8::Value> constructor4(const v8::Arguments& args)
 {
-
-    ExceptionCode ec = 0;
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, string, args[0]);
 
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(string);
