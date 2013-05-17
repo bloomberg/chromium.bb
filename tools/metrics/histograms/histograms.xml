@@ -2004,6 +2004,13 @@ other types of suffix sets.
   <summary>Errno of errors encountered in WritableFileFlush.</summary>
 </histogram>
 
+<histogram name="LevelDBEnv.IDB.LockFileAncestorsNotFound" units="directories">
+  <summary>
+    Number of directories missing when IDB LevelDBEnv tries to create a Lock
+    file.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.IDB.MaxFDs" units="files">
   <summary>
     File descriptor limit recorded every time LevelDB calls NewRandomAccessFile
@@ -2059,6 +2066,13 @@ other types of suffix sets.
 
 <histogram name="LevelDBEnv.IOError.WritableFileFlush" enum="OSAgnosticErrno">
   <summary>Errno of errors encountered in WritableFileFlush.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.LockFileAncestorsNotFound" units="directories">
+  <summary>
+    Number of directories missing when Non-IDB LevelDBEnv tries to create a Lock
+    file.
+  </summary>
 </histogram>
 
 <histogram name="LevelDBEnv.MaxFDs" units="files">
@@ -11264,6 +11278,9 @@ other types of suffix sets.
     A database with non-ascii characters in its path was opened (with either
     success or failure).
   </int>
+  <int value="11" label="OpenAttemptDiskFull">
+    An open failed on a machine with a full disk. No cleanup was attempted.
+  </int>
 </enum>
 
 <enum name="ImporterType" type="int">
@@ -12034,6 +12051,7 @@ other types of suffix sets.
   <int value="13" label="NOT_A_FILE"/>
   <int value="14" label="NOT_EMPTY"/>
   <int value="15" label="INVALID_URL"/>
+  <int value="16" label="I/O"/>
 </enum>
 
 <enum name="PluginLoadResult" type="int">
