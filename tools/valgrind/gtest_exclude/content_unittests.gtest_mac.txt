@@ -28,3 +28,6 @@ WebContentsVideoCaptureDeviceTest.BadFramesGoodFrames
 RenderWidgetHostViewMacTest.*
 WebContentsVideoCaptureDeviceTest.*
 RenderViewHostTest.*
+
+# Speculative disable of hanging tests. http://crbug.com/241919
+VideoCaptureControllerTest.*
