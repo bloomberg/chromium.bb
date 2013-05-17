@@ -7,7 +7,9 @@
 #include <algorithm>
 
 #include "ash/launcher/launcher_button_host.h"
+#include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shell.h"
 #include "grit/ash_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -391,29 +393,46 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void LauncherButton::Layout() {
-  const gfx::Rect button_bounds(GetContentsBounds());
-   int x_offset = 0, y_offset = 0;
-   gfx::Rect icon_bounds;
-   if (shelf_layout_manager_->IsHorizontalAlignment()) {
+  gfx::Rect launcher_bounds(GetContentsBounds());
+  gfx::Rect icon_bounds;
+  if (shelf_layout_manager_->IsHorizontalAlignment()) {
     icon_bounds.SetRect(
-        button_bounds.x(), button_bounds.y() + kIconPad,
-        button_bounds.width(), kIconSize);
+        launcher_bounds.x(), launcher_bounds.y() + kIconPad,
+        launcher_bounds.width(), kIconSize);
   } else {
     icon_bounds.SetRect(
-        button_bounds.x() + kIconPad, button_bounds.y(),
-        kIconSize, button_bounds.height());
+        launcher_bounds.x() + kIconPad, launcher_bounds.y(),
+        kIconSize, launcher_bounds.height());
   }
 
+  int x_offset = 0;
+  int y_offset = 0;
   if (ShouldHop(state_)) {
     x_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
         0, kHopSpacing, -kHopSpacing, 0);
     y_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
         -kHopSpacing, 0, 0, kHopSpacing);
   }
-
   icon_bounds.Offset(x_offset, y_offset);
+
+  views::Widget* widget = GetWidget();
+  if (widget) {
+    gfx::Rect edge_bounds =
+        Shell::GetScreen()->GetDisplayNearestWindow(
+            widget->GetNativeView()).bounds();
+    edge_bounds.Inset(shelf_layout_manager_->SelectValueForShelfAlignment(
+        gfx::Insets(0, 0, kBarSize, 0),
+        gfx::Insets(0, kBarSize, 0, 0),
+        gfx::Insets(0, 0, 0, kBarSize),
+        gfx::Insets(kBarSize, 0, 0, 0)));
+    edge_bounds = ScreenAsh::ConvertRectFromScreen(widget->GetNativeView(),
+                                                   edge_bounds);
+    icon_bounds.Intersect(edge_bounds);
+  }
+
   icon_view_->SetBoundsRect(icon_bounds);
   bar_->SetBarBoundsRect(GetContentsBounds());
+
   UpdateState();
 }
 
@@ -524,6 +543,8 @@ void LauncherButton::UpdateState() {
   bar_->SchedulePaint();
   SchedulePaint();
 }
+
+
 
 }  // namespace internal
 }  // namespace ash
