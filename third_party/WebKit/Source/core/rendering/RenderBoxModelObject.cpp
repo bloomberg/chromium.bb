@@ -624,50 +624,44 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     }
     
     GraphicsContextStateSaver backgroundClipStateSaver(*context, false);
-    OwnPtr<ImageBuffer> maskImage;
     IntRect maskRect;
 
-    if (bgLayer->clip() == PaddingFillBox || bgLayer->clip() == ContentFillBox) {
+    switch (bgLayer->clip()) {
+    case PaddingFillBox:
+    case ContentFillBox: {
+        if (clipToBorderRadius)
+            break;
+
         // Clip to the padding or content boxes as necessary.
-        if (!clipToBorderRadius) {
-            bool includePadding = bgLayer->clip() == ContentFillBox;
-            LayoutRect clipRect = LayoutRect(scrolledPaintRect.x() + bLeft + (includePadding ? pLeft : LayoutUnit()),
-                scrolledPaintRect.y() + borderTop() + (includePadding ? paddingTop() : LayoutUnit()),
-                scrolledPaintRect.width() - bLeft - bRight - (includePadding ? pLeft + pRight : LayoutUnit()),
-                scrolledPaintRect.height() - borderTop() - borderBottom() - (includePadding ? paddingTop() + paddingBottom() : LayoutUnit()));
-            backgroundClipStateSaver.save();
-            context->clip(clipRect);
-        }
-    } else if (bgLayer->clip() == TextFillBox) {
-        // We have to draw our text into a mask that can then be used to clip background drawing.
+        bool includePadding = bgLayer->clip() == ContentFillBox;
+        LayoutRect clipRect = LayoutRect(scrolledPaintRect.x() + bLeft + (includePadding ? pLeft : LayoutUnit()),
+            scrolledPaintRect.y() + borderTop() + (includePadding ? paddingTop() : LayoutUnit()),
+            scrolledPaintRect.width() - bLeft - bRight - (includePadding ? pLeft + pRight : LayoutUnit()),
+            scrolledPaintRect.height() - borderTop() - borderBottom() - (includePadding ? paddingTop() + paddingBottom() : LayoutUnit()));
+        backgroundClipStateSaver.save();
+        context->clip(clipRect);
+
+        break;
+    }
+    case TextFillBox: {
         // First figure out how big the mask has to be.  It should be no bigger than what we need
         // to actually render, so we should intersect the dirty rect with the border box of the background.
         maskRect = pixelSnappedIntRect(rect);
         maskRect.intersect(paintInfo.rect);
 
-        // Now create the mask.
-        maskImage = context->createCompatibleBuffer(maskRect.size());
-        if (!maskImage)
-            return;
-
-        GraphicsContext* maskImageContext = maskImage->context();
-        maskImageContext->translate(-maskRect.x(), -maskRect.y());
-
-        // Now add the text to the clip.  We do this by painting using a special paint phase that signals to
-        // InlineTextBoxes that they should just add their contents to the clip.
-        PaintInfo info(maskImageContext, maskRect, PaintPhaseTextClip, PaintBehaviorForceBlackText, 0, paintInfo.renderRegion);
-        if (box) {
-            RootInlineBox* root = box->root();
-            box->paint(info, LayoutPoint(scrolledPaintRect.x() - box->x(), scrolledPaintRect.y() - box->y()), root->lineTop(), root->lineBottom());
-        } else {
-            LayoutSize localOffset = isBox() ? toRenderBox(this)->locationOffset() : LayoutSize();
-            paint(info, scrolledPaintRect.location() - localOffset);
-        }
-
-        // The mask has been created.  Now we just need to clip to it.
+        // We draw the background into a separate layer, to be later masked with yet another layer
+        // holding the text content.
         backgroundClipStateSaver.save();
         context->clip(maskRect);
         context->beginTransparencyLayer(1);
+
+        break;
+    }
+    case BorderFillBox:
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
     }
 
     // Only fill with a base color (e.g., white) if we're the root document, since iframes/frames with
@@ -753,7 +747,26 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     }
 
     if (bgLayer->clip() == TextFillBox) {
-        context->drawImageBuffer(maskImage.get(), ColorSpaceDeviceRGB, maskRect, CompositeDestinationIn);
+        // Create the text mask layer.
+        context->setCompositeOperation(CompositeDestinationIn);
+        context->beginTransparencyLayer(1);
+
+        // FIXME: Workaround for https://code.google.com/p/skia/issues/detail?id=1291.
+        context->clearRect(maskRect);
+
+        // Now draw the text into the mask. We do this by painting using a special paint phase that signals to
+        // InlineTextBoxes that they should just add their contents to the clip.
+        PaintInfo info(context, maskRect, PaintPhaseTextClip, PaintBehaviorForceBlackText, 0, paintInfo.renderRegion);
+        context->setCompositeOperation(CompositeSourceOver);
+        if (box) {
+            RootInlineBox* root = box->root();
+            box->paint(info, LayoutPoint(scrolledPaintRect.x() - box->x(), scrolledPaintRect.y() - box->y()), root->lineTop(), root->lineBottom());
+        } else {
+            LayoutSize localOffset = isBox() ? toRenderBox(this)->locationOffset() : LayoutSize();
+            paint(info, scrolledPaintRect.location() - localOffset);
+        }
+
+        context->endTransparencyLayer();
         context->endTransparencyLayer();
     }
 }
