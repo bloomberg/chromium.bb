@@ -48,4 +48,8 @@
 #
 # START OVERRIDES HERE
 
+# the new image is better and results from improved AA ellipse drawing
+# implemented in r9162 (https://chromiumcodereview.appspot.com/14938004)
+crbug.com/241761 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
