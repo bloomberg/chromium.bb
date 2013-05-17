@@ -78,8 +78,6 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 
-#include "core/platform/chromium/TraceEvent.h"
-
 namespace WebCore {
 
 static const char* const requestAnimationFrameEventName = "requestAnimationFrame";
@@ -485,10 +483,8 @@ void didDispatchXHRLoadEventImpl(const InspectorInstrumentationCookie& cookie)
 
 void willPaintImpl(InstrumentingAgents* instrumentingAgents, RenderObject* renderer)
 {
-    TRACE_EVENT_INSTANT1("instrumentation", InstrumentationEvents::Paint, InstrumentationEventArguments::PageId, reinterpret_cast<unsigned long long>(renderer->frame()->page()));
-
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->willPaint(renderer->frame());
+        timelineAgent->willPaint(renderer);
 }
 
 void didPaintImpl(InstrumentingAgents* instrumentingAgents, RenderObject* renderer, GraphicsContext* context, const LayoutRect& rect)
@@ -1330,6 +1326,7 @@ const char BeginFrame[] = "BeginFrame";
 namespace InstrumentationEventArguments {
 const char LayerId[] = "layerId";
 const char PageId[] = "pageId";
+const char NodeId[] = "nodeId";
 };
 
 } // namespace WebCore

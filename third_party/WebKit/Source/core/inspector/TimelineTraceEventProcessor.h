@@ -255,7 +255,7 @@ private:
     typedef HashMap<ThreadIdentifier, TimelineThreadState> ThreadStateMap;
     ThreadStateMap m_threadStates;
 
-    HashSet<unsigned long long> m_knownLayers;
+    HashMap<unsigned long long, long long> m_layerToNodeMap;
     unsigned long long m_layerId;
 };
 

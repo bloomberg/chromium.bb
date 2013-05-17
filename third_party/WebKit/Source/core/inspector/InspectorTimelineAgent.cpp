@@ -49,6 +49,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/MemoryUsageSupport.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
@@ -359,8 +360,13 @@ void InspectorTimelineAgent::didRecalculateStyleForElement()
     ++m_styleRecalcElementCounter;
 }
 
-void InspectorTimelineAgent::willPaint(Frame* frame)
+void InspectorTimelineAgent::willPaint(RenderObject* renderer)
 {
+    Frame* frame = renderer->frame();
+    TRACE_EVENT_INSTANT2("instrumentation", InstrumentationEvents::Paint,
+        InstrumentationEventArguments::PageId, reinterpret_cast<unsigned long long>(frame->page()),
+        InstrumentationEventArguments::NodeId, idForNode(renderer->generatingNode()));
+
     pushCurrentRecord(InspectorObject::create(), TimelineRecordType::Paint, true, frame, true);
 }
 
@@ -793,7 +799,7 @@ void InspectorTimelineAgent::localToPageQuad(const RenderObject& renderer, const
     quad->setP4(view->contentsToRootView(roundedIntPoint(absolute.p4())));
 }
 
-int InspectorTimelineAgent::idForNode(Node* node)
+long long InspectorTimelineAgent::idForNode(Node* node)
 {
     return m_domAgent && node ? m_domAgent->backendNodeIdForNode(node, BackendNodeIdGroup) : 0;
 }

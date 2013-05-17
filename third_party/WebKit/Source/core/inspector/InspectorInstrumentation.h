@@ -158,6 +158,7 @@ extern const char BeginFrame[];
 namespace InstrumentationEventArguments {
 extern const char LayerId[];
 extern const char PageId[];
+extern const char NodeId[];
 };
 
 namespace InspectorInstrumentation {

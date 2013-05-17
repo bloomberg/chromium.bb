@@ -243,7 +243,10 @@ void TimelineTraceEventProcessor::onRasterTaskBegin(const TraceEvent& event)
     TimelineThreadState& state = threadState(event.threadIdentifier());
     if (!maybeEnterLayerTask(event, state))
         return;
+    unsigned long long layerId = event.asUInt(InstrumentationEventArguments::LayerId);
+    ASSERT(layerId);
     RefPtr<InspectorObject> record = createRecord(event, TimelineRecordType::Rasterize);
+    record->setObject("data", TimelineRecordFactory::createRasterizeData(m_layerToNodeMap.get(layerId)));
     state.recordStack.addScopedRecord(record.release());
 }
 
@@ -270,7 +273,7 @@ void TimelineTraceEventProcessor::onImageDecodeTaskEnd(const TraceEvent& event)
 bool TimelineTraceEventProcessor::maybeEnterLayerTask(const TraceEvent& event, TimelineThreadState& threadState)
 {
     unsigned long long layerId = event.asUInt(InstrumentationEventArguments::LayerId);
-    if (!m_knownLayers.contains(layerId))
+    if (!m_layerToNodeMap.contains(layerId))
         return false;
     ASSERT(!threadState.inKnownLayerTask);
     threadState.inKnownLayerTask = true;
@@ -304,7 +307,7 @@ void TimelineTraceEventProcessor::onLayerDeleted(const TraceEvent& event)
     unsigned long long id = event.id();
     ASSERT(id);
     processBackgroundEvents();
-    m_knownLayers.remove(id);
+    m_layerToNodeMap.remove(id);
 }
 
 void TimelineTraceEventProcessor::onPaint(const TraceEvent& event)
@@ -313,8 +316,11 @@ void TimelineTraceEventProcessor::onPaint(const TraceEvent& event)
         return;
 
     unsigned long long pageId = event.asUInt(InstrumentationEventArguments::PageId);
-    if (pageId == m_pageId)
-        m_knownLayers.add(m_layerId);
+    if (pageId != m_pageId)
+        return;
+    long long nodeId = event.asInt(InstrumentationEventArguments::NodeId);
+    ASSERT(nodeId);
+    m_layerToNodeMap.set(m_layerId, nodeId);
 }
 
 PassRefPtr<InspectorObject> TimelineTraceEventProcessor::createRecord(const TraceEvent& event, const String& recordType, PassRefPtr<InspectorObject> data)

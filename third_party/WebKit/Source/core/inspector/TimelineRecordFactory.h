@@ -92,9 +92,11 @@ namespace WebCore {
 
         static PassRefPtr<InspectorObject> createAnimationFrameData(int callbackId);
 
-        static PassRefPtr<InspectorObject> createPaintData(const FloatQuad&, int layerRootNodeId);
+        static PassRefPtr<InspectorObject> createPaintData(const FloatQuad&, long long layerRootNodeId);
 
-        static void appendLayoutRoot(InspectorObject* data, const FloatQuad&, int rootNodeId);
+        static PassRefPtr<InspectorObject> createRasterizeData(long long layerRootNodeId);
+
+        static void appendLayoutRoot(InspectorObject* data, const FloatQuad&, long long rootNodeId);
 
         static void appendStyleRecalcDetails(InspectorObject* data, unsigned elementCount);
 

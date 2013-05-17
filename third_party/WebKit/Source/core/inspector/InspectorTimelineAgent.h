@@ -142,7 +142,7 @@ public:
     void didRecalculateStyle();
     void didRecalculateStyleForElement();
 
-    void willPaint(Frame*);
+    void willPaint(RenderObject*);
     void didPaint(RenderObject*, GraphicsContext*, const LayoutRect&);
 
     void willScrollLayer(Frame*);
@@ -243,7 +243,7 @@ private:
 
     void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);
     const TimelineTimeConverter& timeConverter() const { return m_timeConverter; }
-    int idForNode(Node*);
+    long long idForNode(Node*);
     void releaseNodeIds();
 
     double timestamp();
