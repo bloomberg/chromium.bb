@@ -5,9 +5,34 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/api_actions.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
+#include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
+
+namespace {
+
+// Gets the URL for a given tab ID. Helper method for APIAction::LookupTabId.
+std::string GetURLForTabId(const int tab_id, Profile* profile) {
+  content::WebContents* contents = NULL;
+  bool found = ExtensionTabUtil::GetTabById(tab_id,
+                                            profile,
+                                            false,  // no incognito URLs
+                                            NULL,
+                                            NULL,
+                                            &contents,
+                                            NULL);
+  if (found) {
+    GURL url = contents->GetURL();
+    return std::string(url.spec());
+  } else {
+    return std::string();
+  }
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -78,6 +103,48 @@ void APIAction::Record(sql::Connection* db) {
   statement.BindString(5, extra_);
   if (!statement.Run())
     LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
+}
+
+// static
+void APIAction::LookupTabId(const std::string& api_call,
+                            ListValue* args,
+                            Profile* profile) {
+  if (api_call == "tabs.get" ||                 // api calls, ID as int
+      api_call == "tabs.connect" ||
+      api_call == "tabs.sendMessage" ||
+      api_call == "tabs.duplicate" ||
+      api_call == "tabs.update" ||
+      api_call == "tabs.reload" ||
+      api_call == "tabs.detectLanguage" ||
+      api_call == "tabs.executeScript" ||
+      api_call == "tabs.insertCSS" ||
+      api_call == "tabs.move" ||                // api calls, IDs in array
+      api_call == "tabs.remove" ||
+      api_call == "tabs.onUpdated" ||           // events, ID as int
+      api_call == "tabs.onMoved" ||
+      api_call == "tabs.onDetached" ||
+      api_call == "tabs.onAttached" ||
+      api_call == "tabs.onRemoved" ||
+      api_call == "tabs.onReplaced") {
+    int tab_id;
+    ListValue* id_list;
+    if (args->GetInteger(0, &tab_id)) {
+      std::string url = GetURLForTabId(tab_id, profile);
+      if (url != std::string())
+        args->Set(0, new base::StringValue(url));
+    } else if ((api_call == "tabs.move" || api_call == "tabs.remove") &&
+               args->GetList(0, &id_list)) {
+      for (int i = 0; i < static_cast<int>(id_list->GetSize()); ++i) {
+        if (id_list->GetInteger(i, &tab_id)) {
+          std::string url = GetURLForTabId(tab_id, profile);
+          if (url != std::string())
+            id_list->Set(i, new base::StringValue(url));
+        } else {
+          LOG(ERROR) << "The tab ID array is malformed at index " << i;
+        }
+      }
+    }
+  }
 }
 
 std::string APIAction::PrintForDebug() {

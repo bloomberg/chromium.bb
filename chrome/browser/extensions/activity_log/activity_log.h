@@ -145,7 +145,7 @@ class ActivityLog : public ProfileKeyedService,
   void LogAPIActionInternal(
       const Extension* extension,
       const std::string& api_call,
-      const ListValue* args,
+      ListValue* args,
       const std::string& extra,
       const APIAction::Type type);
 
@@ -223,6 +223,8 @@ class ActivityLog : public ProfileKeyedService,
   // collection regardless of whether this bool is true.
   bool testing_mode_;
   base::hash_set<std::string> arg_whitelist_api_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLog);
 };

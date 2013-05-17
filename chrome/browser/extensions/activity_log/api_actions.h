@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_API_ACTIONS_H_
 
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
+#include "chrome/browser/profiles/profile.h"
 
 namespace extensions {
 
@@ -42,6 +43,14 @@ class APIAction : public Action {
 
   // Record the action in the database.
   virtual void Record(sql::Connection* db) OVERRIDE;
+
+  // Used to associate tab IDs with URLs. It will swap out the int in args with
+  // a URL as a string. If the tab is in incognito mode, we leave it alone as
+  // the original int. There is a small chance that the URL translation could
+  // be wrong, if the tab has already been navigated by the time of invocation.
+  static void LookupTabId(const std::string& api_call,
+                          ListValue* args,
+                          Profile* profile);
 
   // Print a APIAction as a regular string for debugging purposes.
   virtual std::string PrintForDebug() OVERRIDE;

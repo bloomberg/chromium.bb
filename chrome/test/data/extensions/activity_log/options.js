@@ -261,6 +261,42 @@ function connectToOther() {
   setCompleted('connectToOther');
 }
 
+function tabIdTranslation() {
+  var tabIds = [-1, -1];
+
+  // Test the case of a single int
+  chrome.tabs.onUpdated.addListener(
+    function testSingleInt(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com\.au/g)) {
+        chrome.tabs.executeScript(
+            tab.id,
+            {'file': 'google_cs.js'},
+            function() {
+              chrome.tabs.onUpdated.removeListener(testSingleInt);
+              tabIds[0] = tabId;
+              window.open('http://www.google.be');
+            });
+      }
+    }
+  );
+
+  // Test the case of arrays
+  chrome.tabs.onUpdated.addListener(
+    function testArray(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" && tab.url.match(/google\.be/g)) {
+        chrome.tabs.move(tabId, {"index": -1});
+        tabIds[1] = tabId;
+        chrome.tabs.remove(tabIds);
+        chrome.tabs.onUpdated.removeListener(testArray);
+        setCompleted('tabIdTranslation');
+      }
+    }
+  );
+
+  window.open('http://www.google.com.au');
+}
+
 // REGISTER YOUR TESTS HERE
 // Attach the tests to buttons.
 function setupEvents() {
@@ -280,6 +316,7 @@ function setupEvents() {
   $('message_self').addEventListener('click', sendMessageToSelf);
   $('message_other').addEventListener('click', sendMessageToOther);
   $('connect_other').addEventListener('click', connectToOther);
+  $('tab_ids').addEventListener('click', tabIdTranslation)
 
   completed = 0;
   total = document.getElementsByTagName('button').length;

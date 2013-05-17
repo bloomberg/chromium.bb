@@ -142,7 +142,7 @@ content::BrowserContext* ActivityLogFactory::GetBrowserContextToUse(
 // ActivityLog
 
 // Use GetInstance instead of directly creating an ActivityLog.
-ActivityLog::ActivityLog(Profile* profile) {
+ActivityLog::ActivityLog(Profile* profile) : profile_(profile) {
   // enable-extension-activity-logging and enable-extension-activity-ui
   log_activity_to_stdout_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExtensionActivityLogging);
@@ -213,12 +213,15 @@ void ActivityLog::RemoveObserver(const Extension* extension,
 
 void ActivityLog::LogAPIActionInternal(const Extension* extension,
                                        const std::string& api_call,
-                                       const ListValue* args,
+                                       ListValue* args,
                                        const std::string& extra,
                                        const APIAction::Type type) {
   std::string verb, manager;
   bool matches = RE2::FullMatch(api_call, "(.*?)\\.(.*)", &manager, &verb);
   if (matches) {
+    if (!args->empty() && manager == "tabs") {
+      APIAction::LookupTabId(api_call, args, profile_);
+    }
     scoped_refptr<APIAction> action = new APIAction(
         extension->id(),
         base::Time::Now(),
