@@ -48,7 +48,7 @@ class PatchedFileSystem(FileSystem):
     if set(paths) & set(deleted):
       raise FileNotFoundError('Files are removed from the patch.')
     patched_files |= (set(added) | set(modified))
-    dir_paths = {path for path in paths if path.endswith('/')}
+    dir_paths = set(path for path in paths if path.endswith('/'))
     file_paths = set(paths) - dir_paths
     patched_paths = file_paths & patched_files
     unpatched_paths = file_paths - patched_files
@@ -135,8 +135,9 @@ class PatchedFileSystem(FileSystem):
             deleted,
             modified)
       except FileNotFoundError:
-        stat_info = StatInfo(version, {child: version
-                                  for child in added + modified})
+        stat_info = StatInfo(
+            version,
+            dict((child, version) for child in added + modified))
     elif len(deleted) + len(modified) > 0:
       # No files were added.
       stat_info = self._PatchStat(self._host_file_system.Stat(directory + '/'),

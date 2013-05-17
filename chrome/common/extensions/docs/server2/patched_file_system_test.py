@@ -110,7 +110,7 @@ class PatchedFileSystemTest(unittest.TestCase):
   def testReadDir(self):
     self.assertEqual(sorted(self._file_system.ReadSingle('dir1/')),
                      sorted(set(self._host_file_system.ReadSingle('dir1/')) |
-                            {'file2.html', 'newsubdir/'}))
+                            set(('file2.html', 'newsubdir/'))))
 
     self.assertEqual(sorted(self._file_system.ReadSingle('dir1/newsubdir/')),
                      sorted(['a.js']))
@@ -120,7 +120,7 @@ class PatchedFileSystemTest(unittest.TestCase):
 
     self.assertEqual(sorted(self._file_system.ReadSingle('dir2/subdir1/')),
         sorted(set(self._host_file_system.ReadSingle('dir2/subdir1/')) -
-               {'sub1.txt'}))
+               set(('sub1.txt',))))
 
     self.assertEqual(sorted(self._file_system.ReadSingle('newdir/')),
                      sorted(['1.html']))
