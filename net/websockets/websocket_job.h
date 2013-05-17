@@ -105,7 +105,7 @@ class NET_EXPORT WebSocketJob
   // delegate_ of completion of handshake.
   void SaveCookiesAndNotifyHeadersComplete();
   void SaveNextCookie();
-  void SaveCookieCallback(bool cookie_status);
+  void OnCookieSaved(bool cookie_status);
   // Clears variables for handling cookies, rebuilds handshake string excluding
   // cookies, and then pass the handshake string to delegate_.
   void NotifyHeadersComplete();
@@ -149,6 +149,9 @@ class NET_EXPORT WebSocketJob
   int spdy_protocol_version_;
   scoped_ptr<SpdyWebSocketStream> spdy_websocket_stream_;
   std::string challenge_;
+
+  bool save_next_cookie_running_;
+  bool callback_pending_;
 
   base::WeakPtrFactory<WebSocketJob> weak_ptr_factory_;
   base::WeakPtrFactory<WebSocketJob> weak_ptr_factory_for_send_pending_;

@@ -80,6 +80,8 @@ WebSocketJob::WebSocketJob(SocketStream::Delegate* delegate)
       handshake_request_sent_(0),
       response_cookies_save_index_(0),
       spdy_protocol_version_(0),
+      save_next_cookie_running_(false),
+      callback_pending_(false),
       weak_ptr_factory_(this),
       weak_ptr_factory_for_send_pending_(this) {
 }
@@ -498,37 +500,63 @@ void WebSocketJob::NotifyHeadersComplete() {
 }
 
 void WebSocketJob::SaveNextCookie() {
-  if (response_cookies_save_index_ == response_cookies_.size()) {
-    response_cookies_.clear();
-    response_cookies_save_index_ = 0;
-
-    NotifyHeadersComplete();
-
-    return;
-  }
-
   if (!socket_ || !delegate_ || state_ != CONNECTING)
     return;
 
-  CookieOptions options;
-  GURL url = GetURLForCookies();
-  std::string cookie = response_cookies_[response_cookies_save_index_];
-  response_cookies_save_index_++;
+  callback_pending_ = false;
+  save_next_cookie_running_ = true;
 
-  // TODO(tyoshino): Use loop. See URLRequestHttpJob::SaveNextCookie().
-  if (delegate_->CanSetCookie(socket_, url, cookie, &options) &&
-      socket_->context()->cookie_store()) {
+  if (socket_->context()->cookie_store()) {
+    GURL url_for_cookies = GetURLForCookies();
+
+    CookieOptions options;
     options.set_include_httponly();
-    socket_->context()->cookie_store()->SetCookieWithOptionsAsync(
-        url, cookie, options,
-        base::Bind(&WebSocketJob::SaveCookieCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    SaveNextCookie();
+
+    // Loop as long as SetCookieWithOptionsAsync completes synchronously. Since
+    // CookieMonster's asynchronous operation APIs queue the callback to run it
+    // on the thread where the API was called, there won't be race. I.e. unless
+    // the callback is run synchronously, it won't be run in parallel with this
+    // method.
+    while (!callback_pending_ &&
+           response_cookies_save_index_ < response_cookies_.size()) {
+      std::string cookie = response_cookies_[response_cookies_save_index_];
+      response_cookies_save_index_++;
+
+      if (!delegate_->CanSetCookie(socket_, url_for_cookies, cookie, &options))
+        continue;
+
+      callback_pending_ = true;
+      socket_->context()->cookie_store()->SetCookieWithOptionsAsync(
+          url_for_cookies, cookie, options,
+          base::Bind(&WebSocketJob::OnCookieSaved,
+                     weak_ptr_factory_.GetWeakPtr()));
+    }
   }
+
+  save_next_cookie_running_ = false;
+
+  if (callback_pending_)
+    return;
+
+  response_cookies_.clear();
+  response_cookies_save_index_ = 0;
+
+  NotifyHeadersComplete();
 }
 
-void WebSocketJob::SaveCookieCallback(bool cookie_status) {
+void WebSocketJob::OnCookieSaved(bool cookie_status) {
+  // Tell the caller of SetCookieWithOptionsAsync() that this completion
+  // callback is invoked.
+  // - If the caller checks callback_pending earlier than this callback, the
+  //   caller exits to let this method continue iteration.
+  // - Otherwise, the caller continues iteration.
+  callback_pending_ = false;
+
+  // Resume SaveNextCookie if the caller of SetCookieWithOptionsAsync() exited
+  // the loop. Otherwise, return.
+  if (save_next_cookie_running_)
+    return;
+
   SaveNextCookie();
 }
 
