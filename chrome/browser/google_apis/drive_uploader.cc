@@ -173,8 +173,15 @@ void DriveUploader::ResumeUploadFile(
   DCHECK(!content_type.empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this (crbug.com/240565).
-  NOTIMPLEMENTED();
+  scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo(
+      drive_file_path, local_file_path, content_type,
+      callback, progress_callback));
+  upload_file_info->upload_location = upload_location;
+
+  StartUploadFile(
+      upload_file_info.Pass(),
+      base::Bind(&DriveUploader::StartGetUploadStatus,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveUploader::StartUploadFile(
@@ -280,6 +287,21 @@ void DriveUploader::OnUploadLocationReceived(
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&upload_file_info),
                  0));  // Upload from the beginning of the file.
+}
+
+void DriveUploader::StartGetUploadStatus(
+    scoped_ptr<UploadFileInfo> upload_file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(upload_file_info);
+
+  UploadFileInfo* info_ptr = upload_file_info.get();
+  drive_service_->GetUploadStatus(
+      info_ptr->drive_path,
+      info_ptr->upload_location,
+      info_ptr->content_length,
+      base::Bind(&DriveUploader::OnUploadRangeResponseReceived,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&upload_file_info)));
 }
 
 void DriveUploader::UploadNextChunk(

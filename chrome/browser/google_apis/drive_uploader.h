@@ -168,6 +168,10 @@ class DriveUploader : public DriveUploaderInterface {
                                 GDataErrorCode code,
                                 const GURL& upload_location);
 
+  // Starts to get the current upload status for the file uploading.
+  // Upon completion, OnUploadRangeResponseReceived should be called.
+  void StartGetUploadStatus(scoped_ptr<UploadFileInfo> upload_file_info);
+
   // Uploads the next chunk of data from the file.
   void UploadNextChunk(scoped_ptr<UploadFileInfo> upload_file_info,
                        int64 start_position);
