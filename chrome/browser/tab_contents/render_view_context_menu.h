@@ -22,6 +22,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/window_open_disposition.h"
 
+class InstantExtendedContextMenuObserver;
 class PrintPreviewContextMenuObserver;
 class Profile;
 class SpellingMenuObserver;
@@ -275,6 +276,9 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // An observer that disables menu items when print preview is active.
   scoped_ptr<PrintPreviewContextMenuObserver> print_preview_menu_observer_;
+
+  // An observer that disables menu items for instant extended mode.
+  scoped_ptr<InstantExtendedContextMenuObserver> instant_extended_observer_;
 
   // Our observers.
   mutable ObserverList<RenderViewContextMenuObserver> observers_;

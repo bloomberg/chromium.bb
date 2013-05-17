@@ -1724,6 +1724,8 @@
         'browser/screensaver_window_finder_gtk.h',
         'browser/search/iframe_source.cc',
         'browser/search/iframe_source.h',
+        'browser/search/instant_extended_context_menu_observer.cc',
+        'browser/search/instant_extended_context_menu_observer.h',
         'browser/search/instant_io_context.cc',
         'browser/search/instant_io_context.h',
         'browser/search/instant_service.cc',
