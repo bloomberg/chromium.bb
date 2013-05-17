@@ -727,15 +727,15 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
   JobInfo* job_info = &job_entry->job_info;
   QueueType queue_type = GetJobQueueType(job_info->job_type);
 
+  // Decrement the number of jobs for this queue.
+  --jobs_running_[queue_type];
+
   const base::TimeDelta elapsed = base::Time::Now() - job_info->start_time;
   util::Log("Job done: %s => %s (elapsed time: %sms) - %s",
             job_info->ToString().c_str(),
             GDataErrorCodeToString(error).c_str(),
             base::Int64ToString(elapsed.InMilliseconds()).c_str(),
             GetQueueInfo(queue_type).c_str());
-
-  // Decrement the number of jobs for this queue.
-  --jobs_running_[queue_type];
 
   // Retry, depending on the error.
   if ((error == google_apis::HTTP_SERVICE_UNAVAILABLE ||
