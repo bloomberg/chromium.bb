@@ -193,11 +193,13 @@ private:
         v8::UniqueId id(reinterpret_cast<intptr_t>((*nodeIterator)->unsafePersistent().value()));
         for (; nodeIterator != nodeIteratorEnd; ++nodeIterator) {
             // This is safe because we know that GC won't happen before we
-            // dispose the UnsafePersistent (we're just preparing a GC).
-            v8::Persistent<v8::Object> wrapper;
-            (*nodeIterator)->unsafePersistent().copyTo(&wrapper);
-            wrapper.MarkPartiallyDependent(isolate);
-            isolate->SetObjectGroupId(wrapper, id);
+            // dispose the UnsafePersistent (we're just preparing a GC). Though,
+            // we need to keep the UnsafePersistent alive until we're done with
+            // v8::Persistent.
+            UnsafePersistent<v8::Object> unsafeWrapper = (*nodeIterator)->unsafePersistent();
+            v8::Persistent<v8::Object>* wrapper = unsafeWrapper.persistent();
+            wrapper->MarkPartiallyDependent(isolate);
+            isolate->SetObjectGroupId(*wrapper, id);
         }
     }
 

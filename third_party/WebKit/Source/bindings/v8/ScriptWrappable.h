@@ -77,9 +77,7 @@ public:
             return reinterpret_cast<const WrapperTypeInfo*>(m_wrapperOrTypeInfo);
 
         if (containsWrapper()) {
-            v8::Persistent<v8::Object> unsafeWrapper;
-            unsafePersistent().copyTo(&unsafeWrapper);
-            return toWrapperTypeInfo(unsafeWrapper);
+            return toWrapperTypeInfo(unsafePersistent().handle());
         }
 
         return 0;
