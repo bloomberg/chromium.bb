@@ -39,7 +39,7 @@ bool CacheStatesEqual(const FileCacheEntry& a, const FileCacheEntry& b) {
 }
 
 bool LoadChangeFeed(const std::string& relative_path,
-                    ChangeListLoader* change_list_loader,
+                    internal::ChangeListLoader* change_list_loader,
                     bool is_delta_feed,
                     const std::string& root_resource_id,
                     int64 root_feed_changestamp) {
@@ -55,8 +55,8 @@ bool LoadChangeFeed(const std::string& relative_path,
   if (!document_feed.get())
     return false;
 
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList(*document_feed));
+  ScopedVector<internal::ChangeList> change_lists;
+  change_lists.push_back(new internal::ChangeList(*document_feed));
 
   scoped_ptr<google_apis::AboutResource> about_resource(
       new google_apis::AboutResource);

@@ -18,6 +18,7 @@
 using content::BrowserThread;
 
 namespace drive {
+namespace internal {
 
 namespace {
 
@@ -82,8 +83,7 @@ class ChangeListProcessor::ChangeListToEntryProtoMapUMAStats {
   int num_shared_with_me_entries_;
 };
 
-ChangeListProcessor::ChangeListProcessor(
-    internal::ResourceMetadata* resource_metadata)
+ChangeListProcessor::ChangeListProcessor(ResourceMetadata* resource_metadata)
   : resource_metadata_(resource_metadata),
     largest_changestamp_(0),
     weak_ptr_factory_(this) {
@@ -482,4 +482,5 @@ void ChangeListProcessor::Clear() {
   on_complete_callback_.Reset();
 }
 
+}  // namespace internal
 }  // namespace drive

@@ -24,9 +24,10 @@
 using content::BrowserThread;
 
 namespace drive {
+namespace internal {
 
 ChangeListLoader::ChangeListLoader(
-    internal::ResourceMetadata* resource_metadata,
+    ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
     DriveWebAppsRegistry* webapps_registry)
     : resource_metadata_(resource_metadata),
@@ -712,4 +713,5 @@ void ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed(
   // on_complete_callback_, which is owned by change_list_processor_.
 }
 
+}  // namespace internal
 }  // namespace drive

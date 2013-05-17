@@ -263,9 +263,8 @@ void FileSystem::ReloadAfterReset(FileError error) {
 }
 
 void FileSystem::SetupChangeListLoader() {
-  change_list_loader_.reset(new ChangeListLoader(resource_metadata_,
-                                                 scheduler_,
-                                                 webapps_registry_));
+  change_list_loader_.reset(new internal::ChangeListLoader(
+      resource_metadata_, scheduler_, webapps_registry_));
   change_list_loader_->AddObserver(this);
 }
 

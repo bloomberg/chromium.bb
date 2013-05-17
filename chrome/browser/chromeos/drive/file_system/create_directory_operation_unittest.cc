@@ -59,7 +59,7 @@ class CreateDirectoryOperationTest
         new JobScheduler(profile_.get(), fake_drive_service_.get()));
 
     DriveWebAppsRegistry drive_web_apps_registry;
-    ChangeListLoader change_list_loader(
+    internal::ChangeListLoader change_list_loader(
         metadata_.get(), scheduler_.get(), &drive_web_apps_registry);
 
     // Makes sure the FakeDriveService's content is loaded to the metadata_.

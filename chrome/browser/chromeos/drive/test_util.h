@@ -18,8 +18,11 @@ class IOBuffer;
 
 namespace drive {
 
-class FileCacheEntry;
+namespace internal {
 class ChangeListLoader;
+}  // namespace internal
+
+class FileCacheEntry;
 
 namespace test_util {
 
@@ -43,7 +46,7 @@ bool CacheStatesEqual(const FileCacheEntry& a, const FileCacheEntry& b);
 // Loads a test json file as root ("/drive") element from a test file stored
 // under chrome/test/data/chromeos. Returns true on success.
 bool LoadChangeFeed(const std::string& relative_path,
-                    ChangeListLoader* change_list_loader,
+                    internal::ChangeListLoader* change_list_loader,
                     bool is_delta_feed,
                     const std::string& root_resource_id,
                     int64 root_feed_changestamp);

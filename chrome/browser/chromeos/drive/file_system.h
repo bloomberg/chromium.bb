@@ -35,20 +35,19 @@ class ResourceEntry;
 
 namespace drive {
 
-class ChangeList;
-class ChangeListLoader;
 class DriveWebAppsRegistry;
 class FileCacheEntry;
 class FileSystemObserver;
 class JobScheduler;
 
 namespace internal {
+class ChangeListLoader;
 class ResourceMetadata;
 }  // namespace internal
 
 // The production implementation of FileSystemInterface.
 class FileSystem : public FileSystemInterface,
-                   public ChangeListLoaderObserver,
+                   public internal::ChangeListLoaderObserver,
                    public file_system::OperationObserver {
  public:
   FileSystem(Profile* profile,
@@ -161,7 +160,9 @@ class FileSystem : public FileSystemInterface,
 
   // Used in tests to update the file system from |feed_list|.
   // See also the comment at ChangeListLoader::UpdateFromFeed().
-  ChangeListLoader* change_list_loader() { return change_list_loader_.get(); }
+  internal::ChangeListLoader* change_list_loader() {
+    return change_list_loader_.get();
+  }
 
  private:
   friend class DriveFileSystemTest;
@@ -466,7 +467,7 @@ class FileSystem : public FileSystemInterface,
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
 
   // The loader is used to load the change lists.
-  scoped_ptr<ChangeListLoader> change_list_loader_;
+  scoped_ptr<internal::ChangeListLoader> change_list_loader_;
 
   ObserverList<FileSystemObserver> observers_;
 

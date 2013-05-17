@@ -27,17 +27,17 @@ class ResourceList;
 
 namespace drive {
 
-class ChangeList;
-class ChangeListLoaderObserver;
-class ChangeListProcessor;
 class DirectoryFetchInfo;
 class DriveWebAppsRegistry;
 class JobScheduler;
 class ResourceEntry;
 
 namespace internal {
+
+class ChangeList;
+class ChangeListLoaderObserver;
+class ChangeListProcessor;
 class ResourceMetadata;
-}  // namespace internal
 
 // Callback run as a response to SearchFromServer.
 typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
@@ -47,7 +47,7 @@ typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
 // Documents List API) or Google Drive API and load the cached metadata.
 class ChangeListLoader {
  public:
-  ChangeListLoader(internal::ResourceMetadata* resource_metadata,
+  ChangeListLoader(ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler,
                    DriveWebAppsRegistry* webapps_registry);
   ~ChangeListLoader();
@@ -259,7 +259,7 @@ class ChangeListLoader {
                                             base::Time start_time,
                                             const base::Closure& callback);
 
-  internal::ResourceMetadata* resource_metadata_;  // Not owned.
+  ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   DriveWebAppsRegistry* webapps_registry_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;
@@ -280,6 +280,7 @@ class ChangeListLoader {
   DISALLOW_COPY_AND_ASSIGN(ChangeListLoader);
 };
 
+}  // namespace internal
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_

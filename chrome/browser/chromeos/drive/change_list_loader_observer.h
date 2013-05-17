@@ -7,9 +7,10 @@
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace drive {
+namespace internal {
 
 // Interface for classes that need to observe events from ChangeListLoader.
 // All events are notified on UI thread.
@@ -34,6 +35,7 @@ class ChangeListLoaderObserver {
   virtual ~ChangeListLoaderObserver() {}
 };
 
+}  // namespace internal
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_OBSERVER_H_
