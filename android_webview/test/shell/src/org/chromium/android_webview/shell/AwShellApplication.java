@@ -27,7 +27,7 @@ public class AwShellApplication extends Application {
 
         AwShellResourceProvider.registerResources(this);
 
-        CommandLine.initFromFile("/data/local/chrome-command-line");
+        CommandLine.initFromFile("/data/local/tmp/android-webview-command-line");
 
         if (CommandLine.getInstance().hasSwitch(CommandLine.WAIT_FOR_JAVA_DEBUGGER)) {
            Log.e(TAG, "Waiting for Java debugger to connect...");
