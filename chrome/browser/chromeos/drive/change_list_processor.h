@@ -79,12 +79,11 @@ class ChangeListProcessor {
                   bool is_delta_feed,
                   const base::Closure& on_complete_callback);
 
-  // Converts list of document feeds from collected feeds into a
-  // ResourceEntryMap. |feed_changestamp| and/or |uma_stats| may be NULL.
-  // entry_map_ is updated as side effects.
-  void FeedToEntryProtoMap(ScopedVector<ChangeList> change_lists,
-                           int64* feed_changestamp,
-                           ChangeListToEntryProtoMapUMAStats* uma_stats);
+  // Converts change lists into a ResourceEntryMap.
+  // |uma_stats| may be NULL.
+  static void FeedToEntryMap(ScopedVector<ChangeList> change_lists,
+                             ResourceEntryMap* entry_map,
+                             ChangeListToEntryProtoMapUMAStats* uma_stats);
 
   // A map of ResourceEntry's representing a feed.
   const ResourceEntryMap& entry_map() const { return entry_map_; }

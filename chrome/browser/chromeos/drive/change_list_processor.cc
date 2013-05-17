@@ -101,14 +101,17 @@ void ChangeListProcessor::ApplyFeeds(
   DCHECK(!on_complete_callback.is_null());
   DCHECK(is_delta_feed || about_resource.get());
 
-  int64 delta_feed_changestamp = 0;
-  ChangeListToEntryProtoMapUMAStats uma_stats;
-  FeedToEntryProtoMap(change_lists.Pass(), &delta_feed_changestamp, &uma_stats);
-  // Note FeedToEntryProtoMap calls Clear() which resets on_complete_callback_.
+  Clear();
+
   on_complete_callback_ = on_complete_callback;
   largest_changestamp_ = 0;
   if (is_delta_feed) {
-    largest_changestamp_ = delta_feed_changestamp;
+    if (!change_lists.empty()) {
+      // The changestamp appears in the first page of the change list.
+      // The changestamp does not appear in the full resource list.
+      largest_changestamp_ = change_lists[0]->largest_changestamp();
+      DCHECK_GE(change_lists[0]->largest_changestamp(), 0);
+    }
   } else if (about_resource.get()) {
     largest_changestamp_ = about_resource->largest_change_id();
 
@@ -119,6 +122,8 @@ void ChangeListProcessor::ApplyFeeds(
     NOTREACHED();
   }
 
+  ChangeListToEntryProtoMapUMAStats uma_stats;
+  FeedToEntryMap(change_lists.Pass(), &entry_map_, &uma_stats);
   ApplyEntryProtoMap(is_delta_feed, about_resource.Pass());
 
   // Shouldn't record histograms when processing delta feeds.
@@ -374,25 +379,15 @@ void ChangeListProcessor::NotifyForRefreshEntry(
   ApplyNextEntryProtoAsync();
 }
 
-void ChangeListProcessor::FeedToEntryProtoMap(
+// static
+void ChangeListProcessor::FeedToEntryMap(
     ScopedVector<ChangeList> change_lists,
-    int64* feed_changestamp,
+    ResourceEntryMap* entry_map,
     ChangeListToEntryProtoMapUMAStats* uma_stats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Clear();
 
   for (size_t i = 0; i < change_lists.size(); ++i) {
     ChangeList* change_list = change_lists[i];
-
-    // Get upload url from the root feed. Links for all other collections will
-    // be handled in ConvertToResourceEntry.
-    if (i == 0) {
-      // The changestamp appears in the first page of the change list.
-      // The changestamp does not appear in the full resource list.
-      if (feed_changestamp)
-        *feed_changestamp = change_list->largest_changestamp();
-      DCHECK_GE(change_list->largest_changestamp(), 0);
-    }
 
     std::vector<ResourceEntry>* entries = change_list->mutable_entries();
     for (size_t i = 0; i < entries->size(); ++i) {
@@ -411,7 +406,7 @@ void ChangeListProcessor::FeedToEntryProtoMap(
           uma_stats->IncrementNumSharedWithMeEntries();
       }
 
-      std::pair<ResourceEntryMap::iterator, bool> ret = entry_map_.
+      std::pair<ResourceEntryMap::iterator, bool> ret = entry_map->
           insert(std::make_pair(entry->resource_id(), ResourceEntry()));
       if (ret.second)
         ret.first->second.Swap(entry);

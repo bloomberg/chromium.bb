@@ -644,13 +644,11 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
     return;
   }
 
-  // Do not use |change_list_processor_| as it may be in use for other
-  // purposes.
-  ChangeListProcessor change_list_processor(resource_metadata_);
-  change_list_processor.FeedToEntryProtoMap(change_lists.Pass(), NULL, NULL);
+  ChangeListProcessor::ResourceEntryMap entry_map;
+  ChangeListProcessor::FeedToEntryMap(change_lists.Pass(), &entry_map, NULL);
   resource_metadata_->RefreshDirectoryOnUIThread(
       directory_fetch_info,
-      change_list_processor.entry_map(),
+      entry_map,
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
