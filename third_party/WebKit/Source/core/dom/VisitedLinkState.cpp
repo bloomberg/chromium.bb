@@ -40,15 +40,28 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline static const AtomicString* linkAttribute(Element* element)
+inline static const AtomicString& linkAttribute(Element* element)
 {
-    if (!element->isLink())
-        return 0;
+    ASSERT(element->isLink());
     if (element->isHTMLElement())
-        return &element->fastGetAttribute(HTMLNames::hrefAttr);
-    if (element->isSVGElement())
-        return &element->getAttribute(XLinkNames::hrefAttr);
-    return 0;
+        return element->fastGetAttribute(HTMLNames::hrefAttr);
+    ASSERT(element->isSVGElement());
+    return element->getAttribute(XLinkNames::hrefAttr);
+}
+
+inline static LinkHash linkHashForElement(Document* document, Element* element)
+{
+    if (element->hasTagName(aTag))
+        return static_cast<HTMLAnchorElement*>(element)->visitedLinkHash();
+    return visitedLinkHash(document->baseURL(), linkAttribute(element));
+}
+
+inline static LinkHash linkHashForElementWithAttribute(Document* document, Element* element, const AtomicString& attribute)
+{
+    ASSERT(linkAttribute(element) == attribute);
+    if (element->hasTagName(aTag))
+        return static_cast<HTMLAnchorElement*>(element)->visitedLinkHash();
+    return visitedLinkHash(document->baseURL(), attribute);
 }
 
 PassOwnPtr<VisitedLinkState> VisitedLinkState::create(Document* document)
@@ -71,21 +84,12 @@ void VisitedLinkState::invalidateStyleForAllLinks()
     }
 }
 
-inline static LinkHash linkHashForElement(Document* document, Element* element)
-{
-    if (element->hasTagName(aTag))
-        return static_cast<HTMLAnchorElement*>(element)->visitedLinkHash();
-    if (const AtomicString* attribute = linkAttribute(element))
-        return WebCore::visitedLinkHash(document->baseURL(), *attribute);
-    return 0;
-}
-
 void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
 {
     if (!m_linksCheckedForVisitedState.contains(linkHash))
         return;
     for (Element* element = ElementTraversal::firstWithin(m_document); element; element = ElementTraversal::next(element)) {
-        if (linkHashForElement(m_document, element) == linkHash)
+        if (element->isLink() && linkHashForElement(m_document, element) == linkHash)
             element->setNeedsStyleRecalc();
     }
 }
@@ -94,34 +98,29 @@ EInsideLink VisitedLinkState::determineLinkStateSlowCase(Element* element)
 {
     ASSERT(element->isLink());
 
-    const AtomicString* attribute = linkAttribute(element);
-    if (!attribute || attribute->isNull())
-        return NotInsideLink;
+    const AtomicString& attribute = linkAttribute(element);
 
-    // An empty href refers to the document itself which is always visited. It is useful to check this explicitly so
-    // that visited links can be tested in platform independent manner, without explicit support in the test harness.
-    if (attribute->isEmpty())
+    if (attribute.isNull())
+        return NotInsideLink; // This can happen for <img usemap>
+
+    // An empty attribute refers to the document itself which is always
+    // visited. It is useful to check this explicitly so that visited
+    // links can be tested in platform independent manner, without
+    // explicit support in the test harness.
+    if (attribute.isEmpty())
         return InsideVisitedLink;
 
-    LinkHash hash;
-    if (element->hasTagName(aTag))
-        hash = static_cast<HTMLAnchorElement*>(element)->visitedLinkHash();
-    else
-        hash = WebCore::visitedLinkHash(element->document()->baseURL(), *attribute);
+    // We null check the Frame here to avoid canonicalizing and hashing
+    // URLs in documents that aren't attached to Frames (like documents
+    // from XMLHttpRequest).
+    if (!m_document->frame())
+        return InsideUnvisitedLink;
 
+    LinkHash hash = linkHashForElementWithAttribute(m_document, element, attribute);
     if (!hash)
         return InsideUnvisitedLink;
 
-    Frame* frame = element->document()->frame();
-    if (!frame)
-        return InsideUnvisitedLink;
-
-    Page* page = frame->page();
-    if (!page)
-        return InsideUnvisitedLink;
-
     m_linksCheckedForVisitedState.add(hash);
-
     return WebKit::Platform::current()->isLinkVisited(hash) ? InsideVisitedLink : InsideUnvisitedLink;
 }
 
