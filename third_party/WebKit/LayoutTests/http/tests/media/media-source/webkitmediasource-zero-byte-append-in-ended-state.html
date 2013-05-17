@@ -3,7 +3,7 @@
     <head>
         <script src="/media-resources/video-test.js"></script>
         <script src="/media/resources/media-source/webm/segment-info.js"></script>
-        <script src="media-source.js"></script>
+        <script src="webkitmediasource-util.js"></script>
         <script>
             var segmentHelper = new MediaSourceTest.SegmentHelper(WebMSegmentInfo.testWebM);
 
@@ -12,6 +12,7 @@
                 event.target.removeEventListener('webkitsourceopen', onSourceOpen);
 
                 segmentHelper.addSourceBuffer();
+
                 consoleWrite("Appending initialization segment.");
                 segmentHelper.appendInitSegment();
 
@@ -22,29 +23,24 @@
                         consoleWrite("Appending first media segment.");
                         segmentHelper.appendMediaSegment(0);
 
-                       MediaSourceTest.expectBufferedRange(mediaSource.sourceBuffers[0], [[0, 0.385]]);
+                        consoleWrite("Calling endOfStream().");
+                        mediaSource.endOfStream();
 
-                       consoleWrite("Calling endOfStream().");
-                       mediaSource.endOfStream();
+                        MediaSourceTest.expectSourceState(mediaSource, "ended");
 
-                       MediaSourceTest.expectSourceState(mediaSource, "ended");
+                        MediaSourceTest.expectBufferedRange(mediaSource.sourceBuffers[0], [[0, 0.399]]);
 
-                       consoleWrite("Setting timestampOffset to 1.");
-                       mediaSource.sourceBuffers[0].timestampOffset = 1;
+                        consoleWrite("Appending zero length Uint8Array.");
+                        segmentHelper.sourceBuffer.append(new Uint8Array(0));
 
-                       consoleWrite("Appending second media segment.");
-                       segmentHelper.sourceBuffer.append(segmentHelper.mediaSegments[1]);
+                        MediaSourceTest.expectSourceState(mediaSource, "open");
+                    }
+                    catch (e)
+                    {
+                        failTest("Unexpected exception: " + e);
+                    }
 
-                       MediaSourceTest.expectBufferedRange(mediaSource.sourceBuffers[0], [[0, 0.385], [1.385, 1.780]]);
-
-                       MediaSourceTest.expectSourceState(mediaSource, "open");
-                   }
-                   catch (e)
-                   {
-                       failTest("Unexpected exception: " + e);
-                   }
-
-                   endTest();
+                    endTest();
                 });
             }
 
@@ -69,6 +65,6 @@
     </head>
     <body onload="onLoad()">
         <video> </video>
-        <p>Tests setting a timestampOffset and calling append() after the MediaSource has transitioned to the "ended" state.</p>
+        <p>Tests calling append() with an empty Uint8Array after the MediaSource has transitioned to the "ended" state.</p>
     </body>
 </html>
