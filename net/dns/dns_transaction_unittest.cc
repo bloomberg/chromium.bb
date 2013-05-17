@@ -916,6 +916,14 @@ TEST_F(DnsTransactionTest, TCPTimeout) {
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
 }
 
+TEST_F(DnsTransactionTest, InvalidQuery) {
+  config_.timeout = TestTimeouts::tiny_timeout();
+  ConfigureFactory();
+
+  TransactionHelper helper0(".", dns_protocol::kTypeA, ERR_INVALID_ARGUMENT);
+  EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+}
+
 }  // namespace
 
 }  // namespace net

@@ -603,6 +603,13 @@ TEST_F(HostResolverImplTest, EmptyHost) {
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());
 }
 
+TEST_F(HostResolverImplTest, EmptyDotsHost) {
+  for (int i = 0; i < 16; ++i) {
+    Request* req = CreateRequest(std::string(i, '.'), 5555);
+    EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());
+  }
+}
+
 TEST_F(HostResolverImplTest, LongHost) {
   Request* req = CreateRequest(std::string(4097, 'a'), 5555);
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());

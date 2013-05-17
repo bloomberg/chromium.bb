@@ -33,6 +33,7 @@
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/dns_reloader.h"
+#include "net/base/dns_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -1757,6 +1758,11 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   DCHECK(addresses);
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(false, callback.is_null());
+
+  // Check that the caller supplied a valid hostname to resolve.
+  std::string labeled_hostname;
+  if (!DNSDomainFromDot(info.hostname(), &labeled_hostname))
+    return ERR_NAME_NOT_RESOLVED;
 
   // Make a log item for the request.
   BoundNetLog request_net_log = BoundNetLog::Make(net_log_,

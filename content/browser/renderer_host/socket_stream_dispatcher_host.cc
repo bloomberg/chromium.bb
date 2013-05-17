@@ -202,6 +202,9 @@ void SocketStreamDispatcherHost::OnConnect(int render_view_id,
     LOG(ERROR) << "socket_id=" << socket_id << " already registered.";
     return;
   }
+
+  // Note that the SocketStreamHost is responsible for checking that |url|
+  // is valid.
   SocketStreamHost* socket_stream_host =
       new SocketStreamHost(this, render_view_id, socket_id);
   hosts_.AddWithID(socket_stream_host, socket_id);

@@ -19,8 +19,10 @@ static std::string IncludeNUL(const char* in) {
 TEST_F(DNSUtilTest, DNSDomainFromDot) {
   std::string out;
 
-  EXPECT_TRUE(DNSDomainFromDot("", &out));
-  EXPECT_EQ(out, IncludeNUL(""));
+  EXPECT_FALSE(DNSDomainFromDot("", &out));
+  EXPECT_FALSE(DNSDomainFromDot(".", &out));
+  EXPECT_FALSE(DNSDomainFromDot("..", &out));
+
   EXPECT_TRUE(DNSDomainFromDot("com", &out));
   EXPECT_EQ(out, IncludeNUL("\003com"));
   EXPECT_TRUE(DNSDomainFromDot("google.com", &out));

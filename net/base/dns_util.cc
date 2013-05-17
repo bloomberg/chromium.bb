@@ -50,6 +50,8 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
 
   if (namelen + 1 > sizeof name)
     return false;
+  if (namelen == 0) // Empty names e.g. "", "." are not valid.
+    return false;
   name[namelen++] = 0;  // This is the root label (of length 0).
 
   *out = std::string(name, namelen);
