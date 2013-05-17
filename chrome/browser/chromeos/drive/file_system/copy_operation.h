@@ -129,8 +129,15 @@ class CopyOperation {
 
   // Part of Copy(). Called after GetResourceEntryPairByPaths() is complete.
   void CopyAfterGetResourceEntryPair(const base::FilePath& dest_file_path,
-                                 const FileOperationCallback& callback,
-                                 scoped_ptr<EntryInfoPairResult> result);
+                                     const FileOperationCallback& callback,
+                                     scoped_ptr<EntryInfoPairResult> result);
+
+  // Callback for handling resource copy on the server.
+  // |callback| must not be null.
+  void OnCopyResourceCompleted(
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Invoked upon completion of GetFileByPath initiated by Copy. If
   // GetFileByPath reports no error, calls TransferRegularFile to transfer

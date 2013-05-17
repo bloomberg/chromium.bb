@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/google_apis/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -305,11 +307,31 @@ void CopyOperation::CopyAfterGetResourceEntryPair(
     return;
   }
 
+  // If Drive API v2 is enabled, we can copy resources on server side.
+  if (google_apis::util::IsDriveV2ApiEnabled()) {
+    base::FilePath new_name = dest_file_path.BaseName();
+    if (src_file_proto->file_specific_info().is_hosted_document()) {
+      // Drop the document extension, which should not be in the title.
+      // TODO(yoshiki): Remove this code with crbug.com/223304.
+      new_name = new_name.RemoveExtension();
+    }
+
+    job_scheduler_->CopyResource(
+        src_file_proto->resource_id(),
+        dest_parent_proto->resource_id(),
+        new_name.value(),
+        base::Bind(&CopyOperation::OnCopyResourceCompleted,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+    return;
+  }
+
+
   if (src_file_proto->file_specific_info().is_hosted_document()) {
     CopyHostedDocumentToDirectory(
         dest_file_path.DirName(),
         src_file_proto->resource_id(),
         // Drop the document extension, which should not be in the title.
+        // TODO(yoshiki): Remove this code with crbug.com/223304.
         dest_file_path.BaseName().RemoveExtension().value(),
         callback);
     return;
@@ -324,6 +346,31 @@ void CopyOperation::CopyAfterGetResourceEntryPair(
                  weak_ptr_factory_.GetWeakPtr(),
                  dest_file_path,
                  callback));
+}
+
+void CopyOperation::OnCopyResourceCompleted(
+    const FileOperationCallback& callback,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  FileError error = util::GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+  DCHECK(resource_entry);
+
+  // The copy on the server side is completed successfully. Update the local
+  // metadata.
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::AddEntry,
+                 base::Unretained(metadata_),
+                 ConvertToResourceEntry(*resource_entry)),
+      callback);
 }
 
 void CopyOperation::OnGetFileCompleteForCopy(
@@ -399,6 +446,7 @@ void CopyOperation::TransferFileForResourceId(
       resource_id,
       // Drop the document extension, which should not be
       // in the document title.
+      // TODO(yoshiki): Remove this code with crbug.com/223304.
       remote_dest_file_path.BaseName().RemoveExtension().value(),
       callback);
 }
