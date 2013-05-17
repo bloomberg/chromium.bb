@@ -424,9 +424,7 @@ class SigninScreenHandler
 
   // Set to true once |LOGIN_WEBUI_VISIBLE| notification is observed.
   bool webui_visible_;
-
-  // True when signin UI is shown to user (either sign in form or user pods).
-  bool login_ui_active_;
+  bool preferences_changed_delayed_;
 
   ErrorScreenActor* error_screen_actor_;
 

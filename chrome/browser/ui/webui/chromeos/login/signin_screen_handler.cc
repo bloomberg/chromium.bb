@@ -345,7 +345,7 @@ SigninScreenHandler::SigninScreenHandler(
       network_state_informer_(network_state_informer),
       weak_factory_(this),
       webui_visible_(false),
-      login_ui_active_(false),
+      preferences_changed_delayed_(false),
       error_screen_actor_(error_screen_actor),
       is_first_update_state_call_(true),
       offline_login_active_(false),
@@ -840,10 +840,11 @@ void SigninScreenHandler::OnUserImageChanged(const User& user) {
 }
 
 void SigninScreenHandler::OnPreferencesChanged() {
-  // Make sure that one of the login UI is active now, otherwise
+  // Make sure that one of the login UI is fully functional now, otherwise
   // preferences update would be picked up next time it will be shown.
-  if (!login_ui_active_) {
-    LOG(WARNING) << "Login UI is not active - ignoring prefs change.";
+  if (!webui_visible_) {
+    LOG(WARNING) << "Login UI is not active - postponed prefs change.";
+    preferences_changed_delayed_ = true;
     return;
   }
 
@@ -853,6 +854,7 @@ void SigninScreenHandler::OnPreferencesChanged() {
     SendUserList(false);
     UpdateUIState(UI_STATE_ACCOUNT_PICKER, NULL);
   }
+  preferences_changed_delayed_ = false;
 }
 
 void SigninScreenHandler::ResetSigninScreenHandlerDelegate() {
@@ -1406,6 +1408,8 @@ void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
         content::NotificationService::NoDetails());
   }
   webui_visible_ = true;
+  if (preferences_changed_delayed_)
+    OnPreferencesChanged();
 }
 
 void SigninScreenHandler::HandleCancelPasswordChangedFlow() {
@@ -1427,6 +1431,9 @@ void SigninScreenHandler::HandleResyncUserData() {
 
 void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
                                                     bool new_value) {
+  LOG(INFO) << "Login WebUI >> active: " << new_value << ", "
+            << "source: " << source;
+
   if (source == kSourceGaiaSignin) {
     ui_state_ = UI_STATE_GAIA_SIGNIN;
   } else if (source == kSourceAccountPicker) {
@@ -1435,10 +1442,6 @@ void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
     NOTREACHED();
     return;
   }
-
-  LOG(INFO) << "Login WebUI >> active: " << new_value << ", "
-            << "source: " << source;
-  login_ui_active_ = new_value;
 }
 
 void SigninScreenHandler::HandleUnlockOnLoginSuccess() {
