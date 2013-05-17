@@ -22,6 +22,7 @@ class SyncFileSystemInternalsHandler : public content::WebUIMessageHandler {
 
  private:
   void GetServiceStatus(const base::ListValue* args);
+  void GetNotificationSource(const base::ListValue* args);
   void GetLog(const base::ListValue* args);
 
   Profile* profile_;

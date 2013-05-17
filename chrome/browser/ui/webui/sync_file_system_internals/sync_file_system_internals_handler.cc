@@ -8,6 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
+#include "chrome/browser/google_apis/drive_notification_manager.h"
+#include "chrome/browser/google_apis/drive_notification_manager_factory.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/logger.h"
@@ -38,6 +40,10 @@ void SyncFileSystemInternalsHandler::RegisterMessages() {
       "getLog",
       base::Bind(&SyncFileSystemInternalsHandler::GetLog,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getNotificationSource",
+      base::Bind(&SyncFileSystemInternalsHandler::GetNotificationSource,
+                 base::Unretained(this)));
 }
 
 void SyncFileSystemInternalsHandler::GetServiceStatus(
@@ -46,8 +52,18 @@ void SyncFileSystemInternalsHandler::GetServiceStatus(
       profile_)->GetSyncServiceState();
   std::string state_string = extensions::api::sync_file_system::ToString(
       extensions::SyncServiceStateToExtensionEnum(state_enum));
-  web_ui()->CallJavascriptFunction("syncService.getServiceStatusResult",
+  web_ui()->CallJavascriptFunction("syncService.onGetServiceStatus",
                                    base::StringValue(state_string));
+}
+
+void SyncFileSystemInternalsHandler::GetNotificationSource(
+    const base::ListValue* args) {
+  google_apis::DriveNotificationManager* drive_notification_manager =
+      google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
+  bool xmpp_enabled = drive_notification_manager->push_notification_enabled();
+  std::string notification_source = xmpp_enabled ? "XMPP" : "Polling";
+  web_ui()->CallJavascriptFunction("syncService.onGetNotificationSource",
+                                   base::StringValue(notification_source));
 }
 
 void SyncFileSystemInternalsHandler::GetLog(

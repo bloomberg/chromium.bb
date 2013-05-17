@@ -22,8 +22,23 @@ function getServiceStatus() {
  * Handles callback from getServiceStatus.
  * @param {string} Service status enum as a string.
  */
-SyncService.prototype.getServiceStatusResult = function(statusString) {
+SyncService.prototype.onGetServiceStatus = function(statusString) {
   $('service-status').textContent = statusString;
+}
+
+/**
+ * Request Google Drive Notification Source. e.g. XMPP or polling.
+ */
+function getNotificationSource() {
+  chrome.send('getNotificationSource');
+}
+
+/**
+ * Handles callback from getNotificationSource.
+ * @param {string} Notification source as a string.
+ */
+SyncService.prototype.onGetNotificationSource = function(sourceString) {
+  $('notification-source').textContent = sourceString;
 }
 
 /**
@@ -66,10 +81,10 @@ SyncService.prototype.onGetLog = function(logEntries) {
 function main() {
   cr.ui.decorate('tabbox', cr.ui.TabBox);
   getServiceStatus();
+  getNotificationSource();
   window.setInterval(getLog, 1000);
 }
 
 document.addEventListener('DOMContentLoaded', main);
 return new SyncService;
 })();
-
