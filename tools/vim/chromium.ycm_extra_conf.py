@@ -66,7 +66,7 @@ def FindChromeSrcFromFilename(filename):
     (String) Path of 'src/', or None if unable to find.
   """
   curdir = os.path.normpath(os.path.dirname(filename))
-  while not (PathExists(curdir, 'src')
+  while not (PathExists(curdir, 'src') and PathExists(curdir, 'src', 'DEPS')
              and (PathExists(curdir, '.gclient')
                   or PathExists(curdir, 'src', '.git'))):
     nextdir = os.path.normpath(os.path.join(curdir, '..'))
