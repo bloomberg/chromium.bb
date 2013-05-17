@@ -41,6 +41,7 @@
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -1015,8 +1016,17 @@ void ExistingUserController::InitializeStartUrls() const {
     customization->ApplyCustomization();
   }
 
-  for (size_t i = 0; i < start_urls.size(); ++i) {
-    CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
+
+  // Don't open default Chrome window for the first login of a new
+  // user because it will hide the Getting Started App window (which is
+  // launched automatically in that situation).
+  if (UserManager::Get()->IsCurrentUserNew()) {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        ::switches::kSilentLaunch, "");
+  } else {
+    for (size_t i = 0; i < start_urls.size(); ++i) {
+      CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
+    }
   }
 }
 
