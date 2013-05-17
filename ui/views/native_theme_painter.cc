@@ -11,6 +11,7 @@
 #include "ui/views/native_theme_delegate.h"
 #include "ui/views/view.h"
 
+
 namespace views {
 
 NativeThemePainter::NativeThemePainter(NativeThemeDelegate* delegate,
@@ -20,7 +21,10 @@ NativeThemePainter::NativeThemePainter(NativeThemeDelegate* delegate,
   DCHECK(delegate_);
 }
 
-gfx::Size NativeThemePainter::GetPreferredSize() {
+NativeThemePainter::~NativeThemePainter() {
+}
+
+gfx::Size NativeThemePainter::GetMinimumSize() const {
   const ui::NativeTheme* theme = view_->GetNativeTheme();
   ui::NativeTheme::ExtraParams extra;
   ui::NativeTheme::State state = delegate_->GetThemeState(&extra);

@@ -17,7 +17,7 @@
 
 namespace views {
 class Combobox;
-class NativeThemePainter;
+class Painter;
 
 namespace examples {
 
@@ -56,7 +56,7 @@ class ExampleNativeThemeButton : public CustomButton,
 
   void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
-  scoped_ptr<NativeThemePainter> painter_;
+  scoped_ptr<Painter> painter_;
   Combobox* cb_part_;
   Combobox* cb_state_;
   int count_;

@@ -65,6 +65,10 @@ class VIEWS_EXPORT Painter {
   // Top-Left/Top/Top-Right/Left/[Center]/Right/Bottom-Left/Bottom/Bottom-Right.
   static Painter* CreateImageGridPainter(const int image_ids[]);
 
+  // Returns the minimum size this painter can paint without obvious graphical
+  // problems (e.g. overlapping images).
+  virtual gfx::Size GetMinimumSize() const = 0;
+
   // Paints the painter in the specified region.
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) = 0;
 
@@ -84,10 +88,8 @@ class VIEWS_EXPORT HorizontalPainter : public Painter {
   virtual ~HorizontalPainter();
 
   // Painter:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
-
-  // TODO(pkasting): This is about to disappear.
-  int height() const;
 
  private:
   // The image chunks.

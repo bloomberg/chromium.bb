@@ -18,6 +18,10 @@ RoundRectPainter::RoundRectPainter(SkColor border_color, int corner_radius)
 RoundRectPainter::~RoundRectPainter() {
 }
 
+gfx::Size RoundRectPainter::GetMinimumSize() const {
+  return gfx::Size(1, 1);
+}
+
 void RoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   SkPaint paint;
   paint.setColor(border_color_);

@@ -33,6 +33,7 @@ class EdgePainter : public views::Painter {
   virtual ~EdgePainter();
 
   // views::Painter:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
 
  private:
@@ -46,6 +47,10 @@ EdgePainter::EdgePainter() {
 }
 
 EdgePainter::~EdgePainter() {
+}
+
+gfx::Size EdgePainter::GetMinimumSize() const {
+  return gfx::Size();
 }
 
 void EdgePainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {

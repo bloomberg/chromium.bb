@@ -32,6 +32,7 @@ class GradientPainter : public Painter {
   virtual ~GradientPainter();
 
   // Painter:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
 
  private:
@@ -62,6 +63,10 @@ GradientPainter::GradientPainter(bool horizontal,
 }
 
 GradientPainter::~GradientPainter() {
+}
+
+gfx::Size GradientPainter::GetMinimumSize() const {
+  return gfx::Size();
 }
 
 void GradientPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
@@ -102,6 +107,7 @@ class VIEWS_EXPORT ImagePainter : public Painter {
   bool IsEmpty() const;
 
   // Painter:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
 
  private:
@@ -154,6 +160,12 @@ ImagePainter::~ImagePainter() {
 
 bool ImagePainter::IsEmpty() const {
   return images_[0].isNull();
+}
+
+gfx::Size ImagePainter::GetMinimumSize() const {
+  return IsEmpty() ? gfx::Size() : gfx::Size(
+      images_[0].width() + images_[1].width() + images_[2].width(),
+      images_[0].height() + images_[3].height() + images_[6].height());
 }
 
 void ImagePainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
@@ -276,9 +288,14 @@ HorizontalPainter::HorizontalPainter(const int image_resource_names[]) {
 HorizontalPainter::~HorizontalPainter() {
 }
 
+gfx::Size HorizontalPainter::GetMinimumSize() const {
+  return gfx::Size(
+      images_[LEFT]->width() + images_[CENTER]->width() +
+          images_[RIGHT]->width(), images_[LEFT]->height());
+}
+
 void HorizontalPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  if (size.width() < (images_[LEFT]->width() + images_[CENTER]->width() +
-      images_[RIGHT]->width()))
+  if (size.width() < GetMinimumSize().width())
     return;  // No room to paint.
 
   canvas->DrawImageInt(*images_[LEFT], 0, 0);
@@ -288,10 +305,6 @@ void HorizontalPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
       *images_[CENTER], images_[LEFT]->width(), 0,
       size.width() - images_[LEFT]->width() - images_[RIGHT]->width(),
       images_[LEFT]->height());
-}
-
-int HorizontalPainter::height() const {
-  return images_[LEFT]->height();
 }
 
 }  // namespace views

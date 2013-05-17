@@ -91,7 +91,8 @@ void IconLabelBubbleView::SetElideInMiddle(bool elide_in_middle) {
 }
 
 gfx::Size IconLabelBubbleView::GetNonLabelSize() const {
-  return gfx::Size(GetNonLabelWidth(), background_painter_.height());
+  return gfx::Size(GetNonLabelWidth(),
+                   background_painter_.GetMinimumSize().height());
 }
 
 int IconLabelBubbleView::GetPreLabelWidth() const {

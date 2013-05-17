@@ -24,14 +24,11 @@ class View;
 class VIEWS_EXPORT NativeThemePainter : public Painter {
  public:
   NativeThemePainter(NativeThemeDelegate* delegate, views::View* view);
-
-  virtual ~NativeThemePainter() {}
-
-  // Returns the preferred size of the native part being painted.
-  gfx::Size GetPreferredSize();
+  virtual ~NativeThemePainter();
 
  private:
-  // Overridden from Painter:
+  // Painter:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
 
   // The delegate the controls the appearance of this painter.

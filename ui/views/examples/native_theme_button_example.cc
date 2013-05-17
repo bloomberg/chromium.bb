@@ -53,8 +53,7 @@ ExampleNativeThemeButton::ExampleNativeThemeButton(
   cb_state_->set_listener(this);
 
   painter_.reset(new NativeThemePainter(this, this));
-  set_background(Background::CreateBackgroundPainter(
-      false, painter_.get()));
+  set_background(Background::CreateBackgroundPainter(false, painter_.get()));
 }
 
 ExampleNativeThemeButton::~ExampleNativeThemeButton() {
@@ -186,7 +185,7 @@ ui::NativeTheme::State ExampleNativeThemeButton::GetForegroundThemeState(
 }
 
 gfx::Size ExampleNativeThemeButton::GetPreferredSize() {
-  return painter_.get() == NULL ? gfx::Size() : painter_->GetPreferredSize();
+  return painter_ ? painter_->GetMinimumSize() : gfx::Size();
 }
 
 void ExampleNativeThemeButton::OnPaintBackground(gfx::Canvas* canvas) {
