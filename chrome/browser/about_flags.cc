@@ -994,14 +994,6 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePinch, switches::kDisablePinch),
   },
   {
-    "pinch-zoom-scrollbars",
-    IDS_FLAGS_PINCH_ZOOM_SCROLLBARS_NAME,
-    IDS_FLAGS_PINCH_ZOOM_SCROLLBARS_DESCRIPTION,
-    kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE(cc::switches::kEnablePinchZoomScrollbars,
-                              cc::switches::kDisablePinchZoomScrollbars)
-  },
-  {
     "forced-maximize-mode",
     IDS_FLAGS_FORCE_MAXIMIZE_MODE_NAME,
     IDS_FLAGS_FORCE_MAXIMIZE_MODE_DESCRIPTION,
