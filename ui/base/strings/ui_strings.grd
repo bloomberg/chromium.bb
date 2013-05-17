@@ -461,6 +461,12 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_CLEAR_ALL" desc="The button for clearing all notifications.">
         Clear All
       </message>
+      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="The tooltip text for the quiet mode button.">
+        Pause notifications for 1 day.
+      </message>
+      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOGGLED_TOOLTIP" desc="The tooltip text for the quiet mode button, when toggled.">
+        Resume notifications.
+      </message>
       <message name="IDS_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
         Nothing to see here, move along.
       </message>
