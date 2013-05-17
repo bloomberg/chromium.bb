@@ -83,9 +83,11 @@ IndexedDBKey::operator WebIDBKey() const {
       return WebIDBKey::createInvalid();
     case WebIDBKey::NullType:
       return WebIDBKey::createNull();
+    default:
+      // This is a placeholder for WebKit::WebIDBKey::MinType
+      NOTREACHED();
+      return WebIDBKey::createInvalid();
   }
-  NOTREACHED();
-  return WebIDBKey::createInvalid();
 }
 
 }  // namespace content

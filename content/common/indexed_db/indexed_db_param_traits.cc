@@ -34,8 +34,11 @@ void ParamTraits<IndexedDBKey>::Write(Message* m,
     case WebKit::WebIDBKey::InvalidType:
     case WebKit::WebIDBKey::NullType:
       return;
+    default:
+      // This is a placeholder for WebKit::WebIDBKey::MinType
+      NOTREACHED();
+      return;
   }
-  NOTREACHED();
 }
 
 bool ParamTraits<IndexedDBKey>::Read(const Message* m,
