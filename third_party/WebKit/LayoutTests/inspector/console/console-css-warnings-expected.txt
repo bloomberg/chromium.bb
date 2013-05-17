@@ -5,7 +5,7 @@ Invalid CSS property declaration at: { console-css-warnings.html:15
 Invalid CSS property declaration at: # console-css-warnings.html:18
 Invalid CSS property declaration at: # console-css-warnings.html:22
 Invalid CSS property declaration at: { console-css-warnings.html:26
-Invalid CSS property value starting with: # console-css-warnings.html:27
+Invalid CSS property value: # console-css-warnings.html:27
 Invalid CSS property declaration at: # console-css-warnings.html:32
 Unexpected CSS token: @ console-css-warnings.html:33
 Unexpected CSS token: { console-css-warnings.html:37
@@ -13,7 +13,7 @@ Unexpected CSS token: { console-css-warnings.html:38
 Unexpected CSS token: { console-css-warnings.html:39
 Unexpected CSS token: { console-css-warnings.html:40
 Unexpected CSS token: @ console-css-warnings.html:45
-Invalid CSS property value starting with: -webkit-linear-gradient( console-css-warnings.html:53
+Invalid CSS property value: -webkit-linear-gradient(10) console-css-warnings.html:53
 Invalid CSS property name: invalidproperty console-css-warnings.html:66
 Invalid CSS property declaration at: - console-css-warnings.html:67
 Invalid CSS property name: -webkit-invalidproperty console-css-warnings.html:70

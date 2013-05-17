@@ -1571,7 +1571,7 @@ declaration:
             $$ = parser->parseValue(static_cast<CSSPropertyID>($1), $6);
             if (!$$) {
                 parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
-                parser->reportError($4, CSSParser::InvalidPropertyValueError);
+                parser->reportError(parser->getSource($4, parser->currentLocation()).trimTrailingWhitespace(), CSSParser::InvalidPropertyValueError);
             } else
                 isPropertyParsed = true;
             parser->m_valueList = nullptr;

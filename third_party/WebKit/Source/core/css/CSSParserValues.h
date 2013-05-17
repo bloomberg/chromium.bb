@@ -48,12 +48,17 @@ struct CSSParserString {
 
     void init(const String& string)
     {
-        m_length = string.length();
+        init(string, 0, string.length());
+    }
+
+    void init(const String& string, unsigned startOffset, unsigned length)
+    {
+        m_length = length;
         if (m_length && string.is8Bit()) {
-            m_data.characters8 = const_cast<LChar*>(string.characters8());
+            m_data.characters8 = const_cast<LChar*>(string.characters8()) + startOffset;
             m_is8Bit = true;
         } else {
-            m_data.characters16 = const_cast<UChar*>(string.characters());
+            m_data.characters16 = const_cast<UChar*>(string.characters()) + startOffset;
             m_is8Bit = false;
         }
     }

@@ -300,6 +300,7 @@ CSSParser::CSSParser(const CSSParserContext& context)
     , m_is8BitSource(false)
     , m_currentCharacter8(0)
     , m_currentCharacter16(0)
+    , m_source(0)
     , m_length(0)
     , m_token(0)
     , m_lineNumber(0)
@@ -415,9 +416,11 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, int 
     m_logErrors = logErrors && sheet->singleOwnerDocument() && !sheet->baseURL().isEmpty() && sheet->singleOwnerDocument()->page();
     m_ignoreErrorsInDeclaration = false;
     m_lineNumber = startLineNumber;
+    m_source = &string;
     setupParser("", string, "");
     cssyyparse(this);
     sheet->shrinkToFit();
+    m_source = 0;
     m_sourceDataHandler = 0;
     m_rule = 0;
     m_ignoreErrorsInDeclaration = false;
@@ -9460,9 +9463,23 @@ CSSParserLocation CSSParser::currentLocation()
     CSSParserLocation location;
     location.lineNumber = m_tokenStartLineNumber;
     if (is8BitSource())
-        location.token.init(tokenStart<LChar>(), currentCharacter<LChar>() - tokenStart<LChar>());
+        location.content.init(tokenStart<LChar>(), currentCharacter<LChar>() - tokenStart<LChar>());
     else
-        location.token.init(tokenStart<UChar>(), currentCharacter<UChar>() - tokenStart<UChar>());
+        location.content.init(tokenStart<UChar>(), currentCharacter<UChar>() - tokenStart<UChar>());
+    return location;
+}
+
+CSSParserLocation CSSParser::getSource(const CSSParserLocation& begin, const CSSParserLocation& end) const
+{
+    if (!m_source)
+        return begin;
+
+    CSSParserLocation location;
+    location.lineNumber = begin.lineNumber;
+    if (is8BitSource())
+        location.content.init(*m_source, begin.content.characters8() - m_dataStart8.get(), end.content.characters8() - begin.content.characters8());
+    else
+        location.content.init(*m_source, begin.content.characters16() - m_dataStart16.get(), end.content.characters16() - begin.content.characters16());
     return location;
 }
 
@@ -10953,7 +10970,7 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
         break;
 
     case InvalidPropertyValueError:
-        builder.appendLiteral("Invalid CSS property value starting with: ");
+        builder.appendLiteral("Invalid CSS property value: ");
         break;
 
     case InvalidPropertyError:
@@ -10964,10 +10981,10 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
         builder.appendLiteral("Unexpected CSS token: ");
     }
 
-    if (location.token.is8Bit())
-        builder.append(location.token.characters8(), location.token.length());
+    if (location.content.is8Bit())
+        builder.append(location.content.characters8(), location.content.length());
     else
-        builder.append(location.token.characters16(), location.token.length());
+        builder.append(location.content.characters16(), location.content.length());
 
     logError(builder.toString(), location.lineNumber);
 }
@@ -11705,6 +11722,18 @@ bool isValidNthToken(const CSSParserString& token)
     // "odd" and "even" which does not match to an+b.
     return equalIgnoringCase(token, "odd") || equalIgnoringCase(token, "even")
         || equalIgnoringCase(token, "n") || equalIgnoringCase(token, "-n");
+}
+
+CSSParserLocation CSSParserLocation::trimTrailingWhitespace() const
+{
+    CSSParserLocation result;
+    result.lineNumber = lineNumber;
+    result.content = content;
+    size_t newLength = content.length();
+    while (newLength > 0 && isHTMLSpace(result.content[newLength - 1]))
+        --newLength;
+    result.content.setLength(newLength);
+    return result;
 }
 
 }

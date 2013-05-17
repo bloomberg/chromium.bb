@@ -409,9 +409,10 @@ public:
     static KURL completeURL(const CSSParserContext&, const String& url);
 
     CSSParserLocation currentLocation();
+    CSSParserLocation getSource(const CSSParserLocation& begin, const CSSParserLocation& end) const;
 
 private:
-    bool is8BitSource() { return m_is8BitSource; }
+    bool is8BitSource() const { return m_is8BitSource; }
 
     template <typename SourceCharacterType>
     int realLex(void* yylval);
@@ -533,6 +534,7 @@ private:
     OwnArrayPtr<UChar> m_dataStart16;
     LChar* m_currentCharacter8;
     UChar* m_currentCharacter16;
+    const String* m_source;
     union {
         LChar* ptr8;
         UChar* ptr16;
@@ -649,7 +651,9 @@ private:
 
 struct CSSParserLocation {
     int lineNumber;
-    CSSParserString token;
+    CSSParserString content;
+
+    CSSParserLocation trimTrailingWhitespace() const;
 };
 
 class CSSParser::SourceDataHandler {

@@ -634,36 +634,37 @@ static bool hasNonWebkitVendorSpecificPrefix(const CSSParserString& string)
 // static
 bool InspectorCSSAgent::cssErrorFilter(const CSSParserLocation& location, int propertyId, int errorType)
 {
-    const size_t tokenLength = location.token.length();
+    const CSSParserString & content = location.content;
+    const size_t contentLength = content.length();
     // Ignore errors like "*property: value". This trick is used for IE7: http://stackoverflow.com/questions/4563651/what-does-an-asterisk-do-in-a-css-property-name
-    if (errorType == CSSParser::PropertyDeclarationError && tokenLength && location.token[0] == '*')
+    if (errorType == CSSParser::PropertyDeclarationError && contentLength && content[0] == '*')
         return false;
 
     // The "filter" property is commonly used instead of "opacity" for IE9.
     if (propertyId == CSSPropertyFilter && (errorType == CSSParser::PropertyDeclarationError || errorType == CSSParser::InvalidPropertyValueError))
         return false;
 
-    if (errorType == CSSParser::InvalidPropertyValueError && hasNonWebkitVendorSpecificPrefix(location.token))
+    if (errorType == CSSParser::InvalidPropertyValueError && hasNonWebkitVendorSpecificPrefix(content))
         return false;
 
-    if (propertyId == CSSPropertyCursor && errorType == CSSParser::InvalidPropertyValueError && location.token.equalIgnoringCase("hand"))
+    if (propertyId == CSSPropertyCursor && errorType == CSSParser::InvalidPropertyValueError && content.equalIgnoringCase("hand"))
         return false;
 
-    // When errorType == CSSParser::InvalidPropertyError location.token is property name.
+    // When errorType == CSSParser::InvalidPropertyError content is property name.
     if (errorType == CSSParser::InvalidPropertyError) {
-        if (hasNonWebkitVendorSpecificPrefix(location.token))
+        if (hasNonWebkitVendorSpecificPrefix(content))
             return false;
 
         // Another hack to make IE-only property.
-        if (tokenLength && location.token[0] == '_')
+        if (contentLength && content[0] == '_')
             return false;
 
         // IE-only set of properties.
-        if (location.token.startsWithIgnoringCase("scrollbar-"))
+        if (content.startsWithIgnoringCase("scrollbar-"))
             return false;
 
         // Unsupported standard property.
-        if (location.token.equalIgnoringCase("font-size-adjust"))
+        if (content.equalIgnoringCase("font-size-adjust"))
             return false;
     }
 
