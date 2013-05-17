@@ -213,6 +213,10 @@ html[dir='rtl'] .enable-control {
   width: 13px;
 }
 
+.extension-id {
+  -webkit-user-select: text;
+}
+
 #extension-settings .trash {
   -webkit-transition: opacity 200ms;
   height: 22px;
