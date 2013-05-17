@@ -296,6 +296,11 @@ class RepoRepository(object):
         ['git', 'config', '--file', self._ManifestConfig, 'repo.reference',
          self._referenced_repo])
 
+  def Detach(self):
+    """Detach projects back to manifest versions.  Effectively a 'reset'."""
+    cros_build_lib.RunCommand(['repo', '--time', 'sync', '-d'],
+                              cwd=self.directory)
+
   def Sync(self, local_manifest=None, jobs=None, cleanup=True,
            all_branches=False, network_only=False):
     """Sync/update the source.  Changes manifest if specified.
