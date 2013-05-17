@@ -23,6 +23,7 @@
 #include "chrome/browser/sync_file_system/local_sync_operation_resolver.h"
 #include "chrome/browser/sync_file_system/remote_change_handler.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_action.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
@@ -41,6 +42,10 @@ class Location;
 
 namespace sync_file_system {
 
+namespace drive {
+class LocalChangeProcessorDelegate;
+}
+
 class DriveFileSyncTaskManager;
 
 // Maintains remote file changes.
@@ -52,6 +57,12 @@ class DriveFileSyncService : public RemoteFileSyncService,
                              public base::SupportsWeakPtr<DriveFileSyncService>,
                              public google_apis::DriveNotificationObserver {
  public:
+  enum ConflictResolutionResult {
+    CONFLICT_RESOLUTION_MARK_CONFLICT,
+    CONFLICT_RESOLUTION_LOCAL_WIN,
+    CONFLICT_RESOLUTION_REMOTE_WIN,
+  };
+
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
 
   static const char kServiceName[];
@@ -128,8 +139,15 @@ class DriveFileSyncService : public RemoteFileSyncService,
       SyncStatusCode sync_status,
       google_apis::GDataErrorCode gdata_error);
 
+  static std::string PathToTitle(const base::FilePath& path);
+  static base::FilePath TitleToPath(const std::string& title);
+  static DriveMetadata::ResourceType SyncFileTypeToDriveMetadataResourceType(
+      SyncFileType file_type);
+
  private:
   friend class DriveFileSyncTaskManager;
+  friend class drive::LocalChangeProcessorDelegate;
+
   friend class DriveFileSyncServiceMockTest;
   friend class DriveFileSyncServiceSyncTest;
   struct ApplyLocalChangeParam;
@@ -191,60 +209,13 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const SyncStatusCallback& callback);
 
   // Local synchronization related methods.
-  // Resolves LocalSync operation type. If non-null |param| is given
-  // the method also populates param->has_drive_metadata and
-  // param->drive_metadata fields.
-  void ApplyLocalChangeInternal(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      SyncStatusCode status,
-      const std::string& resource_id);
-  void DidDeleteForResolveToLocalForLocalSync(
-      const std::string& origin_resource_id,
-      const base::FilePath& local_file_path,
-      const fileapi::FileSystemURL& url,
-      scoped_ptr<ApplyLocalChangeParam> param,
-      google_apis::GDataErrorCode error);
-  void DidApplyLocalChange(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      const google_apis::GDataErrorCode error,
-      SyncStatusCode status);
-  void DidResolveConflictToRemoteChange(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      SyncStatusCode status);
-  void DidUploadNewFileForLocalSync(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      google_apis::GDataErrorCode error,
-      const std::string& resource_id,
-      const std::string& file_md5);
-  void DidCreateDirectoryForLocalSync(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      google_apis::GDataErrorCode error,
-      const std::string& resource_id);
-  void DidUploadExistingFileForLocalSync(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      google_apis::GDataErrorCode error,
-      const std::string& resource_id,
-      const std::string& file_md5);
-  void DidDeleteFileForLocalSync(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      google_apis::GDataErrorCode error);
-  void HandleConflictForLocalSync(
-      scoped_ptr<ApplyLocalChangeParam> param);
-  void ResolveConflictForLocalSync(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      const base::Time& remote_updated_time,
+  ConflictResolutionResult ResolveConflictForLocalSync(
+      SyncFileType local_file_type,
+      const base::Time& local_update_time,
       SyncFileType remote_file_type,
-      SyncStatusCode status);
-  void StartOverLocalSync(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      SyncStatusCode status);
-  void ResolveConflictToRemoteForLocalSync(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      SyncFileType remote_file_type);
-  void DidEnsureOriginRootForUploadNewFile(
-      scoped_ptr<ApplyLocalChangeParam> param,
-      SyncStatusCode status,
-      const std::string& parent_resource_id);
+      const base::Time& remote_update_time);
+  void DidApplyLocalChange(const SyncStatusCallback& callback,
+                           SyncStatusCode status);
 
   void UpdateRegisteredOrigins();
 
@@ -410,6 +381,8 @@ class DriveFileSyncService : public RemoteFileSyncService,
   Profile* profile_;
 
   scoped_ptr<DriveFileSyncTaskManager> task_manager_;
+
+  scoped_ptr<drive::LocalChangeProcessorDelegate> running_local_sync_task_;
 
   // The current remote service state. This does NOT reflect the
   // sync_enabled_ flag, while GetCurrentState() DOES reflect the flag

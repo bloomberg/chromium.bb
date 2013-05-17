@@ -1,0 +1,134 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_CHANGE_PROCESSOR_DELEGATE_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_CHANGE_PROCESSOR_DELEGATE_H_
+
+#include "base/callback.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_file_system.pb.h"
+#include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/syncable/file_change.h"
+#include "webkit/fileapi/syncable/sync_callbacks.h"
+#include "webkit/fileapi/syncable/sync_file_metadata.h"
+
+namespace sync_file_system {
+
+class DriveMetadataStore;
+
+namespace drive {
+
+class APIUtil;
+
+// This class handles ApplyLocalChange in LocalChangeProcessor, and its instance
+// represents single ApplyLocalChange operation.
+// The caller is responsible to own the instance, and can cancel operation by
+// deleting the instance or |sync_service|.
+class LocalChangeProcessorDelegate {
+ public:
+  typedef RemoteChangeHandler::RemoteChange RemoteChange;
+
+  LocalChangeProcessorDelegate(
+      base::WeakPtr<DriveFileSyncService> sync_service,
+      const FileChange& change,
+      const base::FilePath& local_file_path,
+      const SyncFileMetadata& local_file_metadata,
+      const fileapi::FileSystemURL& url);
+  ~LocalChangeProcessorDelegate();
+
+  void Run(const SyncStatusCallback& callback);
+
+ private:
+  void DidGetOriginRoot(const SyncStatusCallback& callback,
+                        SyncStatusCode status,
+                        const std::string& resource_id);
+  void UploadNewFile(const SyncStatusCallback& callback);
+  void DidUploadNewFile(const SyncStatusCallback& callback,
+                        google_apis::GDataErrorCode error,
+                        const std::string& resource_id,
+                        const std::string& md5);
+  void CreateDirectory(const SyncStatusCallback& callback);
+  void DidCreateDirectory(
+      const SyncStatusCallback& callback,
+      google_apis::GDataErrorCode error,
+      const std::string& resource_id);
+  void UploadExistingFile(const SyncStatusCallback& callback);
+  void DidUploadExistingFile(
+      const SyncStatusCallback& callback,
+      google_apis::GDataErrorCode error,
+      const std::string& resource_id,
+      const std::string& md5);
+  void DeleteFile(const SyncStatusCallback& callback);
+  void DeleteDirectory(const SyncStatusCallback& callback);
+  void DidDeleteFile(const SyncStatusCallback& callback,
+                     google_apis::GDataErrorCode error);
+  void ResolveToLocal(const SyncStatusCallback& callback);
+  void DidDeleteFileToResolveToLocal(
+      const SyncStatusCallback& callback,
+      google_apis::GDataErrorCode error);
+  void ResolveToRemote(const SyncStatusCallback& callback);
+  void DidResolveToRemote(const SyncStatusCallback& callback,
+                          SyncStatusCode status);
+  void DidApplyLocalChange(
+      const SyncStatusCallback& callback,
+      const google_apis::GDataErrorCode error,
+      SyncStatusCode status);
+
+  // Metadata manipulation.
+  void UpdateMetadata(const std::string& resource_id,
+                      const std::string& md5,
+                      DriveMetadata::ResourceType type,
+                      const SyncStatusCallback& callback);
+  void ResetMetadataMD5(const SyncStatusCallback& callback);
+  void SetMetadataToBeFetched(DriveMetadata::ResourceType type,
+                              const SyncStatusCallback& callback);
+  void DeleteMetadata(const SyncStatusCallback& callback);
+  void SetMetadataConflict(const SyncStatusCallback& callback);
+
+  // Conflict handling.
+  void HandleCreationConflict(
+      const std::string& resource_id,
+      DriveMetadata::ResourceType type,
+      const SyncStatusCallback& callback);
+  void HandleConflict(const SyncStatusCallback& callback);
+  void DidGetEntryForConflictResolution(
+      const SyncStatusCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::ResourceEntry> entry);
+
+  void HandleManualResolutionCase(const SyncStatusCallback& callback);
+  void HandleLocalWinCase(const SyncStatusCallback& callback);
+  void HandleRemoteWinCase(const SyncStatusCallback& callback);
+  void StartOver(const SyncStatusCallback& callback, SyncStatusCode status);
+
+  SyncStatusCode GDataErrorCodeToSyncStatusCodeWrapper(
+      google_apis::GDataErrorCode error);
+
+  DriveMetadataStore* metadata_store();
+  drive::APIUtilInterface* api_util();
+  RemoteChangeHandler* remote_change_handler();
+
+  base::WeakPtr<DriveFileSyncService> sync_service_;
+
+  fileapi::FileSystemURL url_;
+  FileChange local_change_;
+  base::FilePath local_path_;
+  SyncFileMetadata local_metadata_;
+  DriveMetadata drive_metadata_;
+  bool has_drive_metadata_;
+  RemoteChange remote_change_;
+  bool has_remote_change_;
+
+  std::string origin_resource_id_;
+
+  base::WeakPtrFactory<LocalChangeProcessorDelegate> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalChangeProcessorDelegate);
+};
+
+}  // namespace drive
+}  // namespace sync_file_system
+
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_CHANGE_PROCESSOR_DELEGATE_H_

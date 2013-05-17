@@ -2096,6 +2096,8 @@
         'browser/sync_file_system/drive/api_util.cc',
         'browser/sync_file_system/drive/api_util.h',
         'browser/sync_file_system/drive/api_util_interface.h',
+        'browser/sync_file_system/drive/local_change_processor_delegate.cc',
+        'browser/sync_file_system/drive/local_change_processor_delegate.h',
         'browser/sync_file_system/drive_file_sync_service.cc',
         'browser/sync_file_system/drive_file_sync_service.h',
         'browser/sync_file_system/drive_file_sync_task_manager.cc',
