@@ -64,14 +64,14 @@ class Wow64Functions {
       wow_64_disable_wow_64_fs_redirection_(NULL),
       wow_64_revert_wow_64_fs_redirection_(NULL) {
     if (kernel32_lib_.is_valid()) {
-      is_wow_64_process_ = static_cast<IsWow64Process>(
+      is_wow_64_process_ = reinterpret_cast<IsWow64Process>(
           kernel32_lib_.GetFunctionPointer("IsWow64Process"));
       wow_64_disable_wow_64_fs_redirection_ =
-          static_cast<Wow64DisableWow64FSRedirection>(
+          reinterpret_cast<Wow64DisableWow64FSRedirection>(
               kernel32_lib_.GetFunctionPointer(
                   "Wow64DisableWow64FsRedirection"));
       wow_64_revert_wow_64_fs_redirection_ =
-          static_cast<Wow64RevertWow64FSRedirection>(
+          reinterpret_cast<Wow64RevertWow64FSRedirection>(
               kernel32_lib_.GetFunctionPointer(
                   "Wow64RevertWow64FsRedirection"));
     }

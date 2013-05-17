@@ -125,7 +125,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI {
  public:
   HttpAuthSSPI(SSPILibrary* sspi_library,
                const std::string& scheme,
-               SEC_WCHAR* security_package,
+               const SEC_WCHAR* security_package,
                ULONG max_token_length);
   ~HttpAuthSSPI();
 
@@ -166,7 +166,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI {
 
   SSPILibrary* library_;
   std::string scheme_;
-  SEC_WCHAR* security_package_;
+  const SEC_WCHAR* security_package_;
   std::string decoded_server_auth_token_;
   ULONG max_token_length_;
   CredHandle cred_;

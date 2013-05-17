@@ -32,8 +32,10 @@ POLPARAMS_BEGIN(FileName)
   POLPARAM(BROKER)   // TRUE if called from the broker.
 POLPARAMS_END(FileName)
 
-COMPILE_ASSERT(OpenFile::NAME == FileName::NAME, to_simplify_fs_policies);
-COMPILE_ASSERT(OpenFile::BROKER == FileName::BROKER, to_simplify_fs_policies);
+COMPILE_ASSERT(OpenFile::NAME == static_cast<int>(FileName::NAME),
+               to_simplify_fs_policies);
+COMPILE_ASSERT(OpenFile::BROKER == static_cast<int>(FileName::BROKER),
+               to_simplify_fs_policies);
 
 // Policy parameter for name-based policies.
 POLPARAMS_BEGIN(NameBased)

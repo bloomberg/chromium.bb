@@ -8,7 +8,7 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef public testing::Test EnumerateModulesTest;
+typedef testing::Test EnumerateModulesTest;
 
 // Set up some constants to use as default when creating the structs.
 static const ModuleEnumerator::ModuleType kType =

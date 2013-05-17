@@ -186,7 +186,7 @@ int MapFreeContextBufferStatusToError(SECURITY_STATUS status) {
 
 HttpAuthSSPI::HttpAuthSSPI(SSPILibrary* library,
                            const std::string& scheme,
-                           SEC_WCHAR* security_package,
+                           const SEC_WCHAR* security_package,
                            ULONG max_token_length)
     : library_(library),
       scheme_(scheme),

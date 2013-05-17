@@ -473,15 +473,15 @@ void GamepadPlatformDataFetcherWin::GetDirectInputPadData(
 bool GamepadPlatformDataFetcherWin::GetXInputDllFunctions() {
   xinput_get_capabilities_ = NULL;
   xinput_get_state_ = NULL;
-  xinput_enable_ = static_cast<XInputEnableFunc>(
+  xinput_enable_ = reinterpret_cast<XInputEnableFunc>(
       xinput_dll_.GetFunctionPointer("XInputEnable"));
   if (!xinput_enable_)
     return false;
-  xinput_get_capabilities_ = static_cast<XInputGetCapabilitiesFunc>(
+  xinput_get_capabilities_ = reinterpret_cast<XInputGetCapabilitiesFunc>(
       xinput_dll_.GetFunctionPointer("XInputGetCapabilities"));
   if (!xinput_get_capabilities_)
     return false;
-  xinput_get_state_ = static_cast<XInputGetStateFunc>(
+  xinput_get_state_ = reinterpret_cast<XInputGetStateFunc>(
       xinput_dll_.GetFunctionPointer("XInputGetState"));
   if (!xinput_get_state_)
     return false;

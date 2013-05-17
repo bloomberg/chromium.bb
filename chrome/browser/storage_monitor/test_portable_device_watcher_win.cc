@@ -43,11 +43,11 @@ string16 GetMTPStorageName(const string16& pnp_device_id,
 
 // static
 const char16 TestPortableDeviceWatcherWin::kMTPDeviceWithMultipleStorages[] =
-    L"\\?\usb#vid_ff&pid_18#32&2&1#{ab33-1de4-f22e-1882-9724})";
+    L"\\?\\usb#vid_ff&pid_18#32&2&1#{ab33-1de4-f22e-1882-9724})";
 const char16 TestPortableDeviceWatcherWin::kMTPDeviceWithInvalidInfo[] =
-    L"\\?\usb#vid_00&pid_00#0&2&1#{0000-0000-0000-0000-0000})";
+    L"\\?\\usb#vid_00&pid_00#0&2&1#{0000-0000-0000-0000-0000})";
 const char16 TestPortableDeviceWatcherWin::kMTPDeviceWithValidInfo[] =
-    L"\\?\usb#vid_ff&pid_000f#32&2&1#{abcd-1234-ffde-1112-9172})";
+    L"\\?\\usb#vid_ff&pid_000f#32&2&1#{abcd-1234-ffde-1112-9172})";
 const char TestPortableDeviceWatcherWin::kStorageUniqueIdA[] =
     "mtp:StorageSerial:SID-{s10001, D, 12378}:123123";
 

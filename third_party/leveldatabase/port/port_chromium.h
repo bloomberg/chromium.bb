@@ -22,7 +22,9 @@
 
 #if defined(OS_WIN)
 #define snprintf _snprintf
-#define va_copy(a, b) do { (a) = (b); } while (0)
+#if !defined(__clang__)
+# define va_copy(a, b) do { (a) = (b); } while (0)
+#endif
 #endif
 
 namespace leveldb {

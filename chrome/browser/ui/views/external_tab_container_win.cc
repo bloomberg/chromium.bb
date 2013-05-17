@@ -740,7 +740,7 @@ void ExternalTabContainerWin::UpdateTargetURL(WebContents* source,
                                               int32 page_id,
                                               const GURL& url) {
   if (automation_) {
-    string16 url_string = CA2W(url.spec().c_str());
+    string16 url_string = base::UTF8ToUTF16(url.spec());
     automation_->Send(
         new AutomationMsg_UpdateTargetUrl(tab_handle_, url_string));
   }

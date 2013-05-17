@@ -8,10 +8,10 @@
 
 TEST(ShellDialogsWin, AppendExtensionIfNeeded) {
   struct AppendExtensionTestCase {
-    wchar_t* filename;
-    wchar_t* filter_selected;
-    wchar_t* suggested_ext;
-    wchar_t* expected_filename;
+    const wchar_t* filename;
+    const wchar_t* filter_selected;
+    const wchar_t* suggested_ext;
+    const wchar_t* expected_filename;
   } test_cases[] = {
     // Known extensions, with or without associated MIME types, should not get
     // an extension appended.

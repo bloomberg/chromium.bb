@@ -52,7 +52,7 @@ TEST(DnsConfigServiceWinTest, ParseSearchList) {
 struct AdapterInfo {
   IFTYPE if_type;
   IF_OPER_STATUS oper_status;
-  PWCHAR dns_suffix;
+  const WCHAR* dns_suffix;
   std::string dns_server_addresses[4];  // Empty string indicates end.
   int ports[4];
 };
@@ -89,7 +89,7 @@ scoped_ptr_malloc<IP_ADAPTER_ADDRESSES> CreateAdapterAddresses(
       adapter->Next = adapter + 1;
     adapter->IfType = info.if_type;
     adapter->OperStatus = info.oper_status;
-    adapter->DnsSuffix = info.dns_suffix;
+    adapter->DnsSuffix = const_cast<PWCHAR>(info.dns_suffix);
     IP_ADAPTER_DNS_SERVER_ADDRESS* address = NULL;
     for (size_t j = 0; !info.dns_server_addresses[j].empty(); ++j) {
       --num_addresses;
