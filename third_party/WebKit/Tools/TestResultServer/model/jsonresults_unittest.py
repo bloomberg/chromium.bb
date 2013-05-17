@@ -297,9 +297,7 @@ class JsonResultsTest(unittest.TestCase):
                                     '"times":[[1,4]]'
                                 '}'
                             '}'
-                        '},'
-                        # FIXME: _normalize_results doesn't strip newly emptied directories.
-                        '"video":{"src":{}}'
+                        '}'
                     '},'
                     '"encrypted-media":{'
                         '"encrypted-media-v2-events.html":{'
@@ -633,34 +631,59 @@ class JsonResultsTest(unittest.TestCase):
     def test_merge_remove_test(self):
         self._test_merge(
             # Aggregated results
-            {"builds": ["2", "1"],
-             "tests": {"001.html": {
-                           "results": [[200,"P"]],
-                           "times": [[200,0]]},
-                       "002.html": {
-                           "results": [[10,"F"]],
-                           "times": [[10,0]]},
-                       "003.html": {
-                           "results": [[190, 'X'], [9, 'N'], [1,"F"]],
-                           "times": [[200,0]]},
-                       }},
+            {
+                "builds": ["2", "1"],
+                "tests": {
+                    "directory": {
+                        "directory": {
+                            "001.html": {
+                                "results": [[200, "P"]],
+                                "times": [[200, 0]]
+                            }
+                        }
+                    },
+                    "002.html": {
+                        "results": [[10, "F"]],
+                        "times": [[10, 0]]
+                    },
+                    "003.html": {
+                        "results": [[190, 'X'], [9, 'N'], [1,"F"]],
+                        "times": [[200, 0]]
+                    },
+                }
+            },
             # Incremental results
-            {"builds": ["3"],
-             "tests": {"001.html": {
-                           "results": [[1,"P"]],
-                           "times": [[1,0]]},
-                       "002.html": {
-                           "results": [[1,"P"]],
-                           "times": [[1,0]]},
-                       "003.html": {
-                           "results": [[1,"P"]],
-                           "times": [[1,0]]},
-                       }},
+            {
+                "builds": ["3"],
+                "tests": {
+                    "directory": {
+                        "directory": {
+                            "001.html": {
+                                "results": [[1, "P"]],
+                                "times": [[1, 0]]
+                            }
+                        }
+                    },
+                    "002.html": {
+                        "results": [[1, "P"]],
+                        "times": [[1, 0]]
+                    },
+                    "003.html": {
+                        "results": [[1, "P"]],
+                        "times": [[1, 0]]
+                    },
+                }
+            },
             # Expected results
-            {"builds": ["3", "2", "1"],
-             "tests": {"002.html": {
-                           "results": [[1,"P"],[10,"F"]],
-                           "times": [[11,0]]}}},
+            {
+                "builds": ["3", "2", "1"],
+                "tests": {
+                    "002.html": {
+                        "results": [[1, "P"],[10, "F"]],
+                        "times": [[11, 0]]
+                    }
+                }
+            },
             max_builds=200)
 
     def test_merge_keep_test_with_all_pass_but_slow_time(self):

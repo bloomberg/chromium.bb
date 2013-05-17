@@ -187,6 +187,9 @@ class JsonResults(object):
         for test_name in aggregated_json:
             if _is_directory(aggregated_json[test_name]):
                 cls._normalize_results(aggregated_json[test_name], num_runs)
+                # If normalizing deletes all the children of this directory, also delete the directory.
+                if not aggregated_json[test_name]:
+                    names_to_delete.append(test_name)
             else:
                 leaf = aggregated_json[test_name]
                 leaf[JSON_RESULTS_RESULTS] = cls._remove_items_over_max_number_of_builds(leaf[JSON_RESULTS_RESULTS], num_runs)
