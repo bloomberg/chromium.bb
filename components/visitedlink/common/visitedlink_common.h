@@ -11,7 +11,7 @@
 
 class GURL;
 
-namespace components {
+namespace visitedlink {
 
 // number of bytes in the salt
 #define LINK_SALT_LENGTH 8
@@ -133,6 +133,6 @@ class VisitedLinkCommon {
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkCommon);
 };
 
-}  // namespace components
+}  // namespace visitedlink
 
 #endif  // COMPONENTS_VISITEDLINK_COMMON_VISITEDLINK_COMMON_H_

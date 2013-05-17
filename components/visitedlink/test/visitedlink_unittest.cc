@@ -31,7 +31,7 @@ using content::BrowserThread;
 using content::MockRenderProcessHost;
 using content::RenderViewHostTester;
 
-namespace components {
+namespace visitedlink {
 
 namespace {
 
@@ -773,4 +773,4 @@ TEST_F(VisitedLinkEventsTest, IgnoreRendererCreationFromDifferentContext) {
 
 }
 
-}  // namespace components
+}  // namespace visitedlink

@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// VisitedLinkEventListener broadcasts link coloring database updates to all
-// processes. It also coalesces the updates to avoid excessive broadcasting of
-// messages to the renderers.
-
 #ifndef COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
 #define COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
 
@@ -17,19 +13,21 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-
 namespace base {
 class SharedMemory;
 }
 
 namespace content {
 class BrowserContext;
-}  // namespace content
+}
 
-namespace components {
+namespace visitedlink {
 
 class VisitedLinkUpdater;
 
+// VisitedLinkEventListener broadcasts link coloring database updates to all
+// processes. It also coalesces the updates to avoid excessive broadcasting of
+// messages to the renderers.
 class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
                                  public content::NotificationObserver {
  public:
@@ -67,6 +65,6 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventListener);
 };
 
-}  // namespace components
+}  // namespace visitedlink
 
 #endif  // COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_EVENT_LISTENER_H_

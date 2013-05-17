@@ -27,9 +27,9 @@ class GURL;
 
 namespace content {
 class BrowserContext;
-}  // namespace content
+}
 
-namespace components {
+namespace visitedlink {
 
 class VisitedLinkDelegate;
 
@@ -440,6 +440,6 @@ inline void VisitedLinkMaster::DebugValidate() {
 }
 #endif
 
-}  // namespace components
+}  // namespace visitedlink
 
 #endif  // COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_MASTER_H_

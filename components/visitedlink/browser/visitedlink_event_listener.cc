@@ -19,15 +19,15 @@ using content::RenderWidgetHost;
 namespace {
 
 // The amount of time we wait to accumulate visited link additions.
-static const int kCommitIntervalMs = 100;
+const int kCommitIntervalMs = 100;
 
 // Size of the buffer after which individual link updates deemed not warranted
 // and the overall update should be used instead.
-static const unsigned kVisitedLinkBufferThreshold = 50;
+const unsigned kVisitedLinkBufferThreshold = 50;
 
 }  // namespace
 
-namespace components {
+namespace visitedlink {
 
 // This class manages buffering and sending visited link hashes (fingerprints)
 // to renderer based on widget visibility.
@@ -216,4 +216,4 @@ void VisitedLinkEventListener::Observe(
   }
 }
 
-}  // namespace components
+}  // namespace visitedlink

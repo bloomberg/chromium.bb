@@ -216,7 +216,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   extension_dispatcher_.reset(new extensions::Dispatcher());
   net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
-  visited_link_slave_.reset(new components::VisitedLinkSlave());
+  visited_link_slave_.reset(new visitedlink::VisitedLinkSlave());
 #if defined(FULL_SAFE_BROWSING)
   phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
 #endif

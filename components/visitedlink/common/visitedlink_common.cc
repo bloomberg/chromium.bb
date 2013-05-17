@@ -10,7 +10,7 @@
 #include "base/md5.h"
 #include "googleurl/src/gurl.h"
 
-namespace components {
+namespace visitedlink {
 
 const VisitedLinkCommon::Fingerprint VisitedLinkCommon::null_fingerprint_ = 0;
 const VisitedLinkCommon::Hash VisitedLinkCommon::null_hash_ = -1;
@@ -99,4 +99,4 @@ VisitedLinkCommon::Fingerprint VisitedLinkCommon::ComputeURLFingerprint(
       *reinterpret_cast<uint8(*)[8]>(&digest.a));
 }
 
-}  // namespace components
+}  // namespace visitedlink

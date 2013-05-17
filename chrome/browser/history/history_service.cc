@@ -96,7 +96,7 @@ void RunWithFaviconResults(
 
 // Extract history::URLRows into GURLs for VisitedLinkMaster.
 class URLIteratorFromURLRows
-    : public components::VisitedLinkMaster::URLIterator {
+    : public visitedlink::VisitedLinkMaster::URLIterator {
  public:
   explicit URLIteratorFromURLRows(const history::URLRows& url_rows)
       : itr_(url_rows.begin()),
@@ -223,7 +223,7 @@ HistoryService::HistoryService(Profile* profile)
     : weak_ptr_factory_(this),
       thread_(new base::Thread(kHistoryThreadName)),
       profile_(profile),
-      visitedlink_master_(new components::VisitedLinkMaster(
+      visitedlink_master_(new visitedlink::VisitedLinkMaster(
           profile, this, true)),
       backend_loaded_(false),
       current_backend_id_(-1),

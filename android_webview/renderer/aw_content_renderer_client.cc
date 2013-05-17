@@ -37,7 +37,7 @@ void AwContentRendererClient::RenderThreadStarted() {
   aw_render_process_observer_.reset(new AwRenderProcessObserver);
   thread->AddObserver(aw_render_process_observer_.get());
 
-  visited_link_slave_.reset(new components::VisitedLinkSlave);
+  visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
   thread->AddObserver(visited_link_slave_.get());
 }
 

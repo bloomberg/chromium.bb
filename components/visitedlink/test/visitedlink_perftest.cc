@@ -18,7 +18,7 @@
 
 using base::TimeDelta;
 
-namespace components {
+namespace visitedlink {
 
 namespace {
 
@@ -196,4 +196,4 @@ TEST_F(VisitedLink, TestLoad) {
                 hot_sum / hot_load_times.size(), "ms");
 }
 
-}  // namespace components
+}  // namespace visitedlink

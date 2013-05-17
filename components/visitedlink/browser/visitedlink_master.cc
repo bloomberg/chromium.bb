@@ -30,12 +30,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
-namespace components {
-
 using content::BrowserThread;
 using file_util::ScopedFILE;
 using file_util::OpenFile;
 using file_util::TruncateFile;
+
+namespace visitedlink {
 
 const int32 VisitedLinkMaster::kFileHeaderSignatureOffset = 0;
 const int32 VisitedLinkMaster::kFileHeaderVersionOffset = 4;
@@ -987,4 +987,4 @@ void VisitedLinkMaster::TableBuilder::OnCompleteMainThread() {
     master_->OnTableRebuildComplete(success_, fingerprints_);
 }
 
-}  // namespace components
+}  // namespace visitedlink

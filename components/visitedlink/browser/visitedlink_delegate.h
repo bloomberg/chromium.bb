@@ -11,9 +11,9 @@ class GURL;
 
 namespace content {
 class BrowserContext;
-}  // namespace content
+}
 
-namespace components {
+namespace visitedlink {
 
 // Delegate class that clients of VisitedLinkMaster must implement.
 class VisitedLinkDelegate {
@@ -43,10 +43,9 @@ class VisitedLinkDelegate {
   virtual void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) = 0;
 
  protected:
-
   virtual ~VisitedLinkDelegate() {}
 };
 
-}  // namespace components
+}  // namespace visitedlink
 
 #endif  // COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_DELEGATE_H_

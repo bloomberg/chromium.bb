@@ -21,10 +21,6 @@ class SpellCheckProvider;
 
 struct ChromeViewHostMsg_GetPluginInfo_Output;
 
-namespace components {
-class VisitedLinkSlave;
-}
-
 namespace extensions {
 class Dispatcher;
 class Extension;
@@ -36,6 +32,10 @@ class PrerenderDispatcher;
 
 namespace safe_browsing {
 class PhishingClassifierFilter;
+}
+
+namespace visitedlink {
+class VisitedLinkSlave;
 }
 
 namespace webkit {
@@ -174,7 +174,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<extensions::Dispatcher> extension_dispatcher_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
   scoped_ptr<SpellCheck> spellcheck_;
-  scoped_ptr<components::VisitedLinkSlave> visited_link_slave_;
+  scoped_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
   scoped_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;
 };

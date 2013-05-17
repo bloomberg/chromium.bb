@@ -22,14 +22,14 @@
 
 class GURL;
 
-namespace components {
+namespace visitedlink {
 class VisitedLinkMaster;
-}  // namespace components
+}
 
 namespace content {
 class ResourceContext;
 class WebContents;
-}  // namespace content
+}
 
 namespace android_webview {
 
@@ -39,7 +39,7 @@ class AwURLRequestContextGetter;
 class JniDependencyFactory;
 
 class AwBrowserContext : public content::BrowserContext,
-                         public components::VisitedLinkDelegate {
+                         public visitedlink::VisitedLinkDelegate {
  public:
 
   AwBrowserContext(const base::FilePath path,
@@ -57,7 +57,7 @@ class AwBrowserContext : public content::BrowserContext,
   // Maps to BrowserMainParts::PreMainMessageLoopRun.
   void PreMainMessageLoopRun();
 
-  // These methods map to Add methods in components::VisitedLinkMaster.
+  // These methods map to Add methods in visitedlink::VisitedLinkMaster.
   void AddVisitedURLs(const std::vector<GURL>& urls);
 
   net::URLRequestContextGetter* CreateRequestContext(
@@ -94,7 +94,7 @@ class AwBrowserContext : public content::BrowserContext,
       GetSpeechRecognitionPreferences() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
-  // components::VisitedLinkDelegate implementation.
+  // visitedlink::VisitedLinkDelegate implementation.
   virtual void RebuildTable(
       const scoped_refptr<URLEnumerator>& enumerator) OVERRIDE;
 
@@ -112,7 +112,7 @@ class AwBrowserContext : public content::BrowserContext,
 
   AwDownloadManagerDelegate download_manager_delegate_;
 
-  scoped_ptr<components::VisitedLinkMaster> visitedlink_master_;
+  scoped_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
   scoped_ptr<content::ResourceContext> resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);

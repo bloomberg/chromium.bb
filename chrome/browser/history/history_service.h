@@ -54,10 +54,9 @@ class FilePath;
 class Thread;
 }
 
-namespace components {
+namespace visitedlink {
 class VisitedLinkMaster;
-}  // namespace components
-
+}
 
 namespace history {
 
@@ -86,7 +85,7 @@ class HistoryService : public CancelableRequestProvider,
                        public content::NotificationObserver,
                        public syncer::SyncableService,
                        public ProfileKeyedService,
-                       public components::VisitedLinkDelegate {
+                       public visitedlink::VisitedLinkDelegate {
  public:
   // Miscellaneous commonly-used types.
   typedef std::vector<PageUsageData*> PageUsageDataList;
@@ -657,7 +656,7 @@ class HistoryService : public CancelableRequestProvider,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Implementation of components::VisitedLinkDelegate.
+  // Implementation of visitedlink::VisitedLinkDelegate.
   virtual void RebuildTable(
       const scoped_refptr<URLEnumerator>& enumerator) OVERRIDE;
 
@@ -1068,7 +1067,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Used for propagating link highlighting data across renderers. May be null
   // in tests.
-  scoped_ptr<components::VisitedLinkMaster> visitedlink_master_;
+  scoped_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
 
   // Has the backend finished loading? The backend is loaded once Init has
   // completed.

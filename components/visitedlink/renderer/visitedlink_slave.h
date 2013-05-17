@@ -10,7 +10,7 @@
 #include "components/visitedlink/common/visitedlink_common.h"
 #include "content/public/renderer/render_process_observer.h"
 
-namespace components {
+namespace visitedlink {
 
 // Reads the link coloring database provided by the master. There can be any
 // number of slaves reading the same database.
@@ -27,6 +27,7 @@ class VisitedLinkSlave : public VisitedLinkCommon,
   void OnUpdateVisitedLinks(base::SharedMemoryHandle table);
   void OnAddVisitedLinks(const VisitedLinkSlave::Fingerprints& fingerprints);
   void OnResetVisitedLinks();
+
  private:
   void FreeTable();
 
@@ -36,6 +37,6 @@ class VisitedLinkSlave : public VisitedLinkCommon,
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkSlave);
 };
 
-}  // namespace components
+}  // namespace visitedlink
 
 #endif  // COMPONENTS_VISITEDLINK_RENDERER_VISITEDLINK_SLAVE_H_

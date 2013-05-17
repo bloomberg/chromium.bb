@@ -67,7 +67,7 @@ void AwBrowserContext::InitializeBeforeThreadCreation() {
 
 void AwBrowserContext::PreMainMessageLoopRun() {
   visitedlink_master_.reset(
-      new components::VisitedLinkMaster(this, this, false));
+      new visitedlink::VisitedLinkMaster(this, this, false));
   visitedlink_master_->Init();
 }
 
