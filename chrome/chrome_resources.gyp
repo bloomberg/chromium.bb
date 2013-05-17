@@ -311,6 +311,7 @@
         'chrome_strings',
         'platform_locale_settings',
         'theme_resources',
+        '<(DEPTH)/components/component_resources.gyp:component_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
@@ -346,7 +347,6 @@
           'dependencies': [
             # TODO(zork): Protect this with if use_aura==1
             '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
-            '<(DEPTH)/components/component_resources.gyp:component_resources',
             '<(DEPTH)/content/content_resources.gyp:content_resources',
             '<(DEPTH)/device/device_bluetooth_strings.gyp:device_bluetooth_strings',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
