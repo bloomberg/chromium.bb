@@ -20,6 +20,7 @@ enum MetricsNameIndex {
   UMA_TIME_TO_BE_READY,
   UMA_TIME_TO_LOAD,
   UMA_TIME_TO_TRANSLATE,
+  UMA_USER_ACTION_DURATION,
   UMA_MAX,
 };
 
@@ -61,6 +62,9 @@ void ReportTimeToLoad(double time_in_msec);
 
 // Called when a page translation is finished.
 void ReportTimeToTranslate(double time_in_msec);
+
+// Called when a translation is triggered.
+void ReportUserActionDuration(base::TimeTicks begin, base::TimeTicks end);
 
 #if defined(ENABLE_LANGUAGE_DETECTION)
 

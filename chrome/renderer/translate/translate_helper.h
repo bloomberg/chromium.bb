@@ -151,6 +151,10 @@ class TranslateHelper : public content::RenderViewObserver {
   std::string source_lang_;
   std::string target_lang_;
 
+  // Time when a page langauge is determined. This is used to know a duration
+  // time from showing infobar to requesting translation.
+  base::TimeTicks language_determined_time_;
+
   // Method factory used to make calls to TranslatePageImpl.
   base::WeakPtrFactory<TranslateHelper> weak_method_factory_;
 

@@ -197,6 +197,17 @@ TEST(TranslateHelperMetricsTest, ReportTimeToTranslate) {
   recorder.CheckTotalCount(1);
 }
 
+TEST(TranslateHelperMetricsTest, ReportUserActionDuration) {
+  MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
+      TranslateHelperMetrics::UMA_USER_ACTION_DURATION));
+  recorder.CheckTotalCount(0);
+  TimeTicks begin = TimeTicks::Now();
+  TimeTicks end = begin + base::TimeDelta::FromSeconds(3776);
+  TranslateHelperMetrics::ReportUserActionDuration(begin, end);
+  recorder.CheckValueInLogs(3776000.0);
+  recorder.CheckTotalCount(1);
+}
+
 #if defined(ENABLE_LANGUAGE_DETECTION)
 
 TEST(TranslateHelperMetricsTest, ReportLanguageDetectionTime) {
@@ -204,7 +215,7 @@ TEST(TranslateHelperMetricsTest, ReportLanguageDetectionTime) {
       TranslateHelperMetrics::UMA_LANGUAGE_DETECTION));
   recorder.CheckTotalCount(0);
   TimeTicks begin = TimeTicks::Now();
-  TimeTicks end = begin + base::TimeDelta::FromMicroseconds(9009.0);
+  TimeTicks end = begin + base::TimeDelta::FromMicroseconds(9009);
   TranslateHelperMetrics::ReportLanguageDetectionTime(begin, end);
   recorder.CheckValueInLogs(9.009);
   recorder.CheckTotalCount(1);

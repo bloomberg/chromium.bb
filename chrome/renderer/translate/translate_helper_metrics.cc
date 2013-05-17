@@ -17,6 +17,7 @@ const char kTranslateLanguageVerification[] = "Translate.LanguageVerification";
 const char kTranslateTimeToBeReady[] = "Translate.TimeToBeReady";
 const char kTranslateTimeToLoad[] = "Translate.TimeToLoad";
 const char kTranslateTimeToTranslate[] = "Translate.TimeToTranslate";
+const char kTranslateUserActionDuration[] = "Translate.UserActionDuration";
 
 struct MetricsEntry {
   TranslateHelperMetrics::MetricsNameIndex index;
@@ -37,6 +38,8 @@ const MetricsEntry kMetricsEntries[] = {
     kTranslateTimeToLoad },
   { TranslateHelperMetrics::UMA_TIME_TO_TRANSLATE,
     kTranslateTimeToTranslate },
+  { TranslateHelperMetrics::UMA_USER_ACTION_DURATION,
+    kTranslateUserActionDuration },
 };
 
 COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateHelperMetrics::UMA_MAX,
@@ -85,6 +88,10 @@ void ReportTimeToTranslate(double time_in_msec) {
   UMA_HISTOGRAM_MEDIUM_TIMES(
       kTranslateTimeToTranslate,
       base::TimeDelta::FromMicroseconds(time_in_msec * 1000.0));
+}
+
+void ReportUserActionDuration(base::TimeTicks begin, base::TimeTicks end) {
+  UMA_HISTOGRAM_LONG_TIMES(kTranslateUserActionDuration, end - begin);
 }
 
 #if defined(ENABLE_LANGUAGE_DETECTION)

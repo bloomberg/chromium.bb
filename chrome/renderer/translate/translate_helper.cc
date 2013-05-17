@@ -126,6 +126,8 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   if (language.empty())
     return;
 
+  language_determined_time_ = base::TimeTicks::Now();
+
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
       routing_id(), language, IsPageTranslatable(&document)));
 }
@@ -437,6 +439,9 @@ void TranslateHelper::OnTranslatePage(int page_id,
   source_lang_ = (source_lang != chrome::kUnknownLanguageCode) ?
                   source_lang : kAutoDetectionLanguage;
   target_lang_ = target_lang;
+
+  TranslateHelperMetrics::ReportUserActionDuration(language_determined_time_,
+                                                   base::TimeTicks::Now());
 
   if (!IsTranslateLibAvailable()) {
     // Evaluate the script to add the translation related method to the global
