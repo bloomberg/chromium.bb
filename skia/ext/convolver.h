@@ -20,10 +20,6 @@
 #define SIMD_PADDING 8  // 8 * int16
 #endif
 
-#if defined (ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_MIPSEL) && \
-defined(__mips_dsp) && (__mips_dsp_rev >= 2)
-#define SIMD_MIPS_DSPR2 1
-#endif
 // avoid confusion with Mac OS X's math library (Carbon)
 #if defined(__APPLE__)
 #undef FloatToFixed

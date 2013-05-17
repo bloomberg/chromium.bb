@@ -20,8 +20,7 @@ void Convolve4RowsHorizontally_SSE2(const unsigned char* src_data[4],
                                     unsigned char* out_row[4]);
 void ConvolveHorizontally_SSE2(const unsigned char* src_data,
                                const ConvolutionFilter1D& filter,
-                               unsigned char* out_row,
-                               bool has_alpha);
+                               unsigned char* out_row);
 }  // namespace skia
 
 #endif  // SKIA_EXT_CONVOLVER_SSE2_H_
