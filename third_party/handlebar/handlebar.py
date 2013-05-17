@@ -64,12 +64,12 @@ class RenderResult(object):
     self.text = text;
     self.errors = errors
 
-  def __str__(self):
-    return self.text
-
   def __repr__(self):
     return '%s(text=%s, errors=%s)' % (
         self.__class__.__name__, self.text, self.errors)
+
+  def __str__(self):
+    return repr(self)
 
 class _StringBuilder(object):
   '''Efficiently builds strings.
@@ -90,11 +90,14 @@ class _StringBuilder(object):
     self._Collapse()
     return self._buf[0]
 
-  def __str__(self):
-    return self.ToString()
-
   def _Collapse(self):
     self._buf = [u''.join(self._buf)]
+
+  def __repr__(self):
+    return self.ToString()
+
+  def __str__(self):
+    return repr(self)
 
 class _Contexts(object):
   '''Tracks a stack of context objects, providing efficient key/value retrieval.
@@ -126,6 +129,12 @@ class _Contexts(object):
       if value is not None:
         self._found[key] = value
       return value
+
+    def __repr__(self):
+      return 'Node(value=%s, found=%s)' % (self._value, self._found)
+
+    def __str__(self):
+      return repr(self)
 
   def __init__(self, globals_):
     '''Initializes with the initial global contexts, listed in order from most
@@ -200,7 +209,7 @@ class _Contexts(object):
     if not found_node_list:
       return None
 
-    return found_node_list[-1]._value[key]
+    return found_node_list[-1]._value.get(key)
 
 class _Stack(object):
   class Entry(object):
@@ -276,15 +285,21 @@ class _Identifier(object):
                                                      entry.name))
     return message.ToString()
 
+  def __repr__(self):
+    return self.name
+
   def __str__(self):
-    raise ValueError()
+    return repr(self)
 
 class _Line(object):
   def __init__(self, number):
     self.number = number
 
-  def __str__(self):
+  def __repr__(self):
     return str(self.number)
+
+  def __str__(self):
+    return repr(self)
 
 class _LeafNode(object):
   def __init__(self, start_line, end_line):
@@ -336,6 +351,12 @@ class _DecoratorNode(object):
 
   def GetEndLine(self):
     return self._content.GetEndLine()
+
+  def __repr__(self):
+    return str(self._content)
+
+    def __str__(self):
+      return repr(self)
 
 class _InlineNode(_DecoratorNode):
   def __init__(self, content):
@@ -404,6 +425,12 @@ class _NodeCollection(object):
   def GetEndLine(self):
     return self._nodes[-1].GetEndLine()
 
+  def __repr__(self):
+    return ''.join(str(node) for node in self._nodes)
+
+  def __str__(self):
+    return repr(self)
+
 class _StringNode(object):
   ''' Just a string.
   '''
@@ -447,6 +474,12 @@ class _StringNode(object):
   def GetEndLine(self):
     return self._end_line
 
+  def __repr__(self):
+    return self._string
+
+  def __str__(self):
+    return repr(self)
+
 class _EscapedVariableNode(_LeafNode):
   ''' {{foo}}
   '''
@@ -464,6 +497,12 @@ class _EscapedVariableNode(_LeafNode):
                                    .replace('<', '&lt;')
                                    .replace('>', '&gt;'))
 
+  def __repr__(self):
+    return '{{%s}}' % self._id
+
+  def __str__(self):
+    return repr(self)
+
 class _UnescapedVariableNode(_LeafNode):
   ''' {{{foo}}}
   '''
@@ -479,6 +518,12 @@ class _UnescapedVariableNode(_LeafNode):
     string = value if isinstance(value, basestring) else str(value)
     render_state.text.Append(string)
 
+  def __repr__(self):
+    return '{{{%s}}}' % self._id
+
+  def __str__(self):
+    return repr(self)
+
 class _CommentNode(_LeafNode):
   '''{{- This is a comment -}}
   An empty placeholder node for correct indented rendering behaviour.
@@ -488,6 +533,12 @@ class _CommentNode(_LeafNode):
 
   def Render(self, render_state):
     pass
+
+  def __repr__(self):
+    return '<comment>'
+
+  def __str__(self):
+    return repr(self)
 
 class _SectionNode(_DecoratorNode):
   ''' {{#foo}} ... {{/}}
@@ -512,6 +563,13 @@ class _SectionNode(_DecoratorNode):
     else:
       render_state.AddResolutionError(self._id)
 
+  def __repr__(self):
+    return '{{#%s}}%s{{/%s}}' % (
+        self._id, _DecoratorNode.__repr__(self), self._id)
+
+  def __str__(self):
+    return repr(self)
+
 class _VertedSectionNode(_DecoratorNode):
   ''' {{?foo}} ... {{/}}
   '''
@@ -525,6 +583,13 @@ class _VertedSectionNode(_DecoratorNode):
       render_state.contexts.Push(value)
       self._content.Render(render_state)
       render_state.contexts.Pop()
+
+  def __repr__(self):
+    return '{{?%s}}%s{{/%s}}' % (
+        self._id, _DecoratorNode.__repr__(self), self._id)
+
+  def __str__(self):
+    return repr(self)
 
   @staticmethod
   def ShouldRender(value):
@@ -548,6 +613,13 @@ class _InvertedSectionNode(_DecoratorNode):
     if not _VertedSectionNode.ShouldRender(value):
       self._content.Render(render_state)
 
+  def __repr__(self):
+    return '{{^%s}}%s{{/%s}}' % (
+        self._id, _DecoratorNode.__repr__(self), self._id)
+
+  def __str__(self):
+    return repr(self)
+
 class _JsonNode(_LeafNode):
   ''' {{*foo}}
   '''
@@ -561,6 +633,12 @@ class _JsonNode(_LeafNode):
       render_state.AddResolutionError(self._id)
       return
     render_state.text.Append(json.dumps(value, separators=(',',':')))
+
+  def __repr__(self):
+    return '{{*%s}}' % self._id
+
+  def __str__(self):
+    return repr(self)
 
 class _PartialNode(_LeafNode):
   ''' {{+foo}}
@@ -614,6 +692,12 @@ class _PartialNode(_LeafNode):
   def SetLocalContext(self, id_):
     self._local_context_id = id_
 
+  def __repr__(self):
+    return '{{+%s}}' % self._id
+
+  def __str__(self):
+    return repr(self)
+
 _TOKENS = {}
 
 class _Token(object):
@@ -632,9 +716,6 @@ class _Token(object):
       if self.clazz == _InvertedSectionNode:
         return _VertedSectionNode
       raise ValueError('%s cannot have an else clause.' % self.clazz)
-
-    def __str__(self):
-      return '%s(%s)' % (self.name, self.text)
 
   OPEN_START_SECTION          = Data('OPEN_START_SECTION'         , '{{#', _SectionNode)
   OPEN_START_VERTED_SECTION   = Data('OPEN_START_VERTED_SECTION'  , '{{?', _VertedSectionNode)
@@ -921,3 +1002,9 @@ class Handlebar(object):
 
   def render(self, *contexts):
     return self.Render(*contexts)
+
+  def __repr__(self):
+    return str('%s(%s)' % (self.__class__.__name__, self._top_node))
+
+  def __str__(self):
+    return repr(self)

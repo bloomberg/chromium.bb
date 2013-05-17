@@ -4,7 +4,6 @@
 
 import logging
 import os
-import traceback
 
 from branch_utility import BranchUtility
 import compiled_file_system as compiled_fs
@@ -151,5 +150,4 @@ class TemplateDataSource(object):
       return self._cache.GetFromFile(
           '/'.join((base_path, FormatKey(template_name))))
     except FileNotFoundError as e:
-      logging.warning(traceback.format_exc())
       return None
