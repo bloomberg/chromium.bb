@@ -44,7 +44,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "extensions/common/error_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

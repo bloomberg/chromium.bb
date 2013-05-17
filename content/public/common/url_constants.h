@@ -9,8 +9,6 @@
 
 // Contains constants for known URLs and portions thereof.
 
-class GURL;
-
 // TODO(jam): rename this to content.
 namespace chrome {
 
@@ -79,14 +77,6 @@ CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 
 // Special URL used to swap out a view being rendered by another process.
 extern const char kSwappedOutURL[];
-
-// Null terminated list of schemes that are savable. This function can be
-// invoked on any thread.
-CONTENT_EXPORT const char* const* GetSavableSchemes();
-
-// Returns true if the url has a scheme for WebUI.  See also
-// WebUIControllerFactory::UseWebUIForURL in the browser process.
-CONTENT_EXPORT bool HasWebUIScheme(const GURL& url);
 
 }  // namespace content
 

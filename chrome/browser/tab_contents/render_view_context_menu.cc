@@ -80,6 +80,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/ssl_status.h"
+#include "content/public/common/url_utils.h"
 #include "extensions/browser/view_type_utils.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -1341,7 +1342,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // different (like having "view-source:" on the front).
       NavigationEntry* active_entry =
           source_web_contents_->GetController().GetActiveEntry();
-      return download_util::IsSavableURL(
+      return content::IsSavableURL(
           (active_entry) ? active_entry->GetURL() : GURL());
     }
 

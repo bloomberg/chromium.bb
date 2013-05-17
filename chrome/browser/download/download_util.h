@@ -143,9 +143,6 @@ void DragDownload(const content::DownloadItem* download,
 // Get the localized status text for an in-progress download.
 string16 GetProgressStatusText(content::DownloadItem* download);
 
-// Check whether we can do the saving page operation for the specified URL.
-bool IsSavableURL(const GURL& url);
-
 // Record the total number of items and the number of in-progress items showing
 // in the shelf when it closes.  Set |autoclose| to true when the shelf is
 // closing itself, false when the user explicitly closed it.

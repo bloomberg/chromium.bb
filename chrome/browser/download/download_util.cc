@@ -459,15 +459,6 @@ string16 GetProgressStatusText(DownloadItem* download) {
                                     speed_text, amount, time_remaining);
 }
 
-bool IsSavableURL(const GURL& url) {
-  for (int i = 0; content::GetSavableSchemes()[i] != NULL; ++i) {
-    if (url.SchemeIs(content::GetSavableSchemes()[i])) {
-      return true;
-    }
-  }
-  return false;
-}
-
 void RecordShelfClose(int size, int in_progress, bool autoclose) {
   static const int kMaxShelfSize = 16;
   if (autoclose) {

@@ -11,7 +11,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/test/render_view_test.h"

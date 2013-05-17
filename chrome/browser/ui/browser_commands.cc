@@ -16,7 +16,6 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -71,6 +70,7 @@
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "net/base/escape.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/user_agent/user_agent_util.h"
@@ -247,7 +247,7 @@ int GetContentRestrictions(const Browser* browser) {
     NavigationEntry* active_entry =
         current_tab->GetController().GetActiveEntry();
     // See comment in UpdateCommandsForTabState about why we call url().
-    if (!download_util::IsSavableURL(
+    if (!content::IsSavableURL(
             active_entry ? active_entry->GetURL() : GURL()) ||
         current_tab->ShowingInterstitialPage())
       content_restrictions |= content::CONTENT_RESTRICTION_SAVE;
