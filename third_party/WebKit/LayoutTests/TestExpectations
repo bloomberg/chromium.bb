@@ -68,6 +68,10 @@ webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled [ Slow ]
 # Similar slowness, but always times out on some platforms.
 webkit.org/b/90488 [ Win Mac Debug ] inspector/styles/styles-computed-trace.html [ Timeout ]
 
+# Test became flaky on WinXP, already was on Win7 Debug and Mac10.7 debug
+crbug.com/241855 [ XP Release ] editing/selection/doubleclick-crash.html [ Pass Failure ]
+crbug.com/241855 [ Lion Win7 Debug ] editing/selection/doubleclick-crash.html [ Pass Failure ]
+
 # Chromium r163873 slowed down these tests
 webkit.org/b/100287 compositing/culling/filter-occlusion-blur-large.html [ Slow ]
 webkit.org/b/66989 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Slow ]
