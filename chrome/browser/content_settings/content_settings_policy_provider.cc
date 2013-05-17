@@ -337,9 +337,9 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
 
     scoped_ptr<base::Value> value(base::JSONReader::Read(pattern_filter_json,
         base::JSON_ALLOW_TRAILING_COMMAS));
-    if (!value.get()) {
+    if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
-                 " Invalid JSON format: " << pattern_filter_json;
+                 " Invalid JSON object: " << pattern_filter_json;
       continue;
     }
 
@@ -350,7 +350,8 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
     base::Value* cert_filter_ptr = NULL;
     bool filter_read = pattern_filter_pair->Remove("filter", &cert_filter_ptr);
     scoped_ptr<base::Value> cert_filter(cert_filter_ptr);
-    if (!pattern_read || !filter_read) {
+    if (!pattern_read || !filter_read ||
+        !cert_filter->IsType(base::Value::TYPE_DICTIONARY)) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
                  " Missing pattern or filter.";
       continue;
@@ -365,7 +366,6 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
       continue;
     }
 
-    DCHECK(cert_filter->IsType(base::Value::TYPE_DICTIONARY));
     value_map->SetValue(pattern,
                         ContentSettingsPattern::Wildcard(),
                         CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
