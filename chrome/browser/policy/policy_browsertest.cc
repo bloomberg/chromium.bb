@@ -1501,7 +1501,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
   EXPECT_EQ(url, enumerator2.urls()[0]);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
+// http://crbug.com/241691 PolicyTest.TranslateEnabled is failing regularly.
+IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
   // Verifies that translate can be forced enabled or disabled by policy.
 
   // Get the InfoBarService, and verify that there are no infobars on startup.
