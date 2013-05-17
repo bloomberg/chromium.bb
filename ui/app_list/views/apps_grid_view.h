@@ -147,7 +147,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   Index GetIndexOfView(const views::View* view) const;
   views::View* GetViewAtIndex(const Index& index) const;
 
-  void MoveSelected(int page_delta, int slot_delta);
+  void MoveSelected(int page_delta, int slot_x_delta, int slot_y_delta);
 
   void CalculateIdealBounds();
   void AnimateToIdealBounds();
