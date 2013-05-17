@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/usb/usb_device_resource.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/one_shot_event.h"
 
 class ExtensionInfoMap;
 class ExtensionProcessManager;
@@ -128,6 +129,9 @@ class ExtensionSystem : public ProfileKeyedService {
   virtual void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
       const extension_misc::UnloadedExtensionReason reason) {}
+
+  // Signaled when the extension system has completed its startup tasks.
+  virtual const OneShotEvent& ready() const = 0;
 };
 
 // The ExtensionSystem for ProfileImpl and OffTheRecordProfileImpl.
@@ -173,6 +177,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
       const std::string& extension_id,
       const extension_misc::UnloadedExtensionReason reason) OVERRIDE;
 
+  virtual const OneShotEvent& ready() const OVERRIDE;
+
  private:
   friend class ExtensionSystemSharedFactory;
 
@@ -202,6 +208,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     EventRouter* event_router();
     ExtensionWarningService* warning_service();
+    const OneShotEvent& ready() const { return ready_; }
 
    private:
     Profile* profile_;
@@ -227,6 +234,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_refptr<ExtensionInfoMap> extension_info_map_;
     scoped_ptr<ExtensionWarningService> extension_warning_service_;
     scoped_ptr<ExtensionWarningBadgeService> extension_warning_badge_service_;
+
+    OneShotEvent ready_;
   };
 
   Profile* profile_;

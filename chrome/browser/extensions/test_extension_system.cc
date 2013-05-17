@@ -97,7 +97,8 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
                                                 ExtensionPrefs::Get(profile_),
                                                 blacklist_.get(),
                                                 autoupdate_enabled,
-                                                true));
+                                                true,
+                                                &ready_));
   extension_service_->ClearProvidersForTesting();
   return extension_service_.get();
 }
@@ -167,6 +168,10 @@ ExtensionWarningService* TestExtensionSystem::warning_service() {
 
 Blacklist* TestExtensionSystem::blacklist() {
   return blacklist_.get();
+}
+
+const OneShotEvent& TestExtensionSystem::ready() const {
+  return ready_;
 }
 
 // static

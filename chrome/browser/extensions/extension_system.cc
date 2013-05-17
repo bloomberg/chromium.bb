@@ -137,7 +137,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       ExtensionPrefs::Get(profile_),
       blacklist_.get(),
       autoupdate_enabled,
-      extensions_enabled));
+      extensions_enabled,
+      &ready_));
 
   // These services must be registered before the ExtensionService tries to
   // load any extensions.
@@ -390,6 +391,10 @@ ExtensionWarningService* ExtensionSystemImpl::warning_service() {
 
 Blacklist* ExtensionSystemImpl::blacklist() {
   return shared_->blacklist();
+}
+
+const OneShotEvent& ExtensionSystemImpl::ready() const {
+  return shared_->ready();
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

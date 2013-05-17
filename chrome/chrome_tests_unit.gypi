@@ -481,6 +481,7 @@
         '../extensions/common/matcher/substring_set_matcher_unittest.cc',
         '../extensions/common/matcher/url_matcher_factory_unittest.cc',
         '../extensions/common/matcher/url_matcher_unittest.cc',
+        '../extensions/common/one_shot_event_unittest.cc',
         '../extensions/common/url_pattern_set_unittest.cc',
         '../extensions/common/url_pattern_unittest.cc',
         'app/breakpad_mac_stubs.mm',

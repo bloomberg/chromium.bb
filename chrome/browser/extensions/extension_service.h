@@ -38,6 +38,7 @@
 #include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/one_shot_event.h"
 #include "sync/api/string_ordinal.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/syncable_service.h"
@@ -199,7 +200,8 @@ class ExtensionService
                    extensions::ExtensionPrefs* extension_prefs,
                    extensions::Blacklist* blacklist,
                    bool autoupdate_enabled,
-                   bool extensions_enabled);
+                   bool extensions_enabled,
+                   extensions::OneShotEvent* ready);
 
   virtual ~ExtensionService();
 
@@ -704,7 +706,7 @@ class ExtensionService
   };
   typedef std::list<NaClModuleInfo> NaClModuleInfoList;
 
-  // Sets the ready_ flag and sends a notification to the listeners.
+  // Signals *ready_ and sends a notification to the listeners.
   void SetReadyAndNotifyListeners();
 
   // Return true if the sync type of |extension| matches |type|.
@@ -899,9 +901,8 @@ class ExtensionService
   // Used by dispatchers to limit API quota for individual extensions.
   ExtensionsQuotaService quota_service_;
 
-  // Record that Init() has been called, and chrome::EXTENSIONS_READY
-  // has fired.
-  bool ready_;
+  // Signaled when all extensions are loaded.
+  extensions::OneShotEvent* const ready_;
 
   // Our extension updater, if updates are turned on.
   scoped_ptr<extensions::ExtensionUpdater> updater_;

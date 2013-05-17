@@ -47,7 +47,7 @@ class BackgroundApplicationListModelTest : public ExtensionServiceTestBase {
  protected:
   void InitializeAndLoadEmptyExtensionService() {
     InitializeEmptyExtensionService();
-    service_->OnLoadedInstalledExtensions(); /* Sends EXTENSIONS_READY */
+    service_->Init(); /* Sends EXTENSIONS_READY */
   }
 
   bool IsBackgroundApp(const Extension& app) {

@@ -69,6 +69,7 @@ class TestExtensionSystem : public ExtensionSystem {
       OVERRIDE;
   virtual ExtensionWarningService* warning_service() OVERRIDE;
   virtual Blacklist* blacklist() OVERRIDE;
+  virtual const OneShotEvent& ready() const OVERRIDE;
 
   // Factory method for tests to use with SetTestingProfile.
   static ProfileKeyedService* Build(content::BrowserContext* profile);
@@ -86,6 +87,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;
   scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
+  OneShotEvent ready_;
 };
 
 }  // namespace extensions

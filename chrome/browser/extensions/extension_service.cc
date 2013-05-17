@@ -337,7 +337,8 @@ ExtensionService::ExtensionService(Profile* profile,
                                    extensions::ExtensionPrefs* extension_prefs,
                                    extensions::Blacklist* blacklist,
                                    bool autoupdate_enabled,
-                                   bool extensions_enabled)
+                                   bool extensions_enabled,
+                                   extensions::OneShotEvent* ready)
     : extensions::Blacklist::Observer(blacklist),
       profile_(profile),
       system_(extensions::ExtensionSystem::Get(profile)),
@@ -349,7 +350,7 @@ ExtensionService::ExtensionService(Profile* profile,
       extensions_enabled_(extensions_enabled),
       show_extensions_prompts_(true),
       install_updates_when_idle_(true),
-      ready_(false),
+      ready_(ready),
       toolbar_model_(this),
       menu_manager_(profile),
       event_routers_initialized_(false),
@@ -561,7 +562,7 @@ const Extension* ExtensionService::GetExtensionById(
 void ExtensionService::Init() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DCHECK(!ready_);  // Can't redo init.
+  DCHECK(!is_ready());  // Can't redo init.
   DCHECK_EQ(extensions_.size(), 0u);
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
@@ -584,12 +585,13 @@ void ExtensionService::Init() {
       // import process.
 
       extensions::InstalledLoader(this).LoadAllExtensions();
+      SetReadyAndNotifyListeners();
       RegisterForImportFinished();
     } else {
-      // In this case, LoadAllExtensions() calls OnLoadedInstalledExtensions(),
-      // which calls SetReadyAndNotifyListeners().
+      // In this case, LoadAllExtensions() calls OnLoadedInstalledExtensions().
       component_loader_->LoadAll();
       extensions::InstalledLoader(this).LoadAllExtensions();
+      SetReadyAndNotifyListeners();
 
       // TODO(erikkay) this should probably be deferred to a future point
       // rather than running immediately at startup.
@@ -1238,7 +1240,7 @@ extensions::ContentSettingsStore* ExtensionService::GetContentSettingsStore() {
 }
 
 bool ExtensionService::is_ready() {
-  return ready_;
+  return ready_->is_signaled();
 }
 
 base::SequencedTaskRunner* ExtensionService::GetFileTaskRunner() {
@@ -1962,6 +1964,8 @@ void ExtensionService::ReloadExtensions() {
   UnloadAllExtensions();
   component_loader_->LoadAll();
   extensions::InstalledLoader(this).LoadAllExtensions();
+  // Don't call SetReadyAndNotifyListeners() since tests call this multiple
+  // times.
 }
 
 void ExtensionService::GarbageCollectExtensions() {
@@ -2020,7 +2024,7 @@ void ExtensionService::SyncExtensionChangeIfNeeded(const Extension& extension) {
 }
 
 void ExtensionService::SetReadyAndNotifyListeners() {
-  ready_ = true;
+  ready_->Signal();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSIONS_READY,
       content::Source<Profile>(profile_),
@@ -2032,8 +2036,6 @@ void ExtensionService::OnLoadedInstalledExtensions() {
     updater_->Start();
 
   OnBlacklistUpdated();
-
-  SetReadyAndNotifyListeners();
 }
 
 void ExtensionService::AddExtension(const Extension* extension) {
