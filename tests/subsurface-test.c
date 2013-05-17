@@ -220,6 +220,28 @@ TEST(test_subsurface_nesting_parent)
 	client_roundtrip(client);
 }
 
+FAIL_TEST(test_subsurface_loop_paradox)
+{
+	struct client *client;
+	struct wl_surface *surface[3];
+	struct wl_subcompositor *subco;
+
+	client = client_create(100, 50, 123, 77);
+	assert(client);
+
+	subco = get_subcompositor(client);
+	surface[0] = wl_compositor_create_surface(client->wl_compositor);
+	surface[1] = wl_compositor_create_surface(client->wl_compositor);
+	surface[2] = wl_compositor_create_surface(client->wl_compositor);
+
+	/* create a nesting loop */
+	wl_subcompositor_get_subsurface(subco, surface[1], surface[0]);
+	wl_subcompositor_get_subsurface(subco, surface[2], surface[1]);
+	wl_subcompositor_get_subsurface(subco, surface[0], surface[2]);
+
+	client_roundtrip(client);
+}
+
 FAIL_TEST(test_subsurface_place_above_stranger)
 {
 	struct client *client;
