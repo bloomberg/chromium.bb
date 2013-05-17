@@ -61,19 +61,6 @@ struct NET_EXPORT WebSocketFrameHeader {
       masked(false),
       payload_length(0) {}
 
-  // Backwards-compatible constructor to avoid breaking Chromedriver.
-  // The above constructor should be used in preference, as there is no good
-  // default value for "opcode".
-  // TODO(ricea): Remove this once Chromedriver have stopped using it.
-  WebSocketFrameHeader()
-    : final(false),
-      reserved1(false),
-      reserved2(false),
-      reserved3(false),
-      opcode(kOpCodeDataUnused),
-      masked(false),
-      payload_length(0) {}
-
   // Create a clone of this object on the heap.
   scoped_ptr<WebSocketFrameHeader> Clone();
 
