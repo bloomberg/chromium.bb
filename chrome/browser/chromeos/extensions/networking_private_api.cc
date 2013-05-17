@@ -291,6 +291,7 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
       api::StartConnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  const bool ignore_error_state = true;
   chromeos::NetworkConnectionHandler::Get()->ConnectToNetwork(
       params->network_guid,  // service path
       base::Bind(
@@ -298,7 +299,8 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
           this),
       base::Bind(
           &NetworkingPrivateStartConnectFunction::ConnectionStartFailed,
-          this));
+          this),
+      ignore_error_state);
   return true;
 }
 

@@ -42,7 +42,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual base::HourClockType GetHourClockType() const OVERRIDE;
   virtual void ShowSettings() OVERRIDE;
   virtual void ShowDateSettings() OVERRIDE;
-  virtual void ShowNetworkSettings() OVERRIDE;
+  virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE;
   virtual void ShowBluetoothSettings() OVERRIDE;
   virtual void ShowDisplaySettings() OVERRIDE;
   virtual void ShowDriveSettings() OVERRIDE;
@@ -76,6 +76,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void GetAvailableNetworks(
       std::vector<NetworkIconInfo>* list) OVERRIDE;
   virtual void GetVirtualNetworks(std::vector<NetworkIconInfo>* list) OVERRIDE;
+  virtual void ConfigureNetwork(const std::string& network_id) OVERRIDE;
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE;
   virtual void GetNetworkAddresses(std::string* ip_address,
                                    std::string* ethernet_mac_address,
@@ -87,6 +88,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ToggleMobile() OVERRIDE;
   virtual void ToggleBluetooth() OVERRIDE;
   virtual bool IsBluetoothDiscovering() OVERRIDE;
+  virtual void ShowMobileSimDialog() OVERRIDE;
   virtual void ShowOtherWifi() OVERRIDE;
   virtual void ShowOtherVPN() OVERRIDE;
   virtual void ShowOtherCellular() OVERRIDE;

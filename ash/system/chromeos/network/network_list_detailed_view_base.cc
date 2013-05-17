@@ -322,7 +322,7 @@ void NetworkListDetailedViewBase::ButtonPressed(views::Button* sender,
   ResetInfoBubble();
   SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
   if (sender == settings_)
-    delegate->ShowNetworkSettings();
+    delegate->ShowNetworkSettings("");
   else if (sender == proxy_settings_)
     delegate->ChangeProxySettings();
   else

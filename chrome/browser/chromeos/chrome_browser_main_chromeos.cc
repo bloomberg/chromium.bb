@@ -379,9 +379,9 @@ class DBusServices {
     if (cros_initialized_ && CrosLibrary::Get())
       CrosLibrary::Shutdown();
 
+    NetworkConnectionHandler::Shutdown();
     ManagedNetworkConfigurationHandler::Shutdown();
     NetworkConfigurationHandler::Shutdown();
-    NetworkConnectionHandler::Shutdown();
     NetworkProfileHandler::Shutdown();
 
     NetworkStateHandler::Shutdown();

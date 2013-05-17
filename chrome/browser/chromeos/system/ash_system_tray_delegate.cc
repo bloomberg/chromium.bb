@@ -39,6 +39,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -46,6 +47,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
+#include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
@@ -59,7 +61,9 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
@@ -91,6 +95,8 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -101,6 +107,8 @@
 #include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "net/base/escape.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using drive::DriveSystemService;
@@ -506,11 +514,26 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     chrome::ShowSettingsSubPage(GetAppropriateBrowser(), sub_page);
   }
 
-  virtual void ShowNetworkSettings() OVERRIDE {
+  virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE {
+    if (!LoginState::Get()->IsUserLoggedIn())
+      return;
+
+    std::string page = chrome::kInternetOptionsSubPage;
+    const chromeos::NetworkState* network = service_path.empty() ? NULL :
+        chromeos::NetworkStateHandler::Get()->GetNetworkState(service_path);
+    if (network) {
+      std::string name(network->name());
+      if (name.empty() && network->type() == flimflam::kTypeEthernet)
+        name = l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+      page += base::StringPrintf(
+          "?servicePath=%s&networkType=%s&networkName=%s",
+          net::EscapeUrlEncodedData(service_path, true).c_str(),
+          net::EscapeUrlEncodedData(network->type(), true).c_str(),
+          net::EscapeUrlEncodedData(name, false).c_str());
+    }
     content::RecordAction(
         content::UserMetricsAction("OpenInternetOptionsDialog"));
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
-                                chrome::kInternetOptionsSubPage);
+    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), page);
   }
 
   virtual void ShowBluetoothSettings() OVERRIDE {
@@ -880,13 +903,41 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
           NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
   }
 
+  virtual void ConfigureNetwork(const std::string& network_id) OVERRIDE {
+    const chromeos::NetworkState* network = network_id.empty() ? NULL :
+        chromeos::NetworkStateHandler::Get()->GetNetworkState(network_id);
+    if (!network) {
+      LOG(ERROR) << "ConfigureNetwork: Network not found: " << network_id;
+      return;
+    }
+    if (network->type() == flimflam::kTypeWifi ||
+        network->type() == flimflam::kTypeWimax ||
+        network->type() == flimflam::kTypeVPN) {
+      // TODO(stevenjb): Replace with non-NetworkLibrary UI.
+      Network* cros_network = CrosLibrary::Get()->GetNetworkLibrary()->
+          FindNetworkByPath(network_id);
+      NetworkConfigView::Show(cros_network, GetNativeWindow());
+      return;
+    }
+    if (network->type() == flimflam::kTypeCellular &&
+        (network->activation_state() != flimflam::kActivationStateActivated ||
+         network->cellular_out_of_credits())) {
+      ash::Shell::GetInstance()->delegate()->OpenMobileSetup(network_id);
+      return;
+    }
+    // No special configure or setup for |network_id|, show the settings UI.
+    ShowNetworkSettings(network_id);
+  }
+
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
+    DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kUseNewNetworkConfigurationHandlers));
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     Network* network = crosnet->FindNetworkByPath(network_id);
     if (network)
       network_menu_->ConnectToNetwork(network);  // Shows settings if connected
     else
-      ShowNetworkSettings();
+      ShowNetworkSettings("");
   }
 
   virtual void RequestNetworkScan() OVERRIDE {
@@ -921,6 +972,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     bluetooth_adapter_->SetPowered(!bluetooth_adapter_->IsPowered(),
                                    base::Bind(&base::DoNothing),
                                    base::Bind(&BluetoothPowerFailure));
+  }
+
+  virtual void ShowMobileSimDialog() OVERRIDE {
+    SimDialogDelegate::ShowDialog(GetNativeWindow(),
+                                  SimDialogDelegate::SIM_DIALOG_UNLOCK);
   }
 
   virtual void ShowOtherWifi() OVERRIDE {
@@ -1494,7 +1550,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
             CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
         if (!cellular)
           return;
-        network_menu_->ShowTabbedNetworkSettings(cellular);
+        ShowNetworkSettings(cellular->service_path());
         return;
       }
     } else if (link_index == 1) {

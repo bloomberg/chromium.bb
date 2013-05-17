@@ -5,7 +5,9 @@
 #include "chromeos/network/network_connection_handler.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -26,12 +28,16 @@ namespace chromeos {
 
 namespace {
 
-void InvokeErrorCallback(
-    const std::string& service_path,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& error_name) {
-  network_handler::ShillErrorCallbackFunction(
-      service_path, error_callback, error_name, "Connect Error");
+void InvokeErrorCallback(const std::string& service_path,
+                         const network_handler::ErrorCallback& error_callback,
+                         const std::string& error_name) {
+  std::string error_msg = "Connect Error: " + error_name;
+  NET_LOG_ERROR(error_msg, service_path);
+  if (error_callback.is_null())
+    return;
+  scoped_ptr<base::DictionaryValue> error_data(
+      network_handler::CreateErrorData(service_path, error_name, error_msg));
+  error_callback.Run(error_name, error_data.Pass());
 }
 
 bool NetworkMayNeedCredentials(const NetworkState* network) {
@@ -142,6 +148,11 @@ NetworkConnectionHandler* NetworkConnectionHandler::Get() {
 }
 
 NetworkConnectionHandler::NetworkConnectionHandler() {
+  const char* new_handlers_enabled =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kUseNewNetworkConfigurationHandlers) ?
+      "enabled" : "disabled";
+  NET_LOG_EVENT("NewNetworkConfigurationHandlers", new_handlers_enabled);
 }
 
 NetworkConnectionHandler::~NetworkConnectionHandler() {
@@ -150,7 +161,8 @@ NetworkConnectionHandler::~NetworkConnectionHandler() {
 void NetworkConnectionHandler::ConnectToNetwork(
     const std::string& service_path,
     const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback) {
+    const network_handler::ErrorCallback& error_callback,
+    bool ignore_error_state) {
   const NetworkState* network =
       NetworkStateHandler::Get()->GetNetworkState(service_path);
   if (!network) {
@@ -166,13 +178,31 @@ void NetworkConnectionHandler::ConnectToNetwork(
     InvokeErrorCallback(service_path, error_callback, kErrorConnecting);
     return;
   }
-  if (network->passphrase_required()) {
-    InvokeErrorCallback(service_path, error_callback, kErrorPassphraseRequired);
-    return;
-  }
   if (NetworkRequiresActivation(network)) {
     InvokeErrorCallback(service_path, error_callback, kErrorActivationRequired);
     return;
+  }
+  if (!ignore_error_state) {
+    if (network->passphrase_required()) {
+      InvokeErrorCallback(service_path, error_callback,
+                          kErrorPassphraseRequired);
+      return;
+    }
+    if (network->error() == flimflam::kErrorConnectFailed) {
+      InvokeErrorCallback(service_path, error_callback,
+                          kErrorPassphraseRequired);
+      return;
+    }
+    if (network->error() == flimflam::kErrorBadPassphrase) {
+      InvokeErrorCallback(service_path, error_callback,
+                          kErrorPassphraseRequired);
+      return;
+    }
+    if (network->HasAuthenticationError()) {
+      InvokeErrorCallback(service_path, error_callback,
+                          kErrorConfigurationRequired);
+      return;
+    }
   }
 
   // All synchronous checks passed, add |service_path| to connecting list.
@@ -289,7 +319,7 @@ void NetworkConnectionHandler::HandleShillSuccess(
   // point (or maybe call it twice, once indicating in-progress, then success
   // or failure).
   pending_requests_.erase(service_path);
-  NET_LOG_EVENT("Connected", service_path);
+  NET_LOG_EVENT("Connect Request Sent", service_path);
   success_callback.Run();
 }
 

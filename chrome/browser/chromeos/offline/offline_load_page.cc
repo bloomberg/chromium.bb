@@ -171,7 +171,7 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
   }
   // TODO(oshima): record action for metrics.
   if (command == "open_network_settings") {
-    ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings();
+    ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings("");
   } else {
     LOG(WARNING) << "Unknown command:" << cmd;
   }

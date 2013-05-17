@@ -237,7 +237,7 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
   } else if (sender == button_mobile_) {
     ToggleMobile();
   } else if (sender == settings_) {
-    delegate->ShowNetworkSettings();
+    delegate->ShowNetworkSettings("");
   } else if (sender == proxy_settings_) {
     delegate->ChangeProxySettings();
   } else if (sender == other_mobile_) {
@@ -266,8 +266,18 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
 
   std::map<views::View*, std::string>::iterator found =
       network_map_.find(sender);
-  if (found != network_map_.end())
-    ConnectToNetwork(found->second);
+  if (found != network_map_.end()) {
+    const std::string& service_path = found->second;
+    const NetworkState* network =
+        NetworkStateHandler::Get()->GetNetworkState(service_path);
+    if (!network ||
+        network->IsConnectedState() || network->IsConnectingState()) {
+      Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
+          service_path);
+    } else {
+      ConnectToNetwork(service_path);
+    }
+  }
 }
 
 // Create UI components.
@@ -730,7 +740,6 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
         handler->FormattedHardwareAddressForType(flimflam::kTypeVPN);
   }
 
-  // GetNetworkAddresses returns empty strings if no information is available.
   if (!ip_address.empty()) {
     container->AddChildView(CreateInfoBubbleLine(bundle.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_IP), ip_address));
@@ -766,11 +775,13 @@ void NetworkStateListDetailedView::ConnectToNetwork(
     return;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
+    const bool ignore_error_state = false;
     NetworkConnectionHandler::Get()->ConnectToNetwork(
         service_path,
         base::Bind(&base::DoNothing),
         base::Bind(&NetworkStateListDetailedView::OnConnectFailed,
-                   AsWeakPtr(), service_path));
+                   AsWeakPtr(), service_path),
+        ignore_error_state);
   } else {
     Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
         service_path);
@@ -781,12 +792,21 @@ void NetworkStateListDetailedView::OnConnectFailed(
     const std::string& service_path,
     const std::string& error_name,
     scoped_ptr<base::DictionaryValue> error_data) {
-  VLOG(1) << "ConnectFailed: " << error_name;
-  // This will show the settings UI for a connected/ing network or a connect
-  // dialog for unconfigured networks.
-  // TODO(stevenjb): Change the API to explicitly show network settings or
-  // connect dialog (i.e. explicitly handle different error types).
-  Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
+  if (error_name == NetworkConnectionHandler::kErrorNotFound)
+    return;
+  if (error_name == NetworkConnectionHandler::kErrorPassphraseRequired) {
+    // TODO(stevenjb): Add inline UI to handle passphrase entry here.
+    Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
+        service_path);
+    return;
+  }
+  if (error_name == NetworkConnectionHandler::kErrorCertificateRequired ||
+      error_name == NetworkConnectionHandler::kErrorConfigurationRequired) {
+    Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
+        service_path);
+    return;
+  }
+  Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
       service_path);
 }
 
@@ -816,9 +836,7 @@ void NetworkStateListDetailedView::ToggleMobile() {
       return;
     }
     if (!mobile->sim_lock_type().empty() || mobile->IsSimAbsent()) {
-      // TODO(stevenjb): Rename ToggleMobile() to ShowMobileSimDialog()
-      // when NetworkListDetailedView is deprecated. crbug.com/222540.
-      ash::Shell::GetInstance()->system_tray_delegate()->ToggleMobile();
+      ash::Shell::GetInstance()->system_tray_delegate()->ShowMobileSimDialog();
     } else {
       handler->SetTechnologyEnabled(
           NetworkStateHandler::kMatchTypeMobile, true,

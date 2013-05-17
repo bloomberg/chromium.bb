@@ -66,6 +66,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   bool IsConnectedState() const;
   bool IsConnectingState() const;
 
+  // Returns true if |error_| contains an authentication error.
+  bool HasAuthenticationError() const;
+
   // Helpers (used e.g. when a state is cached)
   static bool StateIsConnected(const std::string& connection_state);
   static bool StateIsConnecting(const std::string& connection_state);

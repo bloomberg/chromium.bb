@@ -44,5 +44,5 @@ void ShillErrorCallbackFunction(const std::string& path,
   error_callback.Run(error_name, error_data.Pass());
 }
 
-} // namespace network_handler
+}  // namespace network_handler
 }  // namespace chromeos

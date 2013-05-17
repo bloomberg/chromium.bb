@@ -355,53 +355,53 @@ void ShillServiceClientStub::SetDefaultProperties() {
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableStubEthernet)) {
-    AddService("stub_ethernet", "eth0",
+    AddService("eth1", "eth1",
                flimflam::kTypeEthernet,
                flimflam::kStateOnline,
                add_to_watchlist);
   }
 
-  AddService("stub_wifi1", "wifi1",
+  AddService("wifi1", "wifi1",
              flimflam::kTypeWifi,
              flimflam::kStateOnline,
              add_to_watchlist);
-  SetServiceProperty("stub_wifi1",
+  SetServiceProperty("wifi1",
                      flimflam::kSecurityProperty,
                      base::StringValue(flimflam::kSecurityWep));
 
-  AddService("stub_wifi2", "wifi2_PSK",
+  AddService("wifi2", "wifi2_PSK",
              flimflam::kTypeWifi,
              flimflam::kStateIdle,
              add_to_watchlist);
-  SetServiceProperty("stub_wifi2",
+  SetServiceProperty("wifi2",
                      flimflam::kSecurityProperty,
                      base::StringValue(flimflam::kSecurityPsk));
   base::FundamentalValue strength_value(80);
-  SetServiceProperty("stub_wifi2",
+  SetServiceProperty("wifi2",
                      flimflam::kSignalStrengthProperty,
                      strength_value);
 
-  AddService("stub_cellular1", "cellular1",
+  AddService("cellular1", "cellular1",
              flimflam::kTypeCellular,
              flimflam::kStateIdle,
              add_to_watchlist);
   base::StringValue technology_value(flimflam::kNetworkTechnologyGsm);
-  SetServiceProperty("stub_cellular1",
+  SetServiceProperty("cellular1",
                      flimflam::kNetworkTechnologyProperty,
                      technology_value);
-  SetServiceProperty("stub_cellular1",
+  SetServiceProperty("cellular1",
                      flimflam::kActivationStateProperty,
                      base::StringValue(flimflam::kActivationStateNotActivated));
-  SetServiceProperty("stub_cellular1",
+  SetServiceProperty("cellular1",
                      flimflam::kRoamingStateProperty,
                      base::StringValue(flimflam::kRoamingStateHome));
 
-  AddService("stub_vpn1", "vpn1",
+  AddService("vpn1", "vpn1",
              flimflam::kTypeVPN,
              flimflam::kStateOnline,
              add_to_watchlist);
 
-  AddService("stub_vpn2", "vpn2",
+  AddService("vpn2", "vpn2",
              flimflam::kTypeVPN,
              flimflam::kStateOffline,
              add_to_watchlist);

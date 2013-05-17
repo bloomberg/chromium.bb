@@ -589,6 +589,20 @@ int FindCurrentCarrierIndex(const base::ListValue* carriers,
   return -1;
 }
 
+chromeos::ConnectionType ParseNetworkTypeString(const std::string& type) {
+  if (type == flimflam::kTypeEthernet)
+    return chromeos::TYPE_ETHERNET;
+  if (type == flimflam::kTypeWifi)
+    return chromeos::TYPE_WIFI;
+  if (type == flimflam::kTypeWimax)
+    return chromeos::TYPE_WIMAX;
+  if (type == flimflam::kTypeCellular)
+    return chromeos::TYPE_CELLULAR;
+  if (type == flimflam::kTypeVPN)
+    return chromeos::TYPE_VPN;
+  return chromeos::TYPE_UNKNOWN;
+}
+
 }  // namespace
 
 namespace options {
@@ -1618,8 +1632,11 @@ void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
     return;
   }
 
-  chromeos::ConnectionType type =
-      (chromeos::ConnectionType) atoi(str_type.c_str());
+  // First try as a string, e.g. "wifi".
+  chromeos::ConnectionType type = ParseNetworkTypeString(str_type);
+  // Next try casting as an enum.
+  if (type == chromeos::TYPE_UNKNOWN)
+    type = (chromeos::ConnectionType) atoi(str_type.c_str());
 
   // Process commands that do not require an existing network.
   if (command == kTagAddConnection) {

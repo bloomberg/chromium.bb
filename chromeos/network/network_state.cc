@@ -188,6 +188,15 @@ bool NetworkState::IsConnectingState() const {
   return StateIsConnecting(connection_state_);
 }
 
+bool NetworkState::HasAuthenticationError() const {
+  return (error_ == flimflam::kErrorBadPassphrase ||
+          error_ == flimflam::kErrorBadWEPKey ||
+          error_ == flimflam::kErrorPppAuthFailed ||
+          error_ == shill::kErrorEapLocalTlsFailed ||
+          error_ == shill::kErrorEapRemoteTlsFailed ||
+          error_ == shill::kErrorEapAuthenticationFailed);
+}
+
 void NetworkState::UpdateName() {
   if (hex_ssid_.empty()) {
     // Validate name for UTF8.

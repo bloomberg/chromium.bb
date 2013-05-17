@@ -145,7 +145,8 @@ void TestSystemTrayDelegate::ShowSettings() {
 void TestSystemTrayDelegate::ShowDateSettings() {
 }
 
-void TestSystemTrayDelegate::ShowNetworkSettings() {
+void TestSystemTrayDelegate::ShowNetworkSettings(
+    const std::string& service_path) {
 }
 
 void TestSystemTrayDelegate::ShowBluetoothSettings() {
@@ -247,6 +248,9 @@ void TestSystemTrayDelegate::GetVirtualNetworks(
     std::vector<NetworkIconInfo>* list) {
 }
 
+void TestSystemTrayDelegate::ConfigureNetwork(const std::string& network_id) {
+}
+
 void TestSystemTrayDelegate::ConnectToNetwork(const std::string& network_id) {
 }
 
@@ -282,6 +286,9 @@ void TestSystemTrayDelegate::ToggleBluetooth() {
 
 bool TestSystemTrayDelegate::IsBluetoothDiscovering() {
   return false;
+}
+
+void TestSystemTrayDelegate::ShowMobileSimDialog() {
 }
 
 void TestSystemTrayDelegate::ShowOtherWifi() {

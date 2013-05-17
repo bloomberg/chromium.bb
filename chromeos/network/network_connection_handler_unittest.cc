@@ -66,12 +66,14 @@ class NetworkConnectionHandlerTest : public testing::Test {
   }
 
   void Connect(const std::string& service_path) {
+    const bool ignore_error_state = false;
     NetworkConnectionHandler::Get()->ConnectToNetwork(
         service_path,
         base::Bind(&NetworkConnectionHandlerTest::SuccessCallback,
                    base::Unretained(this)),
         base::Bind(&NetworkConnectionHandlerTest::ErrorCallback,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        ignore_error_state);
     message_loop_.RunUntilIdle();
   }
 

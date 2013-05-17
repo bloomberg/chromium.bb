@@ -165,8 +165,9 @@ class SystemTrayDelegate {
   // Shows the settings related to date, timezone etc.
   virtual void ShowDateSettings() = 0;
 
-  // Shows the settings related to network.
-  virtual void ShowNetworkSettings() = 0;
+  // Shows the settings related to network. If |service_path| is not empty,
+  // show the settings for that network.
+  virtual void ShowNetworkSettings(const std::string& service_path) = 0;
 
   // Shows the settings related to bluetooth.
   virtual void ShowBluetoothSettings() = 0;
@@ -264,7 +265,10 @@ class SystemTrayDelegate {
   // Returns the information about all virtual networks.
   virtual void GetVirtualNetworks(std::vector<NetworkIconInfo>* list) = 0;
 
-  // Connects to the network specified by the unique id.
+  // Shows UI to configure or activate the network specified by |network_id|.
+  virtual void ConfigureNetwork(const std::string& network_id) = 0;
+
+  // Sends a connect request for the network specified by |network_id|.
   virtual void ConnectToNetwork(const std::string& network_id) = 0;
 
   // Gets the network IP address, and the mac addresses for the ethernet and
@@ -290,6 +294,9 @@ class SystemTrayDelegate {
 
   // Toggles bluetooth.
   virtual void ToggleBluetooth() = 0;
+
+  // Shows UI to unlock a mobile sim.
+  virtual void ShowMobileSimDialog() = 0;
 
   // Shows UI to connect to an unlisted wifi network.
   virtual void ShowOtherWifi() = 0;

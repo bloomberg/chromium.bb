@@ -47,6 +47,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   static const char kErrorCertificateRequired[];
   static const char kErrorConfigurationRequired[];
   static const char kErrorShillError[];
+  static const char kErrorPreviousConnectFailed[];
 
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize();
@@ -69,9 +70,12 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   //  kErrorConfigurationRequired if additional configuration is required.
   //  kErrorShillError if a DBus or Shill error occurred.
   // |error_message| will contain an additional error string for debugging.
+  // If |ignore_error_state| is true, error state for the network is ignored
+  //  (e.g. for repeat attempts).
   void ConnectToNetwork(const std::string& service_path,
                         const base::Closure& success_callback,
-                        const network_handler::ErrorCallback& error_callback);
+                        const network_handler::ErrorCallback& error_callback,
+                        bool ignore_error_state);
 
   // DisconnectToNetwork() will send a Disconnect request to Shill.
   // On success, |success_callback| will be called.
