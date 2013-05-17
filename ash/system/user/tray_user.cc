@@ -127,7 +127,8 @@ class RoundedImageView : public views::View {
 
 class ClickableAvatar : public views::CustomButton {
  public:
-  explicit ClickableAvatar(views::ButtonListener* listener);
+  ClickableAvatar(views::ButtonListener* listener,
+                  ash::user::LoginStatus login);
   virtual ~ClickableAvatar();
 
  private:
@@ -230,14 +231,21 @@ void RoundedImageView::OnPaint(gfx::Canvas* canvas) {
                           path, paint);
 }
 
-ClickableAvatar::ClickableAvatar(views::ButtonListener* listener)
+ClickableAvatar::ClickableAvatar(views::ButtonListener* listener,
+                                 ash::user::LoginStatus login)
     : views::CustomButton(listener) {
   SetLayoutManager(new views::FillLayout());
   RoundedImageView* user_picture =
       new RoundedImageView(kProfileRoundedCornerRadius);
-  user_picture->SetImage(
-      ash::Shell::GetInstance()->system_tray_delegate()->GetUserImage(),
-      gfx::Size(kUserIconSize, kUserIconSize));
+  if (login == ash::user::LOGGED_IN_GUEST) {
+    user_picture->SetImage(*ui::ResourceBundle::GetSharedInstance().
+        GetImageNamed(IDR_AURA_UBER_TRAY_GUEST_ICON).ToImageSkia(),
+        gfx::Size(kUserIconSize, kUserIconSize));
+  } else {
+    user_picture->SetImage(
+        ash::Shell::GetInstance()->system_tray_delegate()->GetUserImage(),
+        gfx::Size(kUserIconSize, kUserIconSize));
+  }
   AddChildView(user_picture);
 }
 
@@ -437,12 +445,10 @@ UserView::~UserView() {}
 
 gfx::Size UserView::GetPreferredSize() {
   gfx::Size size = views::View::GetPreferredSize();
-  if (!user_card_) {
-    // Make sure the default user view item is at least as tall as the other
-    // items.
-    size.set_height(std::max(size.height(),
-                             kTrayPopupItemHeight + GetInsets().height()));
-  }
+  // Make sure the default user view item is at least as tall as the other
+  // items.
+  size.set_height(std::max(size.height(),
+                           kTrayPopupItemHeight + GetInsets().height()));
   return size;
 }
 
@@ -515,9 +521,6 @@ void UserView::AddLogoutButton(ash::user::LoginStatus login) {
 
 void UserView::AddUserCard(SystemTrayItem* owner,
                            ash::user::LoginStatus login) {
-  if (login == ash::user::LOGGED_IN_GUEST)
-    return;
-
   set_border(views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal,
                                               0, kTrayPopupPaddingHorizontal));
 
@@ -537,7 +540,7 @@ void UserView::AddUserCard(SystemTrayItem* owner,
     user_card_->AddChildView(details);
     return;
   }
-  profile_picture_ = new ClickableAvatar(this);
+  profile_picture_ = new ClickableAvatar(this, login);
   user_card_->AddChildView(profile_picture_);
 
   if (login == ash::user::LOGGED_IN_PUBLIC) {
@@ -551,22 +554,27 @@ void UserView::AddUserCard(SystemTrayItem* owner,
   views::View* details = new views::View;
   details->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, 0, kUserDetailsVerticalPadding, 0));
-  views::Label* username = new views::Label(delegate->GetUserDisplayName());
+
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  views::Label* username = new views::Label(
+      login == ash::user::LOGGED_IN_GUEST ?
+          bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_GUEST_LABEL) :
+          delegate->GetUserDisplayName());
   username->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   details->AddChildView(username);
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  if (login != ash::user::LOGGED_IN_GUEST) {
+    views::Label* additional = new views::Label();
+    additional->SetText(login == ash::user::LOGGED_IN_LOCALLY_MANAGED ?
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL) :
+        UTF8ToUTF16(delegate->GetUserEmail()));
 
-  views::Label* additional = new views::Label();
+    additional->SetFont(bundle.GetFont(ui::ResourceBundle::SmallFont));
+    additional->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    additional->SetEnabled(false);
+    details->AddChildView(additional);
+  }
 
-  additional->SetText(login == ash::user::LOGGED_IN_LOCALLY_MANAGED ?
-      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL) :
-      UTF8ToUTF16(delegate->GetUserEmail()));
-
-  additional->SetFont(bundle.GetFont(ui::ResourceBundle::SmallFont));
-  additional->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  additional->SetEnabled(false);
-  details->AddChildView(additional);
   user_card_->AddChildView(details);
 }
 
@@ -637,7 +645,7 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
       need_label = true;
       break;
     case user::LOGGED_IN_GUEST:
-      need_label = true;
+      need_avatar = true;
       break;
     case user::LOGGED_IN_RETAIL_MODE:
     case user::LOGGED_IN_KIOSK_APP:
@@ -667,14 +675,18 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
   if (status == user::LOGGED_IN_LOCALLY_MANAGED) {
     label_->SetText(
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL));
-  } else if (status == user::LOGGED_IN_GUEST) {
-    label_->SetText(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
   }
 
   if (avatar_) {
-    avatar_->SetImage(
-        ash::Shell::GetInstance()->system_tray_delegate()->GetUserImage(),
-        gfx::Size(kUserIconSize, kUserIconSize));
+    if (status == user::LOGGED_IN_GUEST) {
+        avatar_->SetImage(*ui::ResourceBundle::GetSharedInstance().
+            GetImageNamed(IDR_AURA_UBER_TRAY_GUEST_ICON).ToImageSkia(),
+            gfx::Size(kUserIconSize, kUserIconSize));
+    } else {
+      avatar_->SetImage(
+          ash::Shell::GetInstance()->system_tray_delegate()->GetUserImage(),
+          gfx::Size(kUserIconSize, kUserIconSize));
+    }
   }
 }
 
