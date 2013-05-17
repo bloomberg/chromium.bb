@@ -150,6 +150,31 @@ chrome.test.runTests([
         }));
       }));
     }));
-  }
+  },
+
+  function testCreatePopupAndMoveTab() {
+    // An existing tab can be moved into a created empty popup.
+    chrome.tabs.create({url: 'about:blank'}, pass(function(tab) {
+      chrome.windows.create({type: 'popup', tabId: tab.id},
+          pass(function(window) {
+        assertEq(window.tabs.length, 1);
+        chrome.tabs.get(tab.id, pass(function(updatedTabInfo) {
+          assertEq(window.id, updatedTabInfo.windowId);
+        }));
+      }));
+    }));
+
+    // An existing tab cannot be moved into a created non-empty popup.
+    chrome.tabs.create({url: 'about:blank'}, pass(function(tab) {
+      chrome.windows.create({type: 'popup', url: 'about:blank', tabId: tab.id},
+          pass(function(window) {
+        assertEq(window.tabs.length, 1);
+        chrome.tabs.get(tab.id, pass(function(updatedTabInfo) {
+          assertEq(tab.windowId, updatedTabInfo.windowId);
+          assertTrue(window.id != updatedTabInfo.windowId);
+        }));
+      }));
+    }));
+  },
 
 ]);

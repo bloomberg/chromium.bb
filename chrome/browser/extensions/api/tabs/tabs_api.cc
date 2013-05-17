@@ -395,7 +395,8 @@ bool WindowsCreateFunction::ShouldOpenIncognitoWindow(
 bool WindowsCreateFunction::RunImpl() {
   DictionaryValue* args = NULL;
   std::vector<GURL> urls;
-  WebContents* contents = NULL;
+  TabStripModel* source_tab_strip = NULL;
+  int tab_index = -1;
 
   if (HasOptionalArgument(0))
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
@@ -447,19 +448,12 @@ bool WindowsCreateFunction::RunImpl() {
     if (args->HasKey(keys::kTabIdKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTabIdKey, &tab_id));
 
-      // Find the tab and detach it from the original window.
-      TabStripModel* source_tab_strip = NULL;
-      int tab_index = -1;
+      // Find the tab. |source_tab_strip| and |tab_index| will later be used to
+      // move the tab into the created window.
       if (!GetTabById(tab_id, profile(), include_incognito(),
                       NULL, &source_tab_strip,
                       NULL, &tab_index, &error_))
         return false;
-      contents = source_tab_strip->DetachWebContentsAt(tab_index);
-      if (!contents) {
-        error_ = ErrorUtils::FormatErrorMessage(
-            keys::kTabNotFoundError, base::IntToString(tab_id));
-        return false;
-      }
     }
   }
 
@@ -647,12 +641,23 @@ bool WindowsCreateFunction::RunImpl() {
       TabHelper::FromWebContents(tab)->SetExtensionAppIconById(extension_id);
     }
   }
-  if (contents) {
-    TabStripModel* target_tab_strip = new_window->tab_strip_model();
-    target_tab_strip->InsertWebContentsAt(urls.size(), contents,
-                                          TabStripModel::ADD_NONE);
-  } else if (urls.empty() && window_type != Browser::TYPE_POPUP) {
-    // Don't create a new tab when it is intended to create an empty popup.
+
+  WebContents* contents = NULL;
+  // Move the tab into the created window only if it's an empty popup or it's
+  // a tabbed window.
+  if ((window_type == Browser::TYPE_POPUP && urls.empty()) ||
+      window_type == Browser::TYPE_TABBED) {
+    if (source_tab_strip)
+      contents = source_tab_strip->DetachWebContentsAt(tab_index);
+    if (contents) {
+      TabStripModel* target_tab_strip = new_window->tab_strip_model();
+      target_tab_strip->InsertWebContentsAt(urls.size(), contents,
+                                            TabStripModel::ADD_NONE);
+    }
+  }
+  // Create a new tab if the created window is still empty. Don't create a new
+  // tab when it is intended to create an empty popup.
+  if (!contents && urls.empty() && window_type != Browser::TYPE_POPUP) {
     chrome::NewTab(new_window);
   }
   chrome::SelectNumberedTab(new_window, 0);
