@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/time.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/browser/sync/sync_prefs.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "sync/internal_api/public/base/model_type.h"
 
@@ -176,6 +177,9 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // Returns true if sync setup has been completed.
   jboolean HasSyncSetupCompleted(JNIEnv* env, jobject obj);
 
+  // Returns true if sync startup is currently suppressed.
+  jboolean IsStartSuppressed(JNIEnv* env, jobject obj);
+
   // Returns true if sync is configured to "sync everything".
   jboolean HasKeepEverythingSynced(JNIEnv* env, jobject obj);
 
@@ -235,6 +239,10 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
 
   Profile* profile_;
   ProfileSyncService* sync_service_;
+  // The class that handles getting, setting, and persisting sync
+  // preferences.
+  scoped_ptr<browser_sync::SyncPrefs> sync_prefs_;
+
   // Java-side ProfileSyncService object.
   JavaObjectWeakGlobalRef weak_java_profile_sync_service_;
 

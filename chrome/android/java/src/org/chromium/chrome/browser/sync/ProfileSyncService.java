@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -495,6 +494,10 @@ public class ProfileSyncService {
         return nativeHasSyncSetupCompleted(mNativeProfileSyncServiceAndroid);
     }
 
+    public boolean isStartSuppressed() {
+        return nativeIsStartSuppressed(mNativeProfileSyncServiceAndroid);
+    }
+
     /**
      * Notifies sync whether sync setup is in progress - this tells sync whether it should start
      * syncing data types when it starts up, or if it should just stay in "configuration mode".
@@ -599,6 +602,7 @@ public class ProfileSyncService {
             int nativeProfileSyncServiceAndroid, boolean inProgress);
     private native void nativeSetSyncSetupCompleted(int nativeProfileSyncServiceAndroid);
     private native boolean nativeHasSyncSetupCompleted(int nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsStartSuppressed(int nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(int nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(int nativeProfileSyncServiceAndroid);
     private native String nativeGetAboutInfoForTest(int nativeProfileSyncServiceAndroid);

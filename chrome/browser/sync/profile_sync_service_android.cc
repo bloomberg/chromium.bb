@@ -59,6 +59,7 @@ enum {
 ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
     : profile_(NULL),
       sync_service_(NULL),
+      sync_prefs_(NULL),
       weak_java_profile_sync_service_(env, obj) {
   if (g_browser_process == NULL ||
       g_browser_process->profile_manager() == NULL) {
@@ -71,6 +72,8 @@ ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
     NOTREACHED() << "Sync Init: Profile not found.";
     return;
   }
+
+  sync_prefs_.reset(new browser_sync::SyncPrefs(profile_->GetPrefs()));
 
   sync_service_ =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
@@ -223,8 +226,7 @@ void ProfileSyncServiceAndroid::OAuth2TokenFetched(
 void ProfileSyncServiceAndroid::EnableSync(JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Don't need to do anything if we're already enabled.
-  browser_sync::SyncPrefs prefs(profile_->GetPrefs());
-  if (prefs.IsStartSuppressed())
+  if (sync_prefs_->IsStartSuppressed())
     sync_service_->UnsuppressAndStart();
   else
     DVLOG(2) << "Ignoring call to EnableSync() because sync is already enabled";
@@ -291,8 +293,7 @@ void ProfileSyncServiceAndroid::SignOutSync(JNIEnv* env, jobject) {
   SigninManagerFactory::GetForProfile(profile_)->SignOut();
 
   // Need to clear suppress start flag manually
-  browser_sync::SyncPrefs prefs(profile_->GetPrefs());
-  prefs.SetStartSuppressed(false);
+  sync_prefs_->SetStartSuppressed(false);
 }
 
 ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::QuerySyncStatusSummary(
@@ -308,8 +309,7 @@ jboolean ProfileSyncServiceAndroid::SetSyncSessionsId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   std::string machine_tag = ConvertJavaStringToUTF8(env, tag);
-  browser_sync::SyncPrefs prefs(profile_->GetPrefs());
-  prefs.SetSyncSessionsGUID(machine_tag);
+  sync_prefs_->SetSyncSessionsGUID(machine_tag);
   return true;
 }
 
@@ -547,6 +547,12 @@ jboolean ProfileSyncServiceAndroid::HasSyncSetupCompleted(
   return sync_service_->HasSyncSetupCompleted();
 }
 
+jboolean ProfileSyncServiceAndroid::IsStartSuppressed(
+    JNIEnv* env, jobject obj) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return sync_prefs_->IsStartSuppressed();
+}
+
 void ProfileSyncServiceAndroid::EnableEncryptEverything(
     JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -556,8 +562,7 @@ void ProfileSyncServiceAndroid::EnableEncryptEverything(
 jboolean ProfileSyncServiceAndroid::HasKeepEverythingSynced(
     JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  browser_sync::SyncPrefs prefs(profile_->GetPrefs());
-  return prefs.HasKeepEverythingSynced();
+  return sync_prefs_->HasKeepEverythingSynced();
 }
 
 jboolean ProfileSyncServiceAndroid::HasUnrecoverableError(
