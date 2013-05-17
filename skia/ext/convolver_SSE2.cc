@@ -16,7 +16,8 @@ namespace skia {
 // |src_data| and continues for the num_values() of the filter.
 void ConvolveHorizontally_SSE2(const unsigned char* src_data,
                                const ConvolutionFilter1D& filter,
-                               unsigned char* out_row) {
+                               unsigned char* out_row,
+                               bool has_alpha) {
   int num_values = filter.num_values();
 
   int filter_offset, filter_length;

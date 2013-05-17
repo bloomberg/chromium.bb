@@ -744,6 +744,7 @@
             '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
+            'ext/convolver_mips_dspr2.cc',
           ],
         }],
       ],
@@ -787,7 +788,7 @@
             ],
           },
         }],
-        [ 'target_arch != "arm"', {
+        [ 'target_arch != "arm" and target_arch !="mipsel"', {
           'sources': [
             '../third_party/skia/src/opts/SkBitmapProcState_opts_SSSE3.cpp',
           ],

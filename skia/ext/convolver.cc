@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "skia/ext/convolver.h"
 #include "skia/ext/convolver_SSE2.h"
+#include "skia/ext/convolver_mips_dspr2.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
@@ -347,7 +348,8 @@ typedef void (*Convolve4RowsHorizontally_pointer)(
 typedef void (*ConvolveHorizontally_pointer)(
     const unsigned char* src_data,
     const ConvolutionFilter1D& filter,
-    unsigned char* out_row);
+    unsigned char* out_row,
+    bool has_alpha);
 
 struct ConvolveProcs {
   // This is how many extra pixels may be read by the
@@ -367,6 +369,10 @@ void SetupSIMD(ConvolveProcs *procs) {
     procs->convolve_4rows_horizontally = &Convolve4RowsHorizontally_SSE2;
     procs->convolve_horizontally = &ConvolveHorizontally_SSE2;
   }
+#elif defined SIMD_MIPS_DSPR2
+    procs->extra_horizontal_reads = 3;
+    procs->convolve_vertically = &ConvolveVertically_mips_dspr2;
+    procs->convolve_horizontally = &ConvolveHorizontally_mips_dspr2;
 #endif
 }
 
@@ -464,7 +470,7 @@ void BGRAConvolve2D(const unsigned char* source_data,
             avoid_simd_rows) {
           simd.convolve_horizontally(
               &source_data[next_x_row * source_byte_row_stride],
-              filter_x, row_buffer.AdvanceRow());
+              filter_x, row_buffer.AdvanceRow(), source_has_alpha);
         } else {
           if (source_has_alpha) {
             ConvolveHorizontally<true>(
