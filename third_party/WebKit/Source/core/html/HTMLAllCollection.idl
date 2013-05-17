@@ -27,7 +27,7 @@
     CustomNamedGetter,
     CustomCall,
     MasqueradesAsUndefined,
-    GenerateIsReachable=ImplOwnerNodeRoot,
+    GenerateIsReachable=ownerNode,
     DependentLifetime,
 ] interface HTMLAllCollection {
     readonly attribute unsigned long length;

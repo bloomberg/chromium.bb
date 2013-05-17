@@ -20,7 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
-    GenerateIsReachable=ImplOwnerNodeRoot
+    GenerateIsReachable=ownerNode
 ] interface CSSStyleSheet : StyleSheet {
     readonly attribute CSSRule          ownerRule;
     readonly attribute CSSRuleList      cssRules;

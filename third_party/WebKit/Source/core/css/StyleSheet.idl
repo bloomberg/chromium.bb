@@ -21,7 +21,7 @@
 // Introduced in DOM Level 2:
 [
     CustomToV8,
-    GenerateIsReachable=ImplOwnerNodeRoot
+    GenerateIsReachable=ownerNode
 ] interface StyleSheet {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString        type;
              attribute boolean          disabled;

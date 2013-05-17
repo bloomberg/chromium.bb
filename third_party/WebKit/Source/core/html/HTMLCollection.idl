@@ -20,9 +20,8 @@
 
 [
     CustomToV8,
-    GenerateIsReachable=ImplOwnerNodeRoot,
+    GenerateIsReachable=ownerNode,
     DependentLifetime,
-    
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
     getter Node item([Default=Undefined] optional unsigned long index);

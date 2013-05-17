@@ -57,7 +57,7 @@ EnabledAtRuntime=*
 EnabledPerContext=*
 EnforceRange
 EventTarget
-GenerateIsReachable=ImplDocument|ImplElementRoot|ImplOwnerRoot|ImplOwnerNodeRoot
+GenerateIsReachable=*
 GetterRaisesException
 Immutable
 ImplementationNamespace=*

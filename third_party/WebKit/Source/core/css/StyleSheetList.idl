@@ -20,7 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
-    GenerateIsReachable=ImplDocument,
+    GenerateIsReachable=document,
     CustomNamedGetter,
 ] interface StyleSheetList {
     readonly attribute unsigned long    length;

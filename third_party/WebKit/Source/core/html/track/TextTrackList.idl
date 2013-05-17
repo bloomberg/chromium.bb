@@ -26,7 +26,7 @@
 [
     EnabledAtRuntime=videoTrack,
     EventTarget,
-    GenerateIsReachable=ImplOwnerRoot
+    GenerateIsReachable=owner
 ] interface TextTrackList {
     readonly attribute unsigned long length;
     getter TextTrack item(unsigned long index);

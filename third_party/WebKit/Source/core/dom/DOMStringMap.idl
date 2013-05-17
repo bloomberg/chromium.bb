@@ -24,7 +24,7 @@
  */
 
 [
-    GenerateIsReachable=ImplElementRoot,
+    GenerateIsReachable=element,
     CustomNamedGetter,
     CustomDeleteProperty,
     CustomEnumerateProperty,

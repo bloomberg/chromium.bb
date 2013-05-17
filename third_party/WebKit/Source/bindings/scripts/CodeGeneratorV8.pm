@@ -450,22 +450,10 @@ sub HeaderFilesForInterface
     return @includes;
 }
 
-sub NeedsCustomOpaqueRootForGC
+sub NeedsOpaqueRootForGC
 {
     my $interface = shift;
-    return GetGenerateIsReachable($interface) || GetCustomIsReachable($interface);
-}
-
-sub GetGenerateIsReachable
-{
-    my $interface = shift;
-    return $interface->extendedAttributes->{"GenerateIsReachable"} || ""
-}
-
-sub GetCustomIsReachable
-{
-    my $interface = shift;
-    return $interface->extendedAttributes->{"CustomIsReachable"};
+    return $interface->extendedAttributes->{"GenerateIsReachable"} || $interface->extendedAttributes->{"CustomIsReachable"};
 }
 
 sub GenerateOpaqueRootForGC
@@ -474,7 +462,7 @@ sub GenerateOpaqueRootForGC
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
-    if (GetCustomIsReachable($interface)) {
+    if ($interface->extendedAttributes->{"CustomIsReachable"}) {
         return;
     }
 
@@ -484,25 +472,12 @@ void* ${v8ClassName}::opaqueRootForGC(void* object, v8::Persistent<v8::Object> w
     ASSERT(!wrapper.IsIndependent(isolate));
     ${implClassName}* impl = static_cast<${implClassName}*>(object);
 END
-    if (GetGenerateIsReachable($interface) eq  "ImplDocument" ||
-        GetGenerateIsReachable($interface) eq  "ImplElementRoot" ||
-        GetGenerateIsReachable($interface) eq  "ImplOwnerRoot" ||
-        GetGenerateIsReachable($interface) eq  "ImplOwnerNodeRoot") {
-
+    my $isReachableMethod = $interface->extendedAttributes->{"GenerateIsReachable"};
+    if ($isReachableMethod) {
         AddToImplIncludes("bindings/v8/V8GCController.h");
-
-        my $methodName;
-        $methodName = "document" if (GetGenerateIsReachable($interface) eq "ImplDocument");
-        if (GetGenerateIsReachable($interface) eq "ImplElementRoot") {
-            $methodName = "element";
-            # Include Element.h so that the implicit cast from Element* to Node* compiles.
-            AddToImplIncludes("core/dom/Element.h");
-        }
-        $methodName = "owner" if (GetGenerateIsReachable($interface) eq "ImplOwnerRoot");
-        $methodName = "ownerNode" if (GetGenerateIsReachable($interface) eq "ImplOwnerNodeRoot");
-
+        AddToImplIncludes("core/dom/Element.h");
         $code .= <<END;
-    if (Node* owner = impl->${methodName}())
+    if (Node* owner = impl->${isReachableMethod}())
         return V8GCController::opaqueRootForGC(owner, isolate);
 END
     }
@@ -673,7 +648,7 @@ END
     static WrapperTypeInfo info;
 END
 
-    if (NeedsCustomOpaqueRootForGC($interface)) {
+    if (NeedsOpaqueRootForGC($interface)) {
         $header{classPublic}->add("    static void* opaqueRootForGC(void*, v8::Persistent<v8::Object>, v8::Isolate*);\n");
     }
 
@@ -3305,7 +3280,7 @@ sub GenerateImplementation
 
     my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8ClassName}::toActiveDOMObject" : "0";
     my $toEventTarget = InheritsExtendedAttribute($interface, "EventTarget") ? "${v8ClassName}::toEventTarget" : "0";
-    my $rootForGC = NeedsCustomOpaqueRootForGC($interface) ? "${v8ClassName}::opaqueRootForGC" : "0";
+    my $rootForGC = NeedsOpaqueRootForGC($interface) ? "${v8ClassName}::opaqueRootForGC" : "0";
 
     # Find the super descriptor.
     my $parentClass = "";
@@ -3405,7 +3380,7 @@ END
         GenerateReplaceableAttrSetterCallback($interface);
     }
 
-    if (NeedsCustomOpaqueRootForGC($interface)) {
+    if (NeedsOpaqueRootForGC($interface)) {
         GenerateOpaqueRootForGC($interface);
     }
 

@@ -21,7 +21,7 @@
 [
     CustomIndexedSetter,
     CustomNamedGetter,
-    GenerateIsReachable=ImplOwnerNodeRoot,
+    GenerateIsReachable=ownerNode,
     DependentLifetime,
 ] interface HTMLOptionsCollection : HTMLCollection {
     attribute long selectedIndex;

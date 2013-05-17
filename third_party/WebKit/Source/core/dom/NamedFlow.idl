@@ -32,7 +32,7 @@
     EnabledAtRuntime=cssRegions,
     EventTarget,
     InterfaceName=WebKitNamedFlow,
-    GenerateIsReachable=ImplOwnerNodeRoot
+    GenerateIsReachable=ownerNode
 ] interface NamedFlow {
     readonly attribute DOMString name;
     readonly attribute boolean overset;
