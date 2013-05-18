@@ -54,8 +54,6 @@ bool AutomationRendererHelper::SnapshotEntirePage(
   WebFrame* frame = view->mainFrame();
   WebSize old_size = view->size();
   WebSize new_size = frame->contentsSize();
-  // For RTL, the minimum scroll offset may be negative.
-  WebSize min_scroll = frame->minimumScrollOffset();
   WebSize old_scroll = frame->scrollOffset();
   bool fixed_layout_enabled = view->isFixedLayoutModeEnabled();
   WebSize fixed_size = view->fixedLayoutSize();
@@ -65,7 +63,7 @@ bool AutomationRendererHelper::SnapshotEntirePage(
   view->enableFixedLayoutMode(true);
   view->resize(new_size);
   view->layout();
-  frame->setScrollOffset(WebSize(0, 0));
+  frame->setScrollOffset(frame->minimumScrollOffset());
 
   skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(
       skia::CreatePlatformCanvas(new_size.width, new_size.height, true));
@@ -78,8 +76,7 @@ bool AutomationRendererHelper::SnapshotEntirePage(
   view->enableFixedLayoutMode(fixed_layout_enabled);
   view->resize(old_size);
   view->layout();
-  frame->setScrollOffset(WebSize(old_scroll.width - min_scroll.width,
-                                 old_scroll.height - min_scroll.height));
+  frame->setScrollOffset(old_scroll);
 
   const SkBitmap& bmp = skia::GetTopDevice(*canvas)->accessBitmap(false);
   SkAutoLockPixels lock_pixels(bmp);
