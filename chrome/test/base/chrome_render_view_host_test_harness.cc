@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -40,11 +41,11 @@ static ProfileKeyedService* BuildSigninManagerFake(
   Profile* profile = static_cast<Profile*>(context);
 #if defined (OS_CHROMEOS)
   SigninManagerBase* signin = new SigninManagerBase();
-  signin->Initialize(profile);
+  signin->Initialize(profile, NULL);
   return signin;
 #else
   FakeSigninManager* manager = new FakeSigninManager(profile);
-  manager->Initialize(profile);
+  manager->Initialize(profile, g_browser_process->local_state());
   return manager;
 #endif
 }

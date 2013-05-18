@@ -89,3 +89,7 @@ void PrefChangeRegistrar::InvokeUnnamedCallback(const base::Closure& callback,
 PrefService* PrefChangeRegistrar::prefs() {
   return service_;
 }
+
+const PrefService* PrefChangeRegistrar::prefs() const {
+  return service_;
+}

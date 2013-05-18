@@ -60,6 +60,7 @@ class BASE_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
 
   // Return the PrefService for this registrar.
   PrefService* prefs();
+  const PrefService* prefs() const;
 
  private:
   // PrefObserver:

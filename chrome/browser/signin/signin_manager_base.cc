@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
@@ -45,7 +44,7 @@ SigninManagerBase::~SigninManagerBase() {
       "SigninManagerBase::Shutdown";
 }
 
-void SigninManagerBase::Initialize(Profile* profile) {
+void SigninManagerBase::Initialize(Profile* profile, PrefService* local_state) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
   profile_ = profile;

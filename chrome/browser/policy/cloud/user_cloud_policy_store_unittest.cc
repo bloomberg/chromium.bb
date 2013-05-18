@@ -49,7 +49,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
           profile_.get(), FakeSigninManager::Build));
     profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                     PolicyBuilder::kFakeUsername);
-    signin->Initialize(profile_.get());
+    signin->Initialize(profile_.get(), NULL);
     store_.reset(new UserCloudPolicyStore(profile_.get(), policy_file()));
     store_->AddObserver(&observer_);
 

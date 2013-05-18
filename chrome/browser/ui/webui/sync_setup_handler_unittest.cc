@@ -388,7 +388,7 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
     if (!mock_signin_->IsInitialized()) {
       profile_->GetPrefs()->SetString(
           prefs::kGoogleServicesUsername, kTestUser);
-      mock_signin_->Initialize(profile_.get());
+      mock_signin_->Initialize(profile_.get(), NULL);
     }
     EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
         .WillRepeatedly(Return(true));
@@ -525,7 +525,7 @@ TEST_P(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
-  mock_signin_->Initialize(profile_.get());
+  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -555,7 +555,7 @@ TEST_P(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
-  mock_signin_->Initialize(profile_.get());
+  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -613,7 +613,7 @@ TEST_P(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
-  mock_signin_->Initialize(profile_.get());
+  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -644,7 +644,7 @@ TEST_P(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
-  mock_signin_->Initialize(profile_.get());
+  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())

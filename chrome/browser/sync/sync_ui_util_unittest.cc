@@ -164,7 +164,7 @@ class FakeSigninManagerForSyncUIUtilTest : public FakeSigninManagerBase {
  public:
   explicit FakeSigninManagerForSyncUIUtilTest(Profile* profile)
       : auth_in_progress_(false) {
-    Initialize(profile);
+    Initialize(profile, NULL);
   }
 
   virtual ~FakeSigninManagerForSyncUIUtilTest() {

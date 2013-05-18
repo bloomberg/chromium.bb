@@ -55,7 +55,7 @@ const char kImplicitURLString[] =
 class SigninManagerMock : public FakeSigninManager {
  public:
   explicit SigninManagerMock(Profile* profile) : FakeSigninManager(profile) {
-    Initialize(profile);
+    Initialize(profile, NULL);
   }
   MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
 };

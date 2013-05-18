@@ -28,7 +28,7 @@ class SigninGlobalErrorTest : public testing::Test {
             profile_.get(), FakeSigninManagerBase::Build));
     profile_->GetPrefs()->SetString(
           prefs::kGoogleServicesUsername, "testuser@test.com");
-    manager->Initialize(profile_.get());
+    manager->Initialize(profile_.get(), NULL);
     global_error_ = manager->signin_global_error();
   }
 

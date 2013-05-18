@@ -14,7 +14,6 @@
 #include "base/strings/string_split.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
@@ -382,11 +381,10 @@ void SigninManager::SignOut() {
   token_service->EraseTokensFromDB();
 }
 
-void SigninManager::Initialize(Profile* profile) {
-  SigninManagerBase::Initialize(profile);
+void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
+  SigninManagerBase::Initialize(profile, local_state);
 
   // local_state can be null during unit tests.
-  PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
     local_state_pref_registrar_.Init(local_state);
     local_state_pref_registrar_.Add(
@@ -465,7 +463,7 @@ bool SigninManager::IsUsernameAllowedByPolicy(const std::string& username,
 }
 
 bool SigninManager::IsAllowedUsername(const std::string& username) const {
-  PrefService* local_state = g_browser_process->local_state();
+  const PrefService* local_state = local_state_pref_registrar_.prefs();
   if (!local_state)
     return true; // In a unit test with no local state - all names are allowed.
 

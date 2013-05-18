@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 
 #include "base/prefs/pref_registry_simple.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/chrome_signin_manager_delegate.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -96,6 +97,6 @@ ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(
       scoped_ptr<SigninManagerDelegate>(
           new ChromeSigninManagerDelegate(profile)));
 #endif
-  service->Initialize(profile);
+  service->Initialize(profile, g_browser_process->local_state());
   return service;
 }

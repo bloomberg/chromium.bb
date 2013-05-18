@@ -119,7 +119,7 @@ class SigninManager : public SigninManagerBase,
   // On platforms where SigninManager is responsible for dealing with
   // invalid username policy updates, we need to check this during
   // initialization and sign the user out.
-  virtual void Initialize(Profile* profile) OVERRIDE;
+  virtual void Initialize(Profile* profile, PrefService* local_state) OVERRIDE;
 
   // Invoked from an OAuthTokenFetchedCallback to complete user signin.
   virtual void CompletePendingSignin();

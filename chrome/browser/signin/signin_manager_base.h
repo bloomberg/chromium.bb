@@ -66,7 +66,7 @@ class SigninManagerBase : public ProfileKeyedService {
   virtual ~SigninManagerBase();
 
   // If user was signed in, load tokens from DB if available.
-  virtual void Initialize(Profile* profile);
+  virtual void Initialize(Profile* profile, PrefService* local_state);
   bool IsInitialized() const;
 
   // Returns true if a signin to Chrome is allowed (by policy or pref).

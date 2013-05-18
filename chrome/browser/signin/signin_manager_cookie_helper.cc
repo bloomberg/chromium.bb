@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
