@@ -10,7 +10,6 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 
-@class AutofillAccountChooser;
 @class AutofillDetailsContainer;
 @class AutofillDialogWindowController;
 @class AutofillSectionContainer;
@@ -25,7 +24,6 @@ namespace autofill {
 // Might dynamically add and remove other elements.
 @interface AutofillMainContainer : NSViewController {
  @private
-  scoped_nsobject<AutofillAccountChooser> accountChooser_;
   scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
   scoped_nsobject<AutofillDetailsContainer> detailsContainer_;
   AutofillDialogWindowController* target_;
@@ -36,9 +34,6 @@ namespace autofill {
 
 // Designated initializer.
 - (id)initWithController:(autofill::AutofillDialogController*)controller;
-
-// Returns the account chooser.
-- (AutofillAccountChooser*)accountChooser;
 
 // Returns the view controller responsible for |section|.
 - (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section;

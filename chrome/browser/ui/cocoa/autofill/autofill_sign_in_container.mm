@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
@@ -24,18 +23,11 @@
 }
 
 - (void)loadView {
-  scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
-  [view setAutoresizesSubviews:YES];
-
   webContents_.reset(
       content::WebContents::Create(
           content::WebContents::CreateParams(controller_->profile())));
   NSView* webContentView = webContents_->GetView()->GetNativeView();
-  [webContentView setAutoresizingMask:
-      (NSViewWidthSizable | NSViewHeightSizable)];
-
-  [view setSubviews:@[webContentView]];
-  self.view = view;
+  [self setView:webContentView];
 }
 
 - (void)loadSignInPage {

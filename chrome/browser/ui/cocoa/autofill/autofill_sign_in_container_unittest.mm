@@ -70,14 +70,10 @@ class AutofillSignInContainerTest : public ChromeRenderViewHostTestHarness {
 TEST_VIEW(AutofillSignInContainerTest, [container_ view])
 
 TEST_F(AutofillSignInContainerTest, Subviews) {
-  bool hasWebView = false;
-
-  for (NSView* view in [[container_ view] subviews]) {
-    // isKindOfClass would be the better choice, but
-    // WebContentsViewCocoaClass is defined in content, and not public.
-    hasWebView = [view isEqual:
-                     [container_ webContents]->GetView()->GetNativeView()];
-  }
+  // isKindOfClass would be the better choice, but
+  // WebContentsViewCocoaClass is defined in content, and not public.
+  bool hasWebView =[[container_ view] isEqual:
+      [container_ webContents]->GetView()->GetNativeView()];
 
   EXPECT_TRUE(hasWebView);
 }

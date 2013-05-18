@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
@@ -137,17 +138,29 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
                                     chrome_style::kHorizontalPadding);
     [[mainContainer_ view] setFrame:clientRect];
     [[signInContainer_ view] setFrame:clientRect];
+
+    const CGFloat kAccountChooserHeight = 20.0;
+    NSRect headerRect = clientRect;
+    headerRect.size.height = kAccountChooserHeight;
+    headerRect.origin.y = NSMaxY(clientRect);
+    accountChooser_.reset([[AutofillAccountChooser alloc]
+                              initWithFrame:headerRect
+                                 controller:autofillDialog->controller()]);
     [[[self window] contentView] setSubviews:
-        @[[mainContainer_ view], [signInContainer_ view]]];
+        @[accountChooser_, [mainContainer_ view], [signInContainer_ view]]];
 
     NSRect contentRect = clientRect;
     contentRect.origin = NSMakePoint(0, 0);
     contentRect.size.width += 2 * chrome_style::kHorizontalPadding;
-    contentRect.size.height += chrome_style::kClientBottomPadding +
+    contentRect.size.height += NSHeight(headerRect) +
+                               chrome_style::kClientBottomPadding +
                                chrome_style::kTitleTopPadding;
     [[[self window] contentView] setFrame:contentRect];
     NSRect frame = [[self window] frameRectForContentRect:contentRect];
     [[self window] setFrame:frame display:YES];
+
+    [accountChooser_
+        setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
   }
   return self;
 }
@@ -164,7 +177,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 }
 
 - (void)updateAccountChooser {
-  [[mainContainer_ accountChooser] update];
+  [accountChooser_ update];
 }
 
 - (content::NavigationController*)showSignIn {

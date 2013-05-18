@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "grit/generated_resources.h"
@@ -31,20 +30,11 @@
 }
 
 - (void)loadView {
-  const CGFloat kAccountChooserHeight = 20.0;
-  NSRect accountChooserFrame = NSMakeRect(
-      0, -kAccountChooserHeight,
-      0, kAccountChooserHeight);
-  accountChooser_.reset([[AutofillAccountChooser alloc]
-                            initWithFrame:accountChooserFrame
-                                controller:controller_]);
-  [accountChooser_ setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
-
   [self buildWindowButtonsForFrame:NSZeroRect];
 
   scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
   [view setAutoresizesSubviews:YES];
-  [view setSubviews:@[accountChooser_, buttonContainer_]];
+  [view setSubviews:@[buttonContainer_]];
   [self setView:view];
 
   [self layoutButtons];
@@ -54,10 +44,7 @@
   NSSize frameSize = [[detailsContainer_ view] frame].size;
   [[detailsContainer_ view] setFrameOrigin:
       NSMakePoint(0, NSHeight([buttonContainer_ frame]))];
-  frameSize.height += NSHeight([accountChooser_ frame]);
   frameSize.height += NSHeight([buttonContainer_ frame]);
-  [[detailsContainer_ view] setFrameOrigin:
-      NSMakePoint(0, NSHeight([buttonContainer_ frame]))];
   [[self view] setFrameSize:frameSize];
   [[self view] addSubview:[detailsContainer_ view]];
 }
@@ -102,10 +89,6 @@
   scoped_nsobject<GTMUILocalizerAndLayoutTweaker> layoutTweaker(
       [[GTMUILocalizerAndLayoutTweaker alloc] init]);
   [layoutTweaker tweakUI:buttonContainer_];
-}
-
-- (AutofillAccountChooser*)accountChooser {
-  return accountChooser_;
 }
 
 - (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section {

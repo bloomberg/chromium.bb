@@ -104,6 +104,10 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
       base::SysUTF16ToNSString(controller_->AccountChooserText());
   [popup_ setTitle:popupTitle];
 
+  NSString* linkTitle =
+      base::SysUTF16ToNSString(controller_->SignInLinkText());
+  [link_ setTitle:linkTitle];
+
   // populate menu
   NSMenu* accountMenu = [popup_ attachedMenu];
   [accountMenu removeAllItems];
@@ -140,8 +144,7 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 
   [icon_ setFrameSize:[[icon_ image] size]];
   frame.origin.x -= NSWidth([icon_ frame]) + kAroundTextPadding;
-  frame.size.width = NSWidth([icon_ frame]);
-  [icon_ setFrame:frame];
+  [icon_ setFrameOrigin:frame.origin];
 }
 
 @end

@@ -19,6 +19,7 @@ namespace autofill {
   class AutofillDialogController;
 }
 
+@class AutofillAccountChooser;
 @class AutofillDialogWindowController;
 @class AutofillSignInContainer;
 @class AutofillMainContainer;
@@ -77,6 +78,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
 
   scoped_nsobject<AutofillMainContainer> mainContainer_;
   scoped_nsobject<AutofillSignInContainer> signInContainer_;
+  scoped_nsobject<AutofillAccountChooser> accountChooser_;
 }
 
 // Designated initializer. The WebContents cannot be NULL.
