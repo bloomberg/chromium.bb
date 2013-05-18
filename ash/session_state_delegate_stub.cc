@@ -6,6 +6,8 @@
 
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 
 namespace ash {
 
@@ -15,8 +17,12 @@ SessionStateDelegateStub::SessionStateDelegateStub() : screen_locked_(false) {
 SessionStateDelegateStub::~SessionStateDelegateStub() {
 }
 
-bool SessionStateDelegateStub::HasActiveUser() const {
-  return true;
+int SessionStateDelegateStub::GetMaximumNumberOfLoggedInUsers() const {
+  return 3;
+}
+
+int SessionStateDelegateStub::NumberOfLoggedInUsers() const {
+  return 1;
 }
 
 bool SessionStateDelegateStub::IsActiveUserSessionStarted() const {
@@ -40,6 +46,28 @@ void SessionStateDelegateStub::LockScreen() {
 void SessionStateDelegateStub::UnlockScreen() {
   screen_locked_ = false;
   Shell::GetInstance()->UpdateShelfVisibility();
+}
+
+const base::string16 SessionStateDelegateStub::GetUserDisplayName(
+    MultiProfileIndex index) const {
+  return UTF8ToUTF16("stub-user");
+}
+
+const std::string SessionStateDelegateStub::GetUserEmail(
+    MultiProfileIndex index) const {
+  return "stub-user@domain.com";
+}
+
+const gfx::ImageSkia& SessionStateDelegateStub::GetUserImage(
+    MultiProfileIndex index) const {
+  return null_image_;
+}
+
+void SessionStateDelegateStub::GetLoggedInUsers(
+    UserEmailList* users) {
+}
+
+void SessionStateDelegateStub::SwitchActiveUser(const std::string& email) {
 }
 
 }  // namespace ash

@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_USER_TRAY_USER_H_
 #define ASH_SYSTEM_USER_TRAY_USER_H_
 
+#include "ash/session_state_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/user/user_observer.h"
 #include "base/compiler_specific.h"
@@ -25,7 +26,11 @@ class RoundedImageView;
 class TrayUser : public SystemTrayItem,
                  public UserObserver {
  public:
-  explicit TrayUser(SystemTray* system_tray);
+  // The given |multiprofile_index| is the number of the user in a multi profile
+  // scenario. Index #0 is the running user, the other indices are other
+  // logged in users (if there are any). Only index #0 will add an icon to
+  // the system tray.
+  TrayUser(SystemTray* system_tray, MultiProfileIndex index);
   virtual ~TrayUser();
 
  private:
@@ -42,6 +47,9 @@ class TrayUser : public SystemTrayItem,
 
   // Overridden from UserObserver.
   virtual void OnUserUpdate() OVERRIDE;
+
+  // The user index to use.
+  MultiProfileIndex multiprofile_index_;
 
   tray::UserView* user_;
 

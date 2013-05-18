@@ -5,17 +5,36 @@
 #ifndef ASH_SESSION_STATE_DELEGATE_H_
 #define ASH_SESSION_STATE_DELEGATE_H_
 
+#include <string>
+#include <vector>
+
 #include "ash/ash_export.h"
+#include "base/string16.h"
+
+namespace gfx {
+class ImageSkia;
+}  // namespace gfx
 
 namespace ash {
+
+// The index for the multi-profile item to use. The list is always LRU sorted
+// So that the index #0 is the currently active user.
+typedef int MultiProfileIndex;
+
+// A list of email addresses.
+typedef std::vector<std::string> UserEmailList;
 
 // Delegate for checking and modifying the session state.
 class ASH_EXPORT SessionStateDelegate {
  public:
   virtual ~SessionStateDelegate() {};
 
-  // Returns |true| if a session is in progress and there is an active user.
-  virtual bool HasActiveUser() const = 0;
+  // Returns the maximum possible number of logged in users.
+  virtual int GetMaximumNumberOfLoggedInUsers() const = 0;
+
+  // Returns the number of signed in users. If 0 is returned, there is either
+  // no session in progress or no active user.
+  virtual int NumberOfLoggedInUsers() const = 0;
 
   // Returns |true| if the session has been fully started for the active user.
   // When a user becomes active, the profile and browser UI are not immediately
@@ -34,6 +53,25 @@ class ASH_EXPORT SessionStateDelegate {
 
   // Unlocks the screen.
   virtual void UnlockScreen() = 0;
+
+  // Gets the displayed name for the user with the given |index|.
+  // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
+  virtual const base::string16 GetUserDisplayName(
+      MultiProfileIndex index) const = 0;
+
+  // Gets the email address for the user with the given |index|.
+  // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
+  virtual const std::string GetUserEmail(MultiProfileIndex index) const = 0;
+
+  // Gets the avatar image for the user with the given |index|.
+  // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
+  virtual const gfx::ImageSkia& GetUserImage(MultiProfileIndex index) const = 0;
+
+  // Returns a list of all logged in users.
+  virtual void GetLoggedInUsers(UserEmailList* users) = 0;
+
+  // Switches to another active user (if that user has already signed in).
+  virtual void SwitchActiveUser(const std::string& email) = 0;
 };
 
 }  // namespace ash

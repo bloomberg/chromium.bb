@@ -31,7 +31,7 @@ ShelfGestureHandler::~ShelfGestureHandler() {
 
 bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
   Shell* shell = Shell::GetInstance();
-  if (!shell->session_state_delegate()->HasActiveUser() ||
+  if (!shell->session_state_delegate()->NumberOfLoggedInUsers() ||
       shell->session_state_delegate()->IsScreenLocked()) {
     // The gestures are disabled in the lock/login screen.
     return false;

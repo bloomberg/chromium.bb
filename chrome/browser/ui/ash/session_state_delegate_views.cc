@@ -4,14 +4,28 @@
 
 #include "chrome/browser/ui/ash/session_state_delegate.h"
 
+#include "base/logging.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
+#include "ui/gfx/image/image_skia.h"
+
+namespace {
+// This isn't really used. It is mainly here to make the compiler happy.
+gfx::ImageSkia null_image;
+}
+
 SessionStateDelegate::SessionStateDelegate() {
 }
 
 SessionStateDelegate::~SessionStateDelegate() {
 }
 
-bool SessionStateDelegate::HasActiveUser() const {
-  return true;
+int SessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
+  return 3;
+}
+
+int SessionStateDelegate::NumberOfLoggedInUsers() const {
+  return 1;
 }
 
 bool SessionStateDelegate::IsActiveUserSessionStarted() const {
@@ -30,4 +44,32 @@ void SessionStateDelegate::LockScreen() {
 }
 
 void SessionStateDelegate::UnlockScreen() {
+}
+
+const base::string16 SessionStateDelegate::GetUserDisplayName(
+    ash::MultiProfileIndex index) const {
+  NOTIMPLEMENTED();
+  return UTF8ToUTF16("");
+}
+
+const std::string SessionStateDelegate::GetUserEmail(
+    ash::MultiProfileIndex index) const {
+  NOTIMPLEMENTED();
+  return "";
+}
+
+const gfx::ImageSkia& SessionStateDelegate::GetUserImage(
+    ash::MultiProfileIndex index) const {
+  NOTIMPLEMENTED();
+  // To make the compiler happy.
+  return null_image;
+}
+
+void SessionStateDelegate::GetLoggedInUsers(
+    ash::UserEmailList* users) {
+  NOTIMPLEMENTED();
+}
+
+void SessionStateDelegate::SwitchActiveUser(const std::string& email) {
+  NOTIMPLEMENTED();
 }

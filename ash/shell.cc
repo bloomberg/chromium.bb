@@ -616,7 +616,7 @@ void Shell::Init() {
 
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {
   // No context menus if there is no session with an active user.
-  if (!session_state_delegate_->HasActiveUser())
+  if (!session_state_delegate_->NumberOfLoggedInUsers())
     return;
   // No context menus when screen is locked.
   if (session_state_delegate_->IsScreenLocked())

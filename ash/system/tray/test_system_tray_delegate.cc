@@ -9,9 +9,7 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/volume_control_delegate.h"
-#include "base/utf_string_conversions.h"
 #include "base/message_loop.h"
-#include "base/string16.h"
 #include "base/time.h"
 
 namespace ash {
@@ -74,18 +72,6 @@ bool TestSystemTrayDelegate::GetTrayVisibilityOnStartup() {
 }
 
 // Overridden from SystemTrayDelegate:
-const base::string16 TestSystemTrayDelegate::GetUserDisplayName() const {
-  return UTF8ToUTF16("Über tray Über tray Über tray Über tray");
-}
-
-const std::string TestSystemTrayDelegate::GetUserEmail() const {
-  return "über@tray";
-}
-
-const gfx::ImageSkia& TestSystemTrayDelegate::GetUserImage() const {
-  return null_image_;
-}
-
 user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
   // At new user image screen manager->IsUserLoggedIn() would return true
   // but there's no browser session available yet so use SessionStarted().
@@ -103,12 +89,6 @@ user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
 
 bool TestSystemTrayDelegate::IsOobeCompleted() const {
   return true;
-}
-
-void TestSystemTrayDelegate::GetLoggedInUsers(UserEmailList* users) {
-}
-
-void TestSystemTrayDelegate::SwitchActiveUser(const std::string& email) {
 }
 
 void TestSystemTrayDelegate::ChangeProfilePicture() {

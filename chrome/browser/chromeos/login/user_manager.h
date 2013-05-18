@@ -103,6 +103,11 @@ class UserManager {
   // Returns a list of users who are currently logged in.
   virtual const UserList& GetLoggedInUsers() const = 0;
 
+  // Returns a list of users who are currently logged in in the LRU order -
+  // so the active user is the first one in the list. If there is no user logged
+  // in, the current user will be returned.
+  virtual const UserList& GetLRULoggedInUsers() = 0;
+
   // Indicates that a user with the given |email| has just logged in. The
   // persistent list is updated accordingly if the user is not ephemeral.
   // |browser_restart| is true when reloading Chrome after crash to distinguish

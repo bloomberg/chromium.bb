@@ -211,6 +211,8 @@ UserManagerImpl::~UserManagerImpl() {
   }
   // These are pointers to the same User instances that were in users_ list.
   logged_in_users_.clear();
+  lru_logged_in_users_.clear();
+
   delete active_user_;
 }
 
@@ -236,6 +238,17 @@ const UserList& UserManagerImpl::GetUsers() const {
 
 const UserList& UserManagerImpl::GetLoggedInUsers() const {
   return logged_in_users_;
+}
+
+const UserList& UserManagerImpl::GetLRULoggedInUsers() {
+  // If there is no user logged in, we return the active user as the only one.
+  if (lru_logged_in_users_.empty() && active_user_) {
+    temp_single_logged_in_users_.clear();
+    temp_single_logged_in_users_.insert(temp_single_logged_in_users_.begin(),
+                                        active_user_);
+    return temp_single_logged_in_users_;
+  }
+  return lru_logged_in_users_;
 }
 
 void UserManagerImpl::UserLoggedIn(const std::string& email,
@@ -289,6 +302,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
 
   // Place user who just signed in to the top of the logged in users.
   logged_in_users_.insert(logged_in_users_.begin(), active_user_);
+  SetLRUUser(active_user_);
 
   NotifyOnLogin();
 }
@@ -323,6 +337,9 @@ void UserManagerImpl::SwitchActiveUser(const std::string& email) {
   active_user_->set_is_active(false);
   user->set_is_active(true);
   active_user_ = user;
+
+  // Move the user to the front.
+  SetLRUUser(active_user_);
 
   NotifyActiveUserHashChanged(active_user_->username_hash());
 
@@ -1506,6 +1523,15 @@ void UserManagerImpl::ReadPublicAccounts(base::ListValue* public_accounts) {
       }
     }
   }
+}
+
+void UserManagerImpl::SetLRUUser(User* user) {
+  UserList::iterator it = std::find(lru_logged_in_users_.begin(),
+                                    lru_logged_in_users_.end(),
+                                    user);
+  if (it != lru_logged_in_users_.end())
+    lru_logged_in_users_.erase(it);
+  lru_logged_in_users_.insert(lru_logged_in_users_.begin(), user);
 }
 
 }  // namespace chromeos

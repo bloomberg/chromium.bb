@@ -281,7 +281,7 @@ void RootWindowController::InitForPrimaryDisplay() {
       new ToplevelWindowEventHandler(panel_container));
   panel_container->SetLayoutManager(panel_layout_manager_);
 
-  if (Shell::GetInstance()->session_state_delegate()->HasActiveUser())
+  if (Shell::GetInstance()->session_state_delegate()->NumberOfLoggedInUsers())
     shelf_->CreateLauncher();
 
   InitKeyboard();

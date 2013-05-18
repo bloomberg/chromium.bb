@@ -26,13 +26,8 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual bool GetTrayVisibilityOnStartup() OVERRIDE;
 
   // Overridden from SystemTrayDelegate:
-  virtual const base::string16 GetUserDisplayName() const OVERRIDE;
-  virtual const std::string GetUserEmail() const OVERRIDE;
-  virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE;
   virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE;
   virtual bool IsOobeCompleted() const OVERRIDE;
-  virtual void GetLoggedInUsers(UserEmailList* users) OVERRIDE;
-  virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
   virtual void ChangeProfilePicture() OVERRIDE;
   virtual const std::string GetEnterpriseDomain() const OVERRIDE;
   virtual const base::string16 GetEnterpriseMessage() const OVERRIDE;
@@ -124,7 +119,6 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   bool cellular_enabled_;
   bool bluetooth_enabled_;
   bool caps_lock_enabled_;
-  gfx::ImageSkia null_image_;
   scoped_ptr<VolumeControlDelegate> volume_control_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSystemTrayDelegate);

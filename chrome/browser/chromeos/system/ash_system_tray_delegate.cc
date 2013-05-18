@@ -400,18 +400,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return LoginState::Get()->IsUserLoggedIn();
   }
 
-  virtual const string16 GetUserDisplayName() const OVERRIDE {
-    return UserManager::Get()->GetActiveUser()->GetDisplayName();
-  }
-
-  virtual const std::string GetUserEmail() const OVERRIDE {
-    return UserManager::Get()->GetActiveUser()->display_email();
-  }
-
-  virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE {
-    return UserManager::Get()->GetActiveUser()->image();
-  }
-
   virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {
     // Map ChromeOS specific LOGGED_IN states to Ash LOGGED_IN states.
     LoginState::LoggedInState state = LoginState::Get()->GetLoggedInState();
@@ -450,19 +438,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return StartupUtils::IsOobeCompleted();
   }
 
-  virtual void GetLoggedInUsers(ash::UserEmailList* users) OVERRIDE {
-    const UserList& logged_in_users = UserManager::Get()->GetLoggedInUsers();
-    for (UserList::const_iterator it = logged_in_users.begin();
-         it != logged_in_users.end(); ++it) {
-      const User* user = (*it);
-      users->push_back(user->email());
-    }
-  }
-
-  virtual void SwitchActiveUser(const std::string& email) OVERRIDE {
-    UserManager::Get()->SwitchActiveUser(email);
-  }
-
   virtual void ChangeProfilePicture() OVERRIDE {
     content::RecordAction(
         content::UserMetricsAction("OpenChangeProfilePictureDialog"));
@@ -484,7 +459,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual const std::string GetLocallyManagedUserManager() const OVERRIDE {
     if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
       return std::string();
-    return UserManager::Get()->GetManagerForManagedUser(GetUserEmail());
+    return UserManager::Get()->GetManagerForManagedUser(
+        chromeos::UserManager::Get()->GetActiveUser()->display_email());
   }
 
   virtual const string16 GetLocallyManagedUserMessage() const OVERRIDE {

@@ -48,6 +48,7 @@ class UserManagerImpl
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual const UserList& GetLoggedInUsers() const OVERRIDE;
+  virtual const UserList& GetLRULoggedInUsers() OVERRIDE;
   virtual void UserLoggedIn(const std::string& email,
                             const std::string& username_hash,
                             bool browser_restart) OVERRIDE;
@@ -259,6 +260,9 @@ class UserManagerImpl
   // Gets the list of public accounts defined in device settings.
   void ReadPublicAccounts(base::ListValue* public_accounts);
 
+  // Insert |user| at the front of the LRU user list..
+  void SetLRUUser(User* user);
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 
@@ -276,6 +280,14 @@ class UserManagerImpl
   // List of all users that are logged in current session. These point to User
   // instances in |users_|. Only one of them could be marked as active.
   UserList logged_in_users_;
+
+  // A list of all users that are logged in the current session. In contrast to
+  // |logged_in_users|, the order of this list is least recently used so that
+  // the active user should always be the first one in the list.
+  UserList lru_logged_in_users_;
+
+  // The list which gets reported when the |lru_logged_in_users_| list is empty.
+  UserList temp_single_logged_in_users_;
 
   // The logged-in user that is currently active in current session.
   // NULL until a user has logged in, then points to one

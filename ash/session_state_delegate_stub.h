@@ -8,6 +8,7 @@
 #include "ash/session_state_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 
@@ -18,15 +19,27 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   virtual ~SessionStateDelegateStub();
 
   // SessionStateDelegate:
-  virtual bool HasActiveUser() const OVERRIDE;
+  virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE;
+  virtual int NumberOfLoggedInUsers() const OVERRIDE;
   virtual bool IsActiveUserSessionStarted() const OVERRIDE;
   virtual bool CanLockScreen() const OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
+  virtual const base::string16 GetUserDisplayName(
+      ash::MultiProfileIndex index) const OVERRIDE;
+  virtual const std::string GetUserEmail(
+      ash::MultiProfileIndex index) const OVERRIDE;
+  virtual const gfx::ImageSkia& GetUserImage(
+      ash::MultiProfileIndex index) const OVERRIDE;
+  virtual void GetLoggedInUsers(UserEmailList* users) OVERRIDE;
+  virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
 
  private:
   bool screen_locked_;
+
+  // A pseudo user image.
+  gfx::ImageSkia null_image_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateStub);
 };

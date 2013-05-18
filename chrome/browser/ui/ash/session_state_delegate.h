@@ -15,12 +15,21 @@ class SessionStateDelegate : public ash::SessionStateDelegate {
   virtual ~SessionStateDelegate();
 
   // ash::SessionStateDelegate:
-  virtual bool HasActiveUser() const OVERRIDE;
+  virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE;
+  virtual int NumberOfLoggedInUsers() const OVERRIDE;
   virtual bool IsActiveUserSessionStarted() const OVERRIDE;
   virtual bool CanLockScreen() const OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
+  virtual const base::string16 GetUserDisplayName(
+      ash::MultiProfileIndex index) const OVERRIDE;
+  virtual const std::string GetUserEmail(
+      ash::MultiProfileIndex index) const OVERRIDE;
+  virtual const gfx::ImageSkia& GetUserImage(
+      ash::MultiProfileIndex index) const OVERRIDE;
+  virtual void GetLoggedInUsers(ash::UserEmailList* users) OVERRIDE;
+  virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegate);

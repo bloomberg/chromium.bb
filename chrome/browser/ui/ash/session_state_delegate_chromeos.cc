@@ -10,14 +10,23 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 
+// TODO(skuhne): To be able to test this I had to hardcode the number of known
+// users. Get rid of it once it works.
+#define ADD_TEST_USER_ACCOUNTS_FOR_MULTI_USER_TEST_ENVIRONMENT 0
+
 SessionStateDelegate::SessionStateDelegate() {
 }
 
 SessionStateDelegate::~SessionStateDelegate() {
 }
 
-bool SessionStateDelegate::HasActiveUser() const {
-  return chromeos::UserManager::Get()->IsUserLoggedIn();
+int SessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
+  return 3;
+}
+
+int SessionStateDelegate::NumberOfLoggedInUsers() const {
+  return chromeos::UserManager::Get()->GetLoggedInUsers().size() +
+         ADD_TEST_USER_ACCOUNTS_FOR_MULTI_USER_TEST_ENVIRONMENT;
 }
 
 bool SessionStateDelegate::IsActiveUserSessionStarted() const {
@@ -46,4 +55,54 @@ void SessionStateDelegate::LockScreen() {
 void SessionStateDelegate::UnlockScreen() {
   // This is used only for testing thus far.
   NOTIMPLEMENTED();
+}
+
+const base::string16 SessionStateDelegate::GetUserDisplayName(
+    ash::MultiProfileIndex index) const {
+  if (ADD_TEST_USER_ACCOUNTS_FOR_MULTI_USER_TEST_ENVIRONMENT &&
+      static_cast<size_t>(index) >=
+          chromeos::UserManager::Get()->GetLoggedInUsers().size()) {
+    index = 0;
+  }
+  DCHECK_LT(index, NumberOfLoggedInUsers());
+  return chromeos::UserManager::Get()->
+             GetLRULoggedInUsers()[index]->display_name();
+}
+
+const std::string SessionStateDelegate::GetUserEmail(
+    ash::MultiProfileIndex index) const {
+  if (ADD_TEST_USER_ACCOUNTS_FOR_MULTI_USER_TEST_ENVIRONMENT &&
+      static_cast<size_t>(index) >=
+          chromeos::UserManager::Get()->GetLoggedInUsers().size()) {
+    index = 0;
+  }
+  DCHECK_LT(index, NumberOfLoggedInUsers());
+  return chromeos::UserManager::Get()->
+             GetLRULoggedInUsers()[index]->display_email();
+}
+
+const gfx::ImageSkia& SessionStateDelegate::GetUserImage(
+    ash::MultiProfileIndex index) const {
+  if (ADD_TEST_USER_ACCOUNTS_FOR_MULTI_USER_TEST_ENVIRONMENT &&
+      static_cast<size_t>(index) >=
+          chromeos::UserManager::Get()->GetLoggedInUsers().size()) {
+    index = 0;
+  }
+  DCHECK_LT(index, NumberOfLoggedInUsers());
+  return chromeos::UserManager::Get()->GetLRULoggedInUsers()[index]->image();
+}
+
+void SessionStateDelegate::GetLoggedInUsers(
+    ash::UserEmailList* users) {
+  const chromeos::UserList& logged_in_users =
+      chromeos::UserManager::Get()->GetLoggedInUsers();
+  for (chromeos::UserList::const_iterator it = logged_in_users.begin();
+       it != logged_in_users.end(); ++it) {
+    const chromeos::User* user = (*it);
+    users->push_back(user->email());
+  }
+}
+
+void SessionStateDelegate::SwitchActiveUser(const std::string& email) {
+  chromeos::UserManager::Get()->SwitchActiveUser(email);
 }

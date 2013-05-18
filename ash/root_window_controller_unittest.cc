@@ -327,7 +327,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   SetUserLoggedIn(false);
   EXPECT_EQ(user::LOGGED_IN_NONE,
             shell->system_tray_delegate()->GetUserLoginStatus());
-  EXPECT_FALSE(shell->session_state_delegate()->HasActiveUser());
+  EXPECT_EQ(0, shell->session_state_delegate()->NumberOfLoggedInUsers());
   EXPECT_FALSE(shell->session_state_delegate()->IsActiveUserSessionStarted());
 
   internal::RootWindowController* controller =
@@ -352,7 +352,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   SetSessionStarted(true);
   EXPECT_EQ(user::LOGGED_IN_USER,
             shell->system_tray_delegate()->GetUserLoginStatus());
-  EXPECT_TRUE(shell->session_state_delegate()->HasActiveUser());
+  EXPECT_EQ(1, shell->session_state_delegate()->NumberOfLoggedInUsers());
   EXPECT_TRUE(shell->session_state_delegate()->IsActiveUserSessionStarted());
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
       internal::kShellWindowId_SystemModalContainer)->layout_manager(),

@@ -4,6 +4,9 @@
 
 #include "ash/test/test_session_state_delegate.h"
 
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
+
 namespace ash {
 namespace test {
 
@@ -17,8 +20,13 @@ TestSessionStateDelegate::TestSessionStateDelegate()
 TestSessionStateDelegate::~TestSessionStateDelegate() {
 }
 
-bool TestSessionStateDelegate::HasActiveUser() const {
-  return has_active_user_;
+int TestSessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
+  return 3;
+}
+
+int TestSessionStateDelegate::NumberOfLoggedInUsers() const {
+  // TODO(skuhne): Add better test framework to test multiple profiles.
+  return has_active_user_ ? 1 : 0;
 }
 
 bool TestSessionStateDelegate::IsActiveUserSessionStarted() const {
@@ -58,6 +66,28 @@ void TestSessionStateDelegate::SetActiveUserSessionStarted(
 void TestSessionStateDelegate::SetCanLockScreen(bool can_lock_screen) {
   can_lock_screen_ = can_lock_screen;
 }
+
+const base::string16 TestSessionStateDelegate::GetUserDisplayName(
+    ash::MultiProfileIndex index) const {
+  return UTF8ToUTF16("Über tray Über tray Über tray Über tray");
+}
+
+const std::string TestSessionStateDelegate::GetUserEmail(
+    ash::MultiProfileIndex index) const {
+  return "über@tray";
+}
+
+const gfx::ImageSkia& TestSessionStateDelegate::GetUserImage(
+    ash::MultiProfileIndex index) const {
+  return null_image_;
+}
+
+void TestSessionStateDelegate::GetLoggedInUsers(UserEmailList* users) {
+}
+
+void TestSessionStateDelegate::SwitchActiveUser(const std::string& email) {
+}
+
 
 }  // namespace test
 }  // namespace ash

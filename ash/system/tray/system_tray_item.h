@@ -36,7 +36,7 @@ class ASH_EXPORT SystemTrayItem {
   // NOTE: The returned view should almost always be a TrayItemView, which
   // automatically resizes the widget when the size of the view changes, and
   // adds animation when the visibility of the view changes. If a view wants to
-  // avoid these behaviour, then it should not be a TrayItemView.
+  // avoid this behavior, then it should not be a TrayItemView.
   virtual views::View* CreateTrayView(user::LoginStatus status);
 
   // Returns a view for the item to be displayed in the list. This view can be
