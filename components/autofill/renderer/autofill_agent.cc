@@ -228,6 +228,7 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
 
 void AutofillAgent::DidStartProvisionalLoad(WebFrame* frame) {
   if (!frame->parent()) {
+    is_autocheckout_supported_ = false;
     try_to_show_autocheckout_bubble_ = false;
     topmost_frame_ = NULL;
     if (click_timer_.IsRunning()) {
