@@ -240,8 +240,12 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ScriptExecutionContext* context
         ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
+
+    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_currentPrimaryKey, ec);
+    ASSERT(!ec);
+
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    m_backend->deleteFunction(request);
+    m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange, request);
     return request.release();
 }
 

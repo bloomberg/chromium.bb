@@ -42,7 +42,7 @@ public:
 
     virtual void advance(unsigned long, PassRefPtr<WebCore::IDBCallbacks>);
     virtual void continueFunction(PassRefPtr<WebCore::IDBKey>, PassRefPtr<WebCore::IDBCallbacks>);
-    virtual void deleteFunction(PassRefPtr<WebCore::IDBCallbacks>);
+    virtual void deleteFunction(PassRefPtr<WebCore::IDBCallbacks>) { ASSERT_NOT_REACHED(); } // FIXME: Remove: http://crbug.com/241526
     virtual void prefetchContinue(int numberToFetch, PassRefPtr<WebCore::IDBCallbacks>) { ASSERT_NOT_REACHED(); } // Only used in the backend.
     virtual void prefetchReset(int usedPrefetches, int unusedPrefetches) { ASSERT_NOT_REACHED(); } // Only used in the backend.
     virtual void postSuccessHandlerCallback();

@@ -43,7 +43,7 @@ public:
 
     virtual void advance(unsigned long, WebIDBCallbacks*);
     virtual void continueFunction(const WebIDBKey&, WebIDBCallbacks*);
-    virtual void deleteFunction(WebIDBCallbacks* callbacks);
+    virtual void deleteFunction(WebIDBCallbacks* callbacks) { ASSERT_NOT_REACHED(); } // FIXME: Remove: http://crbug.com/241526
     virtual void prefetchContinue(int numberToFetch, WebIDBCallbacks*);
     virtual void prefetchReset(int usedPrefetches, int unusedPrefetches);
 

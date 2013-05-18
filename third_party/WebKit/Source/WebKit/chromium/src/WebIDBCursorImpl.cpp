@@ -55,11 +55,6 @@ void WebIDBCursorImpl::continueFunction(const WebIDBKey& key, WebIDBCallbacks* c
     m_idbCursorBackend->continueFunction(key, IDBCallbacksProxy::create(adoptPtr(callbacks)));
 }
 
-void WebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks)
-{
-    m_idbCursorBackend->deleteFunction(IDBCallbacksProxy::create(adoptPtr(callbacks)));
-}
-
 void WebIDBCursorImpl::prefetchContinue(int numberToFetch, WebIDBCallbacks* callbacks)
 {
     m_idbCursorBackend->prefetchContinue(numberToFetch, IDBCallbacksProxy::create(adoptPtr(callbacks)));

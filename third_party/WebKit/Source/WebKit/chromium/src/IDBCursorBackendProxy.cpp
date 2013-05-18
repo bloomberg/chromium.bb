@@ -60,11 +60,6 @@ void IDBCursorBackendProxy::continueFunction(PassRefPtr<IDBKey> key, PassRefPtr<
     m_idbCursor->continueFunction(key, new WebIDBCallbacksImpl(callbacks));
 }
 
-void IDBCursorBackendProxy::deleteFunction(PassRefPtr<IDBCallbacks> callbacks)
-{
-    m_idbCursor->deleteFunction(new WebIDBCallbacksImpl(callbacks));
-}
-
 void IDBCursorBackendProxy::postSuccessHandlerCallback()
 {
     m_idbCursor->postSuccessHandlerCallback();
