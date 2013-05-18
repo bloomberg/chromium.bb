@@ -14,8 +14,10 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "ui/aura/client/window_move_client.h"
-#include "ui/views/views_export.h"
 #include "ui/gfx/point.h"
+#include "ui/views/views_export.h"
+#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
+#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop_delegate.h"
 
 namespace aura {
 class RootWindow;
@@ -25,14 +27,15 @@ namespace views {
 
 // When we're dragging tabs, we need to manually position our window.
 class VIEWS_EXPORT X11DesktopWindowMoveClient :
-    public base::MessageLoop::Dispatcher,
-    public aura::client::WindowMoveClient {
+      public views::X11WholeScreenMoveLoopDelegate,
+      public aura::client::WindowMoveClient {
  public:
   X11DesktopWindowMoveClient();
   virtual ~X11DesktopWindowMoveClient();
 
-  // Overridden from MessageLoop::Dispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  // Overridden from X11WholeScreenMoveLoopDelegate:
+  virtual void OnMouseMovement(XMotionEvent* event) OVERRIDE;
+  virtual void OnMoveLoopEnded() OVERRIDE;
 
   // Overridden from aura::client::WindowMoveClient:
   virtual aura::client::WindowMoveResult RunMoveLoop(
@@ -42,24 +45,16 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient :
   virtual void EndMoveLoop() OVERRIDE;
 
  private:
-  // Are we running a nested message loop from RunMoveLoop()?
-  bool in_move_loop_;
-
-  // An invisible InputOnly window . We create this window so we can track the
-  // cursor wherever it goes on screen during a drag, since normal windows
-  // don't receive pointer motion events outside of their bounds.
-  ::Window grab_input_window_;
+  X11WholeScreenMoveLoop move_loop_;
 
   // We need to keep track of this so we can actually move it when reacting to
-  // events from |grab_input_window_| during Dispatch().
+  // mouse events.
   aura::RootWindow* root_window_;
 
   // Our cursor offset from the top left window origin when the drag
   // started. Used to calculate the window's new bounds relative to the current
   // location of the cursor.
   gfx::Vector2d window_offset_;
-
-  base::Closure quit_closure_;
 };
 
 }  // namespace views

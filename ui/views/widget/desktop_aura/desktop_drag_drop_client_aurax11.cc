@@ -317,6 +317,10 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
     const gfx::Point& root_location,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
+  // Windows has a specific method, DoDragDrop(), which performs the entire
+  // drag. We have to emulate this, so we spin off a nested runloop which will
+  // track all cursor movement and reroute events to a specific handler.
+
   NOTIMPLEMENTED();
 
   // TODO(erg): Once this is implemented, make sure to reenable the
