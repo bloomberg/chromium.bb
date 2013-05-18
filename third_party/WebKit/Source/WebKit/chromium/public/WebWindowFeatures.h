@@ -31,9 +31,9 @@
 #ifndef WebWindowFeatures_h
 #define WebWindowFeatures_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebString.h"
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebString.h"
+#include "../../../../public/platform/WebVector.h"
 
 #if WEBKIT_IMPLEMENTATION
 #include "core/page/WindowFeatures.h"

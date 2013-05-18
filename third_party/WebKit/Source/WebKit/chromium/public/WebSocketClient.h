@@ -31,7 +31,7 @@
 #ifndef WebSocketClient_h
 #define WebSocketClient_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 
 namespace WebKit {
 

@@ -31,8 +31,8 @@
 #ifndef MockSpellCheck_h
 #define MockSpellCheck_h
 
-#include "Platform/chromium/public/WebString.h"
-#include "Platform/chromium/public/WebVector.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include <vector>
 
 namespace WebTestRunner {

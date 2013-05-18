@@ -26,8 +26,8 @@
 #ifndef WebSpeechRecognitionParams_h
 #define WebSpeechRecognitionParams_h
 
-#include "../../../Platform/chromium/public/WebString.h"
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebString.h"
+#include "../../../../public/platform/WebVector.h"
 #include "WebSecurityOrigin.h"
 #include "WebSpeechGrammar.h"
 

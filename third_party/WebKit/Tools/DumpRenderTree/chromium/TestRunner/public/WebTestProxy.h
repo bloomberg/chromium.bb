@@ -31,9 +31,6 @@
 #ifndef WebTestProxy_h
 #define WebTestProxy_h
 
-#include "Platform/chromium/public/WebRect.h"
-#include "Platform/chromium/public/WebURLError.h"
-#include "Platform/chromium/public/WebURLRequest.h"
 #include "WebKit/chromium/public/WebAccessibilityNotification.h"
 #include "WebKit/chromium/public/WebDOMMessageEvent.h"
 #include "WebKit/chromium/public/WebDragOperation.h"
@@ -45,6 +42,9 @@
 #include "WebKit/chromium/public/WebTextAffinity.h"
 #include "WebKit/chromium/public/WebTextDirection.h"
 #include "WebTestCommon.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebURLError.h"
+#include "public/platform/WebURLRequest.h"
 #include <map>
 #include <memory>
 #include <string>

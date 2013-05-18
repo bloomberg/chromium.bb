@@ -31,7 +31,7 @@
 #ifndef WebMediaStreamRegistry_h
 #define WebMediaStreamRegistry_h
 
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebString.h"
 
 namespace WebKit {
 

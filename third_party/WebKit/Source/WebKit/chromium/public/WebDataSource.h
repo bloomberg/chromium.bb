@@ -31,7 +31,7 @@
 #ifndef WebDataSource_h
 #define WebDataSource_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 #include "WebNavigationType.h"
 #include "WebTextDirection.h"
 

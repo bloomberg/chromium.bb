@@ -31,7 +31,7 @@
 #ifndef WebNodeList_h
 #define WebNodeList_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 
 namespace WebCore { class NodeList; }
 #if WEBKIT_IMPLEMENTATION

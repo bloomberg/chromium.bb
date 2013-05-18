@@ -31,9 +31,9 @@
 #ifndef WebCommonWorkerClient_h
 #define WebCommonWorkerClient_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebFileSystem.h"
-#include "../../../Platform/chromium/public/WebFileSystemType.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebFileSystem.h"
+#include "../../../../public/platform/WebFileSystemType.h"
 // FIXME: need to move this to Platform
 #include "WebStorageQuotaCallbacks.h"
 #include "WebStorageQuotaType.h"

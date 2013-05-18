@@ -31,8 +31,8 @@
 #ifndef WebInputEvent_h
 #define WebInputEvent_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebRect.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebRect.h"
 #include "WebTouchPoint.h"
 
 #include <string.h>

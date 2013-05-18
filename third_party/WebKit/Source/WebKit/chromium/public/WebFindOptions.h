@@ -31,7 +31,7 @@
 #ifndef WebFindOptions_h
 #define WebFindOptions_h
 
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebString.h"
 
 namespace WebKit {
 

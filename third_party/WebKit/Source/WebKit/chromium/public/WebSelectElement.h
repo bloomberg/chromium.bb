@@ -31,7 +31,7 @@
 #ifndef WebSelectElement_h
 #define WebSelectElement_h
 
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebVector.h"
 #include "WebFormControlElement.h"
 #include "WebOptionElement.h"
 

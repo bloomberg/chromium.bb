@@ -31,7 +31,7 @@
 #ifndef WebMediaSource_h
 #define WebMediaSource_h
 
-#include "../../../Platform/chromium/public/WebURL.h"
+#include "../../../../public/platform/WebURL.h"
 #include "WebTimeRange.h"
 
 namespace WebKit {

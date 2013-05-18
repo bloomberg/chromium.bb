@@ -31,9 +31,9 @@
 #ifndef WebAccessibilityObject_h
 #define WebAccessibilityObject_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebPrivatePtr.h"
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebPrivatePtr.h"
+#include "../../../../public/platform/WebVector.h"
 #include "WebAccessibilityRole.h"
 
 #if WEBKIT_IMPLEMENTATION

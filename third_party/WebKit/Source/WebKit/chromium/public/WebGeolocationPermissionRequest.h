@@ -26,8 +26,8 @@
 #ifndef WebGeolocationPermissionRequest_h
 #define WebGeolocationPermissionRequest_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebPrivatePtr.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebPrivatePtr.h"
 
 namespace WebCore {
 class Geolocation;

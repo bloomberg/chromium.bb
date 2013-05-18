@@ -31,7 +31,7 @@
 #ifndef WebNotificationPresenter_h
 #define WebNotificationPresenter_h
 
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebString.h"
 #include "WebNotificationPermissionCallback.h"
 #include "WebSecurityOrigin.h"
 

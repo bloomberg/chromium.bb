@@ -83,15 +83,16 @@
             'include_dirs': [
                 '<(DEPTH)',
                 '<(source_dir)/WebKit/chromium/public',
-                '<(DEPTH)',
                 '../chromium/TestRunner/public',
                 '../chromium/TestRunner/src',
                 '../../../Source',
+                '../../..',
             ],
             'direct_dependent_settings': {
                 'include_dirs': [
                     '../chromium/TestRunner/public',
                     '../../../Source',
+                    '../../..',
                 ],
             },
             'sources': [
@@ -247,7 +248,6 @@
                 '<(DEPTH)',
                 '<(source_dir)/WebKit/chromium/public',
                 '<(tools_dir)/DumpRenderTree',
-                '<(DEPTH)',
             ],
             'defines': [
                 # Technically not a unit test but require functions available only to

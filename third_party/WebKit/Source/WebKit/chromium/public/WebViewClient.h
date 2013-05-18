@@ -31,9 +31,9 @@
 #ifndef WebViewClient_h
 #define WebViewClient_h
 
-#include "../../../Platform/chromium/public/WebColor.h"
-#include "../../../Platform/chromium/public/WebGraphicsContext3D.h"
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebColor.h"
+#include "../../../../public/platform/WebGraphicsContext3D.h"
+#include "../../../../public/platform/WebString.h"
 #include "WebAccessibilityNotification.h"
 #include "WebContentDetectionResult.h"
 #include "WebDragOperation.h"

@@ -31,8 +31,8 @@
 #ifndef WebWidgetClient_h
 #define WebWidgetClient_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebRect.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebRect.h"
 #include "WebNavigationPolicy.h"
 #include "WebScreenInfo.h"
 #include <public/WebLayerTreeView.h>

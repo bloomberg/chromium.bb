@@ -31,8 +31,8 @@
 #ifndef WebMediaPlayer_h
 #define WebMediaPlayer_h
 
-#include "../../../Platform/chromium/public/WebCanvas.h"
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebCanvas.h"
+#include "../../../../public/platform/WebString.h"
 #include "WebTimeRange.h"
 
 namespace WebKit {

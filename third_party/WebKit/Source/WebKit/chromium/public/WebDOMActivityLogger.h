@@ -31,8 +31,8 @@
 #ifndef WebDOMActivityLogger_h
 #define WebDOMActivityLogger_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebString.h"
 #include <v8.h>
 
 namespace WebKit {

@@ -31,8 +31,8 @@
 #ifndef WebArrayBuffer_h
 #define WebArrayBuffer_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebPrivatePtr.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebPrivatePtr.h"
 
 namespace v8 {
 class Value;

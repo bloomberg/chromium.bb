@@ -25,8 +25,8 @@
 #ifndef WebSurroundingText_h
 #define WebSurroundingText_h
 
-#include "../../../Platform/chromium/public/WebPrivateOwnPtr.h"
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebPrivateOwnPtr.h"
+#include "../../../../public/platform/WebString.h"
 #include "WebNode.h"
 #include "WebRange.h"
 

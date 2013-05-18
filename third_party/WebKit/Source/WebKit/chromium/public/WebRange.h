@@ -31,8 +31,8 @@
 #ifndef WebRange_h
 #define WebRange_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebVector.h"
 
 #if WEBKIT_IMPLEMENTATION
 namespace WebCore { class Range; }

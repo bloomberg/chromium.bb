@@ -31,7 +31,7 @@
 #ifndef WebFormElement_h
 #define WebFormElement_h
 
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebVector.h"
 #include "WebElement.h"
 
 #if WEBKIT_IMPLEMENTATION

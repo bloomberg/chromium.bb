@@ -28,4 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../../../Platform/chromium/public/WebScreenInfo.h"
+#include "../../../../public/platform/WebScreenInfo.h"

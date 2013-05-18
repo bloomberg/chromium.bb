@@ -31,7 +31,7 @@
 #ifndef WebSharedWorker_h
 #define WebSharedWorker_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 #include "WebContentSecurityPolicy.h"
 
 namespace WebCore {

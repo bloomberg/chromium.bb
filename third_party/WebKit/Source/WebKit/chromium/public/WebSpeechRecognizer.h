@@ -26,7 +26,7 @@
 #ifndef WebSpeechRecognizer_h
 #define WebSpeechRecognizer_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 #include "WebSpeechRecognitionHandle.h"
 
 namespace WebKit {

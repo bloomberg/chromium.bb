@@ -31,7 +31,7 @@
 #ifndef WebFontRendering_h
 #define WebFontRendering_h
 
-#include "../../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../../public/platform/WebCommon.h"
 #include <SkFontHost.h>
 #include <SkPaint.h>
 

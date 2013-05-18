@@ -31,7 +31,7 @@
 #ifndef WebSubstringUtil_h
 #define WebSubstringUtil_h
 
-#include "../../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../../public/platform/WebCommon.h"
 
 namespace WebKit {
 class WebFrame;

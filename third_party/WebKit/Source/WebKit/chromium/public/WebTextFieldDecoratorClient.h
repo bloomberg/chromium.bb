@@ -31,7 +31,7 @@
 #ifndef WebTextFieldDecoratorClient_h
 #define WebTextFieldDecoratorClient_h
 
-#include "../../../Platform/chromium/public/WebCString.h"
+#include "../../../../public/platform/WebCString.h"
 
 #if WEBKIT_IMPLEMENTATION
 namespace WebCore { class TextFieldDecorator; }

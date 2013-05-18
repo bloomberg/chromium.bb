@@ -31,9 +31,9 @@
 #ifndef WebMenuItemInfo_h
 #define WebMenuItemInfo_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebString.h"
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebString.h"
+#include "../../../../public/platform/WebVector.h"
 #include "WebTextDirection.h"
 
 namespace WebKit {

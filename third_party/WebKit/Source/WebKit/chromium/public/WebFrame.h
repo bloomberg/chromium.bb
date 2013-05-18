@@ -31,12 +31,12 @@
 #ifndef WebFrame_h
 #define WebFrame_h
 
-#include "../../../Platform/chromium/public/WebCanvas.h"
-#include "../../../Platform/chromium/public/WebFileSystem.h"
-#include "../../../Platform/chromium/public/WebFileSystemType.h"
-#include "../../../Platform/chromium/public/WebMessagePortChannel.h"
-#include "../../../Platform/chromium/public/WebReferrerPolicy.h"
-#include "../../../Platform/chromium/public/WebURL.h"
+#include "../../../../public/platform/WebCanvas.h"
+#include "../../../../public/platform/WebFileSystem.h"
+#include "../../../../public/platform/WebFileSystemType.h"
+#include "../../../../public/platform/WebMessagePortChannel.h"
+#include "../../../../public/platform/WebReferrerPolicy.h"
+#include "../../../../public/platform/WebURL.h"
 #include "WebIconURL.h"
 #include "WebNode.h"
 #include "WebURLLoaderOptions.h"

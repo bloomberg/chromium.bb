@@ -31,7 +31,7 @@
 #ifndef WebPopupMenuInfo_h
 #define WebPopupMenuInfo_h
 
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebVector.h"
 #include "WebMenuItemInfo.h"
 
 namespace WebKit {

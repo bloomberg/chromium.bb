@@ -26,9 +26,9 @@
 #ifndef WebSpeechGrammar_h
 #define WebSpeechGrammar_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebPrivatePtr.h"
-#include "../../../Platform/chromium/public/WebURL.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebPrivatePtr.h"
+#include "../../../../public/platform/WebURL.h"
 
 namespace WebCore {
 class SpeechGrammar;

@@ -28,4 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../../../Platform/chromium/public/WebStorageNamespace.h"
+#include "../../../../public/platform/WebStorageNamespace.h"

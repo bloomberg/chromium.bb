@@ -31,7 +31,7 @@
 #ifndef WebScreenInfoFactory_h
 #define WebScreenInfoFactory_h
 
-#include "../../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../../public/platform/WebCommon.h"
 
 #ifdef __OBJC__
 @class NSView;

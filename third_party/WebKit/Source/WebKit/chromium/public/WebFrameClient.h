@@ -31,11 +31,11 @@
 #ifndef WebFrameClient_h
 #define WebFrameClient_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebFileSystem.h"
-#include "../../../Platform/chromium/public/WebFileSystemType.h"
-#include "../../../Platform/chromium/public/WebURLError.h"
-#include "../../../Platform/chromium/public/WebURLRequest.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebFileSystem.h"
+#include "../../../../public/platform/WebFileSystemType.h"
+#include "../../../../public/platform/WebURLError.h"
+#include "../../../../public/platform/WebURLRequest.h"
 #include "WebDOMMessageEvent.h"
 #include "WebIconURL.h"
 #include "WebNavigationPolicy.h"

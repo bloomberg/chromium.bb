@@ -31,9 +31,9 @@
 #ifndef WebPlugin_h
 #define WebPlugin_h
 
-#include "../../../Platform/chromium/public/WebCanvas.h"
-#include "../../../Platform/chromium/public/WebString.h"
-#include "../../../Platform/chromium/public/WebURL.h"
+#include "../../../../public/platform/WebCanvas.h"
+#include "../../../../public/platform/WebString.h"
+#include "../../../../public/platform/WebURL.h"
 #include "WebDragOperation.h"
 #include "WebDragStatus.h"
 

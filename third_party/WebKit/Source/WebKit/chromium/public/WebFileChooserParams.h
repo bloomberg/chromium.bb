@@ -31,8 +31,8 @@
 #ifndef WebFileChooserParams_h
 #define WebFileChooserParams_h
 
-#include "../../../Platform/chromium/public/WebString.h"
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebString.h"
+#include "../../../../public/platform/WebVector.h"
 #include "WebFileChooserCompletion.h"
 
 namespace WebKit {

@@ -31,7 +31,7 @@
 #ifndef WebPopupMenu_h
 #define WebPopupMenu_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 #include "WebWidget.h"
 
 namespace WebKit {

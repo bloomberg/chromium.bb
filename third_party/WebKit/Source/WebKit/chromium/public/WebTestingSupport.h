@@ -26,7 +26,7 @@
 #ifndef WebTestingSupport_h
 #define WebTestingSupport_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 
 namespace WebKit {
 

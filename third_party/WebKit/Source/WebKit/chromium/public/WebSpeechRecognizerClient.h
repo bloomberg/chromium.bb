@@ -26,7 +26,7 @@
 #ifndef WebSpeechRecognizerClient_h
 #define WebSpeechRecognizerClient_h
 
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebVector.h"
 
 namespace WebKit {
 

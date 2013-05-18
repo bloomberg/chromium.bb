@@ -31,7 +31,7 @@
 #ifndef WebConsoleMessage_h
 #define WebConsoleMessage_h
 
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebString.h"
 
 namespace WebKit {
 

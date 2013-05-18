@@ -31,7 +31,7 @@
 #ifndef WebFileChooserCompletion_h
 #define WebFileChooserCompletion_h
 
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebString.h"
 
 namespace WebKit {
 

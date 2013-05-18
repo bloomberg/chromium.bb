@@ -31,7 +31,7 @@
 #ifndef WebKit_h
 #define WebKit_h
 
-#include "../../../Platform/chromium/public/Platform.h"
+#include "../../../../public/platform/Platform.h"
 
 namespace WebKit {
 

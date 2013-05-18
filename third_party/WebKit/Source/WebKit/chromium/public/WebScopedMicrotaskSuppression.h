@@ -31,7 +31,7 @@
 #ifndef WebScopedMicrotaskSuppression_h
 #define WebScopedMicrotaskSuppression_h
 
-#include "../../../Platform/chromium/public/WebPrivateOwnPtr.h"
+#include "../../../../public/platform/WebPrivateOwnPtr.h"
 
 namespace WebKit {
 

@@ -31,8 +31,8 @@
 #ifndef WebDOMEvent_h
 #define WebDOMEvent_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebString.h"
 #include "WebNode.h"
 
 namespace WebCore { class Event; }

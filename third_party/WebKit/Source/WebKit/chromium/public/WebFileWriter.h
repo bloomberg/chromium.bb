@@ -31,8 +31,8 @@
 #ifndef WebFileWriter_h
 #define WebFileWriter_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebString.h"
 
 namespace WebKit {
 

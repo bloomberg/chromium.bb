@@ -28,4 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../../../Platform/chromium/public/WebPluginListBuilder.h"
+#include "../../../../public/platform/WebPluginListBuilder.h"

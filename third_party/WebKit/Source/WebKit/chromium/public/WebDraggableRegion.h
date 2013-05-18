@@ -31,9 +31,9 @@
 #ifndef WebDraggableRegion_h
 #define WebDraggableRegion_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebRect.h"
-#include "../../../Platform/chromium/public/WebString.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebRect.h"
+#include "../../../../public/platform/WebString.h"
 
 namespace WebKit {
 

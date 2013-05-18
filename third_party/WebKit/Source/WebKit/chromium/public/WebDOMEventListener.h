@@ -31,7 +31,7 @@
 #ifndef WebDOMEventListener_h
 #define WebDOMEventListener_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 
 #if WEBKIT_IMPLEMENTATION
 namespace WebCore { class EventTarget; }

@@ -31,7 +31,7 @@
 #ifndef WebHelperPlugin_h
 #define WebHelperPlugin_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 #include "WebWidget.h"
 
 namespace WebKit {

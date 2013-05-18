@@ -31,7 +31,7 @@
 #ifndef WebOptionElement_h
 #define WebOptionElement_h
 
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebVector.h"
 #include "WebElement.h"
 
 #if WEBKIT_IMPLEMENTATION

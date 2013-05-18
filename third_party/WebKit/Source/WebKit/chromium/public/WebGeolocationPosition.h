@@ -26,8 +26,8 @@
 #ifndef WebGeolocationPosition_h
 #define WebGeolocationPosition_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebPrivatePtr.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebPrivatePtr.h"
 
 #if WEBKIT_IMPLEMENTATION
 #include <wtf/PassRefPtr.h>

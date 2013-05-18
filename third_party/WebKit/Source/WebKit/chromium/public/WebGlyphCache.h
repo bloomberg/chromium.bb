@@ -31,7 +31,7 @@
 #ifndef WebGlyphCache_h
 #define WebGlyphCache_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 
 namespace WebKit {
 

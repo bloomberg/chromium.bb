@@ -31,7 +31,7 @@
 #ifndef WebDatabase_h
 #define WebDatabase_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 #include "WebSecurityOrigin.h"
 
 namespace WebCore { class DatabaseBackendBase; }

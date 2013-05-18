@@ -31,7 +31,7 @@
 #ifndef WebScopedUserGesture_h
 #define WebScopedUserGesture_h
 
-#include "../../../Platform/chromium/public/WebPrivateOwnPtr.h"
+#include "../../../../public/platform/WebPrivateOwnPtr.h"
 
 namespace WebCore {
 class UserGestureIndicator;

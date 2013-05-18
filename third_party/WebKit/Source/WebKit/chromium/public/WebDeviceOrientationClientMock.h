@@ -26,8 +26,8 @@
 #ifndef WebDeviceOrientationClientMock_h
 #define WebDeviceOrientationClientMock_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebPrivateOwnPtr.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebPrivateOwnPtr.h"
 #include "WebDeviceOrientationClient.h"
 
 namespace WebCore { class DeviceOrientationClientMock; }

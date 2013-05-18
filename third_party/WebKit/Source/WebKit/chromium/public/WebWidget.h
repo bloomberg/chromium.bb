@@ -31,10 +31,10 @@
 #ifndef WebWidget_h
 #define WebWidget_h
 
-#include "../../../Platform/chromium/public/WebCanvas.h"
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebRect.h"
-#include "../../../Platform/chromium/public/WebSize.h"
+#include "../../../../public/platform/WebCanvas.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebRect.h"
+#include "../../../../public/platform/WebSize.h"
 #include "WebCompositionUnderline.h"
 #include "WebTextDirection.h"
 #include "WebTextInputInfo.h"

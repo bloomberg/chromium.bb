@@ -31,8 +31,8 @@
 #ifndef WebDocument_h
 #define WebDocument_h
 
-#include "../../../Platform/chromium/public/WebReferrerPolicy.h"
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebReferrerPolicy.h"
+#include "../../../../public/platform/WebVector.h"
 #include "WebDraggableRegion.h"
 #include "WebNode.h"
 #include "WebSecurityOrigin.h"

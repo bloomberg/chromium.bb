@@ -31,8 +31,8 @@
 #ifndef WebView_h
 #define WebView_h
 
-#include "../../../Platform/chromium/public/WebString.h"
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebString.h"
+#include "../../../../public/platform/WebVector.h"
 #include "WebDragOperation.h"
 #include "WebPageVisibilityState.h"
 #include "WebWidget.h"

@@ -30,7 +30,7 @@
 #ifndef WebDOMMessageEvent_h
 #define WebDOMMessageEvent_h
 
-#include "../../../Platform/chromium/public/WebMessagePortChannel.h"
+#include "../../../../public/platform/WebMessagePortChannel.h"
 #include "WebDOMEvent.h"
 #include "WebSerializedScriptValue.h"
 

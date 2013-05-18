@@ -31,8 +31,8 @@
 #ifndef WebDevToolsAgent_h
 #define WebDevToolsAgent_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebVector.h"
+#include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebVector.h"
 
 namespace WebKit {
 class WebDevToolsAgentClient;

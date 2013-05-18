@@ -31,7 +31,7 @@
 #ifndef WebNotification_h
 #define WebNotification_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../../public/platform/WebCommon.h"
 #include "WebTextDirection.h"
 
 #if WEBKIT_IMPLEMENTATION

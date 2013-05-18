@@ -32,8 +32,8 @@
 #ifndef WebViewBenchmarkSupport_h
 #define WebViewBenchmarkSupport_h
 
-#include "../../../Platform/chromium/public/WebCanvas.h"
-#include "../../../Platform/chromium/public/WebSize.h"
+#include "../../../../public/platform/WebCanvas.h"
+#include "../../../../public/platform/WebSize.h"
 
 namespace WebKit {
 
