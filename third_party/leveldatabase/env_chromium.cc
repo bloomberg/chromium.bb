@@ -547,14 +547,14 @@ class ChromiumEnv : public Env, public UMALogger {
 
   class Retrier {
    public:
-    Retrier(base::HistogramBase* histogram, const int kMaxRetryMillis) :
-        start_(base::TimeTicks::Now()),
-        limit_(start_ + base::TimeDelta::FromMilliseconds(kMaxRetryMillis)),
-        last_(start_),
-        time_to_sleep_(base::TimeDelta::FromMilliseconds(10)),
-        success_(true),
-        histogram_(histogram) {
-    }
+    Retrier(base::HistogramBase* histogram, const int kMaxRetryMillis)
+        : start_(base::TimeTicks::Now()),
+          limit_(start_ + base::TimeDelta::FromMilliseconds(kMaxRetryMillis)),
+          last_(start_),
+          time_to_sleep_(base::TimeDelta::FromMilliseconds(10)),
+          success_(true),
+          histogram_(histogram) {}
+
     ~Retrier() {
       if (success_)
         histogram_->AddTime(last_ - start_);
@@ -584,7 +584,7 @@ class ChromiumEnv : public Env, public UMALogger {
       return result;
     base::FilePath destination = CreateFilePath(dst);
 
-    Retrier retrier(GetRetryTimeHistogram(kRenameFile), kMaxRenameTimeMillis);
+    Retrier retrier(GetRetryTimeHistogram(kRenameFile), kMaxRetryTimeMillis);
     base::PlatformFileError error = base::PLATFORM_FILE_OK;
     do {
       if (::file_util::ReplaceFileAndGetError(
@@ -615,7 +615,7 @@ class ChromiumEnv : public Env, public UMALogger {
     bool created;
     ::base::PlatformFileError error_code;
     ::base::PlatformFile file;
-    Retrier retrier(GetRetryTimeHistogram(kLockFile), kMaxRenameTimeMillis);
+    Retrier retrier(GetRetryTimeHistogram(kLockFile), kMaxRetryTimeMillis);
     do {
       file = ::base::CreatePlatformFile(
           CreateFilePath(fname), flags, &created, &error_code);
@@ -728,7 +728,7 @@ class ChromiumEnv : public Env, public UMALogger {
   std::string name_;
 
  private:
-  const int kMaxRenameTimeMillis;
+  const int kMaxRetryTimeMillis;
   // BGThread() is the body of the background thread
   void BGThread();
   static void BGThreadWrapper(void* arg) {
@@ -756,7 +756,7 @@ ChromiumEnv::ChromiumEnv()
     : name_("LevelDBEnv"),
       bgsignal_(&mu_),
       started_bgthread_(false),
-      kMaxRenameTimeMillis(1000) {
+      kMaxRetryTimeMillis(1000) {
 }
 
 base::HistogramBase* ChromiumEnv::GetOSErrorHistogram(MethodID method,
@@ -775,10 +775,10 @@ base::HistogramBase* ChromiumEnv::GetRetryTimeHistogram(MethodID method) const {
 
   const int kBucketSizeMillis = 25;
   // Add 2, 1 for each of the buckets <1 and >max.
-  const int kNumBuckets = kMaxRenameTimeMillis / kBucketSizeMillis + 2;
+  const int kNumBuckets = kMaxRetryTimeMillis / kBucketSizeMillis + 2;
   return base::Histogram::FactoryTimeGet(
       uma_name, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis + 1),
+      base::TimeDelta::FromMilliseconds(kMaxRetryTimeMillis + 1),
       kNumBuckets,
       base::Histogram::kUmaTargetedHistogramFlag);
 }
