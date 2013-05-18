@@ -97,7 +97,9 @@ body.custom-theme #logo {
   font-size: 18px;
   height: 36px;
   max-width: 620px;
-  width: 300px;
+  /* #fakebox width (here and below) should be 2px less than #mv-tiles
+     to account for its border. */
+  width: 298px;
 }
 
 #fakebox:hover {
@@ -178,16 +180,20 @@ body.fakebox-focused #cursor {
 }
 
 @media only screen and (min-width:660px) {
-  #fakebox,
-  #mv-tiles {
+  #fakebox {
     width: 458px;
+  }
+  #mv-tiles {
+    width: 460px;
   }
 }
 
 @media only screen and (min-width:820px) {
-  #fakebox,
-  #mv-tiles {
+  #fakebox {
     width: 618px;
+  }
+  #mv-tiles {
+    width: 620px;
   }
 }
 
