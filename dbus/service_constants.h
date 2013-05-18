@@ -166,6 +166,7 @@ const char kSessionManagerStoreDeviceLocalAccountPolicy[] =
 const char kSessionManagerRetrieveDeviceLocalAccountPolicy[] =
     "RetrieveDeviceLocalAccountPolicy";
 const char kSessionManagerRetrieveSessionState[] = "RetrieveSessionState";
+const char kSessionManagerRetrieveActiveSessions[] = "RetrieveActiveSessions";
 const char kSessionManagerStartSessionService[] = "StartSessionService";
 const char kSessionManagerStopSessionService[] = "StopSessionService";
 const char kSessionManagerStartDeviceWipe[] = "StartDeviceWipe";
