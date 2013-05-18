@@ -15,7 +15,7 @@ struct DisallowedFeatures;
 class Buffer;
 class BufferManager;
 class MockErrorState;
-class Texture;
+class TextureRef;
 class TextureManager;
 
 class TestHelper {
@@ -98,7 +98,7 @@ class TestHelper {
 
   static void SetTexParameterWithExpectations(
       ::gfx::MockGLInterface* gl, MockErrorState* error_state,
-      TextureManager* manager, Texture* texture,
+      TextureManager* manager, TextureRef* texture_ref,
       GLenum pname, GLint value, GLenum error);
 
  private:

@@ -170,6 +170,7 @@ bool ContextGroup::Initialize(
                                             feature_info_.get(),
                                             max_texture_size,
                                             max_cube_map_texture_size));
+  texture_manager_->set_framebuffer_manager(framebuffer_manager_.get());
 
   const GLint kMinTextureImageUnits = 8;
   const GLint kMinVertexTextureImageUnits = 0;
@@ -251,6 +252,8 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
 
   if (framebuffer_manager_ != NULL) {
     framebuffer_manager_->Destroy(have_context);
+    if (texture_manager_)
+      texture_manager_->set_framebuffer_manager(NULL);
     framebuffer_manager_.reset();
   }
 

@@ -19,6 +19,7 @@ class FramebufferManager;
 class Renderbuffer;
 class RenderbufferManager;
 class Texture;
+class TextureRef;
 class TextureManager;
 
 // Info about a particular Framebuffer.
@@ -35,7 +36,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
         RenderbufferManager* renderbuffer_manager,
         TextureManager* texture_manager,
         bool cleared) = 0;
-    virtual bool IsTexture(Texture* texture) const = 0;
+    virtual bool IsTexture(TextureRef* texture) const = 0;
     virtual bool IsRenderbuffer(
         Renderbuffer* renderbuffer) const = 0;
     virtual bool CanRenderTo() const = 0;
@@ -71,7 +72,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   // Attaches a texture to a particlar attachment. Pass null to detach.
   void AttachTexture(
-      GLenum attachment, Texture* texture, GLenum target,
+      GLenum attachment, TextureRef* texture_ref, GLenum target,
       GLint level);
 
   // Unbinds the given renderbuffer if it is bound.
@@ -80,7 +81,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   // Unbinds the given texture if it is bound.
   void UnbindTexture(
-      GLenum target, Texture* texture);
+      GLenum target, TextureRef* texture_ref);
 
   const Attachment* GetAttachment(GLenum attachment) const;
 

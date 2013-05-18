@@ -523,11 +523,12 @@ void TestHelper::DoBufferData(
 
 void TestHelper::SetTexParameterWithExpectations(
     ::gfx::MockGLInterface* gl, MockErrorState* error_state,
-    TextureManager* manager, Texture* texture,
+    TextureManager* manager, TextureRef* texture_ref,
     GLenum pname, GLint value, GLenum error) {
   if (error == GL_NO_ERROR) {
     if (pname != GL_TEXTURE_POOL_CHROMIUM) {
-      EXPECT_CALL(*gl, TexParameteri(texture->target(), pname, value))
+      EXPECT_CALL(*gl, TexParameteri(texture_ref->texture()->target(),
+                                     pname, value))
           .Times(1)
           .RetiresOnSaturation();
     }
@@ -540,7 +541,7 @@ void TestHelper::SetTexParameterWithExpectations(
         .Times(1)
         .RetiresOnSaturation();
   }
-  manager->SetParameter("", error_state, texture, pname, value);
+  manager->SetParameter("", error_state, texture_ref, pname, value);
 }
 
 ScopedGLImplementationSetter::ScopedGLImplementationSetter(

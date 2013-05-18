@@ -111,7 +111,7 @@ class GLES2DecoderTestBase : public testing::Test {
     return group_->renderbuffer_manager()->GetRenderbuffer(service_id);
   }
 
-  Texture* GetTexture(GLuint client_id) {
+  TextureRef* GetTexture(GLuint client_id) {
     return group_->texture_manager()->GetTexture(client_id);
   }
 

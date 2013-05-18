@@ -247,12 +247,14 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
-    gpu::gles2::Texture* info = texture_manager->GetTexture(texture_ids[i]);
-    if (!info) {
+    gpu::gles2::TextureRef* texture_ref = texture_manager->GetTexture(
+        texture_ids[i]);
+    if (!texture_ref) {
       DLOG(FATAL) << "Failed to find texture id " << texture_ids[i];
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
+    gpu::gles2::Texture* info = texture_ref->texture();
     if (info->target() != texture_target_) {
       DLOG(FATAL) << "Texture target mismatch for texture id "
                   << texture_ids[i];
@@ -270,7 +272,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
         return;
       }
     }
-    if (!texture_manager->ClearRenderableLevels(command_decoder, info)) {
+    if (!texture_manager->ClearRenderableLevels(command_decoder, texture_ref)) {
       DLOG(FATAL) << "Failed to Clear texture id " << texture_ids[i];
       NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
       return;

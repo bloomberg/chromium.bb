@@ -429,7 +429,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
             framebuffer_->IsPossiblyComplete());
 
   texture_manager_.CreateTexture(kTextureClient1Id, kTextureService1Id);
-  scoped_refptr<Texture> texture1(
+  scoped_refptr<TextureRef> texture1(
       texture_manager_.GetTexture(kTextureClient1Id));
   ASSERT_TRUE(texture1 != NULL);
 
@@ -478,7 +478,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
 
   // Check replacing an attachment
   texture_manager_.CreateTexture(kTextureClient2Id, kTextureService2Id);
-  scoped_refptr<Texture> texture2(
+  scoped_refptr<TextureRef> texture2(
       texture_manager_.GetTexture(kTextureClient2Id));
   ASSERT_TRUE(texture2 != NULL);
   texture_manager_.SetTarget(texture2, GL_TEXTURE_2D);
@@ -580,11 +580,11 @@ TEST_F(FramebufferInfoTest, UnbindTexture) {
   const GLint kLevel1 = 0;
 
   texture_manager_.CreateTexture(kTextureClient1Id, kTextureService1Id);
-  scoped_refptr<Texture> texture1(
+  scoped_refptr<TextureRef> texture1(
       texture_manager_.GetTexture(kTextureClient1Id));
   ASSERT_TRUE(texture1 != NULL);
   texture_manager_.CreateTexture(kTextureClient2Id, kTextureService2Id);
-  scoped_refptr<Texture> texture2(
+  scoped_refptr<TextureRef> texture2(
       texture_manager_.GetTexture(kTextureClient2Id));
   ASSERT_TRUE(texture2 != NULL);
 
@@ -622,7 +622,7 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
       renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient1Id);
   ASSERT_TRUE(renderbuffer1 != NULL);
   texture_manager_.CreateTexture(kTextureClient2Id, kTextureService2Id);
-  scoped_refptr<Texture> texture2(
+  scoped_refptr<TextureRef> texture2(
       texture_manager_.GetTexture(kTextureClient2Id));
   ASSERT_TRUE(texture2 != NULL);
 
@@ -667,7 +667,7 @@ TEST_F(FramebufferInfoTest, GetStatus) {
       renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient1Id);
   ASSERT_TRUE(renderbuffer1 != NULL);
   texture_manager_.CreateTexture(kTextureClient2Id, kTextureService2Id);
-  scoped_refptr<Texture> texture2(
+  scoped_refptr<TextureRef> texture2(
       texture_manager_.GetTexture(kTextureClient2Id));
   ASSERT_TRUE(texture2 != NULL);
   texture_manager_.SetTarget(texture2, GL_TEXTURE_2D);
