@@ -1774,8 +1774,6 @@
         'browser/ui/views/message_center/notification_bubble_wrapper_win.cc',
         'browser/ui/views/message_center/web_notification_tray_win.h',
         'browser/ui/views/message_center/web_notification_tray_win.cc',
-        'browser/ui/views/missing_system_file_dialog_win.cc',
-        'browser/ui/views/missing_system_file_dialog_win.h',
         'browser/ui/views/native_focus_tracker_views.cc',
         'browser/ui/views/native_focus_tracker_views.h',
         'browser/ui/views/native_focus_tracker_views_aura.cc',

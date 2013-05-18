@@ -396,8 +396,8 @@ class OmniboxViewWin
   void CopyURL();
 
   // The handle to the RichEdit DLL.  In the rare case where the user's system
-  // is missing this DLL (due to some kind of system corruption), we show an
-  // error dialog; see missing_system_file_dialog_win.h.
+  // is missing this DLL (due to some kind of system corruption), the similar
+  // OmniboxViewViews is used instead; see Textfield::IsViewsTextfieldEnabled().
   static HMODULE loaded_library_module_;
 
   scoped_ptr<OmniboxPopupView> popup_view_;

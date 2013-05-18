@@ -60,6 +60,10 @@ bool Textfield::IsViewsTextfieldEnabled() {
   // The new dialog style cannot host native Windows textfield controls.
   if (switches::IsNewDialogStyleEnabled())
     return true;
+  // Avoid native Windows Textfields if the RichEdit library is not available.
+  static const HMODULE loaded_msftedit_dll = LoadLibrary(L"msftedit.dll");
+  if (!loaded_msftedit_dll)
+    return true;
 #endif
   return true;
 }

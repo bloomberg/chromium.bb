@@ -38,7 +38,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/missing_system_file_dialog_win.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/user_metrics.h"
@@ -494,13 +493,8 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
           new ui::TSFEventRouter(this) : NULL) {
   if (!loaded_library_module_)
     loaded_library_module_ = LoadLibrary(kRichEditDLLName);
-
-  if (!loaded_library_module_) {
-    // RichEdit DLL is not available. This is a rare error.
-    MissingSystemFileDialog::ShowDialog(
-        GetAncestor(location_bar->GetWidget()->GetNativeView(), GA_ROOT),
-        parent_view_->profile());
-  }
+  // RichEdit should be available; rare exceptions should use the Views omnibox.
+  DCHECK(loaded_library_module_);
 
   saved_selection_for_focus_change_.cpMin = -1;
 
