@@ -25,7 +25,8 @@ DeviceMotion
 DeviceOrientation status=stable
 DialogElement status=experimental
 DirectoryUpload status=stable
-EncryptedMedia status=stable
+EncryptedMedia status=experimental
+EncryptedMediaAnyVersion status=stable
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
 ExperimentalShadowDOM status=experimental
@@ -40,6 +41,7 @@ InputTypeWeek status=stable
 JavaScriptI18NAPI status=stable
 LangAttributeAwareFormControlUI
 LazyLayout
+LegacyEncryptedMedia status=stable
 LocalStorage status=stable
 Media custom
 MediaStream status=stable
@@ -60,5 +62,5 @@ VideoTrack status=stable
 WebAnimation
 WebAudio condition=WEB_AUDIO, status=stable
 WebMIDI status=test
-WebPInAcceptHeader
 WebKitMediaSource status=stable
+WebPInAcceptHeader

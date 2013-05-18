@@ -169,12 +169,34 @@ bool WebRuntimeFeatures::isDirectoryUploadEnabled()
 
 void WebRuntimeFeatures::enableEncryptedMedia(bool enable)
 {
-    RuntimeEnabledFeatures::setEncryptedMediaEnabled(enable);
+    // FIXME: Change to setEncryptedMediaEnabled() once Chromium
+    // starts calling enableLegacyEncryptedMedia().
+    RuntimeEnabledFeatures::setLegacyEncryptedMediaEnabled(enable);
+    // FIXME: Hack to allow MediaKeyError to be enabled for either version.
+    RuntimeEnabledFeatures::setEncryptedMediaAnyVersionEnabled(
+        RuntimeEnabledFeatures::encryptedMediaEnabled()
+        || RuntimeEnabledFeatures::legacyEncryptedMediaEnabled());
 }
 
 bool WebRuntimeFeatures::isEncryptedMediaEnabled()
 {
-    return RuntimeEnabledFeatures::encryptedMediaEnabled();
+    // FIXME: Change to encryptedMediaEnabled() once Chromium
+    // starts calling isLegacyEncryptedMediaEnabled()
+    return RuntimeEnabledFeatures::legacyEncryptedMediaEnabled();
+}
+
+void WebRuntimeFeatures::enableLegacyEncryptedMedia(bool enable)
+{
+    RuntimeEnabledFeatures::setLegacyEncryptedMediaEnabled(enable);
+    // FIXME: Hack to allow MediaKeyError to be enabled for either version.
+    RuntimeEnabledFeatures::setEncryptedMediaAnyVersionEnabled(
+        RuntimeEnabledFeatures::encryptedMediaEnabled()
+        || RuntimeEnabledFeatures::legacyEncryptedMediaEnabled());
+}
+
+bool WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()
+{
+    return RuntimeEnabledFeatures::legacyEncryptedMediaEnabled();
 }
 
 void WebRuntimeFeatures::enableExperimentalCanvasFeatures(bool enable)
