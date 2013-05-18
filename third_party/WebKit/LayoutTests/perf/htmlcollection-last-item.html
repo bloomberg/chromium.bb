@@ -21,8 +21,8 @@ function test(magnitude)
 
 Magnitude.description("Tests that accessing the last item in children HTMLCollection is a constant time operation.");
 Magnitude.numTrials = 5;
-Magnitude.successThreshold = 0.40;
-Magnitude.tolerance = 0.20;
+Magnitude.successThreshold = 0.40; // 2 out of 5
+Magnitude.tolerance = 0.40;
 Magnitude.trim = 2;
 Magnitude.run(setupFunction, test, Magnitude.CONSTANT);
 

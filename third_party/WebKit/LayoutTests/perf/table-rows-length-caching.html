@@ -38,7 +38,7 @@ function testTableRows(magnitude)
 Magnitude.description('Tests that check that table.row.length is properly cached');
 // Quite noisy
 Magnitude.numTrials = 5;
-Magnitude.successThreshold = 0.40;
+Magnitude.successThreshold = 0.40; // 2 out of 5
 Magnitude.tolerance = 0.30;
 Magnitude.trim = 2;
 Magnitude.run(setupTableRows, testTableRows, Magnitude.CONSTANT);

@@ -15,7 +15,9 @@ function test(magnitude)
 }
 
 Magnitude.description("Tests that setAttribute is constant time.");
-Magnitude.tolerance = 0.40;
+Magnitude.numTrials = 5;
+Magnitude.successThreshold = 0.40; // 2 out of 5
+Magnitude.tolerance = 0.70;
 Magnitude.trim = 2;
 Magnitude.run(setupFunction, test, Magnitude.CONSTANT);
 </script>

@@ -178,7 +178,7 @@ Magnitude.run = function(setup, test, expected)
           numSuccesses++;
     }
     var neededToPass = Magnitude.numTrials * Magnitude.successThreshold;
-    Magnitude._debug('Succeeded ' + numSuccesses + ' times, need ' +
+    Magnitude._debug('Successes: ' + numSuccesses + ', need ' +
         neededToPass + ' (' + (100 * Magnitude.successThreshold) + '%) ' +
         'to pass');
     var passedOverall = (numSuccesses >= neededToPass);
