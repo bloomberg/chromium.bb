@@ -5,6 +5,7 @@
 #ifndef UI_GFX_QUAD_F_H_
 #define UI_GFX_QUAD_F_H_
 
+#include <cmath>
 #include <string>
 
 #include "ui/base/ui_export.h"
@@ -56,7 +57,13 @@ class UI_EXPORT QuadF {
   // Returns a rectangle that bounds the four points of the quad. The points of
   // the quad may lie on the right/bottom edge of the resulting rectangle,
   // rather than being strictly inside it.
-  RectF BoundingBox() const;
+  RectF BoundingBox() const {
+    float rl = std::min(std::min(p1_.x(), p2_.x()), std::min(p3_.x(), p4_.x()));
+    float rr = std::max(std::max(p1_.x(), p2_.x()), std::max(p3_.x(), p4_.x()));
+    float rt = std::min(std::min(p1_.y(), p2_.y()), std::min(p3_.y(), p4_.y()));
+    float rb = std::max(std::max(p1_.y(), p2_.y()), std::max(p3_.y(), p4_.y()));
+    return RectF(rl, rt, rr - rl, rb - rt);
+  }
 
   // Add a vector to the quad, offseting each point in the quad by the vector.
   void operator+=(const Vector2dF& rhs);
