@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
@@ -156,7 +157,7 @@ Status WaitForDevToolsAndCheckVersion(
       break;
     if (status.code() != kChromeNotReachable)
       return status;
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
   if (status.IsError())
     return status;
@@ -171,7 +172,7 @@ Status WaitForDevToolsAndCheckVersion(
       *user_client = client.Pass();
       return Status(kOk);
     }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
   return Status(kUnknownError, "unable to discover open pages");
 }

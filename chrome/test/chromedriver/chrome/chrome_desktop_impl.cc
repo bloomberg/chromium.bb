@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/process_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
@@ -16,6 +17,48 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 
+#if defined(OS_POSIX)
+#include <errno.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#endif
+
+namespace {
+
+bool KillProcess(base::ProcessHandle process_id) {
+#if defined(OS_POSIX)
+  kill(process_id, SIGKILL);
+  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(5);
+  while (base::Time::Now() < deadline) {
+    pid_t pid = HANDLE_EINTR(waitpid(process_id, NULL, WNOHANG));
+    if (pid == process_id)
+      return true;
+    if (pid == -1) {
+      if (errno == ECHILD) {
+        // The wait may fail with ECHILD if another process also waited for
+        // the same pid, causing the process state to get cleaned up.
+        return true;
+      }
+      LOG(WARNING) << "Error waiting for process " << process_id;
+    }
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+  }
+  return false;
+#endif
+
+#if defined(OS_WIN)
+  if (!base::KillProcess(process_id, 0, true)) {
+    int exit_code;
+    return base::GetTerminationStatus(process_id, &exit_code) !=
+        base::TERMINATION_STATUS_STILL_RUNNING;
+  }
+  return true;
+#endif
+}
+
+}  // namespace
+
 ChromeDesktopImpl::ChromeDesktopImpl(
     scoped_ptr<DevToolsHttpClient> client,
     const std::string& version,
@@ -25,7 +68,8 @@ ChromeDesktopImpl::ChromeDesktopImpl(
     base::ScopedTempDir* user_data_dir,
     base::ScopedTempDir* extension_dir)
     : ChromeImpl(client.Pass(), version, build_no, devtools_event_listeners),
-      process_(process) {
+      process_(process),
+      quit_(false) {
   if (user_data_dir->IsValid())
     CHECK(user_data_dir_.Set(user_data_dir->Take()));
   if (extension_dir->IsValid())
@@ -33,6 +77,12 @@ ChromeDesktopImpl::ChromeDesktopImpl(
 }
 
 ChromeDesktopImpl::~ChromeDesktopImpl() {
+  if (!quit_) {
+    base::FilePath user_data_dir = user_data_dir_.Take();
+    base::FilePath extension_dir = extension_dir_.Take();
+    LOG(WARNING) << "chrome detaches, user should take care of directory:"
+                 << user_data_dir.value() << " and " << extension_dir.value();
+  }
   base::CloseProcessHandle(process_);
 }
 
@@ -83,11 +133,8 @@ std::string ChromeDesktopImpl::GetOperatingSystemName() {
 }
 
 Status ChromeDesktopImpl::Quit() {
-  if (!base::KillProcess(process_, 0, true)) {
-    int exit_code;
-    if (base::GetTerminationStatus(process_, &exit_code) ==
-        base::TERMINATION_STATUS_STILL_RUNNING)
-      return Status(kUnknownError, "cannot kill Chrome");
-  }
+  quit_ = true;
+  if (!KillProcess(process_))
+    return Status(kUnknownError, "cannot kill Chrome");
   return Status(kOk);
 }

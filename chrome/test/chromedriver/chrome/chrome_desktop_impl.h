@@ -36,6 +36,7 @@ class ChromeDesktopImpl : public ChromeImpl {
 
  private:
   base::ProcessHandle process_;
+  bool quit_;
   base::ScopedTempDir user_data_dir_;
   base::ScopedTempDir extension_dir_;
 
