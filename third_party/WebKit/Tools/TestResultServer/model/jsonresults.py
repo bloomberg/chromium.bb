@@ -51,7 +51,8 @@ JSON_RESULTS_HIERARCHICAL_VERSION = 4
 JSON_RESULTS_MAX_BUILDS = 500
 JSON_RESULTS_MAX_BUILDS_SMALL = 100
 FAILURES_BY_TYPE_KEY = "num_failures_by_type"
-FAILURE_MAP_KEY = 'failure_map'
+FAILURE_MAP_KEY = "failure_map"
+EXPECTED_KEY = "expected"
 
 FAILURE_TO_CHAR = {
     "PASS": JSON_RESULTS_PASS,
@@ -100,11 +101,24 @@ class JsonResults(object):
 
     @classmethod
     def _merge_json(cls, aggregated_json, incremental_json, num_runs):
+        # We have to delete expected entries because the incremental json may not have any
+        # entry for every test in the aggregated json. But, the incremental json will have
+        # all the correct expected entries for that run.
+        cls._delete_expected_entries(aggregated_json[JSON_RESULTS_TESTS])
         cls._merge_non_test_data(aggregated_json, incremental_json, num_runs)
         incremental_tests = incremental_json[JSON_RESULTS_TESTS]
         if incremental_tests:
             aggregated_tests = aggregated_json[JSON_RESULTS_TESTS]
             cls._merge_tests(aggregated_tests, incremental_tests, num_runs)
+
+    @classmethod
+    def _delete_expected_entries(cls, aggregated_json):
+        for key in aggregated_json:
+            item = aggregated_json[key]
+            if _is_directory(item):
+                cls._delete_expected_entries(item)
+            elif EXPECTED_KEY in item:
+                del item[EXPECTED_KEY]
 
     @classmethod
     def _merge_non_test_data(cls, aggregated_json, incremental_json, num_runs):
@@ -162,14 +176,17 @@ class JsonResults(object):
                 cls._merge_tests(aggregated_json[test_name], incremental_sub_result, num_runs)
                 continue
 
+            aggregated_test = aggregated_json[test_name]
+
             if incremental_sub_result:
                 results = incremental_sub_result[JSON_RESULTS_RESULTS]
                 times = incremental_sub_result[JSON_RESULTS_TIMES]
+                if EXPECTED_KEY in incremental_sub_result and incremental_sub_result[EXPECTED_KEY] != "PASS":
+                    aggregated_test[EXPECTED_KEY] = incremental_sub_result[EXPECTED_KEY]
             else:
                 results = [[1, JSON_RESULTS_NO_DATA]]
                 times = [[1, 0]]
 
-            aggregated_test = aggregated_json[test_name]
             cls._insert_item_run_length_encoded(results, aggregated_test[JSON_RESULTS_RESULTS], num_runs)
             cls._insert_item_run_length_encoded(times, aggregated_test[JSON_RESULTS_TIMES], num_runs)
 
@@ -202,7 +219,10 @@ class JsonResults(object):
 
     @classmethod
     def _should_delete_leaf(cls, leaf):
-        deletable_types = set((JSON_RESULTS_PASS, JSON_RESULTS_NO_DATA, JSON_RESULTS_SKIP))
+        if leaf.get(EXPECTED_KEY, 'PASS') != 'PASS':
+            return False
+
+        deletable_types = set((JSON_RESULTS_PASS, JSON_RESULTS_NO_DATA))
         for result in leaf[JSON_RESULTS_RESULTS]:
             if result[1] not in deletable_types:
                 return False
@@ -252,9 +272,9 @@ class JsonResults(object):
 
     @classmethod
     def _populate_tests_from_full_results(cls, full_results, new_results):
-        if 'expected' in full_results:
-            if full_results['expected'] != 'PASS':
-                new_results['expected'] = full_results['expected']
+        if EXPECTED_KEY in full_results:
+            if full_results[EXPECTED_KEY] != 'PASS':
+                new_results[EXPECTED_KEY] = full_results[EXPECTED_KEY]
             time = int(round(full_results['time'])) if 'time' in full_results else 0
             new_results['times'] = [[1, time]]
             # FIXME: Include the retry result as well and find a nice way to display it in the flakiness dashboard.

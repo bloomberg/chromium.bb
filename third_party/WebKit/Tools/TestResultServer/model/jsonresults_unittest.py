@@ -615,10 +615,7 @@ class JsonResultsTest(unittest.TestCase):
                        "003.html": {
                            "results": [[1, "N"]],
                            "times": [[1, 0]]},
-                       "004.html": {
-                           "results": [[1, "X"]],
-                           "times": [[1, 0]]},
-                       }},
+                        }},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
@@ -626,7 +623,6 @@ class JsonResultsTest(unittest.TestCase):
                            "times": [[200, 0]]},
                        }},
             max_builds=200)
-
 
     def test_merge_remove_test(self):
         self._test_merge(
@@ -647,7 +643,7 @@ class JsonResultsTest(unittest.TestCase):
                         "times": [[10, 0]]
                     },
                     "003.html": {
-                        "results": [[190, 'X'], [9, 'N'], [1,"F"]],
+                        "results": [[190, 'P'], [9, 'N'], [1,"F"]],
                         "times": [[200, 0]]
                     },
                 }
@@ -685,6 +681,67 @@ class JsonResultsTest(unittest.TestCase):
                 }
             },
             max_builds=200)
+
+    def test_merge_updates_expected(self):
+        self._test_merge(
+            # Aggregated results
+            {
+                "builds": ["2", "1"],
+                "tests": {
+                    "directory": {
+                        "directory": {
+                            "001.html": {
+                                "expected": "FAIL",
+                                "results": [[200, "P"]],
+                                "times": [[200, 0]]
+                            }
+                        }
+                    },
+                    "002.html": {
+                        "expected": "FAIL",
+                        "results": [[10, "F"]],
+                        "times": [[10, 0]]
+                    },
+                    "003.html": {
+                        "expected": "FAIL",
+                        "results": [[190, 'P'], [9, 'N'], [1,"F"]],
+                        "times": [[200, 0]]
+                    },
+                }
+            },
+            # Incremental results
+            {
+                "builds": ["3"],
+                "tests": {
+                    "002.html": {
+                        "expected": "PASS",
+                        "results": [[1, "P"]],
+                        "times": [[1, 0]]
+                    },
+                    "003.html": {
+                        "expected": "TIMEOUT",
+                        "results": [[1, "P"]],
+                        "times": [[1, 0]]
+                    },
+                }
+            },
+            # Expected results
+            {
+                "builds": ["3", "2", "1"],
+                "tests": {
+                    "002.html": {
+                        "results": [[1, "P"],[10, "F"]],
+                        "times": [[11, 0]]
+                    },
+                    "003.html": {
+                        "expected": "TIMEOUT",
+                        "results": [[191, 'P'], [9, 'N']],
+                        "times": [[200, 0]]
+                    },
+                }
+            },
+            max_builds=200)
+
 
     def test_merge_keep_test_with_all_pass_but_slow_time(self):
         # Do not remove test where all run pass but max running time >= 5 seconds
@@ -778,32 +835,6 @@ class JsonResultsTest(unittest.TestCase):
                            "results": [[max_builds,"F"]],
                            "times": [[max_builds,0]]}}},
             int(max_builds))
-
-    # FIXME: Some data got corrupted and has results and times at the directory level.
-    # Once we've purged this from all the data, we should throw an error on this case.
-    def test_merge_directory_hierarchy_extra_results_and_times(self):
-        self._test_merge(
-            # Aggregated results
-            {"builds": ["2", "1"],
-             "tests": {"baz": {
-                            "003.html": {
-                                "results": [[25,"F"]],
-                                "times": [[25,0]]}},
-                        "results": [[25,"F"]],
-                        "times": [[25,0]]}},
-             # Incremental results
-             {"builds": ["3"],
-             "tests": {"baz": {
-                            "003.html": {
-                                "results": [[1,"F"]],
-                                "times": [[1,0]]}}}},
-             # Expected results
-             {"builds": ["3", "2", "1"],
-             "tests": {"baz": {
-                            "003.html": {
-                                "results": [[26,"F"]],
-                                "times": [[26,0]]}}},
-              "version": 4})
 
     def test_merge_build_directory_hierarchy(self):
         self._test_merge(
