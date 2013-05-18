@@ -1111,6 +1111,11 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
         current_gesture_type_ = kGestureTypeNull;
       }
       break;
+
+    case kGestureTypeMetrics:
+      // One shouldn't reach here
+      Err("Metrics gestures reached ImmediateInterpreter");
+      break;
   }
 }
 

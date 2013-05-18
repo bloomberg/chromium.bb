@@ -28,7 +28,7 @@ class DefaultDeallocator {
 template<typename Elt, class Deallocator = DefaultDeallocator<Elt>>
 class List {
  public:
-  List() : size_(0) { sentinel_.next_ = sentinel_.prev_ = &sentinel_; }
+  List() { Init(); }
   ~List() { DeleteAll(); }
 
   // inserts new_elt before existing. Assumes existing is in list already.
@@ -71,6 +71,12 @@ class List {
   // Iterator-like methods
   Elt* Begin() const { return Head(); }
   Elt* End() const { return const_cast<Elt*>(&sentinel_); }
+
+ protected:
+  void Init() {
+    size_ = 0;
+    sentinel_.next_ = sentinel_.prev_ = &sentinel_;
+  }
 
  private:
   // sentinel element

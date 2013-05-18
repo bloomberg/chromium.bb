@@ -31,6 +31,7 @@ int CombineGesturePriority(const Gesture* gesture) {
     case kGestureTypeFling: priority++;  // fallthrough
     case kGestureTypeSwipeLift: priority++;  // fallthrough
     case kGestureTypeButtonsChange: priority++;  // fallthrough
+    case kGestureTypeMetrics: priority++;  // fallthrough
   }
   // Most important at bottom
 
@@ -55,6 +56,7 @@ void CombineGestures(Gesture* gesture, const Gesture* addend) {
       case kGestureTypeContactInitiated:  // fallthrough
       case kGestureTypeFling:
       case kGestureTypeSwipeLift:
+      case kGestureTypeMetrics:
         break;
       case kGestureTypeButtonsChange:
         CombineButtonsGestures(gesture, addend);

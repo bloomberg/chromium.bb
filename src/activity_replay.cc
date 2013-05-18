@@ -383,6 +383,9 @@ bool ActivityReplay::ParseGesture(DictionaryValue* entry) {
   } else if (gesture_type == ActivityLog::kValueGestureTypeFling) {
     if (!ParseGestureFling(entry, &gs))
       return false;
+  } else if (gesture_type == ActivityLog::kValueGestureTypeMetrics) {
+    if (!ParseGestureMetrics(entry, &gs))
+      return false;
   } else {
     gs.type = kGestureTypeNull;
   }
@@ -542,6 +545,33 @@ bool ActivityReplay::ParseGestureFling(DictionaryValue* entry,
     return false;
   }
   out_gs->details.fling.fling_state = state;
+  return true;
+}
+
+bool ActivityReplay::ParseGestureMetrics(DictionaryValue* entry,
+                                       Gesture* out_gs) {
+  out_gs->type = kGestureTypeMetrics;
+  double dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureMetricsData1, &dbl)) {
+    Err("can't parse metrics data 1");
+    return false;
+  }
+  out_gs->details.metrics.data[0] = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureMetricsData2, &dbl)) {
+    Err("can't parse metrics data 2");
+    return false;
+  }
+  out_gs->details.metrics.data[1] = dbl;
+  int type;
+  if (!entry->GetInteger(ActivityLog::kKeyGestureMetricsType, &type)) {
+    Err("can't parse metrics type");
+    return false;
+  }
+  if (type == 0) {
+    out_gs->details.metrics.type = kGestureMetricsTypeNoisyGround;
+    return true;
+  }
+  out_gs->details.metrics.type = kGestureMetricsTypeUnknown;
   return true;
 }
 

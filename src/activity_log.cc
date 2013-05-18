@@ -292,6 +292,18 @@ const char kSubSubEntryPadding[] = "      ";
       ret->Set(kKeyGestureType,
                new StringValue(kValueGestureTypeSwipeLift));
       break;
+    case kGestureTypeMetrics:
+      handled = true;
+      ret->Set(kKeyGestureType,
+               new StringValue(kValueGestureTypeMetrics));
+      ret->Set(kKeyGestureMetricsType,
+               new FundamentalValue(
+                   static_cast<int>(gesture.details.metrics.type)));
+      ret->Set(kKeyGestureMetricsData1,
+               new FundamentalValue(gesture.details.metrics.data[0]));
+      ret->Set(kKeyGestureMetricsData2,
+               new FundamentalValue(gesture.details.metrics.data[1]));
+      break;
   }
   if (!handled)
     ret->Set(kKeyGestureType,
@@ -438,6 +450,7 @@ const char ActivityLog::kValueGestureTypeButtonsChange[] = "buttonsChange";
 const char ActivityLog::kValueGestureTypeFling[] = "fling";
 const char ActivityLog::kValueGestureTypeSwipe[] = "swipe";
 const char ActivityLog::kValueGestureTypeSwipeLift[] = "swipeLift";
+const char ActivityLog::kValueGestureTypeMetrics[] = "metrics";
 const char ActivityLog::kKeyGestureStartTime[] = "startTime";
 const char ActivityLog::kKeyGestureEndTime[] = "endTime";
 const char ActivityLog::kKeyGestureMoveDX[] = "dx";
@@ -461,6 +474,9 @@ const char ActivityLog::kKeyGestureSwipeDX[] = "dx";
 const char ActivityLog::kKeyGestureSwipeDY[] = "dy";
 const char ActivityLog::kKeyGestureSwipeOrdinalDX[] = "ordinalDx";
 const char ActivityLog::kKeyGestureSwipeOrdinalDY[] = "ordinalDy";
+const char ActivityLog::kKeyGestureMetricsType[] = "type";
+const char ActivityLog::kKeyGestureMetricsData1[] = "data1";
+const char ActivityLog::kKeyGestureMetricsData2[] = "data2";
 const char ActivityLog::kKeyPropChangeType[] = "propChangeType";
 const char ActivityLog::kKeyPropChangeName[] = "name";
 const char ActivityLog::kKeyPropChangeValue[] = "value";

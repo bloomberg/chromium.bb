@@ -210,6 +210,18 @@ typedef struct {
   float ordinal_dz;
 } GesturePinch;
 
+// Metrics types that we care about
+enum GestureMetricsType {
+  kGestureMetricsTypeNoisyGround = 0,
+  kGestureMetricsTypeUnknown,
+};
+
+typedef struct {
+  enum GestureMetricsType type;
+  // Optional values for the metrics. 2 are more than enough for now.
+  float data[2];
+} GestureMetrics;
+
 enum GestureType {
 #ifdef GESTURES_INTERNAL
   kGestureTypeNull = -1,  // internal to Gestures library only
@@ -222,6 +234,7 @@ enum GestureType {
   kGestureTypeSwipe,
   kGestureTypePinch,
   kGestureTypeSwipeLift,
+  kGestureTypeMetrics,
 };
 
 #ifdef __cplusplus
@@ -233,6 +246,7 @@ extern const GestureFling kGestureFling;
 extern const GestureSwipe kGestureSwipe;
 extern const GesturePinch kGesturePinch;
 extern const GestureSwipeLift kGestureSwipeLift;
+extern const GestureMetrics kGestureMetrics;
 #endif  // __cplusplus
 
 struct Gesture {
@@ -290,6 +304,16 @@ struct Gesture {
       : start_time(start),
         end_time(end),
         type(kGestureTypeSwipeLift) {}
+  Gesture(const GestureMetrics&,
+          stime_t start, stime_t end, GestureMetricsType m_type,
+          float d1, float d2)
+      : start_time(start),
+        end_time(end),
+        type(kGestureTypeMetrics) {
+    details.metrics.type = m_type;
+    details.metrics.data[0] = d1;
+    details.metrics.data[1] = d2;
+  }
 #endif  // __cplusplus
 
   stime_t start_time, end_time;
@@ -302,6 +326,7 @@ struct Gesture {
     GestureSwipe swipe;
     GesturePinch pinch;
     GestureSwipeLift swipe_lift;
+    GestureMetrics metrics;
   } details;
 };
 

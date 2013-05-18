@@ -22,6 +22,7 @@ SO_OBJECTS=\
 	$(OBJDIR)/interpreter.o \
 	$(OBJDIR)/logging_filter_interpreter.o \
 	$(OBJDIR)/lookahead_filter_interpreter.o \
+	$(OBJDIR)/metrics_filter_interpreter.o \
 	$(OBJDIR)/mouse_interpreter.o \
 	$(OBJDIR)/multitouch_mouse_interpreter.o \
 	$(OBJDIR)/non_linearity_filter_interpreter.o \

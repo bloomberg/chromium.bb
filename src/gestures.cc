@@ -21,6 +21,7 @@
 #include "gestures/include/logging.h"
 #include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/lookahead_filter_interpreter.h"
+#include "gestures/include/metrics_filter_interpreter.h"
 #include "gestures/include/mouse_interpreter.h"
 #include "gestures/include/multitouch_mouse_interpreter.h"
 #include "gestures/include/non_linearity_filter_interpreter.h"
@@ -240,6 +241,11 @@ string Gesture::String() const {
     case kGestureTypeSwipeLift:
       return StringPrintf("(Gesture type: swipeLift start: %f stop: %f)",
                           start_time, end_time);
+    case kGestureTypeMetrics:
+      return StringPrintf("(Gesture type: metrics start: %f stop: %f "
+                          "type: %d d1: %f d2: %f)", start_time, end_time,
+                          details.metrics.type,
+                          details.metrics.data[0], details.metrics.data[1]);
   }
   return "(Gesture type: unknown)";
 }
@@ -282,6 +288,14 @@ bool Gesture::operator==(const Gesture& that) const {
     case kGestureTypeSwipeLift:
       return gestures::DoubleEq(start_time, that.start_time) &&
           gestures::DoubleEq(end_time, that.end_time);
+    case kGestureTypeMetrics:
+      return gestures::DoubleEq(start_time, that.start_time) &&
+          gestures::DoubleEq(end_time, that.end_time) &&
+          details.metrics.type == that.details.metrics.type &&
+          gestures::FloatEq(details.metrics.data[0],
+              that.details.metrics.data[0]) &&
+          gestures::FloatEq(details.metrics.data[1],
+              that.details.metrics.data[1]);
   }
   return true;
 }
@@ -484,6 +498,7 @@ void GestureInterpreter::InitializeTouchpad(void) {
                                               tracer_.get());
   temp = new TrendClassifyingFilterInterpreter(prop_reg_.get(), temp,
                                                tracer_.get());
+  temp = new MetricsFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
                                       GESTURES_DEVCLASS_TOUCHPAD);
   temp = new FingerMergeFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
@@ -560,3 +575,4 @@ const GestureButtonsChange kGestureButtonsChange = { 0, 0 };
 const GestureFling kGestureFling = { 0, 0, 0, 0, 0 };
 const GestureSwipe kGestureSwipe = { 0, 0, 0, 0 };
 const GesturePinch kGesturePinch = { 0, 0 };
+const GestureMetrics kGestureMetrics = { kGestureMetricsTypeUnknown, {0, 0} };
