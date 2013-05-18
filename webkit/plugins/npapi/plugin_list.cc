@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
-#include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/plugin_switches.h"
 
@@ -186,7 +185,7 @@ bool PluginList::ReadPluginInfo(const base::FilePath& filename,
   // Not an internal plugin.
   *entry_points = NULL;
 
-  return PluginLib::ReadWebPluginInfo(filename, info);
+  return PluginList::ReadWebPluginInfo(filename, info);
 }
 
 // static

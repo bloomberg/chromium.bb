@@ -9,6 +9,8 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/file_version_info.h"
+#include "base/file_version_info_win.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -20,7 +22,6 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
-#include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/plugin_switches.h"
 
 namespace {
@@ -264,6 +265,44 @@ namespace npapi {
 void PluginList::PlatformInit() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   dont_load_new_wmp_ = command_line.HasSwitch(switches::kUseOldWMPPlugin);
+}
+
+bool PluginList::ReadWebPluginInfo(const base::FilePath& filename,
+                                   webkit::WebPluginInfo* info) {
+  // On windows, the way we get the mime types for the library is
+  // to check the version information in the DLL itself.  This
+  // will be a string of the format:  <type1>|<type2>|<type3>|...
+  // For example:
+  //     video/quicktime|audio/aiff|image/jpeg
+  scoped_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfo(filename));
+  if (!version_info) {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "Could not get version info for plugin "
+        << filename.value();
+    return false;
+  }
+
+  FileVersionInfoWin* version_info_win =
+      static_cast<FileVersionInfoWin*>(version_info.get());
+
+  info->name = version_info->product_name();
+  info->desc = version_info->file_description();
+  info->version = version_info->file_version();
+  info->path = filename;
+
+  // TODO(evan): Move the ParseMimeTypes code inline once Pepper is updated.
+  if (!PluginList::ParseMimeTypes(
+          UTF16ToASCII(version_info_win->GetStringValue(L"MIMEType")),
+          UTF16ToASCII(version_info_win->GetStringValue(L"FileExtents")),
+          version_info_win->GetStringValue(L"FileOpenName"),
+          &info->mime_types)) {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "Plugin " << info->name << " has bad MIME types, skipping";
+    return false;
+  }
+
+  return true;
 }
 
 void PluginList::GetPluginDirectories(std::vector<base::FilePath>* plugin_dirs) {

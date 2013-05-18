@@ -46,7 +46,7 @@ struct PluginEntryPoints {
 // the correct types. On Linux, it walks the plugin directories as well
 // (e.g. /usr/lib/browser-plugins/).
 // This object is thread safe.
-class WEBKIT_PLUGINS_EXPORT PluginList {
+class PluginList {
  public:
   // Custom traits that performs platform-dependent initialization
   // when the instance is created.
@@ -169,6 +169,24 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   void set_will_load_plugins_callback(const base::Closure& callback);
 
   virtual ~PluginList();
+
+  // Creates a WebPluginInfo structure given a plugin's path.  On success
+  // returns true, with the information being put into "info".
+  // Returns false if the library couldn't be found, or if it's not a plugin.
+  static bool ReadWebPluginInfo(const base::FilePath& filename,
+                                webkit::WebPluginInfo* info);
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  // Parse the result of an NP_GetMIMEDescription() call.
+  // This API is only used on Unixes, and is exposed here for testing.
+  static void ParseMIMEDescription(const std::string& description,
+      std::vector<webkit::WebPluginMimeType>* mime_types);
+
+  // Extract a version number from a description string.
+  // This API is only used on Unixes, and is exposed here for testing.
+  static void ExtractVersionString(const std::string& version,
+                                   webkit::WebPluginInfo* info);
+#endif
 
  protected:
   // Constructors are private for singletons but we expose this one

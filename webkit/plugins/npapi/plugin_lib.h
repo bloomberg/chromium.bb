@@ -31,24 +31,6 @@ class WEBKIT_PLUGINS_EXPORT PluginLib : public base::RefCounted<PluginLib> {
  public:
   static PluginLib* CreatePluginLib(const base::FilePath& filename);
 
-  // Creates a WebPluginInfo structure given a plugin's path.  On success
-  // returns true, with the information being put into "info".
-  // Returns false if the library couldn't be found, or if it's not a plugin.
-  static bool ReadWebPluginInfo(const base::FilePath& filename,
-                                webkit::WebPluginInfo* info);
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  // Parse the result of an NP_GetMIMEDescription() call.
-  // This API is only used on Unixes, and is exposed here for testing.
-  static void ParseMIMEDescription(const std::string& description,
-      std::vector<webkit::WebPluginMimeType>* mime_types);
-
-  // Extract a version number from a description string.
-  // This API is only used on Unixes, and is exposed here for testing.
-  static void ExtractVersionString(const std::string& version,
-                                   webkit::WebPluginInfo* info);
-#endif
-
   // Unloads all the loaded plugin libraries and cleans up the plugin map.
   static void UnloadAllPlugins();
 

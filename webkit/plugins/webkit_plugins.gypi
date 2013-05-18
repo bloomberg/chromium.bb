@@ -16,22 +16,58 @@
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base_i18n',
+        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_static',
+        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/ui/ui.gyp:ui',
+        '<(DEPTH)/ui/ui.gyp:ui_resources',
       ],
       'sources': [
         '../plugins/webplugininfo.cc',
         '../plugins/webplugininfo.h',
         '../plugins/plugin_constants.cc',
         '../plugins/plugin_constants.h',
-        '../plugins/npapi/plugin_constants_win.cc',
-        '../plugins/npapi/plugin_constants_win.h',
         '../plugins/plugin_switches.cc',
         '../plugins/plugin_switches.h',
+        '../plugins/npapi/plugin_constants_win.cc',
+        '../plugins/npapi/plugin_constants_win.h',
+        '../plugins/npapi/plugin_list.cc',
+        '../plugins/npapi/plugin_list.h',
+        '../plugins/npapi/plugin_list_mac.mm',
+        '../plugins/npapi/plugin_list_posix.cc',
+        '../plugins/npapi/plugin_list_win.cc',
         '../plugins/npapi/plugin_utils.cc',
         '../plugins/npapi/plugin_utils.h',
       ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267 ],
+      'conditions': [
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '<(DEPTH)/build/linux/system.gyp:gtk',
+          ],
+          'sources/': [['exclude', '_x11\\.cc$']],
+        }],
+        ['OS!="mac"', {
+          'sources/': [['exclude', '_mac\\.(cc|mm)$']],
+        }, {  # else: OS=="mac"
+          'sources/': [['exclude', 'plugin_list_posix\\.cc$']],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+            ],
+          },
+        }],
+        ['OS!="win"', {
+          'sources/': [['exclude', '_win\\.cc$']],
+        }, {  # else: OS=="win"
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4800, 4267 ],
+          'sources/': [['exclude', '_posix\\.cc$']],
+          'include_dirs': [
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+        }],
+      ],
     },
 
     {
@@ -86,14 +122,6 @@
         '../plugins/npapi/plugin_instance_mac.mm',
         '../plugins/npapi/plugin_lib.cc',
         '../plugins/npapi/plugin_lib.h',
-        '../plugins/npapi/plugin_lib_mac.mm',
-        '../plugins/npapi/plugin_lib_posix.cc',
-        '../plugins/npapi/plugin_lib_win.cc',
-        '../plugins/npapi/plugin_list.cc',
-        '../plugins/npapi/plugin_list.h',
-        '../plugins/npapi/plugin_list_mac.mm',
-        '../plugins/npapi/plugin_list_posix.cc',
-        '../plugins/npapi/plugin_list_win.cc',
         '../plugins/npapi/plugin_stream.cc',
         '../plugins/npapi/plugin_stream.h',
         '../plugins/npapi/plugin_stream_posix.cc',
@@ -233,7 +261,6 @@
         ['OS!="mac"', {
           'sources/': [['exclude', '_mac\\.(cc|mm)$']],
         }, {  # else: OS=="mac"
-          'sources/': [['exclude', 'plugin_(lib|list)_posix\\.cc$']],
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',

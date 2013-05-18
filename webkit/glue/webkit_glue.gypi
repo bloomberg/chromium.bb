@@ -295,7 +295,6 @@
             'webthemeengine_impl_mac.cc',
           ],
         }, {  # else: OS=="mac"
-          'sources/': [['exclude', 'plugin_(lib|list)_posix\\.cc$']],
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
