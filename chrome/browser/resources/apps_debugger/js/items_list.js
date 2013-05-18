@@ -68,7 +68,7 @@ cr.define('apps_dev_tool', function() {
 
     for (var i = 0; i < completeList.length; i++) {
       var item = completeList[i];
-      if (filter && item.name.toLowerCase().search(filter) < 0)
+      if (filter && item.name.toLowerCase().search(filter.toLowerCase()) < 0)
         continue;
       if (item.isApp)
         appList.push(item);
