@@ -40,6 +40,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/power/power_manager_handler.h"
 #endif
 
 namespace ash {
@@ -119,6 +120,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     // is absent.
     chromeos::CrasAudioHandler::InitializeForTesting();
   }
+  chromeos::PowerManagerHandler::Initialize();
 #endif
 
   ash::Shell::CreateInstance(delegate_);
@@ -154,6 +156,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   message_center::MessageCenter::Shutdown();
 
 #if defined(OS_CHROMEOS)
+  chromeos::PowerManagerHandler::Shutdown();
   if (ash::switches::UseNewAudioHandler())
     chromeos::CrasAudioHandler::Shutdown();
 #endif
