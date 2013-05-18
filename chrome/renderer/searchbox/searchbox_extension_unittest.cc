@@ -19,11 +19,17 @@ TEST(SearchboxExtensionTest, RestrictedInput) {
   // An http URL.
   EXPECT_FALSE(IsSensitiveInput(UTF8ToUTF16("http://www.example.com/foo/bar")));
 
-  // Something with an odd scheme.
+  // Something with a sensitive file: scheme.
   EXPECT_TRUE(IsSensitiveInput(UTF8ToUTF16("file://foo")));
-  EXPECT_TRUE(IsSensitiveInput(UTF8ToUTF16("asdf://bar")));
   // Verify all caps isn't a workaround.
   EXPECT_TRUE(IsSensitiveInput(UTF8ToUTF16("FILE://foo")));
+
+  // A define: query or site: query should be fine.
+  EXPECT_FALSE(IsSensitiveInput(UTF8ToUTF16("define:foo")));
+  EXPECT_FALSE(IsSensitiveInput(UTF8ToUTF16("site:example.com")));
+
+  // FTP is fine.
+  EXPECT_FALSE(IsSensitiveInput(UTF8ToUTF16("ftp://bar")));
 
   // A url with a port is bad.
   EXPECT_TRUE(IsSensitiveInput(UTF8ToUTF16("http://www.example.com:1000")));
