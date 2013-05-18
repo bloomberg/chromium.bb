@@ -65,8 +65,7 @@ class NativeMediaFileUtil : public fileapi::IsolatedFileUtil {
   // Uses the MIME sniffer code, which actually looks into the file,
   // to determine if it is really a media file (to avoid exposing
   // non-media files with a media file extension.)
-  static void IsMediaFile(const base::FilePath& path,
-      base::PlatformFileError* error);
+  static base::PlatformFileError IsMediaFile(const base::FilePath& path);
 
  private:
   // Like GetLocalFilePath(), but always take media_path_filter() into

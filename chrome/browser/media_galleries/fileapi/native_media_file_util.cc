@@ -263,48 +263,44 @@ webkit_blob::ScopedFile NativeMediaFileUtil::CreateSnapshotFile(
       context, url, error, file_info, platform_path);
   if (*error != base::PLATFORM_FILE_OK)
     return file.Pass();
-  IsMediaFile(*platform_path, error);
+  *error = IsMediaFile(*platform_path);
   if (*error == base::PLATFORM_FILE_OK)
     return file.Pass();
   return webkit_blob::ScopedFile();
 }
 
-void NativeMediaFileUtil::IsMediaFile(
-    const base::FilePath& path,
-    base::PlatformFileError* error) {
+// static
+base::PlatformFileError NativeMediaFileUtil::IsMediaFile(
+    const base::FilePath& path) {
   base::PlatformFile file_handle;
-  bool created;
-  *error = NativeFileUtil::CreateOrOpen(path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, &file_handle,
-      &created);
-  if (*error != base::PLATFORM_FILE_OK)
-    return;
+  const int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
+  base::PlatformFileError error =
+      NativeFileUtil::CreateOrOpen(path, flags, &file_handle, NULL);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+
   ScopedPlatformFile scoped_platform_file(file_handle);
   char buffer[net::kMaxBytesToSniff];
-  int64 len;
-  // Read as much as IdentifyExtraMimeType() will bother looking at.
-  len = base::ReadPlatformFile(file_handle, 0, buffer, net::kMaxBytesToSniff);
-  if (len < 0) {
-    *error = base::PLATFORM_FILE_ERROR_FAILED;
-    return;
-  }
-  if (len == 0) {
-    *error = base::PLATFORM_FILE_ERROR_SECURITY;
-    return;
-  }
+
+  // Read as much as net::SniffMimeTypeFromLocalData() will bother looking at.
+  int64 len =
+      base::ReadPlatformFile(file_handle, 0, buffer, net::kMaxBytesToSniff);
+  if (len < 0)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  if (len == 0)
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+
   std::string mime_type;
-  if (!net::SniffMimeTypeFromLocalData(buffer, len, &mime_type)) {
-    *error = base::PLATFORM_FILE_ERROR_SECURITY;
-    return;
-  }
+  if (!net::SniffMimeTypeFromLocalData(buffer, len, &mime_type))
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+
   if (StartsWithASCII(mime_type, "image/", true) ||
       StartsWithASCII(mime_type, "audio/", true) ||
       StartsWithASCII(mime_type, "video/", true) ||
       mime_type == "application/x-shockwave-flash") {
-    *error = base::PLATFORM_FILE_OK;
-  } else {
-    *error = base::PLATFORM_FILE_ERROR_SECURITY;
+    return base::PLATFORM_FILE_OK;
   }
+  return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
 }  // namespace chrome

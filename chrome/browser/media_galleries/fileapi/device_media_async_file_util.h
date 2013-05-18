@@ -149,13 +149,11 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
 
   // Called after OnDidCreateSnapshotFile finishes media check.
   // |callback| is invoked to complete the CreateSnapshotFile request.
-  // It is called with |*error| regardless of result.
   void OnDidCheckMedia(
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      base::SequencedTaskRunner* media_task_runner,
       const base::PlatformFileInfo& file_info,
       scoped_refptr<webkit_blob::ShareableFileReference> platform_file,
-      base::PlatformFileError* error);
+      base::PlatformFileError error);
 
   // Called when CreateSnapshotFile method call fails. |callback| is invoked to
   // notify the caller about the |error|.
