@@ -288,7 +288,7 @@ AC_ARG_ENABLE(colord,
 AM_CONDITIONAL(ENABLE_COLORD,
 	       test "x$enable_colord" = "xyes")
 if test x$enable_colord = xyes; then
-  PKG_CHECK_MODULES(COLORD, colord >= 0.1.8)
+  PKG_CHECK_MODULES(COLORD, colord >= 0.1.27)
 fi
 
 AC_ARG_ENABLE(wcap-tools, [  --disable-wcap-tools],, enable_wcap_tools=yes)
