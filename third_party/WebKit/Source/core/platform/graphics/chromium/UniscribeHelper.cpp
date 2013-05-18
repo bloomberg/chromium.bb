@@ -546,23 +546,25 @@ void UniscribeHelper::fillRuns()
                                             &m_runs[0], &m_scriptTags[0],
                                             &numberOfItems);
 
-            if (SUCCEEDED(hr)) { 
-                // Pack consecutive runs, the script tag of which are 
-                // SCRIPT_TAG_UNKNOWN, to reduce the number of runs. 
-                for (int i = 0; i < numberOfItems; ++i) { 
-                    if (m_scriptTags[i] == SCRIPT_TAG_UNKNOWN) { 
-                        int j = 1; 
-                        while (i + j < numberOfItems && m_scriptTags[i + j] == SCRIPT_TAG_UNKNOWN) 
-                            ++j; 
-                        if (--j) { 
-                            m_runs.remove(i + 1, j); 
-                            m_scriptTags.remove(i + 1, j); 
-                            numberOfItems -= j; 
-                        } 
-                    } 
-                } 
-                m_scriptTags.resize(numberOfItems); 
-            } 
+            if (SUCCEEDED(hr)) {
+                // Pack consecutive runs, the script tag of which are
+                // SCRIPT_TAG_UNKNOWN, to reduce the number of runs.
+                for (int i = 0; i < numberOfItems; ++i) {
+                    // Do not pack with whitespace characters at the head.
+                    // Otherwise whole the run is rendered as a whitespace.
+                    if (m_scriptTags[i] == SCRIPT_TAG_UNKNOWN && !Font::treatAsSpace(m_input[m_runs[i].iCharPos])) {
+                        int j = 1;
+                        while (i + j < numberOfItems && m_scriptTags[i + j] == SCRIPT_TAG_UNKNOWN)
+                            ++j;
+                        if (--j) {
+                            m_runs.remove(i + 1, j);
+                            m_scriptTags.remove(i + 1, j);
+                            numberOfItems -= j;
+                        }
+                    }
+                }
+                m_scriptTags.resize(numberOfItems);
+            }
         } else {
             hr = ScriptItemize(m_input, m_inputLength,
                                static_cast<int>(m_runs.size()) - 1,
