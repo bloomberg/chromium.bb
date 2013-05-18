@@ -34,6 +34,10 @@
   NSInteger hoveredSegment_;
 }
 
+// Returns -1 if |locationInWindow| is not over a segment. Otherwise returns the
+// segment index and highlights it.
+- (NSInteger)findAndHighlightSegmentAtLocation:(NSPoint)locationInWindow;
+
 @end
 
 #endif  // UI_APP_LIST_COCOA_APP_LIST_PAGER_VIEW_H_

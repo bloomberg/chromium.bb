@@ -16,12 +16,14 @@
 
 @interface TestPaginationObserver : NSObject<AppsPaginationModelObserver> {
  @private
+  NSInteger hoveredSegmentForTest_;
   int totalPagesChangedCount_;
   int selectedPageChangedCount_;
   int lastNewSelectedPage_;
   bool visibilityDidChange_;
 }
 
+@property(assign, nonatomic) NSInteger hoveredSegmentForTest;
 @property(assign, nonatomic) int totalPagesChangedCount;
 @property(assign, nonatomic) int selectedPageChangedCount;
 @property(assign, nonatomic) int lastNewSelectedPage;
@@ -32,9 +34,17 @@
 
 @implementation TestPaginationObserver
 
+@synthesize hoveredSegmentForTest = hoveredSegmentForTest_;
 @synthesize totalPagesChangedCount = totalPagesChangedCount_;
 @synthesize selectedPageChangedCount = selectedPageChangedCount_;
 @synthesize lastNewSelectedPage = lastNewSelectedPage_;
+
+- (id)init {
+  if ((self = [super init]))
+    hoveredSegmentForTest_ = -1;
+
+  return self;
+}
 
 - (bool)readVisibilityDidChange {
   bool truth = visibilityDidChange_;
@@ -53,6 +63,10 @@
 
 - (void)pageVisibilityChanged {
   visibilityDidChange_ = true;
+}
+
+- (NSInteger)pagerSegmentAtLocation:(NSPoint)locationInWindow {
+  return hoveredSegmentForTest_;
 }
 
 @end
@@ -87,6 +101,26 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridControllerTest);
 };
+
+// Generate a mouse event at the centre of the view in |page| with the given
+// |index_in_page| that can be used to initiate, update and complete drag
+// operations.
+NSEvent* MouseEventInCell(NSCollectionView* page, size_t index_in_page) {
+  NSRect cell_rect = [page frameForItemAtIndex:index_in_page];
+  NSPoint point_in_view = NSMakePoint(NSMidX(cell_rect), NSMidY(cell_rect));
+  NSPoint point_in_window = [page convertPoint:point_in_view
+                                        toView:nil];
+  return cocoa_test_event_utils::LeftMouseDownAtPoint(point_in_window);
+}
+
+NSEvent* MouseEventForScroll(NSView* view, CGFloat relative_x) {
+  NSRect view_rect = [view frame];
+  NSPoint point_in_view = NSMakePoint(NSMidX(view_rect), NSMidY(view_rect));
+  point_in_view.x += point_in_view.x * relative_x;
+  NSPoint point_in_window = [view convertPoint:point_in_view
+                                        toView:nil];
+  return cocoa_test_event_utils::LeftMouseDownAtPoint(point_in_window);
+}
 
 }  // namespace
 
@@ -226,8 +260,6 @@ TEST_F(AppsGridControllerTest, FirstPageKeyboardNavigation) {
 
 // Tests keyboard navigation across pages.
 TEST_F(AppsGridControllerTest, CrossPageKeyboardNavigation) {
-  [AppsGridController setScrollAnimationDuration:0.0];
-
   model()->PopulateApps(2 * kItemsPerPage);
   EXPECT_EQ(kItemsPerPage, [[GetPageAt(0) content] count]);
   EXPECT_EQ(kItemsPerPage, [[GetPageAt(1) content] count]);
@@ -460,7 +492,6 @@ TEST_F(AppsGridControllerTest, PaginationObserverPagesChanged) {
 
 // Test AppsGridPaginationObserver selectedPageChanged().
 TEST_F(AppsGridControllerTest, PaginationObserverSelectedPageChanged) {
-  [AppsGridController setScrollAnimationDuration:0.0];
   scoped_nsobject<TestPaginationObserver> observer(
       [[TestPaginationObserver alloc] init]);
   [apps_grid_controller_ setPaginationObserver:observer];
@@ -502,21 +533,6 @@ TEST_F(AppsGridControllerTest, PaginationObserverSelectedPageChanged) {
 
   [apps_grid_controller_ setPaginationObserver:nil];
 }
-
-namespace {
-
-// Generate a mouse event at the centre of the view in |page| with the given
-// |index_in_page| that can be used to initiate, update and complete drag
-// operations.
-NSEvent* MouseEventInCell(NSCollectionView* page, size_t index_in_page) {
-  NSRect cell_rect = [page frameForItemAtIndex:index_in_page];
-  NSPoint point_in_view = NSMakePoint(NSMidX(cell_rect), NSMidY(cell_rect));
-  NSPoint point_in_window = [page convertPoint:point_in_view
-                                        toView:nil];
-  return cocoa_test_event_utils::LeftMouseDownAtPoint(point_in_window);
-}
-
-}  // namespace
 
 // Test basic item moves with two items; swapping them around, dragging outside
 // of the view bounds, and dragging on the background.
@@ -625,7 +641,6 @@ TEST_F(AppsGridControllerTest, DragAndDropSimple) {
 
 // Test item moves between pages.
 TEST_F(AppsGridControllerTest, DragAndDropMultiPage) {
-  [AppsGridController setScrollAnimationDuration:0.0];
   const size_t kPagesToTest = 3;
   // Put one item on the last page to hit more edge cases.
   ReplaceTestModel(kItemsPerPage * (kPagesToTest - 1) + 1);
@@ -694,6 +709,78 @@ TEST_F(AppsGridControllerTest, DragAndDropMultiPage) {
   EXPECT_EQ(0u, GetPageIndexForItem(1));
   [drag_manager onMouseUp:mouse_at_cell_0];
   EXPECT_EQ(0u, GetPageIndexForItem(1));
+}
+
+// Test scrolling when dragging past edge or over the pager.
+TEST_F(AppsGridControllerTest, ScrollingWhileDragging) {
+  scoped_nsobject<TestPaginationObserver> observer(
+      [[TestPaginationObserver alloc] init]);
+  [apps_grid_controller_ setPaginationObserver:observer];
+
+  ReplaceTestModel(kItemsPerPage * 3);
+  // Start on the middle page.
+  [apps_grid_controller_ scrollToPage:1];
+  NSCollectionView* page = [apps_grid_controller_ collectionViewAtPageIndex:1];
+  NSEvent* mouse_at_cell_0 = MouseEventInCell(page, 0);
+
+  NSEvent* at_center = MouseEventForScroll([apps_grid_controller_ view], 0.0);
+  NSEvent* at_left = MouseEventForScroll([apps_grid_controller_ view], -1.1);
+  NSEvent* at_right = MouseEventForScroll([apps_grid_controller_ view], 1.1);
+
+  AppsCollectionViewDragManager* drag_manager =
+      [apps_grid_controller_ dragManager];
+  [drag_manager onMouseDownInPage:page
+                        withEvent:mouse_at_cell_0];
+  [drag_manager onMouseDragged:at_center];
+
+  // Nothing should be scheduled: target page is visible page.
+  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(1u, [apps_grid_controller_ scheduledScrollPage]);
+
+  // Drag to the left, should go to first page and no further.
+  [drag_manager onMouseDragged:at_left];
+  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(0u, [apps_grid_controller_ scheduledScrollPage]);
+  [apps_grid_controller_ scrollToPage:0];  // Commit without timer for testing.
+  [drag_manager onMouseDragged:at_left];
+  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(0u, [apps_grid_controller_ scheduledScrollPage]);
+
+  // Drag to the right, should go to last page and no futher.
+  [drag_manager onMouseDragged:at_right];
+  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(1u, [apps_grid_controller_ scheduledScrollPage]);
+  [apps_grid_controller_ scrollToPage:1];
+  [drag_manager onMouseDragged:at_right];
+  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(2u, [apps_grid_controller_ scheduledScrollPage]);
+  [apps_grid_controller_ scrollToPage:2];
+  [drag_manager onMouseDragged:at_right];
+  EXPECT_EQ(2u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(2u, [apps_grid_controller_ scheduledScrollPage]);
+
+  // Simulate a hover over the first pager segment.
+  [observer setHoveredSegmentForTest:0];
+  [drag_manager onMouseDragged:at_center];
+  EXPECT_EQ(2u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(0u, [apps_grid_controller_ scheduledScrollPage]);
+
+  // Drag it back, should cancel schedule.
+  [observer setHoveredSegmentForTest:-1];
+  [drag_manager onMouseDragged:at_center];
+  EXPECT_EQ(2u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(2u, [apps_grid_controller_ scheduledScrollPage]);
+
+  // Hover again, now over middle segment, and ensure a release also cancels.
+  [observer setHoveredSegmentForTest:1];
+  [drag_manager onMouseDragged:at_center];
+  EXPECT_EQ(2u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(1u, [apps_grid_controller_ scheduledScrollPage]);
+  [drag_manager onMouseUp:at_center];
+  EXPECT_EQ(2u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(2u, [apps_grid_controller_ scheduledScrollPage]);
+
+  [apps_grid_controller_ setPaginationObserver:nil];
 }
 
 }  // namespace test

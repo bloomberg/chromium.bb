@@ -35,11 +35,16 @@ APP_LIST_EXPORT
   scoped_nsobject<AppsCollectionViewDragManager> dragManager_;
   scoped_nsobject<NSMutableArray> pages_;
   scoped_nsobject<NSMutableArray> items_;
+  scoped_nsobject<NSTimer> scrollWhileDraggingTimer_;
 
   id<AppsPaginationModelObserver> paginationObserver_;
 
   // Index of the currently visible page.
   size_t visiblePage_;
+  // The page to which the view is currently animating a scroll.
+  size_t targetScrollPage_;
+  // The page to start scrolling to when the timer expires.
+  size_t scheduledScrollPage_;
 
   // Whether we are currently animating a scroll to the nearest page.
   BOOL animatingScroll_;
@@ -75,6 +80,14 @@ APP_LIST_EXPORT
 // Scroll to a page in the grid view with an animation.
 - (void)scrollToPage:(size_t)pageIndex;
 
+// Start a timer to scroll to a new page, if |locationInWindow| is to the left
+// or the right of the view, or if it is over a pager segment. Cancels any
+// existing timer if the target page changes.
+- (void)maybeChangePageForPoint:(NSPoint)locationInWindow;
+
+// Cancel a timer that may have been set by maybeChangePageForPoint().
+- (void)cancelScrollTimer;
+
 // Moves an item within the view only, for dragging or in response to model
 // changes.
 - (void)moveItemInView:(size_t)fromIndex
@@ -101,6 +114,7 @@ APP_LIST_EXPORT
 @interface AppsGridController(TestingAPI)
 
 - (AppsCollectionViewDragManager*)dragManager;
+- (size_t)scheduledScrollPage;
 
 @end
 

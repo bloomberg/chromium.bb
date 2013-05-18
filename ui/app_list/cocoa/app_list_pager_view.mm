@@ -21,7 +21,7 @@ const CGFloat kButtonStripPadding = 20;
 
 @property(assign, nonatomic) NSInteger hoveredSegment;
 
-- (NSInteger)segmentUnderEvent:(NSEvent*)theEvent;
+- (NSInteger)segmentUnderLocation:(NSPoint)locationInWindow;
 
 @end
 
@@ -52,6 +52,12 @@ const CGFloat kButtonStripPadding = 20;
   return self;
 }
 
+- (NSInteger)findAndHighlightSegmentAtLocation:(NSPoint)locationInWindow {
+  NSInteger segment = [self segmentUnderLocation:locationInWindow];
+  [self setHoveredSegment:segment];
+  return segment;
+}
+
 - (void)setHoveredSegment:(NSInteger)segment {
   if (segment == hoveredSegment_)
     return;
@@ -61,11 +67,11 @@ const CGFloat kButtonStripPadding = 20;
   return;
 }
 
-- (NSInteger)segmentUnderEvent:(NSEvent*)theEvent {
+- (NSInteger)segmentUnderLocation:(NSPoint)locationInWindow {
   if ([self segmentCount] == 0)
     return -1;
 
-  NSPoint pointInView = [self convertPoint:[theEvent locationInWindow]
+  NSPoint pointInView = [self convertPoint:locationInWindow
                                   fromView:nil];
   if (![self mouse:pointInView inRect:[self bounds]])
     return -1;
@@ -83,7 +89,7 @@ const CGFloat kButtonStripPadding = 20;
 }
 
 - (void)mouseMoved:(NSEvent*)theEvent {
-  [self setHoveredSegment:[self segmentUnderEvent:theEvent]];
+  [self findAndHighlightSegmentAtLocation:[theEvent locationInWindow]];
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
@@ -94,7 +100,7 @@ const CGFloat kButtonStripPadding = 20;
 // The stock NSSegmentedControl ignores any clicks outside the non-default
 // control height, so process all clicks here.
 - (void)mouseUp:(NSEvent*)theEvent {
-  [self setHoveredSegment:[self segmentUnderEvent:theEvent]];
+  [self findAndHighlightSegmentAtLocation:[theEvent locationInWindow]];
   if (hoveredSegment_ < 0)
     return;
 

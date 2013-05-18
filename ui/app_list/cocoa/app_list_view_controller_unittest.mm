@@ -58,7 +58,6 @@ TEST_F(AppListViewControllerTest, PagerSegmentCounts) {
 
 // Test that clicking the pager changes pages.
 TEST_F(AppListViewControllerTest, PagerChangingPage) {
-  [AppsGridController setScrollAnimationDuration:0.0];
   NSSegmentedControl* pager = [app_list_view_controller_ pagerControl];
   ReplaceTestModel(kItemsPerPage * 3);
   EXPECT_EQ(3, [pager segmentCount]);

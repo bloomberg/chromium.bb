@@ -145,7 +145,7 @@ const CGFloat kDragThreshold = 5;
   if (!itemDragController_) {
     itemDragController_.reset(
         [[ItemDragController alloc] initWithGridCellSize:cellSize_]);
-    [[gridController_ view] addSubview:[itemDragController_ view]];
+    [[[gridController_ view] superview] addSubview:[itemDragController_ view]];
   }
 
   [itemDragController_ initiate:[gridController_ itemAtIndex:itemHitIndex_]
@@ -160,6 +160,8 @@ const CGFloat kDragThreshold = 5;
 - (void)updateDrag:(NSEvent*)theEvent {
   [itemDragController_ update:[theEvent locationInWindow]
                     timestamp:[theEvent timestamp]];
+  [gridController_ maybeChangePageForPoint:[theEvent locationInWindow]];
+
   size_t visiblePage = [gridController_ visiblePage];
   size_t itemIndexOver = [self itemIndexForPage:visiblePage
                                    hitWithEvent:theEvent];
@@ -195,6 +197,7 @@ const CGFloat kDragThreshold = 5;
 
 - (void)completeDrag {
   DCHECK_GE(itemDragIndex_, 0u);
+  [gridController_ cancelScrollTimer];
   AppsGridViewItem* item = [gridController_ itemAtIndex:itemDragIndex_];
 
   // The item could still be animating in the NSCollectionView, so ask it where
@@ -202,7 +205,7 @@ const CGFloat kDragThreshold = 5;
   NSCollectionView* pageView = base::mac::ObjCCastStrict<NSCollectionView>(
       [[item view] superview]);
   size_t indexInPage = itemDragIndex_ % (rows_ * columns_);
-  NSPoint targetOrigin = [[gridController_ view]
+  NSPoint targetOrigin = [[[itemDragController_ view] superview]
       convertPoint:[pageView frameForItemAtIndex:indexInPage].origin
           fromView:pageView];
 

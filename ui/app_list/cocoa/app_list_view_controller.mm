@@ -18,8 +18,6 @@ const CGFloat kBubbleCornerRadius = 3;
 
 // Height of the pager.
 const CGFloat kPagerPreferredHeight = 57;
-// Padding between the bottom of the grid and the bottom of the view.
-const CGFloat kViewGridOffsetY = 41;
 
 // Padding between the top of the grid and the top of the view.
 // TODO(tapted): Update padding when the search entry control is added.
@@ -50,6 +48,10 @@ const CGFloat kMaxSegmentWidth = 80;
                                    yRadius:kBubbleCornerRadius] addClip];
   NSRectFill([self bounds]);
   [NSGraphicsContext restoreGraphicsState];
+}
+
+- (BOOL)isFlipped {
+  return YES;
 }
 
 @end
@@ -105,16 +107,15 @@ const CGFloat kMaxSegmentWidth = 80;
   [pagerControl_ setTarget:appsGridController_];
   [pagerControl_ setAction:@selector(onPagerClicked:)];
 
-  [[appsGridController_ view] setFrameOrigin:NSMakePoint(0, kViewGridOffsetY)];
+  [[appsGridController_ view] setFrameOrigin:NSMakePoint(0, kTopPadding)];
 
   NSRect backgroundRect = [[appsGridController_ view] bounds];
-  backgroundRect.size.height += kViewGridOffsetY + kTopPadding;
+  backgroundRect.size.height += kPagerPreferredHeight;
   scoped_nsobject<BackgroundView> backgroundView(
       [[BackgroundView alloc] initWithFrame:backgroundRect]);
 
   NSRect searchInputRect =
-      NSMakeRect(0, NSMaxY(backgroundRect) - kSearchInputHeight,
-                 backgroundRect.size.width, kSearchInputHeight);
+      NSMakeRect(0, 0, backgroundRect.size.width, kSearchInputHeight);
   scoped_nsobject<NSTextField> searchInput(
       [[NSTextField alloc] initWithFrame:searchInputRect]);
   [searchInput setDelegate:self];
@@ -145,7 +146,7 @@ const CGFloat kMaxSegmentWidth = 80;
   [pagerControl_ sizeToFit];
   [pagerControl_ setFrame:
       NSMakeRect(NSMidX(viewFrame) - NSMidX([pagerControl_ bounds]),
-                 0,
+                 viewFrame.size.height - kPagerPreferredHeight,
                  [pagerControl_ bounds].size.width,
                  kPagerPreferredHeight)];
 }
@@ -156,6 +157,10 @@ const CGFloat kMaxSegmentWidth = 80;
 
 - (void)pageVisibilityChanged {
   [pagerControl_ setNeedsDisplay:YES];
+}
+
+- (NSInteger)pagerSegmentAtLocation:(NSPoint)locationInWindow {
+  return [pagerControl_ findAndHighlightSegmentAtLocation:locationInWindow];
 }
 
 - (BOOL)control:(NSControl*)control

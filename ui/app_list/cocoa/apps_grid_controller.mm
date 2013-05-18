@@ -33,11 +33,15 @@ const CGFloat kViewWidth =
     kFixedColumns * kPreferredTileWidth + 2 * kLeftRightPadding;
 const CGFloat kViewHeight = kFixedRows * kPreferredTileHeight;
 
+const NSTimeInterval kScrollWhileDraggingDelay = 1.0;
 NSTimeInterval g_scroll_duration = 0.18;
 
 }  // namespace
 
 @interface AppsGridController ()
+
+- (void)scrollToPageWithTimer:(size_t)targetPage;
+- (void)onTimer:(NSTimer*)theTimer;
 
 // Cancel a currently running scroll animation.
 - (void)cancelScrollAnimation;
@@ -245,6 +249,66 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   [[clipView animator] setBoundsOrigin:newOrigin];
   [NSAnimationContext endGrouping];
   animatingScroll_ = YES;
+  targetScrollPage_ = pageIndex;
+  [self cancelScrollTimer];
+}
+
+- (void)maybeChangePageForPoint:(NSPoint)locationInWindow {
+  NSPoint pointInView = [[self view] convertPoint:locationInWindow
+                                         fromView:nil];
+  // Check if the point is outside the view on the left or right.
+  if (pointInView.x <= 0 || pointInView.x >= NSWidth([[self view] bounds])) {
+    size_t targetPage = visiblePage_;
+    if (pointInView.x <= 0)
+      targetPage -= targetPage != 0 ? 1 : 0;
+    else
+      targetPage += targetPage < [pages_ count] - 1 ? 1 : 0;
+    [self scrollToPageWithTimer:targetPage];
+    return;
+  }
+
+  if (paginationObserver_) {
+    NSInteger segment =
+        [paginationObserver_ pagerSegmentAtLocation:locationInWindow];
+    if (segment >= 0 && static_cast<size_t>(segment) != targetScrollPage_) {
+      [self scrollToPageWithTimer:segment];
+      return;
+    }
+  }
+
+  // Otherwise the point may have moved back into the view.
+  [self cancelScrollTimer];
+}
+
+- (void)cancelScrollTimer {
+  scheduledScrollPage_ = targetScrollPage_;
+  [scrollWhileDraggingTimer_ invalidate];
+}
+
+- (void)scrollToPageWithTimer:(size_t)targetPage {
+  if (targetPage == targetScrollPage_) {
+    [self cancelScrollTimer];
+    return;
+  }
+
+  if (targetPage == scheduledScrollPage_)
+    return;
+
+  scheduledScrollPage_ = targetPage;
+  [scrollWhileDraggingTimer_ invalidate];
+  scrollWhileDraggingTimer_.reset(
+      [[NSTimer scheduledTimerWithTimeInterval:kScrollWhileDraggingDelay
+                                        target:self
+                                      selector:@selector(onTimer:)
+                                      userInfo:nil
+                                       repeats:NO] retain]);
+}
+
+- (void)onTimer:(NSTimer*)theTimer {
+  if (scheduledScrollPage_ == targetScrollPage_)
+    return;  // Already animating scroll.
+
+  [self scrollToPage:scheduledScrollPage_];
 }
 
 - (void)cancelScrollAnimation {
@@ -466,6 +530,10 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 
 - (AppsCollectionViewDragManager*)dragManager {
   return dragManager_;
+}
+
+- (size_t)scheduledScrollPage {
+  return scheduledScrollPage_;
 }
 
 - (void)listItemsAdded:(size_t)start

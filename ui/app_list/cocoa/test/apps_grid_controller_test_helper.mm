@@ -21,6 +21,7 @@ const size_t AppsGridControllerTestHelper::kItemsPerPage = 16;
 AppsGridControllerTestHelper::AppsGridControllerTestHelper() {
   Init();
   delegate_.reset(new AppListTestViewDelegate);
+  [AppsGridController setScrollAnimationDuration:0.0];
 }
 
 AppsGridControllerTestHelper::~AppsGridControllerTestHelper() {}

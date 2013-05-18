@@ -17,6 +17,7 @@ class AppListViewDelegate;
 }
 
 @class AppsGridController;
+@class AppListPagerView;
 
 // Controller for the top-level view of the app list UI. It creates and hosts an
 // AppsGridController (displaying an AppListModel), and pager control for
@@ -26,7 +27,7 @@ APP_LIST_EXPORT
     NSViewController<AppsPaginationModelObserver, NSTextFieldDelegate> {
  @private
   scoped_nsobject<AppsGridController> appsGridController_;
-  scoped_nsobject<NSSegmentedControl> pagerControl_;
+  scoped_nsobject<AppListPagerView> pagerControl_;
   scoped_ptr<app_list::AppListViewDelegate> delegate_;
 }
 
