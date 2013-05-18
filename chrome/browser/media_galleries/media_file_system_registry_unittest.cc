@@ -81,11 +81,9 @@ class TestMediaFileSystemContext : public MediaFileSystemContext {
   virtual std::string RegisterFileSystemForMassStorage(
       const std::string& device_id, const base::FilePath& path) OVERRIDE;
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   virtual std::string RegisterFileSystemForMTPDevice(
       const std::string& device_id, const base::FilePath& path,
       scoped_refptr<ScopedMTPDeviceMapEntry>* entry) OVERRIDE;
-#endif
 
   virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE;
 
@@ -135,7 +133,6 @@ std::string TestMediaFileSystemContext::RegisterFileSystemForMassStorage(
   return AddFSEntry(device_id, path);
 }
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 std::string TestMediaFileSystemContext::RegisterFileSystemForMTPDevice(
     const std::string& device_id, const base::FilePath& path,
     scoped_refptr<ScopedMTPDeviceMapEntry>* entry) {
@@ -144,7 +141,6 @@ std::string TestMediaFileSystemContext::RegisterFileSystemForMTPDevice(
   *entry = registry_->GetOrCreateScopedMTPDeviceMapEntry(path.value());
   return AddFSEntry(device_id, path);
 }
-#endif
 
 void TestMediaFileSystemContext::RevokeFileSystem(const std::string& fsid) {
   if (!ContainsKey(file_systems_by_id_, fsid))
@@ -889,7 +885,6 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameDefault) {
 // TODO(gbillock): Put the platform-specific parts of this test in tests
 // for those classes, not here. This test, internally, ends up creating an
 // MTP delegate.
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 #if !defined(OS_MACOSX)
 TEST_F(MediaFileSystemRegistryTest, GalleryNameMTP) {
   FSInfoMap galleries_info;
@@ -906,7 +901,6 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameMTP) {
   CheckNewGalleryInfo(GetProfileState(0U), galleries_info, location,
                       true /*removable*/, true /* media device */);
 }
-#endif
 #endif
 
 TEST_F(MediaFileSystemRegistryTest, GalleryNameDCIM) {

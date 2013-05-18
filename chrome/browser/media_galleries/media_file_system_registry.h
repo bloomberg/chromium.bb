@@ -17,13 +17,9 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/media_galleries/fileapi/mtp_device_file_system_config.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "chrome/browser/storage_monitor/removable_storage_observer.h"
-
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
-#endif
+#include "chrome/browser/storage_monitor/removable_storage_observer.h"
 
 class Profile;
 
@@ -108,17 +104,14 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
   // Map a profile to a PrefChangeRegistrar.
   typedef std::map<Profile*, PrefChangeRegistrar*> PrefChangeRegistrarMap;
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Map a MTP or PTP device location to the raw pointer of
   // ScopedMTPDeviceMapEntry. It is safe to store a raw pointer in this
   // map.
   typedef std::map<const base::FilePath::StringType, ScopedMTPDeviceMapEntry*>
       MTPDeviceDelegateMap;
-#endif
 
   void OnRememberedGalleriesChanged(PrefService* service);
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Returns ScopedMTPDeviceMapEntry object for the given |device_location|.
   scoped_refptr<ScopedMTPDeviceMapEntry> GetOrCreateScopedMTPDeviceMapEntry(
       const base::FilePath::StringType& device_location);
@@ -127,7 +120,6 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
   // |device_location|.
   void RemoveScopedMTPDeviceMapEntry(
       const base::FilePath::StringType& device_location);
-#endif
 
   void OnExtensionGalleriesHostEmpty(Profile* profile,
                                      const std::string& extension_id);
@@ -138,10 +130,8 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
 
   PrefChangeRegistrarMap pref_change_registrar_map_;
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Only accessed on the UI thread.
   MTPDeviceDelegateMap mtp_device_delegate_map_;
-#endif
 
   scoped_ptr<MediaFileSystemContext> file_system_context_;
 

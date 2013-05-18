@@ -4,9 +4,6 @@
 
 #include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
 
-#include "chrome/browser/media_galleries/fileapi/mtp_device_file_system_config.h"
-
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 #include "base/bind.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
@@ -14,13 +11,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 
-#endif
-
 namespace chrome {
 
 namespace {
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 bool IsMediaTaskRunnerThread() {
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
@@ -50,8 +44,6 @@ void RemoveDeviceDelegate(const base::FilePath::StringType& device_location) {
       base::Bind(&OnDeviceAsyncDelegateDestroyed, device_location));
 }
 
-#endif
-
 }  // namespace
 
 ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
@@ -62,7 +54,6 @@ ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
 }
 
 void ScopedMTPDeviceMapEntry::Init() {
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   CreateMTPDeviceAsyncDelegateCallback callback =
       base::Bind(&ScopedMTPDeviceMapEntry::OnMTPDeviceAsyncDelegateCreated,
                  this);
@@ -72,23 +63,18 @@ void ScopedMTPDeviceMapEntry::Init() {
       base::Bind(&CreateMTPDeviceAsyncDelegate,
                  device_location_,
                  callback));
-#endif
 }
 
 ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   RemoveDeviceDelegate(device_location_);
   on_destruction_callback_.Run();
-#endif
 }
 
 void ScopedMTPDeviceMapEntry::OnMTPDeviceAsyncDelegateCreated(
     MTPDeviceAsyncDelegate* delegate) {
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   MTPDeviceMapService::GetInstance()->AddAsyncDelegate(
       device_location_, delegate);
-#endif
 }
 
 }  // namespace chrome

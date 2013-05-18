@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/itunes/itunes_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
@@ -30,9 +31,6 @@
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/native_file_util.h"
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-#include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
-#endif
 
 using fileapi::FileSystemContext;
 using fileapi::FileSystemURL;
@@ -52,14 +50,10 @@ MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
       media_path_filter_(new MediaPathFilter()),
       native_media_file_util_(
           new fileapi::AsyncFileUtilAdapter(new NativeMediaFileUtil())),
+      device_media_async_file_util_(
+          DeviceMediaAsyncFileUtil::Create(profile_path_)),
       itunes_file_util_(new fileapi::AsyncFileUtilAdapter(
           new itunes::ItunesFileUtil())) {
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  // TODO(kmadhusu): Initialize |device_media_file_util_| in
-  // initialization list.
-  device_media_async_file_util_.reset(
-      DeviceMediaAsyncFileUtil::Create(profile_path_));
-#endif
 }
 
 MediaFileSystemMountPointProvider::~MediaFileSystemMountPointProvider() {
@@ -114,9 +108,7 @@ fileapi::AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
     case fileapi::kFileSystemTypeNativeMedia:
       return native_media_file_util_.get();
     case fileapi::kFileSystemTypeDeviceMedia:
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
       return device_media_async_file_util_.get();
-#endif
     case fileapi::kFileSystemTypeItunes:
       return itunes_file_util_.get();
     default:
@@ -178,12 +170,10 @@ MediaFileSystemMountPointProvider::CreateFileSystemOperation(
 
   operation_context->SetUserValue(kMediaPathFilterKey,
                                   media_path_filter_.get());
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   if (url.type() == fileapi::kFileSystemTypeDeviceMedia) {
     operation_context->SetUserValue(kMTPDeviceDelegateURLKey,
                                     url.filesystem_id());
   }
-#endif
 
   return new fileapi::LocalFileSystemOperation(context,
                                                operation_context.Pass());

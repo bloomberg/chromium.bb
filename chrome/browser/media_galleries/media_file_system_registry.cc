@@ -263,12 +263,10 @@ class ExtensionGalleriesHost
     file_system_context_->RevokeFileSystem(gallery->second.fsid);
     pref_id_map_.erase(gallery);
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
     MediaDeviceEntryReferencesMap::iterator mtp_device_host =
         media_device_map_references_.find(id);
     if (mtp_device_host != media_device_map_references_.end())
       media_device_map_references_.erase(mtp_device_host);
-#endif
 
     if (pref_id_map_.empty()) {
       rph_refs_.Reset();
@@ -284,11 +282,8 @@ class ExtensionGalleriesHost
 
  private:
   typedef std::map<MediaGalleryPrefId, MediaFileSystemInfo> PrefIdFsInfoMap;
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   typedef std::map<MediaGalleryPrefId, scoped_refptr<ScopedMTPDeviceMapEntry> >
       MediaDeviceEntryReferencesMap;
-#endif
-
 
   // Private destructor and friend declaration for ref counted implementation.
   friend class base::RefCountedThreadSafe<ExtensionGalleriesHost>;
@@ -297,9 +292,7 @@ class ExtensionGalleriesHost
     DCHECK(rph_refs_.empty());
     DCHECK(pref_id_map_.empty());
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
     DCHECK(media_device_map_references_.empty());
-#endif
   }
 
   void GetMediaFileSystemsForAttachedDevices(
@@ -337,16 +330,11 @@ class ExtensionGalleriesHost
         fsid = file_system_context_->RegisterFileSystemForMassStorage(
             device_id, path);
       } else {
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
         scoped_refptr<ScopedMTPDeviceMapEntry> mtp_device_host;
         fsid = file_system_context_->RegisterFileSystemForMTPDevice(
             device_id, path, &mtp_device_host);
         DCHECK(mtp_device_host.get());
         media_device_map_references_[pref_id] = mtp_device_host;
-#else
-        NOTIMPLEMENTED();
-        continue;
-#endif
       }
       DCHECK(!fsid.empty());
 
@@ -395,9 +383,7 @@ class ExtensionGalleriesHost
     }
     pref_id_map_.clear();
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
     media_device_map_references_.clear();
-#endif
 
     no_references_callback_.Run();
   }
@@ -412,11 +398,9 @@ class ExtensionGalleriesHost
   // A map from the gallery preferences id to the file system information.
   PrefIdFsInfoMap pref_id_map_;
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // A map from the gallery preferences id to the corresponding media device
   // host object.
   MediaDeviceEntryReferencesMap media_device_map_references_;
-#endif
 
   // The set of render processes and web contents that may have references to
   // the file system ids this instance manages.
@@ -599,7 +583,6 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     return fsid;
   }
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   virtual std::string RegisterFileSystemForMTPDevice(
       const std::string& device_id, const base::FilePath& path,
       scoped_refptr<ScopedMTPDeviceMapEntry>* entry) OVERRIDE {
@@ -617,7 +600,6 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     *entry = registry_->GetOrCreateScopedMTPDeviceMapEntry(path.value());
     return fsid;
   }
-#endif
 
   virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE {
     IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
@@ -646,9 +628,7 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
   StorageMonitor* monitor = StorageMonitor::GetInstance();
   if (monitor)
     monitor->RemoveObserver(this);
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   DCHECK(mtp_device_delegate_map_.empty());
-#endif
 }
 
 void MediaFileSystemRegistry::OnRememberedGalleriesChanged(
@@ -697,7 +677,6 @@ void MediaFileSystemRegistry::OnRememberedGalleriesChanged(
   }
 }
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 scoped_refptr<ScopedMTPDeviceMapEntry>
 MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
     const base::FilePath::StringType& device_location) {
@@ -723,7 +702,6 @@ void MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry(
   DCHECK(delegate_it != mtp_device_delegate_map_.end());
   mtp_device_delegate_map_.erase(delegate_it);
 }
-#endif
 
 void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(
     Profile* profile, const std::string& extension_id) {

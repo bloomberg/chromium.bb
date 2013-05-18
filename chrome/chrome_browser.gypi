@@ -979,7 +979,6 @@
         'browser/media_galleries/fileapi/media_file_system_mount_point_provider.h',
         'browser/media_galleries/fileapi/media_path_filter.cc',
         'browser/media_galleries/fileapi/media_path_filter.h',
-        'browser/media_galleries/fileapi/mtp_device_file_system_config.h',
         'browser/media_galleries/fileapi/native_media_file_util.cc',
         'browser/media_galleries/fileapi/native_media_file_util.h',
         'browser/media_galleries/fileapi/picasa/picasa_album_table_reader.cc',
