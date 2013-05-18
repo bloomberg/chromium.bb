@@ -177,6 +177,11 @@ bool TiledLayer::DrawsContent() const {
   return true;
 }
 
+void TiledLayer::ReduceMemoryUsage() {
+  if (Updater())
+    Updater()->ReduceMemoryUsage();
+}
+
 void TiledLayer::SetIsMask(bool is_mask) {
   set_tiling_option(is_mask ? NEVER_TILE : AUTO_TILE);
 }

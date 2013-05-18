@@ -284,6 +284,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
                       RenderingStats* stats) {}
   virtual bool NeedMoreUpdates();
   virtual void SetIsMask(bool is_mask) {}
+  virtual void ReduceMemoryUsage() {}
 
   void SetDebugName(const std::string& debug_name);
 

@@ -59,7 +59,7 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
     RenderingStats* stats) {
   if (canvas_size_ != content_rect.size()) {
     canvas_size_ = content_rect.size();
-    canvas_ = make_scoped_ptr(skia::CreateBitmapCanvas(
+    canvas_ = skia::AdoptRef(skia::CreateBitmapCanvas(
         canvas_size_.width(), canvas_size_.height(), opaque_));
   }
 
@@ -83,21 +83,27 @@ void BitmapContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
                                               gfx::Rect source_rect,
                                               gfx::Vector2d dest_offset,
                                               bool partial_update) {
+  CHECK(canvas_);
   ResourceUpdate upload =
-      ResourceUpdate::Create(texture,
-                             &canvas_->getDevice()->accessBitmap(false),
-                             content_rect(),
-                             source_rect,
-                             dest_offset);
+      ResourceUpdate::CreateFromCanvas(texture,
+                                       canvas_,
+                                       content_rect(),
+                                       source_rect,
+                                       dest_offset);
   if (partial_update)
     queue->AppendPartialUpload(upload);
   else
     queue->AppendFullUpload(upload);
 }
 
+void BitmapContentLayerUpdater::ReduceMemoryUsage() {
+  canvas_.clear();
+  canvas_size_ = gfx::Size();
+}
+
 void BitmapContentLayerUpdater::SetOpaque(bool opaque) {
   if (opaque != opaque_) {
-    canvas_.reset();
+    canvas_.clear();
     canvas_size_ = gfx::Size();
   }
   opaque_ = opaque;

@@ -7,6 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/resources/content_layer_updater.h"
+#include "skia/ext/refptr.h"
 
 class SkCanvas;
 
@@ -55,8 +56,8 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
                      gfx::Rect source_rect,
                      gfx::Vector2d dest_offset,
                      bool partial_update);
-
   virtual void SetOpaque(bool opaque) OVERRIDE;
+  virtual void ReduceMemoryUsage() OVERRIDE;
 
  protected:
   BitmapContentLayerUpdater(
@@ -64,7 +65,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
       RenderingStatsInstrumentation* stats_instrumenation);
   virtual ~BitmapContentLayerUpdater();
 
-  scoped_ptr<SkCanvas> canvas_;
+  skia::RefPtr<SkCanvas> canvas_;
   gfx::Size canvas_size_;
   bool opaque_;
 

@@ -56,6 +56,7 @@ class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
                                float contents_height_scale,
                                gfx::Rect* resulting_opaque_rect,
                                RenderingStats* stats) {}
+  virtual void ReduceMemoryUsage() {}
 
   // Set true by the layer when it is known that the entire output is going to
   // be opaque.

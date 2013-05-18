@@ -261,10 +261,11 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   bool PaintMasksForRenderSurface(Layer* render_surface_layer,
                                   ResourceUpdateQueue* queue,
                                   RenderingStats* stats);
-
   void UpdateLayers(Layer* root_layer, ResourceUpdateQueue* queue);
   void UpdateHudLayer();
   void TriggerPrepaint();
+
+  void ReduceMemoryUsage();
 
   void PrioritizeTextures(const LayerList& render_surface_layer_list,
                           OverdrawMetrics* metrics);

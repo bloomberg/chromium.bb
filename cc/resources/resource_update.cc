@@ -5,6 +5,7 @@
 #include "cc/resources/resource_update.h"
 
 #include "base/logging.h"
+#include "skia/ext/platform_canvas.h"
 
 namespace cc {
 
@@ -17,6 +18,23 @@ ResourceUpdate ResourceUpdate::Create(PrioritizedResource* texture,
   ResourceUpdate update;
   update.texture = texture;
   update.bitmap = bitmap;
+  update.content_rect = content_rect;
+  update.source_rect = source_rect;
+  update.dest_offset = dest_offset;
+  return update;
+}
+
+ResourceUpdate ResourceUpdate::CreateFromCanvas(
+    PrioritizedResource* resource,
+    const skia::RefPtr<SkCanvas>& canvas,
+    gfx::Rect content_rect,
+    gfx::Rect source_rect,
+    gfx::Vector2d dest_offset) {
+  CHECK(content_rect.Contains(source_rect));
+  ResourceUpdate update;
+  update.texture = resource;
+  update.canvas = canvas;
+  update.bitmap = &canvas->getDevice()->accessBitmap(false);
   update.content_rect = content_rect;
   update.source_rect = source_rect;
   update.dest_offset = dest_offset;
