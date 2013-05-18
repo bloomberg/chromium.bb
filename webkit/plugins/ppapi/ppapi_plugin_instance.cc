@@ -1399,7 +1399,7 @@ int PluginInstance::PrintBegin(const WebPrintParams& print_params) {
   if (!num_pages)
     return 0;
   current_print_settings_ = print_settings;
-  canvas_ = NULL;
+  canvas_.clear();
   ranges_.clear();
   return num_pages;
 }
@@ -1417,7 +1417,7 @@ bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
 #endif
   if (save_for_later) {
     ranges_.push_back(page_range);
-    canvas_ = canvas;
+    canvas_ = skia::SharePtr(canvas);
     return true;
   } else {
     return PrintPageHelper(&page_range, 1, canvas);
@@ -1456,7 +1456,7 @@ void PluginInstance::PrintEnd() {
   scoped_refptr<PluginInstance> ref(this);
   if (!ranges_.empty())
     PrintPageHelper(&(ranges_.front()), ranges_.size(), canvas_.get());
-  canvas_ = NULL;
+  canvas_.clear();
   ranges_.clear();
 
   DCHECK(plugin_print_interface_);

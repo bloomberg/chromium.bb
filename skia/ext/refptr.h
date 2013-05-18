@@ -13,7 +13,7 @@ namespace skia {
 // this class to avoid dealing with the ref-counting and prevent leaks/crashes
 // due to ref-counting bugs.
 //
-// Example of Creating an SkShader* and setting it on a SkPaint:
+// Example of creating a new SkShader* and setting it on a SkPaint:
 //   skia::RefPtr<SkShader> shader = skia::AdoptRef(SkGradientShader::Create());
 //   paint.setShader(shader.get());
 //
@@ -25,11 +25,17 @@ namespace skia {
 //   }
 //   skia::RefPtr<SkShader> member_refptr_;
 //
-// When returning a ref-counted ponter, also return the skia::RefPtr instead. An
-// example method that creates an SkShader* and returns it:
+// When returning a ref-counted pointer, also return the skia::RefPtr instead.
+// An example method that creates an SkShader* and returns it:
 //   skia::RefPtr<SkShader> MakeAShader() {
 //     return skia::AdoptRef(SkGradientShader::Create());
 //   }
+//
+// To take a scoped reference to an object whose references are all owned
+// by other objects (i.e. does not have one that needs to be adopted) use the
+// skia::SharePtr helper:
+//
+//   skia::RefPtr<SkShader> shader = skia::SharePtr(paint.getShader());
 //
 // Never call ref() or unref() on the underlying ref-counted pointer. If you
 // AdoptRef() the raw pointer immediately into a skia::RefPtr and always work
@@ -84,14 +90,28 @@ class RefPtr {
  private:
   T* ptr_;
 
+  // This function cannot be public because Skia starts its ref-counted
+  // objects at refcnt=1.  This makes it impossible to differentiate
+  // between a newly created object (that doesn't need to be ref'd) or an
+  // already existing object with one owner (that does need to be ref'd so that
+  // this RefPtr can also manage its lifetime).
   explicit RefPtr(T* ptr) : ptr_(ptr) {}
 
   template<typename U>
   friend RefPtr<U> AdoptRef(U* ptr);
+
+  template<typename U>
+  friend RefPtr<U> SharePtr(U* ptr);
 };
 
+// For objects that have an unowned reference (such as newly created objects).
 template<typename T>
 RefPtr<T> AdoptRef(T* ptr) { return RefPtr<T>(ptr); }
+
+// For objects that are already owned. This doesn't take ownership of existing
+// references and adds a new one.
+template<typename T>
+RefPtr<T> SharePtr(T* ptr) { return RefPtr<T>(SkSafeRef(ptr)); }
 
 }  // namespace skia
 

@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/safe_numerics.h"
+#include "skia/ext/refptr.h"
 #include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -29,7 +30,7 @@
 namespace printing {
 
 struct PdfMetafileSkiaData {
-  SkRefPtr<SkPDFDevice> current_page_;
+  skia::RefPtr<SkPDFDevice> current_page_;
   SkPDFDocument pdf_doc_;
   SkDynamicMemoryWStream pdf_stream_;
 #if defined(OS_MACOSX)
@@ -63,9 +64,9 @@ SkDevice* PdfMetafileSkia::StartPageForVectorCanvas(
   SkISize pdf_page_size = SkISize::Make(page_size.width(), page_size.height());
   SkISize pdf_content_size =
       SkISize::Make(content_area.width(), content_area.height());
-  SkRefPtr<SkPDFDevice> pdf_device =
-      new skia::VectorPlatformDeviceSkia(pdf_page_size, pdf_content_size,
-                                         transform);
+  skia::RefPtr<SkPDFDevice> pdf_device =
+      skia::AdoptRef(new skia::VectorPlatformDeviceSkia(
+          pdf_page_size, pdf_content_size, transform));
   data_->current_page_ = pdf_device;
   return pdf_device.get();
 }
@@ -93,7 +94,7 @@ bool PdfMetafileSkia::FinishDocument() {
   if (page_outstanding_)
     FinishPage();
 
-  data_->current_page_ = NULL;
+  data_->current_page_.clear();
 
   int font_counts[SkAdvancedTypefaceMetrics::kNotEmbeddable_Font + 1];
   data_->pdf_doc_.getCountOfFontTypes(font_counts);

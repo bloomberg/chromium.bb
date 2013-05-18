@@ -162,8 +162,7 @@ void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters) {
 }
 
 void WebLayerImpl::setFilter(SkImageFilter* filter) {
-  SkSafeRef(filter);  // Claim a reference for the compositor.
-  layer_->SetFilter(skia::AdoptRef(filter));
+  layer_->SetFilter(skia::SharePtr(filter));
 }
 
 void WebLayerImpl::setDebugName(WebKit::WebString name) {

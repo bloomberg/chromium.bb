@@ -44,13 +44,13 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_gamepad_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
+#include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLLoaderClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureToken.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -733,7 +733,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // to generate the entire PDF given the variables below:
   //
   // The most recently used WebCanvas, guaranteed to be valid.
-  SkRefPtr<WebKit::WebCanvas> canvas_;
+  skia::RefPtr<WebKit::WebCanvas> canvas_;
   // An array of page ranges.
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
 

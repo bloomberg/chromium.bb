@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -76,7 +77,7 @@ class SkiaTextRenderer {
   bool started_drawing_;
   SkPaint paint_;
   SkRect bounds_;
-  SkRefPtr<SkShader> deferred_fade_shader_;
+  skia::RefPtr<SkShader> deferred_fade_shader_;
   SkScalar underline_thickness_;
   SkScalar underline_position_;
 

@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -18,55 +19,6 @@
 
 namespace cc {
 namespace {
-
-class TestLazyPixelRef : public skia::LazyPixelRef {
- public:
-  // Pure virtual implementation.
-  TestLazyPixelRef(int width, int height)
-    : pixels_(new char[4 * width * height]) {}
-  virtual SkFlattenable::Factory getFactory() OVERRIDE { return NULL; }
-  virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE {
-      return pixels_.get();
-  }
-  virtual void onUnlockPixels() OVERRIDE {}
-  virtual bool PrepareToDecode(const PrepareParams& params) OVERRIDE {
-    return true;
-  }
-  virtual SkPixelRef* deepCopy(
-      SkBitmap::Config config,
-      const SkIRect* subset) OVERRIDE {
-    this->ref();
-    return this;
-  }
-  virtual void Decode() OVERRIDE {}
- private:
-  scoped_ptr<char[]> pixels_;
-};
-
-void DrawPicture(unsigned char* buffer,
-                 gfx::Rect layer_rect,
-                 scoped_refptr<Picture> picture) {
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   layer_rect.width(),
-                   layer_rect.height());
-  bitmap.setPixels(buffer);
-  SkDevice device(bitmap);
-  SkCanvas canvas(&device);
-  canvas.clipRect(gfx::RectToSkRect(layer_rect));
-  picture->Raster(&canvas, layer_rect, 1.0f, false);
-}
-
-void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
-  SkAutoTUnref<TestLazyPixelRef> lazy_pixel_ref;
-  lazy_pixel_ref.reset(new TestLazyPixelRef(size.width(), size.height()));
-  lazy_pixel_ref->setURI(uri);
-
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    size.width(),
-                    size.height());
-  bitmap->setPixelRef(lazy_pixel_ref);
-}
 
 TEST(PictureTest, AsBase64String) {
   SkGraphics::Init();

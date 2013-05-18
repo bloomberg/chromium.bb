@@ -224,7 +224,7 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
     if (!paint_.isLCDRenderText() &&
         paint_.getShader() &&
         !paint_.getLooper()) {
-      deferred_fade_shader_ = paint_.getShader();
+      deferred_fade_shader_ = skia::SharePtr(paint_.getShader());
       paint_.setShader(NULL);
       canvas_skia_->saveLayer(&bounds_, NULL);
     }
