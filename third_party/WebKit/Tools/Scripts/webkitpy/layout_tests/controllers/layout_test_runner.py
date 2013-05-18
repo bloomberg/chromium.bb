@@ -183,13 +183,9 @@ class LayoutTestRunner(object):
             "Exiting early after %d crashes and %d timeouts." % (run_results.unexpected_crashes, run_results.unexpected_timeouts))
 
     def _update_summary_with_result(self, run_results, result):
-        if result.type == test_expectations.SKIP:
-            exp_str = got_str = 'SKIP'
-            expected = True
-        else:
-            expected = self._expectations.matches_an_expected_result(result.test_name, result.type, self._options.pixel_tests or result.reftest_type)
-            exp_str = self._expectations.get_expectations_string(result.test_name)
-            got_str = self._expectations.expectation_to_string(result.type)
+        expected = self._expectations.matches_an_expected_result(result.test_name, result.type, self._options.pixel_tests or result.reftest_type)
+        exp_str = self._expectations.get_expectations_string(result.test_name)
+        got_str = self._expectations.expectation_to_string(result.type)
 
         run_results.add(result, expected, self._test_is_slow(result.test_name))
 

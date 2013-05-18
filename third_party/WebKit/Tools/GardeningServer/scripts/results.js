@@ -222,7 +222,6 @@ results.ResultAnalyzer = base.extends(Object, {
         this._isUnexpected = resultNode.is_unexpected;
         this._actual = resultNode ? results.failureTypeList(resultNode.actual) : [];
         this._expected = resultNode ? this._addImpliedExpectations(results.failureTypeList(resultNode.expected)) : [];
-        this._wontfix = resultNode ? resultNode.wontfix : false;
     },
     _addImpliedExpectations: function(resultsList)
     {
@@ -250,7 +249,7 @@ results.ResultAnalyzer = base.extends(Object, {
     },
     wontfix: function()
     {
-        return this._wontfix;
+        return this._expected.indexOf('WONTFIX') != -1;
     },
     hasUnexpectedFailures: function()
     {

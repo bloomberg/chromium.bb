@@ -178,9 +178,6 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
         if result.reftest_type:
             test_dict.update(reftest_type=list(result.reftest_type))
 
-        if expectations.has_modifier(test_name, test_expectations.WONTFIX):
-            test_dict['wontfix'] = True
-
         if result_type == test_expectations.PASS:
             num_passes += 1
             if expected == 'PASS' and result.test_run_time < 1 and not result.has_stderr:

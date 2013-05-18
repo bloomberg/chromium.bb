@@ -572,6 +572,12 @@ class TestExpectationsModel(object):
     def get_expectations_string(self, test):
         """Returns the expectatons for the given test as an uppercase string.
         If there are no expectations for the test, then "PASS" is returned."""
+        if self.has_modifier(test, WONTFIX):
+            return TestExpectationParser.WONTFIX_MODIFIER.upper()
+
+        if self.has_modifier(test, SKIP):
+            return TestExpectationParser.SKIP_MODIFIER.upper()
+
         expectations = self.get_expectations(test)
         retval = []
 
@@ -583,6 +589,9 @@ class TestExpectationsModel(object):
     def expectation_to_string(self, expectation):
         """Return the uppercased string equivalent of a given expectation."""
         for item in TestExpectations.EXPECTATIONS.items():
+            if item[1] == expectation:
+                return item[0].upper()
+        for item in TestExpectations.MODIFIERS.items():
             if item[1] == expectation:
                 return item[0].upper()
         raise ValueError(expectation)

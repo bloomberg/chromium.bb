@@ -37,15 +37,8 @@ unittest.kExampleResultsJSON = {
                 "actual": "IMAGE"
             },
             "expected-wontfix": {
-                "expected": "IMAGE",
-                "actual": "IMAGE",
-                "wontfix": true
-            },
-            "unexpected-wontfix": {
-                "expected": "IMAGE",
-                "actual": "TEXT",
-                "is_unexpected": true,
-                "wontfix": true
+                "expected": "WONTFIX",
+                "actual": "SKIP",
             },
             "flaky-scrollbar.html": {
                 "expected": "PASS",

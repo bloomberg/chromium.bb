@@ -146,7 +146,7 @@ class SummarizedResultsTest(unittest.TestCase):
     def test_summarized_results_wontfix(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
-        self.assertTrue(summary['tests']['failures']['expected']['hang.html']['wontfix'])
+        self.assertEquals(summary['tests']['failures']['expected']['hang.html']['expected'], 'WONTFIX')
         self.assertTrue(summary['tests']['passes']['text.html']['is_unexpected'])
 
     def test_summarized_results_expected_pass(self):
@@ -158,7 +158,7 @@ class SummarizedResultsTest(unittest.TestCase):
     def test_summarized_results_skipped(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
-        self.assertTrue(summary['tests']['passes']['skipped']['skip.html'])
+        self.assertEquals(summary['tests']['passes']['skipped']['skip.html']['expected'], 'SKIP')
 
     def test_rounded_run_times(self):
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
