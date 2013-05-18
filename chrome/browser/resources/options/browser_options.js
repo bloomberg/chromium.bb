@@ -459,15 +459,6 @@ cr.define('options', function() {
         };
         updateGpuRestartButton();
       }
-
-      if (loadTimeData.getBoolean('managedUsersEnabled') &&
-          loadTimeData.getBoolean('profileIsManaged')) {
-        $('managed-user-settings-section').hidden = false;
-
-        $('open-managed-user-settings-button').onclick = function(event) {
-          OptionsPage.navigateToPage('managedUser');
-        };
-      }
     },
 
     /** @override */

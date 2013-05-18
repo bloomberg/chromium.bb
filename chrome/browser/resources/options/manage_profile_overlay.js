@@ -50,9 +50,6 @@ cr.define('options', function() {
 
       if (loadTimeData.getBoolean('managedUsersEnabled')) {
         $('create-profile-managed-container').hidden = false;
-        $('managed-user-settings-button').onclick = function(event) {
-          OptionsPage.navigateToPage('managedUser');
-        };
       }
       $('manage-profile-cancel').onclick =
           $('delete-profile-cancel').onclick =
@@ -143,9 +140,6 @@ cr.define('options', function() {
       this.profileInfo_ = profileInfo;
       $(mode + '-profile-name').value = profileInfo.name;
       $(mode + '-profile-icon-grid').selectedItem = profileInfo.iconURL;
-      $('managed-user-settings-button').hidden =
-          !loadTimeData.getBoolean('managedUsersEnabled') ||
-          !profileInfo.isManaged;
     },
 
     /**

@@ -116,7 +116,6 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
 ManagedUserService::ManagedUserService(Profile* profile)
     : weak_ptr_factory_(this),
       profile_(profile),
-      startup_elevation_(false),
       skip_dialog_for_testing_(false) {}
 
 ManagedUserService::~ManagedUserService() {

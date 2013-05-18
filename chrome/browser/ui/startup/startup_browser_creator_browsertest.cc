@@ -954,18 +954,6 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBrowserCreatorTest,
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   // There should be only one tab.
   EXPECT_EQ(1, tab_strip->count());
-
-  // And it should point to the managed user settings page.
-  content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
-  GURL expected(GURL(std::string(chrome::kChromeUISettingsURL) +
-                     chrome::kManagedUserSettingsSubPage));
-  EXPECT_EQ(GURL(expected), web_contents->GetURL());
-  observer.Wait();
-
-  // Managed user should be in elevated state.
-  bool is_elevated = ManagedModeNavigationObserver::FromWebContents(
-      web_contents)->is_elevated();
-  EXPECT_TRUE(is_elevated);
 }
 
 #endif  // ENABLE_MANAGED_USERS

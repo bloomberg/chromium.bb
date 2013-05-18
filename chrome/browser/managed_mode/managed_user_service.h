@@ -126,14 +126,6 @@ class ManagedUserService : public ProfileKeyedService,
   void RegisterAndInitSync(
       ManagedUserRegistrationService* registration_service);
 
-  void set_startup_elevation(bool elevation) {
-    startup_elevation_ = elevation;
-  }
-
-  bool startup_elevation() const {
-    return startup_elevation_;
-  }
-
   void set_skip_dialog_for_testing(bool skip) {
     skip_dialog_for_testing_ = skip;
   }
@@ -215,9 +207,6 @@ class ManagedUserService : public ProfileKeyedService,
 
   // Owns us via the ProfileKeyedService mechanism.
   Profile* profile_;
-
-  // Is true if the managed user should start in elevated mode.
-  bool startup_elevation_;
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -73,8 +75,6 @@ void ManageProfileHandler::GetLocalizedValues(
     { "manageProfilesDuplicateNameError",
         IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR },
     { "manageProfilesIconLabel", IDS_PROFILES_MANAGE_ICON_LABEL },
-    { "manageProfilesManagedUserSettings",
-        IDS_PROFILES_MANAGE_MANAGED_USER_SETTINGS_BUTTON },
     { "manageProfilesManagedLabel", IDS_PROFILES_CREATE_MANAGED_CHECKBOX },
     { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
@@ -94,6 +94,9 @@ void ManageProfileHandler::GetLocalizedValues(
 
   localized_strings->SetBoolean("profileShortcutsEnabled",
                                 ProfileShortcutManager::IsFeatureEnabled());
+  localized_strings->SetBoolean("managedUsersEnabled",
+                                CommandLine::ForCurrentProcess()->HasSwitch(
+                                    switches::kEnableManagedUsers));
 }
 
 void ManageProfileHandler::InitializeHandler() {

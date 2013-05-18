@@ -106,7 +106,6 @@
 }
 
 /* Proper spacing for the buttons. */
-#managed-user-settings-button,
 #remove-shortcut-button,
 #add-shortcut-button {
   -webkit-margin-end: 10px;

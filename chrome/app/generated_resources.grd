@@ -8237,76 +8237,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_UNLOCK_PASSPHRASE_BUTTON" desc="A button for unlocking the managed user settings page.">
         Unlock
       </message>
-      <message name="IDS_LOCK_MANAGED_USER_BUTTON" desc="A button for locking the managed user settings page.">
-        Lock
-      </message>
       <message name="IDS_INCORRECT_PASSPHRASE_WARNING" desc="A warning for the passphrase page if the incorrect passphrase was entered.">
         The passphrase you entered is incorrect.
-      </message>
-
-      <!-- Managed User Settings dialog data -->
-      <message name="IDS_OPTIONS_MANAGED_USERS_SECTION_TITLE" desc="Title for the Managed User section">
-        Managed User
-      </message>
-      <message name="IDS_MANAGED_USER_SETTINGS_TITLE" desc="Title for the Managed User Settings dialog.">
-        Managed User Settings
-      </message>
-      <message name="IDS_CONTENT_PACKS_TAB_LABEL" desc="Label for installed whitelists on the Managed User Settings dialog.">
-        Content packs
-      </message>
-      <message name="IDS_MANUAL_EXCEPTION_HEADER" desc="Header for the manual exception management page on Managed User Settings dialog">
-        Manual exceptions
-      </message>
-      <message name="IDS_MANUAL_EXCEPTION_TAB_TITLE" desc="Title for the manual exception management page on Managed User Settings dialog">
-        Manual exceptions
-      </message>
-      <message name="IDS_GET_CONTENT_PACKS_BUTTON" desc="The text for the button that opens the webstore, Content pack section.">
-        Get Content Packs
-      </message>
-      <message name="IDS_CONTENT_PACK_SETTINGS_LABEL" desc="Label that explains the three options associated with installed whitelists on the Managed User Settings dialog.">
-        When a managed user tries to access a site that is not in any content pack:
-      </message>
-      <message name="IDS_OUTSIDE_CONTENT_PACKS_ALLOW_RADIO" desc="A radio button in the Managed User Settings dialog for allowing a managed user to view sites that do not belong to the installed whitelists.">
-        Allow
-      </message>
-      <message name="IDS_OUTSIDE_CONTENT_PACKS_WARN_RADIO" desc="A radio button in the Managed User Settings dialog for warning a managed user whenever they try to view sites that do not belong to the installed whitelist.">
-        Warn
-      </message>
-      <message name="IDS_OUTSIDE_CONTENT_PACKS_BLOCK_RADIO" desc="A radio button in the Managed User Settings dialog for blocking a managed user to view sites that do not belong to the installed whitelist.">
-        Block
-      </message>
-      <message name="IDS_ADVANCED_MANAGED_USER_LABEL" desc="A label in the Managed User Settings dialog for other managed user settings.">
-        Advanced settings
-      </message>
-       <message name="IDS_SAFE_SEARCH_ENABLED" desc="A checkbox in the Managed User Settings dialog for enabling SafeSearch.">
-        Enable Google's SafeSearch
-      </message>
-      <message name="IDS_HISTORY_DELETION_DISABLED" desc="A checkbox in the Managed User Settings dialog for tracking history of managed user.">
-        Disable incognito windows and deleting history
-      </message>
-      <message name="IDS_USE_PASSPHRASE_LABEL" desc="A checkbox in the Managed User Settings dialog to set whether to ask for a passphrase to access other profiles.">
-        Require a passphrase to modify the settings for this managed user
-      </message>
-      <message name="IDS_SET_PASSPHRASE_BUTTON" desc="A button in the Managed User Settings dialog to set the passphrase to access other profiles.">
-        Change passphrase...
-      </message>
-      <message name="IDS_SET_PASSPHRASE_TITLE" desc="A title for the Managed User Set Passphrase dialog.">
-        Set a passphrase
-      </message>
-      <message name="IDS_SET_PASSPHRASE_INSTRUCTIONS" desc="Text describing the set passphrase dialog.">
-        Enter a passphrase to change this user's settings later.
-      </message>
-      <message name="IDS_ENTER_PASSPHRASE_LABEL" desc="A label for entering a passphrase to save.">
-        Enter a passphrase:
-      </message>
-      <message name="IDS_CONFIRM_PASSPHRASE_LABEL" desc="A label for re-entering a passphrase to save.">
-        Confirm the passphrase:
-      </message>
-      <message name="IDS_PASSPHRASE_MISMATCH" desc="A warning message which is displayed when the passphrase entered as confirmation does not match the passphrase.">
-        The passphrases do not match.
-      </message>
-      <message name="IDS_SAVE_PASSPHRASE_BUTTON" desc="A button label for saving the passhrase to lock a managed mode user.">
-        Save
       </message>
 
       <!-- Managed Mode Block Interstitial data -->
@@ -14877,9 +14809,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR" desc="error bubble displayed when the user is attempting to rename a profile to a name that is used.">
       Whoops, this name is already in use!
-    </message>
-    <message name="IDS_PROFILES_MANAGE_MANAGED_USER_SETTINGS_BUTTON" desc="Label for button to open managed user settings in the manage profile dialog.">
-      Managed user settings...
     </message>
 
     <!-- Delete Profile Dialog -->
