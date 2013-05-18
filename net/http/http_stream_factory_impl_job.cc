@@ -162,10 +162,9 @@ LoadState HttpStreamFactoryImpl::Job::GetLoadState() const {
   switch (next_state_) {
     case STATE_RESOLVE_PROXY_COMPLETE:
       return session_->proxy_service()->GetLoadState(pac_request_);
+    case STATE_INIT_CONNECTION_COMPLETE:
     case STATE_CREATE_STREAM_COMPLETE:
       return using_quic_ ? LOAD_STATE_CONNECTING : connection_->GetLoadState();
-    case STATE_INIT_CONNECTION_COMPLETE:
-      return LOAD_STATE_SENDING_REQUEST;
     default:
       return LOAD_STATE_IDLE;
   }

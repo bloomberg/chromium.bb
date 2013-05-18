@@ -465,7 +465,6 @@ TEST(HttpStreamFactoryTest, JobNotifiesProxy) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("http://www.google.com");
-  request_info.load_flags = 0;
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
@@ -584,6 +583,31 @@ TEST(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
   waiter.WaitForStream();
 
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 2);
+}
+
+TEST(HttpStreamFactoryTest, GetLoadState) {
+  SessionDependencies session_deps(ProxyService::CreateDirect());
+
+  StaticSocketDataProvider socket_data;
+  socket_data.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps.socket_factory.AddSocketDataProvider(&socket_data);
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://www.google.com");
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter;
+  scoped_ptr<HttpStreamRequest> request(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config,
+          &waiter, BoundNetLog()));
+
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, request->GetLoadState());
+
+  waiter.WaitForStream();
 }
 
 }  // namespace
