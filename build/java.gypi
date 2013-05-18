@@ -282,27 +282,11 @@
     },
     {
       'action_name': 'dex_<(_target_name)',
-      'message': 'Dexing <(_target_name) jar',
-      'inputs': [
-        '<(DEPTH)/build/android/gyp/util/build_utils.py',
-        '<(DEPTH)/build/android/gyp/util/md5_check.py',
-        '<(DEPTH)/build/android/gyp/dex.py',
-        '<(jar_path)',
-      ],
-      'outputs': [
-        '<(dex_path)',
-      ],
-      'action': [
-        'python', '<(DEPTH)/build/android/gyp/dex.py',
-        '--dex-path=<(dex_path)',
-        '--android-sdk-root=<(android_sdk_root)',
-
-        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
-
-        '<(jar_path)',
-      ]
+      'variables': {
+        'dex_input_paths': [ '<(jar_path)' ],
+        'output_path': '<(dex_path)',
+      },
+      'includes': [ 'android/dex_action.gypi' ],
     },
-
   ],
 }

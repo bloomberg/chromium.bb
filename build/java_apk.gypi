@@ -480,43 +480,19 @@
     },
     {
       'action_name': 'dex_<(_target_name)',
-      'message': 'Dexing <(_target_name) jar',
       'variables': {
         'conditions': [
-          ['proguard_enabled=="true" and CONFIGURATION_NAME=="Release"', {
-            'dex_inputs': [ '<(obfuscated_jar_path)' ],
-            'dex_generated_inputs': [],
-          }, {
-            'dex_inputs': [
-              '>@(library_dexed_jars_paths)',
-            ],
-            'dex_generated_inputs': [
-              '<(classes_dir)',
-            ],
+          ['proguard_enabled == "true"', {
+            'input_paths': [ '<(obfuscate_stamp)' ],
+            'proguard_enabled_input_path': '<(obfuscated_jar_path)',
           }],
         ],
+        'input_paths': [ '<(compile_stamp)' ],
+        'dex_input_paths': [ '>@(library_dexed_jars_paths)' ],
+        'dex_generated_input_dirs': [ '<(classes_dir)' ],
+        'output_path': '<(dex_path)',
       },
-      'inputs': [
-        '<(DEPTH)/build/android/gyp/util/build_utils.py',
-        '<(DEPTH)/build/android/gyp/util/md5_check.py',
-        '<(DEPTH)/build/android/gyp/dex.py',
-        '<(compile_stamp)',
-        '>@(dex_inputs)',
-      ],
-      'outputs': [
-        '<(dex_path)',
-      ],
-      'action': [
-        'python', '<(DEPTH)/build/android/gyp/dex.py',
-        '--dex-path=<(dex_path)',
-        '--android-sdk-root=<(android_sdk_root)',
-
-        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
-
-        '>@(dex_inputs)',
-        '>@(dex_generated_inputs)',
-      ]
+      'includes': [ 'android/dex_action.gypi' ],
     },
     {
       'action_name': 'ant package resources',

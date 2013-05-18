@@ -31,12 +31,22 @@ def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--android-sdk-root', help='Android sdk root directory.')
   parser.add_option('--dex-path', help='Dex output path.')
+  parser.add_option('--configuration-name',
+      help='The build CONFIGURATION_NAME.')
+  parser.add_option('--proguard-enabled',
+      help='"true" if proguard is enabled.')
+  parser.add_option('--proguard-enabled-input-path',
+      help='Path to dex in Release mode when proguard is enabled.')
   parser.add_option('--stamp', help='Path to touch on success.')
 
   # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
   parser.add_option('--ignore', help='Ignored.')
 
   options, paths = parser.parse_args()
+
+  if (options.proguard_enabled == "true"
+      and options.configuration_name == "Release"):
+    paths = [options.proguard_enabled_input_path]
 
   DoDex(options, paths)
 
