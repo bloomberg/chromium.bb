@@ -82,6 +82,8 @@ void PicturePile::Update(
     }
   }
 
+  int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
+
   // Walk through all pictures in the rect of interest and record.
   for (TilingData::Iterator iter(&tiling_, interest_rect); iter; ++iter) {
     // Create a picture in this list if it doesn't exist.
@@ -103,7 +105,9 @@ void PicturePile::Update(
     for (PictureList::iterator pic = pic_list.begin();
          pic != pic_list.end(); ++pic) {
       if (!(*pic)->HasRecording()) {
-        (*pic)->Record(painter, tile_grid_info_, stats);
+        TRACE_EVENT0("cc", "PicturePile::Update recording loop");
+        for (int i = 0; i < repeat_count; i++)
+          (*pic)->Record(painter, tile_grid_info_, stats);
         (*pic)->GatherPixelRefs(tile_grid_info_, stats);
         (*pic)->CloneForDrawing(num_raster_threads_);
       }

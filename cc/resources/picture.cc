@@ -192,8 +192,6 @@ void Picture::Record(ContentLayerClient* painter,
                "width", layer_rect_.width(),
                "height", layer_rect_.height());
 
-  // Record() should only be called once.
-  DCHECK(!picture_);
   DCHECK(!tile_grid_info.fTileInterval.isEmpty());
   picture_ = skia::AdoptRef(new SkTileGridPicture(
       layer_rect_.width(), layer_rect_.height(), tile_grid_info));
@@ -303,7 +301,7 @@ void Picture::Raster(
     gfx::Rect content_rect,
     float contents_scale,
     bool enable_lcd_text) {
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "Picture::Raster",
+  TRACE_EVENT_BEGIN1("cc", "Picture::Raster",
     "data", AsTraceableRasterData(content_rect, contents_scale));
 
   DCHECK(picture_);
@@ -318,7 +316,11 @@ void Picture::Raster(
   if (!enable_lcd_text)
     canvas->setDrawFilter(&disable_lcd_text_filter);
   canvas->drawPicture(*picture_);
+  SkIRect bounds;
+  canvas->getClipDeviceBounds(&bounds);
   canvas->restore();
+  TRACE_EVENT_END1("cc", "Picture::Raster",
+                   "num_pixels_rasterized", bounds.width() * bounds.height());
 }
 
 void Picture::AsBase64String(std::string* output) const {

@@ -858,6 +858,7 @@ scoped_ptr<base::Value> TileManager::RasterTaskMetadata::AsValue() const {
   res->SetBoolean("is_tile_in_pending_tree_now_bin",
                   is_tile_in_pending_tree_now_bin);
   res->Set("resolution", TileResolutionAsValue(tile_resolution).release());
+  res->SetInteger("source_frame_number", source_frame_number);
   return res.PassAs<base::Value>();
 }
 
