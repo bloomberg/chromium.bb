@@ -239,6 +239,18 @@ const AcceleratorAction kReservedActions[] = {
 
 const size_t kReservedActionsLength = arraysize(kReservedActions);
 
+const AcceleratorAction kReservedDebugActions[] = {
+  PRINT_LAYER_HIERARCHY,
+  PRINT_VIEW_HIERARCHY,
+  PRINT_WINDOW_HIERARCHY,
+  DEBUG_TOGGLE_DEVICE_SCALE_FACTOR,
+  DEBUG_TOGGLE_SHOW_DEBUG_BORDERS,
+  DEBUG_TOGGLE_SHOW_FPS_COUNTER,
+  DEBUG_TOGGLE_SHOW_PAINT_RECTS,
+};
+
+const size_t kReservedDebugActionsLength = arraysize(kReservedDebugActions);
+
 const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,

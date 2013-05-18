@@ -142,6 +142,14 @@ ASH_EXPORT extern const AcceleratorAction kReservedActions[];
 // The number of elements in kReservedActions.
 ASH_EXPORT extern const size_t kReservedActionsLength;
 
+// Actions that should be handled very early in Ash unless the current target
+// window is full-screen, these actions are only handled if
+// DebugShortcutsEnabled is true (command line switch 'ash-debug-shortcuts').
+ASH_EXPORT extern const AcceleratorAction kReservedDebugActions[];
+
+// The number of elements in kReservedDebugActions.
+ASH_EXPORT extern const size_t kReservedDebugActionsLength;
+
 // Actions allowed while user is not signed in or screen is locked.
 ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[];
 

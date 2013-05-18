@@ -400,8 +400,11 @@ void AcceleratorController::Init() {
   RegisterAccelerators(kDesktopAcceleratorData, kDesktopAcceleratorDataLength);
 #endif
 
-  if (DebugShortcutsEnabled())
+  if (DebugShortcutsEnabled()) {
     RegisterAccelerators(kDebugAcceleratorData, kDebugAcceleratorDataLength);
+    for (size_t i = 0; i < kReservedDebugActionsLength; ++i)
+      reserved_actions_.insert(kReservedDebugActions[i]);
+  }
 
 #if defined(OS_CHROMEOS)
   keyboard_brightness_control_delegate_.reset(
