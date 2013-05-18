@@ -1474,7 +1474,10 @@ ErrorCode RendererOrWorkerProcessPolicy(Sandbox *sandbox, int sysno, void *) {
 ErrorCode FlashProcessPolicy(Sandbox *sandbox, int sysno, void *) {
   switch (sysno) {
     case __NR_clone:
+#if defined(__x86_64__)
+      // TODO(jorgelo): enable this on other platforms.
       return RestrictCloneToThreadsAndEPERMFork(sandbox);
+#endif
     case __NR_sched_get_priority_max:
     case __NR_sched_get_priority_min:
     case __NR_sched_getaffinity:
