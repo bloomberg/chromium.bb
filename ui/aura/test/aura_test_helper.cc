@@ -21,6 +21,7 @@
 #include "ui/gfx/screen.h"
 
 #if defined(USE_X11)
+#include "ui/aura/root_window_host_x11.h"
 #include "ui/base/x/x11_util.h"
 #endif
 
@@ -36,6 +37,9 @@ AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
+#if defined(USE_X11)
+  test::SetUseOverrideRedirectWindowByDefault(true);
+#endif
 }
 
 AuraTestHelper::~AuraTestHelper() {
