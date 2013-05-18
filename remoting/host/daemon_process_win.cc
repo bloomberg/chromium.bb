@@ -185,10 +185,8 @@ void DaemonProcessWin::LaunchNetworkProcess() {
                            arraysize(kCopiedSwitchNames));
 
   scoped_ptr<UnprivilegedProcessDelegate> delegate(
-      new UnprivilegedProcessDelegate(caller_task_runner(), io_task_runner(),
-                                      target.Pass()));
-  network_launcher_.reset(new WorkerProcessLauncher(
-      caller_task_runner(), delegate.Pass(), this));
+      new UnprivilegedProcessDelegate(io_task_runner(), target.Pass()));
+  network_launcher_.reset(new WorkerProcessLauncher(delegate.Pass(), this));
 }
 
 scoped_ptr<DaemonProcess> DaemonProcess::Create(

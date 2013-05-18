@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/win/windows_version.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "remoting/host/chromoting_messages.h"
@@ -89,9 +90,20 @@ void WtsConsoleSessionProcessDriver::OnSessionAttached(uint32 session_id) {
 
   DCHECK(launcher_.get() == NULL);
 
-  // Get the host binary name.
+  // Launch elevated on Win8 to be able to inject Alt+Tab.
+  bool launch_elevated = base::win::GetVersion() >= base::win::VERSION_WIN8;
+
+  // Get the name of the executable to run. |kDesktopBinaryName| specifies
+  // uiAccess="true" in it's manifest.
   base::FilePath desktop_binary;
-  if (!GetInstalledBinaryPath(kDesktopBinaryName, &desktop_binary)) {
+  bool result;
+  if (launch_elevated) {
+    result = GetInstalledBinaryPath(kDesktopBinaryName, &desktop_binary);
+  } else {
+    result = GetInstalledBinaryPath(kHostBinaryName, &desktop_binary);
+  }
+
+  if (!result) {
     Stop();
     return;
   }
@@ -104,16 +116,17 @@ void WtsConsoleSessionProcessDriver::OnSessionAttached(uint32 session_id) {
 
   // Create a Delegate capable of launching an elevated process in the session.
   scoped_ptr<WtsSessionProcessDelegate> delegate(
-      new WtsSessionProcessDelegate(caller_task_runner_,
-                                    io_task_runner_,
+      new WtsSessionProcessDelegate(io_task_runner_,
                                     target.Pass(),
-                                    session_id,
-                                    true,
+                                    launch_elevated,
                                     kDaemonIpcSecurityDescriptor));
+  if (!delegate->Initialize(session_id)) {
+    Stop();
+    return;
+  }
 
   // Use the Delegate to launch the host process.
-  launcher_.reset(new WorkerProcessLauncher(
-      caller_task_runner_, delegate.Pass(), this));
+  launcher_.reset(new WorkerProcessLauncher(delegate.Pass(), this));
 }
 
 void WtsConsoleSessionProcessDriver::OnSessionDetached() {

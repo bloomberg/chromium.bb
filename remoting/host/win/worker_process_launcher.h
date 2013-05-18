@@ -6,11 +6,15 @@
 #define REMOTING_HOST_WIN_WORKER_PROCESS_LAUNCHER_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
+#include "base/timer.h"
+#include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
-#include "ipc/ipc_sender.h"
+#include "net/base/backoff_entry.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -18,7 +22,6 @@ class TimeDelta;
 } // namespace base
 
 namespace IPC {
-class Listener;
 class Message;
 } // namespace IPC
 
@@ -34,47 +37,36 @@ class WorkerProcessIpcDelegate;
 // interaction with the spawned process is through WorkerProcessIpcDelegate and
 // Send() method. In case of error the channel is closed and the worker process
 // is terminated.
-class WorkerProcessLauncher {
+class WorkerProcessLauncher
+    : public base::NonThreadSafe,
+      public base::win::ObjectWatcher::Delegate {
  public:
-  class Delegate : public IPC::Sender {
+  class Delegate {
    public:
     virtual ~Delegate();
+
+    // Asynchronously starts the worker process and creates an IPC channel it
+    // can connect to. |event_handler| must remain valid until KillProcess() has
+    // been called.
+    virtual void LaunchProcess(WorkerProcessLauncher* event_handler) = 0;
+
+    // Sends an IPC message to the worker process. The message will be silently
+    // dropped if the channel is closed.
+    virtual void Send(IPC::Message* message) = 0;
 
     // Closes the IPC channel.
     virtual void CloseChannel() = 0;
 
-    // Returns PID of the worker process or 0 if it is not available.
-    virtual DWORD GetProcessId() const = 0;
-
-    // Returns true if the worker process should not be restarted any more.
-    virtual bool IsPermanentError(int failure_count) const = 0;
-
-    // Terminates the worker process with the given exit code. Destroys the IPC
-    // channel created by LaunchProcess().
-    virtual void KillProcess(DWORD exit_code) = 0;
-
-    // Starts the worker process and creates an IPC channel it can connect to.
-    // |delegate| specifies the object that will receive notifications from
-    // the IPC channel. |process_exit_event_out| receives a handle that becomes
-    // signalled once the launched process has been terminated.
-    virtual bool LaunchProcess(
-        IPC::Listener* delegate,
-        base::win::ScopedHandle* process_exit_event_out) = 0;
+    // Terminates the worker process and closes the IPC channel.
+    virtual void KillProcess() = 0;
   };
 
   // Creates the launcher that will use |launcher_delegate| to manage the worker
-  // process and |worker_delegate| to handle IPCs. The caller must ensure that
-  // |worker_delegate| remains valid until Stoppable::Stop() method has been
-  // called.
-  //
-  // The caller should call all the methods on this class on
-  // the |caller_task_runner| thread. Methods of both delegate interfaces are
-  // called on the |caller_task_runner| thread as well.
-  WorkerProcessLauncher(
-      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-      scoped_ptr<Delegate> launcher_delegate,
-      WorkerProcessIpcDelegate* worker_delegate);
-  ~WorkerProcessLauncher();
+  // process and |ipc_handler| to handle IPCs. The caller must ensure that
+  // |ipc_handler| must outlive this object.
+  WorkerProcessLauncher(scoped_ptr<Delegate> launcher_delegate,
+                        WorkerProcessIpcDelegate* ipc_handler);
+  virtual ~WorkerProcessLauncher();
 
   // Asks the worker process to crash and generate a dump, and closes the IPC
   // channel. |location| is passed to the worker so that it is on the stack in
@@ -87,16 +79,87 @@ class WorkerProcessLauncher {
   // initiated.
   void Send(IPC::Message* message);
 
+  // Notification methods invoked by |Delegate|.
+
+  // Invoked to pass a handle of the launched process back to the caller of
+  // Delegate::LaunchProcess(). The delegate has to make sure that this method
+  // is called before OnChannelConnected().
+  void OnProcessLaunched(base::win::ScopedHandle worker_process);
+
+  // Called when a fatal error occurs (i.e. a failed process launch).
+  // The delegate must guarantee that no other notifications are delivered once
+  // OnFatalError() has been called.
+  void OnFatalError();
+
+  // Mirrors methods of IPC::Listener to be invoked by |Delegate|. |Delegate|
+  // has to validate |peer_pid| if necessary.
+  bool OnMessageReceived(const IPC::Message& message);
+  void OnChannelConnected(int32 peer_pid);
+  void OnChannelError();
+
  private:
   friend class WorkerProcessLauncherTest;
 
-  // Hooks that allow test code to call the corresponding methods of |Core|.
-  void ResetLaunchSuccessTimeoutForTest();
+  // base::win::ObjectWatcher::Delegate implementation used to watch for
+  // the worker process exiting.
+  virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
+
+  // Returns true when the object is being destroyed.
+  bool stopping() const { return ipc_handler_ == NULL; }
+
+  // Attempts to launch the worker process. Schedules next launch attempt if
+  // creation of the process fails.
+  void LaunchWorker();
+
+  // Called to record outcome of a launch attempt: success or failure.
+  void RecordLaunchResult();
+
+  // Called by the test to record a successful launch attempt.
+  void RecordSuccessfulLaunchForTest();
+
+  // Set the desired timeout for |kill_process_timer_|.
   void SetKillProcessTimeoutForTest(const base::TimeDelta& timeout);
 
-  // The actual implementation resides in WorkerProcessLauncher::Core class.
-  class Core;
-  scoped_refptr<Core> core_;
+  // Stops the worker process and schedules next launch attempt unless the
+  // object is being destroyed already.
+  void StopWorker();
+
+  // Handles IPC messages sent by the worker process.
+  WorkerProcessIpcDelegate* ipc_handler_;
+
+  // Implements specifics of launching a worker process.
+  scoped_ptr<WorkerProcessLauncher::Delegate> launcher_delegate_;
+
+  // Keeps the exit code of the worker process after it was closed. The exit
+  // code is used to determine whether the process has to be restarted.
+  DWORD exit_code_;
+
+  // True if IPC messages should be passed to |ipc_handler_|.
+  bool ipc_enabled_;
+
+  // The timer used to delay termination of the worker process when an IPC error
+  // occured or when Crash() request is pending
+  base::OneShotTimer<WorkerProcessLauncher> kill_process_timer_;
+
+  // The default timeout for |kill_process_timer_|.
+  base::TimeDelta kill_process_timeout_;
+
+  // State used to backoff worker launch attempts on failure.
+  net::BackoffEntry launch_backoff_;
+
+  // Timer used to schedule the next attempt to launch the process.
+  base::OneShotTimer<WorkerProcessLauncher> launch_timer_;
+
+  // Monitors |worker_process_| to detect when the launched process
+  // terminates.
+  base::win::ObjectWatcher process_watcher_;
+
+  // Timer used to detect whether a launch attempt was successful or not, and to
+  // cancel the launch attempt if it is taking too long.
+  base::OneShotTimer<WorkerProcessLauncher> launch_result_timer_;
+
+  // The handle of the worker process, if launched.
+  base::win::ScopedHandle worker_process_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessLauncher);
 };

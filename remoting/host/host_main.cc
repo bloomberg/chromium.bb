@@ -125,7 +125,9 @@ int RunElevated() {
   info.nShow = SW_SHOWNORMAL;
 
   if (!ShellExecuteEx(&info)) {
-    return GetLastError();
+    DWORD exit_code = GetLastError();
+    LOG_GETLASTERROR(ERROR) << "Unable to launch '" << binary.value() << "'";
+    return exit_code;
   }
 
   return kSuccessExitCode;
