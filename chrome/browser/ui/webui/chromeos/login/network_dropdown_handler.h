@@ -31,8 +31,7 @@ class NetworkDropdownHandler : public BaseScreenHandler {
   void HandleNetworkItemChosen(double id);
   // Handles network drop-down showing.
   void HandleNetworkDropdownShow(const std::string& element_id,
-                                 bool oobe,
-                                 double last_network_type);
+                                 bool oobe);
   // Handles network drop-down hiding.
   void HandleNetworkDropdownHide();
   // Handles network drop-down refresh.

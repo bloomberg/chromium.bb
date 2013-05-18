@@ -109,6 +109,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &guid_);
   } else if (key == flimflam::kProfileProperty) {
     return GetStringValue(key, value, &profile_path_);
+  } else if (key == flimflam::kProxyConfigProperty) {
+    return GetStringValue(key, value, &proxy_config_);
   } else if (key == shill::kActivateOverNonCellularNetworkProperty) {
     return GetBooleanValue(key, value, &activate_over_non_cellular_networks_);
   } else if (key == shill::kOutOfCreditsProperty) {
@@ -173,6 +175,8 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
   dictionary->SetStringWithoutPathExpansion(flimflam::kGuidProperty, guid_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kProfileProperty,
                                             profile_path_);
+  dictionary->SetStringWithoutPathExpansion(flimflam::kProxyConfigProperty,
+                                            proxy_config_);
   dictionary->SetBooleanWithoutPathExpansion(
       shill::kActivateOverNonCellularNetworkProperty,
       activate_over_non_cellular_networks_);

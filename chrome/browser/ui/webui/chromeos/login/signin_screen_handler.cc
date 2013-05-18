@@ -17,8 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
@@ -45,6 +43,8 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -52,6 +52,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(USE_AURA)
@@ -221,21 +222,10 @@ bool IsSigninScreenError(ErrorScreen::ErrorState error_state) {
       error_state == ErrorScreen::ERROR_STATE_AUTH_EXT_TIMEOUT;
 }
 
-// Returns a pointer to a Network instance by service path or NULL if
-// network can not be found.
-Network* FindNetworkByPath(const std::string& service_path) {
-  CrosLibrary* cros = CrosLibrary::Get();
-  if (!cros)
-    return NULL;
-  NetworkLibrary* network_library = cros->GetNetworkLibrary();
-  if (!network_library)
-    return NULL;
-  return network_library->FindNetworkByPath(service_path);
-}
-
 // Returns network name by service path.
 std::string GetNetworkName(const std::string& service_path) {
-  Network* network = FindNetworkByPath(service_path);
+  const NetworkState* network =
+      NetworkStateHandler::Get()->GetNetworkState(service_path);
   if (!network)
     return std::string();
   return network->name();
@@ -243,31 +233,33 @@ std::string GetNetworkName(const std::string& service_path) {
 
 // Returns network unique id by service path.
 std::string GetNetworkUniqueId(const std::string& service_path) {
-  Network* network = FindNetworkByPath(service_path);
+  const NetworkState* network =
+      NetworkStateHandler::Get()->GetNetworkState(service_path);
   if (!network)
     return std::string();
-  return network->unique_id();
+  return network->guid();
 }
 
 // Returns captive portal state for a network by its service path.
 NetworkPortalDetector::CaptivePortalState GetCaptivePortalState(
     const std::string& service_path) {
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  Network* network = FindNetworkByPath(service_path);
+  const NetworkState* network =
+      NetworkStateHandler::Get()->GetNetworkState(service_path);
   if (!detector || !network)
     return NetworkPortalDetector::CaptivePortalState();
   return detector->GetCaptivePortalState(network);
 }
 
 void RecordDiscrepancyWithShill(
-    const Network* network,
+    const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalStatus status) {
-  if (network->online()) {
+  if (network->connection_state() == flimflam::kStateOnline) {
     UMA_HISTOGRAM_ENUMERATION(
         "CaptivePortal.OOBE.DiscrepancyWithShill_Online",
         status,
         NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-  } else if (network->restricted_pool()) {
+  } else if (network->connection_state() == flimflam::kStatePortal) {
     UMA_HISTOGRAM_ENUMERATION(
         "CaptivePortal.OOBE.DiscrepancyWithShill_RestrictedPool",
         status,
@@ -284,7 +276,8 @@ void RecordDiscrepancyWithShill(
 // network is online but NetworkPortalDetector claims that it's behind
 // portal) for the network identified by |service_path|.
 void RecordNetworkPortalDetectorStats(const std::string& service_path) {
-  const Network* network = FindNetworkByPath(service_path);
+  const NetworkState* network =
+      NetworkStateHandler::Get()->GetNetworkState(service_path);
   if (!network)
     return;
   NetworkPortalDetector::CaptivePortalState state =
@@ -301,19 +294,20 @@ void RecordNetworkPortalDetectorStats(const std::string& service_path) {
       NOTREACHED();
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      if (network->online() || network->restricted_pool())
+      if (network->connection_state() == flimflam::kStateOnline ||
+          network->connection_state() == flimflam::kStatePortal)
         RecordDiscrepancyWithShill(network, state.status);
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
-      if (!network->online())
+      if (network->connection_state() != flimflam::kStateOnline)
         RecordDiscrepancyWithShill(network, state.status);
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
-      if (!network->restricted_pool())
+      if (network->connection_state() != flimflam::kStatePortal)
         RecordDiscrepancyWithShill(network, state.status);
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      if (!network->online())
+      if (network->connection_state() != flimflam::kStateOnline)
         RecordDiscrepancyWithShill(network, state.status);
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT:
@@ -702,9 +696,9 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
 
   if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
     DictionaryValue params;
-    const ConnectionType connection_type =
+    const std::string connection_type =
         network_state_informer_->last_network_type();
-    params.SetInteger("lastNetworkType", static_cast<int>(connection_type));
+    params.SetString("lastNetworkType", connection_type);
     error_screen_actor_->SetUIState(ErrorScreen::UI_STATE_SIGNIN);
     error_screen_actor_->Show(OobeUI::SCREEN_GAIA_SIGNIN, &params);
   }

@@ -198,9 +198,9 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
   virtual void OnNetworkChanged(NetworkLibrary* cros,
                                 const Network* network) OVERRIDE;
 
-  // Parse |network| proxy config and store result in |proxy_config|.
+  // Parse |proxy_config_string| and store result in |proxy_config|.
   // Returns true if proxy config was successfully parsed.
-  static bool ParseProxyConfig(const Network* network,
+  static bool ParseProxyConfig(const std::string& proxy_config_string,
                                net::ProxyConfig* proxy_config);
 
   // Register UseShardProxies preference.
