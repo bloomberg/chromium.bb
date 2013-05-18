@@ -114,6 +114,12 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': ['../../build/linux/system.gyp:gtk'],
         }],
+        # See http://crbug.com/162998#c4 for why this is needed.
+        ['OS=="linux" and linux_use_tcmalloc==1', {
+          'dependencies': [
+            '../../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
       ],
       'defines': [
         'GLES2_CONFORM_SUPPORT_ONLY',
