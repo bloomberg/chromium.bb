@@ -1421,8 +1421,8 @@ webkit.org/b/109312 fast/canvas/canvas-drawImage-shadow.html [ Pass Failure ]
 webkit.org/b/109312 virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ Pass Failure ]
 
 # ENABLE_ENCRYPTED_MEDIA_V2 is not enabled.
-webkit.org/b/97037 media/encrypted-media/encrypted-media-v2-events.html [ Timeout ]
-webkit.org/b/97037 media/encrypted-media/encrypted-media-v2-syntax.html [ Timeout ]
+crbug.com/224791 media/encrypted-media/encrypted-media-v2-events.html [ Skip ]
+crbug.com/224791 media/encrypted-media/encrypted-media-v2-syntax.html [ Skip ]
 
 webkit.org/b/109963 [ Debug ] inspector/profiler/heap-snapshot-get-profile-crash.html [ Pass Crash ]
 
@@ -1451,8 +1451,6 @@ webkit.org/b/110876 [ Debug ] html5lib/generated/ [ Skip ]
 webkit.org/b/112381 [ Win Linux Release ] html5lib/generated/run-tests16-data.html [ Slow ]
 
 webkit.org/b/111524 [ Debug ] fast/dom/HTMLDocument/document-special-properties.html [ Pass Timeout ]
-
-webkit.org/b/111667 [ Debug Win ] media/encrypted-media/encrypted-media-events.html [ Timeout ]
 
 webkit.org/b/111774 [ Win ] http/tests/security/cross-origin-css.html [ Pass Failure ]
 
