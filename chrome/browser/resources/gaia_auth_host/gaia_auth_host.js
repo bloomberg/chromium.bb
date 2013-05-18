@@ -41,8 +41,7 @@ cr.define('cr.login', function() {
    * @const
    */
   var SUPPORTED_PARAMS = [
-    'gaiaOrigin',    // Gaia origin to use;
-    'gaiaUrlPath',   // Url path to gaia sign-in servlet on gaiaOrigin;
+    'gaiaUrl',       // Gaia url to use;
     'hl',            // Language code for the user interface;
     'email',         // Pre-fill the email field in Gaia UI;
     'test_email',    // Used for test;

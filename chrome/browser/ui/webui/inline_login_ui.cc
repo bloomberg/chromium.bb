@@ -93,14 +93,7 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
 
     const std::string& app_locale = g_browser_process->GetApplicationLocale();
     params.SetString("hl", app_locale);
-
-    params.SetString("gaiaOrigin", GaiaUrls::GetInstance()->gaia_origin_url());
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(::switches::kGaiaUrlPath)) {
-      params.SetString(
-          "gaiaUrlPath",
-          command_line->GetSwitchValueASCII(::switches::kGaiaUrlPath));
-    }
+    params.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
 
     web_ui()->CallJavascriptFunction("inline.login.loadAuthExtension", params);
   }

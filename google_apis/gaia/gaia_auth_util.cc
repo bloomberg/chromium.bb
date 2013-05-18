@@ -69,7 +69,7 @@ bool IsGaiaSignonRealm(const GURL& url) {
   if (!url.SchemeIsSecure())
     return false;
 
-  return url == GURL(GaiaUrls::GetInstance()->gaia_origin_url());
+  return url == GaiaUrls::GetInstance()->gaia_url();
 }
 
 }  // namespace gaia

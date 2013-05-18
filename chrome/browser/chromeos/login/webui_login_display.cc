@@ -312,9 +312,9 @@ void WebUILoginDisplay::ShowSigninScreenForCreds(
     webui_handler_->ShowSigninScreenForCreds(username, password);
 }
 
-void WebUILoginDisplay::SetGaiaOriginForTesting(const std::string& arg) {
+void WebUILoginDisplay::SetGaiaUrlForTesting(const GURL& gaia_url) {
   if (webui_handler_)
-    webui_handler_->SetGaiaOriginForTesting(arg);
+    webui_handler_->SetGaiaUrlForTesting(gaia_url);
 }
 
 const UserList& WebUILoginDisplay::GetUsers() const {

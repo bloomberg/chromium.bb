@@ -899,8 +899,8 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
   HandleShowAddUser(NULL);
 }
 
-void SigninScreenHandler::SetGaiaOriginForTesting(const std::string& arg) {
-  gaia_origin_for_test_ = arg;
+void SigninScreenHandler::SetGaiaUrlForTesting(const GURL& gaia_url) {
+  gaia_url_for_test_ = gaia_url;
 }
 
 void SigninScreenHandler::OnCookiesCleared(base::Closure on_clear_callback) {
@@ -1029,17 +1029,13 @@ void SigninScreenHandler::LoadAuthExtension(
     params.Set("localizedStrings", localized_strings);
   }
 
-  std::string gaia_origin = GaiaUrls::GetInstance()->gaia_origin_url();
-  if (!gaia_origin_for_test_.empty())
-    gaia_origin = gaia_origin_for_test_;
-  params.SetString("gaiaOrigin", gaia_origin);
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(::switches::kGaiaUrlPath)) {
-    params.SetString("gaiaUrlPath",
-        command_line->GetSwitchValueASCII(::switches::kGaiaUrlPath));
-  }
+  const GURL gaia_url = gaia_url_for_test_.is_empty() ?
+      GaiaUrls::GetInstance()->gaia_url() :
+      gaia_url_for_test_;
+  params.SetString("gaiaUrl", gaia_url.spec());
 
   // Test automation data:
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
     if (!test_user_.empty()) {
       params.SetString("test_email", test_user_);

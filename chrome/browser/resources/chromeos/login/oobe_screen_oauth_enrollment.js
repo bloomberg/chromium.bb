@@ -167,9 +167,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     onBeforeShow: function(data) {
       var url = data.signin_url;
-      url += '?gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin);
-      if (data.gaiaUrlBase)
-        url += '&gaiaUrlPath=' + encodeURIComponent(data.gaiaUrlPath);
+      url += '?gaiaUrl=' + encodeURIComponent(data.gaiaUrl);
       if (data.test_email) {
         url += '&test_email=' + encodeURIComponent(data.test_email);
         url += '&test_password=' + encodeURIComponent(data.test_password);

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/singleton.h"
+#include "googleurl/src/gurl.h"
 
 // A signleton that provides all the URLs that are used for connecting to GAIA.
 class GaiaUrls {
@@ -15,35 +16,35 @@ class GaiaUrls {
   static GaiaUrls* GetInstance();
 
   // The URLs for different calls in the Google Accounts programmatic login API.
-  const std::string& captcha_url_prefix();
+  const std::string& captcha_url_prefix() const;
 
-  const std::string& gaia_origin_url();
-  const std::string& client_login_url();
-  const std::string& service_login_url();
-  const std::string& service_logout_url();
-  const std::string& issue_auth_token_url();
-  const std::string& get_user_info_url();
-  const std::string& token_auth_url();
-  const std::string& merge_session_url();
-  const std::string& get_oauth_token_url();
-  const std::string& oauth_get_access_token_url();
-  const std::string& oauth_wrap_bridge_url();
-  const std::string& oauth_user_info_url();
-  const std::string& oauth_revoke_token_url();
-  const std::string& oauth1_login_url();
+  const GURL& gaia_url() const;
+  const std::string& client_login_url() const;
+  const std::string& service_login_url() const;
+  const std::string& service_logout_url() const;
+  const std::string& issue_auth_token_url() const;
+  const std::string& get_user_info_url() const;
+  const std::string& token_auth_url() const;
+  const std::string& merge_session_url() const;
+  const std::string& get_oauth_token_url() const;
+  const std::string& oauth_get_access_token_url() const;
+  const std::string& oauth_wrap_bridge_url() const;
+  const std::string& oauth_user_info_url() const;
+  const std::string& oauth_revoke_token_url() const;
+  const std::string& oauth1_login_url() const;
 
-  const std::string& oauth1_login_scope();
-  const std::string& oauth_wrap_bridge_user_info_scope();
+  const std::string& oauth1_login_scope() const;
+  const std::string& oauth_wrap_bridge_user_info_scope() const;
 
-  const std::string& oauth2_chrome_client_id();
-  const std::string& oauth2_chrome_client_secret();
-  const std::string& client_login_to_oauth2_url();
-  const std::string& oauth2_auth_url();
-  const std::string& oauth2_token_url();
-  const std::string& oauth2_issue_token_url();
-  const std::string& oauth2_revoke_url();
+  const std::string& oauth2_chrome_client_id() const;
+  const std::string& oauth2_chrome_client_secret() const;
+  const std::string& client_login_to_oauth2_url() const;
+  const std::string& oauth2_auth_url() const;
+  const std::string& oauth2_token_url() const;
+  const std::string& oauth2_issue_token_url() const;
+  const std::string& oauth2_revoke_url() const;
 
-  const std::string& gaia_login_form_realm();
+  const std::string& gaia_login_form_realm() const;
 
  private:
   GaiaUrls();
@@ -53,7 +54,7 @@ class GaiaUrls {
 
   std::string captcha_url_prefix_;
 
-  std::string gaia_origin_url_;
+  GURL gaia_url_;
   std::string lso_origin_url_;
   std::string google_apis_origin_url_;
   std::string client_login_url_;

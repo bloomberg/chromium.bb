@@ -69,7 +69,7 @@ bool IsSigninFlowURL(const GURL& url) {
     return true;
 
   // Additionally whitelist /ServiceLoginAuth.
-  if (url.GetOrigin() != GURL(GaiaUrls::GetInstance()->gaia_origin_url()))
+  if (url.GetOrigin() != GaiaUrls::GetInstance()->gaia_url().GetOrigin())
     return false;
   return url.path() == kServiceLoginAuth;
 }

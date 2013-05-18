@@ -52,7 +52,7 @@ void CopyChromeSwitchesFromCurrentProcess(CommandLine* destination) {
     switches::kCloudPrintServiceURL,
     switches::kEnableLogging,
     switches::kIgnoreUrlFetcherCertRequests,
-    switches::kLsoHost,
+    switches::kLsoUrl,
     switches::kV,
   };
   destination->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),

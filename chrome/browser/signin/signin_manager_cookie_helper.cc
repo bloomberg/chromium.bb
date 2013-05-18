@@ -42,7 +42,7 @@ void SigninManagerCookieHelper::FetchGaiaCookiesOnIOThread() {
       cookie_store()->GetCookieMonster();
   if (cookie_monster) {
     cookie_monster->GetAllCookiesForURLAsync(
-        GURL(GaiaUrls::GetInstance()->gaia_origin_url()),
+        GaiaUrls::GetInstance()->gaia_url(),
         base::Bind(&SigninManagerCookieHelper::OnGaiaCookiesFetched, this));
   } else {
     OnGaiaCookiesFetched(net::CookieList());

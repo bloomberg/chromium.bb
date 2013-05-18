@@ -25,8 +25,8 @@ Authenticator.prototype = {
   inputLang_: undefined,
   intputEmail_: undefined,
 
-  GAIA_PAGE_ORIGIN: 'https://accounts.google.com',
-  GAIA_PAGE_PATH: '/ServiceLogin?service=chromeoslogin' +
+  GAIA_URL: 'https://accounts.google.com/',
+  GAIA_PAGE_PATH: 'ServiceLogin?service=chromeoslogin' +
       '&skipvpage=true&sarp=1&rm=hide' +
       '&continue=chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/' +
       'success.html',
@@ -36,8 +36,7 @@ Authenticator.prototype = {
   initialize: function() {
     var params = getUrlSearchParams(location.search);
     this.parentPage_ = params['parentPage'] || this.PARENT_PAGE;
-    this.gaiaOrigin_ = params['gaiaOrigin'] || this.GAIA_PAGE_ORIGIN;
-    this.gaiaUrlPath_ = params['gaiaUrlPath'] || '';
+    this.gaiaUrl_ = params['gaiaUrl'] || this.GAIA_URL;
     this.inputLang_ = params['hl'];
     this.inputEmail_ = params['email'];
     this.testEmail_ = params['test_email'];
@@ -47,8 +46,9 @@ Authenticator.prototype = {
   },
 
   isGaiaMessage_: function(msg) {
-    return msg.origin == this.gaiaOrigin_ ||
-           msg.origin == this.GAIA_PAGE_ORIGIN;
+    // Not quite right, but good enough.
+    return this.gaiaUrl_.indexOf(msg.origin) == 0 ||
+           this.GAIA_URL.indexOf(msg.origin) == 0;
   },
 
   isInternalMessage_: function(msg) {
@@ -56,13 +56,7 @@ Authenticator.prototype = {
   },
 
   getFrameUrl_: function() {
-    var url = this.gaiaOrigin_;
-
-    if (this.gaiaOrigin_ == 'https://www.google.com')
-      url += '/accounts';
-
-    if (this.gaiaUrlPath_ && this.gaiaUrlPath_ != '')
-      url += this.gaiaUrlPath_;
+    var url = this.gaiaUrl_;
 
     url += this.GAIA_PAGE_PATH;
 

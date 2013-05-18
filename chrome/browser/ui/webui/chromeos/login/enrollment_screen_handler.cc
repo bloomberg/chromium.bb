@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -463,13 +462,7 @@ void EnrollmentScreenHandler::OnTokenRevokerDone(
 void EnrollmentScreenHandler::DoShow() {
   DictionaryValue screen_data;
   screen_data.SetString("signin_url", kGaiaExtStartPage);
-  screen_data.SetString("gaiaOrigin",
-                        GaiaUrls::GetInstance()->gaia_origin_url());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGaiaUrlPath)) {
-    screen_data.SetString("gaiaUrlPath",
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kGaiaUrlPath));
-  }
+  screen_data.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
   screen_data.SetBoolean("is_auto_enrollment", is_auto_enrollment_);
   screen_data.SetBoolean("prevent_cancellation", !can_exit_enrollment_);
   if (!test_email_.empty()) {

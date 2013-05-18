@@ -56,7 +56,7 @@ class TestBrowserMainExtraParts
   }
 
   void set_quit_task(const base::Closure& quit_task) { quit_task_ = quit_task; }
-  void set_gaia_url(const std::string& url) { gaia_url_ = url; }
+  void set_gaia_url(const GURL& url) { gaia_url_ = url; }
 
  private:
   // Overridden from content::NotificationObserver:
@@ -93,7 +93,7 @@ class TestBrowserMainExtraParts
         static_cast<chromeos::WebUILoginDisplay*>(
             controller->login_display());
     CHECK(webui_login_display);
-    webui_login_display->SetGaiaOriginForTesting(gaia_url_);
+    webui_login_display->SetGaiaUrlForTesting(gaia_url_);
     webui_login_display->ShowSigninScreenForCreds("username", "password");
     // TODO(glotov): mock GAIA server (test_server_) should support
     // username/password configuration.
@@ -102,7 +102,7 @@ class TestBrowserMainExtraParts
   bool webui_visible_, browsing_data_removed_, signin_screen_shown_;
   content::NotificationRegistrar registrar_;
   base::Closure quit_task_;
-  std::string gaia_url_;
+  GURL gaia_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserMainExtraParts);
 };
@@ -164,8 +164,7 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
         << "Current manifest_test.json for gaia_login restrictions "
         << "does not allow this port";
 
-    const std::string gaia_url =
-        "http://localhost:" + test_server_->base_url().port();
+    const GURL gaia_url("http://localhost:" + test_server_->base_url().port());
     content_browser_client_->browser_main_extra_parts_->set_gaia_url(gaia_url);
   }
 
