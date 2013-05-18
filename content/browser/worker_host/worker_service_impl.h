@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/worker_service.h"
 
@@ -21,6 +22,7 @@ namespace content {
 class ResourceContext;
 class WorkerServiceObserver;
 class WorkerStoragePartition;
+class WorkerPrioritySetter;
 
 class CONTENT_EXPORT WorkerServiceImpl
     : public NON_EXPORTED_BASE(WorkerService) {
@@ -72,6 +74,8 @@ class CONTENT_EXPORT WorkerServiceImpl
       WorkerProcessHost* process,
       int worker_route_id);
 
+  void NotifyWorkerProcessCreated();
+
   // Used when we run each worker in a separate process.
   static const int kMaxWorkersWhenSeparate;
   static const int kMaxWorkersPerTabWhenSeparate;
@@ -122,7 +126,8 @@ class CONTENT_EXPORT WorkerServiceImpl
       const WorkerStoragePartition& worker_partition,
       ResourceContext* resource_context);
 
-  NotificationRegistrar registrar_;
+  scoped_refptr<WorkerPrioritySetter> priority_setter_;
+
   int next_worker_route_id_;
 
   WorkerProcessHost::Instances queued_workers_;

@@ -114,7 +114,8 @@ WorkerProcessHost::WorkerProcessHost(
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition)
     : resource_context_(resource_context),
-      partition_(partition) {
+      partition_(partition),
+      process_launched_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(resource_context_);
   process_.reset(
@@ -318,6 +319,9 @@ bool WorkerProcessHost::FilterMessage(const IPC::Message& message,
 }
 
 void WorkerProcessHost::OnProcessLaunched() {
+  process_launched_ = true;
+
+  WorkerServiceImpl::GetInstance()->NotifyWorkerProcessCreated();
 }
 
 bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
@@ -538,8 +542,16 @@ void WorkerProcessHost::TerminateWorker(int worker_route_id) {
   Send(new WorkerMsg_TerminateWorkerContext(worker_route_id));
 }
 
+void WorkerProcessHost::SetBackgrounded(bool backgrounded) {
+  process_->SetBackgrounded(backgrounded);
+}
+
 const ChildProcessData& WorkerProcessHost::GetData() {
   return process_->GetData();
+}
+
+bool WorkerProcessHost::process_launched() const {
+  return process_launched_;
 }
 
 std::vector<std::pair<int, int> > WorkerProcessHost::GetRenderViewIDsForWorker(
