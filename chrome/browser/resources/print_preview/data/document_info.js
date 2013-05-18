@@ -35,6 +35,13 @@ cr.define('print_preview', function() {
     this.isModifiable_ = true;
 
     /**
+     * Whether scaling of the document is prohibited.
+     * @type {boolean}
+     * @private
+     */
+    this.isScalingDisabled_ = false;
+
+    /**
      * Margins of the document in points.
      * @type {print_preview.Margins}
      * @private
@@ -113,6 +120,11 @@ cr.define('print_preview', function() {
       return this.isModifiable_;
     },
 
+    /** @return {boolean} Whether scaling of the document is prohibited. */
+    get isScalingDisabled() {
+      return this.isScalingDisabled_;
+    },
+
     /** @return {print_preview.Margins} Margins of the document in points. */
     get margins() {
       return this.margins_;
@@ -156,6 +168,19 @@ cr.define('print_preview', function() {
       this.title_ = title;
       this.hasSelection_ = hasSelection;
       this.isInitialized_ = true;
+    },
+
+    /**
+     * Updates whether scaling is disabled for the document and dispatches a
+     * CHANGE event.
+     * @param {boolean} isScalingDisabled Whether scaling of the document is
+     *     prohibited.
+     */
+    updateIsScalingDisabled: function(isScalingDisabled) {
+      if (this.isInitialized_ && this.isScalingDisabled_ != isScalingDisabled) {
+        this.isScalingDisabled_ = isScalingDisabled;
+        cr.dispatchSimpleEvent(this, DocumentInfo.EventType.CHANGE);
+      }
     },
 
     /**

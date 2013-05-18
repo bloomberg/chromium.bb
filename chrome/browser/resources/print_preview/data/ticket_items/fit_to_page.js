@@ -17,14 +17,11 @@ cr.define('print_preview.ticket_items', function() {
    */
   function FitToPage(documentInfo, destinationStore) {
     print_preview.ticket_items.TicketItem.call(
-        this, null /*appState*/, null /*field*/, destinationStore);
-
-    /**
-     * Information about the document to print.
-     * @type {!print_preview.DocumentInfo}
-     * @private
-     */
-    this.documentInfo_ = documentInfo;
+        this,
+        null /*appState*/,
+        null /*field*/,
+        destinationStore,
+        documentInfo);
   };
 
   FitToPage.prototype = {
@@ -37,7 +34,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      return !this.documentInfo_.isModifiable &&
+      return !this.getDocumentInfoInternal().isModifiable &&
           (!this.getSelectedDestInternal() ||
               this.getSelectedDestInternal().id !=
                   print_preview.Destination.GooglePromotedId.SAVE_AS_PDF);
@@ -45,13 +42,13 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal: function() {
-      return true;
+      return !this.getDocumentInfoInternal().isScalingDisabled;
     },
 
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
-      return this.getSelectedDestInternal() &&
-          this.getSelectedDestInternal().id ==
+      return !this.getSelectedDestInternal() ||
+          this.getSelectedDestInternal().id !=
               print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
     }
   };

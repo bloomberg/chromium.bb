@@ -720,7 +720,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
 
   var previewGenerator = mock(print_preview.PreviewGenerator);
   printPreview.previewArea_.previewGenerator_ = previewGenerator.proxy();
-  previewGenerator.expects(exactly(2)).requestPreview();
+  previewGenerator.expects(exactly(3)).requestPreview();
 
   var barDestination;
   var destinations = printPreview.destinationStore_.destinations;
