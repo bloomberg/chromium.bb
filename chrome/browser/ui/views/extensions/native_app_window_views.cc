@@ -453,12 +453,12 @@ void NativeAppWindowViews::OnViewWasResized() {
         path.moveTo(0, 0);
         path.lineTo(width, 0);
       }
+      path.lineTo(width, height - kCornerRadius - 1);
+      path.lineTo(width - kCornerRadius - 1, height);
+      path.lineTo(kCornerRadius + 1, height);
+      path.lineTo(0, height - kCornerRadius - 1);
+      path.close();
     }
-    path.lineTo(width, height - kCornerRadius - 1);
-    path.lineTo(width - kCornerRadius - 1, height);
-    path.lineTo(kCornerRadius + 1, height);
-    path.lineTo(0, height - kCornerRadius - 1);
-    path.close();
     SetWindowRgn(web_contents()->GetView()->GetNativeView(),
                  path.CreateNativeRegion(), 1);
   }
