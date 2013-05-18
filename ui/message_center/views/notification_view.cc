@@ -5,9 +5,9 @@
 #include "ui/message_center/views/notification_view.h"
 
 #include "base/command_line.h"
-#include "base/utf_string_conversions.h"
+#include "base/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
@@ -124,6 +124,7 @@ class ItemView : public views::View {
   ItemView(const message_center::NotificationItem& item);
   virtual ~ItemView();
 
+  // Overridden from views::View:
   virtual void SetVisible(bool visible) OVERRIDE;
 
  private:
@@ -383,6 +384,8 @@ NotificationView::NotificationView(const Notification& notification,
                                    MessageCenter* message_center,
                                    bool expanded)
     : MessageView(notification, message_center, expanded) {
+  std::vector<string16> accessible_lines;
+
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();
   background_view_->set_background(MakeBackground());
@@ -409,6 +412,7 @@ NotificationView::NotificationView(const Notification& notification,
                            kRegularTextBackgroundColor);
     title_view_->set_border(MakeTextBorder(padding, 3, 0));
     top_view_->AddChildView(title_view_);
+    accessible_lines.push_back(notification.title());
   }
 
   // Create the message view if appropriate.
@@ -422,6 +426,7 @@ NotificationView::NotificationView(const Notification& notification,
     message_view_->SetColors(kDimTextColor, kDimTextBackgroundColor);
     message_view_->set_border(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(message_view_);
+    accessible_lines.push_back(notification.message());
   }
 
   // Create the list item views (up to a maximum).
@@ -433,6 +438,8 @@ NotificationView::NotificationView(const Notification& notification,
     item_view->set_border(MakeTextBorder(padding, i ? 0 : 4, 0));
     item_views_.push_back(item_view);
     top_view_->AddChildView(item_view);
+    accessible_lines.push_back(
+        items[i].title + base::ASCIIToUTF16(" ") + items[i].message);
   }
 
   // Create the notification icon view.
@@ -490,6 +497,7 @@ NotificationView::NotificationView(const Notification& notification,
   AddChildView(bottom_view_);
   AddChildView(close_button());
   AddChildView(expand_button());
+  set_accessible_name(JoinString(accessible_lines, '\n'));
 }
 
 NotificationView::~NotificationView() {
@@ -566,6 +574,11 @@ void NotificationView::Layout() {
   expand_button()->SetVisible(IsExpansionNeeded(width()));
   expand_button()->SetBounds(content_right - expand_size.width(), expand_y,
                              expand_size.width(), expand_size.height());
+}
+
+void NotificationView::OnFocus() {
+  MessageView::OnFocus();
+  ScrollRectToVisible(GetLocalBounds());
 }
 
 void NotificationView::ScrollRectToVisible(const gfx::Rect& rect) {

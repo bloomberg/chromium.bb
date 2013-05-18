@@ -5,6 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_H_
 
+#include "base/string16.h"
 #include "ui/gfx/insets.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification.h"
@@ -19,6 +20,7 @@ class ScrollView;
 namespace message_center {
 
 class MessageCenter;
+class MessageViewContextMenuController;
 
 // Individual notifications constants.
 const int kPaddingBetweenItems = 10;
@@ -41,8 +43,14 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   bool IsCloseButtonFocused();
   void RequestFocusOnCloseButton();
 
+  void set_accessible_name(const string16& name) { accessible_name_ = name; }
+
   // Overridden from views::View:
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
@@ -57,15 +65,10 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
  protected:
   MessageView();
 
-  // Shows the menu for the notification.
-  void ShowMenu(gfx::Point screen_location);
-
   // Overridden from views::SlideOutView:
   virtual void OnSlideOut() OVERRIDE;
 
   MessageCenter* message_center() { return message_center_; }
-  const string16& display_source() const { return display_source_; }
-  const std::string& extension_id() const { return extension_id_; }
   views::ImageButton* close_button() { return close_button_.get(); }
   views::ImageButton* expand_button() { return expand_button_.get(); }
   views::ScrollView* scroller() { return scroller_; }
@@ -74,12 +77,13 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
  private:
   MessageCenter* message_center_;  // Weak reference.
   std::string notification_id_;
-  string16 display_source_;
-  std::string extension_id_;
 
+  scoped_ptr<MessageViewContextMenuController> context_menu_controller_;
   scoped_ptr<views::ImageButton> close_button_;
   scoped_ptr<views::ImageButton> expand_button_;
   views::ScrollView* scroller_;
+
+  string16 accessible_name_;
 
   bool is_expanded_;
 

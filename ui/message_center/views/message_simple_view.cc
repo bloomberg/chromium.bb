@@ -4,6 +4,7 @@
 
 #include "ui/message_center/views/message_simple_view.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center_constants.h"
@@ -132,6 +133,8 @@ void MessageSimpleView::SetUpView(const Notification& notification) {
   layout->SkipColumns(2);
   layout->AddView(message, 1, 1);
   layout->AddPaddingRow(0, kPaddingBetweenItems);
+  set_accessible_name(
+      notification.title() + base::ASCIIToUTF16("\n") + notification.message());
 }
 
 void MessageSimpleView::ButtonPressed(views::Button* sender,
