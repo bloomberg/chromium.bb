@@ -41,6 +41,9 @@ class ASH_EXPORT AcceleratorControllerContext {
   // event type of the previous accelerator.
   void UpdateContext(const ui::Accelerator& accelerator);
 
+  const ui::Accelerator& current_accelerator() const {
+    return current_accelerator_;
+  }
   const ui::Accelerator& previous_accelerator() const {
     return previous_accelerator_;
   }
@@ -141,7 +144,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // TODO(derat): BrightnessControlDelegate is also used by the system tray;
   // move it outside of this class.
   scoped_ptr<BrightnessControlDelegate> brightness_control_delegate_;
-  ExitWarningHandler exit_warning_handler_;
   scoped_ptr<ImeControlDelegate> ime_control_delegate_;
   scoped_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
@@ -149,6 +151,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
   // Contextual information, eg. if the current accelerator is repeated.
   AcceleratorControllerContext context_;
+
+  // Handles the exit accelerator which requires a long hold to exit and
+  // shows a popup with an explanation.
+  ExitWarningHandler exit_warning_handler_;
 
   // A map from accelerators to the AcceleratorAction values, which are used in
   // the implementation.

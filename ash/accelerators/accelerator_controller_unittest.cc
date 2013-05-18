@@ -322,23 +322,26 @@ class AcceleratorControllerTest : public test::AshTestBase {
   static bool ProcessWithContext(const ui::Accelerator& accelerator);
 
   // Several functions to access ExitWarningHandler (as friend).
-  static void StubForTest(ExitWarningHandler& ewh) {
-    ewh.stub_timers_for_test_ = true;
+  static void StubForTest(ExitWarningHandler* ewh) {
+    ewh->stub_timers_for_test_ = true;
   }
-  static void SimulateTimer1Expired(ExitWarningHandler& ewh) {
-    ewh.Timer1Action();
+  static void Reset(ExitWarningHandler* ewh) {
+    ewh->state_ = ExitWarningHandler::IDLE;
   }
-  static void SimulateTimer2Expired(ExitWarningHandler& ewh) {
-    ewh.Timer2Action();
+  static void SimulateTimer1Expired(ExitWarningHandler* ewh) {
+    ewh->Timer1Action();
   }
-  static bool is_ui_shown(ExitWarningHandler& ewh) {
-    return !!ewh.widget_;
+  static void SimulateTimer2Expired(ExitWarningHandler* ewh) {
+    ewh->Timer2Action();
   }
-  static bool is_idle(ExitWarningHandler& ewh) {
-    return ewh.state_ == ExitWarningHandler::IDLE;
+  static bool is_ui_shown(ExitWarningHandler* ewh) {
+    return !!ewh->widget_;
   }
-  static bool is_exiting(ExitWarningHandler& ewh) {
-    return ewh.state_ == ExitWarningHandler::EXITING;
+  static bool is_idle(ExitWarningHandler* ewh) {
+    return ewh->state_ == ExitWarningHandler::IDLE;
+  }
+  static bool is_exiting(ExitWarningHandler* ewh) {
+    return ewh->state_ == ExitWarningHandler::EXITING;
   }
 
  private:
@@ -356,71 +359,87 @@ bool AcceleratorControllerTest::ProcessWithContext(
   return controller->Process(accelerator);
 }
 
-// Quick double press of exit key => exiting
+#if !defined(OS_WIN)
+// Quick double press of exit shortcut => exiting
 TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestDoublePress) {
-  ExitWarningHandler ewh;
+  ui::Accelerator press(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
+  ui::Accelerator release(press);
+  release.set_type(ui::ET_KEY_RELEASED);
+  ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
+  ASSERT_TRUE(!!ewh);
   StubForTest(ewh);
   EXPECT_TRUE(is_idle(ewh));
   EXPECT_FALSE(is_ui_shown(ewh));
-
-  ewh.HandleExitKey(true);
+  EXPECT_TRUE(ProcessWithContext(press));
+  EXPECT_FALSE(ProcessWithContext(release));
   EXPECT_TRUE(is_ui_shown(ewh));
-  ewh.HandleExitKey(false);
-  ewh.HandleExitKey(true); // double press
+  EXPECT_TRUE(ProcessWithContext(press)); // double press
+  EXPECT_FALSE(ProcessWithContext(release));
   SimulateTimer1Expired(ewh); // simulate double press timer expired
   SimulateTimer2Expired(ewh); // simulate long hold timer expired
-  ewh.HandleExitKey(false);
   EXPECT_FALSE(is_ui_shown(ewh));
   EXPECT_TRUE(is_exiting(ewh));
+  Reset(ewh);
 }
 
-// Long hold of exit key => exiting
+// Long hold of exit shortcut => exiting
 TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestLongHold) {
-  ExitWarningHandler ewh;
+  ui::Accelerator press(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
+  ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
+  ASSERT_TRUE(!!ewh);
   StubForTest(ewh);
   EXPECT_TRUE(is_idle(ewh));
   EXPECT_FALSE(is_ui_shown(ewh));
-
-  ewh.HandleExitKey(true);
+  EXPECT_TRUE(ProcessWithContext(press)); // hold
   EXPECT_TRUE(is_ui_shown(ewh));
   SimulateTimer1Expired(ewh); // simulate double press timer expired
   SimulateTimer2Expired(ewh); // simulate long hold timer expired
-  ewh.HandleExitKey(false); // release after long hold
   EXPECT_FALSE(is_ui_shown(ewh));
   EXPECT_TRUE(is_exiting(ewh));
+  Reset(ewh);
 }
 
-// Release of exit key before hold time limit => cancel
+// Release of exit shortcut before hold time limit => cancel
 TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestEarlyRelease) {
-  ExitWarningHandler ewh;
+  ui::Accelerator press(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
+  ui::Accelerator release(press);
+  release.set_type(ui::ET_KEY_RELEASED);
+  ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
+  ASSERT_TRUE(!!ewh);
   StubForTest(ewh);
   EXPECT_TRUE(is_idle(ewh));
   EXPECT_FALSE(is_ui_shown(ewh));
-
-  ewh.HandleExitKey(true);
+  EXPECT_TRUE(ProcessWithContext(press));
   EXPECT_TRUE(is_ui_shown(ewh));
   SimulateTimer1Expired(ewh); // simulate double press timer expired
-  ewh.HandleExitKey(false); // release before long hold limit
+  EXPECT_FALSE(ProcessWithContext(release));
   SimulateTimer2Expired(ewh); // simulate long hold timer expired
   EXPECT_FALSE(is_ui_shown(ewh));
   EXPECT_TRUE(is_idle(ewh));
+  Reset(ewh);
 }
 
-// Release of exit key before double press limit => cancel.
+// Second Press after double press time limit => cancel
 TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestQuickRelease) {
-  ExitWarningHandler ewh;
+  ui::Accelerator press(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
+  ui::Accelerator release(press);
+  release.set_type(ui::ET_KEY_RELEASED);
+  ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
+  ASSERT_TRUE(!!ewh);
   StubForTest(ewh);
   EXPECT_TRUE(is_idle(ewh));
   EXPECT_FALSE(is_ui_shown(ewh));
-
-  ewh.HandleExitKey(true);
+  EXPECT_TRUE(ProcessWithContext(press));
+  EXPECT_FALSE(ProcessWithContext(release));
   EXPECT_TRUE(is_ui_shown(ewh));
-  ewh.HandleExitKey(false); // release before double press limit
   SimulateTimer1Expired(ewh); // simulate double press timer expired
+  EXPECT_TRUE(ProcessWithContext(press));
   SimulateTimer2Expired(ewh); // simulate long hold timer expired
   EXPECT_FALSE(is_ui_shown(ewh));
   EXPECT_TRUE(is_idle(ewh));
+  Reset(ewh);
 }
+#endif  // !defined(OS_WIN)
 
 TEST_F(AcceleratorControllerTest, Register) {
   const ui::Accelerator accelerator_a(ui::VKEY_A, ui::EF_NONE);
@@ -948,17 +967,18 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // Exit
   ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
   ASSERT_TRUE(!!ewh);
-  StubForTest(*ewh);
-  EXPECT_TRUE(is_idle(*ewh));
-  EXPECT_FALSE(is_ui_shown(*ewh));
+  StubForTest(ewh);
+  EXPECT_TRUE(is_idle(ewh));
+  EXPECT_FALSE(is_ui_shown(ewh));
   EXPECT_TRUE(ProcessWithContext(
       ui::Accelerator(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
-  EXPECT_FALSE(is_idle(*ewh));
-  EXPECT_TRUE(is_ui_shown(*ewh));
-  SimulateTimer1Expired(*ewh);
-  SimulateTimer2Expired(*ewh);
-  EXPECT_FALSE(is_ui_shown(*ewh));
-  EXPECT_TRUE(is_exiting(*ewh));
+  EXPECT_FALSE(is_idle(ewh));
+  EXPECT_TRUE(is_ui_shown(ewh));
+  SimulateTimer1Expired(ewh);
+  SimulateTimer2Expired(ewh);
+  EXPECT_FALSE(is_ui_shown(ewh));
+  EXPECT_TRUE(is_exiting(ewh));
+  Reset(ewh);
 #endif
 
   // New tab

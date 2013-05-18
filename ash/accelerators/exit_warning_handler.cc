@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/exit_warning_handler.h"
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -26,7 +27,7 @@ namespace ash {
 namespace {
 
 const int64 kDoublePressTimeOutMilliseconds = 300;
-const int64 kHoldTimeOutMilliseconds = 1700;
+const int64 kHoldTimeOutMilliseconds = 1000;
 const SkColor kForegroundColor = 0xFFFFFFFF;
 const SkColor kBackgroundColor = 0xE0808080;
 const int kHorizontalMarginAroundText = 100;
@@ -73,10 +74,11 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
 
 } // namespace
 
-ExitWarningHandler::ExitWarningHandler()
-  : state_(IDLE),
-    widget_(NULL),
-    stub_timers_for_test_(false) {
+ExitWarningHandler::ExitWarningHandler(AcceleratorControllerContext* context)
+    : context_(context),
+      state_(IDLE),
+      widget_(NULL),
+      stub_timers_for_test_(false) {
 }
 
 ExitWarningHandler::~ExitWarningHandler() {
@@ -84,30 +86,24 @@ ExitWarningHandler::~ExitWarningHandler() {
   Hide();
 }
 
-void ExitWarningHandler::HandleExitKey(bool press) {
+void ExitWarningHandler::HandleAccelerator() {
+  if (!context_)
+    return;
   switch (state_) {
     case IDLE:
-      if (press) {
-        state_ = WAIT_FOR_QUICK_RELEASE;
-        Show();
-        StartTimers();
-      }
-      break;
-    case WAIT_FOR_QUICK_RELEASE:
-      if (!press)
-        state_ = WAIT_FOR_DOUBLE_PRESS;
+      state_ = WAIT_FOR_DOUBLE_PRESS;
+      accelerator_ = context_->current_accelerator();
+      Show();
+      StartTimers();
       break;
     case WAIT_FOR_DOUBLE_PRESS:
-      if (press) {
-        state_ = EXITING;
-        CancelTimers();
-        Hide();
-        Shell::GetInstance()->delegate()->Exit();
-      }
+      state_ = EXITING;
+      CancelTimers();
+      Hide();
+      Shell::GetInstance()->delegate()->Exit();
       break;
     case WAIT_FOR_LONG_HOLD:
-      if (!press)
-        state_ = CANCELED;
+      state_ = CANCELED;
       break;
     case CANCELED:
     case EXITING:
@@ -119,21 +115,25 @@ void ExitWarningHandler::HandleExitKey(bool press) {
 }
 
 void ExitWarningHandler::Timer1Action() {
-  if (state_ == WAIT_FOR_QUICK_RELEASE)
+  if (state_ == WAIT_FOR_DOUBLE_PRESS)
     state_ = WAIT_FOR_LONG_HOLD;
-  else if (state_ == WAIT_FOR_DOUBLE_PRESS)
-    state_ = CANCELED;
 }
 
 void ExitWarningHandler::Timer2Action() {
+  Hide();
   if (state_ == CANCELED) {
     state_ = IDLE;
-    Hide();
-  }
-  else if (state_ == WAIT_FOR_LONG_HOLD) {
-    state_ = EXITING;
-    Hide();
-    Shell::GetInstance()->delegate()->Exit();
+  } else if (state_ == WAIT_FOR_LONG_HOLD) {
+    if (accelerator_ == context_->current_accelerator()) {
+      // We detect if the user has released any one of the keys that
+      // make up the shortcut by comparing "our" accelerator to the one
+      // from the current context and do not exit in that case.
+      state_ = EXITING;
+      Shell::GetInstance()->delegate()->Exit();
+    }
+    else {
+      state_ = IDLE;
+    }
   }
 }
 

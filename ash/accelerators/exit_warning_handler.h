@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/timer.h"
+#include "ui/base/accelerators/accelerator.h"
 
 namespace views {
 class Widget;
@@ -19,12 +20,16 @@ namespace ash {
 // a period of time. During that time we show a popup informing the
 // user of this. We exit only if the user holds the shortcut longer
 // than this time limit.
-// An expert user may quickly release and then press again (double press)
-// for immediate exit. The press, release and press must happen within
-// the double press time limit.
-// If the user releases (without double press) before the required hold
-// time, we will cancel the exit, but show the ui until the hold time limit
-// has expired to avoid a short popup flash.
+// An expert user may double press the shortcut for immediate exit.
+// The double press must happen within the double press time limit.
+// Unless the user performs a double press, we show the ui until the
+// hold time limit has expired to avoid a short popup flash.
+//
+// Notes:
+//
+// The corresponding accelerator must be non-repeatable (see
+// kNonrepeatableActions in accelerator_table.cc). Otherwise the "Double Press
+// Exit" will be activated just by holding it down, i.e. probably every time.
 //
 // State Transition Diagrams:
 //
@@ -33,58 +38,56 @@ namespace ash {
 //
 //  IDLE
 //   | Press
-//  WAIT_FOR_QUICK_RELEASE action: show ui & start timers
-//   | Release (DT < T1)
-//  WAIT_FOR_DOUBLE_PRESS
+//  WAIT_FOR_DOUBLE_PRESS action: show ui & start timers
 //   | Press (DT < T1)
 //  EXITING action: hide ui, stop timers, exit
 //
 //  IDLE
 //   | Press
-//  WAIT_FOR_QUICK_RELEASE action: show ui & start timers
+//  WAIT_FOR_DOUBLE_PRESS action: show ui & start timers
 //   | T1 timer expires
 //  WAIT_FOR_LONG_HOLD
-//   | T2 Timer exipres
+//   | T2 Timer exipres and
+//   | accelerator was held (matches current accelerator from context)
 //  EXITING action: hide ui, exit
 //
 //  IDLE
 //   | Press
-//  WAIT_FOR_QUICK_RELEASE action: show ui & start timers
-//   | T1 timer expiers
+//  WAIT_FOR_DOUBLE_PRESS action: show ui & start timers
+//   | T1 timer expires
 //  WAIT_FOR_LONG_HOLD
-//   | Release
-//  CANCELED
-//   | T2 timer expires
+//   | T2 Timer exipres and
+//   | accelerator was not held
 //  IDLE action: hide ui
 //
 //  IDLE
 //   | Press
-//  WAIT_FOR_QUICK_RELEASE action: show ui & start timers
-//   | Release (DT < T1)
-//  WAIT_FOR_DOUBLE_PRESS
+//  WAIT_FOR_DOUBLE_PRESS action: show ui & start timers
 //   | T1 timer expires
+//  WAIT_FOR_LONG_HOLD
+//   | Press
 //  CANCELED
 //   | T2 timer expires
 //  IDLE action: hide ui
 //
 
+class AcceleratorControllerContext;
 class AcceleratorControllerTest;
 
 class ASH_EXPORT ExitWarningHandler {
  public:
-  ExitWarningHandler();
+  explicit ExitWarningHandler(AcceleratorControllerContext* context);
 
   ~ExitWarningHandler();
 
-  // Handles shortcut key press and release (Ctrl-Shift-Q).
-  void HandleExitKey(bool press);
+  // Handles accelerator for exit (Ctrl-Shift-Q).
+  void HandleAccelerator();
 
  private:
   friend class AcceleratorControllerTest;
 
   enum State {
     IDLE,
-    WAIT_FOR_QUICK_RELEASE,
     WAIT_FOR_DOUBLE_PRESS,
     WAIT_FOR_LONG_HOLD,
     CANCELED,
@@ -107,6 +110,11 @@ class ASH_EXPORT ExitWarningHandler {
   void Show();
   void Hide();
 
+  // AcceleratorControllerContext is used when a timer expires to test
+  // whether the user has held the accelerator key combination or has
+  // released (at least) one of the keys.
+  AcceleratorControllerContext* context_;
+  ui::Accelerator accelerator_;
   State state_;
   views::Widget* widget_; // owned by |this|.
   base::OneShotTimer<ExitWarningHandler> timer1_; // short; double press
