@@ -24,6 +24,36 @@ namespace {
 // Size of the results cache.
 const size_t kMaxInstantAutocompleteResultItemCacheSize = 100;
 
+bool IsThemeInfoEqual(const ThemeBackgroundInfo& new_theme_info,
+    const ThemeBackgroundInfo& old_theme_info) {
+  return old_theme_info.color_r == new_theme_info.color_r &&
+      old_theme_info.color_g == new_theme_info.color_g &&
+      old_theme_info.color_b == new_theme_info.color_b &&
+      old_theme_info.color_a == new_theme_info.color_a &&
+      old_theme_info.theme_id == new_theme_info.theme_id &&
+      old_theme_info.image_horizontal_alignment ==
+          new_theme_info.image_horizontal_alignment &&
+      old_theme_info.image_vertical_alignment ==
+          new_theme_info.image_vertical_alignment &&
+      old_theme_info.image_tiling == new_theme_info.image_tiling &&
+      old_theme_info.image_height == new_theme_info.image_height &&
+      old_theme_info.has_attribution == new_theme_info.has_attribution;
+}
+
+bool AreMostVisitedItemsEqual(
+    const std::vector<InstantMostVisitedItemIDPair>& new_items,
+    const std::vector<InstantMostVisitedItemIDPair>& old_items) {
+  if (old_items.size() != new_items.size())
+    return false;
+  for (size_t i = 0; i < new_items.size(); i++) {
+    const InstantMostVisitedItem& old_item = old_items[i].second;
+    const InstantMostVisitedItem& new_item = new_items[i].second;
+    if (new_item.url != old_item.url || new_item.title != old_item.title)
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 SearchBox::SearchBox(content::RenderView* render_view)
@@ -339,6 +369,8 @@ void SearchBox::OnSetDisplayInstantResults(bool display_instant_results) {
 }
 
 void SearchBox::OnThemeChanged(const ThemeBackgroundInfo& theme_info) {
+  if (IsThemeInfoEqual(theme_info, theme_info_))
+    return;
   theme_info_ = theme_info;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchThemeChange(
@@ -387,6 +419,11 @@ void SearchBox::SetQuery(const string16& query, bool verbatim) {
 
 void SearchBox::OnMostVisitedChanged(
     const std::vector<InstantMostVisitedItemIDPair>& items) {
+  std::vector<InstantMostVisitedItemIDPair> old_items;
+  most_visited_items_cache_.GetCurrentItems(&old_items);
+  if (AreMostVisitedItemsEqual(items, old_items))
+    return;
+
   most_visited_items_cache_.AddItemsWithRestrictedID(items);
 
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
