@@ -115,13 +115,7 @@ static void buildNodeHighlight(Node* node, const HighlightConfig& highlightConfi
     IntRect titleAnchorBox = boundingBox;
 
     // RenderSVGRoot should be highlighted through the isBox() code path, all other SVG elements should just dump their absoluteQuads().
-#if ENABLE(SVG)
-    bool isSVGRenderer = renderer->node() && renderer->node()->isSVGElement() && !renderer->isSVGRoot();
-#else
-    bool isSVGRenderer = false;
-#endif
-
-    if (isSVGRenderer) {
+    if (renderer->node() && renderer->node()->isSVGElement() && !renderer->isSVGRoot()) {
         highlight->type = HighlightTypeRects;
         renderer->absoluteQuads(highlight->quads);
         for (size_t i = 0; i < highlight->quads.size(); ++i)

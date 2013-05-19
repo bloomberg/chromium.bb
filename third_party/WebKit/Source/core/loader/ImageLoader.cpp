@@ -38,11 +38,8 @@
 #include "core/page/Frame.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderVideo.h"
-#include "weborigin/SecurityOrigin.h"
-
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGImage.h"
-#endif
+#include "weborigin/SecurityOrigin.h"
 
 #if !ASSERT_DISABLED
 // ImageLoader objects are allocated as members of other objects, so generic pointer check would always fail.
@@ -327,10 +324,8 @@ RenderImageResource* ImageLoader::renderImageResource()
     if (renderer->isImage() && !static_cast<RenderImage*>(renderer)->isGeneratedContent())
         return toRenderImage(renderer)->imageResource();
 
-#if ENABLE(SVG)
     if (renderer->isSVGImage())
         return toRenderSVGImage(renderer)->imageResource();
-#endif
 
     if (renderer->isVideo())
         return toRenderVideo(renderer)->imageResource();

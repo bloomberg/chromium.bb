@@ -28,6 +28,7 @@
 #include "core/html/parser/XSSAuditor.h"
 
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/html/FormDataList.h"
@@ -55,11 +56,6 @@
 #include "wtf/MainThread.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#endif
-
 
 namespace WebCore {
 
@@ -196,11 +192,7 @@ static ContentSecurityPolicy::ReflectedXSSDisposition combineXSSProtectionHeader
 
 static bool isSemicolonSeparatedAttribute(const HTMLToken::Attribute& attribute)
 {
-#if ENABLE(SVG)
     return threadSafeMatch(attribute.name, SVGNames::valuesAttr);
-#else
-    return false;
-#endif
 }
 
 static bool semicolonSeparatedValueContainsJavaScriptURL(const String& value)

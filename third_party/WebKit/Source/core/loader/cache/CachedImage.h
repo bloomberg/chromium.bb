@@ -115,9 +115,7 @@ private:
     ContainerSizeRequests m_pendingContainerSizeRequests;
 
     RefPtr<Image> m_image;
-#if ENABLE(SVG)
     OwnPtr<SVGImageCache> m_svgImageCache;
-#endif
     bool m_loadingMultipartContent;
 };
 

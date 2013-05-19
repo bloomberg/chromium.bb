@@ -29,9 +29,7 @@
 #define DOMPath_h
 
 #include "core/html/canvas/CanvasPathMethods.h"
-#if ENABLE(SVG)
 #include "core/svg/SVGPathUtilities.h"
-#endif
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
@@ -64,11 +62,7 @@ private:
     DOMPath(const String& pathData)
         : CanvasPathMethods()
     {
-#if ENABLE(SVG)
         buildPathFromString(pathData, m_path);
-#else
-        UNUSED_PARAM(pathData);
-#endif
     }
 };
 }

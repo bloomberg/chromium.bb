@@ -29,10 +29,7 @@ namespace WebCore {
 class DOMWindow;
 class Frame;
 class RenderPart;
-
-#if ENABLE(SVG)
 class SVGDocument;
-#endif
 
 class HTMLFrameOwnerElement : public HTMLElement {
 public:
@@ -52,9 +49,7 @@ public:
     // RenderObject when using fallback content.
     RenderPart* renderPart() const;
 
-#if ENABLE(SVG)
     SVGDocument* getSVGDocument(ExceptionCode&) const;
-#endif
 
     virtual ScrollbarMode scrollingMode() const { return ScrollbarAuto; }
 

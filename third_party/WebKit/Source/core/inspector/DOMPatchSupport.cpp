@@ -94,10 +94,8 @@ void DOMPatchSupport::patchDocument(const String& markup)
         newDocument = HTMLDocument::create(0, KURL());
     else if (m_document->isXHTMLDocument())
         newDocument = HTMLDocument::createXHTML(0, KURL());
-#if ENABLE(SVG)
     else if (m_document->isSVGDocument())
         newDocument = Document::create(0, KURL());
-#endif
 
     ASSERT(newDocument);
     newDocument->setContextFeatures(m_document->contextFeatures());

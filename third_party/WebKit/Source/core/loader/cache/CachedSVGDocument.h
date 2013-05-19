@@ -23,7 +23,6 @@
 #ifndef CachedSVGDocument_h
 #define CachedSVGDocument_h
 
-#if ENABLE(SVG)
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedResourceClient.h"
@@ -58,7 +57,5 @@ public:
 };
 
 }
-
-#endif
 
 #endif // CachedSVGDocument_h

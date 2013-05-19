@@ -41,6 +41,7 @@
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
@@ -102,30 +103,23 @@
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/text/SegmentedString.h"
 #include "core/plugins/PluginData.h"
-#include "core/xml/parser/XMLDocumentParser.h"
-#include "modules/webdatabase/DatabaseManager.h"
-#include "weborigin/SchemeRegistry.h"
-#include "weborigin/SecurityOrigin.h"
-#include "weborigin/SecurityPolicy.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGLocatable.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGViewElement.h"
 #include "core/svg/SVGViewSpec.h"
-#endif
+#include "core/xml/parser/XMLDocumentParser.h"
+#include "modules/webdatabase/DatabaseManager.h"
+#include "weborigin/SchemeRegistry.h"
+#include "weborigin/SecurityOrigin.h"
+#include "weborigin/SecurityPolicy.h"
 
 
 namespace WebCore {
 
 using namespace HTMLNames;
-
-#if ENABLE(SVG)
 using namespace SVGNames;
-#endif
 
 static const char defaultAcceptHeader[] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
 

@@ -67,15 +67,13 @@ public:
         CSSStyleSheet,
         Script,
         FontResource,
-        RawResource
-#if ENABLE(SVG)
-        , SVGDocumentResource
-#endif
-        , XSLStyleSheet
-        , LinkPrefetch
-        , LinkSubresource
-        , TextTrackResource
-        , ShaderResource
+        RawResource,
+        SVGDocumentResource,
+        XSLStyleSheet,
+        LinkPrefetch,
+        LinkSubresource,
+        TextTrackResource,
+        ShaderResource
     };
 
     enum Status {

@@ -30,15 +30,12 @@
 #include "core/xml/XMLErrors.h"
 
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/page/Frame.h"
 #include <wtf/text/WTFString.h>
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#endif
 
 namespace WebCore {
 
@@ -130,9 +127,7 @@ void XMLErrors::insertErrorMessageBlock()
         if (m_document->attached() && !rootElement->attached())
             rootElement->attach();
         documentElement = body.get();
-    }
-#if ENABLE(SVG)
-    else if (documentElement->namespaceURI() == SVGNames::svgNamespaceURI) {
+    } else if (documentElement->namespaceURI() == SVGNames::svgNamespaceURI) {
         RefPtr<Element> rootElement = m_document->createElement(htmlTag, true);
         RefPtr<Element> body = m_document->createElement(bodyTag, true);
         rootElement->parserAppendChild(body);
@@ -151,7 +146,6 @@ void XMLErrors::insertErrorMessageBlock()
 
         documentElement = body.get();
     }
-#endif
 
     String errorMessages = m_errorMessages.toString();
     RefPtr<Element> reportElement = createXHTMLParserErrorHeader(m_document, errorMessages);

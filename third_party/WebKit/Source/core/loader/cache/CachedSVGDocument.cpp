@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/loader/cache/CachedSVGDocument.h"
 
 #include "core/loader/cache/CachedResourceClient.h"
@@ -75,6 +74,3 @@ void CachedSVGDocument::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) co
 }
 
 }
-
-#endif
-

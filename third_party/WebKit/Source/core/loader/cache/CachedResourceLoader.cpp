@@ -76,10 +76,8 @@ static CachedResource* createResource(CachedResource::Type type, ResourceRequest
         return new CachedCSSStyleSheet(request, charset);
     case CachedResource::Script:
         return new CachedScript(request, charset);
-#if ENABLE(SVG)
     case CachedResource::SVGDocumentResource:
         return new CachedSVGDocument(request);
-#endif
     case CachedResource::FontResource:
         return new CachedFont(request);
     case CachedResource::RawResource:
@@ -200,12 +198,10 @@ CachedResourceHandle<CachedXSLStyleSheet> CachedResourceLoader::requestXSLStyleS
     return static_cast<CachedXSLStyleSheet*>(requestResource(CachedResource::XSLStyleSheet, request).get());
 }
 
-#if ENABLE(SVG)
 CachedResourceHandle<CachedSVGDocument> CachedResourceLoader::requestSVGDocument(CachedResourceRequest& request)
 {
     return static_cast<CachedSVGDocument*>(requestResource(CachedResource::SVGDocumentResource, request).get());
 }
-#endif
 
 CachedResourceHandle<CachedResource> CachedResourceLoader::requestLinkResource(CachedResource::Type type, CachedResourceRequest& request)
 {
@@ -229,9 +225,7 @@ bool CachedResourceLoader::checkInsecureContent(CachedResource::Type type, const
     switch (type) {
     case CachedResource::Script:
     case CachedResource::XSLStyleSheet:
-#if ENABLE(SVG)
     case CachedResource::SVGDocumentResource:
-#endif
     case CachedResource::CSSStyleSheet:
         // These resource can inject script into the current document (Script,
         // XSL) or exfiltrate the content of the current document (CSS).
@@ -290,9 +284,7 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
         // These types of resources can be loaded from any origin.
         // FIXME: Are we sure about CachedResource::FontResource?
         break;
-#if ENABLE(SVG)
     case CachedResource::SVGDocumentResource:
-#endif
     case CachedResource::XSLStyleSheet:
         if (!m_document->securityOrigin()->canRequest(url)) {
             printAccessDeniedMessage(url);
@@ -324,9 +316,7 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowStyleFromSource(url))
             return false;
         break;
-#if ENABLE(SVG)
     case CachedResource::SVGDocumentResource:
-#endif
     case CachedResource::ImageResource:
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowImageFromSource(url))
             return false;
@@ -485,11 +475,9 @@ void CachedResourceLoader::determineTargetType(ResourceRequest& request, CachedR
     case CachedResource::TextTrackResource:
         targetType = ResourceRequest::TargetIsTextTrack;
         break;
-#if ENABLE(SVG)
     case CachedResource::SVGDocumentResource:
         targetType = ResourceRequest::TargetIsImage;
         break;
-#endif
     default:
         ASSERT_NOT_REACHED();
         targetType = ResourceRequest::TargetIsSubresource;

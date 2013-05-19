@@ -26,7 +26,6 @@
 #ifndef CachedSVGDocumentReference_h
 #define CachedSVGDocumentReference_h
 
-#if ENABLE(SVG)
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedSVGDocument.h"
 
@@ -42,7 +41,5 @@ private:
 };
 
 };
-
-#endif
 
 #endif

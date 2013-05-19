@@ -36,6 +36,7 @@
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "XMLNSNames.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
@@ -64,15 +65,11 @@
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/svg/SVGStyleElement.h"
 #include "core/xml/XMLErrors.h"
 #include "core/xml/XMLTreeViewer.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
 #include "weborigin/SecurityOrigin.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#include "core/svg/SVGStyleElement.h"
-#endif
 
 using namespace std;
 

@@ -21,15 +21,12 @@
 #include "config.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderPart.h"
-
-#if ENABLE(SVG)
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGDocument.h"
-#endif
 
 namespace WebCore {
 
@@ -112,7 +109,6 @@ bool HTMLFrameOwnerElement::isKeyboardFocusable(KeyboardEvent* event) const
     return m_contentFrame && HTMLElement::isKeyboardFocusable(event);
 }
 
-#if ENABLE(SVG)
 SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionCode& ec) const
 {
     Document* doc = contentDocument();
@@ -122,6 +118,5 @@ SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionCode& ec) const
     ec = NOT_SUPPORTED_ERR;
     return 0;
 }
-#endif
 
 } // namespace WebCore
