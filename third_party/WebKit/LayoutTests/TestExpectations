@@ -330,7 +330,7 @@ webkit.org/b/48655 [ Debug ] plugins/js-from-destroy.html [ Crash ]
 
 # Requires testRunner.dispatchPendingLoadRequests
 crbug.com/33211 http/tests/loading/deleted-host-in-resource-load-delegate-callback.html [ Timeout ]
-crbug.com/27697 [ SnowLeopard ] storage/websql/hash-change-with-xhr.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/27697 [ Lion ] storage/websql/hash-change-with-xhr.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 crbug.com/78376 http/tests/media/video-play-stall-seek.html [ Timeout ]
 
@@ -641,8 +641,8 @@ webkit.org/b/85463 editing/inserting/typing-space-to-trigger-smart-link.html
 # As of Aug 31, 2012, now times out in release. Marking flaky everywhere.
 crbug.com/32308 fast/frames/cached-frame-counter.html [ Pass Timeout ]
 
-crbug.com/33293 [ SnowLeopard Release ] fast/media/lifetime.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-crbug.com/33293 [ Mac Debug ] fast/media/lifetime.html [ Pass Timeout ]
+crbug.com/33293 [ Lion ] fast/media/lifetime.html [ Failure Timeout ]
+crbug.com/33293 [ SnowLeopard MountainLion Debug ] fast/media/lifetime.html [ Pass Timeout ]
 
 # Chromium DumpRenderTree does not have support for visited links.
 # It always return false in response to isLinkVisited().
@@ -736,11 +736,11 @@ crbug.com/61739 [ Debug ] animations/suspend-resume-animation-events.html [ Fail
 code.google.com/p/v8/issues/detail?id=953 fast/regex/pcre-test-1.html [ Timeout ]
 
 # Skip until Skia knows how to draw focus rings on a path.
-webkit.org/b/50282 [ SnowLeopard ] fast/images/imagemap-focus-ring-outline-color-explicitly-inherited-from-map.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-webkit.org/b/50282 [ SnowLeopard ] fast/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-webkit.org/b/50282 [ SnowLeopard ] fast/images/imagemap-focus-ring-outline-color.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-webkit.org/b/50282 [ SnowLeopard ] fast/images/imagemap-circle-focus-ring.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-webkit.org/b/50282 [ SnowLeopard ] fast/images/imagemap-polygon-focus-ring.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/50282 [ Lion ] fast/images/imagemap-focus-ring-outline-color-explicitly-inherited-from-map.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/50282 [ Lion ] fast/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/50282 [ Lion ] fast/images/imagemap-focus-ring-outline-color.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/50282 [ Lion ] fast/images/imagemap-circle-focus-ring.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/50282 [ Lion ] fast/images/imagemap-polygon-focus-ring.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 #/////////////////////////////////////////////////////////////////////////
 # Regressions caused by switching to DRT.
@@ -1072,7 +1072,7 @@ webkit.org/b/86909 [ Win ] http/tests/inspector/network/network-content-replacem
 
 # Ref-tests can't have platform specific results.
 webkit.org/b/87175 [ Win Linux ] fast/regions/floats-basic-in-variable-width-regions.html [ ImageOnlyFailure ]
-webkit.org/b/87175 [ Win Linux ] fast/regions/overflow-in-uniform-regions.html [ ImageOnlyFailure ]
+webkit.org/b/87175 [ Win Linux MountainLion ] fast/regions/overflow-in-uniform-regions.html [ ImageOnlyFailure ]
 
 webkit.org/b/87321 [ XP Release ] fast/history/history-subframe-with-name.html [ Failure Pass ]
 webkit.org/b/87321 [ Debug ] fast/history/history-subframe-with-name.html [ Pass Timeout ]
