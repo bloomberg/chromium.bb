@@ -29,6 +29,7 @@
 from datetime import datetime
 import logging
 
+from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 MAX_DATA_ENTRY_PER_FILE = 10
@@ -65,9 +66,20 @@ class DataStoreFile(db.Model):
 
     data = None
 
+    # FIXME: Remove this once all the bots have cycled after converting to the high-replication database.
+    def _convert_blob_keys(self, keys):
+        converted_keys = []
+        for key in keys:
+            new_key = blobstore.BlobMigrationRecord.get_new_blob_key(key)
+            if new_key:
+                converted_keys.append(new_key)
+            else:
+                converted_keys.append(key)
+        return keys
+
     def delete_data(self, keys=None):
         if not keys:
-            keys = self.data_keys
+            keys = self._convert_blob_keys(self.data_keys)
 
         for key in keys:
             data_entry = DataEntry.get(key)
@@ -91,9 +103,11 @@ class DataStoreFile(db.Model):
         # reason, only the data pointed by new_data_keys may be corrupted,
         # the existing data_keys data remains untouched. The corrupted data
         # in new_data_keys will be overwritten in next update.
-        keys = self.new_data_keys
+        keys = self._convert_blob_keys(self.new_data_keys)
         self.new_data_keys = []
 
+        # FIXME: is all this complexity with storing the file in chunks really needed anymore?
+        # Can we just store it in a single blob?
         while start < len(data):
             if keys:
                 key = keys[0]
@@ -123,7 +137,7 @@ class DataStoreFile(db.Model):
         if keys:
             self.delete_data(keys)
 
-        temp_keys = self.data_keys
+        temp_keys = self._convert_blob_keys(self.data_keys)
         self.data_keys = self.new_data_keys
         self.new_data_keys = temp_keys
         self.data = data
@@ -136,7 +150,7 @@ class DataStoreFile(db.Model):
             return None
 
         data = []
-        for key in self.data_keys:
+        for key in self._convert_blob_keys(self.data_keys):
             logging.info("Loading data for key: %s.", key)
             data_entry = DataEntry.get(key)
             if not data_entry:
