@@ -3,12 +3,23 @@ module('aggregate_results');
 
 function setupAggregateResultsData()
 {
+    var historyInstance = new history.History(flakinessConfig);
+    // FIXME(jparent): Remove this once global isn't used.
+    g_history = historyInstance;
+    for (var key in history.DEFAULT_CROSS_DASHBOARD_STATE_VALUES)
+        historyInstance.crossDashboardState[key] = history.DEFAULT_CROSS_DASHBOARD_STATE_VALUES[key];
+
     var builderName = 'Blink Linux';
     LOAD_BUILDBOT_DATA([{
         name: 'ChromiumWebkit',
         url: 'dummyurl',
         tests: {'layout-tests': {'builders': [builderName]}}
     }]);
+    for (var group in LAYOUT_TESTS_BUILDER_GROUPS)
+        LAYOUT_TESTS_BUILDER_GROUPS[group] = null;
+
+    loadBuildersList('@ToT - chromium.org', 'layout-tests');
+
     g_resultsByBuilder[builderName] = {
         allFixableCount: [5, 6],
         fixableCount: [4, 2],
