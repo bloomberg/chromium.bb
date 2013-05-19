@@ -53,7 +53,7 @@ def run_results(port):
     return test_run_results.TestRunResults(expectations, len(tests))
 
 
-def summarized_results(port, expected, passing, flaky):
+def summarized_results(port, expected, passing, flaky, only_include_failing=False):
     test_is_slow = False
 
     initial_results = run_results(port)
@@ -88,7 +88,7 @@ def summarized_results(port, expected, passing, flaky):
     else:
         retry_results = None
 
-    return test_run_results.summarize_results(port, initial_results.expectations, initial_results, retry_results, enabled_pixel_tests_in_retry=False)
+    return test_run_results.summarize_results(port, initial_results.expectations, initial_results, retry_results, enabled_pixel_tests_in_retry=False, only_include_failing=only_include_failing)
 
 
 class InterpretTestFailuresTest(unittest.TestCase):
@@ -159,6 +159,11 @@ class SummarizedResultsTest(unittest.TestCase):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
         self.assertEquals(summary['tests']['passes']['skipped']['skip.html']['expected'], 'SKIP')
+
+    def test_summarized_results_only_inlude_failing(self):
+        self.port._options.builder_name = 'dummy builder'
+        summary = summarized_results(self.port, expected=False, passing=True, flaky=False, only_include_failing=True)
+        self.assertTrue('passes' not in summary['tests'])
 
     def test_rounded_run_times(self):
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)

@@ -206,15 +206,18 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue(one_line_summary in logging_stream.buflist)
 
         # Ensure the results were summarized properly.
-        self.assertEqual(details.summarized_results['num_regressions'], details.exit_code)
+        self.assertEqual(details.summarized_failing_results['num_regressions'], details.exit_code)
 
         # Ensure the image diff percentage is in the results.
-        self.assertEqual(details.summarized_results['tests']['failures']['expected']['image.html']['image_diff_percent'], 1)
+        self.assertEqual(details.summarized_failing_results['tests']['failures']['expected']['image.html']['image_diff_percent'], 1)
 
         # Ensure the results were written out and displayed.
+        failing_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/failing_results.json')
+        json_to_eval = failing_results_text.replace("ADD_RESULTS(", "").replace(");", "")
+        self.assertEqual(json.loads(json_to_eval), details.summarized_failing_results)
+
         full_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
-        json_to_eval = full_results_text.replace("ADD_RESULTS(", "").replace(");", "")
-        self.assertEqual(json.loads(json_to_eval), details.summarized_results)
+        self.assertEqual(json.loads(full_results_text), details.summarized_full_results)
 
         self.assertEqual(host.user.opened_urls, [path.abspath_to_uri(MockHost().platform, '/tmp/layout-test-results/results.html')])
 
@@ -915,7 +918,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 7)
+        self.assertEqual(len(file_list), 8)
         self.assertBaselines(file_list, "passes/image", [".txt", ".png"], err)
         self.assertBaselines(file_list, "failures/expected/missing_image", [".txt", ".png"], err)
 
@@ -931,7 +934,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 9)
+        self.assertEqual(len(file_list), 10)
         self.assertBaselines(file_list, "failures/unexpected/missing_text", [".txt"], err)
         self.assertBaselines(file_list, "platform/test/failures/unexpected/missing_image", [".png"], err)
         self.assertBaselines(file_list, "platform/test/failures/unexpected/missing_render_tree_dump", [".txt"], err)
@@ -945,7 +948,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 7)
+        self.assertEqual(len(file_list), 8)
         self.assertBaselines(file_list,
             "platform/test-mac-leopard/passes/image", [".txt", ".png"], err)
         self.assertBaselines(file_list,

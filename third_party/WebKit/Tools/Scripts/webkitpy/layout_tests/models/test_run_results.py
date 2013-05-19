@@ -89,9 +89,10 @@ class TestRunResults(object):
 
 
 class RunDetails(object):
-    def __init__(self, exit_code, summarized_results=None, initial_results=None, retry_results=None, enabled_pixel_tests_in_retry=False):
+    def __init__(self, exit_code, summarized_full_results=None, summarized_failing_results=None, initial_results=None, retry_results=None, enabled_pixel_tests_in_retry=False):
         self.exit_code = exit_code
-        self.summarized_results = summarized_results
+        self.summarized_full_results = summarized_full_results
+        self.summarized_failing_results = summarized_failing_results
         self.initial_results = initial_results
         self.retry_results = retry_results
         self.enabled_pixel_tests_in_retry = enabled_pixel_tests_in_retry
@@ -119,7 +120,7 @@ def _interpret_test_failures(failures):
     return test_dict
 
 
-def summarize_results(port_obj, expectations, initial_results, retry_results, enabled_pixel_tests_in_retry):
+def summarize_results(port_obj, expectations, initial_results, retry_results, enabled_pixel_tests_in_retry, only_include_failing=False):
     """Returns a dictionary containing a summary of the test runs, with the following fields:
         'version': a version indicator
         'fixable': The number of fixable tests (NOW - PASS)
@@ -166,6 +167,9 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
         result_type = result.type
         actual = [keywords[result_type]]
 
+        if only_include_failing and result.type == test_expectations.SKIP:
+            continue
+
         test_dict = {}
 
         rounded_run_time = round(result.test_run_time, 1)
@@ -180,7 +184,9 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
 
         if result_type == test_expectations.PASS:
             num_passes += 1
-            if expected == 'PASS' and result.test_run_time < 1 and not result.has_stderr:
+            # FIXME: Once we migrate garden-o-matic to using failing_results.json, include all results when
+            # only_include_failing is False.
+            if not result.has_stderr and (only_include_failing or (expected == 'PASS' and result.test_run_time < 1)):
                 continue
         elif result_type == test_expectations.CRASH:
             if test_name in initial_results.unexpected_results_by_name:

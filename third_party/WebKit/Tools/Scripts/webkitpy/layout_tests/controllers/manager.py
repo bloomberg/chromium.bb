@@ -230,12 +230,13 @@ class Manager(object):
             self._look_for_new_crash_logs(retry_results, start_time)
 
         _log.debug("summarizing results")
-        summarized_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry)
-        self._printer.print_results(end_time - start_time, initial_results, summarized_results)
+        summarized_full_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry)
+        summarized_failing_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry, only_include_failing=True)
+        self._printer.print_results(end_time - start_time, initial_results, summarized_failing_results)
 
         if not self._options.dry_run:
             self._port.print_leaks_summary()
-            self._write_json_files(summarized_results, initial_results)
+            self._write_json_files(summarized_full_results, summarized_failing_results, initial_results)
             self._upload_json_files()
 
             results_path = self._filesystem.join(self._results_directory, "results.html")
@@ -244,8 +245,8 @@ class Manager(object):
                                                (self._options.full_results_html and initial_results.total_failures)):
                 self._port.show_results_html_file(results_path)
 
-        return test_run_results.RunDetails(self._port.exit_code_from_summarized_results(summarized_results),
-                                           summarized_results, initial_results, retry_results, enabled_pixel_tests_in_retry)
+        return test_run_results.RunDetails(self._port.exit_code_from_summarized_results(summarized_failing_results),
+                                           summarized_full_results, summarized_failing_results, initial_results, retry_results, enabled_pixel_tests_in_retry)
 
     def _run_tests(self, tests_to_run, tests_to_skip, repeat_each, iterations, num_workers, retrying):
         needs_http = self._port.requires_http_server() or any(self._is_http_test(test) for test in tests_to_run)
@@ -326,7 +327,7 @@ class Manager(object):
                     (result.type != test_expectations.MISSING) and
                     (result.type != test_expectations.CRASH or include_crashes))]
 
-    def _write_json_files(self, summarized_results, initial_results):
+    def _write_json_files(self, summarized_full_results, summarized_failing_results, initial_results):
         _log.debug("Writing JSON files in %s." % self._results_directory)
 
         # FIXME: Upload stats.json to the server and delete times_ms.
@@ -339,8 +340,11 @@ class Manager(object):
         self._filesystem.write_text_file(stats_path, json.dumps(stats_trie))
 
         full_results_path = self._filesystem.join(self._results_directory, "full_results.json")
-        # We write full_results.json out as jsonp because we need to load it from a file url and Chromium doesn't allow that.
-        json_results_generator.write_json(self._filesystem, summarized_results, full_results_path, callback="ADD_RESULTS")
+        json_results_generator.write_json(self._filesystem, summarized_full_results, full_results_path)
+
+        full_results_path = self._filesystem.join(self._results_directory, "failing_results.json")
+        # We write failing_results.json out as jsonp because we need to load it from a file url for results.html and Chromium doesn't allow that.
+        json_results_generator.write_json(self._filesystem, summarized_failing_results, full_results_path, callback="ADD_RESULTS")
 
         _log.debug("Finished writing JSON files.")
 
@@ -357,7 +361,7 @@ class Manager(object):
                  ("testtype", "layout-tests"),
                  ("master", self._options.master_name)]
 
-        files = [(file, self._filesystem.join(self._results_directory, file)) for file in ["full_results.json", "times_ms.json"]]
+        files = [(file, self._filesystem.join(self._results_directory, file)) for file in ["failing_results.json", "full_results.json", "times_ms.json"]]
 
         url = "http://%s/testfile/upload" % self._options.test_results_server
         # Set uploading timeout in case appengine server is having problems.
