@@ -28,6 +28,7 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/html/canvas/CheckedInt.h"
+#include "wtf/CPU.h"
 
 namespace {
 

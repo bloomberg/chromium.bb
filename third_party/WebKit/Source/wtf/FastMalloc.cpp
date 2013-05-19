@@ -75,9 +75,12 @@
 //   goes from about 1100 ns to about 300 ns.
 
 #include "config.h"
-#include "FastMalloc.h"
+#include "wtf/FastMalloc.h"
 
-#include "Assertions.h"
+#include "wtf/Assertions.h"
+#include "wtf/CPU.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/UnusedParam.h"
 
 #include <limits>
 #if OS(WINDOWS)
@@ -86,8 +89,6 @@
 #include <pthread.h>
 #endif
 #include <string.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/UnusedParam.h>
 
 #ifndef NO_TCMALLOC_SAMPLES
 #define NO_TCMALLOC_SAMPLES

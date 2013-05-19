@@ -28,7 +28,8 @@
 #ifndef DOUBLE_CONVERSION_UTILS_H_
 #define DOUBLE_CONVERSION_UTILS_H_
 
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
+#include "wtf/CPU.h"
 #include <stdlib.h>
 #include <string.h>
 

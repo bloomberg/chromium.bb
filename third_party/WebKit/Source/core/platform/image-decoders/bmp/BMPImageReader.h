@@ -33,6 +33,7 @@
 
 #include <stdint.h>
 #include "core/platform/image-decoders/ImageDecoder.h"
+#include "wtf/CPU.h"
 
 namespace WebCore {
 

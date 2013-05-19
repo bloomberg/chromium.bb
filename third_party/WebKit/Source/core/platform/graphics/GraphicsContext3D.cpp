@@ -43,6 +43,7 @@
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 #include "wtf/ArrayBufferView.h"
+#include "wtf/CPU.h"
 #include "wtf/OwnArrayPtr.h"
 #include "wtf/PassOwnArrayPtr.h"
 #include "wtf/text/CString.h"

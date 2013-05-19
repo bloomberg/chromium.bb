@@ -26,13 +26,14 @@
 #ifndef WTF_MathExtras_h
 #define WTF_MathExtras_h
 
+#include "wtf/CPU.h"
+#include "wtf/StdLibExtras.h"
 #include <algorithm>
 #include <cmath>
 #include <float.h>
 #include <limits>
 #include <stdint.h>
 #include <stdlib.h>
-#include <wtf/StdLibExtras.h>
 
 #if OS(SOLARIS)
 #include <ieeefp.h>

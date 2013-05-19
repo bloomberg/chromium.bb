@@ -30,8 +30,9 @@
 #if CPU(ARM_NEON) && CPU(ARM_TRADITIONAL) && COMPILER(GCC)
 
 #include "core/platform/graphics/filters/FELighting.h"
-#include <wtf/Alignment.h>
-#include <wtf/ParallelJobs.h>
+#include "wtf/Alignment.h"
+#include "wtf/CPU.h"
+#include "wtf/ParallelJobs.h"
 
 namespace WebCore {
 

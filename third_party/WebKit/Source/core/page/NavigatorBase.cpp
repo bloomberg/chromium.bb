@@ -28,11 +28,12 @@
 #include "core/page/NavigatorBase.h"
 
 #include "core/platform/network/NetworkStateNotifier.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/CPU.h"
+#include "wtf/text/WTFString.h"
 
 #if OS(LINUX)
 #include "sys/utsname.h"
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 #endif
 
 #ifndef WEBCORE_NAVIGATOR_PLATFORM

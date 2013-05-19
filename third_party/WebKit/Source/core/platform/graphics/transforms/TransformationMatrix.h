@@ -31,7 +31,8 @@
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatPoint3D.h"
 #include "core/platform/graphics/IntPoint.h"
-#include <wtf/FastAllocBase.h>
+#include "wtf/CPU.h"
+#include "wtf/FastAllocBase.h"
 
 namespace WebCore {
 

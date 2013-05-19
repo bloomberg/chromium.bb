@@ -21,6 +21,7 @@
             'BitVector.h',
             'BloomFilter.h',
             'ByteOrder.h',
+            'CPU.h',
             'CheckedArithmetic.h',
             'Compiler.h',
             'Complex.h',

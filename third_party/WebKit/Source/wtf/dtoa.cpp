@@ -35,10 +35,11 @@
 #include "config.h"
 #include "dtoa.h"
 
+#include "wtf/CPU.h"
+#include "wtf/MathExtras.h"
+#include "wtf/Threading.h"
+#include "wtf/Vector.h"
 #include <stdio.h>
-#include <wtf/MathExtras.h>
-#include <wtf/Threading.h>
-#include <wtf/Vector.h>
 
 #if COMPILER(MSVC)
 #pragma warning(disable: 4244)

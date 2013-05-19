@@ -40,7 +40,8 @@
 #include "config.h"
 #include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/image-decoders/jpeg/JPEGImageDecoder.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/CPU.h"
+#include "wtf/PassOwnPtr.h"
 
 extern "C" {
 #if USE(ICCJPEG)

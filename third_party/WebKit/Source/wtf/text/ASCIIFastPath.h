@@ -22,13 +22,15 @@
 #ifndef ASCIIFastPath_h
 #define ASCIIFastPath_h
 
+#include "wtf/Alignment.h"
+#include "wtf/CPU.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/unicode/Unicode.h"
+#include <stdint.h>
+
 #if OS(DARWIN) && (CPU(X86) || CPU(X86_64))
 #include <emmintrin.h>
 #endif
-#include <stdint.h>
-#include <wtf/Alignment.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/unicode/Unicode.h>
 
 namespace WTF {
 

@@ -30,13 +30,14 @@
 
 #include "config.h"
 
-#include <wtf/Assertions.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/ThreadRestrictionVerifier.h>
-#include <wtf/Vector.h>
+#include "wtf/Assertions.h"
+#include "wtf/CPU.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/ThreadRestrictionVerifier.h"
+#include "wtf/Vector.h"
 
 namespace WTF {
 
