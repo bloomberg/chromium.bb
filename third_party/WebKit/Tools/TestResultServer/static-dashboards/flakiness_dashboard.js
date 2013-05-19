@@ -1246,8 +1246,10 @@ function showPopupForBuild(e, builder, index, opt_testName)
     var master = builderMaster(builder);
     var buildBasePath = master.logPath(builder, buildNumber);
 
-    html += '<ul><li>' + linkHTMLToOpenWindow(buildBasePath, 'Build log') +
-        '</li><li>Blink: ' + ui.html.blinkRevisionLink(g_resultsByBuilder[builder], index) + '</li>';
+    html += '<ul><li>' + linkHTMLToOpenWindow(buildBasePath, 'Build log');
+
+    if (g_resultsByBuilder[builder][BLINK_REVISIONS_KEY])
+        html += '</li><li>Blink: ' + ui.html.blinkRevisionLink(g_resultsByBuilder[builder], index) + '</li>';
 
     html += '</li><li>Chromium: ' + ui.html.chromiumRevisionLink(g_resultsByBuilder[builder], index) + '</li>';
 
@@ -2189,27 +2191,6 @@ function appendNonWebKitResults(container, url, itemClassName, opt_title)
     }
 
     container.appendChild(dummyNode);
-}
-
-function buildInfoForRevision(builder, revision)
-{
-    var revisions = g_resultsByBuilder[builder][BLINK_REVISION_KEY];
-    var revisionStart = 0, revisionEnd = 0, buildNumber = 0;
-    for (var i = 0; i < revisions.length; i++) {
-        if (revision > revisions[i]) {
-            revisionStart = revisions[i - 1];
-            revisionEnd = revisions[i];
-            buildNumber = g_resultsByBuilder[builder].buildNumbers[i - 1];
-            break;
-        }
-    }
-
-    if (revisionEnd)
-      revisionEnd++;
-    else
-      revisionEnd = '';
-
-    return {revisionStart: revisionStart, revisionEnd: revisionEnd, buildNumber: buildNumber};
 }
 
 function lookupVirtualTestSuite(test) {

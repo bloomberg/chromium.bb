@@ -169,7 +169,7 @@ ui.html._revisionLink = function(resultsKey, results, index)
 
     var rangeUrl = 'http://build.chromium.org/f/chromium/perf/dashboard/ui/changelog' +
         (isChrome ? '' : '_blink') + '.html?url=/trunk' + (isChrome ? '/src' : '') +
-        '&range=' + previousRevision + ':' + currentRevision + '&mode=html';
+        '&range=' + (previousRevision + 1) + ':' + currentRevision + '&mode=html';
     return '<a href="' + rangeUrl + '">r' + (previousRevision + 1) + ' to r' + currentRevision + '</a>';
 }
 
