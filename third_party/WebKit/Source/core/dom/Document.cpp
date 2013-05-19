@@ -1992,8 +1992,10 @@ AXObjectCache* Document::axObjectCache() const
 void Document::setVisuallyOrdered()
 {
     m_visuallyOrdered = true;
+    // FIXME: How is possible to not have a renderer here?
     if (renderer())
         renderer()->style()->setRTLOrdering(VisualOrder);
+    scheduleForcedStyleRecalc();
 }
 
 PassRefPtr<DocumentParser> Document::createParser()
