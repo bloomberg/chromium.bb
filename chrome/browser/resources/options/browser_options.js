@@ -29,6 +29,13 @@ cr.define('options', function() {
     signedIn_: false,
 
     /**
+     * Keeps track of whether the user has completed sync setup or not.
+     * @type {boolean}
+     * @private
+     */
+    setupCompleted_: false,
+
+    /**
      * Keeps track of whether |onShowHomeButtonChanged_| has been called. See
      * |onShowHomeButtonChanged_|.
      * @type {boolean}
@@ -697,12 +704,16 @@ cr.define('options', function() {
 
       $('sync-section').hidden = false;
 
-      // If the user gets signed out while the advanced sync settings dialog is
-      // visible, say, due to a dashboard clear, close the dialog.
-      if (this.signedIn_ && !syncData.signedIn)
+      // If the user gets signed out or if sync gets disabled while the advanced
+      // sync settings dialog is visible, say, due to a dashboard clear, close
+      // the dialog.
+      if ((this.signedIn_ && !syncData.signedIn) ||
+          (this.setupCompleted_ && !syncData.setupCompleted)) {
         SyncSetupOverlay.closeOverlay();
+      }
 
       this.signedIn_ = syncData.signedIn;
+      this.setupCompleted_ = syncData.setupCompleted;
 
       // Display the "advanced settings" button if we're signed in and sync is
       // not managed/disabled. If the user is signed in, but sync is disabled,
