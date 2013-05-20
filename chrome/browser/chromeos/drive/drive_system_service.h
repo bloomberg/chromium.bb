@@ -37,12 +37,12 @@ class FileSystemInterface;
 class FileSystemProxy;
 class FileWriteHelper;
 class JobListInterface;
-class StaleCacheFilesRemover;
-class SyncClient;
 
 namespace internal {
 class FileCache;
 class ResourceMetadata;
+class StaleCacheFilesRemover;
+class SyncClient;
 }  // namespace internal
 
 // Interface for classes that need to observe events from DriveSystemService.
@@ -162,8 +162,8 @@ class DriveSystemService
   scoped_ptr<FileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DownloadHandler> download_handler_;
-  scoped_ptr<SyncClient> sync_client_;
-  scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
+  scoped_ptr<internal::SyncClient> sync_client_;
+  scoped_ptr<internal::StaleCacheFilesRemover> stale_cache_files_remover_;
   scoped_refptr<FileSystemProxy> file_system_proxy_;
   scoped_ptr<DebugInfoCollector> debug_info_collector_;
 

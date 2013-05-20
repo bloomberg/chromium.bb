@@ -22,8 +22,8 @@ class FileSystemInterface;
 class ResourceEntry;
 
 namespace internal {
+
 class FileCache;
-}  // namespace internal
 
 // The SyncClient is used to synchronize pinned files on Drive and the
 // cache on the local drive. The sync client works as follows.
@@ -38,8 +38,7 @@ class FileCache;
 // If the user logs out before fetching of the pinned files is complete, this
 // client resumes fetching operations next time the user logs in, based on
 // the states left in the cache.
-class SyncClient : public FileSystemObserver,
-                   public internal::FileCacheObserver {
+class SyncClient : public FileSystemObserver, public FileCacheObserver {
  public:
   // Types of sync tasks.
   enum SyncType {
@@ -47,7 +46,7 @@ class SyncClient : public FileSystemObserver,
     UPLOAD,  // Upload a file to the Drive server.
   };
 
-  SyncClient(FileSystemInterface* file_system, internal::FileCache* cache);
+  SyncClient(FileSystemInterface* file_system, FileCache* cache);
   virtual ~SyncClient();
 
   // FileSystemInterface::Observer overrides.
@@ -139,7 +138,7 @@ class SyncClient : public FileSystemObserver,
                             FileError error);
 
   FileSystemInterface* file_system_;  // Owned by DriveSystemService.
-  internal::FileCache* cache_;  // Owned by DriveSystemService.
+  FileCache* cache_;  // Owned by DriveSystemService.
 
   // List of the resource ids of resources which have a fetch task created.
   std::set<std::string> fetch_list_;
@@ -161,6 +160,7 @@ class SyncClient : public FileSystemObserver,
   DISALLOW_COPY_AND_ASSIGN(SyncClient);
 };
 
+}  // namespace internal
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_SYNC_CLIENT_H_

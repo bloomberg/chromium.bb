@@ -16,6 +16,7 @@
 using content::BrowserThread;
 
 namespace drive {
+namespace internal {
 
 namespace {
 
@@ -54,8 +55,7 @@ void CollectBacklog(std::vector<std::string>* to_fetch,
 
 }  // namespace
 
-SyncClient::SyncClient(FileSystemInterface* file_system,
-                       internal::FileCache* cache)
+SyncClient::SyncClient(FileSystemInterface* file_system, FileCache* cache)
     : file_system_(file_system),
       cache_(cache),
       delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),
@@ -339,4 +339,5 @@ void SyncClient::OnUploadFileComplete(const std::string& resource_id,
   }
 }
 
+}  // namespace internal
 }  // namespace drive

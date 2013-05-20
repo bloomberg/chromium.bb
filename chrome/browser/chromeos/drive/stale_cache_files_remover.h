@@ -19,16 +19,15 @@ class FileCacheEntry;
 class FileSystemInterface;
 
 namespace internal {
+
 class FileCache;
-}  // namespace internal
 
 // This class removes stale cache files, which are present locally, but no
 // longer present on the server. This can happen if files are removed from the
 // server from other devices, or from the web interface.
 class StaleCacheFilesRemover : public FileSystemObserver {
  public:
-  StaleCacheFilesRemover(FileSystemInterface* file_system,
-                         internal::FileCache* cache);
+  StaleCacheFilesRemover(FileSystemInterface* file_system, FileCache* cache);
   virtual ~StaleCacheFilesRemover();
 
  private:
@@ -52,8 +51,8 @@ class StaleCacheFilesRemover : public FileSystemObserver {
       const base::FilePath& drive_file_path,
       scoped_ptr<ResourceEntry> entry);
 
-  internal::FileCache* cache_;  // Not owned.
   FileSystemInterface* file_system_;  // Not owned.
+  FileCache* cache_;  // Not owned.
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
@@ -61,6 +60,7 @@ class StaleCacheFilesRemover : public FileSystemObserver {
   DISALLOW_COPY_AND_ASSIGN(StaleCacheFilesRemover);
 };
 
+}  // namespace internal
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_STALE_CACHE_FILES_REMOVER_H_

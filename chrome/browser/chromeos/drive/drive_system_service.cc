@@ -148,9 +148,9 @@ DriveSystemService::DriveSystemService(
   file_write_helper_.reset(new FileWriteHelper(file_system()));
   download_handler_.reset(new DownloadHandler(file_write_helper(),
                                               file_system()));
-  sync_client_.reset(new SyncClient(file_system(), cache_.get()));
-  stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system(),
-                                                              cache_.get()));
+  sync_client_.reset(new internal::SyncClient(file_system(), cache_.get()));
+  stale_cache_files_remover_.reset(
+      new internal::StaleCacheFilesRemover(file_system(), cache_.get()));
   debug_info_collector_.reset(
       new DebugInfoCollector(file_system(), cache_.get()));
 }

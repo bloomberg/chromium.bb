@@ -13,6 +13,7 @@
 using content::BrowserThread;
 
 namespace drive {
+namespace internal {
 
 namespace {
 
@@ -29,9 +30,9 @@ void EmitErrorLog(const std::string& resource_id,
 
 StaleCacheFilesRemover::StaleCacheFilesRemover(
     FileSystemInterface* file_system,
-    internal::FileCache* cache)
-    : cache_(cache),
-      file_system_(file_system),
+    FileCache* cache)
+    : file_system_(file_system),
+      cache_(cache),
       weak_ptr_factory_(this) {
   file_system_->AddObserver(this);
 }
@@ -88,4 +89,5 @@ void StaleCacheFilesRemover::RemoveCacheIfNecessary(
   }
 }
 
+}  // namespace internal
 }  // namespace drive
