@@ -222,7 +222,7 @@ void CannedSyncableFileSystem::SetUp() {
 
   // In testing we override this setting to support directory operations
   // by default.
-  SetEnableSyncDirectoryOperation(true);
+  SetEnableSyncFSDirectoryOperation(true);
 
   is_filesystem_set_up_ = true;
 }
@@ -230,7 +230,7 @@ void CannedSyncableFileSystem::SetUp() {
 void CannedSyncableFileSystem::TearDown() {
   quota_manager_ = NULL;
   file_system_context_ = NULL;
-  SetEnableSyncDirectoryOperation(false);
+  SetEnableSyncFSDirectoryOperation(false);
 
   // Make sure we give some more time to finish tasks on other threads.
   EnsureLastTaskRuns(io_task_runner_);

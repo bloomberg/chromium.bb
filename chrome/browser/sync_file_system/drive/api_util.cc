@@ -526,8 +526,8 @@ void APIUtil::EnsureSyncRootIsNotInMyDrive(
 // TODO(calvinlo): Delete this when Sync Directory Operations are supported by
 // default.
 std::string APIUtil::GetSyncRootDirectoryName() {
-  return IsSyncDirectoryOperationEnabled() ? kSyncRootDirectoryNameDev
-                                           : kSyncRootDirectoryName;
+  return IsSyncFSDirectoryOperationEnabled() ? kSyncRootDirectoryNameDev
+                                             : kSyncRootDirectoryName;
 }
 
 // static

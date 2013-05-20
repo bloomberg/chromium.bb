@@ -356,7 +356,7 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
     return;
   }
   operation_runner_ = file_system_context->sync_context()->operation_runner();
-  is_directory_operation_enabled_ = IsSyncDirectoryOperationEnabled();
+  is_directory_operation_enabled_ = IsSyncFSDirectoryOperationEnabled();
 }
 
 LocalFileSystemOperation* SyncableFileSystemOperation::NewOperation() {

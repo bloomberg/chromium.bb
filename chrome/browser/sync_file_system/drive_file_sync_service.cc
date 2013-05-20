@@ -57,7 +57,7 @@ const base::FilePath::CharType kSyncFileSystemDirDev[] =
     FILE_PATH_LITERAL("Sync FileSystem Dev");
 
 const base::FilePath::CharType* GetSyncFileSystemDir() {
-  return IsSyncDirectoryOperationEnabled()
+  return IsSyncFSDirectoryOperationEnabled()
       ? kSyncFileSystemDirDev : kSyncFileSystemDir;
 }
 
@@ -1055,7 +1055,7 @@ void DriveFileSyncService::DidApplyRemoteChange(
   if (param->remote_change.change.IsFile()) {
     param->drive_metadata.set_type(DriveMetadata::RESOURCE_TYPE_FILE);
   } else {
-    DCHECK(IsSyncDirectoryOperationEnabled());
+    DCHECK(IsSyncFSDirectoryOperationEnabled());
     param->drive_metadata.set_type(DriveMetadata::RESOURCE_TYPE_FOLDER);
   }
 
@@ -1238,7 +1238,7 @@ bool DriveFileSyncService::AppendRemoteChange(
   if (!entry.is_folder() && !entry.is_file() && !entry.deleted())
     return false;
 
-  if (entry.is_folder() && !IsSyncDirectoryOperationEnabled())
+  if (entry.is_folder() && !IsSyncFSDirectoryOperationEnabled())
     return false;
 
   SyncFileType file_type = entry.is_file() ?
@@ -1334,7 +1334,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     if (!remote_resource_id.empty() &&
         !local_resource_id.empty() &&
         remote_resource_id == local_resource_id) {
-      DCHECK(IsSyncDirectoryOperationEnabled() ||
+      DCHECK(IsSyncFSDirectoryOperationEnabled() ||
              DriveMetadata::RESOURCE_TYPE_FILE == metadata.type());
       file_type = metadata.type() == DriveMetadata::RESOURCE_TYPE_FILE ?
           SYNC_FILE_TYPE_FILE : SYNC_FILE_TYPE_DIRECTORY;
@@ -1483,7 +1483,7 @@ void DriveFileSyncService::NotifyLastOperationStatus(
 
 // static
 std::string DriveFileSyncService::PathToTitle(const base::FilePath& path) {
-  if (!IsSyncDirectoryOperationEnabled())
+  if (!IsSyncFSDirectoryOperationEnabled())
     return path.AsUTF8Unsafe();
 
   return fileapi::FilePathToString(
@@ -1492,7 +1492,7 @@ std::string DriveFileSyncService::PathToTitle(const base::FilePath& path) {
 
 // static
 base::FilePath DriveFileSyncService::TitleToPath(const std::string& title) {
-  if (!IsSyncDirectoryOperationEnabled())
+  if (!IsSyncFSDirectoryOperationEnabled())
     return base::FilePath::FromUTF8Unsafe(title);
 
   return fileapi::StringToFilePath(title).NormalizePathSeparators();

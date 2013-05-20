@@ -36,7 +36,7 @@ void LocalChangeProcessorDelegate::Run(const SyncStatusCallback& callback) {
     return;
 
   // TODO(nhiroki): support directory operations (http://crbug.com/161442).
-  DCHECK(IsSyncDirectoryOperationEnabled() || !local_change_.IsDirectory());
+  DCHECK(IsSyncFSDirectoryOperationEnabled() || !local_change_.IsDirectory());
 
   has_drive_metadata_ =
       metadata_store()->ReadEntry(url_, &drive_metadata_) == SYNC_STATUS_OK;
@@ -168,7 +168,7 @@ void LocalChangeProcessorDelegate::CreateDirectory(
   if (!sync_service_)
     return;
 
-  DCHECK(IsSyncDirectoryOperationEnabled());
+  DCHECK(IsSyncFSDirectoryOperationEnabled());
   api_util()->CreateDirectory(
       origin_resource_id_,
       DriveFileSyncService::PathToTitle(url_.path()),
@@ -284,7 +284,7 @@ void LocalChangeProcessorDelegate::DeleteDirectory(
   if (!sync_service_)
     return;
 
-  DCHECK(IsSyncDirectoryOperationEnabled());
+  DCHECK(IsSyncFSDirectoryOperationEnabled());
   DCHECK(has_drive_metadata_);
   // This does not handle recursive directory deletion
   // (which should not happen other than after a restart).
@@ -368,7 +368,7 @@ void LocalChangeProcessorDelegate::DidDeleteFileToResolveToLocal(
     return;
   }
 
-  DCHECK(IsSyncDirectoryOperationEnabled());
+  DCHECK(IsSyncFSDirectoryOperationEnabled());
   DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_metadata_.file_type);
   CreateDirectory(callback);
 }

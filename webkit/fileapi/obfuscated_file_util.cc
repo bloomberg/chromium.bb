@@ -340,7 +340,7 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
   // operations or clean up the code if we decided not to support directory
   // operations. (http://crbug.com/161442)
   if (url.type() == kFileSystemTypeSyncable &&
-      !sync_file_system::IsSyncDirectoryOperationEnabled()) {
+      !sync_file_system::IsSyncFSDirectoryOperationEnabled()) {
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   }
 
