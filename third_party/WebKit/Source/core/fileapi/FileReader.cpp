@@ -60,6 +60,7 @@ FileReader::FileReader(ScriptExecutionContext* context)
     , m_readType(FileReaderLoader::ReadAsBinaryString)
     , m_lastProgressNotificationTimeMS(0)
 {
+    ScriptWrappable::init(this);
 }
 
 FileReader::~FileReader()

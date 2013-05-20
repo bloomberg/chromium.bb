@@ -43,6 +43,7 @@ namespace WebCore {
 
 FileReaderSync::FileReaderSync()
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ScriptExecutionContext* scriptExecutionContext, Blob* blob, ExceptionCode& ec)

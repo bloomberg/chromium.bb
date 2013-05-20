@@ -31,6 +31,7 @@
 #ifndef FileReader_h
 #define FileReader_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
 #include "core/fileapi/FileError.h"
@@ -47,7 +48,7 @@ class ScriptExecutionContext;
 
 typedef int ExceptionCode;
 
-class FileReader : public RefCounted<FileReader>, public ActiveDOMObject, public EventTarget, public FileReaderLoaderClient {
+class FileReader : public RefCounted<FileReader>, public ScriptWrappable, public ActiveDOMObject, public EventTarget, public FileReaderLoaderClient {
 public:
     static PassRefPtr<FileReader> create(ScriptExecutionContext*);
 
