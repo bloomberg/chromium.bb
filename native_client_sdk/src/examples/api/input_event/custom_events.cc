@@ -63,7 +63,8 @@ std::string MouseEvent::ToString() const {
          << " modifier:" << string_event_modifiers()
          << " button:" << MouseButtonToString(mouse_button_)
          << " x:" << x_position_ << " y:" << y_position_
-         << " click_count:" << click_count_ << " time:" << timestamp_ << "\n";
+         << " click_count:" << click_count_ << " time:" << timestamp_
+         << " is_context_menu: " << is_context_menu_ << "\n";
   return stream.str();
 }
 

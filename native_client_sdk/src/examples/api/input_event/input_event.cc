@@ -149,7 +149,8 @@ class InputEventInstance : public pp::Instance {
       case PP_INPUTEVENT_TYPE_MOUSEUP:
       case PP_INPUTEVENT_TYPE_MOUSEMOVE:
       case PP_INPUTEVENT_TYPE_MOUSEENTER:
-      case PP_INPUTEVENT_TYPE_MOUSELEAVE: {
+      case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+      case PP_INPUTEVENT_TYPE_CONTEXTMENU: {
         pp::MouseInputEvent mouse_event(event);
         PP_InputEvent_MouseButton pp_button = mouse_event.GetButton();
         MouseEvent::MouseButton mouse_button = MouseEvent::kNone;
@@ -173,7 +174,8 @@ class InputEventInstance : public pp::Instance {
                            mouse_event.GetPosition().x(),
                            mouse_event.GetPosition().y(),
                            mouse_event.GetClickCount(),
-                           mouse_event.GetTimeStamp());
+                           mouse_event.GetTimeStamp(),
+                           event.GetType() == PP_INPUTEVENT_TYPE_CONTEXTMENU);
       } break;
       case PP_INPUTEVENT_TYPE_WHEEL: {
         pp::WheelInputEvent wheel_event(event);
@@ -189,8 +191,7 @@ class InputEventInstance : public pp::Instance {
       case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
       case PP_INPUTEVENT_TYPE_KEYDOWN:
       case PP_INPUTEVENT_TYPE_KEYUP:
-      case PP_INPUTEVENT_TYPE_CHAR:
-      case PP_INPUTEVENT_TYPE_CONTEXTMENU: {
+      case PP_INPUTEVENT_TYPE_CHAR: {
         pp::KeyboardInputEvent key_event(event);
         event_ptr = new KeyEvent(ConvertEventModifier(key_event.GetModifiers()),
                                  key_event.GetKeyCode(),
