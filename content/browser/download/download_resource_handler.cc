@@ -128,6 +128,10 @@ bool DownloadResourceHandler::OnResponseStarted(
   // If it's a download, we don't want to poison the cache with it.
   request_->StopCaching();
 
+  // Lower priority as well, so downloads don't contend for resources
+  // with main frames.
+  request_->SetPriority(net::IDLE);
+
   std::string content_disposition;
   request_->GetResponseHeaderByName("content-disposition",
                                     &content_disposition);
