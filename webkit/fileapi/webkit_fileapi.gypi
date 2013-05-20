@@ -26,7 +26,6 @@
       '../fileapi/file_system_file_stream_reader.h',
       '../fileapi/file_system_file_util.cc',
       '../fileapi/file_system_file_util.h',
-      '../fileapi/file_system_mount_point_provider.h',
       '../fileapi/file_system_operation.h',
       '../fileapi/file_system_operation_context.cc',
       '../fileapi/file_system_operation_context.h',

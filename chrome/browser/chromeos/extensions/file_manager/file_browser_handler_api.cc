@@ -51,8 +51,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "googleurl/src/gurl.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_mount_point_provider.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

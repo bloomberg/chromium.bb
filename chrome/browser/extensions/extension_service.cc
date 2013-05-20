@@ -115,8 +115,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
+#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_mount_point_provider.h"
 #endif
 
 using content::BrowserContext;

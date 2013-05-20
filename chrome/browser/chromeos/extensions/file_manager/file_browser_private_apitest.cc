@@ -13,8 +13,8 @@
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_mount_point_provider.h"
 
 using ::testing::_;
 using ::testing::ReturnRef;
