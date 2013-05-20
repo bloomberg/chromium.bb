@@ -258,7 +258,15 @@ TEST_F(AppsGridViewTest, MouseDrag) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_F(AppsGridViewTest, MouseDragFlipPage) {
+// Test fails sometimes on chrome os.
+// http://crbug.com/242248
+#if defined(OS_CHROMEOS)
+#define MAYBE_MouseDragFlipPage DISABLED_MouseDragFlipPage
+#else
+#define MAYBE_MouseDragFlipPage MouseDragFlipPage
+#endif  // defined(OS_CHROMEOS)
+
+TEST_F(AppsGridViewTest, MAYBE_MouseDragFlipPage) {
   test_api_->SetPageFlipDelay(10);
   pagination_model_->SetTransitionDurations(10, 10);
 
