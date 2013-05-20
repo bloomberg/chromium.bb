@@ -15,6 +15,13 @@ hr {
   margin: 15px 0;
 }
 
+/* Override the visual style of tabs. */
+
+tabs tab {
+  min-width: 150px;
+  padding: 5px 20px;
+}
+
 /* Contents */
 
 #extension-settings {
