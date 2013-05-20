@@ -332,10 +332,10 @@ class ExpectationSyntaxTests(Base):
         self.assert_tokenize_exp('foo.html', modifiers=['SKIP'], expectations=['PASS'])
 
     def test_bare_name_and_bugs(self):
-        self.assert_tokenize_exp('webkit.org/b/12345 foo.html', modifiers=['BUGWK12345', 'SKIP'], expectations=['PASS'])
-        self.assert_tokenize_exp('crbug.com/12345 foo.html', modifiers=['BUGCR12345', 'SKIP'], expectations=['PASS'])
-        self.assert_tokenize_exp('Bug(dpranke) foo.html', modifiers=['BUGDPRANKE', 'SKIP'], expectations=['PASS'])
-        self.assert_tokenize_exp('crbug.com/12345 crbug.com/34567 foo.html', modifiers=['BUGCR12345', 'BUGCR34567', 'SKIP'], expectations=['PASS'])
+        self.assert_tokenize_exp('webkit.org/b/12345 foo.html', modifiers=['webkit.org/b/12345', 'SKIP'], expectations=['PASS'])
+        self.assert_tokenize_exp('crbug.com/12345 foo.html', modifiers=['crbug.com/12345', 'SKIP'], expectations=['PASS'])
+        self.assert_tokenize_exp('Bug(dpranke) foo.html', modifiers=['Bug(dpranke)', 'SKIP'], expectations=['PASS'])
+        self.assert_tokenize_exp('crbug.com/12345 crbug.com/34567 foo.html', modifiers=['crbug.com/12345', 'crbug.com/34567', 'SKIP'], expectations=['PASS'])
 
     def test_comments(self):
         self.assert_tokenize_exp("# comment", name=None, comment="# comment")
@@ -380,10 +380,10 @@ class SemanticTests(Base):
 
     def test_bad_bugid(self):
         try:
-            self.parse_exp('BUG1234 failures/expected/text.html [ Failure ]', is_lint_mode=True)
+            self.parse_exp('crbug/1234 failures/expected/text.html [ Failure ]', is_lint_mode=True)
             self.fail('should have raised an error about a bad bug identifier')
         except ParseError, exp:
-            self.assertEqual(len(exp.warnings), 1)
+            self.assertEqual(len(exp.warnings), 2)
 
     def test_missing_bugid(self):
         self.parse_exp('failures/expected/text.html [ Failure ]')
@@ -626,7 +626,7 @@ class TestExpectationSerializationTests(unittest.TestCase):
 
     def test_parsed_to_string(self):
         expectation_line = TestExpectationLine()
-        expectation_line.parsed_bug_modifiers = ['BUGX']
+        expectation_line.parsed_bug_modifiers = ['Bug(x)']
         expectation_line.name = 'test/name/for/realz.html'
         expectation_line.parsed_expectations = set([IMAGE])
         self.assertEqual(expectation_line.to_string(self._converter), None)
@@ -706,7 +706,7 @@ class TestExpectationSerializationTests(unittest.TestCase):
         def add_line(matching_configurations, reconstitute):
             expectation_line = TestExpectationLine()
             expectation_line.original_string = "Nay"
-            expectation_line.parsed_bug_modifiers = ['BUGX']
+            expectation_line.parsed_bug_modifiers = ['Bug(x)']
             expectation_line.name = 'Yay'
             expectation_line.parsed_expectations = set([IMAGE])
             expectation_line.matching_configurations = matching_configurations

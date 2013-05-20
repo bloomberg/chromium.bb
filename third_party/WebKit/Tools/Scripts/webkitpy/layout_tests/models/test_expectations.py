@@ -48,6 +48,10 @@ _log = logging.getLogger(__name__)
 # FIXME: Perhas these two routines should be part of the Port instead?
 BASELINE_SUFFIX_LIST = ('png', 'wav', 'txt')
 
+WEBKIT_BUG_PREFIX = 'webkit.org/b/'
+CHROMIUM_BUG_PREFIX = 'crbug.com/'
+V8_BUG_PREFIX = 'code.google.com/p/v8/issues/detail?id='
+NAMED_BUG_PREFIX = 'Bug('
 
 class ParseError(Exception):
     def __init__(self, warnings):
@@ -64,9 +68,7 @@ class ParseError(Exception):
 class TestExpectationParser(object):
     """Provides parsing facilities for lines in the test_expectation.txt file."""
 
-    DUMMY_BUG_MODIFIER = "bug_dummy"
-    BUG_MODIFIER_PREFIX = 'bug'
-    BUG_MODIFIER_REGEX = 'bug\d+'
+    DUMMY_BUG_MODIFIER = "Bug(dummy)"
     REBASELINE_MODIFIER = 'rebaseline'
     PASS_EXPECTATION = 'pass'
     SKIP_MODIFIER = 'skip'
@@ -141,19 +143,19 @@ class TestExpectationParser(object):
         if self.SLOW_MODIFIER in modifiers and self.TIMEOUT_EXPECTATION in expectations:
             expectation_line.warnings.append('A test can not be both SLOW and TIMEOUT. If it times out indefinitely, then it should be just TIMEOUT.')
 
-        for modifier in modifiers:
-            if modifier in TestExpectations.MODIFIERS:
-                expectation_line.parsed_modifiers.append(modifier)
-                if modifier == self.WONTFIX_MODIFIER:
-                    has_wontfix = True
-            elif modifier.startswith(self.BUG_MODIFIER_PREFIX):
+        for modifier in expectation_line.modifiers:
+            if modifier.startswith(WEBKIT_BUG_PREFIX) or modifier.startswith(CHROMIUM_BUG_PREFIX) or modifier.startswith(V8_BUG_PREFIX) or modifier.startswith(NAMED_BUG_PREFIX):
                 has_bugid = True
-                if re.match(self.BUG_MODIFIER_REGEX, modifier):
-                    expectation_line.warnings.append('BUG\d+ is not allowed, must be one of BUGCR\d+, BUGWK\d+, BUGV8_\d+, or a non-numeric bug identifier.')
-                else:
-                    expectation_line.parsed_bug_modifiers.append(modifier)
+                expectation_line.parsed_bug_modifiers.append(modifier)
             else:
-                parsed_specifiers.add(modifier)
+                # FIXME: Store the unmodified modifier.
+                modifier = modifier.lower()
+                if modifier in TestExpectations.MODIFIERS:
+                    expectation_line.parsed_modifiers.append(modifier)
+                    if modifier == self.WONTFIX_MODIFIER:
+                        has_wontfix = True
+                else:
+                    parsed_specifiers.add(modifier)
 
         if not expectation_line.parsed_bug_modifiers and not has_wontfix and not has_bugid and self._port.warn_if_bug_missing_in_test_expectations():
             expectation_line.warnings.append(self.MISSING_BUG_WARNING)
@@ -276,36 +278,29 @@ class TestExpectationParser(object):
         expectations = []
         warnings = []
 
-        WEBKIT_BUG_PREFIX = 'webkit.org/b/'
-        CHROMIUM_BUG_PREFIX = 'crbug.com/'
-        V8_BUG_PREFIX = 'code.google.com/p/v8/issues/detail?id='
-
         tokens = remaining_string.split()
         state = 'start'
         for token in tokens:
             if (token.startswith(WEBKIT_BUG_PREFIX) or
                 token.startswith(CHROMIUM_BUG_PREFIX) or
                 token.startswith(V8_BUG_PREFIX) or
-                token.startswith('Bug(')):
+                token.startswith(NAMED_BUG_PREFIX)):
                 if state != 'start':
                     warnings.append('"%s" is not at the start of the line.' % token)
                     break
                 if token.startswith(WEBKIT_BUG_PREFIX):
-                    bugs.append(token.replace(WEBKIT_BUG_PREFIX, 'BUGWK'))
+                    bugs.append(token)
                 elif token.startswith(CHROMIUM_BUG_PREFIX):
-                    bugs.append(token.replace(CHROMIUM_BUG_PREFIX, 'BUGCR'))
+                    bugs.append(token)
                 elif token.startswith(V8_BUG_PREFIX):
-                    bugs.append(token.replace(V8_BUG_PREFIX, 'BUGV8_'))
+                    bugs.append(token)
                 else:
                     match = re.match('Bug\((\w+)\)$', token)
                     if not match:
                         warnings.append('unrecognized bug identifier "%s"' % token)
                         break
                     else:
-                        bugs.append('BUG' + match.group(1).upper())
-            elif token.startswith('BUG'):
-                warnings.append('unrecognized old-style bug identifier "%s"' % token)
-                break
+                        bugs.append(token)
             elif token == '[':
                 if state == 'start':
                     state = 'configuration'
@@ -455,18 +450,15 @@ class TestExpectationLine(object):
         new_modifiers = []
         new_expectations = []
         for modifier in modifiers:
-            modifier = modifier.upper()
-            if modifier.startswith('BUGWK'):
-                bugs.append('webkit.org/b/' + modifier.replace('BUGWK', ''))
-            elif modifier.startswith('BUGCR'):
-                bugs.append('crbug.com/' + modifier.replace('BUGCR', ''))
-            elif modifier.startswith('BUG'):
-                # FIXME: we should preserve case once we can drop the old syntax.
-                bugs.append('Bug(' + modifier[3:].lower() + ')')
-            elif modifier in ('SLOW', 'SKIP', 'REBASELINE', 'WONTFIX'):
-                new_expectations.append(TestExpectationParser._inverted_expectation_tokens.get(modifier))
+            if modifier.startswith(WEBKIT_BUG_PREFIX) or modifier.startswith(CHROMIUM_BUG_PREFIX) or modifier.startswith(V8_BUG_PREFIX) or modifier.startswith(NAMED_BUG_PREFIX):
+                bugs.append(modifier)
             else:
-                new_modifiers.append(TestExpectationParser._inverted_configuration_tokens.get(modifier, modifier))
+                # FIXME: Make this all work with the mixed-cased modifiers (e.g. WontFix, Slow, etc).
+                modifier = modifier.upper()
+                if modifier in ('SLOW', 'SKIP', 'REBASELINE', 'WONTFIX'):
+                    new_expectations.append(TestExpectationParser._inverted_expectation_tokens.get(modifier))
+                else:
+                    new_modifiers.append(TestExpectationParser._inverted_configuration_tokens.get(modifier, modifier))
 
         for expectation in expectations:
             expectation = expectation.upper()

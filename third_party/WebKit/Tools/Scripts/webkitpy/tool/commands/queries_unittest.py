@@ -217,8 +217,8 @@ class PrintExpectationsTest(unittest.TestCase):
 
     def test_csv(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/image.html'],
-                      ('test-win-xp,failures/expected/image.html,BUGTEST,IMAGE\n'
-                       'test-win-xp,failures/expected/text.html,BUGTEST,FAIL\n'),
+                      ('test-win-xp,failures/expected/image.html,Bug(test),IMAGE\n'
+                       'test-win-xp,failures/expected/text.html,Bug(test),FAIL\n'),
                       csv=True)
 
     def test_paths(self):
