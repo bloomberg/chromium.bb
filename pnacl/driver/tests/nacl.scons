@@ -6,8 +6,7 @@
 
 Import('env')
 
-# Depends on the opt-host version of sel_ldr and sel_universal.
-if 'TRUSTED_ENV' not in env or env['OPTIMIZATION_LEVEL'] == 'dbg':
+if 'TRUSTED_ENV' not in env or not env.Bit('bitcode'):
   Return()
 
 sel_universal = env['TRUSTED_ENV'].File(

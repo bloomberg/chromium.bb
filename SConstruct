@@ -2187,7 +2187,6 @@ def MakeBaseTrustedEnv():
   base_env.Append(BUILD_SCONSCRIPTS = [
       # KEEP THIS SORTED PLEASE
       'build/build.scons',
-      'pnacl/driver/tests/build.scons',
       'toolchain_build/build.scons',
       'src/shared/gio/build.scons',
       'src/shared/imc/build.scons',
@@ -3281,6 +3280,7 @@ irt_variant_tests = [
 # that are incompatible with having an IRT loaded.
 nonvariant_tests = [
     #### ALPHABETICALLY SORTED ####
+    'pnacl/driver/tests/nacl.scons',
     'tests/barebones/nacl.scons',
     'tests/chrome_extension/nacl.scons',
     'tests/custom_desc/nacl.scons',
