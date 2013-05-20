@@ -43,7 +43,8 @@ NSSCertDatabase::ImportCertFailure::~ImportCertFailure() {}
 
 // static
 NSSCertDatabase* NSSCertDatabase::GetInstance() {
-  return Singleton<NSSCertDatabase>::get();
+  return Singleton<NSSCertDatabase,
+                   LeakySingletonTraits<NSSCertDatabase> >::get();
 }
 
 NSSCertDatabase::NSSCertDatabase()
