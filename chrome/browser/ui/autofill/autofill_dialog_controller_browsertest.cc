@@ -233,7 +233,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutSuccess) {
             metric_logger().dialog_dismissal_action());
   EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
 
-  controller()->Hide();
+  controller()->OnAutocheckoutSuccess();
+  controller()->view()->GetTestableView()->CancelForTesting();
   RunMessageLoop();
 
   EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_SUCCEEDED,
@@ -251,7 +252,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutError) {
 
   controller()->OnAutocheckoutError();
   controller()->view()->GetTestableView()->CancelForTesting();
-
   RunMessageLoop();
 
   EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_FAILED,

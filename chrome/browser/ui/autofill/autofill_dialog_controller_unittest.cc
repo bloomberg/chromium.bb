@@ -174,7 +174,8 @@ class TestAutofillDialogController
         test_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
                 GetRequestContext(), this),
-        is_first_run_(true) {}
+        is_first_run_(true),
+        dialog_type_(dialog_type) {}
   virtual ~TestAutofillDialogController() {}
 
   virtual AutofillDialogView* CreateView() OVERRIDE {
@@ -200,6 +201,12 @@ class TestAutofillDialogController
   void set_is_first_run(bool is_first_run) { is_first_run_ = is_first_run; }
 
   const GURL& open_tab_url() { return open_tab_url_; }
+
+  virtual DialogType GetDialogType() const OVERRIDE {
+    return dialog_type_;
+  }
+
+  void set_dialog_type(DialogType dialog_type) { dialog_type_ = dialog_type; }
 
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
@@ -229,6 +236,7 @@ class TestAutofillDialogController
   testing::NiceMock<TestWalletClient> test_wallet_client_;
   bool is_first_run_;
   GURL open_tab_url_;
+  DialogType dialog_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
@@ -1064,6 +1072,42 @@ TEST_F(AutofillDialogControllerTest, NoWalletNotifications) {
       DialogNotification::EXPLANATORY_MESSAGE).empty());
   EXPECT_TRUE(NotificationsOfType(
       DialogNotification::WALLET_USAGE_CONFIRMATION).empty());
+}
+
+TEST_F(AutofillDialogControllerTest, OnAutocheckoutError) {
+  SwitchToAutofill();
+  controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
+
+  // We also have to simulate CC inputs to keep the controller happy.
+  FillCreditCardInputs();
+
+  controller()->OnAccept();
+  controller()->OnAutocheckoutError();
+
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_EQ(0U, NotificationsOfType(
+      DialogNotification::AUTOCHECKOUT_SUCCESS).size());
+  EXPECT_EQ(1U, NotificationsOfType(
+      DialogNotification::AUTOCHECKOUT_ERROR).size());
+}
+
+TEST_F(AutofillDialogControllerTest, OnAutocheckoutSuccess) {
+  SwitchToAutofill();
+  controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
+
+  // We also have to simulate CC inputs to keep the controller happy.
+  FillCreditCardInputs();
+
+  controller()->OnAccept();
+  controller()->OnAutocheckoutSuccess();
+
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_EQ(1U, NotificationsOfType(
+      DialogNotification::AUTOCHECKOUT_SUCCESS).size());
+  EXPECT_EQ(0U, NotificationsOfType(
+      DialogNotification::AUTOCHECKOUT_ERROR).size());
 }
 
 TEST_F(AutofillDialogControllerTest, ViewCancelDoesntSetPref) {

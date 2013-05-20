@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/rect.h"
 
@@ -62,6 +64,10 @@ void TabAutofillManagerDelegate::OnAutocheckoutError() {
   // |dialog_controller_| is a WeakPtr, but we require it to be present when
   // |OnAutocheckoutError| is called, so we intentionally do not do NULL check.
   dialog_controller_->OnAutocheckoutError();
+}
+
+void TabAutofillManagerDelegate::OnAutocheckoutSuccess() {
+  dialog_controller_->OnAutocheckoutSuccess();
 }
 
 void TabAutofillManagerDelegate::ShowAutofillSettings() {
@@ -173,9 +179,13 @@ void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
 void TabAutofillManagerDelegate::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  // A redirect immediately after a successful Autocheckout flow shouldn't hide
+  // the dialog.
+  bool was_redirect = details.entry &&
+      content::PageTransitionIsRedirect(details.entry->GetTransitionType());
   if (dialog_controller_ &&
       (dialog_controller_->dialog_type() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE ||
-       !dialog_controller_->AutocheckoutIsRunning())) {
+       (!dialog_controller_->AutocheckoutIsRunning() && !was_redirect))) {
     HideRequestAutocompleteDialog();
   }
 

@@ -80,6 +80,9 @@ class AutofillDialogController {
   // Whether or not the progress bar in the button strip should be showing.
   virtual bool ShouldShowProgressBar() const = 0;
 
+  // Which dialog buttons should be visible.
+  virtual int GetDialogButtons() const = 0;
+
   // Whether or not the |button| should be enabled.
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const = 0;
 

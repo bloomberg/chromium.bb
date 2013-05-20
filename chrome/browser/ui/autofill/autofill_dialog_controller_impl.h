@@ -94,11 +94,11 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether Autocheckout is currently running.
   bool AutocheckoutIsRunning() const;
 
-  // Whether there was an error in the previous Autocheckout flow.
-  bool HadAutocheckoutError() const;
-
   // Called when there is an error in an active Autocheckout flow.
   void OnAutocheckoutError();
+
+  // Called when an Autocheckout flow completes successfully.
+  void OnAutocheckoutSuccess();
 
   // AutofillDialogController implementation.
   virtual string16 DialogTitle() const OVERRIDE;
@@ -117,6 +117,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual gfx::Image AccountChooserImage() OVERRIDE;
   virtual bool ShouldShowDetailArea() const OVERRIDE;
   virtual bool ShouldShowProgressBar() const OVERRIDE;
+  virtual int GetDialogButtons() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual const std::vector<ui::Range>& LegalDocumentLinks() OVERRIDE;
   virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
@@ -581,8 +582,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Wallet data.
   bool wallet_server_validation_error_;
 
-  // Whether or not there was an error in the Autocheckout flow.
-  bool had_autocheckout_error_;
+  // The current state of the Autocheckout flow.
+  AutocheckoutState autocheckout_state_;
 
   // Whether the latency to display to the UI was logged to UMA yet.
   bool was_ui_latency_logged_;

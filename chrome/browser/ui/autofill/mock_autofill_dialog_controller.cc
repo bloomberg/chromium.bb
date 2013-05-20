@@ -73,6 +73,10 @@ bool MockAutofillDialogController::ShouldShowProgressBar() const {
   return false;
 }
 
+int MockAutofillDialogController::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+}
+
 bool MockAutofillDialogController::ShouldShowDetailArea() const {
   return false;
 }

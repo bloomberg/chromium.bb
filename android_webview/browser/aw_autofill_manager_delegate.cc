@@ -78,6 +78,9 @@ void AwAutofillManagerDelegate::HideRequestAutocompleteDialog() {
 void AwAutofillManagerDelegate::OnAutocheckoutError() {
 }
 
+void AwAutofillManagerDelegate::OnAutocheckoutSuccess() {
+}
+
 void AwAutofillManagerDelegate::ShowAutofillSettings() {
 }
 

@@ -236,7 +236,7 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
     popup_controller_->Hide();
 
   GetMetricLogger().LogDialogInitialUserState(
-      dialog_type_, initial_user_state_);
+      GetDialogType(), initial_user_state_);
 }
 
 // static
@@ -276,20 +276,20 @@ void AutofillDialogControllerImpl::Show() {
 
   // Log any relevant UI metrics and security exceptions.
   GetMetricLogger().LogDialogUiEvent(
-      dialog_type_, AutofillMetrics::DIALOG_UI_SHOWN);
+      GetDialogType(), AutofillMetrics::DIALOG_UI_SHOWN);
 
   GetMetricLogger().LogDialogSecurityMetric(
-      dialog_type_, AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
+      GetDialogType(), AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
 
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
     GetMetricLogger().LogDialogSecurityMetric(
-        dialog_type_,
+        GetDialogType(),
         AutofillMetrics::SECURITY_METRIC_CREDIT_CARD_OVER_HTTP);
   }
 
   if (!invoked_from_same_origin_) {
     GetMetricLogger().LogDialogSecurityMetric(
-        dialog_type_,
+        GetDialogType(),
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
   }
 
@@ -398,19 +398,30 @@ void AutofillDialogControllerImpl::UpdateProgressBar(double value) {
 }
 
 bool AutofillDialogControllerImpl::AutocheckoutIsRunning() const {
-  return !autocheckout_started_timestamp_.is_null();
-}
-
-bool AutofillDialogControllerImpl::HadAutocheckoutError() const {
-  return had_autocheckout_error_;
+  return autocheckout_state_ == AUTOCHECKOUT_IN_PROGRESS;
 }
 
 void AutofillDialogControllerImpl::OnAutocheckoutError() {
-  had_autocheckout_error_ = true;
+  DCHECK_EQ(AUTOCHECKOUT_IN_PROGRESS, autocheckout_state_);
+  GetMetricLogger().LogAutocheckoutDuration(
+      base::Time::Now() - autocheckout_started_timestamp_,
+      AutofillMetrics::AUTOCHECKOUT_FAILED);
+  autocheckout_state_ = AUTOCHECKOUT_ERROR;
   autocheckout_started_timestamp_ = base::Time();
   view_->UpdateNotificationArea();
   view_->UpdateButtonStrip();
   view_->UpdateDetailArea();
+}
+
+void AutofillDialogControllerImpl::OnAutocheckoutSuccess() {
+  DCHECK_EQ(AUTOCHECKOUT_IN_PROGRESS, autocheckout_state_);
+  GetMetricLogger().LogAutocheckoutDuration(
+      base::Time::Now() - autocheckout_started_timestamp_,
+      AutofillMetrics::AUTOCHECKOUT_SUCCEEDED);
+  autocheckout_state_ = AUTOCHECKOUT_SUCCESS;
+  autocheckout_started_timestamp_ = base::Time();
+  view_->UpdateNotificationArea();
+  view_->UpdateButtonStrip();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -425,6 +436,10 @@ string16 AutofillDialogControllerImpl::EditSuggestionText() const {
 }
 
 string16 AutofillDialogControllerImpl::CancelButtonText() const {
+  if (autocheckout_state_ == AUTOCHECKOUT_ERROR)
+    return l10n_util::GetStringUTF16(IDS_OK);
+  if (autocheckout_state_ == AUTOCHECKOUT_SUCCESS)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CONTINUE_BUTTON);
   return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
@@ -497,7 +512,13 @@ bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
       !profile_->IsOffTheRecord() &&
       IsManuallyEditingAnySection() &&
       !ShouldShowProgressBar() &&
-      !HadAutocheckoutError();
+      autocheckout_state_ != AUTOCHECKOUT_ERROR;
+}
+
+int AutofillDialogControllerImpl::GetDialogButtons() const {
+  if (autocheckout_state_ != AUTOCHECKOUT_NOT_STARTED)
+    return ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
@@ -513,7 +534,8 @@ bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
   DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
   // TODO(ahutter): Make it possible for the user to cancel out of the dialog
   // while Autocheckout is in progress.
-  return had_autocheckout_error_ || !callback_.is_null();
+  return autocheckout_state_ != AUTOCHECKOUT_IN_PROGRESS ||
+         !callback_.is_null();
 }
 
 const std::vector<ui::Range>& AutofillDialogControllerImpl::
@@ -768,13 +790,13 @@ gfx::Image AutofillDialogControllerImpl::AccountChooserImage() {
 bool AutofillDialogControllerImpl::ShouldShowDetailArea() const {
   // Hide the detail area when Autocheckout is running or there was an error (as
   // there's nothing they can do after an error but cancel).
-  return !(AutocheckoutIsRunning() || HadAutocheckoutError());
+  return autocheckout_state_ == AUTOCHECKOUT_NOT_STARTED;
 }
 
 bool AutofillDialogControllerImpl::ShouldShowProgressBar() const {
   // Show the progress bar while Autocheckout is running but hide it on errors,
   // as there's no use leaving it up if the flow has failed.
-  return AutocheckoutIsRunning() && !HadAutocheckoutError();
+  return autocheckout_state_ == AUTOCHECKOUT_IN_PROGRESS;
 }
 
 string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
@@ -970,7 +992,7 @@ void AutofillDialogControllerImpl::EditClickedForSection(
   view_->UpdateSection(section);
 
   GetMetricLogger().LogDialogUiEvent(
-      dialog_type_, DialogSectionToUiEditEvent(section));
+      GetDialogType(), DialogSectionToUiEditEvent(section));
 }
 
 void AutofillDialogControllerImpl::EditCancelledForSection(
@@ -1167,15 +1189,8 @@ void AutofillDialogControllerImpl::FocusMoved() {
 void AutofillDialogControllerImpl::ViewClosed() {
   GetManager()->RemoveObserver(this);
 
-  if (AutocheckoutIsRunning() || had_autocheckout_error_) {
-    AutofillMetrics::AutocheckoutCompletionStatus metric =
-        AutocheckoutIsRunning() ?
-            AutofillMetrics::AUTOCHECKOUT_SUCCEEDED :
-            AutofillMetrics::AUTOCHECKOUT_FAILED;
-    GetMetricLogger().LogAutocheckoutDuration(
-        base::Time::Now() - autocheckout_started_timestamp_,
-        metric);
-  }
+  // TODO(ahutter): Once a user can cancel Autocheckout mid-flow, log that
+  // metric here.
 
   delete this;
 }
@@ -1250,10 +1265,16 @@ std::vector<DialogNotification>
             l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_VERIFY_CVV)));
   }
 
-  if (had_autocheckout_error_) {
+  if (autocheckout_state_ == AUTOCHECKOUT_ERROR) {
     notifications.push_back(DialogNotification(
         DialogNotification::AUTOCHECKOUT_ERROR,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_ERROR)));
+  }
+
+  if (autocheckout_state_ == AUTOCHECKOUT_SUCCESS) {
+    notifications.push_back(DialogNotification(
+        DialogNotification::AUTOCHECKOUT_SUCCESS,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_SUCCESS)));
   }
 
   if (wallet_server_validation_error_) {
@@ -1277,7 +1298,7 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
     view_->UpdateAccountChooser();
 
     GetMetricLogger().LogDialogUiEvent(
-        dialog_type_, AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
+        GetDialogType(), AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
   } else {
     HideSignIn();
   }
@@ -1351,7 +1372,7 @@ content::WebContents* AutofillDialogControllerImpl::web_contents() {
 void AutofillDialogControllerImpl::OnPopupShown(
     content::KeyboardListener* listener) {
   GetMetricLogger().LogDialogPopupEvent(
-      dialog_type_, AutofillMetrics::DIALOG_POPUP_SHOWN);
+      GetDialogType(), AutofillMetrics::DIALOG_POPUP_SHOWN);
 }
 
 void AutofillDialogControllerImpl::OnPopupHidden(
@@ -1381,7 +1402,7 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
   }
 
   GetMetricLogger().LogDialogPopupEvent(
-      dialog_type_, AutofillMetrics::DIALOG_POPUP_FORM_FILLED);
+      GetDialogType(), AutofillMetrics::DIALOG_POPUP_FORM_FILLED);
 
   // TODO(estade): not sure why it's necessary to do this explicitly.
   HidePopup();
@@ -1679,7 +1700,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
           ::prefs::kAutofillDialogPayWithoutWallet)),
       is_submitting_(false),
       wallet_server_validation_error_(false),
-      had_autocheckout_error_(false),
+      autocheckout_state_(AUTOCHECKOUT_NOT_STARTED),
       was_ui_latency_logged_(false) {
   // TODO(estade): remove duplicates from |form_structure|?
   DCHECK(!callback_.is_null());
@@ -2068,7 +2089,7 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
 
   risk::GetFingerprint(
       gaia_id, window_bounds, *web_contents(), chrome::VersionInfo().Version(),
-      charset, accept_languages, install_time, dialog_type_,
+      charset, accept_languages, install_time, GetDialogType(),
       g_browser_process->GetApplicationLocale(),
       base::Bind(&AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -2401,14 +2422,17 @@ void AutofillDialogControllerImpl::FinishSubmit() {
   profile_->GetPrefs()->SetBoolean(::prefs::kAutofillDialogPayWithoutWallet,
                                    manually_selected_pay_without_wallet);
 
-  switch (dialog_type_) {
+  switch (GetDialogType()) {
     case DIALOG_TYPE_AUTOCHECKOUT:
       // Stop observing PersonalDataManager to avoid the dialog redrawing while
       // in an Autocheckout flow.
       GetManager()->RemoveObserver(this);
       autocheckout_started_timestamp_ = base::Time::Now();
+      DCHECK_EQ(AUTOCHECKOUT_NOT_STARTED, autocheckout_state_);
+      autocheckout_state_ = AUTOCHECKOUT_IN_PROGRESS;
       view_->UpdateButtonStrip();
       view_->UpdateDetailArea();
+      view_->UpdateNotificationArea();
       break;
 
     case DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
@@ -2421,11 +2445,11 @@ void AutofillDialogControllerImpl::FinishSubmit() {
 void AutofillDialogControllerImpl::LogOnFinishSubmitMetrics() {
   GetMetricLogger().LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
-      dialog_type_,
+      GetDialogType(),
       AutofillMetrics::DIALOG_ACCEPTED);
 
   GetMetricLogger().LogDialogUiEvent(
-      dialog_type_, AutofillMetrics::DIALOG_UI_ACCEPTED);
+      GetDialogType(), AutofillMetrics::DIALOG_UI_ACCEPTED);
 
   AutofillMetrics::DialogDismissalState dismissal_state;
   if (!IsManuallyEditingAnySection())
@@ -2437,12 +2461,12 @@ void AutofillDialogControllerImpl::LogOnFinishSubmitMetrics() {
   else
     dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_NO_SAVE;
 
-  GetMetricLogger().LogDialogDismissalState(dialog_type_, dismissal_state);
+  GetMetricLogger().LogDialogDismissalState(GetDialogType(), dismissal_state);
 }
 
 void AutofillDialogControllerImpl::LogOnCancelMetrics() {
   GetMetricLogger().LogDialogUiEvent(
-      dialog_type_, AutofillMetrics::DIALOG_UI_CANCELED);
+      GetDialogType(), AutofillMetrics::DIALOG_UI_CANCELED);
 
   AutofillMetrics::DialogDismissalState dismissal_state;
   if (!IsManuallyEditingAnySection())
@@ -2452,11 +2476,11 @@ void AutofillDialogControllerImpl::LogOnCancelMetrics() {
   else
     dismissal_state = AutofillMetrics::DIALOG_CANCELED_WITH_INVALID_FIELDS;
 
-  GetMetricLogger().LogDialogDismissalState(dialog_type_, dismissal_state);
+  GetMetricLogger().LogDialogDismissalState(GetDialogType(), dismissal_state);
 
   GetMetricLogger().LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
-      dialog_type_,
+      GetDialogType(),
       AutofillMetrics::DIALOG_CANCELED);
 }
 
@@ -2477,7 +2501,7 @@ void AutofillDialogControllerImpl::LogSuggestionItemSelectedMetric(
     return;
   }
 
-  GetMetricLogger().LogDialogUiEvent(dialog_type_, dialog_ui_event);
+  GetMetricLogger().LogDialogUiEvent(GetDialogType(), dialog_ui_event);
 }
 
 void AutofillDialogControllerImpl::LogDialogLatencyToShow() {
@@ -2485,7 +2509,7 @@ void AutofillDialogControllerImpl::LogDialogLatencyToShow() {
     return;
 
   GetMetricLogger().LogDialogLatencyToShow(
-      dialog_type_,
+      GetDialogType(),
       base::Time::Now() - dialog_shown_timestamp_);
   was_ui_latency_logged_ = true;
 }

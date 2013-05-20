@@ -1081,7 +1081,7 @@ int AutofillDialogViews::GetDialogButtons() const {
   if (sign_in_webview_->visible())
     return ui::DIALOG_BUTTON_NONE;
 
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  return controller_->GetDialogButtons();
 }
 
 string16 AutofillDialogViews::GetDialogButtonLabel(ui::DialogButton button)

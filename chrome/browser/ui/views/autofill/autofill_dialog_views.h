@@ -296,6 +296,8 @@ class AutofillDialogViews : public AutofillDialogView,
       arrow_centering_anchor_ = arrow_centering_anchor;
     }
 
+    // TODO(estade): Wrap notifications text.
+
    private:
     // Utility function for determining whether an arrow should be drawn
     // pointing at |arrow_centering_anchor_|.

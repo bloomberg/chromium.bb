@@ -49,6 +49,7 @@ class AwAutofillManagerDelegate :
       GetAutocheckoutWhitelistManager() const OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
   virtual void OnAutocheckoutError() OVERRIDE;
+  virtual void OnAutocheckoutSuccess() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ConfirmSaveCreditCard(
       const autofill::AutofillMetrics& metric_logger,

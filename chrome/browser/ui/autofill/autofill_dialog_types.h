@@ -69,6 +69,7 @@ class DialogNotification {
   enum Type {
     NONE,
     AUTOCHECKOUT_ERROR,
+    AUTOCHECKOUT_SUCCESS,
     EXPLANATORY_MESSAGE,
     REQUIRED_ACTION,
     SECURITY_WARNING,
@@ -123,6 +124,14 @@ enum DialogSignedInState {
   REQUIRES_PASSIVE_SIGN_IN,
   SIGNED_IN,
   SIGN_IN_DISABLED,
+};
+
+// Overall state of the Autocheckout flow.
+enum AutocheckoutState {
+  AUTOCHECKOUT_ERROR,        // There was an error in the flow.
+  AUTOCHECKOUT_IN_PROGRESS,  // The flow is currently in.
+  AUTOCHECKOUT_NOT_STARTED,  // The flow has not been initiated by the user yet.
+  AUTOCHECKOUT_SUCCESS,      // The flow completed successsfully.
 };
 
 struct SuggestionState {

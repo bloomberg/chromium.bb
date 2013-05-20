@@ -243,6 +243,7 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
   }
 
   MOCK_METHOD0(OnAutocheckoutError, void());
+  MOCK_METHOD0(OnAutocheckoutSuccess, void());
 
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
@@ -524,7 +525,8 @@ TEST_F(AutocheckoutManagerTest, OnClickFailedTest) {
       .Times(1);
   autocheckout_manager_->OnClickFailed(MISSING_ADVANCE);
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
-  HideRequestAutocompleteDialog();
+  EXPECT_TRUE(
+      autofill_manager_delegate_->request_autocomplete_dialog_open());
 }
 
 TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
@@ -571,7 +573,8 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataMissingMetaData) {
       scoped_ptr<AutocheckoutPageMetaData>());
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_EQ(0U, process()->sink().message_count());
-  HideRequestAutocompleteDialog();
+  EXPECT_TRUE(
+      autofill_manager_delegate_->request_autocomplete_dialog_open());
 }
 
 TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataRepeatedStartPage) {
@@ -585,7 +588,8 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataRepeatedStartPage) {
   autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_EQ(0U, process()->sink().message_count());
-  HideRequestAutocompleteDialog();
+  EXPECT_TRUE(
+      autofill_manager_delegate_->request_autocomplete_dialog_open());
 }
 
 TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataRepeatedPage) {
@@ -605,7 +609,8 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataRepeatedPage) {
   autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_EQ(0U, process()->sink().message_count());
-  HideRequestAutocompleteDialog();
+  EXPECT_TRUE(
+      autofill_manager_delegate_->request_autocomplete_dialog_open());
 }
 
 TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataNotInFlow) {
@@ -626,7 +631,8 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataNotInFlow) {
   autocheckout_manager_->OnLoadedPageMetaData(CreateNotInFlowMetaData());
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_EQ(0U, process()->sink().message_count());
-  HideRequestAutocompleteDialog();
+  EXPECT_TRUE(
+      autofill_manager_delegate_->request_autocomplete_dialog_open());
 }
 
 TEST_F(AutocheckoutManagerTest,
@@ -649,6 +655,7 @@ TEST_F(AutocheckoutManagerTest, FullAutocheckoutFlow) {
   // Go to second page.
   EXPECT_CALL(*autofill_manager_delegate_,
               UpdateProgressBar(testing::DoubleEq(2.0/3.0))).Times(1);
+  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutSuccess()).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
   EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
   CheckFillFormsAndClickIpc();
@@ -660,7 +667,7 @@ TEST_F(AutocheckoutManagerTest, FullAutocheckoutFlow) {
   autocheckout_manager_->OnLoadedPageMetaData(CreateEndOfFlowMetaData());
   CheckFillFormsAndClickIpc();
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
-  EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());
+  EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
 }
 
 TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
@@ -671,6 +678,7 @@ TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
   EXPECT_CALL(autocheckout_manager_->metric_logger(),
               LogAutocheckoutBubbleMetric(
                   AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
+  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutSuccess()).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateOnePageFlowMetaData());
   // Simulate the user submitting some data via the requestAutocomplete UI.
   autofill_manager_delegate_->SetUserSuppliedData(
@@ -690,7 +698,7 @@ TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
                                                      true);
   CheckFillFormsAndClickIpc();
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
-  EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());
+  EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
 }
 
 }  // namespace autofill

@@ -246,7 +246,7 @@ void AutocheckoutManager::OnLoadedPageMetaData(
   // If the current page is the last page in the flow, close the dialog.
   if (page_meta_data_->IsEndOfAutofillableFlow()) {
     SendAutocheckoutStatus(status);
-    autofill_manager_->delegate()->HideRequestAutocompleteDialog();
+    autofill_manager_->delegate()->OnAutocheckoutSuccess();
     in_autocheckout_flow_ = false;
   }
 }
@@ -388,7 +388,7 @@ void AutocheckoutManager::ReturnAutocheckoutData(
   // If the current page is the last page in the flow, close the dialog.
   if (page_meta_data_->IsEndOfAutofillableFlow()) {
     SendAutocheckoutStatus(SUCCESS);
-    autofill_manager_->delegate()->HideRequestAutocompleteDialog();
+    autofill_manager_->delegate()->OnAutocheckoutSuccess();
     in_autocheckout_flow_ = false;
   }
 }

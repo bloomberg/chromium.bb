@@ -30,6 +30,7 @@ class MockAutofillDialogController : public AutofillDialogController {
   MOCK_METHOD0(MenuModelForAccountChooser, ui::MenuModel*());
   virtual gfx::Image AccountChooserImage() OVERRIDE;
   virtual bool ShouldShowProgressBar() const OVERRIDE;
+  virtual int GetDialogButtons() const OVERRIDE;
   virtual bool ShouldShowDetailArea() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual const std::vector<ui::Range>& LegalDocumentLinks() OVERRIDE;

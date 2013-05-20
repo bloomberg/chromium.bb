@@ -29,6 +29,7 @@ SkColor DialogNotification::GetBackgroundColor() const {
     case DialogNotification::SECURITY_WARNING:
     case DialogNotification::VALIDATION_ERROR:
       return kWarningColor;
+    case DialogNotification::AUTOCHECKOUT_SUCCESS:
     case DialogNotification::NONE:
       return SK_ColorTRANSPARENT;
   }
@@ -39,6 +40,7 @@ SkColor DialogNotification::GetBackgroundColor() const {
 
 SkColor DialogNotification::GetTextColor() const {
   switch (type_) {
+    case DialogNotification::AUTOCHECKOUT_SUCCESS:
     case DialogNotification::REQUIRED_ACTION:
     case DialogNotification::WALLET_ERROR:
     case DialogNotification::AUTOCHECKOUT_ERROR:

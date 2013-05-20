@@ -76,6 +76,11 @@ class AutofillManagerDelegate {
   // the user.
   virtual void OnAutocheckoutError() = 0;
 
+  // Called when an Autocheckout flow has succeeded. Causes a notification
+  // explaining that they must confirm their purchase to be displayed to the
+  // user.
+  virtual void OnAutocheckoutSuccess() = 0;
+
   // Causes the Autofill settings UI to be shown.
   virtual void ShowAutofillSettings() = 0;
 

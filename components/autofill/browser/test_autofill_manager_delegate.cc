@@ -26,6 +26,8 @@ void TestAutofillManagerDelegate::HideRequestAutocompleteDialog() {}
 
 void TestAutofillManagerDelegate::OnAutocheckoutError() {}
 
+void TestAutofillManagerDelegate::OnAutocheckoutSuccess() {}
+
 void TestAutofillManagerDelegate::ShowAutofillSettings() {}
 
 void TestAutofillManagerDelegate::ConfirmSaveCreditCard(
