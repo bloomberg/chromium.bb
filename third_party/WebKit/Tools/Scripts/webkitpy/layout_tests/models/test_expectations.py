@@ -108,6 +108,7 @@ class TestExpectationParser(object):
         expectation_line.filename = '<Skipped file>'
         expectation_line.line_number = 0
         expectation_line.expectations = [TestExpectationParser.PASS_EXPECTATION]
+        expectation_line.is_skipped_outside_expectations_file = True
         self._parse_line(expectation_line)
         return expectation_line
 
@@ -389,6 +390,7 @@ class TestExpectationLine(object):
         self.comment = None
         self.matching_tests = []
         self.warnings = []
+        self.is_skipped_outside_expectations_file = False
 
     def is_invalid(self):
         return self.warnings and self.warnings != [TestExpectationParser.MISSING_BUG_WARNING]
@@ -572,6 +574,9 @@ class TestExpectationsModel(object):
     def get_expectations_string(self, test):
         """Returns the expectatons for the given test as an uppercase string.
         If there are no expectations for the test, then "PASS" is returned."""
+        if self.get_expectation_line(test).is_skipped_outside_expectations_file:
+            return 'NOTRUN'
+
         if self.has_modifier(test, WONTFIX):
             return TestExpectationParser.WONTFIX_MODIFIER.upper()
 
@@ -884,7 +889,7 @@ class TestExpectations(object):
             expectations_dict_index += 1
 
         # FIXME: move ignore_tests into port.skipped_layout_tests()
-        self.add_skipped_tests(port.skipped_layout_tests(tests).union(set(port.get_option('ignore_tests', []))))
+        self.add_extra_skipped_tests(port.skipped_layout_tests(tests).union(set(port.get_option('ignore_tests', []))))
 
         self._has_warnings = False
         self._report_warnings()
@@ -1006,7 +1011,7 @@ class TestExpectations(object):
             if self._model_all_expectations or self._test_config in expectation_line.matching_configurations:
                 self._model.add_expectation_line(expectation_line)
 
-    def add_skipped_tests(self, tests_to_skip):
+    def add_extra_skipped_tests(self, tests_to_skip):
         if not tests_to_skip:
             return
         for test in self._expectations:

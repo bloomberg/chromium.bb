@@ -27,10 +27,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from datetime import datetime
-from django.utils import simplejson
 import logging
 import sys
 import traceback
+
+# FIXME: Once we're on python 2.7, just use json directly.
+try:
+    from django.utils import simplejson
+except:
+    import json as simplejson
 
 from model.testfile import TestFile
 
@@ -45,6 +50,7 @@ JSON_RESULTS_RESULTS = "results"
 JSON_RESULTS_TIMES = "times"
 JSON_RESULTS_PASS = "P"
 JSON_RESULTS_SKIP = "X"
+JSON_RESULTS_NOTRUN = "Y"
 JSON_RESULTS_NO_DATA = "N"
 JSON_RESULTS_MIN_TIME = 3
 JSON_RESULTS_HIERARCHICAL_VERSION = 4
@@ -65,6 +71,7 @@ FAILURE_TO_CHAR = {
     "MISSING": "O",
     "IMAGE+TEXT": "Z",
     "NO DATA": JSON_RESULTS_NO_DATA,
+    "NOTRUN": JSON_RESULTS_NOTRUN,
 }
 
 # FIXME: Use dict comprehensions once we update the server to python 2.7.
@@ -222,7 +229,7 @@ class JsonResults(object):
         if leaf.get(EXPECTED_KEY, 'PASS') != 'PASS':
             return False
 
-        deletable_types = set((JSON_RESULTS_PASS, JSON_RESULTS_NO_DATA))
+        deletable_types = set((JSON_RESULTS_PASS, JSON_RESULTS_NO_DATA, JSON_RESULTS_NOTRUN))
         for result in leaf[JSON_RESULTS_RESULTS]:
             if result[1] not in deletable_types:
                 return False
@@ -273,12 +280,17 @@ class JsonResults(object):
     @classmethod
     def _populate_tests_from_full_results(cls, full_results, new_results):
         if EXPECTED_KEY in full_results:
-            if full_results[EXPECTED_KEY] != 'PASS':
-                new_results[EXPECTED_KEY] = full_results[EXPECTED_KEY]
+            expected = full_results[EXPECTED_KEY]
+            if expected != 'PASS' and expected != 'NOTRUN':
+                new_results[EXPECTED_KEY] = expected
             time = int(round(full_results['time'])) if 'time' in full_results else 0
             new_results['times'] = [[1, time]]
-            # FIXME: Include the retry result as well and find a nice way to display it in the flakiness dashboard.
-            first_actual_failure = full_results['actual'].split(' ')[0]
+
+            if expected == 'NOTRUN':
+                first_actual_failure = expected
+            else:
+                # FIXME: Include the retry result as well and find a nice way to display it in the flakiness dashboard.
+                first_actual_failure = full_results['actual'].split(' ')[0]
             new_results['results'] = [[1, FAILURE_TO_CHAR[first_actual_failure]]]
             return
 

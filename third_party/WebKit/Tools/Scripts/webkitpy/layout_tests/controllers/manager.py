@@ -117,7 +117,7 @@ class Manager(object):
             random.shuffle(tests_to_run)
 
         tests_to_run, tests_in_other_chunks = self._finder.split_into_chunks(tests_to_run)
-        self._expectations.add_skipped_tests(tests_in_other_chunks)
+        self._expectations.add_extra_skipped_tests(tests_in_other_chunks)
         tests_to_skip.update(tests_in_other_chunks)
 
         return tests_to_run, tests_to_skip

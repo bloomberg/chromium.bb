@@ -296,6 +296,12 @@ class SkippedTests(Base):
         _, _, logs = capture.restore_output()
         self.assertEqual('The following test foo/bar/baz.html from the Skipped list doesn\'t exist\n', logs)
 
+    def test_expectations_string(self):
+        self.parse_exp(self.get_basic_expectations())
+        notrun = 'failures/expected/text.html'
+        self._exp.add_extra_skipped_tests([notrun])
+        self.assertEqual('NOTRUN', self._exp.get_expectations_string(notrun))
+
 
 class ExpectationSyntaxTests(Base):
     def test_unrecognized_expectation(self):

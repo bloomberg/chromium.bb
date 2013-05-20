@@ -33,7 +33,11 @@ except ImportError:
     print "ERROR: Add the TestResultServer, google_appengine and yaml/lib directories to your PYTHONPATH"
     raise
 
-from django.utils import simplejson
+# FIXME: Once we're on python 2.7, just use json directly.
+try:
+    from django.utils import simplejson
+except:
+    import json as simplejson
 
 import unittest
 
@@ -72,6 +76,11 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
                         "src_removal_does_not_trigger_loadstart.html": {
                               "expected": "PASS",
                               "actual": "PASS",
+                              "time": 1.1
+                        },
+                        "notrun.html": {
+                              "expected": "NOTRUN",
+                              "actual": "SKIP",
                               "time": 1.1
                         }
                     }
@@ -131,7 +140,7 @@ JSON_RESULTS_OLD_TEMPLATE = (
     '"tests":{[TESTDATA_TESTS]},'
     '"wontfixCounts":[[TESTDATA_COUNTS]]'
     '},'
-    '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Z":"IMAGE+TEXT"},'
+    '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Y":"NOTRUN","Z":"IMAGE+TEXT"},'
     '"version":[VERSION]'
     '}')
 
@@ -147,7 +156,7 @@ JSON_RESULTS_TEMPLATE = (
     '"secondsSinceEpoch":[[TESTDATA_TIMES]],'
     '"tests":{[TESTDATA_TESTS]}'
     '},'
-    '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Z":"IMAGE+TEXT"},'
+    '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Y":"NOTRUN","Z":"IMAGE+TEXT"},'
     '"version":[VERSION]'
     '}')
 
@@ -324,7 +333,7 @@ class JsonResultsTest(unittest.TestCase):
                 '}'
             '}'
         '},'
-        '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Z":"IMAGE+TEXT"},'
+        '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Y":"NOTRUN","Z":"IMAGE+TEXT"},'
         '"version":4}')
 
         aggregated_results = ""
@@ -611,6 +620,9 @@ class JsonResultsTest(unittest.TestCase):
                            "times": [[1, 0]]},
                        "002.html": {
                            "results": [[1, "P"]],
+                           "times": [[1, 0]]},
+                       "notrun.html": {
+                           "results": [[1, "Y"]],
                            "times": [[1, 0]]},
                        "003.html": {
                            "results": [[1, "N"]],
