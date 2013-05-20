@@ -49,7 +49,7 @@ public:
 
     static void checkMemoryUsage();
     static void hintForCollectGarbage();
-    static void collectGarbage();
+    static void collectGarbage(v8::Isolate*);
 
     static Node* opaqueRootForGC(Node*, v8::Isolate*);
 };

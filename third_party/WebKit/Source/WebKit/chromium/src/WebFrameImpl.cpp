@@ -852,7 +852,7 @@ void WebFrameImpl::collectGarbage()
         return;
     if (!frame()->settings()->isScriptEnabled())
         return;
-    V8GCController::collectGarbage();
+    V8GCController::collectGarbage(v8::Isolate::GetCurrent());
 }
 
 bool WebFrameImpl::checkIfRunInsecureContent(const WebURL& url) const

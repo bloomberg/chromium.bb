@@ -62,4 +62,25 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     return result;
 }
 
+v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate)
+{
+    v8::Local<v8::Value> result;
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    if (context.IsEmpty())
+        return result;
+    {
+        v8::Context::Scope scope(context);
+        v8::TryCatch tryCatch;
+        v8::Handle<v8::Script> script = v8::Script::Compile(source);
+        if (script.IsEmpty() || tryCatch.HasCaught())
+            return result;
+
+        V8RecursionScope::MicrotaskSuppression recursionScope;
+        result = script->Run();
+        if (tryCatch.HasCaught())
+            return result;
+    }
+    return result;
+}
+
 } // namespace WebCore

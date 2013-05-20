@@ -35,6 +35,7 @@ class ScriptExecutionContext;
 class V8ScriptRunner {
 public:
     static v8::Local<v8::Value> runCompiledScript(v8::Handle<v8::Script>, ScriptExecutionContext*);
+    static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*);
 };
 
 } // namespace WebCore

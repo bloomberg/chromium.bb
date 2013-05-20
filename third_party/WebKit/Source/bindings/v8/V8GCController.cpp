@@ -34,6 +34,7 @@
 #include "V8MessagePort.h"
 #include "V8MutationObserver.h"
 #include "V8Node.h"
+#include "V8ScriptRunner.h"
 #include "bindings/v8/RetainedDOMInfo.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
@@ -417,28 +418,10 @@ void V8GCController::hintForCollectGarbage()
     v8::V8::IdleNotification(longIdlePauseInMS);
 }
 
-void V8GCController::collectGarbage()
+void V8GCController::collectGarbage(v8::Isolate* isolate)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
-
-    ScopedPersistent<v8::Context> context;
-    context.set(v8::Context::New(isolate));
-    if (context.isEmpty())
-        return;
-
-    {
-        v8::Context::Scope scope(context.get());
-        v8::Local<v8::String> source = v8::String::New("if (gc) gc();");
-        v8::Local<v8::String> name = v8::String::New("gc");
-        v8::Handle<v8::Script> script = v8::Script::Compile(source, name);
-        if (!script.IsEmpty()) {
-            V8RecursionScope::MicrotaskSuppression scope;
-            script->Run();
-        }
-    }
-
-    context.clear();
+    V8ScriptRunner::compileAndRunInternalScript(v8String("if (gc) gc();", isolate), isolate);
 }
 
 }  // namespace WebCore
