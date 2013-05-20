@@ -49,7 +49,7 @@ class BuildBotPrinter(object):
     def print_results(self, run_details):
         if self.debug_logging:
             self.print_run_results(run_details.initial_results)
-        self.print_unexpected_results(run_details.summarized_failing_results, run_details.enabled_pixel_tests_in_retry)
+        self.print_unexpected_results(run_details.summarized_results, run_details.enabled_pixel_tests_in_retry)
 
     def _print(self, msg):
         self.stream.write(msg + '\n')

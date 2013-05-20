@@ -99,7 +99,8 @@ class JSONTestResult(object):
 
     def _failure_types_from_actual_result(self, actual):
         # FIXME: There doesn't seem to be a full list of all possible values of
-        # 'actual' anywhere.
+        # 'actual' anywhere.  However JSONLayoutResultsGenerator.FAILURE_TO_CHAR
+        # is a useful reference as that's for "old" style results.json files
         #
         # FIXME: TEXT, IMAGE_PLUS_TEXT, and AUDIO are obsolete but we keep them for
         # now so that we can parse old results.json files.
