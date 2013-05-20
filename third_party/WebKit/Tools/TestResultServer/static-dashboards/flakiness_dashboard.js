@@ -32,8 +32,8 @@
 var FORWARD = 'forward';
 var BACKWARD = 'backward';
 var GTEST_MODIFIERS = ['FLAKY', 'FAILS', 'MAYBE', 'DISABLED'];
-var TEST_URL_BASE_PATH_IN_VERSION_CONTROL = 'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/';
-var TEST_URL_BASE_PATH = "http://svn.webkit.org/repository/webkit/trunk/LayoutTests/";
+var TEST_URL_BASE_PATH_FOR_BROWSING = 'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/';
+var TEST_URL_BASE_PATH_FOR_XHR = 'http://src.chromium.org/blink/trunk/LayoutTests/';
 var TEST_RESULTS_BASE_PATH = 'http://build.chromium.org/f/chromium/layout_test_results/';
 var GPU_RESULTS_BASE_PATH = 'http://chromium-browser-gpu-tests.commondatastorage.googleapis.com/runs/'
 
@@ -972,15 +972,14 @@ function addExpectationItem(expectationsContainers, parentContainer, platform, p
     };
 
     var url = base + platformPart + path;
-    if (isImage || !string.startsWith(base, 'http://svn.webkit.org')) {
+    if (isImage) {
         var dummyNode = document.createElement(isImage ? 'img' : 'script');
         dummyNode.src = url;
         dummyNode.onload = function() {
             var item;
             if (isImage) {
                 item = dummyNode;
-                if (string.startsWith(base, 'http://svn.webkit.org'))
-                    maybeAddPngChecksum(item, url);
+                maybeAddPngChecksum(item, url);
             } else {
                 item = document.createElement('iframe');
                 item.src = url;
@@ -1253,15 +1252,15 @@ function loadBaselinesForTest(expectationsContainers, expectationsContainer, tes
     var suite = lookupVirtualTestSuite(test);
 
     if (!suite)
-        addExpectationItem(expectationsContainers, expectationsContainer, null, test, TEST_URL_BASE_PATH);
+        addExpectationItem(expectationsContainers, expectationsContainer, null, test, TEST_URL_BASE_PATH_FOR_XHR);
 
     addExpectations(expectationsContainers, expectationsContainer,
-        TEST_URL_BASE_PATH, '', text, png, reftest_html_file, reftest_mismatch_html_file, suite);
+        TEST_URL_BASE_PATH_FOR_XHR, '', text, png, reftest_html_file, reftest_mismatch_html_file, suite);
 
     var fallbacks = allFallbacks();
     for (var i = 0; i < fallbacks.length; i++) {
       var fallback = 'platform/' + fallbacks[i];
-      addExpectations(expectationsContainers, expectationsContainer, TEST_URL_BASE_PATH, fallback, text, png,
+      addExpectations(expectationsContainers, expectationsContainer, TEST_URL_BASE_PATH_FOR_XHR, fallback, text, png,
           reftest_html_file, reftest_mismatch_html_file, suite);
     }
 
@@ -1381,7 +1380,7 @@ function htmlForIndividualTests(tests)
             if (g_history.isLayoutTestResults()) {
                 var suite = lookupVirtualTestSuite(test);
                 var base = suite ? baseTest(test, suite) : test;
-                var versionControlUrl = TEST_URL_BASE_PATH_IN_VERSION_CONTROL + base;
+                var versionControlUrl = TEST_URL_BASE_PATH_FOR_BROWSING + base;
                 testNameHtml += '<h2>' + linkHTMLToOpenWindow(versionControlUrl, test) + '</h2>';
             } else
                 testNameHtml += '<h2>' + test + '</h2>';
