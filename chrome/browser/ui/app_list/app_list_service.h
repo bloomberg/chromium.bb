@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 
 class AppListControllerDelegate;
+class CommandLine;
 class PrefRegistrySimple;
 class Profile;
 
@@ -34,6 +35,8 @@ class AppListService {
 
   virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) = 0;
+
+  static void RecordShowTimings(const CommandLine& command_line);
 
   // Show the app list.
   virtual void ShowAppList(Profile* requested_profile) = 0;

@@ -58,3 +58,6 @@ void AppListService::InitAll(Profile* initial_profile) {}
 
 // static
 void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {}
+
+// static
+void AppListService::RecordShowTimings(const CommandLine& command_line) {}
