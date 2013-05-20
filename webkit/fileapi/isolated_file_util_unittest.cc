@@ -360,8 +360,7 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
                  << ": " << test_case.path);
 
     // Read entries in the directory to construct the expected results map.
-    typedef std::map<base::FilePath::StringType,
-                     base::FileUtilProxy::Entry> EntryMap;
+    typedef std::map<base::FilePath::StringType, DirectoryEntry> EntryMap;
     EntryMap expected_entry_map;
 
     base::FilePath dir_path = GetTestCasePlatformPath(test_case.path);
@@ -372,7 +371,7 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
     while (!(current = file_enum.Next()).empty()) {
       FileEnumerator::FindInfo file_info;
       file_enum.GetFindInfo(&file_info);
-      base::FileUtilProxy::Entry entry;
+      DirectoryEntry entry;
       entry.is_directory = FileEnumerator::IsDirectory(file_info);
       entry.name = current.BaseName().value();
       entry.size = FileEnumerator::GetFilesize(file_info);
@@ -399,7 +398,7 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
 
     EXPECT_EQ(expected_entry_map.size(), entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
-      const base::FileUtilProxy::Entry& entry = entries[i];
+      const DirectoryEntry& entry = entries[i];
       EntryMap::iterator found = expected_entry_map.find(entry.name);
       EXPECT_TRUE(found != expected_entry_map.end());
       EXPECT_EQ(found->second.name, entry.name);

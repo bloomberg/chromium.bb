@@ -7,9 +7,11 @@
 
 #include <vector>
 
-#include "base/files/file_util_proxy.h"
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/platform_file.h"
 #include "base/process.h"
+#include "webkit/fileapi/directory_entry.h"
 
 namespace base {
 class Time;
@@ -76,7 +78,7 @@ class FileSystemOperation {
            base::ProcessHandle peer_handle)> OpenFileCallback;
 
   // Used for ReadDirectoryCallback.
-  typedef std::vector<base::FileUtilProxy::Entry> FileEntryList;
+  typedef std::vector<DirectoryEntry> FileEntryList;
 
   // Used for ReadDirectory(). |result| is the return code of the operation,
   // |file_list| is the list of files read, and |has_more| is true if some files

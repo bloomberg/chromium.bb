@@ -11,6 +11,7 @@
       '../fileapi/copy_or_move_file_validator.h',
       '../fileapi/cross_operation_delegate.cc',
       '../fileapi/cross_operation_delegate.h',
+      '../fileapi/directory_entry.h',
       '../fileapi/external_mount_points.cc',
       '../fileapi/external_mount_points.h',
       '../fileapi/file_observers.h',

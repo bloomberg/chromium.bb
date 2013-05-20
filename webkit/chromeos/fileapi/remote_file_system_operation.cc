@@ -253,7 +253,7 @@ void RemoteFileSystemOperation::DidGetMetadata(
 void RemoteFileSystemOperation::DidReadDirectory(
     const ReadDirectoryCallback& callback,
     base::PlatformFileError rv,
-    const std::vector<base::FileUtilProxy::Entry>& entries,
+    const std::vector<fileapi::DirectoryEntry>& entries,
     bool has_more) {
   callback.Run(rv, entries, has_more /* has_more */);
 }

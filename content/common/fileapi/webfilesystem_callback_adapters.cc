@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/files/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
@@ -15,6 +14,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "webkit/base/file_path_string_conversions.h"
+#include "webkit/fileapi/directory_entry.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -57,7 +57,7 @@ void CreateSnapshotFileCallbackAdapter(
 
 void ReadDirectoryCallbackAdapater(
     WebKit::WebFileSystemCallbacks* callbacks,
-    const std::vector<base::FileUtilProxy::Entry>& entries,
+    const std::vector<fileapi::DirectoryEntry>& entries,
     bool has_more) {
   WebVector<WebFileSystemEntry> file_system_entries(entries.size());
   for (size_t i = 0; i < entries.size(); i++) {

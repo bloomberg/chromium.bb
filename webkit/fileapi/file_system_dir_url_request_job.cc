@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/files/file_util_proxy.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/strings/sys_string_conversions.h"
@@ -20,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
+#include "webkit/fileapi/directory_entry.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -94,7 +94,7 @@ void FileSystemDirURLRequestJob::StartAsync() {
 
 void FileSystemDirURLRequestJob::DidReadDirectory(
     base::PlatformFileError result,
-    const std::vector<base::FileUtilProxy::Entry>& entries,
+    const std::vector<DirectoryEntry>& entries,
     bool has_more) {
   if (result != base::PLATFORM_FILE_OK) {
     int rv = net::ERR_FILE_NOT_FOUND;
@@ -116,7 +116,7 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
     data_.append(net::GetDirectoryListingHeader(title));
   }
 
-  typedef std::vector<base::FileUtilProxy::Entry>::const_iterator EntryIterator;
+  typedef std::vector<DirectoryEntry>::const_iterator EntryIterator;
   for (EntryIterator it = entries.begin(); it != entries.end(); ++it) {
     const base::string16& name = base::FilePath(it->name).LossyDisplayName();
     data_.append(net::GetDirectoryListingEntry(

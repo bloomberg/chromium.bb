@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 
+#include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -15,6 +16,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_system_api.h"
+#include "webkit/fileapi/directory_entry.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -181,7 +183,7 @@ void DidReadDirectory(
     PPB_FileRef_Impl* dir_ref,
     linked_ptr<std::vector< ::ppapi::PPB_FileRef_CreateInfo> > dir_files,
     linked_ptr<std::vector<PP_FileType> > dir_file_types,
-    const std::vector<base::FileUtilProxy::Entry>& entries,
+    const std::vector<fileapi::DirectoryEntry>& entries,
     bool has_more) {
   if (!TrackedCallback::IsPending(callback))
     return;
@@ -198,7 +200,7 @@ void DidReadDirectory(
     dir_path += '/';
 
   for (size_t i = 0; i < entries.size(); ++i) {
-    const base::FileUtilProxy::Entry& entry = entries[i];
+    const fileapi::DirectoryEntry& entry = entries[i];
     scoped_refptr<PPB_FileRef_Impl> file_ref(PPB_FileRef_Impl::CreateInternal(
         dir_ref->pp_instance(),
         dir_ref->file_system_resource(),

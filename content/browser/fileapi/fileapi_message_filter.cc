@@ -27,6 +27,7 @@
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/fileapi/directory_entry.h"
 #include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_permission_policy.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -650,7 +651,7 @@ void FileAPIMessageFilter::DidGetMetadata(
 void FileAPIMessageFilter::DidReadDirectory(
     int request_id,
     base::PlatformFileError result,
-    const std::vector<base::FileUtilProxy::Entry>& entries,
+    const std::vector<fileapi::DirectoryEntry>& entries,
     bool has_more) {
   if (result == base::PLATFORM_FILE_OK)
     Send(new FileSystemMsg_DidReadDirectory(request_id, entries, has_more));

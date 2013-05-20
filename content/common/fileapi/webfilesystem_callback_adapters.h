@@ -6,10 +6,13 @@
 #define CONTENT_COMMON_FILEAPI_WEBFILESYSTEM_CALLBACK_ADAPTERS_H_
 
 #include "base/basictypes.h"
-#include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"
 
 class GURL;
+
+namespace fileapi {
+struct DirectoryEntry;
+}
 
 namespace WebKit {
 class WebFileSystemCallbacks;
@@ -33,7 +36,7 @@ void CreateSnapshotFileCallbackAdapter(
 
 void ReadDirectoryCallbackAdapater(
     WebKit::WebFileSystemCallbacks* callbacks,
-    const std::vector<base::FileUtilProxy::Entry>& entries,
+    const std::vector<fileapi::DirectoryEntry>& entries,
     bool has_more);
 
 void OpenFileSystemCallbackAdapter(

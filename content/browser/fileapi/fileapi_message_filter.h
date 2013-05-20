@@ -31,6 +31,7 @@ namespace fileapi {
 class FileSystemURL;
 class FileSystemContext;
 class FileSystemOperation;
+struct DirectoryEntry;
 }
 
 namespace net {
@@ -138,7 +139,7 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
                       const base::FilePath& platform_path);
   void DidReadDirectory(int request_id,
                         base::PlatformFileError result,
-                        const std::vector<base::FileUtilProxy::Entry>& entries,
+                        const std::vector<fileapi::DirectoryEntry>& entries,
                         bool has_more);
   void DidOpenFile(int request_id,
                    quota::QuotaLimitType quota_policy,

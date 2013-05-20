@@ -109,7 +109,7 @@ class ReadDirectoryHelper {
 
     base::FilePath current;
     while (!(current = file_enum->Next()).empty()) {
-      AsyncFileUtil::Entry entry;
+      DirectoryEntry entry;
       entry.is_directory = file_enum->IsDirectory();
       entry.name = VirtualPath::BaseName(current).value();
       entry.size = file_enum->Size();
@@ -126,7 +126,7 @@ class ReadDirectoryHelper {
 
  private:
   base::PlatformFileError error_;
-  std::vector<AsyncFileUtil::Entry> entries_;
+  std::vector<DirectoryEntry> entries_;
   DISALLOW_COPY_AND_ASSIGN(ReadDirectoryHelper);
 };
 

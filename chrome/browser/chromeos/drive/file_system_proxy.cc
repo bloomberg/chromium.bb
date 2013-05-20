@@ -27,6 +27,7 @@
 
 using base::MessageLoopProxy;
 using content::BrowserThread;
+using fileapi::DirectoryEntry;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemOperation;
 using webkit_blob::ShareableFileReference;
@@ -153,13 +154,13 @@ void DidCloseFileForTruncate(
 
 }  // namespace
 
-base::FileUtilProxy::Entry ResourceEntryToFileUtilProxyEntry(
+DirectoryEntry ResourceEntryToDirectoryEntry(
     const ResourceEntry& resource_entry) {
   base::PlatformFileInfo file_info;
   util::ConvertResourceEntryToPlatformFileInfo(
       resource_entry.file_info(), &file_info);
 
-  base::FileUtilProxy::Entry entry;
+  DirectoryEntry entry;
   entry.name = resource_entry.base_name();
   entry.is_directory = file_info.is_directory;
   entry.size = file_info.size;
@@ -269,7 +270,7 @@ void FileSystemProxy::ReadDirectory(
         FROM_HERE,
         base::Bind(callback,
                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                   std::vector<base::FileUtilProxy::Entry>(),
+                   std::vector<DirectoryEntry>(),
                    false));
     return;
   }
@@ -800,13 +801,13 @@ void FileSystemProxy::OnReadDirectory(
 
   if (error != FILE_ERROR_OK) {
     callback.Run(FileErrorToPlatformError(error),
-                 std::vector<base::FileUtilProxy::Entry>(),
+                 std::vector<DirectoryEntry>(),
                  false);
     return;
   }
   DCHECK(resource_entries.get());
 
-  std::vector<base::FileUtilProxy::Entry> entries;
+  std::vector<DirectoryEntry> entries;
   // Convert Drive files to something File API stack can understand.
   for (size_t i = 0; i < resource_entries->size(); ++i) {
     const ResourceEntry& resource_entry = (*resource_entries)[i];
@@ -815,7 +816,7 @@ void FileSystemProxy::OnReadDirectory(
         hide_hosted_documents) {
       continue;
     }
-    entries.push_back(ResourceEntryToFileUtilProxyEntry(resource_entry));
+    entries.push_back(ResourceEntryToDirectoryEntry(resource_entry));
   }
 
   callback.Run(base::PLATFORM_FILE_OK, entries, false);

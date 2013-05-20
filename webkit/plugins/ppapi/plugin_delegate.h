@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/files/file_util_proxy.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
@@ -54,6 +53,10 @@ class MessageLoopProxy;
 class Time;
 }
 
+namespace fileapi {
+struct DirectoryEntry;
+}
+
 namespace gfx {
 class Point;
 }
@@ -93,6 +96,7 @@ class NetworkListObserver;
 }  // namespace webkit_glue
 
 namespace webkit {
+
 namespace ppapi {
 
 class FileIO;
@@ -501,7 +505,7 @@ class PluginDelegate {
   // Callback typedefs for FileSystem related methods.
   typedef base::Callback<void (base::PlatformFileError)> StatusCallback;
   typedef base::Callback<void(
-      const std::vector<base::FileUtilProxy::Entry>& entries,
+      const std::vector<fileapi::DirectoryEntry>& entries,
       bool has_more)> ReadDirectoryCallback;
   typedef base::Callback<void(
       const base::PlatformFileInfo& file_info,

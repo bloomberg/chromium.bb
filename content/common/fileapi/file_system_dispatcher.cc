@@ -87,7 +87,7 @@ class FileSystemDispatcher::CallbackDispatcher {
   }
 
   void DidReadDirectory(
-      const std::vector<base::FileUtilProxy::Entry>& entries,
+      const std::vector<fileapi::DirectoryEntry>& entries,
       bool has_more) {
     directory_callback_.Run(entries, has_more);
   }
@@ -427,7 +427,7 @@ void FileSystemDispatcher::OnDidCreateSnapshotFile(
 
 void FileSystemDispatcher::OnDidReadDirectory(
     int request_id,
-    const std::vector<base::FileUtilProxy::Entry>& entries,
+    const std::vector<fileapi::DirectoryEntry>& entries,
     bool has_more) {
   CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);

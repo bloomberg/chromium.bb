@@ -406,7 +406,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
       std::set<base::FilePath::StringType>* files,
       std::set<base::FilePath::StringType>* directories) {
     scoped_ptr<FileSystemOperationContext> context;
-    std::vector<base::FileUtilProxy::Entry> entries;
+    std::vector<DirectoryEntry> entries;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               AsyncFileTestHelper::ReadDirectory(
                   file_system_context(), root_url, &entries));
@@ -450,17 +450,17 @@ class ObfuscatedFileUtilTest : public testing::Test {
     FillTestDirectory(root_url, &files, &directories);
 
     scoped_ptr<FileSystemOperationContext> context;
-    std::vector<base::FileUtilProxy::Entry> entries;
+    std::vector<DirectoryEntry> entries;
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               AsyncFileTestHelper::ReadDirectory(
                   file_system_context(), root_url, &entries));
-    std::vector<base::FileUtilProxy::Entry>::iterator entry_iter;
+    std::vector<DirectoryEntry>::iterator entry_iter;
     EXPECT_EQ(files.size() + directories.size(), entries.size());
     EXPECT_TRUE(change_observer()->HasNoChange());
     for (entry_iter = entries.begin(); entry_iter != entries.end();
         ++entry_iter) {
-      const base::FileUtilProxy::Entry& entry = *entry_iter;
+      const DirectoryEntry& entry = *entry_iter;
       std::set<base::FilePath::StringType>::iterator iter =
           files.find(entry.name);
       if (iter != files.end()) {
@@ -1096,7 +1096,7 @@ TEST_F(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
       ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_TRUE(created);
 
-  std::vector<base::FileUtilProxy::Entry> entries;
+  std::vector<DirectoryEntry> entries;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
             AsyncFileTestHelper::ReadDirectory(
                 file_system_context(), url, &entries));
@@ -1653,7 +1653,7 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
     EXPECT_TRUE(created);
   }
 
-  std::vector<base::FileUtilProxy::Entry> entries;
+  std::vector<DirectoryEntry> entries;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             AsyncFileTestHelper::ReadDirectory(
                 file_system_context(), empty_path, &entries));

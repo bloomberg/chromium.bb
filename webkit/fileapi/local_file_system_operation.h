@@ -266,7 +266,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
                       const base::FilePath& platform_path);
   void DidReadDirectory(const ReadDirectoryCallback& callback,
                         base::PlatformFileError rv,
-                        const std::vector<base::FileUtilProxy::Entry>& entries,
+                        const std::vector<DirectoryEntry>& entries,
                         bool has_more);
   void DidWrite(const FileSystemURL& url,
                 base::PlatformFileError rv,

@@ -6,7 +6,6 @@
 #define WEBKIT_CHROMEOS_FILEAPI_FILE_SYSTEM_FILE_UTIL_ASYNC_H_
 
 #include "base/callback.h"
-#include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "webkit/chromeos/fileapi/async_file_stream.h"
 
@@ -19,8 +18,6 @@ using base::PlatformFileError;
 class FileUtilAsync {
  public:
   virtual ~FileUtilAsync() {}
-
-  typedef base::FileUtilProxy::Entry DirectoryEntry;
 
   // Used for GetFileInfo(). |result| is the return code of the operation,
   // and |file_info| is the obtained file info.

@@ -379,7 +379,7 @@ void MTPDeviceDelegateImplMac::NotifyReadDir() {
       base::FilePath relative_path;
       read_path.AppendRelativePath(file_paths_[i], &relative_path);
       base::PlatformFileInfo info = file_info_[file_paths_[i].value()];
-      base::FileUtilProxy::Entry entry;
+      fileapi::DirectoryEntry entry;
       entry.name = relative_path.value();
       entry.is_directory = info.is_directory;
       entry.size = info.size;

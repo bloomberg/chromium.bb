@@ -6,7 +6,7 @@
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_SYSTEM_H_
 
 #include <vector>
-#include "base/files/file_util_proxy.h"
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
@@ -128,7 +128,7 @@ class SimpleFileSystem
   void DidReadDirectory(
       WebKit::WebFileSystemCallbacks* callbacks,
       base::PlatformFileError result,
-      const std::vector<base::FileUtilProxy::Entry>& entries,
+      const std::vector<fileapi::DirectoryEntry>& entries,
       bool has_more);
   void DidOpenFileSystem(WebKit::WebFileSystemCallbacks* callbacks,
                          base::PlatformFileError result,

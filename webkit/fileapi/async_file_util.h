@@ -9,6 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"
+#include "webkit/fileapi/directory_entry.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -47,8 +48,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
            const base::PlatformFileInfo& file_info,
            const base::FilePath& platform_path)> GetFileInfoCallback;
 
-  typedef base::FileUtilProxy::Entry Entry;
-  typedef std::vector<base::FileUtilProxy::Entry> EntryList;
+  typedef std::vector<DirectoryEntry> EntryList;
   typedef base::Callback<
       void(base::PlatformFileError result,
            const EntryList& file_list,

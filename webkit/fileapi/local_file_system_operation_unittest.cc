@@ -86,7 +86,7 @@ class LocalFileSystemOperationTest
   int status() const { return status_; }
   const base::PlatformFileInfo& info() const { return info_; }
   const base::FilePath& path() const { return path_; }
-  const std::vector<base::FileUtilProxy::Entry>& entries() const {
+  const std::vector<DirectoryEntry>& entries() const {
     return entries_;
   }
   const ShareableFileReference* shareable_file_ref() const {
@@ -205,7 +205,7 @@ class LocalFileSystemOperationTest
 
   void DidReadDirectory(
       base::PlatformFileError status,
-      const std::vector<base::FileUtilProxy::Entry>& entries,
+      const std::vector<DirectoryEntry>& entries,
       bool /* has_more */) {
     entries_ = entries;
     status_ = status;
@@ -276,7 +276,7 @@ class LocalFileSystemOperationTest
   int status_;
   base::PlatformFileInfo info_;
   base::FilePath path_;
-  std::vector<base::FileUtilProxy::Entry> entries_;
+  std::vector<DirectoryEntry> entries_;
   scoped_refptr<ShareableFileReference> shareable_file_ref_;
 
  private:

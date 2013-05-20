@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/files/file_util_proxy.h"
 #include "base/id_map.h"
 #include "base/process.h"
 #include "ipc/ipc_listener.h"
@@ -21,6 +20,10 @@
 namespace base {
 class FilePath;
 struct PlatformFileInfo;
+}
+
+namespace fileapi {
+struct DirectoryEntry;
 }
 
 class GURL;
@@ -38,7 +41,7 @@ class FileSystemDispatcher : public IPC::Listener {
       const base::FilePath& platform_path)> MetadataCallback;
   typedef MetadataCallback CreateSnapshotFileCallback;
   typedef base::Callback<void(
-      const std::vector<base::FileUtilProxy::Entry>& entries,
+      const std::vector<fileapi::DirectoryEntry>& entries,
       bool has_more)> ReadDirectoryCallback;
   typedef base::Callback<void(
       const std::string& name,
@@ -134,10 +137,9 @@ class FileSystemDispatcher : public IPC::Listener {
   void OnDidCreateSnapshotFile(int request_id,
                                const base::PlatformFileInfo& file_info,
                                const base::FilePath& platform_path);
-  void OnDidReadDirectory(
-      int request_id,
-      const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool has_more);
+  void OnDidReadDirectory(int request_id,
+                          const std::vector<fileapi::DirectoryEntry>& entries,
+                          bool has_more);
   void OnDidFail(int request_id, base::PlatformFileError error_code);
   void OnDidWrite(int request_id, int64 bytes, bool complete);
   void OnDidOpenFile(

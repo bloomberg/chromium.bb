@@ -96,11 +96,10 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
                       base::PlatformFileError rv,
                       const base::PlatformFileInfo& file_info,
                       const base::FilePath& platform_path);
-  void DidReadDirectory(
-      const ReadDirectoryCallback& callback,
-      base::PlatformFileError rv,
-      const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool has_more);
+  void DidReadDirectory(const ReadDirectoryCallback& callback,
+                        base::PlatformFileError rv,
+                        const std::vector<fileapi::DirectoryEntry>& entries,
+                        bool has_more);
   void DidWrite(base::PlatformFileError result,
                 int64 bytes,
                 FileWriterDelegate::WriteProgressStatus write_status);

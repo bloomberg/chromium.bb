@@ -162,7 +162,7 @@ void MTPDeviceTaskHelper::OnDidReadDirectoryByPath(
   base::FilePath current;
   MTPDeviceObjectEnumerator file_enum(file_entries);
   while (!(current = file_enum.Next()).empty()) {
-    fileapi::AsyncFileUtil::Entry entry;
+    fileapi::DirectoryEntry entry;
     entry.name = fileapi::VirtualPath::BaseName(current).value();
     entry.is_directory = file_enum.IsDirectory();
     entry.size = file_enum.Size();

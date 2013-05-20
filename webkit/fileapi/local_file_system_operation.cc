@@ -241,7 +241,7 @@ void LocalFileSystemOperation::ReadDirectory(
 
   base::PlatformFileError result = SetUp(url, OPERATION_MODE_READ);
   if (result != base::PLATFORM_FILE_OK) {
-    callback.Run(result, std::vector<base::FileUtilProxy::Entry>(), false);
+    callback.Run(result, std::vector<DirectoryEntry>(), false);
     delete this;
     return;
   }
@@ -786,7 +786,7 @@ void LocalFileSystemOperation::DidGetMetadata(
 void LocalFileSystemOperation::DidReadDirectory(
     const ReadDirectoryCallback& callback,
     base::PlatformFileError rv,
-    const std::vector<base::FileUtilProxy::Entry>& entries,
+    const std::vector<DirectoryEntry>& entries,
     bool has_more) {
   callback.Run(rv, entries, has_more);
 }
