@@ -10,6 +10,7 @@ import sys
 import unittest
 
 MODULES = [
+    'driver_tools_test',
     'expand_response_file_test',
     'help_message_test',
     'strip_test',

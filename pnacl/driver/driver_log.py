@@ -14,7 +14,7 @@ import sys
 import pathtools
 
 #TODO: DriverOpen/Close are in here because this is a low level lib without
-# any dependencies. maybe they should go in another low level lib, or maybe
+# any dependencies. Maybe they should go in another low level lib, or maybe
 # this should become a low level lib that's more general than just log
 
 # same with TempFiles. this factoring is at least a little useful though
@@ -47,13 +47,14 @@ class TempFileHandler(object):
   def wipe(self):
     for path in self.files:
       try:
-        os.remove(pathtools.tosys(path))
+        sys_path = pathtools.tosys(path)
+        # If exiting early, the file may not have been created yet.
+        if os.path.exists(sys_path):
+          os.remove(sys_path)
       except OSError as err:
-        # If we're exiting early, the temp file
-        # may have never been created.
-        Log.Warning("TempFileHandler: Unable to wipe file %s w/ error %s",
-                    pathtools.touser(path),
-                    err.strerror)
+        Log.Fatal("TempFileHandler: Unable to wipe file %s w/ error %s",
+                  pathtools.touser(path),
+                  err.strerror)
     self.files = []
 
 TempFiles = TempFileHandler()
