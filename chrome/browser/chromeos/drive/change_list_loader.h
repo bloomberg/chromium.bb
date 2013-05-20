@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -18,6 +19,10 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace google_apis {
 class AboutResource;
@@ -47,7 +52,8 @@ typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
 // Documents List API) or Google Drive API and load the cached metadata.
 class ChangeListLoader {
  public:
-  ChangeListLoader(ResourceMetadata* resource_metadata,
+  ChangeListLoader(base::SequencedTaskRunner* blocking_task_runner,
+                   ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler,
                    DriveWebAppsRegistry* webapps_registry);
   ~ChangeListLoader();
@@ -255,15 +261,17 @@ class ChangeListLoader {
 
   // Part of UpdateFromFeed().
   // Callback for ChangeListProcessor::ApplyFeeds.
-  void NotifyDirectoryChangedAfterApplyFeed(bool should_notify,
-                                            base::Time start_time,
-                                            const base::Closure& callback);
+  void NotifyDirectoryChangedAfterApplyFeed(
+      ChangeListProcessor* change_list_processor,
+      bool should_notify,
+      base::Time start_time,
+      const base::Closure& callback);
 
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   DriveWebAppsRegistry* webapps_registry_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;
-  scoped_ptr<ChangeListProcessor> change_list_processor_;
   typedef std::map<std::string, std::vector<FileOperationCallback> >
       LoadCallbackMap;
   LoadCallbackMap pending_load_callback_;

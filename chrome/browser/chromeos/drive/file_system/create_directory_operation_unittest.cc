@@ -60,7 +60,8 @@ class CreateDirectoryOperationTest
 
     DriveWebAppsRegistry drive_web_apps_registry;
     internal::ChangeListLoader change_list_loader(
-        metadata_.get(), scheduler_.get(), &drive_web_apps_registry);
+        blocking_task_runner_, metadata_.get(), scheduler_.get(),
+        &drive_web_apps_registry);
 
     // Makes sure the FakeDriveService's content is loaded to the metadata_.
     change_list_loader.LoadIfNeeded(

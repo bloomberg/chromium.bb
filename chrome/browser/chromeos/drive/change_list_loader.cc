@@ -27,10 +27,12 @@ namespace drive {
 namespace internal {
 
 ChangeListLoader::ChangeListLoader(
+    base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
     DriveWebAppsRegistry* webapps_registry)
-    : resource_metadata_(resource_metadata),
+    : blocking_task_runner_(blocking_task_runner),
+      resource_metadata_(resource_metadata),
       scheduler_(scheduler),
       webapps_registry_(webapps_registry),
       last_known_remote_changestamp_(0),
@@ -110,18 +112,23 @@ void ChangeListLoader::UpdateFromFeed(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  change_list_processor_.reset(new ChangeListProcessor(resource_metadata_));
+  ChangeListProcessor* change_list_processor =
+      new ChangeListProcessor(resource_metadata_);
   // Don't send directory content change notification while performing
   // the initial content retrieval.
   const bool should_notify_changed_directories = is_delta_feed;
 
   util::Log("Apply change lists (is delta: %d)", is_delta_feed);
-  change_list_processor_->ApplyFeeds(
-      about_resource.Pass(),
-      change_lists.Pass(),
-      is_delta_feed,
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&ChangeListProcessor::ApplyFeeds,
+                 base::Unretained(change_list_processor),
+                 base::Passed(&about_resource),
+                 base::Passed(&change_lists),
+                 is_delta_feed),
       base::Bind(&ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed,
                  weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(change_list_processor),
                  should_notify_changed_directories,
                  base::Time::Now(),
                  callback));
@@ -686,11 +693,12 @@ void ChangeListLoader::OnGetAppList(google_apis::GDataErrorCode status,
 }
 
 void ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed(
+    ChangeListProcessor* change_list_processor,
     bool should_notify_changed_directories,
     base::Time start_time,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(change_list_processor_.get());
+  DCHECK(change_list_processor);
   DCHECK(!callback.is_null());
 
   const base::TimeDelta elapsed = base::Time::Now() - start_time;
@@ -699,8 +707,8 @@ void ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed(
 
   if (should_notify_changed_directories) {
     for (std::set<base::FilePath>::iterator dir_iter =
-            change_list_processor_->changed_dirs().begin();
-        dir_iter != change_list_processor_->changed_dirs().end();
+            change_list_processor->changed_dirs().begin();
+        dir_iter != change_list_processor->changed_dirs().end();
         ++dir_iter) {
       FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
                         OnDirectoryChanged(*dir_iter));
@@ -708,9 +716,6 @@ void ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed(
   }
 
   callback.Run();
-
-  // Cannot delete change_list_processor_ yet because we are in
-  // on_complete_callback_, which is owned by change_list_processor_.
 }
 
 }  // namespace internal
