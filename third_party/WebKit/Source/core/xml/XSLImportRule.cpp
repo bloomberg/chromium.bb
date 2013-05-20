@@ -25,6 +25,7 @@
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"
 #include "core/xml/XSLStyleSheet.h"
 
@@ -97,7 +98,7 @@ void XSLImportRule::loadSheet()
             return;
     }
     
-    CachedResourceRequest request(ResourceRequest(cachedResourceLoader->document()->completeURL(absHref)));
+    CachedResourceRequest request(ResourceRequest(cachedResourceLoader->document()->completeURL(absHref)), cachedResourceRequestInitiators().xml);
     m_cachedSheet = cachedResourceLoader->requestXSLStyleSheet(request);
     
     if (m_cachedSheet) {

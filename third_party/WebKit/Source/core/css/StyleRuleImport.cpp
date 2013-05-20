@@ -117,8 +117,7 @@ void StyleRuleImport::requestStyleSheet()
         rootSheet = sheet;
     }
 
-    CachedResourceRequest request(ResourceRequest(absURL), m_parentStyleSheet->charset());
-    request.setInitiator(cachedResourceRequestInitiators().css);
+    CachedResourceRequest request(ResourceRequest(absURL), cachedResourceRequestInitiators().css, m_parentStyleSheet->charset());
     if (m_parentStyleSheet->isUserStyleSheet())
         m_cachedSheet = cachedResourceLoader->requestUserCSSStyleSheet(request);
     else

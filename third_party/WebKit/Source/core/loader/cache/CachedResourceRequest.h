@@ -28,6 +28,7 @@
 
 #include "core/dom/Element.h"
 #include "core/loader/ResourceLoaderOptions.h"
+#include "core/loader/cache/CachedResourceInitiatorInfo.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/RefPtr.h>
@@ -40,9 +41,9 @@ class CachedResourceRequest {
 public:
     enum DeferOption { NoDefer, DeferredByClient };
 
-    explicit CachedResourceRequest(const ResourceRequest&, const String& charset = String(), ResourceLoadPriority = ResourceLoadPriorityUnresolved);
-    CachedResourceRequest(const ResourceRequest&, const ResourceLoaderOptions&);
-    CachedResourceRequest(const ResourceRequest&, ResourceLoadPriority);
+    explicit CachedResourceRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String(), ResourceLoadPriority = ResourceLoadPriorityUnresolved);
+    CachedResourceRequest(const ResourceRequest&, const AtomicString& initiator, const ResourceLoaderOptions&);
+    CachedResourceRequest(const ResourceRequest&, const AtomicString& initiator, ResourceLoadPriority);
     ~CachedResourceRequest();
 
     ResourceRequest& mutableResourceRequest() { return m_resourceRequest; }
@@ -57,10 +58,7 @@ public:
     void setForPreload(bool forPreload) { m_forPreload = forPreload; }
     DeferOption defer() const { return m_defer; }
     void setDefer(DeferOption defer) { m_defer = defer; }
-    void setInitiator(PassRefPtr<Element>);
-    void setInitiator(const AtomicString& name);
-    const AtomicString& initiatorName() const;
-    PassRefPtr<Element> initiatorElement();
+    const CachedResourceInitiatorInfo& initiatorInfo() const { return m_initiatorInfo; }
     void setContentSecurityCheck(ContentSecurityPolicyCheck contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
 
 private:
@@ -70,8 +68,7 @@ private:
     ResourceLoadPriority m_priority;
     bool m_forPreload;
     DeferOption m_defer;
-    RefPtr<Element> m_initiatorElement;
-    AtomicString m_initiatorName;
+    CachedResourceInitiatorInfo m_initiatorInfo;
 };
 
 } // namespace WebCore

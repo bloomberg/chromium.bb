@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebCachedURLRequest.h"
 
-#include "core/dom/Element.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include <public/WebURLRequest.h>
@@ -67,12 +66,7 @@ bool WebCachedURLRequest::forPreload() const
 
 WebString WebCachedURLRequest::initiatorName() const
 {
-    return WebString(m_private->initiatorName());
-}
-
-WebElement WebCachedURLRequest::initiatorElement() const
-{
-    return WebElement(m_private->initiatorElement());
+    return WebString(m_private->initiatorInfo().name);
 }
 
 WebCachedURLRequest::WebCachedURLRequest(CachedResourceRequest* request)

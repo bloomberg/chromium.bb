@@ -30,7 +30,12 @@ namespace WebCore {
 
 CachedResourceRequestInitiators::CachedResourceRequestInitiators()
     : css("css", AtomicString::ConstructFromLiteral)
+    , document("document", AtomicString::ConstructFromLiteral)
     , icon("icon", AtomicString::ConstructFromLiteral)
+    , link("link", AtomicString::ConstructFromLiteral)
+    , processinginstruction("processinginstruction", AtomicString::ConstructFromLiteral)
+    , texttrack("texttrack", AtomicString::ConstructFromLiteral)
+    , xml("xml", AtomicString::ConstructFromLiteral)
     , xmlhttprequest("xmlhttprequest", AtomicString::ConstructFromLiteral)
 {
 }

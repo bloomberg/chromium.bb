@@ -1085,6 +1085,7 @@
             'loader/cache/CachedResourceHandle.cpp',
             'loader/cache/CachedResourceLoader.cpp',
             'loader/cache/CachedResourceRequest.cpp',
+            'loader/cache/CachedResourceInitiatorInfo.h',
             'loader/cache/CachedResourceRequestInitiators.cpp',
             'loader/cache/CachedScript.cpp',
             'loader/cache/CachedScript.h',

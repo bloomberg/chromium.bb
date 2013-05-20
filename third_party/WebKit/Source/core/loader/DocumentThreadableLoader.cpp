@@ -390,8 +390,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
             options.dataBufferingPolicy = BufferData;
         }
 
-        CachedResourceRequest newRequest(request, options);
-        newRequest.setInitiator(m_options.initiator);
+        CachedResourceRequest newRequest(request, m_options.initiator, options);
         ASSERT(!m_resource);
         m_resource = m_document->cachedResourceLoader()->requestRawResource(newRequest);
         if (m_resource) {

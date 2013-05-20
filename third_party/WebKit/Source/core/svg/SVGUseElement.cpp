@@ -250,8 +250,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
         if (isExternalReference) {
             KURL url = document()->completeURL(href());
             if (url.hasFragmentIdentifier()) {
-                CachedResourceRequest request(ResourceRequest(url.string()));
-                request.setInitiator(this);
+                CachedResourceRequest request(ResourceRequest(url.string()), localName());
                 setCachedDocument(document()->cachedResourceLoader()->requestSVGDocument(request));
             }
         } else

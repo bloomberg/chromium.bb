@@ -1232,15 +1232,7 @@ void WebTestProxyBase::willRequestResource(WebFrame* frame, const WebKit::WebCac
 {
     if (m_testInterfaces->testRunner()->shouldDumpResourceRequestCallbacks()) {
         printFrameDescription(m_delegate, frame);
-        WebElement element = request.initiatorElement();
-        if (!element.isNull()) {
-            m_delegate->printMessage(" - element with ");
-            if (element.hasAttribute("id"))
-                m_delegate->printMessage(string("id '") + element.getAttribute("id").utf8().data() + "'");
-            else
-                m_delegate->printMessage("no id");
-        } else
-            m_delegate->printMessage(string(" - ") + request.initiatorName().utf8().data());
+        m_delegate->printMessage(string(" - ") + request.initiatorName().utf8().data());
         m_delegate->printMessage(string(" requested '") + URLDescription(request.urlRequest().url()).c_str() + "'\n");
     }
 }

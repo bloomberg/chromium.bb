@@ -41,6 +41,7 @@
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Settings.h"
@@ -130,7 +131,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
             priority = ResourceLoadPriorityLow;
             type = CachedResource::LinkSubresource;
         }
-        CachedResourceRequest linkRequest(ResourceRequest(document->completeURL(href)), priority);
+        CachedResourceRequest linkRequest(ResourceRequest(document->completeURL(href)), cachedResourceRequestInitiators().link, priority);
         
         if (m_cachedLinkResource) {
             m_cachedLinkResource->removeClient(this);

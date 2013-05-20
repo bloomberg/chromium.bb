@@ -545,8 +545,7 @@ void LinkStyle::process()
 
         // Load stylesheets that are not needed for the rendering immediately with low priority.
         ResourceLoadPriority priority = blocking ? ResourceLoadPriorityUnresolved : ResourceLoadPriorityVeryLow;
-        CachedResourceRequest request(ResourceRequest(document()->completeURL(url)), charset, priority);
-        request.setInitiator(m_owner);
+        CachedResourceRequest request(ResourceRequest(document()->completeURL(url)), m_owner->localName(), charset, priority);
         m_cachedSheet = document()->cachedResourceLoader()->requestCSSStyleSheet(request);
 
         if (m_cachedSheet)

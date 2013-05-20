@@ -71,11 +71,7 @@ StyleCachedImage* CSSImageValue::cachedImage(CachedResourceLoader* loader)
     if (!m_accessedImage) {
         m_accessedImage = true;
 
-        CachedResourceRequest request(ResourceRequest(loader->document()->completeURL(m_url)));
-        if (m_initiatorName.isEmpty())
-            request.setInitiator(cachedResourceRequestInitiators().css);
-        else
-            request.setInitiator(m_initiatorName);
+        CachedResourceRequest request(ResourceRequest(loader->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? cachedResourceRequestInitiators().css : m_initiatorName);
         if (CachedResourceHandle<CachedImage> cachedImage = loader->requestImage(request))
             m_image = StyleCachedImage::create(cachedImage.get());
     }

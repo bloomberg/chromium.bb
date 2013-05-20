@@ -34,13 +34,11 @@
 #include "../../../../public/platform/WebCommon.h"
 #include "../../../../public/platform/WebPrivateOwnPtr.h"
 #include "../../../../public/platform/WebString.h"
-#include "WebElement.h"
 
 namespace WebCore { class CachedResourceRequest; }
 
 namespace WebKit {
 
-class WebElement;
 class WebString;
 class WebURLRequest;
 class WrappedResourceRequest;
@@ -54,7 +52,6 @@ public:
     WEBKIT_EXPORT WebString charset() const;
     WEBKIT_EXPORT bool forPreload() const;
     WEBKIT_EXPORT WebString initiatorName() const;
-    WEBKIT_EXPORT WebElement initiatorElement() const;
 
 #if WEBKIT_IMPLEMENTATION
     explicit WebCachedURLRequest(WebCore::CachedResourceRequest*);

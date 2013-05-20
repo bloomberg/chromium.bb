@@ -56,6 +56,7 @@
 #include "core/loader/archive/ArchiveResourceCollection.h"
 #include "core/loader/archive/MHTMLArchive.h"
 #include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
@@ -1079,7 +1080,7 @@ void DocumentLoader::startLoadingMainResource()
     ResourceRequest request(m_request);
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
         (SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy));
-    CachedResourceRequest cachedResourceRequest(request, mainResourceLoadOptions);
+    CachedResourceRequest cachedResourceRequest(request, cachedResourceRequestInitiators().document, mainResourceLoadOptions);
     m_mainResource = m_cachedResourceLoader->requestMainResource(cachedResourceRequest);
     if (!m_mainResource) {
         setRequest(ResourceRequest());

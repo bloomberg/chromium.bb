@@ -55,8 +55,7 @@ CachedSVGDocument* WebKitCSSSVGDocumentValue::load(CachedResourceLoader* loader)
     if (!m_loadRequested) {
         m_loadRequested = true;
 
-        CachedResourceRequest request(ResourceRequest(loader->document()->completeURL(m_url)));
-        request.setInitiator(cachedResourceRequestInitiators().css);
+        CachedResourceRequest request(ResourceRequest(loader->document()->completeURL(m_url)), cachedResourceRequestInitiators().css);
         m_document = loader->requestSVGDocument(request);
     }
 

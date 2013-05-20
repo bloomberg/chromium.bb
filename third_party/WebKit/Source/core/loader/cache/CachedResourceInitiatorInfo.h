@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google, Inc. All rights reserved.
+ * Copyright (C) 2013 Google, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,33 +23,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CachedResourceRequestInitiators_h
-#define CachedResourceRequestInitiators_h
+#ifndef CachedResourceInitiatorInfo_h
+#define CachedResourceInitiatorInfo_h
 
-#include "core/platform/ThreadGlobalData.h"
-#include <wtf/text/AtomicString.h>
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-struct CachedResourceRequestInitiators {
-    const AtomicString css;
-    const AtomicString document;
-    const AtomicString icon;
-    const AtomicString link;
-    const AtomicString processinginstruction;
-    const AtomicString texttrack;
-    const AtomicString xml;
-    const AtomicString xmlhttprequest;
-    WTF_MAKE_NONCOPYABLE(CachedResourceRequestInitiators); WTF_MAKE_FAST_ALLOCATED;
-private:
-    CachedResourceRequestInitiators();
-    friend class ThreadGlobalData;
-};
+struct CachedResourceInitiatorInfo {
+    CachedResourceInitiatorInfo()
+        : name()
+        , startTime(0.0)
+    {
+    }
 
-inline const CachedResourceRequestInitiators& cachedResourceRequestInitiators()
-{
-    return threadGlobalData().cachedResourceRequestInitiators();
-}
+    AtomicString name;
+    double startTime;
+};
 
 } // namespace WebCore
 

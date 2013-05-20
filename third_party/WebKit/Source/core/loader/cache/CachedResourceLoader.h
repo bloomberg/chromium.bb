@@ -29,6 +29,7 @@
 #include "core/loader/cache/CachePolicy.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/CachedResourceInitiatorInfo.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceLoadPriority.h"
@@ -171,11 +172,7 @@ private:
 
     Timer<CachedResourceLoader> m_garbageCollectDocumentResourcesTimer;
 
-    struct InitiatorInfo {
-        AtomicString name;
-        double startTime;
-    };
-    HashMap<CachedResource*, InitiatorInfo> m_initiatorMap;
+    HashMap<CachedResource*, CachedResourceInitiatorInfo> m_initiatorMap;
 
     // 29 bits left
     bool m_autoLoadImages : 1;

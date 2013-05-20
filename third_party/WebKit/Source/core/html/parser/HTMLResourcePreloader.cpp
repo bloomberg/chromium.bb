@@ -52,8 +52,7 @@ KURL PreloadRequest::completeURL(Document* document)
 CachedResourceRequest PreloadRequest::resourceRequest(Document* document)
 {
     ASSERT(isMainThread());
-    CachedResourceRequest request(ResourceRequest(completeURL(document)));
-    request.setInitiator(m_initiator);
+    CachedResourceRequest request(ResourceRequest(completeURL(document)), m_initiator);
 
     // FIXME: It's possible CORS should work for other request types?
     if (m_resourceType == CachedResource::Script)

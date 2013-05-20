@@ -97,8 +97,7 @@ bool CSSFontFaceSrcValue::hasFailedOrCanceledSubresources() const
 CachedFont* CSSFontFaceSrcValue::cachedFont(Document* document)
 {
     if (!m_cachedFont) {
-        CachedResourceRequest request(ResourceRequest(document->completeURL(m_resource)));
-        request.setInitiator(cachedResourceRequestInitiators().css);
+        CachedResourceRequest request(ResourceRequest(document->completeURL(m_resource)), cachedResourceRequestInitiators().css);
         m_cachedFont = document->cachedResourceLoader()->requestFont(request);
     }
     return m_cachedFont.get();

@@ -257,7 +257,7 @@ bool ScriptElement::requestScript(const String& sourceUrl)
 
     ASSERT(!m_cachedScript);
     if (!stripLeadingAndTrailingHTMLSpaces(sourceUrl).isEmpty()) {
-        CachedResourceRequest request(ResourceRequest(m_element->document()->completeURL(sourceUrl)));
+        CachedResourceRequest request(ResourceRequest(m_element->document()->completeURL(sourceUrl)), element()->localName());
 
         String crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
         if (!crossOriginMode.isNull()) {
@@ -266,7 +266,6 @@ bool ScriptElement::requestScript(const String& sourceUrl)
             updateRequestForAccessControl(request.mutableResourceRequest(), m_element->document()->securityOrigin(), allowCredentials);
         }
         request.setCharset(scriptCharset());
-        request.setInitiator(element());
 
         bool isValidScriptNonce = m_element->document()->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
         if (isValidScriptNonce)

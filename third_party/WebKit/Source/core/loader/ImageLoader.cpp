@@ -176,8 +176,7 @@ void ImageLoader::updateFromElement()
     // an empty string.
     CachedResourceHandle<CachedImage> newImage = 0;
     if (!attr.isNull() && !stripLeadingAndTrailingHTMLSpaces(attr).isEmpty()) {
-        CachedResourceRequest request(ResourceRequest(document->completeURL(sourceURI(attr))));
-        request.setInitiator(element());
+        CachedResourceRequest request(ResourceRequest(document->completeURL(sourceURI(attr))), element()->localName());
 
         String crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
         if (!crossOriginMode.isNull()) {

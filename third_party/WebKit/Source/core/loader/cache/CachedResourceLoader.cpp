@@ -557,15 +557,17 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::loadResource(CachedRe
 
 void CachedResourceLoader::storeResourceTimingInitiatorInformation(const CachedResourceHandle<CachedResource>& resource, const CachedResourceRequest& request)
 {
+    CachedResourceInitiatorInfo info = request.initiatorInfo();
+    info.startTime = monotonicallyIncreasingTime();
+
     if (resource->type() == CachedResource::MainResource) {
         // <iframe>s should report the initial navigation requested by the parent document, but not subsequent navigations.
         if (frame()->ownerElement() && !frame()->ownerElement()->loadedNonEmptyDocument()) {
-            InitiatorInfo info = { frame()->ownerElement()->localName(), monotonicallyIncreasingTime() };
+            info.name = frame()->ownerElement()->localName();
             m_initiatorMap.add(resource.get(), info);
             frame()->ownerElement()->didLoadNonEmptyDocument();
         }
     } else {
-        InitiatorInfo info = { request.initiatorName(), monotonicallyIncreasingTime() };
         m_initiatorMap.add(resource.get(), info);
     }
 }
@@ -754,14 +756,14 @@ void CachedResourceLoader::loadDone(CachedResource* resource)
     RefPtr<Document> protectDocument(m_document);
 
     if (resource && resource->response().isHTTP() && ((!resource->errorOccurred() && !resource->wasCanceled()) || resource->response().httpStatusCode() == 304)) {
-        HashMap<CachedResource*, InitiatorInfo>::iterator initiatorIt = m_initiatorMap.find(resource);
+        HashMap<CachedResource*, CachedResourceInitiatorInfo>::iterator initiatorIt = m_initiatorMap.find(resource);
         if (initiatorIt != m_initiatorMap.end()) {
             ASSERT(document());
             Document* initiatorDocument = document();
             if (resource->type() == CachedResource::MainResource)
                 initiatorDocument = document()->parentDocument();
             ASSERT(initiatorDocument);
-            const InitiatorInfo& info = initiatorIt->value;
+            const CachedResourceInitiatorInfo& info = initiatorIt->value;
             initiatorDocument->domWindow()->performance()->addResourceTiming(info.name, initiatorDocument, resource->resourceRequest(), resource->response(), info.startTime, resource->loadFinishTime());
             m_initiatorMap.remove(initiatorIt);
         }
@@ -996,8 +998,6 @@ void CachedResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo)
     info.addMember(m_preloads, "preloads");
     info.addMember(m_pendingPreloads, "pendingPreloads");
     info.addMember(m_garbageCollectDocumentResourcesTimer, "garbageCollectDocumentResourcesTimer");
-    // FIXME: m_initiatorMap has pointers to already deleted CachedResources
-    info.ignoreMember(m_initiatorMap);
 }
 
 const ResourceLoaderOptions& CachedResourceLoader::defaultCachedResourceOptions()
