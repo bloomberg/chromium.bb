@@ -45,6 +45,7 @@ public:
     void setSelectedIndex(int);
 
     void setLength(unsigned, ExceptionCode&);
+    void anonymousNamedGetter(const AtomicString& name, RefPtr<NodeList>&, RefPtr<Node>&);
 
 private:
     HTMLOptionsCollection(Node*);

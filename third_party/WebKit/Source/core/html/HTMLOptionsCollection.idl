@@ -20,13 +20,13 @@
 
 [
     CustomIndexedSetter,
-    CustomNamedGetter,
     GenerateIsReachable=ownerNode,
     DependentLifetime,
 ] interface HTMLOptionsCollection : HTMLCollection {
     attribute long selectedIndex;
     [CustomSetter, SetterRaisesException] attribute unsigned long length;
     [ImplementedAs=item] getter Node(unsigned long index);
+    [ImplementedAs=anonymousNamedGetter] getter (NodeList or Node)(DOMString name);
 
     [Custom] Node namedItem([Default=Undefined] optional DOMString name);
 

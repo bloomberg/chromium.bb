@@ -22,6 +22,7 @@
 #include "core/html/HTMLOptionsCollection.h"
 
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 
@@ -87,6 +88,22 @@ void HTMLOptionsCollection::setSelectedIndex(int index)
 void HTMLOptionsCollection::setLength(unsigned length, ExceptionCode& ec)
 {
     toHTMLSelectElement(ownerNode())->setLength(length, ec);
+}
+
+void HTMLOptionsCollection::anonymousNamedGetter(const AtomicString& name, RefPtr<NodeList>& returnValue1, RefPtr<Node>& returnValue2)
+{
+    Vector<RefPtr<Node> > namedItems;
+    this->namedItems(name, namedItems);
+
+    if (!namedItems.size())
+        return;
+
+    if (namedItems.size() == 1) {
+        returnValue2 = namedItems.at(0);
+        return;
+    }
+
+    returnValue1 = NamedNodesCollection::create(namedItems);
 }
 
 } //namespace
