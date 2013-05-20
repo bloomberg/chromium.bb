@@ -33,7 +33,6 @@
 
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "WebInbandTextTrackClient.h"
-#include <wtf/OwnPtr.h>
 
 namespace WebCore {
 class InbandTextTrackPrivateClient;
@@ -72,7 +71,7 @@ public:
                               const WebString& settings);
 
 private:
-    OwnPtr<WebInbandTextTrack> m_track;
+    WebInbandTextTrack* m_track;
 };
 
 }
