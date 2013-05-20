@@ -235,9 +235,14 @@ bool SandboxFileStreamWriter::CancelIfRequested() {
 }
 
 int SandboxFileStreamWriter::Flush(const net::CompletionCallback& callback) {
-  // For now, Flush is meaningful only for local native file access. It is no-op
-  // for sandboxed filesystem files (see the discussion in crbug.com/144790).
-  return net::OK;
+  DCHECK(!has_pending_operation_);
+  DCHECK(cancel_callback_.is_null());
+
+  // Write() is not called yet, so there's nothing to flush.
+  if (!local_file_writer_)
+    return net::OK;
+
+  return local_file_writer_->Flush(callback);
 }
 
 }  // namespace fileapi

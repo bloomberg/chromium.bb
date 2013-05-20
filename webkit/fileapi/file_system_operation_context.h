@@ -88,6 +88,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
 
   // Tests also need access to some setters.
   friend class FileSystemQuotaClientTest;
+  friend class FileWriterDelegateTest;
   friend class LocalFileSystemOperationTest;
   friend class LocalFileSystemOperationWriteTest;
   friend class LocalFileSystemTestOriginHelper;
