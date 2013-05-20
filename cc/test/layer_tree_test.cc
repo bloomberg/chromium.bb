@@ -251,10 +251,6 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
     test_hooks_->DidFailToInitializeOutputSurface();
   }
 
-  virtual scoped_ptr<InputHandlerClient> CreateInputHandlerClient() OVERRIDE {
-    return scoped_ptr<InputHandlerClient>();
-  }
-
   virtual void WillCommit() OVERRIDE {}
 
   virtual void DidCommit() OVERRIDE {

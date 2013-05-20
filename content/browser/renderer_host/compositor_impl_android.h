@@ -75,8 +75,6 @@ class CONTENT_EXPORT CompositorImpl
   virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,
                                    float page_scale) OVERRIDE {}
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
-  virtual scoped_ptr<cc::InputHandlerClient> CreateInputHandlerClient()
-      OVERRIDE;
   virtual void DidInitializeOutputSurface(bool success) OVERRIDE {}
   virtual void WillCommit() OVERRIDE {}
   virtual void DidCommit() OVERRIDE {}

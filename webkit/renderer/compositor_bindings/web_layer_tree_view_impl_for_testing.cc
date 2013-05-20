@@ -25,10 +25,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webkit/gpu/test_context_provider_factory.h"
-#include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
-#include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
-#include "webkit/renderer/compositor_bindings/web_to_ccinput_handler_adapter.h"
 #include "webkit/support/test_webkit_platform_support.h"
 
 using WebKit::WebColor;
@@ -198,11 +195,6 @@ WebLayerTreeViewImplForTesting::CreateOutputSurface() {
     }
   }
   return surface.Pass();
-}
-
-scoped_ptr<cc::InputHandlerClient>
-WebLayerTreeViewImplForTesting::CreateInputHandlerClient() {
-  return scoped_ptr<cc::InputHandlerClient>();
 }
 
 void WebLayerTreeViewImplForTesting::ScheduleComposite() {

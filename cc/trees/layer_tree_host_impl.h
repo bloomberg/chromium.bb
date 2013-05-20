@@ -83,11 +83,13 @@ class LayerTreeHostImplClient {
 
 // LayerTreeHostImpl owns the LayerImpl trees as well as associated rendering
 // state.
-class CC_EXPORT LayerTreeHostImpl : public InputHandler,
-                                    public RendererClient,
-                                    public TileManagerClient,
-                                    public OutputSurfaceClient,
-                                    public TopControlsManagerClient {
+class CC_EXPORT LayerTreeHostImpl
+    : public InputHandler,
+      public RendererClient,
+      public TileManagerClient,
+      public OutputSurfaceClient,
+      public TopControlsManagerClient,
+      public base::SupportsWeakPtr<LayerTreeHostImpl> {
  public:
   static scoped_ptr<LayerTreeHostImpl> Create(
       const LayerTreeSettings& settings,
@@ -97,6 +99,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   virtual ~LayerTreeHostImpl();
 
   // InputHandler implementation
+  virtual void BindToClient(InputHandlerClient* client) OVERRIDE;
   virtual InputHandler::ScrollStatus ScrollBegin(
       gfx::Point viewport_point,
       InputHandler::ScrollInputType type) OVERRIDE;
@@ -154,6 +157,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   virtual void Animate(base::TimeTicks monotonic_time,
                        base::Time wall_clock_time);
   virtual void UpdateAnimationState(bool start_ready_animations);
+  void MainThreadHasStoppedFlinging();
   void UpdateBackgroundAnimateTicking(bool should_background_tick);
   void SetViewportDamage(gfx::Rect damage_rect);
 
@@ -436,6 +440,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // by the next sync from the main thread.
   scoped_ptr<LayerTreeImpl> recycle_tree_;
 
+  InputHandlerClient* input_handler_client_;
   bool did_lock_scrolling_layer_;
   bool should_bubble_scrolls_;
   bool wheel_scrolling_;

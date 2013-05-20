@@ -715,10 +715,6 @@ scoped_ptr<cc::OutputSurface> Compositor::CreateOutputSurface() {
       ContextFactory::GetInstance()->CreateOutputSurface(this));
 }
 
-scoped_ptr<cc::InputHandlerClient> Compositor::CreateInputHandlerClient() {
-  return scoped_ptr<cc::InputHandlerClient>();
-}
-
 void Compositor::DidCommit() {
   DCHECK(!IsLocked());
   FOR_EACH_OBSERVER(CompositorObserver,

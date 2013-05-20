@@ -19,6 +19,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/debug/latency_info.h"
+#include "cc/input/input_handler.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/output/output_surface.h"
 #include "cc/scheduler/rate_limiter.h"
@@ -109,7 +110,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void WillCommit();
   void CommitComplete();
   scoped_ptr<OutputSurface> CreateOutputSurface();
-  scoped_ptr<InputHandlerClient> CreateInputHandlerClient();
   virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* client);
   void DidLoseOutputSurface();
@@ -130,6 +130,9 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
                     size_t contents_memory_limit_bytes);
 
   LayerTreeHostClient* client() { return client_; }
+  const base::WeakPtr<InputHandler>& GetInputHandler() {
+    return input_handler_weak_ptr_;
+  }
 
   void Composite(base::TimeTicks frame_begin_time);
 
@@ -297,6 +300,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   scoped_ptr<PrioritizedResourceManager> contents_texture_manager_;
   scoped_ptr<PrioritizedResource> surface_memory_placeholder_;
 
+  base::WeakPtr<InputHandler> input_handler_weak_ptr_;
   base::WeakPtr<TopControlsManager> top_controls_manager_weak_ptr_;
 
   LayerTreeSettings settings_;

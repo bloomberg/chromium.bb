@@ -42,11 +42,6 @@ scoped_ptr<OutputSurface> FakeLayerTreeHostClient::CreateOutputSurface() {
       .PassAs<OutputSurface>();
 }
 
-scoped_ptr<InputHandlerClient>
-FakeLayerTreeHostClient::CreateInputHandlerClient() {
-  return scoped_ptr<InputHandlerClient>();
-}
-
 scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
     OffscreenContextProviderForMainThread() {
   if (!main_thread_contexts_ ||

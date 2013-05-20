@@ -21,6 +21,21 @@ namespace cc {
 
 class LayerScrollOffsetDelegate;
 
+class CC_EXPORT InputHandlerClient {
+ public:
+  virtual ~InputHandlerClient() {}
+
+  virtual void WillShutdown() = 0;
+  virtual void Animate(base::TimeTicks time) = 0;
+  virtual void MainThreadHasStoppedFlinging() = 0;
+
+ protected:
+  InputHandlerClient() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InputHandlerClient);
+};
+
 // The InputHandler is a way for the embedders to interact with the impl thread
 // side of the compositor implementation. There is one InputHandler per
 // LayerTreeHost. To use the input handler, implement the InputHanderClient
@@ -29,6 +44,11 @@ class CC_EXPORT InputHandler {
  public:
   enum ScrollStatus { ScrollOnMainThread, ScrollStarted, ScrollIgnored };
   enum ScrollInputType { Gesture, Wheel, NonBubblingGesture };
+
+  // Binds a client to this handler to receive notifications. Only one client
+  // can be bound to an InputHandler. The client must live at least until the
+  // handler calls WillShutdown() on the client.
+  virtual void BindToClient(InputHandlerClient* client) = 0;
 
   // Selects a layer to be scrolled at a given point in viewport (logical
   // pixel) coordinates. Returns ScrollStarted if the layer at the coordinates
@@ -98,21 +118,6 @@ class CC_EXPORT InputHandler {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
-};
-
-class CC_EXPORT InputHandlerClient {
- public:
-  virtual ~InputHandlerClient() {}
-
-  virtual void BindToHandler(InputHandler* handler) = 0;
-  virtual void Animate(base::TimeTicks time) = 0;
-  virtual void MainThreadHasStoppedFlinging() = 0;
-
- protected:
-  InputHandlerClient() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputHandlerClient);
 };
 
 }  // namespace cc

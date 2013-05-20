@@ -159,8 +159,7 @@ class ThreadProxy : public Proxy,
   void BeginFrameAbortedOnImplThread();
   void RequestReadbackOnImplThread(ReadbackRequest* request);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
-  void InitializeImplOnImplThread(CompletionEvent* completion,
-                                  InputHandlerClient* input_handler_client);
+  void InitializeImplOnImplThread(CompletionEvent* completion);
   void SetLayerTreeHostClientReadyOnImplThread();
   void SetVisibleOnImplThread(CompletionEvent* completion, bool visible);
   void HasInitializedOutputSurfaceOnImplThread(
@@ -221,8 +220,6 @@ class ThreadProxy : public Proxy,
   base::WeakPtrFactory<ThreadProxy> weak_factory_;
 
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
-
-  scoped_ptr<InputHandlerClient> input_handler_client_on_impl_thread_;
 
   scoped_ptr<Scheduler> scheduler_on_impl_thread_;
 

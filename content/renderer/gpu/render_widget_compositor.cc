@@ -5,6 +5,7 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 
 #include <limits>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -24,7 +25,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 #include "ui/gl/gl_switches.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
-#include "webkit/renderer/compositor_bindings/web_to_ccinput_handler_adapter.h"
 
 namespace cc {
 class Layer;
@@ -290,6 +290,11 @@ RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget)
 
 RenderWidgetCompositor::~RenderWidgetCompositor() {}
 
+const base::WeakPtr<cc::InputHandler>&
+RenderWidgetCompositor::GetInputHandler() {
+  return layer_tree_host_->GetInputHandler();
+}
+
 void RenderWidgetCompositor::SetSuppressScheduleComposite(bool suppress) {
   if (suppress_schedule_composite_ == suppress)
     return;
@@ -530,16 +535,6 @@ scoped_ptr<cc::OutputSurface> RenderWidgetCompositor::CreateOutputSurface() {
 void RenderWidgetCompositor::DidInitializeOutputSurface(bool success) {
   if (!success)
     widget_->webwidget()->didExitCompositingMode();
-}
-
-scoped_ptr<cc::InputHandlerClient>
-RenderWidgetCompositor::CreateInputHandlerClient() {
-  scoped_ptr<cc::InputHandlerClient> ret;
-  scoped_ptr<WebKit::WebInputHandler> web_handler(
-      widget_->webwidget()->createInputHandler());
-  if (web_handler)
-     ret = WebKit::WebToCCInputHandlerAdapter::create(web_handler.Pass());
-  return ret.Pass();
 }
 
 void RenderWidgetCompositor::WillCommit() {

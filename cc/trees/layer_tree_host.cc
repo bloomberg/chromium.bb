@@ -390,10 +390,6 @@ scoped_ptr<OutputSurface> LayerTreeHost::CreateOutputSurface() {
   return client_->CreateOutputSurface();
 }
 
-scoped_ptr<InputHandlerClient> LayerTreeHost::CreateInputHandlerClient() {
-  return client_->CreateInputHandlerClient();
-}
-
 scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
   DCHECK(proxy_->IsImplThread());
@@ -407,6 +403,7 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
     top_controls_manager_weak_ptr_ =
         host_impl->top_controls_manager()->AsWeakPtr();
   }
+  input_handler_weak_ptr_ = host_impl->AsWeakPtr();
   return host_impl.Pass();
 }
 

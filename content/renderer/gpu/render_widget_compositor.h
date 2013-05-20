@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
 #define CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "cc/debug/rendering_stats.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -16,6 +17,7 @@
 class SkPicture;
 
 namespace cc {
+class InputHandler;
 class LayerTreeHost;
 struct LatencyInfo;
 }
@@ -32,6 +34,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
 
   virtual ~RenderWidgetCompositor();
 
+  const base::WeakPtr<cc::InputHandler>& GetInputHandler();
   void SetSuppressScheduleComposite(bool suppress);
   void Animate(base::TimeTicks time);
   void Composite(base::TimeTicks frame_begin_time);
@@ -92,8 +95,6 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
                                    float page_scale) OVERRIDE;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual void DidInitializeOutputSurface(bool success) OVERRIDE;
-  virtual scoped_ptr<cc::InputHandlerClient> CreateInputHandlerClient()
-      OVERRIDE;
   virtual void WillCommit() OVERRIDE;
   virtual void DidCommit() OVERRIDE;
   virtual void DidCommitAndDrawFrame() OVERRIDE;
@@ -104,7 +105,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForCompositorThread() OVERRIDE;
 
-private:
+ private:
   explicit RenderWidgetCompositor(RenderWidget* widget);
 
   bool initialize(cc::LayerTreeSettings settings);

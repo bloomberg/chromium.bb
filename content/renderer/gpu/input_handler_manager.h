@@ -15,6 +15,10 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace cc {
+class InputHandler;
+}
+
 namespace WebKit {
 class WebInputEvent;
 }
@@ -22,8 +26,9 @@ class WebInputEvent;
 namespace content {
 
 class InputEventFilter;
+class InputHandlerWrapper;
 
-// InputHandlerManager class manages WebCompositorInputHandler instances for
+// InputHandlerManager class manages InputHandlerProxy instances for
 // the WebViews in this renderer.
 class InputHandlerManager {
  public:
@@ -41,12 +46,11 @@ class InputHandlerManager {
   IPC::ChannelProxy::MessageFilter* GetMessageFilter() const;
 
   // Callable from the main thread only.
-  void AddInputHandler(int routing_id,
-                       int input_handler_id,
-                       const base::WeakPtr<RenderViewImpl>& render_view_impl);
+  void AddInputHandler(
+      int routing_id,
+      const base::WeakPtr<cc::InputHandler>& input_handler,
+      const base::WeakPtr<RenderViewImpl>& render_view_impl);
 
-
- private:
   // Callback only from the compositor's thread.
   void RemoveInputHandler(int routing_id);
 
@@ -55,14 +59,15 @@ class InputHandlerManager {
                         const WebKit::WebInputEvent* input_event);
 
   // Called from the compositor's thread.
+  InputEventFilter* filter() { return filter_.get(); }
+
+ private:
+  // Called from the compositor's thread.
   void AddInputHandlerOnCompositorThread(
       int routing_id,
-      int input_handler_id,
       const scoped_refptr<base::MessageLoopProxy>& main_loop,
+      const base::WeakPtr<cc::InputHandler>& input_handler,
       const base::WeakPtr<RenderViewImpl>& render_view_impl);
-
-  class InputHandlerWrapper;
-  friend class InputHandlerWrapper;
 
   typedef std::map<int,  // routing_id
                    scoped_refptr<InputHandlerWrapper> > InputHandlerMap;

@@ -159,6 +159,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : client_(client),
       proxy_(proxy),
+      input_handler_client_(NULL),
       did_lock_scrolling_layer_(false),
       should_bubble_scrolls_(false),
       wheel_scrolling_(false),
@@ -209,6 +210,11 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::~LayerTreeHostImpl()");
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", this);
+
+  if (input_handler_client_) {
+    input_handler_client_->WillShutdown();
+    input_handler_client_ = NULL;
+  }
 
   if (active_tree_->root_layer()) {
     ClearRenderSurfaces();
@@ -277,6 +283,8 @@ bool LayerTreeHostImpl::CanDraw() {
 
 void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time,
                                 base::Time wall_clock_time) {
+  if (input_handler_client_)
+    input_handler_client_->Animate(monotonic_time);
   AnimatePageScale(monotonic_time);
   AnimateLayers(monotonic_time, wall_clock_time);
   AnimateScrollbars(monotonic_time);
@@ -721,6 +729,11 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // If we're making a frame to draw, it better have at least one render pass.
   DCHECK(!frame->render_passes.empty());
   return draw_frame;
+}
+
+void LayerTreeHostImpl::MainThreadHasStoppedFlinging() {
+  if (input_handler_client_)
+    input_handler_client_->MainThreadHasStoppedFlinging();
 }
 
 void LayerTreeHostImpl::UpdateBackgroundAnimateTicking(
@@ -1487,6 +1500,11 @@ void LayerTreeHostImpl::DidChangeTopControlsPosition() {
 bool LayerTreeHostImpl::EnsureRenderSurfaceLayerList() {
   active_tree_->UpdateDrawProperties();
   return !active_tree_->RenderSurfaceLayerList().empty();
+}
+
+void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
+  DCHECK(input_handler_client_ == NULL);
+  input_handler_client_ = client;
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
