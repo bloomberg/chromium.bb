@@ -46,6 +46,8 @@ public:
 
     virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE FINAL;
 
+    virtual void markDirty(bool dirty = true) OVERRIDE FINAL;
+
     void computePerCharacterLayoutInformation();
 
     InlineBox* closestLeafChildForPosition(const LayoutPoint&);
