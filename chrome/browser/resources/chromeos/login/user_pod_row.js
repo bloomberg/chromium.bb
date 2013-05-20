@@ -1146,6 +1146,15 @@ cr.define('login', function() {
     },
 
     /**
+     * Restores input focus to current selected pod, if there is any.
+     */
+    refocusCurrentPod: function() {
+      if (this.focusedPod_) {
+        this.focusedPod_.focusInput();
+      }
+    },
+
+    /**
      * Clears focused pod password field.
      */
     clearFocusedPod: function() {

@@ -273,6 +273,9 @@ class SigninScreenHandler
   void UpdateAuthExtension();
   void UpdateAddButtonStatus();
 
+  // Restore input focus to current user pod.
+  void RefocusCurrentPod();
+
   // WebUI message handlers.
   void HandleCompleteAuthentication(const std::string& email,
                                     const std::string& password,

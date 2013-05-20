@@ -706,6 +706,13 @@ cr.define('cr.ui.login', function() {
     $('pod-row').clearFocusedPod();
   };
 
+  /**
+   * Restores input focus to currently selected pod.
+   */
+  DisplayManager.refocusCurrentPod = function() {
+    $('pod-row').refocusCurrentPod();
+  };
+
   // Export
   return {
     DisplayManager: DisplayManager

@@ -253,6 +253,13 @@ cr.define('cr.ui', function() {
     DisplayManager.clearUserPodPassword();
   };
 
+  /**
+   * Restores input focus to currently selected pod.
+   */
+  Oobe.refocusCurrentPod = function() {
+    DisplayManager.refocusCurrentPod();
+  };
+
   // Export
   return {
     Oobe: Oobe

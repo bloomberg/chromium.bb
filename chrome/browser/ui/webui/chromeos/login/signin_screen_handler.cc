@@ -826,6 +826,10 @@ void SigninScreenHandler::ClearUserPodPassword() {
   CallJS("cr.ui.Oobe.clearUserPodPassword");
 }
 
+void SigninScreenHandler::RefocusCurrentPod() {
+  CallJS("cr.ui.Oobe.refocusCurrentPod");
+}
+
 void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
   CallJS("cr.ui.Oobe.onLoginSuccess", username);
 }
@@ -1353,6 +1357,9 @@ void SigninScreenHandler::HandleLoginWebuiReady() {
     rvh->ExecuteJavascriptInWebFrame(
         ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
         ASCIIToUTF16(code));
+    // As we could miss and window.onload could already be called, restore
+    // focus to current pod (see crbug/175243).
+    RefocusCurrentPod();
   }
   HandleFrameLoadingCompleted(0);
 }
