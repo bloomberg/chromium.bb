@@ -236,7 +236,7 @@ def RunWebkitLayoutTests(options):
         '--results-directory', '..layout-test-results',
         '--target', options.target,
         '--builder-name', options.build_properties.get('buildername', ''),
-        '--build-number', options.build_properties.get('buildnumber', ''),
+        '--build-number', str(options.build_properties.get('buildnumber', '')),
         '--master-name', options.build_properties.get('mastername', ''),
         '--build-name', options.build_properties.get('buildername', ''),
         '--platform=chromium-android']
