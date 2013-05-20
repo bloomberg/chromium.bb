@@ -35,14 +35,13 @@
 
 namespace WebCore {
 
-PassRefPtr<Animation> Animation::create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, Timing& timing)
+PassRefPtr<Animation> Animation::create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect)
 {
-    return adoptRef(new Animation(target, effect, timing));
+    return adoptRef(new Animation(target, effect));
 }
 
-Animation::Animation(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, Timing& timing)
-    : TimedItem(timing)
-    , m_target(target)
+Animation::Animation(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect)
+    : m_target(target)
     , m_effect(effect)
     , m_isInTargetActiveAnimationsList(false)
 {
@@ -54,31 +53,26 @@ Animation::~Animation()
         m_target->removeActiveAnimation(this);
 }
 
-void Animation::applyEffects(bool previouslyActiveOrInEffect)
+// Generate animation values for a timer tick at the provided time. This time represents the
+// parent group's iteration time, or the document time if no parent group exists.
+TimedItem::ChildAnimationState Animation::serviceAnimations(double time)
 {
-    if (!previouslyActiveOrInEffect) {
+    if (!m_isInTargetActiveAnimationsList) {
         m_target->addActiveAnimation(this);
         m_isInTargetActiveAnimationsList = true;
     }
-    m_cachedStyle = m_effect->sample(0, currentIteration());
-    m_target->setNeedsStyleRecalc(SyntheticStyleChange);
-}
 
-void Animation::clearEffects()
-{
+    updateTimeFraction(time);
+    m_cachedStyle = m_effect->sample(m_timeFraction, m_currentIteration);
+    m_target->setNeedsStyleRecalc(SyntheticStyleChange);
+
+    // For now, all animations last 1 second.
+    if (time < 1)
+        return AnimationInProgress;
+
     m_target->removeActiveAnimation(this);
     m_isInTargetActiveAnimationsList = false;
-    m_cachedStyle.clear();
-}
-
-void Animation::updateChildrenAndEffects(bool wasActiveOrInEffect) const
-{
-    const bool isActiveOrInEffect = isActive() || isInEffect();
-    ASSERT(m_isInTargetActiveAnimationsList == wasActiveOrInEffect);
-    if (wasActiveOrInEffect && !isActiveOrInEffect)
-        const_cast<Animation*>(this)->clearEffects();
-    else if (isActiveOrInEffect)
-        const_cast<Animation*>(this)->applyEffects(wasActiveOrInEffect);
+    return AnimationCompleted;
 }
 
 } // namespace

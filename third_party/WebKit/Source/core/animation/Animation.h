@@ -34,7 +34,7 @@
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/TimedItem.h"
 #include "core/css/StylePropertySet.h"
-#include "wtf/RefPtr.h"
+#include <wtf/RefPtr.h>
 
 namespace WebCore {
 
@@ -43,8 +43,10 @@ class Element;
 class Animation FINAL : public TimedItem {
 
 public:
-    static PassRefPtr<Animation> create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect>, Timing&);
+    static PassRefPtr<Animation> create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect>);
     virtual ~Animation();
+
+    virtual ChildAnimationState serviceAnimations(double time) OVERRIDE FINAL;
 
     StylePropertySet* cachedStyle()
     {
@@ -52,13 +54,8 @@ public:
         return m_cachedStyle.get();
     }
 
-protected:
-    virtual void applyEffects(bool previouslyActiveOrInEffect);
-    virtual void clearEffects();
-    virtual void updateChildrenAndEffects(bool) const OVERRIDE FINAL;
-
 private:
-    Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, Timing&);
+    Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>);
 
     RefPtr<Element> m_target;
     RefPtr<AnimationEffect> m_effect;

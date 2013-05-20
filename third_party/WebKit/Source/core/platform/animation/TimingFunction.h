@@ -25,8 +25,7 @@
 #ifndef TimingFunction_h
 #define TimingFunction_h
 
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include <wtf/RefCounted.h>
 
 namespace WebCore {
 

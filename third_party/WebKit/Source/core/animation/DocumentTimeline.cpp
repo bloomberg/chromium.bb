@@ -60,11 +60,10 @@ void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 {
     Vector<size_t> expiredIndices;
 
-    for (size_t i = 0; i < m_children.size(); ++i) {
-        m_children[i]->updateInheritedTime(monotonicAnimationStartTime);
-        if (!(m_children[i]->isCurrent() || m_children[i]->isInEffect()))
+    for (size_t i = 0; i < m_children.size(); ++i)
+        if (m_children[i]->serviceAnimations(monotonicAnimationStartTime) ==
+            TimedItem::AnimationCompleted)
             expiredIndices.append(i);
-    }
 
     for (int i = expiredIndices.size() - 1; i >= 0; i--)
         m_children.remove(expiredIndices[i]);
