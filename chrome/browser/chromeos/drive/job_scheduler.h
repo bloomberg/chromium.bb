@@ -22,8 +22,27 @@ class Profile;
 namespace drive {
 
 // The JobScheduler is responsible for queuing and scheduling drive
-// operations.  It is responsible for handling retry logic, rate limiting, as
-// concurrency as appropriate.
+// jobs.
+//
+// All jobs are processed in order of priority.
+//   - Jobs that occur as a result of a direct user action are handled
+//     immediately (i.e. the client context is USER_INITIATED).
+//   - Jobs that are done in response to state changes or server actions are run
+//     in the background (i.e. the client context is BACKGROUND).
+//
+// All jobs are retried a maximum of kMaxRetryCount when they fail due to
+// throttling or server error.  The delay before retrying a job is shared
+// between jobs.  It doubles in length on each failure, up to 16 seconds.
+//
+// Jobs are grouped into two types:
+//   - File jobs are any job that transfer the contents of files.
+//     By default, they are only run when connected to WiFi.
+//   - Metadata jobs are any jobs that operate on File metadata or
+//     the directory structure.  Up to kMaxJobCount[METADATA_QUEUE] jobs are run
+//     concurrently.
+//
+// Because jobs are executed by priority and the potential for network failures,
+// there is no guarantee of ordering of operations.
 class JobScheduler
     : public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public JobListInterface {
