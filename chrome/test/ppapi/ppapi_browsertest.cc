@@ -284,9 +284,10 @@ TEST_PPAPI_NACL(Graphics2D_BindNull)
 // These tests fail with the test compositor which is what's used by default for
 // browser tests on Windows Aura. Renable when the software compositor is
 // available.
-TEST_PPAPI_IN_PROCESS(Graphics3D)
+// In-process and NaCl tests are having flaky failures on Win: crbug.com/242252
+TEST_PPAPI_IN_PROCESS(DISABLED_Graphics3D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics3D)
-TEST_PPAPI_NACL(Graphics3D)
+TEST_PPAPI_NACL(DISABLED_Graphics3D)
 #endif
 
 TEST_PPAPI_IN_PROCESS(ImageData)
