@@ -319,6 +319,16 @@ class SpdyTestUtil {
       int tail_headers_size,
       SpdyStreamId associated_stream_id) const;
 
+  // Construct an expected SPDY reply string.
+  // |extra_headers| are the extra header-value pairs, which typically
+  // will vary the most between calls.
+  // |buffer| is the buffer we're filling in.
+  // Returns the number of bytes written into |buffer|.
+  int ConstructSpdyReplyString(const char* const extra_headers[],
+                               int extra_header_count,
+                               char* buffer,
+                               int buffer_length) const;
+
   // Construct an expected SPDY SETTINGS frame.
   // |settings| are the settings to set.
   // Returns the constructed frame.  The caller takes ownership of the frame.
