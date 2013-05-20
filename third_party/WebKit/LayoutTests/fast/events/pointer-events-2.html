@@ -173,6 +173,8 @@
     }
 
     function testContent() {
+      // Mouse events only work after an initial layout
+      document.body.offsetLeft;
       
       // hit left side
       var yOffset = topEdge;

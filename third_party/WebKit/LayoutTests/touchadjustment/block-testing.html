@@ -37,6 +37,8 @@
         {
             if (window.testRunner && window.internals && internals.touchNodeAdjustedToBestClickableNode) {
                 description('Test touch-adjustment on a block where we also touch the inner text and outside link.');
+                // Mouse events only work after an initial layout
+                document.body.offsetLeft;
                 testDirectTouches();
                 document.getElementById('sandbox').style.display = 'none';
             }

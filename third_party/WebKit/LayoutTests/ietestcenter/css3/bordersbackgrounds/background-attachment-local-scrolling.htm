@@ -74,6 +74,8 @@
 
     <script>
         if (window.eventSender) {
+            // Mouse events only work after an initial layout
+            document.body.offsetLeft;
             eventSender.mouseMoveTo(240, 250);
             eventSender.mouseDown();
             eventSender.mouseUp();

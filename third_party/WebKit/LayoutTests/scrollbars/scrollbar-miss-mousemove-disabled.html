@@ -117,6 +117,9 @@ disabled control case. On success, the text should begin with "zx".<p/>
 <div id="console"></div>
 <script>
 if (window.eventSender) {
+    // Mouse events only work after an initial layout
+    document.body.offsetLeft;
+
     document.form1.text1.disabled = true;
     document.form1.style.display = "none";
     eventSender.mouseMoveTo(390, 10);

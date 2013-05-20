@@ -10,6 +10,9 @@ innerDiv.contentEditable = true;
 outerDiv.appendChild(innerDiv);
 document.body.insertBefore(outerDiv, document.body.firstChild);
 
+// Mouse events only work after an initial layout
+document.body.offsetLeft;
+
 var lastClickCausedFocus = false;
 document.documentElement.addEventListener("mouseup", function(e) {
     var lastClick = e || window.event;

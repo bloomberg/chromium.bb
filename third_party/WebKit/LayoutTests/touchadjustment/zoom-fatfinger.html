@@ -39,6 +39,8 @@
             description('Test that targetted area is picked even if the touch area is not fully contained.');
             testRunner.dumpAsText();
             testRunner.waitUntilDone();
+            // Mouse events only work after an initial layout
+            document.body.offsetLeft;
             testDirectTouches();
             isSuccessfullyParsed();
             testRunner.notifyDone();

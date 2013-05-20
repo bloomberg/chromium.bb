@@ -17,6 +17,8 @@ FAIL: No mouseout was sent.
 if (window.testRunner)
     testRunner.dumpAsText();
 if (window.eventSender) {
+    // Mouse events only work after an initial layout
+    document.body.offsetLeft;
     // Initial move on windows is used to force the webview to 
     // initialise the windows mouse event tracker. 
     eventSender.mouseMoveTo(5, 5);

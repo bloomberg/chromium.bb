@@ -46,6 +46,8 @@
     if (window.testRunner) {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
+        // Mouse events only work after an initial layout
+        document.body.offsetLeft;
     }
 
     // Zoomed.

@@ -24,6 +24,8 @@ function mouseHandler(evt)
 }
 
 if (window.eventSender) {
+    // Mouse events only work after an initial layout
+    document.documentElement.offsetLeft;
     eventSender.mouseMoveTo(150, 135);
     eventSender.mouseDown();
     eventSender.mouseUp();

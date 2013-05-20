@@ -5,6 +5,8 @@
 
         function clickLinkNow() {
             if (window.eventSender) {
+                // Mouse events only work after an initial layout
+                document.documentElement.offsetLeft;
                 eventSender.mouseMoveTo(20, 20);
                 eventSender.mouseDown();
                 eventSender.mouseUp();

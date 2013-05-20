@@ -64,6 +64,8 @@
     {
         if (window.testRunner && window.internals && internals.touchNodeAdjustedToBestClickableNode) {
             description('Tests touch-adjustment on inline links. Making sure we can hit over line-breaks, and can miss when tapping between parts of a line-broken link.');
+            // Mouse events only work after an initial layout
+            document.body.offsetLeft;
             testDirectTouches();
             testDirectMisses();
             testIndirectTouches();

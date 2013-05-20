@@ -77,6 +77,8 @@
     {
         if (window.testRunner && window.internals && internals.touchNodeAdjustedToBestContextMenuNode) {
             description('Test touch adjustment for context-menu gestures.');
+            // Mouse events only work after an initial layout
+            document.body.offsetLeft;
             // Set editing-behaviour to win, so context-menu gesture does not trigger selections.
             internals.settings.setEditingBehavior('win');
             testDirectTouches();

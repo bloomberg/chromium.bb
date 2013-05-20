@@ -13,6 +13,8 @@
     } else {
         testRunner.dumpAsText();
 
+        // Mouse events only work after an initial layout
+        document.body.offsetLeft;
         // Click on the plugin.
         eventSender.mouseMoveTo(20, 20);
         eventSender.mouseDown();

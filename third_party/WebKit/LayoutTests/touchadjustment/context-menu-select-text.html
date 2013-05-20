@@ -50,6 +50,8 @@
     {
         if (window.testRunner && window.internals && internals.touchNodeAdjustedToBestContextMenuNode) {
             description('Test touch adjustment for context-menu gestures with automatic select behaviour.');
+            // Mouse events only work after an initial layout
+            document.body.offsetLeft;
             testAdjustedTouches();
             e.sandbox.style.display = 'none';
         }

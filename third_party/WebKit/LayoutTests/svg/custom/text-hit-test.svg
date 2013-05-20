@@ -25,6 +25,8 @@
       
       function runTest() {
          if (window.eventSender) {
+            // Mouse events only work after an initial layout
+            document.documentElement.offsetLeft;
             testClickAt(91*2, 71*2); 
             testClickAt(91*2, 21*2); 
             document.getElementById("status").textContent = "Failed";

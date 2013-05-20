@@ -2,6 +2,8 @@
 <p>Tests drag-selecting down. If the test succeeds, the text from the center to the end of the text field should be selected.</p>
 <script>
 if (window.eventSender) {
+    // Mouse events only work after an initial layout
+    document.body.offsetLeft;
     eventSender.mouseMoveTo(50, 15);
     eventSender.mouseDown();
     eventSender.mouseUp();

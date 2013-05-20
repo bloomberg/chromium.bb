@@ -2,6 +2,8 @@
 <p>Tests clicking on an input element that has a value that self-destructs. If the test succeeds, there should be a blinking caret in the text field.</p>
 <script>
 if (window.eventSender) {
+    // Mouse events only work after an initial layout
+    document.body.offsetLeft;
     eventSender.mouseMoveTo(15, 15);
     eventSender.mouseDown();
     eventSender.mouseUp();

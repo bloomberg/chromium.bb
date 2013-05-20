@@ -5,6 +5,8 @@ if (window.testRunner)
 function test()
 {
     if (window.eventSender) {
+        // Mouse events only work after an initial layout
+        document.body.offsetLeft;
         eventSender.mouseMoveTo(100, 335);
 	eventSender.mouseDown();
     }

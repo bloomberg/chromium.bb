@@ -20,6 +20,8 @@ function onInputFileChange(testFileInfoList)
 function runTests(testFileInfoList)
 {
     var pathsOnly = testFileInfoList.map(function(fileSpec) { return fileSpec['path']; });
+    // Mouse events only work after an initial layout
+    document.body.offsetLeft;
     eventSender.beginDragWithFiles(pathsOnly);
     eventSender.mouseMoveTo(10, 10);
     eventSender.mouseUp();

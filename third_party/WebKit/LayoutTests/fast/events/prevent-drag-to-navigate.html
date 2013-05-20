@@ -30,6 +30,9 @@ window.addEventListener("dragleave", dragLeave, true);
 function doTest() {
     testRunner.dumpAsText();
 
+    // Mouse events only work after an initial layout
+    document.body.offsetLeft;
+
     eventSender.beginDragWithFiles(["resources/file-for-prevent-drag-to-navigate.html"]);
     eventSender.mouseMoveTo(10, 10);
     eventSender.mouseUp();

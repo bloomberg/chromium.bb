@@ -16,6 +16,8 @@ function myfunc() {
 
 function clickNow() {
     if (window.eventSender) {
+        // Mouse events only work after an initial layout
+        document.documentElement.offsetLeft;
         eventSender.mouseMoveTo(20, 10);
         eventSender.mouseDown();
         eventSender.mouseUp();

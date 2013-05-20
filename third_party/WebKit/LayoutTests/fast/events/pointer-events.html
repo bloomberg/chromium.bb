@@ -50,6 +50,8 @@
         testContent.appendChild(hit);
             
         if (window.eventSender) {
+          // Mouse events only work after an initial layout
+          document.body.offsetLeft;
           // Cell click
           eventSender.mouseMoveTo(15, yOffset + 10);
           eventSender.mouseDown();

@@ -66,6 +66,9 @@ var runTests = function () {
 
     testRunner.dumpAsText();
 
+    // Mouse events only work after an initial layout
+    document.body.offsetLeft;
+
     testElement(0);
     testElement(1);
     testElement(2);

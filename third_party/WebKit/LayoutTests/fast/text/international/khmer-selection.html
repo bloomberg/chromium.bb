@@ -6,6 +6,8 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <script>
     function main() {
+      // Mouse events only work after an initial layout
+      document.body.offsetLeft;
       window.eventSender.mouseMoveTo(5, 8);
       window.eventSender.mouseDown();
 

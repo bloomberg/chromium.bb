@@ -32,6 +32,8 @@
             testRunner.waitUntilDone();
     
         if (window.eventSender) {
+            // Mouse events only work after an initial layout
+            document.documentElement.offsetLeft;
             eventSender.mouseMoveTo(350, 350);
             eventSender.mouseDown();
             eventSender.mouseMoveTo(200, 200);

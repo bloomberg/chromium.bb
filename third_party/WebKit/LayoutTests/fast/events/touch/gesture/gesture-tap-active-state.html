@@ -52,6 +52,9 @@ function runTests()
         return;
     }
 
+    // Mouse events only work after an initial layout
+    document.body.offsetLeft;
+
     debug("Verify active isn't initially set");
     shouldBeFalse("isBoxActive()");
 

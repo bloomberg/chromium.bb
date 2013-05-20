@@ -61,6 +61,8 @@
     {
         if (window.testRunner && window.internals && internals.touchNodeAdjustedToBestClickableNode) {
             description(document.title);
+            // Mouse events only work after an initial layout
+            document.body.offsetLeft;
             testDirectTouches();
             testAdjustedTouches();
             e.sandbox.style.display = 'none';

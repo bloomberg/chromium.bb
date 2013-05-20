@@ -49,6 +49,8 @@ function clickAt(x, y)
 }
 
 if (window.eventSender) {
+    // Mouse events only work after an initial layout
+    document.documentElement.offsetLeft;
 
     // cause focusin and focusout
     clickAt(50, 50);

@@ -79,6 +79,9 @@
               testContent.appendChild(stokeText);
               
               if (window.eventSender) {
+                // Mouse events only work after an initial layout
+                document.documentElement.offsetLeft;
+
                 // Stroke click
                 eventSender.mouseMoveTo(xOffset, yOffset);
                 eventSender.mouseDown();
