@@ -847,4 +847,62 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
   StartTest("transferFromDriveToDownloads");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
+                       TransferFromDownloadsToDrive) {
+  ASSERT_TRUE(PrepareVolume());
+  ResultCatcher catcher;
+  StartTest("transferFromDownloadsToDrive");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
+                       TransferFromSharedToDownloads) {
+  ASSERT_TRUE(PrepareVolume());
+  ResultCatcher catcher;
+  StartTest("transferFromSharedToDownloads");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
+                       TransferFromSharedToDrive) {
+  ASSERT_TRUE(PrepareVolume());
+  ResultCatcher catcher;
+  StartTest("transferFromSharedToDrive");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
+                       TransferFromRecentToDownloads) {
+  ASSERT_TRUE(PrepareVolume());
+  ResultCatcher catcher;
+  StartTest("transferFromRecentToDownloads");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
+                       TransferFromRecentToDrive) {
+  ASSERT_TRUE(PrepareVolume());
+  ResultCatcher catcher;
+  StartTest("transferFromRecentToDrive");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// TODO(hirono): Bring back the offline feature. http://crbug.com/238545
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
+                       DISABLED_TransferFromOfflineToDownloads) {
+  ASSERT_TRUE(PrepareVolume());
+  ResultCatcher catcher;
+  StartTest("transferFromOfflineToDownloads");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// TODO(hirono): Bring back the offline feature. http://crbug.com/238545
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
+                       DISABLED_TransferFromOfflineToDrive) {
+  ASSERT_TRUE(PrepareVolume());
+  ResultCatcher catcher;
+  StartTest("transferFromOfflineToDrive");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
 }  // namespace

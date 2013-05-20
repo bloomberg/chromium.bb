@@ -39,6 +39,13 @@ var EXPECTED_NEWLY_ADDED_FILE = [
 ];
 
 /**
+ * Time out value to be used for waitForFiles.
+ * @type {number}
+ * @const
+ */
+var WAIT_FOR_FILES_TIME_OUT = 3000;
+
+/**
  * @param {boolean} isDrive True if the test is for Drive.
  * @return {Array.<Array.<string>>} A sorted list of expected entries at the
  *     initial state.
@@ -313,9 +320,21 @@ testcase.autocomplete = function() {
 };
 
 /**
- * Tests copy from Drive's root to local's downloads.
+ * Test function to copy from the specified source to the specified destination.
+ * @param {string} targetFile Name of target file to be copied.
+ * @param {string} srcName Type of source volume. e.g. downloads, drive,
+ *     drive_recent, drive_shared_with_me, drive_offline.
+ * @param {Array.<Array.<string>>} srcContents Expected initial contents in the
+ *     source volume.
+ * @param {string} dstName Type of destination volume.
+ * @param {Array.<Array.<string>>} dstContents Expected initial contents in the
+ *     destination volume.
  */
-testcase.transferFromDriveToDownloads = function() {
+testcase.intermediate.copyBetweenVolumes = function(targetFile,
+                                                    srcName,
+                                                    srcContents,
+                                                    dstName,
+                                                    dstContents) {
   var appId;
   var steps = [
     function() {
@@ -323,53 +342,67 @@ testcase.transferFromDriveToDownloads = function() {
     },
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil('selectVolume', appId, ['drive'], steps.shift());
+      callRemoteTestUtil('selectVolume', appId, [srcName], steps.shift());
     },
     function(result) {
       chrome.test.assertTrue(result);
-      // Using callRemoteTestUtil assumes EXPECTED_FILES_BEFORE_LOCAL.length !=
-      // EXPECTED_FILES_BEFORE_DRIVE.length
-      callRemoteTestUtil('waitForFileListChange', appId,
-                         [EXPECTED_FILES_BEFORE_LOCAL.length], steps.shift());
-    },
-    function(actualFilesAfter) {
-      chrome.test.assertEq(EXPECTED_FILES_BEFORE_DRIVE, actualFilesAfter);
-      callRemoteTestUtil('selectFile', appId, ['hello.txt'], steps.shift());
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [srcContents, WAIT_FOR_FILES_TIME_OUT],
+                         steps.shift());
     },
     function(result) {
       chrome.test.assertTrue(result);
-      // Ctrl + C
-      callRemoteTestUtil('fakeKeyDown', appId,
-                         ['#file-list', 'U+0043', true], steps.shift());
+      callRemoteTestUtil('selectFile', appId, [targetFile], steps.shift());
     },
     function(result) {
       chrome.test.assertTrue(result);
-      // Switch to downloads
-      callRemoteTestUtil('selectVolume', appId, ['downloads'], steps.shift());
+      callRemoteTestUtil('execCommand', appId, ['copy'], steps.shift());
     },
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFileListChange', appId,
-                         [EXPECTED_FILES_BEFORE_DRIVE.length], steps.shift());
+      callRemoteTestUtil('selectVolume', appId, [dstName], steps.shift());
     },
-    function(actualFilesAfter) {
-      chrome.test.assertEq(EXPECTED_FILES_BEFORE_LOCAL, actualFilesAfter);
-      // Ctrl + V
-      callRemoteTestUtil('fakeKeyDown', appId,
-                         ['#file-list', 'U+0056', true], steps.shift());
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [dstContents, WAIT_FOR_FILES_TIME_OUT],
+                         steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('execCommand', appId, ['paste'], steps.shift());
     },
     function(result) {
       chrome.test.assertTrue(result);
       callRemoteTestUtil('waitForFileListChange', appId,
-                         [EXPECTED_FILES_BEFORE_LOCAL.length], steps.shift());
+                         [dstContents.length], steps.shift());
     },
     function(actualFilesAfter) {
-      chrome.test.assertEq(EXPECTED_FILES_BEFORE_LOCAL.length + 1,
+      chrome.test.assertEq(dstContents.length + 1,
                            actualFilesAfter.length);
+      var copiedItem = null;
+      for (var i = 0; i < srcContents.length; i++) {
+        if (srcContents[i][0] == targetFile) {
+          copiedItem = srcContents[i];
+          break;
+        }
+      }
+      chrome.test.assertTrue(copiedItem != null);
+      for (var i = 0; i < dstContents.length; i++) {
+        if (dstContents[i][0] == targetFile) {
+          copiedItem[0] = copiedItem[0].replace(/\.(?=[^\.]+$)/, ' (1).');
+          break;
+        }
+      }
+      // File size can not be obtained on drive_shared_with_me volume.
+      var ignoreSize = srcName == 'drive_shared_with_me' ||
+                       dstName == 'drive_shared_with_me';
       for (var i = 0; i < actualFilesAfter.length; i++) {
-        if (actualFilesAfter[i][0] == 'hello (1).txt' &&
-            actualFilesAfter[i][1] == '123 bytes' &&
-            actualFilesAfter[i][2] == 'Plain text') {
+        if (actualFilesAfter[i][0] == copiedItem[0] &&
+            (ignoreSize || actualFilesAfter[i][1] == copiedItem[1]) &&
+            actualFilesAfter[i][2] == copiedItem[2]) {
           chrome.test.succeed();
           return;
         }
@@ -379,4 +412,92 @@ testcase.transferFromDriveToDownloads = function() {
   ];
   steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
   steps.shift()();
+};
+
+/**
+ * Tests copy from drive's root to local's downloads.
+ */
+testcase.transferFromDriveToDownloads = function() {
+  testcase.intermediate.copyBetweenVolumes('hello.txt',
+                                           'drive',
+                                           EXPECTED_FILES_BEFORE_DRIVE,
+                                           'downloads',
+                                           EXPECTED_FILES_BEFORE_LOCAL);
+};
+
+/**
+ * Tests copy from local's downloads to drive's root.
+ */
+testcase.transferFromDownloadsToDrive = function() {
+  testcase.intermediate.copyBetweenVolumes('hello.txt',
+                                           'downloads',
+                                           EXPECTED_FILES_BEFORE_LOCAL,
+                                           'drive',
+                                           EXPECTED_FILES_BEFORE_DRIVE);
+};
+
+/**
+ * Tests copy from drive's shared_with_me to local's downloads.
+ */
+testcase.transferFromSharedToDownloads = function() {
+  testcase.intermediate.copyBetweenVolumes('Test Shared Document.gdoc',
+                                           'drive_shared_with_me',
+                                           EXPECTED_FILES_IN_SHARED_WITH_ME,
+                                           'downloads',
+                                           EXPECTED_FILES_BEFORE_LOCAL);
+};
+
+/**
+ * Tests copy from drive's shared_with_me to drive's root.
+ */
+testcase.transferFromSharedToDrive = function() {
+  testcase.intermediate.copyBetweenVolumes('Test Shared Document.gdoc',
+                                           'drive_shared_with_me',
+                                           EXPECTED_FILES_IN_SHARED_WITH_ME,
+                                           'drive',
+                                           EXPECTED_FILES_BEFORE_DRIVE);
+};
+
+/**
+ * Tests copy from drive's recent to local's downloads.
+ */
+testcase.transferFromRecentToDownloads = function() {
+  testcase.intermediate.copyBetweenVolumes('hello.txt',
+                                           'drive_recent',
+                                           EXPECTED_FILES_IN_RECENT,
+                                           'downloads',
+                                           EXPECTED_FILES_BEFORE_LOCAL);
+};
+
+/**
+ * Tests copy from drive's recent to drive's root.
+ */
+testcase.transferFromRecentToDrive = function() {
+  testcase.intermediate.copyBetweenVolumes('hello.txt',
+                                           'drive_recent',
+                                           EXPECTED_FILES_IN_RECENT,
+                                           'drive',
+                                           EXPECTED_FILES_BEFORE_DRIVE);
+};
+
+/**
+ * Tests copy from drive's offline to local's downloads.
+ */
+testcase.transferFromOfflineToDownloads = function() {
+  testcase.intermediate.copyBetweenVolumes('Test Document.gdoc',
+                                           'drive_offline',
+                                           EXPECTED_FILES_IN_OFFLINE,
+                                           'downloads',
+                                           EXPECTED_FILES_BEFORE_LOCAL);
+};
+
+/**
+ * Tests copy from drive's offline to drive's root.
+ */
+testcase.transferFromOfflineToDrive = function() {
+  testcase.intermediate.copyBetweenVolumes('Test Document.gdoc',
+                                           'drive_offline',
+                                           EXPECTED_FILES_IN_OFFLINE,
+                                           'drive',
+                                           EXPECTED_FILES_BEFORE_DRIVE);
 };

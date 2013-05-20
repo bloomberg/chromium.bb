@@ -221,15 +221,75 @@ test.util.selectFile = function(contentWindow, filename) {
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} iconName Name of the volume icon.
- * @return {boolean} True if the target is found and mousedown and click events
- *     are sent.
+ * @param {function(boolean)} callback Callback function to notify the caller
+ *     whether the target is found and mousedown and click events are sent.
  */
-test.util.selectVolume = function(contentWindow, iconName) {
+test.util.selectVolume = function(contentWindow, iconName, callback) {
   var query = '[volume-type-icon=' + iconName + ']';
-  // To change the selected volume, we have to send both events 'mousedown' and
-  // 'click' to the volume list.
-  return test.util.fakeMouseDown(contentWindow, query) &&
-      test.util.fakeMouseClick(contentWindow, query);
+  var driveQuery = '[volume-type-icon=drive]';
+  var isDriveSubVolume = iconName == 'drive_recent' ||
+                         iconName == 'drive_shared_with_me' ||
+                         iconName == 'drive_offline';
+  var preSelection = false;
+  var steps = {
+    checkQuery: function() {
+      if (contentWindow.document.querySelector(query)) {
+        steps.sendEvents();
+        return;
+      }
+      if (!preSelection) {
+        if (!isDriveSubVolume) {
+          callback(false);
+          return;
+        }
+        if (!(test.util.fakeMouseDown(contentWindow, driveQuery) &&
+              test.util.fakeMouseClick(contentWindow, driveQuery))) {
+          callback(false);
+          return;
+        }
+        preSelection = true;
+      }
+      setTimeout(steps.checkQuery, 50);
+    },
+    sendEvents: function() {
+      // To change the selected volume, we have to send both events 'mousedown'
+      // and 'click' to the volume list.
+      callback(test.util.fakeMouseDown(contentWindow, query) &&
+               test.util.fakeMouseClick(contentWindow, query));
+    }
+  };
+  steps.checkQuery();
+};
+
+/**
+ * Waits the contents of file list becomes to equal to expected contents.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {Array.<Array.<string>>} expected Expected contents of file list.
+ * @param {number} timeoutMs Number of milliseconds of timeout. If this is 0,
+ *     waitForFiles waits for exptected files forever.
+ * @param {function(boolean)} callback Callback function to notify the caller
+ *     whether expected files turned up or not.
+ */
+test.util.waitForFiles = function(contentWindow,
+                                  expected,
+                                  timeoutMs,
+                                  callback) {
+  var startTime = new Date().getTime();
+  var step = function() {
+    if (timeoutMs != 0 &&
+        startTime + timeoutMs < new Date().getTime()) {
+      callback(false);
+      return;
+    }
+    if (chrome.test.checkDeepEq(expected,
+                                test.util.getFileList(contentWindow))) {
+      callback(true);
+      return;
+    }
+    setTimeout(step, 50);
+  };
+  step();
 };
 
 /**
@@ -332,6 +392,8 @@ test.util.deleteFile = function(contentWindow, filename) {
 test.util.registerRemoteTestUtils = function() {
   var onMessage = chrome.runtime ? chrome.runtime.onMessageExternal :
       chrome.extension.onMessageExternal;
+  // This callback function should be return whether the response value of
+  // message will be passed asynchronously or not.
   onMessage.addListener(function(request, sender, sendResponse) {
     if (sender.id != test.util.TESTING_EXTENSION_ID) {
       console.error('The testing extension must be white-listed.');
@@ -381,8 +443,8 @@ test.util.registerRemoteTestUtils = function() {
           sendResponse(test.util.selectFile(contentWindow, request.args[0]));
           return false;
         case 'selectVolume':
-          sendResponse(test.util.selectVolume(contentWindow, request.args[0]));
-          return false;
+          test.util.selectVolume(contentWindow, request.args[0], sendResponse);
+          return true;
         case 'fakeKeyDown':
           sendResponse(test.util.fakeKeyDown(contentWindow,
                                              request.args[0],
@@ -402,6 +464,15 @@ test.util.registerRemoteTestUtils = function() {
           return false;
         case 'deleteFile':
           sendResponse(test.util.deleteFile(contentWindow, request.args[0]));
+          return false;
+        case 'waitForFiles':
+          test.util.waitForFiles(contentWindow,
+                                 request.args[0],
+                                 request.args[1],
+                                 sendResponse);
+          return true;
+        case 'execCommand':
+          sendResponse(contentWindow.document.execCommand(request.args[0]));
           return false;
         default:
           console.error('Window function ' + request.func + ' not found.');
