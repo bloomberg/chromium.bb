@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebIDBKey.h"
@@ -16,17 +17,22 @@ namespace content {
 
 class CONTENT_EXPORT IndexedDBKey {
  public:
-  IndexedDBKey(); // Defaults to WebKit::WebIDBKey::InvalidType.
+  typedef std::vector<IndexedDBKey> KeyArray;
+
+  IndexedDBKey();  // Defaults to WebKit::WebIDBKey::InvalidType.
+  IndexedDBKey(WebKit::WebIDBKey::Type);  // must be Null or Invalid
+  explicit IndexedDBKey(const KeyArray& array);
+  explicit IndexedDBKey(const string16& str);
+  IndexedDBKey(double number,
+               WebKit::WebIDBKey::Type type);  // must be date or number
   explicit IndexedDBKey(const WebKit::WebIDBKey& key);
   ~IndexedDBKey();
 
-  void SetNull();
-  void SetInvalid();
-  void SetArray(const std::vector<IndexedDBKey>& array);
-  void SetString(const string16& string);
-  void SetDate(double date);
-  void SetNumber(double number);
-  void Set(const WebKit::WebIDBKey& key);
+  bool IsValid() const;
+
+  int Compare(const IndexedDBKey& other) const;
+  bool IsLessThan(const IndexedDBKey& other) const;
+  bool IsEqual(const IndexedDBKey& other) const;
 
   WebKit::WebIDBKey::Type type() const { return type_; }
   const std::vector<IndexedDBKey>& array() const { return array_; }
@@ -35,6 +41,7 @@ class CONTENT_EXPORT IndexedDBKey {
   double number() const { return number_; }
 
   operator WebKit::WebIDBKey() const;
+  size_t size_estimate() const { return size_estimate_; }
 
  private:
   WebKit::WebIDBKey::Type type_;
@@ -42,6 +49,13 @@ class CONTENT_EXPORT IndexedDBKey {
   string16 string_;
   double date_;
   double number_;
+
+  size_t size_estimate_;
+
+  // Very rough estimate of minimum key size overhead.
+  enum {
+    kOverheadSize = 16
+  };
 };
 
 }  // namespace content

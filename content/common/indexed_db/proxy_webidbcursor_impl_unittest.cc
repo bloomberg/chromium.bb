@@ -24,25 +24,22 @@ namespace {
 class MockDispatcher : public IndexedDBDispatcher {
  public:
   MockDispatcher()
-      : prefetch_calls_(0)
-      , last_prefetch_count_(0)
-      , continue_calls_(0)
-      , destroyed_cursor_id_(0) {
-  }
+      : prefetch_calls_(0),
+        last_prefetch_count_(0),
+        continue_calls_(0),
+        destroyed_cursor_id_(0) {}
 
-  virtual void RequestIDBCursorPrefetch(
-      int n,
-      WebIDBCallbacks* callbacks,
-      int32 ipc_cursor_id) OVERRIDE {
+  virtual void RequestIDBCursorPrefetch(int n,
+                                        WebIDBCallbacks* callbacks,
+                                        int32 ipc_cursor_id) OVERRIDE {
     ++prefetch_calls_;
     last_prefetch_count_ = n;
     callbacks_.reset(callbacks);
   }
 
-  virtual void RequestIDBCursorContinue(
-      const IndexedDBKey&,
-      WebIDBCallbacks* callbacks,
-      int32 ipc_cursor_id) OVERRIDE {
+  virtual void RequestIDBCursorContinue(const IndexedDBKey&,
+                                        WebIDBCallbacks* callbacks,
+                                        int32 ipc_cursor_id) OVERRIDE {
     ++continue_calls_;
     callbacks_.reset(callbacks);
   }
@@ -66,15 +63,14 @@ class MockDispatcher : public IndexedDBDispatcher {
 
 class MockContinueCallbacks : public WebIDBCallbacks {
  public:
-  MockContinueCallbacks(IndexedDBKey* key = 0)
-      : key_(key) {
-  }
+  MockContinueCallbacks(IndexedDBKey* key = 0) : key_(key) {}
 
   virtual void onSuccess(const WebIDBKey& key,
                          const WebIDBKey& primaryKey,
                          const WebData& value) {
+
     if (key_)
-      key_->Set(key);
+      *key_ = IndexedDBKey(key);
   }
 
  private:
@@ -99,8 +95,8 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
     for (int i = 0; i < RendererWebIDBCursorImpl::kPrefetchContinueThreshold;
          ++i) {
       cursor.continueFunction(null_key, new MockContinueCallbacks());
-      EXPECT_EQ(dispatcher.continue_calls(), ++continue_calls);
-      EXPECT_EQ(dispatcher.prefetch_calls(), 0);
+      EXPECT_EQ(++continue_calls, dispatcher.continue_calls());
+      EXPECT_EQ(0, dispatcher.prefetch_calls());
     }
 
     // Do enough repetitions to verify that the count grows each time,
@@ -114,8 +110,8 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
 
       // Initiate the prefetch
       cursor.continueFunction(null_key, new MockContinueCallbacks());
-      EXPECT_EQ(dispatcher.continue_calls(), continue_calls);
-      EXPECT_EQ(dispatcher.prefetch_calls(), repetitions + 1);
+      EXPECT_EQ(continue_calls, dispatcher.continue_calls());
+      EXPECT_EQ(repetitions + 1, dispatcher.prefetch_calls());
 
       // Verify that the requested count has increased since last time.
       int prefetch_count = dispatcher.last_prefetch_count();
@@ -123,11 +119,11 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
       last_prefetch_count = prefetch_count;
 
       // Fill the prefetch cache as requested.
-      std::vector<IndexedDBKey> keys(prefetch_count);
+      std::vector<IndexedDBKey> keys;
       std::vector<IndexedDBKey> primary_keys(prefetch_count);
       std::vector<WebData> values(prefetch_count);
       for (int i = 0; i < prefetch_count; ++i) {
-        keys[i].SetNumber(expected_key + i);
+        keys.push_back(IndexedDBKey(expected_key + i, WebIDBKey::NumberType));
       }
       cursor.SetPrefetchData(keys, primary_keys, values);
 
@@ -139,11 +135,11 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
       for (int i = 0; i < prefetch_count; ++i) {
         IndexedDBKey key;
         cursor.continueFunction(null_key, new MockContinueCallbacks(&key));
-        EXPECT_EQ(dispatcher.continue_calls(), continue_calls);
-        EXPECT_EQ(dispatcher.prefetch_calls(), repetitions + 1);
+        EXPECT_EQ(continue_calls, dispatcher.continue_calls());
+        EXPECT_EQ(repetitions + 1, dispatcher.prefetch_calls());
 
-        EXPECT_EQ(key.type(), WebIDBKey::NumberType);
-        EXPECT_EQ(key.number(), expected_key++);
+        EXPECT_EQ(WebIDBKey::NumberType, key.type());
+        EXPECT_EQ(expected_key++, key.number());
       }
     }
   }

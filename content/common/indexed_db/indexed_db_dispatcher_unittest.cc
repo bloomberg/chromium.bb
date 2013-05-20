@@ -22,9 +22,7 @@ namespace {
 
 class MockCallbacks : public WebIDBCallbacks {
  public:
-  MockCallbacks()
-      : error_seen_(false) {
-  }
+  MockCallbacks() : error_seen_(false) {}
 
   virtual void onError(const WebIDBDatabaseError&) OVERRIDE {
     error_seen_ = true;
@@ -47,18 +45,16 @@ TEST(IndexedDBDispatcherTest, ValueSizeTest) {
 
   MockCallbacks callbacks;
   IndexedDBDispatcher dispatcher;
-  IndexedDBKey key;
-  key.SetNumber(0);
-  dispatcher.RequestIDBDatabasePut(
-      ipc_dummy_id,
-      transaction_id,
-      object_store_id,
-      value,
-      key,
-      WebIDBDatabase::AddOrUpdate,
-      &callbacks,
-      WebVector<long long>(),
-      WebVector<WebVector<WebIDBKey> >());
+  IndexedDBKey key(0, WebIDBKey::NumberType);
+  dispatcher.RequestIDBDatabasePut(ipc_dummy_id,
+                                   transaction_id,
+                                   object_store_id,
+                                   value,
+                                   key,
+                                   WebIDBDatabase::AddOrUpdate,
+                                   &callbacks,
+                                   WebVector<long long>(),
+                                   WebVector<WebVector<WebIDBKey> >());
 
   EXPECT_TRUE(callbacks.error_seen());
 }

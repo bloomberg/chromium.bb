@@ -12,30 +12,36 @@ using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBKey;
 
 IndexedDBKeyRange::IndexedDBKeyRange()
-    : lower_open_(false),
-      upper_open_(false) {
-  lower_.SetNull();
-  upper_.SetNull();
-}
+    : lower_(WebIDBKey::NullType),
+      upper_(WebIDBKey::NullType),
+      lower_open_(false),
+      upper_open_(false) {}
 
-IndexedDBKeyRange::IndexedDBKeyRange(const WebIDBKeyRange& key_range) {
-  lower_.Set(key_range.lower());
-  upper_.Set(key_range.upper());
-  lower_open_ = key_range.lowerOpen();
-  upper_open_ = key_range.upperOpen();
-}
+IndexedDBKeyRange::IndexedDBKeyRange(const WebIDBKeyRange& key_range)
+    : lower_(key_range.lower()),
+      upper_(key_range.upper()),
+      lower_open_(key_range.lowerOpen()),
+      upper_open_(key_range.upperOpen()) {}
 
-IndexedDBKeyRange::~IndexedDBKeyRange() {
-}
+IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& lower,
+                                     const IndexedDBKey& upper,
+                                     bool lower_open,
+                                     bool upper_open)
+    : lower_(lower),
+      upper_(upper),
+      lower_open_(lower_open),
+      upper_open_(upper_open) {}
 
+IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& key)
+    : lower_(key), upper_(key), lower_open_(false), upper_open_(false) {}
 
-void IndexedDBKeyRange::Set(const IndexedDBKey& lower,
-                            const IndexedDBKey& upper,
-                            bool lower_open, bool upper_open) {
-  lower_.Set(lower);
-  upper_.Set(upper);
-  lower_open_ = lower_open;
-  upper_open_ = upper_open;
+IndexedDBKeyRange::~IndexedDBKeyRange() {}
+
+bool IndexedDBKeyRange::IsOnlyKey() const {
+  if (lower_open_ || upper_open_)
+    return false;
+
+  return lower_.IsEqual(upper_);
 }
 
 IndexedDBKeyRange::operator WebIDBKeyRange() const {

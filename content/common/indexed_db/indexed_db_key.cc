@@ -13,60 +13,132 @@ namespace content {
 using WebKit::WebIDBKey;
 using WebKit::WebVector;
 
+namespace {
+size_t CalculateKeySize(const WebIDBKey& key);
+
+template <typename T> static size_t CalculateSize(const T& keys) {
+  size_t size(0);
+  for (size_t i = 0; i < keys.size(); ++i) {
+    size += CalculateKeySize(keys[i]);
+  }
+  return size;
+}
+
+size_t CalculateKeySize(const WebIDBKey& key) {
+  switch (key.type()) {
+    case WebIDBKey::ArrayType:
+      return CalculateSize(key.array());
+
+    case WebIDBKey::StringType:
+      return key.string().length() * sizeof(string16::value_type);
+
+    case WebIDBKey::DateType:
+    case WebIDBKey::NumberType:
+      return sizeof(double);
+    default:
+      return 0;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+template <typename T>
+static IndexedDBKey::KeyArray
+CopyKeyArray(const T& array) {
+  IndexedDBKey::KeyArray result;
+  result.reserve(array.size());
+  for (size_t i = 0; i < array.size(); ++i) {
+    result.push_back(IndexedDBKey(array[i]));
+  }
+  return result;
+}
+
+static IndexedDBKey::KeyArray CopyKeyArray(const WebIDBKey& other) {
+  IndexedDBKey::KeyArray result;
+  if (other.type() == WebIDBKey::ArrayType) {
+    result = CopyKeyArray(other.array());
+  }
+  return result;
+}
+} // namespace
+
 IndexedDBKey::IndexedDBKey()
     : type_(WebIDBKey::NullType),
       date_(0),
-      number_(0) {
+      number_(0),
+      size_estimate_(kOverheadSize) {}
+
+IndexedDBKey::IndexedDBKey(WebIDBKey::Type type)
+    : type_(type), date_(0), number_(0), size_estimate_(kOverheadSize) {
+  DCHECK(type == WebIDBKey::NullType || type == WebIDBKey::InvalidType);
 }
 
-IndexedDBKey::IndexedDBKey(const WebIDBKey& key) {
-  Set(key);
+IndexedDBKey::IndexedDBKey(double number, WebIDBKey::Type type)
+    : type_(type),
+      date_(number),
+      number_(number),
+      size_estimate_(kOverheadSize + sizeof(double)) {
+  DCHECK(type == WebIDBKey::NumberType || type == WebIDBKey::DateType);
 }
 
-IndexedDBKey::~IndexedDBKey() {
-}
+IndexedDBKey::IndexedDBKey(const KeyArray& keys)
+    : type_(WebIDBKey::ArrayType),
+      array_(CopyKeyArray(keys)),
+      date_(0),
+      number_(0),
+      size_estimate_(kOverheadSize + CalculateSize(keys)) {}
 
-void IndexedDBKey::SetInvalid() {
-  type_ = WebIDBKey::InvalidType;
-}
+IndexedDBKey::IndexedDBKey(const WebIDBKey& key)
+    : type_(key.type()),
+      array_(CopyKeyArray(key)),
+      string_(key.type() == WebIDBKey::StringType
+                  ? static_cast<string16>(key.string())
+                  : string16()),
+      date_(key.type() == WebIDBKey::DateType ? key.date() : 0),
+      number_(key.type() == WebIDBKey::NumberType ? key.number() : 0),
+      size_estimate_(kOverheadSize + CalculateKeySize(key)) {}
 
-void IndexedDBKey::SetNull() {
-  type_ = WebIDBKey::NullType;
-}
+IndexedDBKey::IndexedDBKey(const string16& key)
+    : type_(WebIDBKey::StringType), string_(key) {}
 
-void IndexedDBKey::SetArray(const std::vector<IndexedDBKey>& array) {
-  type_ = WebIDBKey::ArrayType;
-  array_ = array;
-}
+IndexedDBKey::~IndexedDBKey() {}
 
-void IndexedDBKey::SetString(const string16& string) {
-  type_ = WebIDBKey::StringType;
-  string_ = string;
-}
+int IndexedDBKey::Compare(const IndexedDBKey& other) const {
+  if (type_ != other.type_)
+    return type_ > other.type_ ? -1 : 1;
 
-void IndexedDBKey::SetDate(double date) {
-  type_ = WebIDBKey::DateType;
-  date_ = date;
-}
-
-void IndexedDBKey::SetNumber(double number) {
-  type_ = WebIDBKey::NumberType;
-  number_ = number;
-}
-
-void IndexedDBKey::Set(const WebIDBKey& key) {
-  type_ = key.type();
-  array_.clear();
-  if (key.type() == WebIDBKey::ArrayType) {
-    WebVector<WebIDBKey> array = key.array();
-    for (size_t i = 0; i < array.size(); ++i) {
-      array_.push_back(IndexedDBKey(array[i]));
-    }
+  switch (type_) {
+    case WebIDBKey::ArrayType:
+      for (size_t i = 0; i < array_.size() && i < other.array_.size(); ++i) {
+        if (int result = array_[i].Compare(other.array_[i]))
+          return result;
+      }
+      if (array_.size() < other.array_.size())
+        return -1;
+      if (array_.size() > other.array_.size())
+        return 1;
+      return 0;
+    case WebIDBKey::StringType:
+      return -other.string_.compare(string_);
+    case WebIDBKey::DateType:
+    case WebIDBKey::NumberType:
+      return (number_ < other.number_) ? -1 : (number_ > other.number_) ? 1 : 0;
+    case WebIDBKey::InvalidType:
+    case WebIDBKey::NullType:
+      NOTREACHED();
+      return 0;
   }
-  string_ = key.type() == WebIDBKey::StringType ?
-                static_cast<string16>(key.string()) : string16();
-  number_ = key.type() == WebIDBKey::NumberType ? key.number() : 0;
-  date_ = key.type() == WebIDBKey::DateType ? key.date() : 0;
+
+  NOTREACHED();
+  return 0;
+}
+
+bool IndexedDBKey::IsLessThan(const IndexedDBKey& other) const {
+  return Compare(other) < 0;
+}
+
+bool IndexedDBKey::IsEqual(const IndexedDBKey& other) const {
+  return !Compare(other);
 }
 
 IndexedDBKey::operator WebIDBKey() const {
