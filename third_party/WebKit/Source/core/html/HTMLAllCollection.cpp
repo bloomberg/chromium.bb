@@ -27,6 +27,7 @@
 #include "core/html/HTMLAllCollection.h"
 
 #include "core/dom/Element.h"
+#include "core/dom/NamedNodesCollection.h"
 
 namespace WebCore {
 
@@ -61,6 +62,24 @@ Node* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigned i
     }
 
     return 0;
+}
+
+void HTMLAllCollection::anonymousNamedGetter(const AtomicString& name, RefPtr<NodeList>& returnValue1, RefPtr<Node>& returnValue2)
+{
+    Vector<RefPtr<Node> > namedItems;
+    this->namedItems(name, namedItems);
+
+    if (!namedItems.size())
+        return;
+
+    if (namedItems.size() == 1) {
+        returnValue2 = namedItems.at(0);
+        return;
+    }
+
+    // FIXME: HTML5 specification says this should be a HTMLCollection.
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
+    returnValue1 = NamedNodesCollection::create(namedItems);
 }
 
 } // namespace WebCore

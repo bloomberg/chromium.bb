@@ -74,17 +74,6 @@ static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v
     return toV8Fast(result.release(), holder, collection);
 }
 
-v8::Handle<v8::Value> V8HTMLAllCollection::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return v8Undefined();
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return v8Undefined();
-
-    HTMLAllCollection* imp = V8HTMLAllCollection::toNative(info.Holder());
-    return getNamedItems(imp, toWebCoreAtomicString(name), info);
-}
-
 v8::Handle<v8::Value> V8HTMLAllCollection::itemMethodCustom(const v8::Arguments& args)
 {
     HTMLAllCollection* imp = V8HTMLAllCollection::toNative(args.Holder());

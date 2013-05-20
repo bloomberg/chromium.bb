@@ -24,7 +24,6 @@
  */
 
 [
-    CustomNamedGetter,
     CustomCall,
     MasqueradesAsUndefined,
     GenerateIsReachable=ownerNode,
@@ -32,6 +31,7 @@
 ] interface HTMLAllCollection {
     readonly attribute unsigned long length;
     [Custom] getter Node item([Default=Undefined] optional unsigned long index);
+    [ImplementedAs=anonymousNamedGetter] getter (NodeList or Node)(DOMString name);
     [Custom] Node namedItem(DOMString name);
     // FIXME: This should return an HTMLAllCollection.
     NodeList tags(DOMString name);
