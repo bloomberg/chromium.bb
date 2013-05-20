@@ -7,8 +7,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(LanguageUsageMetricsTest, ParseAcceptLanguages) {
-  std::set<Language> language_set;
-  std::set<Language>::const_iterator it;
+  std::set<int> language_set;
+  std::set<int>::const_iterator it;
+
+  const int ENGLISH = 25966;
+  const int SPANISH = 25971;
+  const int JAPANESE = 27233;
 
   // Basic single language case.
   LanguageUsageMetrics::ParseAcceptLanguages("ja", &language_set);
@@ -52,8 +56,8 @@ TEST(LanguageUsageMetricsTest, ParseAcceptLanguages) {
   EXPECT_EQ(3U, language_set.size());
   it = language_set.begin();
   EXPECT_EQ(ENGLISH, *it);
-  EXPECT_EQ(JAPANESE, *++it);
   EXPECT_EQ(SPANISH, *++it);
+  EXPECT_EQ(JAPANESE, *++it);
 
   // Two empty languages.
   LanguageUsageMetrics::ParseAcceptLanguages(",", &language_set);
@@ -70,22 +74,30 @@ TEST(LanguageUsageMetricsTest, ParseAcceptLanguages) {
   EXPECT_EQ(SPANISH, *language_set.begin());
 
   // Combination of invalid and valid.
-  LanguageUsageMetrics::ParseAcceptLanguages("zz,en", &language_set);
+  LanguageUsageMetrics::ParseAcceptLanguages("1234,en", &language_set);
   EXPECT_EQ(1U, language_set.size());
-  EXPECT_EQ(ENGLISH, *language_set.begin());
+  it = language_set.begin();
+  EXPECT_EQ(ENGLISH, *it);
 }
 
-TEST(LanguageUsageMetricsTest, ToLanguage) {
+TEST(LanguageUsageMetricsTest, ToLanguageCode) {
+  const int SPANISH = 25971;
+  const int JAPANESE = 27233;
+
   // Basic case.
-  EXPECT_EQ(JAPANESE, LanguageUsageMetrics::ToLanguage("ja"));
+  EXPECT_EQ(JAPANESE, LanguageUsageMetrics::ToLanguageCode("ja"));
 
   // Case is ignored.
-  EXPECT_EQ(SPANISH, LanguageUsageMetrics::ToLanguage("Es"));
+  EXPECT_EQ(SPANISH, LanguageUsageMetrics::ToLanguageCode("Es"));
 
   // Coutry code is ignored.
-  EXPECT_EQ(JAPANESE, LanguageUsageMetrics::ToLanguage("ja-JP"));
+  EXPECT_EQ(JAPANESE, LanguageUsageMetrics::ToLanguageCode("ja-JP"));
 
   // Invalid locales are considered as unknown language.
-  EXPECT_EQ(UNKNOWN_LANGUAGE, LanguageUsageMetrics::ToLanguage(std::string()));
-  EXPECT_EQ(UNKNOWN_LANGUAGE, LanguageUsageMetrics::ToLanguage("xx"));
+  EXPECT_EQ(0, LanguageUsageMetrics::ToLanguageCode(std::string()));
+  EXPECT_EQ(0, LanguageUsageMetrics::ToLanguageCode("1234"));
+
+  // "xx" is not acceptable because it doesn't exist in ISO 639-1 table.
+  // However, LanguageUsageMetrics doesn't tell what code is valid.
+  EXPECT_EQ(30840, LanguageUsageMetrics::ToLanguageCode("xx"));
 }

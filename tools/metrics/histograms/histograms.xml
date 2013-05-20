@@ -1989,6 +1989,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="LanguageUsage.AcceptLanguage" enum="LanguageCode">
+  <summary>Accept languages.</summary>
+</histogram>
+
+<histogram name="LanguageUsage.ApplicationLanguage" enum="LanguageCode">
+  <summary>Application languages used for UI.</summary>
+</histogram>
+
 <histogram name="LevelDBEnv.All.SafeThreadAccess" units="accesses">
   <summary>
     Linux and CrOS use unlocked_stdio(3). If it is used unsafely, record it
@@ -11385,6 +11393,537 @@ other types of suffix sets.
   <int value="3" label="IPV6_GLOBAL_ADDRESS_MISSING"/>
   <int value="4" label="IPV6_GLOBAL_ADDRESS_PRESENT"/>
   <int value="5" label="IPV6_INTERFACE_ARRAY_TOO_SHORT"/>
+</enum>
+
+<enum name="LanguageCode" type="int">
+  <summary>ISO 639 Language Codes.</summary>
+  <int value="24929" label="Afar"/>
+  <int value="24930" label="Abkhazian"/>
+  <int value="24933" label="Avestan"/>
+  <int value="24934" label="Afrikaans"/>
+  <int value="24939" label="Akan"/>
+  <int value="24941" label="Amharic"/>
+  <int value="24942" label="Aragonese"/>
+  <int value="24946" label="Arabic"/>
+  <int value="24947" label="Assamese"/>
+  <int value="24950" label="Avaric"/>
+  <int value="24953" label="Aymara"/>
+  <int value="24954" label="Azerbaijani"/>
+  <int value="25185" label="Bashkir"/>
+  <int value="25189" label="Belarusian"/>
+  <int value="25191" label="Bulgarian"/>
+  <int value="25192" label="Bihari"/>
+  <int value="25193" label="Bislama"/>
+  <int value="25197" label="Bambara"/>
+  <int value="25198" label="Bengali"/>
+  <int value="25199" label="Tibetan"/>
+  <int value="25202" label="Breton"/>
+  <int value="25203" label="Bosnian"/>
+  <int value="25441" label="Catalan"/>
+  <int value="25445" label="Chechen"/>
+  <int value="25448" label="Chamorro"/>
+  <int value="25455" label="Corsican"/>
+  <int value="25458" label="Cree"/>
+  <int value="25459" label="Czech"/>
+  <int value="25461" label="Church Slavic"/>
+  <int value="25462" label="Chuvash"/>
+  <int value="25465" label="Welsh"/>
+  <int value="25697" label="Danish"/>
+  <int value="25701" label="German"/>
+  <int value="25718" label="Divehi"/>
+  <int value="25722" label="Dzongkha"/>
+  <int value="25957" label="Ewe"/>
+  <int value="25964" label="Greek"/>
+  <int value="25966" label="English"/>
+  <int value="25967" label="Esperanto"/>
+  <int value="25971" label="Spanish"/>
+  <int value="25972" label="Estonian"/>
+  <int value="25973" label="Basque"/>
+  <int value="26209" label="Persian"/>
+  <int value="26214" label="Fulah"/>
+  <int value="26217" label="Finnish"/>
+  <int value="26218" label="Fijian"/>
+  <int value="26223" label="Faroese"/>
+  <int value="26226" label="French"/>
+  <int value="26233" label="Western Frisian"/>
+  <int value="26465" label="Irish"/>
+  <int value="26468" label="Scottish Gaelic"/>
+  <int value="26476" label="Galician"/>
+  <int value="26478" label="Guarani"/>
+  <int value="26485" label="Gujarati"/>
+  <int value="26486" label="Manx"/>
+  <int value="26721" label="Hausa"/>
+  <int value="26725" label="Hebrew"/>
+  <int value="26729" label="Hindi"/>
+  <int value="26735" label="Hiri Motu"/>
+  <int value="26738" label="Croatian"/>
+  <int value="26740" label="Haitian"/>
+  <int value="26741" label="Hungarian"/>
+  <int value="26745" label="Armenian"/>
+  <int value="26746" label="Herero"/>
+  <int value="26977" label="Interlingua"/>
+  <int value="26980" label="Indonesian"/>
+  <int value="26981" label="Interlingue"/>
+  <int value="26983" label="Igbo"/>
+  <int value="26985" label="Sichuan Yi"/>
+  <int value="26987" label="Inupiaq"/>
+  <int value="26991" label="Ido"/>
+  <int value="26995" label="Icelandic"/>
+  <int value="26996" label="Italian"/>
+  <int value="26997" label="Inuktitut"/>
+  <int value="27233" label="Japanese"/>
+  <int value="27254" label="Javanese"/>
+  <int value="27489" label="Georgian"/>
+  <int value="27495" label="Kongo"/>
+  <int value="27497" label="Kikuyu"/>
+  <int value="27498" label="Kuanyama"/>
+  <int value="27499" label="Kazakh"/>
+  <int value="27500" label="Kalaallisut"/>
+  <int value="27501" label="Khmer"/>
+  <int value="27502" label="Kannada"/>
+  <int value="27503" label="Korean"/>
+  <int value="27506" label="Kanuri"/>
+  <int value="27507" label="Kashmiri"/>
+  <int value="27509" label="Kurdish"/>
+  <int value="27510" label="Komi"/>
+  <int value="27511" label="Cornish"/>
+  <int value="27513" label="Kirghiz"/>
+  <int value="27745" label="Latin"/>
+  <int value="27746" label="Luxembourgish"/>
+  <int value="27751" label="Ganda"/>
+  <int value="27753" label="Limburgish"/>
+  <int value="27758" label="Lingala"/>
+  <int value="27759" label="Lao"/>
+  <int value="27764" label="Lithuanian"/>
+  <int value="27765" label="Luba-Katanga"/>
+  <int value="27766" label="Latvian"/>
+  <int value="28007" label="Malagasy"/>
+  <int value="28008" label="Marshallese"/>
+  <int value="28009" label="Maori"/>
+  <int value="28011" label="Macedonian"/>
+  <int value="28012" label="Malayalam"/>
+  <int value="28014" label="Mongolian"/>
+  <int value="28015" label="Moldavian"/>
+  <int value="28018" label="Marathi"/>
+  <int value="28019" label="Malay"/>
+  <int value="28020" label="Maltese"/>
+  <int value="28025" label="Burmese"/>
+  <int value="28257" label="Nauru"/>
+  <int value="28258" label="Norwegian Bokmal"/>
+  <int value="28260" label="North Ndebele"/>
+  <int value="28261" label="Nepali"/>
+  <int value="28263" label="Ndonga"/>
+  <int value="28268" label="Dutch"/>
+  <int value="28270" label="Norwegian Nynorsk"/>
+  <int value="28271" label="Norwegian"/>
+  <int value="28274" label="South Ndebele"/>
+  <int value="28278" label="Navajo"/>
+  <int value="28281" label="Nyanja"/>
+  <int value="28515" label="Occitan"/>
+  <int value="28522" label="Ojibwa"/>
+  <int value="28525" label="Oromo"/>
+  <int value="28530" label="Oriya"/>
+  <int value="28531" label="Ossetic"/>
+  <int value="28769" label="Punjabi"/>
+  <int value="28777" label="Pali"/>
+  <int value="28780" label="Polish"/>
+  <int value="28787" label="Pashto"/>
+  <int value="28788" label="Portuguese"/>
+  <int value="29045" label="Quechua"/>
+  <int value="29293" label="Romansh"/>
+  <int value="29294" label="Rundi"/>
+  <int value="29295" label="Romanian"/>
+  <int value="29301" label="Russian"/>
+  <int value="29303" label="Kinyarwanda"/>
+  <int value="29537" label="Sanskrit"/>
+  <int value="29539" label="Sardinian"/>
+  <int value="29540" label="Sindhi"/>
+  <int value="29541" label="Northern Sami"/>
+  <int value="29543" label="Sango"/>
+  <int value="29544" label="Serbo-Croatian"/>
+  <int value="29545" label="Sinhala"/>
+  <int value="29547" label="Slovak"/>
+  <int value="29548" label="Slovenian"/>
+  <int value="29549" label="Samoan"/>
+  <int value="29550" label="Shona"/>
+  <int value="29551" label="Somali"/>
+  <int value="29553" label="Albanian"/>
+  <int value="29554" label="Serbian"/>
+  <int value="29555" label="Swati"/>
+  <int value="29556" label="Southern Sotho"/>
+  <int value="29557" label="Sundanese"/>
+  <int value="29558" label="Swedish"/>
+  <int value="29559" label="Swahili"/>
+  <int value="29793" label="Tamil"/>
+  <int value="29797" label="Telugu"/>
+  <int value="29799" label="Tajik"/>
+  <int value="29800" label="Thai"/>
+  <int value="29801" label="Tigrinya"/>
+  <int value="29803" label="Turkmen"/>
+  <int value="29804" label="Tagalog"/>
+  <int value="29806" label="Tswana"/>
+  <int value="29807" label="Tonga"/>
+  <int value="29810" label="Turkish"/>
+  <int value="29811" label="Tsonga"/>
+  <int value="29812" label="Tatar"/>
+  <int value="29815" label="Twi"/>
+  <int value="29817" label="Tahitian"/>
+  <int value="30055" label="Uighur"/>
+  <int value="30059" label="Ukrainian"/>
+  <int value="30066" label="Urdu"/>
+  <int value="30074" label="Uzbek"/>
+  <int value="30309" label="Venda"/>
+  <int value="30313" label="Vietnamese"/>
+  <int value="30319" label="Volapuk"/>
+  <int value="30561" label="Walloon"/>
+  <int value="30575" label="Wolof"/>
+  <int value="30824" label="Xhosa"/>
+  <int value="31081" label="Yiddish"/>
+  <int value="31087" label="Yoruba"/>
+  <int value="31329" label="Zhuang"/>
+  <int value="31336" label="Chinese"/>
+  <int value="31349" label="Zulu"/>
+  <int value="6382437" label="Achinese"/>
+  <int value="6382440" label="Acoli"/>
+  <int value="6382689" label="Adangme"/>
+  <int value="6382713" label="Adyghe"/>
+  <int value="6383201" label="Afro-Asiatic Language"/>
+  <int value="6383208" label="Afrihili"/>
+  <int value="6383982" label="Ainu"/>
+  <int value="6384491" label="Akkadian"/>
+  <int value="6384741" label="Aleut"/>
+  <int value="6384743" label="Algonquian Language"/>
+  <int value="6384756" label="Southern Altai"/>
+  <int value="6385255" label="Old English"/>
+  <int value="6385264" label="Angika"/>
+  <int value="6385761" label="Apache Language"/>
+  <int value="6386275" label="Aramaic"/>
+  <int value="6386286" label="Araucanian"/>
+  <int value="6386288" label="Arapaho"/>
+  <int value="6386292" label="Artificial Language"/>
+  <int value="6386295" label="Arawak"/>
+  <int value="6386529" label="Asu"/>
+  <int value="6386548" label="Asturian"/>
+  <int value="6386792" label="Athapascan Language"/>
+  <int value="6387059" label="Australian Language"/>
+  <int value="6387553" label="Awadhi"/>
+  <int value="6447460" label="Banda"/>
+  <int value="6447465" label="Bamileke Language"/>
+  <int value="6447468" label="Baluchi"/>
+  <int value="6447470" label="Balinese"/>
+  <int value="6447475" label="Basa"/>
+  <int value="6447476" label="Baltic Language"/>
+  <int value="6448490" label="Beja"/>
+  <int value="6448493" label="Bemba"/>
+  <int value="6448498" label="Berber"/>
+  <int value="6448506" label="Bena"/>
+  <int value="6449263" label="Bhojpuri"/>
+  <int value="6449515" label="Bikol"/>
+  <int value="6449518" label="Bini"/>
+  <int value="6450273" label="Siksika"/>
+  <int value="6450804" label="Bantu"/>
+  <int value="6451809" label="Braj"/>
+  <int value="6451832" label="Bodo"/>
+  <int value="6452331" label="Batak"/>
+  <int value="6452577" label="Buriat"/>
+  <int value="6452583" label="Buginese"/>
+  <int value="6453614" label="Blin"/>
+  <int value="6512996" label="Caddo"/>
+  <int value="6513001" label="Central American Indian Language"/>
+  <int value="6513010" label="Carib"/>
+  <int value="6513013" label="Caucasian Language"/>
+  <int value="6513017" label="Cayuga"/>
+  <int value="6513512" label="Atsam"/>
+  <int value="6514018" label="Cebuano"/>
+  <int value="6514028" label="Celtic Language"/>
+  <int value="6514535" label="Chiga"/>
+  <int value="6514786" label="Chibcha"/>
+  <int value="6514791" label="Chagatai"/>
+  <int value="6514795" label="Chuukese"/>
+  <int value="6514797" label="Mari"/>
+  <int value="6514798" label="Chinook Jargon"/>
+  <int value="6514799" label="Choctaw"/>
+  <int value="6514800" label="Chipewyan"/>
+  <int value="6514802" label="Cherokee"/>
+  <int value="6514809" label="Cheyenne"/>
+  <int value="6516067" label="Chamic Language"/>
+  <int value="6516592" label="Coptic"/>
+  <int value="6516837" label="English-based Creole or Pidgin"/>
+  <int value="6516838" label="French-based Creole or Pidgin"/>
+  <int value="6516848" label="Portuguese-based Creole or Pidgin"/>
+  <int value="6517352" label="Crimean Turkish"/>
+  <int value="6517360" label="Creole or Pidgin"/>
+  <int value="6517602" label="Kashubian"/>
+  <int value="6518131" label="Cushitic Language"/>
+  <int value="6578539" label="Dakota"/>
+  <int value="6578546" label="Dargwa"/>
+  <int value="6578550" label="Taita"/>
+  <int value="6578553" label="Dayak"/>
+  <int value="6579564" label="Delaware"/>
+  <int value="6579566" label="Slave"/>
+  <int value="6580082" label="Dogrib"/>
+  <int value="6580590" label="Dinka"/>
+  <int value="6580837" label="Zarma"/>
+  <int value="6582121" label="Dogri"/>
+  <int value="6582881" label="Dravidian Language"/>
+  <int value="6583138" label="Lower Sorbian"/>
+  <int value="6583649" label="Duala"/>
+  <int value="6583661" label="Middle Dutch"/>
+  <int value="6584693" label="Dyula"/>
+  <int value="6644341" label="Embu"/>
+  <int value="6645353" label="Efik"/>
+  <int value="6645625" label="Ancient Egyptian"/>
+  <int value="6646625" label="Ekajuk"/>
+  <int value="6646904" label="Elamite"/>
+  <int value="6647405" label="Middle English"/>
+  <int value="6649711" label="Ewondo"/>
+  <int value="6709614" label="Fang"/>
+  <int value="6709620" label="Fanti"/>
+  <int value="6711660" label="Filipino"/>
+  <int value="6711669" label="Finno-Ugrian Language"/>
+  <int value="6713198" label="Fon"/>
+  <int value="6713965" label="Middle French"/>
+  <int value="6713967" label="Old French"/>
+  <int value="6713970" label="Northern Frisian"/>
+  <int value="6713971" label="Eastern Frisian"/>
+  <int value="6714738" label="Friulian"/>
+  <int value="6775137" label="Ga"/>
+  <int value="6775161" label="Gayo"/>
+  <int value="6775393" label="Gbaya"/>
+  <int value="6776173" label="Germanic Language"/>
+  <int value="6776186" label="Geez"/>
+  <int value="6777196" label="Gilbertese"/>
+  <int value="6778216" label="Middle High German"/>
+  <int value="6778728" label="Old High German"/>
+  <int value="6778734" label="Gondi"/>
+  <int value="6778738" label="Gorontalo"/>
+  <int value="6778740" label="Gothic"/>
+  <int value="6779490" label="Grebo"/>
+  <int value="6779491" label="Ancient Greek"/>
+  <int value="6779767" label="Swiss German"/>
+  <int value="6780282" label="Gusii"/>
+  <int value="6780777" label="Gwich'in"/>
+  <int value="6840681" label="Haida"/>
+  <int value="6840695" label="Hawaiian"/>
+  <int value="6842732" label="Hiligaynon"/>
+  <int value="6842733" label="Himachali"/>
+  <int value="6842740" label="Hittite"/>
+  <int value="6843758" label="Hmong"/>
+  <int value="6845282" label="Upper Sorbian"/>
+  <int value="6845808" label="Hupa"/>
+  <int value="6906465" label="Iban"/>
+  <int value="6908527" label="Ijo"/>
+  <int value="6909039" label="Iloko"/>
+  <int value="6909539" label="Indic Language"/>
+  <int value="6909541" label="Indo-European Language"/>
+  <int value="6909544" label="Ingush"/>
+  <int value="6910561" label="Iranian Language"/>
+  <int value="6910575" label="Iroquoian Language"/>
+  <int value="6972015" label="Lojban"/>
+  <int value="6974819" label="Machame"/>
+  <int value="6975602" label="Judeo-Persian"/>
+  <int value="6976098" label="Judeo-Arabic"/>
+  <int value="7037281" label="Kara-Kalpak"/>
+  <int value="7037282" label="Kabyle"/>
+  <int value="7037283" label="Kachin"/>
+  <int value="7037290" label="Jju"/>
+  <int value="7037293" label="Kamba"/>
+  <int value="7037298" label="Karen"/>
+  <int value="7037303" label="Kawi"/>
+  <int value="7037540" label="Kabardian"/>
+  <int value="7037799" label="Tyap"/>
+  <int value="7038053" label="Makonde"/>
+  <int value="7038305" label="Kabuverdianu"/>
+  <int value="7038575" label="Koro"/>
+  <int value="7039073" label="Khasi"/>
+  <int value="7039081" label="Khoisan Language"/>
+  <int value="7039087" label="Khotanese"/>
+  <int value="7039089" label="Koyra Chiini"/>
+  <int value="7040110" label="Kalenjin"/>
+  <int value="7040354" label="Kimbundu"/>
+  <int value="7040875" label="Konkani"/>
+  <int value="7040883" label="Kosraean"/>
+  <int value="7041125" label="Kpelle"/>
+  <int value="7041635" label="Karachay-Balkar"/>
+  <int value="7041644" label="Karelian"/>
+  <int value="7041647" label="Kru"/>
+  <int value="7041653" label="Kurukh"/>
+  <int value="7041890" label="Shambala"/>
+  <int value="7041896" label="Colognian"/>
+  <int value="7042413" label="Kumyk"/>
+  <int value="7042420" label="Kutenai"/>
+  <int value="7102820" label="Ladino"/>
+  <int value="7102823" label="Langi"/>
+  <int value="7102824" label="Lahnda"/>
+  <int value="7102829" label="Lamba"/>
+  <int value="7103866" label="Lezghian"/>
+  <int value="7106412" label="Mongo"/>
+  <int value="7106426" label="Lozi"/>
+  <int value="7107937" label="Luba-Lulua"/>
+  <int value="7107945" label="Luiseno"/>
+  <int value="7107950" label="Lunda"/>
+  <int value="7107951" label="Luo"/>
+  <int value="7107955" label="Lushai"/>
+  <int value="7107961" label="Luyia"/>
+  <int value="7168356" label="Madurese"/>
+  <int value="7168359" label="Magahi"/>
+  <int value="7168361" label="Maithili"/>
+  <int value="7168363" label="Makasar"/>
+  <int value="7168366" label="Mandingo"/>
+  <int value="7168368" label="Austronesian Language"/>
+  <int value="7168371" label="Masai"/>
+  <int value="7169126" label="Moksha"/>
+  <int value="7169138" label="Mandar"/>
+  <int value="7169390" label="Mende"/>
+  <int value="7169394" label="Meru"/>
+  <int value="7169637" label="Morisyen"/>
+  <int value="7169889" label="Middle Irish"/>
+  <int value="7170403" label="Micmac"/>
+  <int value="7170414" label="Minangkabau"/>
+  <int value="7170419" label="Miscellaneous Language"/>
+  <int value="7170920" label="Mon-Khmer Language"/>
+  <int value="7171683" label="Manchu"/>
+  <int value="7171689" label="Manipuri"/>
+  <int value="7171695" label="Manobo Language"/>
+  <int value="7171944" label="Mohawk"/>
+  <int value="7171955" label="Mossi"/>
+  <int value="7173484" label="Multiple Languages"/>
+  <int value="7173486" label="Munda Language"/>
+  <int value="7173491" label="Creek"/>
+  <int value="7173996" label="Mirandese"/>
+  <int value="7174002" label="Marwari"/>
+  <int value="7174510" label="Mayan Language"/>
+  <int value="7174518" label="Erzya"/>
+  <int value="7233896" label="Nahuatl"/>
+  <int value="7233897" label="North American Indian Language"/>
+  <int value="7233904" label="Neapolitan"/>
+  <int value="7233905" label="Nama"/>
+  <int value="7234675" label="Low German"/>
+  <int value="7234935" label="Newari"/>
+  <int value="7235937" label="Nias"/>
+  <int value="7235939" label="Niger-Kordofanian Language"/>
+  <int value="7235957" label="Niuean"/>
+  <int value="7237479" label="Nogai"/>
+  <int value="7237486" label="Old Norse"/>
+  <int value="7237999" label="N'Ko"/>
+  <int value="7238511" label="Northern Sotho"/>
+  <int value="7239010" label="Nubian Language"/>
+  <int value="7239523" label="Classical Newari"/>
+  <int value="7240045" label="Nyamwezi"/>
+  <int value="7240046" label="Nyankole"/>
+  <int value="7240047" label="Nyoro"/>
+  <int value="7240297" label="Nzima"/>
+  <int value="7304033" label="Osage"/>
+  <int value="7304289" label="Ottoman Turkish"/>
+  <int value="7304303" label="Otomian Language"/>
+  <int value="7364961" label="Papuan Language"/>
+  <int value="7364967" label="Pangasinan"/>
+  <int value="7364972" label="Pahlavi"/>
+  <int value="7364973" label="Pampanga"/>
+  <int value="7364976" label="Papiamento"/>
+  <int value="7364981" label="Palauan"/>
+  <int value="7365999" label="Old Persian"/>
+  <int value="7366761" label="Philippine Language"/>
+  <int value="7366766" label="Phoenician"/>
+  <int value="7368558" label="Pohnpeian"/>
+  <int value="7369313" label="Prakrit Language"/>
+  <int value="7369327" label="Old Provencal"/>
+  <int value="7496042" label="Rajasthani"/>
+  <int value="7496048" label="Rapanui"/>
+  <int value="7496050" label="Rarotongan"/>
+  <int value="7499617" label="Romance Language"/>
+  <int value="7499622" label="Rombo"/>
+  <int value="7499629" label="Romany"/>
+  <int value="7501168" label="Aromanian"/>
+  <int value="7501675" label="Rwa"/>
+  <int value="7561572" label="Sandawe"/>
+  <int value="7561576" label="Yakut"/>
+  <int value="7561577" label="South American Indian Language"/>
+  <int value="7561580" label="Salishan Language"/>
+  <int value="7561581" label="Samaritan Aramaic"/>
+  <int value="7561585" label="Samburu"/>
+  <int value="7561587" label="Sasak"/>
+  <int value="7561588" label="Santali"/>
+  <int value="7562094" label="Sicilian"/>
+  <int value="7562095" label="Scots"/>
+  <int value="7562597" label="Seneca"/>
+  <int value="7562600" label="Sena"/>
+  <int value="7562604" label="Selkup"/>
+  <int value="7562605" label="Semitic Language"/>
+  <int value="7562611" label="Koyraboro Senni"/>
+  <int value="7563105" label="Old Irish"/>
+  <int value="7563118" label="Sign Language"/>
+  <int value="7563369" label="Tachelhit"/>
+  <int value="7563374" label="Shan"/>
+  <int value="7563620" label="Sidamo"/>
+  <int value="7563631" label="Siouan Language"/>
+  <int value="7563636" label="Sino-Tibetan Language"/>
+  <int value="7564385" label="Slavic Language"/>
+  <int value="7564641" label="Southern Sami"/>
+  <int value="7564649" label="Sami Language"/>
+  <int value="7564650" label="Lule Sami"/>
+  <int value="7564654" label="Inari Sami"/>
+  <int value="7564659" label="Skolt Sami"/>
+  <int value="7564907" label="Soninke"/>
+  <int value="7565159" label="Sogdien"/>
+  <int value="7565166" label="Songhai"/>
+  <int value="7565934" label="Sranan Tongo"/>
+  <int value="7565938" label="Serer"/>
+  <int value="7566177" label="Nilo-Saharan Language"/>
+  <int value="7566201" label="Saho"/>
+  <int value="7566699" label="Sukuma"/>
+  <int value="7566707" label="Susu"/>
+  <int value="7566712" label="Sumerian"/>
+  <int value="7567202" label="Comorian"/>
+  <int value="7567715" label="Classical Syriac"/>
+  <int value="7567730" label="Syriac"/>
+  <int value="7627113" label="Tai Language"/>
+  <int value="7628141" label="Timne"/>
+  <int value="7628143" label="Teso"/>
+  <int value="7628146" label="Tereno"/>
+  <int value="7628148" label="Tetum"/>
+  <int value="7629159" label="Tigre"/>
+  <int value="7629174" label="Tiv"/>
+  <int value="7629676" label="Tokelau"/>
+  <int value="7629928" label="Klingon"/>
+  <int value="7629929" label="Tlingit"/>
+  <int value="7630184" label="Tamashek"/>
+  <int value="7630695" label="Nyasa Tonga"/>
+  <int value="7630953" label="Tok Pisin"/>
+  <int value="7631478" label="Taroko"/>
+  <int value="7631721" label="Tsimshian"/>
+  <int value="7632237" label="Tumbuka"/>
+  <int value="7632240" label="Tupi Language"/>
+  <int value="7632244" label="Altaic Language"/>
+  <int value="7632492" label="Tuvalu"/>
+  <int value="7632753" label="Tasawaq"/>
+  <int value="7633270" label="Tuvinian"/>
+  <int value="7633517" label="Central Morocco Tamazight"/>
+  <int value="7693421" label="Udmurt"/>
+  <int value="7694177" label="Ugaritic"/>
+  <int value="7695714" label="Umbundu"/>
+  <int value="7695972" label="Unknown Language"/>
+  <int value="7758185" label="Vai"/>
+  <int value="7761780" label="Votic"/>
+  <int value="7763310" label="Vunjo"/>
+  <int value="7823723" label="Wakashan Language"/>
+  <int value="7823724" label="Walamo"/>
+  <int value="7823730" label="Waray"/>
+  <int value="7823731" label="Washo"/>
+  <int value="7824750" label="Sorbian Language"/>
+  <int value="7889260" label="Kalmyk"/>
+  <int value="7892839" label="Soga"/>
+  <int value="7954799" label="Yao"/>
+  <int value="7954800" label="Yapese"/>
+  <int value="7958635" label="Yupik Language"/>
+  <int value="7959909" label="Cantonese"/>
+  <int value="8020336" label="Zapotec"/>
+  <int value="8020588" label="Blissymbols"/>
+  <int value="8021358" label="Zenaga"/>
+  <int value="8023652" label="Zande"/>
+  <int value="8025454" label="Zuni"/>
+  <int value="8026232" label="No linguistic content"/>
+  <int value="8026721" label="Zaza"/>
 </enum>
 
 <enum name="LevelDBErrorCount" type="int">
