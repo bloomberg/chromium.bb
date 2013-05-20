@@ -56,17 +56,12 @@ class CrosLanguageOptionsHandler
   static base::ListValue* GetUILanguageList(
       const input_method::InputMethodDescriptors& descriptors);
 
-  // Gets the list of input methods that are implemented in an extension.
+  // Converts input method descriptors to the list of input methods.
   // The return value will look like:
   // [{'id': '_ext_ime_nejguenhnsnjnwychcnsdsdjketest',
   //   'displayName': 'Sample IME'},  ...]
-  static base::ListValue* GetExtensionImeList();
-
-  // Gets the list of input methods that are implemented in an extension and
-  // working as component one. The return value will look like:
-  // [{'id': '_comp_fpfbhcjppmaeaijcidgiibchfbnhbeljmozc_ja',
-  //   'displayName': 'Mozc'}, ...]
-  static base::ListValue* GetComponentExtensionImeList();
+  static base::ListValue* ConvertInputMethodDescriptosToIMEList(
+      const input_method::InputMethodDescriptors& descriptors);
 
  private:
   // LanguageOptionsHandlerCommon implementation.
