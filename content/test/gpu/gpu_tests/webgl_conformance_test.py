@@ -78,7 +78,10 @@ class WebGLConformanceTest(page_test.PageTest):
     if _DidWebGLTestSucceed(tab):
       results.AddSuccess(page)
     else:
-      results.AddFailure(page, _WebGLTestMessages(tab), None)
+      results.AddFailureMessage(page, _WebGLTestMessages(tab))
+
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArg('--enable-webgl')
 
   @staticmethod
   def _ParseTests(path, version = None):
