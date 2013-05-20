@@ -16,12 +16,6 @@
 
 namespace chromeos {
 
-// The guest user has a magic, empty e-mail address.
-extern const char kGuestUserEMail[];
-
-// The retail mode user has a magic, domainless e-mail address.
-extern const char kRetailModeUserEMail[];
-
 extern const int kDefaultImagesCount;
 
 // User context data that is being exchanged between part of ChromeOS

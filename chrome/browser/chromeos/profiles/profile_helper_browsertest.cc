@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, ActiveUserProfileDir) {
   ActiveUserChanged(&profile_helper, kActiveUserHash);
   base::FilePath profile_dir = profile_helper.GetActiveUserProfileDir();
   std::string expected_dir;
-  expected_dir.append(ProfileHelper::kProfileDirPrefix);
+  expected_dir.append(chrome::kProfileDirPrefix);
   expected_dir.append(kActiveUserHash);
   EXPECT_EQ(expected_dir, profile_dir.BaseName().value());
 }

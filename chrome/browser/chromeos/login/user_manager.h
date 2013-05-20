@@ -60,11 +60,21 @@ class UserManager {
   // Username for stub login when not running on ChromeOS.
   static const char kStubUser[];
 
+  // Magic e-mail addresses are bad. They exist here because some code already
+  // depends on them and it is hard to figure out what. Any user types added in
+  // the future should be identified by a new |UserType|, not a new magic e-mail
+  // address.
+  // Username for Guest session user.
+  static const char kGuestUserName[];
+
   // Domain that is used for all locally managed users.
   static const char kLocallyManagedUserDomain[];
 
   // Domain that is used for kiosk app robot.
   static const char kKioskAppUserDomain[];
+
+  // The retail mode user has a magic, domainless e-mail address.
+  static const char kRetailModeUserName[];
 
   // Creates the singleton instance. This method is not thread-safe and must be
   // called from the main UI thread.

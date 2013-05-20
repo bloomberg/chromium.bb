@@ -556,7 +556,7 @@ void WallpaperManager::SetLastSelectedUser(
 
 void WallpaperManager::SetUserWallpaper(const std::string& email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (email == kGuestUserEMail) {
+  if (email == UserManager::kGuestUserName) {
     SetDefaultWallpaper();
     return;
   }

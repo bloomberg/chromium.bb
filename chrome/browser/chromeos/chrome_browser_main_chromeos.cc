@@ -579,13 +579,13 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
       !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
     std::string username =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
-    VLOG(1) << "Relaunching browser for user: " << username;
     UserManager* user_manager = UserManager::Get();
-    // TODO(nkostylev): Get user username_hash (cryptohome mount point)
-    // from a separate cmd line switch.
+    // In case of multi-profiles --login-profile will contain user_id_hash.
     std::string username_hash =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
     user_manager->UserLoggedIn(username, username_hash, true);
+    VLOG(1) << "Relaunching browser for user: " << username
+            << " with hash: " << username_hash;
 
     // Redirects Chrome logging to the user data dir.
     logging::RedirectChromeLogging(parsed_command_line());

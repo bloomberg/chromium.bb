@@ -206,11 +206,20 @@ base::FilePath GetSessionLogFile(const CommandLine& command_line) {
   if (env->GetVar(env_vars::kSessionLogDir, &log_dir_str) &&
       !log_dir_str.empty()) {
     log_dir = base::FilePath(log_dir_str);
-  } else {
+  } else if (command_line.HasSwitch(chromeos::switches::kLoginProfile)) {
     PathService::Get(chrome::DIR_USER_DATA, &log_dir);
-    base::FilePath login_profile =
-        command_line.GetSwitchValuePath(chromeos::switches::kLoginProfile);
-    log_dir = log_dir.Append(login_profile);
+    base::FilePath profile_dir;
+    if (command_line.HasSwitch(switches::kMultiProfiles)) {
+      // We could not use g_browser_process > profile_helper() here.
+      std::string profile_dir_str = chrome::kProfileDirPrefix;
+      profile_dir_str.append(
+          command_line.GetSwitchValueASCII(chromeos::switches::kLoginProfile));
+      profile_dir = base::FilePath(profile_dir_str);
+    } else {
+      profile_dir =
+          command_line.GetSwitchValuePath(chromeos::switches::kLoginProfile);
+    }
+    log_dir = log_dir.Append(profile_dir);
   }
   return log_dir.Append(GetLogFileName().BaseName());
 }

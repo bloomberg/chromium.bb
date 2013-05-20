@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -309,7 +310,7 @@ std::string GetOffTheRecordCommandLine(
   otr_switches.SetString(switches::kGuestSession, std::string());
   otr_switches.SetString(::switches::kIncognito, std::string());
   otr_switches.SetString(::switches::kLoggingLevel, kGuestModeLoggingLevel);
-  otr_switches.SetString(switches::kLoginUser, kGuestUserName);
+  otr_switches.SetString(switches::kLoginUser, UserManager::kGuestUserName);
 
   // Override the home page.
   otr_switches.SetString(::switches::kHomePage,

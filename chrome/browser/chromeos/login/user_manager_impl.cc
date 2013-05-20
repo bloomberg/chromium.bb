@@ -262,11 +262,12 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
   if (active_user_)
     active_user_->set_is_active(false);
 
-  if (email == kGuestUserEMail) {
+  if (email == UserManager::kGuestUserName) {
     GuestUserLoggedIn();
-  } else if (email == kRetailModeUserEMail) {
+  } else if (email == UserManager::kRetailModeUserName) {
     RetailModeUserLoggedIn();
-  } else if (gaia::ExtractDomainName(email) == kKioskAppUserDomain) {
+  } else if (gaia::ExtractDomainName(email) ==
+                 UserManager::kKioskAppUserDomain) {
     KioskAppLoggedIn(email);
   } else {
     EnsureUsersLoaded();
@@ -776,7 +777,8 @@ bool UserManagerImpl::IsUserNonCryptohomeDataEphemeral(
     const std::string& email) const {
   // Data belonging to the guest, retail mode and stub users is always
   // ephemeral.
-  if (email == kGuestUserEMail || email == kRetailModeUserEMail ||
+  if (email == UserManager::kGuestUserName ||
+      email == UserManager::kRetailModeUserName ||
       email == kStubUser) {
     return true;
   }
@@ -989,7 +991,8 @@ User* UserManagerImpl::FindUserInListAndModify(const std::string& email) {
 
 void UserManagerImpl::GuestUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUserEMail, false);
+  WallpaperManager::Get()->SetInitialUserWallpaper(UserManager::kGuestUserName,
+                                                   false);
   active_user_ = User::CreateGuestUser();
   // TODO(nkostylev): Add support for passing guest session cryptohome
   // mount point. Legacy (--login-profile) value will be used for now.
@@ -1092,7 +1095,8 @@ void UserManagerImpl::PublicAccountUserLoggedIn(User* user) {
 
 void UserManagerImpl::KioskAppLoggedIn(const std::string& username) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(gaia::ExtractDomainName(username), kKioskAppUserDomain);
+  DCHECK_EQ(gaia::ExtractDomainName(username),
+            UserManager::kKioskAppUserDomain);
 
   WallpaperManager::Get()->SetInitialUserWallpaper(username, false);
   active_user_ = User::CreateKioskAppUser(username);
@@ -1112,10 +1116,11 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_new_ = true;
   active_user_ = User::CreateRetailModeUser();
-  user_image_manager_->UserLoggedIn(kRetailModeUserEMail,
+  user_image_manager_->UserLoggedIn(UserManager::kRetailModeUserName,
                                     is_current_user_new_,
                                     true);
-  WallpaperManager::Get()->SetInitialUserWallpaper(kRetailModeUserEMail, false);
+  WallpaperManager::Get()->SetInitialUserWallpaper(
+      UserManager::kRetailModeUserName, false);
 }
 
 void UserManagerImpl::NotifyOnLogin() {

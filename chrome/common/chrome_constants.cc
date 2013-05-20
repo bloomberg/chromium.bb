@@ -253,6 +253,10 @@ const wchar_t kMetroRegistryPath[] =
 const wchar_t kLaunchModeValue[] = L"launch_mode";
 #endif
 
+#if defined(OS_CHROMEOS)
+const char kProfileDirPrefix[] = "u-";
+#endif
+
 }  // namespace chrome
 
 #undef FPL

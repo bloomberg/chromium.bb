@@ -136,6 +136,13 @@ extern const wchar_t kMetroRegistryPath[];
 extern const wchar_t kLaunchModeValue[];
 #endif
 
+#if defined(OS_CHROMEOS)
+// Chrome OS profile directories have custom prefix.
+// Profile path format: [user_data_dir]/u-[$hash]
+// Ex.: /home/chronos/u-0123456789
+extern const char kProfileDirPrefix[];
+#endif
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_CONSTANTS_H_

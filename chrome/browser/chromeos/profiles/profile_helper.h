@@ -21,11 +21,6 @@ namespace chromeos {
 class ProfileHelper : public BrowsingDataRemover::Observer,
                       public UserManager::UserSessionStateObserver {
  public:
-  // Chrome OS profile directories have custom prefix.
-  // Profile path format: [user_data_dir]/u-[$hash]
-  // Ex.: /home/chronos/u-0123456789
-  static const char kProfileDirPrefix[];
-
   ProfileHelper();
   virtual ~ProfileHelper();
 
