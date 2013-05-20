@@ -171,7 +171,11 @@ var defaultDashboardSpecificStateValues = {
     sortOrder: BACKWARD,
     sortColumn: 'flakiness',
     showExpectations: false,
-    showFlaky: true,
+    // FIXME: Show flaky tests by default if you have a builder picked.
+    // Ideally, we'd fix the dashboard to not pick a default builder and have
+    // you pick one. In the interim, this is a good way to make the default
+    // page load faster since we don't need to generate/layout a large table.
+    showFlaky: false,
     showLargeExpectations: false,
     showChrome: true,
     showWontFix: false,
@@ -630,23 +634,21 @@ function htmlForTestResults(test)
     return html;
 }
 
-// Returns whether we should exclude test results from the test table.
-function shouldHideTest(testResult)
+function shouldShowTest(testResult)
 {
-    // For non-layout tests, we always show everything.
     if (!g_history.isLayoutTestResults())
-        return false;
+        return true;
 
     if (testResult.expectations == 'WONTFIX')
-        return !g_history.dashboardSpecificState.showWontFix;
+        return g_history.dashboardSpecificState.showWontFix;
 
     if (testResult.expectations == 'SKIP')
-        return !g_history.dashboardSpecificState.showSkip;
+        return g_history.dashboardSpecificState.showSkip;
 
     if (testResult.isFlaky)
-        return !g_history.dashboardSpecificState.showFlaky;
+        return g_history.dashboardSpecificState.showFlaky;
 
-    return !g_history.dashboardSpecificState.showNonFlaky;
+    return g_history.dashboardSpecificState.showNonFlaky;
 }
 
 function createBugHTML(test)
@@ -684,14 +686,6 @@ function tableHeaders(opt_getAll)
 
 function htmlForSingleTestRow(test)
 {
-    if (!isCrossBuilderView() && shouldHideTest(test)) {
-        // The innerHTML call is considerably faster if we exclude the rows for
-        // items we're not showing than if we hide them using display:none.
-        // For the crossBuilderView, we want to show all rows the user is
-        // explicitly listing tests to view.
-        return '';
-    }
-
     var headers = tableHeaders();
     var html = '';
     for (var i = 0; i < headers.length; i++) {
@@ -705,6 +699,7 @@ function htmlForSingleTestRow(test)
 
             html += '<tr><td class="' + testCellClassName + '">' + testCellHTML;
         } else if (string.startsWith(header, 'bugs'))
+            // FIXME: linkify bugs.
             html += '<td class=options-container>' + (test.bugs || createBugHTML(test));
         else if (string.startsWith(header, 'expectations'))
             html += '<td class=options-container>' + test.expectations;
@@ -1425,17 +1420,17 @@ function linkHTMLToToggleState(key, linkText)
 function headerForTestTableHtml()
 {
     return '<h2 style="display:inline-block">Failing tests</h2>' +
-        checkBoxToToggleState('showWontFix', 'Show WontFix') +
-        checkBoxToToggleState('showSkip', 'Show Skip') +
+        checkBoxToToggleState('showFlaky', 'Show flaky') +
         checkBoxToToggleState('showNonFlaky', 'Show non-flaky') +
-        checkBoxToToggleState('showFlaky', 'Show flaky');
+        checkBoxToToggleState('showSkip', 'Show Skip') +
+        checkBoxToToggleState('showWontFix', 'Show WontFix');
 }
 
 function generatePageForBuilder(builderName)
 {
     processTestRunsForBuilder(builderName);
 
-    var results = g_perBuilderFailures[builderName];
+    var results = g_perBuilderFailures[builderName].filter(shouldShowTest);
     sortTests(results, g_history.dashboardSpecificState.sortColumn, g_history.dashboardSpecificState.sortOrder);
 
     var testsHTML = '';
@@ -1445,11 +1440,10 @@ function generatePageForBuilder(builderName)
             tableRowsHTML += htmlForSingleTestRow(results[i])
         testsHTML = htmlForTestTable(tableRowsHTML);
     } else {
-        testsHTML = '<div>No tests found. ';
         if (g_history.isLayoutTestResults())
-            testsHTML += 'Try showing tests with correct expectations.</div>';
+            testsHTML += '<div>Fill in one of the text inputs or checkboxes above to show failures.</div>';
         else
-            testsHTML += 'This means no tests have failed!</div>';
+            testsHTML += '<div>No tests have failed!</div>';
     }
 
     var html = htmlForNavBar();

@@ -54,14 +54,6 @@ function resetGlobals()
     return historyInstance;
 }
 
-function stubResultsByBuilder(data)
-{
-    for (var builder in currentBuilders())
-    {
-        g_resultsByBuilder[builder] = data[builder] || {'tests': []};
-    };
-}
-
 test('substringList', 2, function() {
     var historyInstance = new history.History(flakinessConfig);
     // FIXME(jparent): Remove this once global isn't used.
@@ -128,8 +120,14 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
     loadBuildersList('@ToT - chromium.org', 'layout-tests');
 
     var builderName = 'WebKit Linux';
+    g_resultsByBuilder[builderName] = {buildNumbers: [2, 1], blinkRevision: [1234, 1233]};
+
     var test = 'dummytest.html';
-    g_testToResultsMap[test] = [createResultsObjectForTest(test, builderName)];
+    var resultsObject = createResultsObjectForTest(test, builderName);
+    resultsObject.rawResults = [[1, 'F']];
+    resultsObject.rawTimes = [[1, 0]];
+    resultsObject.bugs = "crbug.com/1234"
+    g_testToResultsMap[test] = [resultsObject];
 
     equal(htmlForIndividualTestOnAllBuildersWithResultsLinks(test),
         '<table class=test-table><thead><tr>' +
@@ -139,7 +137,13 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
                 '<th sortValue=slowest><div class=table-header-content><span></span><span class=header-text>slowest run</span></div></th>' +
                 '<th sortValue=flakiness colspan=10000><div class=table-header-content><span></span><span class=header-text>flakiness (numbers are runtimes in seconds)</span></div></th>' +
             '</tr></thead>' +
-            '<tbody></tbody>' +
+            '<tbody><tr>' +
+                '<td class="test-link"><span class="link" onclick="g_history.setQueryParameter(\'tests\',\'dummytest.html\');">dummytest.html</span>' +
+                '<td class=options-container>' +
+                    'crbug.com/1234' +
+                '<td class=options-container><td><td title="TEXT. Click for more info." class="results F" onclick=\'showPopupForBuild(event, "WebKit Linux",0,"dummytest.html")\'>&nbsp;' +
+                '<td title="NO DATA. Click for more info." class="results N" onclick=\'showPopupForBuild(event, "WebKit Linux",1,"dummytest.html")\'>&nbsp;' +
+            '</tbody>' +
         '</table>' +
         '<div>The following builders either don\'t run this test (e.g. it\'s skipped) or all runs passed:</div>' +
         '<div class=skipped-builder-list>' +
@@ -386,7 +390,7 @@ test('changeTestTypeInvalidatesGroup', 1, function() {
     notEqual(historyInstance.crossDashboardState.group, originalGroup, "group should have been invalidated");   
 });
 
-test('shouldHideTest', 9, function() {
+test('shouldShowTest', 9, function() {
     var historyInstance = new history.History(flakinessConfig);
     historyInstance.parseParameters();
     // FIXME(jparent): Change to use the flakiness_dashboard's history object
@@ -394,33 +398,33 @@ test('shouldHideTest', 9, function() {
     g_history = historyInstance;
     var test = createResultsObjectForTest('foo/test.html', 'dummyBuilder');
 
-    equal(shouldHideTest(test), true, 'default layout test, hide it.');
+    equal(shouldShowTest(test), false, 'default layout test, hide it.');
     historyInstance.dashboardSpecificState.showNonFlaky = true;
-    equal(shouldHideTest(test), false, 'show correct expectations.');
+    equal(shouldShowTest(test), true, 'show correct expectations.');
     historyInstance.dashboardSpecificState.showNonFlaky = false;
 
     test = createResultsObjectForTest('foo/test.html', 'dummyBuilder');
     test.expectations = "WONTFIX";
-    equal(shouldHideTest(test), true, 'by default hide wontfix');
+    equal(shouldShowTest(test), false, 'by default hide wontfix');
     historyInstance.dashboardSpecificState.showWontFix = true;
-    equal(shouldHideTest(test), false, 'show wontfix');
+    equal(shouldShowTest(test), true, 'show wontfix');
     historyInstance.dashboardSpecificState.showWontFix = false;
 
     test = createResultsObjectForTest('foo/test.html', 'dummyBuilder');
     test.expectations = "SKIP";
-    equal(shouldHideTest(test), true, 'we hide skip tests by default');
+    equal(shouldShowTest(test), false, 'we hide skip tests by default');
     historyInstance.dashboardSpecificState.showSkip = true;
-    equal(shouldHideTest(test), false, 'show skip test');
+    equal(shouldShowTest(test), true, 'show skip test');
     historyInstance.dashboardSpecificState.showSkip = false;
 
     test = createResultsObjectForTest('foo/test.html', 'dummyBuilder');
     test.isFlaky = true;
-    equal(shouldHideTest(test), false, 'show flaky tests by default');
-    historyInstance.dashboardSpecificState.showFlaky = false;
-    equal(shouldHideTest(test), true, 'do not show flaky test');
+    equal(shouldShowTest(test), false, 'hide flaky tests by default');
     historyInstance.dashboardSpecificState.showFlaky = true;
+    equal(shouldShowTest(test), true, 'show flaky test');
+    historyInstance.dashboardSpecificState.showFlaky = false;
 
     test = createResultsObjectForTest('foo/test.html', 'dummyBuilder');
     historyInstance.crossDashboardState.testType = 'not layout tests';
-    equal(shouldHideTest(test), false, 'show all non layout tests');
+    equal(shouldShowTest(test), true, 'show all non layout tests');
 });
