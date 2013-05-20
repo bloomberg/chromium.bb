@@ -318,7 +318,10 @@ include/ppapi/c/ppb_var.h
 include/ppapi/c/ppb_view.h
 include/ppapi/c/ppb_websocket.h
 include/ppapi/c/pp_completion_callback.h
+include/ppapi/c/private/pp_file_handle.h
 include/ppapi/c/private/ppb_ext_crx_file_system_private.h
+include/ppapi/c/private/ppb_file_io_private.h
+include/ppapi/c/private/ppb_file_ref_private.h
 include/ppapi/c/private/ppb_host_resolver_private.h
 include/ppapi/c/private/ppb_net_address_private.h
 include/ppapi/c/private/ppb_tcp_server_socket_private.h
@@ -326,8 +329,10 @@ include/ppapi/c/private/ppb_tcp_socket_private.h
 include/ppapi/c/private/ppb_udp_socket_private.h
 include/ppapi/c/private/ppb_x509_certificate_private.h
 include/ppapi/cpp/private/ext_crx_file_system_private.h
+include/ppapi/cpp/private/file_io_private.h
 include/ppapi/cpp/private/host_resolver_private.h
 include/ppapi/cpp/private/net_address_private.h
+include/ppapi/cpp/private/pass_file_handle.h
 include/ppapi/cpp/private/tcp_server_socket_private.h
 include/ppapi/cpp/private/tcp_socket_private.h
 include/ppapi/cpp/private/udp_socket_private.h
@@ -667,6 +672,7 @@ src/ppapi_main/ppapi_main.cc
 src/ppapi_main/ppapi_queue.cc
 src/ppapi_cpp_private/Makefile
 src/ppapi_cpp_private/make.bat
+src/ppapi_cpp_private/file_io_private.cc
 src/ppapi_cpp_private/net_address_private.cc
 src/ppapi_cpp_private/tcp_socket_private.cc
 src/ppapi_cpp_private/udp_socket_private.cc

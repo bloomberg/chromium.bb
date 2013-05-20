@@ -9,6 +9,7 @@
       'TYPE' : 'lib',
       'SOURCES' : [
           'ext_crx_file_system_private.cc',
+          'file_io_private.cc',
           'host_resolver_private.cc',
           'net_address_private.cc',
           'tcp_socket_private.cc',
