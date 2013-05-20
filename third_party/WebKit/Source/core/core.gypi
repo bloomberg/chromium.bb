@@ -522,6 +522,8 @@
             'animation/DocumentTimeline.h',
             'animation/TimedItem.cpp',
             'animation/TimedItem.h',
+            'animation/TimedItemCalculations.h',
+            'animation/Timing.h',
             'css/BasicShapeFunctions.cpp',
             'css/CSSAspectRatioValue.cpp',
             'css/CSSAspectRatioValue.h',
@@ -3640,6 +3642,8 @@
         ],
         'core_unittest_files': [
             'animation/DocumentTimelineTest.cpp',
+            'animation/TimedItemCalculationsTest.cpp',
+            'animation/TimedItemTest.cpp',
             'platform/DecimalTest.cpp',
             'platform/chromium/ClipboardChromiumTest.cpp',
             'platform/graphics/chromium/AnimationTranslationUtilTest.cpp',
