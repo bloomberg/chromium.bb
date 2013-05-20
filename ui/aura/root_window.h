@@ -159,7 +159,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // the bounds before change contained the |last_moust_location()|.
   void OnWindowBoundsChanged(Window* window, bool contained_mouse);
 
-  // Invoked when |window|'s visibility is changed.
+  // Dispatches OnMouseExited to the |window| which is hiding if nessessary.
+  void DispatchMouseExitToHidingWindow(Window* window);
+
+  // Invoked when |window|'s visibility has changed.
   void OnWindowVisibilityChanged(Window* window, bool is_visible);
 
   // Invoked when |window|'s tranfrom has changed. |contained_mouse|

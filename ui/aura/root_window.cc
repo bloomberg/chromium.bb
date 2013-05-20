@@ -353,6 +353,7 @@ bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
 }
 
 void RootWindow::OnWindowDestroying(Window* window) {
+  DispatchMouseExitToHidingWindow(window);
   OnWindowHidden(window, WINDOW_DESTROYED, NULL);
 
   if (window->IsVisible() &&
@@ -367,6 +368,23 @@ void RootWindow::OnWindowBoundsChanged(Window* window,
       (window->IsVisible() &&
        window->ContainsPointInRoot(GetLastMouseLocationInRoot()))) {
     PostMouseMoveEventAfterWindowChange();
+  }
+}
+
+void RootWindow::DispatchMouseExitToHidingWindow(Window* window) {
+  // The mouse capture is intentionally ignored. Think that a mouse enters
+  // to a window, the window sets the capture, the mouse exits the window,
+  // and then it releases the capture. In that case OnMouseExited won't
+  // be called. So it is natural not to emit OnMouseExited even though
+  // |window| is the capture window.
+  gfx::Point last_mouse_location = GetLastMouseLocationInRoot();
+  if (window->Contains(mouse_moved_handler_) &&
+      window->ContainsPointInRoot(last_mouse_location)) {
+    ui::MouseEvent event(ui::ET_MOUSE_EXITED,
+                         last_mouse_location,
+                         last_mouse_location,
+                         ui::EF_NONE);
+    DispatchMouseEnterOrExit(event, ui::ET_MOUSE_EXITED);
   }
 }
 
@@ -772,6 +790,7 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
                                                RootWindow* new_root) {
   DCHECK(aura::client::GetCaptureWindow(this) != this);
 
+  DispatchMouseExitToHidingWindow(detached);
   OnWindowHidden(detached, new_root ? WINDOW_MOVING : WINDOW_HIDDEN, new_root);
 
   if (detached->IsVisible() &&

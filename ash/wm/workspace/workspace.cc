@@ -64,6 +64,8 @@ aura::Window* Workspace::ReleaseWindow() {
   // WorkspaceManager.
   window_->SetLayoutManager(NULL);
   window_->SetEventFilter(NULL);
+  window_->RemovePreTargetHandler(event_handler_.get());
+  window_->RemovePostTargetHandler(event_handler_.get());
   aura::Window* window = window_;
   window_ = NULL;
   return window;

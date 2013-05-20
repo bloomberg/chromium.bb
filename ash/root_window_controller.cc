@@ -236,8 +236,8 @@ RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
         kShellWindowId_SystemModalContainer;
     container = GetContainer(modal_window_id);
   }
-  return static_cast<SystemModalContainerLayoutManager*>(
-      container->layout_manager());
+  return container ? static_cast<SystemModalContainerLayoutManager*>(
+      container->layout_manager()) : NULL;
 }
 
 aura::Window* RootWindowController::GetContainer(int container_id) {

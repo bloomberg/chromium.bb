@@ -1271,6 +1271,32 @@ TEST_F(WindowTest, MouseEnterExitWithClick) {
   EXPECT_FALSE(d2.exited());
 }
 
+TEST_F(WindowTest, MouseEnterExitWhenDeleteWithCapture) {
+  MouseEnterExitWindowDelegate delegate;
+  scoped_ptr<Window> window(
+      CreateTestWindowWithDelegate(&delegate, 1, gfx::Rect(10, 10, 50, 50),
+                                   root_window()));
+
+  test::EventGenerator generator(root_window());
+  generator.MoveMouseToCenterOf(window.get());
+  EXPECT_TRUE(delegate.entered());
+  EXPECT_FALSE(delegate.exited());
+
+  // Emmulate what Views does on a click by grabbing and releasing capture.
+  generator.PressLeftButton();
+  window->SetCapture();
+
+  delegate.ResetExpectations();
+  generator.MoveMouseTo(0, 0);
+  EXPECT_FALSE(delegate.entered());
+  EXPECT_FALSE(delegate.exited());
+
+  delegate.ResetExpectations();
+  window.reset();
+  EXPECT_FALSE(delegate.entered());
+  EXPECT_FALSE(delegate.exited());
+}
+
 // Verifies that enter / exits are sent if windows appear and are deleted
 // under the current mouse position..
 TEST_F(WindowTest, MouseEnterExitWithDelete) {
@@ -1284,8 +1310,8 @@ TEST_F(WindowTest, MouseEnterExitWithDelete) {
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
 
+  MouseEnterExitWindowDelegate d2;
   {
-    MouseEnterExitWindowDelegate d2;
     scoped_ptr<Window> w2(
         CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50),
                                      root_window()));
@@ -1299,6 +1325,7 @@ TEST_F(WindowTest, MouseEnterExitWithDelete) {
   }
   // Enters / exits can be send asynchronously.
   RunAllPendingInMessageLoop();
+  EXPECT_TRUE(d2.exited());
   EXPECT_TRUE(d1.entered());
 }
 
@@ -1330,7 +1357,55 @@ TEST_F(WindowTest, MouseEnterExitWithHide) {
   w2->Hide();
   // Enters / exits can be send asynchronously.
   RunAllPendingInMessageLoop();
+  EXPECT_TRUE(d2.exited());
   EXPECT_TRUE(d1.entered());
+}
+
+TEST_F(WindowTest, MouseEnterExitWithParentHide) {
+  MouseEnterExitWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
+                                   root_window()));
+  MouseEnterExitWindowDelegate d2;
+  Window* w2 = CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50),
+                                            w1.get());
+  test::EventGenerator generator(root_window());
+  generator.MoveMouseToCenterOf(w2);
+  // Enters / exits can be send asynchronously.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(d2.entered());
+  EXPECT_FALSE(d2.exited());
+
+  d2.ResetExpectations();
+  w1->Hide();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(d2.entered());
+  EXPECT_TRUE(d2.exited());
+
+  w1.reset();
+}
+
+TEST_F(WindowTest, MouseEnterExitWithParentDelete) {
+  MouseEnterExitWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
+                                   root_window()));
+  MouseEnterExitWindowDelegate d2;
+  Window* w2 = CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50),
+                                            w1.get());
+  test::EventGenerator generator(root_window());
+  generator.MoveMouseToCenterOf(w2);
+
+  // Enters / exits can be send asynchronously.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(d2.entered());
+  EXPECT_FALSE(d2.exited());
+
+  d2.ResetExpectations();
+  w1.reset();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(d2.entered());
+  EXPECT_TRUE(d2.exited());
 }
 
 // Creates a window with a delegate (w111) that can handle events at a lower
@@ -2122,7 +2197,7 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
   // Window is detached, so no event is set.
-  EXPECT_EQ("0 0 0", d11.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 1", d11.GetMouseMotionCountsAndReset());
 
   w1->AddChild(w11.get());
   RunAllPendingInMessageLoop();
@@ -2134,7 +2209,7 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
   w11->Hide();
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
-  EXPECT_EQ("0 0 0", d11.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 1", d11.GetMouseMotionCountsAndReset());
 
   w11->Show();
   RunAllPendingInMessageLoop();
@@ -2169,7 +2244,7 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
       &d11, 1, gfx::Rect(0, 0, 100, 100), w1.get()));
   RunAllPendingInMessageLoop();
   EXPECT_EQ("0 0 0", d1.GetMouseMotionCountsAndReset());
-  EXPECT_EQ("0 0 0", d11.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 1", d11.GetMouseMotionCountsAndReset());
 
   // Closing windows
   w11.reset();

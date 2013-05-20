@@ -920,9 +920,9 @@ void ShelfLayoutManager::UpdateHitTestBounds() {
 bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
   if (!window)
     return false;
-  return (shelf_ &&
-          shelf_->GetNativeWindow()->Contains(window)) ||
-      (shelf_->status_area_widget()->GetNativeWindow()->Contains(window));
+  return (shelf_ && shelf_->GetNativeWindow()->Contains(window)) ||
+      (shelf_->status_area_widget() &&
+       shelf_->status_area_widget()->GetNativeWindow()->Contains(window));
 }
 
 int ShelfLayoutManager::GetWorkAreaSize(const State& state, int size) const {

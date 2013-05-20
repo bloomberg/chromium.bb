@@ -922,10 +922,10 @@ bool Shell::CanWindowReceiveEvents(aura::Window* window) {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter) {
-    if ((*iter)->GetSystemModalLayoutManager(window)->
-            CanWindowReceiveEvents(window)) {
+    internal::SystemModalContainerLayoutManager* layout_manager =
+        (*iter)->GetSystemModalLayoutManager(window);
+    if (layout_manager && layout_manager->CanWindowReceiveEvents(window))
       return true;
-    }
   }
   return false;
 }

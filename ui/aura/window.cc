@@ -712,6 +712,9 @@ void Window::SetVisible(bool visible) {
                     OnWindowVisibilityChanging(this, visible));
 
   RootWindow* root_window = GetRootWindow();
+  if (root_window)
+    root_window->DispatchMouseExitToHidingWindow(this);
+
   client::VisibilityClient* visibility_client =
       client::GetVisibilityClient(this);
   if (visibility_client)
