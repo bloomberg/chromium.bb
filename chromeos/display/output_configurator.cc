@@ -39,6 +39,24 @@ std::string DisplayPowerStateToString(DisplayPowerState state) {
   }
 }
 
+// Returns a string describing |state|.
+std::string OutputStateToString(OutputState state) {
+  switch (state) {
+    case STATE_INVALID:
+      return "INVALID";
+    case STATE_HEADLESS:
+      return "HEADLESS";
+    case STATE_SINGLE:
+      return "SINGLE";
+    case STATE_DUAL_MIRROR:
+      return "DUAL_MIRROR";
+    case STATE_DUAL_EXTENDED:
+      return "DUAL_EXTENDED";
+  }
+  NOTREACHED() << "Unknown state " << state;
+  return "INVALID";
+}
+
 // Returns the number of outputs in |outputs| that should be turned on, per
 // |state|.  If |output_power| is non-NULL, it is updated to contain the
 // on/off state of each corresponding entry in |outputs|.
@@ -232,6 +250,7 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   if (!configure_display_)
     return false;
 
+  VLOG(1) << "SetDisplayMode: state=" << OutputStateToString(new_state);
   if (output_state_ == new_state)
     return true;
 
@@ -347,8 +366,8 @@ bool OutputConfigurator::EnterState(
     const std::vector<OutputSnapshot>& outputs) {
   std::vector<bool> output_power;
   int num_on_outputs = GetOutputPower(outputs, power_state, &output_power);
-  VLOG(1) << "EnterState: output=" << output_state
-          << ", power=" << power_state;
+  VLOG(1) << "EnterState: output=" << OutputStateToString(output_state)
+          << " power=" << DisplayPowerStateToString(power_state);
   switch (output_state) {
     case STATE_HEADLESS:
       if (outputs.size() != 0) {
