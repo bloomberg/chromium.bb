@@ -351,8 +351,7 @@ static bool hasNon90rotation(GraphicsContext* context)
     return !context->getTotalMatrix().rectStaysRect();
 }
 
-
-static void paintSkBitmap(GraphicsContext* context, const NativeImageSkia& bitmap, const SkRect& srcRect, const SkRect& destRect, const SkXfermode::Mode& compOp)
+void Image::paintSkBitmap(GraphicsContext* context, const NativeImageSkia& bitmap, const SkRect& srcRect, const SkRect& destRect, const SkXfermode::Mode& compOp)
 {
     TRACE_EVENT0("skia", "paintSkBitmap");
     SkPaint paint;
@@ -419,21 +418,6 @@ static void paintSkBitmap(GraphicsContext* context, const NativeImageSkia& bitma
     context->didDrawRect(destRect, paint, &bitmap.bitmap());
 }
 
-// A helper method for translating negative width and height values.
-FloatRect normalizeRect(const FloatRect& rect)
-{
-    FloatRect norm = rect;
-    if (norm.width() < 0) {
-        norm.setX(norm.x() + norm.width());
-        norm.setWidth(-norm.width());
-    }
-    if (norm.height() < 0) {
-        norm.setY(norm.y() + norm.height());
-        norm.setHeight(-norm.height());
-    }
-    return norm;
-}
-
 bool FrameData::clear(bool clearMetadata)
 {
     if (clearMetadata)
@@ -463,7 +447,7 @@ void Image::drawPattern(GraphicsContext* context,
     if (!bitmap)
         return;
 
-    FloatRect normSrcRect = normalizeRect(floatSrcRect);
+    FloatRect normSrcRect = adjustForNegativeSize(floatSrcRect);
     normSrcRect.intersect(FloatRect(0, 0, bitmap->bitmap().width(), bitmap->bitmap().height()));
     if (destRect.isEmpty() || normSrcRect.isEmpty())
         return; // nothing to draw
@@ -540,118 +524,6 @@ void Image::drawPattern(GraphicsContext* context,
     paint.setFilterBitmap(resampling == RESAMPLE_LINEAR);
 
     context->drawRect(destRect, paint);
-}
-
-// ================================================
-// BitmapImage Class
-// ================================================
-
-// FIXME: These should go to BitmapImageSkia.cpp
-
-BitmapImage::BitmapImage(PassRefPtr<NativeImageSkia> nativeImage, ImageObserver* observer)
-    : Image(observer)
-    , m_size(nativeImage->bitmap().width(), nativeImage->bitmap().height())
-    , m_currentFrame(0)
-    , m_frames(0)
-    , m_frameTimer(0)
-    , m_repetitionCount(cAnimationNone)
-    , m_repetitionCountStatus(Unknown)
-    , m_repetitionsComplete(0)
-    , m_decodedSize(nativeImage->decodedSize())
-    , m_decodedPropertiesSize(0)
-    , m_frameCount(1)
-    , m_isSolidColor(false)
-    , m_checkedForSolidColor(false)
-    , m_animationFinished(true)
-    , m_allDataReceived(true)
-    , m_haveSize(true)
-    , m_sizeAvailable(true)
-    , m_haveFrameCount(true)
-{
-    // Since we don't have a decoder, we can't figure out the image orientation.
-    // Set m_sizeRespectingOrientation to be the same as m_size so it's not 0x0.
-    m_sizeRespectingOrientation = m_size;
-
-    m_frames.grow(1);
-    m_frames[0].m_hasAlpha = !nativeImage->bitmap().isOpaque();
-    m_frames[0].m_frame = nativeImage;
-    m_frames[0].m_haveMetadata = true;
-
-    checkForSolidColor();
-}
-
-void BitmapImage::invalidatePlatformData()
-{
-}
-
-void BitmapImage::checkForSolidColor()
-{
-    m_isSolidColor = false;
-    m_checkedForSolidColor = true;
-
-    if (frameCount() > 1)
-        return;
-
-    RefPtr<NativeImageSkia> frame = frameAtIndex(0);
-
-    if (frame && size().width() == 1 && size().height() == 1) {
-        SkAutoLockPixels lock(frame->bitmap());
-        if (!frame->bitmap().getPixels())
-            return;
-
-        m_isSolidColor = true;
-        m_solidColor = Color(frame->bitmap().getColor(0, 0));
-    }
-}
-
-void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace colorSpace, CompositeOperator compositeOp, BlendMode blendMode)
-{
-    draw(ctxt, dstRect, srcRect, colorSpace, compositeOp, blendMode, DoNotRespectImageOrientation);
-}
-
-void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace colorSpace, CompositeOperator compositeOp, BlendMode blendMode, RespectImageOrientationEnum shouldRespectImageOrientation)
-{
-    // Spin the animation to the correct frame before we try to draw it, so we
-    // don't draw an old frame and then immediately need to draw a newer one,
-    // causing flicker and wasting CPU.
-    startAnimation();
-
-    RefPtr<NativeImageSkia> bm = nativeImageForCurrentFrame();
-    if (!bm)
-        return; // It's too early and we don't have an image yet.
-
-    FloatRect normDstRect = normalizeRect(dstRect);
-    FloatRect normSrcRect = normalizeRect(srcRect);
-    normSrcRect.intersect(FloatRect(0, 0, bm->bitmap().width(), bm->bitmap().height()));
-
-    if (normSrcRect.isEmpty() || normDstRect.isEmpty())
-        return; // Nothing to draw.
-
-    ImageOrientation orientation = DefaultImageOrientation;
-    if (shouldRespectImageOrientation == RespectImageOrientation)
-        orientation = frameOrientationAtIndex(m_currentFrame);
-
-    GraphicsContextStateSaver saveContext(*ctxt, false);
-    if (orientation != DefaultImageOrientation) {
-        saveContext.save();
-
-        // ImageOrientation expects the origin to be at (0, 0)
-        ctxt->translate(normDstRect.x(), normDstRect.y());
-        normDstRect.setLocation(FloatPoint());
-
-        ctxt->concatCTM(orientation.transformFromDefault(normDstRect.size()));
-
-        if (orientation.usesWidthAsHeight()) {
-            // The destination rect will have it's width and height already reversed for the orientation of
-            // the image, as it was needed for page layout, so we need to reverse it back here.
-            normDstRect = FloatRect(normDstRect.x(), normDstRect.y(), normDstRect.height(), normDstRect.width());
-        }
-    }
-
-    paintSkBitmap(ctxt, *bm, normSrcRect, normDstRect, WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
-
-    if (ImageObserver* observer = imageObserver())
-        observer->didDraw(this);
 }
 
 } // namespace WebCore

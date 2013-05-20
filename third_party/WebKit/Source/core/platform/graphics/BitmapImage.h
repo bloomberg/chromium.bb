@@ -205,9 +205,6 @@ protected:
     // Returns whether the animation was advanced.
     bool internalAdvanceAnimation(bool skippingFrames);
 
-    // Handle platform-specific data
-    void invalidatePlatformData();
-    
     // Checks to see if the image is a 1x1 solid color.  We optimize these images and just do a fill rect instead.
     // This check should happen regardless whether m_checkedForSolidColor is already set, as the frame may have
     // changed.

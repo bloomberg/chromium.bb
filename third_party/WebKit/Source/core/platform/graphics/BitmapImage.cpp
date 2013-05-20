@@ -31,8 +31,10 @@
 #include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/MemoryObjectInfo.h>
@@ -64,9 +66,40 @@ BitmapImage::BitmapImage(ImageObserver* observer)
 {
 }
 
+BitmapImage::BitmapImage(PassRefPtr<NativeImageSkia> nativeImage, ImageObserver* observer)
+    : Image(observer)
+    , m_size(nativeImage->bitmap().width(), nativeImage->bitmap().height())
+    , m_currentFrame(0)
+    , m_frames(0)
+    , m_frameTimer(0)
+    , m_repetitionCount(cAnimationNone)
+    , m_repetitionCountStatus(Unknown)
+    , m_repetitionsComplete(0)
+    , m_decodedSize(nativeImage->decodedSize())
+    , m_decodedPropertiesSize(0)
+    , m_frameCount(1)
+    , m_isSolidColor(false)
+    , m_checkedForSolidColor(false)
+    , m_animationFinished(true)
+    , m_allDataReceived(true)
+    , m_haveSize(true)
+    , m_sizeAvailable(true)
+    , m_haveFrameCount(true)
+{
+    // Since we don't have a decoder, we can't figure out the image orientation.
+    // Set m_sizeRespectingOrientation to be the same as m_size so it's not 0x0.
+    m_sizeRespectingOrientation = m_size;
+
+    m_frames.grow(1);
+    m_frames[0].m_hasAlpha = !nativeImage->bitmap().isOpaque();
+    m_frames[0].m_frame = nativeImage;
+    m_frames[0].m_haveMetadata = true;
+
+    checkForSolidColor();
+}
+
 BitmapImage::~BitmapImage()
 {
-    invalidatePlatformData();
     stopAnimation();
 }
 
@@ -121,7 +154,6 @@ void BitmapImage::destroyMetadataAndNotify(unsigned frameBytesCleared)
 {
     m_isSolidColor = false;
     m_checkedForSolidColor = false;
-    invalidatePlatformData();
 
     ASSERT(m_decodedSize >= frameBytesCleared);
     m_decodedSize -= frameBytesCleared;
@@ -267,6 +299,56 @@ bool BitmapImage::dataChanged(bool allDataReceived)
 String BitmapImage::filenameExtension() const
 {
     return m_source.filenameExtension();
+}
+
+void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace colorSpace, CompositeOperator compositeOp, BlendMode blendMode)
+{
+    draw(ctxt, dstRect, srcRect, colorSpace, compositeOp, blendMode, DoNotRespectImageOrientation);
+}
+
+void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace colorSpace, CompositeOperator compositeOp, BlendMode blendMode, RespectImageOrientationEnum shouldRespectImageOrientation)
+{
+    // Spin the animation to the correct frame before we try to draw it, so we
+    // don't draw an old frame and then immediately need to draw a newer one,
+    // causing flicker and wasting CPU.
+    startAnimation();
+
+    RefPtr<NativeImageSkia> bm = nativeImageForCurrentFrame();
+    if (!bm)
+        return; // It's too early and we don't have an image yet.
+
+    FloatRect normDstRect = adjustForNegativeSize(dstRect);
+    FloatRect normSrcRect = adjustForNegativeSize(srcRect);
+    normSrcRect.intersect(FloatRect(0, 0, bm->bitmap().width(), bm->bitmap().height()));
+
+    if (normSrcRect.isEmpty() || normDstRect.isEmpty())
+        return; // Nothing to draw.
+
+    ImageOrientation orientation = DefaultImageOrientation;
+    if (shouldRespectImageOrientation == RespectImageOrientation)
+        orientation = frameOrientationAtIndex(m_currentFrame);
+
+    GraphicsContextStateSaver saveContext(*ctxt, false);
+    if (orientation != DefaultImageOrientation) {
+        saveContext.save();
+
+        // ImageOrientation expects the origin to be at (0, 0)
+        ctxt->translate(normDstRect.x(), normDstRect.y());
+        normDstRect.setLocation(FloatPoint());
+
+        ctxt->concatCTM(orientation.transformFromDefault(normDstRect.size()));
+
+        if (orientation.usesWidthAsHeight()) {
+            // The destination rect will have it's width and height already reversed for the orientation of
+            // the image, as it was needed for page layout, so we need to reverse it back here.
+            normDstRect = FloatRect(normDstRect.x(), normDstRect.y(), normDstRect.height(), normDstRect.width());
+        }
+    }
+
+    paintSkBitmap(ctxt, *bm, normSrcRect, normDstRect, WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+
+    if (ImageObserver* observer = imageObserver())
+        observer->didDraw(this);
 }
 
 size_t BitmapImage::frameCount()
@@ -558,6 +640,26 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
     if (skippingFrames != advancedAnimation)
         imageObserver()->animationAdvanced(this);
     return advancedAnimation;
+}
+
+void BitmapImage::checkForSolidColor()
+{
+    m_isSolidColor = false;
+    m_checkedForSolidColor = true;
+
+    if (frameCount() > 1)
+        return;
+
+    RefPtr<NativeImageSkia> frame = frameAtIndex(0);
+
+    if (frame && size().width() == 1 && size().height() == 1) {
+        SkAutoLockPixels lock(frame->bitmap());
+        if (!frame->bitmap().getPixels())
+            return;
+
+        m_isSolidColor = true;
+        m_solidColor = Color(frame->bitmap().getColor(0, 0));
+    }
 }
 
 bool BitmapImage::mayFillWithSolidColor()

@@ -88,6 +88,20 @@ void Image::fillWithSolidColor(GraphicsContext* ctxt, const FloatRect& dstRect, 
     ctxt->setCompositeOperation(previousOperator);
 }
 
+FloatRect Image::adjustForNegativeSize(const FloatRect& rect)
+{
+    FloatRect norm = rect;
+    if (norm.width() < 0) {
+        norm.setX(norm.x() + norm.width());
+        norm.setWidth(-norm.width());
+    }
+    if (norm.height() < 0) {
+        norm.setY(norm.y() + norm.height());
+        norm.setHeight(-norm.height());
+    }
+    return norm;
+}
+
 void Image::draw(GraphicsContext* ctx, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator op, BlendMode blendMode, RespectImageOrientationEnum)
 {
     draw(ctx, dstRect, srcRect, styleColorSpace, op, blendMode);
