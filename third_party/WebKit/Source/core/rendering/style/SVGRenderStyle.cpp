@@ -27,7 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/rendering/style/SVGRenderStyle.h"
 
 #include "core/css/CSSPrimitiveValue.h"
@@ -233,5 +232,3 @@ StyleDifference SVGRenderStyle::diff(const SVGRenderStyle* other) const
 }
 
 }
-
-#endif // ENABLE(SVG)

@@ -26,14 +26,11 @@
 #ifndef PaintInfo_h
 #define PaintInfo_h
 
-#if ENABLE(SVG)
-#include "core/platform/graphics/transforms/AffineTransform.h"
-#endif
-
 #include <limits>
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/PaintPhase.h"
 #include <wtf/HashMap.h>
 #include <wtf/ListHashSet.h>
@@ -90,7 +87,6 @@ struct PaintInfo {
     bool skipRootBackground() const { return paintBehavior & PaintBehaviorSkipRootBackground; }
     bool paintRootBackgroundOnly() const { return paintBehavior & PaintBehaviorRootBackgroundOnly; }
 
-#if ENABLE(SVG)
     void applyTransform(const AffineTransform& localToAncestorTransform)
     {
         if (localToAncestorTransform.isIdentity())
@@ -103,7 +99,6 @@ struct PaintInfo {
 
         rect = localToAncestorTransform.inverse().mapRect(rect);
     }
-#endif
 
     static IntRect infiniteRect() { return IntRect(LayoutRect::infiniteRect()); }
 

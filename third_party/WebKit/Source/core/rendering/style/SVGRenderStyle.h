@@ -23,7 +23,6 @@
 #ifndef SVGRenderStyle_h
 #define SVGRenderStyle_h
 
-#if ENABLE(SVG)
 #include "core/css/CSSValueList.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/platform/graphics/GraphicsTypes.h"
@@ -469,5 +468,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGRenderStyle_h

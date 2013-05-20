@@ -23,6 +23,8 @@
 #include "core/rendering/HitTestLocation.h"
 
 #include "HTMLNames.h"
+#include "SVGNames.h"
+#include "XLinkNames.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/editing/FrameSelection.h"
 #include "core/html/HTMLAnchorElement.h"
@@ -39,11 +41,6 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderInline.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#include "XLinkNames.h"
-#endif
 
 namespace WebCore {
 

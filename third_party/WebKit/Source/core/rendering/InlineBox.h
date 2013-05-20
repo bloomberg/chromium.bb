@@ -123,11 +123,10 @@ public:
     virtual bool isInlineFlowBox() const { return false; }
     virtual bool isInlineTextBox() const { return false; }
     virtual bool isRootInlineBox() const { return false; }
-#if ENABLE(SVG)
+
     virtual bool isSVGInlineTextBox() const { return false; }
     virtual bool isSVGInlineFlowBox() const { return false; }
     virtual bool isSVGRootInlineBox() const { return false; }
-#endif
 
     bool hasVirtualLogicalHeight() const { return m_bitfields.hasVirtualLogicalHeight(); }
     void setHasVirtualLogicalHeight() { m_bitfields.setHasVirtualLogicalHeight(true); }

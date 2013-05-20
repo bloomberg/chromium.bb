@@ -624,12 +624,8 @@ public:
 
     bool canUseConvertToLayerCoords() const
     {
-        // These RenderObject have an impact on their layers' without them knowing about it.
-        return !renderer()->hasColumns() && !renderer()->hasTransform()
-#if ENABLE(SVG)
-            && !renderer()->isSVGRoot()
-#endif
-            ;
+        // These RenderObjects have an impact on their layers without the renderers knowing about it.
+        return !renderer()->hasColumns() && !renderer()->hasTransform() && !renderer()->isSVGRoot();
     }
 
     void convertToPixelSnappedLayerCoords(const RenderLayer* ancestorLayer, IntPoint& location) const;

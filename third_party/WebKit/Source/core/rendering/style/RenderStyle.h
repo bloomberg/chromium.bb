@@ -52,10 +52,12 @@
 #include "core/rendering/style/NinePieceImage.h"
 #include "core/rendering/style/OutlineValue.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/style/ShadowData.h"
 #include "core/rendering/style/StyleBackgroundData.h"
 #include "core/rendering/style/StyleBoxData.h"
 #include "core/rendering/style/StyleDeprecatedFlexibleBoxData.h"
+#include "core/rendering/style/StyleFilterData.h"
 #include "core/rendering/style/StyleFlexibleBoxData.h"
 #include "core/rendering/style/StyleGridData.h"
 #include "core/rendering/style/StyleGridItemData.h"
@@ -67,18 +69,12 @@
 #include "core/rendering/style/StyleSurroundData.h"
 #include "core/rendering/style/StyleTransformData.h"
 #include "core/rendering/style/StyleVisualData.h"
+#include "core/svg/SVGPaint.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>
-
-#include "core/rendering/style/StyleFilterData.h"
-
-#if ENABLE(SVG)
-#include "core/rendering/style/SVGRenderStyle.h"
-#include "core/svg/SVGPaint.h"
-#endif
 
 template<typename T, typename U> inline bool compareEqual(const T& t, const U& u) { return t == static_cast<T>(u); }
 
@@ -140,9 +136,7 @@ protected:
     // list of associated pseudo styles
     OwnPtr<PseudoStyleCache> m_cachedPseudoStyles;
 
-#if ENABLE(SVG)
     DataRef<SVGRenderStyle> m_svgStyle;
-#endif
 
 // !START SYNC!: Keep this in sync with the copy constructor in RenderStyle.cpp and implicitlyInherited() in StyleResolver.cpp
 
@@ -1329,7 +1323,6 @@ public:
 #endif
     void setTextSecurity(ETextSecurity aTextSecurity) { SET_VAR(rareInheritedData, textSecurity, aTextSecurity); }
 
-#if ENABLE(SVG)
     const SVGRenderStyle* svgStyle() const { return m_svgStyle.get(); }
     SVGRenderStyle* accessSVGStyle() { return m_svgStyle.access(); }
 
@@ -1365,7 +1358,6 @@ public:
     void setBaselineShiftValue(SVGLength s) { accessSVGStyle()->setBaselineShiftValue(s); }
     SVGLength kerning() const { return svgStyle()->kerning(); }
     void setKerning(SVGLength k) { accessSVGStyle()->setKerning(k); }
-#endif
 
     void setShapeInside(PassRefPtr<ExclusionShapeValue> value)
     {
@@ -1724,11 +1716,9 @@ private:
 
     Color colorIncludingFallback(int colorProperty, bool visitedLink) const;
 
-#if ENABLE(SVG)
     Color stopColor() const { return svgStyle()->stopColor(); }
     Color floodColor() const { return svgStyle()->floodColor(); }
     Color lightingColor() const { return svgStyle()->lightingColor(); }
-#endif
 
     void appendContent(PassOwnPtr<ContentData>);
 };

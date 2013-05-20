@@ -46,6 +46,7 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -116,10 +117,6 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 #include <wtf/UnusedParam.h>
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#endif
 
 #define MIN_INTERSECT_FOR_REVEAL 32
 
@@ -1597,10 +1594,10 @@ bool RenderLayer::cannotBlitToWindow() const
 
 bool RenderLayer::isTransparent() const
 {
-#if ENABLE(SVG)
+    // FIXME: This seems incorrect; why would SVG layers be opaque?
     if (renderer()->node() && renderer()->node()->namespaceURI() == SVGNames::svgNamespaceURI)
         return false;
-#endif
+
     return renderer()->isTransparent() || renderer()->hasMask();
 }
 
@@ -3746,9 +3743,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
             }
 
             context->clipPath(clipPath->path(rootRelativeBounds), clipPath->windRule());
-        }
-#if ENABLE(SVG)
-        else if (style->clipPath()->getOperationType() == ClipPathOperation::REFERENCE) {
+        } else if (style->clipPath()->getOperationType() == ClipPathOperation::REFERENCE) {
             ReferenceClipPathOperation* referenceClipPathOperation = static_cast<ReferenceClipPathOperation*>(style->clipPath());
             Document* document = renderer()->document();
             // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
@@ -3763,7 +3758,6 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
                 static_cast<RenderSVGResourceClipper*>(element->renderer())->applyClippingToContext(renderer(), rootRelativeBounds, paintingInfo.paintDirtyRect, context);
             }
         }
-#endif
     }
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);
@@ -6376,12 +6370,10 @@ void RenderLayer::updateOrRemoveFilterClients()
     else if (hasFilterInfo())
         filterInfo()->removeCustomFilterClients();
 
-#if ENABLE(SVG)
     if (renderer()->style()->filter().hasReferenceFilter())
         ensureFilterInfo()->updateReferenceFilterClients(renderer()->style()->filter());
     else if (hasFilterInfo())
         filterInfo()->removeReferenceFilterClients();
-#endif
 }
 
 void RenderLayer::updateOrRemoveFilterEffectRenderer()

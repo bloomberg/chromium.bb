@@ -27,8 +27,6 @@
 #include "config.h"
 #include "core/rendering/RenderObject.h"
 
-#include <stdio.h>
-#include <algorithm>
 #include "HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -78,13 +76,12 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CursorList.h"
-#include <wtf/RefCountedLeakCounter.h>
-#include <wtf/UnusedParam.h>
-
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
-#endif
+#include "wtf/RefCountedLeakCounter.h"
+#include "wtf/UnusedParam.h"
+#include <algorithm>
+#include <stdio.h>
 
 using namespace std;
 
@@ -366,9 +363,7 @@ void RenderObject::addChild(RenderObject* newChild, RenderObject* beforeChild)
     if (newChild->hasLayer() && !layerCreationAllowedForSubtree())
         toRenderLayerModelObject(newChild)->layer()->removeOnlyThisLayer();
 
-#if ENABLE(SVG)
     SVGRenderSupport::childAdded(this, newChild);
-#endif
 }
 
 void RenderObject::removeChild(RenderObject* oldChild)
@@ -663,10 +658,8 @@ static inline bool objectIsRelayoutBoundary(const RenderObject* object)
     if (object->isTextControl())
         return true;
 
-#if ENABLE(SVG)
     if (object->isSVGRoot())
         return true;
-#endif
 
     if (!object->hasOverflowClip())
         return false;
@@ -820,10 +813,8 @@ RenderBlock* RenderObject::containingBlock() const
                 o = o->containingBlock();
                 break;
             }
-#if ENABLE(SVG)
             if (o->isSVGForeignObject()) //foreignObject is the containing block for contents inside it
                 break;
-#endif
 
             o = o->parent();
         }
@@ -1985,9 +1976,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
     if (s_affectsParentBlock)
         handleDynamicFloatPositionChange();
 
-#if ENABLE(SVG)
     SVGRenderSupport::styleChanged(this);
-#endif
 
     if (!m_parent)
         return;
@@ -2341,11 +2330,10 @@ RenderObject* RenderObject::container(const RenderLayerModelObject* repaintConta
         // FIXME: The definition of view() has changed to not crawl up the render tree.  It might
         // be safe now to use it.
         while (o && o->parent() && !(o->hasTransform() && o->isRenderBlock())) {
-#if ENABLE(SVG)
             // foreignObject is the containing block for its contents.
             if (o->isSVGForeignObject())
                 break;
-#endif
+
             // The render flow thread is the top most containing block
             // for the fixed positioned elements.
             if (o->isOutOfFlowRenderFlowThread())
@@ -2361,10 +2349,9 @@ RenderObject* RenderObject::container(const RenderLayerModelObject* repaintConta
         // we may not have one if we're part of an uninstalled subtree.  We'll
         // climb as high as we can though.
         while (o && o->style()->position() == StaticPosition && !o->isRenderView() && !(o->hasTransform() && o->isRenderBlock())) {
-#if ENABLE(SVG)
             if (o->isSVGForeignObject()) // foreignObject is the containing block for contents inside it
                 break;
-#endif
+
             if (repaintContainerSkipped && o == repaintContainer)
                 *repaintContainerSkipped = true;
 
@@ -2513,10 +2500,8 @@ void RenderObject::willBeRemovedFromTree()
     if (RenderNamedFlowThread* containerFlowThread = parent()->renderNamedFlowThreadWrapper())
         containerFlowThread->removeFlowChild(this);
 
-#if ENABLE(SVG)
-    // Update cached boundaries in SVG renderers, if a child is removed.
+    // Update cached boundaries in SVG renderers if a child is removed.
     parent()->setNeedsBoundariesUpdate();
-#endif
 }
 
 void RenderObject::removeFromRenderFlowThread()
@@ -3119,8 +3104,6 @@ void RenderObject::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.setCustomAllocation(true);
 }
 
-#if ENABLE(SVG)
-
 RenderSVGResourceContainer* RenderObject::toRenderSVGResourceContainer()
 {
     ASSERT_NOT_REACHED();
@@ -3170,8 +3153,6 @@ bool RenderObject::nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const
     ASSERT_NOT_REACHED();
     return false;
 }
-
-#endif // ENABLE(SVG)
 
 } // namespace WebCore
 

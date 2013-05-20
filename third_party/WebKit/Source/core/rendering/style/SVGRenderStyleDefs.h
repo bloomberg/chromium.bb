@@ -28,7 +28,6 @@
 #ifndef SVGRenderStyleDefs_h
 #define SVGRenderStyleDefs_h
 
-#if ENABLE(SVG)
 #include "core/rendering/style/ShadowData.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGPaint.h"
@@ -276,5 +275,4 @@ namespace WebCore {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
 #endif // SVGRenderStyleDefs_h

@@ -235,13 +235,11 @@ void RootInlineBox::setContainingRegion(RenderRegion* region)
 
 LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache& verticalPositionCache)
 {
-#if ENABLE(SVG)
     // SVG will handle vertical alignment on its own.
     if (isSVGRootInlineBox())
         return 0;
 
     // FIXME: figure out how to call computeMaxLogicalTop() when SVG is enabled.
-#endif
 
     LayoutUnit maxPositionTop = 0;
     LayoutUnit maxPositionBottom = 0;

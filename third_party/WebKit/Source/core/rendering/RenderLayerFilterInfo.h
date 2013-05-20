@@ -30,18 +30,14 @@
 #ifndef RenderLayerFilterInfo_h
 #define RenderLayerFilterInfo_h
 
+#include "core/dom/Element.h"
+#include "core/loader/cache/CachedSVGDocument.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgramClient.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
-
-#include "core/platform/graphics/filters/custom/CustomFilterProgramClient.h"
-
-#if ENABLE(SVG)
-#include "core/dom/Element.h"
-#include "core/loader/cache/CachedSVGDocument.h"
-#endif
 
 namespace WebCore {
 
@@ -52,12 +48,7 @@ class RenderLayerFilterInfo;
 
 typedef HashMap<const RenderLayer*, RenderLayerFilterInfo*> RenderLayerFilterInfoMap;
     
-class RenderLayerFilterInfo
-    : public CustomFilterProgramClient
-#if ENABLE(SVG)
-    , public CachedSVGDocumentClient
-#endif
-{
+class RenderLayerFilterInfo : public CustomFilterProgramClient, public CachedSVGDocumentClient {
 public:
     static RenderLayerFilterInfo* filterInfoForRenderLayer(const RenderLayer*);
     static RenderLayerFilterInfo* createFilterInfoForRenderLayerIfNeeded(RenderLayer*);
@@ -76,11 +67,9 @@ public:
     void updateCustomFilterClients(const FilterOperations&);
     void removeCustomFilterClients();
 
-#if ENABLE(SVG)
     void updateReferenceFilterClients(const FilterOperations&);
     virtual void notifyFinished(CachedResource*);
     void removeReferenceFilterClients();
-#endif
 
 private:
     RenderLayerFilterInfo(RenderLayer*);
@@ -95,10 +84,8 @@ private:
     CustomFilterProgramList m_cachedCustomFilterPrograms;
     
     static RenderLayerFilterInfoMap* s_filterMap;
-#if ENABLE(SVG)
     Vector<RefPtr<Element> > m_internalSVGReferences;
     Vector<CachedResourceHandle<CachedSVGDocument> > m_externalSVGReferences;
-#endif
 };
 
 } // namespace WebCore

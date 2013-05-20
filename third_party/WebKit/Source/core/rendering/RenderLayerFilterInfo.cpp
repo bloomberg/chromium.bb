@@ -31,19 +31,15 @@
 
 #include "core/rendering/RenderLayerFilterInfo.h"
 
-#include "core/rendering/FilterEffectRenderer.h"
-#include "core/rendering/RenderLayer.h"
-
-#if ENABLE(SVG)
 #include "core/loader/cache/CachedSVGDocument.h"
 #include "core/loader/cache/CachedSVGDocumentReference.h"
+#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
+#include "core/rendering/FilterEffectRenderer.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
-#endif
-
-#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
-#include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 
 namespace WebCore {
 
@@ -99,9 +95,7 @@ RenderLayerFilterInfo::RenderLayerFilterInfo(RenderLayer* layer)
 RenderLayerFilterInfo::~RenderLayerFilterInfo()
 {
     removeCustomFilterClients();
-#if ENABLE(SVG)
     removeReferenceFilterClients();
-#endif
 }
 
 void RenderLayerFilterInfo::setRenderer(PassRefPtr<FilterEffectRenderer> renderer)
@@ -109,7 +103,6 @@ void RenderLayerFilterInfo::setRenderer(PassRefPtr<FilterEffectRenderer> rendere
     m_renderer = renderer; 
 }
 
-#if ENABLE(SVG)
 void RenderLayerFilterInfo::notifyFinished(CachedResource*)
 {
     RenderObject* renderer = m_layer->renderer();
@@ -157,7 +150,6 @@ void RenderLayerFilterInfo::removeReferenceFilterClients()
     }
     m_internalSVGReferences.clear();
 }
-#endif
 
 void RenderLayerFilterInfo::notifyCustomFilterProgramLoaded(CustomFilterProgram*)
 {

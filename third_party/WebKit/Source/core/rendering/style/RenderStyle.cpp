@@ -59,9 +59,8 @@ COMPILE_ASSERT(sizeof(BorderValue) == sizeof(SameSizeAsBorderValue), BorderValue
 struct SameSizeAsRenderStyle : public RefCounted<SameSizeAsRenderStyle> {
     void* dataRefs[7];
     void* ownPtrs[1];
-#if ENABLE(SVG)
     void* dataRefSvgStyle;
-#endif
+
     struct InheritedFlags {
         unsigned m_bitfields[2];
     } inherited_flags;
@@ -111,9 +110,7 @@ ALWAYS_INLINE RenderStyle::RenderStyle()
     , rareNonInheritedData(defaultStyle()->rareNonInheritedData)
     , rareInheritedData(defaultStyle()->rareInheritedData)
     , inherited(defaultStyle()->inherited)
-#if ENABLE(SVG)
     , m_svgStyle(defaultStyle()->m_svgStyle)
-#endif
 {
     setBitDefaults(); // Would it be faster to copy this from the default style?
     COMPILE_ASSERT((sizeof(InheritedFlags) <= 8), InheritedFlags_does_not_grow);
@@ -139,9 +136,7 @@ ALWAYS_INLINE RenderStyle::RenderStyle(bool)
     rareNonInheritedData.access()->m_gridItem.init();
     rareInheritedData.init();
     inherited.init();
-#if ENABLE(SVG)
     m_svgStyle.init();
-#endif
 }
 
 ALWAYS_INLINE RenderStyle::RenderStyle(const RenderStyle& o)
@@ -153,9 +148,7 @@ ALWAYS_INLINE RenderStyle::RenderStyle(const RenderStyle& o)
     , rareNonInheritedData(o.rareNonInheritedData)
     , rareInheritedData(o.rareInheritedData)
     , inherited(o.inherited)
-#if ENABLE(SVG)
     , m_svgStyle(o.m_svgStyle)
-#endif
     , inherited_flags(o.inherited_flags)
     , noninherited_flags(o.noninherited_flags)
 {
@@ -172,10 +165,8 @@ void RenderStyle::inheritFrom(const RenderStyle* inheritParent, IsAtShadowBounda
         rareInheritedData = inheritParent->rareInheritedData;
     inherited = inheritParent->inherited;
     inherited_flags = inheritParent->inherited_flags;
-#if ENABLE(SVG)
     if (m_svgStyle != inheritParent->m_svgStyle)
         m_svgStyle.access()->inheritFrom(inheritParent->m_svgStyle.get());
-#endif
 }
 
 void RenderStyle::copyNonInheritedFrom(const RenderStyle* other)
@@ -200,10 +191,8 @@ void RenderStyle::copyNonInheritedFrom(const RenderStyle* other)
     noninherited_flags._page_break_after = other->noninherited_flags._page_break_after;
     noninherited_flags._page_break_inside = other->noninherited_flags._page_break_inside;
     noninherited_flags.explicitInheritance = other->noninherited_flags.explicitInheritance;
-#if ENABLE(SVG)
     if (m_svgStyle != other->m_svgStyle)
         m_svgStyle.access()->copyNonInheritedFrom(other->m_svgStyle.get());
-#endif
     ASSERT(zoom() == initialZoom());
 }
 
@@ -219,10 +208,7 @@ bool RenderStyle::operator==(const RenderStyle& o) const
         && rareNonInheritedData == o.rareNonInheritedData
         && rareInheritedData == o.rareInheritedData
         && inherited == o.inherited
-#if ENABLE(SVG)
-        && m_svgStyle == o.m_svgStyle
-#endif
-            ;
+        && m_svgStyle == o.m_svgStyle;
 }
 
 bool RenderStyle::isStyleAvailable() const
@@ -319,9 +305,7 @@ bool RenderStyle::inheritedNotEqual(const RenderStyle* other) const
 {
     return inherited_flags != other->inherited_flags
            || inherited != other->inherited
-#if ENABLE(SVG)
            || m_svgStyle->inheritedNotEqual(other->m_svgStyle.get())
-#endif
            || rareInheritedData != other->rareInheritedData;
 }
 
@@ -330,9 +314,7 @@ bool RenderStyle::inheritedDataShared(const RenderStyle* other) const
     // This is a fast check that only looks if the data structures are shared.
     return inherited_flags == other->inherited_flags
         && inherited.get() == other->inherited.get()
-#if ENABLE(SVG)
         && m_svgStyle.get() == other->m_svgStyle.get()
-#endif
         && rareInheritedData.get() == other->rareInheritedData.get();
 }
 
@@ -367,14 +349,12 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
 {
     changedContextSensitiveProperties = ContextSensitivePropertyNone;
 
-#if ENABLE(SVG)
     StyleDifference svgChange = StyleDifferenceEqual;
     if (m_svgStyle != other->m_svgStyle) {
         svgChange = m_svgStyle->diff(other->m_svgStyle.get());
         if (svgChange == StyleDifferenceLayout)
             return svgChange;
     }
-#endif
 
     if (m_box->width() != other->m_box->width()
         || m_box->minWidth() != other->m_box->minWidth()
@@ -582,14 +562,12 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
     if (!QuotesData::equals(rareInheritedData->quotes.get(), other->rareInheritedData->quotes.get()))
         return StyleDifferenceLayout;
 
-#if ENABLE(SVG)
     // SVGRenderStyle::diff() might have returned StyleDifferenceRepaint, eg. if fill changes.
     // If eg. the font-size changed at the same time, we're not allowed to return StyleDifferenceRepaint,
     // but have to return StyleDifferenceLayout, that's why  this if branch comes after all branches
     // that are relevant for SVG and might return StyleDifferenceLayout.
     if (svgChange != StyleDifferenceEqual)
         return svgChange;
-#endif
 
     // Make sure these left/top/right/bottom checks stay below all layout checks and above
     // all visible checks.
@@ -1601,9 +1579,7 @@ void RenderStyle::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     // FIXME: inherited contains StyleImage and Font fields that might need to be instrumented.
     info.addMember(inherited, "inherited");
     info.addMember(m_cachedPseudoStyles, "cachedPseudoStyles");
-#if ENABLE(SVG)
     info.addMember(m_svgStyle, "svgStyle");
-#endif
     info.addMember(inherited_flags, "inherited_flags");
     info.addMember(noninherited_flags, "noninherited_flags");
 }

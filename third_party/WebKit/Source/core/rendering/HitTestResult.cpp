@@ -23,6 +23,8 @@
 #include "core/rendering/HitTestResult.h"
 
 #include "HTMLNames.h"
+#include "SVGNames.h"
+#include "XLinkNames.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
@@ -42,11 +44,6 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderInline.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#include "XLinkNames.h"
-#endif
 
 namespace WebCore {
 
@@ -295,9 +292,7 @@ KURL HitTestResult::absoluteImageURL() const
         || m_innerNonSharedNode->hasTagName(imgTag)
         || m_innerNonSharedNode->hasTagName(inputTag)
         || m_innerNonSharedNode->hasTagName(objectTag)    
-#if ENABLE(SVG)
         || m_innerNonSharedNode->hasTagName(SVGNames::imageTag)
-#endif
        ) {
         Element* element = toElement(m_innerNonSharedNode.get());
         urlString = element->imageSourceURL();
@@ -335,10 +330,8 @@ KURL HitTestResult::absoluteLinkURL() const
     AtomicString urlString;
     if (m_innerURLElement->hasTagName(aTag) || m_innerURLElement->hasTagName(areaTag) || m_innerURLElement->hasTagName(linkTag))
         urlString = m_innerURLElement->getAttribute(hrefAttr);
-#if ENABLE(SVG)
     else if (m_innerURLElement->hasTagName(SVGNames::aTag))
         urlString = m_innerURLElement->getAttribute(XLinkNames::hrefAttr);
-#endif
     else
         return KURL();
 
@@ -352,10 +345,9 @@ bool HitTestResult::isLiveLink() const
 
     if (m_innerURLElement->hasTagName(aTag))
         return static_cast<HTMLAnchorElement*>(m_innerURLElement.get())->isLiveLink();
-#if ENABLE(SVG)
+
     if (m_innerURLElement->hasTagName(SVGNames::aTag))
         return m_innerURLElement->isLink();
-#endif
 
     return false;
 }

@@ -555,8 +555,7 @@ protected:
 
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
 
-#if ENABLE(SVG)
-    // Only used by RenderSVGText, which explicitely overrides RenderBlock::layoutBlock(), do NOT use for anything else.
+    // Only used by RenderSVGText, which explicitly overrides RenderBlock::layoutBlock(), do NOT use for anything else.
     void forceLayoutInlineChildren()
     {
         LayoutUnit repaintLogicalTop = 0;
@@ -564,7 +563,6 @@ protected:
         clearFloats();
         layoutInlineChildren(true, repaintLogicalTop, repaintLogicalBottom);
     }
-#endif
 
     bool updateRegionsAndExclusionsLogicalSize(RenderFlowThread*);
     void computeRegionRangeForBlock(RenderFlowThread*);

@@ -50,12 +50,6 @@
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
-#include <wtf/HexNumber.h>
-#include <wtf/unicode/CharacterNames.h>
-#include <wtf/UnusedParam.h>
-#include <wtf/Vector.h>
-
-#if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 #include "core/rendering/svg/RenderSVGImage.h"
@@ -64,8 +58,10 @@
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGRenderTreeAsText.h"
-#endif
-
+#include "wtf/HexNumber.h"
+#include "wtf/UnusedParam.h"
+#include "wtf/Vector.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
 
@@ -483,7 +479,6 @@ static void writeTextRun(TextStream& ts, const RenderText& o, const InlineTextBo
 
 void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavior behavior)
 {
-#if ENABLE(SVG)
     if (o.isSVGShape()) {
         write(ts, *toRenderSVGShape(&o), indent);
         return;
@@ -516,7 +511,6 @@ void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavi
         writeSVGImage(ts, *toRenderSVGImage(&o), indent);
         return;
     }
-#endif
 
     writeIndent(ts, indent);
 
