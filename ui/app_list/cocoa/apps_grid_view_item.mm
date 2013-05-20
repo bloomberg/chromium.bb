@@ -176,6 +176,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
     [[prototypeButton cell]
         setFont:ui::ResourceBundle::GetSharedInstance().GetFont(
             app_list::kItemTextFontStyle).GetNativeFont()];
+    [[prototypeButton cell] setLineBreakMode:NSLineBreakByTruncatingTail];
 
     scoped_nsobject<AppsGridItemBackgroundView> prototypeButtonBackground(
         [[AppsGridItemBackgroundView alloc] initWithFrame:NSMakeRect(

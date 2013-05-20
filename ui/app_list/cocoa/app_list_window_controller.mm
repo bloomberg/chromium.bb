@@ -37,7 +37,7 @@
   [controlledWindow setReleasedWhenClosed:NO];
   [controlledWindow setBackgroundColor:[NSColor clearColor]];
   [controlledWindow setOpaque:NO];
-  [controlledWindow setHasShadow:NO];
+  [controlledWindow setHasShadow:YES];
 
   if ((self = [super initWithWindow:controlledWindow])) {
     appListViewController_.reset([[AppListViewController alloc] init]);
