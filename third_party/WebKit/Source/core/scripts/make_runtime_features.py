@@ -66,6 +66,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
         lowered = string[0].lower() + string[1:]
         lowered = lowered.replace("cSS", "css")
         lowered = lowered.replace("iME", "ime")
+        lowered = lowered.replace("hTML", "html")
         return lowered
 
     def _feature_sets(self):
