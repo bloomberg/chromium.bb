@@ -260,6 +260,8 @@
         'browser/ui/autofill/autofill_dialog_controller_impl.h',
         'browser/ui/autofill/autofill_dialog_models.cc',
         'browser/ui/autofill/autofill_dialog_models.h',
+        'browser/ui/autofill/autofill_dialog_sign_in_delegate.cc',
+        'browser/ui/autofill/autofill_dialog_sign_in_delegate.h',
         'browser/ui/autofill/autofill_dialog_types.cc',
         'browser/ui/autofill/autofill_dialog_types.h',
         'browser/ui/autofill/autofill_dialog_view.cc',

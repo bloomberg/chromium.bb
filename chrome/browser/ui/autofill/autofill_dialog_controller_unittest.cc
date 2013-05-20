@@ -73,6 +73,8 @@ class TestAutofillDialogView : public AutofillDialogView {
 
   MOCK_METHOD0(ModelChanged, void());
 
+  virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE {}
+
   void SetUserInput(DialogSection section, const DetailOutputMap& map) {
     outputs_[section] = map;
   }

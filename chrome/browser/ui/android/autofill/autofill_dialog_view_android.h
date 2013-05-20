@@ -39,6 +39,7 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   virtual void HideSignIn() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
+  virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
 
   // Java to C++ calls
   void ItemSelected(JNIEnv* env, jobject obj, jint section, jint index);

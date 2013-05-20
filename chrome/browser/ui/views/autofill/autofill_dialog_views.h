@@ -39,7 +39,6 @@ class FocusManager;
 class ImageButton;
 class ImageView;
 class Label;
-class LabelButton;
 class Link;
 class MenuRunner;
 class StyledLabel;
@@ -55,6 +54,7 @@ class KeyEvent;
 
 namespace autofill {
 
+class AutofillDialogSignInDelegate;
 struct DetailInput;
 
 // Views toolkit implementation of the Autofill dialog that handles the
@@ -100,6 +100,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void SetTextContentsOfInput(const DetailInput& input,
                                       const string16& contents) OVERRIDE;
   virtual void ActivateInput(const DetailInput& input) OVERRIDE;
+  virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;
@@ -586,6 +587,9 @@ class AutofillDialogViews : public AutofillDialogView,
   std::map<views::View*, string16> validity_map_;
 
   ScopedObserver<views::Widget, AutofillDialogViews> observer_;
+
+  // Delegate for the sign-in dialog's webview.
+  scoped_ptr<AutofillDialogSignInDelegate> sign_in_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogViews);
 };

@@ -50,6 +50,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual void HideSignIn() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
+  virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
 
   // ConstrainedWindowMacDelegate implementation.
   virtual void OnConstrainedWindowClosed(

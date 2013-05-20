@@ -99,6 +99,10 @@ void AutofillDialogCocoa::ModelChanged() {
   [sheet_controller_ modelChanged];
 }
 
+void AutofillDialogCocoa::OnSignInResize(const gfx::Size& pref_size) {
+  // TODO(groby): Implement Mac support for this.
+}
+
 void AutofillDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   constrained_window_.reset();

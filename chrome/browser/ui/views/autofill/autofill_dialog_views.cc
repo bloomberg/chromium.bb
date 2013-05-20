@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_sign_in_delegate.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/wallet/wallet_service_url.h"
@@ -967,9 +968,7 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   // to navigate instead of LoadInitialURL.  Figure out why it doesn't work.
 
   sign_in_webview_->LoadInitialURL(wallet::GetSignInUrl());
-  // TODO(abodenha) Resize the dialog to avoid the need for a scroll bar on
-  // sign in. See http://crbug.com/169286
-  sign_in_webview_->SetPreferredSize(contents_->GetPreferredSize());
+
   main_container_->SetVisible(false);
   sign_in_webview_->SetVisible(true);
   UpdateButtonStrip();
@@ -1049,6 +1048,11 @@ void AutofillDialogViews::SetTextContentsOfInput(const DetailInput& input,
 
 void AutofillDialogViews::ActivateInput(const DetailInput& input) {
   TextfieldEditedOrActivated(TextfieldForInput(input), false);
+}
+
+void AutofillDialogViews::OnSignInResize(const gfx::Size& pref_size) {
+  sign_in_webview_->SetPreferredSize(pref_size);
+  ContentsPreferredSizeChanged();
 }
 
 string16 AutofillDialogViews::GetWindowTitle() const {
@@ -1282,6 +1286,9 @@ void AutofillDialogViews::InitChildViews() {
   sign_in_webview_ = new views::WebView(controller_->profile());
   sign_in_webview_->SetVisible(false);
   contents_->AddChildView(sign_in_webview_);
+  sign_in_delegate_.reset(
+      new AutofillDialogSignInDelegate(this,
+                                       sign_in_webview_->GetWebContents()));
 }
 
 views::View* AutofillDialogViews::CreateMainContainer() {
