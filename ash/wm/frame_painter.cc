@@ -33,6 +33,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -82,28 +83,73 @@ const int kActivationCrossfadeDurationMs = 200;
 // Alpha/opacity value for fully-opaque headers.
 const int kFullyOpaque = 255;
 
-// Tiles an image into an area, rounding the top corners. Samples the |bitmap|
-// starting |bitmap_offset_x| pixels from the left of the image.
+// Tiles an image into an area, rounding the top corners. Samples |image|
+// starting |image_inset_x| pixels from the left of the image.
 void TileRoundRect(gfx::Canvas* canvas,
-                   int x, int y, int w, int h,
-                   const SkPaint& paint,
                    const gfx::ImageSkia& image,
-                   int corner_radius,
+                   const SkPaint& paint,
+                   const gfx::Rect& bounds,
+                   int top_left_corner_radius,
+                   int top_right_corner_radius,
                    int image_inset_x) {
-  // To get the shader to sample the image |inset_y| pixels in but tile across
-  // the whole image, we adjust the target rectangle for the shader to the right
-  // and translate the canvas left to compensate.
-  SkRect rect;
-  rect.iset(x, y, x + w, y + h);
-  const SkScalar kRadius = SkIntToScalar(corner_radius);
+  SkRect rect = gfx::RectToSkRect(bounds);
+  const SkScalar kTopLeftRadius = SkIntToScalar(top_left_corner_radius);
+  const SkScalar kTopRightRadius = SkIntToScalar(top_right_corner_radius);
   SkScalar radii[8] = {
-      kRadius, kRadius,  // top-left
-      kRadius, kRadius,  // top-right
+      kTopLeftRadius, kTopLeftRadius,  // top-left
+      kTopRightRadius, kTopRightRadius,  // top-right
       0, 0,   // bottom-right
       0, 0};  // bottom-left
   SkPath path;
   path.addRoundRect(rect, radii, SkPath::kCW_Direction);
   canvas->DrawImageInPath(image, -image_inset_x, 0, path, paint);
+}
+
+// Tiles |frame_image| and |frame_overlay_image| into an area, rounding the top
+// corners.
+void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
+                                 const gfx::ImageSkia* frame_image,
+                                 const gfx::ImageSkia* frame_overlay_image,
+                                 const SkPaint& paint,
+                                 const gfx::Rect& bounds,
+                                 int corner_radius,
+                                 int image_inset_x) {
+  SkXfermode::Mode normal_mode;
+  SkXfermode::AsMode(NULL, &normal_mode);
+
+  // If |paint| is using an unusual SkXfermode::Mode (this is the case while
+  // crossfading), we must create a new canvas to overlay |frame_image| and
+  // |frame_overlay_image| using |normal_mode| and then paint the result
+  // using the unusual mode. We try to avoid this because creating a new
+  // browser-width canvas is expensive.
+  bool fast_path = (!frame_overlay_image ||
+      SkXfermode::IsMode(paint.getXfermode(), normal_mode));
+  if (fast_path) {
+    TileRoundRect(canvas, *frame_image, paint, bounds, corner_radius,
+        corner_radius, image_inset_x);
+
+    if (frame_overlay_image) {
+      // Adjust |bounds| such that |frame_overlay_image| is not tiled.
+      gfx::Rect overlay_bounds = bounds;
+      overlay_bounds.Intersect(
+          gfx::Rect(bounds.origin(), frame_overlay_image->size()));
+      int top_left_corner_radius = corner_radius;
+      int top_right_corner_radius = corner_radius;
+      if (overlay_bounds.width() < bounds.width() - corner_radius)
+        top_right_corner_radius = 0;
+      TileRoundRect(canvas, *frame_overlay_image, paint, overlay_bounds,
+          top_left_corner_radius, top_right_corner_radius, 0);
+    }
+  } else {
+    gfx::Canvas temporary_canvas(bounds.size(), canvas->scale_factor(), false);
+    temporary_canvas.TileImageInt(*frame_image,
+                                  image_inset_x, 0,
+                                  0, 0,
+                                  bounds.width(), bounds.height());
+    temporary_canvas.DrawImageInt(*frame_overlay_image, 0, 0);
+    TileRoundRect(canvas, gfx::ImageSkia(temporary_canvas.ExtractImageRep()),
+        paint, bounds, corner_radius, corner_radius, 0);
+  }
 }
 
 // Returns true if |child| and all ancestors are visible. Useful to ensure that
@@ -179,8 +225,10 @@ FramePainter::FramePainter()
       header_left_edge_(NULL),
       header_right_edge_(NULL),
       previous_theme_frame_id_(0),
+      previous_theme_frame_overlay_id_(0),
       previous_opacity_(0),
       crossfade_theme_frame_id_(0),
+      crossfade_theme_frame_overlay_id_(0),
       crossfade_opacity_(0),
       crossfade_animation_(NULL),
       size_button_behavior_(SIZE_BUTTON_MAXIMIZES) {
@@ -373,9 +421,11 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                gfx::Canvas* canvas,
                                HeaderMode header_mode,
                                int theme_frame_id,
-                               const gfx::ImageSkia* theme_frame_overlay) {
-  if (previous_theme_frame_id_ != 0 &&
-      previous_theme_frame_id_ != theme_frame_id) {
+                               int theme_frame_overlay_id) {
+  bool initial_paint = (previous_theme_frame_id_ == 0);
+  if (!initial_paint &&
+      (previous_theme_frame_id_ != theme_frame_id ||
+       previous_theme_frame_overlay_id_ != theme_frame_overlay_id)) {
     aura::Window* parent = frame_->GetNativeWindow()->parent();
     // Don't animate the header if the parent (a workspace) is already
     // animating. Doing so results in continually painting during the animation
@@ -390,6 +440,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
     if (!parent_animating) {
       crossfade_animation_.reset(new ui::SlideAnimation(this));
       crossfade_theme_frame_id_ = previous_theme_frame_id_;
+      crossfade_theme_frame_overlay_id_ = previous_theme_frame_overlay_id_;
       crossfade_opacity_ = previous_opacity_;
       crossfade_animation_->SetSlideDuration(kActivationCrossfadeDurationMs);
       crossfade_animation_->Show();
@@ -399,10 +450,15 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   }
 
   int opacity =
-      GetHeaderOpacity(header_mode, theme_frame_id, theme_frame_overlay);
+      GetHeaderOpacity(header_mode, theme_frame_id, theme_frame_overlay_id);
   ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
   gfx::ImageSkia* theme_frame = theme_provider->GetImageSkiaNamed(
       theme_frame_id);
+  gfx::ImageSkia* theme_frame_overlay = NULL;
+  if (theme_frame_overlay_id != 0) {
+    theme_frame_overlay = theme_provider->GetImageSkiaNamed(
+        theme_frame_overlay_id);
+  }
   header_frame_bounds_ = gfx::Rect(0, 0, view->width(), theme_frame->height());
 
   const int kCornerRadius = 2;
@@ -411,7 +467,19 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   if (crossfade_animation_.get() && crossfade_animation_->is_animating()) {
     gfx::ImageSkia* crossfade_theme_frame =
         theme_provider->GetImageSkiaNamed(crossfade_theme_frame_id_);
-    if (crossfade_theme_frame) {
+    gfx::ImageSkia* crossfade_theme_frame_overlay = NULL;
+    if (crossfade_theme_frame_overlay_id_ != 0) {
+      crossfade_theme_frame_overlay = theme_provider->GetImageSkiaNamed(
+          crossfade_theme_frame_overlay_id_);
+    }
+    if (!crossfade_theme_frame ||
+        (crossfade_theme_frame_overlay_id_ != 0 &&
+         !crossfade_theme_frame_overlay)) {
+      // Reset the animation. This case occurs when the user switches the theme
+      // that they are using.
+      crossfade_animation_.reset();
+      paint.setAlpha(opacity);
+    } else {
       double current_value = crossfade_animation_->GetCurrentValue();
       int old_alpha = (1 - current_value) * crossfade_opacity_;
       int new_alpha = current_value * opacity;
@@ -419,36 +487,32 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
       // Draw the old header background, clipping the corners to be rounded.
       paint.setAlpha(old_alpha);
       paint.setXfermodeMode(SkXfermode::kPlus_Mode);
-      TileRoundRect(canvas,
-                    0, 0, view->width(), theme_frame->height(),
-                    paint,
-                    *crossfade_theme_frame,
-                    kCornerRadius,
-                    GetThemeBackgroundXInset());
+      PaintFrameImagesInRoundRect(canvas,
+                                  crossfade_theme_frame,
+                                  crossfade_theme_frame_overlay,
+                                  paint,
+                                  header_frame_bounds_,
+                                  kCornerRadius,
+                                  GetThemeBackgroundXInset());
 
       paint.setAlpha(new_alpha);
-    } else {
-      crossfade_animation_.reset();
-      paint.setAlpha(opacity);
     }
   } else {
     paint.setAlpha(opacity);
   }
 
   // Draw the header background, clipping the corners to be rounded.
-  TileRoundRect(canvas,
-                0, 0, view->width(), theme_frame->height(),
-                paint,
-                *theme_frame,
-                kCornerRadius,
-                GetThemeBackgroundXInset());
+  PaintFrameImagesInRoundRect(canvas,
+                              theme_frame,
+                              theme_frame_overlay,
+                              paint,
+                              header_frame_bounds_,
+                              kCornerRadius,
+                              GetThemeBackgroundXInset());
 
   previous_theme_frame_id_ = theme_frame_id;
+  previous_theme_frame_overlay_id_ = theme_frame_overlay_id;
   previous_opacity_ = opacity;
-
-  // Draw the theme frame overlay, if available.
-  if (theme_frame_overlay)
-    canvas->DrawImageInt(*theme_frame_overlay, 0, 0);
 
   // Separator between the maximize and close buttons.  It overlaps the left
   // edge of the close button.
@@ -759,12 +823,14 @@ int FramePainter::GetTitleOffsetX() const {
 int FramePainter::GetHeaderOpacity(
     HeaderMode header_mode,
     int theme_frame_id,
-    const gfx::ImageSkia* theme_frame_overlay) const {
+    int theme_frame_overlay_id) const {
   // User-provided themes are painted fully opaque.
-  if (frame_->GetThemeProvider()->HasCustomImage(theme_frame_id))
+  ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
+  if (theme_provider->HasCustomImage(theme_frame_id) ||
+      (theme_frame_overlay_id != 0 &&
+       theme_provider->HasCustomImage(theme_frame_overlay_id))) {
     return kFullyOpaque;
-  if (theme_frame_overlay)
-    return kFullyOpaque;
+  }
 
   // The header is fully opaque when using the minimalistic header style.
   if (ShouldUseMinimalHeaderStyle(THEMED_NO))

@@ -100,11 +100,12 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   bool ShouldUseMinimalHeaderStyle(Themed header_themed) const;
 
   // Paints the frame header.
+  // |theme_frame_overlay_id| is 0 if no overlay image should be used.
   void PaintHeader(views::NonClientFrameView* view,
                    gfx::Canvas* canvas,
                    HeaderMode header_mode,
                    int theme_frame_id,
-                   const gfx::ImageSkia* theme_frame_overlay);
+                   int theme_frame_overlay_id);
 
   // Paints the header/content separator line.  Exists as a separate function
   // because some windows with complex headers (e.g. browsers with tab strips)
@@ -172,9 +173,13 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   int GetTitleOffsetX() const;
 
   // Returns the opacity value used to paint the header.
+  // |theme_frame_overlay_id| is 0 if no overlay image is used.
   int GetHeaderOpacity(HeaderMode header_mode,
                        int theme_frame_id,
-                       const gfx::ImageSkia* theme_frame_overlay) const;
+                       int theme_frame_overlay_id) const;
+
+  // Adjust frame operations for left / right maximized modes.
+  int AdjustFrameHitCodeForMaximizedModes(int hit_code);
 
   // Returns true if the user is cycling through workspaces.
   bool IsCyclingThroughWorkspaces() const;
@@ -221,12 +226,14 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   const gfx::ImageSkia* header_left_edge_;
   const gfx::ImageSkia* header_right_edge_;
 
-  // Image id and opacity last used for painting header.
+  // Image ids and opacity last used for painting header.
   int previous_theme_frame_id_;
+  int previous_theme_frame_overlay_id_;
   int previous_opacity_;
 
-  // Image id and opacity we are crossfading from.
+  // Image ids and opacity we are crossfading from.
   int crossfade_theme_frame_id_;
+  int crossfade_theme_frame_overlay_id_;
   int crossfade_opacity_;
 
   gfx::Rect header_frame_bounds_;

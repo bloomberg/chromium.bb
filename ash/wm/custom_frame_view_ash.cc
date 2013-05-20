@@ -150,7 +150,7 @@ void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
       canvas,
       paint_as_active ? FramePainter::ACTIVE : FramePainter::INACTIVE,
       theme_image_id,
-      NULL);
+      0);
   frame_painter_->PaintTitleBar(this, canvas, GetTitleFont());
   frame_painter_->PaintHeaderContentSeparator(this, canvas);
   canvas->Restore();

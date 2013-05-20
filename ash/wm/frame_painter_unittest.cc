@@ -594,7 +594,7 @@ TEST_F(FramePainterTest, GetHeaderOpacity) {
   EXPECT_EQ(FramePainter::kSoloWindowOpacity,
             p1.GetHeaderOpacity(FramePainter::ACTIVE,
                                 IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
-                                NULL));
+                                0));
 
   // Create a second widget and painter.
   scoped_ptr<Widget> w2(CreateTestWidget());
@@ -608,33 +608,20 @@ TEST_F(FramePainterTest, GetHeaderOpacity) {
   EXPECT_EQ(FramePainter::kActiveWindowOpacity,
             p2.GetHeaderOpacity(FramePainter::ACTIVE,
                                 IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
-                                NULL));
+                                0));
 
   // Inactive window has inactive window opacity.
   EXPECT_EQ(FramePainter::kInactiveWindowOpacity,
             p2.GetHeaderOpacity(FramePainter::INACTIVE,
                                 IDR_AURA_WINDOW_HEADER_BASE_INACTIVE,
-                                NULL));
-
-  // Custom overlay image is drawn completely opaque.
-  gfx::ImageSkia custom_overlay;
-  EXPECT_EQ(255,
-            p1.GetHeaderOpacity(FramePainter::ACTIVE,
-                                IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
-                                &custom_overlay));
+                                0));
 
   // Regular maximized windows are fully opaque.
   ash::wm::MaximizeWindow(w1->GetNativeWindow());
   EXPECT_EQ(255,
             p1.GetHeaderOpacity(FramePainter::ACTIVE,
                                 IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
-                                NULL));
-
-  // Windows with custom overlays are fully opaque when maximized.
-  EXPECT_EQ(255,
-            p1.GetHeaderOpacity(FramePainter::ACTIVE,
-                                IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
-                                &custom_overlay));
+                                0));
 }
 
 // Test that the minimal header style is used in the proper situations.

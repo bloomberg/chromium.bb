@@ -221,11 +221,13 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   // The primary header image changes based on window activation state and
   // theme, so we look it up for each paint.
   int theme_frame_image_id = GetThemeFrameImageId();
-  const gfx::ImageSkia* theme_frame_overlay_image = GetThemeFrameOverlayImage();
+  int theme_frame_overlay_image_id = GetThemeFrameOverlayImageId();
 
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
   ash::FramePainter::Themed header_themed = ash::FramePainter::THEMED_NO;
-  if (GetThemeProvider()->HasCustomImage(theme_frame_image_id) ||
-      theme_frame_overlay_image) {
+  if (theme_provider->HasCustomImage(theme_frame_image_id) ||
+      (theme_frame_overlay_image_id != 0 &&
+       theme_provider->HasCustomImage(theme_frame_overlay_image_id))) {
     header_themed = ash::FramePainter::THEMED_YES;
   }
 
@@ -238,7 +240,7 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
       ShouldPaintAsActive() ?
           ash::FramePainter::ACTIVE : ash::FramePainter::INACTIVE,
       theme_frame_image_id,
-      theme_frame_overlay_image);
+      theme_frame_overlay_image_id);
   if (browser_view()->ShouldShowWindowTitle())
     frame_painter_->PaintTitleBar(this, canvas, BrowserFrame::GetTitleFont());
   if (browser_view()->IsToolbarVisible())
@@ -530,14 +532,13 @@ int BrowserNonClientFrameViewAsh::GetThemeFrameImageId() const {
       IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
 }
 
-const gfx::ImageSkia*
-BrowserNonClientFrameViewAsh::GetThemeFrameOverlayImage() const {
+int BrowserNonClientFrameViewAsh::GetThemeFrameOverlayImageId() const {
   ui::ThemeProvider* tp = GetThemeProvider();
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view()->IsBrowserTypeNormal() &&
       !browser_view()->IsOffTheRecord()) {
-    return tp->GetImageSkiaNamed(ShouldPaintAsActive() ?
-        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
+    return ShouldPaintAsActive() ?
+        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE;
   }
-  return NULL;
+  return 0;
 }

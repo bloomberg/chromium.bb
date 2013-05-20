@@ -118,7 +118,7 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
       canvas,
       paint_as_active ? FramePainter::ACTIVE : FramePainter::INACTIVE,
       theme_frame_id,
-      NULL);
+      0);
   frame_painter_->PaintTitleBar(this, canvas, title_font_);
   frame_painter_->PaintHeaderContentSeparator(this, canvas);
 }
