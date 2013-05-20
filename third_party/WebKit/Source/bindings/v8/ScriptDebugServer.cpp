@@ -568,7 +568,7 @@ void ScriptDebugServer::compileScript(ScriptState* state, const String& expressi
     v8::TryCatch tryCatch;
 
     v8::ScriptOrigin origin(v8String(sourceURL, context->GetIsolate()), v8Integer(0, context->GetIsolate()), v8Integer(0, context->GetIsolate()));
-    v8::Handle<v8::Script> script = v8::Script::New(code, &origin);
+    v8::Handle<v8::Script> script = v8::Script::Compile(code, &origin);
 
     if (tryCatch.HasCaught()) {
         v8::Local<v8::Message> message = tryCatch.Message();
