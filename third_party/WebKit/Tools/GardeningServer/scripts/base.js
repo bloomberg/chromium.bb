@@ -176,6 +176,12 @@ base.forEachDirectory = function(pathList, callback)
 
 base.parseJSONP = function(jsonp)
 {
+    if (!jsonp)
+        return {};
+
+    if (!jsonp.match(/^[^{[]*\(/))
+        return JSON.parse(jsonp);
+
     var startIndex = jsonp.indexOf('(') + 1;
     var endIndex = jsonp.lastIndexOf(')');
     if (startIndex == 0 || endIndex == -1)

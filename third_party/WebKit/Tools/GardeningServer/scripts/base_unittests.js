@@ -466,9 +466,13 @@ test("getURLParameter", 1, function() {
     ok(!base.getURLParameter('non-existant'));
 });
 
-test("parseJSONP", 2, function() {
+test("parseJSONP", 6, function() {
     deepEqual(base.parseJSONP(""), {});
     deepEqual(base.parseJSONP('p({"key": "value"})'), {"key": "value"});
+    deepEqual(base.parseJSONP('ADD_RESULTS({"dummy":"data"});'), {"dummy":"data"});
+    deepEqual(base.parseJSONP('{"dummy":"data"}'), {"dummy":"data"});
+    deepEqual(base.parseJSONP('ADD_RESULTS({"builder(1)":"data"});'), {"builder(1)":"data"});
+    deepEqual(base.parseJSONP('{"builder(1)":"data"}'), {"builder(1)":"data"});
 });
 
 })();
