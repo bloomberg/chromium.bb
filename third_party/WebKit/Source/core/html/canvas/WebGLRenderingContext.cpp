@@ -1853,7 +1853,7 @@ void WebGLRenderingContext::finish()
 {
     if (isContextLost())
         return;
-    m_context->finish();
+    m_context->flush(); // Intentionally a flush, not a finish.
 }
 
 void WebGLRenderingContext::flush()
