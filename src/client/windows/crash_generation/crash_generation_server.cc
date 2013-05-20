@@ -116,7 +116,8 @@ CrashGenerationServer::CrashGenerationServer(
       server_state_(IPC_SERVER_STATE_UNINITIALIZED),
       shutting_down_(false),
       overlapped_(),
-      client_info_(NULL) {
+      client_info_(NULL),
+      pre_fetch_custom_info_(true) {
   InitializeCriticalSection(&sync_);
 
   if (dump_path) {
@@ -198,7 +199,7 @@ CrashGenerationServer::~CrashGenerationServer() {
   if (overlapped_.hEvent) {
     CloseHandle(overlapped_.hEvent);
   }
-  
+
   DeleteCriticalSection(&sync_);
 }
 
@@ -831,10 +832,12 @@ void CALLBACK CrashGenerationServer::OnPipeConnected(void* context, BOOLEAN) {
 void CALLBACK CrashGenerationServer::OnDumpRequest(void* context, BOOLEAN) {
   assert(context);
   ClientInfo* client_info = reinterpret_cast<ClientInfo*>(context);
-  client_info->PopulateCustomInfo();
 
   CrashGenerationServer* crash_server = client_info->crash_server();
   assert(crash_server);
+  if (crash_server->pre_fetch_custom_info_) {
+    client_info->PopulateCustomInfo();
+  }
   crash_server->HandleDumpRequest(*client_info);
 
   ResetEvent(client_info->dump_requested_handle());

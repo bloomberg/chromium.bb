@@ -102,6 +102,10 @@ class CrashGenerationServer {
   // Returns true if initialization is successful; false otherwise.
   bool Start();
 
+  void pre_fetch_custom_info(bool do_pre_fetch) {
+    pre_fetch_custom_info_ = do_pre_fetch;
+  }
+
  private:
   // Various states the client can be in during the handshake with
   // the server.
@@ -260,6 +264,9 @@ class CrashGenerationServer {
 
   // Whether to generate dumps.
   bool generate_dumps_;
+
+  // Wether to populate custom information up-front.
+  bool pre_fetch_custom_info_;
 
   // Instance of a mini dump generator.
   scoped_ptr<MinidumpGenerator> dump_generator_;

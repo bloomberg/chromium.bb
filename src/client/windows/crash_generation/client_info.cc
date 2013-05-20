@@ -206,7 +206,7 @@ bool ClientInfo::PopulateCustomInfo() {
   }
 
   SetProcessUptime();
-  return (bytes_count != read_count);
+  return (bytes_count == read_count);
 }
 
 CustomClientInfo ClientInfo::GetCustomInfo() const {
