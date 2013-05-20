@@ -37,8 +37,9 @@ var TEST_URL_BASE_PATH = "http://svn.webkit.org/repository/webkit/trunk/LayoutTe
 var TEST_RESULTS_BASE_PATH = 'http://build.chromium.org/f/chromium/layout_test_results/';
 var GPU_RESULTS_BASE_PATH = 'http://chromium-browser-gpu-tests.commondatastorage.googleapis.com/runs/'
 
-var MIN_SECONDS_FOR_SLOW_TEST = 4;
-var MIN_SECONDS_FOR_SLOW_TEST_DEBUG = 2 * MIN_SECONDS_FOR_SLOW_TEST;
+var RELEASE_TIMEOUT = 6;
+var DEBUG_TIMEOUT = 12;
+var SLOW_MULTIPLIER = 5;
 var CHUNK_SIZE = 25;
 
 // FIXME: Figure out how to make this not be hard-coded.
@@ -229,12 +230,6 @@ function createResultsObjectForTest(test, builder)
     };
 }
 
-function isDebug(builderName)
-{
-    var builderNameUpperCase = builderName.toUpperCase();
-    return string.contains(builderNameUpperCase, 'DBG') || string.contains(builderNameUpperCase, 'DEBUG');
-}
-
 // Returns the expectation string for the given single character result.
 // This string should match the expectations that are put into
 // test_expectations.py.
@@ -374,14 +369,6 @@ function individualTestsForSubstringList()
     for (var test in testsMap)
         testsArray.push(test);
     return testsArray;
-}
-
-// Returns whether this test's slowest time is above the cutoff for
-// being a slow test.
-function isSlowTest(resultsForTest)
-{
-    var maxTime = isDebug(resultsForTest.builder) ? MIN_SECONDS_FOR_SLOW_TEST_DEBUG : MIN_SECONDS_FOR_SLOW_TEST;
-    return resultsForTest.slowestNonTimeoutCrashTime > maxTime;
 }
 
 function allTestsWithResult(result)
@@ -1540,9 +1527,9 @@ function showLegend()
           html += '<div class=fallback-header>' + platform + '</div>' + htmlForFallbackHelp(g_fallbacksMap[platform]);
 
       html += '<div>RELEASE TIMEOUTS:</div>' +
-          htmlForSlowTimes(MIN_SECONDS_FOR_SLOW_TEST) +
+          htmlForSlowTimes(RELEASE_TIMEOUT) +
           '<div>DEBUG TIMEOUTS:</div>' +
-          htmlForSlowTimes(MIN_SECONDS_FOR_SLOW_TEST_DEBUG);
+          htmlForSlowTimes(DEBUG_TIMEOUT);
     }
 
     legend.innerHTML = html;
@@ -1551,7 +1538,7 @@ function showLegend()
 function htmlForSlowTimes(minTime)
 {
     return '<ul><li>' + minTime + ' seconds</li><li>' +
-        5 * minTime + ' seconds if marked Slow in TestExpectations</li></ul>';
+        SLOW_MULTIPLIER * minTime + ' seconds if marked Slow in TestExpectations</li></ul>';
 }
 
 function postHeightChangedMessage()
