@@ -14,6 +14,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
 #include "ui/base/layout.h"
 #include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/glue/webfallbackthemeengine_impl.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 #if defined(USE_DEFAULT_RENDER_THEME)
@@ -57,6 +58,7 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
 
   // Platform methods (partial implementation):
   virtual WebKit::WebThemeEngine* themeEngine();
+  virtual WebKit::WebFallbackThemeEngine* fallbackThemeEngine();
 
   virtual base::PlatformFile databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
@@ -186,7 +188,8 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   double shared_timer_fire_time_;
   bool shared_timer_fire_time_was_set_while_suspended_;
   int shared_timer_suspended_;  // counter
-  WebThemeEngineImpl theme_engine_;
+  WebThemeEngineImpl native_theme_engine_;
+  WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
   scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
 };
