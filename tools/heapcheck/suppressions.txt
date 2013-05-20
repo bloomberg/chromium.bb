@@ -1707,12 +1707,6 @@
    fun:::LoadWhitelistsOnBlockingPoolThread
 }
 {
-   bug_171983
-   Heapcheck:Leak
-   ...
-   fun:chromeos::MagnificationManagerTest_MagnificationObserver_Test::TestBody
-}
-{
    bug_173597
    Heapcheck:Leak
    fun:FcConfigEvaluate
