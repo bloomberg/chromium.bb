@@ -74,9 +74,6 @@ public:
     int startLine() const { return m_startPosition.m_line.oneBasedInt(); }
     const TextPosition& startPosition() const { return m_startPosition; }
 
-    static PassOwnPtr<v8::ScriptData> precompileScript(v8::Handle<v8::String>, CachedScript*);
-    static v8::Handle<v8::Script> compileScript(v8::Handle<v8::String>, const String&, const TextPosition&, v8::ScriptData*, v8::Isolate*);
-
 private:
     String m_source;
     CachedResourceHandle<CachedScript> m_cachedScript;

@@ -40,6 +40,7 @@
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/html/HTMLElement.h"
@@ -163,7 +164,7 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
 
     v8::Handle<v8::String> codeExternalString = v8String(code, isolate);
 
-    v8::Handle<v8::Script> script = ScriptSourceCode::compileScript(codeExternalString, m_sourceURL, m_position, 0, isolate);
+    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(codeExternalString, m_sourceURL, m_position, 0, isolate);
     if (script.IsEmpty())
         return;
 

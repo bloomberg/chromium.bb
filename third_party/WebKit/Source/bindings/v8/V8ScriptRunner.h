@@ -26,14 +26,20 @@
 #ifndef V8ScriptRunner_h
 #define V8ScriptRunner_h
 
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace WebCore {
 
+class CachedScript;
 class ScriptExecutionContext;
 
 class V8ScriptRunner {
 public:
+    static PassOwnPtr<v8::ScriptData> precompileScript(v8::Handle<v8::String>, CachedScript*);
+    static v8::Handle<v8::Script> compileScript(v8::Handle<v8::String>, const String&, const TextPosition&, v8::ScriptData*, v8::Isolate*);
     static v8::Local<v8::Value> runCompiledScript(v8::Handle<v8::Script>, ScriptExecutionContext*);
     static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*);
 };

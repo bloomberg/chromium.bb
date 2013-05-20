@@ -30,8 +30,45 @@
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8RecursionScope.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/loader/CachedMetadata.h"
+#include "core/loader/cache/CachedScript.h"
 
 namespace WebCore {
+
+PassOwnPtr<v8::ScriptData> V8ScriptRunner::precompileScript(v8::Handle<v8::String> code, CachedScript* cachedScript)
+{
+    // A pseudo-randomly chosen ID used to store and retrieve V8 ScriptData from
+    // the CachedScript. If the format changes, this ID should be changed too.
+    static const unsigned dataTypeID = 0xECC13BD7;
+
+    // Very small scripts are not worth the effort to preparse.
+    static const int minPreparseLength = 1024;
+
+    if (!cachedScript || code->Length() < minPreparseLength)
+        return nullptr;
+
+    CachedMetadata* cachedMetadata = cachedScript->cachedMetadata(dataTypeID);
+    if (cachedMetadata)
+        return adoptPtr(v8::ScriptData::New(cachedMetadata->data(), cachedMetadata->size()));
+
+    OwnPtr<v8::ScriptData> scriptData = adoptPtr(v8::ScriptData::PreCompile(code));
+    if (!scriptData)
+        return nullptr;
+
+    cachedScript->setCachedMetadata(dataTypeID, scriptData->Data(), scriptData->Length());
+
+    return scriptData.release();
+}
+
+v8::Handle<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData, v8::Isolate* isolate)
+{
+    v8::Handle<v8::String> name = v8String(fileName, isolate);
+    v8::Handle<v8::Integer> line = v8Integer(scriptStartPosition.m_line.zeroBasedInt(), isolate);
+    v8::Handle<v8::Integer> column = v8Integer(scriptStartPosition.m_column.zeroBasedInt(), isolate);
+    v8::ScriptOrigin origin(name, line, column);
+    v8::Handle<v8::Script> script = v8::Script::Compile(code, &origin, scriptData);
+    return script;
+}
 
 v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> script, ScriptExecutionContext* context)
 {

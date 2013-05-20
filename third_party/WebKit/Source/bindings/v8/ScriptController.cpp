@@ -256,11 +256,11 @@ v8::Local<v8::Value> ScriptController::compileAndRunScript(const ScriptSourceCod
         // Compile the script.
         v8::Handle<v8::String> code = v8String(source.source(), m_isolate);
         TRACE_EVENT_BEGIN0("v8", "v8.compile");
-        OwnPtr<v8::ScriptData> scriptData = ScriptSourceCode::precompileScript(code, source.cachedScript());
+        OwnPtr<v8::ScriptData> scriptData = V8ScriptRunner::precompileScript(code, source.cachedScript());
 
         // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
         // 1, whereas v8 starts at 0.
-        v8::Handle<v8::Script> script = ScriptSourceCode::compileScript(code, source.url(), source.startPosition(), scriptData.get(), m_isolate);
+        v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(code, source.url(), source.startPosition(), scriptData.get(), m_isolate);
         TRACE_EVENT_END0("v8", "v8.compile");
         TRACE_EVENT0("v8", "v8.run");
 
