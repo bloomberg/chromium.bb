@@ -680,12 +680,6 @@ END
 END
     }
 
-    if ($interfaceName eq "HTMLDocument") {
-      $header{classPublic}->add(<<END);
-    static v8::Local<v8::Object> wrapInShadowObject(v8::Local<v8::Object> wrapper, Node* impl, v8::Isolate*);
-END
-    }
-
     my @enabledPerContextFunctions;
     foreach my $function (@{$interface->functions}) {
         my $name = $function->signature->name;
