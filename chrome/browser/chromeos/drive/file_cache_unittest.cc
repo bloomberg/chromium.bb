@@ -27,35 +27,6 @@ namespace drive {
 namespace internal {
 namespace {
 
-struct TestCacheResource {
-  const char* source_file;
-  const char* resource_id;
-  const char* md5;
-  bool is_pinned;
-  bool is_dirty;
-} const test_cache_resources[] = {
-  // Cache resource in tmp dir, i.e. not pinned or dirty.
-  { "gdata/root_feed.json", "tmp:resource_id", "md5_tmp_alphanumeric",
-    false, false },
-  // Cache resource in tmp dir, i.e. not pinned or dirty, with resource_id
-  // containing non-alphanumeric characters.
-  { "gdata/empty_feed.json", "tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?",
-    "md5_tmp_non_alphanumeric", false, false },
-  // Cache resource that is pinned and persistent.
-  { "gdata/directory_entry.json", "pinned:existing", "md5_pinned_existing",
-    true, false },
-  // Cache resource with a non-existent source file that is pinned.
-  { "", "pinned:non-existent", "md5_pinned_non_existent", true, false },
-  // Cache resource that is dirty.
-  { "gdata/account_metadata.json", "dirty:existing", "md5_dirty_existing",
-    false, true },
-  // Cache resource that is pinned and dirty.
-  { "gdata/basic_feed.json", "dirty_and_pinned:existing",
-    "md5_dirty_and_pinned_existing", true, true },
-};
-
-const int64 kLotsOfSpace = kMinFreeSpace * 10;
-
 struct PathToVerify {
   PathToVerify(const base::FilePath& in_path_to_scan,
                const base::FilePath& in_expected_existing_path) :
@@ -117,61 +88,6 @@ class FileCacheTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     cache_.reset();
-  }
-
-  void PrepareTestCacheResources() {
-    fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
-
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cache_resources); ++i) {
-      const struct TestCacheResource& resource = test_cache_resources[i];
-      // Copy file from data dir to cache.
-      if (!std::string(resource.source_file).empty()) {
-        base::FilePath source_path =
-            google_apis::test_util::GetTestFilePath(
-                std::string("chromeos/") + resource.source_file);
-
-        FileError error = FILE_ERROR_OK;
-        cache_->StoreOnUIThread(
-            resource.resource_id,
-            resource.md5,
-            source_path,
-            FileCache::FILE_OPERATION_COPY,
-            google_apis::test_util::CreateCopyResultCallback(&error));
-        google_apis::test_util::RunBlockingPoolTask();
-        EXPECT_EQ(FILE_ERROR_OK, error);
-      }
-      // Pin.
-      if (resource.is_pinned) {
-        FileError error = FILE_ERROR_OK;
-        EXPECT_CALL(*mock_cache_observer_,
-                    OnCachePinned(resource.resource_id, resource.md5)).Times(1);
-        cache_->PinOnUIThread(
-            resource.resource_id,
-            resource.md5,
-            google_apis::test_util::CreateCopyResultCallback(&error));
-        google_apis::test_util::RunBlockingPoolTask();
-        EXPECT_EQ(FILE_ERROR_OK, error);
-      }
-      // Mark dirty.
-      if (resource.is_dirty) {
-        FileError error = FILE_ERROR_OK;
-        cache_->MarkDirtyOnUIThread(
-            resource.resource_id,
-            resource.md5,
-            google_apis::test_util::CreateCopyResultCallback(&error));
-        google_apis::test_util::RunBlockingPoolTask();
-        EXPECT_EQ(FILE_ERROR_OK, error);
-
-        EXPECT_CALL(*mock_cache_observer_,
-                    OnCacheCommitted(resource.resource_id)).Times(1);
-        cache_->CommitDirtyOnUIThread(
-            resource.resource_id,
-            resource.md5,
-            google_apis::test_util::CreateCopyResultCallback(&error));
-        google_apis::test_util::RunBlockingPoolTask();
-        EXPECT_EQ(FILE_ERROR_OK, error);
-      }
-    }
   }
 
   void TestGetFileFromCacheByResourceIdAndMd5(
@@ -637,7 +553,8 @@ TEST_F(FileCacheTest, GetCacheFilePath) {
 }
 
 TEST_F(FileCacheTest, StoreToCacheSimple) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -670,7 +587,8 @@ TEST_F(FileCacheTest, StoreToCacheSimple) {
 }
 
 TEST_F(FileCacheTest, LocallyModifiedSimple) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -688,7 +606,8 @@ TEST_F(FileCacheTest, LocallyModifiedSimple) {
 }
 
 TEST_F(FileCacheTest, GetFromCacheSimple) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -716,7 +635,8 @@ TEST_F(FileCacheTest, GetFromCacheSimple) {
 }
 
 TEST_F(FileCacheTest, RemoveFromCacheSimple) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   // Use alphanumeric characters for resource id.
   std::string resource_id("pdf:1a2b");
@@ -744,7 +664,8 @@ TEST_F(FileCacheTest, RemoveFromCacheSimple) {
 }
 
 TEST_F(FileCacheTest, PinAndUnpin) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -806,7 +727,8 @@ TEST_F(FileCacheTest, PinAndUnpin) {
 }
 
 TEST_F(FileCacheTest, StoreToCachePinned) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -837,7 +759,8 @@ TEST_F(FileCacheTest, StoreToCachePinned) {
 }
 
 TEST_F(FileCacheTest, GetFromCachePinned) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -868,7 +791,8 @@ TEST_F(FileCacheTest, GetFromCachePinned) {
 }
 
 TEST_F(FileCacheTest, RemoveFromCachePinned) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   // Use alphanumeric characters for resource_id.
   std::string resource_id("pdf:1a2b");
@@ -910,7 +834,8 @@ TEST_F(FileCacheTest, RemoveFromCachePinned) {
 }
 
 TEST_F(FileCacheTest, DirtyCacheSimple) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -944,7 +869,8 @@ TEST_F(FileCacheTest, DirtyCacheSimple) {
 }
 
 TEST_F(FileCacheTest, DirtyCachePinned) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -989,7 +915,8 @@ TEST_F(FileCacheTest, DirtyCachePinned) {
 
 // Test is disabled because it is flaky (http://crbug.com/134146)
 TEST_F(FileCacheTest, PinAndUnpinDirtyCache) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -1042,7 +969,8 @@ TEST_F(FileCacheTest, PinAndUnpinDirtyCache) {
 }
 
 TEST_F(FileCacheTest, DirtyCacheRepetitive) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -1110,7 +1038,8 @@ TEST_F(FileCacheTest, DirtyCacheRepetitive) {
 }
 
 TEST_F(FileCacheTest, DirtyCacheInvalid) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -1157,7 +1086,8 @@ TEST_F(FileCacheTest, DirtyCacheInvalid) {
 }
 
 TEST_F(FileCacheTest, RemoveFromDirtyCache) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -1194,7 +1124,8 @@ TEST_F(FileCacheTest, RemoveFromDirtyCache) {
 }
 
 TEST_F(FileCacheTest, MountUnmount) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -1236,7 +1167,25 @@ TEST_F(FileCacheTest, MountUnmount) {
 }
 
 TEST_F(FileCacheTest, Iterate) {
-  PrepareTestCacheResources();
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
+  const std::vector<test_util::TestCacheResource> cache_resources(
+      test_util::GetDefaultTestCacheResources());
+  // Set mock expectations.
+  for (size_t i = 0; i < cache_resources.size(); ++i) {
+    if (cache_resources[i].is_pinned) {
+      EXPECT_CALL(*mock_cache_observer_,
+                  OnCachePinned(cache_resources[i].resource_id,
+                                cache_resources[i].md5)).Times(1);
+    }
+    if (cache_resources[i].is_dirty) {
+      EXPECT_CALL(*mock_cache_observer_,
+                  OnCacheCommitted(cache_resources[i].resource_id)).Times(1);
+    }
+  }
+  ASSERT_TRUE(test_util::PrepareTestCacheResources(
+      cache_.get(),
+      cache_resources));
 
   std::vector<std::string> resource_ids;
   std::vector<FileCacheEntry> cache_entries;
@@ -1262,7 +1211,8 @@ TEST_F(FileCacheTest, Iterate) {
 
 
 TEST_F(FileCacheTest, ClearAll) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -1331,7 +1281,8 @@ TEST(FileCacheExtraTest, InitializationFailure) {
 }
 
 TEST_F(FileCacheTest, UpdatePinnedCache) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
