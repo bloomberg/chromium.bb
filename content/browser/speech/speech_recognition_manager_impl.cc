@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/browser/speech/google_streaming_remote_engine.h"
 #include "content/browser/speech/speech_recognition_engine.h"
-#include "content/browser/speech/speech_recognizer.h"
+#include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
@@ -92,9 +92,10 @@ int SpeechRecognitionManagerImpl::CreateSession(
   SpeechRecognitionEngineConfig remote_engine_config;
   remote_engine_config.language = config.language;
   remote_engine_config.grammars = config.grammars;
-  remote_engine_config.audio_sample_rate = SpeechRecognizer::kAudioSampleRate;
+  remote_engine_config.audio_sample_rate =
+      SpeechRecognizerImpl::kAudioSampleRate;
   remote_engine_config.audio_num_bits_per_sample =
-     SpeechRecognizer::kNumBitsPerAudioSample;
+      SpeechRecognizerImpl::kNumBitsPerAudioSample;
   remote_engine_config.filter_profanities = config.filter_profanities;
   remote_engine_config.continuous = config.continuous;
   remote_engine_config.interim_results = config.interim_results;
@@ -117,7 +118,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
   // The legacy api cannot use continuous mode.
   DCHECK(!config.is_legacy_api || !config.continuous);
 
-  session.recognizer = new SpeechRecognizer(
+  session.recognizer = new SpeechRecognizerImpl(
       this,
       session_id,
       !config.continuous,
