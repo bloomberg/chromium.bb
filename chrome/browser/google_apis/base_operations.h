@@ -358,7 +358,6 @@ class UploadRangeOperationBase : public UrlFetchOperationBase {
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void NotifyStartToOperationRegistry() OVERRIDE;
   virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
@@ -434,6 +433,7 @@ class ResumeUploadOperationBase : public UploadRangeOperationBase {
                               int64* range_offset,
                               int64* range_length,
                               std::string* upload_content_type) OVERRIDE;
+  virtual void NotifyStartToOperationRegistry() OVERRIDE;
 
  private:
   // The parameters for the request. See ResumeUploadParams for the details.

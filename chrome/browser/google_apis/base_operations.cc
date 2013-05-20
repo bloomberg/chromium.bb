@@ -579,10 +579,6 @@ void UploadRangeOperationBase::OnDataParsed(GDataErrorCode code,
   OnProcessURLFetchResultsComplete(last_chunk_completed_);
 }
 
-void UploadRangeOperationBase::NotifyStartToOperationRegistry() {
-  NotifyResume();
-}
-
 void UploadRangeOperationBase::NotifySuccessToOperationRegistry() {
   if (last_chunk_completed_)
     NotifyFinish(OPERATION_COMPLETED);
@@ -664,6 +660,10 @@ bool ResumeUploadOperationBase::GetContentFile(
   *range_length = end_position_ - start_position_;
   *upload_content_type = content_type_;
   return true;
+}
+
+void ResumeUploadOperationBase::NotifyStartToOperationRegistry() {
+  NotifyResume();
 }
 
 //======================== GetUploadStatusOperationBase ========================

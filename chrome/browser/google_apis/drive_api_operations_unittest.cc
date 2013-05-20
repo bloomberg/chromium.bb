@@ -889,6 +889,9 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
+// TODO(kinaba): crbug.com/{241241,164098} Re-enable the test.
+#define NO_GET_UPLOAD_STATUS_TEST
+
 TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
   // Set an expected url for uploading.
   expected_upload_path_ = kTestUploadNewFilePath;
@@ -939,6 +942,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
             "\"title\":\"new file title\"}",
             http_request_.content);
 
+#if !defined(NO_GET_UPLOAD_STATUS_TEST)
   // Before sending any data, check the current status.
   // This is an edge case test for GetUploadStatusOperation.
   {
@@ -976,6 +980,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
     EXPECT_EQ(0, response.start_position_received);
     EXPECT_EQ(0, response.end_position_received);
   }
+#endif  // NO_GET_UPLOAD_STATUS_TEST
 
   // Upload the content to the upload URL.
   for (size_t start_position = 0; start_position < kTestContent.size();
@@ -1037,6 +1042,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
     EXPECT_EQ(0, response.start_position_received);
     EXPECT_EQ(static_cast<int64>(end_position), response.end_position_received);
 
+#if !defined(NO_GET_UPLOAD_STATUS_TEST)
     // Check the response by GetUploadStatusOperation.
     drive::GetUploadStatusOperation* get_upload_status_operation =
         new drive::GetUploadStatusOperation(
@@ -1068,6 +1074,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
     EXPECT_EQ(0, response.start_position_received);
     EXPECT_EQ(static_cast<int64>(end_position),
               response.end_position_received);
+#endif  // NO_GET_UPLOAD_STATUS_TEST
   }
 }
 

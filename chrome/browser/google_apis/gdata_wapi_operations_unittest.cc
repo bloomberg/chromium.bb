@@ -995,6 +995,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
+// TODO(kinaba): crbug.com/{241241,164098} Re-enable the test.
+#define NO_GET_UPLOAD_STATUS_TEST
+
 // This test exercises InitiateUploadNewFileOperation and ResumeUploadOperation
 // for a scenario of uploading a new *large* file, which requires multiple
 // requests of ResumeUploadOperation. GetUploadOperation is also tested in this
@@ -1054,6 +1057,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
             "</entry>\n",
             http_request_.content);
 
+#if !defined(NO_GET_UPLOAD_STATUS_TEST)
   // 2) Before sending any data, check the current status.
   // This is an edge case test for GetUploadStatusOperation
   // (UploadRangeOperationBase).
@@ -1092,6 +1096,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     EXPECT_EQ(0, response.start_position_received);
     EXPECT_EQ(0, response.end_position_received);
   }
+#endif  // NO_GET_UPLOAD_STATUS_TEST
 
   // 3) Upload the content to the upload URL with multiple requests.
   size_t num_bytes_consumed = 0;
@@ -1160,6 +1165,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     EXPECT_EQ(static_cast<int64>(end_position),
               response.end_position_received);
 
+#if !defined(NO_GET_UPLOAD_STATUS_TEST)
     // Check the response by GetUploadStatusOperation.
     GetUploadStatusOperation* get_upload_status_operation =
         new GetUploadStatusOperation(
@@ -1191,6 +1197,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     EXPECT_EQ(0, response.start_position_received);
     EXPECT_EQ(static_cast<int64>(end_position),
               response.end_position_received);
+#endif  // NO_GET_UPLOAD_STATUS_TEST
   }
 
   EXPECT_EQ(kUploadContent.size(), num_bytes_consumed);
