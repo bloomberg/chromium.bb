@@ -66,6 +66,11 @@ class PageCycler(page_measurement.PageMeasurement):
     options.AppendExtraBrowserArg('--js-flags=--expose_gc')
     options.AppendExtraBrowserArg('--no-sandbox')
 
+    # Temporarily disable typical_25 page set on mac.
+    if sys.platform == 'darwin' and sys.argv[-1].endswith('/typical_25.json'):
+      print 'typical_25 is currently disabled on mac. Skipping test.'
+      sys.exit(0)
+
   def MeasureMemory(self, tab, results):
     memory = tab.browser.memory_stats
     if not memory['Browser']:
