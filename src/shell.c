@@ -1296,7 +1296,7 @@ busy_cursor_grab_focus(struct weston_pointer_grab *base)
 						 pointer->x, pointer->y,
 						 &sx, &sy);
 
-	if (grab->shsurf->surface != surface) {
+	if (!grab->shsurf || grab->shsurf->surface != surface) {
 		shell_grab_end(grab);
 		free(grab);
 	}
