@@ -107,14 +107,6 @@
 #include "ui/aura/env.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
-#elif defined(OS_WIN) && defined(USE_AURA)
-#include "chrome/browser/browser_process_platform_part_aurawin.h"
-#else
-#include "chrome/browser/browser_process_platform_part.h"
-#endif  // defined(OS_CHROMEOS)
-
 #if !defined(OS_ANDROID)
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #endif

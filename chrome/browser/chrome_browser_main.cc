@@ -40,6 +40,7 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
@@ -178,12 +179,6 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/win/dpi.h"
 #endif  // defined(OS_WIN)
-
-#if defined(OS_WIN) && defined(USE_AURA)
-#include "chrome/browser/browser_process_platform_part_aurawin.h"
-#else
-#include "chrome/browser/browser_process_platform_part.h"
-#endif
 
 #if defined(OS_MACOSX)
 #include <Security/Security.h>

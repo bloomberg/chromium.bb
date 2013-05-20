@@ -14,6 +14,10 @@ BrowserProcessPlatformPart::BrowserProcessPlatformPart() {
 BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
 }
 
+void BrowserProcessPlatformPart::OnMetroViewerProcessTerminated() {
+  metro_viewer_process_host_.reset(NULL);
+}
+
 void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
     const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kViewerConnection) &&
@@ -23,11 +27,4 @@ void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
         new MetroViewerProcessHost(
             command_line.GetSwitchValueASCII(switches::kViewerConnection)));
   }
-}
-
-void BrowserProcessPlatformPart::StartTearDown() {
-}
-
-void BrowserProcessPlatformPart::OnMetroViewerProcessTerminated() {
-  metro_viewer_process_host_.reset(NULL);
 }

@@ -13,12 +13,12 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/ui/host_desktop.h"
 
 class AutomationProviderList;
 class BackgroundModeManager;
 class BookmarkPromptController;
-class BrowserProcessPlatformPart;
 class ChromeNetLog;
 class CRLSetFetcher;
 class ComponentUpdateService;

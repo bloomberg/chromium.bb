@@ -14,14 +14,6 @@ BrowserProcessPlatformPart::BrowserProcessPlatformPart()
 BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
 }
 
-void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
-    const CommandLine& /* command_line */) {
-}
-
-void BrowserProcessPlatformPart::StartTearDown() {
-  profile_helper_.reset();
-}
-
 chromeos::OomPriorityManager*
     BrowserProcessPlatformPart::oom_priority_manager() {
   DCHECK(CalledOnValidThread());
@@ -41,4 +33,8 @@ void BrowserProcessPlatformPart::CreateProfileHelper() {
   DCHECK(!created_profile_helper_ && profile_helper_.get() == NULL);
   created_profile_helper_ = true;
   profile_helper_.reset(new chromeos::ProfileHelper());
+}
+
+void BrowserProcessPlatformPart::StartTearDown() {
+  profile_helper_.reset();
 }

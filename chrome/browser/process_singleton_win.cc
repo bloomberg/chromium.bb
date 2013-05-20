@@ -23,6 +23,7 @@
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/metro_chrome_win.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -37,12 +38,6 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/hwnd_util.h"
-
-#if defined(USE_AURA)
-#include "chrome/browser/browser_process_platform_part_aurawin.h"
-#else
-#include "chrome/browser/browser_process_platform_part.h"
-#endif
 
 namespace {
 

@@ -7,24 +7,21 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/browser_process_platform_part_base.h"
 
-class CommandLine;
 class MetroViewerProcessHost;
 
-class BrowserProcessPlatformPart {
+class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
  public:
   BrowserProcessPlatformPart();
   virtual ~BrowserProcessPlatformPart();
 
-  // Called after creating the process singleton or when another chrome
-  // rendez-vous with this one.
-  virtual void PlatformSpecificCommandLineProcessing(
-      const CommandLine& command_line);
-
-  // Called from BrowserProcessImpl::StartTearDown().
-  virtual void StartTearDown();
-
+  // Invoked when the ASH metro viewer process on Windows 8 exits.
   void OnMetroViewerProcessTerminated();
+
+  // Overridden from BrowserProcessPlatformPartBase:
+  virtual void PlatformSpecificCommandLineProcessing(
+      const CommandLine& command_line) OVERRIDE;
 
  private:
   // Hosts the channel for the Windows 8 metro viewer process which runs in

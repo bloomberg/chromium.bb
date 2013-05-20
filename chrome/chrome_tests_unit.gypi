@@ -238,8 +238,6 @@
         'test/base/testing_browser_process.h',
         'test/base/testing_browser_process_platform_part.h',
         'test/base/testing_browser_process_platform_part.cc',
-        'test/base/testing_browser_process_platform_part_chromeos.h',
-        'test/base/testing_browser_process_platform_part_chromeos.cc',
         'test/base/testing_pref_service_syncable.cc',
         'test/base/testing_pref_service_syncable.h',
         'test/base/testing_profile.cc',
@@ -326,10 +324,6 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos_test_support',
-          ],
-          'sources/': [
-            ['exclude', '^test/base/testing_browser_process_platform_part\\.cc$'],
-            ['exclude', '^test/base/testing_browser_process_platform_part\\.h$'],
           ],
         }],
         ['configuration_policy==0', {

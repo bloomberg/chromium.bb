@@ -5,25 +5,16 @@
 #ifndef CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_H_
 #define CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_H_
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 
-class CommandLine;
-
-class BrowserProcessPlatformPart {
- public:
-  BrowserProcessPlatformPart();
-  virtual ~BrowserProcessPlatformPart();
-
-  // Called after creating the process singleton or when another chrome
-  // rendez-vous with this one.
-  virtual void PlatformSpecificCommandLineProcessing(
-      const CommandLine& command_line);
-
-  // Called from BrowserProcessImpl::StartTearDown().
-  virtual void StartTearDown();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
-};
+// Include the appropriate BrowserProcessPlatformPart based on the platform.
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#elif defined(OS_WIN) && defined(USE_AURA)
+#include "chrome/browser/browser_process_platform_part_aurawin.h"
+#else
+#include "chrome/browser/browser_process_platform_part_base.h"
+typedef BrowserProcessPlatformPartBase BrowserProcessPlatformPart;
+#endif
 
 #endif  // CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_H_
