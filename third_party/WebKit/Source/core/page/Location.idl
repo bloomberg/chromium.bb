@@ -34,6 +34,9 @@
     [Custom, Unforgeable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void assign([Default=Undefined] optional DOMString url);
     [Custom, Unforgeable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void replace([Default=Undefined] optional DOMString url);
     [Custom, Unforgeable] void reload();
+    [CustomGetter, DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute void assign;
+    [CustomGetter, DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute void replace;
+    [CustomGetter, DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute void reload;
 
     // URI decomposition attributes
     [CustomSetter] attribute DOMString protocol;
