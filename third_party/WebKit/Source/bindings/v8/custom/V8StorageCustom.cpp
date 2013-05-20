@@ -65,38 +65,6 @@ v8::Handle<v8::Array> V8Storage::namedPropertyEnumerator(const v8::AccessorInfo&
     return properties;
 }
 
-static v8::Handle<v8::Value> storageGetter(v8::Local<v8::String> v8Name, const v8::AccessorInfo& info)
-{
-    Storage* storage = V8Storage::toNative(info.Holder());
-    String name = toWebCoreString(v8Name);
-
-    if (name == "length")
-        return v8Undefined();
-    ExceptionCode ec = 0;
-    bool found = storage->contains(name, ec);
-    if (ec)
-        return setDOMException(ec, info.GetIsolate());
-    if (!found)
-        return v8Undefined();
-    String result = storage->getItem(name, ec);
-    if (ec)
-        return setDOMException(ec, info.GetIsolate());
-    return v8String(result, info.GetIsolate());
-}
-
-v8::Handle<v8::Value> V8Storage::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
-{
-    v8::Handle<v8::Integer> indexV8 = v8Integer(index, info.GetIsolate());
-    return storageGetter(indexV8->ToString(), info);
-}
-
-v8::Handle<v8::Value> V8Storage::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return v8Undefined();
-    return storageGetter(name, info);
-}
-
 v8::Handle<v8::Integer> V8Storage::namedPropertyQuery(v8::Local<v8::String> v8Name, const v8::AccessorInfo& info)
 {
     Storage* storage = V8Storage::toNative(info.Holder());

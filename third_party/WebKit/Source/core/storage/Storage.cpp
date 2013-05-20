@@ -56,4 +56,21 @@ Storage::~Storage()
         m_storageArea->decrementAccessCount();
 }
 
+String Storage::anonymousIndexedGetter(unsigned index, ExceptionCode& ec)
+{
+    return anonymousNamedGetter(String::number(index), ec);
+}
+
+String Storage::anonymousNamedGetter(const AtomicString& name, ExceptionCode& ec)
+{
+    ec = 0;
+    bool found = contains(name, ec);
+    if (ec || !found)
+        return String();
+    String result = getItem(name, ec);
+    if (ec)
+        return String();
+    return result;
+}
+
 }

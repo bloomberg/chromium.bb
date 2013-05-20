@@ -53,6 +53,9 @@ namespace WebCore {
 
         StorageArea* area() const { return m_storageArea.get(); }
 
+        String anonymousIndexedGetter(unsigned, ExceptionCode&);
+        String anonymousNamedGetter(const AtomicString&, ExceptionCode&);
+
     private:
         Storage(Frame*, PassRefPtr<StorageArea>);
 

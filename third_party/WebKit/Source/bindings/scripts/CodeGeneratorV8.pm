@@ -3091,14 +3091,20 @@ sub GenerateImplementationIndexedProperty
         $nativeValue .= ".release()" if (IsRefPtrType($returnType));
         my $isNull = GenerateIsNullExpression($returnType, "element");
         my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->signature->type, $indexedGetterFunction->signature->extendedAttributes, $nativeValue, "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "collection");
-        my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index");
-        my $getterCode = <<END;
-v8::Handle<v8::Value> ${v8ClassName}::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
-{
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
-    ${implClassName}* collection = toNative(info.Holder());
-${methodCallCode}
-END
+        my $raisesExceptions = $indexedGetterFunction->signature->extendedAttributes->{"RaisesException"};
+        my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index", $raisesExceptions);
+        my $getterCode = "v8::Handle<v8::Value> ${v8ClassName}::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)\n";
+        $getterCode .= "{\n";
+        $getterCode .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
+        $getterCode .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+        if ($raisesExceptions) {
+            $getterCode .= "    ExceptionCode ec = 0;\n";
+        }
+        $getterCode .= $methodCallCode . "\n";
+        if ($raisesExceptions) {
+            $getterCode .= "    if (ec)\n";
+            $getterCode .= "        return setDOMException(ec, info.GetIsolate());\n";
+        }
         if (IsUnionType($returnType)) {
             $getterCode .= "${returnJSValueCode}\n";
             $getterCode .= "    return v8Undefined();\n";
@@ -3178,6 +3184,14 @@ sub GenerateMethodCall
     my $returnName = shift;
     my $functionExpression = shift;
     my $firstArgument = shift;
+    my $raisesExceptions = shift;
+
+    my @arguments = ();
+    push @arguments, $firstArgument;
+    if ($raisesExceptions) {
+        push @arguments, "ec";
+    }
+
     if (IsUnionType($returnType)) {
         my $code = "";
         my @extraArguments = ();
@@ -3188,14 +3202,14 @@ sub GenerateMethodCall
             $code .= "    ${nativeType} ${unionMemberVariable};\n";
             push @extraArguments, $unionMemberVariable;
         }
-        $code .= "    ${functionExpression}(${firstArgument}, " . (join ", ", @extraArguments) . ");";
+        push @arguments, @extraArguments;
+        $code .= "    ${functionExpression}(" . (join ", ", @arguments) . ");";
         return $code;
     } else {
         my $nativeType = GetNativeType($returnType);
-        return "    ${nativeType} element = ${functionExpression}(${firstArgument});"
+        return "    ${nativeType} element = ${functionExpression}(" . (join ", ", @arguments) . ");"
     }
 }
-
 
 sub GenerateImplementationNamedPropertyGetter
 {
@@ -3211,30 +3225,36 @@ sub GenerateImplementationNamedPropertyGetter
     my $nativeValue = "element";
     $nativeValue .= ".release()" if (IsRefPtrType($returnType));
     my $returnJSValueCode = NativeToJSValue($namedGetterFunction->signature->type, $namedGetterFunction->signature->extendedAttributes, $nativeValue, "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "collection");
-    my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "propertyName");
+    my $raisesExceptions = $namedGetterFunction->signature->extendedAttributes->{"RaisesException"};
+    my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "propertyName", $raisesExceptions);
 
-    my $code = <<END;
-v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return v8Undefined();
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return v8Undefined();
-
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
-    ${implClassName}* collection = toNative(info.Holder());
-    AtomicString propertyName = toWebCoreAtomicString(name);
-${methodCallCode}
-END
-        if (IsUnionType($returnType)) {
-            $code .= "${returnJSValueCode}\n";
-            $code .= "    return v8Undefined();\n";
-        } else {
-            $code .= "    if (${isNull})\n";
-            $code .= "        return v8Undefined();\n";
-            $code .= $returnJSValueCode . "\n";
-        }
-        $code .= "}\n\n";
+    my $code = "v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)\n";
+    $code .= "{\n";
+    $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
+    $code .= "        return v8Undefined();\n";
+    $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";
+    $code .= "        return v8Undefined();\n";
+    $code .= "\n";
+    $code .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
+    $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+    $code .= "    AtomicString propertyName = toWebCoreAtomicString(name);\n";
+    if ($raisesExceptions) {
+        $code .= "    ExceptionCode ec = 0;\n";
+    }
+    $code .= $methodCallCode . "\n";
+    if ($raisesExceptions) {
+        $code .= "    if (ec)\n";
+        $code .= "        return setDOMException(ec, info.GetIsolate());\n";
+    }
+    if (IsUnionType($returnType)) {
+        $code .= "${returnJSValueCode}\n";
+        $code .= "    return v8Undefined();\n";
+    } else {
+        $code .= "    if (${isNull})\n";
+        $code .= "        return v8Undefined();\n";
+        $code .= $returnJSValueCode . "\n";
+    }
+    $code .= "}\n\n";
     $implementation{nameSpaceWebCore}->add($code);
 }
 

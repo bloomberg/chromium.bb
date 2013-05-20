@@ -24,13 +24,13 @@
  */
 
 [
-    CustomNamedGetter,
     CustomDeleteProperty,
     CustomEnumerateProperty,
-    CustomIndexedGetter,
     CustomIndexedSetter,
     CustomNamedSetter,
 ] interface Storage {
+    [RaisesException, ImplementedAs=anonymousIndexedGetter] getter DOMString(unsigned long index);
+    [RaisesException, ImplementedAs=anonymousNamedGetter] getter DOMString(DOMString name);
     [NotEnumerable, GetterRaisesException] readonly attribute unsigned long length;
     [NotEnumerable, TreatReturnedNullStringAs=Null, RaisesException] DOMString key(unsigned long index);
     [NotEnumerable, TreatReturnedNullStringAs=Null, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] DOMString getItem(DOMString key);
