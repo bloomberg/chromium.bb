@@ -242,7 +242,7 @@ int map_private_test(struct NaClHostDesc *d, void *test_specifics) {
 }
 
 /*
- * Write out kNumBytes (a multiple of 64K) bytes of data.
+ * Write out kNumFileBytes (a multiple of 64K) bytes of data.
  */
 int CreateTestData(struct NaClHostDesc *d) {
   size_t nbytes;

@@ -53,6 +53,33 @@ static ssize_t NaClDescNullWrite(struct NaClDesc *vself,
   return len;
 }
 
+static ssize_t NaClDescNullPRead(struct NaClDesc *vself,
+                                 void *buf,
+                                 size_t len,
+                                 nacl_off64_t offset) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(buf);
+  UNREFERENCED_PARAMETER(len);
+  if (offset < 0) {
+    return -NACL_ABI_EINVAL;
+  }
+
+  return 0;
+}
+
+static ssize_t NaClDescNullPWrite(struct NaClDesc *vself,
+                                  void const *buf,
+                                  size_t len,
+                                  nacl_off64_t offset) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(buf);
+  if (offset < 0) {
+    return -NACL_ABI_EINVAL;
+  }
+
+  return len;
+}
+
 static int NaClDescNullFstat(struct NaClDesc *vself,
                             struct nacl_abi_stat *statbuf) {
   UNREFERENCED_PARAMETER(vself);
@@ -116,6 +143,8 @@ static struct NaClDescVtbl const kNaClDescNullVtbl = {
   NaClDescNullRead,
   NaClDescNullWrite,
   NaClDescSeekNotImplemented,
+  NaClDescNullPRead,
+  NaClDescNullPWrite,
   NaClDescIoctlNotImplemented,
   NaClDescNullFstat,
   NaClDescGetdentsNotImplemented,

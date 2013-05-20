@@ -384,6 +384,8 @@ static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
+  NaClDescPReadNotImplemented,
+  NaClDescPWriteNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescFstatNotImplemented,
   NaClDescGetdentsNotImplemented,
@@ -422,6 +424,8 @@ static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
+  NaClDescPReadNotImplemented,
+  NaClDescPWriteNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescImcDescFstat,  /* diff */
   NaClDescGetdentsNotImplemented,
@@ -460,6 +464,8 @@ static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
+  NaClDescPReadNotImplemented,
+  NaClDescPWriteNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescXferableDataDescFstat,  /* diff */
   NaClDescGetdentsNotImplemented,

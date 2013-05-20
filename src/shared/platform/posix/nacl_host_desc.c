@@ -32,6 +32,15 @@
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
+#if NACL_LINUX
+# define PREAD pread64
+# define PWRITE pwrite64
+#elif NACL_OSX
+# define PREAD pread
+# define PWRITE pwrite
+#else
+# error "Which POSIX OS?"
+#endif
 
 /*
  * Map our ABI to the host OS's ABI.  On linux, this should be a big no-op.
@@ -401,6 +410,52 @@ nacl_off64_t NaClHostDescSeek(struct NaClHostDesc  *d,
 # error "What Unix-like OS is this?"
 #endif
 }
+
+ssize_t NaClHostDescPRead(struct NaClHostDesc *d,
+                          void *buf,
+                          size_t len,
+                          nacl_off64_t offset) {
+  ssize_t retval;
+
+  NaClHostDescCheckValidity("NaClHostDescPRead", d);
+  if (NACL_ABI_O_WRONLY == (d->flags & NACL_ABI_O_ACCMODE)) {
+    NaClLog(3, "NaClHostDescPRead: WRONLY file\n");
+    return -NACL_ABI_EBADF;
+  }
+  return ((-1 == (retval = PREAD(d->d, buf, len, offset)))
+          ? -NaClXlateErrno(errno) : retval);
+}
+
+ssize_t NaClHostDescPWrite(struct NaClHostDesc *d,
+                           void const *buf,
+                           size_t len,
+                           nacl_off64_t offset) {
+  ssize_t retval;
+
+  NaClHostDescCheckValidity("NaClHostDescPWrite", d);
+  if (NACL_ABI_O_RDONLY == (d->flags & NACL_ABI_O_ACCMODE)) {
+    NaClLog(3, "NaClHostDescPWrite: RDONLY file\n");
+    return -NACL_ABI_EBADF;
+  }
+#if NACL_OSX
+  /*
+   * OSX's interpretation of what the POSIX standard requires differs
+   * from Linux.  On OSX, pwrite using a descriptor that was opened
+   * with O_APPEND will not append, but write to the offset specified
+   * by the pread formal parameter.  On Linux, the O_APPEND-induced
+   * seek to the end wins.  We standardize on Linux behavior.  By just
+   * using the write syscall, we ensure that the
+   * seek-to-end-before-write semantics apply.
+   */
+  if (0 != (d->flags & NACL_ABI_O_APPEND)) {
+    return ((-1 == (retval = write(d->d, buf, len)))
+            ? -NaClXlateErrno(errno) : retval);
+  }
+#endif
+  return ((-1 == (retval = PWRITE(d->d, buf, len, offset)))
+          ? -NaClXlateErrno(errno) : retval);
+}
+
 
 int NaClHostDescIoctl(struct NaClHostDesc *d,
                       int                 request,

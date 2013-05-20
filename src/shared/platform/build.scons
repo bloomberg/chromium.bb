@@ -215,4 +215,16 @@ if env.Bit('windows'):
   env.AddNodeToTestSuite(node, ['small_tests'],
                          'run_nacl_host_desc_mmap_win_test')
 
+nacl_host_desc_pread_pwrite_test_exe = env.ComponentProgram(
+  'nacl_host_desc_pread_pwrite_test',
+  ['nacl_host_desc_pread_pwrite_test.c'],
+  EXTRA_LIBS=['platform', 'nrd_xfer'])
+
+node = env.CommandTest('nacl_host_desc_pread_pwrite_test.out',
+                       [nacl_host_desc_pread_pwrite_test_exe,
+                        '-t', MakeTempDir()])
+
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_nacl_host_desc_pread_pwrite_test')
+
 env.EnsureRequiredBuildWarnings()
