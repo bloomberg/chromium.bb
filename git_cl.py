@@ -1120,6 +1120,17 @@ def CMDcomments(parser, args):
   return 0
 
 
+def CMDdescription(parser, args):
+  """brings up the editor for the current CL's description."""
+  cl = Changelist()
+  if not cl.GetIssue():
+    DieWithError('This branch has no associated changelist.')
+  description = ChangeDescription(cl.GetDescription())
+  description.prompt()
+  cl.UpdateDescription(description.description)
+  return 0
+
+
 def CreateDescriptionFromLog(args):
   """Pulls out the commit log to use as a base for the CL description."""
   log_args = []
