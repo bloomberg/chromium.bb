@@ -23,7 +23,7 @@ class AppListServiceDisabled : public AppListService {
   // AppListService overrides:
   virtual void Init(Profile* initial_profile) OVERRIDE {}
 
-  virtual base::FilePath GetAppListProfilePath(
+  virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) OVERRIDE {
     return base::FilePath();
   }

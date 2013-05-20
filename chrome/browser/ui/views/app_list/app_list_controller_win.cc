@@ -305,18 +305,10 @@ class AppListController : public AppListServiceImpl {
 
   // AppListService overrides:
   virtual void Init(Profile* initial_profile) OVERRIDE;
-
-  // Activates the app list at the current mouse cursor location, creating the
-  // app list if necessary.
   virtual void ShowAppList(Profile* requested_profile) OVERRIDE;
-
-  // Hides the app list.
   virtual void DismissAppList() OVERRIDE;
-
   virtual bool IsAppListVisible() const OVERRIDE;
-
   virtual void EnableAppList() OVERRIDE;
-
   virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
   // AppListServiceImpl overrides:

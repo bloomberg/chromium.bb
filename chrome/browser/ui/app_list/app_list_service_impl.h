@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/profile_loader.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -61,7 +62,7 @@ class AppListServiceImpl : public AppListService,
 
   // AppListService overrides:
   virtual void Init(Profile* initial_profile) OVERRIDE;
-  virtual base::FilePath GetAppListProfilePath(
+  virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) OVERRIDE;
 
   virtual void ShowForSavedProfile() OVERRIDE;
@@ -80,17 +81,9 @@ class AppListServiceImpl : public AppListService,
   // it without showing it so that the next show is faster. Does nothing if the
   // view already exists, or another profile is in the middle of being loaded to
   // be shown.
-  void LoadProfileForInit();
-  void OnProfileLoadedForInit(int profile_load_sequence_id,
-                              Profile* profile,
-                              Profile::CreateStatus status);
-
-  // We need to keep the browser alive while we are loading a profile as that
-  // shows intent to show the app list. These two functions track our pending
-  // profile loads and start or end browser keep alive accordingly.
-  void IncrementPendingProfileLoads();
-  void DecrementPendingProfileLoads();
-  bool IsInitViewNeeded() const;
+  void LoadProfileForWarmup();
+  void OnProfileLoadedForWarmup(Profile* profile);
+  bool IsWarmupNeeded() const;
 
   // AppListService overrides:
   // Update the profile path stored in local prefs, load it (if not already
@@ -116,6 +109,8 @@ class AppListServiceImpl : public AppListService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  base::FilePath GetCurrentProfilePath();
+
   // The profile the AppList is currently displaying.
   Profile* profile_;
 
@@ -127,6 +122,8 @@ class AppListServiceImpl : public AppListService,
 
   base::WeakPtrFactory<AppListServiceImpl> weak_factory_;
   content::NotificationRegistrar registrar_;
+
+  ProfileLoader profile_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceImpl);
 };

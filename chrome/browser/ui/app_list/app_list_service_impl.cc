@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -100,7 +99,8 @@ AppListServiceImpl::AppListServiceImpl()
     : profile_(NULL),
       profile_load_sequence_id_(0),
       pending_profile_loads_(0),
-      weak_factory_(this) {
+      weak_factory_(this),
+      profile_loader_(g_browser_process->profile_manager()) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   profile_manager->GetProfileInfoCache().AddObserver(this);
 }
@@ -109,7 +109,7 @@ AppListServiceImpl::~AppListServiceImpl() {}
 
 void AppListServiceImpl::Init(Profile* initial_profile) {}
 
-base::FilePath AppListServiceImpl::GetAppListProfilePath(
+base::FilePath AppListServiceImpl::GetProfilePath(
     const base::FilePath& user_data_dir) {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
@@ -175,19 +175,13 @@ void AppListServiceImpl::Observe(
 
 void AppListServiceImpl::SetAppListProfile(
     const base::FilePath& profile_file_path) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile = profile_manager->GetProfileByPath(profile_file_path);
-
-  if (!profile) {
-    LoadProfileAsync(profile_file_path);
-    return;
-  }
-
-  ShowAppList(profile);
+  profile_loader_.LoadProfileInvalidatingOtherLoads(
+      profile_file_path, base::Bind(&AppListServiceImpl::ShowAppList,
+                                    weak_factory_.GetWeakPtr()));
 }
 
 void AppListServiceImpl::ShowForSavedProfile() {
-  SetAppListProfile(GetAppListProfilePath(
+  SetAppListProfile(GetProfilePath(
       g_browser_process->profile_manager()->user_data_dir()));
 }
 
@@ -208,42 +202,7 @@ void AppListServiceImpl::SetProfile(Profile* new_profile) {
 }
 
 void AppListServiceImpl::InvalidatePendingProfileLoads() {
-  profile_load_sequence_id_++;
-}
-
-void AppListServiceImpl::LoadProfileAsync(
-    const base::FilePath& profile_file_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  InvalidatePendingProfileLoads();
-  IncrementPendingProfileLoads();
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  profile_manager->CreateProfileAsync(
-      profile_file_path,
-      base::Bind(&AppListServiceImpl::OnProfileLoaded,
-                 weak_factory_.GetWeakPtr(), profile_load_sequence_id_),
-      string16(), string16(), false);
-}
-
-void AppListServiceImpl::OnProfileLoaded(int profile_load_sequence_id,
-                                         Profile* profile,
-                                         Profile::CreateStatus status) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  switch (status) {
-    case Profile::CREATE_STATUS_CREATED:
-      break;
-    case Profile::CREATE_STATUS_INITIALIZED:
-      // Only show if there has been no other profile shown since this load
-      // started.
-      if (profile_load_sequence_id == profile_load_sequence_id_)
-        ShowAppList(profile);
-      DecrementPendingProfileLoads();
-      break;
-    case Profile::CREATE_STATUS_FAIL:
-      DecrementPendingProfileLoads();
-      break;
-  }
+  profile_loader_.InvalidatePendingProfileLoads();
 }
 
 void AppListServiceImpl::ScheduleWarmup() {
@@ -252,7 +211,7 @@ void AppListServiceImpl::ScheduleWarmup() {
   const int kInitWindowDelay = 5;
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&AppListServiceImpl::LoadProfileForInit,
+      base::Bind(&AppListServiceImpl::LoadProfileForWarmup,
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kInitWindowDelay));
 
@@ -264,58 +223,30 @@ void AppListServiceImpl::ScheduleWarmup() {
       base::TimeDelta::FromSeconds(kSendUsageStatsDelay));
 }
 
-bool AppListServiceImpl::IsInitViewNeeded() const {
+bool AppListServiceImpl::IsWarmupNeeded() const {
   if (!g_browser_process || g_browser_process->IsShuttingDown())
     return false;
 
   // We only need to initialize the view if there's no view already created and
   // there's no profile loading to be shown.
-  return !HasCurrentView() && profile_load_sequence_id_ == 0;
+  return !HasCurrentView() && !profile_loader_.AnyProfilesLoading();
 }
 
-void AppListServiceImpl::LoadProfileForInit() {
-  if (!IsInitViewNeeded())
+void AppListServiceImpl::LoadProfileForWarmup() {
+  if (!IsWarmupNeeded())
     return;
 
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath profile_file_path(
-      GetAppListProfilePath(profile_manager->user_data_dir()));
-  Profile* profile = profile_manager->GetProfileByPath(profile_file_path);
-
-  if (!profile) {
-    profile_manager->CreateProfileAsync(
-        profile_file_path,
-        base::Bind(&AppListServiceImpl::OnProfileLoadedForInit,
-                   weak_factory_.GetWeakPtr(), profile_load_sequence_id_),
-        string16(), string16(), false);
-    return;
-  }
-
-  DoWarmupForProfile(profile);
+  profile_loader_.LoadProfileInvalidatingOtherLoads(
+      GetCurrentProfilePath(),
+      base::Bind(&AppListServiceImpl::OnProfileLoadedForWarmup,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void AppListServiceImpl::OnProfileLoadedForInit(int profile_load_sequence_id,
-                                                Profile* profile,
-                                                Profile::CreateStatus status) {
-  if (!IsInitViewNeeded())
-    return;
-
-  if (status != Profile::CREATE_STATUS_INITIALIZED)
+void AppListServiceImpl::OnProfileLoadedForWarmup(Profile* profile) {
+  if (!IsWarmupNeeded())
     return;
 
   DoWarmupForProfile(profile);
-}
-
-void AppListServiceImpl::IncrementPendingProfileLoads() {
-  pending_profile_loads_++;
-  if (pending_profile_loads_ == 1)
-    chrome::StartKeepAlive();
-}
-
-void AppListServiceImpl::DecrementPendingProfileLoads() {
-  pending_profile_loads_--;
-  if (pending_profile_loads_ == 0)
-    chrome::EndKeepAlive();
 }
 
 void AppListServiceImpl::SaveProfilePathToLocalState(
@@ -323,4 +254,9 @@ void AppListServiceImpl::SaveProfilePathToLocalState(
   g_browser_process->local_state()->SetString(
       prefs::kAppListProfile,
       profile_file_path.BaseName().MaybeAsASCII());
+}
+
+base::FilePath AppListServiceImpl::GetCurrentProfilePath() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return GetProfilePath(profile_manager->user_data_dir());
 }

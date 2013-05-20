@@ -26,7 +26,7 @@ class AppListServiceAsh : public AppListServiceImpl {
   AppListServiceAsh() {}
 
   // AppListService overrides:
-  virtual base::FilePath GetAppListProfilePath(
+  virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) OVERRIDE;
   virtual void ShowAppList(Profile* default_profile) OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
@@ -36,7 +36,7 @@ class AppListServiceAsh : public AppListServiceImpl {
   DISALLOW_COPY_AND_ASSIGN(AppListServiceAsh);
 };
 
-base::FilePath AppListServiceAsh::GetAppListProfilePath(
+base::FilePath AppListServiceAsh::GetProfilePath(
     const base::FilePath& user_data_dir) {
   return ChromeLauncherController::instance()->profile()->GetPath();
 }
