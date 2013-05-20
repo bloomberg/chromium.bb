@@ -31,6 +31,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/range/range.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -52,8 +53,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/mouse_watcher.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -176,26 +179,59 @@ class UserCard : public views::CustomButton {
   UserCard(views::ButtonListener* listener, bool active_user);
   virtual ~UserCard();
 
+  // Called when the border should remain even in the non highlighted state.
+  void ForceBorderVisible(bool show);
+
   // Overridden from views::View
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
  private:
-  // Change the hover/active state of the "button".
-  void ShowActive(bool active);
+  // Change the hover/active state of the "button" when the status changes.
+  void ShowActive();
 
   // True if this is the active user.
   bool is_active_user_;
+
+  // True if button is hovered.
+  bool button_hovered_;
+
+  // True if the border should be visible.
+  bool show_border_;
+
   DISALLOW_COPY_AND_ASSIGN(UserCard);
 };
 
+class UserViewMouseWatcherHost : public views::MouseWatcherHost {
+public:
+ explicit UserViewMouseWatcherHost(const gfx::Rect& screen_area)
+     : screen_area_(screen_area) {}
+ virtual ~UserViewMouseWatcherHost() {}
+
+ // Implementation of MouseWatcherHost.
+ virtual bool Contains(const gfx::Point& screen_point,
+                       views::MouseWatcherHost::MouseEventType type) OVERRIDE {
+   return screen_area_.Contains(screen_point);
+ }
+
+private:
+ gfx::Rect screen_area_;
+
+ DISALLOW_COPY_AND_ASSIGN(UserViewMouseWatcherHost);
+};
+
+// The view of a user item.
 class UserView : public views::View,
-                 public views::ButtonListener {
+                 public views::ButtonListener,
+                 public views::MouseWatcherListener {
  public:
   UserView(SystemTrayItem* owner,
            ash::user::LoginStatus login,
            MultiProfileIndex index);
   virtual ~UserView();
+
+  // Overridden from MouseWatcherListener:
+  virtual void MouseMovedOutOfHost() OVERRIDE;
 
  private:
   // Overridden from views::View.
@@ -219,11 +255,54 @@ class UserView : public views::View,
   // Create the additional user card content for the public mode.
   void AddLoggedInPublicModeUserCardContent(SystemTrayItem* owner);
 
+  // Create the menu option to add another user. If |disabled| is set the user
+  // cannot actively click on the item.
+  void ToggleAddUserMenuOption();
+
   MultiProfileIndex multiprofile_index_;
   views::View* user_card_;
   views::View* logout_button_;
+  scoped_ptr<views::Widget> add_menu_option_;
+
+  // The mouse watcher which takes care of out of window hover events.
+  scoped_ptr<views::MouseWatcher> mouse_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(UserView);
+};
+
+// The menu item view which gets shown when the user clicks in multi profile
+// mode onto the user item.
+class AddUserView : public views::CustomButton,
+                    public views::ButtonListener {
+ public:
+  // The |owner| is the view for which this view gets created. The |listener|
+  // will get notified when this item gets clicked.
+  AddUserView(UserCard* owner, views::ButtonListener* listener);
+  virtual ~AddUserView();
+
+  // Overridden from views::ButtonListener.
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+ private:
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+
+  // Create the additional client content for this item.
+  void AddContent();
+
+  // This is the content we create and show.
+  views::View* add_user_;
+
+  // This listener will get informed when someone clicks on this button.
+  views::ButtonListener* listener_;
+
+  // This is the owner view of this item.
+  UserCard* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddUserView);
 };
 
 RoundedImageView::RoundedImageView(int corner_radius, bool active_user)
@@ -446,36 +525,44 @@ void PublicAccountUserDetails::CalculatePreferredSize(SystemTrayItem* owner,
 
 UserCard::UserCard(views::ButtonListener* listener, bool active_user)
     : CustomButton(listener),
-      is_active_user_(active_user) {
+      is_active_user_(active_user),
+      button_hovered_(false),
+      show_border_(false) {
   if (is_active_user_) {
     set_background(
         views::Background::CreateSolidBackground(kBackgroundColor));
-    ShowActive(false);
+    ShowActive();
   }
 }
 
 UserCard::~UserCard() {}
 
+void UserCard::ForceBorderVisible(bool show) {
+  show_border_ = show;
+  ShowActive();
+}
+
 void UserCard::OnMouseEntered(const ui::MouseEvent& event) {
   if (is_active_user_) {
+    button_hovered_ = true;
     background()->SetNativeControlColor(kHoverBackgroundColor);
-    ShowActive(true);
-    SchedulePaint();
+    ShowActive();
   }
 }
 
 void UserCard::OnMouseExited(const ui::MouseEvent& event) {
   if (is_active_user_) {
+    button_hovered_ = false;
     background()->SetNativeControlColor(kBackgroundColor);
-    ShowActive(false);
-    SchedulePaint();
+    ShowActive();
   }
 }
 
-void UserCard::ShowActive(bool active) {
-  int width = active ? 1 : 0;
+void UserCard::ShowActive() {
+  int width = button_hovered_ || show_border_ ? 1 : 0;
   set_border(views::Border::CreateSolidSidedBorder(width, width, width, 1,
                                                    kBorderColor));
+  SchedulePaint();
 }
 
 UserView::UserView(SystemTrayItem* owner,
@@ -502,6 +589,13 @@ UserView::UserView(SystemTrayItem* owner,
 }
 
 UserView::~UserView() {}
+
+void UserView::MouseMovedOutOfHost() {
+  // Make sure that the MouseWatcher does not outlive our add menu option.
+  DCHECK(!add_menu_option_.get());
+  mouse_watcher_.reset();
+  add_menu_option_.reset();
+}
 
 gfx::Size UserView::GetPreferredSize() {
   gfx::Size size = views::View::GetPreferredSize();
@@ -567,26 +661,16 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   } else if (sender == user_card_ &&
              ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
     if (!multiprofile_index_) {
-      // TODO(skuhne): Need to add the images & adding logic here.
-      // TODO(skuhne): Make sure that we do not offer an add when this mode is
-      // active.
-      // TODO(skuhne): Use IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT as
-      // string.
-      const SessionStateDelegate* session_state_delegate =
-          ash::Shell::GetInstance()->session_state_delegate();
-      if (session_state_delegate->NumberOfLoggedInUsers() >=
-              session_state_delegate->GetMaximumNumberOfLoggedInUsers()) {
-        // TODO(skuhne): Use IDS_ASH_STATUS_TRAY_CAPTION_CANNOT_ADD_USER and
-        // IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER when showing the error
-        // message that no more users can be added.
-      } else {
-        ash::Shell::GetInstance()->system_tray_delegate()->ShowUserLogin();
-      }
+      ToggleAddUserMenuOption();
     } else {
       ash::SessionStateDelegate* delegate =
           ash::Shell::GetInstance()->session_state_delegate();
       delegate->SwitchActiveUser(delegate->GetUserEmail(multiprofile_index_));
     }
+  } else if (add_menu_option_.get() &&
+             sender == add_menu_option_->GetContentsView()) {
+    // Let the user add another account to the session.
+    ash::Shell::GetInstance()->system_tray_delegate()->ShowUserLogin();
   } else {
     NOTREACHED();
   }
@@ -645,6 +729,7 @@ void UserView::AddUserCard(SystemTrayItem* owner,
 
   // The entire user card should trigger hover (the inner items get disabled).
   user_card_->SetEnabled(true);
+  user_card_->set_notify_enter_exit_on_child(true);
 
   if (login == ash::user::LOGGED_IN_PUBLIC) {
     AddLoggedInPublicModeUserCardContent(owner);
@@ -669,7 +754,6 @@ void UserView::AddUserCard(SystemTrayItem* owner,
   ash::SessionStateDelegate* delegate =
       ash::Shell::GetInstance()->session_state_delegate();
   views::View* details = new views::View;
-  details->SetEnabled(false);
   details->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, 0, kUserDetailsVerticalPadding, 0));
   views::Label* username = NULL;
@@ -679,7 +763,6 @@ void UserView::AddUserCard(SystemTrayItem* owner,
         login == ash::user::LOGGED_IN_GUEST ?
             bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_GUEST_LABEL) :
             delegate->GetUserDisplayName(multiprofile_index_));
-    username->SetEnabled(false);
     username->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     details->AddChildView(username);
   }
@@ -693,7 +776,6 @@ void UserView::AddUserCard(SystemTrayItem* owner,
 
     additional->SetFont(bundle.GetFont(ui::ResourceBundle::SmallFont));
     additional->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    additional->SetEnabled(false);
     details->AddChildView(additional);
   }
 
@@ -746,6 +828,135 @@ void UserView::AddLoggedInPublicModeUserCardContent(SystemTrayItem* owner) {
   user_card_->AddChildView(CreateIconForUserCard(ash::user::LOGGED_IN_PUBLIC));
   user_card_->AddChildView(new PublicAccountUserDetails(
       owner, GetPreferredSize().width() + kTrayPopupPaddingBetweenItems));
+}
+
+void UserView::ToggleAddUserMenuOption() {
+  if (add_menu_option_.get()) {
+    mouse_watcher_.reset();
+    add_menu_option_.reset();
+    return;
+  }
+
+  // Note: We do not need to install a global event handler to delete this
+  // item since it will destroyed automatically before the menu / user menu item
+  // gets destroyed..
+  const SessionStateDelegate* session_state_delegate =
+      ash::Shell::GetInstance()->session_state_delegate();
+  bool cannot_add_more_users =
+      session_state_delegate->NumberOfLoggedInUsers() >=
+          session_state_delegate->GetMaximumNumberOfLoggedInUsers();
+  add_menu_option_.reset(new views::Widget);
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_TOOLTIP;
+  params.keep_on_top = true;
+  params.context = this->GetWidget()->GetNativeWindow();
+  params.accept_events = true;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.transparent = true;
+  add_menu_option_->Init(params);
+  add_menu_option_->SetOpacity(0xFF);
+  add_menu_option_->GetNativeWindow()->set_owned_by_parent(false);
+  SetShadowType(add_menu_option_->GetNativeView(),
+                views::corewm::SHADOW_TYPE_NONE);
+
+  // Position it below our user card.
+  gfx::Rect bounds = user_card_->GetBoundsInScreen();
+  bounds.set_y(bounds.y() + bounds.height());
+  add_menu_option_->SetBounds(bounds);
+
+  // Show the content.
+  add_menu_option_->SetContentsView(new AddUserView(
+      static_cast<UserCard*>(user_card_), this));
+  add_menu_option_->SetAlwaysOnTop(true);
+  add_menu_option_->Show();
+  if (cannot_add_more_users) {
+    // TODO(skuhne): Use IDS_ASH_STATUS_TRAY_CAPTION_CANNOT_ADD_USER and
+    // IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER when showing the error
+    // message that no more users can be added.
+  }
+  // Find the screen area which encloses both elements and sets then a mouse
+  // watcher which will close the "menu".
+  gfx::Rect area = user_card_->GetBoundsInScreen();
+  area.set_height(2 * area.height());
+  mouse_watcher_.reset(new views::MouseWatcher(
+      new UserViewMouseWatcherHost(area),
+      this));
+  mouse_watcher_->Start();
+}
+
+AddUserView::AddUserView(UserCard* owner, views::ButtonListener* listener)
+    : CustomButton(listener_),
+      add_user_(NULL),
+      listener_(listener),
+      owner_(owner) {
+  AddContent();
+  owner_->ForceBorderVisible(true);
+}
+
+AddUserView::~AddUserView() {
+  owner_->ForceBorderVisible(false);
+}
+
+gfx::Size AddUserView::GetPreferredSize() {
+  return owner_->bounds().size();
+}
+
+int AddUserView::GetHeightForWidth(int width) {
+  return owner_->bounds().size().height();
+}
+
+void AddUserView::Layout() {
+  gfx::Rect contents_area(GetContentsBounds());
+  add_user_->SetBoundsRect(contents_area);
+}
+
+void AddUserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
+  if (add_user_ == sender)
+    listener_->ButtonPressed(this, event);
+  else
+    NOTREACHED();
+}
+
+void AddUserView::AddContent() {
+  set_notify_enter_exit_on_child(true);
+
+  const SessionStateDelegate* delegate =
+      ash::Shell::GetInstance()->session_state_delegate();
+  bool enable = delegate->NumberOfLoggedInUsers() <
+                    delegate->GetMaximumNumberOfLoggedInUsers();
+
+  SetLayoutManager(new views::FillLayout());
+  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+
+  // Add padding around the panel.
+  set_border(views::Border::CreateSolidBorder(1, kBorderColor));
+
+  add_user_ = new UserCard(this, enable);
+  add_user_->set_border(views::Border::CreateEmptyBorder(
+      kUserCardVerticalPadding,
+      kTrayPopupPaddingHorizontal- kTrayUserTileHoverBorderInset,
+      kUserCardVerticalPadding,
+      kTrayPopupPaddingHorizontal- kTrayUserTileHoverBorderInset));
+
+  add_user_->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0 , kTrayPopupPaddingBetweenItems));
+  AddChildViewAt(add_user_, 0);
+
+  // Add the [+] icon.
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  RoundedImageView* icon = new RoundedImageView(kProfileRoundedCornerRadius,
+                                                true);
+  // TODO(skuhne): Add the resource and load the proper icon.
+  icon->SetImage(*ui::ResourceBundle::GetSharedInstance().
+      GetImageNamed(IDR_AURA_UBER_TRAY_GUEST_ICON).ToImageSkia(),
+      gfx::Size(kUserIconSize, kUserIconSize));
+  add_user_->AddChildView(icon);
+
+  // Add the command text.
+  views::Label* command_label = new views::Label(
+      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
+  command_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  add_user_->AddChildView(command_label);
 }
 
 }  // namespace tray
