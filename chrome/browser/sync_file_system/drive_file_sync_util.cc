@@ -4,9 +4,21 @@
 
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 
 namespace sync_file_system {
+
+namespace {
+
+// A command switch to enable Drive API instead of WAPI in Sync FileSystem API.
+// (http://crbug.com/234557)
+// TODO(nhiroki): this command-line switch should be temporary.
+const char kEnableDriveAPI[] = "enable-drive-api-for-syncfs";
+
+bool is_drive_api_enabled = false;
+
+}  // namespace
 
 SyncStatusCode GDataErrorCodeToSyncStatusCode(
     google_apis::GDataErrorCode error) {
@@ -66,6 +78,15 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
 
   LOG(WARNING) << "Got unexpected error: " << error;
   return SYNC_STATUS_FAILED;
+}
+
+void SetEnableDriveAPI(bool flag) {
+  is_drive_api_enabled = flag;
+}
+
+bool IsDriveAPIEnabled() {
+  return is_drive_api_enabled ||
+      CommandLine::ForCurrentProcess()->HasSwitch(kEnableDriveAPI);
 }
 
 }  // namespace sync_file_system
