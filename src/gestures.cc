@@ -28,6 +28,7 @@
 #include "gestures/include/palm_classifying_filter_interpreter.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/scaling_filter_interpreter.h"
+#include "gestures/include/stationary_wiggle_filter_interpreter.h"
 #include "gestures/include/cr48_profile_sensor_filter_interpreter.h"
 #include "gestures/include/sensor_jump_filter_interpreter.h"
 #include "gestures/include/split_correcting_filter_interpreter.h"
@@ -492,6 +493,8 @@ void GestureInterpreter::InitializeTouchpad(void) {
   temp = new IirFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new BoxFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new StationaryWiggleFilterInterpreter(prop_reg_.get(), temp,
+                                               tracer_.get());
   temp = new SensorJumpFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new AccelFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new SplitCorrectingFilterInterpreter(prop_reg_.get(), temp,
