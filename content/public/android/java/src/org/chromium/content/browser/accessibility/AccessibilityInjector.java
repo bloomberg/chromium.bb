@@ -6,6 +6,7 @@ package org.chromium.content.browser.accessibility;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -47,6 +48,7 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
     // The Java objects that are exposed to JavaScript
     private TextToSpeechWrapper mTextToSpeech;
     private VibratorWrapper mVibrator;
+    private final boolean mHasVibratePermission;
 
     // Lazily loaded helper objects.
     private AccessibilityManager mAccessibilityManager;
@@ -111,6 +113,9 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
 
         mAccessibilityScreenReaderUrl = CommandLine.getInstance().getSwitchValue(
                 CommandLine.ACCESSIBILITY_JAVASCRIPT_URL, DEFAULT_ACCESSIBILITY_SCREEN_READER_URL);
+
+        mHasVibratePermission = mContentViewCore.getContext().checkCallingOrSelfPermission(
+                android.Manifest.permission.VIBRATE) == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
@@ -285,7 +290,7 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
                         ALIAS_ACCESSIBILITY_JS_INTERFACE);
             }
 
-            if (mVibrator == null) {
+            if (mVibrator == null && mHasVibratePermission) {
                 mVibrator = new VibratorWrapper(context);
                 mContentViewCore.addJavascriptInterface(mVibrator,
                         ALIAS_ACCESSIBILITY_JS_INTERFACE_2);
