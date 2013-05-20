@@ -7,6 +7,7 @@ import sys
 
 import buildbot_common
 import build_utils
+import getos
 from buildbot_common import ErrorExit
 from easy_template import RunTemplateFileIfChanged
 from build_paths import SCRIPT_DIR, SDK_EXAMPLE_DIR
@@ -204,7 +205,8 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
   RunTemplateFileIfChanged(template, make_path, template_dict)
 
   outdir = os.path.dirname(os.path.abspath(make_path))
-  AddMakeBat(pepperdir, outdir)
+  if getos.GetPlatform() == 'win':
+    AddMakeBat(pepperdir, outdir)
 
   if IsExample(desc):
     ProcessHTML(srcroot, dstroot, desc, toolchains, configs,
@@ -231,6 +233,5 @@ def GenerateMasterMakefile(pepperdir, out_path, targets):
   }
   RunTemplateFileIfChanged(in_path, out_path, template_dict)
   outdir = os.path.dirname(os.path.abspath(out_path))
-  AddMakeBat(pepperdir, outdir)
-
-
+  if getos.GetPlatform() == 'win':
+    AddMakeBat(pepperdir, outdir)
