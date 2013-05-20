@@ -413,6 +413,29 @@ public:
     CSSParserLocation getSource(const CSSParserLocation& begin, const CSSParserLocation& end) const;
 
 private:
+    enum PropertyType {
+        PropertyExplicit,
+        PropertyImplicit
+    };
+
+    class ImplicitScope {
+        WTF_MAKE_NONCOPYABLE(ImplicitScope);
+    public:
+        ImplicitScope(WebCore::CSSParser* parser, PropertyType propertyType)
+            : m_parser(parser)
+        {
+            m_parser->m_implicitShorthand = propertyType == CSSParser::PropertyImplicit;
+        }
+
+        ~ImplicitScope()
+        {
+            m_parser->m_implicitShorthand = false;
+        }
+
+    private:
+        WebCore::CSSParser* m_parser;
+    };
+
     bool is8BitSource() const { return m_is8BitSource; }
 
     template <typename SourceCharacterType>

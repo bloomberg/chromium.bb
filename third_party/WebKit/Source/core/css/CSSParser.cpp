@@ -112,33 +112,6 @@ extern int cssyyparse(WebCore::CSSParser*);
 using namespace std;
 using namespace WTF;
 
-namespace {
-
-enum PropertyType {
-    PropertyExplicit,
-    PropertyImplicit
-};
-
-class ImplicitScope {
-    WTF_MAKE_NONCOPYABLE(ImplicitScope);
-public:
-    ImplicitScope(WebCore::CSSParser* parser, PropertyType propertyType)
-        : m_parser(parser)
-    {
-        m_parser->m_implicitShorthand = propertyType == PropertyImplicit;
-    }
-
-    ~ImplicitScope()
-    {
-        m_parser->m_implicitShorthand = false;
-    }
-
-private:
-    WebCore::CSSParser* m_parser;
-};
-
-} // namespace
-
 namespace WebCore {
 
 static const unsigned INVALID_NUM_PARSED_PROPERTIES = UINT_MAX;
