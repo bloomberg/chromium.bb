@@ -454,10 +454,10 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const
     if (!n || m_frame->document() != n->document() || selection->isNone())
         return false;
 
-    ContainerNode* parentNode = n->parentNode();
     unsigned nodeIndex = n->nodeIndex();
     RefPtr<Range> selectedRange = selection->selection().toNormalizedRange();
 
+    ContainerNode* parentNode = n->parentNode();
     if (!parentNode)
         return false;
 
