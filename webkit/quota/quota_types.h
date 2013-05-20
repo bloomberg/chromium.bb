@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/tuple.h"
 #include "webkit/quota/quota_status_code.h"
 
 class GURL;
@@ -47,15 +48,16 @@ typedef base::Callback<void(const std::set<GURL>& origins,
                             StorageType type)> GetOriginsCallback;
 typedef base::Callback<void(const UsageInfoEntries&)> GetUsageInfoCallback;
 
+template<typename CallbackType, typename Args>
+void DispatchToCallback(const CallbackType& callback,
+                        const Args& args) {
+  DispatchToMethod(&callback, &CallbackType::Run, args);
+}
+
 // Simple template wrapper for a callback queue.
-template <typename CallbackType>
-class CallbackQueueBase {
+template <typename CallbackType, typename Args>
+class CallbackQueue {
  public:
-  typedef typename std::deque<CallbackType> Queue;
-  typedef typename Queue::iterator iterator;
-
-  virtual ~CallbackQueueBase() {}
-
   // Returns true if the given |callback| is the first one added to the queue.
   bool Add(const CallbackType& callback) {
     callbacks_.push_back(callback);
@@ -66,67 +68,35 @@ class CallbackQueueBase {
     return !callbacks_.empty();
   }
 
- protected:
-  std::deque<CallbackType> callbacks_;
-};
-
-template <typename CallbackType1, typename A1>
-class CallbackQueue1 : public CallbackQueueBase<CallbackType1> {
- public:
-  typedef typename CallbackQueueBase<CallbackType1>::Queue Queue;
   // Runs the callbacks added to the queue and clears the queue.
-  void Run(A1 arg) {
-    // Note: template-derived class needs 'this->' to access its base class.
-    for (typename Queue::iterator iter = this->callbacks_.begin();
-         iter != this->callbacks_.end(); ++iter) {
-      iter->Run(arg);
-    }
-    this->callbacks_.clear();
+  void Run(const Args& args) {
+    typedef typename std::vector<CallbackType>::iterator iterator;
+    for (iterator iter = callbacks_.begin();
+         iter != callbacks_.end(); ++iter)
+      DispatchToCallback(*iter, args);
+    callbacks_.clear();
   }
+
+ private:
+  std::vector<CallbackType> callbacks_;
 };
 
-template <typename CallbackType2, typename A1, typename A2>
-class CallbackQueue2 : public CallbackQueueBase<CallbackType2> {
- public:
-  typedef typename CallbackQueueBase<CallbackType2>::Queue Queue;
-  // Runs the callbacks added to the queue and clears the queue.
-  void Run(A1 arg1, A2 arg2) {
-    for (typename Queue::iterator iter = this->callbacks_.begin();
-         iter != this->callbacks_.end(); ++iter) {
-      iter->Run(arg1, arg2);
-    }
-    this->callbacks_.clear();
-  }
-};
+typedef CallbackQueue<GlobalUsageCallback,
+                      Tuple3<StorageType, int64, int64> >
+    GlobalUsageCallbackQueue;
 
-template <typename CallbackType3, typename A1, typename A2, typename A3>
-class CallbackQueue3 : public CallbackQueueBase<CallbackType3> {
+template <typename CallbackType, typename Key, typename Args>
+class CallbackQueueMap {
  public:
-  typedef typename CallbackQueueBase<CallbackType3>::Queue Queue;
-  // Runs the callbacks added to the queue and clears the queue.
-  void Run(A1 arg1, A2 arg2, A3 arg3) {
-    for (typename Queue::iterator iter = this->callbacks_.begin();
-         iter != this->callbacks_.end(); ++iter) {
-      iter->Run(arg1, arg2, arg3);
-    }
-    this->callbacks_.clear();
-  }
-};
-
-typedef CallbackQueue3<GlobalUsageCallback,
-                       StorageType, int64, int64> GlobalUsageCallbackQueue;
-
-template <typename CallbackType, typename CallbackQueueType, typename KEY>
-class CallbackQueueMapBase {
- public:
-  typedef std::map<KEY, CallbackQueueType> CallbackMap;
+  typedef CallbackQueue<CallbackType, Args> CallbackQueueType;
+  typedef std::map<Key, CallbackQueueType> CallbackMap;
   typedef typename CallbackMap::iterator iterator;
 
-  bool Add(const KEY& key, const CallbackType& callback) {
+  bool Add(const Key& key, const CallbackType& callback) {
     return callback_map_[key].Add(callback);
   }
 
-  bool HasCallbacks(const KEY& key) const {
+  bool HasCallbacks(const Key& key) const {
     return (callback_map_.find(key) != callback_map_.end());
   }
 
@@ -139,34 +109,21 @@ class CallbackQueueMapBase {
 
   void Clear() { callback_map_.clear(); }
 
- protected:
+  // Runs the callbacks added for the given |key| and clears the key
+  // from the map.
+  void Run(const Key& key, const Args& args) {
+    if (!this->HasCallbacks(key))
+      return;
+    CallbackQueueType& queue = callback_map_[key];
+    queue.Run(args);
+    callback_map_.erase(key);
+  }
+
+ private:
   CallbackMap callback_map_;
 };
 
-template <typename CallbackType1, typename KEY, typename ARG>
-class CallbackQueueMap1
-    : public CallbackQueueMapBase<CallbackType1,
-                                  CallbackQueue1<CallbackType1, ARG>,
-                                  KEY> {
- public:
-  typedef typename CallbackQueueMapBase<
-      CallbackType1,
-      CallbackQueue1<CallbackType1, ARG>,
-      KEY>::iterator iterator;
-  typedef CallbackQueue1<CallbackType1, ARG> Queue;
-
-  // Runs the callbacks added for the given |key| and clears the key
-  // from the map.
-  void Run(const KEY& key, ARG arg) {
-    if (!this->HasCallbacks(key))
-      return;
-    Queue& queue = this->callback_map_[key];
-    queue.Run(arg);
-    this->callback_map_.erase(key);
-  }
-};
-
-typedef CallbackQueueMap1<UsageCallback, std::string, int64>
+typedef CallbackQueueMap<UsageCallback, std::string, Tuple1<int64> >
     HostUsageCallbackMap;
 
 }  // namespace quota

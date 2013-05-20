@@ -348,8 +348,9 @@ void UsageTracker::DidGetClientGlobalUsage(StorageType type,
 
     // All the clients have returned their usage data.  Dispatches the
     // pending callbacks.
-    global_usage_callbacks_.Run(type, global_usage_.usage,
-                                global_usage_.unlimited_usage);
+    global_usage_callbacks_.Run(
+        MakeTuple(type, global_usage_.usage,
+                  global_usage_.unlimited_usage));
   }
 }
 
@@ -365,7 +366,7 @@ void UsageTracker::DidGetClientHostUsage(const std::string& host,
       info.usage = 0;
     // All the clients have returned their usage data.  Dispatches the
     // pending callbacks.
-    host_usage_callbacks_.Run(host, info.usage);
+    host_usage_callbacks_.Run(host, MakeTuple(info.usage));
     outstanding_host_usage_.erase(host);
   }
 }
@@ -554,8 +555,8 @@ void ClientUsageTracker::GatherGlobalUsageComplete(
 
   DCHECK(global_usage_callback_.HasCallbacks());
   global_usage_callback_.Run(
-      type_, global_usage,
-      GetCachedGlobalUnlimitedUsage() + non_cached_global_usage);
+      MakeTuple(type_, global_usage,
+                GetCachedGlobalUnlimitedUsage() + non_cached_global_usage));
 
   for (HostUsageCallbackMap::iterator iter = host_usage_callbacks_.Begin();
        iter != host_usage_callbacks_.End(); ++iter) {
@@ -564,7 +565,7 @@ void ClientUsageTracker::GatherGlobalUsageComplete(
         non_cached_host_usage.find(iter->first);
     if (found != non_cached_host_usage.end())
       host_usage += found->second;
-    iter->second.Run(host_usage);
+    iter->second.Run(MakeTuple(host_usage));
   }
   host_usage_callbacks_.Clear();
 }
@@ -573,7 +574,7 @@ void ClientUsageTracker::GatherHostUsageComplete(const std::string& host,
                                                  int64 usage) {
   DCHECK(host_usage_tasks_.find(host) != host_usage_tasks_.end());
   host_usage_tasks_.erase(host);
-  host_usage_callbacks_.Run(host, usage);
+  host_usage_callbacks_.Run(host, MakeTuple(usage));
 }
 
 int64 ClientUsageTracker::GetCachedHostUsage(const std::string& host) const {
