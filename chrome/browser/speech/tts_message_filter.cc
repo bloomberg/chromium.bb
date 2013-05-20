@@ -17,9 +17,7 @@ using content::BrowserThread;
 TtsMessageFilter::TtsMessageFilter(int render_process_id, Profile* profile)
     : render_process_id_(render_process_id),
       profile_(profile) {
-}
-
-TtsMessageFilter::~TtsMessageFilter() {
+  TtsController::GetInstance()->AddVoicesChangedDelegate(this);
 }
 
 void TtsMessageFilter::OverrideThreadForMessage(
@@ -36,7 +34,7 @@ void TtsMessageFilter::OverrideThreadForMessage(
 }
 
 bool TtsMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                bool* message_was_ok) {
+                                         bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(TtsMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(TtsHostMsg_InitializeVoiceList, OnInitializeVoiceList)
@@ -47,6 +45,10 @@ bool TtsMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void TtsMessageFilter::OnChannelClosing() {
+  TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
 }
 
 void TtsMessageFilter::OnInitializeVoiceList() {
@@ -129,4 +131,11 @@ void TtsMessageFilter::OnTtsEvent(Utterance* utterance,
           utterance->src_id(), error_message));
       break;
   }
+}
+
+void TtsMessageFilter::OnVoicesChanged() {
+  OnInitializeVoiceList();
+}
+
+TtsMessageFilter::~TtsMessageFilter() {
 }

@@ -723,9 +723,7 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->GetChannel()->AddFilter(
       new prerender::PrerenderMessageFilter(id, profile));
   host->GetChannel()->AddFilter(new ValidationMessageMessageFilter(id));
-#if !defined(OS_ANDROID)
   host->GetChannel()->AddFilter(new TtsMessageFilter(id, profile));
-#endif
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));

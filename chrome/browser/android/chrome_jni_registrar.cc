@@ -18,6 +18,7 @@
 #include "chrome/browser/lifetime/application_lifetime_android.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search_engines/template_url_service_android.h"
+#include "chrome/browser/speech/tts_android.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_dialog_view_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
@@ -72,6 +73,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "StatusTray", StatusTrayAndroid::Register },
   { "TabAndroid", TabAndroid::RegisterTabAndroid },
   { "TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register },
+  { "TtsPlatformImpl", TtsPlatformImplAndroid::Register },
   { "WebsiteSettingsPopupAndroid",
       WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid },
 };

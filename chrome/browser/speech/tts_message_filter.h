@@ -13,7 +13,8 @@ class Profile;
 
 class TtsMessageFilter
     : public content::BrowserMessageFilter,
-      public UtteranceEventDelegate {
+      public UtteranceEventDelegate,
+      public VoicesChangedDelegate {
  public:
   TtsMessageFilter(int render_process_id, Profile* profile);
 
@@ -23,12 +24,16 @@ class TtsMessageFilter
       content::BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
+  virtual void OnChannelClosing() OVERRIDE;
 
   // UtteranceEventDelegate implementation.
   virtual void OnTtsEvent(Utterance* utterance,
                           TtsEventType event_type,
                           int char_index,
                           const std::string& error_message) OVERRIDE;
+
+  // VoicesChangedDelegate implementation.
+  virtual void OnVoicesChanged() OVERRIDE;
 
  private:
   virtual ~TtsMessageFilter();

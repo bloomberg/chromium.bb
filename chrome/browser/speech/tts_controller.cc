@@ -156,6 +156,7 @@ void TtsController::SpeakNow(Utterance* utterance) {
     voice.native = true;
 
   if (!voice.native) {
+#if !defined(OS_ANDROID)
     DCHECK(!voice.extension_id.empty());
     current_utterance_ = utterance;
     utterance->set_extension_id(voice.extension_id);
@@ -168,6 +169,7 @@ void TtsController::SpeakNow(Utterance* utterance) {
       current_utterance_ = NULL;
       SpeakNextUtterance();
     }
+#endif
   } else {
     GetPlatformImpl()->clear_error();
     bool success = GetPlatformImpl()->Speak(
@@ -197,7 +199,9 @@ void TtsController::SpeakNow(Utterance* utterance) {
 
 void TtsController::Stop() {
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
+#if !defined(OS_ANDROID)
     ExtensionTtsEngineStop(current_utterance_);
+#endif
   } else {
     GetPlatformImpl()->clear_error();
     GetPlatformImpl()->StopSpeaking();
@@ -230,8 +234,10 @@ void TtsController::OnTtsEvent(int utterance_id,
 
 void TtsController::GetVoices(Profile* profile,
                               std::vector<VoiceData>* out_voices) {
+#if !defined(OS_ANDROID)
   if (profile)
     GetExtensionVoices(profile, out_voices);
+#endif
 
   TtsPlatformImpl* platform_impl = GetPlatformImpl();
   if (platform_impl && platform_impl->PlatformImplAvailable())
@@ -351,5 +357,22 @@ int TtsController::GetMatchingVoice(
   }
 
   return -1;
+}
+
+void TtsController::VoicesChanged() {
+  for (std::set<VoicesChangedDelegate*>::iterator iter =
+           voices_changed_delegates_.begin();
+       iter != voices_changed_delegates_.end(); ++iter) {
+    (*iter)->OnVoicesChanged();
+  }
+}
+
+void TtsController::AddVoicesChangedDelegate(VoicesChangedDelegate* delegate) {
+  voices_changed_delegates_.insert(delegate);
+}
+
+void TtsController::RemoveVoicesChangedDelegate(
+    VoicesChangedDelegate* delegate) {
+  voices_changed_delegates_.erase(delegate);
 }
 

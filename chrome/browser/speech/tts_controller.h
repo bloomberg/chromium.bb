@@ -80,6 +80,14 @@ class UtteranceEventDelegate {
                           const std::string& error_message) = 0;
 };
 
+// Class that wants to be notified when the set of
+// voices has changed.
+class VoicesChangedDelegate {
+ public:
+  virtual ~VoicesChangedDelegate() {}
+  virtual void OnVoicesChanged() = 0;
+};
+
 // One speech utterance.
 class Utterance {
  public:
@@ -263,6 +271,16 @@ class TtsController {
   // finishes loading the built-in TTS component extension.
   void RetrySpeakingQueuedUtterances();
 
+  // Called by the extension system or platform implementation when the
+  // list of voices may have changed and should be re-queried.
+  void VoicesChanged();
+
+  // Add a delegate that wants to be notified when the set of voices changes.
+  void AddVoicesChangedDelegate(VoicesChangedDelegate* delegate);
+
+  // Remove delegate that wants to be notified when the set of voices changes.
+  void RemoveVoicesChangedDelegate(VoicesChangedDelegate* delegate);
+
   // For unit testing.
   void SetPlatformImpl(TtsPlatformImpl* platform_impl);
   int QueueSize();
@@ -301,6 +319,9 @@ class TtsController {
 
   // A queue of utterances to speak after the current one finishes.
   std::queue<Utterance*> utterance_queue_;
+
+  // A set of delegates that want to be notified when the voices change.
+  std::set<VoicesChangedDelegate*> voices_changed_delegates_;
 
   // A pointer to the platform implementation of text-to-speech, for
   // dependency injection.
