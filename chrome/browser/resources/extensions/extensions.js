@@ -87,16 +87,6 @@ cr.define('extensions', function() {
       $('dev-controls').addEventListener('webkitTransitionEnd',
           this.handleDevControlsTransitionEnd_.bind(this));
 
-      if (!cr.isChromeOS) {
-        $('unlock-button').addEventListener('click', function() {
-          chrome.send('setElevated', [true]);
-        });
-
-        $('lock-button').addEventListener('click', function() {
-          chrome.send('setElevated', [false]);
-        });
-      }
-
       // Set up the three dev mode buttons (load unpacked, pack and update).
       $('load-unpacked').addEventListener('click',
           this.handleLoadUnpackedExtension_.bind(this));
@@ -259,14 +249,12 @@ cr.define('extensions', function() {
     } else {
       pageDiv.classList.remove('profile-is-managed');
     }
-    if (extensionsData.profileIsManaged && !extensionsData.profileIsElevated) {
+    if (extensionsData.profileIsManaged) {
       pageDiv.classList.add('showing-banner');
-      pageDiv.classList.add('managed-user-locked');
       $('toggle-dev-on').disabled = true;
       marginTop += 45;
     } else {
       pageDiv.classList.remove('showing-banner');
-      pageDiv.classList.remove('managed-user-locked');
       $('toggle-dev-on').disabled = false;
     }
 

@@ -54,11 +54,6 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/webui/web_ui_util.h"
 
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
-#endif
-
 using chrome::AppLaunchParams;
 using chrome::OpenApplication;
 using content::WebContents;
@@ -109,11 +104,6 @@ void AppLauncherHandler::CreateAppInfo(
   bool enabled = service->IsExtensionEnabled(extension->id()) &&
       !service->GetTerminatedExtension(extension->id());
   extension->GetBasicInfo(enabled, value);
-
-#if defined(ENABLE_MANAGED_USERS)
-  scoped_ptr<ScopedExtensionElevation> elevation =
-      GetScopedElevation(extension->id(), service);
-#endif
 
   value->SetBoolean("mayDisable", extensions::ExtensionSystem::Get(
       service->profile())->management_policy()->UserMayModifySettings(
@@ -537,11 +527,6 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
   if (!extension)
     return;
 
-#if defined(ENABLE_MANAGED_USERS)
-  scoped_ptr<ScopedExtensionElevation> elevation =
-      GetScopedElevation(extension->id(), extension_service_);
-#endif
-
   if (!extensions::ExtensionSystem::Get(extension_service_->profile())->
           management_policy()->UserMayModifySettings(extension, NULL)) {
     LOG(ERROR) << "Attempt to uninstall an extension that is non-usermanagable "
@@ -789,19 +774,6 @@ void AppLauncherHandler::RecordAppLaunchByUrl(
 
   RecordAppLaunchType(bucket, extensions::Manifest::TYPE_HOSTED_APP);
 }
-
-#if defined(ENABLE_MANAGED_USERS)
-// static
-scoped_ptr<ScopedExtensionElevation> AppLauncherHandler::GetScopedElevation(
-    const std::string& extension_id, ExtensionService* service) {
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(service->profile());
-  scoped_ptr<ScopedExtensionElevation> elevation(
-      new ScopedExtensionElevation(managed_user_service));
-  elevation->AddExtension(extension_id);
-  return elevation.Pass();
-}
-#endif
 
 void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
   if (!extension_id_prompting_.empty())

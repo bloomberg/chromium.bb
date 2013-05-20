@@ -101,13 +101,6 @@ class ManagedUserService : public ProfileKeyedService,
   void RequestAuthorization(content::WebContents* web_contents,
                             const PassphraseCheckedCallback& callback);
 
-  // Add an elevation for a specific extension which allows the managed user to
-  // install/uninstall this specific extension.
-  void AddElevationForExtension(const std::string& extension_id);
-
-  // Remove the elevation for a specific extension.
-  void RemoveElevationForExtension(const std::string& extension_id);
-
   // Initializes this object. This method does nothing if the profile is not
   // managed.
   void Init();
@@ -126,8 +119,8 @@ class ManagedUserService : public ProfileKeyedService,
   void RegisterAndInitSync(
       ManagedUserRegistrationService* registration_service);
 
-  void set_skip_dialog_for_testing(bool skip) {
-    skip_dialog_for_testing_ = skip;
+  void set_elevated_for_testing(bool skip) {
+    elevated_for_testing_ = skip;
   }
 
   // extensions::ManagementPolicy::Provider implementation:
@@ -215,8 +208,8 @@ class ManagedUserService : public ProfileKeyedService,
   // by the managed user.
   std::set<std::string> elevated_for_extensions_;
 
-  // Skips the passphrase dialog in tests if set to true.
-  bool skip_dialog_for_testing_;
+  // Sets a profile in elevated state for testing if set to true.
+  bool elevated_for_testing_;
 
   URLFilterContext url_filter_context_;
 };

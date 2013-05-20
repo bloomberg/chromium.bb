@@ -15,8 +15,6 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -24,11 +22,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/id_util.h"
 #include "sync/api/string_ordinal.h"
-
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
-#endif
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -191,21 +184,6 @@ void UnpackedInstaller::OnRequirementsChecked(
     return;
   }
 
-#if defined(ENABLE_MANAGED_USERS)
-  ManagedUserService* service =
-      ManagedUserServiceFactory::GetForProfile(installer_.profile());
-  if (service->ProfileIsManaged()) {
-    Browser* browser = chrome::FindLastActiveWithProfile(
-        service_weak_->profile(),
-        chrome::GetActiveDesktop());
-    DCHECK(service->CanSkipPassphraseDialog(
-        browser->tab_strip_model()->GetActiveWebContents()));
-    installer_.OnAuthorizationResult(
-        base::Bind(&UnpackedInstaller::ConfirmInstall, this),
-        true);
-    return;
-  }
-#endif
   ConfirmInstall();
 }
 

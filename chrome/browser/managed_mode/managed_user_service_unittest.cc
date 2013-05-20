@@ -15,7 +15,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -213,15 +212,7 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(ManagedModeURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(example_url));
 
-  managed_user_service->set_skip_dialog_for_testing(true);
-
-  // Create a testing browser in order to make it possible to use the unpacked
-  // installer.
-  Browser::CreateParams profile_params(profile_.get(),
-                                       chrome::HOST_DESKTOP_TYPE_NATIVE);
-  scoped_ptr<Browser> browser(
-      chrome::CreateBrowserWithTestWindowForParams(&profile_params));
-  BrowserList::SetLastActive(browser.get());
+  managed_user_service->set_elevated_for_testing(true);
 
   // Load a content pack.
   scoped_refptr<extensions::UnpackedInstaller> installer(
@@ -292,7 +283,6 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
 #endif
 
   // Disable the first content pack.
-  managed_user_service->AddElevationForExtension(extension->id());
   service_->DisableExtension(extension->id(),
                              extensions::Extension::DISABLE_USER_ACTION);
   observer.Wait();

@@ -116,7 +116,7 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
 ManagedUserService::ManagedUserService(Profile* profile)
     : weak_ptr_factory_(this),
       profile_(profile),
-      skip_dialog_for_testing_(false) {}
+      elevated_for_testing_(false) {}
 
 ManagedUserService::~ManagedUserService() {
 }
@@ -142,8 +142,7 @@ bool ManagedUserService::CanSkipPassphraseDialog(
 #if defined(OS_CHROMEOS)
   NOTREACHED();
 #endif
-  return skip_dialog_for_testing_ ||
-         IsElevatedForWebContents(web_contents) ||
+  return IsElevatedForWebContents(web_contents) ||
          IsPassphraseEmpty();
 }
 
@@ -154,7 +153,7 @@ void ManagedUserService::RequestAuthorization(
   NOTREACHED();
 #endif
 
-  if (skip_dialog_for_testing_ || CanSkipPassphraseDialog(web_contents)) {
+  if (CanSkipPassphraseDialog(web_contents)) {
     callback.Run(true);
     return;
   }
@@ -295,21 +294,6 @@ void ManagedUserService::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
-      // Remove the temporary elevation.
-      const extensions::Extension* extension =
-          content::Details<const extensions::InstalledExtensionInfo>(details)->
-              extension;
-      RemoveElevationForExtension(extension->id());
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      // Remove the temporary elevation.
-      const extensions::Extension* extension =
-          content::Details<extensions::Extension>(details).ptr();
-      RemoveElevationForExtension(extension->id());
-      break;
-    }
     default:
       NOTREACHED();
   }
@@ -319,6 +303,9 @@ bool ManagedUserService::ExtensionManagementPolicyImpl(
     const std::string& extension_id,
     string16* error) const {
   if (!ProfileIsManaged())
+    return true;
+
+  if (elevated_for_testing_)
     return true;
 
   if (elevated_for_extensions_.count(extension_id))
@@ -446,24 +433,6 @@ void ManagedUserService::GetManualExceptionsForHost(const std::string& host,
   }
 }
 
-void ManagedUserService::AddElevationForExtension(
-    const std::string& extension_id) {
-#if defined(OS_CHROMEOS)
-  NOTREACHED();
-#else
-  elevated_for_extensions_.insert(extension_id);
-#endif
-}
-
-void ManagedUserService::RemoveElevationForExtension(
-    const std::string& extension_id) {
-#if defined(OS_CHROMEOS)
-  NOTREACHED();
-#else
-  elevated_for_extensions_.erase(extension_id);
-#endif
-}
-
 void ManagedUserService::InitForTesting() {
   DCHECK(!profile_->GetPrefs()->GetBoolean(prefs::kProfileIsManaged));
   profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
@@ -485,12 +454,6 @@ void ManagedUserService::Init() {
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
-#if !defined(OS_CHROMEOS)
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 content::Source<Profile>(profile_));
-#endif
 
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(

@@ -34,17 +34,6 @@ class ExtensionInstaller {
   // Called on the UI thread to start the requirements check on the extension
   void CheckRequirements(const RequirementsCallback& callback);
 
-#if defined(ENABLE_MANAGED_USERS)
-  // Shows the managed user passphrase dialog if the managed user is not in
-  // elevated state yet.
-  void ShowPassphraseDialog(content::WebContents* web_contents,
-                            const base::Closure& authorization_callback);
-
-  // Runs on the UI thread. Callback from the managed user passphrase dialog.
-  void OnAuthorizationResult(const base::Closure& authorization_callback,
-                             bool success);
-#endif
-
   // Checks the management policy if the extension can be installed.
   string16 CheckManagementPolicy();
 

@@ -445,26 +445,7 @@ void CrxInstaller::OnRequirementsChecked(
     }
     has_requirement_errors_ = true;
   }
-
-#if defined(ENABLE_MANAGED_USERS) && !defined(OS_CHROMEOS)
-  // Extensions which should be installed by policy are installed without
-  // using the ExtensionInstallPrompt. In that case, |client_| is NULL.
-  if (!client_) {
-    // Automatically set authorization
-    installer_.OnAuthorizationResult(
-        base::Bind(&CrxInstaller::ConfirmInstall, this),
-        true);
-    return;
-  }
-  // |parent_web_contents| could be NULL when the client is instantiated from
-  // ExtensionEnableFlow, but that code path does not lead to here. Also they
-  // are NULL in some tests.
-  installer_.ShowPassphraseDialog(
-      client_->parent_web_contents(),
-      base::Bind(&CrxInstaller::ConfirmInstall, this));
-#else
   ConfirmInstall();
-#endif
 }
 
 void CrxInstaller::ConfirmInstall() {
