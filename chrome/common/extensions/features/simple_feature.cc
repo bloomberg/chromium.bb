@@ -267,8 +267,12 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
     }
   }
 
+  // HACK(kalman): user script -> extension. Solve this in a more generic way
+  // when we compile feature files.
+  Manifest::Type type_to_check = (type == Manifest::TYPE_USER_SCRIPT) ?
+      Manifest::TYPE_EXTENSION : type;
   if (!extension_types_.empty() &&
-      extension_types_.find(type) == extension_types_.end()) {
+      extension_types_.find(type_to_check) == extension_types_.end()) {
     return CreateAvailability(INVALID_TYPE, type);
   }
 
