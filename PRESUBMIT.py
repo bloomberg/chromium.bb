@@ -160,6 +160,43 @@ _BANNED_CPP_FUNCTIONS = (
         r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",
       ),
     ),
+    (
+      'SkRefPtr',
+      (
+        'The use of SkRefPtr is prohibited. ',
+        'Please use skia::RefPtr instead.'
+      ),
+      True,
+      (),
+    ),
+    (
+      'SkAutoRef',
+      (
+        'The indirect use of SkRefPtr via SkAutoRef is prohibited. ',
+        'Please use skia::RefPtr instead.'
+      ),
+      True,
+      (),
+    ),
+    (
+      'SkAutoTUnref',
+      (
+        'The use of SkAutoTUnref is dangerous because it implicitly ',
+        'converts to a raw pointer. Please use skia::RefPtr instead.'
+      ),
+      True,
+      (),
+    ),
+    (
+      'SkAutoUnref',
+      (
+        'The indirect use of SkAutoTUnref through SkAutoUnref is dangerous ',
+        'because it implicitly converts to a raw pointer. ',
+        'Please use skia::RefPtr instead.'
+      ),
+      True,
+      (),
+    ),
 )
 
 
