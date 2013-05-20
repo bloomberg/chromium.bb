@@ -55,7 +55,7 @@ class AudioRecorderThread(threading.Thread):
   def run(self):
     """Starts audio recording."""
     if WINDOWS:
-      if record_mono:
+      if self._record_mono:
         raise Exception("Mono recording not supported on Windows yet!")
 
       duration = time.strftime('%H:%M:%S', time.gmtime(self._duration))
