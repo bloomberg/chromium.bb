@@ -172,7 +172,8 @@ private:
      }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest, Basic) {
+// Flaky: http://crbug.com/242167.
+IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest, DISABLED_Basic) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   const size_t crash_size_before =
       GetExtensionService()->terminated_extensions()->size();
