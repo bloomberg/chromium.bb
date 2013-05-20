@@ -19,14 +19,19 @@ namespace extensions {
 SettingsBackend::SettingsBackend(
     const scoped_refptr<SettingsStorageFactory>& storage_factory,
     const base::FilePath& base_path,
+    syncer::ModelType sync_type,
+    const syncer::SyncableService::StartSyncFlare& flare,
     const SettingsStorageQuotaEnforcer::Limits& quota,
     const scoped_refptr<SettingsObserverList>& observers)
     : storage_factory_(storage_factory),
       base_path_(base_path),
       quota_(quota),
       observers_(observers),
-      sync_type_(syncer::UNSPECIFIED) {
+      sync_type_(sync_type),
+      flare_(flare) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(sync_type_ == syncer::EXTENSION_SETTINGS ||
+         sync_type_ == syncer::APP_SETTINGS);
 }
 
 SettingsBackend::~SettingsBackend() {
@@ -70,6 +75,11 @@ SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
             CreateSettingsSyncProcessor(extension_id).Pass());
     if (error.IsSet())
       syncable_storage.get()->StopSyncing();
+  } else {
+    // Tell sync to try and start soon, because syncable changes to sync_type_
+    // have started happening. This will cause sync to call us back
+    // asynchronously via MergeDataAndStartSyncing as soon as possible.
+    flare_.Run(sync_type_);
   }
 
   return syncable_storage.get();
@@ -168,14 +178,11 @@ syncer::SyncMergeResult SettingsBackend::MergeDataAndStartSyncing(
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(type == syncer::EXTENSION_SETTINGS ||
-         type == syncer::APP_SETTINGS);
-  DCHECK_EQ(sync_type_, syncer::UNSPECIFIED);
+  DCHECK_EQ(sync_type_, type);
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(sync_error_factory.get());
 
-  sync_type_ = type;
   sync_processor_ = sync_processor.Pass();
   sync_error_factory_ = sync_error_factory.Pass();
 
@@ -260,7 +267,7 @@ void SettingsBackend::StopSyncing(syncer::ModelType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(type == syncer::EXTENSION_SETTINGS ||
          type == syncer::APP_SETTINGS);
-  DCHECK(sync_type_ == type || sync_type_ == syncer::UNSPECIFIED);
+  DCHECK_EQ(sync_type_, type);
 
   for (StorageObjMap::iterator it = storage_objs_.begin();
       it != storage_objs_.end(); ++it) {
@@ -269,7 +276,6 @@ void SettingsBackend::StopSyncing(syncer::ModelType type) {
     it->second->StopSyncing();
   }
 
-  sync_type_ = syncer::UNSPECIFIED;
   sync_processor_.reset();
   sync_error_factory_.reset();
 }

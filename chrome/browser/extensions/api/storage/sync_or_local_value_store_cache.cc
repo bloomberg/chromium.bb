@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/api/storage/weak_unlimited_settings_storage.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/browser/browser_thread.h"
@@ -107,9 +108,14 @@ void SyncOrLocalValueStoreCache::InitOnFileThread(
   const base::FilePath extension_path = profile_path.AppendASCII(
       local ? ExtensionService::kLocalExtensionSettingsDirectoryName
             : ExtensionService::kSyncExtensionSettingsDirectoryName);
-  app_backend_.reset(new SettingsBackend(factory, app_path, quota, observers));
-  extension_backend_.reset(
-      new SettingsBackend(factory, extension_path, quota, observers));
+  app_backend_.reset(new SettingsBackend(
+      factory, app_path, syncer::APP_SETTINGS,
+      sync_start_util::GetFlareForSyncableService(profile_path),
+      quota, observers));
+  extension_backend_.reset(new SettingsBackend(
+      factory, extension_path, syncer::EXTENSION_SETTINGS,
+      sync_start_util::GetFlareForSyncableService(profile_path),
+      quota, observers));
 }
 
 }  // namespace extensions
