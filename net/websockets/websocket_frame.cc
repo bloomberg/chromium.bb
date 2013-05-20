@@ -4,6 +4,8 @@
 
 #include "net/websockets/websocket_frame.h"
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -39,19 +41,6 @@ inline void MaskWebSocketFramePayloadByBytes(
 
 namespace net {
 
-// Definitions for in-struct constants.
-const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeContinuation =
-    0x0;
-const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeText = 0x1;
-const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeBinary = 0x2;
-const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeDataUnused =
-    0x3;
-const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeClose = 0x8;
-const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodePing = 0x9;
-const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodePong = 0xA;
-const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeControlUnused =
-    0xB;
-
 scoped_ptr<WebSocketFrameHeader> WebSocketFrameHeader::Clone() {
   scoped_ptr<WebSocketFrameHeader> ret(new WebSocketFrameHeader(opcode));
   ret->final = final;
@@ -64,11 +53,9 @@ scoped_ptr<WebSocketFrameHeader> WebSocketFrameHeader::Clone() {
   return ret.Pass();
 }
 
-WebSocketFrameChunk::WebSocketFrameChunk() : final_chunk(false) {
-}
+WebSocketFrameChunk::WebSocketFrameChunk() : final_chunk(false) {}
 
-WebSocketFrameChunk::~WebSocketFrameChunk() {
-}
+WebSocketFrameChunk::~WebSocketFrameChunk() {}
 
 int GetWebSocketFrameHeaderSize(const WebSocketFrameHeader& header) {
   int extended_length_size = 0;
@@ -79,8 +66,7 @@ int GetWebSocketFrameHeaderSize(const WebSocketFrameHeader& header) {
     extended_length_size = 8;
   }
 
-  return (WebSocketFrameHeader::kBaseHeaderSize +
-          extended_length_size +
+  return (WebSocketFrameHeader::kBaseHeaderSize + extended_length_size +
           (header.masked ? WebSocketFrameHeader::kMaskingKeyLength : 0));
 }
 
@@ -122,8 +108,7 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
   int extended_length_size = 0;
   uint8 second_byte = 0u;
   second_byte |= header.masked ? kMaskBit : 0u;
-  if (header.payload_length <=
-      kMaxPayloadLengthWithoutExtendedLengthField) {
+  if (header.payload_length <= kMaxPayloadLengthWithoutExtendedLengthField) {
     second_byte |= header.payload_length;
   } else if (header.payload_length <= kuint16max) {
     second_byte |= kPayloadLengthWithTwoByteExtendedLengthField;
@@ -138,10 +123,10 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
   if (extended_length_size == 2) {
     uint16 payload_length_16 = static_cast<uint16>(header.payload_length);
     WriteBigEndian(buffer + buffer_index, payload_length_16);
-    buffer_index += sizeof(uint16);
+    buffer_index += sizeof(payload_length_16);
   } else if (extended_length_size == 8) {
     WriteBigEndian(buffer + buffer_index, header.payload_length);
-    buffer_index += sizeof(uint64);
+    buffer_index += sizeof(header.payload_length);
   }
 
   // Writes "masking key" field, if needed.
@@ -191,20 +176,18 @@ void MaskWebSocketFramePayload(const WebSocketMaskingKey& masking_key,
   // If the buffer is too small for the vectorised version to be useful, revert
   // to the byte-at-a-time implementation early.
   if (data_size <= static_cast<int>(kPackedMaskKeySize * 2)) {
-    MaskWebSocketFramePayloadByBytes(masking_key,
-                                     frame_offset % kMaskingKeyLength,
-                                     data, end);
+    MaskWebSocketFramePayloadByBytes(
+        masking_key, frame_offset % kMaskingKeyLength, data, end);
     return;
   }
   const size_t data_modulus =
       reinterpret_cast<size_t>(data) % kPackedMaskKeySize;
-  char* const aligned_begin = data_modulus == 0 ? data :
-      (data + kPackedMaskKeySize - data_modulus);
+  char* const aligned_begin =
+      data_modulus == 0 ? data : (data + kPackedMaskKeySize - data_modulus);
   // Guaranteed by the above check for small data_size.
   DCHECK(aligned_begin < end);
-  MaskWebSocketFramePayloadByBytes(masking_key,
-                                   frame_offset % kMaskingKeyLength,
-                                   data, aligned_begin);
+  MaskWebSocketFramePayloadByBytes(
+      masking_key, frame_offset % kMaskingKeyLength, data, aligned_begin);
   const size_t end_modulus = reinterpret_cast<size_t>(end) % kPackedMaskKeySize;
   char* const aligned_end = end - end_modulus;
   // Guaranteed by the above check for small data_size.
@@ -213,21 +196,21 @@ void MaskWebSocketFramePayload(const WebSocketMaskingKey& masking_key,
   // for our alignment. The "trick" here is that 0 XORed with the mask will
   // give the value of the mask for the appropriate byte.
   char realigned_mask[kMaskingKeyLength] = { 0 };
-  MaskWebSocketFramePayloadByBytes(masking_key,
-                                   (frame_offset + aligned_begin - data)
-                                   % kMaskingKeyLength,
-                                   realigned_mask,
-                                   realigned_mask + kMaskingKeyLength);
+  MaskWebSocketFramePayloadByBytes(
+      masking_key,
+      (frame_offset + aligned_begin - data) % kMaskingKeyLength,
+      realigned_mask,
+      realigned_mask + kMaskingKeyLength);
 
   for (size_t i = 0; i < kPackedMaskKeySize; i += kMaskingKeyLength) {
     // memcpy() is allegedly blessed by the C++ standard for type-punning.
     memcpy(reinterpret_cast<char*>(&packed_mask_key) + i,
-           realigned_mask, kMaskingKeyLength);
+           realigned_mask,
+           kMaskingKeyLength);
   }
 
   // The main loop.
-  for (char* merged = aligned_begin;
-       merged != aligned_end;
+  for (char* merged = aligned_begin; merged != aligned_end;
        merged += kPackedMaskKeySize) {
     // This is not quite standard-compliant C++. However, the standard-compliant
     // equivalent (using memcpy()) compiles to slower code using g++. In
@@ -237,10 +220,11 @@ void MaskWebSocketFramePayload(const WebSocketMaskingKey& masking_key,
     *reinterpret_cast<PackedMaskType*>(merged) ^= packed_mask_key;
   }
 
-  MaskWebSocketFramePayloadByBytes(masking_key,
-                                   (frame_offset + (aligned_end - data))
-                                   % kMaskingKeyLength,
-                                     aligned_end, end);
+  MaskWebSocketFramePayloadByBytes(
+      masking_key,
+      (frame_offset + (aligned_end - data)) % kMaskingKeyLength,
+      aligned_end,
+      end);
 }
 
 }  // namespace net

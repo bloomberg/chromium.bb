@@ -42,8 +42,7 @@ WebSocketFrameParser::WebSocketFrameParser()
             '\0');
 }
 
-WebSocketFrameParser::~WebSocketFrameParser() {
-}
+WebSocketFrameParser::~WebSocketFrameParser() {}
 
 bool WebSocketFrameParser::Decode(
     const char* data,
@@ -175,8 +174,7 @@ scoped_ptr<WebSocketFrameChunk> WebSocketFrameParser::DecodeFramePayload(
   const char* current = &buffer_.front() + current_read_pos_;
   const char* end = &buffer_.front() + buffer_.size();
   uint64 next_size = std::min<uint64>(
-      end - current,
-      current_frame_header_->payload_length - frame_offset_);
+      end - current, current_frame_header_->payload_length - frame_offset_);
   // This check must pass because |payload_length| is already checked to be
   // less than std::numeric_limits<int>::max() when the header is parsed.
   DCHECK_LE(next_size, static_cast<uint64>(kint32max));
@@ -193,8 +191,8 @@ scoped_ptr<WebSocketFrameChunk> WebSocketFrameParser::DecodeFramePayload(
     if (current_frame_header_->masked) {
       // The masking function is its own inverse, so we use the same function to
       // unmask as to mask.
-      MaskWebSocketFramePayload(masking_key_, frame_offset_,
-                                io_data, next_size);
+      MaskWebSocketFramePayload(
+          masking_key_, frame_offset_, io_data, next_size);
     }
 
     current_read_pos_ += next_size;

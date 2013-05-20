@@ -22,25 +22,32 @@ class IOBufferWithSize;
 // (see http://tools.ietf.org/html/rfc6455#section-5.2).
 struct NET_EXPORT WebSocketFrameHeader {
   typedef int OpCode;
-  static const OpCode kOpCodeContinuation;
-  static const OpCode kOpCodeText;
-  static const OpCode kOpCodeBinary;
-  static const OpCode kOpCodeDataUnused;
-  static const OpCode kOpCodeClose;
-  static const OpCode kOpCodePing;
-  static const OpCode kOpCodePong;
-  static const OpCode kOpCodeControlUnused;
 
-  // Efficiently determine whether a given opcode is one of the data opcodes
-  // known to this implementation.
-  static bool IsKnownDataOpCode(OpCode opCode) {
-    return (opCode & ~3) == 0 && opCode != 3;
+  // Originally these constants were static const int, but to make it possible
+  // to use them in a switch statement they were changed to an enum.
+  enum OpCodeEnum {
+    kOpCodeContinuation = 0x0,
+    kOpCodeText = 0x1,
+    kOpCodeBinary = 0x2,
+    kOpCodeDataUnused = 0x3,
+    kOpCodeClose = 0x8,
+    kOpCodePing = 0x9,
+    kOpCodePong = 0xA,
+    kOpCodeControlUnused = 0xB,
+  };
+
+  // Return true if |opcode| is one of the data opcodes known to this
+  // implementation.
+  static bool IsKnownDataOpCode(OpCode opcode) {
+    return opcode == kOpCodeContinuation || opcode == kOpCodeText ||
+           opcode == kOpCodeBinary;
   }
 
-  // Efficiently determine whether a given opcode is one of the control opcodes
-  // known to this implementation.
-  static bool IsKnownControlOpCode(OpCode opCode) {
-    return (opCode & ~3) == 8 && opCode != 0x0B;
+  // Return true if |opcode| is one of the control opcodes known to this
+  // implementation.
+  static bool IsKnownControlOpCode(OpCode opcode) {
+    return opcode == kOpCodeClose || opcode == kOpCodePing ||
+           opcode == kOpCodePong;
   }
 
   // These values must be a compile-time constant. "enum hack" is used here
@@ -53,13 +60,13 @@ struct NET_EXPORT WebSocketFrameHeader {
 
   // Constructor to avoid a lot of repetitive initialisation.
   explicit WebSocketFrameHeader(OpCode opCode)
-    : final(false),
-      reserved1(false),
-      reserved2(false),
-      reserved3(false),
-      opcode(opCode),
-      masked(false),
-      payload_length(0) {}
+      : final(false),
+        reserved1(false),
+        reserved2(false),
+        reserved3(false),
+        opcode(opCode),
+        masked(false),
+        payload_length(0) {}
 
   // Create a clone of this object on the heap.
   scoped_ptr<WebSocketFrameHeader> Clone();
@@ -119,8 +126,7 @@ struct WebSocketMaskingKey {
 // Returns the size of WebSocket frame header. The size of WebSocket frame
 // header varies from 2 bytes to 14 bytes depending on the payload length
 // and maskedness.
-NET_EXPORT int GetWebSocketFrameHeaderSize(
-    const WebSocketFrameHeader& header);
+NET_EXPORT int GetWebSocketFrameHeaderSize(const WebSocketFrameHeader& header);
 
 // Writes wire format of a WebSocket frame header into |output|, and returns
 // the number of bytes written.
@@ -138,11 +144,10 @@ NET_EXPORT int GetWebSocketFrameHeaderSize(
 // GetWebSocketFrameHeaderSize() can be used to know the size of header
 // beforehand. If the size of |buffer| is insufficient, this function returns
 // ERR_INVALID_ARGUMENT and does not write any data to |buffer|.
-NET_EXPORT int WriteWebSocketFrameHeader(
-    const WebSocketFrameHeader& header,
-    const WebSocketMaskingKey* masking_key,
-    char* buffer,
-    int buffer_size);
+NET_EXPORT int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
+                                         const WebSocketMaskingKey* masking_key,
+                                         char* buffer,
+                                         int buffer_size);
 
 // Generates a masking key suitable for use in a new WebSocket frame.
 NET_EXPORT WebSocketMaskingKey GenerateWebSocketMaskingKey();
