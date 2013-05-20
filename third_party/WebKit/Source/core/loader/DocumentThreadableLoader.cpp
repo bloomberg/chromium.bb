@@ -333,7 +333,7 @@ void DocumentThreadableLoader::notifyFinished(CachedResource* resource)
 void DocumentThreadableLoader::didFinishLoading(unsigned long identifier, double finishTime)
 {
     if (m_actualRequest) {
-        InspectorInstrumentation::didFinishLoading(m_document->frame(), m_document->frame()->loader()->documentLoader(), identifier, finishTime);
+        InspectorInstrumentation::didFinishLoading(m_document->frame(), identifier, m_document->frame()->loader()->documentLoader(), finishTime);
         ASSERT(!m_sameOriginRequest);
         ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
         preflightSuccess();
@@ -344,7 +344,7 @@ void DocumentThreadableLoader::didFinishLoading(unsigned long identifier, double
 void DocumentThreadableLoader::didFail(unsigned long identifier, const ResourceError& error)
 {
     if (m_actualRequest)
-        InspectorInstrumentation::didFailLoading(m_document->frame(), m_document->frame()->loader()->documentLoader(), identifier, error);
+        InspectorInstrumentation::didFailLoading(m_document->frame(), identifier, m_document->frame()->loader()->documentLoader(), error);
 
     m_client->didFail(error);
 }
@@ -366,7 +366,7 @@ void DocumentThreadableLoader::preflightFailure(unsigned long identifier, const 
 {
     ResourceError error(errorDomainWebKitInternal, 0, url, errorDescription);
     if (m_actualRequest)
-        InspectorInstrumentation::didFailLoading(m_document->frame(), m_document->frame()->loader()->documentLoader(), identifier, error);
+        InspectorInstrumentation::didFailLoading(m_document->frame(), identifier, m_document->frame()->loader()->documentLoader(), error);
     m_actualRequest = nullptr; // Prevent didFinishLoading() from bypassing access check.
     m_client->didFailAccessControlCheck(error);
 }

@@ -627,9 +627,9 @@ void applyEmulatedMediaImpl(InstrumentingAgents* instrumentingAgents, String* me
 void willSendRequestImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->willSendResourceRequest(identifier, loader, request, redirectResponse);
+        timelineAgent->willSendRequest(identifier, loader, request, redirectResponse);
     if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
-        resourceAgent->willSendResourceRequest(identifier, loader, request, redirectResponse);
+        resourceAgent->willSendRequest(identifier, loader, request, redirectResponse);
 }
 
 void continueAfterPingLoaderImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& response)
@@ -716,7 +716,7 @@ void didReceiveDataImpl(InstrumentingAgents* instrumentingAgents, unsigned long 
         resourceAgent->didReceiveData(identifier, data, dataLength, encodedDataLength);
 }
 
-void didFinishLoadingImpl(InstrumentingAgents* instrumentingAgents, DocumentLoader* loader, unsigned long identifier, double monotonicFinishTime)
+void didFinishLoadingImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, double monotonicFinishTime)
 {
     InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent();
     InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent();
@@ -734,7 +734,7 @@ void didFinishLoadingImpl(InstrumentingAgents* instrumentingAgents, DocumentLoad
         resourceAgent->didFinishLoading(identifier, loader, finishTime);
 }
 
-void didFailLoadingImpl(InstrumentingAgents* instrumentingAgents, DocumentLoader* loader, unsigned long identifier, const ResourceError& error)
+void didFailLoadingImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, const ResourceError& error)
 {
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->didFailLoading(identifier, loader, error);
@@ -1086,7 +1086,7 @@ void workerContextTerminatedImpl(InstrumentingAgents* instrumentingAgents, Worke
         workerAgent->workerContextTerminated(proxy);
 }
 
-void didCreateWebSocketImpl(InstrumentingAgents* instrumentingAgents, Document* document, unsigned long identifier, const KURL& requestURL, const KURL&, const String& protocol)
+void didCreateWebSocketImpl(InstrumentingAgents* instrumentingAgents, Document* document, unsigned long identifier, const KURL& requestURL, const String& protocol)
 {
     InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent();
     if (!inspectorAgent)

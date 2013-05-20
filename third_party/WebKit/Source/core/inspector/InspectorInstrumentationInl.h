@@ -100,8 +100,8 @@ void didReceiveResourceDataImpl(const InspectorInstrumentationCookie&);
 InspectorInstrumentationCookie willReceiveResourceResponseImpl(InstrumentingAgents*, Frame*, unsigned long identifier, const ResourceResponse&);
 void didReceiveResourceResponseImpl(const InspectorInstrumentationCookie&, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
 void didReceiveDataImpl(InstrumentingAgents*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
-void didFinishLoadingImpl(InstrumentingAgents*, DocumentLoader*, unsigned long identifier, double finishTime);
-void didFailLoadingImpl(InstrumentingAgents*, DocumentLoader*, unsigned long identifier, const ResourceError&);
+void didFinishLoadingImpl(InstrumentingAgents*, unsigned long identifier, DocumentLoader*, double finishTime);
+void didFailLoadingImpl(InstrumentingAgents*, unsigned long identifier, DocumentLoader*, const ResourceError&);
 void documentThreadableLoaderStartedLoadingForClientImpl(InstrumentingAgents*, unsigned long identifier, ThreadableLoaderClient*);
 void willLoadXHRImpl(InstrumentingAgents*, ThreadableLoaderClient*, const String&, const KURL&, bool, PassRefPtr<FormData>, const HTTPHeaderMap&, bool);
 void didFailXHRLoadingImpl(InstrumentingAgents*, ThreadableLoaderClient*);
@@ -132,7 +132,7 @@ InspectorInstrumentationCookie willFireAnimationFrameImpl(InstrumentingAgents*, 
 void didFireAnimationFrameImpl(const InspectorInstrumentationCookie&);
 void didStartWorkerContextImpl(InstrumentingAgents*, WorkerContextProxy*, const KURL&);
 void workerContextTerminatedImpl(InstrumentingAgents*, WorkerContextProxy*);
-void didCreateWebSocketImpl(InstrumentingAgents*, Document*, unsigned long identifier, const KURL& requestURL, const KURL& documentURL, const String& protocol);
+void didCreateWebSocketImpl(InstrumentingAgents*, Document*, unsigned long identifier, const KURL& requestURL, const String& protocol);
 void willSendWebSocketHandshakeRequestImpl(InstrumentingAgents*, Document*, unsigned long identifier, const WebSocketHandshakeRequest&);
 void didReceiveWebSocketHandshakeResponseImpl(InstrumentingAgents*, Document*, unsigned long identifier, const WebSocketHandshakeResponse&);
 void didCloseWebSocketImpl(InstrumentingAgents*, Document*, unsigned long identifier);
@@ -605,16 +605,16 @@ inline void didReceiveData(Frame* frame, unsigned long identifier, const char* d
         didReceiveDataImpl(instrumentingAgents, identifier, data, dataLength, encodedDataLength);
 }
 
-inline void didFinishLoading(Frame* frame, DocumentLoader* loader, unsigned long identifier, double finishTime)
+inline void didFinishLoading(Frame* frame, unsigned long identifier, DocumentLoader* loader, double finishTime)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
-        didFinishLoadingImpl(instrumentingAgents, loader, identifier, finishTime);
+        didFinishLoadingImpl(instrumentingAgents, identifier, loader, finishTime);
 }
 
-inline void didFailLoading(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceError& error)
+inline void didFailLoading(Frame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceError& error)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
-        didFailLoadingImpl(instrumentingAgents, loader, identifier, error);
+        didFailLoadingImpl(instrumentingAgents, identifier, loader, error);
 }
 
 inline void documentThreadableLoaderStartedLoadingForClient(ScriptExecutionContext* context, unsigned long identifier, ThreadableLoaderClient* client)
@@ -806,10 +806,10 @@ inline void workerContextTerminated(ScriptExecutionContext* context, WorkerConte
         workerContextTerminatedImpl(instrumentingAgents, proxy);
 }
 
-inline void didCreateWebSocket(Document* document, unsigned long identifier, const KURL& requestURL, const KURL& documentURL, const String& protocol)
+inline void didCreateWebSocket(Document* document, unsigned long identifier, const KURL& requestURL, const String& protocol)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        didCreateWebSocketImpl(instrumentingAgents, document, identifier, requestURL, documentURL, protocol);
+        didCreateWebSocketImpl(instrumentingAgents, document, identifier, requestURL, protocol);
 }
 
 inline void willSendWebSocketHandshakeRequest(Document* document, unsigned long identifier, const WebSocketHandshakeRequest& request)

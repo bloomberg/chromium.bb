@@ -175,7 +175,7 @@ public:
     void timeEnd(Frame*, const String&);
 
     void didScheduleResourceRequest(Document*, const String& url);
-    void willSendResourceRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&);
+    void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&);
     bool willReceiveResourceResponse(Frame*, unsigned long, const ResourceResponse&);
     void didReceiveResourceResponse(unsigned long, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);
