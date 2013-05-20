@@ -708,6 +708,12 @@ class ThreadCheckingInputHandlerClient : public InputHandlerClient {
     *received_stop_flinging_ = true;
   }
 
+  virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+                             gfx::Vector2dF current_fling_velocity) OVERRIDE {
+    if (!task_runner_->BelongsToCurrentThread())
+      ADD_FAILURE() << "DidOverscroll called on wrong thread";
+  }
+
  private:
   base::SingleThreadTaskRunner* task_runner_;
   bool* received_stop_flinging_;

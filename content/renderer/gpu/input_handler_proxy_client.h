@@ -44,6 +44,9 @@ class InputHandlerProxyClient {
       const WebKit::WebFloatPoint& velocity,
       const WebKit::WebSize& cumulative_scroll) = 0;
 
+  virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+                             gfx::Vector2dF current_fling_velocity) = 0;
+
  protected:
   virtual ~InputHandlerProxyClient() {}
 };

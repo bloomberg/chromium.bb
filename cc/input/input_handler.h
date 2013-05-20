@@ -29,6 +29,12 @@ class CC_EXPORT InputHandlerClient {
   virtual void Animate(base::TimeTicks time) = 0;
   virtual void MainThreadHasStoppedFlinging() = 0;
 
+  // Called when scroll deltas reaching the root scrolling layer go unused.
+  // The accumulated overscroll is scoped by the most recent call to
+  // InputHandler::ScrollBegin.
+  virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+                             gfx::Vector2dF current_fling_velocity) = 0;
+
  protected:
   InputHandlerClient() {}
 
@@ -66,6 +72,9 @@ class CC_EXPORT InputHandler {
   // scrolled will be moved instead. If no layer can be moved in the requested
   // direction at all, then false is returned. If any layer is moved, then
   // true is returned.
+  // If the scroll delta hits the root layer, and the layer can no longer move,
+  // the root overscroll accumulated within this ScrollBegin() scope is reported
+  // to the client.
   // Should only be called if ScrollBegin() returned ScrollStarted.
   virtual bool ScrollBy(gfx::Point viewport_point,
                         gfx::Vector2dF scroll_delta) = 0;

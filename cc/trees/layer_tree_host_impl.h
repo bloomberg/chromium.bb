@@ -349,6 +349,13 @@ class CC_EXPORT LayerTreeHostImpl
 
   skia::RefPtr<SkPicture> CapturePicture();
 
+  gfx::Vector2dF accumulated_root_overscroll() const {
+    return accumulated_root_overscroll_;
+  }
+  gfx::Vector2dF current_fling_velocity() const {
+    return current_fling_velocity_;
+  }
+
   bool pinch_gesture_active() const { return pinch_gesture_active_; }
 
   void SetTreePriority(TreePriority priority);
@@ -454,6 +461,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool visible_;
   ManagedMemoryPolicy managed_memory_policy_;
 
+  gfx::Vector2dF accumulated_root_overscroll_;
   gfx::Vector2dF current_fling_velocity_;
 
   bool pinch_gesture_active_;

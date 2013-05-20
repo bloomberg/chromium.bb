@@ -298,6 +298,12 @@ void InputHandlerProxy::MainThreadHasStoppedFlinging() {
   fling_may_be_active_on_main_thread_ = false;
 }
 
+void InputHandlerProxy::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+                                      gfx::Vector2dF current_fling_velocity) {
+  DCHECK(client_);
+  client_->DidOverscroll(accumulated_overscroll, current_fling_velocity);
+}
+
 bool InputHandlerProxy::CancelCurrentFling() {
   bool had_fling_animation = fling_curve_;
   if (had_fling_animation &&

@@ -125,6 +125,9 @@ class MockInputHandlerProxyClient
     return new FakeWebGestureCurve(velocity, cumulative_scroll);
   }
 
+  virtual void DidOverscroll(gfx::Vector2dF overscroll,
+                             gfx::Vector2dF fling_velocity) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputHandlerProxyClient);
 };

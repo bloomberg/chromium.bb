@@ -33,6 +33,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
+#include "ui/gfx/vector2d_f.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/webcursor.h"
 
@@ -187,6 +188,10 @@ class CONTENT_EXPORT RenderWidget
                          int pixels_to_scroll,
                          int mouse_event_x,
                          int mouse_event_y);
+
+  // Notifies the host that root scroll layer has overscrolled.
+  void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+                     gfx::Vector2dF current_fling_velocity);
 
   // Close the underlying WebWidget.
   virtual void Close();
@@ -692,6 +697,9 @@ class CONTENT_EXPORT RenderWidget
 
   // Specified whether the compositor will run in its own thread.
   bool is_threaded_compositing_enabled_;
+
+  // Specifies whether overscroll notifications are forwarded to the host.
+  bool overscroll_notifications_enabled_;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 

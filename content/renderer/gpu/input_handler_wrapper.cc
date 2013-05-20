@@ -57,4 +57,13 @@ WebKit::WebGestureCurve* InputHandlerWrapper::CreateFlingAnimationCurve(
       deviceSource, velocity, cumulative_scroll);
 }
 
+void InputHandlerWrapper::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+                                        gfx::Vector2dF current_fling_velocity) {
+  main_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&RenderViewImpl::DidOverscroll,
+                 render_view_impl_,
+                 accumulated_overscroll, current_fling_velocity));
+}
+
 }  // namespace content

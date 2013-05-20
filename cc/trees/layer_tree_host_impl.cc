@@ -1669,6 +1669,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     return false;
 
   gfx::Vector2dF pending_delta = scroll_delta;
+  gfx::Vector2dF unused_root_delta;
   bool did_scroll = false;
   bool consume_by_top_controls = top_controls_manager_ &&
       (CurrentlyScrollingLayer() == RootScrollLayer() || scroll_delta.y() < 0);
@@ -1679,11 +1680,15 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     if (!layer_impl->scrollable())
       continue;
 
-    // Only allow bubble scrolling when the scroll is in the direction to make
-    // the top controls visible.
-    if (consume_by_top_controls && layer_impl == RootScrollLayer()) {
-      pending_delta = top_controls_manager_->ScrollBy(pending_delta);
-      UpdateMaxScrollOffset();
+    if (layer_impl == RootScrollLayer()) {
+      // Only allow bubble scrolling when the scroll is in the direction to make
+      // the top controls visible.
+      if (consume_by_top_controls && layer_impl == RootScrollLayer()) {
+        pending_delta = top_controls_manager_->ScrollBy(pending_delta);
+        UpdateMaxScrollOffset();
+      }
+      // Track root layer deltas for reporting overscroll.
+      unused_root_delta = pending_delta;
     }
 
     gfx::Vector2dF applied_delta;
@@ -1709,6 +1714,10 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
       else
         break;
     }
+
+    if (layer_impl == RootScrollLayer())
+      unused_root_delta.Subtract(applied_delta);
+
     did_scroll = true;
     did_lock_scrolling_layer_ = true;
     if (!should_bubble_scrolls_) {
@@ -1731,7 +1740,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     gfx::Vector2dF perpendicular_axis(-applied_delta.y(), applied_delta.x());
     pending_delta = MathUtil::ProjectVector(pending_delta, perpendicular_axis);
 
-    if (gfx::ToFlooredVector2d(pending_delta).IsZero())
+    if (gfx::ToRoundedVector2d(pending_delta).IsZero())
       break;
   }
 
@@ -1739,7 +1748,18 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     client_->SetNeedsCommitOnImplThread();
     client_->SetNeedsRedrawOnImplThread();
     client_->RenewTreePriority();
+
+    // Scrolling of any layer will reset root overscroll accumulation.
+    accumulated_root_overscroll_ = gfx::Vector2dF();
   }
+
+  accumulated_root_overscroll_ += unused_root_delta;
+  bool did_overscroll = !gfx::ToRoundedVector2d(unused_root_delta).IsZero();
+  if (did_overscroll && input_handler_client_) {
+    input_handler_client_->DidOverscroll(accumulated_root_overscroll_,
+                                         current_fling_velocity_);
+  }
+
   return did_scroll;
 }
 
@@ -1800,6 +1820,7 @@ void LayerTreeHostImpl::OnRootLayerDelegatedScrollOffsetChanged() {
 void LayerTreeHostImpl::ClearCurrentlyScrollingLayer() {
   active_tree_->ClearCurrentlyScrollingLayer();
   did_lock_scrolling_layer_ = false;
+  accumulated_root_overscroll_ = gfx::Vector2dF();
   current_fling_velocity_ = gfx::Vector2dF();
 }
 

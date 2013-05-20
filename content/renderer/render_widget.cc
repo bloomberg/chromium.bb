@@ -177,6 +177,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       device_scale_factor_(screen_info_.deviceScaleFactor),
       throttle_input_events_(true),
       is_threaded_compositing_enabled_(false),
+      overscroll_notifications_enabled_(false),
       weak_ptr_factory_(this) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
@@ -186,6 +187,9 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
   is_threaded_compositing_enabled_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableThreadedCompositing);
+  overscroll_notifications_enabled_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOverscrollNotifications);
 }
 
 RenderWidget::~RenderWidget() {
@@ -2317,6 +2321,15 @@ void RenderWidget::BeginSmoothScroll(
 
   Send(new ViewHostMsg_BeginSmoothScroll(routing_id_, params));
   pending_smooth_scroll_gesture_ = callback;
+}
+
+void RenderWidget::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+                                 gfx::Vector2dF current_fling_velocity) {
+  if (overscroll_notifications_enabled_) {
+    Send(new ViewHostMsg_DidOverscroll(routing_id_,
+                                       accumulated_overscroll,
+                                       current_fling_velocity));
+  }
 }
 
 bool RenderWidget::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
