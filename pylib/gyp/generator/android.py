@@ -413,7 +413,9 @@ class AndroidMkWriter(object):
                      (main_output, main_output_deps))
         self.WriteLn('\t%s\n' % command)
         for output in outputs[1:]:
-          self.WriteLn('%s: %s' % (output, main_output))
+          # Make each output depend on the main output, with an empty command
+          # to force make to notice that the mtime has changed.
+          self.WriteLn('%s: %s ;' % (output, main_output))
         self.WriteLn('.PHONY: %s' % (rule_trigger))
         self.WriteLn('%s: %s' % (rule_trigger, main_output))
         self.WriteLn('')
