@@ -68,7 +68,7 @@ class TiclInvalidationService
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
-  // Override of ProfileKeyedService methods.
+  // Overrides ProfileKeyedService method.
   virtual void Shutdown() OVERRIDE;
 
  protected:
@@ -83,7 +83,8 @@ class TiclInvalidationService
 
   void Start();
   void UpdateToken();
-  void Stop();
+  void StopInvalidator();
+  void Logout();
 
   Profile *const profile_;
   SigninManagerBase *const signin_manager_;

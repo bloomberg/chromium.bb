@@ -49,7 +49,7 @@ void TiclInvalidationService::Init() {
                               content::Source<TokenService>(token_service_));
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                              content::NotificationService::AllSources());
+                              content::Source<Profile>(profile_));
 }
 
 void TiclInvalidationService::InitForTest(syncer::Invalidator* invalidator) {
@@ -107,7 +107,8 @@ void TiclInvalidationService::AcknowledgeInvalidation(
 syncer::InvalidatorState TiclInvalidationService::GetInvalidatorState() const {
   DCHECK(CalledOnValidThread());
   if (invalidator_) {
-    DVLOG(2) << "GetInvalidatorState returning " << GetInvalidatorState();
+    DVLOG(2) << "GetInvalidatorState returning "
+        << invalidator_->GetInvalidatorState();
     return invalidator_->GetInvalidatorState();
   } else {
     DVLOG(2) << "Invalidator currently stopped";
@@ -117,9 +118,6 @@ syncer::InvalidatorState TiclInvalidationService::GetInvalidatorState() const {
 
 std::string TiclInvalidationService::GetInvalidatorClientId() const {
   DCHECK(CalledOnValidThread());
-  // invalidator_storage_ will be initialized between calls to Init() and
-  // Stop().  No one should attempt to get the ID of an uninitialized or stopped
-  // service.
   return invalidator_storage_->GetInvalidatorClientId();
 }
 
@@ -145,7 +143,7 @@ void TiclInvalidationService::Observe(
       break;
     }
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT: {
-      Stop();
+      Logout();
       break;
     }
     default: {
@@ -166,7 +164,10 @@ void TiclInvalidationService::OnIncomingInvalidation(
 
 void TiclInvalidationService::Shutdown() {
   DCHECK(CalledOnValidThread());
-  Stop();
+  if (IsStarted()) {
+    StopInvalidator();
+  }
+  invalidator_storage_.reset();
   invalidator_registrar_.reset();
 }
 
@@ -197,6 +198,8 @@ bool TiclInvalidationService::IsStarted() {
 void TiclInvalidationService::Start() {
   DCHECK(CalledOnValidThread());
   DCHECK(!invalidator_);
+  DCHECK(invalidator_storage_);
+  DCHECK(!invalidator_storage_->GetInvalidatorClientId().empty());
 
   notifier::NotifierOptions options =
       ParseNotifierOptions(*CommandLine::ForCurrentProcess());
@@ -230,15 +233,20 @@ void TiclInvalidationService::UpdateToken() {
   invalidator_->UpdateCredentials(email, sync_token);
 }
 
-void TiclInvalidationService::Stop() {
-  if (invalidator_) {
-    invalidator_->UnregisterHandler(this);
-    invalidator_.reset();
-  }
-  if (invalidator_storage_) {
-    invalidator_storage_->Clear();
-    invalidator_storage_.reset();
-  }
+void TiclInvalidationService::StopInvalidator() {
+  DCHECK(invalidator_);
+  invalidator_->UnregisterHandler(this);
+  invalidator_.reset();
+}
+
+void TiclInvalidationService::Logout() {
+  StopInvalidator();
+
+  // This service always expects to have a valid invalidator storage.
+  // So we must not only clear the old one, but also start a new one.
+  invalidator_storage_->Clear();
+  invalidator_storage_.reset(new InvalidatorStorage(profile_->GetPrefs()));
+  invalidator_storage_->SetInvalidatorClientId(GenerateInvalidatorClientId());
 }
 
 }  // namespace invalidation
