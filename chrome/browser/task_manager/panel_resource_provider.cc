@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_panel_resource_provider.h"
+#include "chrome/browser/task_manager/panel_resource_provider.h"
 
 #include "base/i18n/rtl.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/task_manager/task_manager_render_resource.h"
-#include "chrome/browser/task_manager/task_manager_resource_util.h"
+#include "chrome/browser/task_manager/renderer_resource.h"
+#include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -25,10 +25,12 @@ using content::RenderViewHost;
 using content::WebContents;
 using extensions::Extension;
 
-class TaskManagerPanelResource : public TaskManagerRendererResource {
+namespace task_manager {
+
+class PanelResource : public RendererResource {
  public:
-  explicit TaskManagerPanelResource(Panel* panel);
-  virtual ~TaskManagerPanelResource();
+  explicit PanelResource(Panel* panel);
+  virtual ~PanelResource();
 
   // TaskManager::Resource methods:
   virtual Type GetType() const OVERRIDE;
@@ -44,15 +46,15 @@ class TaskManagerPanelResource : public TaskManagerRendererResource {
   // or in incognito mode.
   int message_prefix_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerPanelResource);
+  DISALLOW_COPY_AND_ASSIGN(PanelResource);
 };
 
-TaskManagerPanelResource::TaskManagerPanelResource(Panel* panel)
-    : TaskManagerRendererResource(
+PanelResource::PanelResource(Panel* panel)
+    : RendererResource(
         panel->GetWebContents()->GetRenderProcessHost()->GetHandle(),
         panel->GetWebContents()->GetRenderViewHost()),
       panel_(panel) {
-  message_prefix_id_ = TaskManagerResourceUtil::GetMessagePrefixID(
+  message_prefix_id_ = util::GetMessagePrefixID(
       GetExtension()->is_app(),
       true,  // is_extension
       panel->profile()->IsOffTheRecord(),
@@ -61,14 +63,14 @@ TaskManagerPanelResource::TaskManagerPanelResource(Panel* panel)
       false);  // is_background
 }
 
-TaskManagerPanelResource::~TaskManagerPanelResource() {
+PanelResource::~PanelResource() {
 }
 
-TaskManager::Resource::Type TaskManagerPanelResource::GetType() const {
+TaskManager::Resource::Type PanelResource::GetType() const {
   return EXTENSION;
 }
 
-string16 TaskManagerPanelResource::GetTitle() const {
+string16 PanelResource::GetTitle() const {
   string16 title = panel_->GetWindowTitle();
   // Since the title will be concatenated with an IDS_TASK_MANAGER_* prefix
   // we need to explicitly set the title to be LTR format if there is no
@@ -83,40 +85,38 @@ string16 TaskManagerPanelResource::GetTitle() const {
   return l10n_util::GetStringFUTF16(message_prefix_id_, title);
 }
 
-string16 TaskManagerPanelResource::GetProfileName() const {
-  return TaskManagerResourceUtil::GetProfileNameFromInfoCache(
-      panel_->profile());
+string16 PanelResource::GetProfileName() const {
+  return util::GetProfileNameFromInfoCache(panel_->profile());
 }
 
-gfx::ImageSkia TaskManagerPanelResource::GetIcon() const {
+gfx::ImageSkia PanelResource::GetIcon() const {
   gfx::Image icon = panel_->GetCurrentPageIcon();
   return icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia();
 }
 
-WebContents* TaskManagerPanelResource::GetWebContents() const {
+WebContents* PanelResource::GetWebContents() const {
   return panel_->GetWebContents();
 }
 
-const Extension* TaskManagerPanelResource::GetExtension() const {
+const Extension* PanelResource::GetExtension() const {
   ExtensionService* extension_service =
       panel_->profile()->GetExtensionService();
   return extension_service->extensions()->GetByID(panel_->extension_id());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TaskManagerPanelResourceProvider class
+// PanelResourceProvider class
 ////////////////////////////////////////////////////////////////////////////////
 
-TaskManagerPanelResourceProvider::TaskManagerPanelResourceProvider(
-    TaskManager* task_manager)
+PanelResourceProvider::PanelResourceProvider(TaskManager* task_manager)
     : updating_(false),
       task_manager_(task_manager) {
 }
 
-TaskManagerPanelResourceProvider::~TaskManagerPanelResourceProvider() {
+PanelResourceProvider::~PanelResourceProvider() {
 }
 
-TaskManager::Resource* TaskManagerPanelResourceProvider::GetResource(
+TaskManager::Resource* PanelResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
@@ -140,7 +140,7 @@ TaskManager::Resource* TaskManagerPanelResourceProvider::GetResource(
   return NULL;
 }
 
-void TaskManagerPanelResourceProvider::StartUpdating() {
+void PanelResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
@@ -156,7 +156,7 @@ void TaskManagerPanelResourceProvider::StartUpdating() {
                  content::NotificationService::AllSources());
 }
 
-void TaskManagerPanelResourceProvider::StopUpdating() {
+void PanelResourceProvider::StopUpdating() {
   DCHECK(updating_);
   updating_ = false;
 
@@ -171,7 +171,7 @@ void TaskManagerPanelResourceProvider::StopUpdating() {
   resources_.clear();
 }
 
-void TaskManagerPanelResourceProvider::Add(Panel* panel) {
+void PanelResourceProvider::Add(Panel* panel) {
   if (!updating_)
     return;
 
@@ -179,12 +179,12 @@ void TaskManagerPanelResourceProvider::Add(Panel* panel) {
   if (iter != resources_.end())
     return;
 
-  TaskManagerPanelResource* resource = new TaskManagerPanelResource(panel);
+  PanelResource* resource = new PanelResource(panel);
   resources_[panel] = resource;
   task_manager_->AddResource(resource);
 }
 
-void TaskManagerPanelResourceProvider::Remove(Panel* panel) {
+void PanelResourceProvider::Remove(Panel* panel) {
   if (!updating_)
     return;
 
@@ -192,13 +192,13 @@ void TaskManagerPanelResourceProvider::Remove(Panel* panel) {
   if (iter == resources_.end())
     return;
 
-  TaskManagerPanelResource* resource = iter->second;
+  PanelResource* resource = iter->second;
   task_manager_->RemoveResource(resource);
   resources_.erase(iter);
   delete resource;
 }
 
-void TaskManagerPanelResourceProvider::Observe(int type,
+void PanelResourceProvider::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   WebContents* web_contents = content::Source<WebContents>(source).ptr();
@@ -235,3 +235,5 @@ void TaskManagerPanelResourceProvider::Observe(int type,
       break;
   }
 }
+
+}  // namespace task_manager

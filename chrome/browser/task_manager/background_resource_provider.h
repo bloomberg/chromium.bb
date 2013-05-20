@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_EXTENSION_PROCESS_RESOURCE_PROVIDER_H_
-#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_EXTENSION_PROCESS_RESOURCE_PROVIDER_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_BACKGROUND_RESOURCE_PROVIDER_H_
+#define CHROME_BROWSER_TASK_MANAGER_BACKGROUND_RESOURCE_PROVIDER_H_
 
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class TaskManagerExtensionProcessResource;
+class BackgroundContents;
 
-namespace content {
-class RenderViewHost;
-}
+namespace task_manager {
 
-class TaskManagerExtensionProcessResourceProvider
+class BackgroundContentsResource;
+
+class BackgroundContentsResourceProvider
     : public TaskManager::ResourceProvider,
       public content::NotificationObserver {
  public:
-  explicit TaskManagerExtensionProcessResourceProvider(
+  explicit BackgroundContentsResourceProvider(
       TaskManager* task_manager);
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
@@ -37,26 +38,32 @@ class TaskManagerExtensionProcessResourceProvider
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  virtual ~TaskManagerExtensionProcessResourceProvider();
+  virtual ~BackgroundContentsResourceProvider();
 
-  bool IsHandledByThisProvider(content::RenderViewHost* render_view_host);
-  void AddToTaskManager(content::RenderViewHost* render_view_host);
-  void RemoveFromTaskManager(content::RenderViewHost* render_view_host);
+  void Add(BackgroundContents* background_contents, const string16& title);
+  void Remove(BackgroundContents* background_contents);
+
+  void AddToTaskManager(BackgroundContents* background_contents,
+                        const string16& title);
+
+  // Whether we are currently reporting to the task manager. Used to ignore
+  // notifications sent after StopUpdating().
+  bool updating_;
 
   TaskManager* task_manager_;
 
-  // Maps the actual resources (content::RenderViewHost*) to the Task Manager
+  // Maps the actual resources (the BackgroundContents) to the Task Manager
   // resources.
-  typedef std::map<content::RenderViewHost*,
-      TaskManagerExtensionProcessResource*> ExtensionRenderViewHostMap;
-  ExtensionRenderViewHostMap resources_;
+  typedef std::map<BackgroundContents*, BackgroundContentsResource*>
+      Resources;
+  Resources resources_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
 
-  bool updating_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerExtensionProcessResourceProvider);
+  DISALLOW_COPY_AND_ASSIGN(BackgroundContentsResourceProvider);
 };
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_EXTENSION_PROCESS_RESOURCE_PROVIDER_H_
+}  // namespace task_manager
+
+#endif  // CHROME_BROWSER_TASK_MANAGER_BACKGROUND_RESOURCE_PROVIDER_H_

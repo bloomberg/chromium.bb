@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_child_process_resource_provider.h"
+#include "chrome/browser/task_manager/child_process_resource_provider.h"
 
 #include <vector>
 
@@ -24,13 +24,15 @@ using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 using content::WebContents;
 
-class TaskManagerChildProcessResource : public TaskManager::Resource {
+namespace task_manager {
+
+class ChildProcessResource : public TaskManager::Resource {
  public:
-  TaskManagerChildProcessResource(int process_type,
-                                  const string16& name,
-                                  base::ProcessHandle handle,
-                                  int unique_process_id);
-  virtual ~TaskManagerChildProcessResource();
+  ChildProcessResource(int process_type,
+                       const string16& name,
+                       base::ProcessHandle handle,
+                       int unique_process_id);
+  virtual ~ChildProcessResource();
 
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
@@ -63,12 +65,12 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
   // plugins.
   static gfx::ImageSkia* default_icon_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerChildProcessResource);
+  DISALLOW_COPY_AND_ASSIGN(ChildProcessResource);
 };
 
-gfx::ImageSkia* TaskManagerChildProcessResource::default_icon_ = NULL;
+gfx::ImageSkia* ChildProcessResource::default_icon_ = NULL;
 
-TaskManagerChildProcessResource::TaskManagerChildProcessResource(
+ChildProcessResource::ChildProcessResource(
     int process_type,
     const string16& name,
     base::ProcessHandle handle,
@@ -88,34 +90,34 @@ TaskManagerChildProcessResource::TaskManagerChildProcessResource(
   }
 }
 
-TaskManagerChildProcessResource::~TaskManagerChildProcessResource() {
+ChildProcessResource::~ChildProcessResource() {
 }
 
 // TaskManagerResource methods:
-string16 TaskManagerChildProcessResource::GetTitle() const {
+string16 ChildProcessResource::GetTitle() const {
   if (title_.empty())
     title_ = GetLocalizedTitle();
 
   return title_;
 }
 
-string16 TaskManagerChildProcessResource::GetProfileName() const {
+string16 ChildProcessResource::GetProfileName() const {
   return string16();
 }
 
-gfx::ImageSkia TaskManagerChildProcessResource::GetIcon() const {
+gfx::ImageSkia ChildProcessResource::GetIcon() const {
   return *default_icon_;
 }
 
-base::ProcessHandle TaskManagerChildProcessResource::GetProcess() const {
+base::ProcessHandle ChildProcessResource::GetProcess() const {
   return handle_;
 }
 
-int TaskManagerChildProcessResource::GetUniqueChildProcessId() const {
+int ChildProcessResource::GetUniqueChildProcessId() const {
   return unique_process_id_;
 }
 
-TaskManager::Resource::Type TaskManagerChildProcessResource::GetType() const {
+TaskManager::Resource::Type ChildProcessResource::GetType() const {
   // Translate types to TaskManager::ResourceType, since ChildProcessData's type
   // is not available for all TaskManager resources.
   switch (process_type_) {
@@ -141,15 +143,15 @@ TaskManager::Resource::Type TaskManagerChildProcessResource::GetType() const {
   }
 }
 
-bool TaskManagerChildProcessResource::SupportNetworkUsage() const {
+bool ChildProcessResource::SupportNetworkUsage() const {
   return network_usage_support_;
 }
 
-void TaskManagerChildProcessResource::SetSupportNetworkUsage() {
+void ChildProcessResource::SetSupportNetworkUsage() {
   network_usage_support_ = true;
 }
 
-string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
+string16 ChildProcessResource::GetLocalizedTitle() const {
   string16 title = name_;
   if (title.empty()) {
     switch (process_type_) {
@@ -207,20 +209,19 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TaskManagerChildProcessResourceProvider class
+// ChildProcessResourceProvider class
 ////////////////////////////////////////////////////////////////////////////////
 
-TaskManagerChildProcessResourceProvider::
-    TaskManagerChildProcessResourceProvider(TaskManager* task_manager)
+ChildProcessResourceProvider::
+    ChildProcessResourceProvider(TaskManager* task_manager)
     : task_manager_(task_manager),
       updating_(false) {
 }
 
-TaskManagerChildProcessResourceProvider::
-    ~TaskManagerChildProcessResourceProvider() {
+ChildProcessResourceProvider::~ChildProcessResourceProvider() {
 }
 
-TaskManager::Resource* TaskManagerChildProcessResourceProvider::GetResource(
+TaskManager::Resource* ChildProcessResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
@@ -231,7 +232,7 @@ TaskManager::Resource* TaskManagerChildProcessResourceProvider::GetResource(
     return NULL;
 }
 
-void TaskManagerChildProcessResourceProvider::StartUpdating() {
+void ChildProcessResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
@@ -239,13 +240,13 @@ void TaskManagerChildProcessResourceProvider::StartUpdating() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &TaskManagerChildProcessResourceProvider::RetrieveChildProcessData,
+          &ChildProcessResourceProvider::RetrieveChildProcessData,
           this));
 
   BrowserChildProcessObserver::Add(this);
 }
 
-void TaskManagerChildProcessResourceProvider::StopUpdating() {
+void ChildProcessResourceProvider::StopUpdating() {
   DCHECK(updating_);
   updating_ = false;
 
@@ -258,7 +259,7 @@ void TaskManagerChildProcessResourceProvider::StopUpdating() {
   BrowserChildProcessObserver::Remove(this);
 }
 
-void TaskManagerChildProcessResourceProvider::BrowserChildProcessHostConnected(
+void ChildProcessResourceProvider::BrowserChildProcessHostConnected(
     const content::ChildProcessData& data) {
   DCHECK(updating_);
 
@@ -275,8 +276,9 @@ void TaskManagerChildProcessResourceProvider::BrowserChildProcessHostConnected(
   AddToTaskManager(data);
 }
 
-void TaskManagerChildProcessResourceProvider::
-BrowserChildProcessHostDisconnected(const content::ChildProcessData& data) {
+void ChildProcessResourceProvider::
+    BrowserChildProcessHostDisconnected(
+        const content::ChildProcessData& data) {
   DCHECK(updating_);
 
   if (data.process_type == content::PROCESS_TYPE_WORKER)
@@ -289,7 +291,7 @@ BrowserChildProcessHostDisconnected(const content::ChildProcessData& data) {
     return;
   }
   // Remove the resource from the Task Manager.
-  TaskManagerChildProcessResource* resource = iter->second;
+  ChildProcessResource* resource = iter->second;
   task_manager_->RemoveResource(resource);
   // Remove it from the provider.
   resources_.erase(iter);
@@ -304,10 +306,10 @@ BrowserChildProcessHostDisconnected(const content::ChildProcessData& data) {
   delete resource;
 }
 
-void TaskManagerChildProcessResourceProvider::AddToTaskManager(
+void ChildProcessResourceProvider::AddToTaskManager(
     const content::ChildProcessData& child_process_data) {
-  TaskManagerChildProcessResource* resource =
-      new TaskManagerChildProcessResource(
+  ChildProcessResource* resource =
+      new ChildProcessResource(
           child_process_data.process_type,
           child_process_data.name,
           child_process_data.handle,
@@ -318,7 +320,7 @@ void TaskManagerChildProcessResourceProvider::AddToTaskManager(
 }
 
 // The ChildProcessData::Iterator has to be used from the IO thread.
-void TaskManagerChildProcessResourceProvider::RetrieveChildProcessData() {
+void ChildProcessResourceProvider::RetrieveChildProcessData() {
   std::vector<content::ChildProcessData> child_processes;
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
     // Only add processes which are already started, since we need their handle.
@@ -333,18 +335,20 @@ void TaskManagerChildProcessResourceProvider::RetrieveChildProcessData() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          &TaskManagerChildProcessResourceProvider::ChildProcessDataRetreived,
+          &ChildProcessResourceProvider::ChildProcessDataRetreived,
           this, child_processes));
 }
 
 // This is called on the UI thread.
-void TaskManagerChildProcessResourceProvider::ChildProcessDataRetreived(
+void ChildProcessResourceProvider::ChildProcessDataRetreived(
     const std::vector<content::ChildProcessData>& child_processes) {
   for (size_t i = 0; i < child_processes.size(); ++i)
     AddToTaskManager(child_processes[i]);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,
-      content::Source<TaskManagerChildProcessResourceProvider>(this),
+      content::Source<ChildProcessResourceProvider>(this),
       content::NotificationService::NoDetails());
 }
+
+}  // namespace task_manager

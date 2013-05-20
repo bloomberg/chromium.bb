@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_guest_resource_provider.h"
+#include "chrome/browser/task_manager/guest_resource_provider.h"
 
 #include "base/string16.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/task_manager/task_manager_render_resource.h"
-#include "chrome/browser/task_manager/task_manager_resource_util.h"
+#include "chrome/browser/task_manager/renderer_resource.h"
+#include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -26,10 +26,12 @@ using content::RenderWidgetHost;
 using content::WebContents;
 using extensions::Extension;
 
-class TaskManagerGuestResource : public TaskManagerRendererResource {
+namespace task_manager {
+
+class GuestResource : public RendererResource {
  public:
-  explicit TaskManagerGuestResource(content::RenderViewHost* render_view_host);
-  virtual ~TaskManagerGuestResource();
+  explicit GuestResource(content::RenderViewHost* render_view_host);
+  virtual ~GuestResource();
 
   // TaskManager::Resource methods:
   virtual Type GetType() const OVERRIDE;
@@ -40,45 +42,43 @@ class TaskManagerGuestResource : public TaskManagerRendererResource {
   virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerGuestResource);
+  DISALLOW_COPY_AND_ASSIGN(GuestResource);
 };
 
-TaskManagerGuestResource::TaskManagerGuestResource(
-    RenderViewHost* render_view_host)
-    : TaskManagerRendererResource(
+GuestResource::GuestResource(RenderViewHost* render_view_host)
+    : RendererResource(
           render_view_host->GetSiteInstance()->GetProcess()->GetHandle(),
           render_view_host) {
 }
 
-TaskManagerGuestResource::~TaskManagerGuestResource() {
+GuestResource::~GuestResource() {
 }
 
-TaskManager::Resource::Type TaskManagerGuestResource::GetType() const {
+TaskManager::Resource::Type GuestResource::GetType() const {
   return GUEST;
 }
 
-string16 TaskManagerGuestResource::GetTitle() const {
+string16 GuestResource::GetTitle() const {
   WebContents* web_contents = GetWebContents();
   const int message_id = IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX;
   if (web_contents) {
-    string16 title = TaskManagerResourceUtil::GetTitleFromWebContents(
-        web_contents);
+    string16 title = util::GetTitleFromWebContents(web_contents);
     return l10n_util::GetStringFUTF16(message_id, title);
   }
   return l10n_util::GetStringFUTF16(message_id, string16());
 }
 
-string16 TaskManagerGuestResource::GetProfileName() const {
+string16 GuestResource::GetProfileName() const {
   WebContents* web_contents = GetWebContents();
   if (web_contents) {
     Profile* profile = Profile::FromBrowserContext(
         web_contents->GetBrowserContext());
-    return TaskManagerResourceUtil::GetProfileNameFromInfoCache(profile);
+    return util::GetProfileNameFromInfoCache(profile);
   }
   return string16();
 }
 
-gfx::ImageSkia TaskManagerGuestResource::GetIcon() const {
+gfx::ImageSkia GuestResource::GetIcon() const {
   WebContents* web_contents = GetWebContents();
   if (web_contents && FaviconTabHelper::FromWebContents(web_contents)) {
     return FaviconTabHelper::FromWebContents(web_contents)->
@@ -87,24 +87,23 @@ gfx::ImageSkia TaskManagerGuestResource::GetIcon() const {
   return gfx::ImageSkia();
 }
 
-WebContents* TaskManagerGuestResource::GetWebContents() const {
+WebContents* GuestResource::GetWebContents() const {
   return WebContents::FromRenderViewHost(render_view_host());
 }
 
-const Extension* TaskManagerGuestResource::GetExtension() const {
+const Extension* GuestResource::GetExtension() const {
   return NULL;
 }
 
-TaskManagerGuestResourceProvider::
-    TaskManagerGuestResourceProvider(TaskManager* task_manager)
+GuestResourceProvider::GuestResourceProvider(TaskManager* task_manager)
     :  updating_(false),
        task_manager_(task_manager) {
 }
 
-TaskManagerGuestResourceProvider::~TaskManagerGuestResourceProvider() {
+GuestResourceProvider::~GuestResourceProvider() {
 }
 
-TaskManager::Resource* TaskManagerGuestResourceProvider::GetResource(
+TaskManager::Resource* GuestResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
@@ -126,7 +125,7 @@ TaskManager::Resource* TaskManagerGuestResourceProvider::GetResource(
   return NULL;
 }
 
-void TaskManagerGuestResourceProvider::StartUpdating() {
+void GuestResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
@@ -154,7 +153,7 @@ void TaskManagerGuestResourceProvider::StartUpdating() {
       content::NotificationService::AllBrowserContextsAndSources());
 }
 
-void TaskManagerGuestResourceProvider::StopUpdating() {
+void GuestResourceProvider::StopUpdating() {
   DCHECK(updating_);
   updating_ = false;
 
@@ -170,16 +169,13 @@ void TaskManagerGuestResourceProvider::StopUpdating() {
   resources_.clear();
 }
 
-void TaskManagerGuestResourceProvider::Add(
-    RenderViewHost* render_view_host) {
-  TaskManagerGuestResource* resource =
-      new TaskManagerGuestResource(render_view_host);
+void GuestResourceProvider::Add(RenderViewHost* render_view_host) {
+  GuestResource* resource = new GuestResource(render_view_host);
   resources_[render_view_host] = resource;
   task_manager_->AddResource(resource);
 }
 
-void TaskManagerGuestResourceProvider::Remove(
-    RenderViewHost* render_view_host) {
+void GuestResourceProvider::Remove(RenderViewHost* render_view_host) {
   if (!updating_)
     return;
 
@@ -187,13 +183,13 @@ void TaskManagerGuestResourceProvider::Remove(
   if (iter == resources_.end())
     return;
 
-  TaskManagerGuestResource* resource = iter->second;
+  GuestResource* resource = iter->second;
   task_manager_->RemoveResource(resource);
   resources_.erase(iter);
   delete resource;
 }
 
-void TaskManagerGuestResourceProvider::Observe(int type,
+void GuestResourceProvider::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   WebContents* web_contents = content::Source<WebContents>(source).ptr();
@@ -211,3 +207,5 @@ void TaskManagerGuestResourceProvider::Observe(int type,
       NOTREACHED() << "Unexpected notification.";
   }
 }
+
+}  // namespace task_manager

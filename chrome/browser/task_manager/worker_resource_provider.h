@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_WORKER_RESOURCE_PROVIDER_H_
-#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_WORKER_RESOURCE_PROVIDER_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_WORKER_RESOURCE_PROVIDER_H_
+#define CHROME_BROWSER_TASK_MANAGER_WORKER_RESOURCE_PROVIDER_H_
 
 #include <map>
 #include <vector>
@@ -13,22 +13,24 @@
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/worker_service_observer.h"
 
-class TaskManagerSharedWorkerResource;
+namespace task_manager {
 
-class TaskManagerWorkerResourceProvider
+class SharedWorkerResource;
+
+class WorkerResourceProvider
     : public TaskManager::ResourceProvider,
       public content::BrowserChildProcessObserver,
       private content::WorkerServiceObserver {
  public:
-  explicit TaskManagerWorkerResourceProvider(TaskManager* task_manager);
+  explicit WorkerResourceProvider(TaskManager* task_manager);
 
  private:
   class WorkerResourceListHolder;
-  typedef std::vector<TaskManagerSharedWorkerResource*> WorkerResourceList;
-  typedef scoped_ptr<TaskManagerSharedWorkerResource> WorkerResourceHolder;
+  typedef std::vector<SharedWorkerResource*> WorkerResourceList;
+  typedef scoped_ptr<SharedWorkerResource> WorkerResourceHolder;
   typedef std::map<int, WorkerResourceList> ProcessIdToWorkerResources;
 
-  virtual ~TaskManagerWorkerResourceProvider();
+  virtual ~WorkerResourceProvider();
 
   // TaskManager::ResourceProvider implementation.
   virtual TaskManager::Resource* GetResource(int origin_pid,
@@ -57,7 +59,7 @@ class TaskManagerWorkerResourceProvider
   void StopObservingWorkers();
 
   void AddWorkerResourceList(WorkerResourceListHolder* resource_list_holder);
-  void AddResource(TaskManagerSharedWorkerResource* resource);
+  void AddResource(SharedWorkerResource* resource);
   void DeleteAllResources();
 
   bool updating_;
@@ -69,7 +71,9 @@ class TaskManagerWorkerResourceProvider
   // the task manager until the process is launched.
   ProcessIdToWorkerResources launching_workers_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerWorkerResourceProvider);
+  DISALLOW_COPY_AND_ASSIGN(WorkerResourceProvider);
 };
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_WORKER_RESOURCE_PROVIDER_H_
+}  // namespace task_manager
+
+#endif  // CHROME_BROWSER_TASK_MANAGER_WORKER_RESOURCE_PROVIDER_H_

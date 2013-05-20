@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_resource_util.h"
+#include "chrome/browser/task_manager/task_manager_util.h"
 
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
@@ -15,12 +15,16 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 
-int TaskManagerResourceUtil::GetMessagePrefixID(bool is_app,
-                                                bool is_extension,
-                                                bool is_incognito,
-                                                bool is_prerender,
-                                                bool is_instant_overlay,
-                                                bool is_background) {
+namespace task_manager {
+
+namespace util {
+
+int GetMessagePrefixID(bool is_app,
+                       bool is_extension,
+                       bool is_incognito,
+                       bool is_prerender,
+                       bool is_instant_overlay,
+                       bool is_background) {
   if (is_app) {
     if (is_background)
       return IDS_TASK_MANAGER_BACKGROUND_PREFIX;
@@ -41,8 +45,7 @@ int TaskManagerResourceUtil::GetMessagePrefixID(bool is_app,
   return IDS_TASK_MANAGER_TAB_PREFIX;
 }
 
-string16 TaskManagerResourceUtil::GetProfileNameFromInfoCache(
-    Profile* profile) {
+string16 GetProfileNameFromInfoCache(Profile* profile) {
   DCHECK(profile);
 
   ProfileInfoCache& cache =
@@ -55,8 +58,7 @@ string16 TaskManagerResourceUtil::GetProfileNameFromInfoCache(
     return cache.GetNameOfProfileAtIndex(index);
 }
 
-string16 TaskManagerResourceUtil::GetTitleFromWebContents(
-    content::WebContents* web_contents) {
+string16 GetTitleFromWebContents(content::WebContents* web_contents) {
   DCHECK(web_contents);
 
   string16 title = web_contents->GetTitle();
@@ -79,3 +81,7 @@ string16 TaskManagerResourceUtil::GetTitleFromWebContents(
   }
   return title;
 }
+
+}  // namespace util
+
+}  // namespace task_manager

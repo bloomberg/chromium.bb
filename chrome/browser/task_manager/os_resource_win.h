@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_OS_RESOURCES_WIN_H_
-#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_OS_RESOURCES_WIN_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_OS_RESOURCE_WIN_H_
+#define CHROME_BROWSER_TASK_MANAGER_OS_RESOURCE_WIN_H_
 
 #include "base/process_util.h"
+
+namespace task_manager {
 
 // Get the current number of GDI handles in use (and peak on >= Win7+).
 void GetWinGDIHandles(base::ProcessHandle process,
@@ -17,4 +19,6 @@ void GetWinUSERHandles(base::ProcessHandle process,
                        size_t* current,
                        size_t* peak);
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_OS_RESOURCES_WIN_H_
+}  // namespace task_manager
+
+#endif  // CHROME_BROWSER_TASK_MANAGER_OS_RESOURCE_WIN_H_

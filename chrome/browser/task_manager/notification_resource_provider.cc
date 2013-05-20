@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_notification_resource_provider.h"
+#include "chrome/browser/task_manager/notification_resource_provider.h"
 
 #include "base/string16.h"
 #include "chrome/browser/browser_process.h"
@@ -19,10 +19,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-class TaskManagerNotificationResource : public TaskManager::Resource {
+namespace task_manager {
+
+class NotificationResource : public TaskManager::Resource {
  public:
-  explicit TaskManagerNotificationResource(BalloonHost* balloon_host);
-  virtual ~TaskManagerNotificationResource();
+  explicit NotificationResource(BalloonHost* balloon_host);
+  virtual ~NotificationResource();
 
   // TaskManager::Resource interface
   virtual string16 GetTitle() const OVERRIDE;
@@ -49,13 +51,12 @@ class TaskManagerNotificationResource : public TaskManager::Resource {
   int unique_process_id_;
   string16 title_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerNotificationResource);
+  DISALLOW_COPY_AND_ASSIGN(NotificationResource);
 };
 
-gfx::ImageSkia* TaskManagerNotificationResource::default_icon_ = NULL;
+gfx::ImageSkia* NotificationResource::default_icon_ = NULL;
 
-TaskManagerNotificationResource::TaskManagerNotificationResource(
-    BalloonHost* balloon_host)
+NotificationResource::NotificationResource(BalloonHost* balloon_host)
     : balloon_host_(balloon_host) {
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -70,67 +71,66 @@ TaskManagerNotificationResource::TaskManagerNotificationResource(
                                       balloon_host_->GetSource());
 }
 
-TaskManagerNotificationResource::~TaskManagerNotificationResource() {
+NotificationResource::~NotificationResource() {
 }
 
-string16 TaskManagerNotificationResource::GetTitle() const {
+string16 NotificationResource::GetTitle() const {
   return title_;
 }
 
-string16 TaskManagerNotificationResource::GetProfileName() const {
+string16 NotificationResource::GetProfileName() const {
   return string16();
 }
 
-gfx::ImageSkia TaskManagerNotificationResource::GetIcon() const {
+gfx::ImageSkia NotificationResource::GetIcon() const {
   return *default_icon_;
 }
 
-base::ProcessHandle TaskManagerNotificationResource::GetProcess() const {
+base::ProcessHandle NotificationResource::GetProcess() const {
   return process_handle_;
 }
 
-int TaskManagerNotificationResource::GetUniqueChildProcessId() const {
+int NotificationResource::GetUniqueChildProcessId() const {
   return unique_process_id_;
 }
 
-TaskManager::Resource::Type TaskManagerNotificationResource::GetType() const {
+TaskManager::Resource::Type NotificationResource::GetType() const {
   return NOTIFICATION;
 }
 
-bool TaskManagerNotificationResource::CanInspect() const {
+bool NotificationResource::CanInspect() const {
   return true;
 }
 
-void TaskManagerNotificationResource::Inspect() const {
+void NotificationResource::Inspect() const {
   DevToolsWindow::OpenDevToolsWindow(
       balloon_host_->web_contents()->GetRenderViewHost());
 }
 
-bool TaskManagerNotificationResource::SupportNetworkUsage() const {
+bool NotificationResource::SupportNetworkUsage() const {
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TaskManagerNotificationResourceProvider class
+// NotificationResourceProvider class
 ////////////////////////////////////////////////////////////////////////////////
 
 // static
-TaskManagerNotificationResourceProvider*
-TaskManagerNotificationResourceProvider::Create(TaskManager* task_manager) {
-  return new TaskManagerNotificationResourceProvider(task_manager);
+NotificationResourceProvider*
+NotificationResourceProvider::Create(TaskManager* task_manager) {
+  return new NotificationResourceProvider(task_manager);
 }
 
-TaskManagerNotificationResourceProvider::
-    TaskManagerNotificationResourceProvider(TaskManager* task_manager)
+NotificationResourceProvider::
+    NotificationResourceProvider(TaskManager* task_manager)
     : task_manager_(task_manager),
       updating_(false) {
 }
 
-TaskManagerNotificationResourceProvider::
-    ~TaskManagerNotificationResourceProvider() {
+NotificationResourceProvider::~NotificationResourceProvider() {
 }
 
-TaskManager::Resource* TaskManagerNotificationResourceProvider::GetResource(
+TaskManager::Resource* NotificationResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
@@ -138,7 +138,7 @@ TaskManager::Resource* TaskManagerNotificationResourceProvider::GetResource(
   return NULL;
 }
 
-void TaskManagerNotificationResourceProvider::StartUpdating() {
+void NotificationResourceProvider::StartUpdating() {
   // MessageCenter does not use Balloons.
   if (NotificationUIManager::DelegatesToMessageCenter())
     return;
@@ -166,7 +166,7 @@ void TaskManagerNotificationResourceProvider::StartUpdating() {
                  content::NotificationService::AllSources());
 }
 
-void TaskManagerNotificationResourceProvider::StopUpdating() {
+void NotificationResourceProvider::StopUpdating() {
   // MessageCenter does not use Balloons.
   if (NotificationUIManager::DelegatesToMessageCenter())
     return;
@@ -185,7 +185,7 @@ void TaskManagerNotificationResourceProvider::StopUpdating() {
   resources_.clear();
 }
 
-void TaskManagerNotificationResourceProvider::Observe(
+void NotificationResourceProvider::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -202,26 +202,25 @@ void TaskManagerNotificationResourceProvider::Observe(
   }
 }
 
-void TaskManagerNotificationResourceProvider::AddToTaskManager(
+void NotificationResourceProvider::AddToTaskManager(
     BalloonHost* balloon_host) {
-  TaskManagerNotificationResource* resource =
-      new TaskManagerNotificationResource(balloon_host);
+  NotificationResource* resource = new NotificationResource(balloon_host);
   DCHECK(resources_.find(balloon_host) == resources_.end());
   resources_[balloon_host] = resource;
   task_manager_->AddResource(resource);
 }
 
-void TaskManagerNotificationResourceProvider::RemoveFromTaskManager(
+void NotificationResourceProvider::RemoveFromTaskManager(
     BalloonHost* balloon_host) {
   if (!updating_)
     return;
-  std::map<BalloonHost*, TaskManagerNotificationResource*>::iterator iter =
+  std::map<BalloonHost*, NotificationResource*>::iterator iter =
       resources_.find(balloon_host);
   if (iter == resources_.end())
     return;
 
   // Remove the resource from the Task Manager.
-  TaskManagerNotificationResource* resource = iter->second;
+  NotificationResource* resource = iter->second;
   task_manager_->RemoveResource(resource);
 
   // Remove it from the map.
@@ -230,3 +229,5 @@ void TaskManagerNotificationResourceProvider::RemoveFromTaskManager(
   // Finally, delete the resource.
   delete resource;
 }
+
+}  // namespace task_manager

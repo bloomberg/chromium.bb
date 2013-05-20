@@ -23,15 +23,15 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/task_manager/task_manager_background_resource_provider.h"
-#include "chrome/browser/task_manager/task_manager_browser_process_resource_provider.h"
-#include "chrome/browser/task_manager/task_manager_child_process_resource_provider.h"
-#include "chrome/browser/task_manager/task_manager_extension_process_resource_provider.h"
-#include "chrome/browser/task_manager/task_manager_guest_resource_provider.h"
-#include "chrome/browser/task_manager/task_manager_notification_resource_provider.h"
-#include "chrome/browser/task_manager/task_manager_panel_resource_provider.h"
-#include "chrome/browser/task_manager/task_manager_tab_contents_resource_provider.h"
-#include "chrome/browser/task_manager/task_manager_worker_resource_provider.h"
+#include "chrome/browser/task_manager/background_resource_provider.h"
+#include "chrome/browser/task_manager/browser_process_resource_provider.h"
+#include "chrome/browser/task_manager/child_process_resource_provider.h"
+#include "chrome/browser/task_manager/extension_process_resource_provider.h"
+#include "chrome/browser/task_manager/guest_resource_provider.h"
+#include "chrome/browser/task_manager/notification_resource_provider.h"
+#include "chrome/browser/task_manager/panel_resource_provider.h"
+#include "chrome/browser/task_manager/tab_contents_resource_provider.h"
+#include "chrome/browser/task_manager/worker_resource_provider.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -54,10 +54,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/image/image_skia.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/task_manager/task_manager_os_resources_win.h"
-#endif
 
 using content::BrowserThread;
 using content::OpenURLParams;
@@ -130,6 +126,42 @@ bool IsSharedByGroup(int col_id) {
       return false;
   }
 }
+
+#if defined(OS_WIN)
+void GetWinGDIHandles(base::ProcessHandle process,
+                      size_t* current,
+                      size_t* peak) {
+  *current = 0;
+  *peak = 0;
+  // Get a handle to |process| that has PROCESS_QUERY_INFORMATION rights.
+  HANDLE current_process = GetCurrentProcess();
+  HANDLE process_with_query_rights;
+  if (DuplicateHandle(current_process, process, current_process,
+                      &process_with_query_rights, PROCESS_QUERY_INFORMATION,
+                      false, 0)) {
+    *current = GetGuiResources(process_with_query_rights, GR_GDIOBJECTS);
+    *peak = GetGuiResources(process_with_query_rights, GR_GDIOBJECTS_PEAK);
+    CloseHandle(process_with_query_rights);
+  }
+}
+
+void GetWinUSERHandles(base::ProcessHandle process,
+                       size_t* current,
+                       size_t* peak) {
+  *current = 0;
+  *peak = 0;
+  // Get a handle to |process| that has PROCESS_QUERY_INFORMATION rights.
+  HANDLE current_process = GetCurrentProcess();
+  HANDLE process_with_query_rights;
+  if (DuplicateHandle(current_process, process, current_process,
+                      &process_with_query_rights, PROCESS_QUERY_INFORMATION,
+                      false, 0)) {
+    *current = GetGuiResources(process_with_query_rights, GR_USEROBJECTS);
+    *peak = GetGuiResources(process_with_query_rights, GR_USEROBJECTS_PEAK);
+    CloseHandle(process_with_query_rights);
+  }
+}
+#endif
 
 }  // namespace
 
@@ -220,26 +252,26 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       goat_salt_(base::RandUint64()),
       last_unique_id_(0) {
   AddResourceProvider(
-      new TaskManagerBrowserProcessResourceProvider(task_manager));
+      new task_manager::BrowserProcessResourceProvider(task_manager));
   AddResourceProvider(
-      new TaskManagerBackgroundContentsResourceProvider(task_manager));
-  AddResourceProvider(new TaskManagerTabContentsResourceProvider(task_manager));
-  AddResourceProvider(new TaskManagerPanelResourceProvider(task_manager));
+      new task_manager::BackgroundContentsResourceProvider(task_manager));
   AddResourceProvider(
-      new TaskManagerChildProcessResourceProvider(task_manager));
+      new task_manager::TabContentsResourceProvider(task_manager));
+  AddResourceProvider(new task_manager::PanelResourceProvider(task_manager));
   AddResourceProvider(
-      new TaskManagerExtensionProcessResourceProvider(task_manager));
+      new task_manager::ChildProcessResourceProvider(task_manager));
   AddResourceProvider(
-      new TaskManagerGuestResourceProvider(task_manager));
+      new task_manager::ExtensionProcessResourceProvider(task_manager));
+  AddResourceProvider(new task_manager::GuestResourceProvider(task_manager));
 
 #if defined(ENABLE_NOTIFICATIONS)
   TaskManager::ResourceProvider* provider =
-      TaskManagerNotificationResourceProvider::Create(task_manager);
+      task_manager::NotificationResourceProvider::Create(task_manager);
   if (provider)
     AddResourceProvider(provider);
 #endif
 
-  AddResourceProvider(new TaskManagerWorkerResourceProvider(task_manager));
+  AddResourceProvider(new task_manager::WorkerResourceProvider(task_manager));
 }
 
 void TaskManagerModel::AddObserver(TaskManagerModelObserver* observer) {

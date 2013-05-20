@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_RENDER_RESOURCE_H_
-#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_RENDER_RESOURCE_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_RENDERER_RESOURCE_H_
+#define CHROME_BROWSER_TASK_MANAGER_RENDERER_RESOURCE_H_
 
 #include "base/basictypes.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -13,14 +13,16 @@ namespace content {
 class RenderViewHost;
 }
 
+namespace task_manager {
+
 // Base class for various types of render process resources that provides common
 // functionality like stats tracking.
-class TaskManagerRendererResource : public TaskManager::Resource,
-                                    public content::RenderViewHostObserver {
+class RendererResource : public TaskManager::Resource,
+                         public content::RenderViewHostObserver {
  public:
-  TaskManagerRendererResource(base::ProcessHandle process,
+  RendererResource(base::ProcessHandle process,
                               content::RenderViewHost* render_view_host);
-  virtual ~TaskManagerRendererResource();
+  virtual ~RendererResource();
 
   // TaskManager::Resource methods:
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
@@ -86,7 +88,9 @@ class TaskManagerRendererResource : public TaskManager::Resource,
   size_t v8_memory_used_;
   bool pending_v8_memory_allocated_update_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerRendererResource);
+  DISALLOW_COPY_AND_ASSIGN(RendererResource);
 };
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_RENDER_RESOURCE_H_
+}  // namespace task_manager
+
+#endif  // CHROME_BROWSER_TASK_MANAGER_RENDERER_RESOURCE_H_

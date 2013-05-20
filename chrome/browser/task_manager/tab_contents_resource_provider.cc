@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_tab_contents_resource_provider.h"
+#include "chrome/browser/task_manager/tab_contents_resource_provider.h"
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -13,8 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/task_manager/task_manager_render_resource.h"
-#include "chrome/browser/task_manager/task_manager_resource_util.h"
+#include "chrome/browser/task_manager/renderer_resource.h"
+#include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
@@ -32,7 +32,6 @@
 
 using content::WebContents;
 using extensions::Extension;
-
 
 namespace {
 
@@ -65,12 +64,14 @@ bool IsContentsBackgroundPrinted(WebContents* web_contents) {
 
 }  // namespace
 
+namespace task_manager {
+
 // Tracks a single tab contents, prerendered page, Instant page, or background
 // printing page.
-class TaskManagerTabContentsResource : public TaskManagerRendererResource {
+class TabContentsResource : public RendererResource {
  public:
-  explicit TaskManagerTabContentsResource(content::WebContents* web_contents);
-  virtual ~TaskManagerTabContentsResource();
+  explicit TabContentsResource(content::WebContents* web_contents);
+  virtual ~TabContentsResource();
 
   // Called when the underlying web_contents has been committed and is no
   // longer an Instant overlay.
@@ -93,16 +94,15 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   Profile* profile_;
   bool is_instant_overlay_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
+  DISALLOW_COPY_AND_ASSIGN(TabContentsResource);
 };
 
-gfx::ImageSkia* TaskManagerTabContentsResource::prerender_icon_ = NULL;
+gfx::ImageSkia* TabContentsResource::prerender_icon_ = NULL;
 
-TaskManagerTabContentsResource::TaskManagerTabContentsResource(
+TabContentsResource::TabContentsResource(
     WebContents* web_contents)
-    : TaskManagerRendererResource(
-          web_contents->GetRenderProcessHost()->GetHandle(),
-          web_contents->GetRenderViewHost()),
+    : RendererResource(web_contents->GetRenderProcessHost()->GetHandle(),
+                       web_contents->GetRenderViewHost()),
       web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       is_instant_overlay_(IsContentsInstant(web_contents)) {
@@ -112,27 +112,26 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
   }
 }
 
-TaskManagerTabContentsResource::~TaskManagerTabContentsResource() {
+TabContentsResource::~TabContentsResource() {
 }
 
-void TaskManagerTabContentsResource::InstantCommitted() {
+void TabContentsResource::InstantCommitted() {
   DCHECK(is_instant_overlay_);
   is_instant_overlay_ = false;
 }
 
-bool TaskManagerTabContentsResource::HostsExtension() const {
+bool TabContentsResource::HostsExtension() const {
   return web_contents_->GetURL().SchemeIs(extensions::kExtensionScheme);
 }
 
-TaskManager::Resource::Type TaskManagerTabContentsResource::GetType() const {
+TaskManager::Resource::Type TabContentsResource::GetType() const {
   return HostsExtension() ? EXTENSION : RENDERER;
 }
 
-string16 TaskManagerTabContentsResource::GetTitle() const {
+string16 TabContentsResource::GetTitle() const {
   // Fall back on the URL if there's no title.
   GURL url = web_contents_->GetURL();
-  string16 tab_title =
-      TaskManagerResourceUtil::GetTitleFromWebContents(web_contents_);
+  string16 tab_title = util::GetTitleFromWebContents(web_contents_);
 
   // Only classify as an app if the URL is an app and the tab is hosting an
   // extension process.  (It's possible to be showing the URL from before it
@@ -142,7 +141,7 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
   bool is_app = extension_service->IsInstalledApp(url) &&
       process_map->Contains(web_contents_->GetRenderProcessHost()->GetID());
 
-  int message_id = TaskManagerResourceUtil::GetMessagePrefixID(
+  int message_id = util::GetMessagePrefixID(
       is_app,
       HostsExtension(),
       profile_->IsOffTheRecord(),
@@ -152,22 +151,22 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
   return l10n_util::GetStringFUTF16(message_id, tab_title);
 }
 
-string16 TaskManagerTabContentsResource::GetProfileName() const {
-  return TaskManagerResourceUtil::GetProfileNameFromInfoCache(profile_);
+string16 TabContentsResource::GetProfileName() const {
+  return util::GetProfileNameFromInfoCache(profile_);
 }
 
-gfx::ImageSkia TaskManagerTabContentsResource::GetIcon() const {
+gfx::ImageSkia TabContentsResource::GetIcon() const {
   if (IsContentsPrerendering(web_contents_))
     return *prerender_icon_;
   return FaviconTabHelper::FromWebContents(web_contents_)->
       GetFavicon().AsImageSkia();
 }
 
-WebContents* TaskManagerTabContentsResource::GetWebContents() const {
+WebContents* TabContentsResource::GetWebContents() const {
   return web_contents_;
 }
 
-const Extension* TaskManagerTabContentsResource::GetExtension() const {
+const Extension* TabContentsResource::GetExtension() const {
   if (HostsExtension()) {
     ExtensionService* extension_service = profile_->GetExtensionService();
     return extension_service->extensions()->GetByID(
@@ -178,20 +177,19 @@ const Extension* TaskManagerTabContentsResource::GetExtension() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TaskManagerTabContentsResourceProvider class
+// TabContentsResourceProvider class
 ////////////////////////////////////////////////////////////////////////////////
 
-TaskManagerTabContentsResourceProvider::
-    TaskManagerTabContentsResourceProvider(TaskManager* task_manager)
+TabContentsResourceProvider::
+    TabContentsResourceProvider(TaskManager* task_manager)
     :  updating_(false),
        task_manager_(task_manager) {
 }
 
-TaskManagerTabContentsResourceProvider::
-    ~TaskManagerTabContentsResourceProvider() {
+TabContentsResourceProvider::~TabContentsResourceProvider() {
 }
 
-TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
+TaskManager::Resource* TabContentsResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
@@ -205,7 +203,7 @@ TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
   if (origin_pid)
     return NULL;
 
-  std::map<WebContents*, TaskManagerTabContentsResource*>::iterator
+  std::map<WebContents*, TabContentsResource*>::iterator
       res_iter = resources_.find(web_contents);
   if (res_iter == resources_.end()) {
     // Can happen if the tab was closed while a network request was being
@@ -215,7 +213,7 @@ TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
   return res_iter->second;
 }
 
-void TaskManagerTabContentsResourceProvider::StartUpdating() {
+void TabContentsResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
@@ -269,7 +267,7 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-void TaskManagerTabContentsResourceProvider::StopUpdating() {
+void TabContentsResourceProvider::StopUpdating() {
   DCHECK(updating_);
   updating_ = false;
 
@@ -289,15 +287,13 @@ void TaskManagerTabContentsResourceProvider::StopUpdating() {
   resources_.clear();
 }
 
-void TaskManagerTabContentsResourceProvider::AddToTaskManager(
-    WebContents* web_contents) {
-  TaskManagerTabContentsResource* resource =
-      new TaskManagerTabContentsResource(web_contents);
+void TabContentsResourceProvider::AddToTaskManager(WebContents* web_contents) {
+  TabContentsResource* resource = new TabContentsResource(web_contents);
   resources_[web_contents] = resource;
   task_manager_->AddResource(resource);
 }
 
-void TaskManagerTabContentsResourceProvider::Add(WebContents* web_contents) {
+void TabContentsResourceProvider::Add(WebContents* web_contents) {
   if (!updating_)
     return;
 
@@ -327,10 +323,10 @@ void TaskManagerTabContentsResourceProvider::Add(WebContents* web_contents) {
   AddToTaskManager(web_contents);
 }
 
-void TaskManagerTabContentsResourceProvider::Remove(WebContents* web_contents) {
+void TabContentsResourceProvider::Remove(WebContents* web_contents) {
   if (!updating_)
     return;
-  std::map<WebContents*, TaskManagerTabContentsResource*>::iterator
+  std::map<WebContents*, TabContentsResource*>::iterator
       iter = resources_.find(web_contents);
   if (iter == resources_.end()) {
     // Since WebContents are destroyed asynchronously (see TabContentsCollector
@@ -341,7 +337,7 @@ void TaskManagerTabContentsResourceProvider::Remove(WebContents* web_contents) {
   }
 
   // Remove the resource from the Task Manager.
-  TaskManagerTabContentsResource* resource = iter->second;
+  TabContentsResource* resource = iter->second;
   task_manager_->RemoveResource(resource);
   // And from the provider.
   resources_.erase(iter);
@@ -349,18 +345,17 @@ void TaskManagerTabContentsResourceProvider::Remove(WebContents* web_contents) {
   delete resource;
 }
 
-void TaskManagerTabContentsResourceProvider::InstantCommitted(
-    WebContents* web_contents) {
+void TabContentsResourceProvider::InstantCommitted(WebContents* web_contents) {
   if (!updating_)
     return;
-  std::map<WebContents*, TaskManagerTabContentsResource*>::iterator
+  std::map<WebContents*, TabContentsResource*>::iterator
       iter = resources_.find(web_contents);
   DCHECK(iter != resources_.end());
   if (iter != resources_.end())
     iter->second->InstantCommitted();
 }
 
-void TaskManagerTabContentsResourceProvider::Observe(
+void TabContentsResourceProvider::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -385,3 +380,5 @@ void TaskManagerTabContentsResourceProvider::Observe(
       return;
   }
 }
+
+}  // namespace task_manager

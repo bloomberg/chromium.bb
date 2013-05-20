@@ -2,27 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_GUEST_RESOURCE_PROVIDER_H_
-#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_GUEST_RESOURCE_PROVIDER_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_PANEL_RESOURCE_PROVIDER_H_
+#define CHROME_BROWSER_TASK_MANAGER_PANEL_RESOURCE_PROVIDER_H_
 
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/gfx/image/image_skia.h"
 
-class TaskManagerGuestResource;
+class Panel;
+class TaskManager;
 
-namespace content {
-class RenderViewHost;
-}
+namespace task_manager {
 
-class TaskManagerGuestResourceProvider
-    : public TaskManager::ResourceProvider,
-      public content::NotificationObserver {
+class PanelResource;
+
+class PanelResourceProvider : public TaskManager::ResourceProvider,
+                              public content::NotificationObserver {
  public:
-  explicit TaskManagerGuestResourceProvider(TaskManager* task_manager);
+  explicit PanelResourceProvider(TaskManager* task_manager);
 
   // TaskManager::ResourceProvider methods:
   virtual TaskManager::Resource* GetResource(int origin_pid,
@@ -37,10 +39,10 @@ class TaskManagerGuestResourceProvider
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  virtual ~TaskManagerGuestResourceProvider();
+  virtual ~PanelResourceProvider();
 
-  void Add(content::RenderViewHost* render_view_host);
-  void Remove(content::RenderViewHost* render_view_host);
+  void Add(Panel* panel);
+  void Remove(Panel* panel);
 
   // Whether we are currently reporting to the task manager. Used to ignore
   // notifications sent after StopUpdating().
@@ -48,14 +50,16 @@ class TaskManagerGuestResourceProvider
 
   TaskManager* task_manager_;
 
-  typedef std::map<content::RenderViewHost*,
-      TaskManagerGuestResource*> GuestResourceMap;
-  GuestResourceMap resources_;
+  // Maps the actual resources (the Panels) to the Task Manager resources.
+  typedef std::map<Panel*, PanelResource*> PanelResourceMap;
+  PanelResourceMap resources_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerGuestResourceProvider);
+  DISALLOW_COPY_AND_ASSIGN(PanelResourceProvider);
 };
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_GUEST_RESOURCE_PROVIDER_H_
+}  // namespace task_manager
+
+#endif  // CHROME_BROWSER_TASK_MANAGER_PANEL_RESOURCE_PROVIDER_H_

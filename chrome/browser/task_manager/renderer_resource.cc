@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_render_resource.h"
+#include "chrome/browser/task_manager/renderer_resource.h"
 
 #include "base/basictypes.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -11,11 +11,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerRendererResource class
-////////////////////////////////////////////////////////////////////////////////
-TaskManagerRendererResource::TaskManagerRendererResource(
-    base::ProcessHandle process, content::RenderViewHost* render_view_host)
+namespace task_manager {
+
+RendererResource::RendererResource(base::ProcessHandle process,
+                                   content::RenderViewHost* render_view_host)
     : content::RenderViewHostObserver(render_view_host),
       process_(process),
       render_view_host_(render_view_host),
@@ -32,10 +31,10 @@ TaskManagerRendererResource::TaskManagerRendererResource(
   memset(&stats_, 0, sizeof(stats_));
 }
 
-TaskManagerRendererResource::~TaskManagerRendererResource() {
+RendererResource::~RendererResource() {
 }
 
-void TaskManagerRendererResource::Refresh() {
+void RendererResource::Refresh() {
   if (!pending_stats_update_) {
     render_view_host_->Send(new ChromeViewMsg_GetCacheResourceStats);
     pending_stats_update_ = true;
@@ -52,83 +51,85 @@ void TaskManagerRendererResource::Refresh() {
 }
 
 WebKit::WebCache::ResourceTypeStats
-TaskManagerRendererResource::GetWebCoreCacheStats() const {
+RendererResource::GetWebCoreCacheStats() const {
   return stats_;
 }
 
-float TaskManagerRendererResource::GetFPS() const {
+float RendererResource::GetFPS() const {
   return fps_;
 }
 
-size_t TaskManagerRendererResource::GetV8MemoryAllocated() const {
+size_t RendererResource::GetV8MemoryAllocated() const {
   return v8_memory_allocated_;
 }
 
-size_t TaskManagerRendererResource::GetV8MemoryUsed() const {
+size_t RendererResource::GetV8MemoryUsed() const {
   return v8_memory_used_;
 }
 
-void TaskManagerRendererResource::NotifyResourceTypeStats(
+void RendererResource::NotifyResourceTypeStats(
     const WebKit::WebCache::ResourceTypeStats& stats) {
   stats_ = stats;
   pending_stats_update_ = false;
 }
 
-void TaskManagerRendererResource::NotifyFPS(float fps) {
+void RendererResource::NotifyFPS(float fps) {
   fps_ = fps;
   pending_fps_update_ = false;
 }
 
-void TaskManagerRendererResource::NotifyV8HeapStats(
+void RendererResource::NotifyV8HeapStats(
     size_t v8_memory_allocated, size_t v8_memory_used) {
   v8_memory_allocated_ = v8_memory_allocated;
   v8_memory_used_ = v8_memory_used;
   pending_v8_memory_allocated_update_ = false;
 }
 
-base::ProcessHandle TaskManagerRendererResource::GetProcess() const {
+base::ProcessHandle RendererResource::GetProcess() const {
   return process_;
 }
 
-int TaskManagerRendererResource::GetUniqueChildProcessId() const {
+int RendererResource::GetUniqueChildProcessId() const {
   return unique_process_id_;
 }
 
-TaskManager::Resource::Type TaskManagerRendererResource::GetType() const {
+TaskManager::Resource::Type RendererResource::GetType() const {
   return RENDERER;
 }
 
-int TaskManagerRendererResource::GetRoutingID() const {
+int RendererResource::GetRoutingID() const {
   return render_view_host_->GetRoutingID();
 }
 
-bool TaskManagerRendererResource::ReportsCacheStats() const {
+bool RendererResource::ReportsCacheStats() const {
   return true;
 }
 
-bool TaskManagerRendererResource::ReportsFPS() const {
+bool RendererResource::ReportsFPS() const {
   return true;
 }
 
-bool TaskManagerRendererResource::ReportsV8MemoryStats() const {
+bool RendererResource::ReportsV8MemoryStats() const {
   return true;
 }
 
-bool TaskManagerRendererResource::CanInspect() const {
+bool RendererResource::CanInspect() const {
   return true;
 }
 
-void TaskManagerRendererResource::Inspect() const {
+void RendererResource::Inspect() const {
   DevToolsWindow::OpenDevToolsWindow(render_view_host_);
 }
 
-bool TaskManagerRendererResource::SupportNetworkUsage() const {
+bool RendererResource::SupportNetworkUsage() const {
   return true;
 }
 
-void TaskManagerRendererResource::RenderViewHostDestroyed(
+void RendererResource::RenderViewHostDestroyed(
     content::RenderViewHost* render_view_host) {
   // We should never get here.  We should get deleted first.
   // Use this CHECK to help diagnose http://crbug.com/165138.
   CHECK(false);
 }
+
+}  // namespace task_manager

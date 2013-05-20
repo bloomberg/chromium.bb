@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_browser_process_resource_provider.h"
+#include "chrome/browser/task_manager/browser_process_resource_provider.h"
 
 #include "base/command_line.h"
 #include "base/string16.h"
@@ -24,13 +24,11 @@
 #include "ui/gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerBrowserProcessResource class
-////////////////////////////////////////////////////////////////////////////////
+namespace task_manager {
 
-gfx::ImageSkia* TaskManagerBrowserProcessResource::default_icon_ = NULL;
+gfx::ImageSkia* BrowserProcessResource::default_icon_ = NULL;
 
-TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource()
+BrowserProcessResource::BrowserProcessResource()
     : title_() {
   int pid = base::GetCurrentProcId();
   bool success = base::OpenPrivilegedProcessHandle(pid, &process_);
@@ -63,56 +61,56 @@ TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource()
   default_icon_->MakeThreadSafe();
 }
 
-TaskManagerBrowserProcessResource::~TaskManagerBrowserProcessResource() {
+BrowserProcessResource::~BrowserProcessResource() {
   base::CloseProcessHandle(process_);
 }
 
 // TaskManagerResource methods:
-string16 TaskManagerBrowserProcessResource::GetTitle() const {
+string16 BrowserProcessResource::GetTitle() const {
   if (title_.empty()) {
     title_ = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT);
   }
   return title_;
 }
 
-string16 TaskManagerBrowserProcessResource::GetProfileName() const {
+string16 BrowserProcessResource::GetProfileName() const {
   return string16();
 }
 
-gfx::ImageSkia TaskManagerBrowserProcessResource::GetIcon() const {
+gfx::ImageSkia BrowserProcessResource::GetIcon() const {
   return *default_icon_;
 }
 
-size_t TaskManagerBrowserProcessResource::SqliteMemoryUsedBytes() const {
+size_t BrowserProcessResource::SqliteMemoryUsedBytes() const {
   return static_cast<size_t>(sqlite3_memory_used());
 }
 
-base::ProcessHandle TaskManagerBrowserProcessResource::GetProcess() const {
+base::ProcessHandle BrowserProcessResource::GetProcess() const {
   return base::GetCurrentProcessHandle();  // process_;
 }
 
-int TaskManagerBrowserProcessResource::GetUniqueChildProcessId() const {
+int BrowserProcessResource::GetUniqueChildProcessId() const {
   return 0;
 }
 
-TaskManager::Resource::Type TaskManagerBrowserProcessResource::GetType() const {
+TaskManager::Resource::Type BrowserProcessResource::GetType() const {
   return BROWSER;
 }
 
-bool TaskManagerBrowserProcessResource::SupportNetworkUsage() const {
+bool BrowserProcessResource::SupportNetworkUsage() const {
   return true;
 }
 
-void TaskManagerBrowserProcessResource::SetSupportNetworkUsage() {
+void BrowserProcessResource::SetSupportNetworkUsage() {
   NOTREACHED();
 }
 
-bool TaskManagerBrowserProcessResource::ReportsSqliteMemoryUsed() const {
+bool BrowserProcessResource::ReportsSqliteMemoryUsed() const {
   return true;
 }
 
 // BrowserProcess uses v8 for proxy resolver in certain cases.
-bool TaskManagerBrowserProcessResource::ReportsV8MemoryStats() const {
+bool BrowserProcessResource::ReportsV8MemoryStats() const {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   bool using_v8 = !command_line->HasSwitch(switches::kWinHttpProxyResolver);
   if (using_v8 && command_line->HasSwitch(switches::kSingleProcess)) {
@@ -121,29 +119,28 @@ bool TaskManagerBrowserProcessResource::ReportsV8MemoryStats() const {
   return using_v8;
 }
 
-size_t TaskManagerBrowserProcessResource::GetV8MemoryAllocated() const {
+size_t BrowserProcessResource::GetV8MemoryAllocated() const {
   return net::ProxyResolverV8::GetTotalHeapSize();
 }
 
-size_t TaskManagerBrowserProcessResource::GetV8MemoryUsed() const {
+size_t BrowserProcessResource::GetV8MemoryUsed() const {
   return net::ProxyResolverV8::GetUsedHeapSize();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TaskManagerBrowserProcessResourceProvider class
+// BrowserProcessResourceProvider class
 ////////////////////////////////////////////////////////////////////////////////
 
-TaskManagerBrowserProcessResourceProvider::
-    TaskManagerBrowserProcessResourceProvider(TaskManager* task_manager)
+BrowserProcessResourceProvider::
+    BrowserProcessResourceProvider(TaskManager* task_manager)
     : updating_(false),
       task_manager_(task_manager) {
 }
 
-TaskManagerBrowserProcessResourceProvider::
-    ~TaskManagerBrowserProcessResourceProvider() {
+BrowserProcessResourceProvider::~BrowserProcessResourceProvider() {
 }
 
-TaskManager::Resource* TaskManagerBrowserProcessResourceProvider::GetResource(
+TaskManager::Resource* BrowserProcessResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
@@ -154,9 +151,11 @@ TaskManager::Resource* TaskManagerBrowserProcessResourceProvider::GetResource(
   return &resource_;
 }
 
-void TaskManagerBrowserProcessResourceProvider::StartUpdating() {
+void BrowserProcessResourceProvider::StartUpdating() {
   task_manager_->AddResource(&resource_);
 }
 
-void TaskManagerBrowserProcessResourceProvider::StopUpdating() {
+void BrowserProcessResourceProvider::StopUpdating() {
 }
+
+}  // namespace task_manager

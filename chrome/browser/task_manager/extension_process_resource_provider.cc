@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_extension_process_resource_provider.h"
+#include "chrome/browser/task_manager/extension_process_resource_provider.h"
 
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/task_manager/task_manager_resource_util.h"
+#include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -28,11 +28,13 @@
 using content::WebContents;
 using extensions::Extension;
 
-class TaskManagerExtensionProcessResource : public TaskManager::Resource {
+namespace task_manager {
+
+class ExtensionProcessResource : public TaskManager::Resource {
  public:
-  explicit TaskManagerExtensionProcessResource(
+  explicit ExtensionProcessResource(
       content::RenderViewHost* render_view_host);
-  virtual ~TaskManagerExtensionProcessResource();
+  virtual ~ExtensionProcessResource();
 
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
@@ -65,12 +67,12 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
   int unique_process_id_;
   string16 title_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerExtensionProcessResource);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionProcessResource);
 };
 
-gfx::ImageSkia* TaskManagerExtensionProcessResource::default_icon_ = NULL;
+gfx::ImageSkia* ExtensionProcessResource::default_icon_ = NULL;
 
-TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
+ExtensionProcessResource::ExtensionProcessResource(
     content::RenderViewHost* render_view_host)
     : render_view_host_(render_view_host) {
   if (!default_icon_) {
@@ -85,7 +87,7 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
 
   Profile* profile = Profile::FromBrowserContext(
       render_view_host->GetProcess()->GetBrowserContext());
-  int message_id = TaskManagerResourceUtil::GetMessagePrefixID(
+  int message_id = util::GetMessagePrefixID(
       GetExtension()->is_app(),
       true,  // is_extension
       profile->IsOffTheRecord(),
@@ -95,53 +97,52 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
   title_ = l10n_util::GetStringFUTF16(message_id, extension_name);
 }
 
-TaskManagerExtensionProcessResource::~TaskManagerExtensionProcessResource() {
+ExtensionProcessResource::~ExtensionProcessResource() {
 }
 
-string16 TaskManagerExtensionProcessResource::GetTitle() const {
+string16 ExtensionProcessResource::GetTitle() const {
   return title_;
 }
 
-string16 TaskManagerExtensionProcessResource::GetProfileName() const {
-  return TaskManagerResourceUtil::GetProfileNameFromInfoCache(
+string16 ExtensionProcessResource::GetProfileName() const {
+  return util::GetProfileNameFromInfoCache(
       Profile::FromBrowserContext(
-      render_view_host_->GetProcess()->GetBrowserContext()));
+          render_view_host_->GetProcess()->GetBrowserContext()));
 }
 
-gfx::ImageSkia TaskManagerExtensionProcessResource::GetIcon() const {
+gfx::ImageSkia ExtensionProcessResource::GetIcon() const {
   return *default_icon_;
 }
 
-base::ProcessHandle TaskManagerExtensionProcessResource::GetProcess() const {
+base::ProcessHandle ExtensionProcessResource::GetProcess() const {
   return process_handle_;
 }
 
-int TaskManagerExtensionProcessResource::GetUniqueChildProcessId() const {
+int ExtensionProcessResource::GetUniqueChildProcessId() const {
   return unique_process_id_;
 }
 
-TaskManager::Resource::Type
-TaskManagerExtensionProcessResource::GetType() const {
+TaskManager::Resource::Type ExtensionProcessResource::GetType() const {
   return EXTENSION;
 }
 
-bool TaskManagerExtensionProcessResource::CanInspect() const {
+bool ExtensionProcessResource::CanInspect() const {
   return true;
 }
 
-void TaskManagerExtensionProcessResource::Inspect() const {
+void ExtensionProcessResource::Inspect() const {
   DevToolsWindow::OpenDevToolsWindow(render_view_host_);
 }
 
-bool TaskManagerExtensionProcessResource::SupportNetworkUsage() const {
+bool ExtensionProcessResource::SupportNetworkUsage() const {
   return true;
 }
 
-void TaskManagerExtensionProcessResource::SetSupportNetworkUsage() {
+void ExtensionProcessResource::SetSupportNetworkUsage() {
   NOTREACHED();
 }
 
-const Extension* TaskManagerExtensionProcessResource::GetExtension() const {
+const Extension* ExtensionProcessResource::GetExtension() const {
   Profile* profile = Profile::FromBrowserContext(
       render_view_host_->GetProcess()->GetBrowserContext());
   ExtensionProcessManager* process_manager =
@@ -149,7 +150,7 @@ const Extension* TaskManagerExtensionProcessResource::GetExtension() const {
   return process_manager->GetExtensionForRenderViewHost(render_view_host_);
 }
 
-bool TaskManagerExtensionProcessResource::IsBackground() const {
+bool ExtensionProcessResource::IsBackground() const {
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host_);
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
@@ -157,20 +158,19 @@ bool TaskManagerExtensionProcessResource::IsBackground() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TaskManagerExtensionProcessResourceProvider class
+// ExtensionProcessResourceProvider class
 ////////////////////////////////////////////////////////////////////////////////
 
-TaskManagerExtensionProcessResourceProvider::
-    TaskManagerExtensionProcessResourceProvider(TaskManager* task_manager)
+ExtensionProcessResourceProvider::
+    ExtensionProcessResourceProvider(TaskManager* task_manager)
     : task_manager_(task_manager),
       updating_(false) {
 }
 
-TaskManagerExtensionProcessResourceProvider::
-    ~TaskManagerExtensionProcessResourceProvider() {
+ExtensionProcessResourceProvider::~ExtensionProcessResourceProvider() {
 }
 
-TaskManager::Resource* TaskManagerExtensionProcessResourceProvider::GetResource(
+TaskManager::Resource* ExtensionProcessResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
@@ -192,7 +192,7 @@ TaskManager::Resource* TaskManagerExtensionProcessResourceProvider::GetResource(
   return NULL;
 }
 
-void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
+void ExtensionProcessResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
@@ -234,7 +234,7 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
+void ExtensionProcessResourceProvider::StopUpdating() {
   DCHECK(updating_);
   updating_ = false;
 
@@ -255,7 +255,7 @@ void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
   resources_.clear();
 }
 
-void TaskManagerExtensionProcessResourceProvider::Observe(
+void ExtensionProcessResourceProvider::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -279,13 +279,13 @@ void TaskManagerExtensionProcessResourceProvider::Observe(
   }
 }
 
-bool TaskManagerExtensionProcessResourceProvider::
+bool ExtensionProcessResourceProvider::
     IsHandledByThisProvider(content::RenderViewHost* render_view_host) {
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
   // Don't add WebContents that belong to a guest (those are handled by
   // TaskManagerGuestResourceProvider). Otherwise they will be added twice, and
   // in this case they will have the app's name as a title (due to the
-  // TaskManagerExtensionProcessResource constructor).
+  // ExtensionProcessResource constructor).
   if (web_contents->GetRenderProcessHost()->IsGuest())
     return false;
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
@@ -302,29 +302,29 @@ bool TaskManagerExtensionProcessResourceProvider::
 #endif  // USE_ASH
 }
 
-void TaskManagerExtensionProcessResourceProvider::AddToTaskManager(
+void ExtensionProcessResourceProvider::AddToTaskManager(
     content::RenderViewHost* render_view_host) {
   if (!IsHandledByThisProvider(render_view_host))
     return;
 
-  TaskManagerExtensionProcessResource* resource =
-      new TaskManagerExtensionProcessResource(render_view_host);
+  ExtensionProcessResource* resource =
+      new ExtensionProcessResource(render_view_host);
   DCHECK(resources_.find(render_view_host) == resources_.end());
   resources_[render_view_host] = resource;
   task_manager_->AddResource(resource);
 }
 
-void TaskManagerExtensionProcessResourceProvider::RemoveFromTaskManager(
+void ExtensionProcessResourceProvider::RemoveFromTaskManager(
     content::RenderViewHost* render_view_host) {
   if (!updating_)
     return;
-  std::map<content::RenderViewHost*, TaskManagerExtensionProcessResource*>
+  std::map<content::RenderViewHost*, ExtensionProcessResource*>
       ::iterator iter = resources_.find(render_view_host);
   if (iter == resources_.end())
     return;
 
   // Remove the resource from the Task Manager.
-  TaskManagerExtensionProcessResource* resource = iter->second;
+  ExtensionProcessResource* resource = iter->second;
   task_manager_->RemoveResource(resource);
 
   // Remove it from the provider.
@@ -333,3 +333,5 @@ void TaskManagerExtensionProcessResourceProvider::RemoveFromTaskManager(
   // Finally, delete the resource.
   delete resource;
 }
+
+}  // namespace task_manager

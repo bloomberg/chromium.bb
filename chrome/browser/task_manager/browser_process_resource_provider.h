@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_BROWSER_PROCESS_RESOURCE_PROVIDER_H_
-#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_BROWSER_PROCESS_RESOURCE_PROVIDER_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_BROWSER_PROCESS_RESOURCE_PROVIDER_H_
+#define CHROME_BROWSER_TASK_MANAGER_BROWSER_PROCESS_RESOURCE_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -25,10 +25,12 @@ namespace extensions {
 class Extension;
 }
 
-class TaskManagerBrowserProcessResource : public TaskManager::Resource {
+namespace task_manager {
+
+class BrowserProcessResource : public TaskManager::Resource {
  public:
-  TaskManagerBrowserProcessResource();
-  virtual ~TaskManagerBrowserProcessResource();
+  BrowserProcessResource();
+  virtual ~BrowserProcessResource();
 
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
@@ -54,13 +56,13 @@ class TaskManagerBrowserProcessResource : public TaskManager::Resource {
 
   static gfx::ImageSkia* default_icon_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerBrowserProcessResource);
+  DISALLOW_COPY_AND_ASSIGN(BrowserProcessResource);
 };
 
-class TaskManagerBrowserProcessResourceProvider
+class BrowserProcessResourceProvider
     : public TaskManager::ResourceProvider {
  public:
-  explicit TaskManagerBrowserProcessResourceProvider(
+  explicit BrowserProcessResourceProvider(
       TaskManager* task_manager);
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
@@ -74,12 +76,14 @@ class TaskManagerBrowserProcessResourceProvider
   bool updating_;
 
  private:
-  virtual ~TaskManagerBrowserProcessResourceProvider();
+  virtual ~BrowserProcessResourceProvider();
 
   TaskManager* task_manager_;
-  TaskManagerBrowserProcessResource resource_;
+  BrowserProcessResource resource_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerBrowserProcessResourceProvider);
+  DISALLOW_COPY_AND_ASSIGN(BrowserProcessResourceProvider);
 };
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_BROWSER_PROCESS_RESOURCE_PROVIDER_H_
+}  // namespace task_manager
+
+#endif  // CHROME_BROWSER_TASK_MANAGER_BROWSER_PROCESS_RESOURCE_PROVIDER_H_

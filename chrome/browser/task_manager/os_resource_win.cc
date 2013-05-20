@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_os_resources_win.h"
+#include "chrome/browser/task_manager/os_resource_win.h"
+
+namespace task_manager {
 
 void GetWinGDIHandles(base::ProcessHandle process,
                       size_t* current,
@@ -37,3 +39,5 @@ void GetWinUSERHandles(base::ProcessHandle process,
     CloseHandle(process_with_query_rights);
   }
 }
+
+}  // namespace task_manager

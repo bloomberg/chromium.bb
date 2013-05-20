@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_NOTIFICATION_RESOURCE_PROVIDER_H_
-#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_NOTIFICATION_RESOURCE_PROVIDER_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_NOTIFICATION_RESOURCE_PROVIDER_H_
+#define CHROME_BROWSER_TASK_MANAGER_NOTIFICATION_RESOURCE_PROVIDER_H_
 
 #include <map>
 #include <vector>
@@ -14,14 +14,15 @@
 #include "content/public/browser/notification_registrar.h"
 
 class BalloonHost;
-class TaskManagerNotificationResource;
 
-class TaskManagerNotificationResourceProvider
-    : public TaskManager::ResourceProvider,
-      public content::NotificationObserver {
+namespace task_manager {
+
+class NotificationResource;
+
+class NotificationResourceProvider : public TaskManager::ResourceProvider,
+                                     public content::NotificationObserver {
  public:
-  static TaskManagerNotificationResourceProvider* Create(
-      TaskManager* task_manager);
+  static NotificationResourceProvider* Create(TaskManager* task_manager);
 
   // TaskManager::ResourceProvider interface
   virtual TaskManager::Resource* GetResource(int origin_pid,
@@ -36,8 +37,8 @@ class TaskManagerNotificationResourceProvider
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  explicit TaskManagerNotificationResourceProvider(TaskManager* task_manager);
-  virtual ~TaskManagerNotificationResourceProvider();
+  explicit NotificationResourceProvider(TaskManager* task_manager);
+  virtual ~NotificationResourceProvider();
 
   void AddToTaskManager(BalloonHost* balloon_host);
   void RemoveFromTaskManager(BalloonHost* balloon_host);
@@ -45,14 +46,16 @@ class TaskManagerNotificationResourceProvider
   TaskManager* task_manager_;
 
   // Maps the actual resources (BalloonHost*) to the Task Manager resources.
-  std::map<BalloonHost*, TaskManagerNotificationResource*> resources_;
+  std::map<BalloonHost*, NotificationResource*> resources_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
 
   bool updating_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerNotificationResourceProvider);
+  DISALLOW_COPY_AND_ASSIGN(NotificationResourceProvider);
 };
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_NOTIFICATION_RESOURCE_PROVIDER_H_
+}  // namespace task_manager
+
+#endif  // CHROME_BROWSER_TASK_MANAGER_NOTIFICATION_RESOURCE_PROVIDER_H_

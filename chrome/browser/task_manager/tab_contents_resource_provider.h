@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_TAB_CONTENTS_RESOURCE_PROVIDER_H_
-#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_TAB_CONTENTS_RESOURCE_PROVIDER_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_TAB_CONTENTS_RESOURCE_PROVIDER_H_
+#define CHROME_BROWSER_TASK_MANAGER_TAB_CONTENTS_RESOURCE_PROVIDER_H_
 
 #include <map>
 
@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class TaskManager;
-class TaskManagerTabContentsResource;
 
 namespace content {
 class WebContents;
@@ -21,13 +20,16 @@ class NotificationSource;
 class NotificationDetails;
 }
 
+namespace task_manager {
+
+class TabContentsResource;
+
 // Provides resources for tab contents, prerendered pages, Instant pages, and
 // background printing pages.
-class TaskManagerTabContentsResourceProvider
-    : public TaskManager::ResourceProvider,
-      public content::NotificationObserver {
+class TabContentsResourceProvider : public TaskManager::ResourceProvider,
+                                    public content::NotificationObserver {
  public:
-  explicit TaskManagerTabContentsResourceProvider(TaskManager* task_manager);
+  explicit TabContentsResourceProvider(TaskManager* task_manager);
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
@@ -41,7 +43,7 @@ class TaskManagerTabContentsResourceProvider
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  virtual ~TaskManagerTabContentsResourceProvider();
+  virtual ~TabContentsResourceProvider();
 
   void Add(content::WebContents* web_contents);
   void Remove(content::WebContents* web_contents);
@@ -57,12 +59,14 @@ class TaskManagerTabContentsResourceProvider
 
   // Maps the actual resources (the WebContentses) to the Task Manager
   // resources.
-  std::map<content::WebContents*, TaskManagerTabContentsResource*> resources_;
+  std::map<content::WebContents*, TabContentsResource*> resources_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResourceProvider);
+  DISALLOW_COPY_AND_ASSIGN(TabContentsResourceProvider);
 };
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_TAB_CONTENTS_RESOURCE_PROVIDER_H_
+}  // namespace task_manager
+
+#endif  // CHROME_BROWSER_TASK_MANAGER_TAB_CONTENTS_RESOURCE_PROVIDER_H_
