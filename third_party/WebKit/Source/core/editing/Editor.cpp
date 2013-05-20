@@ -1143,33 +1143,40 @@ void Editor::confirmComposition()
 {
     if (!m_compositionNode)
         return;
-    setComposition(m_compositionNode->data().substring(m_compositionStart, m_compositionEnd - m_compositionStart), ConfirmComposition);
+    finishComposition(m_compositionNode->data().substring(m_compositionStart, m_compositionEnd - m_compositionStart), ConfirmComposition);
+}
+
+void Editor::confirmComposition(const String& text)
+{
+    finishComposition(text, ConfirmComposition);
 }
 
 void Editor::cancelComposition()
 {
     if (!m_compositionNode)
         return;
-    setComposition(emptyString(), CancelComposition);
+    finishComposition(emptyString(), CancelComposition);
 }
 
 bool Editor::cancelCompositionIfSelectionIsInvalid()
 {
-    unsigned start;
-    unsigned end;
-    if (!hasComposition() || ignoreCompositionSelectionChange() || getCompositionSelection(start, end))
+    if (!hasComposition() || ignoreCompositionSelectionChange())
+        return false;
+
+    // Check if selection start and selection end are valid.
+    Position start = m_frame->selection()->start();
+    Position end = m_frame->selection()->end();
+    if (start.containerNode() == m_compositionNode
+        && end.containerNode() == m_compositionNode
+        && static_cast<unsigned>(start.computeOffsetInContainerNode()) > m_compositionStart
+        && static_cast<unsigned>(end.computeOffsetInContainerNode()) < m_compositionEnd)
         return false;
 
     cancelComposition();
     return true;
 }
 
-void Editor::confirmComposition(const String& text)
-{
-    setComposition(text, ConfirmComposition);
-}
-
-void Editor::setComposition(const String& text, SetCompositionMode mode)
+void Editor::finishComposition(const String& text, FinishCompositionMode mode)
 {
     ASSERT(mode == ConfirmComposition || mode == CancelComposition);
     UserTypingGestureIndicator typingGestureIndicator(m_frame);
@@ -1911,27 +1918,6 @@ PassRefPtr<Range> Editor::compositionRange() const
     if (start >= end)
         return 0;
     return Range::create(m_compositionNode->document(), m_compositionNode.get(), start, m_compositionNode.get(), end);
-}
-
-bool Editor::getCompositionSelection(unsigned& selectionStart, unsigned& selectionEnd) const
-{
-    if (!m_compositionNode)
-        return false;
-    Position start = m_frame->selection()->start();
-    if (start.deprecatedNode() != m_compositionNode)
-        return false;
-    Position end = m_frame->selection()->end();
-    if (end.deprecatedNode() != m_compositionNode)
-        return false;
-
-    if (static_cast<unsigned>(start.deprecatedEditingOffset()) < m_compositionStart)
-        return false;
-    if (static_cast<unsigned>(end.deprecatedEditingOffset()) > m_compositionEnd)
-        return false;
-
-    selectionStart = start.deprecatedEditingOffset() - m_compositionStart;
-    selectionEnd = start.deprecatedEditingOffset() - m_compositionEnd;
-    return true;
 }
 
 bool Editor::setSelectionOffsets(int selectionStart, int selectionEnd)

@@ -241,12 +241,15 @@ public:
     // international text input composition
     bool hasComposition() const { return m_compositionNode; }
     void setComposition(const String&, const Vector<CompositionUnderline>&, unsigned selectionStart, unsigned selectionEnd);
+    // Inserts the text that is being composed as a regular text.
+    // This method does nothing if composition node is not present.
     void confirmComposition();
-    void confirmComposition(const String&); // if no existing composition, replaces selection
+    // Inserts the given text string in the place of the existing composition, or replaces the selection if composition is not present.
+    void confirmComposition(const String& text);
+    // Deletes the existing composition text.
     void cancelComposition();
     bool cancelCompositionIfSelectionIsInvalid();
     PassRefPtr<Range> compositionRange() const;
-    bool getCompositionSelection(unsigned& selectionStart, unsigned& selectionEnd) const;
     bool setSelectionOffsets(int selectionStart, int selectionEnd);
 
     // getting international text input composition state (for use by InlineTextBox)
@@ -358,8 +361,8 @@ private:
     String selectedText(TextIteratorBehavior) const;
 
     void selectComposition();
-    enum SetCompositionMode { ConfirmComposition, CancelComposition };
-    void setComposition(const String&, SetCompositionMode);
+    enum FinishCompositionMode { ConfirmComposition, CancelComposition };
+    void finishComposition(const String&, FinishCompositionMode);
 
     void changeSelectionAfterCommand(const VisibleSelection& newSelection, FrameSelection::SetSelectionOptions);
     void notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
