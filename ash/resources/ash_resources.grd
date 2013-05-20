@@ -106,6 +106,8 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_LEFT" file="cros/status/status_logout_button_normal_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_RIGHT" file="cros/status/status_logout_button_normal_top_right.png" />
 
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ADD_MULTIPROFILE_USER" file="cros/status/multiprofiles_add.png" />
+      
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_MORE" file="cros/status/status_more.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED" file="cros/network/status_cellular_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="cros/network/status_network_failed.png" />
