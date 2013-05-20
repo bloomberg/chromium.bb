@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -30,7 +29,6 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
-using content::DownloadManager;
 using content::ResourceDispatcherHost;
 
 namespace {
@@ -136,8 +134,6 @@ void PluginInstaller::StartInstalling(const GURL& plugin_url,
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadStarted());
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  DownloadManager* download_manager =
-      BrowserContext::GetDownloadManager(profile);
   download_util::RecordDownloadSource(
       download_util::INITIATED_BY_PLUGIN_INSTALLER);
   BrowserThread::PostTask(
@@ -148,14 +144,11 @@ void PluginInstaller::StartInstalling(const GURL& plugin_url,
                  web_contents->GetRenderProcessHost()->GetID(),
                  web_contents->GetRenderViewHost()->GetRoutingID(),
                  base::Bind(&PluginInstaller::DownloadStarted,
-                            base::Unretained(this),
-                            make_scoped_refptr(download_manager))));
+                            base::Unretained(this))));
 }
 
-void PluginInstaller::DownloadStarted(
-    scoped_refptr<content::DownloadManager> dlm,
-    content::DownloadItem* item,
-    net::Error error) {
+void PluginInstaller::DownloadStarted(content::DownloadItem* item,
+                                      net::Error error) {
   if (!item) {
     DCHECK_NE(net::OK, error);
     std::string msg =

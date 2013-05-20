@@ -55,9 +55,7 @@ class PluginInstaller : public content::DownloadItem::Observer {
                        content::WebContents* web_contents);
 
  private:
-  void DownloadStarted(scoped_refptr<content::DownloadManager> dlm,
-                       content::DownloadItem* item,
-                       net::Error error);
+  void DownloadStarted(content::DownloadItem* item, net::Error error);
   void DownloadError(const std::string& msg);
   void DownloadCancelled();
 
