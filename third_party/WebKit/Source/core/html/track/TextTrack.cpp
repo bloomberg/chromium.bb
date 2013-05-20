@@ -110,6 +110,7 @@ TextTrack::TextTrack(ScriptExecutionContext* context, TextTrackClient* client, c
     , m_renderedTrackIndex(invalidTrackIndex)
     , m_hasBeenConfigured(false)
 {
+    ScriptWrappable::init(this);
     setKind(kind);
 }
 

@@ -45,6 +45,7 @@ TextTrackList::TextTrackList(HTMLMediaElement* owner, ScriptExecutionContext* co
     , m_dispatchingEvents(0)
 {
     ASSERT(context->isDocument());
+    ScriptWrappable::init(this);
 }
 
 TextTrackList::~TextTrackList()

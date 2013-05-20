@@ -32,6 +32,7 @@
 #ifndef TextTrackCue_h
 #define TextTrackCue_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLElement.h"
@@ -70,7 +71,7 @@ protected:
 
 // ----------------------------
 
-class TextTrackCue : public RefCounted<TextTrackCue>, public EventTarget {
+class TextTrackCue : public RefCounted<TextTrackCue>, public ScriptWrappable, public EventTarget {
 public:
     static PassRefPtr<TextTrackCue> create(ScriptExecutionContext* context, double start, double end, const String& content)
     {

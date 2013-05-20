@@ -26,13 +26,15 @@
 #ifndef TextTrackList_h
 #define TextTrackList_h
 
-#include <algorithm>
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventTarget.h"
 #include "core/platform/Timer.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+
+#include <algorithm>
 
 namespace WebCore {
 
@@ -40,7 +42,7 @@ class HTMLMediaElement;
 class TextTrack;
 class TextTrackList;
 
-class TextTrackList : public RefCounted<TextTrackList>, public EventTarget {
+class TextTrackList : public RefCounted<TextTrackList>, public ScriptWrappable, public EventTarget {
 public:
     static PassRefPtr<TextTrackList> create(HTMLMediaElement* owner, ScriptExecutionContext* context)
     {

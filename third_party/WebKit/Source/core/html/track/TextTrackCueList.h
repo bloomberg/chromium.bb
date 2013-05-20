@@ -26,14 +26,15 @@
 #ifndef TextTrackCueList_h
 #define TextTrackCueList_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/track/TextTrackCue.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class TextTrackCueList : public RefCounted<TextTrackCueList> {
+class TextTrackCueList : public RefCounted<TextTrackCueList>, public ScriptWrappable {
 public:
     static PassRefPtr<TextTrackCueList> create()
     {
@@ -52,7 +53,7 @@ public:
     bool add(PassRefPtr<TextTrackCue>);
     bool remove(TextTrackCue*);
     bool contains(TextTrackCue*) const;
-    
+
     bool updateCueIndex(TextTrackCue*);
 
 private:

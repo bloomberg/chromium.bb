@@ -204,6 +204,7 @@ TextTrackCue::TextTrackCue(ScriptExecutionContext* context, double start, double
     , m_displayDirection(CSSValueLtr)
 {
     ASSERT(m_scriptExecutionContext->isDocument());
+    ScriptWrappable::init(this);
 
     // 4. If the text track cue writing direction is horizontal, then let
     // writing-mode be 'horizontal-tb'. Otherwise, if the text track cue writing

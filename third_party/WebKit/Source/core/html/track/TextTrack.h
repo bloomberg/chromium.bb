@@ -27,6 +27,7 @@
 #ifndef TextTrack_h
 #define TextTrack_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/track/TrackBase.h"
 #include <wtf/PassOwnPtr.h>
@@ -55,7 +56,7 @@ public:
     virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>) = 0;
 };
 
-class TextTrack : public TrackBase {
+class TextTrack : public TrackBase, public ScriptWrappable {
 public:
     static PassRefPtr<TextTrack> create(ScriptExecutionContext* context, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
     {

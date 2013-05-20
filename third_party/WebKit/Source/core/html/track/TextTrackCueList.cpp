@@ -31,6 +31,7 @@ namespace WebCore {
 
 TextTrackCueList::TextTrackCueList()
 {
+    ScriptWrappable::init(this);
 }
 
 unsigned long TextTrackCueList::length() const
