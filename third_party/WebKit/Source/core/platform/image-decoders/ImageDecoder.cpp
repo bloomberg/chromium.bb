@@ -31,11 +31,7 @@
 #include "core/platform/image-decoders/png/PNGImageDecoder.h"
 #include "core/platform/image-decoders/webp/WEBPImageDecoder.h"
 
-#include <algorithm>
-#include <cmath>
 #include <wtf/MemoryInstrumentationVector.h>
-
-using namespace std;
 
 namespace WebCore {
 
@@ -44,7 +40,7 @@ static unsigned copyFromSharedBuffer(char* buffer, unsigned bufferLength, const 
     unsigned bytesExtracted = 0;
     const char* moreData;
     while (unsigned moreDataLength = sharedBuffer.getSomeData(moreData, offset)) {
-        unsigned bytesToCopy = min(bufferLength - bytesExtracted, moreDataLength);
+        unsigned bytesToCopy = std::min(bufferLength - bytesExtracted, moreDataLength);
         memcpy(buffer + bytesExtracted, moreData, bytesToCopy);
         bytesExtracted += bytesToCopy;
         if (bytesExtracted == bufferLength)
