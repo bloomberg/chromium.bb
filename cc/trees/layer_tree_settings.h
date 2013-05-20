@@ -54,6 +54,7 @@ class CC_EXPORT LayerTreeSettings {
   gfx::Size max_untiled_layer_size;
   gfx::Size minimum_occlusion_tracking_size;
   bool use_pinch_zoom_scrollbars;
+  bool use_pinch_virtual_viewport;
   size_t max_tiles_for_interest_area;
   size_t max_unused_resource_memory_percentage;
   int highp_threshold_min;
