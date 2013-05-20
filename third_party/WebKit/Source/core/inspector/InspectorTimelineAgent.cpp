@@ -631,14 +631,12 @@ void InspectorTimelineAgent::innerAddRecordToTimeline(PassRefPtr<InspectorObject
 {
     prpRecord->setString("type", type);
     RefPtr<TypeBuilder::Timeline::TimelineEvent> record = TypeBuilder::Timeline::TimelineEvent::runtimeCast(prpRecord);
-    if (type == TimelineRecordType::Program)
-        setNativeHeapStatistics(record.get());
-    else
-        setDOMCounters(record.get());
 
-    if (m_recordStack.isEmpty())
+    if (m_recordStack.isEmpty()) {
+        setNativeHeapStatistics(record.get());
         sendEvent(record.release());
-    else {
+    } else {
+        setDOMCounters(record.get());
         TimelineRecordEntry parent = m_recordStack.last();
         parent.children->pushObject(record.release());
     }
