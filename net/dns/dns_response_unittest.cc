@@ -378,6 +378,20 @@ TEST(DnsResponseTest, InitParseWithoutQueryTwoQuestions) {
   EXPECT_FALSE(parser.ReadRecord(&record));
 }
 
+TEST(DnsResponseTest, InitParseWithoutQueryPacketTooShort) {
+  const uint8 response_data[] = {
+    // Header
+    0xca, 0xfe,               // ID
+    0x81, 0x80,               // Standard query response, RA, no error
+    0x00, 0x00,               // No question
+  };
+
+  DnsResponse resp;
+  memcpy(resp.io_buffer()->data(), response_data, sizeof(response_data));
+
+  EXPECT_FALSE(resp.InitParseWithoutQuery(sizeof(response_data)));
+}
+
 void VerifyAddressList(const std::vector<const char*>& ip_addresses,
                        const AddressList& addrlist) {
   ASSERT_EQ(ip_addresses.size(), addrlist.size());
