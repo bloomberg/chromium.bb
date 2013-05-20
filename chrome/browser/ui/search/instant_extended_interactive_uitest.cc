@@ -2378,8 +2378,15 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AcceptingJSSearchDoesNotRunJS) {
   EXPECT_NE(ASCIIToUTF16("evil"), instant_tab->GetTitle());
 }
 
+// Flaky on mac: http://crbug.com/242164
+#if defined(OS_MACOSX)
+#define MAYBE_ReloadSearchAfterBackReloadsCorrectQuery DISABLED_ReloadSearchAfterBackReloadsCorrectQuery
+#else
+#define MAYBE_ReloadSearchAfterBackReloadsCorrectQuery ReloadSearchAfterBackReloadsCorrectQuery
+#endif
+
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       ReloadSearchAfterBackReloadsCorrectQuery) {
+                       MAYBE_ReloadSearchAfterBackReloadsCorrectQuery) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlaySupport();
 
