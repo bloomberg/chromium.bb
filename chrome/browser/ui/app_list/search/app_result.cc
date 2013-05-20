@@ -11,9 +11,11 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
+#include "content/public/browser/user_metrics.h"
 
 namespace app_list {
 
@@ -64,6 +66,11 @@ void AppResult::Open(int event_flags) {
   if (!extension)
     return;
 
+  AppLauncherHandler::RecordAppLaunchType(
+      extension_misc::APP_LAUNCH_APP_LIST_SEARCH,
+      extension->GetType());
+  content::RecordAction(
+      content::UserMetricsAction("AppList_ClickOnAppFromSearch"));
   controller_->ActivateApp(profile_, extension, event_flags);
 }
 

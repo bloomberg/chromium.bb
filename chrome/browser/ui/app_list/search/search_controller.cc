@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "content/public/browser/user_metrics.h"
 #include "ui/app_list/search_box_model.h"
 
 namespace app_list {
@@ -80,6 +81,9 @@ void SearchController::Stop() {
 }
 
 void SearchController::OpenResult(SearchResult* result, int event_flags) {
+  // Count AppList.Search here because it is composed of search + action.
+  content::RecordAction(content::UserMetricsAction("AppList_Search"));
+
   // TODO(xiyuan): Hook up with user learning.
   static_cast<app_list::ChromeSearchResult*>(result)->Open(event_flags);
 }
