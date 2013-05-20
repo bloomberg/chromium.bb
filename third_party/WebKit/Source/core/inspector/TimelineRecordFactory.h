@@ -49,7 +49,7 @@ namespace WebCore {
 
     class TimelineRecordFactory {
     public:
-        static PassRefPtr<InspectorObject> createGenericRecord(double startTime, int maxCallStackDepth);
+        static PassRefPtr<InspectorObject> createGenericRecord(double startTime, int maxCallStackDepth, const String& type);
         static PassRefPtr<InspectorObject> createBackgroundRecord(double startTime, const String& thread);
 
         static PassRefPtr<InspectorObject> createGCEventData(const size_t usedHeapSizeDelta);

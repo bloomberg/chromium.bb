@@ -237,8 +237,8 @@ private:
     void setHeapSizeStatistics(InspectorObject* record);
     void commitFrameRecord();
 
-    void addRecordToTimeline(PassRefPtr<InspectorObject>, const String& type);
-    void innerAddRecordToTimeline(PassRefPtr<InspectorObject>, const String& type);
+    void addRecordToTimeline(PassRefPtr<InspectorObject>);
+    void innerAddRecordToTimeline(PassRefPtr<InspectorObject>);
     void clearRecordStack();
 
     void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);

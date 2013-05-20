@@ -165,10 +165,10 @@ void InspectorTimelineAgent::pushGCEventRecords()
     GCEvents events = m_gcEvents;
     m_gcEvents.clear();
     for (GCEvents::iterator i = events.begin(); i != events.end(); ++i) {
-        RefPtr<InspectorObject> record = TimelineRecordFactory::createGenericRecord(m_timeConverter.fromMonotonicallyIncreasingTime(i->startTime), m_maxCallStackDepth);
+        RefPtr<InspectorObject> record = TimelineRecordFactory::createGenericRecord(m_timeConverter.fromMonotonicallyIncreasingTime(i->startTime), m_maxCallStackDepth, TimelineRecordType::GCEvent);
         record->setObject("data", TimelineRecordFactory::createGCEventData(i->collectedBytes));
         record->setNumber("endTime", m_timeConverter.fromMonotonicallyIncreasingTime(i->endTime));
-        addRecordToTimeline(record.release(), TimelineRecordType::GCEvent);
+        addRecordToTimeline(record.release());
     }
 }
 
@@ -247,7 +247,7 @@ void InspectorTimelineAgent::stop(ErrorString*)
 void InspectorTimelineAgent::didBeginFrame()
 {
     TRACE_EVENT_INSTANT0("webkit", InstrumentationEvents::BeginFrame);
-    m_pendingFrameRecord = TimelineRecordFactory::createGenericRecord(timestamp(), 0);
+    m_pendingFrameRecord = TimelineRecordFactory::createGenericRecord(timestamp(), 0, TimelineRecordType::BeginFrame);
 }
 
 void InspectorTimelineAgent::didCancelFrame()
@@ -621,15 +621,14 @@ void InspectorTimelineAgent::didCloseWebSocket(Document* document, unsigned long
     appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketDestroy, true, document->frame());
 }
 
-void InspectorTimelineAgent::addRecordToTimeline(PassRefPtr<InspectorObject> record, const String& type)
+void InspectorTimelineAgent::addRecordToTimeline(PassRefPtr<InspectorObject> record)
 {
     commitFrameRecord();
-    innerAddRecordToTimeline(record, type);
+    innerAddRecordToTimeline(record);
 }
 
-void InspectorTimelineAgent::innerAddRecordToTimeline(PassRefPtr<InspectorObject> prpRecord, const String& type)
+void InspectorTimelineAgent::innerAddRecordToTimeline(PassRefPtr<InspectorObject> prpRecord)
 {
-    prpRecord->setString("type", type);
     RefPtr<TypeBuilder::Timeline::TimelineEvent> record = TypeBuilder::Timeline::TimelineEvent::runtimeCast(prpRecord);
 
     if (m_recordStack.isEmpty()) {
@@ -717,7 +716,7 @@ void InspectorTimelineAgent::didCompleteCurrentRecord(const String& type)
         size_t usedHeapSizeDelta = getUsedHeapSize() - entry.usedHeapSizeAtStart;
         if (usedHeapSizeDelta)
             entry.record->setNumber("usedHeapSizeDelta", usedHeapSizeDelta);
-        addRecordToTimeline(entry.record, type);
+        addRecordToTimeline(entry.record);
     }
 }
 
@@ -740,10 +739,10 @@ InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentin
 void InspectorTimelineAgent::appendRecord(PassRefPtr<InspectorObject> data, const String& type, bool captureCallStack, Frame* frame)
 {
     pushGCEventRecords();
-    RefPtr<InspectorObject> record = TimelineRecordFactory::createGenericRecord(timestamp(), captureCallStack ? m_maxCallStackDepth : 0);
+    RefPtr<InspectorObject> record = TimelineRecordFactory::createGenericRecord(timestamp(), captureCallStack ? m_maxCallStackDepth : 0, type);
     record->setObject("data", data);
     setFrameIdentifier(record.get(), frame);
-    addRecordToTimeline(record.release(), type);
+    addRecordToTimeline(record.release());
 }
 
 void InspectorTimelineAgent::sendEvent(PassRefPtr<InspectorObject> event)
@@ -757,7 +756,7 @@ void InspectorTimelineAgent::pushCurrentRecord(PassRefPtr<InspectorObject> data,
 {
     pushGCEventRecords();
     commitFrameRecord();
-    RefPtr<InspectorObject> record = TimelineRecordFactory::createGenericRecord(timestamp(), captureCallStack ? m_maxCallStackDepth : 0);
+    RefPtr<InspectorObject> record = TimelineRecordFactory::createGenericRecord(timestamp(), captureCallStack ? m_maxCallStackDepth : 0, type);
     setFrameIdentifier(record.get(), frame);
     m_recordStack.append(TimelineRecordEntry(record.release(), data, InspectorArray::create(), type, getUsedHeapSize()));
     if (hasLowLevelDetails && !m_platformInstrumentationClientInstalledAtStackDepth && !PlatformInstrumentation::hasClient()) {
@@ -772,7 +771,7 @@ void InspectorTimelineAgent::commitFrameRecord()
         return;
     
     m_pendingFrameRecord->setObject("data", InspectorObject::create());
-    innerAddRecordToTimeline(m_pendingFrameRecord.release(), TimelineRecordType::BeginFrame);
+    innerAddRecordToTimeline(m_pendingFrameRecord.release());
 }
 
 void InspectorTimelineAgent::clearRecordStack()
