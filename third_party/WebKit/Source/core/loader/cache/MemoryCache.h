@@ -96,9 +96,6 @@ public:
 
     static KURL removeFragmentIdentifierIfNeeded(const KURL& originalURL);
     
-    void revalidationSucceeded(CachedResource* revalidatingResource, const ResourceResponse&);
-    void revalidationFailed(CachedResource* revalidatingResource);
-    
     // Sets the cache's memory capacities, in bytes. These will hold only approximately, 
     // since the decoded cost of resources like scripts and stylesheets is not known.
     //  - minDeadBytes: The maximum number of bytes that dead resources should consume when the cache is under pressure.
@@ -132,8 +129,6 @@ public:
 
     // Function to collect cache statistics for the caches window in the Safari Debug menu.
     Statistics getStatistics();
-    
-    void resourceAccessed(CachedResource*);
 
     typedef HashSet<RefPtr<SecurityOrigin> > SecurityOriginSet;
     void removeResourcesWithOrigin(SecurityOrigin*);

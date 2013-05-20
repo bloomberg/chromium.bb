@@ -380,7 +380,7 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
         resource = revalidateResource(request, resource.get());
         break;
     case Use:
-        memoryCache()->resourceAccessed(resource.get());
+        resource->updateForAccess();
         notifyLoadedFromMemoryCache(resource.get());
         break;
     }

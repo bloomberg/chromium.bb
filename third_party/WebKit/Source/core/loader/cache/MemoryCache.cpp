@@ -95,50 +95,9 @@ void MemoryCache::add(CachedResource* resource)
     ASSERT(WTF::isMainThread());
     m_resources.set(resource->url(), resource);
     resource->setInCache(true);
-    
-    resourceAccessed(resource);
+    resource->updateForAccess();
     
     LOG(ResourceLoading, "MemoryCache::add Added '%s', resource %p\n", resource->url().string().latin1().data(), resource);
-}
-
-void MemoryCache::revalidationSucceeded(CachedResource* revalidatingResource, const ResourceResponse& response)
-{
-    CachedResource* resource = revalidatingResource->resourceToRevalidate();
-    ASSERT(resource);
-    ASSERT(!resource->inCache());
-    ASSERT(resource->isLoaded());
-    ASSERT(revalidatingResource->inCache());
-
-    // Calling evict() can potentially delete revalidatingResource, which we use
-    // below. This mustn't be the case since revalidation means it is loaded
-    // and so canDelete() is false.
-    ASSERT(!revalidatingResource->canDelete());
-
-    evict(revalidatingResource);
-
-    ASSERT(!m_resources.get(resource->url()));
-    m_resources.set(resource->url(), resource);
-    resource->setInCache(true);
-    resource->updateResponseAfterRevalidation(response);
-    insertInLRUList(resource);
-    int delta = resource->size();
-    if (resource->decodedSize() && resource->hasClients())
-        insertInLiveDecodedResourcesList(resource);
-    if (delta)
-        adjustSize(resource->hasClients(), delta);
-    
-    revalidatingResource->switchClientsToRevalidatedResource();
-    ASSERT(!revalidatingResource->m_deleted);
-    // this deletes the revalidating resource
-    revalidatingResource->clearResourceToRevalidate();
-}
-
-void MemoryCache::revalidationFailed(CachedResource* revalidatingResource)
-{
-    ASSERT(WTF::isMainThread());
-    LOG(ResourceLoading, "Revalidation failed for %p", revalidatingResource);
-    ASSERT(revalidatingResource->resourceToRevalidate());
-    revalidatingResource->clearResourceToRevalidate();
 }
 
 CachedResource* MemoryCache::resourceForURL(const KURL& resourceURL)
@@ -445,25 +404,6 @@ void MemoryCache::insertInLRUList(CachedResource* resource)
     ASSERT(found);
 #endif
 
-}
-
-void MemoryCache::resourceAccessed(CachedResource* resource)
-{
-    ASSERT(resource->inCache());
-    
-    // Need to make sure to remove before we increase the access count, since
-    // the queue will possibly change.
-    removeFromLRUList(resource);
-    
-    // If this is the first time the resource has been accessed, adjust the size of the cache to account for its initial size.
-    if (!resource->accessCount())
-        adjustSize(resource->hasClients(), resource->size());
-    
-    // Add to our access count.
-    resource->increaseAccessCount();
-    
-    // Now insert into the new queue.
-    insertInLRUList(resource);
 }
 
 void MemoryCache::removeResourcesWithOrigin(SecurityOrigin* origin)

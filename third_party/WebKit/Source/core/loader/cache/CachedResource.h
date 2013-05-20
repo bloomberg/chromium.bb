@@ -151,8 +151,8 @@ public:
             || type() == RawResource;
     }
 
+    void updateForAccess();
     unsigned accessCount() const { return m_accessCount; }
-    void increaseAccessCount() { m_accessCount++; }
 
     // Computes the status of an object after loading.  
     // Updates the expire date on the cache entry file
@@ -232,9 +232,8 @@ public:
     
     // HTTP revalidation support methods for CachedResourceLoader.
     void setResourceToRevalidate(CachedResource*);
-    virtual void switchClientsToRevalidatedResource();
-    void clearResourceToRevalidate();
-    void updateResponseAfterRevalidation(const ResourceResponse& validatingResponse);
+    void revalidationSucceeded(const ResourceResponse&);
+    void revalidationFailed();
     
     virtual void didSendData(unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void didDownloadData(int) { }
@@ -255,6 +254,10 @@ protected:
     void didAccessDecodedData(double timeStamp);
 
     bool isSafeToMakePurgeable() const;
+
+    virtual void switchClientsToRevalidatedResource();
+    void clearResourceToRevalidate();
+    void updateResponseAfterRevalidation(const ResourceResponse& validatingResponse);
     
     HashCountedSet<CachedResourceClient*> m_clients;
 

@@ -37,7 +37,6 @@
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/MemoryCache.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/Logging.h"
@@ -261,10 +260,9 @@ void ResourceLoader::cancel(const ResourceError& error)
     if (m_state == Initialized) {
         LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().string().latin1().data());
         m_state = Finishing;
-        if (m_resource->resourceToRevalidate())
-            memoryCache()->revalidationFailed(m_resource);
         m_resource->setResourceError(nonNullError);
-        memoryCache()->remove(m_resource);
+        if (m_resource->resourceToRevalidate())
+            m_resource->revalidationFailed();
     }
 
     // If we re-enter cancel() from inside didFailToLoad(), we want to pick up from where we 
@@ -360,7 +358,7 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
             // 304 Not modified / Use local copy
             // Existing resource is ok, just use it updating the expiration time.
             m_resource->setResponse(response);
-            memoryCache()->revalidationSucceeded(m_resource, response);
+            m_resource->revalidationSucceeded(response);
             if (reachedTerminalState())
                 return;
 
@@ -369,7 +367,7 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
             return;
         }
         // Did not get 304 response, continue as a regular resource load.
-        memoryCache()->revalidationFailed(m_resource);
+        m_resource->revalidationFailed();
     }
 
     m_resource->responseReceived(response);
@@ -460,12 +458,10 @@ void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
     RefPtr<ResourceLoader> protect(this);
     CachedResourceHandle<CachedResource> protectResource(m_resource);
     m_state = Finishing;
-    if (m_resource->resourceToRevalidate())
-        memoryCache()->revalidationFailed(m_resource);
     m_resource->setResourceError(error);
+    if (m_resource->resourceToRevalidate())
+        m_resource->revalidationFailed();
     m_resource->error(CachedResource::LoadError);
-    if (!m_resource->isPreloaded())
-        memoryCache()->remove(m_resource);
 
     if (m_cancelled)
         return;

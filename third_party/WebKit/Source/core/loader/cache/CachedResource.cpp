@@ -201,7 +201,7 @@ void CachedResource::failBeforeStarting()
     // FIXME: What if resources in other frames were waiting for this revalidation?
     LOG(ResourceLoading, "Cannot start loading '%s'", url().string().latin1().data());
     if (m_resourceToRevalidate) 
-        memoryCache()->revalidationFailed(this); 
+        revalidationFailed();
     error(CachedResource::LoadError);
 }
 
@@ -693,6 +693,62 @@ void CachedResource::updateResponseAfterRevalidation(const ResourceResponse& val
             continue;
         m_response.setHTTPHeaderField(it->key, it->value);
     }
+}
+
+void CachedResource::revalidationSucceeded(const ResourceResponse& response)
+{
+    ASSERT(m_resourceToRevalidate);
+    ASSERT(!m_resourceToRevalidate->inCache());
+    ASSERT(m_resourceToRevalidate->isLoaded());
+    ASSERT(inCache());
+
+    // Calling evict() can potentially delete revalidatingResource, which we use
+    // below. This mustn't be the case since revalidation means it is loaded
+    // and so canDelete() is false.
+    ASSERT(!canDelete());
+
+    m_resourceToRevalidate->updateResponseAfterRevalidation(response);
+    memoryCache()->remove(this);
+    memoryCache()->add(m_resourceToRevalidate);
+    int delta = m_resourceToRevalidate->size();
+    if (m_resourceToRevalidate->decodedSize() && m_resourceToRevalidate->hasClients())
+        memoryCache()->insertInLiveDecodedResourcesList(m_resourceToRevalidate);
+    if (delta)
+        memoryCache()->adjustSize(m_resourceToRevalidate->hasClients(), delta);
+
+    switchClientsToRevalidatedResource();
+    ASSERT(!m_deleted);
+    // clearResourceToRevalidate deletes this.
+    clearResourceToRevalidate();
+}
+
+void CachedResource::revalidationFailed()
+{
+    ASSERT(WTF::isMainThread());
+    LOG(ResourceLoading, "Revalidation failed for %p", this);
+    ASSERT(resourceToRevalidate());
+    clearResourceToRevalidate();
+    if (!m_error.isNull() && (m_error.isCancellation() || !isPreloaded()))
+        memoryCache()->remove(this);
+}
+
+void CachedResource::updateForAccess()
+{
+    ASSERT(inCache());
+
+    // Need to make sure to remove before we increase the access count, since
+    // the queue will possibly change. However, if this is a resource that is being
+    // added back in due to a successful revalidation, it is not present in the LRU list
+    // at this point, so we don't need to remove it.
+    if (!m_proxyResource && m_accessCount)
+        memoryCache()->removeFromLRUList(this);
+
+    // If this is the first time the resource has been accessed, adjust the size of the cache to account for its initial size.
+    if (!m_accessCount)
+        memoryCache()->adjustSize(hasClients(), size());
+
+    m_accessCount++;
+    memoryCache()->insertInLRUList(this);
 }
 
 void CachedResource::registerHandle(CachedResourceHandleBase* h)
