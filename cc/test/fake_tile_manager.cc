@@ -4,9 +4,15 @@
 
 #include "cc/test/fake_tile_manager.h"
 
+#include "cc/resources/raster_worker_pool.h"
+
 namespace cc {
 
 FakeTileManager::FakeTileManager(TileManagerClient* client)
-    : TileManager(client, NULL, 1, false, NULL) {
-}
+    : TileManager(client,
+                  NULL,
+                  RasterWorkerPool::Create(1),
+                  1,
+                  false,
+                  NULL) {}
 }

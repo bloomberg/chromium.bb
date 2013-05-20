@@ -1410,11 +1410,11 @@ bool LayerTreeHostImpl::InitializeRenderer(
     return false;
 
   if (settings_.impl_side_painting) {
-    tile_manager_.reset(new TileManager(this,
+    tile_manager_ = TileManager::Create(this,
                                         resource_provider.get(),
                                         settings_.num_raster_threads,
                                         settings_.use_color_estimator,
-                                        rendering_stats_instrumentation_));
+                                        rendering_stats_instrumentation_);
     UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   }
 

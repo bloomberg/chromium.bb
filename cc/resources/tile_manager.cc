@@ -105,15 +105,33 @@ scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
   }
 }
 
+// static
+scoped_ptr<TileManager> TileManager::Create(
+    TileManagerClient* client,
+    ResourceProvider* resource_provider,
+    size_t num_raster_threads,
+    bool use_color_estimator,
+    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
+  scoped_ptr<RasterWorkerPool> raster_worker_pool =
+      RasterWorkerPool::Create(num_raster_threads);
+  return make_scoped_ptr(new TileManager(client,
+                                         resource_provider,
+                                         raster_worker_pool.Pass(),
+                                         num_raster_threads,
+                                         use_color_estimator,
+                                         rendering_stats_instrumentation));
+}
+
 TileManager::TileManager(
     TileManagerClient* client,
     ResourceProvider* resource_provider,
+    scoped_ptr<RasterWorkerPool> raster_worker_pool,
     size_t num_raster_threads,
     bool use_color_estimator,
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
-      raster_worker_pool_(RasterWorkerPool::Create(this, num_raster_threads)),
+      raster_worker_pool_(raster_worker_pool.Pass()),
       manage_tiles_pending_(false),
       manage_tiles_call_count_(0),
       bytes_pending_upload_(0),
@@ -124,6 +142,7 @@ TileManager::TileManager(
       did_initialize_visible_tile_(false),
       pending_tasks_(0),
       max_pending_tasks_(kMaxNumPendingTasksPerThread * num_raster_threads) {
+  raster_worker_pool_->SetClient(this);
 }
 
 TileManager::~TileManager() {

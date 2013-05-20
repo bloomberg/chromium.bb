@@ -35,10 +35,10 @@ class WorkerPoolTest : public testing::Test,
   }
 
   void Reset() {
-    worker_pool_ = WorkerPool::Create(this,
-                                      1,
+    worker_pool_ = WorkerPool::Create(1,
                                       base::TimeDelta::FromDays(1024),
                                       "test");
+    worker_pool_->SetClient(this);
   }
 
   void RunAllTasksAndReset() {

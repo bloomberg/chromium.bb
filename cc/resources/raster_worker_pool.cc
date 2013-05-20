@@ -36,12 +36,11 @@ const int kCheckForCompletedTasksDelayMs = 6;
 
 }  // namespace
 
-RasterWorkerPool::RasterWorkerPool(
-    WorkerPoolClient* client, size_t num_threads) : WorkerPool(
-        client,
-        num_threads,
-        base::TimeDelta::FromMilliseconds(kCheckForCompletedTasksDelayMs),
-        kWorkerThreadNamePrefix) {
+RasterWorkerPool::RasterWorkerPool(size_t num_threads)
+    : WorkerPool(
+          num_threads,
+          base::TimeDelta::FromMilliseconds(kCheckForCompletedTasksDelayMs),
+          kWorkerThreadNamePrefix) {
 }
 
 RasterWorkerPool::~RasterWorkerPool() {

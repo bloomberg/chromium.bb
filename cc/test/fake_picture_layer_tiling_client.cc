@@ -23,15 +23,14 @@ class FakeInfinitePicturePileImpl : public PicturePileImpl {
 };
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()
-    : tile_manager_(&tile_manager_client_,
-                    NULL,
-                    1,
-                    false,
-                    &stats_instrumentation_),
+    : tile_manager_(TileManager::Create(&tile_manager_client_,
+                                        NULL,
+                                        1,
+                                        false,
+                                        &stats_instrumentation_)),
       pile_(new FakeInfinitePicturePileImpl()),
       twin_tiling_(NULL),
-      allow_create_tile_(true) {
-}
+      allow_create_tile_(true) {}
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 }
@@ -41,7 +40,7 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
     gfx::Rect rect) {
   if (!allow_create_tile_)
     return NULL;
-  return new Tile(&tile_manager_,
+  return new Tile(tile_manager_.get(),
                   pile_.get(),
                   tile_size_,
                   rect,

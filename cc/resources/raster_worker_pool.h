@@ -13,15 +13,14 @@ namespace cc {
 class PicturePileImpl;
 
 // A worker thread pool that runs raster tasks.
-class RasterWorkerPool : public WorkerPool {
+class CC_EXPORT RasterWorkerPool : public WorkerPool {
  public:
   typedef base::Callback<void(PicturePileImpl* picture_pile)> RasterCallback;
 
   virtual ~RasterWorkerPool();
 
-  static scoped_ptr<RasterWorkerPool> Create(
-      WorkerPoolClient* client, size_t num_threads) {
-    return make_scoped_ptr(new RasterWorkerPool(client, num_threads));
+  static scoped_ptr<RasterWorkerPool> Create(size_t num_threads) {
+    return make_scoped_ptr(new RasterWorkerPool(num_threads));
   }
 
   void PostRasterTaskAndReply(PicturePileImpl* picture_pile,
@@ -29,7 +28,7 @@ class RasterWorkerPool : public WorkerPool {
                               const base::Closure& reply);
 
  private:
-  RasterWorkerPool(WorkerPoolClient* client, size_t num_threads);
+  explicit RasterWorkerPool(size_t num_threads);
 
   DISALLOW_COPY_AND_ASSIGN(RasterWorkerPool);
 };

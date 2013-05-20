@@ -293,11 +293,10 @@ void WorkerPool::Inner::Run() {
   has_pending_tasks_cv_.Signal();
 }
 
-WorkerPool::WorkerPool(WorkerPoolClient* client,
-                       size_t num_threads,
+WorkerPool::WorkerPool(size_t num_threads,
                        base::TimeDelta check_for_completed_tasks_delay,
                        const std::string& thread_name_prefix)
-    : client_(client),
+    : client_(NULL),
       origin_loop_(base::MessageLoopProxy::current()),
       weak_ptr_factory_(this),
       check_for_completed_tasks_delay_(check_for_completed_tasks_delay),
@@ -367,6 +366,7 @@ void WorkerPool::DispatchCompletionCallbacks() {
     task->DidComplete();
   }
 
+  DCHECK(client_);
   client_->DidFinishDispatchingWorkerPoolCompletionCallbacks();
 }
 

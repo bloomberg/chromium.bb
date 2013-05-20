@@ -44,7 +44,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
  protected:
   FakeTileManagerClient tile_manager_client_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
-  TileManager tile_manager_;
+  scoped_ptr<TileManager> tile_manager_;
   scoped_refptr<PicturePileImpl> pile_;
   gfx::Size tile_size_;
   PictureLayerTiling* twin_tiling_;
