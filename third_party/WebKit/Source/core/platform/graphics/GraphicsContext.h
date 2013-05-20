@@ -209,9 +209,9 @@ public:
     // Sets up the paint for the current fill style.
     void setupPaintForFilling(SkPaint*) const;
 
-    // Sets up the paint for stroking. Returns an int representing the effective
-    // width of the pen. If a non-zero length is provided,
-    // the number of dashes/dots on a dashed/dotted line will be adjusted to
+    // Sets up the paint for stroking. Returns a float representing the
+    // effective width of the pen. If a non-zero length is provided, the
+    // number of dashes/dots on a dashed/dotted line will be adjusted to
     // start and end that length with a dash/dot.
     float setupPaintForStroking(SkPaint*, SkRect*, int length) const;
 

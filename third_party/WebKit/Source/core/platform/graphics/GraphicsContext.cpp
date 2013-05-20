@@ -1075,7 +1075,21 @@ void GraphicsContext::drawLineForText(const FloatPoint& pt, float width, bool pr
     r.fBottom = r.fTop + SkIntToScalar(thickness);
 
     SkPaint paint;
-    setupPaintForFilling(&paint);
+    switch (strokeStyle()) {
+    case NoStroke:
+    case SolidStroke:
+#if ENABLE(CSS3_TEXT)
+    case DoubleStroke:
+    case WavyStroke:
+#endif // CSS3_TEXT
+        setupPaintForFilling(&paint);
+        break;
+    case DottedStroke:
+    case DashedStroke:
+        setupPaintForStroking(&paint, &r, 0);
+        break;
+    }
+
     // Text lines are drawn using the stroke color.
     paint.setColor(effectiveStrokeColor());
     drawRect(r, paint);
