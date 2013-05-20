@@ -1108,18 +1108,23 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
 }
 
 void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
+  // Use transparency for the draw-attention animation.
+  int alpha = (tab_animation_ && tab_animation_->is_animating())
+                  ? static_cast<int>(GetThrobValue() * 255)
+                  : 255;
+
   // Draw a gray rectangle to represent the tab. This works for mini-tabs as
   // well as regular ones. The active tab has a brigher bar.
   SkColor color =
       IsActive() ? kImmersiveActiveTabColor : kImmersiveInactiveTabColor;
   gfx::Rect bar_rect = GetImmersiveBarRect();
-  canvas->FillRect(bar_rect, color);
+  canvas->FillRect(bar_rect, SkColorSetA(color, alpha));
 
   // Paint network activity indicator.
   // TODO(jamescook): Replace this placeholder animation with a real one.
   // For now, let's go with a Cylon eye effect, but in blue.
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
-    const SkColor kEyeColor = SkColorSetRGB(71, 138, 217);
+    const SkColor kEyeColor = SkColorSetARGB(alpha, 71, 138, 217);
     int eye_width = bar_rect.width() / 3;
     int eye_offset = bar_rect.width() * immersive_loading_step_ /
         kImmersiveLoadingStepCount;
