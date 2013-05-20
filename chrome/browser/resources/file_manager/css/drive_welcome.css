@@ -24,7 +24,7 @@
 
 .drive-welcome-button {
   -webkit-user-select: none;
-  background-image: linear-gradient(top,#f5f5f5,#f1f1f1);
+  background-image: linear-gradient(to bottom, #f5f5f5, #f1f1f1);
   border: 1px solid rgba(0,0,0,0.1);
   border-radius: 2px;
   color: #444;
@@ -40,7 +40,7 @@
 }
 
 .drive-welcome-button:hover {
-  background-image: linear-gradient(top,#f8f8f8,#f1f1f1);
+  background-image: linear-gradient(to bottom, #f8f8f8, #f1f1f1);
   border-color: #C6C6C6;
   box-shadow: 0 1px 1px rgba(0,0,0,0.1);
   color: #222;
@@ -48,14 +48,14 @@
 }
 
 .drive-welcome-button:active {
-  background-image: linear-gradient(top,#f6f6f6,#f1f1f1);
+  background-image: linear-gradient(to bottom, #f6f6f6, #f1f1f1);
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
 
 .drive-welcome-button.drive-welcome-start {
   background-image:
-    linear-gradient(top, rgb(77, 144, 254), rgb(71, 135, 237));
+    linear-gradient(to bottom, rgb(77, 144, 254), rgb(71, 135, 237));
   border-color: rgb(48, 121, 237);
   color: white;
   text-decoration: none;
@@ -63,7 +63,7 @@
 
 .drive-welcome-button.drive-welcome-start:hover {
   background-image:
-    linear-gradient(top, rgb(77, 144, 254), rgb(53, 122, 232));
+    linear-gradient(to bottom, rgb(77, 144, 254), rgb(53, 122, 232));
   border-color: rgb(47, 91, 183);
   box-shadow: 0 1px 1px rgba(0,0,0,0.1);
 }

@@ -203,7 +203,7 @@ body:not([new-ui]) #butter-bar .progress-track {
 /* The top title of the dialog. */
 .dialog-title {
   -webkit-padding-start: 15px;
-  background-image: linear-gradient(top, #fff, #f6f6f6);
+  background-image: linear-gradient(to bottom, #fff, #f6f6f6);
   border-bottom: 1px rgb(214, 217, 227) solid;
   box-sizing: border-box;
   color: rgb(66, 80, 108);
