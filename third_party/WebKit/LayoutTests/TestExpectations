@@ -1367,10 +1367,6 @@ webkit.org/b/112058 [ Debug SnowLeopard ] svg/custom/foreign-object-skew.svg [ I
 
 webkit.org/b/112193 fast/dom/Window/window-postmessage-clone.html [ Failure Pass ]
 
-webkit.org/b/112219 fast/layers/no-clipping-overflow-hidden-added-after-transform.html [ ImageOnlyFailure Pass ]
-webkit.org/b/112219 fast/layers/no-clipping-overflow-hidden-hardware-acceleration.html [ ImageOnlyFailure Pass ]
-webkit.org/b/112219 fast/layers/no-clipping-overflow-hidden-added-after-transition.html [ ImageOnlyFailure Pass ]
-
 webkit.org/b/112601 http/tests/security/cross-frame-access-port-explicit-domain.html [ Failure Pass ]
 webkit.org/b/112621 [ Win Linux ] fast/forms/datalist/update-range-with-datalist.html [ ImageOnlyFailure Pass ]
 webkit.org/b/112629 http/tests/xmlhttprequest/send-array-buffer.html [ Failure Pass ]
