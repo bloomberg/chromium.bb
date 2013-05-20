@@ -11,6 +11,8 @@
           'type': '<(gtest_target_type)',
           'sources': [
             'auto_login_parser/auto_login_parser_unittest.cc',
+            'browser_context_keyed_service/browser_context_dependency_manager_unittest.cc',
+            'browser_context_keyed_service/dependency_graph_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
             'test/run_all_unittests.cc',
@@ -29,6 +31,9 @@
 
             # Dependencies of auto_login_parser
             'auto_login_parser',
+
+            # Dependencies of browser_context_keyed_service
+            'browser_context_keyed_service',
 
             # Dependencies of encryptor
             'encryptor',

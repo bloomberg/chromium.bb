@@ -9,9 +9,9 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

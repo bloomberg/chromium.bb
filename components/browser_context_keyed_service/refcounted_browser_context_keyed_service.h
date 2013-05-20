@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PROFILES_REFCOUNTED_PROFILE_KEYED_SERVICE_H_
-#define CHROME_BROWSER_PROFILES_REFCOUNTED_PROFILE_KEYED_SERVICE_H_
+#ifndef COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_H_
+#define COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -67,4 +67,4 @@ class RefcountedProfileKeyedService
   content::BrowserThread::ID thread_id_;
 };
 
-#endif  // CHROME_BROWSER_PROFILES_REFCOUNTED_PROFILE_KEYED_SERVICE_H_
+#endif  // COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_H_

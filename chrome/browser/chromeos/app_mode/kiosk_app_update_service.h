@@ -12,8 +12,8 @@
 #include "base/memory/singleton.h"
 #include "base/timer.h"
 #include "chrome/browser/extensions/update_observer.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class Profile;
 

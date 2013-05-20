@@ -12,9 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_types.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/ref_counted_util.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "ui/base/layout.h"
 
 class GURL;

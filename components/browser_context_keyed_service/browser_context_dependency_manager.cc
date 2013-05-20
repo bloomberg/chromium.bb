@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 #include <algorithm>
 #include <deque>
 #include <iterator>
 
 #include "base/bind.h"
-#include "chrome/browser/profiles/profile_keyed_base_factory.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
 #include "content/public/browser/browser_context.h"
 
 #ifndef NDEBUG
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 #endif
 
 class Profile;
@@ -138,9 +138,9 @@ void ProfileDependencyManager::DumpProfileDependencies(
   // Whenever we try to build a destruction ordering, we should also dump a
   // dependency graph to "/path/to/profile/profile-dependencies.dot".
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDumpProfileDependencyGraph)) {
+          switches::kDumpBrowserContextDependencyGraph)) {
     base::FilePath dot_file =
-        profile->GetPath().AppendASCII("profile-dependencies.dot");
+        profile->GetPath().AppendASCII("browser-context-dependencies.dot");
     std::string contents = dependency_graph_.DumpAsGraphviz(
         "Profile", base::Bind(&ProfileKeyedBaseFactoryGetNodeName));
     file_util::WriteFile(dot_file, contents.c_str(), contents.size());

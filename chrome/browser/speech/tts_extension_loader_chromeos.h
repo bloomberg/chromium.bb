@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SPEECH_TTS_EXTENSION_LOADER_CHROMEOS_H_
 
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 // Profile-keyed class that loads a built-in TTS component extension
 // into a given profile on Chrome OS.

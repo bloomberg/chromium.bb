@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PROFILES_PROFILE_DEPENDENCY_MANAGER_H_
-#define CHROME_BROWSER_PROFILES_PROFILE_DEPENDENCY_MANAGER_H_
+#ifndef COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_BROWSER_CONTEXT_DEPENDENCY_MANAGER_H_
+#define COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_BROWSER_CONTEXT_DEPENDENCY_MANAGER_H_
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/profiles/dependency_graph.h"
+#include "components/browser_context_keyed_service/dependency_graph.h"
 
 #ifndef NDEBUG
 #include <set>
@@ -83,4 +83,4 @@ class ProfileDependencyManager {
 #endif
 };
 
-#endif  // CHROME_BROWSER_PROFILES_PROFILE_DEPENDENCY_MANAGER_H_
+#endif  // COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_BROWSER_CONTEXT_DEPENDENCY_MANAGER_H_

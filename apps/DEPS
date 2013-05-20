@@ -1,6 +1,7 @@
 include_rules = [
   "+base",
   "+content",
+  "+components/browser_context_keyed_service",
   "+ui",
   "+win8",
   # Temporary allowed includes.

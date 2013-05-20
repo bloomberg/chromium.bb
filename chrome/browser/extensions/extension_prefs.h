@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/extension.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/common/url_pattern_set.h"
 #include "sync/api/string_ordinal.h"
 

@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 // Implements the chrome.networkingPrivate.getProperties method.
 class NetworkingPrivateGetPropertiesFunction : public AsyncExtensionFunction {

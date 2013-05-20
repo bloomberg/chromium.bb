@@ -6,8 +6,8 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/usb/usb_service.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 UsbServiceFactory* UsbServiceFactory::GetInstance() {
   return Singleton<UsbServiceFactory>::get();

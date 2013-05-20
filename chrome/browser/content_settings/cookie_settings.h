@@ -13,9 +13,9 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 #include "chrome/common/content_settings.h"
+#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
+#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h"
 
 class ContentSettingsPattern;
 class CookieSettingsWrapper;

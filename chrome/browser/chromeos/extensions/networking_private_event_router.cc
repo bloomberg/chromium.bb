@@ -12,13 +12,13 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using extensions::event_names::kOnNetworkListChanged;

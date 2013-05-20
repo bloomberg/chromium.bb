@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiles/dependency_graph.h"
-#include "chrome/browser/profiles/dependency_node.h"
+#include "components/browser_context_keyed_service/dependency_graph.h"
+#include "components/browser_context_keyed_service/dependency_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

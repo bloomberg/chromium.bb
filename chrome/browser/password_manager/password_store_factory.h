@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h"
 
 class PasswordStore;
 class Profile;

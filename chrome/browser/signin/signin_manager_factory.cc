@@ -6,12 +6,12 @@
 
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/chrome_signin_manager_delegate.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 SigninManagerFactory::SigninManagerFactory()

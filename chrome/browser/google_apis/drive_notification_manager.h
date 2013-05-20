@@ -9,7 +9,7 @@
 #include "base/observer_list.h"
 #include "base/timer.h"
 #include "chrome/browser/google_apis/drive_notification_observer.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "sync/notifier/invalidation_handler.h"
 
 class Profile;

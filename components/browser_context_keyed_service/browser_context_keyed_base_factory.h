@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PROFILES_PROFILE_KEYED_BASE_FACTORY_H_
-#define CHROME_BROWSER_PROFILES_PROFILE_KEYED_BASE_FACTORY_H_
+#ifndef COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_
+#define COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_
 
 #include <set>
 
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/profiles/dependency_node.h"
+#include "components/browser_context_keyed_service/dependency_node.h"
 
 class PrefService;
 class ProfileDependencyManager;
@@ -130,4 +130,4 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe,
 #endif
 };
 
-#endif  // CHROME_BROWSER_PROFILES_PROFILE_KEYED_BASE_FACTORY_H_
+#endif  // COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_

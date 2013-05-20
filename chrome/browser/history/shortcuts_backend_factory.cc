@@ -7,8 +7,8 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 using history::ShortcutsBackend;
 

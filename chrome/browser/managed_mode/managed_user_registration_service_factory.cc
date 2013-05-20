@@ -5,7 +5,7 @@
 #include "chrome/browser/managed_mode/managed_user_registration_service_factory.h"
 
 #include "chrome/browser/managed_mode/managed_user_registration_service.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 // static
 ManagedUserRegistrationService*

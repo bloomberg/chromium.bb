@@ -4,8 +4,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "chrome/browser/profiles/profile_dependency_manager.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class ProfileDependencyManagerUnittests : public ::testing::Test {
  protected:

@@ -251,6 +251,10 @@ extern const char kDisableCarbonInterposing[];
 CONTENT_EXPORT extern const char kTestCompositor[];
 #endif
 
+#ifndef NDEBUG
+CONTENT_EXPORT extern const char kDumpBrowserContextDependencyGraph[];
+#endif
+
 extern const char kEnableWebPInAcceptHeader[];
 
 CONTENT_EXPORT extern const char kOverscrollHistoryNavigation[];

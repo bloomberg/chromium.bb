@@ -5,7 +5,7 @@
 #ifndef APPS_SHORTCUT_MANAGER_FACTORY_H_
 #define APPS_SHORTCUT_MANAGER_FACTORY_H_
 
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 template<typename Type> struct DefaultSingletonTraits;
 

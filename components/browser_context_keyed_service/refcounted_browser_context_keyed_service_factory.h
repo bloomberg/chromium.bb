@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PROFILES_REFCOUNTED_PROFILE_KEYED_SERVICE_FACTORY_H_
-#define CHROME_BROWSER_PROFILES_REFCOUNTED_PROFILE_KEYED_SERVICE_FACTORY_H_
+#ifndef COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_H_
+#define COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 
 class Profile;
 class RefcountedProfileKeyedService;
@@ -85,4 +85,4 @@ class RefcountedProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
   DISALLOW_COPY_AND_ASSIGN(RefcountedProfileKeyedServiceFactory);
 };
 
-#endif  // CHROME_BROWSER_PROFILES_REFCOUNTED_PROFILE_KEYED_SERVICE_FACTORY_H_
+#endif  // COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_H_

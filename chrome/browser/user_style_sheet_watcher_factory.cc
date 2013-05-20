@@ -6,8 +6,8 @@
 
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 // static
 scoped_refptr<UserStyleSheetWatcher>

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_USER_STYLE_SHEET_WATCHER_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h"
 
 class Profile;
 class UserStyleSheetWatcher;

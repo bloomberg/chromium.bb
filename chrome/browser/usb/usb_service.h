@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/usb/usb_device.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 class UsbEventHandler;

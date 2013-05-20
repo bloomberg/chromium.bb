@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_THUMBNAILS_THUMBNAIL_SERVICE_H_
 #define CHROME_BROWSER_THUMBNAILS_THUMBNAIL_SERVICE_H_
 
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/common/thumbnail_score.h"
+#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
 

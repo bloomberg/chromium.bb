@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
+#include "content/public/browser/browser_context.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 
 void RefcountedProfileKeyedServiceFactory::SetTestingFactory(
     content::BrowserContext* profile,

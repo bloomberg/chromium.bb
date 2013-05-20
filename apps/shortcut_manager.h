@@ -6,8 +6,8 @@
 #define APPS_SHORTCUT_MANAGER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/extension.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

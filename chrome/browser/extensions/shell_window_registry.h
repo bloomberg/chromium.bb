@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;

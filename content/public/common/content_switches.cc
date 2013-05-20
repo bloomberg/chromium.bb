@@ -782,6 +782,12 @@ const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 extern const char kTestCompositor[]         = "test-compositor";
 #endif
 
+#ifndef NDEBUG
+// Dumps dependency information about our browser context keyed services
+// into a dot file in the browser context directory.
+const char kDumpBrowserContextDependencyGraph[] = "dump-browser-context-graph";
+#endif
+
 // Sets the tile size used by composited layers.
 const char kDefaultTileWidth[]              = "default-tile-width";
 const char kDefaultTileHeight[]             = "default-tile-height";

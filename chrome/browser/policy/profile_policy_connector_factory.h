@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/profiles/profile_keyed_base_factory.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
 
 class Profile;
 

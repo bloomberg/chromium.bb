@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PROFILES_DEPENDENCY_GRAPH_H_
-#define CHROME_BROWSER_PROFILES_DEPENDENCY_GRAPH_H_
+#ifndef COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_DEPENDENCY_GRAPH_H_
+#define COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_DEPENDENCY_GRAPH_H_
 
 #include <map>
 #include <string>
@@ -64,4 +64,4 @@ class DependencyGraph {
   DISALLOW_COPY_AND_ASSIGN(DependencyGraph);
 };
 
-#endif  // CHROME_BROWSER_PROFILES_DEPENDENCY_GRAPH_H_
+#endif  // COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_DEPENDENCY_GRAPH_H_

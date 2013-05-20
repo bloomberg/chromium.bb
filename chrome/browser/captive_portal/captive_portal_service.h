@@ -12,7 +12,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/backoff_entry.h"
 

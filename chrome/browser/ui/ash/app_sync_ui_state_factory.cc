@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/ash/app_sync_ui_state_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 // static
 AppSyncUIState* AppSyncUIStateFactory::GetForProfile(Profile* profile) {

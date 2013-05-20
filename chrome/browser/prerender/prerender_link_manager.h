@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_handle.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;

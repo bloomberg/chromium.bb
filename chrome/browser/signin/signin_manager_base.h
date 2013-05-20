@@ -33,8 +33,8 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/signin/signin_internals_util.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 class CookieSettings;
 class ProfileIOData;

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 namespace predictors {
 

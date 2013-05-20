@@ -8,7 +8,7 @@
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class ChromeGeolocationPermissionContext;
 class PrefRegistrySyncable;
