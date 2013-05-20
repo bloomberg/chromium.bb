@@ -46,6 +46,7 @@
         # base::LazyInstance is a template that pulls in dynamic_annotations so
         # we need to explictly link in the code for dynamic_annotations.
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../re2/re2.gyp:re2',
       ],
       'conditions': [
         ['use_snappy', {
@@ -82,6 +83,7 @@
         # Include and then exclude so that all files show up in IDEs, even if
         # they don't build.
         'env_chromium.cc',
+        'env_chromium.h',
         'env_idb.h',
         'port/port_chromium.cc',
         'port/port_chromium.h',
@@ -169,6 +171,18 @@
       ],
       'sources/': [
         ['exclude', '_(android|example|portable|posix)\\.cc$'],
+      ],
+    },
+    {
+      'target_name': 'env_chromium_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'leveldatabase',
+        '../../base/base.gyp:test_support_base',
+        '../../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'env_chromium_unittest.cc',
       ],
     },
     {

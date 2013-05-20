@@ -17,16 +17,17 @@
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chromium_logger.h"
+#include "env_chromium.h"
 #include "leveldb/env.h"
 #include "leveldb/slice.h"
 #include "port/port.h"
+#include "third_party/re2/re2/re2.h"
 #include "util/logging.h"
 
 #if defined(OS_WIN)
@@ -39,6 +40,10 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #endif
+
+using namespace leveldb;
+
+namespace leveldb_env {
 
 namespace {
 
@@ -145,29 +150,6 @@ bool sync_parent(const std::string& fname) {
   return true;
 }
 
-enum MethodID {
-  kSequentialFileRead,
-  kSequentialFileSkip,
-  kRandomAccessFileRead,
-  kWritableFileAppend,
-  kWritableFileClose,
-  kWritableFileFlush,
-  kWritableFileSync,
-  kNewSequentialFile,
-  kNewRandomAccessFile,
-  kNewWritableFile,
-  kDeleteFile,
-  kCreateDir,
-  kDeleteDir,
-  kGetFileSize,
-  kRenameFile,
-  kLockFile,
-  kUnlockFile,
-  kGetTestDirectory,
-  kNewLogger,
-  kNumEntries
-};
-
 const char* MethodIDToString(MethodID method) {
   switch (method) {
     case kSequentialFileRead:
@@ -223,14 +205,6 @@ class UMALogger {
   virtual void RecordOSError(MethodID method, base::PlatformFileError error)
       const = 0;
 };
-
-}  // namespace
-
-namespace leveldb {
-
-namespace {
-
-class Thread;
 
 static const base::FilePath::CharType kLevelDBTestDirectoryPrefix[]
     = FILE_PATH_LITERAL("leveldb-test-");
@@ -299,7 +273,7 @@ class ChromiumSequentialFile: public SequentialFile {
         // We leave status as ok if we hit the end of the file
       } else {
         // A partial read with an error: return a non-ok status
-        s = Status::IOError(filename_, strerror(errno));
+        s = MakeIOError(filename_, strerror(errno), kSequentialFileRead, errno);
         uma_logger_->RecordErrorAt(kSequentialFileRead);
       }
     }
@@ -309,7 +283,8 @@ class ChromiumSequentialFile: public SequentialFile {
   virtual Status Skip(uint64_t n) {
     if (fseek(file_, n, SEEK_CUR)) {
       uma_logger_->RecordErrorAt(kSequentialFileSkip);
-      return Status::IOError(filename_, strerror(errno));
+      return MakeIOError(
+          filename_, strerror(errno), kSequentialFileSkip, errno);
     }
     return Status::OK();
   }
@@ -334,7 +309,8 @@ class ChromiumRandomAccessFile: public RandomAccessFile {
     *result = Slice(scratch, (r < 0) ? 0 : r);
     if (r < 0) {
       // An error: return a non-ok status
-      s = Status::IOError(filename_, "Could not perform read");
+      s = MakeIOError(
+          filename_, "Could not perform read", kRandomAccessFileRead);
       uma_logger_->RecordErrorAt(kRandomAccessFileRead);
     }
     return s;
@@ -364,7 +340,8 @@ class ChromiumWritableFile : public WritableFile {
     Status result;
     if (r != data.size()) {
       uma_logger_->RecordOSError(kWritableFileAppend, errno);
-      result = Status::IOError(filename_, strerror(errno));
+      result =
+          MakeIOError(filename_, strerror(errno), kWritableFileAppend, errno);
     }
     return result;
   }
@@ -372,7 +349,8 @@ class ChromiumWritableFile : public WritableFile {
   virtual Status Close() {
     Status result;
     if (fclose(file_) != 0) {
-      result = Status::IOError(filename_, strerror(errno));
+      result =
+          MakeIOError(filename_, strerror(errno), kWritableFileClose, errno);
       uma_logger_->RecordErrorAt(kWritableFileClose);
     }
     file_ = NULL;
@@ -383,7 +361,8 @@ class ChromiumWritableFile : public WritableFile {
     Status result;
     if (HANDLE_EINTR(fflush_wrapper(file_))) {
       int saved_errno = errno;
-      result = Status::IOError(filename_, strerror(saved_errno));
+      result = MakeIOError(
+          filename_, strerror(saved_errno), kWritableFileFlush, saved_errno);
       uma_logger_->RecordOSError(kWritableFileFlush, saved_errno);
     }
     return result;
@@ -402,7 +381,8 @@ class ChromiumWritableFile : public WritableFile {
       error = errno;
     // Report the first error we found.
     if (error) {
-      result = Status::IOError(filename_, strerror(error));
+      result =
+          MakeIOError(filename_, strerror(error), kWritableFileSync, error);
       uma_logger_->RecordErrorAt(kWritableFileSync);
     }
     return result;
@@ -428,7 +408,8 @@ class ChromiumEnv : public Env, public UMALogger {
       *result = NULL;
       int saved_errno = errno;
       RecordOSError(kNewSequentialFile, saved_errno);
-      return Status::IOError(fname, strerror(saved_errno));
+      return MakeIOError(
+          fname, strerror(saved_errno), kNewSequentialFile, saved_errno);
     } else {
       *result = new ChromiumSequentialFile(fname, f, this);
       return Status::OK();
@@ -462,7 +443,10 @@ class ChromiumEnv : public Env, public UMALogger {
       RecordOpenFilesLimit("OtherError");
     *result = NULL;
     RecordOSError(kNewRandomAccessFile, error_code);
-    return Status::IOError(fname, PlatformFileErrorString(error_code));
+    return MakeIOError(fname,
+                       PlatformFileErrorString(error_code),
+                       kNewRandomAccessFile,
+                       error_code);
   }
 
   virtual Status NewWritableFile(const std::string& fname,
@@ -471,12 +455,12 @@ class ChromiumEnv : public Env, public UMALogger {
     FILE* f = fopen_internal(fname.c_str(), "wb");
     if (f == NULL) {
       RecordErrorAt(kNewWritableFile);
-      return Status::IOError(fname, strerror(errno));
+      return MakeIOError(fname, strerror(errno), kNewWritableFile, errno);
     } else {
       if (!sync_parent(fname)) {
         fclose(f);
         RecordErrorAt(kNewWritableFile);
-        return Status::IOError(fname, strerror(errno));
+        return MakeIOError(fname, strerror(errno), kNewWritableFile, errno);
       }
       *result = new ChromiumWritableFile(fname, f, this);
       return Status::OK();
@@ -507,7 +491,7 @@ class ChromiumEnv : public Env, public UMALogger {
     Status result;
     // TODO(jorlow): Should we assert this is a file?
     if (!::file_util::Delete(CreateFilePath(fname), false)) {
-      result = Status::IOError(fname, "Could not delete file.");
+      result = MakeIOError(fname, "Could not delete file.", kDeleteFile);
       RecordErrorAt(kDeleteFile);
     }
     return result;
@@ -516,7 +500,7 @@ class ChromiumEnv : public Env, public UMALogger {
   virtual Status CreateDir(const std::string& name) {
     Status result;
     if (!::file_util::CreateDirectory(CreateFilePath(name))) {
-      result = Status::IOError(name, "Could not create directory.");
+      result = MakeIOError(name, "Could not create directory.", kCreateDir);
       RecordErrorAt(kCreateDir);
     }
     return result;
@@ -526,7 +510,7 @@ class ChromiumEnv : public Env, public UMALogger {
     Status result;
     // TODO(jorlow): Should we assert this is a directory?
     if (!::file_util::Delete(CreateFilePath(name), false)) {
-      result = Status::IOError(name, "Could not delete directory.");
+      result = MakeIOError(name, "Could not delete directory.", kDeleteDir);
       RecordErrorAt(kDeleteDir);
     }
     return result;
@@ -537,7 +521,7 @@ class ChromiumEnv : public Env, public UMALogger {
     int64_t signed_size;
     if (!::file_util::GetFileSize(CreateFilePath(fname), &signed_size)) {
       *size = 0;
-      s = Status::IOError(fname, "Could not determine file size.");
+      s = MakeIOError(fname, "Could not determine file size.", kGetFileSize);
       RecordErrorAt(kGetFileSize);
     } else {
       *size = static_cast<uint64_t>(signed_size);
@@ -601,7 +585,7 @@ class ChromiumEnv : public Env, public UMALogger {
     char buf[100];
     snprintf(buf, sizeof(buf), "Could not rename file: %s",
              PlatformFileErrorString(error));
-    return Status::IOError(src, buf);
+    return MakeIOError(src, buf, kRenameFile, error);
   }
 
   virtual Status LockFile(const std::string& fname, FileLock** lock) {
@@ -637,7 +621,8 @@ class ChromiumEnv : public Env, public UMALogger {
     }
 
     if (error_code != ::base::PLATFORM_FILE_OK) {
-      result = Status::IOError(fname, PlatformFileErrorString(error_code));
+      result = MakeIOError(
+          fname, PlatformFileErrorString(error_code), kLockFile, error_code);
       RecordOSError(kLockFile, error_code);
     } else {
       ChromiumFileLock* my_lock = new ChromiumFileLock;
@@ -651,7 +636,7 @@ class ChromiumEnv : public Env, public UMALogger {
     ChromiumFileLock* my_lock = reinterpret_cast<ChromiumFileLock*>(lock);
     Status result;
     if (!::base::ClosePlatformFile(my_lock->file_)) {
-      result = Status::IOError("Could not close lock file.");
+      result = MakeIOError("Could not close lock file.", "", kUnlockFile);
       RecordErrorAt(kUnlockFile);
     }
     delete my_lock;
@@ -669,7 +654,9 @@ class ChromiumEnv : public Env, public UMALogger {
                                                &test_directory_)) {
         mu_.Release();
         RecordErrorAt(kGetTestDirectory);
-        return Status::IOError("Could not create temp directory.");
+        return MakeIOError("Could not create temp directory.",
+                           "",
+                           kGetTestDirectory);
       }
     }
     *path = FilePathToString(test_directory_);
@@ -683,11 +670,11 @@ class ChromiumEnv : public Env, public UMALogger {
       *result = NULL;
       int saved_errno = errno;
       RecordOSError(kNewLogger, saved_errno);
-      return Status::IOError(fname, strerror(saved_errno));
+      return MakeIOError(fname, strerror(saved_errno), kNewLogger, saved_errno);
     } else {
       if (!sync_parent(fname)) {
         fclose(f);
-        return Status::IOError(fname, strerror(errno));
+        return MakeIOError(fname, strerror(errno), kNewLogger, errno);
       }
       *result = new ChromiumLogger(f);
       return Status::OK();
@@ -893,14 +880,80 @@ class IDBEnv : public ChromiumEnv {
 ::base::LazyInstance<ChromiumEnv>::Leaky
     default_env = LAZY_INSTANCE_INITIALIZER;
 
+}  // unnamed namespace
+
+Status MakeIOError(Slice filename,
+                   const char* message,
+                   MethodID method,
+                   int saved_errno) {
+  char buf[512];
+  snprintf(buf,
+           sizeof(buf),
+           "%s (ChromeMethodErrno: %d::%s::%d)",
+           message,
+           method,
+           MethodIDToString(method),
+           saved_errno);
+  return Status::IOError(filename, buf);
 }
 
+Status MakeIOError(Slice filename,
+                   const char* message,
+                   MethodID method,
+                   base::PlatformFileError error) {
+  DCHECK(error < 0);
+  char buf[512];
+  snprintf(buf,
+           sizeof(buf),
+           "%s (ChromeMethodPFE: %d::%s::%d)",
+           message,
+           method,
+           MethodIDToString(method),
+           -error);
+  return Status::IOError(filename, buf);
+}
+
+Status MakeIOError(Slice filename, const char* message, MethodID method) {
+  char buf[512];
+  snprintf(buf,
+           sizeof(buf),
+           "%s (ChromeMethodOnly: %d::%s)",
+           message,
+           method,
+           MethodIDToString(method));
+  return Status::IOError(filename, buf);
+}
+
+bool ParseMethodAndError(const char* string, int* method, int* error) {
+  if (RE2::PartialMatch(string, "ChromeMethodOnly: (\\d+)", method))
+    return true;
+  if (RE2::PartialMatch(string,
+                        "ChromeMethodPFE: (\\d+)::.*::(\\d+)",
+                        method,
+                        error)) {
+    *error = -*error;
+    return true;
+  }
+  if (RE2::PartialMatch(string,
+                        "ChromeMethodErrno: (\\d+)::.*::(\\d+)",
+                        method,
+                        error)) {
+    return true;
+  }
+  return false;
+}
+
+}  // namespace leveldb_env
+
+namespace leveldb {
+
 Env* IDBEnv() {
-  return idb_env.Pointer();
+  return leveldb_env::idb_env.Pointer();
 }
 
 Env* Env::Default() {
-  return default_env.Pointer();
+  return leveldb_env::default_env.Pointer();
 }
 
-}
+}  // namespace leveldb
+
