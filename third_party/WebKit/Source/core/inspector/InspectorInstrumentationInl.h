@@ -165,7 +165,6 @@ inline void didInsertDOMNode(Document* document, Node* node)
         didInsertDOMNodeImpl(instrumentingAgents, node);
 }
 
-
 inline void willModifyDOMAttr(Document* document, Element* element, const AtomicString& oldValue, const AtomicString& newValue)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
@@ -186,6 +185,7 @@ inline void didRemoveDOMAttr(Document* document, Element* element, const AtomicS
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
         didRemoveDOMAttrImpl(instrumentingAgents, element, name);
 }
+
 inline void characterDataModified(Document* document, CharacterData* characterData)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
@@ -220,13 +220,13 @@ inline void mediaQueryResultChanged(Document* document)
         mediaQueryResultChangedImpl(instrumentingAgents);
 }
 
-
 inline void didCreateNamedFlow(Document* document, NamedFlow* namedFlow)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
         didCreateNamedFlowImpl(instrumentingAgents, document, namedFlow);
 }
+
 inline void willRemoveNamedFlow(Document* document, NamedFlow* namedFlow)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
@@ -570,19 +570,19 @@ inline void didLoadResourceFromMemoryCache(Page* page, DocumentLoader* loader, C
         didLoadResourceFromMemoryCacheImpl(instrumentingAgents, loader, resource);
 }
 
-inline void didReceiveResourceData(const InspectorInstrumentationCookie& cookie)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (cookie.isValid())
-        didReceiveResourceDataImpl(cookie);
-}
-
 inline InspectorInstrumentationCookie willReceiveResourceData(Frame* frame, unsigned long identifier, int length)
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
         return willReceiveResourceDataImpl(instrumentingAgents, frame, identifier, length);
     return InspectorInstrumentationCookie();
+}
+
+inline void didReceiveResourceData(const InspectorInstrumentationCookie& cookie)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (cookie.isValid())
+        didReceiveResourceDataImpl(cookie);
 }
 
 inline InspectorInstrumentationCookie willReceiveResourceResponse(Frame* frame, unsigned long identifier, const ResourceResponse& response)
