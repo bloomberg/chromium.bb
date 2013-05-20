@@ -39,7 +39,10 @@ public:
     virtual bool isMeasure() { return true; }
 
 private:
-    PerformanceMeasure(const String& name, double startTime, double duration) : PerformanceEntry(name, "measure", startTime, duration) { }
+    PerformanceMeasure(const String& name, double startTime, double duration) : PerformanceEntry(name, "measure", startTime, duration)
+    {
+        ScriptWrappable::init(this);
+    }
     ~PerformanceMeasure() { }
 };
 

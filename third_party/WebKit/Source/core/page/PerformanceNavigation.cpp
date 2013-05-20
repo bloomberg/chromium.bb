@@ -40,6 +40,7 @@ namespace WebCore {
 PerformanceNavigation::PerformanceNavigation(Frame* frame)
     : DOMWindowProperty(frame)
 {
+    ScriptWrappable::init(this);
 }
 
 unsigned short PerformanceNavigation::type() const

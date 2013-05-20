@@ -70,6 +70,7 @@ inline EventSource::EventSource(ScriptExecutionContext* context, const KURL& url
     , m_requestInFlight(false)
     , m_reconnectDelay(defaultReconnectDelay)
 {
+    ScriptWrappable::init(this);
     eventSourceInit.get("withCredentials", m_withCredentials);
 }
 

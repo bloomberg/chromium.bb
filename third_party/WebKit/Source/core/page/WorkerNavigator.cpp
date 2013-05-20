@@ -33,6 +33,7 @@ namespace WebCore {
 WorkerNavigator::WorkerNavigator(const String& userAgent)
     : m_userAgent(userAgent)
 {
+    ScriptWrappable::init(this);
 }
 
 WorkerNavigator::~WorkerNavigator()

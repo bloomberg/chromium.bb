@@ -44,6 +44,7 @@ SpeechInputResult::SpeechInputResult(const String& utterance, double confidence)
     : m_utterance(utterance)
     , m_confidence(confidence)
 {
+    ScriptWrappable::init(this);
 }
 
 double SpeechInputResult::confidence() const

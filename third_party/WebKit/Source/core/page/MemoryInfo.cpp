@@ -135,6 +135,7 @@ size_t quantizeMemorySize(size_t size)
 
 MemoryInfo::MemoryInfo(Frame* frame)
 {
+    ScriptWrappable::init(this);
     if (!frame || !frame->settings())
         return;
 

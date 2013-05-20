@@ -32,6 +32,7 @@
 #define MemoryInfo_h
 
 #include "bindings/v8/ScriptGCEvent.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
@@ -39,7 +40,7 @@ namespace WebCore {
 
 class Frame;
 
-class MemoryInfo : public RefCounted<MemoryInfo> {
+class MemoryInfo : public RefCounted<MemoryInfo>, public ScriptWrappable {
 public:
     static PassRefPtr<MemoryInfo> create(Frame* frame) { return adoptRef(new MemoryInfo(frame)); }
 

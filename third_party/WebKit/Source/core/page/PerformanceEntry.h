@@ -32,13 +32,14 @@
 #ifndef PerformanceEntry_h
 #define PerformanceEntry_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class PerformanceEntry : public RefCounted<PerformanceEntry> {
+class PerformanceEntry : public RefCounted<PerformanceEntry>, public ScriptWrappable {
 public:
     virtual ~PerformanceEntry();
 

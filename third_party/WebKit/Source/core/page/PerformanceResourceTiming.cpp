@@ -83,6 +83,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(const AtomicString& initiat
     , m_shouldReportDetails(passesTimingAllowCheck(response, requestingDocument))
     , m_requestingDocument(requestingDocument)
 {
+    ScriptWrappable::init(this);
 }
 
 PerformanceResourceTiming::~PerformanceResourceTiming()

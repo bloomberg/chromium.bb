@@ -31,6 +31,7 @@
 #ifndef PerformanceTiming_h
 #define PerformanceTiming_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/page/DOMWindowProperty.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -43,7 +44,7 @@ struct DocumentTiming;
 class Frame;
 class ResourceLoadTiming;
 
-class PerformanceTiming : public RefCounted<PerformanceTiming>, public DOMWindowProperty {
+class PerformanceTiming : public RefCounted<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
 public:
     static PassRefPtr<PerformanceTiming> create(Frame* frame) { return adoptRef(new PerformanceTiming(frame)); }
 

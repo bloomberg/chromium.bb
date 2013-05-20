@@ -26,6 +26,7 @@
 #ifndef WorkerNavigator_h
 #define WorkerNavigator_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/page/NavigatorBase.h"
 #include "core/platform/Supplementable.h"
 #include <wtf/PassRefPtr.h>
@@ -35,7 +36,7 @@
 
 namespace WebCore {
 
-class WorkerNavigator : public NavigatorBase, public RefCounted<WorkerNavigator>, public Supplementable<WorkerNavigator> {
+class WorkerNavigator : public RefCounted<WorkerNavigator>, public ScriptWrappable, public NavigatorBase, public Supplementable<WorkerNavigator> {
 public:
     static PassRefPtr<WorkerNavigator> create(const String& userAgent) { return adoptRef(new WorkerNavigator(userAgent)); }
     virtual ~WorkerNavigator();

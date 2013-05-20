@@ -28,15 +28,15 @@
 
 #if ENABLE(INPUT_SPEECH)
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/page/SpeechInputResult.h"
-
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class SpeechInputResultList : public RefCounted<SpeechInputResultList> {
+class SpeechInputResultList : public RefCounted<SpeechInputResultList>, public ScriptWrappable {
 public:
     static PassRefPtr<SpeechInputResultList> create(const SpeechInputResultArray& results);
 

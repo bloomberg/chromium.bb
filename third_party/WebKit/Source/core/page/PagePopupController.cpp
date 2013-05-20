@@ -41,6 +41,7 @@ PagePopupController::PagePopupController(PagePopupClient* client)
     : m_popupClient(client)
 {
     ASSERT(client);
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<PagePopupController> PagePopupController::create(PagePopupClient* client)

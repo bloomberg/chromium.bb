@@ -28,15 +28,16 @@
 
 #if ENABLE(INPUT_SPEECH)
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 // This class holds one speech recognition result including the text and other related
 // fields, as received from the embedder.
-class SpeechInputResult : public RefCounted<SpeechInputResult> {
+class SpeechInputResult : public RefCounted<SpeechInputResult>, public ScriptWrappable {
 public:
     static PassRefPtr<SpeechInputResult> create(const SpeechInputResult& source);
     static PassRefPtr<SpeechInputResult> create(const String& utterance, double confidence);

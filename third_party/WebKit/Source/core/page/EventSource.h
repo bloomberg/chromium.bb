@@ -32,6 +32,7 @@
 #ifndef EventSource_h
 #define EventSource_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
@@ -48,7 +49,7 @@ class ResourceResponse;
 class TextResourceDecoder;
 class ThreadableLoader;
 
-class EventSource : public RefCounted<EventSource>, public EventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
+class EventSource : public RefCounted<EventSource>, public ScriptWrappable, public EventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<EventSource> create(ScriptExecutionContext*, const String& url, const Dictionary&, ExceptionCode&);

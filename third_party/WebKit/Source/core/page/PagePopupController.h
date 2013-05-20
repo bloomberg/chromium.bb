@@ -31,14 +31,15 @@
 #ifndef PagePopupController_h
 #define PagePopupController_h
 
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class PagePopupClient;
 
-class PagePopupController : public RefCounted<PagePopupController> {
+class PagePopupController : public RefCounted<PagePopupController>, public ScriptWrappable {
 public:
     static PassRefPtr<PagePopupController> create(PagePopupClient*);
     void setValueAndClosePopup(int numValue, const String& stringValue);

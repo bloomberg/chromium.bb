@@ -31,6 +31,7 @@
 #ifndef PerformanceNavigation_h
 #define PerformanceNavigation_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/page/DOMWindowProperty.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -39,7 +40,7 @@ namespace WebCore {
 
 class Frame;
 
-class PerformanceNavigation : public RefCounted<PerformanceNavigation>, public DOMWindowProperty {
+class PerformanceNavigation : public RefCounted<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
 public:
     static PassRefPtr<PerformanceNavigation> create(Frame* frame) { return adoptRef(new PerformanceNavigation(frame)); }
 

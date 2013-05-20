@@ -48,6 +48,7 @@ SpeechInputResult* SpeechInputResultList::item(unsigned index)
 SpeechInputResultList::SpeechInputResultList(const SpeechInputResultArray& results)
     : m_results(results) // Takes a copy of the array of RefPtrs.
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore
