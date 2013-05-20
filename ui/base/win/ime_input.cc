@@ -4,11 +4,16 @@
 
 #include "ui/base/win/ime_input.h"
 
+#include <atlbase.h>
+#include <atlcom.h>
+#include <msctf.h>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_comptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/composition_text.h"
 
@@ -130,7 +135,23 @@ bool ImeInput::SetInputLanguage() {
   // while composing a text.
   HKL keyboard_layout = ::GetKeyboardLayout(0);
   input_language_id_ = reinterpret_cast<LANGID>(keyboard_layout);
-  ime_status_ = (::ImmIsIME(keyboard_layout) == TRUE);
+
+  // Check TSF Input Processor first.
+  // If the active profile is TSF INPUTPROCESSOR, this is IME.
+  base::win::ScopedComPtr<ITfInputProcessorProfileMgr> prof_mgr;
+  TF_INPUTPROCESSORPROFILE prof;
+  if (SUCCEEDED(prof_mgr.CreateInstance(CLSID_TF_InputProcessorProfiles)) &&
+      SUCCEEDED(prof_mgr->GetActiveProfile(GUID_TFCAT_TIP_KEYBOARD, &prof)) &&
+      prof.hkl == NULL &&
+      prof.dwProfileType == TF_PROFILETYPE_INPUTPROCESSOR) {
+      ime_status_ = true;
+  } else {
+    // If the curent language is not using TSF, check IMM32 based IMEs.
+    // As ImmIsIME always returns non-0 value on Vista+, use ImmGetIMEFileName
+    // instead to check if this HKL has any associated IME file.
+    ime_status_ = (ImmGetIMEFileName(keyboard_layout, NULL, 0) != 0);
+  }
+
   return ime_status_;
 }
 
