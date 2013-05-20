@@ -55,7 +55,6 @@ enum EjectWinLockOutcomes {
 // reports that some floppy drives don't report as DRIVE_REMOVABLE.
 DeviceType GetDeviceType(const string16& mount_point) {
   UINT drive_type = GetDriveType(mount_point.c_str());
-  VLOG(1) << "Getting drive type for " << mount_point << " is " << drive_type;
   if (drive_type == DRIVE_FIXED || drive_type == DRIVE_REMOTE ||
       drive_type == DRIVE_RAMDISK) {
     return FIXED;
@@ -79,7 +78,6 @@ DeviceType GetDeviceType(const string16& mount_point) {
       kMaxPathBufLen);
   if (dos_device == 0 && dos_device_slash == 0)
     return FLOPPY;
-  VLOG(1) << "Got device path " << device_path << " and " << device_path_slash;
   if (device_path.find(L"Floppy") != string16::npos ||
       device_path_slash.find(L"Floppy") != string16::npos) {
     return FLOPPY;
@@ -143,7 +141,6 @@ bool GetDeviceDetails(const base::FilePath& device_path,
                                           kMaxPathBufLen)) {
       return false;
     }
-    VLOG(1) << "guid=" << guid;
   }
 
   // If we're adding a floppy drive, return without querying any more
@@ -151,7 +148,6 @@ bool GetDeviceDetails(const base::FilePath& device_path,
   // Note: treats FLOPPY as FIXED_MASS_STORAGE. This is intentional.
   DeviceType device_type = GetDeviceType(mount_point);
   if (device_type == FLOPPY) {
-    VLOG(1) << "Returning floppy";
     if (info) {
       info->device_id = chrome::StorageInfo::MakeDeviceId(
           chrome::StorageInfo::FIXED_MASS_STORAGE, UTF16ToUTF8(guid));
@@ -386,7 +382,6 @@ void VolumeMountWatcherWin::AddDevicesOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < removable_devices.size(); i++) {
-    VLOG(1) << "Adding device " << removable_devices[i].value();
     if (ContainsKey(pending_device_checks_, removable_devices[i]))
       continue;
     pending_device_checks_.insert(removable_devices[i]);
