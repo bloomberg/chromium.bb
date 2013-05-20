@@ -182,7 +182,7 @@ float* FFTFrame::imagData() const
 OMXFFTSpec_R_F32* FFTFrame::contextForSize(unsigned log2FFTSize)
 {
     ASSERT(log2FFTSize);
-    ASSERT(log2FFTSize < kMaxFFTPow2Size);
+    ASSERT(log2FFTSize <= kMaxFFTPow2Size);
     int bufSize;
     OMXResult status = omxSP_FFTGetBufSize_R_F32(log2FFTSize, &bufSize);
 
