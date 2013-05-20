@@ -57,22 +57,6 @@ struct SecurityOriginHash;
 // -------|-----+++++++++++++++|
 // -------|-----+++++++++++++++|+++++
 
-// The behavior of the cache changes in the following way if shouldMakeResourcePurgeableOnEviction
-// returns true.
-//
-// 1. Dead resources in the cache are kept in non-purgeable memory.
-// 2. When we prune dead resources, instead of freeing them, we mark their memory as purgeable and
-//    keep the resources until the kernel reclaims the purgeable memory.
-//
-// By leaving the in-cache dead resources in dirty resident memory, we decrease the likelihood of
-// the kernel claiming that memory and forcing us to refetch the resource (for example when a user
-// presses back).
-//
-// And by having an unbounded number of resource objects using purgeable memory, we can use as much
-// memory as is available on the machine. The trade-off here is that the CachedResource object (and
-// its member variables) are allocated in non-purgeable TC-malloc'd memory so we would see slightly
-// more memory use due to this.
-
 class MemoryCache {
     WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -107,7 +91,7 @@ public:
     
     CachedResource* resourceForURL(const KURL&);
     
-    bool add(CachedResource* resource);
+    void add(CachedResource*);
     void remove(CachedResource* resource) { evict(resource); }
 
     static KURL removeFragmentIdentifierIfNeeded(const KURL& originalURL);
@@ -122,14 +106,8 @@ public:
     //  - totalBytes: The maximum number of bytes that the cache should consume overall.
     void setCapacities(unsigned minDeadBytes, unsigned maxDeadBytes, unsigned totalBytes);
 
-    // Turn the cache on and off.  Disabling the cache will remove all resources from the cache.  They may
-    // still live on if they are referenced by some Web page though.
-    void setDisabled(bool);
-    bool disabled() const { return m_disabled; }
-
     void evictResources();
-    
-    void setPruneEnabled(bool enabled) { m_pruneEnabled = enabled; }
+
     void prune();
     void pruneToPercentage(float targetPercentLive);
 
@@ -149,8 +127,6 @@ public:
 
     void addToLiveResourcesSize(CachedResource*);
     void removeFromLiveResourcesSize(CachedResource*);
-
-    static bool shouldMakeResourcePurgeableOnEviction();
 
     static void removeUrlFromCache(ScriptExecutionContext*, const String& urlString);
 
@@ -193,13 +169,10 @@ private:
     void pruneDeadResourcesToSize(unsigned targetSize);
     void pruneLiveResourcesToSize(unsigned targetSize);
 
-    bool makeResourcePurgeable(CachedResource*);
     void evict(CachedResource*);
 
     static void removeUrlFromCacheImpl(ScriptExecutionContext*, const String& urlString);
 
-    bool m_disabled;  // Whether or not the cache is enabled.
-    bool m_pruneEnabled;
     bool m_inPruneResources;
 
     unsigned m_capacity;
@@ -222,11 +195,6 @@ private:
     // referenced by a Web page).
     HashMap<String, CachedResource*> m_resources;
 };
-
-inline bool MemoryCache::shouldMakeResourcePurgeableOnEviction()
-{
-    return false;
-}
 
 // Function to obtain the global cache.
 MemoryCache* memoryCache();

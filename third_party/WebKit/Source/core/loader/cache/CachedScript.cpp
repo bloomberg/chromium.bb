@@ -86,7 +86,7 @@ void CachedScript::destroyDecodedData()
 {
     m_script = String();
     setDecodedSize(0);
-    if (!MemoryCache::shouldMakeResourcePurgeableOnEviction() && isSafeToMakePurgeable())
+    if (isSafeToMakePurgeable())
         makePurgeable(true);
 }
 

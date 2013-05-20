@@ -111,7 +111,6 @@ public:
     DocumentLoader* documentLoader() const { return m_documentLoader; }
     void clearDocumentLoader() { m_documentLoader = 0; }
 
-    void removeCachedResource(CachedResource*) const;
     void loadDone(CachedResource*);
     void garbageCollectDocumentResources();
     

@@ -189,7 +189,6 @@ void ImageLoader::updateFromElement()
             document->cachedResourceLoader()->setAutoLoadImages(false);
             newImage = new CachedImage(request.resourceRequest());
             newImage->setLoading(true);
-            newImage->setOwningCachedResourceLoader(document->cachedResourceLoader());
             document->cachedResourceLoader()->m_documentResources.set(newImage->url(), newImage.get());
             document->cachedResourceLoader()->setAutoLoadImages(autoLoadOtherImages);
         } else

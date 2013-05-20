@@ -115,9 +115,6 @@ CachedResourceLoader::~CachedResourceLoader()
     m_document = 0;
 
     clearPreloads();
-    DocumentResourceMap::iterator end = m_documentResources.end();
-    for (DocumentResourceMap::iterator it = m_documentResources.begin(); it != end; ++it)
-        it->value->setOwningCachedResourceLoader(0);
 
     // Make sure no requests still point to this CachedResourceLoader
     ASSERT(m_requestCount == 0);
@@ -368,14 +365,6 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
     if (Frame* f = frame())
         f->loader()->client()->dispatchWillRequestResource(&request);
 
-    if (memoryCache()->disabled()) {
-        DocumentResourceMap::iterator it = m_documentResources.find(url.string());
-        if (it != m_documentResources.end()) {
-            it->value->setOwningCachedResourceLoader(0);
-            m_documentResources.remove(it);
-        }
-    }
-
     // See if we can use an existing resource from the cache.
     CachedResourceHandle<CachedResource> resource = memoryCache()->resourceForURL(url);
 
@@ -524,7 +513,6 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::revalidateResource(co
 {
     ASSERT(resource);
     ASSERT(resource->inCache());
-    ASSERT(!memoryCache()->disabled());
     ASSERT(resource->canUseCacheValidator());
     ASSERT(!resource->resourceToRevalidate());
 
@@ -549,8 +537,7 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::loadResource(CachedRe
     addAdditionalRequestHeaders(request.mutableResourceRequest(), type);
     CachedResourceHandle<CachedResource> resource = createResource(type, request.mutableResourceRequest(), charset);
 
-    if (!memoryCache()->add(resource.get()))
-        resource->setOwningCachedResourceLoader(this);
+    memoryCache()->add(resource.get());
     storeResourceTimingInitiatorInformation(resource, request);
     return resource;
 }
@@ -740,16 +727,6 @@ CachePolicy CachedResourceLoader::cachePolicy(CachedResource::Type type) const
     return CachePolicyVerify;
 }
 
-void CachedResourceLoader::removeCachedResource(CachedResource* resource) const
-{
-#ifndef NDEBUG
-    DocumentResourceMap::iterator it = m_documentResources.find(resource->url());
-    if (it != m_documentResources.end())
-        ASSERT(it->value.get() == resource);
-#endif
-    m_documentResources.remove(resource->url());
-}
-
 void CachedResourceLoader::loadDone(CachedResource* resource)
 {
     RefPtr<DocumentLoader> protectDocumentLoader(m_documentLoader);
@@ -795,10 +772,8 @@ void CachedResourceLoader::garbageCollectDocumentResources()
     StringVector resourcesToDelete;
 
     for (DocumentResourceMap::iterator it = m_documentResources.begin(); it != m_documentResources.end(); ++it) {
-        if (it->value->hasOneHandle()) {
+        if (it->value->hasOneHandle())
             resourcesToDelete.append(it->key);
-            it->value->setOwningCachedResourceLoader(0);
-        }
     }
 
     for (StringVector::const_iterator it = resourcesToDelete.begin(); it != resourcesToDelete.end(); ++it)

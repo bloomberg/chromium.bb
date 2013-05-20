@@ -165,7 +165,6 @@ CachedResource::CachedResource(const ResourceRequest& request, Type type)
     , m_prevInAllResourcesList(0)
     , m_nextInLiveResourcesList(0)
     , m_prevInLiveResourcesList(0)
-    , m_owningCachedResourceLoader(0)
     , m_resourceToRevalidate(0)
     , m_proxyResource(0)
 {
@@ -195,9 +194,6 @@ CachedResource::~CachedResource()
     m_deleted = true;
     cachedResourceLeakCounter.decrement();
 #endif
-
-    if (m_owningCachedResourceLoader)
-        m_owningCachedResourceLoader->removeCachedResource(this);
 }
 
 void CachedResource::failBeforeStarting()
@@ -864,7 +860,6 @@ void CachedResource::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_prevInAllResourcesList, "prevInAllResourcesList");
     info.addMember(m_nextInLiveResourcesList, "nextInLiveResourcesList");
     info.addMember(m_prevInLiveResourcesList, "prevInLiveResourcesList");
-    info.addMember(m_owningCachedResourceLoader, "owningCachedResourceLoader");
     info.addMember(m_resourceToRevalidate, "resourceToRevalidate");
     info.addMember(m_proxyResource, "proxyResource");
     info.addMember(m_handlesToRevalidate, "handlesToRevalidate");

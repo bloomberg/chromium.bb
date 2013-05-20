@@ -66,9 +66,7 @@ MemoryCache* memoryCache()
 }
 
 MemoryCache::MemoryCache()
-    : m_disabled(false)
-    , m_pruneEnabled(true)
-    , m_inPruneResources(false)
+    : m_inPruneResources(false)
     , m_capacity(cDefaultCacheCapacity)
     , m_minDeadCapacity(0)
     , m_maxDeadCapacity(cDefaultCacheCapacity)
@@ -92,11 +90,8 @@ KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL)
     return url;
 }
 
-bool MemoryCache::add(CachedResource* resource)
+void MemoryCache::add(CachedResource* resource)
 {
-    if (disabled())
-        return false;
-
     ASSERT(WTF::isMainThread());
     m_resources.set(resource->url(), resource);
     resource->setInCache(true);
@@ -104,7 +99,6 @@ bool MemoryCache::add(CachedResource* resource)
     resourceAccessed(resource);
     
     LOG(ResourceLoading, "MemoryCache::add Added '%s', resource %p\n", resource->url().string().latin1().data(), resource);
-    return true;
 }
 
 void MemoryCache::revalidationSucceeded(CachedResource* revalidatingResource, const ResourceResponse& response)
@@ -152,15 +146,11 @@ CachedResource* MemoryCache::resourceForURL(const KURL& resourceURL)
     ASSERT(WTF::isMainThread());
     KURL url = removeFragmentIdentifierIfNeeded(resourceURL);
     CachedResource* resource = m_resources.get(url);
-    bool wasPurgeable = MemoryCache::shouldMakeResourcePurgeableOnEviction() && resource && resource->isPurgeable();
     if (resource && !resource->makePurgeable(false)) {
         ASSERT(!resource->hasClients());
         evict(resource);
         return 0;
     }
-    // Add the size back since we had subtracted it when we marked the memory as purgeable.
-    if (wasPurgeable)
-        adjustSize(resource->hasClients(), resource->size());
     return resource;
 }
 
@@ -181,9 +171,6 @@ unsigned MemoryCache::liveCapacity() const
 
 void MemoryCache::pruneLiveResources()
 {
-    if (!m_pruneEnabled)
-        return;
-
     unsigned capacity = liveCapacity();
     if (capacity && m_liveSize <= capacity)
         return;
@@ -195,9 +182,6 @@ void MemoryCache::pruneLiveResources()
 
 void MemoryCache::pruneLiveResourcesToPercentage(float prunePercentage)
 {
-    if (!m_pruneEnabled)
-        return;
-
     if (prunePercentage < 0.0f  || prunePercentage > 0.95f)
         return;
 
@@ -249,9 +233,6 @@ void MemoryCache::pruneLiveResourcesToSize(unsigned targetSize)
 
 void MemoryCache::pruneDeadResources()
 {
-    if (!m_pruneEnabled)
-        return;
-
     unsigned capacity = deadCapacity();
     if (capacity && m_deadSize <= capacity)
         return;
@@ -262,9 +243,6 @@ void MemoryCache::pruneDeadResources()
 
 void MemoryCache::pruneDeadResourcesToPercentage(float prunePercentage)
 {
-    if (!m_pruneEnabled)
-        return;
-
     if (prunePercentage < 0.0f  || prunePercentage > 0.95f)
         return;
 
@@ -329,13 +307,9 @@ void MemoryCache::pruneDeadResourcesToSize(unsigned targetSize)
         while (current) {
             CachedResourceHandle<CachedResource> previous = current->m_prevInAllResourcesList;
             ASSERT(!previous || previous->inCache());
-            if (!current->hasClients() && !current->isPreloaded() && !current->isCacheValidator()) {
-                if (!makeResourcePurgeable(current))
-                    evict(current);
-
-                if (targetSize && m_deadSize <= targetSize)
-                    return;
-            }
+            if (!current->hasClients() && !current->isPreloaded() && !current->isCacheValidator()
+                && targetSize && m_deadSize <= targetSize)
+                return;
             if (previous && !previous->inCache())
                 break;
             current = previous.get();
@@ -360,28 +334,6 @@ void MemoryCache::setCapacities(unsigned minDeadBytes, unsigned maxDeadBytes, un
     prune();
 }
 
-bool MemoryCache::makeResourcePurgeable(CachedResource* resource)
-{
-    if (!MemoryCache::shouldMakeResourcePurgeableOnEviction())
-        return false;
-
-    if (!resource->inCache())
-        return false;
-
-    if (resource->isPurgeable())
-        return true;
-
-    if (!resource->isSafeToMakePurgeable())
-        return false;
-
-    if (!resource->makePurgeable(true))
-        return false;
-
-    adjustSize(resource->hasClients(), -static_cast<int>(resource->size()));
-
-    return true;
-}
-
 void MemoryCache::evict(CachedResource* resource)
 {
     ASSERT(WTF::isMainThread());
@@ -396,11 +348,7 @@ void MemoryCache::evict(CachedResource* resource)
         // Remove from the appropriate LRU list.
         removeFromLRUList(resource);
         removeFromLiveDecodedResourcesList(resource);
-
-        // If the resource was purged, it means we had already decremented the size when we made the
-        // resource purgeable in makeResourcePurgeable(). So adjust the size if we are evicting a
-        // resource that was not marked as purgeable.
-        if (!MemoryCache::shouldMakeResourcePurgeableOnEviction() || !resource->isPurgeable())
+        if (!resource->isPurgeable())
             adjustSize(resource->hasClients(), -static_cast<int>(resource->size()));
     } else
         ASSERT(m_resources.get(resource->url()) != resource);
@@ -703,33 +651,18 @@ void MemoryCache::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_resources, "resources");
     info.addMember(m_allResources, "allResources");
     info.addMember(m_liveDecodedResources, "liveDecodedResources");
-#if !ENABLE(CACHE_PARTITIONING)
     for (CachedResourceMap::const_iterator i = m_resources.begin(); i != m_resources.end(); ++i)
         info.addMember(i->value, "cachedResourceItem", WTF::RetainingPointer);
-#endif
 }
 
-void MemoryCache::setDisabled(bool disabled)
+void MemoryCache::evictResources()
 {
-    m_disabled = disabled;
-    if (!m_disabled)
-        return;
-
     for (;;) {
         CachedResourceMap::iterator i = m_resources.begin();
         if (i == m_resources.end())
             break;
         evict(i->value);
     }
-}
-
-void MemoryCache::evictResources()
-{
-    if (disabled())
-        return;
-
-    setDisabled(true);
-    setDisabled(false);
 }
 
 void MemoryCache::prune()

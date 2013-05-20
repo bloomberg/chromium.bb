@@ -143,7 +143,7 @@ void CachedCSSStyleSheet::destroyDecodedData()
 
     setDecodedSize(0);
 
-    if (!MemoryCache::shouldMakeResourcePurgeableOnEviction() && isSafeToMakePurgeable())
+    if (isSafeToMakePurgeable())
         makePurgeable(true);
 }
 
