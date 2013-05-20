@@ -33,6 +33,8 @@ namespace {
 // 16: approximately 250ms of content in 60 fps movies.
 const size_t kAccessUnitSize = 16;
 
+const uint8 kVorbisPadding[] = { 0xff, 0xff, 0xff, 0xff };
+
 }  // namespace
 
 namespace webkit_media {
@@ -89,10 +91,10 @@ MediaSourceDelegate::MediaSourceDelegate(
 MediaSourceDelegate::~MediaSourceDelegate() {}
 
 void MediaSourceDelegate::Initialize(
-    scoped_ptr<WebKit::WebMediaSource> media_source,
+    WebKit::WebMediaSource* media_source,
     const UpdateNetworkStateCB& update_network_state_cb) {
   DCHECK(media_source);
-  media_source_ = media_source.Pass();
+  media_source_.reset(media_source);
   update_network_state_cb_ = update_network_state_cb;
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
@@ -301,6 +303,16 @@ void MediaSourceDelegate::OnBufferReady(
       params->access_units[index].data = std::vector<uint8>(
           buffer->GetData(),
           buffer->GetData() + buffer->GetDataSize());
+#if !defined(GOOGLE_TV)
+      // Vorbis needs 4 extra bytes padding on Android. Check
+      // NuMediaExtractor.cpp in Android source code.
+      if (is_audio && media::kCodecVorbis ==
+          stream->audio_decoder_config().codec()) {
+        params->access_units[index].data.insert(
+            params->access_units[index].data.end(), kVorbisPadding,
+            kVorbisPadding + 4);
+      }
+#endif
       if (buffer->GetDecryptConfig()) {
         params->access_units[index].key_id = std::vector<char>(
             buffer->GetDecryptConfig()->key_id().begin(),
@@ -347,8 +359,7 @@ void MediaSourceDelegate::OnDemuxerInitDone(
   NotifyDemuxerReady("");
 }
 
-void MediaSourceDelegate::NotifyDemuxerReady(
-    const std::string& key_system) {
+void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
   MediaPlayerHostMsg_DemuxerReady_Params params;
   DemuxerStream* audio_stream = chunk_demuxer_->GetStream(DemuxerStream::AUDIO);
   if (audio_stream) {

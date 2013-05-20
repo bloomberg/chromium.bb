@@ -207,8 +207,8 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
   base::TimeDelta timestamp;
   int32 buf_index = 0;
   do {
-    int32 offset = 0;
-    int32 size = 0;
+    size_t offset = 0;
+    size_t size = 0;
     buf_index = media_codec_->DequeueOutputBuffer(
         media::MediaCodecBridge::kTimeOutNoWait,
         &offset, &size, &timestamp, &eos);

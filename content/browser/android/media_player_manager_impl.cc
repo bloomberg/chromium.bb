@@ -44,14 +44,14 @@ bool MediaPlayerManagerImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
                         DestroyAllMediaPlayers)
-#if defined(GOOGLE_TV)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
-                        OnNotifyExternalSurface)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DemuxerReady,
                         OnDemuxerReady)
+#if defined(GOOGLE_TV)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
+                            OnNotifyExternalSurface)
+#endif
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ReadFromDemuxerAck,
                         OnReadFromDemuxerAck)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -198,6 +198,14 @@ void MediaPlayerManagerImpl::DestroyAllMediaPlayers() {
   }
 }
 
+void MediaPlayerManagerImpl::OnDemuxerReady(
+    int player_id,
+    const media::MediaPlayerHostMsg_DemuxerReady_Params& params) {
+  MediaPlayerAndroid* player = GetPlayer(player_id);
+  if (player)
+    player->DemuxerReady(params);
+}
+
 #if defined(GOOGLE_TV)
 void MediaPlayerManagerImpl::AttachExternalVideoSurface(int player_id,
                                                            jobject surface) {
@@ -223,13 +231,7 @@ void MediaPlayerManagerImpl::OnNotifyExternalSurface(
     view->NotifyExternalSurface(player_id, is_request, rect);
 }
 
-void MediaPlayerManagerImpl::OnDemuxerReady(
-    int player_id,
-    const media::MediaPlayerHostMsg_DemuxerReady_Params& params) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player)
-    player->DemuxerReady(params);
-}
+#endif
 
 void MediaPlayerManagerImpl::OnReadFromDemuxerAck(
     int player_id,
@@ -238,7 +240,6 @@ void MediaPlayerManagerImpl::OnReadFromDemuxerAck(
   if (player)
     player->ReadFromDemuxerAck(params);
 }
-#endif
 
 MediaPlayerAndroid* MediaPlayerManagerImpl::GetPlayer(int player_id) {
   for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
@@ -308,13 +309,11 @@ void MediaPlayerManagerImpl::OnTimeUpdate(int player_id,
       routing_id(), player_id, current_time));
 }
 
-#if defined(GOOGLE_TV)
 void MediaPlayerManagerImpl::OnReadFromDemuxer(
     int player_id, media::DemuxerStream::Type type, bool seek_done) {
   Send(new MediaPlayerMsg_ReadFromDemuxer(
       routing_id(), player_id, type, seek_done));
 }
-#endif
 
 void MediaPlayerManagerImpl::RequestMediaResources(
     MediaPlayerAndroid* player) {

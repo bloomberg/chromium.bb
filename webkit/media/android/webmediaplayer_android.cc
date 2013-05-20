@@ -21,14 +21,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/media/android/media_source_delegate.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #include "webkit/media/android/webmediaplayer_proxy_android.h"
 #include "webkit/media/webmediaplayer_util.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
-
-#if defined(GOOGLE_TV)
-#include "webkit/media/android/media_source_delegate.h"
-#endif
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
 
@@ -107,19 +104,16 @@ void WebMediaPlayerAndroid::load(const WebURL& url,
   if (cors_mode != CORSModeUnspecified)
     NOTIMPLEMENTED() << "No CORS support";
 
-  scoped_ptr<WebKit::WebMediaSource> scoped_media_source(media_source);
-#if defined(GOOGLE_TV)
   if (media_source) {
     media_source_delegate_.reset(
         new MediaSourceDelegate(
             frame_, client_, proxy_, player_id_, media_log_));
     // |media_source_delegate_| is owned, so Unretained() is safe here.
     media_source_delegate_->Initialize(
-        scoped_media_source.Pass(),
+        media_source,
         base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
                    base::Unretained(this)));
   }
-#endif
 
   url_ = url;
   GURL first_party_url = frame_->document().firstPartyForCookies();
@@ -164,10 +158,8 @@ void WebMediaPlayerAndroid::seek(double seconds) {
   seeking_ = true;
 
   base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
-#if defined(GOOGLE_TV)
   if (media_source_delegate_)
     media_source_delegate_->Seek(seek_time);
-#endif
   if (proxy_)
     proxy_->Seek(player_id_, seek_time);
 }
@@ -240,7 +232,6 @@ double WebMediaPlayerAndroid::currentTime() const {
   // If the player is pending for a seek, return the seek time.
   if (seeking())
     return pending_seek_;
-
   return current_time_;
 }
 
@@ -263,10 +254,8 @@ WebMediaPlayer::ReadyState WebMediaPlayerAndroid::readyState() const {
 }
 
 const WebTimeRanges& WebMediaPlayerAndroid::buffered() {
-#if defined(GOOGLE_TV)
   if (media_source_delegate_)
     return media_source_delegate_->Buffered();
-#endif
   return buffered_;
 }
 
@@ -349,37 +338,29 @@ double WebMediaPlayerAndroid::mediaTimeForTimeValue(double timeValue) const {
 }
 
 unsigned WebMediaPlayerAndroid::decodedFrameCount() const {
-#if defined(GOOGLE_TV)
   if (media_source_delegate_)
     return media_source_delegate_->DecodedFrameCount();
-#endif
   NOTIMPLEMENTED();
   return 0;
 }
 
 unsigned WebMediaPlayerAndroid::droppedFrameCount() const {
-#if defined(GOOGLE_TV)
   if (media_source_delegate_)
     return media_source_delegate_->DroppedFrameCount();
-#endif
   NOTIMPLEMENTED();
   return 0;
 }
 
 unsigned WebMediaPlayerAndroid::audioDecodedByteCount() const {
-#if defined(GOOGLE_TV)
   if (media_source_delegate_)
     return media_source_delegate_->AudioDecodedByteCount();
-#endif
   NOTIMPLEMENTED();
   return 0;
 }
 
 unsigned WebMediaPlayerAndroid::videoDecodedByteCount() const {
-#if defined(GOOGLE_TV)
   if (media_source_delegate_)
     return media_source_delegate_->VideoDecodedByteCount();
-#endif
   NOTIMPLEMENTED();
   return 0;
 }
@@ -484,7 +465,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
 }
 
 void WebMediaPlayerAndroid::OnTimeUpdate(base::TimeDelta current_time) {
-  current_time_ = static_cast<float>(current_time.InSecondsF());
+  current_time_ = current_time.InSecondsF();
 }
 
 void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
@@ -689,6 +670,7 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::cancelKeyRequest(
     return media_source_delegate_->CancelKeyRequest(key_system, session_id);
   return MediaKeyExceptionKeySystemNotSupported;
 }
+#endif
 
 void WebMediaPlayerAndroid::OnReadFromDemuxer(
     media::DemuxerStream::Type type, bool seek_done) {
@@ -697,7 +679,6 @@ void WebMediaPlayerAndroid::OnReadFromDemuxer(
   else
     NOTIMPLEMENTED();
 }
-#endif
 
 void WebMediaPlayerAndroid::enterFullscreen() {
   if (proxy_ && manager_->CanEnterFullscreen(frame_)) {

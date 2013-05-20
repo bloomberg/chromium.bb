@@ -12,9 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#if defined(GOOGLE_TV)
 #include "media/base/demuxer_stream.h"
-#endif
 #include "cc/layers/video_frame_provider.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
@@ -37,9 +35,7 @@ class WebLayerImpl;
 
 namespace webkit_media {
 
-#if defined(GOOGLE_TV)
 class MediaSourceDelegate;
-#endif
 class WebMediaPlayerManagerAndroid;
 class WebMediaPlayerProxyAndroid;
 
@@ -202,10 +198,10 @@ class WebMediaPlayerAndroid
   virtual MediaKeyException cancelKeyRequest(
       const WebKit::WebString& key_system,
       const WebKit::WebString& session_id) OVERRIDE;
+#endif
 
   // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
   void OnReadFromDemuxer(media::DemuxerStream::Type type, bool seek_done);
-#endif
 
  protected:
   // Helper method to update the playing state.
@@ -306,9 +302,9 @@ class WebMediaPlayerAndroid
   // A rectangle represents the geometry of video frame, when computed last
   // time.
   gfx::RectF last_computed_rect_;
+#endif
 
   scoped_ptr<MediaSourceDelegate> media_source_delegate_;
-#endif
 
   // Proxy object that delegates method calls on Render Thread.
   // This object is created on the Render Thread and is only called in the
@@ -318,7 +314,7 @@ class WebMediaPlayerAndroid
   // The current playing time. Because the media player is in the browser
   // process, it will regularly update the |current_time_| by calling
   // OnTimeUpdate().
-  float current_time_;
+  double current_time_;
 
   media::MediaLog* media_log_;
 

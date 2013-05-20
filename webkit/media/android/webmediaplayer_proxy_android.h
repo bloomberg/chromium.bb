@@ -9,9 +9,7 @@
 
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#if defined(GOOGLE_TV)
 #include "media/base/android/demuxer_stream_player_params.h"
-#endif
 
 namespace webkit_media {
 
@@ -53,6 +51,7 @@ class WebMediaPlayerProxyAndroid {
   // Request an external surface for out-of-band compositing.
   virtual void RequestExternalSurface(int player_id,
                                       const gfx::RectF& geometry) = 0;
+#endif
 
   // Inform the media source player that the demuxer is ready.
   virtual void DemuxerReady(
@@ -63,7 +62,6 @@ class WebMediaPlayerProxyAndroid {
   virtual void ReadFromDemuxerAck(
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) = 0;
-#endif
 };
 
 }  // namespace webkit_media

@@ -107,9 +107,7 @@ TEST(MediaCodecBridgeTest, DoNormal) {
   scoped_ptr<media::AudioCodecBridge> media_codec;
   media_codec.reset(new AudioCodecBridge(kCodecMP3));
 
-  media_codec->Start(kCodecMP3, 44100, 2, NULL, 0);
-
-  ASSERT_GT(media_codec->GetOutputBuffers(), 0);
+  media_codec->Start(kCodecMP3, 44100, 2, NULL, 0, false);
 
   int input_buf_index = media_codec->DequeueInputBuffer(
       MediaCodecBridge::kTimeOutInfinity);
@@ -133,8 +131,8 @@ TEST(MediaCodecBridgeTest, DoNormal) {
   input_pts = kPresentationTimeBase;
   bool eos = false;
   while (!eos) {
-    int unused_offset = 0;
-    int size = 0;
+    size_t unused_offset = 0;
+    size_t size = 0;
     base::TimeDelta timestamp;
     int output_buf_index = media_codec->DequeueOutputBuffer(
         MediaCodecBridge::kTimeOutInfinity,
@@ -151,7 +149,7 @@ TEST(MediaCodecBridgeTest, DoNormal) {
         media_codec->GetOutputBuffers();
         continue;
     }
-    EXPECT_LE(1, size);
+    EXPECT_LE(1u, size);
     if (!eos)
       EXPECT_EQ(++input_pts, timestamp.InMicroseconds());
     ASSERT_LE(input_pts, kPresentationTimeBase + 2);
@@ -169,12 +167,13 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
   // The first byte of the header is not 0x02.
   uint8 invalid_first_byte[] = { 0x00, 0xff, 0xff, 0xff, 0xff };
   EXPECT_FALSE(media_codec->Start(
-      kCodecVorbis, 44100, 2, invalid_first_byte, sizeof(invalid_first_byte)));
+      kCodecVorbis, 44100, 2, invalid_first_byte, sizeof(invalid_first_byte),
+      false));
 
   // Size of the header does not match with the data we passed in.
   uint8 invalid_size[] = { 0x02, 0x01, 0xff, 0x01, 0xff };
   EXPECT_FALSE(media_codec->Start(
-      kCodecVorbis, 44100, 2, invalid_size, sizeof(invalid_size)));
+      kCodecVorbis, 44100, 2, invalid_size, sizeof(invalid_size), false));
 
   // Size of the header is too large.
   size_t large_size = 8 * 1024 * 1024 + 2;
@@ -184,7 +183,7 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
     very_large_header[i] = 0xff;
   very_large_header[large_size - 1] = 0xfe;
   EXPECT_FALSE(media_codec->Start(
-      kCodecVorbis, 44100, 2, very_large_header, 0x80000000));
+      kCodecVorbis, 44100, 2, very_large_header, 0x80000000, false));
   delete[] very_large_header;
 }
 

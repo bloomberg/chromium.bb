@@ -14,9 +14,7 @@
 #include "content/browser/android/content_video_view.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "googleurl/src/gurl.h"
-#if defined(GOOGLE_TV)
 #include "media/base/android/demuxer_stream_player_params.h"
-#endif
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
 #include "ui/gfx/rect_f.h"
@@ -65,12 +63,10 @@ class MediaPlayerManagerImpl
   virtual void OnError(int player_id, int error) OVERRIDE;
   virtual void OnVideoSizeChanged(
       int player_id, int width, int height) OVERRIDE;
-#if defined(GOOGLE_TV)
   virtual void OnReadFromDemuxer(
       int player_id,
       media::DemuxerStream::Type type,
       bool seek_done) OVERRIDE;
-#endif
   virtual void RequestMediaResources(
       media::MediaPlayerAndroid* player) OVERRIDE;
   virtual void ReleaseMediaResources(
@@ -100,15 +96,16 @@ class MediaPlayerManagerImpl
   void OnPause(int player_id);
   void OnReleaseResources(int player_id);
   void OnDestroyPlayer(int player_id);
-#if defined(GOOGLE_TV)
-  void OnNotifyExternalSurface(
-      int player_id, bool is_request, const gfx::RectF& rect);
   void OnDemuxerReady(
       int player_id,
       const media::MediaPlayerHostMsg_DemuxerReady_Params& params);
   void OnReadFromDemuxerAck(
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
+
+#if defined(GOOGLE_TV)
+  void OnNotifyExternalSurface(
+      int player_id, bool is_request, const gfx::RectF& rect);
 #endif
 
   // An array of managed players.

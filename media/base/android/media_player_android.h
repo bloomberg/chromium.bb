@@ -11,11 +11,8 @@
 #include "base/callback.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "media/base/media_export.h"
-
-#if defined(GOOGLE_TV)
 #include "media/base/android/demuxer_stream_player_params.h"
-#endif
+#include "media/base/media_export.h"
 
 namespace media {
 
@@ -79,7 +76,6 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual bool CanSeekForward() = 0;
   virtual bool CanSeekBackward() = 0;
 
-#if defined(GOOGLE_TV)
   // Methods for DeumxerStreamPlayer.
   // Informs DemuxerStreamPlayer that the demuxer is ready.
   virtual void DemuxerReady(
@@ -87,7 +83,6 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Called when the requested data is received from the demuxer.
   virtual void ReadFromDemuxerAck(
       const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
-#endif
 
   int player_id() { return player_id_; }
 

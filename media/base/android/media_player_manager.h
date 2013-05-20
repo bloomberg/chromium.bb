@@ -7,9 +7,7 @@
 
 #include "base/time.h"
 #include "media/base/media_export.h"
-#if defined(GOOGLE_TV)
 #include "media/base/android/demuxer_stream_player_params.h"
-#endif
 
 namespace media {
 
@@ -67,11 +65,9 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Called when video size has changed. Args: player ID, width, height.
   virtual void OnVideoSizeChanged(int player_id, int width, int height) = 0;
 
-#if defined(GOOGLE_TV)
   // Callback when DemuxerStreamPlayer wants to read data from the demuxer.
   virtual void OnReadFromDemuxer(
       int player_id, media::DemuxerStream::Type type, bool seek_done) = 0;
-#endif
 };
 
 }  // namespace media

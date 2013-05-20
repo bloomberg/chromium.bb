@@ -46,7 +46,9 @@ class MediaSourceDelegate : public media::DemuxerHost {
                       media::MediaLog* media_log);
   virtual ~MediaSourceDelegate();
 
-  void Initialize(scoped_ptr<WebKit::WebMediaSource> media_source,
+  // Initialize the MediaSourceDelegate. |media_source| will be owned by
+  // this object after this call.
+  void Initialize(WebKit::WebMediaSource* media_source,
                   const UpdateNetworkStateCB& update_network_state_cb);
 
   const WebKit::WebTimeRanges& Buffered();

@@ -40,6 +40,8 @@
       ],
       'sources': [
         'android/audio_decoder_android.cc',
+        'android/media_source_delegate.cc',
+        'android/media_source_delegate.h',
         'android/stream_texture_factory_android.h',
         'android/webmediaplayer_android.cc',
         'android/webmediaplayer_android.h',
@@ -110,10 +112,6 @@
           ],
         }],
         ['google_tv == 1', {
-          'sources': [
-            'android/media_source_delegate.cc',
-            'android/media_source_delegate.h',
-          ],
           'sources!': [
             'crypto/key_systems_info.cc',
           ],

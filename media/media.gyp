@@ -198,6 +198,8 @@
         'audio/win/wavein_input_win.h',
         'audio/win/waveout_output_win.cc',
         'audio/win/waveout_output_win.h',
+        'base/android/demuxer_stream_player_params.cc',
+        'base/android/demuxer_stream_player_params.h',
         'base/android/media_player_manager.cc',
         'base/android/media_player_manager.h',
         'base/android/media_resource_getter.cc',
@@ -1498,6 +1500,7 @@
           ],
           'sources': [
             'base/android/java/src/org/chromium/media/AudioManagerAndroid.java',
+            'base/android/java/src/org/chromium/media/MediaCodecBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerListener.java',
             'base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java',
@@ -1517,15 +1520,6 @@
             'jni_gen_package': 'media',
           },
           'includes': [ '../build/jni_generator.gypi' ],
-        },
-        {
-          'target_name': 'media_codec_jni_headers',
-          'type': 'none',
-          'variables': {
-            'jni_gen_package': 'media',
-            'input_java_class': 'android/media/MediaCodec.class',
-          },
-          'includes': [ '../build/jar_file_jni_generator.gypi' ],
         },
         {
           'target_name': 'media_format_jni_headers',
@@ -1550,22 +1544,15 @@
             'base/android/media_player_bridge.h',
             'base/android/media_player_listener.cc',
             'base/android/media_player_listener.h',
+            'base/android/media_source_player.cc',
+            'base/android/media_source_player.h',
             'base/android/webaudio_media_codec_bridge.cc',
             'base/android/webaudio_media_codec_bridge.h',
             'base/android/webaudio_media_codec_info.h',
           ],
-          'conditions': [
-            ['google_tv == 1', {
-              'sources': [
-                'base/android/demuxer_stream_player_params.cc',
-                'base/android/demuxer_stream_player_params.h',
-              ],
-            }],
-          ],
           'dependencies': [
             '../base/base.gyp:base',
             'media_android_jni_headers',
-            'media_codec_jni_headers',
             'media_format_jni_headers',
           ],
           'include_dirs': [

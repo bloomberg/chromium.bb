@@ -13,6 +13,7 @@
 #include "jni/MediaPlayer_jni.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_resource_getter.h"
+#include "media/base/android/media_source_player.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
@@ -38,13 +39,18 @@ MediaPlayerAndroid* MediaPlayerAndroid::Create(
     const GURL& first_party_for_cookies,
     bool hide_url_log,
     MediaPlayerManager* manager) {
-  LOG_IF(WARNING, is_media_source) << "MSE is not supported";
-  return new MediaPlayerBridge(
-      player_id,
-      url,
-      first_party_for_cookies,
-      hide_url_log,
-      manager);
+  if (!is_media_source) {
+      return new MediaPlayerBridge(
+          player_id,
+          url,
+          first_party_for_cookies,
+          hide_url_log,
+          manager);
+  } else {
+    return new MediaSourcePlayer(
+        player_id,
+        manager);
+  }
 }
 #endif
 

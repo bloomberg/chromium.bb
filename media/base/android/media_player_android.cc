@@ -62,7 +62,6 @@ void MediaPlayerAndroid::ReleaseMediaResourcesFromManager() {
     manager_->ReleaseMediaResources(this);
 }
 
-#if defined(GOOGLE_TV)
 void MediaPlayerAndroid::DemuxerReady(
     const MediaPlayerHostMsg_DemuxerReady_Params& params) {
   NOTREACHED() << "Unexpected ipc received";
@@ -72,6 +71,5 @@ void MediaPlayerAndroid::ReadFromDemuxerAck(
     const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
   NOTREACHED() << "Unexpected ipc received";
 }
-#endif
 
 }  // namespace media
