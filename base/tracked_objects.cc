@@ -507,10 +507,10 @@ void ThreadData::TallyRunOnWorkerThreadIfTracking(
   // TODO(jar): Support the option to coalesce all worker-thread activity under
   // one ThreadData instance that uses locks to protect *all* access.  This will
   // reduce memory (making it provably bounded), but run incrementally slower
-  // (since we'll use locks on TallyBirth and TallyDeath).  The good news is
-  // that the locks on TallyDeath will be *after* the worker thread has run, and
-  // hence nothing will be waiting for the completion (... besides some other
-  // thread that might like to run).  Also, the worker threads tasks are
+  // (since we'll use locks on TallyABirth and TallyADeath).  The good news is
+  // that the locks on TallyADeath will be *after* the worker thread has run,
+  // and hence nothing will be waiting for the completion (... besides some
+  // other thread that might like to run).  Also, the worker threads tasks are
   // generally longer, and hence the cost of the lock may perchance be amortized
   // over the long task's lifetime.
   ThreadData* current_thread_data = Get();
