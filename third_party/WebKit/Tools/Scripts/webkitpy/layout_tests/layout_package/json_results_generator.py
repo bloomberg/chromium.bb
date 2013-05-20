@@ -37,8 +37,15 @@ import xml.dom.minidom
 from webkitpy.common.checkout.scm.detection import SCMDetector
 from webkitpy.common.net.file_uploader import FileUploader
 
-# A JSON results generator for generic tests.
-# FIXME: move this code out of the layout_package directory.
+# FIXME: This is the left-overs from when we used to generate JSON here.
+# What's still used by webkitpy is just a group of functions used by a
+# hodge-podge of different classes. Those functions should be move to where they are
+# used and this file should just go away entirely.
+#
+# Unfortunately, a big chunk of this file is used by
+# chromium/src/build/android/pylib/utils/flakiness_dashboard_results_uploader.py
+# so we can't delete it until that code is migrated over.
+# See crbug.com/242206
 
 _log = logging.getLogger(__name__)
 
