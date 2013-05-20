@@ -21,7 +21,7 @@ message PlatformFileInfoProto {
 }
 
 // File specific info, which is a part of ResourceEntry.
-message DriveFileSpecificInfo {
+message FileSpecificInfo {
   // This URL points to a thumbnail image. The thumbnail URL is not permanent
   // as it's not protected by authentication. See crbug.com/127697 for how
   // stale thumbnail URLs are handled.
@@ -45,7 +45,8 @@ message DriveFileSpecificInfo {
   optional bool is_hosted_document = 6;
 }
 
-message DriveDirectorySpecificInfo {
+// Directory specific info, which is a part of ResourceEntry.
+message DirectorySpecificInfo {
   // The changestamp of this directory. This value can be larger than the
   // changestamp of DriveResourceMetadata, if this directory was
   // "fast-fetched". See crbug.com/178348 for details about the "fast-fetch"
@@ -53,7 +54,7 @@ message DriveDirectorySpecificInfo {
   optional int64 changestamp = 1;
 }
 
-// Represents DriveEntry, DriveFile, and DriveDirectory without children.
+// Represents an entry in the resource metadata.
 message ResourceEntry {
   optional PlatformFileInfoProto file_info = 1;
   optional string base_name = 2;
@@ -67,10 +68,10 @@ message ResourceEntry {
   optional bool shared_with_me = 14;
 
   // File specific information, such as MD5.
-  optional DriveFileSpecificInfo file_specific_info = 9;
+  optional FileSpecificInfo file_specific_info = 9;
 
   // Directory specific information, such as changestamp.
-  optional DriveDirectorySpecificInfo directory_specific_info = 13;
+  optional DirectorySpecificInfo directory_specific_info = 13;
 }
 
 // Container for the header part of ResourceMetadata.

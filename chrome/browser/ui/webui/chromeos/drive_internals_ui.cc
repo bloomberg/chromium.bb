@@ -159,7 +159,7 @@ std::string FormatEntry(const base::FilePath& path,
                 google_apis::util::FormatTimeAsString(creation_time).c_str());
 
   if (entry.has_file_specific_info()) {
-    const drive::DriveFileSpecificInfo& file_specific_info =
+    const drive::FileSpecificInfo& file_specific_info =
         entry.file_specific_info();
     StringAppendF(&out, "    thumbnail_url: %s\n",
                   file_specific_info.thumbnail_url().c_str());
@@ -177,7 +177,7 @@ std::string FormatEntry(const base::FilePath& path,
 
   if (entry.has_directory_specific_info()) {
     StringAppendF(&out, "  directory_info\n");
-    const drive::DriveDirectorySpecificInfo& directory_specific_info =
+    const drive::DirectorySpecificInfo& directory_specific_info =
         entry.directory_specific_info();
     StringAppendF(&out, "    changestamp: %"PRId64"\n",
                   directory_specific_info.changestamp());

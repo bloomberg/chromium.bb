@@ -72,8 +72,7 @@ ResourceEntry ConvertToResourceEntry(
   file_info->set_creation_time(input.published_time().ToInternalValue());
 
   if (input.is_file() || input.is_hosted_document()) {
-    DriveFileSpecificInfo* file_specific_info =
-        output.mutable_file_specific_info();
+    FileSpecificInfo* file_specific_info = output.mutable_file_specific_info();
     if (input.is_file()) {
       file_info->set_size(input.file_size());
       file_specific_info->set_file_md5(input.file_md5());

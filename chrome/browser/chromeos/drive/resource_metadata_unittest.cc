@@ -61,12 +61,11 @@ ResourceEntry CreateResourceEntry(int sequence_id,
   file_info->set_is_directory(is_directory);
 
   if (!is_directory) {
-    DriveFileSpecificInfo* file_specific_info =
-        entry.mutable_file_specific_info();
+    FileSpecificInfo* file_specific_info = entry.mutable_file_specific_info();
     file_info->set_size(sequence_id * 1024);
     file_specific_info->set_file_md5(std::string("md5:") + title);
   } else {
-    DriveDirectorySpecificInfo* directory_specific_info =
+    DirectorySpecificInfo* directory_specific_info =
         entry.mutable_directory_specific_info();
     directory_specific_info->set_changestamp(kTestChangestamp);
   }

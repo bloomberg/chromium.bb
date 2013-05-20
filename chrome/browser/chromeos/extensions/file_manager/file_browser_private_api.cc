@@ -373,7 +373,7 @@ void FillDriveEntryPropertiesValue(
   if (!entry_proto.has_file_specific_info())
     return;
 
-  const drive::DriveFileSpecificInfo& file_specific_info =
+  const drive::FileSpecificInfo& file_specific_info =
       entry_proto.file_specific_info();
 
   property_dict->SetString("thumbnailUrl", file_specific_info.thumbnail_url());
@@ -2373,7 +2373,7 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
     return;
   }
 
-  const drive::DriveFileSpecificInfo& file_specific_info =
+  const drive::FileSpecificInfo& file_specific_info =
       entry->file_specific_info();
 
   // Get drive WebApps that can accept this file.
