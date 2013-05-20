@@ -797,13 +797,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // |invalidator_registrar_| is not NULL).
   void UpdateInvalidatorRegistrarState();
 
-  // Destroys / recreates an instance of ProfileSyncService. Used exclusively by
-  // the sync integration tests so they can restart sync from scratch without
-  // tearing down and recreating the browser process. Needed because simply
-  // calling Shutdown() and Initialize() will not recreate other internal
-  // objects like SyncBackendHost, SyncManager, etc.
-  void ResetForTest();
-
   // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 

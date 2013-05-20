@@ -329,20 +329,6 @@ void SyncTest::InitializeInstance(int index) {
       TemplateURLServiceFactory::GetForProfile(GetProfile(index)));
 }
 
-void SyncTest::RestartSyncService(int index) {
-  DVLOG(1) << "Restarting profile sync service for profile " << index << ".";
-  delete clients_[index];
-  Profile* profile = GetProfile(index);
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  service->ResetForTest();
-  clients_[index] = new ProfileSyncServiceHarness(profile,
-                                                  username_,
-                                                  password_);
-  service->Initialize();
-  GetClient(index)->AwaitSyncRestart();
-}
-
 bool SyncTest::SetupSync() {
   // Create sync profiles and clients if they haven't already been created.
   if (profiles_.empty()) {

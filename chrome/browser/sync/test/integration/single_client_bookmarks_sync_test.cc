@@ -152,20 +152,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }
 
-// Restart the sync service on a client and make sure sync is up and running.
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
-                       DISABLED_RestartSyncService) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.com")));
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a bookmark."));
-  ASSERT_TRUE(ModelMatchesVerifier(0));
-
-  RestartSyncService(0);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Restarted sync."));
-  ASSERT_TRUE(ModelMatchesVerifier(0));
-}
-
 // Test that a client doesn't mutate the favicon data in the process
 // of storing the favicon data from sync to the database or in the process
 // of requesting data from the database for sync.

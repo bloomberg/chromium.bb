@@ -1943,21 +1943,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
   ASSERT_TRUE(AllModelsMatch());
 }
 
-// Restart the sync service on one client and make sure all data is synced when
-// the service restarts.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
-                       DISABLED_RestartSyncService) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.com")));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
-
-  RestartSyncService(0);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Restarted sync."));
-  ASSERT_TRUE(AllModelsMatchVerifier());
-}
-
 // Trigger the server side creation of Synced Bookmarks. Ensure both clients
 // remain syncing afterwards. Add bookmarks to the synced bookmarks folder
 // and ensure both clients receive the boomkmark.

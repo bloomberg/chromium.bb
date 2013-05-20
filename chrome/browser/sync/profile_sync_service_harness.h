@@ -70,11 +70,6 @@ class ProfileSyncServiceHarness
   // has been initialized.  Returns true if the wait was successful.
   bool AwaitBackendInitialized();
 
-  // Blocks the caller until the datatype manager is configured and sync has
-  // been initialized (for example, after a browser restart).  Returns true if
-  // the wait was successful.
-  bool AwaitSyncRestart();
-
   // Blocks the caller until this harness has completed a single sync cycle
   // since the previous one.  Returns true if a sync cycle has completed.
   bool AwaitDataSyncCompletion(const std::string& reason);

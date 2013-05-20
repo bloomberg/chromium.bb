@@ -549,27 +549,6 @@ bool ProfileSyncServiceHarness::AwaitBackendInitialized() {
                                       "Waiting for OnBackendInitialized().");
 }
 
-bool ProfileSyncServiceHarness::AwaitSyncRestart() {
-  DVLOG(1) << GetClientInfoString("AwaitSyncRestart");
-  if (service()->ShouldPushChanges()) {
-    // Sync has already been restarted; don't wait.
-    return true;
-  }
-
-  // Wait for the sync backend to be initialized.
-  if (!AwaitBackendInitialized()) {
-    LOG(ERROR) << "OnBackendInitialized() not seen after "
-               << kLiveSyncOperationTimeoutMs / 1000
-               << " seconds.";
-    return false;
-  }
-
-  // Wait for sync configuration to complete.
-  wait_state_ = WAITING_FOR_SYNC_CONFIGURATION;
-  return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
-                                      "Waiting for sync configuration.");
-}
-
 bool ProfileSyncServiceHarness::AwaitDataSyncCompletion(
     const std::string& reason) {
   DVLOG(1) << GetClientInfoString("AwaitDataSyncCompletion");

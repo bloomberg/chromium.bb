@@ -2095,25 +2095,3 @@ void ProfileSyncService::UpdateInvalidatorRegistrarState() {
            << syncer::InvalidatorStateToString(effective_state);
   invalidator_registrar_->UpdateInvalidatorState(effective_state);
 }
-
-void ProfileSyncService::ResetForTest() {
-  Profile* profile = profile_;
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-  ProfileSyncService::StartBehavior behavior =
-      browser_defaults::kSyncAutoStarts ? ProfileSyncService::AUTO_START
-                                        : ProfileSyncService::MANUAL_START;
-
-  // We call the destructor and placement new here because we want to explicitly
-  // recreate a new ProfileSyncService instance at the same memory location as
-  // the old one. Doing so is fine because this code is run only from within
-  // integration tests, and the message loop is not running at this point.
-  // See http://stackoverflow.com/questions/6224121/is-new-this-myclass-undefined-behaviour-after-directly-calling-the-destru.
-  ProfileSyncService* old_this = this;
-  this->~ProfileSyncService();
-  new(old_this) ProfileSyncService(
-      new ProfileSyncComponentsFactoryImpl(profile,
-                                           CommandLine::ForCurrentProcess()),
-      profile,
-      signin,
-      behavior);
-}
