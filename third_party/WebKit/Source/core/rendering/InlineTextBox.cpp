@@ -1115,6 +1115,8 @@ static void strokeWavyTextDecoration(GraphicsContext* context, FloatPoint& p1, F
 
 void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& boxOrigin, ETextDecoration deco, TextDecorationStyle decorationStyle, const ShadowData* shadow)
 {
+    GraphicsContextStateSaver stateSaver(*context);
+
     // FIXME: We should improve this rule and not always just assume 1.
     const float textDecorationThickness = 1.f;
 
@@ -1145,7 +1147,6 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
     RenderStyle* styleToUse = renderer()->style(isFirstLineStyle());
     int baseline = styleToUse->fontMetrics().ascent();
 
-    bool setClip = false;
     int extraOffset = 0;
     if (!linesAreOpaque && shadow && shadow->next()) {
         FloatRect clipRect(localOrigin, FloatSize(width, baseline + 2));
@@ -1158,15 +1159,12 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
             clipRect.unite(shadowRect);
             extraOffset = max(extraOffset, max(0, shadowY) + s->blur());
         }
-        context->save();
         context->clip(clipRect);
         extraOffset += baseline + 2;
         localOrigin.move(0, extraOffset);
-        setClip = true;
     }
 
     ColorSpace colorSpace = renderer()->style()->colorSpace();
-    bool setShadow = false;
 
     do {
         if (shadow) {
@@ -1178,7 +1176,6 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
             int shadowX = isHorizontal() ? shadow->x() : shadow->y();
             int shadowY = isHorizontal() ? shadow->y() : -shadow->x();
             context->setShadow(FloatSize(shadowX, shadowY - extraOffset), shadow->blur(), shadow->color(), colorSpace);
-            setShadow = true;
             shadow = shadow->next();
         }
 
@@ -1250,11 +1247,6 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
 #endif // CSS3_TEXT
         }
     } while (shadow);
-
-    if (setClip)
-        context->restore();
-    else if (setShadow)
-        context->clearShadow();
 }
 
 static GraphicsContext::DocumentMarkerLineStyle lineStyleForMarkerType(DocumentMarker::MarkerType markerType)
