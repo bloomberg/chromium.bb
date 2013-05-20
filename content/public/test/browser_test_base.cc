@@ -13,6 +13,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/test/test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -57,7 +58,10 @@ void RunTaskOnRendererThread(const base::Closure& task,
 
 extern int BrowserMain(const MainFunctionParams&);
 
-BrowserTestBase::BrowserTestBase() {
+BrowserTestBase::BrowserTestBase()
+    : embedded_test_server_(
+        new net::test_server::EmbeddedTestServer(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
   base::PowerMonitor::AllocateSystemIOPorts();
@@ -118,6 +122,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   }
 #endif  // defined(OS_POSIX)
   RunTestOnMainThreadLoop();
+  embedded_test_server_.reset();
 }
 
 void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {

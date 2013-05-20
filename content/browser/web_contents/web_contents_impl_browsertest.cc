@@ -10,11 +10,13 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 namespace content {
@@ -85,14 +87,14 @@ class NavigateOnCommitObserver : public WindowedNotificationObserver {
 
 // Test that DidStopLoading includes the correct URL in the details.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DidStopLoadingDetails) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   LoadStopNotificationObserver load_observer(
       &shell()->web_contents()->GetController());
-  NavigateToURL(shell(), test_server()->GetURL("files/title1.html"));
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
   load_observer.Wait();
 
-  EXPECT_EQ("/files/title1.html", load_observer.url_.path());
+  EXPECT_EQ("/title1.html", load_observer.url_.path());
   EXPECT_EQ(0, load_observer.session_index_);
   EXPECT_EQ(&shell()->web_contents()->GetController(),
             load_observer.controller_);
@@ -102,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DidStopLoadingDetails) {
 // pending entry is present.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        DidStopLoadingDetailsWithPending) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Listen for the first load to stop.
   LoadStopNotificationObserver load_observer(
@@ -111,12 +113,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // We will hear a DidStopLoading from the first load as the new load
   // is started.
   NavigateOnCommitObserver commit_observer(
-      shell(), test_server()->GetURL("files/title2.html"));
-  NavigateToURL(shell(), test_server()->GetURL("files/title1.html"));
+      shell(), embedded_test_server()->GetURL("/title2.html"));
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
   commit_observer.Wait();
   load_observer.Wait();
 
-  EXPECT_EQ("/files/title1.html", load_observer.url_.path());
+  EXPECT_EQ("/title1.html", load_observer.url_.path());
   EXPECT_EQ(0, load_observer.session_index_);
   EXPECT_EQ(&shell()->web_contents()->GetController(),
             load_observer.controller_);
@@ -125,9 +127,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 // Test that the browser receives the proper frame attach/detach messages from
 // the renderer and builds proper frame tree.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrameTree) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
-  NavigateToURL(shell(), test_server()->GetURL("files/frame_tree/top.html"));
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/frame_tree/top.html"));
 
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
@@ -152,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrameTree) {
 
   // Navigate to about:blank, which should leave only the root node of the frame
   // tree in the browser process.
-  NavigateToURL(shell(), test_server()->GetURL("files/title1.html"));
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
   root = wc->GetFrameTreeRootForTesting();
   EXPECT_EQ(0UL, root->child_count());

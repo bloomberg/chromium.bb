@@ -146,6 +146,26 @@ TEST_F(EmbeddedTestServerTest, RegisterRequestHandler) {
   EXPECT_EQ("/test?q=foo", request_relative_url_);
 }
 
+TEST_F(EmbeddedTestServerTest, ServeFilesFromDirectory) {
+  base::FilePath src_dir;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  server_->ServeFilesFromDirectory(
+      src_dir.AppendASCII("net").AppendASCII("data"));
+
+  scoped_ptr<URLFetcher> fetcher(
+      URLFetcher::Create(server_->GetURL("/test.html"),
+                              URLFetcher::GET,
+                              this));
+  fetcher->SetRequestContext(request_context_getter_.get());
+  fetcher->Start();
+  WaitForResponses(1);
+
+  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
+  EXPECT_EQ(SUCCESS, fetcher->GetResponseCode());
+  EXPECT_EQ("<p>Hello World!</p>", GetContentFromFetcher(*fetcher));
+  EXPECT_EQ("", GetContentTypeFromFetcher(*fetcher));
+}
+
 TEST_F(EmbeddedTestServerTest, DefaultNotFoundResponse) {
   scoped_ptr<URLFetcher> fetcher(
       URLFetcher::Create(server_->GetURL("/non-existent"),

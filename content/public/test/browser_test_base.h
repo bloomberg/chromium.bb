@@ -16,6 +16,12 @@ namespace base {
 class FilePath;
 }
 
+namespace net {
+namespace test_server {
+class EmbeddedTestServer;
+}
+}
+
 namespace content {
 
 class BrowserTestBase : public testing::Test {
@@ -64,10 +70,19 @@ class BrowserTestBase : public testing::Test {
   virtual void RunTestOnMainThreadLoop() = 0;
 
   // Returns the testing server. Guaranteed to be non-NULL.
+  // TODO(phajdan.jr): Remove test_server accessor (http://crbug.com/96594).
   const net::SpawnedTestServer* test_server() const {
     return test_server_.get();
   }
   net::SpawnedTestServer* test_server() { return test_server_.get(); }
+
+  // Returns the embedded test server. Guaranteed to be non-NULL.
+  const net::test_server::EmbeddedTestServer* embedded_test_server() const {
+    return embedded_test_server_.get();
+  }
+  net::test_server::EmbeddedTestServer* embedded_test_server() {
+    return embedded_test_server_.get();
+  }
 
 #if defined(OS_POSIX)
   // This is only needed by a test that raises SIGTERM to ensure that a specific
@@ -95,6 +110,9 @@ class BrowserTestBase : public testing::Test {
 
   // Testing server, started on demand.
   scoped_ptr<net::SpawnedTestServer> test_server_;
+
+  // Embedded test server, cheap to create, started on demand.
+  scoped_ptr<net::test_server::EmbeddedTestServer> embedded_test_server_;
 
 #if defined(OS_POSIX)
   bool handle_sigterm_;

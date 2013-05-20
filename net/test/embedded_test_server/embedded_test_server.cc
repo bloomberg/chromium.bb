@@ -5,10 +5,14 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "net/test/embedded_test_server/http_connection.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -32,6 +36,27 @@ scoped_ptr<HttpResponse> HandleDefaultRequest(const GURL& url,
   if (url.path() != request_url.path())
     return scoped_ptr<HttpResponse>(NULL);
   return scoped_ptr<HttpResponse>(new HttpResponse(response));
+}
+
+// Handles |request| by serving a file from under |server_root|.
+scoped_ptr<HttpResponse> HandleFileRequest(const base::FilePath& server_root,
+                                           const HttpRequest& request) {
+  // This is a test-only server. Ignore I/O thread restrictions.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+  // Trim the first byte ('/').
+  std::string request_path(request.relative_url.substr(1));
+
+  std::string file_contents;
+  if (!file_util::ReadFileToString(
+          server_root.AppendASCII(request_path), &file_contents)) {
+    return scoped_ptr<HttpResponse>(NULL);
+  }
+
+  scoped_ptr<HttpResponse> http_response(new HttpResponse);
+  http_response->set_code(net::test_server::SUCCESS);
+  http_response->set_content(file_contents);
+  return http_response.Pass();
 }
 
 }  // namespace
@@ -62,6 +87,10 @@ EmbeddedTestServer::EmbeddedTestServer(
 
 EmbeddedTestServer::~EmbeddedTestServer() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (Started() && !ShutdownAndWaitUntilComplete()) {
+    LOG(ERROR) << "EmbeddedTestServer failed to shut down.";
+  }
 }
 
 bool EmbeddedTestServer::InitializeAndWaitUntilReady() {
@@ -157,6 +186,11 @@ GURL EmbeddedTestServer::GetURL(const std::string& relative_url) const {
   DCHECK(StartsWithASCII(relative_url, "/", true /* case_sensitive */))
       << relative_url;
   return base_url_.Resolve(relative_url);
+}
+
+void EmbeddedTestServer::ServeFilesFromDirectory(
+    const base::FilePath& directory) {
+  RegisterRequestHandler(base::Bind(&HandleFileRequest, directory));
 }
 
 void EmbeddedTestServer::RegisterRequestHandler(

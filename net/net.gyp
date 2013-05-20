@@ -1962,6 +1962,7 @@
                 'variables': {
                   'test_data_files': [
                     'data/ssl/certificates/',
+                    'data/test.html',
                     'data/url_request_unittest/',
                   ],
                   'test_data_prefix': 'net',

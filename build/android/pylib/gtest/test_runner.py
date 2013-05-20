@@ -92,6 +92,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'net/data/proxy_resolver_v8_unittest',
         'net/data/proxy_script_fetcher_unittest',
         'net/data/ssl/certificates',
+        'net/data/test.html',
         'net/data/url_request_unittest/',
         ]
   elif test_suite_basename == 'ui_tests':

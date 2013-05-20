@@ -17,6 +17,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/socket/tcp_listen_socket.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace net {
 namespace test_server {
 
@@ -106,6 +110,12 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
 
   // Returns the port number used by the server.
   int port() const { return port_; }
+
+  // Registers request handler which serves files from |directory|.
+  // For instance, a request to "/foo.html" is served by "foo.html" under
+  // |directory|. Files under sub directories are also handled in the same way
+  // (i.e. "/foo/bar.html" is served by "foo/bar.html" under |directory|).
+  void ServeFilesFromDirectory(const base::FilePath& directory);
 
   // The most general purpose method. Any request processing can be added using
   // this method. Takes ownership of the object. The |callback| is called
