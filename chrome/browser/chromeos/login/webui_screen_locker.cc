@@ -205,7 +205,8 @@ string16 WebUIScreenLocker::GetConnectedNetworkName() {
 }
 
 bool WebUIScreenLocker::IsSigninInProgress() const {
-  NOTREACHED();
+  // The way how screen locker is implemented right now there's no
+  // GAIA sign in in progress in any case.
   return false;
 }
 
