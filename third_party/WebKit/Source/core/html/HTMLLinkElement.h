@@ -141,10 +141,13 @@ public:
     // For LinkStyle
     bool loadLink(const String& type, const KURL& url) { return m_linkLoader.loadLink(m_relAttribute, type, url, document()); }
     bool isAlternate() const { return m_link->isUnset() && m_relAttribute.isAlternate(); }
-    bool shouldProcessStyle();
+    bool shouldProcessStyle() { return linkStyleToProcess(); }
 
 private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+
+    LinkStyle* linkStyle() const { return m_link.get(); }
+    LinkStyle* linkStyleToProcess();
 
     void process();
     static void processCallback(Node*);

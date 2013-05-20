@@ -63,7 +63,6 @@ static LinkEventSender& linkLoadEventSender()
 
 inline HTMLLinkElement::HTMLLinkElement(const QualifiedName& tagName, Document* document, bool createdByParser)
     : HTMLElement(tagName, document)
-    , m_link(adoptPtr(new LinkStyle(this)))
     , m_linkLoader(this)
     , m_sizes(DOMSettableTokenList::create())
     , m_createdByParser(createdByParser)
@@ -105,13 +104,17 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
     } else if (name == mediaAttr) {
         m_media = value.string().lower();
         process();
-    } else if (name == disabledAttr)
-        m_link->setDisabledState(!value.isNull());
-    else if (name == onbeforeloadAttr)
+    } else if (name == disabledAttr) {
+        if (LinkStyle* link = linkStyle())
+            link->setDisabledState(!value.isNull());
+    } else if (name == onbeforeloadAttr)
         setAttributeEventListener(eventNames().beforeloadEvent, createAttributeEventListener(this, name, value));
     else {
-        if (name == titleAttr)
-            m_link->setSheetTitle(value);
+        if (name == titleAttr) {
+            if (LinkStyle* link = linkStyle())
+                link->setSheetTitle(value);
+        }
+
         HTMLElement::parseAttribute(name, value);
     }
 }
@@ -139,17 +142,27 @@ bool HTMLLinkElement::shouldLoadLink()
     return continueLoad;
 }
 
-bool HTMLLinkElement::shouldProcessStyle()
+LinkStyle* HTMLLinkElement::linkStyleToProcess()
 {
-    bool should = inDocument() && !m_isInShadowTree;
-    ASSERT(should || !m_link->hasSheet());
-    return should;
+    bool visible = inDocument() && !m_isInShadowTree;
+    if (!visible) {
+        ASSERT(!linkStyle() || !linkStyle()->hasSheet());
+        return 0;
+    }
+
+    if (!m_link) {
+        m_link = adoptPtr(new LinkStyle(this));
+        if (fastHasAttribute(disabledAttr))
+            m_link->setDisabledState(true);
+    }
+
+    return m_link.get();
 }
 
 void HTMLLinkElement::process()
 {
-    if (shouldProcessStyle())
-        m_link->process();
+    if (LinkStyle* link = linkStyleToProcess())
+        link->process();
 }
 
 Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* insertionPoint)
@@ -177,12 +190,13 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
     m_linkLoader.released();
 
     if (m_isInShadowTree) {
-        ASSERT(!m_link->hasSheet());
+        ASSERT(!linkStyle() || !linkStyle()->hasSheet());
         return;
     }
     document()->styleSheetCollection()->removeStyleSheetCandidateNode(this);
 
-    m_link->ownerRemoved();
+    if (LinkStyle* link = linkStyle())
+        link->ownerRemoved();
 
     if (document()->renderer())
         document()->styleResolverChanged(DeferRecalcStyle);
@@ -196,7 +210,7 @@ void HTMLLinkElement::finishParsingChildren()
 
 bool HTMLLinkElement::styleSheetIsLoading() const
 {
-    return m_link->styleSheetIsLoading();
+    return linkStyle() && linkStyle()->styleSheetIsLoading();
 }
 
 void HTMLLinkElement::linkLoaded()
@@ -231,12 +245,14 @@ void HTMLLinkElement::didSendDOMContentLoadedForLinkPrerender()
 
 bool HTMLLinkElement::sheetLoaded()
 {
-    return m_link->sheetLoaded();
+    ASSERT(linkStyle());
+    return linkStyle()->sheetLoaded();
 }
 
 void HTMLLinkElement::notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred)
 {
-    m_link->notifyLoadedSheetAndAllCriticalSubresources(errorOccurred);
+    ASSERT(linkStyle());
+    linkStyle()->notifyLoadedSheetAndAllCriticalSubresources(errorOccurred);
 }
 
 void HTMLLinkElement::dispatchPendingLoadEvents()
@@ -247,7 +263,8 @@ void HTMLLinkElement::dispatchPendingLoadEvents()
 void HTMLLinkElement::dispatchPendingEvent(LinkEventSender* eventSender)
 {
     ASSERT_UNUSED(eventSender, eventSender == &linkLoadEventSender());
-    if (m_link->hasLoadedSheet())
+    ASSERT(linkStyle());
+    if (linkStyle()->hasLoadedSheet())
         linkLoaded();
     else
         linkLoadingErrored();
@@ -255,7 +272,8 @@ void HTMLLinkElement::dispatchPendingEvent(LinkEventSender* eventSender)
 
 void HTMLLinkElement::startLoadingDynamicSheet()
 {
-    m_link->startLoadingDynamicSheet();
+    ASSERT(linkStyle());
+    linkStyle()->startLoadingDynamicSheet();
 }
 
 bool HTMLLinkElement::isURLAttribute(const Attribute& attribute) const
