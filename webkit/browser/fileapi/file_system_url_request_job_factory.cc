@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/file_system_url_request_job_factory.h"
+#include "webkit/browser/fileapi/file_system_url_request_job_factory.h"
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/url_request/url_request.h"
-#include "webkit/fileapi/file_system_url_request_job.h"
-#include "webkit/fileapi/file_system_dir_url_request_job.h"
+#include "webkit/browser/fileapi/file_system_dir_url_request_job.h"
+#include "webkit/browser/fileapi/file_system_url_request_job.h"
 
 namespace fileapi {
 

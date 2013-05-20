@@ -35,7 +35,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_url_request_job_factory.h"
-#include "webkit/fileapi/file_system_url_request_job_factory.h"
+#include "webkit/browser/fileapi/file_system_url_request_job_factory.h"
 
 using appcache::AppCacheService;
 using fileapi::FileSystemContext;

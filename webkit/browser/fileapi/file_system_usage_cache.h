@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_USAGE_CACHE_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_USAGE_CACHE_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_USAGE_CACHE_H_
+#define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_USAGE_CACHE_H_
 
 #include <map>
 
@@ -100,4 +100,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemUsageCache {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_USAGE_CACHE_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_USAGE_CACHE_H_
