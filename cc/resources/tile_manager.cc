@@ -669,6 +669,7 @@ void TileManager::DispatchOneImageDecodeTask(
   raster_worker_pool_->PostTaskAndReply(
       base::Bind(&TileManager::RunImageDecodeTask,
                  pixel_ref,
+                 tile->layer_id(),
                  rendering_stats_instrumentation_),
       base::Bind(&TileManager::OnImageDecodeTaskCompleted,
                  base::Unretained(this),
@@ -920,8 +921,10 @@ void TileManager::RunRasterTask(
 // static
 void TileManager::RunImageDecodeTask(
     skia::LazyPixelRef* pixel_ref,
+    int layer_id,
     RenderingStatsInstrumentation* stats_instrumentation) {
   TRACE_EVENT0("cc", "TileManager::RunImageDecodeTask");
+  devtools_instrumentation::ScopedImageDecodeTask image_decode_task(layer_id);
   base::TimeTicks start_time = stats_instrumentation->StartRecording();
   pixel_ref->Decode();
   base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);

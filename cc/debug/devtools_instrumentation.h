@@ -15,6 +15,7 @@ const char kCategory[] = "cc,devtools";
 const char kLayerId[] = "layerId";
 const char kPaintLayer[] = "PaintLayer";
 const char kRasterTask[] = "RasterTask";
+const char kImageDecodeTask[] = "ImageDecodeTask";
 }
 
 struct ScopedPaintLayer {
@@ -39,6 +40,18 @@ struct ScopedRasterTask {
   }
 
   DISALLOW_COPY_AND_ASSIGN(ScopedRasterTask);
+};
+
+struct ScopedImageDecodeTask {
+  explicit ScopedImageDecodeTask(int layer_id) {
+    TRACE_EVENT_BEGIN1(internal::kCategory, internal::kImageDecodeTask,
+        internal::kLayerId, layer_id);
+  }
+  ~ScopedImageDecodeTask() {
+    TRACE_EVENT_END0(internal::kCategory, internal::kImageDecodeTask);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedImageDecodeTask);
 };
 
 struct ScopedLayerObjectTracker

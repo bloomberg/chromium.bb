@@ -171,6 +171,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       PicturePileImpl* picture_pile);
   static void RunImageDecodeTask(
       skia::LazyPixelRef* pixel_ref,
+      int layer_id,
       RenderingStatsInstrumentation* stats_instrumentation);
 
   TileManagerClient* client_;
