@@ -43,13 +43,76 @@ class KURL;
 template<typename T> class EventSender;
 typedef EventSender<HTMLLinkElement> LinkEventSender;
 
-class HTMLLinkElement FINAL : public HTMLElement, public CachedStyleSheetClient, public LinkLoaderClient {
+class LinkStyle FINAL : public CachedStyleSheetClient {
+public:
+    explicit LinkStyle(HTMLLinkElement* owner);
+    ~LinkStyle();
+
+    void startLoadingDynamicSheet();
+    void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred);
+    bool sheetLoaded();
+
+    void setDisabledState(bool);
+    void process();
+    void ownerRemoved();
+    void setSheetTitle(const String&);
+
+    bool styleSheetIsLoading() const;
+    bool hasSheet() const { return m_sheet; }
+    bool hasLoadedSheet() const { return m_loadedSheet; }
+    bool isDisabled() const { return m_disabledState == Disabled; }
+    bool isEnabledViaScript() const { return m_disabledState == EnabledViaScript; }
+    bool isUnset() const { return m_disabledState == Unset; }
+
+    CSSStyleSheet* sheet() const { return m_sheet.get(); }
+
+private:
+    // From CachedResourceClient
+    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet*);
+
+    enum DisabledState {
+        Unset,
+        EnabledViaScript,
+        Disabled
+    };
+
+    enum PendingSheetType {
+        None,
+        NonBlocking,
+        Blocking
+    };
+
+    enum RemovePendingSheetNotificationType {
+        RemovePendingSheetNotifyImmediately,
+        RemovePendingSheetNotifyLater
+    };
+
+    void clearSheet();
+    void addPendingSheet(PendingSheetType);
+    void removePendingSheet(RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
+    Document* document();
+
+    CachedResourceHandle<CachedCSSStyleSheet> m_cachedSheet;
+    RefPtr<CSSStyleSheet> m_sheet;
+    DisabledState m_disabledState;
+    PendingSheetType m_pendingSheetType;
+    bool m_loading;
+    bool m_firedLoad;
+    bool m_loadedSheet;
+    HTMLLinkElement* m_owner;
+};
+
+
+class HTMLLinkElement FINAL : public HTMLElement, public LinkLoaderClient {
 public:
     static PassRefPtr<HTMLLinkElement> create(const QualifiedName&, Document*, bool createdByParser);
     virtual ~HTMLLinkElement();
 
     KURL href() const;
     String rel() const;
+    String media() const { return m_media; }
+    String typeValue() const { return m_type; }
+    const LinkRelAttribute& relAttribute() const { return m_relAttribute; }
 
     virtual String target() const;
 
@@ -60,35 +123,43 @@ public:
     // the icon size string as parsed from the HTML attribute
     String iconSizes() const;
 
-    CSSStyleSheet* sheet() const { return m_sheet.get(); }
+    CSSStyleSheet* sheet() const { return m_link->sheet(); }
 
     bool styleSheetIsLoading() const;
 
-    bool isDisabled() const { return m_disabledState == Disabled; }
-    bool isEnabledViaScript() const { return m_disabledState == EnabledViaScript; }
+    bool isDisabled() const { return m_link->isDisabled(); }
+    bool isEnabledViaScript() const { return m_link->isEnabledViaScript(); }
     void setSizes(const String&);
     DOMSettableTokenList* sizes() const;
 
     void dispatchPendingEvent(LinkEventSender*);
     static void dispatchPendingLoadEvents();
 
+    // From LinkLoaderClient
+    virtual bool shouldLoadLink() OVERRIDE;
+
+    // For LinkStyle
+    bool loadLink(const String& type, const KURL& url) { return m_linkLoader.loadLink(m_relAttribute, type, url, document()); }
+    bool isAlternate() const { return m_link->isUnset() && m_relAttribute.isAlternate(); }
+    bool shouldProcessStyle();
+
 private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
-    virtual bool shouldLoadLink();
     void process();
     static void processCallback(Node*);
-    void clearSheet();
 
+    // From Node and subclassses
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
+    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
+    virtual bool sheetLoaded() OVERRIDE;
+    virtual void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred) OVERRIDE;
+    virtual void startLoadingDynamicSheet() OVERRIDE;
+    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const OVERRIDE;
+    virtual void finishParsingChildren();
 
-    // from CachedResourceClient
-    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet* sheet);
-    virtual bool sheetLoaded();
-    virtual void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred);
-    virtual void startLoadingDynamicSheet();
-
+    // From LinkLoaderClient
     virtual void linkLoaded() OVERRIDE;
     virtual void linkLoadingErrored() OVERRIDE;
     virtual void didStartLinkPrerender() OVERRIDE;
@@ -96,52 +167,19 @@ private:
     virtual void didSendLoadForLinkPrerender() OVERRIDE;
     virtual void didSendDOMContentLoadedForLinkPrerender() OVERRIDE;
 
-    bool isAlternate() const { return m_disabledState == Unset && m_relAttribute.isAlternate(); }
-    
-    void setDisabledState(bool);
-
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-
-private:
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
-
-    virtual void finishParsingChildren();
-    
-    enum PendingSheetType { None, NonBlocking, Blocking };
-    void addPendingSheet(PendingSheetType);
-
-    enum RemovePendingSheetNotificationType {
-        RemovePendingSheetNotifyImmediately,
-        RemovePendingSheetNotifyLater
-    };
-
-    void removePendingSheet(RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
-
 private:
     HTMLLinkElement(const QualifiedName&, Document*, bool createdByParser);
 
+    OwnPtr<LinkStyle> m_link;
     LinkLoader m_linkLoader;
-    CachedResourceHandle<CachedCSSStyleSheet> m_cachedSheet;
-    RefPtr<CSSStyleSheet> m_sheet;
-    enum DisabledState {
-        Unset,
-        EnabledViaScript,
-        Disabled
-    };
 
     String m_type;
     String m_media;
     RefPtr<DOMSettableTokenList> m_sizes;
-    DisabledState m_disabledState;
     LinkRelAttribute m_relAttribute;
-    bool m_loading;
+
     bool m_createdByParser;
     bool m_isInShadowTree;
-    bool m_firedLoad;
-    bool m_loadedSheet;
-
-    PendingSheetType m_pendingSheetType;
-
     int m_beforeLoadRecurseCount;
 };
 
