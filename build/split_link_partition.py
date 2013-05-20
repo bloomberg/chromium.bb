@@ -126,8 +126,6 @@
   'all_from_libs': [
     (r'autofill_common\.lib$', r'switches\.obj$'),
     (r'base_static\.lib$', r'base_switches\.obj$'),
-    # TODO(scottmg): This one is not solely constants, but looks safe.
-    (r'browser_extensions\.lib$', r'tab_capture_api\.obj$'),
     (r'\bcc\.lib$', r'switches\.obj$'),
     (r'\bcommon\.lib$', r'extension_constants\.obj$'),
     (r'\bcommon\.lib$', r'extension_manifest_constants\.obj$'),
@@ -141,11 +139,13 @@
     (r'content_common\.lib$', r'browser_plugin_constants\.obj$'),
     (r'content_common\.lib$', r'content_constants\.obj$'),
     (r'content_common\.lib$', r'content_switches\.obj$'),
+    (r'content_common\.lib$', r'media_stream_options\.obj$'),
     (r'content_common\.lib$', r'page_zoom\.obj$'),
     (r'content_common\.lib$', r'url_constants\.obj$'),
     (r'gl_wrapper\.lib$', r'gl_switches\.obj$'),
     # TODO(scottmg): This one is not solely constants, but looks safe.
     (r'libjingle_webrtc_common\.lib$', r'mediaconstraintsinterface\.obj$'),
+    (r'\bmedia\.lib$', r'audio_manager_base\.obj$'),
     (r'\bmedia\.lib$', r'media_switches\.obj$'),
     # TODO(scottmg): This one is not solely constants, but looks safe.
     (r'\bnet\.lib$', r'http_request_headers\.obj$'),
