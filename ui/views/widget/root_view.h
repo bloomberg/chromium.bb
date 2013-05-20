@@ -120,8 +120,8 @@ class VIEWS_EXPORT RootView : public View,
   virtual View::DragInfo* GetDragInfo() OVERRIDE;
 
  private:
-  friend class View;
-  friend class Widget;
+  friend class ::views::View;
+  friend class ::views::Widget;
 
   // Input ---------------------------------------------------------------------
 
