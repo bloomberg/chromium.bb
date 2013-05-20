@@ -18,6 +18,12 @@ namespace {
 void StartSyncOnUIThread(const base::FilePath& profile,
                          syncer::ModelType type) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager) {
+    // Can happen in tests.
+    DVLOG(2) << "No ProfileManager, can't start sync.";
+    return;
+  }
+
   Profile* p = profile_manager->GetProfileByPath(profile);
   if (!p) {
     DVLOG(2) << "Profile not found, can't start sync.";
