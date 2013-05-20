@@ -28,12 +28,9 @@
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGResource.h"
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
-#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

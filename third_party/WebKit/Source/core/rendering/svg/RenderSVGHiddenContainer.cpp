@@ -21,9 +21,6 @@
 
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 
-#include "core/rendering/svg/RenderSVGPath.h"
-#include "core/svg/SVGStyledElement.h"
-
 namespace WebCore {
 
 RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGStyledElement* element)

@@ -25,32 +25,12 @@
 
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
-#include "SVGNames.h"
-#include "core/html/ImageData.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/ImageBuffer.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/SourceAlpha.h"
 #include "core/platform/graphics/filters/SourceGraphic.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
-#include "core/rendering/svg/RenderSVGResource.h"
-#include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "core/svg/SVGStyledElement.h"
-#include "core/svg/SVGUnitTypes.h"
-#include "core/svg/graphics/filters/SVGFilter.h"
-
-#include <wtf/UnusedParam.h>
-#include <wtf/Vector.h>
 
 using namespace std;
 

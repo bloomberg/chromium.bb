@@ -20,17 +20,8 @@
 #ifndef RenderSVGResourceClipper_h
 #define RenderSVGResourceClipper_h
 
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/ImageBuffer.h"
-#include "core/platform/graphics/IntSize.h"
-#include "core/platform/graphics/Path.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGClipPathElement.h"
-#include "core/svg/SVGUnitTypes.h"
-
-#include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
 
 namespace WebCore {
 

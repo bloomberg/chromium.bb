@@ -24,17 +24,10 @@
 #ifndef RenderSVGResourceFilter_h
 #define RenderSVGResourceFilter_h
 
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGFilterElement.h"
-#include "core/svg/SVGUnitTypes.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
-
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
 
 namespace WebCore {
 

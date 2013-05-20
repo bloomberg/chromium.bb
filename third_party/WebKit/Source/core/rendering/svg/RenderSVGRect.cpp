@@ -30,7 +30,6 @@
 #include "core/rendering/svg/RenderSVGRect.h"
 
 #include "SVGNames.h"
-#include "core/svg/SVGRectElement.h"
 
 namespace WebCore {
 

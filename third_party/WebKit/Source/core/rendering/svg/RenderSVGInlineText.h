@@ -22,7 +22,6 @@
 #ifndef RenderSVGInlineText_h
 #define RenderSVGInlineText_h
 
-#include "core/platform/graphics/Font.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/svg/SVGTextLayoutAttributes.h"
 

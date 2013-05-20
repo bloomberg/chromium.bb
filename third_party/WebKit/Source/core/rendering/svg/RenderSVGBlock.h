@@ -21,7 +21,6 @@
 #define RenderSVGBlock_h
 
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
 
 namespace WebCore {
 

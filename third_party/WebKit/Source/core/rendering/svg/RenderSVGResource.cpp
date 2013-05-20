@@ -24,16 +24,13 @@
 
 #include "core/rendering/svg/RenderSVGResource.h"
 
-#include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
-#include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
 

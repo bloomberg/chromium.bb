@@ -31,7 +31,6 @@
 #include "SVGNames.h"
 #include "core/svg/SVGCircleElement.h"
 #include "core/svg/SVGEllipseElement.h"
-#include "core/svg/SVGStyledTransformableElement.h"
 
 namespace WebCore {
 

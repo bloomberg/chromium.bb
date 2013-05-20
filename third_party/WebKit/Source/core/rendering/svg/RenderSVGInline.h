@@ -23,8 +23,6 @@
 
 #include "core/rendering/RenderInline.h"
 
-#include "core/rendering/svg/SVGRenderSupport.h"
-
 namespace WebCore {
 
 class RenderSVGInline : public RenderInline {

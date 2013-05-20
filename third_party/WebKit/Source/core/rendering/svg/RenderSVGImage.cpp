@@ -27,23 +27,16 @@
 
 #include "core/rendering/svg/RenderSVGImage.h"
 
-#include "core/dom/Attr.h"
-#include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/RenderImageResource.h"
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGImageElement.h"
-#include "core/svg/SVGLength.h"
-#include "core/svg/SVGPreserveAspectRatio.h"
 
 namespace WebCore {
 

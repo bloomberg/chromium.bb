@@ -23,10 +23,9 @@
 
 #include "core/rendering/svg/RenderSVGInline.h"
 
-#include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGInlineFlowBox.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 
 namespace WebCore {

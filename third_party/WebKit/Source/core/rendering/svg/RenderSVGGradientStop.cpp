@@ -23,7 +23,6 @@
 
 #include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGStopElement.h"
 

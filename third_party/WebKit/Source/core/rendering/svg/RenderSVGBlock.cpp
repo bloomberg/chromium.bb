@@ -23,8 +23,6 @@
 
 #include "core/rendering/svg/RenderSVGBlock.h"
 
-#include "core/rendering/style/StyleInheritedData.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
 

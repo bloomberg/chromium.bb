@@ -28,15 +28,9 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/page/Settings.h"
-#include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/FloatQuad.h"
-#include "core/rendering/RenderBlock.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
-#include "core/rendering/svg/SVGRootInlineBox.h"
 
 namespace WebCore {
 
