@@ -976,6 +976,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   FileInfoList info_list;
   std::vector<GURL> file_urls;
   std::vector<base::FilePath> file_paths;
+  bool has_google_document = false;
   for (size_t i = 0; i < files_list->GetSize(); ++i) {
     FileInfo info;
     std::string file_url_str;
@@ -998,6 +999,12 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     info.file_url = file_url;
     info.file_path = file_system_url.path();
     info_list.push_back(info);
+
+    if (google_apis::ResourceEntry::ClassifyEntryKindByFileExtension(
+            info.file_path) &
+        google_apis::ResourceEntry::KIND_OF_GOOGLE_DOCUMENT) {
+      has_google_document = true;
+    }
   }
 
   ListValue* result_list = new ListValue();
@@ -1006,8 +1013,11 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   // Find the Drive apps first, because we want them to take precedence
   // when setting the default app.
   bool default_already_set = false;
-  if (!FindDriveAppTasks(info_list, result_list, &default_already_set))
-    return false;
+  // Google document are not opened by drive apps but file manager.
+  if (!has_google_document) {
+    if (!FindDriveAppTasks(info_list, result_list, &default_already_set))
+      return false;
+  }
 
   // Take the union of platform app file handlers, and all previous Drive
   // and extension tasks. As above, we know there aren't duplicates because

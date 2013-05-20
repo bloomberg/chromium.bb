@@ -44,8 +44,11 @@ FileError CopyLocalFileOnBlockingPool(
 std::string GetDocumentResourceIdOnBlockingPool(
     const base::FilePath& local_file_path) {
   std::string result;
-  if (google_apis::ResourceEntry::HasHostedDocumentExtension(
-          local_file_path)) {
+  const bool has_hosted_document =
+      google_apis::ResourceEntry::ClassifyEntryKindByFileExtension(
+          local_file_path) &
+      google_apis::ResourceEntry::KIND_OF_HOSTED_DOCUMENT;
+  if (has_hosted_document) {
     std::string error;
     DictionaryValue* dict_value = NULL;
     JSONFileValueSerializer serializer(local_file_path);

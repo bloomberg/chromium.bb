@@ -578,18 +578,19 @@ std::string ResourceEntry::GetHostedDocumentExtension() const {
 }
 
 // static
-bool ResourceEntry::HasHostedDocumentExtension(const base::FilePath& file) {
+int ResourceEntry::ClassifyEntryKindByFileExtension(
+    const base::FilePath& file_path) {
 #if defined(OS_WIN)
-  std::string file_extension = WideToUTF8(file.Extension());
+  std::string file_extension = WideToUTF8(file_path.Extension());
 #else
-  std::string file_extension = file.Extension();
+  std::string file_extension = file_path.Extension();
 #endif
   for (size_t i = 0; i < arraysize(kEntryKindMap); ++i) {
     const char* document_extension = kEntryKindMap[i].extension;
     if (document_extension && file_extension == document_extension)
-      return true;
+      return ClassifyEntryKind(kEntryKindMap[i].kind);
   }
-  return false;
+  return 0;
 }
 
 // static

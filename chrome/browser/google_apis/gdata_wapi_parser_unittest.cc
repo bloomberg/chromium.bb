@@ -304,26 +304,53 @@ TEST(GDataWAPIParserTest, AccountMetadataParser) {
   EXPECT_EQ(0U, second_app->secondary_extensions().size());
 }
 
-// Test file extension checking in ResourceEntry::HasDocumentExtension().
-TEST(GDataWAPIParserTest, ResourceEntryHasDocumentExtension) {
-  EXPECT_TRUE(ResourceEntry::HasHostedDocumentExtension(
-      base::FilePath(FILE_PATH_LITERAL("Test.gdoc"))));
-  EXPECT_TRUE(ResourceEntry::HasHostedDocumentExtension(
-      base::FilePath(FILE_PATH_LITERAL("Test.gsheet"))));
-  EXPECT_TRUE(ResourceEntry::HasHostedDocumentExtension(
-      base::FilePath(FILE_PATH_LITERAL("Test.gslides"))));
-  EXPECT_TRUE(ResourceEntry::HasHostedDocumentExtension(
-      base::FilePath(FILE_PATH_LITERAL("Test.gdraw"))));
-  EXPECT_TRUE(ResourceEntry::HasHostedDocumentExtension(
-      base::FilePath(FILE_PATH_LITERAL("Test.gtable"))));
-  EXPECT_FALSE(ResourceEntry::HasHostedDocumentExtension(
-      base::FilePath(FILE_PATH_LITERAL("Test.tar.gz"))));
-  EXPECT_FALSE(ResourceEntry::HasHostedDocumentExtension(
-      base::FilePath(FILE_PATH_LITERAL("Test.txt"))));
-  EXPECT_FALSE(ResourceEntry::HasHostedDocumentExtension(
-      base::FilePath(FILE_PATH_LITERAL("Test"))));
-  EXPECT_FALSE(ResourceEntry::HasHostedDocumentExtension(
-      base::FilePath()));
+TEST(GDataWAPIParserTest, ClassifyEntryKindByFileExtension) {
+  EXPECT_EQ(
+      ResourceEntry::KIND_OF_GOOGLE_DOCUMENT |
+      ResourceEntry::KIND_OF_HOSTED_DOCUMENT,
+      ResourceEntry::ClassifyEntryKindByFileExtension(
+          base::FilePath(FILE_PATH_LITERAL("Test.gdoc"))));
+  EXPECT_EQ(
+      ResourceEntry::KIND_OF_GOOGLE_DOCUMENT |
+      ResourceEntry::KIND_OF_HOSTED_DOCUMENT,
+      ResourceEntry::ClassifyEntryKindByFileExtension(
+          base::FilePath(FILE_PATH_LITERAL("Test.gsheet"))));
+  EXPECT_EQ(
+      ResourceEntry::KIND_OF_GOOGLE_DOCUMENT |
+      ResourceEntry::KIND_OF_HOSTED_DOCUMENT,
+      ResourceEntry::ClassifyEntryKindByFileExtension(
+          base::FilePath(FILE_PATH_LITERAL("Test.gslides"))));
+  EXPECT_EQ(
+      ResourceEntry::KIND_OF_GOOGLE_DOCUMENT |
+      ResourceEntry::KIND_OF_HOSTED_DOCUMENT,
+      ResourceEntry::ClassifyEntryKindByFileExtension(
+          base::FilePath(FILE_PATH_LITERAL("Test.gdraw"))));
+  EXPECT_EQ(
+      ResourceEntry::KIND_OF_GOOGLE_DOCUMENT |
+      ResourceEntry::KIND_OF_HOSTED_DOCUMENT,
+      ResourceEntry::ClassifyEntryKindByFileExtension(
+          base::FilePath(FILE_PATH_LITERAL("Test.gtable"))));
+  EXPECT_EQ(
+      ResourceEntry::KIND_OF_EXTERNAL_DOCUMENT |
+      ResourceEntry::KIND_OF_HOSTED_DOCUMENT,
+      ResourceEntry::ClassifyEntryKindByFileExtension(
+          base::FilePath(FILE_PATH_LITERAL("Test.glink"))));
+  EXPECT_EQ(
+      ResourceEntry::KIND_OF_NONE,
+      ResourceEntry::ClassifyEntryKindByFileExtension(
+          base::FilePath(FILE_PATH_LITERAL("Test.tar.gz"))));
+  EXPECT_EQ(
+      ResourceEntry::KIND_OF_NONE,
+      ResourceEntry::ClassifyEntryKindByFileExtension(
+          base::FilePath(FILE_PATH_LITERAL("Test.txt"))));
+  EXPECT_EQ(
+      ResourceEntry::KIND_OF_NONE,
+      ResourceEntry::ClassifyEntryKindByFileExtension(
+          base::FilePath(FILE_PATH_LITERAL("Test"))));
+  EXPECT_EQ(
+      ResourceEntry::KIND_OF_NONE,
+      ResourceEntry::ClassifyEntryKindByFileExtension(
+          base::FilePath()));
 }
 
 TEST(GDataWAPIParserTest, ResourceEntryClassifyEntryKind) {

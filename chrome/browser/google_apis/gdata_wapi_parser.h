@@ -422,9 +422,6 @@ class ResourceEntry : public CommonMetadata {
   // Returns true if |value| is NULL or it is parsed as int64 successfully.
   static bool ParseChangestamp(const base::Value* value, int64* result);
 
-  // Returns true if |file| has one of the hosted document extensions.
-  static bool HasHostedDocumentExtension(const base::FilePath& file);
-
   // The resource ID is used to identify a resource, which looks like:
   // file:d41d8cd98f00b204e9800998ecf8
   const std::string& resource_id() const { return resource_id_; }
@@ -522,6 +519,10 @@ class ResourceEntry : public CommonMetadata {
   // KIND_OF_HOSTED_DOCUMENT and KIND_OF_GOOGLE_DOCUMENT, hence the returned
   // value is KIND_OF_HOSTED_DOCUMENT | KIND_OF_GOOGLE_DOCUMENT.
   static int ClassifyEntryKind(DriveEntryKind kind);
+
+  // Classifies the EntryKind by the file extension of specific path. The
+  // returned value is a bitmask of EntryKindClass. See also ClassifyEntryKind.
+  static int ClassifyEntryKindByFileExtension(const base::FilePath& file);
 
   void set_resource_id(const std::string& resource_id) {
     resource_id_ = resource_id;
