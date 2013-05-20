@@ -80,9 +80,9 @@
       # ninja which explicitly supports this use case (gyp turns all actions into
       # ninja restat rules).
       ['"<(GENERATOR)"=="ninja"', {
-        'write_file_only_if_changed': '--writeFileOnlyIfChanged 1'
+        'write_file_only_if_changed': '--write-file-only-if-changed 1',
       },{
-        'write_file_only_if_changed': '--writeFileOnlyIfChanged 0'
+        'write_file_only_if_changed': '--write-file-only-if-changed 0',
       }],
     ],
   },
@@ -104,7 +104,7 @@
         'idl_files_list': '<|(idl_files_list.tmp <@(idl_files))',
       },
       'inputs': [
-        'scripts/preprocess-idls.pl',
+        'scripts/preprocess_idls.py',
         '<(idl_files_list)',
         '<!@(cat <(idl_files_list))',
        ],
@@ -114,18 +114,13 @@
        ],
        'msvs_cygwin_shell': 0,
        'action': [
-         '<(perl_exe)',
-         '-w',
-         '-Iscripts',
-         '-I../core/scripts',
-         'scripts/preprocess-idls.pl',
-         '--defines',
-         '<(feature_defines)',
-         '--idlFilesList',
+         'python',
+         'scripts/preprocess_idls.py',
+         '--idl-files-list',
          '<(idl_files_list)',
-         '--supplementalDependencyFile',
+         '--supplemental-dependency-file',
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
-         '--windowConstructorsFile',
+         '--window-constructors-file',
          '<(SHARED_INTERMEDIATE_DIR)/DOMWindowConstructors.idl',
          '<@(write_file_only_if_changed)',
        ],

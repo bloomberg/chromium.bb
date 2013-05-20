@@ -61,7 +61,7 @@ GetOptions('include=s@' => \@idlDirectories,
            'supplementalDependencyFile=s' => \$supplementalDependencyFile,
            'additionalIdlFiles=s' => \$additionalIdlFiles,
            'idlAttributesFile=s' => \$idlAttributesFile,
-           'writeFileOnlyIfChanged=s' => \$writeFileOnlyIfChanged);
+           'write-file-only-if-changed=s' => \$writeFileOnlyIfChanged);
 
 my $targetIdlFile = $ARGV[0];
 
@@ -179,7 +179,7 @@ foreach my $idlFile (@supplementedIdlFiles) {
                 push(@{$targetDataNode->constants}, $constant);
             }
         } else {
-            die "$idlFile is not a supplemental dependency of $targetIdlFile. There maybe a bug in the the supplemental dependency generator (preprocess-idls.pl).\n";
+            die "$idlFile is not a supplemental dependency of $targetIdlFile. There maybe a bug in the the supplemental dependency generator (preprocess_idls.py).\n";
         }
     }
 }

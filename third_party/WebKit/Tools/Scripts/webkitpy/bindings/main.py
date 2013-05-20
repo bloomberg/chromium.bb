@@ -69,12 +69,11 @@ class BindingsTests:
             os.write(idl_files_list[0], os.path.join(input_directory, input_file) + "\n")
         os.close(idl_files_list[0])
 
-        cmd = ['perl', '-w',
-               '-Ibindings/scripts',
-               'bindings/scripts/preprocess-idls.pl',
-               '--idlFilesList', idl_files_list[1],
-               '--supplementalDependencyFile', supplemental_dependency_file,
-               '--windowConstructorsFile', window_constructors_file]
+        cmd = ['python',
+               'bindings/scripts/preprocess_idls.py',
+               '--idl-files-list', idl_files_list[1],
+               '--supplemental-dependency-file', supplemental_dependency_file,
+               '--window-constructors-file', window_constructors_file]
 
         exit_code = 0
         try:
