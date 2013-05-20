@@ -731,7 +731,7 @@ END
     }
 
     GenerateHeaderNamedAndIndexedPropertyAccessors($interface);
-    GenerateHeaderCustomCall($interface);
+    GenerateHeaderLegacyCall($interface);
     GenerateHeaderCustomInternalFieldIndices($interface);
 
     if ($interface->name eq "DOMWindow") {
@@ -1018,12 +1018,12 @@ END
     }
 }
 
-sub GenerateHeaderCustomCall
+sub GenerateHeaderLegacyCall
 {
     my $interface = shift;
 
-    if ($interface->extendedAttributes->{"CustomCall"}) {
-        $header{classPublic}->add("    static v8::Handle<v8::Value> callAsFunctionCallback(const v8::Arguments&);\n");
+    if ($interface->extendedAttributes->{"CustomLegacyCall"}) {
+        $header{classPublic}->add("    static v8::Handle<v8::Value> legacyCallCustom(const v8::Arguments&);\n");
     }
     if ($interface->name eq "Location") {
         $header{classPublic}->add("    static v8::Handle<v8::Value> assignAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);\n");
@@ -3243,15 +3243,15 @@ END
     $implementation{nameSpaceWebCore}->add($code);
 }
 
-sub GenerateImplementationCustomCall
+sub GenerateImplementationLegacyCall
 {
     my $interface = shift;
     my $code = "";
 
     my $v8ClassName = GetV8ClassName($interface);
 
-    if ($interface->extendedAttributes->{"CustomCall"}) {
-        $code .= "    desc->InstanceTemplate()->SetCallAsFunctionHandler(${v8ClassName}::callAsFunctionCallback);\n";
+    if ($interface->extendedAttributes->{"CustomLegacyCall"}) {
+        $code .= "    desc->InstanceTemplate()->SetCallAsFunctionHandler(${v8ClassName}::legacyCallCustom);\n";
     }
     return $code;
 }
@@ -3713,7 +3713,7 @@ END
 
     $code .= GenerateImplementationIndexedProperty($interface);
     $code .= GenerateImplementationNamedPropertyAccessors($interface);
-    $code .= GenerateImplementationCustomCall($interface);
+    $code .= GenerateImplementationLegacyCall($interface);
     $code .= GenerateImplementationMasqueradesAsUndefined($interface);
 
     # Define our functions with Set() or SetAccessor()

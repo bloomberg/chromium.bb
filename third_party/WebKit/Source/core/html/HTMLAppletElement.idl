@@ -23,7 +23,7 @@
     CustomNamedSetter,
     CustomIndexedGetter,
     CustomIndexedSetter,
-    CustomCall
+    CustomLegacyCall
 ] interface HTMLAppletElement : HTMLElement {
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString alt;

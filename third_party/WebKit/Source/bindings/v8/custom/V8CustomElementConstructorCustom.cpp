@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8CustomElementConstructor::callAsFunctionCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8CustomElementConstructor::legacyCallCustom(const v8::Arguments& args)
 {
     if (!args.IsConstructCall())
         return throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());

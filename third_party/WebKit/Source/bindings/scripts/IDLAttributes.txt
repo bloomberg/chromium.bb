@@ -30,7 +30,6 @@ Conditional=*
 Constructor
 ConstructorTemplate=Event|TypedArray
 Custom
-CustomCall
 CustomConstructor
 CustomDeleteProperty
 CustomEnumerateProperty
@@ -38,6 +37,7 @@ CustomGetter
 CustomIndexedGetter
 CustomIndexedSetter
 CustomIsReachable
+CustomLegacyCall
 CustomNamedGetter
 CustomNamedSetter
 CustomSetter

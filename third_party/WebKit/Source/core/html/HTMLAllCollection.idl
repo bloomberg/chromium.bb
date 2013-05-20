@@ -24,7 +24,7 @@
  */
 
 [
-    CustomCall,
+    CustomLegacyCall,
     MasqueradesAsUndefined,
     GenerateIsReachable=ownerNode,
     DependentLifetime,

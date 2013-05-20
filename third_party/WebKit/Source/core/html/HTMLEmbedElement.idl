@@ -21,7 +21,7 @@
 [
     CustomNamedGetter,
     CustomNamedSetter,
-    CustomCall,
+    CustomLegacyCall,
     CustomIndexedGetter,
     CustomIndexedSetter,
 ] interface HTMLEmbedElement : HTMLElement {

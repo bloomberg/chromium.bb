@@ -91,7 +91,7 @@ v8::Handle<v8::Value> V8HTMLAllCollection::namedItemMethodCustom(const v8::Argum
     return result;
 }
 
-v8::Handle<v8::Value> V8HTMLAllCollection::callAsFunctionCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8HTMLAllCollection::legacyCallCustom(const v8::Arguments& args)
 {
     if (args.Length() < 1)
         return v8::Undefined();

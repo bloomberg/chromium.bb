@@ -103,17 +103,17 @@ v8::Handle<v8::Value> V8HTMLObjectElement::namedPropertySetter(v8::Local<v8::Str
     return npObjectNamedSetter<V8HTMLObjectElement>(name, value, info);
 }
 
-v8::Handle<v8::Value> V8HTMLAppletElement::callAsFunctionCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8HTMLAppletElement::legacyCallCustom(const v8::Arguments& args)
 {
     return npObjectInvokeDefaultHandler(args);
 }
 
-v8::Handle<v8::Value> V8HTMLEmbedElement::callAsFunctionCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8HTMLEmbedElement::legacyCallCustom(const v8::Arguments& args)
 {
     return npObjectInvokeDefaultHandler(args);
 }
 
-v8::Handle<v8::Value> V8HTMLObjectElement::callAsFunctionCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8HTMLObjectElement::legacyCallCustom(const v8::Arguments& args)
 {
     return npObjectInvokeDefaultHandler(args);
 }

@@ -23,7 +23,7 @@
     CustomNamedSetter,
     CustomIndexedGetter,
     CustomIndexedSetter,
-    CustomCall
+    CustomLegacyCall
 ] interface HTMLObjectElement : HTMLElement {
     readonly attribute HTMLFormElement form;
     [Reflect] attribute DOMString code;
