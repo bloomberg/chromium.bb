@@ -2,14 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Runs Apple's SunSpider JavaScript benchmark."""
+
 import collections
 import json
+import os
 
 from telemetry.core import util
 from telemetry.page import page_measurement
-
+from telemetry.page import page_set
 
 class SunSpiderMeasurement(page_measurement.PageMeasurement):
+  def CreatePageSet(self, options):
+    return page_set.PageSet.FromDict({
+        'serving_dirs': ['../../../chrome/test/data/sunspider/'],
+        'pages': [
+          { 'url': 'file:///../../../chrome/test/data/sunspider/'
+                   'sunspider-1.0/driver.html' }
+          ]
+        }, os.path.abspath(__file__))
+
   def MeasurePage(self, _, tab, results):
     js_is_done = """
 window.location.pathname.indexOf('results.html') >= 0"""

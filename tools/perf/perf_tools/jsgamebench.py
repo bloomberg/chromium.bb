@@ -2,10 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Runs Facebook's JSGameBench benchmark."""
+
+import os
+
 from telemetry.core import util
 from telemetry.page import page_measurement
+from telemetry.page import page_set
 
 class JsGameBench(page_measurement.PageMeasurement):
+  def CreatePageSet(self, options):
+    return page_set.PageSet.FromDict({
+        'archive_data_file': '../data/jsgamebench.json',
+        'pages': [
+          { 'url': 'http://localhost/' }
+          ]
+        }, os.path.abspath(__file__))
+
   def MeasurePage(self, _, tab, results):
     tab.ExecuteJavaScript('UI.call({}, "perftest")')
 

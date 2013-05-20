@@ -2,12 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Runs spaceport.io's PerfMarks benchmark."""
+
 import logging
+import os
 
 from telemetry.core import util
 from telemetry.page import page_measurement
+from telemetry.page import page_set
 
 class SpaceportMeasurement(page_measurement.PageMeasurement):
+  def CreatePageSet(self, options):
+    return page_set.PageSet.FromDict({
+        'pages': [
+          {'url':
+           'file:///../../../chrome/test/data/third_party/spaceport/index.html'}
+          ]
+        }, os.path.abspath(__file__))
+
   def CustomizeBrowserOptions(self, options):
     options.extra_browser_args.extend(['--disable-gpu-vsync'])
 

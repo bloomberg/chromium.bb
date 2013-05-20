@@ -2,13 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Runs Mozilla's Kraken JavaScript benchmark."""
+
+import os
+
 from telemetry.core import util
 from telemetry.page import page_measurement
+from telemetry.page import page_set
 
 def _Mean(l):
   return float(sum(l)) / len(l) if len(l) > 0 else 0.0
 
 class Kraken(page_measurement.PageMeasurement):
+  def CreatePageSet(self, options):
+    return page_set.PageSet.FromDict({
+        'archive_data_file': '../data/kraken.json',
+        'pages': [
+          { 'url': 'http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html' }
+          ]
+        }, os.path.abspath(__file__))
+
   def MeasurePage(self, _, tab, results):
     js_is_done = """
 document.title.indexOf("Results") != -1 && document.readyState == "complete"

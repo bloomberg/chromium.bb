@@ -1,7 +1,0 @@
-{
-  "description": "SunSpider JavaScript benchmark",
-  "serving_dirs": ["../../../chrome/test/data/sunspider/"],
-  "pages": [
-    { "url": "file:///../../../chrome/test/data/sunspider/sunspider-1.0/driver.html" }
-  ]
-}

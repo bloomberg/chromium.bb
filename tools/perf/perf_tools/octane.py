@@ -1,10 +1,22 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+import os
+
 from telemetry.core import util
 from telemetry.page import page_measurement
+from telemetry.page import page_set
 
 class Octane(page_measurement.PageMeasurement):
+  def CreatePageSet(self, options):
+    return page_set.PageSet.FromDict({
+        'pages': [
+          { 'url': 'file:///../../../chrome/test/data/perf/third_party/octane/'
+                   'index.html?auto=1' }
+          ]
+        }, os.path.abspath(__file__))
+
   def MeasurePage(self, _, tab, results):
     js_is_done = """
 completed && !document.getElementById("progress-bar-container")"""

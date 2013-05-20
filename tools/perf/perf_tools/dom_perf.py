@@ -4,9 +4,11 @@
 
 import json
 import math
+import os
 
 from telemetry.core import util
 from telemetry.page import page_measurement
+from telemetry.page import page_set
 
 
 def _GeometricMean(values):
@@ -33,6 +35,23 @@ SCORE_TRACE_NAME = 'score'
 
 
 class DomPerf(page_measurement.PageMeasurement):
+  def CreatePageSet(self, options):
+    BASE_PAGE = 'file:///../../../data/dom_perf/run.html?reportInJS=1&run='
+    return page_set.PageSet.FromDict({
+        'pages': [
+          { 'url': BASE_PAGE + 'Accessors' },
+          { 'url': BASE_PAGE + 'CloneNodes' },
+          { 'url': BASE_PAGE + 'CreateNodes' },
+          { 'url': BASE_PAGE + 'DOMDivWalk' },
+          { 'url': BASE_PAGE + 'DOMTable' },
+          { 'url': BASE_PAGE + 'DOMWalk' },
+          { 'url': BASE_PAGE + 'Events' },
+          { 'url': BASE_PAGE + 'Get+Elements' },
+          { 'url': BASE_PAGE + 'GridSort' },
+          { 'url': BASE_PAGE + 'Template' }
+          ]
+        }, os.path.abspath(__file__))
+
   @property
   def results_are_the_same_on_every_page(self):
     return False
