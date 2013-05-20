@@ -415,9 +415,6 @@ webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequi
 
 webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Pass Crash ]
 
-# Temporary suppression, pending landing the fix.
-crbug.com/165180 svg/foreignObject/filter-repaint.svg [ ImageOnlyFailure Pass ]
-
 # -----------------------------------------------------------------
 # End SVG TESTS
 # -----------------------------------------------------------------

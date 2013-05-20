@@ -111,7 +111,7 @@ void SVGResourcesCache::clientLayoutChanged(RenderObject* object)
 
     // Invalidate the resources if either the RenderObject itself changed,
     // or we have filter resources, which could depend on the layout of children.
-    if (object->selfNeedsLayout())
+    if (object->selfNeedsLayout() || resources->filter())
         resources->removeClientFromCache(object);
 }
 
