@@ -32,6 +32,7 @@
 #include "V8HTMLOptionsCollection.h"
 
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLOptionsCollection.h"
 
@@ -41,7 +42,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Collection.h"
 #include "bindings/v8/custom/V8HTMLSelectElementCustom.h"
-#include "bindings/v8/custom/V8NamedNodesCollection.h"
 
 namespace WebCore {
 
@@ -57,7 +57,7 @@ static v8::Handle<v8::Value> getNamedItems(HTMLOptionsCollection* collection, co
     if (namedItems.size() == 1)
         return toV8Fast(namedItems.at(0).release(), holder, collection);
 
-    return toV8Fast(V8NamedNodesCollection::create(namedItems), holder, collection);
+    return toV8Fast(NamedNodesCollection::create(namedItems), holder, collection);
 }
 
 v8::Handle<v8::Value> V8HTMLOptionsCollection::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)

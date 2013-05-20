@@ -34,7 +34,7 @@
 #include "V8Node.h"
 #include "V8NodeList.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/custom/V8NamedNodesCollection.h"
+#include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormElement.h"
 
@@ -64,7 +64,7 @@ v8::Handle<v8::Value> V8HTMLFormElement::namedPropertyGetter(v8::Local<v8::Strin
     if (elements.size() == 1)
         return toV8Fast(elements.at(0).release(), info, imp);
 
-    return toV8Fast(V8NamedNodesCollection::create(elements), info, imp);
+    return toV8Fast(NamedNodesCollection::create(elements), info, imp);
 }
 
 } // namespace WebCore

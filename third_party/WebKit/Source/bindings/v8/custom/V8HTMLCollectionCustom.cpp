@@ -36,7 +36,6 @@
 #include "V8HTMLOptionsCollection.h"
 #include "V8Node.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/custom/V8NamedNodesCollection.h"
 #include "core/html/HTMLCollection.h"
 
 namespace WebCore {

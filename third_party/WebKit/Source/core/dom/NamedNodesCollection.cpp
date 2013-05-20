@@ -28,21 +28,21 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "config.h"
-#include "bindings/v8/custom/V8NamedNodesCollection.h"
+#include "core/dom/NamedNodesCollection.h"
 
 #include "core/dom/Element.h"
 #include "core/dom/NamedNodeMap.h"
 
 namespace WebCore {
 
-Node* V8NamedNodesCollection::item(unsigned index) const
+Node* NamedNodesCollection::item(unsigned index) const
 {
     if (index < m_nodes.size())
         return m_nodes[index].get();
     return 0;
 }
 
-Node* V8NamedNodesCollection::namedItem(const AtomicString& id) const
+Node* NamedNodesCollection::namedItem(const AtomicString& id) const
 {
     for (unsigned i = 0; i < m_nodes.size(); ++i) {
         Node* node = m_nodes[i].get();
@@ -52,4 +52,4 @@ Node* V8NamedNodesCollection::namedItem(const AtomicString& id) const
     return 0;
 }
 
-}  // namespace WebCore
+} // namespace WebCore

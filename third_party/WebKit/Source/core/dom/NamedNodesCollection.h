@@ -28,8 +28,8 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef V8NamedNodesCollection_h
-#define V8NamedNodesCollection_h
+#ifndef NamedNodesCollection_h
+#define NamedNodesCollection_h
 
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
@@ -39,24 +39,24 @@
 
 namespace WebCore {
 
-    class V8NamedNodesCollection : public NodeList {
-    public:
-        static PassRefPtr<NodeList> create(const Vector<RefPtr<Node> >& nodes)
-        {
-            return adoptRef(new V8NamedNodesCollection(nodes));
-        }
+class NamedNodesCollection : public NodeList {
+public:
+    static PassRefPtr<NodeList> create(const Vector<RefPtr<Node> >& nodes)
+    {
+        return adoptRef(new NamedNodesCollection(nodes));
+    }
 
-        virtual unsigned length() const OVERRIDE { return m_nodes.size(); }
-        virtual Node* item(unsigned) const OVERRIDE;
-        virtual Node* namedItem(const AtomicString&) const OVERRIDE;
+    virtual unsigned length() const OVERRIDE { return m_nodes.size(); }
+    virtual Node* item(unsigned) const OVERRIDE;
+    virtual Node* namedItem(const AtomicString&) const OVERRIDE;
 
-    private:
-        explicit V8NamedNodesCollection(const Vector<RefPtr<Node> >& nodes)
-            : m_nodes(nodes) { }
+private:
+    explicit NamedNodesCollection(const Vector<RefPtr<Node> >& nodes)
+        : m_nodes(nodes) { }
 
-        Vector<RefPtr<Node> > m_nodes;
-    };
+    Vector<RefPtr<Node> > m_nodes;
+};
 
-}  // namespace WebCore
+} // namespace WebCore
 
-#endif  // V8NamedNodesCollection_h
+#endif // NamedNodesCollection_h

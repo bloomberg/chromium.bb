@@ -31,12 +31,12 @@
 #include "config.h"
 #include "V8HTMLAllCollection.h"
 
+#include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLAllCollection.h"
 
 #include "V8Node.h"
 #include "V8NodeList.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/custom/V8NamedNodesCollection.h"
 
 namespace WebCore {
 
@@ -54,7 +54,7 @@ static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, Atomic
 
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-    return toV8Fast(V8NamedNodesCollection::create(namedItems), holder, collection);
+    return toV8Fast(NamedNodesCollection::create(namedItems), holder, collection);
 }
 
 template<class HolderContainer>

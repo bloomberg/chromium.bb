@@ -1798,6 +1798,8 @@
             'dom/NameNodeList.cpp',
             'dom/NameNodeList.h',
             'dom/NamedNodeMap.cpp',
+            'dom/NamedNodesCollection.cpp',
+            'dom/NamedNodesCollection.h',
             'dom/Node.cpp',
             'dom/NodeFilter.cpp',
             'dom/NodeFilter.h',
