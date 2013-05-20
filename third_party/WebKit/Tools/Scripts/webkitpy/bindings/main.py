@@ -73,7 +73,8 @@ class BindingsTests:
                'bindings/scripts/preprocess_idls.py',
                '--idl-files-list', idl_files_list[1],
                '--supplemental-dependency-file', supplemental_dependency_file,
-               '--window-constructors-file', window_constructors_file]
+               '--window-constructors-file', window_constructors_file,
+               '--write-file-only-if-changed', '0']
 
         exit_code = 0
         try:
