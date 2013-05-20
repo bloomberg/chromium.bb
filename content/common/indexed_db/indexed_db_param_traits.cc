@@ -131,18 +131,18 @@ bool ParamTraits<IndexedDBKeyPath>::Read(const Message* m,
       std::vector<string16> array;
       if (!ReadParam(m, iter, &array))
         return false;
-      r->SetArray(array);
+      *r = IndexedDBKeyPath(array);
       return true;
     }
     case WebIDBKeyPath::StringType: {
       string16 string;
       if (!ReadParam(m, iter, &string))
         return false;
-      r->SetString(string);
+      *r = IndexedDBKeyPath(string);
       return true;
     }
     case WebIDBKeyPath::NullType:
-      r->SetNull();
+      *r = IndexedDBKeyPath();
       return true;
   }
   NOTREACHED();
