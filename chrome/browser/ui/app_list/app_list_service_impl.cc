@@ -135,10 +135,6 @@ AppListControllerDelegate* AppListServiceImpl::CreateControllerDelegate() {
   return NULL;
 }
 
-bool AppListServiceImpl::HasCurrentView() const { return false; }
-
-void AppListServiceImpl::DoWarmupForProfile(Profile* initial_profile) {}
-
 void AppListServiceImpl::OnSigninStatusChanged() {}
 
 void AppListServiceImpl::OnProfileAdded(const base::FilePath& profilePath) {}
@@ -205,58 +201,9 @@ void AppListServiceImpl::InvalidatePendingProfileLoads() {
   profile_loader_.InvalidatePendingProfileLoads();
 }
 
-void AppListServiceImpl::ScheduleWarmup() {
-  // Post a task to create the app list. This is posted to not impact startup
-  // time.
-  const int kInitWindowDelay = 5;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AppListServiceImpl::LoadProfileForWarmup,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kInitWindowDelay));
-
-  // Send app list usage stats after a delay.
-  const int kSendUsageStatsDelay = 5;
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AppListServiceImpl::SendAppListStats),
-      base::TimeDelta::FromSeconds(kSendUsageStatsDelay));
-}
-
-bool AppListServiceImpl::IsWarmupNeeded() const {
-  if (!g_browser_process || g_browser_process->IsShuttingDown())
-    return false;
-
-  // We only need to initialize the view if there's no view already created and
-  // there's no profile loading to be shown.
-  return !HasCurrentView() && !profile_loader_.AnyProfilesLoading();
-}
-
-void AppListServiceImpl::LoadProfileForWarmup() {
-  if (!IsWarmupNeeded())
-    return;
-
-  profile_loader_.LoadProfileInvalidatingOtherLoads(
-      GetCurrentProfilePath(),
-      base::Bind(&AppListServiceImpl::OnProfileLoadedForWarmup,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void AppListServiceImpl::OnProfileLoadedForWarmup(Profile* profile) {
-  if (!IsWarmupNeeded())
-    return;
-
-  DoWarmupForProfile(profile);
-}
-
 void AppListServiceImpl::SaveProfilePathToLocalState(
     const base::FilePath& profile_file_path) {
   g_browser_process->local_state()->SetString(
       prefs::kAppListProfile,
       profile_file_path.BaseName().MaybeAsASCII());
-}
-
-base::FilePath AppListServiceImpl::GetCurrentProfilePath() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return GetProfilePath(profile_manager->user_data_dir());
 }

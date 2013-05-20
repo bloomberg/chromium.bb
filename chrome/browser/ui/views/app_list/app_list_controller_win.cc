@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -312,14 +313,22 @@ class AppListController : public AppListServiceImpl {
   virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
   // AppListServiceImpl overrides:
-  virtual bool HasCurrentView() const OVERRIDE;
-  virtual void DoWarmupForProfile(Profile* initial_profile) OVERRIDE;
   virtual void OnSigninStatusChanged() OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AppListController>;
 
   AppListController();
+
+  bool IsWarmupNeeded();
+  void ScheduleWarmup();
+
+  // Loads the profile last used with the app list and populates the view from
+  // it without showing it so that the next show is faster. Does nothing if the
+  // view already exists, or another profile is in the middle of being loaded to
+  // be shown.
+  void LoadProfileForWarmup();
+  void OnLoadProfileForWarmup(Profile* initial_profile);
 
   // Create or recreate, and initialize |current_view_| from
   // |requested_profile|.
@@ -376,6 +385,8 @@ class AppListController : public AppListServiceImpl {
   // when this happens it is kept visible if the taskbar is seen briefly without
   // the right mouse button down, but not if this happens twice in a row.
   bool preserving_focus_for_taskbar_menu_;
+
+  base::WeakPtrFactory<AppListController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListController);
 };
@@ -465,7 +476,8 @@ AppListController::AppListController()
       view_delegate_(NULL),
       can_close_app_list_(true),
       regain_first_lost_focus_(false),
-      preserving_focus_for_taskbar_menu_(false) {}
+      preserving_focus_for_taskbar_menu_(false),
+      weak_factory_(this) {}
 
 AppListController::~AppListController() {
 }
@@ -822,11 +834,10 @@ void AppListController::FreeAnyKeepAliveForView() {
     keep_alive_.reset(NULL);
 }
 
-bool AppListController::HasCurrentView() const {
-  return current_view_ != NULL;
-}
+void AppListController::OnLoadProfileForWarmup(Profile* initial_profile) {
+  if (!IsWarmupNeeded())
+    return;
 
-void AppListController::DoWarmupForProfile(Profile* initial_profile) {
   PopulateViewFromProfile(initial_profile);
   current_view_->Prerender();
 }
@@ -848,7 +859,7 @@ void AppListController::Init(Profile* initial_profile) {
   // Instantiate AppListController so it listens for profile deletions.
   AppListController::GetInstance();
 
-  AppListServiceImpl::ScheduleWarmup();
+  ScheduleWarmup();
 
   MigrateAppLauncherEnabledPref();
 
@@ -888,6 +899,46 @@ void AppListController::EnableAppList() {
         base::Bind(&CreateAppListShortcuts,
                    user_data_dir, GetAppModelId(), shortcut_locations));
   }
+}
+
+void AppListController::ScheduleWarmup() {
+  // Post a task to create the app list. This is posted to not impact startup
+  // time.
+  const int kInitWindowDelay = 5;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AppListController::LoadProfileForWarmup,
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(kInitWindowDelay));
+
+  // Send app list usage stats after a delay.
+  const int kSendUsageStatsDelay = 5;
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AppListController::SendAppListStats),
+      base::TimeDelta::FromSeconds(kSendUsageStatsDelay));
+}
+
+bool AppListController::IsWarmupNeeded() {
+  if (!g_browser_process || g_browser_process->IsShuttingDown())
+    return false;
+
+  // We only need to initialize the view if there's no view already created and
+  // there's no profile loading to be shown.
+  return !current_view_ && !profile_loader().AnyProfilesLoading();
+}
+
+void AppListController::LoadProfileForWarmup() {
+  if (!IsWarmupNeeded())
+    return;
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath profile_path(GetProfilePath(profile_manager->user_data_dir()));
+
+  profile_loader().LoadProfileInvalidatingOtherLoads(
+      profile_path,
+      base::Bind(&AppListController::OnLoadProfileForWarmup,
+                 weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace

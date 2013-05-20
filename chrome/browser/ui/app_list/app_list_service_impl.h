@@ -43,19 +43,11 @@ class AppListServiceImpl : public AppListService,
   Profile* profile() const { return profile_; }
   void SetProfile(Profile* new_profile);
   void InvalidatePendingProfileLoads();
+  ProfileLoader& profile_loader() { return profile_loader_; }
+  const ProfileLoader& profile_loader() const { return profile_loader_; }
 
   // Save |profile_file_path| as the app list profile in local state.
   void SaveProfilePathToLocalState(const base::FilePath& profile_file_path);
-
-  // Perform shared AppListService warmup tasks, possibly calling
-  // DoWarmupForProfile() after loading the configured profile.
-  void ScheduleWarmup();
-
-  // Return true if there is a current UI view for the app list.
-  virtual bool HasCurrentView() const;
-
-  // Called when |initial_profile| is loaded and ready to use during warmup.
-  virtual void DoWarmupForProfile(Profile* initial_profile);
 
   // Called in response to observed successful and unsuccessful signin changes.
   virtual void OnSigninStatusChanged();
@@ -76,14 +68,6 @@ class AppListServiceImpl : public AppListService,
   void OnProfileLoaded(int profile_load_sequence_id,
                        Profile* profile,
                        Profile::CreateStatus status);
-
-  // Loads the profile last used with the app list and populates the view from
-  // it without showing it so that the next show is faster. Does nothing if the
-  // view already exists, or another profile is in the middle of being loaded to
-  // be shown.
-  void LoadProfileForWarmup();
-  void OnProfileLoadedForWarmup(Profile* profile);
-  bool IsWarmupNeeded() const;
 
   // AppListService overrides:
   // Update the profile path stored in local prefs, load it (if not already
@@ -108,8 +92,6 @@ class AppListServiceImpl : public AppListService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  base::FilePath GetCurrentProfilePath();
 
   // The profile the AppList is currently displaying.
   Profile* profile_;
