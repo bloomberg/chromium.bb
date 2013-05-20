@@ -215,6 +215,8 @@ protected:
     virtual unsigned ruleIndexByStyle(CSSStyleDeclaration*) const;
     virtual bool ensureParsedDataReady();
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&);
+    virtual String sourceMapURL() const;
+    virtual String sourceURL() const;
 
     // Also accessed by friend class InspectorStyle.
     virtual bool setStyleText(CSSStyleDeclaration*, const String&);
@@ -266,6 +268,8 @@ protected:
     virtual unsigned ruleIndexByStyle(CSSStyleDeclaration*) const { return 0; }
     virtual bool ensureParsedDataReady();
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&);
+    virtual String sourceMapURL() const OVERRIDE { return String(); }
+    virtual String sourceURL() const OVERRIDE { return String(); }
 
     // Also accessed by friend class InspectorStyle.
     virtual bool setStyleText(CSSStyleDeclaration*, const String&);

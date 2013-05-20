@@ -163,7 +163,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > searchInTextByLi
     return result;
 }
 
-static String findMagicComment(const String& content, const String& name, MagicCommentType commentType)
+String findMagicComment(const String& content, const String& name, MagicCommentType commentType)
 {
     ASSERT(name.find("=") == notFound);
     String pattern;
@@ -204,9 +204,9 @@ static String findMagicComment(const String& content, const String& name, MagicC
     }
 }
 
-String findSourceURL(const String& content)
+String findSourceURL(const String& content, MagicCommentType commentType)
 {
-    return findMagicComment(content, "sourceURL", JavaScriptMagicComment);
+    return findMagicComment(content, "sourceURL", commentType);
 }
 
 String findSourceMapURL(const String& content, MagicCommentType commentType)

@@ -161,8 +161,6 @@ private:
     int documentNodeWithRequestedFlowsId(Document*);
     void collectAllStyleSheets(Vector<InspectorStyleSheet*>&);
     void collectStyleSheets(CSSStyleSheet*, Vector<InspectorStyleSheet*>&);
-    String sourceMapURLForStyleSheet(const InspectorStyleSheet*);
-    PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> buildObjectForStyleSheetInfo(const InspectorStyleSheet*);
 
     InspectorStyleSheet* bindStyleSheet(CSSStyleSheet*);
     String unbindStyleSheet(InspectorStyleSheet*);

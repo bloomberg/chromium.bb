@@ -54,7 +54,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > searchInTextByLi
 TextPosition textPositionFromOffset(size_t offset, const Vector<size_t>& lineEndings);
 PassOwnPtr<Vector<size_t> > lineEndings(const String&);
 
-String findSourceURL(const String& content);
+String findSourceURL(const String& content, MagicCommentType);
 String findSourceMapURL(const String& content, MagicCommentType);
 
 } // namespace ContentSearchUtils

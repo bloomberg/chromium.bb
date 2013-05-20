@@ -748,7 +748,7 @@ void InspectorCSSAgent::enable(ErrorString*)
     Vector<InspectorStyleSheet*> styleSheets;
     collectAllStyleSheets(styleSheets);
     for (size_t i = 0; i < styleSheets.size(); ++i)
-        m_frontend->styleSheetAdded(buildObjectForStyleSheetInfo(styleSheets.at(i)));
+        m_frontend->styleSheetAdded(styleSheets.at(i)->buildObjectForStyleSheetInfo());
 }
 
 void InspectorCSSAgent::disable(ErrorString*)
@@ -848,7 +848,7 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const Vecto
         if (!m_cssStyleSheetToInspectorStyleSheet.contains(*it)) {
             InspectorStyleSheet* newStyleSheet = bindStyleSheet(static_cast<CSSStyleSheet*>(*it));
             if (m_frontend)
-                m_frontend->styleSheetAdded(buildObjectForStyleSheetInfo(newStyleSheet));
+                m_frontend->styleSheetAdded(newStyleSheet->buildObjectForStyleSheetInfo());
         }
     }
 }
@@ -972,7 +972,7 @@ void InspectorCSSAgent::getAllStyleSheets(ErrorString*, RefPtr<TypeBuilder::Arra
     Vector<InspectorStyleSheet*> styleSheets;
     collectAllStyleSheets(styleSheets);
     for (size_t i = 0; i < styleSheets.size(); ++i)
-        styleInfos->addItem(buildObjectForStyleSheetInfo(styleSheets.at(i)));
+        styleInfos->addItem(styleSheets.at(i)->buildObjectForStyleSheetInfo());
 }
 
 void InspectorCSSAgent::getStyleSheet(ErrorString* errorString, const String& styleSheetId, RefPtr<TypeBuilder::CSS::CSSStyleSheetBody>& styleSheetObject)
@@ -1270,38 +1270,6 @@ void InspectorCSSAgent::collectStyleSheets(CSSStyleSheet* styleSheet, Vector<Ins
                 collectStyleSheets(importedStyleSheet, result);
         }
     }
-}
-
-String InspectorCSSAgent::sourceMapURLForStyleSheet(const InspectorStyleSheet* styleSheet)
-{
-    DEFINE_STATIC_LOCAL(String, sourceMapHttpHeader, (ASCIILiteral("X-SourceMap")));
-    if (styleSheet->origin() != TypeBuilder::CSS::StyleSheetOrigin::Regular)
-        return String();
-
-    String styleSheetText;
-    bool success = styleSheet->getText(&styleSheetText);
-    if (success) {
-        String sourceMapURL = ContentSearchUtils::findSourceMapURL(styleSheetText, ContentSearchUtils::CSSMagicComment);
-        if (!sourceMapURL.isEmpty())
-            return sourceMapURL;
-    }
-
-    if (styleSheet->finalURL().isEmpty())
-        return String();
-
-    CachedResource* resource = m_pageAgent->cachedResource(m_pageAgent->mainFrame(), KURL(ParsedURLString, styleSheet->finalURL()));
-    if (resource)
-        return resource->response().httpHeaderField(sourceMapHttpHeader);
-    return String();
-}
-
-PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorCSSAgent::buildObjectForStyleSheetInfo(const InspectorStyleSheet* inspectorStyleSheet)
-{
-    RefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> result = inspectorStyleSheet->buildObjectForStyleSheetInfo();
-    String sourceMapURL = sourceMapURLForStyleSheet(inspectorStyleSheet);
-    if (!sourceMapURL.isEmpty())
-        result->setSourceMapURL(sourceMapURL);
-    return result.release();
 }
 
 InspectorStyleSheet* InspectorCSSAgent::bindStyleSheet(CSSStyleSheet* styleSheet)
