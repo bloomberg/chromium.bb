@@ -431,9 +431,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
   EXPECT_EQ("-3.59,-2.06,-0.43,2.15,0.77,-0.95,", GetAudioHash());
 }
 
-// TODO(fgalligan): Enable test when code to parse encrypted WebM files lands
-// in Chromium's FFmpeg. crbug.com/189221
-TEST_F(PipelineIntegrationTest, DISABLED_BasicPlaybackEncrypted) {
+TEST_F(PipelineIntegrationTest, BasicPlaybackEncrypted) {
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   set_need_key_cb(base::Bind(&FakeEncryptedMedia::NeedKey,
                              base::Unretained(&encrypted_media)));

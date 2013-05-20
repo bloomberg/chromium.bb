@@ -294,9 +294,7 @@ TEST_F(FFmpegDemuxerTest, Initialize_Multitrack) {
   EXPECT_FALSE(demuxer_->GetStream(DemuxerStream::UNKNOWN));
 }
 
-// TODO(fgalligan): Enable test when code to parse encrypted WebM files lands
-// in Chromium's FFmpeg. crbug.com/189221
-TEST_F(FFmpegDemuxerTest, DISABLED_Initialize_Encrypted) {
+TEST_F(FFmpegDemuxerTest, Initialize_Encrypted) {
   EXPECT_CALL(*this, NeedKeyCBMock(kWebMEncryptInitDataType, NotNull(),
                                    DecryptConfig::kDecryptionKeySize))
       .Times(Exactly(2));
