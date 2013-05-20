@@ -1538,6 +1538,12 @@ class NetworkLibrary {
   // Carrier ID format: <carrier name> (country). Ex.: "Verizon (us)".
   virtual const std::string& GetCellularHomeCarrierId() const = 0;
 
+  // Checks if the current cellular device should be activated by directly
+  // calling it's activate function instead of going through the activation
+  // process.
+  // Note: Currently Sprint is the only carrier using direct activation.
+  virtual bool CellularDeviceUsesDirectActivation() const = 0;
+
   // Passes |old_pin|, |new_pin| to change SIM card PIM.
   virtual void ChangePin(const std::string& old_pin,
                          const std::string& new_pin) = 0;

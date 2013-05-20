@@ -621,6 +621,11 @@ const std::string& NetworkLibraryImplBase::GetCellularHomeCarrierId() const {
   return EmptyString();
 }
 
+bool NetworkLibraryImplBase::CellularDeviceUsesDirectActivation() const {
+  const NetworkDevice* cellular = FindCellularDevice();
+  return cellular && (cellular->carrier() == shill::kCarrierSprint);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Profiles.
 

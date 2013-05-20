@@ -64,11 +64,17 @@ std::string EscapeAmpersands(const std::string& input) {
 }
 
 // Activate a cellular network.
-void ActivateCellular(const chromeos::CellularNetwork* cellular) {
+void ActivateCellular(chromeos::CellularNetwork* cellular) {
   DCHECK(cellular);
 
-  ash::Shell::GetInstance()->delegate()->OpenMobileSetup(
-      cellular->service_path());
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  if (cros->CellularDeviceUsesDirectActivation()) {
+    cellular->StartActivation();
+  } else {
+    ash::Shell::GetInstance()->delegate()->OpenMobileSetup(
+        cellular->service_path());
+  }
 }
 
 // Decides whether a network should be highlighted in the UI.

@@ -183,6 +183,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual void SignalCellularPlanPayment() OVERRIDE;
   virtual bool HasRecentCellularPlanPayment() OVERRIDE;
   virtual const std::string& GetCellularHomeCarrierId() const OVERRIDE;
+  virtual bool CellularDeviceUsesDirectActivation() const OVERRIDE;
 
   // virtual ChangePin implemented in derived classes.
   // virtual ChangeRequiredPin implemented in derived classes.

@@ -141,6 +141,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(DisconnectFromNetwork, void(const Network*));
   MOCK_METHOD1(ForgetNetwork, void(const std::string&));
   MOCK_CONST_METHOD0(GetCellularHomeCarrierId, const std::string&(void));
+  MOCK_CONST_METHOD0(CellularDeviceUsesDirectActivation, bool(void));
 
   MOCK_CONST_METHOD0(ethernet_available, bool(void));
   MOCK_CONST_METHOD0(wifi_available, bool(void));

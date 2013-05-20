@@ -551,15 +551,6 @@ void Activate(std::string service_path) {
     cellular->StartActivation();
 }
 
-// Check if the current cellular device can be activated by directly calling
-// it's activate function instead of going through the activation process.
-// Note: Currently Sprint is the only carrier that uses this.
-bool UseDirectActivation() {
-  const chromeos::NetworkDevice* device =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary()->FindCellularDevice();
-  return device && (device->carrier() == shill::kCarrierSprint);
-}
-
 // Given a list of supported carrier's by the device, return the index of
 // the carrier the device is currently using.
 int FindCurrentCarrierIndex(const base::ListValue* carriers,
@@ -977,7 +968,7 @@ void InternetOptionsHandler::CarrierStatusCallback(
     chromeos::NetworkMethodErrorType error,
     const std::string& error_message) {
   if ((error == chromeos::NETWORK_METHOD_ERROR_NONE) &&
-      UseDirectActivation()) {
+      cros_->CellularDeviceUsesDirectActivation()) {
     Activate(service_path);
     UpdateConnectionData(cros_->FindNetworkByPath(service_path));
   }
@@ -1673,7 +1664,7 @@ void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
   } else if (command == kTagDisconnect && type != chromeos::TYPE_ETHERNET) {
     cros_->DisconnectFromNetwork(network);
   } else if (command == kTagActivate && type == chromeos::TYPE_CELLULAR) {
-    if (!UseDirectActivation()) {
+    if (!cros_->CellularDeviceUsesDirectActivation()) {
       ash::Shell::GetInstance()->delegate()->OpenMobileSetup(
           network->service_path());
     } else {
