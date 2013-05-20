@@ -1840,6 +1840,40 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Import.ShowDialog.FromBookmarkBarView" units="seconds">
+  <summary>
+    The amount of time from install time to time that user opens import dialog
+    from BookmarkBarView.
+  </summary>
+</histogram>
+
+<histogram name="Import.ShowDialog.FromFloatingBookmarkBarView" units="seconds">
+  <summary>
+    The amount of time from install time to time that user opens import dialog
+    from NTP floating BookmarkBarView.
+  </summary>
+</histogram>
+
+<histogram name="Import_ShowDlg.FromBookmarkBarView" units="seconds">
+  <obsolete>
+    Deprecated and replaced by Import.ShowDialog.FromBookmarkBarView
+  </obsolete>
+  <summary>
+    The amount of time from install time to time that user opens import dialog
+    from BookmarkBarView.
+  </summary>
+</histogram>
+
+<histogram name="Import_ShowDlg.FromFloatingBookmarkBarView" units="seconds">
+  <obsolete>
+    Deprecated and replaced by Import.ShowDialog.FromFloatingBookmarkBarView
+  </obsolete>
+  <summary>
+    The amount of time from install time to time that user opens import dialog
+    from NTP floating BookmarkBarView.
+  </summary>
+</histogram>
+
 <histogram name="Installer.DevModeErrorCodes" enum="UpdateEngineErrorCode">
   <summary>Errors from update_engine process when running in dev mode.</summary>
 </histogram>

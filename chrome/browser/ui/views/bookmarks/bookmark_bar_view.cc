@@ -952,10 +952,10 @@ void BookmarkBarView::ShowImportDialog() {
       g_browser_process->local_state()->GetInt64(prefs::kInstallDate);
   int64 time_from_install = base::Time::Now().ToTimeT() - install_time;
   if (bookmark_bar_state_ == BookmarkBar::SHOW)
-    UMA_HISTOGRAM_COUNTS("Import_ShowDlg.FromBookmarkBarView",
+    UMA_HISTOGRAM_COUNTS("Import.ShowDialog.FromBookmarkBarView",
                          time_from_install);
   else if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
-    UMA_HISTOGRAM_COUNTS("Import_ShowDlg.FromFloatingBookmarkBarView",
+    UMA_HISTOGRAM_COUNTS("Import.ShowDialog.FromFloatingBookmarkBarView",
                          time_from_install);
   }
 
