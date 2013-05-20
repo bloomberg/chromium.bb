@@ -11,9 +11,6 @@ function startTest()
 {
     var input = document.getElementById('file');
 
-    // Mouse events only work after an initial layout
-    document.body.offsetLeft;
-
     // Drop 2 files to the control.
     eventSender.beginDragWithFiles(['input-file-re-render.html', 'script-tests/TEMPLATE.html']);
     eventSender.mouseMoveTo(10, 10);

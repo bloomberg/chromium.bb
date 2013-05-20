@@ -1,2 +1,0 @@
-
-PASS: Got no mouse event.

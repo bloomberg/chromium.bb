@@ -71,8 +71,6 @@ function test() {
     document.getElementById('test').addEventListener("click", listener, false);
 
     if (window.eventSender) {
-        // Mouse events only work after an initial layout
-        document.body.offsetLeft;
         eventSender.mouseMoveTo(175, 105);
         eventSender.mouseDown();
         eventSender.mouseUp();

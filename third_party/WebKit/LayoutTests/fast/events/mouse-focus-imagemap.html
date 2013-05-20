@@ -18,9 +18,6 @@
 
     description("This tests that a link in an image map with tabindex < 0 is not mouse focusable.");
 
-    // Mouse events only work after an initial layout
-    document.body.offsetLeft;
-
     // First try to focus on the <area> that is focusable.
     eventSender.mouseMoveTo(100, 100);
     eventSender.mouseDown();

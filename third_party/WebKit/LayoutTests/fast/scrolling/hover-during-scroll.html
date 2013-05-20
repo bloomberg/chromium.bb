@@ -103,9 +103,6 @@ function runtest()
 
     testRunner.waitUntilDone();
 
-    // Mouse events only work after an initial layout
-    document.body.offsetLeft;
-
     debug("Mouse is visible, moving it over the first div.");
     internals.setIsCursorVisible(document, true);
     eventSender.mouseMoveTo(42, centerOfDivAtIndex(0));

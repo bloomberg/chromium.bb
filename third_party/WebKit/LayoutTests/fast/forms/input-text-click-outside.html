@@ -2,8 +2,6 @@
 <p>This test clicks outside an input element, and must not result in the element receiving focus. If the test succeeds the element should not have a focus ring.</p>
 <script>
 if (window.eventSender) {
-    // Mouse events only work after an initial layout
-    document.body.offsetLeft;
     eventSender.mouseMoveTo(200, 45);
     eventSender.mouseDown();
     eventSender.mouseUp();

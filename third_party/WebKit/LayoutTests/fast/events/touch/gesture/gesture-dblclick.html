@@ -72,8 +72,6 @@ function runTest() {
 
     if (window.eventSender) {
         description("This tests gesture callbacks for a double tap sequence of gestures.");
-        // Mouse events only work after an initial layout
-        document.body.offsetLeft;
         eventSender.gestureTap(10, 12);
         eventSender.leapForward(10);
         eventSender.gestureTap(11, 12, 2);

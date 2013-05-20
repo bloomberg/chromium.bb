@@ -94,9 +94,6 @@ function mouseEventSequence()
 if (window.eventSender && window.internals && window.internals.settings) {
     description("This tests single touch event emulation using mouse events.");
 
-    // Mouse events only work after an initial layout
-    document.body.offsetLeft;
-
     window.eventSender.dragMode = false;
     window.jsTestIsAsync = true;
     window.internals.settings.setTouchEventEmulationEnabled(true);

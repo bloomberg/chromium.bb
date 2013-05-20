@@ -60,9 +60,6 @@
   <script type="text/javascript">
   <![CDATA[
     if (window.eventSender) {
-      // Mouse events only work after an initial layout
-      document.documentElement.offsetLeft;
-
       testClick(30, 100, true);
       testClick(30, 50, true);
       testClick(30, 150, true);

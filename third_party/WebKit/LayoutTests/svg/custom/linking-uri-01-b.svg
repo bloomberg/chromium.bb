@@ -22,8 +22,6 @@ function linkClicked()
 
 function clickLink() {
     if (window.eventSender) {
-        // Mouse events only work after an initial layout
-        document.documentElement.offsetLeft;
         eventSender.mouseMoveTo(160, 165);
         eventSender.mouseDown();
         eventSender.mouseUp();

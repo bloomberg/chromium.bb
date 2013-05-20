@@ -13,8 +13,6 @@
 
    function click() { 
         if (window.eventSender) {
-            // Mouse events only work after an initial layout
-            document.documentElement.offsetLeft;
             // Fill click
             eventSender.mouseMoveTo(25, 25);
             eventSender.mouseDown();

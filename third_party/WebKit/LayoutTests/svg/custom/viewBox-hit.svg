@@ -9,8 +9,6 @@ function circle_click(evt) {
 }
 function runTest() {
     if (window.eventSender) {
-        // Mouse events only work after an initial layout
-        document.documentElement.offsetLeft;
         eventSender.mouseMoveTo(100, 100);
         eventSender.mouseDown();
         eventSender.mouseUp();

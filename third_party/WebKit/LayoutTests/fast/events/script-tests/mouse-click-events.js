@@ -25,11 +25,8 @@ div.addEventListener("mousedown", appendEventLog, false);
 div.addEventListener("mouseup", appendEventLog, false);
 document.body.insertBefore(div, document.body.firstChild);
 
-if (window.eventSender) {
-    // Mouse events only work after an initial layout
-    document.body.offsetLeft;
+if (window.eventSender)
     eventSender.mouseMoveTo(10, 10);
-}
 
 function sendEvents(button) {
     if (!window.eventSender) {

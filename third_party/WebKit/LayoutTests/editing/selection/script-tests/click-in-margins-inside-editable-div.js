@@ -19,9 +19,6 @@ div.appendChild(secondDiv);
 
 document.body.insertBefore(div, document.body.firstChild);
 
-// Mouse events only work after an initial layout
-document.body.offsetLeft;
-
 function clickShouldResultInRange(x, y, node, offset) {
     if (window.eventSender) {
         clickAt(x, y);

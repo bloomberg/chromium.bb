@@ -88,8 +88,6 @@ function runTests()
 
 if (window.eventSender) {
     testRunner.waitUntilDone();
-    // Mouse events only work after an initial layout
-    document.body.offsetLeft;
     util.runTests();
 } else
     testFailed("This test is not interactive, please run using DumpRenderTree");

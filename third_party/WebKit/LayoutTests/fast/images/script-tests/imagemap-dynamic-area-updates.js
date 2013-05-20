@@ -25,9 +25,6 @@ map.appendChild(area);
 document.body.appendChild(image);
 document.body.appendChild(map);
 
-// Mouse events only work after an initial layout
-document.body.offsetLeft;
-
 function setArea(shape, coords)
 {
     area.setAttribute('shape', shape);

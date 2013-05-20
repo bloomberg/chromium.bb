@@ -33,10 +33,6 @@ function runTest() {
     setStatus("This test requires DumpRenderTree to run. Dots are where the clicks go.");
     return;
   }
-
-  // Mouse events only work after an initial layout
-  document.documentElement.offsetLeft;
-
   testClickAt(219, 196, true);
   testClickAt(236, 300, false);
 }

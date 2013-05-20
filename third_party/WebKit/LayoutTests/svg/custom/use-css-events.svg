@@ -45,8 +45,6 @@ a:focus .rt { visibility: visible; }
 </a>
 
 <script type="text/ecmascript"><![CDATA[
-// Mouse events only work after an initial layout
-document.documentElement.offsetLeft;
 eventSender.mouseMoveTo(50, 200);
 eventSender.mouseDown();
 ]]></script> 

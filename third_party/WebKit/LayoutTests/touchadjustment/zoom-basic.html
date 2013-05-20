@@ -61,8 +61,6 @@
             description('Test basic cases of tap-to-zoom mechanics.');
             testRunner.dumpAsText();
             testRunner.waitUntilDone();
-            // Mouse events only work after an initial layout
-            document.body.offsetLeft;
             testDirectTouches();
             isSuccessfullyParsed();
             testRunner.notifyDone();

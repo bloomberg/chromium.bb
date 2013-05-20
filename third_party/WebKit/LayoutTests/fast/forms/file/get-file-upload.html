@@ -24,8 +24,6 @@ function startOrVerify()
             log('FAIL: ' + query);
         testRunner.notifyDone();
     } else {
-        // Mouse events only work after an initial layout
-        document.body.offsetLeft;
         // Start the test
         eventSender.beginDragWithFiles(['get-file-upload.html']);
         eventSender.mouseMoveTo(10, 10);

@@ -31,9 +31,6 @@
     var box2 = document.getElementById('box2')
     testRunner.dumpAsText();
 
-    // Mouse events only work after an initial layout
-    document.body.offsetLeft;
-
     eventSender.dragMode = false;
     // This mouse click seems to be required for WebKit's event handling to
     // pick up the :hover class. See https://bugs.webkit.org/show_bug.cgi?id=74264

@@ -55,8 +55,6 @@ function mouseev(event) {
 function test() {
     if (window.testRunner) {
         testRunner.dumpAsText();
-        // Mouse events only work after an initial layout
-        document.body.offsetLeft;
         // test a normal mouse to
         eventSender.mouseMoveTo(50, 50);
         eventSender.mouseDown();

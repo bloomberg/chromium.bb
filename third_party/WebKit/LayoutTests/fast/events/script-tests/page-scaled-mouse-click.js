@@ -44,9 +44,6 @@ function testEvents(button, description, expectedString) {
 }
 
 if (window.eventSender && window.internals) {
-    // Mouse events only work after an initial layout
-    document.body.offsetLeft;
-
     eventSender.mouseMoveTo(10, 10);
     // We are clicking in the same position on screen. As we scale or transform the page,
     // we expect the pageX and pageY event coordinates to change because different

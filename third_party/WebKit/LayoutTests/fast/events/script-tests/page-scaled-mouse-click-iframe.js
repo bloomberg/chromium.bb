@@ -75,6 +75,9 @@ function iframeLoaded() {
   finishJSTest();
 }
 
+// Mouse events only work after an initial layout
+document.body.offsetLeft;
+
 // Add the iframe to the document.
 iframe.src = "resources/page-scaled-mouse-click-iframe-inner.html";
 document.body.insertBefore(iframe, document.body.firstChild);
