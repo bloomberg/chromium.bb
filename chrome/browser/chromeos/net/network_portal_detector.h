@@ -94,7 +94,7 @@ class NetworkPortalDetector {
   virtual bool StartDetectionIfIdle() = 0;
 
   // Enables lazy detection mode. In this mode portal detection after
-  // first 3 consecutive attemps will be performed once in 30 seconds.
+  // first 3 consecutive attemps will be performed once in 5 seconds.
   virtual void EnableLazyDetection() = 0;
 
   // Dizables lazy detection mode.

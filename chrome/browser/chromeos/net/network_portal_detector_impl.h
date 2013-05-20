@@ -80,6 +80,12 @@ class NetworkPortalDetectorImpl
     STATE_CHECKING_FOR_PORTAL,
   };
 
+  // Basic unit used in detection timeout computation.
+  static const int kBaseRequestTimeoutSec = 5;
+
+  // Single detection attempt timeout in lazy mode.
+  static const int kLazyRequestTimeoutSec = 15;
+
   // Initiates Captive Portal detection after |delay|.
   void DetectCaptivePortal(const base::TimeDelta& delay);
 
@@ -144,7 +150,8 @@ class NetworkPortalDetectorImpl
 
   // Sets portal detection timeout. Used by unit tests.
   void set_request_timeout_for_testing(const base::TimeDelta& timeout) {
-    request_timeout_ = timeout;
+    request_timeout_for_testing_ = timeout;
+    request_timeout_for_testing_initialized_ = true;
   }
 
   // Returns delay before next portal check. Used by unit tests.
@@ -165,6 +172,13 @@ class NetworkPortalDetectorImpl
   // Returns true if detection timeout callback isn't fired or
   // cancelled.
   bool DetectionTimeoutIsCancelledForTesting() const;
+
+  // Returns timeout for current (or immediate) detection attempt.
+  // The following rules are used for timeout computation:
+  // * if default (active) network is NULL, kBaseRequestTimeoutSec is used
+  // * if lazy detection mode is enabled, kLazyRequestTimeoutSec is used
+  // * otherwise, timeout equals to |attempt_count_| * kBaseRequestTimeoutSec
+  int GetRequestTimeoutSec() const;
 
   // Unique identifier of the active network.
   std::string active_network_id_;
@@ -212,14 +226,17 @@ class NetworkPortalDetectorImpl
   // Start time of portal detection attempt.
   base::TimeTicks attempt_start_time_;
 
-  // Timeout for a portal detection.
-  base::TimeDelta request_timeout_;
-
   // Delay before next portal detection.
   base::TimeDelta next_attempt_delay_;
 
   // Test time ticks used by unit tests.
   base::TimeTicks time_ticks_for_testing_;
+
+  // Test timeout for a portal detection used by unit tests.
+  base::TimeDelta request_timeout_for_testing_;
+
+  // True if |request_timeout_for_testing_| is initialized.
+  bool request_timeout_for_testing_initialized_;
 
   content::NotificationRegistrar registrar_;
 

@@ -31,9 +31,6 @@ const int kMaxRequestAttempts = 3;
 // network.
 const int kMinTimeBetweenAttemptsSec = 3;
 
-// Timeout for a portal check.
-const int kRequestTimeoutSec = 5;
-
 // Delay before portal detection caused by changes in proxy settings.
 const int kProxyChangeDelaySec = 1;
 
@@ -97,7 +94,7 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
       lazy_check_interval_(base::TimeDelta::FromSeconds(kLazyCheckIntervalSec)),
       min_time_between_attempts_(
           base::TimeDelta::FromSeconds(kMinTimeBetweenAttemptsSec)),
-      request_timeout_(base::TimeDelta::FromSeconds(kRequestTimeoutSec)) {
+      request_timeout_for_testing_initialized_(false) {
   captive_portal_detector_.reset(new CaptivePortalDetector(request_context));
 
   registrar_.Add(this,
@@ -332,9 +329,17 @@ void NetworkPortalDetectorImpl::DetectCaptivePortalTask() {
   detection_timeout_.Reset(
       base::Bind(&NetworkPortalDetectorImpl::PortalDetectionTimeout,
                  weak_ptr_factory_.GetWeakPtr()));
+  base::TimeDelta request_timeout;
+
+  // For easier unit testing check for testing state is performed here
+  // and not in the GetRequestTimeoutSec().
+  if (request_timeout_for_testing_initialized_)
+    request_timeout = request_timeout_for_testing_;
+  else
+    request_timeout = base::TimeDelta::FromSeconds(GetRequestTimeoutSec());
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           detection_timeout_.callback(),
-                                          request_timeout_);
+                                          request_timeout);
 }
 
 void NetworkPortalDetectorImpl::PortalDetectionTimeout() {
@@ -487,6 +492,16 @@ base::TimeTicks NetworkPortalDetectorImpl::GetCurrentTimeTicks() const {
 
 bool NetworkPortalDetectorImpl::DetectionTimeoutIsCancelledForTesting() const {
   return detection_timeout_.IsCancelled();
+}
+
+int NetworkPortalDetectorImpl::GetRequestTimeoutSec() const {
+  DCHECK_LE(0, attempt_count_);
+  const Network* network = GetActiveNetwork();
+  if (!network)
+    return kBaseRequestTimeoutSec;
+  if (lazy_detection_enabled_)
+    return kLazyRequestTimeoutSec;
+  return attempt_count_ * kBaseRequestTimeoutSec;
 }
 
 }  // namespace chromeos

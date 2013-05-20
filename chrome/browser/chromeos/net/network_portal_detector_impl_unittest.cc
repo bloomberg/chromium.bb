@@ -39,6 +39,9 @@ class NetworkPortalDetectorImplTest
     wifi2_network_ = network_library_->FindNetworkByPath("wifi2");
     DCHECK(wifi2_network_);
 
+    cellular1_network_ = network_library_->FindNetworkByPath("cellular1");
+    DCHECK(cellular1_network_);
+
     profile_.reset(new TestingProfile());
     network_portal_detector_.reset(
         new NetworkPortalDetectorImpl(profile_->GetRequestContext()));
@@ -65,10 +68,22 @@ class NetworkPortalDetectorImplTest
     ASSERT_EQ(response_code, state.response_code);
   }
 
+  void CheckRequestTimeoutAndCompleteAttempt(
+      int expected_attempt_count,
+      int expected_request_timeout_sec,
+      int net_error,
+      int status_code) {
+    ASSERT_TRUE(is_state_checking_for_portal());
+    ASSERT_EQ(expected_attempt_count, attempt_count());
+    ASSERT_EQ(expected_request_timeout_sec, get_request_timeout_sec());
+    CompleteURLFetch(net_error, status_code, NULL);
+  }
+
   NetworkLibrary* network_library() { return network_library_; }
   Network* ethernet_network() { return ethernet_network_; }
   Network* wifi1_network() { return wifi1_network_; }
   Network* wifi2_network() { return wifi2_network_; }
+  Network* cellular1_network() { return cellular1_network_; }
 
   Profile* profile() { return profile_.get(); }
 
@@ -99,6 +114,10 @@ class NetworkPortalDetectorImplTest
   bool detection_timeout_is_cancelled() {
     return
         network_portal_detector()->DetectionTimeoutIsCancelledForTesting();
+  }
+
+  int get_request_timeout_sec() {
+    return network_portal_detector()->GetRequestTimeoutSec();
   }
 
   bool is_state_idle() {
@@ -145,6 +164,11 @@ class NetworkPortalDetectorImplTest
     MessageLoop::current()->RunUntilIdle();
   }
 
+  void EnableNetworkDeviceType(ConnectionType device, bool enable) {
+    static_cast<NetworkLibraryImplBase*>(
+        network_library())->CallEnableNetworkDeviceType(device, enable);
+  }
+
   void SetConnected(Network* network) {
     Network::TestApi test_api(network);
     test_api.SetConnected();
@@ -164,6 +188,9 @@ class NetworkPortalDetectorImplTest
 
   // Pointer to a fake wifi2 network.
   Network* wifi2_network_;
+
+  // Pointer to a fake cellular1 network.
+  Network* cellular1_network_;
 
   MessageLoop message_loop_;
 
@@ -636,6 +663,63 @@ TEST_F(NetworkPortalDetectorImplTest, TestDetectionRestart) {
 
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
                    wifi1_network());
+  ASSERT_TRUE(is_state_idle());
+}
+
+TEST_F(NetworkPortalDetectorImplTest, RequestTimeouts) {
+  ASSERT_TRUE(is_state_idle());
+  set_min_time_between_attempts(base::TimeDelta());
+  set_lazy_check_interval(base::TimeDelta());
+
+  EnableNetworkDeviceType(TYPE_WIFI, false);
+  SetConnected(cellular1_network());
+
+  // First portal detection attempt for cellular1 uses 5sec timeout.
+  CheckRequestTimeoutAndCompleteAttempt(1, 5, net::ERR_CONNECTION_CLOSED,
+                                        net::URLFetcher::RESPONSE_CODE_INVALID);
+
+  // Second portal detection attempt for cellular1 uses 10sec timeout.
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  MessageLoop::current()->RunUntilIdle();
+  CheckRequestTimeoutAndCompleteAttempt(2, 10, net::ERR_CONNECTION_CLOSED,
+                                        net::URLFetcher::RESPONSE_CODE_INVALID);
+
+  // Third portal detection attempt for cellular1 uses 15sec timeout.
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  MessageLoop::current()->RunUntilIdle();
+  CheckRequestTimeoutAndCompleteAttempt(3, 15, net::ERR_CONNECTION_CLOSED,
+                                        net::URLFetcher::RESPONSE_CODE_INVALID);
+
+  ASSERT_TRUE(is_state_idle());
+
+  // Check that in lazy detection for cellualr1 15sec timeout is used.
+  enable_lazy_detection();
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  MessageLoop::current()->RunUntilIdle();
+  disable_lazy_detection();
+  CheckRequestTimeoutAndCompleteAttempt(3, 15, net::ERR_CONNECTION_CLOSED,
+                                        net::URLFetcher::RESPONSE_CODE_INVALID);
+  ASSERT_TRUE(is_state_idle());
+
+  EnableNetworkDeviceType(TYPE_WIFI, true);
+  SetConnected(wifi1_network());
+
+  // First portal detection attempt for wifi1 uses 5sec timeout.
+  CheckRequestTimeoutAndCompleteAttempt(1, 5, net::ERR_CONNECTION_CLOSED,
+                                        net::URLFetcher::RESPONSE_CODE_INVALID);
+
+  // Second portal detection attempt for wifi1 also uses 5sec timeout.
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  MessageLoop::current()->RunUntilIdle();
+  CheckRequestTimeoutAndCompleteAttempt(2, 10, net::OK, 204);
+  ASSERT_TRUE(is_state_idle());
+
+  // Check that in lazy detection for wifi1 5sec timeout is used.
+  enable_lazy_detection();
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  MessageLoop::current()->RunUntilIdle();
+  disable_lazy_detection();
+  CheckRequestTimeoutAndCompleteAttempt(3, 15, net::OK, 204);
   ASSERT_TRUE(is_state_idle());
 }
 
