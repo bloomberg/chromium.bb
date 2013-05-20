@@ -21,6 +21,7 @@
 #ifndef StyleSheetList_h
 #define StyleSheetList_h
 
+#include "core/css/CSSStyleSheet.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 #include <wtf/PassRefPtr.h>
@@ -45,7 +46,7 @@ public:
     Document* document() { return m_document; }
 
     void detachFromDocument();
-
+    CSSStyleSheet* anonymousNamedGetter(const AtomicString&);
 private:
     StyleSheetList(Document*);
     const Vector<RefPtr<StyleSheet> >& styleSheets() const;
