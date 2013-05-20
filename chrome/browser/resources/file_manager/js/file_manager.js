@@ -421,8 +421,6 @@ DialogType.isModal = function(type) {
     this.table_.endBatchUpdates();
     this.grid_.endBatchUpdates();
 
-    metrics.recordInterval('Load.Total');
-
     callback();
   };
 
@@ -692,10 +690,7 @@ DialogType.isModal = function(type) {
 
     // Run again just in case if all pending closures have completed and the
     // queue has stopped and monitor the completion.
-    this.initializeQueue_.run(function() {
-      callback();
-      metrics.recordInterval('Load.Total');
-    });
+    this.initializeQueue_.run(callback);
   };
 
   /**

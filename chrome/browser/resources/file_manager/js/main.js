@@ -24,6 +24,7 @@ function init() {
   // Initializes UI and starts the File Manager dialog.
   fileManager.initializeUI(document.body, function() {
     chrome.test.sendMessage('ready');
+    metrics.recordInterval('Load.Total');
   });
 }
 
