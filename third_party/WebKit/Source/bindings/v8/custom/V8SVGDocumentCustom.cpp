@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "V8SVGDocument.h"
 
 #include "bindings/v8/ScriptController.h"
@@ -53,5 +52,3 @@ v8::Handle<v8::Object> wrap(SVGDocument* impl, v8::Handle<v8::Object> creationCo
 }
 
 } // namespace WebCore
-
-#endif

@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
-
 #include "V8SVGElement.h"
 #include "V8SVGElementWrapperFactory.h"
 
@@ -44,5 +42,3 @@ v8::Handle<v8::Object> wrap(SVGElement* impl, v8::Handle<v8::Object> creationCon
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

@@ -43,6 +43,7 @@
 #include "V8Node.h"
 #include "V8Notation.h"
 #include "V8ProcessingInstruction.h"
+#include "V8SVGElement.h"
 #include "V8ShadowRoot.h"
 #include "V8Text.h"
 #include "bindings/v8/V8AbstractEventListener.h"
@@ -52,10 +53,6 @@
 #include "core/dom/EventListener.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "wtf/RefPtr.h"
-
-#if ENABLE(SVG)
-#include "V8SVGElement.h"
-#endif
 
 namespace WebCore {
 
@@ -128,10 +125,8 @@ v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, 
         // For performance reasons, this is inlined from V8Element::wrap and must remain in sync.
         if (impl->isHTMLElement())
             return wrap(toHTMLElement(impl), creationContext, isolate);
-#if ENABLE(SVG)
         if (impl->isSVGElement())
             return wrap(toSVGElement(impl), creationContext, isolate);
-#endif
         return V8Element::createWrapper(toElement(impl), creationContext, isolate);
     case Node::ATTRIBUTE_NODE:
         return wrap(static_cast<Attr*>(impl), creationContext, isolate);

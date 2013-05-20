@@ -33,10 +33,7 @@
 
 #include "V8Element.h"
 #include "V8HTMLElement.h"
-
-#if ENABLE(SVG)
 #include "V8SVGElement.h"
-#endif
 
 namespace WebCore {
 
@@ -46,10 +43,8 @@ v8::Handle<v8::Object> wrap(Element* impl, v8::Handle<v8::Object> creationContex
     ASSERT(impl);
     if (impl->isHTMLElement())
         return wrap(toHTMLElement(impl), creationContext, isolate);
-#if ENABLE(SVG)
     if (impl->isSVGElement())
         return wrap(toSVGElement(impl), creationContext, isolate);
-#endif
     return V8Element::createWrapper(impl, creationContext, isolate);
 }
 

@@ -33,8 +33,10 @@
 #include "bindings/v8/CustomElementHelpers.h"
 
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "V8CustomElementConstructor.h"
 #include "V8HTMLElementWrapperFactory.h"
+#include "V8SVGElementWrapperFactory.h"
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
@@ -42,12 +44,7 @@
 #include "core/dom/Node.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
-
-#if ENABLE(SVG)
-#include "V8SVGElementWrapperFactory.h"
-#include "SVGNames.h"
 #include "core/svg/SVGElement.h"
-#endif
 
 namespace WebCore {
 
@@ -97,14 +94,12 @@ v8::Handle<v8::Object> CustomElementHelpers::CreateWrapperFunction::invoke(Eleme
         if (m_html)
             return m_html(toHTMLElement(element), creationContext, isolate);
         return createV8HTMLFallbackWrapper(toHTMLUnknownElement(toHTMLElement(element)), creationContext, isolate);
-    }
-#if ENABLE(SVG)
-    else if (element->isSVGElement()) {
+    } else if (element->isSVGElement()) {
         if (m_svg)
             return m_svg(toSVGElement(element), creationContext, isolate);
         return createV8SVGFallbackWrapper(toSVGElement(element), creationContext, isolate);
     }
-#endif
+
     ASSERT(0);
     return v8::Handle<v8::Object>();
 }
@@ -114,10 +109,8 @@ v8::Handle<v8::Object> CustomElementHelpers::createUpgradeCandidateWrapper(PassR
     if (CustomElementRegistry::isCustomTagName(element->localName())) {
         if (element->isHTMLElement())
             return createV8HTMLDirectWrapper(toHTMLElement(element.get()), creationContext, isolate);
-    #if ENABLE(SVG)
         else if (element->isSVGElement())
             return createV8SVGDirectWrapper(toSVGElement(element.get()), creationContext, isolate);
-    #endif
         else {
             ASSERT(0);
             return v8::Handle<v8::Object>();
@@ -185,12 +178,10 @@ bool CustomElementHelpers::isValidPrototypeParameter(const ScriptValue& prototyp
         return true;
     }
 
-#if ENABLE(SVG)
     if (hasValidPrototypeChainFor(prototypeObject, &V8SVGElement::info, state->context())) {
         namespaceURI = SVGNames::svgNamespaceURI;
         return true;
     }
-#endif
 
     if (hasValidPrototypeChainFor(prototypeObject, &V8Element::info, state->context())) {
         namespaceURI = nullAtom;
@@ -240,10 +231,8 @@ const QualifiedName* CustomElementHelpers::findLocalName(v8::Handle<v8::Object> 
         return 0;
     if (const QualifiedName* htmlName = findHTMLTagNameOfV8Type(type))
         return htmlName;
-#if ENABLE(SVG)
     if (const QualifiedName* svgName = findSVGTagNameOfV8Type(type))
         return svgName;
-#endif
     return 0;
 }
 

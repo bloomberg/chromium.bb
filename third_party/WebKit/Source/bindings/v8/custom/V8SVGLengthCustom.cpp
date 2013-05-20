@@ -30,7 +30,6 @@
  
 #include <config.h>
 
-#if ENABLE(SVG)
 #include "V8SVGLength.h"
 
 #include "bindings/v8/V8Binding.h"
@@ -97,5 +96,3 @@ v8::Handle<v8::Value> V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8:
 }
 
 } // namespace WebCore
-
-#endif

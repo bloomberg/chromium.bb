@@ -33,17 +33,12 @@
 
 #include "V8CSSPrimitiveValue.h"
 #include "V8CSSValueList.h"
-#include "V8WebKitCSSTransformValue.h"
-
-#include "V8WebKitCSSFilterValue.h"
-
-#include "V8WebKitCSSMixFunctionValue.h"
-#include "core/css/WebKitCSSMixFunctionValue.h"
-
-#if ENABLE(SVG)
 #include "V8SVGColor.h"
 #include "V8SVGPaint.h"
-#endif
+#include "V8WebKitCSSFilterValue.h"
+#include "V8WebKitCSSMixFunctionValue.h"
+#include "V8WebKitCSSTransformValue.h"
+#include "core/css/WebKitCSSMixFunctionValue.h"
 
 namespace WebCore {
 
@@ -60,12 +55,10 @@ v8::Handle<v8::Object> wrap(CSSValue* impl, v8::Handle<v8::Object> creationConte
         return wrap(static_cast<CSSValueList*>(impl), creationContext, isolate);
     if (impl->isPrimitiveValue())
         return wrap(static_cast<CSSPrimitiveValue*>(impl), creationContext, isolate);
-#if ENABLE(SVG)
     if (impl->isSVGPaint())
         return wrap(static_cast<SVGPaint*>(impl), creationContext, isolate);
     if (impl->isSVGColor())
         return wrap(static_cast<SVGColor*>(impl), creationContext, isolate);
-#endif
     return V8CSSValue::createWrapper(impl, creationContext, isolate);
 }
 

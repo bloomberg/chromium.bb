@@ -45,6 +45,7 @@
 #include "V8DOMImplementation.h"
 #include "V8HTMLDocument.h"
 #include "V8Node.h"
+#include "V8SVGDocument.h"
 #include "V8Touch.h"
 #include "V8TouchList.h"
 #include "V8WebGLRenderingContext.h"
@@ -54,10 +55,6 @@
 #include "bindings/v8/V8DOMWindowShell.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/custom/V8CustomXPathNSResolver.h"
-
-#if ENABLE(SVG)
-#include "V8SVGDocument.h"
-#endif
 
 #include "wtf/RefPtr.h"
 
@@ -93,10 +90,8 @@ v8::Handle<v8::Object> wrap(Document* impl, v8::Handle<v8::Object> creationConte
     ASSERT(impl);
     if (impl->isHTMLDocument())
         return wrap(toHTMLDocument(impl), creationContext, isolate);
-#if ENABLE(SVG)
     if (impl->isSVGDocument())
         return wrap(toSVGDocument(impl), creationContext, isolate);
-#endif
     v8::Handle<v8::Object> wrapper = V8Document::createWrapper(impl, creationContext, isolate);
     if (wrapper.IsEmpty())
         return wrapper;
