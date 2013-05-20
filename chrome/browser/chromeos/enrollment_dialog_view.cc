@@ -96,7 +96,7 @@ void EnrollmentDialogView::ShowDialog(gfx::NativeWindow owning_window,
                                       const base::Closure& connect) {
   EnrollmentDialogView* dialog_view =
       new EnrollmentDialogView(network_name, profile, target_uri, connect);
-  views::Widget::CreateWindowWithParent(dialog_view, owning_window);
+  views::DialogDelegate::CreateDialogWidget(dialog_view, NULL, owning_window);
   dialog_view->InitDialog();
   views::Widget* widget = dialog_view->GetWidget();
   DCHECK(widget);
