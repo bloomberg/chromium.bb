@@ -62,7 +62,6 @@ loader.Loader = function()
     this._loadingSteps = [
         this._loadBuildersList,
         this._loadResultsFiles,
-        this._loadExpectationsFiles,
     ];
 
     this._buildersThatFailedToLoad = [];
@@ -205,39 +204,6 @@ loader.Loader.prototype = {
                 return false;
         }
         return true;
-    },
-    _loadExpectationsFiles: function()
-    {
-        if (!isFlakinessDashboard() && !this._history.crossDashboardState.useTestData) {
-            this._loadNext();
-            return;
-        }
-
-        var expectationsFilesToRequest = {};
-        traversePlatformsTree(function(platform, platformName) {
-            if (platform.fallbackPlatforms)
-                platform.fallbackPlatforms.forEach(function(fallbackPlatform) {
-                    var fallbackPlatformObject = platformObjectForName(fallbackPlatform);
-                    if (fallbackPlatformObject.expectationsDirectory && !(fallbackPlatform in expectationsFilesToRequest))
-                        expectationsFilesToRequest[fallbackPlatform] = EXPECTATIONS_URL_BASE_PATH + fallbackPlatformObject.expectationsDirectory + '/TestExpectations';
-                });
-
-            if (platform.expectationsDirectory)
-                expectationsFilesToRequest[platformName] = EXPECTATIONS_URL_BASE_PATH + platform.expectationsDirectory + '/TestExpectations';
-        });
-
-        for (platformWithExpectations in expectationsFilesToRequest)
-            loader.request(expectationsFilesToRequest[platformWithExpectations],
-                    partial(function(loader, platformName, xhr) {
-                        g_expectationsByPlatform[platformName] = getParsedExpectations(xhr.responseText);
-
-                        delete expectationsFilesToRequest[platformName];
-                        if (!Object.keys(expectationsFilesToRequest).length)
-                            loader._loadNext();
-                    }, this, platformWithExpectations),
-                    partial(function(platformName, xhr) {
-                        console.error('Could not load expectations file for ' + platformName);
-                    }, platformWithExpectations));
     },
     _addErrors: function()
     {

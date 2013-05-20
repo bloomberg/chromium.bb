@@ -79,31 +79,6 @@ test('results files loading', 11, function() {
     }
 });
 
-test('expectations files loading', 1, function() {
-    resetGlobals();
-    g_history.parseCrossDashboardParameters();
-    // FIXME: re-enable once added back in flakiness_dashboard.js
-    var expectedLoadedPlatforms = [/* "chromium", "chromium-android", */"efl", "efl-wk1", "efl-wk2", "gtk",
-                                   "gtk-wk2", "mac", "mac-lion", /*"mac-snowleopard", */"qt", "win", "wk2"];
-    var loadedPlatforms = [];
-    var resourceLoader = new loader.Loader();
-    resourceLoader._loadNext = function() {
-        deepEqual(loadedPlatforms.sort(), expectedLoadedPlatforms);
-    }
-
-    var requestFunction = loader.request;
-    loader.request = function(url, successCallback, errorCallback) {
-        loadedPlatforms.push(/LayoutTests\/platform\/(.+)\/TestExpectations/.exec(url)[1]);
-        successCallback({responseText: ''});
-    }
-
-    try {
-        resourceLoader._loadExpectationsFiles();
-    } finally {
-        loader.request = requestFunction;
-    }
-});
-
 test('results file failing to load', 2, function() {
     resetGlobals();
     loadBuildersList('@ToT - chromium.org', 'layout-tests');
