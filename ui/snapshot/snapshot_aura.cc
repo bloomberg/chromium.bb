@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
@@ -28,9 +29,13 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
 
   gfx::Rect read_pixels_bounds = snapshot_bounds;
 
-  // When not in compact mode we must take into account the window's position on
-  // the desktop.
-  read_pixels_bounds.Offset(window->bounds().OffsetFromOrigin());
+  // We must take into account the window's position on the desktop.
+  gfx::Point origin = window->bounds().origin();
+  const aura::Window* root_window = window->GetRootWindow();
+  if (root_window)
+    aura::Window::ConvertPointToTarget(window, root_window, &origin);
+
+  read_pixels_bounds.Offset(origin.OffsetFromOrigin());
   gfx::Rect read_pixels_bounds_in_pixel =
       ui::ConvertRectToPixel(window->layer(), read_pixels_bounds);
 
