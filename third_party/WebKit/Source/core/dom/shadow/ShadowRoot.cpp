@@ -159,10 +159,13 @@ void ShadowRoot::setApplyAuthorStyles(bool value)
     if (isOrphan())
         return;
 
-    if (m_applyAuthorStyles != value) {
-        m_applyAuthorStyles = value;
+    if (m_applyAuthorStyles == value)
+        return;
+
+    m_applyAuthorStyles = value;
+    // FIXME: Why do we need to recalc style on all other shadow roots too?
+    if (attached())
         host()->setNeedsStyleRecalc();
-    }
 }
 
 void ShadowRoot::setResetStyleInheritance(bool value)
@@ -170,11 +173,13 @@ void ShadowRoot::setResetStyleInheritance(bool value)
     if (isOrphan())
         return;
 
-    if (value != m_resetStyleInheritance) {
-        m_resetStyleInheritance = value;
-        if (attached() && owner())
-            owner()->recalcStyle(Force);
-    }
+    if (value == m_resetStyleInheritance)
+        return;
+
+    m_resetStyleInheritance = value;
+    // FIXME: Why do we need to recalc style on all other shadow roots too?
+    if (attached())
+        host()->setNeedsStyleRecalc();
 }
 
 void ShadowRoot::attach()
