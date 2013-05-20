@@ -41,6 +41,7 @@ NULL_REGEX = re.compile('')
 
 LOGGER = logging.getLogger('dmprof')
 POLICIES_JSON_PATH = os.path.join(BASE_PATH, 'policies.json')
+CHROME_SRC_PATH = os.path.join(BASE_PATH, os.pardir, os.pardir)
 
 
 # Heap Profile Dump versions
@@ -220,11 +221,11 @@ class SymbolDataSources(object):
   very big.  So, the 'dmprof' profiler is designed to use 'SymbolMappingCache'
   which caches actually used symbols.
   """
-  def __init__(self, prefix, fake_directories=None):
+  def __init__(self, prefix, alternative_dirs=None):
     self._prefix = prefix
     self._prepared_symbol_data_sources_path = None
     self._loaded_symbol_data_sources = None
-    self._fake_directories = fake_directories or {}
+    self._alternative_dirs = alternative_dirs or {}
 
   def prepare(self):
     """Prepares symbol data sources by extracting mapping from a binary.
@@ -240,7 +241,7 @@ class SymbolDataSources(object):
         prepare_symbol_info.prepare_symbol_info(
             self._prefix + '.maps',
             output_dir_path=self._prefix + '.symmap',
-            fake_directories=self._fake_directories,
+            alternative_dirs=self._alternative_dirs,
             use_tempdir=True,
             use_source_file_name=True))
     if self._prepared_symbol_data_sources_path:
@@ -1048,14 +1049,24 @@ class Command(object):
 
   See COMMANDS in main().
   """
+  _DEVICE_LIB_PATTERN = re.compile(r'(/data/app-lib/.*-[0-9])/.*')
+
   def __init__(self, usage):
     self._parser = optparse.OptionParser(usage)
 
   @staticmethod
   def load_basic_files(
-      dump_path, multiple, no_dump=False, fake_directories=None):
+      dump_path, multiple, no_dump=False, alternative_dirs=None):
     prefix = Command._find_prefix(dump_path)
-    symbol_data_sources = SymbolDataSources(prefix, fake_directories or {})
+    # If the target process is estimated to be working on Android, converts
+    # a path in the Android device to a path estimated to be corresponding in
+    # the host.  Use --alternative-dirs to specify the conversion manually.
+    if not alternative_dirs:
+      alternative_dirs = Command._estimate_alternative_dirs(prefix)
+    if alternative_dirs:
+      for device, host in alternative_dirs.iteritems():
+        LOGGER.info('Assuming %s on device as %s on host' % (device, host))
+    symbol_data_sources = SymbolDataSources(prefix, alternative_dirs)
     symbol_data_sources.prepare()
     bucket_set = BucketSet()
     bucket_set.load(prefix)
@@ -1088,6 +1099,36 @@ class Command(object):
   @staticmethod
   def _find_prefix(path):
     return re.sub('\.[0-9][0-9][0-9][0-9]\.heap', '', path)
+
+  @staticmethod
+  def _estimate_alternative_dirs(prefix):
+    """Estimates a path in host from a corresponding path in target device.
+
+    For Android, dmprof.py should find symbol information from binaries in
+    the host instead of the Android device because dmprof.py doesn't run on
+    the Android device.  This method estimates a path in the host
+    corresponding to a path in the Android device.
+
+    Returns:
+        A dict that maps a path in the Android device to a path in the host.
+        If a file in "/data/app-lib" is found in /proc/maps, it assumes the
+        process was running on Android and maps the path to "out/Debug/lib"
+        in the Chromium directory.  An empty dict is returned unless Android.
+    """
+    device_lib_path_candidates = set()
+
+    with open(prefix + '.maps') as maps_f:
+      maps = proc_maps.ProcMaps.load(maps_f)
+      for entry in maps:
+        matched = Command._DEVICE_LIB_PATTERN.match(entry.as_dict()['name'])
+        if matched:
+          device_lib_path_candidates.add(matched.group(1))
+
+    if len(device_lib_path_candidates) == 1:
+      return {device_lib_path_candidates.pop(): os.path.join(
+                  CHROME_SRC_PATH, 'out', 'Debug', 'lib')}
+    else:
+      return {}
 
   @staticmethod
   def _find_all_dumps(dump_path):
@@ -1202,7 +1243,7 @@ class PolicyCommands(Command):
         'Usage: %%prog %s [-p POLICY] <first-dump>' % command)
     self._parser.add_option('-p', '--policy', type='string', dest='policy',
                             help='profile with POLICY', metavar='POLICY')
-    self._parser.add_option('--fake-directories', dest='fake_directories',
+    self._parser.add_option('--alternative-dirs', dest='alternative_dirs',
                             metavar='/path/on/target@/path/on/host[:...]',
                             help='Read files in /path/on/host/ instead of '
                                  'files in /path/on/target/.')
@@ -1210,13 +1251,13 @@ class PolicyCommands(Command):
   def _set_up(self, sys_argv):
     options, args = self._parse_args(sys_argv, 1)
     dump_path = args[1]
-    fake_directories_dict = {}
-    if options.fake_directories:
-      for fake_directory_pair in options.fake_directories.split(':'):
-        target_path, host_path = fake_directory_pair.split('@', 1)
-        fake_directories_dict[target_path] = host_path
+    alternative_dirs_dict = {}
+    if options.alternative_dirs:
+      for alternative_dir_pair in options.alternative_dirs.split(':'):
+        target_path, host_path = alternative_dir_pair.split('@', 1)
+        alternative_dirs_dict[target_path] = host_path
     (bucket_set, dumps) = Command.load_basic_files(
-        dump_path, True, fake_directories=fake_directories_dict)
+        dump_path, True, alternative_dirs=alternative_dirs_dict)
 
     policy_set = PolicySet.load(Command._parse_policy_list(options.policy))
     return policy_set, dumps, bucket_set

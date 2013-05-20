@@ -55,7 +55,7 @@ def _dump_command_result(command, output_dir_path, basename, suffix):
 
 def prepare_symbol_info(maps_path,
                         output_dir_path=None,
-                        fake_directories=None,
+                        alternative_dirs=None,
                         use_tempdir=False,
                         use_source_file_name=False):
   """Prepares (collects) symbol information files for find_runtime_symbols.
@@ -76,7 +76,7 @@ def prepare_symbol_info(maps_path,
 
   Args:
       maps_path: A path to a file which contains '/proc/<pid>/maps'.
-      fake_directories: A mapping from a directory '/path/on/target' where the
+      alternative_dirs: A mapping from a directory '/path/on/target' where the
           target process runs to a directory '/path/on/host' where the script
           reads the binary.  Considered to be used for Android binaries.
       output_dir_path: A path to a directory where files are prepared.
@@ -89,7 +89,7 @@ def prepare_symbol_info(maps_path,
       A pair of a path to the prepared directory and a boolean representing
       if it created a temporary directory or not.
   """
-  fake_directories = fake_directories or {}
+  alternative_dirs = alternative_dirs or {}
   if not output_dir_path:
     matched = re.match('^(.*)\.maps$', os.path.basename(maps_path))
     if matched:
@@ -145,7 +145,7 @@ def prepare_symbol_info(maps_path,
     LOGGER.debug('  %016x-%016x +%06x %s' % (
         entry.begin, entry.end, entry.offset, entry.name))
     binary_path = entry.name
-    for target_path, host_path in fake_directories.iteritems():
+    for target_path, host_path in alternative_dirs.iteritems():
       if entry.name.startswith(target_path):
         binary_path = entry.name.replace(target_path, host_path, 1)
     nm_filename = _dump_command_result(
@@ -194,7 +194,7 @@ def main():
   handler.setFormatter(formatter)
   LOGGER.addHandler(handler)
 
-  # TODO(dmikurube): Specify |fake_directories| from command line.
+  # TODO(dmikurube): Specify |alternative_dirs| from command line.
   if len(sys.argv) < 2:
     sys.stderr.write("""Usage:
 %s /path/to/maps [/path/to/output_data_dir/]
