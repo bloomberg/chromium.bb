@@ -23,6 +23,8 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
@@ -36,6 +38,51 @@ const int kPictureVersion = 1;
 // Minimum size of a decoded stream that we need.
 // 4 bytes for version, 4 * 4 for each of the 2 rects.
 const unsigned int kMinPictureSizeBytes = 36;
+
+bool EncodeBitmap(SkWStream* stream, const SkBitmap& bm) {
+  const int kJpegQuality = 80;
+  std::vector<unsigned char> data;
+
+  // If bitmap is opaque, encode as JPEG.
+  // Otherwise encode as PNG.
+  bool encoding_succeeded = false;
+  if (bm.isOpaque()) {
+    SkAutoLockPixels lock_bitmap(bm);
+    if (bm.empty())
+      return false;
+
+    encoding_succeeded = gfx::JPEGCodec::Encode(
+        reinterpret_cast<unsigned char*>(bm.getAddr32(0, 0)),
+        gfx::JPEGCodec::FORMAT_SkBitmap,
+        bm.width(),
+        bm.height(),
+        bm.rowBytes(),
+        kJpegQuality,
+        &data);
+  } else {
+    encoding_succeeded = gfx::PNGCodec::EncodeBGRASkBitmap(bm, false, &data);
+  }
+
+  if (encoding_succeeded)
+    return stream->write(&data.front(), data.size());
+  return false;
+}
+
+bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {
+  const unsigned char* data = static_cast<const unsigned char *>(buffer);
+
+  // Try PNG first.
+  if (gfx::PNGCodec::Decode(data, size, bm))
+    return true;
+
+  // Try JPEG.
+  scoped_ptr<SkBitmap> decoded_jpeg(gfx::JPEGCodec::Decode(data, size));
+  if (decoded_jpeg) {
+    *bm = *decoded_jpeg;
+    return true;
+  }
+  return false;
+}
 
 class DisableLCDTextFilter : public SkDrawFilter {
  public:
@@ -138,7 +185,7 @@ Picture::Picture(const std::string& encoded_string, bool* success) {
                            opaque_rect_height);
 
   // Read the picture. This creates an empty picture on failure.
-  picture_ = skia::AdoptRef(new SkPicture(&stream, success, NULL));
+  picture_ = skia::AdoptRef(new SkPicture(&stream, success, &DecodeBitmap));
 }
 
 Picture::Picture(const skia::RefPtr<SkPicture>& picture,
@@ -340,7 +387,7 @@ void Picture::AsBase64String(std::string* output) const {
   stream.write32(opaque_rect_.height());
 
   // Serialize the picture.
-  picture_->serialize(&stream);
+  picture_->serialize(&stream, &EncodeBitmap);
 
   // Encode the picture as base64.
   size_t serialized_size = stream.bytesWritten();
