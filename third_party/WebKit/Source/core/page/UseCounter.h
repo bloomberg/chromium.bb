@@ -26,6 +26,7 @@
 #ifndef UseCounter_h
 #define UseCounter_h
 
+#include "CSSPropertyNames.h"
 #include "wtf/BitVector.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -34,9 +35,11 @@
 
 namespace WebCore {
 
+class CSSStyleSheet;
 class DOMWindow;
 class Document;
 class ScriptExecutionContext;
+class StyleSheetContents;
 
 // UseCounter is used for counting the number of times features of
 // Blink are used on real web pages and help us know commonly
@@ -139,6 +142,7 @@ public:
     // "count" sets the bit for this feature to 1. Repeated calls are ignored.
     static void count(Document*, Feature);
     static void count(DOMWindow*, Feature);
+    void count(CSSPropertyID);
 
     // "countDeprecation" sets the bit for this feature to 1, and sends a deprecation
     // warning to the console. Repeated calls are ignored.
@@ -151,6 +155,10 @@ public:
     String deprecationMessage(Feature);
 
     void didCommitLoad();
+
+    static UseCounter* getFrom(const Document*);
+    static UseCounter* getFrom(const CSSStyleSheet*);
+    static UseCounter* getFrom(const StyleSheetContents*);
 
 private:
     bool recordMeasurement(Feature feature)
@@ -172,6 +180,7 @@ private:
     void updateMeasurements();
 
     OwnPtr<BitVector> m_countBits;
+    BitVector m_CSSFeatureBits;
 };
 
 } // namespace WebCore

@@ -122,8 +122,8 @@ void WebKitCSSKeyframesRule::insertRule(const String& ruleText)
 {
     ASSERT(m_childRuleCSSOMWrappers.size() == m_keyframesRule->keyframes().size());
 
-    CSSParser parser(parserContext());
     CSSStyleSheet* styleSheet = parentStyleSheet();
+    CSSParser parser(parserContext(), UseCounter::getFrom(styleSheet));
     RefPtr<StyleKeyframe> keyframe = parser.parseKeyframeRule(styleSheet ? styleSheet->contents() : 0, ruleText);
     if (!keyframe)
         return;

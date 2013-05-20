@@ -277,7 +277,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
         ec = INDEX_SIZE_ERR;
         return 0;
     }
-    CSSParser p(m_contents->parserContext());
+    CSSParser p(m_contents->parserContext(), UseCounter::getFrom(this));
     RefPtr<StyleRuleBase> rule = p.parseRule(m_contents.get(), ruleString);
 
     if (!rule) {
