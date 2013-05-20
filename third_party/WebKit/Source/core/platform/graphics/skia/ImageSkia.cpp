@@ -440,7 +440,7 @@ void Image::drawPattern(GraphicsContext* context,
                         ColorSpace styleColorSpace,
                         CompositeOperator compositeOp,
                         const FloatRect& destRect,
-                        BlendMode)
+                        BlendMode blendMode)
 {
     TRACE_EVENT0("skia", "Image::drawPattern");
     RefPtr<NativeImageSkia> bitmap = nativeImageForCurrentFrame();
@@ -520,7 +520,8 @@ void Image::drawPattern(GraphicsContext* context,
 
     SkPaint paint;
     paint.setShader(shader)->unref();
-    paint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp));
+    paint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+
     paint.setFilterBitmap(resampling == RESAMPLE_LINEAR);
 
     context->drawRect(destRect, paint);

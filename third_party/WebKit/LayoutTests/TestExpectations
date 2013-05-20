@@ -102,6 +102,10 @@ webkit.org/b/100071 fast/canvas/canvas-blend-solid.html [ Failure ImageOnlyFailu
 webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-image.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
+crbug.com/229166 css3/compositing/effect-background-blend-mode.html [ Missing ]
+crbug.com/229166 css3/compositing/effect-background-blend-mode-stacking.html [ Missing ]
+crbug.com/229166 css3/compositing/effect-background-blend-mode-tiled.html [ Missing ]
+
 # Quota API is not supported in DRT yet.
 crbug.com/84572 storage/storageinfo-missing-arguments.html
 crbug.com/84572 storage/storageinfo-no-callbacks.html
