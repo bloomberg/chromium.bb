@@ -169,7 +169,7 @@ class CC_EXPORT PictureLayerTiling {
                      gfx::Size layer_bounds,
                      PictureLayerTilingClient* client);
   void SetLiveTilesRect(gfx::Rect live_tiles_rect);
-  void CreateTile(int i, int j);
+  void CreateTile(int i, int j, const PictureLayerTiling* twin_tiling);
   Tile* TileAt(int, int) const;
 
   // Given properties.

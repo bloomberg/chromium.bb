@@ -74,7 +74,9 @@ Tile* PictureLayerTiling::TileAt(int i, int j) const {
   return iter->second.get();
 }
 
-void PictureLayerTiling::CreateTile(int i, int j) {
+void PictureLayerTiling::CreateTile(int i,
+                                    int j,
+                                    const PictureLayerTiling* twin_tiling) {
   TileMapKey key(i, j);
   DCHECK(tiles_.find(key) == tiles_.end());
 
@@ -83,11 +85,10 @@ void PictureLayerTiling::CreateTile(int i, int j) {
   tile_rect.set_size(tiling_data_.max_texture_size());
 
   // Check our twin for a valid tile.
-  const PictureLayerTiling* twin = client_->GetTwinTiling(this);
-  if (twin && tiling_data_.max_texture_size() ==
-      twin->tiling_data_.max_texture_size()) {
-    Tile* candidate_tile = twin->TileAt(i, j);
-    if (candidate_tile) {
+  if (twin_tiling &&
+      tiling_data_.max_texture_size() ==
+      twin_tiling->tiling_data_.max_texture_size()) {
+    if (Tile* candidate_tile = twin_tiling->TileAt(i, j)) {
       gfx::Rect rect =
           gfx::ScaleToEnclosingRect(paint_rect, 1.0f / contents_scale_);
       if (!client_->GetInvalidation()->Intersects(rect)) {
@@ -117,9 +118,10 @@ void PictureLayerTiling::DestroyAndRecreateTilesWithText() {
       new_tiles.push_back(it->first);
   }
 
+  const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
   for (size_t i = 0; i < new_tiles.size(); ++i) {
     tiles_.erase(new_tiles[i]);
-    CreateTile(new_tiles[i].first, new_tiles[i].second);
+    CreateTile(new_tiles[i].first, new_tiles[i].second, twin_tiling);
   }
 }
 
@@ -452,6 +454,8 @@ void PictureLayerTiling::SetLiveTilesRect(
     tiles_.erase(found);
   }
 
+  const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
+
   // Iterate to allocate new tiles for all regions with newly exposed area.
   for (TilingData::DifferenceIterator iter(&tiling_data_,
                                            new_live_tiles_rect,
@@ -459,7 +463,7 @@ void PictureLayerTiling::SetLiveTilesRect(
        iter;
        ++iter) {
     TileMapKey key(iter.index());
-    CreateTile(key.first, key.second);
+    CreateTile(key.first, key.second, twin_tiling);
   }
 
   live_tiles_rect_ = new_live_tiles_rect;
