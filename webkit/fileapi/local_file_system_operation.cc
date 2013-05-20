@@ -53,7 +53,6 @@ LocalFileSystemOperation::LocalFileSystemOperation(
 LocalFileSystemOperation::~LocalFileSystemOperation() {
   if (!operation_context())
     return;
-  operation_context()->DetachUserDataThread();
   if (write_target_url_.is_valid()) {
     operation_context()->update_observers()->Notify(
         &FileUpdateObserver::OnEndUpdate, MakeTuple(write_target_url_));

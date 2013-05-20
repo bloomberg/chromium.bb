@@ -25,6 +25,9 @@ FileSystemOperationContext::FileSystemOperationContext(
       allowed_bytes_growth_(0),
       quota_limit_type_(quota::kQuotaLimitTypeUnknown) {}
 
-FileSystemOperationContext::~FileSystemOperationContext() {}
+FileSystemOperationContext::~FileSystemOperationContext() {
+  DetachUserDataThread();
+  setter_thread_checker_.DetachFromThread();
+}
 
 }  // namespace fileapi

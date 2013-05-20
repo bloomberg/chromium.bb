@@ -6,6 +6,7 @@
 #define WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_CONTEXT_H_
 
 #include "base/supports_user_data.h"
+#include "base/threading/thread_checker.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/quota/quota_types.h"
 #include "webkit/storage/webkit_storage_export.h"
@@ -40,6 +41,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   }
 
   // Updates the current remaining quota.
+  // This can be called to update the remaining quota during the operation.
   void set_allowed_bytes_growth(const int64& allowed_bytes_growth) {
     allowed_bytes_growth_ = allowed_bytes_growth;
   }
@@ -60,12 +62,35 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   AccessObserverList* access_observers() { return &access_observers_; }
   UpdateObserverList* update_observers() { return &update_observers_; }
 
+  // Following setters should be called only on the same thread as the
+  // FileSystemOperationContext is created (i.e. are not supposed be updated
+  // after the context's passed onto other task runners).
+  void set_change_observers(const ChangeObserverList& list) {
+    DCHECK(setter_thread_checker_.CalledOnValidThread());
+    change_observers_ = list;
+  }
+  void set_access_observers(const AccessObserverList& list) {
+    DCHECK(setter_thread_checker_.CalledOnValidThread());
+    access_observers_ = list;
+  }
+  void set_update_observers(const UpdateObserverList& list) {
+    DCHECK(setter_thread_checker_.CalledOnValidThread());
+    update_observers_ = list;
+  }
+  void set_quota_limit_type(quota::QuotaLimitType limit_type) {
+    DCHECK(setter_thread_checker_.CalledOnValidThread());
+    quota_limit_type_ = limit_type;
+  }
+
   // Gets and sets value-type (or not-owned) variable as UserData.
+  // (SetUserValue can be called only on the same thread as this context
+  // is created as well as other setters.)
   template <typename T> T GetUserValue(const char* key) const {
     ValueAdapter<T>* v = static_cast<ValueAdapter<T>*>(GetUserData(key));
     return v ? v->value() : T();
   }
   template <typename T> void SetUserValue(const char* key, const T& value) {
+    DCHECK(setter_thread_checker_.CalledOnValidThread());
     SetUserData(key, new ValueAdapter<T>(value));
   }
 
@@ -81,32 +106,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
     DISALLOW_COPY_AND_ASSIGN(ValueAdapter);
   };
 
-  // Only regular (and test) MountPointProviders can access following setters.
-  friend class IsolatedMountPointProvider;
-  friend class SandboxMountPointProvider;
-  friend class TestMountPointProvider;
-
-  // Tests also need access to some setters.
-  friend class FileSystemQuotaClientTest;
-  friend class FileWriterDelegateTest;
-  friend class LocalFileSystemOperationTest;
-  friend class LocalFileSystemOperationWriteTest;
-  friend class LocalFileSystemTestOriginHelper;
-  friend class ObfuscatedFileUtilTest;
-
-  void set_change_observers(const ChangeObserverList& list) {
-    change_observers_ = list;
-  }
-  void set_access_observers(const AccessObserverList& list) {
-    access_observers_ = list;
-  }
-  void set_update_observers(const UpdateObserverList& list) {
-    update_observers_ = list;
-  }
-  void set_quota_limit_type(quota::QuotaLimitType limit_type) {
-    quota_limit_type_ = limit_type;
-  }
-
   FileSystemContext* file_system_context_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -116,6 +115,9 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   AccessObserverList access_observers_;
   ChangeObserverList change_observers_;
   UpdateObserverList update_observers_;
+
+  // Used to check its setters are not called on arbitrary thread.
+  base::ThreadChecker setter_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationContext);
 };
