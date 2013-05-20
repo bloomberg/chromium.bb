@@ -149,7 +149,9 @@ TextRun::~TextRun() {
 
 // Returns the X coordinate of the leading or |trailing| edge of the glyph
 // starting at |index|, relative to the left of the text (not the view).
-int GetGlyphXBoundary(internal::TextRun* run, size_t index, bool trailing) {
+int GetGlyphXBoundary(const internal::TextRun* run,
+                      size_t index,
+                      bool trailing) {
   DCHECK_GE(index, run->range.start());
   DCHECK_LT(index, run->range.end() + (trailing ? 0 : 1));
   int x = 0;
@@ -204,14 +206,14 @@ SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
 
   EnsureLayout();
   // Find the run that contains the point and adjust the argument location.
-  Point p(ToTextPoint(point));
-  size_t run_index = GetRunContainingPoint(p);
+  int x = ToTextPoint(point).x();
+  size_t run_index = GetRunContainingXCoord(x);
   if (run_index == runs_.size())
-    return EdgeSelectionModel((p.x() < 0) ? CURSOR_LEFT : CURSOR_RIGHT);
+    return EdgeSelectionModel((x < 0) ? CURSOR_LEFT : CURSOR_RIGHT);
   internal::TextRun* run = runs_[run_index];
 
   int position = 0, trailing = 0;
-  HRESULT hr = ScriptXtoCP(p.x() - run->preceding_run_widths,
+  HRESULT hr = ScriptXtoCP(x - run->preceding_run_widths,
                            run->range.length(),
                            run->glyph_count,
                            run->logical_clusters.get(),
@@ -367,15 +369,13 @@ std::vector<Rect> RenderTextWin::GetSubstringBounds(const ui::Range& range) {
   // Add a Rect for each run/selection intersection.
   // TODO(msw): The bounds should probably not always be leading the range ends.
   for (size_t i = 0; i < runs_.size(); ++i) {
-    internal::TextRun* run = runs_[visual_to_logical_[i]];
+    const internal::TextRun* run = runs_[visual_to_logical_[i]];
     ui::Range intersection = run->range.Intersect(layout_range);
     if (intersection.IsValid()) {
       DCHECK(!intersection.is_reversed());
       ui::Range range_x(GetGlyphXBoundary(run, intersection.start(), false),
                         GetGlyphXBoundary(run, intersection.end(), false));
       Rect rect(range_x.GetMin(), 0, range_x.length(), run->font.GetHeight());
-      // Center the rect vertically in the display area.
-      rect.Offset(0, (display_rect().height() - rect.height()) / 2);
       rect.set_origin(ToViewPoint(rect.origin()));
       // Union this with the last rect if they're adjacent.
       if (!bounds.empty() && rect.SharesEdgeWith(bounds.back())) {
@@ -447,7 +447,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   DCHECK(!needs_layout_);
 
   // Skia will draw glyphs with respect to the baseline.
-  Vector2d offset(GetOffsetForDrawing() + Vector2d(0, common_baseline_));
+  Vector2d offset(GetTextOffset() + Vector2d(0, common_baseline_));
 
   SkScalar x = SkIntToScalar(offset.x());
   SkScalar y = SkIntToScalar(offset.y());
@@ -810,22 +810,21 @@ size_t RenderTextWin::GetRunContainingCaret(const SelectionModel& caret) const {
   DCHECK(!needs_layout_);
   size_t layout_position = TextIndexToLayoutIndex(caret.caret_pos());
   LogicalCursorDirection affinity = caret.caret_affinity();
-  size_t run = 0;
-  for (; run < runs_.size(); ++run)
+  for (size_t run = 0; run < runs_.size(); ++run)
     if (RangeContainsCaret(runs_[run]->range, layout_position, affinity))
-      break;
-  return run;
+      return run;
+  return runs_.size();
 }
 
-size_t RenderTextWin::GetRunContainingPoint(const Point& point) const {
+size_t RenderTextWin::GetRunContainingXCoord(int x) const {
   DCHECK(!needs_layout_);
   // Find the text run containing the argument point (assumed already offset).
-  size_t run = 0;
-  for (; run < runs_.size(); ++run)
-    if (runs_[run]->preceding_run_widths <= point.x() &&
-        runs_[run]->preceding_run_widths + runs_[run]->width > point.x())
-      break;
-  return run;
+  for (size_t run = 0; run < runs_.size(); ++run) {
+    if ((runs_[run]->preceding_run_widths <= x) &&
+        ((runs_[run]->preceding_run_widths + runs_[run]->width) > x))
+      return run;
+  }
+  return runs_.size();
 }
 
 SelectionModel RenderTextWin::FirstSelectionModelInsideRun(

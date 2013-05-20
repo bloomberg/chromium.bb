@@ -233,7 +233,7 @@ void NativeTextfieldWin::UpdateBorder() {
 }
 
 void NativeTextfieldWin::UpdateBorderColor() {
-  // TODO(estade): implement.
+  NOTIMPLEMENTED();
 }
 
 void NativeTextfieldWin::UpdateTextColor() {
@@ -303,6 +303,12 @@ void NativeTextfieldWin::UpdateVerticalMargins() {
   }
   // Non-zero margins case.
   NOTIMPLEMENTED();
+}
+
+void NativeTextfieldWin::UpdateVerticalAlignment() {
+  // Default alignment is vertically centered.
+  if (textfield_->vertical_alignment() != gfx::ALIGN_VCENTER)
+    NOTIMPLEMENTED();
 }
 
 bool NativeTextfieldWin::SetFocus() {

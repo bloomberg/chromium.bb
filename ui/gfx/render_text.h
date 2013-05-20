@@ -132,6 +132,11 @@ class UI_EXPORT RenderText {
   }
   void SetHorizontalAlignment(HorizontalAlignment alignment);
 
+  VerticalAlignment vertical_alignment() const {
+    return vertical_alignment_;
+  }
+  void SetVerticalAlignment(VerticalAlignment alignment);
+
   const FontList& font_list() const { return font_list_; }
   void SetFontList(const FontList& font_list);
   void SetFont(const Font& font);
@@ -412,12 +417,9 @@ class UI_EXPORT RenderText {
   Point ToTextPoint(const Point& point);
   Point ToViewPoint(const Point& point);
 
-  // Returns display offset based on current text alignment.
+  // Returns the text offset from the origin, taking into account text alignment
+  // only.
   Vector2d GetAlignmentOffset();
-
-  // Returns the offset for drawing text. Does not account for font
-  // baseline, as needed by Skia.
-  Vector2d GetOffsetForDrawing();
 
   // Applies fade effects to |renderer|.
   void ApplyFadeEffects(internal::SkiaTextRenderer* renderer);
@@ -439,7 +441,8 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ObscuredText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, EdgeSelectionModels);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, OriginForDrawing);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffset);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL);
 
   // Set the cursor to |position|, with the caret trailing the previous
   // grapheme, or if there is no previous grapheme, leading the cursor position.
@@ -461,8 +464,13 @@ class UI_EXPORT RenderText {
   // Logical UTF-16 string data to be drawn.
   string16 text_;
 
-  // Horizontal alignment of the text with respect to |display_rect_|.
+  // Horizontal alignment of the text with respect to |display_rect_|.  The
+  // default is to align left if the application UI is LTR and right if RTL.
   HorizontalAlignment horizontal_alignment_;
+
+  // Vertical alignment of the text with respect to |display_rect_|.  The
+  // default is to align vertically centered.
+  VerticalAlignment vertical_alignment_;
 
   // The text directionality mode, defaults to DIRECTIONALITY_FROM_TEXT.
   DirectionalityMode directionality_mode_;

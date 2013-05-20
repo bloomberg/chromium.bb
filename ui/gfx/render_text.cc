@@ -334,6 +334,14 @@ void RenderText::SetHorizontalAlignment(HorizontalAlignment alignment) {
   }
 }
 
+void RenderText::SetVerticalAlignment(VerticalAlignment alignment) {
+  if (vertical_alignment_ != alignment) {
+    vertical_alignment_ = alignment;
+    display_offset_ = Vector2d();
+    cached_bounds_and_offset_valid_ = false;
+  }
+}
+
 void RenderText::SetFontList(const FontList& font_list) {
   font_list_ = font_list;
   cached_bounds_and_offset_valid_ = false;
@@ -724,6 +732,7 @@ void RenderText::SetTextShadows(const ShadowValues& shadows) {
 
 RenderText::RenderText()
     : horizontal_alignment_(base::i18n::IsRTL() ? ALIGN_RIGHT : ALIGN_LEFT),
+      vertical_alignment_(ALIGN_VCENTER),
       directionality_mode_(DIRECTIONALITY_FROM_TEXT),
       text_direction_(base::i18n::UNKNOWN_DIRECTION),
       cursor_enabled_(true),
@@ -824,19 +833,18 @@ Point RenderText::ToViewPoint(const Point& point) {
 }
 
 Vector2d RenderText::GetAlignmentOffset() {
-  if (horizontal_alignment() == ALIGN_LEFT)
-    return Vector2d();
-
-  int x_offset = display_rect().width() - GetContentWidth();
-  if (horizontal_alignment() == ALIGN_CENTER)
-    x_offset /= 2;
-  return Vector2d(x_offset, 0);
-}
-
-Vector2d RenderText::GetOffsetForDrawing() {
-  // Center the text vertically in the display area.
-  return GetTextOffset() +
-      Vector2d(0, (display_rect().height() - GetStringSize().height()) / 2);
+  Vector2d offset;
+  if (horizontal_alignment_ != ALIGN_LEFT) {
+    offset.set_x(display_rect().width() - GetContentWidth());
+    if (horizontal_alignment_ == ALIGN_CENTER)
+      offset.set_x(offset.x() / 2);
+  }
+  if (vertical_alignment_ != ALIGN_TOP) {
+    offset.set_y(display_rect().height() - GetStringSize().height());
+    if (vertical_alignment_ == ALIGN_VCENTER)
+      offset.set_y(offset.y() / 2);
+  }
+  return offset;
 }
 
 void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
@@ -860,7 +868,7 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   // TODO(asvitkine): This is currently not based on GetTextDirection() because
   //                  RenderTextWin does not return a direction that's based on
   //                  the text content.
-  if (horizontal_alignment() == ALIGN_RIGHT)
+  if (horizontal_alignment_ == ALIGN_RIGHT)
     std::swap(fade_left, fade_right);
 
   Rect solid_part = display_rect();
@@ -968,8 +976,9 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 }
 
 void RenderText::DrawSelection(Canvas* canvas) {
-  const SkColor color = focused() ? selection_background_focused_color_ :
-                                    selection_background_unfocused_color_;
+  const SkColor color = focused() ?
+      selection_background_focused_color_ :
+      selection_background_unfocused_color_;
   const std::vector<Rect> sel = GetSubstringBounds(selection());
   for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
     canvas->FillRect(*i, color);

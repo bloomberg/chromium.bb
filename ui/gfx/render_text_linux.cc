@@ -103,7 +103,7 @@ SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
   // When the point is outside of text, return HOME/END position.
   if (p.x() < 0)
     return EdgeSelectionModel(CURSOR_LEFT);
-  else if (p.x() > GetStringSize().width())
+  if (p.x() > GetStringSize().width())
     return EdgeSelectionModel(CURSOR_RIGHT);
 
   int caret_pos = 0, trailing = 0;
@@ -232,14 +232,13 @@ std::vector<Rect> RenderTextLinux::GetSubstringBounds(const ui::Range& range) {
 
   int height = 0;
   pango_layout_get_pixel_size(layout_, NULL, &height);
-  int y = (display_rect().height() - height) / 2;
 
   std::vector<Rect> bounds;
   for (int i = 0; i < n_ranges; ++i) {
     // TODO(derat): Support fractional bounds for subpixel positioning?
     int x = PANGO_PIXELS(ranges[2 * i]);
     int width = PANGO_PIXELS(ranges[2 * i + 1]) - x;
-    Rect rect(x, y, width, height);
+    Rect rect(x, 0, width, height);
     rect.set_origin(ToViewPoint(rect.origin()));
     bounds.push_back(rect);
   }
@@ -370,9 +369,9 @@ void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
 void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   DCHECK(layout_);
 
-  Vector2d offset(GetOffsetForDrawing());
   // Skia will draw glyphs with respect to the baseline.
-  offset += Vector2d(0, PANGO_PIXELS(pango_layout_get_baseline(layout_)));
+  Vector2d offset(GetTextOffset() +
+      Vector2d(0, PANGO_PIXELS(pango_layout_get_baseline(layout_))));
 
   SkScalar x = SkIntToScalar(offset.x());
   SkScalar y = SkIntToScalar(offset.y());

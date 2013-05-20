@@ -46,7 +46,6 @@ base::string16 GetSelectedText(RenderText* render_text) {
                                     render_text->selection().length());
 }
 
-#if !defined(OS_MACOSX)
 // A test utility function to set the application default text direction.
 void SetRTL(bool rtl) {
   // Override the current locale/direction.
@@ -57,7 +56,6 @@ void SetRTL(bool rtl) {
 #endif
   EXPECT_EQ(rtl, base::i18n::IsRTL());
 }
-#endif
 
 }  // namespace
 
@@ -1000,34 +998,76 @@ TEST_F(RenderTextTest, CursorBoundsInReplacementMode) {
   EXPECT_EQ(cursor_around_b.right(), cursor_before_c.x());
 }
 
-// http://crbug.com/161902
-#if defined(OS_LINUX)
-#define MAYBE_OriginForDrawing DISABLED_OriginForDrawing
-#else
-#define MAYBE_OriginForDrawing OriginForDrawing
-#endif
-TEST_F(RenderTextTest, MAYBE_OriginForDrawing) {
+TEST_F(RenderTextTest, GetTextOffset) {
+  // The default horizontal text offset differs for LTR and RTL, and is only set
+  // when the RenderText object is created.  This test will check the default in
+  // LTR mode, and the next test will check the RTL default.
+  const bool was_rtl = base::i18n::IsRTL();
+  SetRTL(false);
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("abcdefg"));
   render_text->SetFontList(FontList("Arial, 13px"));
 
-  // Set display area's height equals to font height.
-  const int font_height = render_text->GetStringSize().height();
-  Rect display_rect(0, 0, 100, font_height);
+  // Set display area's size equal to the font size.
+  const gfx::Size font_size(render_text->GetContentWidth(),
+                            render_text->GetStringSize().height());
+  Rect display_rect(font_size);
   render_text->SetDisplayRect(display_rect);
 
-  Vector2d offset = render_text->GetOffsetForDrawing();
+  Vector2d offset = render_text->GetTextOffset();
   EXPECT_TRUE(offset.IsZero());
 
-  // Set display area's height greater than font height.
+  // Set display area's size greater than font size.
   const int kEnlargement = 2;
-  display_rect = Rect(0, 0, 100, font_height + kEnlargement);
+  display_rect.Inset(0, 0, -kEnlargement, -kEnlargement);
   render_text->SetDisplayRect(display_rect);
 
-  // Text should be vertically centered.
-  offset = render_text->GetOffsetForDrawing();
-  EXPECT_EQ(offset.x(), 0);
-  EXPECT_EQ(offset.y(), kEnlargement / 2);
+  // Check the default horizontal and vertical alignment.
+  offset = render_text->GetTextOffset();
+  EXPECT_EQ(kEnlargement / 2, offset.y());
+  EXPECT_EQ(0, offset.x());
+
+  // Check explicitly setting the horizontal alignment.
+  render_text->SetHorizontalAlignment(ALIGN_LEFT);
+  offset = render_text->GetTextOffset();
+  EXPECT_EQ(0, offset.x());
+  render_text->SetHorizontalAlignment(ALIGN_CENTER);
+  offset = render_text->GetTextOffset();
+  EXPECT_EQ(kEnlargement / 2, offset.x());
+  render_text->SetHorizontalAlignment(ALIGN_RIGHT);
+  offset = render_text->GetTextOffset();
+  EXPECT_EQ(kEnlargement, offset.x());
+
+  // Check explicitly setting the vertical alignment.
+  render_text->SetVerticalAlignment(ALIGN_TOP);
+  offset = render_text->GetTextOffset();
+  EXPECT_EQ(0, offset.y());
+  render_text->SetVerticalAlignment(ALIGN_VCENTER);
+  offset = render_text->GetTextOffset();
+  EXPECT_EQ(kEnlargement / 2, offset.y());
+  render_text->SetVerticalAlignment(ALIGN_BOTTOM);
+  offset = render_text->GetTextOffset();
+  EXPECT_EQ(kEnlargement, offset.y());
+
+  SetRTL(was_rtl);
+}
+
+TEST_F(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL) {
+  // This only checks the default horizontal alignment in RTL mode; all other
+  // GetTextOffset() attributes are checked by the test above.
+  const bool was_rtl = base::i18n::IsRTL();
+  SetRTL(true);
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetText(ASCIIToUTF16("abcdefg"));
+  render_text->SetFontList(FontList("Arial, 13px"));
+  const int kEnlargement = 2;
+  const gfx::Size font_size(render_text->GetContentWidth() + kEnlargement,
+                            render_text->GetStringSize().height());
+  Rect display_rect(font_size);
+  render_text->SetDisplayRect(display_rect);
+  Vector2d offset = render_text->GetTextOffset();
+  EXPECT_EQ(kEnlargement, offset.x());
+  SetRTL(was_rtl);
 }
 
 TEST_F(RenderTextTest, SameFontForParentheses) {

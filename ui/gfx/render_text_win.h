@@ -106,7 +106,7 @@ class RenderTextWin : public RenderText {
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
   size_t GetRunContainingCaret(const SelectionModel& caret) const;
-  size_t GetRunContainingPoint(const Point& point) const;
+  size_t GetRunContainingXCoord(int x) const;
 
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.
