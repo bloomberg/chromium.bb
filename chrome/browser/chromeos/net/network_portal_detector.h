@@ -10,7 +10,7 @@
 
 namespace chromeos {
 
-class NetworkState;
+class Network;
 
 // This class handles all notifications about network changes from
 // NetworkLibrary and delegates portal detection for the active
@@ -46,7 +46,7 @@ class NetworkPortalDetector {
     // detection is in process for the active network. Note, that
     // |network| may be NULL.
     virtual void OnPortalDetectionCompleted(
-        const NetworkState* network,
+        const Network* network,
         const CaptivePortalState& state) = 0;
 
    protected:
@@ -76,7 +76,7 @@ class NetworkPortalDetector {
 
   // Returns Captive Portal state for a given |network|.
   virtual CaptivePortalState GetCaptivePortalState(
-      const chromeos::NetworkState* network) = 0;
+      const chromeos::Network* network) = 0;
 
   // Returns true if portal detection is enabled.
   virtual bool IsEnabled() = 0;

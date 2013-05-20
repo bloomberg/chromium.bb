@@ -573,12 +573,11 @@ void ProxyConfigServiceImpl::OnNetworkChanged(NetworkLibrary* network_lib,
 }
 
 // static
-bool ProxyConfigServiceImpl::ParseProxyConfig(
-    const std::string& proxy_config_string,
-    net::ProxyConfig* proxy_config) {
-  if (!proxy_config)
+bool ProxyConfigServiceImpl::ParseProxyConfig(const Network* network,
+                                              net::ProxyConfig* proxy_config) {
+  if (!network || !proxy_config)
     return false;
-  JSONStringValueSerializer serializer(proxy_config_string);
+  JSONStringValueSerializer serializer(network->proxy_config());
   scoped_ptr<Value> value(serializer.Deserialize(NULL, NULL));
   if (!value.get() || value->GetType() != Value::TYPE_DICTIONARY)
     return false;
@@ -759,7 +758,7 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfig(const Network* network,
       network_availability = net::ProxyConfigService::CONFIG_VALID;
     } else if (!network->proxy_config().empty()) {
       // Network is private or shared with user using shared proxies.
-      if (ParseProxyConfig(network->proxy_config(), &network_config)) {
+      if (ParseProxyConfig(network, &network_config)) {
         VLOG(1) << this << ": using network proxy: "
                 << network->proxy_config();
         network_availability = net::ProxyConfigService::CONFIG_VALID;

@@ -4,12 +4,11 @@
 
 #include "chrome/browser/chromeos/net/network_portal_detector_stub.h"
 
-#include "chromeos/network/network_state.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 
 namespace chromeos {
 
-NetworkPortalDetectorStub::NetworkPortalDetectorStub()
-  : default_network_(NULL) {
+NetworkPortalDetectorStub::NetworkPortalDetectorStub() : active_network_(NULL) {
 }
 
 NetworkPortalDetectorStub::~NetworkPortalDetectorStub() {
@@ -30,14 +29,13 @@ void NetworkPortalDetectorStub::AddAndFireObserver(Observer* observer) {
   AddObserver(observer);
   if (!observer)
     return;
-  if (!default_network_ ||
-      !portal_state_map_.count(default_network_->path())) {
-    observer->OnPortalDetectionCompleted(default_network_.get(),
-                                         CaptivePortalState());
+  if (!active_network_ ||
+      !portal_state_map_.count(active_network_->service_path())) {
+    observer->OnPortalDetectionCompleted(active_network_, CaptivePortalState());
   } else {
     observer->OnPortalDetectionCompleted(
-        default_network_.get(),
-        portal_state_map_[default_network_->path()]);
+        active_network_,
+        portal_state_map_[active_network_->service_path()]);
   }
 }
 
@@ -48,10 +46,10 @@ void NetworkPortalDetectorStub::RemoveObserver(Observer* observer) {
 
 NetworkPortalDetector::CaptivePortalState
 NetworkPortalDetectorStub::GetCaptivePortalState(
-    const chromeos::NetworkState* network) {
-  if (!network || !portal_state_map_.count(network->path()))
+    const chromeos::Network* network) {
+  if (!network || !portal_state_map_.count(network->service_path()))
     return CaptivePortalState();
-  return portal_state_map_[network->path()];
+  return portal_state_map_[network->service_path()];
 }
 
 bool NetworkPortalDetectorStub::IsEnabled() {
@@ -71,30 +69,27 @@ void NetworkPortalDetectorStub::EnableLazyDetection() {
 void NetworkPortalDetectorStub::DisableLazyDetection() {
 }
 
-void NetworkPortalDetectorStub::SetDefaultNetworkPathForTesting(
-    const std::string& service_path) {
-  if (service_path.empty())
-    default_network_.reset();
-  else
-    default_network_.reset(new NetworkState(service_path));
+void NetworkPortalDetectorStub::SetActiveNetworkForTesting(
+    const Network* network) {
+  active_network_ = network;
 }
 
 void NetworkPortalDetectorStub::SetDetectionResultsForTesting(
-    const std::string& service_path,
+    const Network* network,
     const CaptivePortalState& state) {
-  if (service_path.empty())
+  if (!network)
     return;
-  portal_state_map_[service_path] = state;
+  portal_state_map_[network->service_path()] = state;
 }
 
 void NetworkPortalDetectorStub::NotifyObserversForTesting() {
   CaptivePortalState state;
-  if (default_network_ &&
-      portal_state_map_.count(default_network_->path())) {
-    state = portal_state_map_[default_network_->path()];
+  if (active_network_ &&
+      portal_state_map_.count(active_network_->service_path())) {
+    state = portal_state_map_[active_network_->service_path()];
   }
   FOR_EACH_OBSERVER(Observer, observers_,
-                    OnPortalDetectionCompleted(default_network_.get(), state));
+                    OnPortalDetectionCompleted(active_network_, state));
 }
 
 }  // namespace chromeos

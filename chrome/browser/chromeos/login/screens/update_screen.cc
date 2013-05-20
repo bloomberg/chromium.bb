@@ -12,6 +12,8 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/update_screen_actor.h"
@@ -19,7 +21,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/network_state.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -81,6 +82,17 @@ void StartUpdateCallback(UpdateScreen* screen,
 bool IsBlockingUpdateEnabledInCommandLine() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDisableOOBEBlockingUpdate);
+}
+
+// TODO (ygorshenin@): switch over to use NetworkStateHandler.
+const Network* GetDefaultNetwork() {
+  CrosLibrary* cros = CrosLibrary::Get();
+  if (!cros)
+    return NULL;
+  NetworkLibrary* network_library = cros->GetNetworkLibrary();
+  if (!network_library)
+    return NULL;
+  return network_library->active_network();
 }
 
 }  // anonymous namespace
@@ -240,10 +252,10 @@ void UpdateScreen::UpdateStatusChanged(
 }
 
 void UpdateScreen::OnPortalDetectionCompleted(
-    const NetworkState* network,
+    const Network* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
   LOG(WARNING) << "UpdateScreen::PortalDetectionCompleted(): "
-               << "network=" << (network ? network->path() : "") << ", "
+               << "network=" << (network ? network->service_path() : "") << ", "
                << "state.status=" << state.status << ", "
                << "state.response_code=" << state.response_code;
 
@@ -505,7 +517,7 @@ void UpdateScreen::HideErrorMessage() {
 }
 
 void UpdateScreen::UpdateErrorMessage(
-    const NetworkState* network,
+    const Network* network,
     const NetworkPortalDetector::CaptivePortalStatus status) {
   switch (status) {
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:

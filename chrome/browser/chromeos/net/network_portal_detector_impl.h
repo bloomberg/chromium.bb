@@ -18,8 +18,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -31,15 +31,14 @@ class URLRequestContextGetter;
 
 namespace chromeos {
 
-class NetworkState;
-
 // This class handles all notifications about network changes from
-// NetworkLibrary and delegates portal detection for the default
+// NetworkLibrary and delegates portal detection for the active
 // network to CaptivePortalService.
 class NetworkPortalDetectorImpl
     : public NetworkPortalDetector,
       public base::NonThreadSafe,
-      public chromeos::NetworkStateHandlerObserver,
+      public chromeos::NetworkLibrary::NetworkManagerObserver,
+      public chromeos::NetworkLibrary::NetworkObserver,
       public content::NotificationObserver {
  public:
   explicit NetworkPortalDetectorImpl(
@@ -53,16 +52,19 @@ class NetworkPortalDetectorImpl
   virtual void AddAndFireObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual CaptivePortalState GetCaptivePortalState(
-      const chromeos::NetworkState* network) OVERRIDE;
+      const chromeos::Network* network) OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;
   virtual void Enable(bool start_detection) OVERRIDE;
   virtual bool StartDetectionIfIdle() OVERRIDE;
   virtual void EnableLazyDetection() OVERRIDE;
   virtual void DisableLazyDetection() OVERRIDE;
 
-  // NetworkStateHandlerObserver implementation:
-  virtual void NetworkManagerChanged() OVERRIDE;
-  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
+  // NetworkLibrary::NetworkManagerObserver implementation:
+  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* cros) OVERRIDE;
+
+  // NetworkLibrary::NetworkObserver implementation:
+  virtual void OnNetworkChanged(chromeos::NetworkLibrary* cros,
+                                const chromeos::Network* network) OVERRIDE;
 
  private:
   friend class NetworkPortalDetectorImplTest;
@@ -110,11 +112,11 @@ class NetworkPortalDetectorImpl
   bool IsCheckingForPortal() const;
 
   // Stores captive portal state for a |network|.
-  void SetCaptivePortalState(const NetworkState* network,
+  void SetCaptivePortalState(const Network* network,
                              const CaptivePortalState& results);
 
   // Notifies observers that portal detection is completed for a |network|.
-  void NotifyPortalDetectionCompleted(const NetworkState* network,
+  void NotifyPortalDetectionCompleted(const Network* network,
                                       const CaptivePortalState& state);
 
   // Returns the current TimeTicks.
@@ -164,14 +166,14 @@ class NetworkPortalDetectorImpl
   // cancelled.
   bool DetectionTimeoutIsCancelledForTesting() const;
 
-  // Unique identifier of the default network.
-  std::string default_network_id_;
+  // Unique identifier of the active network.
+  std::string active_network_id_;
 
-  // Service path of the default network.
-  std::string default_service_path_;
+  // Service path of the active network.
+  std::string active_service_path_;
 
-  // Connection state of the default network.
-  std::string default_connection_state_;
+  // Connection state of the active network.
+  ConnectionState active_connection_state_;
 
   State state_;
   CaptivePortalStateMap portal_state_map_;
@@ -183,7 +185,7 @@ class NetworkPortalDetectorImpl
   // URL that returns a 204 response code when connected to the Internet.
   GURL test_url_;
 
-  // Detector for checking default network for a portal state.
+  // Detector for checking active network for a portal state.
   scoped_ptr<captive_portal::CaptivePortalDetector> captive_portal_detector_;
 
   // True if the NetworkPortalDetector is enabled.
@@ -191,7 +193,7 @@ class NetworkPortalDetectorImpl
 
   base::WeakPtrFactory<NetworkPortalDetectorImpl> weak_ptr_factory_;
 
-  // Number of portal detection attemps for a default network.
+  // Number of portal detection attemps for an active network.
   int attempt_count_;
 
   bool lazy_detection_enabled_;
@@ -201,7 +203,7 @@ class NetworkPortalDetectorImpl
   base::TimeDelta lazy_check_interval_;
 
   // Minimum time between consecutive portal checks for the same
-  // default network.
+  // active network.
   base::TimeDelta min_time_between_attempts_;
 
   // Start time of portal detection.

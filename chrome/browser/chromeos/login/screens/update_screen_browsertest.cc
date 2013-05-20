@@ -29,8 +29,8 @@ namespace chromeos {
 
 namespace {
 
-const char kStubEthernetServicePath[] = "eth0";
-const char kStubWifiServicePath[] = "wlan0";
+const char kDefaultEthernetServicePath[] = "eth0";
+const char kDefaultWifiServicePath[] = "wlan0";
 
 }  // namespace
 
@@ -55,10 +55,29 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         = mock_dbus_thread_manager->fake_update_engine_client();
 
     mock_network_library_ = cros_mock_->mock_network_library();
+    stub_ethernet_.reset(new EthernetNetwork(kDefaultEthernetServicePath));
+    stub_wifi_.reset(new WifiNetwork(kDefaultWifiServicePath));
     EXPECT_CALL(*mock_network_library_, SetDefaultCheckPortalList())
         .Times(1);
+    EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(_))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_network_library_, FindWifiDevice())
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_network_library_, FindEthernetDevice())
+        .Times(AnyNumber());
     EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _))
         .Times(AnyNumber());
+    EXPECT_CALL(*mock_network_library_,
+                FindNetworkByPath(kDefaultEthernetServicePath))
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(stub_ethernet_.get())));
+    EXPECT_CALL(*mock_network_library_,
+                FindNetworkByPath(kDefaultWifiServicePath))
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(stub_wifi_.get())));
 
     // Setup network portal detector to return online state for both
     // ethernet and wifi networks. Ethernet is an active network by
@@ -69,9 +88,9 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     NetworkPortalDetector::CaptivePortalState online_state;
     online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
     online_state.response_code = 204;
-    SetDefaultNetworkPath(kStubEthernetServicePath);
-    SetDetectionResults(kStubEthernetServicePath, online_state);
-    SetDetectionResults(kStubWifiServicePath, online_state);
+    SetActiveNetwork(stub_ethernet_.get());
+    SetDetectionResults(stub_ethernet_.get(), online_state);
+    SetDetectionResults(stub_wifi_.get(), online_state);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -101,17 +120,16 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     DBusThreadManager::Shutdown();
   }
 
-  void SetDefaultNetworkPath(const std::string& service_path) {
+  void SetActiveNetwork(const Network* network) {
     DCHECK(network_portal_detector_stub_);
-    network_portal_detector_stub_->SetDefaultNetworkPathForTesting(
-        service_path);
+    network_portal_detector_stub_->SetActiveNetworkForTesting(network);
   }
 
   void SetDetectionResults(
-      const std::string& service_path,
+      const Network* network,
       const NetworkPortalDetector::CaptivePortalState& state) {
     DCHECK(network_portal_detector_stub_);
-    network_portal_detector_stub_->SetDetectionResultsForTesting(service_path,
+    network_portal_detector_stub_->SetDetectionResultsForTesting(network,
                                                                  state);
   }
 
@@ -122,6 +140,8 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
 
   FakeUpdateEngineClient* fake_update_engine_client_;
   MockNetworkLibrary* mock_network_library_;
+  scoped_ptr<Network> stub_ethernet_;
+  scoped_ptr<Network> stub_wifi_;
   scoped_ptr<MockScreenObserver> mock_screen_observer_;
   scoped_ptr<MockErrorScreenActor> mock_error_screen_actor_;
   scoped_ptr<MockErrorScreen> mock_error_screen_;
@@ -242,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemproraryOfflineNetwork) {
   NetworkPortalDetector::CaptivePortalState portal_state;
   portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
   portal_state.response_code = 200;
-  SetDetectionResults(kStubEthernetServicePath, portal_state);
+  SetDetectionResults(stub_ethernet_.get(), portal_state);
 
   // Update screen will show error message about portal state because
   // ethernet is behind captive portal.
@@ -262,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemproraryOfflineNetwork) {
   NetworkPortalDetector::CaptivePortalState online_state;
   online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
   online_state.response_code = 204;
-  SetDetectionResults(kStubEthernetServicePath, online_state);
+  SetDetectionResults(stub_ethernet_.get(), online_state);
 
   // Second notification from portal detector will be about online state,
   // so update screen will hide error message and proceed to update.
@@ -288,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
   NetworkPortalDetector::CaptivePortalState portal_state;
   portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
   portal_state.response_code = 200;
-  SetDetectionResults(kStubEthernetServicePath, portal_state);
+  SetDetectionResults(stub_ethernet_.get(), portal_state);
 
   // Update screen will show error message about portal state because
   // ethernet is behind captive portal.
@@ -310,8 +330,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
   proxy_state.status =
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
   proxy_state.response_code = -1;
-  SetDefaultNetworkPath(kStubWifiServicePath);
-  SetDetectionResults(kStubWifiServicePath, proxy_state);
+  SetActiveNetwork(stub_wifi_.get());
+  SetDetectionResults(stub_wifi_.get(), proxy_state);
 
   // Update screen will show message about proxy error because wifie
   // network requires proxy authentication.
@@ -323,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
-  SetDefaultNetworkPath("");
+  SetActiveNetwork(NULL);
 
   // Cancels pending update request.
   EXPECT_CALL(*mock_screen_observer_,

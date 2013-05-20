@@ -16,8 +16,6 @@
 
 namespace chromeos {
 
-class NetworkState;
-
 // Class that controls screen showing ui for locally managed user creation.
 class LocallyManagedUserCreationScreen
     : public WizardScreen,
@@ -78,9 +76,9 @@ class LocallyManagedUserCreationScreen
                                bool recoverable) OVERRIDE;
   virtual void OnCreationSuccess() OVERRIDE;
 
-  // NetworkPortalDetector::Observer implementation:
+  // ConnectivityStateHelperObserver implementation:
   virtual void OnPortalDetectionCompleted(
-          const NetworkState* network,
+          const Network* network,
           const NetworkPortalDetector::CaptivePortalState& state) OVERRIDE;
  private:
   LocallyManagedUserCreationScreenHandler* actor_;

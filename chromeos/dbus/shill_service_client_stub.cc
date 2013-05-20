@@ -106,13 +106,10 @@ void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
     return;
   }
   if (name == flimflam::kStateProperty) {
-    // If the service went into a connected state, then move it to the top of
-    // the list in the manager client.
-    // TODO(gauravsh): Generalize to sort services properly to allow for testing
-    //  more complex scenarios.
+    // If we connect to a service, then we move it to the top of the list in
+    // the manager client.
     std::string state;
-    if (value.GetAsString(&state) && (state == flimflam::kStateOnline ||
-                                      state == flimflam::kStatePortal))  {
+    if (value.GetAsString(&state) && state == flimflam::kStateOnline) {
       ShillManagerClient* manager_client =
           DBusThreadManager::Get()->GetShillManagerClient();
       manager_client->GetTestInterface()->MoveServiceToIndex(

@@ -28,6 +28,9 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   NetworkDropdown(content::WebUI* web_ui, bool oobe);
   virtual ~NetworkDropdown();
 
+  // Sets last active network type. Used to show correct disconnected icon.
+  void SetLastNetworkType(ConnectionType last_network_type);
+
   // This method should be called, when item with the given id is chosen.
   void OnItemChosen(int id);
 

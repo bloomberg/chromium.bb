@@ -7,12 +7,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "net/proxy/proxy_config.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
 
@@ -25,11 +23,13 @@ namespace chromeos {
 
 NetworkStateInformer::NetworkStateInformer()
     : state_(OFFLINE),
-      delegate_(NULL) {
+      delegate_(NULL),
+      last_network_type_(TYPE_WIFI) {
 }
 
 NetworkStateInformer::~NetworkStateInformer() {
-  NetworkStateHandler::Get()->RemoveObserver(this);
+  CrosLibrary::Get()->GetNetworkLibrary()->
+      RemoveNetworkManagerObserver(this);
   if (NetworkPortalDetector::IsEnabledInCommandLine() &&
       NetworkPortalDetector::GetInstance()) {
     NetworkPortalDetector::GetInstance()->RemoveObserver(this);
@@ -37,8 +37,9 @@ NetworkStateInformer::~NetworkStateInformer() {
 }
 
 void NetworkStateInformer::Init() {
-  UpdateState();
-  NetworkStateHandler::Get()->AddObserver(this);
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  UpdateState(cros);
+  cros->AddNetworkManagerObserver(this);
 
   if (NetworkPortalDetector::IsEnabledInCommandLine() &&
       NetworkPortalDetector::GetInstance()) {
@@ -67,14 +68,13 @@ void NetworkStateInformer::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void NetworkStateInformer::NetworkManagerChanged() {
-  const NetworkState* default_network =
-      NetworkStateHandler::Get()->DefaultNetwork();
+void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
+  const Network* active_network = cros->active_network();
   State new_state = OFFLINE;
   std::string new_network_service_path;
-  if (default_network) {
-    new_state = GetNetworkState(default_network);
-    new_network_service_path = default_network->path();
+  if (active_network) {
+    new_state = GetNetworkState(active_network);
+    new_network_service_path = active_network->service_path();
   }
   if ((state_ != ONLINE && (new_state == ONLINE || new_state == CONNECTING)) ||
       (state_ == ONLINE && (new_state == ONLINE || new_state == CONNECTING) &&
@@ -101,16 +101,14 @@ void NetworkStateInformer::NetworkManagerChanged() {
   }
 }
 
-void NetworkStateInformer::DefaultNetworkChanged(const NetworkState* network) {
-  NetworkManagerChanged();
-}
-
 void NetworkStateInformer::OnPortalDetectionCompleted(
-    const NetworkState* network,
+    const Network* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  if (NetworkStateHandler::IsInitialized() &&
-      NetworkStateHandler::Get()->DefaultNetwork() == network)
-    NetworkManagerChanged();
+  if (CrosLibrary::Get() && network) {
+    NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+    if (network_library && network_library->active_network() == network)
+      OnNetworkManagerChanged(network_library);
+  }
 }
 
 void NetworkStateInformer::Observe(
@@ -129,15 +127,14 @@ void NetworkStateInformer::OnPortalDetected() {
   SendStateToObservers(ErrorScreenActor::ERROR_REASON_PORTAL_DETECTED);
 }
 
-bool NetworkStateInformer::UpdateState() {
+bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
   State new_state = OFFLINE;
 
-  const NetworkState* default_network =
-      NetworkStateHandler::Get()->DefaultNetwork();
-  if (default_network) {
-    new_state = GetNetworkState(default_network);
-    last_network_service_path_ = default_network->path();
-    last_network_type_ = default_network->type();
+  const Network* active_network = cros->active_network();
+  if (active_network) {
+    new_state = GetNetworkState(active_network);
+    last_network_service_path_ = active_network->service_path();
+    last_network_type_ = active_network->type();
   }
 
   bool updated = (new_state != state_) ||
@@ -157,7 +154,7 @@ void NetworkStateInformer::UpdateStateAndNotify() {
   // Cancel pending update request if any.
   check_state_.Cancel();
 
-  if (UpdateState())
+  if (UpdateState(CrosLibrary::Get()->GetNetworkLibrary()))
     SendStateToObservers(ErrorScreenActor::ERROR_REASON_NETWORK_STATE_CHANGED);
   else
     SendStateToObservers(ErrorScreenActor::ERROR_REASON_UPDATE);
@@ -170,7 +167,7 @@ void NetworkStateInformer::SendStateToObservers(
 }
 
 NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
-    const NetworkState* network) {
+    const Network* network) {
   DCHECK(network);
   if (NetworkPortalDetector::IsEnabledInCommandLine() &&
       NetworkPortalDetector::GetInstance()) {
@@ -178,15 +175,14 @@ NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
         NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
     NetworkPortalDetector::CaptivePortalStatus status = state.status;
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-        NetworkState::StateIsConnecting(network->connection_state())) {
+        network->connecting()) {
       return CONNECTING;
     }
     // For proxy-less networks rely on shill's online state if
     // NetworkPortalDetector's state of current network is unknown.
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE ||
         (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-         !IsProxyConfigured(network) &&
-         network->connection_state() == flimflam::kStateOnline)) {
+         !IsProxyConfigured(network) && network->online())) {
       return ONLINE;
     }
     if (status ==
@@ -196,33 +192,31 @@ NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
     }
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL ||
         (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-         network->connection_state() == flimflam::kStatePortal))
+         network->restricted_pool()))
       return CAPTIVE_PORTAL;
   } else {
-    if (NetworkState::StateIsConnecting(network->connection_state()))
+    if (network->connecting())
       return CONNECTING;
-    if (network->connection_state() == flimflam::kStateOnline)
+    if (network->online())
       return ONLINE;
-    if (network->connection_state() == flimflam::kStatePortal)
+    if (network->restricted_pool())
       return CAPTIVE_PORTAL;
   }
   return OFFLINE;
 }
 
-bool NetworkStateInformer::IsProxyConfigured(const NetworkState* network) {
+bool NetworkStateInformer::IsProxyConfigured(const Network* network) {
   DCHECK(network);
-
-  ProxyStateMap::iterator it = proxy_state_map_.find(network->guid());
+  ProxyStateMap::iterator it = proxy_state_map_.find(network->unique_id());
   if (it != proxy_state_map_.end() &&
       it->second.proxy_config == network->proxy_config()) {
     return it->second.configured;
   }
   net::ProxyConfig proxy_config;
-  if (!ProxyConfigServiceImpl::ParseProxyConfig(network->proxy_config(),
-                                                &proxy_config))
+  if (!ProxyConfigServiceImpl::ParseProxyConfig(network, &proxy_config))
     return false;
   bool configured = !proxy_config.proxy_rules().empty();
-  proxy_state_map_[network->guid()] =
+  proxy_state_map_[network->unique_id()] =
       ProxyState(network->proxy_config(), configured);
   return configured;
 }
