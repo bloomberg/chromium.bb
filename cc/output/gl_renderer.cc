@@ -734,14 +734,14 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   bool clipped = false;
   gfx::QuadF device_quad = MathUtil::MapQuad(
       contents_device_transform, SharedGeometryQuad(), &clipped);
-  DCHECK(!clipped);
   LayerQuad device_layer_bounds(gfx::QuadF(device_quad.BoundingBox()));
   LayerQuad device_layer_edges(device_quad);
 
   // Use anti-aliasing programs only when necessary.
-  bool use_aa = (!device_quad.IsRectilinear() ||
-                 !gfx::IsNearestRectWithinDistance(device_quad.BoundingBox(),
-                                                   kAntiAliasingEpsilon));
+  bool use_aa = !clipped &&
+      (!device_quad.IsRectilinear() ||
+       !gfx::IsNearestRectWithinDistance(device_quad.BoundingBox(),
+                                         kAntiAliasingEpsilon));
   if (use_aa) {
     device_layer_bounds.InflateAntiAliasingDistance();
     device_layer_edges.InflateAntiAliasingDistance();
@@ -992,7 +992,6 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   gfx::QuadF surface_quad = MathUtil::MapQuad(contents_device_transform_inverse,
                                               device_layer_edges.ToQuadF(),
                                               &clipped);
-  DCHECK(!clipped);
 
   SetShaderOpacity(quad->opacity(), shader_alpha_location);
   SetShaderQuadF(surface_quad, shader_quad_location);

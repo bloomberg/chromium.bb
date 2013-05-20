@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "cc/base/math_util.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
@@ -336,10 +337,12 @@ class GLRendererShaderTest : public testing::Test {
             scoped_ptr<WebKit::WebGraphicsContext3D>(
                 new ShaderCreatorMockGraphicsContext()))),
         resource_provider_(ResourceProvider::Create(output_surface_.get(), 0)),
-        renderer_(GLRenderer::Create(&mock_client_,
-                                     output_surface_.get(),
-                                     resource_provider_.get(),
-                                     0)) {}
+        renderer_(scoped_ptr<FakeRendererGL>(
+            new FakeRendererGL(&mock_client_,
+                               output_surface_.get(),
+                               resource_provider_.get()))) {
+    renderer_->Initialize();
+  }
 
   void TestRenderPassProgram() {
     EXPECT_PROGRAM_VALID(renderer_->render_pass_program_);
@@ -398,7 +401,7 @@ class GLRendererShaderTest : public testing::Test {
   scoped_ptr<OutputSurface> output_surface_;
   FakeRendererClient mock_client_;
   scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<GLRenderer> renderer_;
+  scoped_ptr<FakeRendererGL> renderer_;
 };
 
 namespace {
@@ -1343,6 +1346,57 @@ TEST_F(GLRendererShaderTest, DISABLED_DrawRenderPassQuadShaderPermutations) {
       *mock_client_.render_passes_in_draw_order());
   renderer_->DrawFrame(mock_client_.render_passes_in_draw_order());
   TestRenderPassMaskColorMatrixProgramAA();
+}
+
+// At this time, the AA code path cannot be taken if the surface's rect would
+// project incorrectly by the given transform, because of w<0 clipping.
+TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
+  gfx::Rect child_rect(50, 50);
+  RenderPass::Id child_pass_id(2, 0);
+  TestRenderPass* child_pass;
+
+  gfx::Rect viewport_rect(mock_client_.DeviceViewportSize());
+  RenderPass::Id root_pass_id(1, 0);
+  TestRenderPass* root_pass;
+
+  gfx::Transform transform_preventing_aa;
+  transform_preventing_aa.ApplyPerspectiveDepth(40.0);
+  transform_preventing_aa.RotateAboutYAxis(-20.0);
+  transform_preventing_aa.Scale(30.0, 1.0);
+
+  // Verify that the test transform and test rect actually do cause the clipped
+  // flag to trigger. Otherwise we are not testing the intended scenario.
+  bool clipped = false;
+  MathUtil::MapQuad(transform_preventing_aa,
+                    gfx::QuadF(child_rect),
+                    &clipped);
+  ASSERT_TRUE(clipped);
+
+  // Set up the render pass quad to be drawn
+  ScopedPtrVector<RenderPass>* render_passes =
+      mock_client_.render_passes_in_draw_order();
+
+  render_passes->clear();
+
+  child_pass = AddRenderPass(
+      render_passes, child_pass_id, child_rect, transform_preventing_aa);
+
+  root_pass = AddRenderPass(
+      render_passes, root_pass_id, viewport_rect, gfx::Transform());
+
+  AddRenderPassQuad(root_pass,
+                    child_pass,
+                    0,
+                    skia::RefPtr<SkImageFilter>(),
+                    transform_preventing_aa);
+
+  renderer_->DecideRenderPassAllocationsForFrame(
+      *mock_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(mock_client_.render_passes_in_draw_order());
+
+  // If use_aa incorrectly ignores clipping, it will use the
+  // RenderPassProgramAA shader instead of the RenderPassProgram.
+  TestRenderPassProgram();
 }
 
 TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
