@@ -29,6 +29,7 @@
 #ifndef InspectorFrontendHost_h
 #define InspectorFrontendHost_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/platform/ContextMenu.h"
@@ -47,7 +48,7 @@ class InspectorFrontendClient;
 class Node;
 class Page;
 
-class InspectorFrontendHost : public RefCounted<InspectorFrontendHost> {
+class InspectorFrontendHost : public RefCounted<InspectorFrontendHost>, public ScriptWrappable {
 public:
     static PassRefPtr<InspectorFrontendHost> create(InspectorFrontendClient* client, Page* frontendPage)
     {

@@ -31,6 +31,7 @@
 #define InjectedScriptHost_h
 
 #include "bindings/v8/ScriptState.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/inspector/InspectorAgent.h"
 #include "core/page/ConsoleTypes.h"
 #include <wtf/RefCounted.h>
@@ -57,7 +58,7 @@ class Storage;
 
 struct EventListenerInfo;
 
-class InjectedScriptHost : public RefCounted<InjectedScriptHost> {
+class InjectedScriptHost : public RefCounted<InjectedScriptHost>, public ScriptWrappable {
 public:
     static PassRefPtr<InjectedScriptHost> create();
     ~InjectedScriptHost();

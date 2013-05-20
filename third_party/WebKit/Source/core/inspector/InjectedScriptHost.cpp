@@ -71,6 +71,7 @@ InjectedScriptHost::InjectedScriptHost()
     , m_domStorageAgent(0)
     , m_domAgent(0)
 {
+    ScriptWrappable::init(this);
     m_defaultInspectableObject = adoptPtr(new InspectableObject());
 }
 

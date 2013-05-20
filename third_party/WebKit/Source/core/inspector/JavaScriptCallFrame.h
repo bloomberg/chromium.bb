@@ -33,13 +33,14 @@
 
 
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include <v8-debug.h>
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class JavaScriptCallFrame : public RefCounted<JavaScriptCallFrame> {
+class JavaScriptCallFrame : public RefCounted<JavaScriptCallFrame>, public ScriptWrappable {
 public:
     static PassRefPtr<JavaScriptCallFrame> create(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame)
     {

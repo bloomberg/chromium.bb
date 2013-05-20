@@ -31,6 +31,7 @@
 #ifndef ScriptProfileNode_h
 #define ScriptProfileNode_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -44,7 +45,7 @@ class ScriptProfileNode;
 
 typedef Vector<RefPtr<ScriptProfileNode> > ProfileNodesList;
 
-class ScriptProfileNode : public RefCounted<ScriptProfileNode> {
+class ScriptProfileNode : public RefCounted<ScriptProfileNode>, public ScriptWrappable {
 public:
     static PassRefPtr<ScriptProfileNode> create(const v8::CpuProfileNode* profileNode)
     {
@@ -65,7 +66,9 @@ public:
 protected:
     ScriptProfileNode(const v8::CpuProfileNode* profileNode)
         : m_profileNode(profileNode)
-    {}
+    {
+        ScriptWrappable::init(this);
+    }
 
 private:
     const v8::CpuProfileNode* m_profileNode;

@@ -39,6 +39,7 @@ JavaScriptCallFrame::JavaScriptCallFrame(v8::Handle<v8::Context> debuggerContext
     : m_debuggerContext(debuggerContext)
     , m_callFrame(callFrame)
 {
+    ScriptWrappable::init(this);
 }
 
 JavaScriptCallFrame::~JavaScriptCallFrame()
