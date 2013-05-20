@@ -523,20 +523,20 @@ bool IsAllowedSignalHandling(int sysno) {
   }
 }
 
-bool IsOperationOnFd(int sysno) {
+bool IsAllowedOperationOnFd(int sysno) {
   switch (sysno) {
     case __NR_close:
     case __NR_dup:
     case __NR_dup2:
     case __NR_dup3:
-    case __NR_fcntl:  // TODO(jln): we may want to restrict arguments.
-#if defined(__i386__) || defined(__arm__)
-    case __NR_fcntl64:
-#endif
 #if defined(__x86_64__) || defined(__arm__)
     case __NR_shutdown:
 #endif
       return true;
+    case __NR_fcntl:
+#if defined(__i386__) || defined(__arm__)
+    case __NR_fcntl64:
+#endif
     default:
       return false;
   }
@@ -1195,7 +1195,7 @@ bool IsBaselinePolicyAllowed(int sysno) {
       IsArmPrivate(sysno) ||
 #endif
       IsKill(sysno) ||
-      IsOperationOnFd(sysno)) {
+      IsAllowedOperationOnFd(sysno)) {
     return true;
   } else {
     return false;
@@ -1273,6 +1273,57 @@ ErrorCode RestrictMprotectFlags(Sandbox *sandbox) {
                        ErrorCode(ErrorCode::ERR_ALLOWED));
 }
 
+ErrorCode RestrictFcntlCommands(Sandbox *sandbox) {
+  // For now, we're only sure this will work on x64. This is because of the
+  // use of TP_64BIT for a "long" argument. Ideally, the seccomp API would
+  // have a TP_LONG or TP_SIZET type.
+  DCHECK(IsArchitectureX86_64());
+  // We allow F_GETFL, F_SETFL, F_GETFD, F_SETFD, F_DUPFD, F_DUPFD_CLOEXEC,
+  // F_SETLK, F_SETLKW and F_GETLK.
+  // We also restrict the flags in F_SETFL. We don't want to permit flags with
+  // a history of trouble such as O_DIRECT. The flags you see are actually the
+  // allowed ones, and the variable is a "denied" mask because of the negation
+  // operator.
+  // Glibc overrides the kernel's O_LARGEFILE value. Account for this.
+  int kOLargeFileFlag = O_LARGEFILE;
+  if (IsArchitectureX86_64())
+    kOLargeFileFlag = 0100000;
+
+  unsigned long denied_mask = ~(O_ACCMODE | O_APPEND | O_NONBLOCK | O_SYNC |
+                                kOLargeFileFlag | O_CLOEXEC | O_NOATIME);
+  return sandbox->Cond(1, ErrorCode::TP_32BIT,
+                       ErrorCode::OP_EQUAL, F_GETFL,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(1, ErrorCode::TP_32BIT,
+                       ErrorCode::OP_EQUAL, F_SETFL,
+                       sandbox->Cond(2, ErrorCode::TP_64BIT,
+                                     ErrorCode::OP_HAS_ANY_BITS, denied_mask,
+                                     sandbox->Trap(CrashSIGSYS_Handler, NULL),
+                                     ErrorCode(ErrorCode::ERR_ALLOWED)),
+         sandbox->Cond(1, ErrorCode::TP_32BIT,
+                       ErrorCode::OP_EQUAL, F_GETFD,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(1, ErrorCode::TP_32BIT,
+                       ErrorCode::OP_EQUAL, F_SETFD,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(1, ErrorCode::TP_32BIT,
+                       ErrorCode::OP_EQUAL, F_DUPFD,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(1, ErrorCode::TP_32BIT,
+                       ErrorCode::OP_EQUAL, F_SETLK,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(1, ErrorCode::TP_32BIT,
+                       ErrorCode::OP_EQUAL, F_SETLKW,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(1, ErrorCode::TP_32BIT,
+                       ErrorCode::OP_EQUAL, F_GETLK,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(1, ErrorCode::TP_32BIT,
+                       ErrorCode::OP_EQUAL, F_DUPFD_CLOEXEC,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Trap(CrashSIGSYS_Handler, NULL))))))))));
+}
+
 ErrorCode BaselinePolicy(Sandbox *sandbox, int sysno) {
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
@@ -1313,9 +1364,8 @@ ErrorCode BaselinePolicy(Sandbox *sandbox, int sysno) {
 #endif
 
 #if defined(__i386__) || defined(__arm__)
-  if (sysno == __NR_mmap2) {
+  if (sysno == __NR_mmap2)
     return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
 #endif
 
   if (sysno == __NR_mprotect) {
@@ -1324,6 +1374,18 @@ ErrorCode BaselinePolicy(Sandbox *sandbox, int sysno) {
     else
       return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
+
+  if (sysno == __NR_fcntl) {
+    if (IsArchitectureX86_64())
+      return RestrictFcntlCommands(sandbox);
+    else
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+
+#if defined(__i386__) || defined(__arm__)
+  if (sysno == __NR_fcntl64)
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+#endif
 
   // TODO(jln): some system calls in those sets are not supposed to
   // return ENOENT. Return the appropriate error.
