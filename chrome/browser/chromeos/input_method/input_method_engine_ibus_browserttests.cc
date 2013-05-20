@@ -215,6 +215,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   ASSERT_TRUE(property_listener.WaitUntilSatisfied());
   ASSERT_TRUE(property_listener.was_satisfied());
 
+  // onReset should be fired if Reset is called.
+  ExtensionTestMessageListener reset_listener("onReset", false);
+  engine_handler->Reset();
+  ASSERT_TRUE(reset_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(reset_listener.was_satisfied());
+
   // onBlur should be fired if FocusOut is called.
   ExtensionTestMessageListener blur_listener("onBlur", false);
   engine_handler->FocusOut();

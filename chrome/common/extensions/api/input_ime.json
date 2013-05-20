@@ -628,6 +628,18 @@
             }
           }
         ]
+      },
+      {
+        "name": "onReset",
+        "type": "function",
+        "description": "This event is sent when chrome terminates ongoing text input session.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "engineID",
+            "description": "ID of the engine receiving the event"
+          }
+        ]
       }
     ]
   }

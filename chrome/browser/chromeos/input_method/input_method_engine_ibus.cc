@@ -465,6 +465,7 @@ void InputMethodEngineIBus::SetCapability(
 }
 
 void InputMethodEngineIBus::Reset() {
+  observer_->OnReset(engine_id_);
 }
 
 void InputMethodEngineIBus::ProcessKeyEvent(

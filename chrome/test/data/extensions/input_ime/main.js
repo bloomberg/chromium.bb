@@ -17,7 +17,8 @@ IMEBase.prototype = {
   onKeyEvent: function(context, engine, keyData) { return false; },
   onCandidateClicked: function(candidateID, button) {},
   onMenuItemActivated: function(name) {},
-  onSurroundingTextChanged: function(text, focus, anchor) {}
+  onSurroundingTextChanged: function(text, focus, anchor) {},
+  onReset: function(engineID) {}
 };
 
 /**
@@ -68,6 +69,10 @@ EchoBackIME.prototype.onMenuItemActivated = function(name) {
 
 EchoBackIME.prototype.onSurroundingTextChanged = function(text, focus, anchor) {
   chrome.test.sendMessage('onSurroundingTextChanged');
+};
+
+EchoBackIME.prototype.onReset = function(engineID) {
+  chrome.test.sendMessage('onReset');
 };
 
 /**
@@ -245,6 +250,15 @@ EngineBridge.prototype = {
   },
 
   /**
+   * Called from chrome.input.ime.onReset.
+   * @private
+   * @this EngineBridge
+   **/
+  onReset_: function(engineID) {
+    this.engineInstance_[engineID].onReset(engineID);
+  },
+
+  /**
    * Add engine instance for |engineID|.
    * @this EngineBridge
    **/
@@ -270,6 +284,7 @@ EngineBridge.prototype = {
         this.onMenuItemActivated_.bind(this));
     chrome.input.ime.onSurroundingTextChanged.addListener(
         this.onSurroundingTextChanged_.bind(this));
+    chrome.input.ime.onReset.addListener(this.onReset_.bind(this));
   }
 };
 

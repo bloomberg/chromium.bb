@@ -153,6 +153,7 @@ const char kOnKeyEvent[] = "input.ime.onKeyEvent";
 const char kOnCandidateClicked[] = "input.ime.onCandidateClicked";
 const char kOnMenuItemActivated[] = "input.ime.onMenuItemActivated";
 const char kOnSurroundingTextChanged[] = "input.ime.onSurroundingTextChanged";
+const char kOnReset[] = "input.ime.onReset";
 
 }  // namespace events
 
@@ -322,6 +323,16 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
 
     DispatchEventToExtension(profile_, extension_id_,
                              events::kOnSurroundingTextChanged, args.Pass());
+  }
+
+  virtual void OnReset(const std::string& engine_id) OVERRIDE {
+    if (profile_ == NULL || extension_id_.empty())
+      return;
+    scoped_ptr<base::ListValue> args(new ListValue());
+    args->Append(Value::CreateStringValue(engine_id));
+
+    DispatchEventToExtension(profile_, extension_id_,
+                             events::kOnReset, args.Pass());
   }
 
  private:
