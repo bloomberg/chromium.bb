@@ -32,20 +32,40 @@
 
 #include <public/WebRTCICECandidate.h>
 
-#include "core/platform/mediastream/RTCIceCandidateDescriptor.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 #include <public/WebString.h>
-
-using namespace WebCore;
 
 namespace WebKit {
 
-WebRTCICECandidate::WebRTCICECandidate(RTCIceCandidateDescriptor* iceCandidate)
-    : m_private(iceCandidate)
+class WebRTCICECandidatePrivate : public RefCounted<WebRTCICECandidatePrivate> {
+public:
+    static PassRefPtr<WebRTCICECandidatePrivate> create(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex)
+    {
+        return adoptRef(new WebRTCICECandidatePrivate(candidate, sdpMid, sdpMLineIndex));
+    }
+    virtual ~WebRTCICECandidatePrivate();
+
+    const WebString& candidate() const { return m_candidate; }
+    const WebString& sdpMid() const { return m_sdpMid; }
+    unsigned short sdpMLineIndex() const { return m_sdpMLineIndex; }
+
+private:
+    WebRTCICECandidatePrivate(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex);
+
+    WebString m_candidate;
+    WebString m_sdpMid;
+    unsigned short m_sdpMLineIndex;
+};
+
+WebRTCICECandidatePrivate::WebRTCICECandidatePrivate(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex)
+    : m_candidate(candidate)
+    , m_sdpMid(sdpMid)
+    , m_sdpMLineIndex(sdpMLineIndex)
 {
 }
 
-WebRTCICECandidate::WebRTCICECandidate(PassRefPtr<RTCIceCandidateDescriptor> iceCandidate)
-    : m_private(iceCandidate)
+WebRTCICECandidatePrivate::~WebRTCICECandidatePrivate()
 {
 }
 
@@ -61,12 +81,7 @@ void WebRTCICECandidate::reset()
 
 void WebRTCICECandidate::initialize(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex)
 {
-    m_private = RTCIceCandidateDescriptor::create(candidate, sdpMid, sdpMLineIndex);
-}
-
-WebRTCICECandidate::operator PassRefPtr<WebCore::RTCIceCandidateDescriptor>() const
-{
-    return m_private.get();
+    m_private = WebRTCICECandidatePrivate::create(candidate, sdpMid, sdpMLineIndex);
 }
 
 WebString WebRTCICECandidate::candidate() const

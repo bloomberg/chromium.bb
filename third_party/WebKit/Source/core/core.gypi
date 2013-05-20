@@ -3006,8 +3006,6 @@
             'platform/mediastream/RTCDTMFSenderHandlerClient.h',
             'platform/mediastream/RTCDataChannelHandler.h',
             'platform/mediastream/RTCDataChannelHandlerClient.h',
-            'platform/mediastream/RTCIceCandidateDescriptor.cpp',
-            'platform/mediastream/RTCIceCandidateDescriptor.h',
             'platform/mediastream/RTCPeerConnectionHandler.h',
             'platform/mediastream/RTCPeerConnectionHandlerClient.h',
             'platform/mediastream/RTCSessionDescriptionDescriptor.cpp',

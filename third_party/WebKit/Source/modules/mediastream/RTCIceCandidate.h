@@ -37,28 +37,28 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
+#include <public/WebRTCICECandidate.h>
 
 namespace WebCore {
 
 class Dictionary;
-class RTCIceCandidateDescriptor;
 
 class RTCIceCandidate : public RefCounted<RTCIceCandidate>, public ScriptWrappable {
 public:
     static PassRefPtr<RTCIceCandidate> create(const Dictionary&, ExceptionCode&);
-    static PassRefPtr<RTCIceCandidate> create(PassRefPtr<RTCIceCandidateDescriptor>);
+    static PassRefPtr<RTCIceCandidate> create(WebKit::WebRTCICECandidate);
     virtual ~RTCIceCandidate();
 
-    const String& candidate() const;
-    const String& sdpMid() const;
+    String candidate() const;
+    String sdpMid() const;
     unsigned short sdpMLineIndex() const;
 
-    RTCIceCandidateDescriptor* descriptor();
+    WebKit::WebRTCICECandidate webCandidate();
 
 private:
-    explicit RTCIceCandidate(PassRefPtr<RTCIceCandidateDescriptor>);
+    explicit RTCIceCandidate(WebKit::WebRTCICECandidate);
 
-    RefPtr<RTCIceCandidateDescriptor> m_descriptor;
+    WebKit::WebRTCICECandidate m_webCandidate;
 };
 
 } // namespace WebCore

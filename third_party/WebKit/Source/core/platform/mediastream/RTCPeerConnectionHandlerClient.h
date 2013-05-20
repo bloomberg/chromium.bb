@@ -33,11 +33,14 @@
 
 #include <wtf/PassRefPtr.h>
 
+namespace WebKit {
+class WebRTCICECandidate;
+}
+
 namespace WebCore {
 
 class MediaStreamDescriptor;
 class RTCDataChannelHandler;
-class RTCIceCandidateDescriptor;
 
 class RTCPeerConnectionHandlerClient {
 public:
@@ -69,7 +72,7 @@ public:
     virtual ~RTCPeerConnectionHandlerClient() { }
 
     virtual void negotiationNeeded() = 0;
-    virtual void didGenerateIceCandidate(PassRefPtr<RTCIceCandidateDescriptor>) = 0;
+    virtual void didGenerateIceCandidate(WebKit::WebRTCICECandidate) = 0;
     virtual void didChangeSignalingState(SignalingState) = 0;
     virtual void didChangeIceGatheringState(IceGatheringState) = 0;
     virtual void didChangeIceConnectionState(IceConnectionState) = 0;

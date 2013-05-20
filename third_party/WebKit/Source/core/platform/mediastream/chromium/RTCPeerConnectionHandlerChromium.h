@@ -63,7 +63,7 @@ public:
     virtual PassRefPtr<RTCSessionDescriptionDescriptor> localDescription() OVERRIDE;
     virtual PassRefPtr<RTCSessionDescriptionDescriptor> remoteDescription() OVERRIDE;
     virtual bool updateIce(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>) OVERRIDE;
-    virtual bool addIceCandidate(PassRefPtr<RTCIceCandidateDescriptor>) OVERRIDE;
+    virtual bool addIceCandidate(WebKit::WebRTCICECandidate) OVERRIDE;
     virtual bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>) OVERRIDE;
     virtual void removeStream(PassRefPtr<MediaStreamDescriptor>) OVERRIDE;
     virtual void getStats(PassRefPtr<RTCStatsRequest>) OVERRIDE;

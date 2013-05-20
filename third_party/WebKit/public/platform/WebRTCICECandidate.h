@@ -33,6 +33,7 @@
 
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
+#include "WebString.h"
 
 namespace WebCore {
 class RTCIceCandidateDescriptor;
@@ -41,6 +42,7 @@ class RTCIceCandidateDescriptor;
 namespace WebKit {
 
 class WebString;
+class WebRTCICECandidatePrivate;
 
 class WebRTCICECandidate {
 public:
@@ -65,14 +67,14 @@ public:
     WEBKIT_EXPORT unsigned short sdpMLineIndex() const;
 
 #if WEBKIT_IMPLEMENTATION
-    WebRTCICECandidate(WebCore::RTCIceCandidateDescriptor*);
-    WebRTCICECandidate(WTF::PassRefPtr<WebCore::RTCIceCandidateDescriptor>);
-
-    operator WTF::PassRefPtr<WebCore::RTCIceCandidateDescriptor>() const;
+    WebRTCICECandidate(WebString candidate, WebString sdpMid, unsigned short sdpMLineIndex)
+    {
+        this->initialize(candidate, sdpMid, sdpMLineIndex);
+    }
 #endif
 
 private:
-    WebPrivatePtr<WebCore::RTCIceCandidateDescriptor> m_private;
+    WebPrivatePtr<WebRTCICECandidatePrivate> m_private;
 };
 
 } // namespace WebKit

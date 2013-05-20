@@ -43,7 +43,6 @@
 #include "core/page/Frame.h"
 #include "core/platform/mediastream/RTCConfiguration.h"
 #include "core/platform/mediastream/RTCDataChannelHandler.h"
-#include "core/platform/mediastream/RTCIceCandidateDescriptor.h"
 #include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStreamEvent.h"
@@ -59,6 +58,7 @@
 #include "modules/mediastream/RTCStatsCallback.h"
 #include "modules/mediastream/RTCStatsRequestImpl.h"
 #include "modules/mediastream/RTCVoidRequestImpl.h"
+#include <public/WebRTCICECandidate.h>
 
 namespace WebCore {
 
@@ -291,7 +291,7 @@ void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, Exception
         return;
     }
 
-    bool valid = m_peerHandler->addIceCandidate(iceCandidate->descriptor());
+    bool valid = m_peerHandler->addIceCandidate(iceCandidate->webCandidate());
     if (!valid)
         ec = SYNTAX_ERR;
 }
@@ -506,13 +506,13 @@ void RTCPeerConnection::negotiationNeeded()
     scheduleDispatchEvent(Event::create(eventNames().negotiationneededEvent, false, false));
 }
 
-void RTCPeerConnection::didGenerateIceCandidate(PassRefPtr<RTCIceCandidateDescriptor> iceCandidateDescriptor)
+void RTCPeerConnection::didGenerateIceCandidate(WebKit::WebRTCICECandidate webCandidate)
 {
     ASSERT(scriptExecutionContext()->isContextThread());
-    if (!iceCandidateDescriptor)
+    if (webCandidate.isNull())
         scheduleDispatchEvent(RTCIceCandidateEvent::create(false, false, 0));
     else {
-        RefPtr<RTCIceCandidate> iceCandidate = RTCIceCandidate::create(iceCandidateDescriptor);
+        RefPtr<RTCIceCandidate> iceCandidate = RTCIceCandidate::create(webCandidate);
         scheduleDispatchEvent(RTCIceCandidateEvent::create(false, false, iceCandidate.release()));
     }
 }

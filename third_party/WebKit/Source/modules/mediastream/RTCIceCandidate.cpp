@@ -35,7 +35,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/InspectorValues.h"
-#include "core/platform/mediastream/RTCIceCandidateDescriptor.h"
+#include <public/WebRTCICECandidate.h>
 
 namespace WebCore {
 
@@ -54,16 +54,16 @@ PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(const Dictionary& dictionary
     unsigned short sdpMLineIndex = 0;
     dictionary.get("sdpMLineIndex", sdpMLineIndex);
 
-    return adoptRef(new RTCIceCandidate(RTCIceCandidateDescriptor::create(candidate, sdpMid, sdpMLineIndex)));
+    return adoptRef(new RTCIceCandidate(WebKit::WebRTCICECandidate(candidate, sdpMid, sdpMLineIndex)));
 }
 
-PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(PassRefPtr<RTCIceCandidateDescriptor> descriptor)
+PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(WebKit::WebRTCICECandidate webCandidate)
 {
-    return adoptRef(new RTCIceCandidate(descriptor));
+    return adoptRef(new RTCIceCandidate(webCandidate));
 }
 
-RTCIceCandidate::RTCIceCandidate(PassRefPtr<RTCIceCandidateDescriptor> descriptor)
-    : m_descriptor(descriptor)
+RTCIceCandidate::RTCIceCandidate(WebKit::WebRTCICECandidate webCandidate)
+    : m_webCandidate(webCandidate)
 {
     ScriptWrappable::init(this);
 }
@@ -72,24 +72,24 @@ RTCIceCandidate::~RTCIceCandidate()
 {
 }
 
-const String& RTCIceCandidate::candidate() const
+String RTCIceCandidate::candidate() const
 {
-    return m_descriptor->candidate();
+    return m_webCandidate.candidate();
 }
 
-const String& RTCIceCandidate::sdpMid() const
+String RTCIceCandidate::sdpMid() const
 {
-    return m_descriptor->sdpMid();
+    return m_webCandidate.sdpMid();
 }
 
 unsigned short RTCIceCandidate::sdpMLineIndex() const
 {
-    return m_descriptor->sdpMLineIndex();
+    return m_webCandidate.sdpMLineIndex();
 }
 
-RTCIceCandidateDescriptor* RTCIceCandidate::descriptor()
+WebKit::WebRTCICECandidate RTCIceCandidate::webCandidate()
 {
-    return m_descriptor.get();
+    return m_webCandidate;
 }
 
 } // namespace WebCore

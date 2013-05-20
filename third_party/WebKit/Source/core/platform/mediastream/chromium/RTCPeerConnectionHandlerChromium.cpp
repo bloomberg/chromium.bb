@@ -37,7 +37,6 @@
 #include "core/platform/mediastream/RTCConfiguration.h"
 #include "core/platform/mediastream/RTCDTMFSenderHandler.h"
 #include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
-#include "core/platform/mediastream/RTCIceCandidateDescriptor.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
 #include "core/platform/mediastream/RTCSessionDescriptionRequest.h"
@@ -122,7 +121,7 @@ bool RTCPeerConnectionHandlerChromium::updateIce(PassRefPtr<RTCConfiguration> co
     return m_webHandler->updateICE(configuration, constraints);
 }
 
-bool RTCPeerConnectionHandlerChromium::addIceCandidate(PassRefPtr<RTCIceCandidateDescriptor> iceCandidate)
+bool RTCPeerConnectionHandlerChromium::addIceCandidate(WebKit::WebRTCICECandidate iceCandidate)
 {
     return m_webHandler->addICECandidate(iceCandidate);
 }

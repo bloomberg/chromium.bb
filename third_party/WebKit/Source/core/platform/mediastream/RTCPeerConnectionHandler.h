@@ -35,6 +35,10 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 
+namespace WebKit {
+class WebRTCICECandidate;
+}
+
 namespace WebCore {
 
 class MediaConstraints;
@@ -42,7 +46,6 @@ class MediaStreamComponent;
 class RTCConfiguration;
 class RTCDTMFSenderHandler;
 class RTCDataChannelHandler;
-class RTCIceCandidateDescriptor;
 class RTCPeerConnectionHandlerClient;
 class RTCSessionDescriptionDescriptor;
 class RTCSessionDescriptionRequest;
@@ -63,7 +66,7 @@ public:
     virtual PassRefPtr<RTCSessionDescriptionDescriptor> localDescription() = 0;
     virtual PassRefPtr<RTCSessionDescriptionDescriptor> remoteDescription() = 0;
     virtual bool updateIce(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>) = 0;
-    virtual bool addIceCandidate(PassRefPtr<RTCIceCandidateDescriptor>) = 0;
+    virtual bool addIceCandidate(WebKit::WebRTCICECandidate) = 0;
     virtual bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>) = 0;
     virtual void removeStream(PassRefPtr<MediaStreamDescriptor>) = 0;
     virtual void getStats(PassRefPtr<RTCStatsRequest>) = 0;
