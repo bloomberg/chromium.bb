@@ -602,6 +602,94 @@ TEST(RectTest, ToFlooredRect) {
   }
 }
 
+TEST(RectTest, ScaleToEnclosedRect) {
+  static const struct Test {
+    Rect input_rect;
+    float input_scale;
+    Rect expected_rect;
+  } tests[] = {
+    {
+      Rect(),
+      5.f,
+      Rect(),
+    }, {
+      Rect(1, 1, 1, 1),
+      5.f,
+      Rect(5, 5, 5, 5),
+    }, {
+      Rect(-1, -1, 0, 0),
+      5.f,
+      Rect(-5, -5, 0, 0),
+    }, {
+      Rect(1, -1, 0, 1),
+      5.f,
+      Rect(5, -5, 0, 5),
+    }, {
+      Rect(-1, 1, 1, 0),
+      5.f,
+      Rect(-5, 5, 5, 0),
+    }, {
+      Rect(1, 2, 3, 4),
+      1.5f,
+      Rect(2, 3, 4, 6),
+    }, {
+      Rect(-1, -2, 0, 0),
+      1.5f,
+      Rect(-1, -3, 0, 0),
+    }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    Rect result = ScaleToEnclosedRect(tests[i].input_rect,
+                                      tests[i].input_scale);
+    EXPECT_EQ(tests[i].expected_rect.ToString(), result.ToString());
+  }
+}
+
+TEST(RectTest, ScaleToEnclosingRect) {
+  static const struct Test {
+    Rect input_rect;
+    float input_scale;
+    Rect expected_rect;
+  } tests[] = {
+    {
+      Rect(),
+      5.f,
+      Rect(),
+    }, {
+      Rect(1, 1, 1, 1),
+      5.f,
+      Rect(5, 5, 5, 5),
+    }, {
+      Rect(-1, -1, 0, 0),
+      5.f,
+      Rect(-5, -5, 0, 0),
+    }, {
+      Rect(1, -1, 0, 1),
+      5.f,
+      Rect(5, -5, 0, 5),
+    }, {
+      Rect(-1, 1, 1, 0),
+      5.f,
+      Rect(-5, 5, 5, 0),
+    }, {
+      Rect(1, 2, 3, 4),
+      1.5f,
+      Rect(1, 3, 5, 6),
+    }, {
+      Rect(-1, -2, 0, 0),
+      1.5f,
+      Rect(-2, -3, 0, 0),
+    }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    Rect result = ScaleToEnclosingRect(tests[i].input_rect,
+                                       tests[i].input_scale);
+    EXPECT_EQ(tests[i].expected_rect.ToString(), result.ToString());
+  }
+}
+
 #if defined(OS_WIN)
 TEST(RectTest, ConstructAndAssign) {
   const RECT rect_1 = { 0, 0, 10, 10 };

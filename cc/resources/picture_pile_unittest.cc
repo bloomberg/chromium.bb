@@ -64,8 +64,8 @@ TEST(PicturePileTest, SmallInvalidateInflated) {
        it != picture_list.end();
        ++it) {
     scoped_refptr<Picture> picture = *it;
-    gfx::Rect picture_rect = gfx::ToEnclosedRect(
-        gfx::ScaleRect(picture->LayerRect(), min_scale));
+    gfx::Rect picture_rect =
+        gfx::ScaleToEnclosedRect(picture->LayerRect(), min_scale);
 
     // The invalidation in each tile should have been made large enough
     // that scaling it never makes a rect smaller than 1 px wide or tall.
@@ -185,8 +185,8 @@ TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
            it != picture_list.end();
            ++it) {
         scoped_refptr<Picture> picture = *it;
-        gfx::Rect picture_rect = gfx::ToEnclosedRect(
-            gfx::ScaleRect(picture->LayerRect(), min_scale));
+        gfx::Rect picture_rect =
+            gfx::ScaleToEnclosedRect(picture->LayerRect(), min_scale);
 
         // The invalidation in each tile should have been made large enough
         // that scaling it never makes a rect smaller than 1 px wide or tall.

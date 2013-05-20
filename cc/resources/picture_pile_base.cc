@@ -170,8 +170,8 @@ bool PicturePileBase::HasRecordingAt(int x, int y) {
 bool PicturePileBase::CanRaster(float contents_scale, gfx::Rect content_rect) {
   if (tiling_.total_size().IsEmpty())
     return false;
-  gfx::Rect layer_rect = gfx::ToEnclosingRect(
-      gfx::ScaleRect(content_rect, 1.f / contents_scale));
+  gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
+      content_rect, 1.f / contents_scale);
   layer_rect.Intersect(gfx::Rect(tiling_.total_size()));
   return recorded_region_.Contains(layer_rect);
 }

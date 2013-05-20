@@ -358,10 +358,9 @@ gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(
     gfx::Rect layer_rect) const {
   // Don't intersect with the bounds as in LayerRectToContentRect() because
   // layer_rect here might be in coordinates of the containing layer.
-  gfx::RectF content_rect = gfx::ScaleRect(layer_rect,
-                                           contents_scale_y(),
-                                           contents_scale_y());
-  return gfx::ToEnclosingRect(content_rect);
+  return gfx::ScaleToEnclosingRect(layer_rect,
+                                   contents_scale_y(),
+                                   contents_scale_y());
 }
 
 void ScrollbarLayer::SetTexturePriorities(

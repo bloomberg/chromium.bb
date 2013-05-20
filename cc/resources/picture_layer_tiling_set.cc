@@ -263,10 +263,10 @@ void PictureLayerTilingSet::UpdateTilePriorities(
     const gfx::Transform& current_screen_transform,
     double current_frame_time_in_seconds,
     size_t max_tiles_for_interest_area) {
-  gfx::RectF viewport_in_layer_space = gfx::ScaleRect(
+  gfx::Rect viewport_in_layer_space = gfx::ScaleToEnclosingRect(
       viewport_in_content_space,
       1.f / current_layer_contents_scale);
-  gfx::RectF visible_layer_rect = gfx::ScaleRect(
+  gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
       visible_content_rect,
       1.f / current_layer_contents_scale);
 

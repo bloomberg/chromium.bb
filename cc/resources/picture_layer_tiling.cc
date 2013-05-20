@@ -89,7 +89,7 @@ void PictureLayerTiling::CreateTile(int i, int j) {
     Tile* candidate_tile = twin->TileAt(i, j);
     if (candidate_tile) {
       gfx::Rect rect =
-          gfx::ToEnclosingRect(ScaleRect(paint_rect, 1.0f / contents_scale_));
+          gfx::ScaleToEnclosingRect(paint_rect, 1.0f / contents_scale_);
       if (!client_->GetInvalidation()->Intersects(rect)) {
         tiles_[key] = candidate_tile;
         return;
@@ -160,9 +160,9 @@ PictureLayerTiling::CoverageIterator::CoverageIterator(
       1 / dest_to_content_scale_));
 
   gfx::Rect content_rect =
-      gfx::ToEnclosingRect(gfx::ScaleRect(dest_rect_,
-                                          dest_to_content_scale_,
-                                          dest_to_content_scale_));
+      gfx::ScaleToEnclosingRect(dest_rect_,
+                                dest_to_content_scale_,
+                                dest_to_content_scale_);
   // IndexFromSrcCoord clamps to valid tile ranges, so it's necessary to
   // check for non-intersection first.
   content_rect.Intersect(gfx::Rect(tiling_->tiling_data_.total_size()));
@@ -211,9 +211,10 @@ PictureLayerTiling::CoverageIterator::operator++() {
 
   gfx::Rect content_rect = tiling_->tiling_data_.TileBounds(tile_i_, tile_j_);
 
-  current_geometry_rect_ = gfx::ToEnclosingRect(
-      gfx::ScaleRect(content_rect, 1 / dest_to_content_scale_,
-                                   1 / dest_to_content_scale_));
+  current_geometry_rect_ =
+      gfx::ScaleToEnclosingRect(content_rect,
+                                1 / dest_to_content_scale_,
+                                1 / dest_to_content_scale_);
 
   current_geometry_rect_.Intersect(dest_rect_);
 
@@ -283,8 +284,8 @@ void PictureLayerTiling::Reset() {
 void PictureLayerTiling::UpdateTilePriorities(
     WhichTree tree,
     gfx::Size device_viewport,
-    const gfx::RectF& viewport_in_layer_space,
-    const gfx::RectF& visible_layer_rect,
+    gfx::Rect viewport_in_layer_space,
+    gfx::Rect visible_layer_rect,
     gfx::Size last_layer_bounds,
     gfx::Size current_layer_bounds,
     float last_layer_contents_scale,
@@ -304,11 +305,9 @@ void PictureLayerTiling::UpdateTilePriorities(
   }
 
   gfx::Rect viewport_in_content_space =
-      gfx::ToEnclosingRect(gfx::ScaleRect(viewport_in_layer_space,
-                                          contents_scale_));
+      gfx::ScaleToEnclosingRect(viewport_in_layer_space, contents_scale_);
   gfx::Rect visible_content_rect =
-      gfx::ToEnclosingRect(gfx::ScaleRect(visible_layer_rect,
-                                          contents_scale_));
+      gfx::ScaleToEnclosingRect(visible_layer_rect, contents_scale_);
 
   gfx::Size tile_size = tiling_data_.max_texture_size();
   int64 interest_rect_area =

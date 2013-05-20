@@ -129,8 +129,8 @@ class CC_EXPORT PictureLayerTiling {
   void UpdateTilePriorities(
       WhichTree tree,
       gfx::Size device_viewport,
-      const gfx::RectF& viewport_in_layer_space,
-      const gfx::RectF& visible_layer_rect,
+      gfx::Rect viewport_in_layer_space,
+      gfx::Rect visible_layer_rect,
       gfx::Size last_layer_bounds,
       gfx::Size current_layer_bounds,
       float last_layer_contents_scale,

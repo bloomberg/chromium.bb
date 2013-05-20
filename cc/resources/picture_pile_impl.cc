@@ -112,8 +112,8 @@ void PicturePileImpl::Raster(
   }
 
   // Rasterize the collection of relevant picture piles.
-  gfx::Rect layer_rect = gfx::ToEnclosingRect(
-      gfx::ScaleRect(content_rect, 1.f / contents_scale));
+  gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
+      content_rect, 1.f / contents_scale);
 
   canvas->clipRect(gfx::RectToSkRect(content_rect),
                    SkRegion::kReplace_Op);
@@ -144,8 +144,8 @@ void PicturePileImpl::Raster(
       // of the picture's layer rect.  The min_contents_scale enforces that
       // enough buffer pixels have been added such that the enclosed rect
       // encompasses all invalidated pixels at any larger scale level.
-      gfx::Rect content_clip = gfx::ToEnclosedRect(
-          gfx::ScaleRect((*i)->LayerRect(), contents_scale));
+      gfx::Rect content_clip = gfx::ScaleToEnclosedRect(
+          (*i)->LayerRect(), contents_scale);
       DCHECK(!content_clip.IsEmpty()) <<
           "Layer rect: " << (*i)->LayerRect().ToString() <<
           "Contents scale: " << contents_scale;
@@ -246,8 +246,8 @@ void PicturePileImpl::AnalyzeInRect(gfx::Rect content_rect,
   DCHECK(analysis);
   TRACE_EVENT0("cc", "PicturePileImpl::AnalyzeInRect");
 
-  gfx::Rect layer_rect = gfx::ToEnclosingRect(
-      gfx::ScaleRect(content_rect, 1.0f / contents_scale));
+  gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
+      content_rect, 1.0f / contents_scale);
 
   layer_rect.Intersect(gfx::Rect(tiling_.total_size()));
 
@@ -277,8 +277,8 @@ PicturePileImpl::PixelRefIterator::PixelRefIterator(
     float contents_scale,
     const PicturePileImpl* picture_pile)
     : picture_pile_(picture_pile),
-      layer_rect_(gfx::ToEnclosingRect(
-          gfx::ScaleRect(content_rect, 1.f / contents_scale))),
+      layer_rect_(gfx::ScaleToEnclosingRect(
+          content_rect, 1.f / contents_scale)),
       tile_iterator_(&picture_pile_->tiling_, layer_rect_),
       picture_list_(NULL) {
   // Early out if there isn't a single tile.

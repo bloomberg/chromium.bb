@@ -128,8 +128,8 @@ class PictureLayerTilingIteratorTest : public testing::Test {
 
   void VerifyTilesCoverNonContainedRect(float rect_scale, gfx::Rect dest_rect) {
     float dest_to_contents_scale = tiling_->contents_scale() / rect_scale;
-    gfx::Rect clamped_rect(gfx::ToEnclosingRect(gfx::ScaleRect(
-        tiling_->ContentRect(), 1 / dest_to_contents_scale)));
+    gfx::Rect clamped_rect = gfx::ScaleToEnclosingRect(
+        tiling_->ContentRect(), 1.f / dest_to_contents_scale);
     clamped_rect.Intersect(dest_rect);
     VerifyTilesExactlyCoverRect(rect_scale, dest_rect, clamped_rect);
   }

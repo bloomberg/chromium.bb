@@ -12,6 +12,7 @@
 #ifndef UI_GFX_RECT_H_
 #define UI_GFX_RECT_H_
 
+#include <cmath>
 #include <string>
 
 #include "ui/gfx/point.h"
@@ -106,6 +107,34 @@ UI_EXPORT Rect SubtractRects(const Rect& a, const Rect& b);
 // rect to be outside the rect.  So technically one or both points will not be
 // contained within the rect, because they will appear on one of these edges.
 UI_EXPORT Rect BoundingRect(const Point& p1, const Point& p2);
+
+inline Rect ScaleToEnclosingRect(const Rect& rect,
+                                 float x_scale,
+                                 float y_scale) {
+  int x = std::floor(rect.x() * x_scale);
+  int y = std::floor(rect.y() * y_scale);
+  int r = rect.width() == 0 ? x : std::ceil(rect.right() * x_scale);
+  int b = rect.height() == 0 ? y : std::ceil(rect.bottom() * y_scale);
+  return Rect(x, y, r - x, b - y);
+}
+
+inline Rect ScaleToEnclosingRect(const Rect& rect, float scale) {
+  return ScaleToEnclosingRect(rect, scale, scale);
+}
+
+inline Rect ScaleToEnclosedRect(const Rect& rect,
+                                float x_scale,
+                                float y_scale) {
+  int x = std::ceil(rect.x() * x_scale);
+  int y = std::ceil(rect.y() * y_scale);
+  int r = rect.width() == 0 ? x : std::floor(rect.right() * x_scale);
+  int b = rect.height() == 0 ? y : std::floor(rect.bottom() * y_scale);
+  return Rect(x, y, r - x, b - y);
+}
+
+inline Rect ScaleToEnclosedRect(const Rect& rect, float scale) {
+  return ScaleToEnclosedRect(rect, scale, scale);
+}
 
 #if !defined(COMPILER_MSVC)
 extern template class RectBase<Rect, Point, Size, Insets, Vector2d, int>;

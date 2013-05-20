@@ -910,7 +910,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
   pile->RerecordPile();
 
   gfx::Rect content_rect(
-      gfx::ToEnclosingRect(gfx::ScaleRect(layer_rect, contents_scale)));
+      gfx::ScaleToEnclosingRect(layer_rect, contents_scale));
   gfx::Rect content_union_rect(
       gfx::ToEnclosingRect(gfx::ScaleRect(union_layer_rect, contents_scale)));
 

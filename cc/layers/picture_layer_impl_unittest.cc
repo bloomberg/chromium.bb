@@ -246,9 +246,9 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
   EXPECT_GT(tilings->num_tilings(), 0u);
   for (size_t i = 0; i < tilings->num_tilings(); ++i) {
     const PictureLayerTiling* tiling = tilings->tiling_at(i);
-    gfx::Rect content_invalidation = gfx::ToEnclosingRect(gfx::ScaleRect(
+    gfx::Rect content_invalidation = gfx::ScaleToEnclosingRect(
         layer_invalidation,
-        tiling->contents_scale()));
+        tiling->contents_scale());
     for (PictureLayerTiling::CoverageIterator
              iter(tiling,
                   tiling->contents_scale(),
@@ -309,9 +309,9 @@ TEST_F(PictureLayerImplTest, NoInvalidationBoundsChange) {
   EXPECT_GT(tilings->num_tilings(), 0u);
   for (size_t i = 0; i < tilings->num_tilings(); ++i) {
     const PictureLayerTiling* tiling = tilings->tiling_at(i);
-    gfx::Rect active_content_bounds = gfx::ToEnclosingRect(gfx::ScaleRect(
+    gfx::Rect active_content_bounds = gfx::ScaleToEnclosingRect(
         gfx::Rect(active_layer_bounds),
-        tiling->contents_scale()));
+        tiling->contents_scale());
     for (PictureLayerTiling::CoverageIterator
              iter(tiling,
                   tiling->contents_scale(),
@@ -376,8 +376,8 @@ TEST_F(PictureLayerImplTest, AddTilesFromNewRecording) {
          ++iter) {
       EXPECT_FALSE(iter.full_tile_geometry_rect().IsEmpty());
       // Ensure there is a recording for this tile.
-      gfx::Rect layer_rect = gfx::ToEnclosingRect(gfx::ScaleRect(
-          iter.full_tile_geometry_rect(), 1.f / tiling->contents_scale()));
+      gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
+          iter.full_tile_geometry_rect(), 1.f / tiling->contents_scale());
       layer_rect.Intersect(gfx::Rect(layer_bounds));
 
       bool in_pending = pending_pile->recorded_region().Contains(layer_rect);

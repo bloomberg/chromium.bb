@@ -1379,7 +1379,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
 
   gfx::Rect layer_bounds_rect(layer->bounds());
   layer->draw_properties().drawable_content_rect =
-      gfx::ToEnclosingRect(gfx::ScaleRect(layer_bounds_rect, 0.5));
+      gfx::ScaleToEnclosingRect(layer_bounds_rect, 0.5f);
   layer->draw_properties().visible_content_rect =
       gfx::Rect(layer->content_bounds());
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
