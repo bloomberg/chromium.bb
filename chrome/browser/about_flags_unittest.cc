@@ -267,10 +267,16 @@ TEST_F(AboutFlagsTest, PersistAndPrune) {
   EXPECT_FALSE(command_line.HasSwitch(kSwitch3));
 
   // Experiment 3 should show still be persisted in preferences though.
-  scoped_ptr<ListValue> switch_prefs(
-      GetFlagsExperimentsData(&prefs_, kOwnerAccessToFlags));
-  ASSERT_TRUE(switch_prefs.get());
-  EXPECT_EQ(arraysize(kExperiments), switch_prefs->GetSize());
+  const ListValue* experiments_list =
+      prefs_.GetList(prefs::kEnabledLabsExperiments);
+  ASSERT_TRUE(experiments_list);
+  EXPECT_EQ(2U, experiments_list->GetSize());
+  std::string s0;
+  ASSERT_TRUE(experiments_list->GetString(0, &s0));
+  EXPECT_EQ(kFlags1, s0);
+  std::string s1;
+  ASSERT_TRUE(experiments_list->GetString(1, &s1));
+  EXPECT_EQ(kFlags3, s1);
 }
 
 // Tests that switches which should have values get them in the command
@@ -317,11 +323,17 @@ TEST_F(AboutFlagsTest, CheckValues) {
             command_line.GetCommandLineString().find(switch2_with_equals));
 #endif
 
-  // And it should persist
-  scoped_ptr<ListValue> switch_prefs(
-      GetFlagsExperimentsData(&prefs_, kOwnerAccessToFlags));
-  ASSERT_TRUE(switch_prefs.get());
-  EXPECT_EQ(arraysize(kExperiments), switch_prefs->GetSize());
+  // And it should persist.
+  const ListValue* experiments_list =
+      prefs_.GetList(prefs::kEnabledLabsExperiments);
+  ASSERT_TRUE(experiments_list);
+  EXPECT_EQ(2U, experiments_list->GetSize());
+  std::string s0;
+  ASSERT_TRUE(experiments_list->GetString(0, &s0));
+  EXPECT_EQ(kFlags1, s0);
+  std::string s1;
+  ASSERT_TRUE(experiments_list->GetString(1, &s1));
+  EXPECT_EQ(kFlags2, s1);
 }
 
 // Tests multi-value type experiments.

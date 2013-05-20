@@ -1658,13 +1658,15 @@ void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line) {
   FlagsState::GetInstance()->ConvertFlagsToSwitches(prefs, command_line);
 }
 
-ListValue* GetFlagsExperimentsData(PrefService* prefs, FlagAccess access) {
+void GetFlagsExperimentsData(PrefService* prefs,
+                             FlagAccess access,
+                             base::ListValue* supported_experiments,
+                             base::ListValue* unsupported_experiments) {
   std::set<std::string> enabled_experiments;
   GetSanitizedEnabledFlags(prefs, &enabled_experiments);
 
   int current_platform = GetCurrentPlatform();
 
-  ListValue* experiments_data = new ListValue();
   for (size_t i = 0; i < num_experiments; ++i) {
     const Experiment& experiment = experiments[i];
 
@@ -1675,13 +1677,6 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs, FlagAccess access) {
     data->SetString("description",
                     l10n_util::GetStringUTF16(
                         experiment.visible_description_id));
-    bool supported = (experiment.supported_platforms & current_platform) != 0;
-#if defined(OS_CHROMEOS)
-    if (access == kOwnerAccessToFlags &&
-        (experiment.supported_platforms & kOsCrOSOwnerOnly) != 0)
-      supported = true;
-#endif
-    data->SetBoolean("supported", supported);
 
     ListValue* supported_platforms = new ListValue();
     AddOsStrings(experiment.supported_platforms, supported_platforms);
@@ -1701,9 +1696,18 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs, FlagAccess access) {
         NOTREACHED();
     }
 
-    experiments_data->Append(data);
+    bool supported = (experiment.supported_platforms & current_platform) != 0;
+#if defined(OS_CHROMEOS)
+    if (access == kOwnerAccessToFlags &&
+        (experiment.supported_platforms & kOsCrOSOwnerOnly) != 0) {
+      supported = true;
+    }
+#endif
+    if (supported)
+      supported_experiments->Append(data);
+    else
+      unsupported_experiments->Append(data);
   }
-  return experiments_data;
 }
 
 bool IsRestartNeededToCommitChanges() {

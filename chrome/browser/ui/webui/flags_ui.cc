@@ -53,12 +53,17 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
                              IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE);
   source->AddLocalizedString("flagsWarningHeader", IDS_FLAGS_WARNING_HEADER);
   source->AddLocalizedString("flagsBlurb", IDS_FLAGS_WARNING_TEXT);
+  source->AddLocalizedString("flagsUnsupportedTableTitle",
+                             IDS_FLAGS_UNSUPPORTED_TABLE_TITLE);
+  source->AddLocalizedString("flagsNoUnsupportedExperiments",
+                             IDS_FLAGS_NO_UNSUPPORTED_EXPERIMENTS);
   source->AddLocalizedString("flagsNotSupported", IDS_FLAGS_NOT_AVAILABLE);
   source->AddLocalizedString("flagsRestartNotice", IDS_FLAGS_RELAUNCH_NOTICE);
   source->AddLocalizedString("flagsRestartButton", IDS_FLAGS_RELAUNCH_BUTTON);
   source->AddLocalizedString("resetAllButton", IDS_FLAGS_RESET_ALL_BUTTON);
   source->AddLocalizedString("disable", IDS_FLAGS_DISABLE);
   source->AddLocalizedString("enable", IDS_FLAGS_ENABLE);
+
 #if defined(OS_CHROMEOS)
   if (!chromeos::UserManager::Get()->IsCurrentUserOwner() &&
       base::chromeos::IsRunningOnChromeOS()) {
@@ -130,9 +135,15 @@ void FlagsDOMHandler::RegisterMessages() {
 }
 
 void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
+  scoped_ptr<ListValue> supported_experiments(new ListValue);
+  scoped_ptr<ListValue> unsupported_experiments(new ListValue);
+  about_flags::GetFlagsExperimentsData(prefs_,
+                                       access_,
+                                       supported_experiments.get(),
+                                       unsupported_experiments.get());
   DictionaryValue results;
-  results.Set("flagsExperiments",
-              about_flags::GetFlagsExperimentsData(prefs_, access_));
+  results.Set("supportedExperiments", supported_experiments.release());
+  results.Set("unsupportedExperiments", unsupported_experiments.release());
   results.SetBoolean("needsRestart",
                      about_flags::IsRestartNeededToCommitChanges());
   web_ui()->CallJavascriptFunction("returnFlagsExperiments", results);

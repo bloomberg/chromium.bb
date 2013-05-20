@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 body {
-  margin: 10px;
+  margin: 10px 10px 0;
 <if expr="not pp_ifdef('android')">
   min-width: 47em;
 </if>
@@ -63,7 +63,11 @@ h1 {
 
 div.content {
   font-size: 88%;
-  margin-top: 5px;
+  margin: 5px auto 10px;
+}
+
+div.content:last-of-type {
+  margin-bottom: 0;
 }
 
 .section-header {
@@ -148,7 +152,7 @@ html[dir=rtl] #experiment-reset-all {
 
 .no-experiments {
   font-size: 1.2em;
-  margin: 6em 0 0;
+  margin: 6em 0;
   text-align: center;
 }
 

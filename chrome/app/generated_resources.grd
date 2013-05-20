@@ -6154,6 +6154,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE" desc="Shown if no experiments are available">
         Aww, it looks like there are currently no experiments available.
       </message>
+      <message name="IDS_FLAGS_UNSUPPORTED_TABLE_TITLE" desc="Title for the unsupported experiments table on the about:flags page. It lists all experiments that are not available on the current platform.">
+        Unavailable Experiments
+      </message>
+      <message name="IDS_FLAGS_NO_UNSUPPORTED_EXPERIMENTS" desc="Show if there are no unavailable experiments.">
+        All experiments are available on your platform!
+      </message>
       <message name="IDS_FLAGS_NOT_AVAILABLE" desc="Shown instead of the Enable/Disable link, to let the user know that an experiment is not available on the current platform.">
         Sorry, this experiment is not available on your platform.
       </message>

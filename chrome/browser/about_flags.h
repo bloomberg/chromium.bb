@@ -113,8 +113,13 @@ void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line);
 // with the |kOsCrOSOwnerOnly| label should be enabled in the UI or not.
 enum FlagAccess { kGeneralAccessFlagsOnly, kOwnerAccessToFlags };
 
-// Get a list of all available experiments. The caller owns the result.
-base::ListValue* GetFlagsExperimentsData(PrefService* prefs, FlagAccess access);
+// Get the list of experiments. Experiments that are available on the current
+// platform are appended to |supported_experiments|; all other experiments are
+// appended to |unsupported_experiments|.
+void GetFlagsExperimentsData(PrefService* prefs,
+                             FlagAccess access,
+                             base::ListValue* supported_experiments,
+                             base::ListValue* unsupported_experiments);
 
 // Returns true if one of the experiment flags has been flipped since startup.
 bool IsRestartNeededToCommitChanges();

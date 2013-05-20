@@ -8,17 +8,16 @@
  */
 
 /**
- * Takes the |flagsExperimentsData| input argument which represents data about
- * the currently available experiments and populates the html jstemplate
+ * Takes the |experimentsData| input argument which represents data about all
+ * the current experiments and populates the html jstemplate with that data.
  * with that data. It expects an object structure like the above.
- * @param {Object} flagsExperimentsData Information about available experiments.
+ * @param {Object} experimentsData Information about all experiments.
  *     See returnFlagsExperiments() for the structure of this object.
  */
-function renderTemplate(flagsExperimentsData) {
+function renderTemplate(experimentsData) {
   // This is the javascript code that processes the template:
-  var input = new JsEvalContext(flagsExperimentsData);
-  var output = $('flagsExperimentTemplate');
-  jstProcess(input, output);
+  jstProcess(new JsEvalContext(experimentsData),
+             $('flagsExperimentTemplate'));
 
   // Add handlers to dynamically created HTML elements.
   var elements = document.getElementsByClassName('experiment-select');
@@ -102,11 +101,11 @@ function resetAllFlags() {
 
 /**
  * Called by the WebUI to re-populate the page with data representing the
- * current state of installed experiments.
- * @param {Object} flagsExperimentsData Information about available experiments
+ * current state of all experiments.
+ * @param {Object} experimentsData Information about all experiments.
  *     in the following format:
  *   {
- *     flagsExperiments: [
+ *     supportedExperiments: [
  *       {
  *         internal_name: 'Experiment ID string',
  *         name: 'Experiment Name',
@@ -121,19 +120,21 @@ function resetAllFlags() {
  *             selected: true
  *           }
  *         ],
- *         supported: true,
  *         supported_platforms: [
  *           'Mac',
  *           'Linux'
  *         ],
  *       }
  *     ],
+ *     unsupportedExperiments: [
+ *       // Mirrors the format of |supportedExperiments| above.
+ *     ],
  *     needsRestart: false
  *   }
  */
-function returnFlagsExperiments(flagsExperimentsData) {
+function returnFlagsExperiments(experimentsData) {
   var bodyContainer = $('body-container');
-  renderTemplate(flagsExperimentsData);
+  renderTemplate(experimentsData);
   bodyContainer.style.visibility = 'visible';
 }
 
