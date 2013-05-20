@@ -61,9 +61,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Removes this host from the host list. Calls ChildProcessHost::ForceShutdown
   void ForceShutdown();
 
-  // Callers can reduce the BrowserChildProcess' priority.
-  void SetBackgrounded(bool backgrounded);
-
   // Controls whether the child process should be terminated on browser
   // shutdown. Default is to always terminate.
   void SetTerminateChildOnShutdown(bool terminate_on_shutdown);
