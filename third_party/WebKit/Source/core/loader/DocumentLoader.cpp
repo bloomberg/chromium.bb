@@ -491,6 +491,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     if (redirectResponse.isNull())
         return;
 
+    frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
     if (!shouldContinueForNavigationPolicy(newRequest))
         stopLoadingForPolicyChange();
 }

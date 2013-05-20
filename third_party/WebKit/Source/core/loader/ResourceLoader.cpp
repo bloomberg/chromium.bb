@@ -328,9 +328,6 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
 
     m_request = request;
 
-    if (!redirectResponse.isNull() && !m_documentLoader->isCommitted())
-        frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
-
     if (request.isNull())
         cancel();
 }
