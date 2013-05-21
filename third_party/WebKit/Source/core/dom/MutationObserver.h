@@ -31,13 +31,14 @@
 #ifndef MutationObserver_h
 #define MutationObserver_h
 
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
@@ -52,7 +53,7 @@ typedef int ExceptionCode;
 typedef unsigned char MutationObserverOptions;
 typedef unsigned char MutationRecordDeliveryOptions;
 
-class MutationObserver : public RefCounted<MutationObserver> {
+class MutationObserver : public RefCounted<MutationObserver>, public ScriptWrappable {
 public:
     enum MutationType {
         ChildList = 1 << 0,

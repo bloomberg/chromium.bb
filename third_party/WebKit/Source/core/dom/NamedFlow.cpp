@@ -47,6 +47,7 @@ NamedFlow::NamedFlow(PassRefPtr<NamedFlowCollection> manager, const AtomicString
     , m_parentFlowThread(0)
 {
     ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
+    ScriptWrappable::init(this);
 }
 
 NamedFlow::~NamedFlow()

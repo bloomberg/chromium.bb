@@ -45,6 +45,7 @@ MessagePort::MessagePort(ScriptExecutionContext& scriptExecutionContext)
     , m_closed(false)
     , m_scriptExecutionContext(&scriptExecutionContext)
 {
+    ScriptWrappable::init(this);
     m_scriptExecutionContext->createdMessagePort(this);
 
     // Don't need to call processMessagePortMessagesSoon() here, because the port will not be opened until start() is invoked.

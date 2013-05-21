@@ -31,9 +31,10 @@
 #ifndef DataTransferItemList_h
 #define DataTransferItemList_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/DataTransferItem.h"
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -42,8 +43,13 @@ class File;
 
 typedef int ExceptionCode;
 
-class DataTransferItemList : public RefCounted<DataTransferItemList> {
+class DataTransferItemList : public RefCounted<DataTransferItemList>, public ScriptWrappable {
 public:
+    DataTransferItemList()
+    {
+        ScriptWrappable::init(this);
+    }
+
     virtual ~DataTransferItemList() { }
 
     virtual size_t length() const = 0;

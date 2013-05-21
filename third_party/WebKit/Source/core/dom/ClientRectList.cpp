@@ -33,10 +33,12 @@ namespace WebCore {
 
 ClientRectList::ClientRectList()
 {
+    ScriptWrappable::init(this);
 }
 
 ClientRectList::ClientRectList(const Vector<FloatQuad>& quads)
 {
+    ScriptWrappable::init(this);
     m_list.reserveInitialCapacity(quads.size());
     for (size_t i = 0; i < quads.size(); ++i)
         m_list.append(ClientRect::create(quads[i].enclosingBoundingBox()));

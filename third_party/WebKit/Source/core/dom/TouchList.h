@@ -26,13 +26,14 @@
 #ifndef TouchList_h
 #define TouchList_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/Touch.h"
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class TouchList : public RefCounted<TouchList> {
+class TouchList : public RefCounted<TouchList>, public ScriptWrappable {
 public:
     static PassRefPtr<TouchList> create()
     {
@@ -47,7 +48,10 @@ public:
     void append(const PassRefPtr<Touch> touch) { m_values.append(touch); }
 
 private:
-    TouchList() {}
+    TouchList()
+    {
+        ScriptWrappable::init(this);
+    }
 
     Vector<RefPtr<Touch> > m_values;
 };

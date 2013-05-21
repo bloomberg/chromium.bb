@@ -31,8 +31,9 @@
 #ifndef DataTransferItem_h
 #define DataTransferItem_h
 
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -41,8 +42,13 @@ class File;
 class StringCallback;
 class ScriptExecutionContext;
 
-class DataTransferItem : public RefCounted<DataTransferItem> {
+class DataTransferItem : public RefCounted<DataTransferItem>, public ScriptWrappable {
 public:
+    DataTransferItem()
+    {
+        ScriptWrappable::init(this);
+    }
+
     virtual ~DataTransferItem() { }
 
     static const char kindString[];

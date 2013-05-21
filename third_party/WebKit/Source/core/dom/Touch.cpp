@@ -66,6 +66,7 @@ Touch::Touch(Frame* frame, EventTarget* target, unsigned identifier, int screenX
     , m_rotationAngle(rotationAngle)
     , m_force(force)
 {
+    ScriptWrappable::init(this);
     float scaleFactor = frame->pageZoomFactor();
     float x = pageX * scaleFactor;
     float y = pageY * scaleFactor;
@@ -87,6 +88,7 @@ Touch::Touch(EventTarget* target, unsigned identifier, int clientX, int clientY,
     , m_force(force)
     , m_absoluteLocation(absoluteLocation)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<Touch> Touch::cloneWithNewTarget(EventTarget* eventTarget) const

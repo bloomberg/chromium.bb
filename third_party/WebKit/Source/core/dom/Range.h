@@ -25,6 +25,7 @@
 #ifndef Range_h
 #define Range_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/FragmentScriptingPermission.h"
 #include "core/dom/RangeBoundaryPoint.h"
@@ -46,7 +47,7 @@ class Node;
 class NodeWithIndex;
 class Text;
 
-class Range : public RefCounted<Range> {
+class Range : public RefCounted<Range>, public ScriptWrappable {
 public:
     static PassRefPtr<Range> create(PassRefPtr<Document>);
     static PassRefPtr<Range> create(PassRefPtr<Document>, PassRefPtr<Node> startContainer, int startOffset, PassRefPtr<Node> endContainer, int endOffset);
