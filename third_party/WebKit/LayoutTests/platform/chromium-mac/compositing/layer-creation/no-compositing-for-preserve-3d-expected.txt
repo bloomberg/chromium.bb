@@ -7,6 +7,7 @@ This layer should be composited.
     (GraphicsLayer
       (bounds 785.00 611.00)
       (contentsOpaque 1)
+      (drawsContent 1)
       (children 1
         (GraphicsLayer
           (position 18.00 390.00)

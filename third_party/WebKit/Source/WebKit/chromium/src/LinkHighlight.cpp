@@ -27,7 +27,6 @@
 
 #include "LinkHighlight.h"
 
-#include "NonCompositedContentHost.h"
 #include "SkMatrix44.h"
 #include "WebFrameImpl.h"
 #include "WebKit.h"
@@ -66,7 +65,6 @@ LinkHighlight::LinkHighlight(Node* node, WebViewImpl* owningWebViewImpl)
     : m_node(node)
     , m_owningWebViewImpl(owningWebViewImpl)
     , m_currentGraphicsLayer(0)
-    , m_usingNonCompositedContentHost(false)
     , m_geometryNeedsUpdate(false)
     , m_isAnimating(false)
     , m_startTime(monotonicallyIncreasingTime())
@@ -129,13 +127,6 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
         return 0;
 
     GraphicsLayerChromium* newGraphicsLayer = static_cast<GraphicsLayerChromium*>(renderLayer->backing()->graphicsLayer());
-    m_clipLayer->setSublayerTransform(SkMatrix44());
-    m_usingNonCompositedContentHost = !newGraphicsLayer->drawsContent();
-    if (m_usingNonCompositedContentHost ) {
-        m_clipLayer->setSublayerTransform(newGraphicsLayer->platformLayer()->transform());
-        newGraphicsLayer = static_cast<GraphicsLayerChromium*>(m_owningWebViewImpl->nonCompositedContentHost()->topLevelRootLayer());
-    }
-
     if (m_currentGraphicsLayer != newGraphicsLayer) {
         if (m_currentGraphicsLayer)
             clearGraphicsLayerLinkHighlightPointer();
@@ -197,22 +188,20 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositin
     ASSERT(quads.size());
 
     FloatRect positionAdjust;
-    if (!m_usingNonCompositedContentHost) {
-        const RenderStyle* style = m_node->renderer()->style();
-        // If we have a box shadow, and are non-relative, then must manually adjust
-        // for its size.
-        if (const ShadowData* shadow = style->boxShadow()) {
-            int outlineSize = m_node->renderer()->outlineStyleForRepaint()->outlineSize();
-            shadow->adjustRectForShadow(positionAdjust, outlineSize);
-        }
+    const RenderStyle* style = m_node->renderer()->style();
+    // If we have a box shadow, and are non-relative, then must manually adjust
+    // for its size.
+    if (const ShadowData* shadow = style->boxShadow()) {
+        int outlineSize = m_node->renderer()->outlineStyleForRepaint()->outlineSize();
+        shadow->adjustRectForShadow(positionAdjust, outlineSize);
+    }
 
-        // If absolute or fixed, need to subtract out our fixed positioning.
-        // FIXME: should we use RenderLayer::staticBlockPosition() here instead?
-        // Perhaps consider this if out-of-flow elements cause further problems.
-        if (m_node->renderer()->isOutOfFlowPositioned()) {
-            FloatPoint delta(style->left().getFloatValue(), style->top().getFloatValue());
-            positionAdjust.moveBy(delta);
-        }
+    // If absolute or fixed, need to subtract out our fixed positioning.
+    // FIXME: should we use RenderLayer::staticBlockPosition() here instead?
+    // Perhaps consider this if out-of-flow elements cause further problems.
+    if (m_node->renderer()->isOutOfFlowPositioned()) {
+        FloatPoint delta(style->left().getFloatValue(), style->top().getFloatValue());
+        positionAdjust.moveBy(delta);
     }
 
     Path newPath;

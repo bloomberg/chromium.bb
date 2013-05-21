@@ -192,8 +192,12 @@ void RenderLayerBacking::createPrimaryGraphicsLayer()
     
     m_graphicsLayer = createGraphicsLayer(layerName);
 
-    if (m_isMainFrameRenderViewLayer)
+    if (m_isMainFrameRenderViewLayer) {
         m_graphicsLayer->setContentsOpaque(true);
+#if !OS(ANDROID)
+        m_graphicsLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
+#endif
+    }
 
     updateOpacity(renderer()->style());
     updateTransform(renderer()->style());
@@ -369,7 +373,7 @@ void RenderLayerBacking::updateAfterLayout(UpdateAfterLayoutFlags flags)
         }
     }
     
-    if (flags & NeedsFullRepaint && !paintsIntoWindow() && !paintsIntoCompositedAncestor())
+    if (flags & NeedsFullRepaint && !paintsIntoCompositedAncestor())
         setContentsNeedDisplay();
 }
 
@@ -1318,7 +1322,7 @@ bool RenderLayerBacking::hasVisibleNonCompositingDescendantLayers() const
 
 bool RenderLayerBacking::containsPaintedContent() const
 {
-    if (isSimpleContainerCompositingLayer() || paintsIntoWindow() || paintsIntoCompositedAncestor() || m_artificiallyInflatedBounds || m_owningLayer->isReflection())
+    if (isSimpleContainerCompositingLayer() || paintsIntoCompositedAncestor() || m_artificiallyInflatedBounds || m_owningLayer->isReflection())
         return false;
 
     if (isDirectlyCompositedImage())
@@ -1501,15 +1505,6 @@ GraphicsLayer* RenderLayerBacking::childForSuperlayers() const
     return m_graphicsLayer.get();
 }
 
-bool RenderLayerBacking::paintsIntoWindow() const
-{
-    if (m_owningLayer->isRootLayer()) {
-        return compositor()->rootLayerAttachment() != RenderLayerCompositor::RootLayerAttachedViaEnclosingFrame;
-    }
-    
-    return false;
-}
-
 void RenderLayerBacking::setRequiresOwnBackingStore(bool requiresOwnBacking)
 {
     if (requiresOwnBacking == m_requiresOwnBackingStore)
@@ -1590,7 +1585,7 @@ void RenderLayerBacking::paintIntoLayer(const GraphicsLayer* graphicsLayer, Grap
                     const IntRect& paintDirtyRect, // In the coords of rootLayer.
                     PaintBehavior paintBehavior, GraphicsLayerPaintingPhase paintingPhase)
 {
-    if (paintsIntoWindow() || paintsIntoCompositedAncestor()) {
+    if (paintsIntoCompositedAncestor()) {
         ASSERT_NOT_REACHED();
         return;
     }
