@@ -159,14 +159,8 @@ void willRemoveDOMNodeImpl(InstrumentingAgents* instrumentingAgents, Node* node)
 {
     if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
         domDebuggerAgent->willRemoveDOMNode(node);
-}
-
-void didRemoveDOMNodeImpl(InstrumentingAgents* instrumentingAgents, Node* node)
-{
-    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
-        domDebuggerAgent->didRemoveDOMNode(node);
     if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-        domAgent->didRemoveDOMNode(node);
+        domAgent->willRemoveDOMNode(node);
 }
 
 void willModifyDOMAttrImpl(InstrumentingAgents* instrumentingAgents, Element* element, const AtomicString& oldValue, const AtomicString& newValue)

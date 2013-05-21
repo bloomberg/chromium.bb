@@ -37,8 +37,6 @@ namespace InspectorInstrumentation {
 
 bool profilerEnabledImpl(InstrumentingAgents*);
 bool isDebuggerPausedImpl(InstrumentingAgents*);
-void willRemoveDOMNodeImpl(InstrumentingAgents*, Node*);
-void didRemoveDOMNodeImpl(InstrumentingAgents*, Node*);
 void didPushShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
 void willPopShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
 InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents*, StyleRule*, StyleResolver*);
@@ -69,15 +67,6 @@ inline bool isDebuggerPaused(Frame* frame)
     return false;
 }
 
-
-inline void willRemoveDOMNode(Document* document, Node* node)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document)) {
-        willRemoveDOMNodeImpl(instrumentingAgents, node);
-        didRemoveDOMNodeImpl(instrumentingAgents, node);
-    }
-}
 
 inline void didPushShadowRoot(Element* host, ShadowRoot* root)
 {

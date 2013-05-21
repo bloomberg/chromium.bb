@@ -37,6 +37,7 @@ namespace InspectorInstrumentation {
 
 void didClearWindowObjectInWorldImpl(InstrumentingAgents*, Frame*, DOMWrapperWorld*);
 void willInsertDOMNodeImpl(InstrumentingAgents*, Node* parent);
+void willRemoveDOMNodeImpl(InstrumentingAgents*, Node*);
 void didInsertDOMNodeImpl(InstrumentingAgents*, Node*);
 void willModifyDOMAttrImpl(InstrumentingAgents*, Element*, const AtomicString& oldValue, const AtomicString& newValue);
 void didModifyDOMAttrImpl(InstrumentingAgents*, Element*, const AtomicString& name, const AtomicString& value);
@@ -156,6 +157,13 @@ inline void willInsertDOMNode(Document* document, Node* parent)
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
         willInsertDOMNodeImpl(instrumentingAgents, parent);
+}
+
+inline void willRemoveDOMNode(Document* document, Node* node)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
+        willRemoveDOMNodeImpl(instrumentingAgents, node);
 }
 
 inline void didInsertDOMNode(Document* document, Node* node)

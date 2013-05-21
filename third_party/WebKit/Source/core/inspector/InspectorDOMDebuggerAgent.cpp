@@ -312,6 +312,7 @@ void InspectorDOMDebuggerAgent::willRemoveDOMNode(Node* node)
         descriptionForDOMEvent(node, SubtreeModified, false, eventData.get());
         m_debuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::DOM, eventData.release());
     }
+    didRemoveDOMNode(node);
 }
 
 void InspectorDOMDebuggerAgent::willModifyDOMAttr(Element* element, const AtomicString&, const AtomicString&)

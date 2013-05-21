@@ -1648,7 +1648,7 @@ void InspectorDOMAgent::didInsertDOMNode(Node* node)
     }
 }
 
-void InspectorDOMAgent::didRemoveDOMNode(Node* node)
+void InspectorDOMAgent::willRemoveDOMNode(Node* node)
 {
     if (isWhitespace(node))
         return;

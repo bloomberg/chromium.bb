@@ -167,7 +167,7 @@ public:
     void didCommitLoad(Frame*, DocumentLoader*);
 
     void didInsertDOMNode(Node*);
-    void didRemoveDOMNode(Node*);
+    void willRemoveDOMNode(Node*);
     void willModifyDOMAttr(Element*, const AtomicString& oldValue, const AtomicString& newValue);
     void didModifyDOMAttr(Element*, const AtomicString& name, const AtomicString& value);
     void didRemoveDOMAttr(Element*, const AtomicString& name);
