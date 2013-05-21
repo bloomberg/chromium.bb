@@ -12,6 +12,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/ui/ash/user_wallpaper_delegate_win.h"
+#endif
+
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
   return false;
 }
@@ -86,7 +90,11 @@ ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
 }
 
 ash::UserWallpaperDelegate* ChromeShellDelegate::CreateUserWallpaperDelegate() {
+#if defined(OS_WIN)
+  return ::CreateUserWallpaperDelegate();
+#else
   return NULL;
+#endif
 }
 
 void ChromeShellDelegate::HandleMediaNextTrack() {

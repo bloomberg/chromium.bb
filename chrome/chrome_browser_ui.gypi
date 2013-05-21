@@ -238,6 +238,8 @@
         'browser/ui/ash/tabs/dock_info_chromeos.cc',
         'browser/ui/ash/user_action_handler.cc',
         'browser/ui/ash/user_action_handler.h',
+        'browser/ui/ash/user_wallpaper_delegate_win.cc',
+        'browser/ui/ash/user_wallpaper_delegate_win.h',        
         'browser/ui/ash/volume_controller_chromeos.cc',
         'browser/ui/ash/volume_controller_chromeos.h',
         'browser/ui/ash/window_positioner.cc',
