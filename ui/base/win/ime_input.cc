@@ -203,6 +203,14 @@ void ImeInput::DestroyImeWindow(HWND window_handle) {
 }
 
 void ImeInput::MoveImeWindow(HWND window_handle, HIMC imm_context) {
+  // Does nothing when the target window has no input focus. This is important
+  // because the renderer may issue SelectionBoundsChanged event even when it
+  // has no input focus. (e.g. the page update caused by incremental search.)
+  // So this event should be ignored when the |window_handle| no longer has the
+  // input focus.
+  if (GetFocus() != window_handle)
+    return;
+
   int x = caret_rect_.x();
   int y = caret_rect_.y();
 
