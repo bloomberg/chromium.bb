@@ -5,6 +5,7 @@
 #include "chrome/browser/history/top_sites.h"
 
 #include "base/metrics/field_trial.h"
+#include "base/string_util.h"
 #include "chrome/browser/history/top_sites_impl.h"
 #include "chrome/browser/history/top_sites_likely_impl.h"
 #include "grit/chromium_strings.h"
@@ -13,6 +14,21 @@
 #include "grit/theme_resources.h"
 
 namespace history {
+
+namespace {
+
+// Constants for the most visited tile placement field trial.
+// ex:
+// "OneEightGroup_Flipped" --> Will cause tile 1 and 8 to be flipped.
+// "OneEightGroup_NoChange" --> Will not flip anything.
+//
+// See field trial config (MostVisitedTilePlacement.json) for details.
+const char kMostVisitedFieldTrialName[] = "MostVisitedTilePlacement";
+const char kOneEightGroupPrefix[] = "OneEight";
+const char kOneFourGroupPrefix[] = "OneFour";
+const char kFlippedSuffix[] = "Flipped";
+
+}  // namespace
 
 const TopSites::PrepopulatedPage kPrepopulatedPages[] = {
 #if defined(OS_ANDROID)
@@ -42,6 +58,29 @@ TopSites* TopSites::Create(Profile* profile, const base::FilePath& db_name) {
   TopSitesImpl* top_sites_impl = new TopSitesImpl(profile);
   top_sites_impl->Init(db_name);
   return top_sites_impl;
+}
+
+// static
+void TopSites::MaybeShuffle(MostVisitedURLList* data) {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kMostVisitedFieldTrialName);
+
+  // Depending on the study group of the client, we might flip the 1st and 4th
+  // tiles, or the 1st and 8th, or do nothing.
+  if (EndsWith(group_name, kFlippedSuffix, true)) {
+    size_t index_to_flip = 0;
+    if (StartsWithASCII(group_name, kOneEightGroupPrefix, true) &&
+        data->size() >= 8) {
+      index_to_flip = 7;
+    } else if (StartsWithASCII(group_name, kOneFourGroupPrefix, true) &&
+               data->size() >= 4) {
+      index_to_flip = 3;
+    }
+
+    if (data->empty() || (*data)[index_to_flip].url.is_empty())
+      return;
+    std::swap((*data)[0], (*data)[index_to_flip]);
+  }
 }
 
 }  // namespace history

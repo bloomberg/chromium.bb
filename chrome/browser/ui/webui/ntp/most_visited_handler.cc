@@ -212,8 +212,12 @@ void MostVisitedHandler::HandleMostVisitedSelected(
 void MostVisitedHandler::SetPagesValueFromTopSites(
     const history::MostVisitedURLList& data) {
   pages_value_.reset(new ListValue);
-  for (size_t i = 0; i < data.size(); i++) {
-    const history::MostVisitedURL& url = data[i];
+
+  history::MostVisitedURLList top_sites(data);
+  history::TopSites::MaybeShuffle(&top_sites);
+
+  for (size_t i = 0; i < top_sites.size(); i++) {
+    const history::MostVisitedURL& url = top_sites[i];
     DictionaryValue* page_value = new DictionaryValue();
     if (url.url.is_empty()) {
       page_value->SetBoolean("filler", true);

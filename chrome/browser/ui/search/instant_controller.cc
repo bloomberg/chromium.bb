@@ -1709,9 +1709,12 @@ void InstantController::OnMostVisitedItemsReceived(
   if (!instant_service)
     return;
 
+  history::MostVisitedURLList reordered_data(data);
+  history::TopSites::MaybeShuffle(&reordered_data);
+
   std::vector<InstantMostVisitedItem> most_visited_items;
-  for (size_t i = 0; i < data.size(); i++) {
-    const history::MostVisitedURL& url = data[i];
+  for (size_t i = 0; i < reordered_data.size(); i++) {
+    const history::MostVisitedURL& url = reordered_data[i];
     InstantMostVisitedItem item;
     item.url = url.url;
     item.title = url.title;
