@@ -20,7 +20,7 @@ namespace media {
 // The canonical example use-case is holding the list of ranges of buffered
 // bytes or times in a <video> tag.
 template<class T>  // Endpoint type; typically a base::TimeDelta or an int64.
-class Ranges {
+class MEDIA_EXPORT Ranges {
  public:
   // Allow copy & assign.
 
@@ -104,8 +104,9 @@ size_t Ranges<T>::Add(T start, T end) {
 }
 
 template<>
-void Ranges<base::TimeDelta>::DCheckLT(const base::TimeDelta& lhs,
-                                       const base::TimeDelta& rhs) const;
+MEDIA_EXPORT void Ranges<base::TimeDelta>::DCheckLT(
+    const base::TimeDelta& lhs,
+    const base::TimeDelta& rhs) const;
 
 template<class T>
 void Ranges<T>::DCheckLT(const T& lhs, const T& rhs) const {
