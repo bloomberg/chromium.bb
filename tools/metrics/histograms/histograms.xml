@@ -8582,6 +8582,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Translate.ShowErrorInfobar" enum="TranslateError">
+  <summary>
+    Chrome Translate shows an error infobar when an error happens on translation
+    and the infobar message depends on what kind of error happens. This metric
+    counts how often each error message is shown.
+  </summary>
+</histogram>
+
 <histogram name="Translate.TimeToBeReady" units="milliseconds">
   <summary>
     The time from injecting scripts for Chrome Translate to being ready to
@@ -13569,6 +13577,16 @@ other types of suffix sets.
   <int value="0" label="No Content-Language"/>
   <int value="1" label="Valid Content-Language"/>
   <int value="2" label="Invalid Content-Language"/>
+</enum>
+
+<enum name="TranslateError" type="int">
+  <int value="0" label="No error"/>
+  <int value="1" label="Network error"/>
+  <int value="2" label="Initialization error"/>
+  <int value="3" label="Unknown language"/>
+  <int value="4" label="Unsupported language"/>
+  <int value="5" label="Identical language"/>
+  <int value="6" label="Translation error"/>
 </enum>
 
 <enum name="TranslateInitiationStatus" type="int">

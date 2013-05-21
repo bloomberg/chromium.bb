@@ -23,6 +23,12 @@
 
 using content::NavigationEntry;
 
+namespace {
+
+const char kTranslateShowErrorInfobar[] = "Translate.ShowErrorInfobar";
+
+}  // namespace
+
 // static
 const size_t TranslateInfoBarDelegate::kNoIndex = static_cast<size_t>(-1);
 
@@ -188,6 +194,9 @@ string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
   }
 
   DCHECK_EQ(TRANSLATION_ERROR, infobar_type_);
+  UMA_HISTOGRAM_ENUMERATION(kTranslateShowErrorInfobar,
+                            error_type_,
+                            TranslateErrors::TRANSLATE_ERROR_MAX);
   switch (error_type_) {
     case TranslateErrors::NETWORK:
       return l10n_util::GetStringUTF16(
