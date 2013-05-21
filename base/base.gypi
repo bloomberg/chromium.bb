@@ -404,6 +404,7 @@
           'stl_util.h',
           'string_util.cc',
           'string_util.h',
+          'string_util_constants.cc',
           'string_util_posix.h',
           'string_util_win.h',
           'string16.cc',

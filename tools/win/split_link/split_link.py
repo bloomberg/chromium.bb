@@ -378,12 +378,10 @@ def main():
     deffiles = GenerateDefFiles(unresolved_by_part)
     import_libs = BuildImportLibs(flags, inputs_by_part, deffiles)
   else:
-    return 1
-
-  if data_exports:
-    print 'Data exports found, see report above.'
-    print('These cannot be exported, and must be either duplicated to the '
-          'target DLL, or wrapped in a function.')
+    if data_exports:
+      print '%d data exports found, see report above.' % data_exports
+      print('These cannot be exported, and must be either duplicated to the '
+            'target DLL (if constant), or wrapped in a function.')
     return 1
 
   mt_exe = GetMtPath()

@@ -125,6 +125,7 @@
   # .lib files.
   'all_from_libs': [
     (r'autofill_common\.lib$', r'switches\.obj$'),
+    (r'\bbase\.lib$', r'string_util_constants\.obj$'),
     (r'base_static\.lib$', r'base_switches\.obj$'),
     (r'\bcc\.lib$', r'switches\.obj$'),
     (r'\bcommon\.lib$', r'extension_constants\.obj$'),
