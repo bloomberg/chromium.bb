@@ -1748,6 +1748,9 @@ void InspectorDOMAgent::didInvalidateStyleAttr(Node* node)
 
 void InspectorDOMAgent::didPushShadowRoot(Element* host, ShadowRoot* root)
 {
+    if (!host->ownerDocument())
+        return;
+
     int hostId = m_documentNodeToIdMap.get(host);
     if (hostId)
         m_frontend->shadowRootPushed(hostId, buildObjectForNode(root, 0, &m_documentNodeToIdMap));
@@ -1755,6 +1758,9 @@ void InspectorDOMAgent::didPushShadowRoot(Element* host, ShadowRoot* root)
 
 void InspectorDOMAgent::willPopShadowRoot(Element* host, ShadowRoot* root)
 {
+    if (!host->ownerDocument())
+        return;
+
     int hostId = m_documentNodeToIdMap.get(host);
     int rootId = m_documentNodeToIdMap.get(root);
     if (hostId && rootId)

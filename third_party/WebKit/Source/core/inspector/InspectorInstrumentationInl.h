@@ -47,6 +47,8 @@ void didInvalidateStyleAttrImpl(InstrumentingAgents*, Node*);
 void activeStyleSheetsUpdatedImpl(InstrumentingAgents*, Document*, const Vector<RefPtr<StyleSheet> >&);
 void frameWindowDiscardedImpl(InstrumentingAgents*, DOMWindow*);
 void mediaQueryResultChangedImpl(InstrumentingAgents*);
+void didPushShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
+void willPopShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
 void didCreateNamedFlowImpl(InstrumentingAgents*, Document*, NamedFlow*);
 void willRemoveNamedFlowImpl(InstrumentingAgents*, Document*, NamedFlow*);
 void didUpdateRegionLayoutImpl(InstrumentingAgents*, Document*, NamedFlow*);
@@ -227,6 +229,20 @@ inline void mediaQueryResultChanged(Document* document)
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
         mediaQueryResultChangedImpl(instrumentingAgents);
+}
+
+inline void didPushShadowRoot(Element* host, ShadowRoot* root)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForElement(host))
+        didPushShadowRootImpl(instrumentingAgents, host, root);
+}
+
+inline void willPopShadowRoot(Element* host, ShadowRoot* root)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForElement(host))
+        willPopShadowRootImpl(instrumentingAgents, host, root);
 }
 
 inline void didCreateNamedFlow(Document* document, NamedFlow* namedFlow)

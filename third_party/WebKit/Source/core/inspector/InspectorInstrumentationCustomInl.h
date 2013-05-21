@@ -37,8 +37,6 @@ namespace InspectorInstrumentation {
 
 bool profilerEnabledImpl(InstrumentingAgents*);
 bool isDebuggerPausedImpl(InstrumentingAgents*);
-void didPushShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
-void willPopShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
 InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents*, StyleRule*, StyleResolver*);
 void continueAfterXFrameOptionsDeniedImpl(Frame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
 void continueWithPolicyDownloadImpl(Frame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
@@ -64,21 +62,6 @@ inline bool isDebuggerPaused(Frame* frame)
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
         return isDebuggerPausedImpl(instrumentingAgents);
     return false;
-}
-
-
-inline void didPushShadowRoot(Element* host, ShadowRoot* root)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(host->ownerDocument()))
-        didPushShadowRootImpl(instrumentingAgents, host, root);
-}
-
-inline void willPopShadowRoot(Element* host, ShadowRoot* root)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(host->ownerDocument()))
-        willPopShadowRootImpl(instrumentingAgents, host, root);
 }
 
 inline InspectorInstrumentationCookie willProcessRule(Document* document, StyleRule* rule, StyleResolver* styleResolver)
