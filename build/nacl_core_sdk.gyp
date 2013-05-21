@@ -11,7 +11,9 @@
       'target_name': 'nacl_core_sdk',
       'type': 'none',
       'dependencies': [
+        '../src/untrusted/minidump_generator/minidump_generator.gyp:minidump_generator_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_dynacode_lib',
+        '../src/untrusted/nacl/nacl.gyp:nacl_exception_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_list_mappings_lib',
         '../src/untrusted/nosys/nosys.gyp:nosys_lib',
