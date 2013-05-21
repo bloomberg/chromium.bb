@@ -1545,7 +1545,7 @@ crbug.com/225883 [ Win ] inspector/profiler/memory-instrumentation-external-arra
 crbug.com/225184 [ Win Mac Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure ]
 crbug.com/237270 fast/js/stack-overflow-arrity-catch.html [ Failure Pass ]
 
-crbug.com/238082 [ Win Mac Debug ] media/media-continues-playing-after-replace-source.html [ Crash Timeout Pass ]
+crbug.com/238082 [ Win Mac Linux Debug ] media/media-continues-playing-after-replace-source.html [ Crash Timeout Pass ]
 crbug.com/88588 [ Mac Win Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
 
 Bug(ojan) [ Win Mac ] http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
