@@ -137,7 +137,7 @@ void SynchronousCompositorOutputSurface::EnableVSyncNotification(
 
 void SynchronousCompositorOutputSurface::SwapBuffers(
     const cc::LatencyInfo& info) {
-  context3d()->finish();
+  context3d()->shallowFlushCHROMIUM();
   did_swap_buffer_ = true;
 }
 
