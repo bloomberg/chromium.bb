@@ -36,7 +36,7 @@ class FakeAudioThread : public base::PlatformThread::Delegate {
     audio_bus_ = media::AudioBus::Create(capturer_->audio_parameters());
   }
 
-  virtual ~FakeAudioThread() { DCHECK(thread_.is_null()); }
+  virtual ~FakeAudioThread() { DCHECK(!thread_); }
 
   // base::PlatformThread::Delegate:
   virtual void ThreadMain() OVERRIDE {
@@ -57,7 +57,7 @@ class FakeAudioThread : public base::PlatformThread::Delegate {
   void Start() {
     base::PlatformThread::CreateWithPriority(
         0, this, &thread_, base::kThreadPriority_RealtimeAudio);
-    CHECK(!thread_.is_null());
+    CHECK(thread_ != base::kNullThreadHandle);
   }
 
   void Stop() {

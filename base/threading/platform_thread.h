@@ -23,68 +23,27 @@
 
 namespace base {
 
+// PlatformThreadHandle should not be assumed to be a numeric type, since the
+// standard intends to allow pthread_t to be a structure.  This means you
+// should not initialize it to a value, like 0.  If it's a member variable, the
+// constructor can safely "value initialize" using () in the initializer list.
 #if defined(OS_WIN)
 typedef DWORD PlatformThreadId;
+typedef void* PlatformThreadHandle;  // HANDLE
+const PlatformThreadHandle kNullThreadHandle = NULL;
 #elif defined(OS_POSIX)
+typedef pthread_t PlatformThreadHandle;
+const PlatformThreadHandle kNullThreadHandle = 0;
 typedef pid_t PlatformThreadId;
 #endif
 
-class PlatformThreadHandle {
- public:
-#if defined(OS_WIN)
-  typedef void* Handle;
-#elif defined(OS_POSIX)
-  typedef pthread_t Handle;
-#endif
-
-  PlatformThreadHandle()
-      : handle_(0),
-        id_(0) {
-  }
-
-  explicit PlatformThreadHandle(Handle handle)
-      : handle_(handle),
-        id_(0) {
-  }
-
-  PlatformThreadHandle(Handle handle,
-                       PlatformThreadId id)
-      : handle_(handle),
-        id_(id) {
-  }
-
-  bool is_equal(const PlatformThreadHandle& other) {
-    return handle_ == other.handle_;
-  }
-
-  bool is_null() {
-    return !handle_;
-  }
-
-  Handle platform_handle() {
-    return handle_;
-  }
-
- private:
-  friend class PlatformThread;
-
-  Handle handle_;
-  PlatformThreadId id_;
-};
-
-const PlatformThreadHandle kNullThreadHandle(0);
-const PlatformThreadId kInvalidThreadId(0);
-
+const PlatformThreadId kInvalidThreadId = 0;
 
 // Valid values for SetThreadPriority()
 enum ThreadPriority{
   kThreadPriority_Normal,
   // Suitable for low-latency, glitch-resistant audio.
-  kThreadPriority_RealtimeAudio,
-  // Suitable for threads which generate data for the display (at ~60Hz).
-  kThreadPriority_Display,
-  // Suitable for threads that shouldn't disrupt high priority work.
-  kThreadPriority_Background
+  kThreadPriority_RealtimeAudio
 };
 
 // A namespace for low-level thread functions.
@@ -102,9 +61,6 @@ class BASE_EXPORT PlatformThread {
 
   // Gets the current thread id, which may be useful for logging purposes.
   static PlatformThreadId CurrentId();
-
-  // Get the current handle.
-  static PlatformThreadHandle CurrentHandle();
 
   // Yield the current thread so another thread can be scheduled.
   static void YieldCurrentThread();
@@ -150,6 +106,8 @@ class BASE_EXPORT PlatformThread {
   // |thread_handle|.
   static void Join(PlatformThreadHandle thread_handle);
 
+  // Sets the priority of the thread specified in |handle| to |priority|.
+  // This does not work on Linux, use CreateWithPriority() instead.
   static void SetThreadPriority(PlatformThreadHandle handle,
                                 ThreadPriority priority);
 

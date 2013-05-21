@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/safe_strerror_posix.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
@@ -29,53 +28,74 @@
 #include <unistd.h>
 #endif
 
+#if defined(OS_ANDROID)
+#include <sys/resource.h>
+#include "base/android/thread_utils.h"
+#include "jni/ThreadUtils_jni.h"
+#endif
+
 namespace base {
 
+#if defined(OS_MACOSX)
 void InitThreading();
-void InitOnThread();
-void TerminateOnThread();
-size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes);
+#endif
 
 namespace {
 
 struct ThreadParams {
-  ThreadParams()
-      : delegate(NULL),
-        joinable(false),
-        priority(kThreadPriority_Normal),
-        handle(NULL),
-        handle_set(false, false) {
-  }
-
   PlatformThread::Delegate* delegate;
   bool joinable;
   ThreadPriority priority;
-  PlatformThreadHandle* handle;
-  WaitableEvent handle_set;
 };
 
-void* ThreadFunc(void* params) {
-  base::InitOnThread();
-  ThreadParams* thread_params = static_cast<ThreadParams*>(params);
+void SetCurrentThreadPriority(ThreadPriority priority) {
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  switch (priority) {
+    case kThreadPriority_Normal:
+      NOTREACHED() << "Don't reset priority as not all processes can.";
+      break;
+    case kThreadPriority_RealtimeAudio:
+#if defined(OS_LINUX)
+      const int kNiceSetting = -10;
+      // Linux isn't posix compliant with setpriority(2), it will set a thread
+      // priority if it is passed a tid, not affecting the rest of the threads
+      // in the process.  Setting this priority will only succeed if the user
+      // has been granted permission to adjust nice values on the system.
+      if (setpriority(PRIO_PROCESS, PlatformThread::CurrentId(), kNiceSetting))
+        DVLOG(1) << "Failed to set nice value of thread to " << kNiceSetting;
+#elif defined(OS_ANDROID)
+      JNIEnv* env = base::android::AttachCurrentThread();
+      Java_ThreadUtils_setThreadPriorityAudio(env, PlatformThread::CurrentId());
+#endif  // defined(OS_LINUX)
+      break;
+  }
+#else  // !defined(OS_LINUX) && !defined(OS_ANDROID)
+  PlatformThread::SetThreadPriority(pthread_self(), priority);
+#endif
+}
 
+void* ThreadFunc(void* params) {
+#if defined(OS_ANDROID)
+  // Threads on linux/android may inherit their priority from the thread
+  // where they were created. This sets all threads to the default.
+  // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+  if (setpriority(PRIO_PROCESS, PlatformThread::CurrentId(), 0))
+    DVLOG(1) << "Failed to reset initial thread nice value to zero.";
+#endif
+  ThreadParams* thread_params = static_cast<ThreadParams*>(params);
   PlatformThread::Delegate* delegate = thread_params->delegate;
   if (!thread_params->joinable)
     base::ThreadRestrictions::SetSingletonAllowed(false);
 
-  if (thread_params->priority != kThreadPriority_Normal) {
-    PlatformThread::SetThreadPriority(PlatformThread::CurrentHandle(),
-                                      thread_params->priority);
-  }
+  // If there is a non-default priority for this thread, set it now.
+  if (thread_params->priority != kThreadPriority_Normal)
+    SetCurrentThreadPriority(thread_params->priority);
 
-  // Stash the id in the handle so the calling thread has a complete
-  // handle, and unblock the parent thread.
-  *(thread_params->handle) = PlatformThreadHandle(pthread_self(),
-                                                  PlatformThread::CurrentId());
-  thread_params->handle_set.Signal();
-
+  delete thread_params;
   delegate->ThreadMain();
-
-  base::TerminateOnThread();
+#if defined(OS_ANDROID)
+  base::android::DetachFromVM();
+#endif
   return NULL;
 }
 
@@ -83,36 +103,60 @@ bool CreateThread(size_t stack_size, bool joinable,
                   PlatformThread::Delegate* delegate,
                   PlatformThreadHandle* thread_handle,
                   ThreadPriority priority) {
+#if defined(OS_MACOSX)
   base::InitThreading();
+#endif  // OS_MACOSX
 
   bool success = false;
   pthread_attr_t attributes;
   pthread_attr_init(&attributes);
 
-  // Pthreads are joinable by default, so only specify the detached
-  // attribute if the thread should be non-joinable.
+  // Pthreads are joinable by default, so only specify the detached attribute if
+  // the thread should be non-joinable.
   if (!joinable) {
     pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_DETACHED);
   }
 
-  // Get a better default if available.
-  if (stack_size == 0)
-    stack_size = base::GetDefaultThreadStackSize(attributes);
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // The Mac OS X default for a pthread stack size is 512kB.
+  // Libc-594.1.4/pthreads/pthread.c's pthread_attr_init uses
+  // DEFAULT_STACK_SIZE for this purpose.
+  //
+  // 512kB isn't quite generous enough for some deeply recursive threads that
+  // otherwise request the default stack size by specifying 0. Here, adopt
+  // glibc's behavior as on Linux, which is to use the current stack size
+  // limit (ulimit -s) as the default stack size. See
+  // glibc-2.11.1/nptl/nptl-init.c's __pthread_initialize_minimal_internal. To
+  // avoid setting the limit below the Mac OS X default or the minimum usable
+  // stack size, these values are also considered. If any of these values
+  // can't be determined, or if stack size is unlimited (ulimit -s unlimited),
+  // stack_size is left at 0 to get the system default.
+  //
+  // Mac OS X normally only applies ulimit -s to the main thread stack. On
+  // contemporary OS X and Linux systems alike, this value is generally 8MB
+  // or in that neighborhood.
+  if (stack_size == 0) {
+    size_t default_stack_size;
+    struct rlimit stack_rlimit;
+    if (pthread_attr_getstacksize(&attributes, &default_stack_size) == 0 &&
+        getrlimit(RLIMIT_STACK, &stack_rlimit) == 0 &&
+        stack_rlimit.rlim_cur != RLIM_INFINITY) {
+      stack_size = std::max(std::max(default_stack_size,
+                                     static_cast<size_t>(PTHREAD_STACK_MIN)),
+                            static_cast<size_t>(stack_rlimit.rlim_cur));
+    }
+  }
+#endif  // OS_MACOSX && !OS_IOS
 
   if (stack_size > 0)
     pthread_attr_setstacksize(&attributes, stack_size);
 
-  ThreadParams params;
-  params.delegate = delegate;
-  params.joinable = joinable;
-  params.priority = priority;
-  params.handle = thread_handle;
+  ThreadParams* params = new ThreadParams;
+  params->delegate = delegate;
+  params->joinable = joinable;
+  params->priority = priority;
 
-  pthread_t handle = 0;
-  int err = pthread_create(&handle,
-                           &attributes,
-                           ThreadFunc,
-                           &params);
+  int err = pthread_create(thread_handle, &attributes, ThreadFunc, params);
   success = !err;
   if (!success) {
     errno = err;
@@ -120,13 +164,8 @@ bool CreateThread(size_t stack_size, bool joinable,
   }
 
   pthread_attr_destroy(&attributes);
-
-  // Don't let this call complete until the thread id
-  // is set in the handle.
-  if (success)
-    params.handle_set.Wait();
-  CHECK_EQ(handle, thread_handle->platform_handle());
-
+  if (!success)
+    delete params;
   return success;
 }
 
@@ -154,11 +193,6 @@ PlatformThreadId PlatformThread::CurrentId() {
 #endif
 }
 
-//static
-PlatformThreadHandle PlatformThread::CurrentHandle() {
-  return PlatformThreadHandle(pthread_self(), CurrentId());
-}
-
 // static
 void PlatformThread::YieldCurrentThread() {
   sched_yield();
@@ -179,6 +213,42 @@ void PlatformThread::Sleep(TimeDelta duration) {
     sleep_time = remaining;
 }
 
+#if defined(OS_LINUX)
+// static
+void PlatformThread::SetName(const char* name) {
+  ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
+  tracked_objects::ThreadData::InitializeThreadContext(name);
+
+  // On linux we can get the thread names to show up in the debugger by setting
+  // the process name for the LWP.  We don't want to do this for the main
+  // thread because that would rename the process, causing tools like killall
+  // to stop working.
+  if (PlatformThread::CurrentId() == getpid())
+    return;
+
+  // http://0pointer.de/blog/projects/name-your-threads.html
+  // Set the name for the LWP (which gets truncated to 15 characters).
+  // Note that glibc also has a 'pthread_setname_np' api, but it may not be
+  // available everywhere and it's only benefit over using prctl directly is
+  // that it can set the name of threads other than the current thread.
+  int err = prctl(PR_SET_NAME, name);
+  // We expect EPERM failures in sandboxed processes, just ignore those.
+  if (err < 0 && errno != EPERM)
+    DPLOG(ERROR) << "prctl(PR_SET_NAME)";
+}
+#elif defined(OS_MACOSX)
+// Mac is implemented in platform_thread_mac.mm.
+#else
+// static
+void PlatformThread::SetName(const char* name) {
+  ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
+  tracked_objects::ThreadData::InitializeThreadContext(name);
+
+  // (This should be relatively simple to implement for the BSDs; I
+  // just don't have one handy to test the code on.)
+}
+#endif  // defined(OS_LINUX)
+
 // static
 const char* PlatformThread::GetName() {
   return ThreadIdNameManager::GetInstance()->GetName(CurrentId());
@@ -187,7 +257,6 @@ const char* PlatformThread::GetName() {
 // static
 bool PlatformThread::Create(size_t stack_size, Delegate* delegate,
                             PlatformThreadHandle* thread_handle) {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   return CreateThread(stack_size, true /* joinable thread */,
                       delegate, thread_handle, kThreadPriority_Normal);
 }
@@ -196,7 +265,6 @@ bool PlatformThread::Create(size_t stack_size, Delegate* delegate,
 bool PlatformThread::CreateWithPriority(size_t stack_size, Delegate* delegate,
                                         PlatformThreadHandle* thread_handle,
                                         ThreadPriority priority) {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   return CreateThread(stack_size, true,  // joinable thread
                       delegate, thread_handle, priority);
 }
@@ -205,7 +273,6 @@ bool PlatformThread::CreateWithPriority(size_t stack_size, Delegate* delegate,
 bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate* delegate) {
   PlatformThreadHandle unused;
 
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   bool result = CreateThread(stack_size, false /* non-joinable thread */,
                              delegate, &unused, kThreadPriority_Normal);
   return result;
@@ -217,7 +284,21 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   // the thread referred to by |thread_handle| may still be running long-lived /
   // blocking tasks.
   base::ThreadRestrictions::AssertIOAllowed();
-  pthread_join(thread_handle.handle_, NULL);
+  pthread_join(thread_handle, NULL);
 }
+
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+// Mac OS X uses lower-level mach APIs and Android uses Java APIs.
+// static
+void PlatformThread::SetThreadPriority(PlatformThreadHandle, ThreadPriority) {
+  // TODO(crogers): Implement, see http://crbug.com/116172
+}
+#endif
+
+#if defined(OS_ANDROID)
+bool RegisterThreadUtils(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace base

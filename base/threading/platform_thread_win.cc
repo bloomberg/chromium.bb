@@ -64,6 +64,7 @@ DWORD __stdcall ThreadFunc(void* params) {
 bool CreateThreadInternal(size_t stack_size,
                           PlatformThread::Delegate* delegate,
                           PlatformThreadHandle* out_thread_handle) {
+  PlatformThreadHandle thread_handle;
   unsigned int flags = 0;
   if (stack_size > 0 && base::win::GetVersion() >= base::win::VERSION_XP) {
     flags = STACK_SIZE_PARAM_IS_A_RESERVATION;
@@ -80,7 +81,7 @@ bool CreateThreadInternal(size_t stack_size,
   // have to work running on CreateThread() threads anyway, since we run code
   // on the Windows thread pool, etc.  For some background on the difference:
   //   http://www.microsoft.com/msj/1099/win32/win321099.aspx
-  void* thread_handle = CreateThread(
+  thread_handle = CreateThread(
       NULL, stack_size, ThreadFunc, params, flags, NULL);
   if (!thread_handle) {
     delete params;
@@ -88,7 +89,7 @@ bool CreateThreadInternal(size_t stack_size,
   }
 
   if (out_thread_handle)
-    *out_thread_handle = PlatformThreadHandle(thread_handle);
+    *out_thread_handle = thread_handle;
   else
     CloseHandle(thread_handle);
   return true;
@@ -99,12 +100,6 @@ bool CreateThreadInternal(size_t stack_size,
 // static
 PlatformThreadId PlatformThread::CurrentId() {
   return GetCurrentThreadId();
-}
-
-// static
-PlatformThreadHandle PlatformThread::CurrentHandle() {
-  NOTIMPLEMENTED(); // See OpenThread()
-  return kNullThreadHandle;
 }
 
 // static
@@ -169,7 +164,7 @@ bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate* delegate) {
 
 // static
 void PlatformThread::Join(PlatformThreadHandle thread_handle) {
-  DCHECK(thread_handle.handle_);
+  DCHECK(thread_handle);
   // TODO(willchan): Enable this check once I can get it to work for Windows
   // shutdown.
   // Joining another thread may block the current thread for a long time, since
@@ -181,17 +176,17 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
 
   // Wait for the thread to exit.  It should already have terminated but make
   // sure this assumption is valid.
-  DWORD result = WaitForSingleObject(thread_handle.handle_, INFINITE);
+  DWORD result = WaitForSingleObject(thread_handle, INFINITE);
   if (result != WAIT_OBJECT_0) {
     // Debug info for bug 127931.
     DWORD error = GetLastError();
     debug::Alias(&error);
     debug::Alias(&result);
-    debug::Alias(&thread_handle.handle_);
+    debug::Alias(&thread_handle);
     CHECK(false);
   }
 
-  CloseHandle(thread_handle.handle_);
+  CloseHandle(thread_handle);
 }
 
 // static
@@ -199,13 +194,10 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
                                        ThreadPriority priority) {
   switch (priority) {
     case kThreadPriority_Normal:
-      ::SetThreadPriority(handle.handle_, THREAD_PRIORITY_NORMAL);
+      ::SetThreadPriority(handle, THREAD_PRIORITY_NORMAL);
       break;
     case kThreadPriority_RealtimeAudio:
-      ::SetThreadPriority(handle.handle_, THREAD_PRIORITY_TIME_CRITICAL);
-      break;
-    default:
-      NOTREACHED() << "Unknown priority.";
+      ::SetThreadPriority(handle, THREAD_PRIORITY_TIME_CRITICAL);
       break;
   }
 }

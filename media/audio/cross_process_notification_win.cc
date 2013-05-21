@@ -121,9 +121,7 @@ class ExtraWaitThread : public base::PlatformThread::Delegate {
           &events_[MAXIMUM_WAIT_OBJECTS - 2],
           count_ - (MAXIMUM_WAIT_OBJECTS - 2),
           &thread_signaled_event));
-      base::PlatformThreadHandle handle = base::kNullThreadHandle;
-      base::PlatformThread::Create(0, extra_wait_thread.get(), &handle);
-      next_thread = handle.platform_handle();
+      base::PlatformThread::Create(0, extra_wait_thread.get(), &next_thread);
 
       event_count = MAXIMUM_WAIT_OBJECTS;
       events[MAXIMUM_WAIT_OBJECTS - 1] = next_thread;
@@ -142,7 +140,7 @@ class ExtraWaitThread : public base::PlatformThread::Delegate {
         // so on), we must wait for ours to exit before we can check the
         // propagated event offset.
         if (next_thread) {
-          base::PlatformThread::Join(base::PlatformThreadHandle(next_thread));
+          base::PlatformThread::Join(next_thread);
           next_thread = NULL;
         }
         if (thread_signaled_event != -1)
@@ -158,7 +156,7 @@ class ExtraWaitThread : public base::PlatformThread::Delegate {
     }
 
     if (next_thread)
-      base::PlatformThread::Join(base::PlatformThreadHandle(next_thread));
+      base::PlatformThread::Join(next_thread);
   }
 
  private:
@@ -234,7 +232,7 @@ int CrossProcessNotification::WaitMultiple(const Notifications& notifications,
     base::PlatformThread::Create(0, &wait_thread, &thread);
     HANDLE events[MAXIMUM_WAIT_OBJECTS];
     std::copy(&handles[0], &handles[MAXIMUM_WAIT_OBJECTS - 1], &events[0]);
-    events[MAXIMUM_WAIT_OBJECTS - 1] = thread.platform_handle();
+    events[MAXIMUM_WAIT_OBJECTS - 1] = thread;
     wait = ::WaitForMultipleObjects(MAXIMUM_WAIT_OBJECTS, &events[0], FALSE,
                                     INFINITE);
     wait_failed = wait < WAIT_OBJECT_0 ||
