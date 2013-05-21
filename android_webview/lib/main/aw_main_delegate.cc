@@ -56,13 +56,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       ::EnableVirtualizedContext();
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
-
-  // Temporarily disable merged thread mode until proper hardware init is done.
-  // Currently hardware draw with incomplete init is making invalid GL calls
-  // that is crashing in graphics driver on Nexus 7.
-  if (!cl->HasSwitch("merge-ui-and-compositor-threads"))
-    cl->AppendSwitch(switches::kNoMergeUIAndRendererCompositorThreads);
-
   if (UIAndRendererCompositorThreadsNotMerged()) {
     cl->AppendSwitch(cc::switches::kEnableCompositorFrameMessage);
     cl->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
