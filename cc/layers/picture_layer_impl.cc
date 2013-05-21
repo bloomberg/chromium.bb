@@ -940,6 +940,8 @@ bool PictureLayerImpl::CanHaveTilings() const {
     return false;
   if (pile_->recorded_region().IsEmpty())
     return false;
+  if (!layer_tree_impl()->tile_manager())
+    return false;
   return true;
 }
 

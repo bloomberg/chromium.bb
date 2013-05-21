@@ -432,9 +432,12 @@ class CC_EXPORT LayerTreeHostImpl
   void StartScrollbarAnimationRecursive(LayerImpl* layer, base::TimeTicks time);
 
   scoped_ptr<OutputSurface> output_surface_;
+
+  // |resource_provider_| and |tile_manager_| can be NULL, e.g. when using tile-
+  // free rendering - see OutputSurface::ForcedDrawToSoftwareDevice().
   scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<Renderer> renderer_;
   scoped_ptr<TileManager> tile_manager_;
+  scoped_ptr<Renderer> renderer_;
 
   // Tree currently being drawn.
   scoped_ptr<LayerTreeImpl> active_tree_;

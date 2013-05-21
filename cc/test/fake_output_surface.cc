@@ -16,6 +16,7 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(context3d.Pass()),
       num_sent_frames_(0),
       vsync_notification_enabled_(false),
+      forced_draw_to_software_device_(false),
       weak_ptr_factory_(this) {
   capabilities_.has_parent_compositor = has_parent;
 }
@@ -24,6 +25,7 @@ FakeOutputSurface::FakeOutputSurface(
     scoped_ptr<SoftwareOutputDevice> software_device, bool has_parent)
     : OutputSurface(software_device.Pass()),
       num_sent_frames_(0),
+      forced_draw_to_software_device_(false),
       weak_ptr_factory_(this) {
   capabilities_.has_parent_compositor = has_parent;
 }
@@ -45,6 +47,10 @@ void FakeOutputSurface::EnableVSyncNotification(bool enable) {
 
 void FakeOutputSurface::DidVSync(base::TimeTicks frame_time) {
   client_->DidVSync(frame_time);
+}
+
+bool FakeOutputSurface::ForcedDrawToSoftwareDevice() const {
+  return forced_draw_to_software_device_;
 }
 
 void FakeOutputSurface::SendFrameAck() {

@@ -57,6 +57,14 @@ class FakeOutputSurface : public OutputSurface {
         new FakeOutputSurface(software_device.Pass(), true));
   }
 
+  static scoped_ptr<FakeOutputSurface> CreateDeferredGL(
+      scoped_ptr<SoftwareOutputDevice> software_device) {
+    scoped_ptr<FakeOutputSurface> result(
+        new FakeOutputSurface(software_device.Pass(), false));
+    result->capabilities_.deferred_gl_initialization = true;
+    return result.Pass();
+  }
+
   virtual void SendFrameToParentCompositor(CompositorFrame* frame) OVERRIDE;
 
   CompositorFrame& last_sent_frame() { return last_sent_frame_; }
@@ -67,6 +75,11 @@ class FakeOutputSurface : public OutputSurface {
     return vsync_notification_enabled_;
   }
   void DidVSync(base::TimeTicks frame_time);
+
+  void set_forced_draw_to_software_device(bool forced) {
+    forced_draw_to_software_device_ = forced;
+  }
+  virtual bool ForcedDrawToSoftwareDevice() const OVERRIDE;
 
  private:
   FakeOutputSurface(
@@ -82,6 +95,7 @@ class FakeOutputSurface : public OutputSurface {
   CompositorFrame last_sent_frame_;
   size_t num_sent_frames_;
   bool vsync_notification_enabled_;
+  bool forced_draw_to_software_device_;
   base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_;
 };
 

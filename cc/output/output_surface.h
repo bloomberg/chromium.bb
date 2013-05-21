@@ -44,10 +44,12 @@ class CC_EXPORT OutputSurface {
   struct Capabilities {
     Capabilities()
         : has_parent_compositor(false),
-          max_frames_pending(0) {}
+          max_frames_pending(0),
+          deferred_gl_initialization(false) {}
 
     bool has_parent_compositor;
     int max_frames_pending;
+    bool deferred_gl_initialization;
   };
 
   const Capabilities& capabilities() const {

@@ -245,6 +245,10 @@ class LayerTreeHostImplTest : public testing::Test,
 
   void InitializeRendererAndDrawFrame() {
     host_impl_->InitializeRenderer(CreateOutputSurface());
+    DrawFrame();
+  }
+
+  void DrawFrame() {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
     host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
@@ -5658,6 +5662,42 @@ TEST_F(CompositorFrameMetadataTest, CompositorFrameAckCountsAsSwapComplete) {
   CompositorFrameAck ack;
   host_impl_->OnSendFrameToParentCompositorAck(ack);
   EXPECT_EQ(swap_buffers_complete_, 1);
+}
+
+class CountingSoftwareDevice : public SoftwareOutputDevice {
+ public:
+  CountingSoftwareDevice() : frames_began_(0), frames_ended_(0) {}
+
+  virtual SkCanvas* BeginPaint(gfx::Rect damage_rect) OVERRIDE {
+    ++frames_began_;
+    return SoftwareOutputDevice::BeginPaint(damage_rect);
+  }
+  virtual void EndPaint(SoftwareFrameData* frame_data) OVERRIDE {
+    ++frames_ended_;
+    SoftwareOutputDevice::EndPaint(frame_data);
+  }
+
+  int frames_began_, frames_ended_;
+};
+
+TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  CountingSoftwareDevice* software_device = new CountingSoftwareDevice();
+  FakeOutputSurface* output_surface = FakeOutputSurface::CreateDeferredGL(
+      scoped_ptr<SoftwareOutputDevice>(software_device)).release();
+  host_impl_->InitializeRenderer(scoped_ptr<OutputSurface>(output_surface));
+
+  output_surface->set_forced_draw_to_software_device(true);
+  EXPECT_TRUE(output_surface->ForcedDrawToSoftwareDevice());
+
+  EXPECT_EQ(0, software_device->frames_began_);
+  EXPECT_EQ(0, software_device->frames_ended_);
+
+  DrawFrame();
+
+  EXPECT_EQ(1, software_device->frames_began_);
+  EXPECT_EQ(1, software_device->frames_ended_);
 }
 
 }  // namespace

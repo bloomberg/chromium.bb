@@ -300,8 +300,12 @@ void ThreadProxy::CheckOutputSurfaceStatusOnImplThread() {
   TRACE_EVENT0("cc", "ThreadProxy::CheckOutputSurfaceStatusOnImplThread");
   if (!layer_tree_host_impl_->IsContextLost())
     return;
-  if (cc::ContextProvider* offscreen_contexts = layer_tree_host_impl_->
-          resource_provider()->offscreen_context_provider())
+  cc::ContextProvider* offscreen_contexts =
+    layer_tree_host_impl_->resource_provider() ?
+        layer_tree_host_impl_->resource_provider()->
+            offscreen_context_provider() : NULL;
+
+  if (offscreen_contexts)
     offscreen_contexts->VerifyContexts();
   scheduler_on_impl_thread_->DidLoseOutputSurface();
 }
@@ -404,6 +408,8 @@ bool ThreadProxy::ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,
 
   if (!layer_tree_host_->contents_texture_manager())
     return false;
+  if (!layer_tree_host_impl_->resource_provider())
+    return false;
 
   bool reduce_result = layer_tree_host_->contents_texture_manager()->
       ReduceMemoryOnImplThread(limit_bytes,
@@ -425,6 +431,8 @@ void ThreadProxy::ReduceWastedContentsTextureMemoryOnImplThread() {
   DCHECK(IsImplThread());
 
   if (!layer_tree_host_->contents_texture_manager())
+    return;
+  if (!layer_tree_host_impl_->resource_provider())
     return;
 
   layer_tree_host_->contents_texture_manager()->ReduceWastedMemoryOnImplThread(
@@ -777,8 +785,10 @@ void ThreadProxy::BeginFrameCompleteOnImplThread(
 
   if (offscreen_context_provider)
     offscreen_context_provider->BindToCurrentThread();
-  layer_tree_host_impl_->resource_provider()->
-      set_offscreen_context_provider(offscreen_context_provider);
+  if (layer_tree_host_impl_->resource_provider()) {
+    layer_tree_host_impl_->resource_provider()->
+        set_offscreen_context_provider(offscreen_context_provider);
+  }
 
   if (layer_tree_host_->contents_texture_manager()->
           LinkedEvictedBackingsExist()) {
@@ -793,16 +803,22 @@ void ThreadProxy::BeginFrameCompleteOnImplThread(
   layer_tree_host_->contents_texture_manager()->
       PushTexturePrioritiesToBackings();
 
-  current_resource_update_controller_on_impl_thread_ =
-      ResourceUpdateController::Create(
-          this,
-          Proxy::ImplThread(),
-          queue.Pass(),
-          layer_tree_host_impl_->resource_provider());
-  current_resource_update_controller_on_impl_thread_->PerformMoreUpdates(
-      scheduler_on_impl_thread_->AnticipatedDrawTime());
-
   commit_completion_event_on_impl_thread_ = completion;
+  if (layer_tree_host_impl_->resource_provider()) {
+    current_resource_update_controller_on_impl_thread_ =
+        ResourceUpdateController::Create(
+            this,
+            Proxy::ImplThread(),
+            queue.Pass(),
+            layer_tree_host_impl_->resource_provider());
+    current_resource_update_controller_on_impl_thread_->PerformMoreUpdates(
+        scheduler_on_impl_thread_->AnticipatedDrawTime());
+  } else {
+    // Normally the ResourceUpdateController notifies when begin frame has
+    // completed, but in tile-free software rendering there is no resource
+    // update step so jump straight to the notification.
+    scheduler_on_impl_thread_->BeginFrameComplete();
+  }
 }
 
 void ThreadProxy::BeginFrameAbortedOnImplThread() {
@@ -818,11 +834,11 @@ void ThreadProxy::ScheduledActionCommit() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionCommit");
   DCHECK(IsImplThread());
   DCHECK(commit_completion_event_on_impl_thread_);
-  DCHECK(current_resource_update_controller_on_impl_thread_);
-
-  // Complete all remaining texture updates.
-  current_resource_update_controller_on_impl_thread_->Finalize();
-  current_resource_update_controller_on_impl_thread_.reset();
+  if (current_resource_update_controller_on_impl_thread_) {
+    // Complete all remaining texture updates.
+    current_resource_update_controller_on_impl_thread_->Finalize();
+    current_resource_update_controller_on_impl_thread_.reset();
+  }
 
   layer_tree_host_impl_->BeginCommit();
   layer_tree_host_->BeginCommitOnImplThread(layer_tree_host_impl_.get());
@@ -1166,8 +1182,9 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
 
     scheduler_on_impl_thread_->SetMaxFramesPending(max_frames_pending);
 
-    layer_tree_host_impl_->resource_provider()->
-        set_offscreen_context_provider(offscreen_context_provider);
+    if (layer_tree_host_impl_->resource_provider())
+      layer_tree_host_impl_->resource_provider()->
+          set_offscreen_context_provider(offscreen_context_provider);
 
     scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
   } else if (offscreen_context_provider) {

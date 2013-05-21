@@ -107,15 +107,13 @@ void SyncInputEventFilter::SetInputHandler(
     return;
   }
 
-  TRACE_EVENT0("SyncInputEventFilter::SetInputHandler",
-               "SettingHandler");
+  TRACE_EVENT0("cc", "SyncInputEventFilter::SetInputHandler");
   input_handler_.reset(new InputHandlerWrapper(this, new_input_handler));
 }
 
 void SyncInputEventFilter::ClearInputHandler() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TRACE_EVENT0("SyncInputEventFilter::ClearInputHandler",
-               "ClearingHandler");
+  TRACE_EVENT0("cc", "SyncInputEventFilter::ClearInputHandler");
   input_handler_.reset();
 }
 

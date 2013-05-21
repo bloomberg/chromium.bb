@@ -723,8 +723,10 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   RemoveRenderPasses(CullRenderPassesWithNoQuads(), frame);
   if (!output_surface_->ForcedDrawToSoftwareDevice())
     renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
-  RemoveRenderPasses(CullRenderPassesWithCachedTextures(renderer_.get()),
-                     frame);
+  if (renderer_) {
+    RemoveRenderPasses(CullRenderPassesWithCachedTextures(renderer_.get()),
+                       frame);
+  }
 
   // If we're making a frame to draw, it better have at least one render pass.
   DCHECK(!frame->render_passes.empty());
@@ -804,6 +806,7 @@ static void RemoveRenderPassesRecursive(RenderPass::Id remove_render_pass_id,
 bool LayerTreeHostImpl::CullRenderPassesWithCachedTextures::
     ShouldRemoveRenderPass(const RenderPassDrawQuad& quad,
                            const FrameData& frame) const {
+  DCHECK(renderer_);
   bool quad_has_damage = !quad.contents_changed_since_last_frame.IsEmpty();
   bool quad_has_cached_resource =
       renderer_->HaveCachedResourcesForRenderPassId(quad.render_pass_id);
@@ -1155,7 +1158,8 @@ void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
 
   // Once all layers have been drawn, pending texture uploads should no
   // longer block future uploads.
-  resource_provider_->MarkPendingUploadsAsNonBlocking();
+  if (resource_provider_)
+    resource_provider_->MarkPendingUploadsAsNonBlocking();
 }
 
 void LayerTreeHostImpl::FinishAllRendering() {
@@ -1287,7 +1291,7 @@ bool LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
   if (!pending_tree_)
     return false;
 
-  CHECK(tile_manager_);
+  CHECK(settings_.impl_side_painting);
 
   pending_tree_->UpdateDrawProperties();
 
@@ -1296,9 +1300,11 @@ bool LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
       "PendingTree", pending_tree_.get(), "activate",
       "state", TracedValue::FromValue(ActivationStateAsValue().release()));
 
-  // Activate once all visible resources in pending tree are ready.
-  if (!pending_tree_->AreVisibleResourcesReady())
-    return false;
+  if (resource_provider_) {
+    // Activate once all visible resources in pending tree are ready.
+    if (!pending_tree_->AreVisibleResourcesReady())
+      return false;
+  }
 
   ActivatePendingTree();
   return true;
@@ -1404,37 +1410,44 @@ bool LayerTreeHostImpl::InitializeRenderer(
   if (!output_surface->BindToClient(this))
     return false;
 
-  scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
-      output_surface.get(), settings_.highp_threshold_min);
-  if (!resource_provider)
-    return false;
+  if (output_surface->capabilities().deferred_gl_initialization) {
+    // TODO(joth): Defer creating the Renderer too, until GL is initialized.
+    // See http://crbug.com/230197
+    renderer_ = SoftwareRenderer::Create(this, output_surface.get(), NULL);
+  } else {
+    scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
+        output_surface.get(), settings_.highp_threshold_min);
+    if (!resource_provider)
+      return false;
 
-  if (settings_.impl_side_painting) {
-    tile_manager_ = TileManager::Create(this,
-                                        resource_provider.get(),
-                                        settings_.num_raster_threads,
-                                        settings_.use_color_estimator,
-                                        rendering_stats_instrumentation_);
-    UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
-  }
+    if (settings_.impl_side_painting) {
+      tile_manager_ = TileManager::Create(this,
+                                          resource_provider.get(),
+                                          settings_.num_raster_threads,
+                                          settings_.use_color_estimator,
+                                          rendering_stats_instrumentation_);
+      UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
+    }
 
-  if (output_surface->capabilities().has_parent_compositor) {
-    renderer_ = DelegatingRenderer::Create(this, output_surface.get(),
+    if (output_surface->capabilities().has_parent_compositor) {
+      renderer_ = DelegatingRenderer::Create(this, output_surface.get(),
+                                             resource_provider.get());
+    } else if (output_surface->context3d()) {
+      renderer_ = GLRenderer::Create(this,
+                                     output_surface.get(),
+                                     resource_provider.get(),
+                                     settings_.highp_threshold_min);
+    } else if (output_surface->software_device()) {
+      renderer_ = SoftwareRenderer::Create(this,
+                                           output_surface.get(),
                                            resource_provider.get());
-  } else if (output_surface->context3d()) {
-    renderer_ = GLRenderer::Create(this,
-                                   output_surface.get(),
-                                   resource_provider.get(),
-                                   settings_.highp_threshold_min);
-  } else if (output_surface->software_device()) {
-    renderer_ = SoftwareRenderer::Create(this,
-                                         output_surface.get(),
-                                         resource_provider.get());
-  }
-  if (!renderer_)
-    return false;
+    }
+    if (!renderer_)
+      return false;
 
-  resource_provider_ = resource_provider.Pass();
+    resource_provider_ = resource_provider.Pass();
+  }
+
   output_surface_ = output_surface.Pass();
 
   if (!visible_)

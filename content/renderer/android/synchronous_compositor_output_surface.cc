@@ -96,6 +96,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       vsync_enabled_(false),
       did_swap_buffer_(false),
       current_sw_canvas_(NULL) {
+  capabilities_.deferred_gl_initialization = true;
 }
 
 SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {
