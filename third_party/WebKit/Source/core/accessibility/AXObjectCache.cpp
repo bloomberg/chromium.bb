@@ -269,11 +269,9 @@ static PassRefPtr<AccessibilityObject> createFromRenderer(RenderObject* renderer
     if (node && node->isMediaControlElement())
         return AccessibilityMediaControl::create(renderer);
 
-#if ENABLE(SVG)
     if (renderer->isSVGRoot())
         return AccessibilitySVGRoot::create(renderer);
-#endif
-    
+
     if (renderer->isBoxModelObject()) {
         RenderBoxModelObject* cssBox = toRenderBoxModelObject(renderer);
         if (cssBox->isListBox())
