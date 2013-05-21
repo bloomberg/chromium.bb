@@ -8420,6 +8420,10 @@ other types of suffix sets.
   <summary>Error codes returned by sqlite for the quota db.</summary>
 </histogram>
 
+<histogram name="Sqlite.SizeKB" units="Kb">
+  <summary>Size in kilobytes of pre-existing database at startup.</summary>
+</histogram>
+
 <histogram name="Sqlite.Text.Error" enum="SqliteErrorCode">
   <summary>Error codes returned by sqlite the full text db.</summary>
 </histogram>
@@ -15234,6 +15238,7 @@ other types of suffix sets.
   <group name="TopSites" label="TopSites"/>
   <group name="Web" label="Web"/>
   <affected-histogram name="Sqlite.Error"/>
+  <affected-histogram name="Sqlite.SizeKB"/>
   <affected-histogram name="Sqlite.Version"/>
 </fieldtrial>
 

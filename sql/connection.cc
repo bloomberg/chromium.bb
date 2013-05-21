@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "base/files/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
@@ -129,6 +130,20 @@ Connection::~Connection() {
 }
 
 bool Connection::Open(const base::FilePath& path) {
+  if (!histogram_tag_.empty()) {
+    int64 size_64 = 0;
+    if (file_util::GetFileSize(path, &size_64)) {
+      size_t sample = static_cast<size_t>(size_64 / 1024);
+      std::string full_histogram_name = "Sqlite.SizeKB." + histogram_tag_;
+      base::HistogramBase* histogram =
+          base::Histogram::FactoryGet(
+              full_histogram_name, 1, 1000000, 50,
+              base::HistogramBase::kUmaTargetedHistogramFlag);
+      if (histogram)
+        histogram->Add(sample);
+    }
+  }
+
 #if defined(OS_WIN)
   return OpenInternal(WideToUTF8(path.value()));
 #elif defined(OS_POSIX)
