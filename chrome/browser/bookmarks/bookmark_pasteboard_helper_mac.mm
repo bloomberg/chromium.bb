@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "ui/base/clipboard/clipboard.h"
 
 NSString* const kBookmarkDictionaryListPboardType =
     @"BookmarkDictionaryListPboardType";

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_PASTEBOARD_HELPER_MAC_H_
 
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_sourcetag.h"
 
 #if defined(__OBJC__)
 @class NSString;
