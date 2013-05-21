@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/sandbox_file_stream_writer.h"
+#include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 
 #include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"

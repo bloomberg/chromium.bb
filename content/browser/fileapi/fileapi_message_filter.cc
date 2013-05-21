@@ -27,6 +27,7 @@
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/directory_entry.h"
 #include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_permission_policy.h"
@@ -35,7 +36,6 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/local_file_system_operation.h"
-#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/quota_manager.h"
 
 using fileapi::FileSystemFileUtil;

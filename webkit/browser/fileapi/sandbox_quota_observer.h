@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_
-#define WEBKIT_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_
+#define WEBKIT_BROWSER_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_
 
 #include <map>
 
@@ -80,4 +80,4 @@ class SandboxQuotaObserver
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_

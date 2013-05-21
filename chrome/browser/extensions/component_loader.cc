@@ -43,8 +43,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/storage_partition.h"
+#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #endif
 
 #if defined(ENABLE_APP_LIST)

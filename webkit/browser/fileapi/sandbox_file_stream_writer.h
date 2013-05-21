@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
-#define WEBKIT_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
+#define WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -89,4 +89,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxFileStreamWriter
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_

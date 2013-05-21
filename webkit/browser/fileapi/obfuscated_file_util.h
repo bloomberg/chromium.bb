@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_OBFUSCATED_FILE_UTIL_H_
-#define WEBKIT_FILEAPI_OBFUSCATED_FILE_UTIL_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_H_
+#define WEBKIT_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_H_
 
 #include <map>
 #include <string>
@@ -14,11 +14,11 @@
 #include "base/platform_file.h"
 #include "base/timer.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/browser/fileapi/sandbox_directory_database.h"
+#include "webkit/browser/fileapi/sandbox_origin_database.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/sandbox_directory_database.h"
-#include "webkit/fileapi/sandbox_origin_database.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -259,4 +259,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_OBFUSCATED_FILE_UTIL_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_H_

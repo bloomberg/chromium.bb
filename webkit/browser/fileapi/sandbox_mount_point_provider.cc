@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -15,6 +15,9 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
+#include "webkit/browser/fileapi/obfuscated_file_util.h"
+#include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
+#include "webkit/browser/fileapi/sandbox_quota_observer.h"
 #include "webkit/fileapi/async_file_util_adapter.h"
 #include "webkit/fileapi/copy_or_move_file_validator.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -25,9 +28,6 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_operation.h"
-#include "webkit/fileapi/obfuscated_file_util.h"
-#include "webkit/fileapi/sandbox_file_stream_writer.h"
-#include "webkit/fileapi/sandbox_quota_observer.h"
 #include "webkit/fileapi/syncable/syncable_file_system_operation.h"
 #include "webkit/quota/quota_manager.h"
 

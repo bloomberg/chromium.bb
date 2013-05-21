@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 
 #include <set>
 

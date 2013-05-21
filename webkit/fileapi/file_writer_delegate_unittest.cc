@@ -17,6 +17,7 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/platform_test.h"
+#include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -24,7 +25,6 @@
 #include "webkit/fileapi/file_writer_delegate.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/mock_file_system_context.h"
-#include "webkit/fileapi/sandbox_file_stream_writer.h"
 
 namespace fileapi {
 

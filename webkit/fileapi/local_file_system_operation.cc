@@ -12,6 +12,7 @@
 #include "net/url_request/url_request_context.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/fileapi/async_file_util.h"
 #include "webkit/fileapi/cross_operation_delegate.h"
 #include "webkit/fileapi/file_observers.h"
@@ -24,7 +25,6 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_writer_delegate.h"
 #include "webkit/fileapi/remove_operation_delegate.h"
-#include "webkit/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 
