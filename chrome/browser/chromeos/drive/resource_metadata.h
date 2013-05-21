@@ -356,10 +356,6 @@ class ResourceMetadata {
   // Removes the entry and its descendants.
   bool RemoveEntryRecursively(const std::string& resource_id);
 
-  // Converts the children as a vector of ResourceEntry.
-  scoped_ptr<ResourceEntryVector> DirectoryChildrenToProtoVector(
-      const std::string& directory_resource_id);
-
   const base::FilePath data_directory_path_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

@@ -703,7 +703,17 @@ FileError ResourceMetadata::ReadDirectoryByPath(
   if (!entry->file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
-  DirectoryChildrenToProtoVector(entry->resource_id())->swap(*out_entries);
+  std::vector<std::string> children;
+  storage_->GetChildren(entry->resource_id(), &children);
+
+  ResourceEntryVector entries;
+  for (size_t i = 0; i < children.size(); ++i) {
+    scoped_ptr<ResourceEntry> child = storage_->GetEntry(children[i]);
+    if (!child)
+      return FILE_ERROR_FAILED;
+    entries.push_back(*child);
+  }
+  out_entries->swap(entries);
   return FILE_ERROR_OK;
 }
 
@@ -774,15 +784,14 @@ FileError ResourceMetadata::RefreshDirectory(
   }
 
   // Go through the existing entries and remove deleted entries.
-  scoped_ptr<ResourceEntryVector> entries =
-      DirectoryChildrenToProtoVector(directory->resource_id());
-  for (size_t i = 0; i < entries->size(); ++i) {
+  std::vector<std::string> children;
+  storage_->GetChildren(directory->resource_id(), &children);
+  for (size_t i = 0; i < children.size(); ++i) {
     if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
       return FILE_ERROR_NO_SPACE;
 
-    const ResourceEntry& entry = entries->at(i);
-    if (entry_map.count(entry.resource_id()) == 0) {
-      if (!RemoveEntryRecursively(entry.resource_id()))
+    if (entry_map.count(children[i]) == 0) {
+      if (!RemoveEntryRecursively(children[i]))
         return FILE_ERROR_FAILED;
     }
   }
@@ -918,22 +927,6 @@ bool ResourceMetadata::RemoveEntryRecursively(
     }
   }
   return storage_->RemoveEntry(resource_id);
-}
-
-scoped_ptr<ResourceEntryVector>
-ResourceMetadata::DirectoryChildrenToProtoVector(
-    const std::string& directory_resource_id) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  scoped_ptr<ResourceEntryVector> entries(new ResourceEntryVector);
-  std::vector<std::string> children;
-  storage_->GetChildren(directory_resource_id, &children);
-  for (size_t i = 0; i < children.size(); ++i) {
-    scoped_ptr<ResourceEntry> child = storage_->GetEntry(children[i]);
-    DCHECK(child);
-    entries->push_back(*child);
-  }
-  return entries.Pass();
 }
 
 }  // namespace internal
