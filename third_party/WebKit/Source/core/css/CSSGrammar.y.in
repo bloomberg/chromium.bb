@@ -585,7 +585,7 @@ media_query_exp:
         if ($1 != MediaQuery::None)
             $$ = parser->createFloatingMediaQueryExp("", 0);
         else {
-            $5.lower();
+            parser->tokenToLowerCase($5);
             $$ = parser->createFloatingMediaQueryExp($5, $7);
         }
     }
@@ -629,7 +629,7 @@ media_query:
     }
     |
     maybe_media_restrictor maybe_space medium maybe_and_media_query_exp_list {
-        $3.lower();
+        parser->tokenToLowerCase($3);
         $$ = parser->createFloatingMediaQuery($1, $3, parser->sinkFloatingMediaQueryExpList($4));
     }
     ;
@@ -1228,10 +1228,9 @@ simple_selector_list:
 
 element_name:
     IDENT {
-        CSSParserString& str = $1;
         if (parser->m_context.isHTMLDocument)
-            str.lower();
-        $$ = str;
+            parser->tokenToLowerCase($1);
+        $$ = $1;
     }
     | '*' {
         static LChar star = '*';
@@ -1259,7 +1258,7 @@ specifier:
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::Id);
         if (parser->m_context.mode == CSSQuirksMode)
-            $1.lower();
+            parser->tokenToLowerCase($1);
         $$->setValue($1);
     }
   | HEX {
@@ -1269,7 +1268,7 @@ specifier:
             $$ = parser->createFloatingSelector();
             $$->setMatch(CSSSelector::Id);
             if (parser->m_context.mode == CSSQuirksMode)
-                $1.lower();
+                parser->tokenToLowerCase($1);
             $$->setValue($1);
         }
     }
@@ -1283,17 +1282,16 @@ class:
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::Class);
         if (parser->m_context.mode == CSSQuirksMode)
-            $2.lower();
+            parser->tokenToLowerCase($2);
         $$->setValue($2);
     }
   ;
 
 attr_name:
     IDENT maybe_space {
-        CSSParserString& str = $1;
         if (parser->m_context.isHTMLDocument)
-            str.lower();
-        $$ = str;
+            parser->tokenToLowerCase($1);
+        $$ = $1;
     }
     ;
 
@@ -1355,7 +1353,7 @@ pseudo_page:
     ':' IDENT {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PagePseudoClass);
-        $2.lower();
+        parser->tokenToLowerCase($2);
         $$->setValue($2);
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
@@ -1366,7 +1364,7 @@ pseudo:
     ':' IDENT {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
-        $2.lower();
+        parser->tokenToLowerCase($2);
         $$->setValue($2);
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
@@ -1375,7 +1373,7 @@ pseudo:
     | ':' ':' IDENT {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoElement);
-        $3.lower();
+        parser->tokenToLowerCase($3);
         $$->setValue($3);
         // FIXME: This call is needed to force selector to compute the pseudoType early enough.
         CSSSelector::PseudoType type = $$->pseudoType();
@@ -1405,7 +1403,7 @@ pseudo:
             $$ = parser->createFloatingSelector();
             $$->setMatch(CSSSelector::PseudoElement);
             $$->setFunctionArgumentSelector($5);
-            $3.lower();
+            parser->tokenToLowerCase($3);
             $$->setValue($3);
         }
     }
@@ -1422,7 +1420,7 @@ pseudo:
             $$ = parser->createFloatingSelector();
             $$->setMatch(CSSSelector::PseudoClass);
             $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($4));
-            $2.lower();
+            parser->tokenToLowerCase($2);
             $$->setValue($2);
             CSSSelector::PseudoType type = $$->pseudoType();
             if (type != CSSSelector::PseudoAny)
@@ -1458,7 +1456,7 @@ pseudo:
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
         $$->setArgument($4);
-        $2.lower();
+        parser->tokenToLowerCase($2);
         $$->setValue($2);
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
@@ -1486,7 +1484,7 @@ pseudo:
             selectorVector.append(parser->sinkFloatingSelector($4));
             $$->adoptSelectorVector(selectorVector);
 
-            $2.lower();
+            parser->tokenToLowerCase($2);
             $$->setValue($2);
         }
     }

@@ -397,6 +397,8 @@ public:
 
     int token() { return m_token; }
 
+    void tokenToLowerCase(const CSSParserString& token);
+
 #if ENABLE(CSS_DEVICE_ADAPTATION)
     void markViewportRuleBodyStart() { m_inViewport = true; }
     void markViewportRuleBodyEnd() { m_inViewport = false; }

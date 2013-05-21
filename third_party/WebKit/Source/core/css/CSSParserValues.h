@@ -32,14 +32,14 @@ class CSSValue;
 class QualifiedName;
 
 struct CSSParserString {
-    void init(LChar* characters, unsigned length)
+    void init(const LChar* characters, unsigned length)
     {
         m_data.characters8 = characters;
         m_length = length;
         m_is8Bit = true;
     }
 
-    void init(UChar* characters, unsigned length)
+    void init(const UChar* characters, unsigned length)
     {
         m_data.characters16 = characters;
         m_length = length;
@@ -71,15 +71,13 @@ struct CSSParserString {
     }
 
     bool is8Bit() const { return m_is8Bit; }
-    LChar* characters8() const { ASSERT(is8Bit()); return m_data.characters8; }
-    UChar* characters16() const { ASSERT(!is8Bit()); return m_data.characters16; }
+    const LChar* characters8() const { ASSERT(is8Bit()); return m_data.characters8; }
+    const UChar* characters16() const { ASSERT(!is8Bit()); return m_data.characters16; }
     template <typename CharacterType>
-    CharacterType* characters() const;
+    const CharacterType* characters() const;
 
     unsigned length() const { return m_length; }
     void setLength(unsigned length) { m_length = length; }
-
-    void lower();
 
     UChar operator[](unsigned i) const
     {
@@ -113,8 +111,8 @@ struct CSSParserString {
     operator AtomicString() const { return is8Bit() ? AtomicString(m_data.characters8, m_length) : AtomicString(m_data.characters16, m_length); }
 
     union {
-        LChar* characters8;
-        UChar* characters16;
+        const LChar* characters8;
+        const UChar* characters16;
     } m_data;
     unsigned m_length;
     bool m_is8Bit;

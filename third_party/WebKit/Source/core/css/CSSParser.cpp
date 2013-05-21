@@ -296,34 +296,6 @@ CSSParser::~CSSParser()
     deleteAllValues(m_floatingFunctions);
 }
 
-template <typename CharacterType>
-ALWAYS_INLINE static void makeLower(const CharacterType* input, CharacterType* output, unsigned length)
-{
-    // FIXME: If we need Unicode lowercasing here, then we probably want the real kind
-    // that can potentially change the length of the string rather than the character
-    // by character kind. If we don't need Unicode lowercasing, it would be good to
-    // simplify this function.
-
-    if (charactersAreAllASCII(input, length)) {
-        // Fast case for all-ASCII.
-        for (unsigned i = 0; i < length; i++)
-            output[i] = toASCIILower(input[i]);
-    } else {
-        for (unsigned i = 0; i < length; i++)
-            output[i] = Unicode::toLower(input[i]);
-    }
-}
-
-void CSSParserString::lower()
-{
-    if (is8Bit()) {
-        makeLower(characters8(), characters8(), length());
-        return;
-    }
-
-    makeLower(characters16(), characters16(), length());
-}
-
 void CSSParser::setupParser(const char* prefix, unsigned prefixLength, const String& string, const char* suffix, unsigned suffixLength)
 {
     m_parsedTextPrefixLength = prefixLength;
@@ -9393,10 +9365,10 @@ static inline CharacterType* skipWhiteSpace(CharacterType* currentCharacter)
 // Main CSS tokenizer functions.
 
 template <>
-LChar* CSSParserString::characters<LChar>() const { return characters8(); }
+const LChar* CSSParserString::characters<LChar>() const { return characters8(); }
 
 template <>
-UChar* CSSParserString::characters<UChar>() const { return characters16(); }
+const UChar* CSSParserString::characters<UChar>() const { return characters16(); }
 
 template <>
 inline LChar*& CSSParser::currentCharacter<LChar>()
@@ -10926,6 +10898,37 @@ CSSParser::RuleList* CSSParser::createRuleList()
 
     m_parsedRuleLists.append(list.release());
     return listPtr;
+}
+
+
+template <typename CharacterType>
+ALWAYS_INLINE static void makeLower(const CharacterType* input, CharacterType* output, unsigned length)
+{
+    // FIXME: If we need Unicode lowercasing here, then we probably want the real kind
+    // that can potentially change the length of the string rather than the character
+    // by character kind. If we don't need Unicode lowercasing, it would be good to
+    // simplify this function.
+
+    if (charactersAreAllASCII(input, length)) {
+        // Fast case for all-ASCII.
+        for (unsigned i = 0; i < length; i++)
+            output[i] = toASCIILower(input[i]);
+    } else {
+        for (unsigned i = 0; i < length; i++)
+            output[i] = Unicode::toLower(input[i]);
+    }
+}
+
+void CSSParser::tokenToLowerCase(const CSSParserString& token)
+{
+    size_t length = token.length();
+    if (is8BitSource()) {
+        size_t offset = token.characters8() - m_dataStart8.get();
+        makeLower(token.characters8(), m_dataStart8.get() + offset, length);
+    } else {
+        size_t offset = token.characters16() - m_dataStart16.get();
+        makeLower(token.characters16(), m_dataStart16.get() + offset, length);
+    }
 }
 
 void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
