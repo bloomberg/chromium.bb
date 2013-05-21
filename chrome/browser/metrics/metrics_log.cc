@@ -110,31 +110,31 @@ OmniboxEventProto::InputType AsOmniboxEventInputType(
 OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
     AutocompleteMatch::Type type) {
   switch (type) {
-    case AutocompleteMatch::URL_WHAT_YOU_TYPED:
+    case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
       return OmniboxEventProto::Suggestion::URL_WHAT_YOU_TYPED;
-    case AutocompleteMatch::HISTORY_URL:
+    case AutocompleteMatchType::HISTORY_URL:
       return OmniboxEventProto::Suggestion::HISTORY_URL;
-    case AutocompleteMatch::HISTORY_TITLE:
+    case AutocompleteMatchType::HISTORY_TITLE:
       return OmniboxEventProto::Suggestion::HISTORY_TITLE;
-    case AutocompleteMatch::HISTORY_BODY:
+    case AutocompleteMatchType::HISTORY_BODY:
       return OmniboxEventProto::Suggestion::HISTORY_BODY;
-    case AutocompleteMatch::HISTORY_KEYWORD:
+    case AutocompleteMatchType::HISTORY_KEYWORD:
       return OmniboxEventProto::Suggestion::HISTORY_KEYWORD;
-    case AutocompleteMatch::NAVSUGGEST:
+    case AutocompleteMatchType::NAVSUGGEST:
       return OmniboxEventProto::Suggestion::NAVSUGGEST;
-    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
+    case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
       return OmniboxEventProto::Suggestion::SEARCH_WHAT_YOU_TYPED;
-    case AutocompleteMatch::SEARCH_HISTORY:
+    case AutocompleteMatchType::SEARCH_HISTORY:
       return OmniboxEventProto::Suggestion::SEARCH_HISTORY;
-    case AutocompleteMatch::SEARCH_SUGGEST:
+    case AutocompleteMatchType::SEARCH_SUGGEST:
       return OmniboxEventProto::Suggestion::SEARCH_SUGGEST;
-    case AutocompleteMatch::SEARCH_OTHER_ENGINE:
+    case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
       return OmniboxEventProto::Suggestion::SEARCH_OTHER_ENGINE;
-    case AutocompleteMatch::EXTENSION_APP:
+    case AutocompleteMatchType::EXTENSION_APP:
       return OmniboxEventProto::Suggestion::EXTENSION_APP;
-    case AutocompleteMatch::CONTACT:
+    case AutocompleteMatchType::CONTACT:
       return OmniboxEventProto::Suggestion::CONTACT;
-    case AutocompleteMatch::BOOKMARK_TITLE:
+    case AutocompleteMatchType::BOOKMARK_TITLE:
       return OmniboxEventProto::Suggestion::BOOKMARK_TITLE;
     default:
       NOTREACHED();
@@ -1060,7 +1060,7 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
       OPEN_ELEMENT_FOR_SCOPE("autocompleteitem");
       if (i->provider)
         WriteAttribute("provider", i->provider->GetName());
-      const std::string result_type(AutocompleteMatch::TypeToString(i->type));
+      const std::string result_type(AutocompleteMatchType::ToString(i->type));
       if (!result_type.empty())
         WriteAttribute("resulttype", result_type);
       WriteIntAttribute("relevance", i->relevance);

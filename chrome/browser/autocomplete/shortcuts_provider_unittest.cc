@@ -646,7 +646,7 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
                backend_->shortcuts_map().find(ASCIIToUTF16("erase")));
 
   AutocompleteMatch match(provider_, 1200, true,
-                          AutocompleteMatch::HISTORY_TITLE);
+                          AutocompleteMatchType::HISTORY_TITLE);
 
   match.destination_url = GURL(shortcuts_to_test_delete[0].url);
   match.contents = ASCIIToUTF16(shortcuts_to_test_delete[0].contents);

@@ -176,7 +176,7 @@ void ZeroSuggestProvider::AddMatchForCurrentURL() {
     // that it is in the first suggestion slot and inline autocompleted. It
     // gets dropped as soon as the user types something.
     AutocompleteMatch match(this, kMaxZeroSuggestRelevance, false,
-                            AutocompleteMatch::NAVSUGGEST);
+                            AutocompleteMatchType::NAVSUGGEST);
     match.destination_url = GURL(current_query_);
     match.contents = current_query_text;
     if (!user_text_is_url) {
@@ -209,7 +209,7 @@ void ZeroSuggestProvider::AddMatchForResult(
   // TODO(jered): Use real scores from the suggestion server.
   const int suggestion_relevance = kMaxZeroSuggestRelevance - matches_.size();
   AutocompleteMatch match(this, suggestion_relevance, false,
-      AutocompleteMatch::SEARCH_SUGGEST);
+                          AutocompleteMatchType::SEARCH_SUGGEST);
   match.contents = result;
   match.fill_into_edit = result;
   if (!user_text_is_url && user_text_ != result)

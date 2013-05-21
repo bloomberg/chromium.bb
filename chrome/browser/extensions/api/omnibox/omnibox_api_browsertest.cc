@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
     const AutocompleteResult& result = autocomplete_controller->result();
     ASSERT_EQ(2U, result.size()) << AutocompleteResultAsString(result);
     AutocompleteMatch match = result.match_at(0);
-    EXPECT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, match.type);
+    EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, match.type);
     EXPECT_FALSE(match.deletable);
 
     match = result.match_at(1);
@@ -70,7 +70,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
     EXPECT_EQ(ASCIIToUTF16("keyword"), result.match_at(0).keyword);
     EXPECT_EQ(ASCIIToUTF16("keyword suggestio"),
               result.match_at(0).fill_into_edit);
-    EXPECT_EQ(AutocompleteMatch::SEARCH_OTHER_ENGINE, result.match_at(0).type);
+    EXPECT_EQ(AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+              result.match_at(0).type);
     EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
               result.match_at(0).provider->type());
     EXPECT_EQ(ASCIIToUTF16("keyword"), result.match_at(1).keyword);
@@ -125,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
               result.match_at(1).contents_class[5].style);
 
     AutocompleteMatch match = result.match_at(4);
-    EXPECT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, match.type);
+    EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, match.type);
     EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,
               result.match_at(4).provider->type());
     EXPECT_FALSE(match.deletable);

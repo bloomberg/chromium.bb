@@ -70,7 +70,7 @@ class SearchProviderTest : public testing::Test,
   virtual void TearDown();
 
   struct ResultInfo {
-    ResultInfo() : result_type(AutocompleteMatch::NUM_TYPES) {
+    ResultInfo() : result_type(AutocompleteMatchType::NUM_TYPES) {
     }
     ResultInfo(GURL gurl,
                AutocompleteMatch::Type result_type,
@@ -430,7 +430,7 @@ TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
   QueryForInput(term, true, false);
 
   ASSERT_FALSE(provider_->matches().empty());
-  ASSERT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+  ASSERT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
             provider_->matches()[0].type);
 }
 
@@ -873,9 +873,11 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   // keyword provider's what-you-typed, and one for the default provider's
   // what you typed, in that order.
   ASSERT_EQ(3u, result.size());
-  EXPECT_EQ(AutocompleteMatch::SEARCH_HISTORY, result.match_at(0).type);
-  EXPECT_EQ(AutocompleteMatch::SEARCH_OTHER_ENGINE, result.match_at(1).type);
-  EXPECT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, result.match_at(2).type);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_HISTORY, result.match_at(0).type);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+            result.match_at(1).type);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+            result.match_at(2).type);
   EXPECT_GT(result.match_at(0).relevance, result.match_at(1).relevance);
   EXPECT_GT(result.match_at(1).relevance, result.match_at(2).relevance);
 
@@ -901,20 +903,20 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
     // Test a simple keyword input.
     { ASCIIToUTF16("k foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
-                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                    ASCIIToUTF16("k foo")),
         ResultInfo(GURL("http://defaultturl/k%20foo"),
-                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    ASCIIToUTF16("k foo") ) } },
 
     // Make sure extra whitespace after the keyword doesn't change the
     // keyword verbatim query.
     { ASCIIToUTF16("k   foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
-                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                    ASCIIToUTF16("k foo")),
         ResultInfo(GURL("http://defaultturl/k%20%20%20foo"),
-                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    ASCIIToUTF16("k   foo")) } },
     // Leading whitespace should be stripped before SearchProvider gets the
     // input; hence there are no tests here about how it handles those inputs.
@@ -923,10 +925,10 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
     // matches.
     { ASCIIToUTF16("k  foo  bar"), 2,
       { ResultInfo(GURL("http://keyword/foo%20%20bar"),
-                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                    ASCIIToUTF16("k foo  bar")),
         ResultInfo(GURL("http://defaultturl/k%20%20foo%20%20bar"),
-                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    ASCIIToUTF16("k  foo  bar")) } },
     // Note in the above test case we don't test trailing whitespace because
     // SearchProvider still doesn't handle this well.  See related bugs:
@@ -936,35 +938,35 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
     // when constructing the keyword match.
     { ASCIIToUTF16("www.k foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
-                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                    ASCIIToUTF16("k foo")),
         ResultInfo(GURL("http://defaultturl/www.k%20foo"),
-                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    ASCIIToUTF16("www.k foo")) } },
     { ASCIIToUTF16("http://k foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
-                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                    ASCIIToUTF16("k foo")),
         ResultInfo(GURL("http://defaultturl/http%3A//k%20foo"),
-                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    ASCIIToUTF16("http://k foo")) } },
     { ASCIIToUTF16("http://www.k foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
-                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                    ASCIIToUTF16("k foo")),
         ResultInfo(GURL("http://defaultturl/http%3A//www.k%20foo"),
-                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    ASCIIToUTF16("http://www.k foo")) } },
 
     // A keyword with no remaining input shouldn't get a keyword
     // verbatim match.
     { ASCIIToUTF16("k"), 1,
       { ResultInfo(GURL("http://defaultturl/k"),
-                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    ASCIIToUTF16("k")) } },
     { ASCIIToUTF16("k "), 1,
       { ResultInfo(GURL("http://defaultturl/k%20"),
-                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    ASCIIToUTF16("k ")) } }
 
     // The fact that verbatim queries to keyword are handled by KeywordProvider
@@ -1667,61 +1669,63 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
                 "{\"google:suggesttype\":[\"NAVIGATION\"],"
                  "\"google:suggestrelevance\":[9999]}]",
       { "a.com/a", "a.com", kNotApplicable, kNotApplicable },
-      { AutocompleteMatch::NAVSUGGEST, AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
-        AutocompleteMatch::NUM_TYPES, AutocompleteMatch::NUM_TYPES } },
+      { AutocompleteMatchType::NAVSUGGEST,
+        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::NUM_TYPES,
+        AutocompleteMatchType::NUM_TYPES } },
 
     // Ensure topmost SUGGEST matches are not allowed for URL input.
     // SearchProvider disregards search and verbatim suggested relevances.
     { "a.com", "[\"a.com\",[\"a.com info\"],[],[],"
                 "{\"google:suggestrelevance\":[9999]}]",
       { "a.com", "a.com info", kNotApplicable, kNotApplicable },
-      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
-        AutocompleteMatch::SEARCH_SUGGEST,
-        AutocompleteMatch::NUM_TYPES, AutocompleteMatch::NUM_TYPES } },
+      { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::SEARCH_SUGGEST,
+        AutocompleteMatchType::NUM_TYPES, AutocompleteMatchType::NUM_TYPES } },
     { "a.com", "[\"a.com\",[\"a.com/a\"],[],[],"
                 "{\"google:suggestrelevance\":[9999]}]",
       { "a.com", "a.com/a", kNotApplicable, kNotApplicable },
-      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
-        AutocompleteMatch::SEARCH_SUGGEST,
-        AutocompleteMatch::NUM_TYPES, AutocompleteMatch::NUM_TYPES } },
+      { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::SEARCH_SUGGEST,
+        AutocompleteMatchType::NUM_TYPES, AutocompleteMatchType::NUM_TYPES } },
 
     // Ensure the fallback mechanism allows inlinable NAVIGATION matches.
     { "a.com", "[\"a.com\",[\"a.com/a\", \"http://a.com/b\"],[],[],"
                 "{\"google:suggesttype\":[\"QUERY\", \"NAVIGATION\"],"
                  "\"google:suggestrelevance\":[9999, 9998]}]",
       { "a.com/b", "a.com", "a.com/a", kNotApplicable },
-      { AutocompleteMatch::NAVSUGGEST,
-        AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
-        AutocompleteMatch::SEARCH_SUGGEST,
-        AutocompleteMatch::NUM_TYPES } },
+      { AutocompleteMatchType::NAVSUGGEST,
+        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::SEARCH_SUGGEST,
+        AutocompleteMatchType::NUM_TYPES } },
     { "a.com", "[\"a.com\",[\"a.com/a\", \"http://a.com/b\"],[],[],"
                 "{\"google:suggesttype\":[\"QUERY\", \"NAVIGATION\"],"
                  "\"google:suggestrelevance\":[9998, 9997],"
                  "\"google:verbatimrelevance\":9999}]",
       { "a.com/b", "a.com", "a.com/a", kNotApplicable },
-      { AutocompleteMatch::NAVSUGGEST,
-        AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
-        AutocompleteMatch::SEARCH_SUGGEST,
-        AutocompleteMatch::NUM_TYPES } },
+      { AutocompleteMatchType::NAVSUGGEST,
+        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::SEARCH_SUGGEST,
+        AutocompleteMatchType::NUM_TYPES } },
 
     // Ensure the fallback mechanism disallows non-inlinable NAVIGATION matches.
     { "a.com", "[\"a.com\",[\"a.com/a\", \"http://abc.com\"],[],[],"
                 "{\"google:suggesttype\":[\"QUERY\", \"NAVIGATION\"],"
       "\"google:suggestrelevance\":[9999, 9998]}]",
       { "a.com", "abc.com", "a.com/a", kNotApplicable },
-      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
-        AutocompleteMatch::NAVSUGGEST,
-        AutocompleteMatch::SEARCH_SUGGEST,
-        AutocompleteMatch::NUM_TYPES } },
+      { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::NAVSUGGEST,
+        AutocompleteMatchType::SEARCH_SUGGEST,
+        AutocompleteMatchType::NUM_TYPES } },
     { "a.com", "[\"a.com\",[\"a.com/a\", \"http://abc.com\"],[],[],"
                 "{\"google:suggesttype\":[\"QUERY\", \"NAVIGATION\"],"
                  "\"google:suggestrelevance\":[9998, 9997],"
                  "\"google:verbatimrelevance\":9999}]",
       { "a.com", "abc.com", "a.com/a", kNotApplicable },
-      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
-        AutocompleteMatch::NAVSUGGEST,
-        AutocompleteMatch::SEARCH_SUGGEST,
-        AutocompleteMatch::NUM_TYPES } },
+      { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::NAVSUGGEST,
+        AutocompleteMatchType::SEARCH_SUGGEST,
+        AutocompleteMatchType::NUM_TYPES } },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
@@ -1744,7 +1748,7 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
     // Ensure that no expected matches are missing.
     for (; j < ARRAYSIZE_UNSAFE(cases[i].match_contents); ++j) {
       EXPECT_EQ(kNotApplicable, cases[i].match_contents[j]);
-      EXPECT_EQ(AutocompleteMatch::NUM_TYPES, cases[i].match_types[j]);
+      EXPECT_EQ(AutocompleteMatchType::NUM_TYPES, cases[i].match_types[j]);
     }
   }
 }

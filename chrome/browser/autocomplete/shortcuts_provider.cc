@@ -177,7 +177,7 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     const history::ShortcutsBackend::Shortcut& shortcut) {
   DCHECK(!term_string.empty());
   AutocompleteMatch match(this, relevance, true,
-                          AutocompleteMatch::HISTORY_TITLE);
+                          AutocompleteMatchType::HISTORY_TITLE);
   match.destination_url = shortcut.url;
   DCHECK(match.destination_url.is_valid());
   match.fill_into_edit = UTF8ToUTF16(shortcut.url.spec());

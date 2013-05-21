@@ -100,6 +100,8 @@
         'common/attrition_experiments.h',
         'common/auto_start_linux.cc',
         'common/auto_start_linux.h',
+        'common/autocomplete_match_type.cc',
+        'common/autocomplete_match_type.h',
         'common/automation_constants.cc',
         'common/automation_constants.h',
         'common/automation_events.cc',

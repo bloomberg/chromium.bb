@@ -85,13 +85,13 @@ void TestProvider::Start(const AutocompleteInput& input,
   // Generate 4 results synchronously, the rest later.
   AddResults(0, 1);
   AddResultsWithSearchTermsArgs(
-      1, 1, AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+      1, 1, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
       TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("echo")));
   AddResultsWithSearchTermsArgs(
-      2, 1, AutocompleteMatch::NAVSUGGEST,
+      2, 1, AutocompleteMatchType::NAVSUGGEST,
       TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("nav")));
   AddResultsWithSearchTermsArgs(
-      3, 1, AutocompleteMatch::SEARCH_SUGGEST,
+      3, 1, AutocompleteMatchType::SEARCH_SUGGEST,
       TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("query")));
 
   if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
@@ -112,7 +112,7 @@ void TestProvider::Run() {
 void TestProvider::AddResults(int start_at, int num) {
   AddResultsWithSearchTermsArgs(start_at,
                                 num,
-                                AutocompleteMatch::URL_WHAT_YOU_TYPED,
+                                AutocompleteMatchType::URL_WHAT_YOU_TYPED,
                                 TemplateURLRef::SearchTermsArgs(string16()));
 }
 
@@ -411,8 +411,8 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,
       controller_->result().default_match()->provider->type());
   EXPECT_EQ(allow_exact_keyword_match ?
-      AutocompleteMatch::SEARCH_OTHER_ENGINE :
-      AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+      AutocompleteMatchType::SEARCH_OTHER_ENGINE :
+      AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
       controller_->result().default_match()->type);
 }
 
@@ -528,7 +528,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
   {
     AssistedQueryStatsTestData test_data[] = {
       //  MSVC doesn't support zero-length arrays, so supply some dummy data.
-      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, "" }
+      { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, "" }
     };
     SCOPED_TRACE("No matches");
     // Note: We pass 0 here to ignore the dummy data above.
@@ -537,7 +537,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
 
   {
     AssistedQueryStatsTestData test_data[] = {
-      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, "chrome.0.69i57" }
+      { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, "chrome.0.69i57" }
     };
     SCOPED_TRACE("One match");
     RunAssistedQueryStatsTest(test_data, ARRAYSIZE_UNSAFE(test_data));
@@ -545,21 +545,21 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
 
   {
     AssistedQueryStatsTestData test_data[] = {
-      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+      { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         "chrome.0.69i57j69i58j5l2j0l3j69i59" },
-      { AutocompleteMatch::URL_WHAT_YOU_TYPED,
+      { AutocompleteMatchType::URL_WHAT_YOU_TYPED,
         "chrome.1.69i57j69i58j5l2j0l3j69i59" },
-      { AutocompleteMatch::NAVSUGGEST,
+      { AutocompleteMatchType::NAVSUGGEST,
         "chrome.2.69i57j69i58j5l2j0l3j69i59" },
-      { AutocompleteMatch::NAVSUGGEST,
+      { AutocompleteMatchType::NAVSUGGEST,
         "chrome.3.69i57j69i58j5l2j0l3j69i59" },
-      { AutocompleteMatch::SEARCH_SUGGEST,
+      { AutocompleteMatchType::SEARCH_SUGGEST,
         "chrome.4.69i57j69i58j5l2j0l3j69i59" },
-      { AutocompleteMatch::SEARCH_SUGGEST,
+      { AutocompleteMatchType::SEARCH_SUGGEST,
         "chrome.5.69i57j69i58j5l2j0l3j69i59" },
-      { AutocompleteMatch::SEARCH_SUGGEST,
+      { AutocompleteMatchType::SEARCH_SUGGEST,
         "chrome.6.69i57j69i58j5l2j0l3j69i59" },
-      { AutocompleteMatch::SEARCH_HISTORY,
+      { AutocompleteMatchType::SEARCH_HISTORY,
         "chrome.7.69i57j69i58j5l2j0l3j69i59" },
     };
     SCOPED_TRACE("Multiple matches");
@@ -573,7 +573,7 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
   // For the destination URL to have aqs parameters for query formulation time
   // and the field trial triggered bit, many conditions need to be satisfied.
   AutocompleteMatch match(NULL, 1100, false,
-                          AutocompleteMatch::SEARCH_SUGGEST);
+                          AutocompleteMatchType::SEARCH_SUGGEST);
   GURL url = controller_->
       GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_TRUE(url.path().empty());

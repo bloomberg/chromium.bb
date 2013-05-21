@@ -54,43 +54,43 @@ void AutocompleteMatchToAssistedQuery(
   *subtype = string16::npos;
 
   switch (match) {
-    case AutocompleteMatch::SEARCH_SUGGEST: {
+    case AutocompleteMatchType::SEARCH_SUGGEST: {
       *type = 0;
       return;
     }
-    case AutocompleteMatch::NAVSUGGEST: {
+    case AutocompleteMatchType::NAVSUGGEST: {
       *type = 5;
       return;
     }
-    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED: {
+    case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED: {
       *subtype = 57;
       return;
     }
-    case AutocompleteMatch::URL_WHAT_YOU_TYPED: {
+    case AutocompleteMatchType::URL_WHAT_YOU_TYPED: {
       *subtype = 58;
       return;
     }
-    case AutocompleteMatch::SEARCH_HISTORY: {
+    case AutocompleteMatchType::SEARCH_HISTORY: {
       *subtype = 59;
       return;
     }
-    case AutocompleteMatch::HISTORY_URL: {
+    case AutocompleteMatchType::HISTORY_URL: {
       *subtype = 60;
       return;
     }
-    case AutocompleteMatch::HISTORY_TITLE: {
+    case AutocompleteMatchType::HISTORY_TITLE: {
       *subtype = 61;
       return;
     }
-    case AutocompleteMatch::HISTORY_BODY: {
+    case AutocompleteMatchType::HISTORY_BODY: {
       *subtype = 62;
       return;
     }
-    case AutocompleteMatch::HISTORY_KEYWORD: {
+    case AutocompleteMatchType::HISTORY_KEYWORD: {
       *subtype = 63;
       return;
     }
-    case AutocompleteMatch::BOOKMARK_TITLE: {
+    case AutocompleteMatchType::BOOKMARK_TITLE: {
       *subtype = 65;
       return;
     }

@@ -160,7 +160,8 @@ AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
   // The AutocompleteMatch we construct is non-deletable because the only
   // way to support this would be to delete the underlying bookmark, which is
   // unlikely to be what the user intends.
-  AutocompleteMatch match(this, 0, false, AutocompleteMatch::BOOKMARK_TITLE);
+  AutocompleteMatch match(this, 0, false,
+                          AutocompleteMatchType::BOOKMARK_TITLE);
   const string16& title(title_match.node->GetTitle());
   DCHECK(!title.empty());
   const GURL& url(title_match.node->url());

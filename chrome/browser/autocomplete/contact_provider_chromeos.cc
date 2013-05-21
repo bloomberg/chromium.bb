@@ -226,7 +226,7 @@ void ContactProvider::AddContactIfMatched(
 AutocompleteMatch ContactProvider::CreateAutocompleteMatch(
     const AutocompleteInput& input,
     const ContactData& contact) {
-  AutocompleteMatch match(this, 0, false, AutocompleteMatch::CONTACT);
+  AutocompleteMatch match(this, 0, false, AutocompleteMatchType::CONTACT);
   match.inline_autocomplete_offset = string16::npos;
   match.contents = contact.full_name;
   match.fill_into_edit = match.contents;

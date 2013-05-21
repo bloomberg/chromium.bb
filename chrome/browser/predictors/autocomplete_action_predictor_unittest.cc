@@ -352,7 +352,7 @@ TEST_F(AutocompleteActionPredictorTest, RecommendActionURL) {
   ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   AutocompleteMatch match;
-  match.type = AutocompleteMatch::HISTORY_URL;
+  match.type = AutocompleteMatchType::HISTORY_URL;
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_url_db); ++i) {
     match.destination_url = GURL(test_url_db[i].url);
@@ -366,7 +366,7 @@ TEST_F(AutocompleteActionPredictorTest, RecommendActionSearch) {
   ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   AutocompleteMatch match;
-  match.type = AutocompleteMatch::SEARCH_WHAT_YOU_TYPED;
+  match.type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
 
   for (size_t i = 0; i < arraysize(test_url_db); ++i) {
     match.destination_url = GURL(test_url_db[i].url);

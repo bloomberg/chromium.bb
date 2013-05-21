@@ -113,7 +113,7 @@ BuiltinProvider::~BuiltinProvider() {}
 void BuiltinProvider::AddMatch(const string16& match_string,
                                const ACMatchClassifications& styles) {
   AutocompleteMatch match(this, kRelevance, false,
-                          AutocompleteMatch::NAVSUGGEST);
+                          AutocompleteMatchType::NAVSUGGEST);
   match.fill_into_edit = match_string;
   match.destination_url = GURL(match_string);
   match.contents = match_string;

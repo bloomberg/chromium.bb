@@ -751,7 +751,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
     view_->RevertAll();  // Revert the box to its unedited state
   }
 
-  if (match.type == AutocompleteMatch::EXTENSION_APP) {
+  if (match.type == AutocompleteMatchType::EXTENSION_APP) {
     ExtensionAppProvider::LaunchAppFromOmnibox(match, profile_, disposition);
   } else {
     base::TimeDelta query_formulation_time =
@@ -1279,7 +1279,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
     // just getting a "search what you typed" URL from
     // SearchProvider::CreateSearchSuggestion(), since the user may be in a
     // non-default search mode such as image search.
-    match->type = AutocompleteMatch::SEARCH_WHAT_YOU_TYPED;
+    match->type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
     match->destination_url =
         delegate_->GetNavigationController().GetVisibleEntry()->GetURL();
     match->transition = content::PAGE_TRANSITION_RELOAD;
@@ -1311,7 +1311,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
         if (default_provider && default_provider->SupportsReplacement()) {
           *match = SearchProvider::CreateSearchSuggestion(profile_,
               autocomplete_controller()->search_provider(), input, text, text,
-              0, AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+              0, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
               TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, false,
               default_provider->keyword());
         } else {
@@ -1465,7 +1465,7 @@ void OmniboxEditModel::DoPreconnect(const AutocompleteMatch& match) {
   if (!match.destination_url.SchemeIs(extensions::kExtensionScheme)) {
     // Warm up DNS Prefetch cache, or preconnect to a search service.
     UMA_HISTOGRAM_ENUMERATION("Autocomplete.MatchType", match.type,
-                              AutocompleteMatch::NUM_TYPES);
+                              AutocompleteMatchType::NUM_TYPES);
     if (profile_->GetNetworkPredictor()) {
       profile_->GetNetworkPredictor()->AnticipateOmniboxUrl(
           match.destination_url,

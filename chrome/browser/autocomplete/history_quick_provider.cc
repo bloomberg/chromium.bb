@@ -32,6 +32,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/autocomplete_match_type.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -333,8 +334,8 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     int score) {
   const history::URLRow& info = history_match.url_info;
   AutocompleteMatch match(this, score, !!info.visit_count(),
-      history_match.url_matches.empty() ?
-          AutocompleteMatch::HISTORY_TITLE : AutocompleteMatch::HISTORY_URL);
+      history_match.url_matches.empty() ? AutocompleteMatchType::HISTORY_TITLE :
+          AutocompleteMatchType::HISTORY_URL);
   match.typed_count = info.typed_count();
   match.destination_url = info.url();
   DCHECK(match.destination_url.is_valid());

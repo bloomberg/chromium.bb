@@ -301,7 +301,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
       "Update: %s user_text='%s' full_text='%s' selection_start=%d "
       "selection_end=%d verbatim=%d typing=%d popup=%d escape_pressed=%d "
       "is_keyword_search=%d",
-      AutocompleteMatch::TypeToString(match.type).c_str(),
+      AutocompleteMatchType::ToString(match.type).c_str(),
       UTF16ToUTF8(user_text).c_str(), UTF16ToUTF8(full_text).c_str(),
       static_cast<int>(selection_start), static_cast<int>(selection_end),
       verbatim, user_input_in_progress, omnibox_popup_is_open, escape_pressed,
@@ -359,7 +359,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // In non extended mode, Instant is disabled for URLs and keyword mode.
   if (!extended_enabled_ &&
       (!last_match_was_search_ ||
-       match.type == AutocompleteMatch::SEARCH_OTHER_ENGINE)) {
+       match.type == AutocompleteMatchType::SEARCH_OTHER_ENGINE)) {
     HideOverlay();
     return false;
   }
@@ -1820,7 +1820,7 @@ void InstantController::PopulateInstantAutocompleteResultFromMatch(
     InstantAutocompleteResult* result) {
   DCHECK(result);
   result->provider = UTF8ToUTF16(match.provider->GetName());
-  result->type = UTF8ToUTF16(AutocompleteMatch::TypeToString(match.type));
+  result->type = UTF8ToUTF16(AutocompleteMatchType::ToString(match.type));
   result->description = match.description;
   result->destination_url = UTF8ToUTF16(match.destination_url.spec());
 

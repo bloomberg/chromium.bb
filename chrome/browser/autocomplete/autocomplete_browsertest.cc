@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
     // about the other match existing.
     ASSERT_GE(result.size(), 1U) << AutocompleteResultAsString(result);
     AutocompleteMatch match = result.match_at(0);
-    EXPECT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, match.type);
+    EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, match.type);
     EXPECT_FALSE(match.deletable);
   }
 

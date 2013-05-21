@@ -232,8 +232,8 @@ AutocompleteMatch HistoryContentsProvider::ResultToMatch(
     const MatchReference& match_reference) {
   const history::URLResult& result = *match_reference.result;
   AutocompleteMatch match(this, match_reference.relevance, true,
-      MatchInTitle(result) ?
-          AutocompleteMatch::HISTORY_TITLE : AutocompleteMatch::HISTORY_BODY);
+      MatchInTitle(result) ? AutocompleteMatchType::HISTORY_TITLE :
+          AutocompleteMatchType::HISTORY_BODY);
   match.contents = StringForURLDisplay(result.url(), true, trim_http_);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(result.url(),

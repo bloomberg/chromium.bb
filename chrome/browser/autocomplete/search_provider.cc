@@ -256,8 +256,8 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
   // destination_url for comparison as it varies depending upon the index passed
   // to TemplateURL::ReplaceSearchTerms.
   for (ACMatches::iterator i = matches_.begin(); i != matches_.end();) {
-    if (((i->type == AutocompleteMatch::SEARCH_HISTORY) ||
-         (i->type == AutocompleteMatch::SEARCH_SUGGEST)) &&
+    if (((i->type == AutocompleteMatchType::SEARCH_HISTORY) ||
+         (i->type == AutocompleteMatchType::SEARCH_SUGGEST)) &&
         (i->fill_into_edit == text)) {
       i = matches_.erase(i);
       results_updated = true;
@@ -277,7 +277,7 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
         TemplateURLRef::NO_SUGGESTION_CHOSEN;
     MatchMap match_map;
     AddMatchToMap(text, adjusted_input_text, verbatim_relevance + 1,
-                  AutocompleteMatch::SEARCH_SUGGEST,
+                  AutocompleteMatchType::SEARCH_SUGGEST,
                   did_not_accept_default_suggestion, false, &match_map);
     if (!match_map.empty()) {
       matches_.push_back(match_map.begin()->second);
@@ -1047,7 +1047,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
   if (verbatim_relevance > 0) {
     AddMatchToMap(input_.text(), input_.text(), verbatim_relevance,
-                  AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                  AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                   did_not_accept_default_suggestion, false, &map);
   }
   if (!keyword_input_.text().empty()) {
@@ -1063,7 +1063,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       if (keyword_verbatim_relevance > 0) {
         AddMatchToMap(keyword_input_.text(), keyword_input_.text(),
                       keyword_verbatim_relevance,
-                      AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                      AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                       did_not_accept_keyword_suggestion, true, &map);
       }
     }
@@ -1074,7 +1074,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       !input_.prevent_inline_autocomplete())
     AddMatchToMap(input_.text() + default_provider_suggestion_.text,
                   input_.text(), verbatim_relevance + 1,
-                  AutocompleteMatch::SEARCH_SUGGEST,
+                  AutocompleteMatchType::SEARCH_SUGGEST,
                   did_not_accept_default_suggestion, false, &map);
 
   AddHistoryResultsToMap(keyword_history_results_, true,
@@ -1117,7 +1117,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
 
 bool SearchProvider::IsTopMatchNavigationInKeywordMode() const {
   return (!providers_.keyword_provider().empty() &&
-          (matches_.front().type == AutocompleteMatch::NAVSUGGEST));
+          (matches_.front().type == AutocompleteMatchType::NAVSUGGEST));
 }
 
 bool SearchProvider::IsTopMatchScoreTooLow() const {
@@ -1137,20 +1137,22 @@ bool SearchProvider::IsTopMatchScoreTooLow() const {
 bool SearchProvider::IsTopMatchHighRankSearchForURL() const {
   return input_.type() == AutocompleteInput::URL &&
          matches_.front().relevance > CalculateRelevanceForVerbatim() &&
-         (matches_.front().type == AutocompleteMatch::SEARCH_SUGGEST ||
-          matches_.front().type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
-          matches_.front().type == AutocompleteMatch::SEARCH_OTHER_ENGINE);
+         (matches_.front().type == AutocompleteMatchType::SEARCH_SUGGEST ||
+          matches_.front().type ==
+              AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
+          matches_.front().type == AutocompleteMatchType::SEARCH_OTHER_ENGINE);
 }
 
 bool SearchProvider::IsTopMatchNotInlinable() const {
   // Note: this test assumes the SEARCH_OTHER_ENGINE match corresponds to
   // the verbatim search query on the keyword engine.  SearchProvider should
   // not create any other match of type SEARCH_OTHER_ENGINE.
-  return matches_.front().type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
-         matches_.front().type != AutocompleteMatch::URL_WHAT_YOU_TYPED &&
-         matches_.front().type != AutocompleteMatch::SEARCH_OTHER_ENGINE &&
-         matches_.front().inline_autocomplete_offset == string16::npos &&
-         matches_.front().fill_into_edit != input_.text();
+  return
+      matches_.front().type != AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED &&
+      matches_.front().type != AutocompleteMatchType::URL_WHAT_YOU_TYPED &&
+      matches_.front().type != AutocompleteMatchType::SEARCH_OTHER_ENGINE &&
+      matches_.front().inline_autocomplete_offset == string16::npos &&
+      matches_.front().fill_into_edit != input_.text();
 }
 
 void SearchProvider::UpdateMatches() {
@@ -1273,7 +1275,8 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
   for (SuggestResults::const_iterator i(scored_results.begin());
        i != scored_results.end(); ++i) {
     AddMatchToMap(i->suggestion(), input_text, i->relevance(),
-                  AutocompleteMatch::SEARCH_HISTORY, did_not_accept_suggestion,
+                  AutocompleteMatchType::SEARCH_HISTORY,
+                  did_not_accept_suggestion,
                   is_keyword, map);
   }
 }
@@ -1343,7 +1346,7 @@ void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
     const bool is_keyword = results[i].from_keyword_provider();
     const string16& input = is_keyword ? keyword_input_.text() : input_.text();
     AddMatchToMap(results[i].suggestion(), input, results[i].relevance(),
-                  AutocompleteMatch::SEARCH_SUGGEST, i, is_keyword, map);
+                  AutocompleteMatchType::SEARCH_SUGGEST, i, is_keyword, map);
   }
 }
 
@@ -1474,8 +1477,8 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   // -- they should always use grey text if they are to autocomplete at all. So
   // we clamp non-verbatim results to just below the verbatim score to ensure
   // that none of them are inline autocompleted.
-  if (type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
-      type != AutocompleteMatch::SEARCH_OTHER_ENGINE &&
+  if (type != AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED &&
+      type != AutocompleteMatchType::SEARCH_OTHER_ENGINE &&
       chrome::IsInstantExtendedAPIEnabled()) {
     relevance = std::min(kNonURLVerbatimRelevance - 1, relevance);
   }
@@ -1511,7 +1514,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   const string16& input = navigation.from_keyword_provider() ?
       keyword_input_.text() : input_.text();
   AutocompleteMatch match(this, navigation.relevance(), false,
-                          AutocompleteMatch::NAVSUGGEST);
+                          AutocompleteMatchType::NAVSUGGEST);
   match.destination_url = navigation.url();
 
   // First look for the user's input inside the fill_into_edit as it would be

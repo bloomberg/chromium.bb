@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/common/autocomplete_match_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -74,25 +75,7 @@ struct AutocompleteMatch {
   typedef std::map<std::string, std::string> AdditionalInfo;
 
   // The type of this match.
-  enum Type {
-    URL_WHAT_YOU_TYPED = 0,  // The input as a URL.
-    HISTORY_URL,             // A past page whose URL contains the input.
-    HISTORY_TITLE,           // A past page whose title contains the input.
-    HISTORY_BODY,            // A past page whose body contains the input.
-    HISTORY_KEYWORD,         // A past page whose keyword contains the input.
-    NAVSUGGEST,              // A suggested URL.
-    SEARCH_WHAT_YOU_TYPED,   // The input as a search query (with the default
-                             // engine).
-    SEARCH_HISTORY,          // A past search (with the default engine)
-                             // containing the input.
-    SEARCH_SUGGEST,          // A suggested search (with the default engine).
-    SEARCH_OTHER_ENGINE,     // A search with a non-default engine.
-    EXTENSION_APP,           // An Extension App with a title/url that contains
-                             // the input.
-    CONTACT,                 // One of the user's contacts.
-    BOOKMARK_TITLE,          // A bookmark whose title contains the input.
-    NUM_TYPES,
-  };
+  typedef AutocompleteMatchType::Type Type;
 
   // Null-terminated array of characters that are not valid within |contents|
   // and |description| strings.
@@ -108,9 +91,6 @@ struct AutocompleteMatch {
 
   // Converts |type| to a string representation.  Used in logging and debugging.
   AutocompleteMatch& operator=(const AutocompleteMatch& match);
-
-  // Converts |type| to a string representation.  Used in logging.
-  static std::string TypeToString(Type type);
 
   // Converts |type| to a resource identifier for the appropriate icon for this
   // type to show in the completion popup.

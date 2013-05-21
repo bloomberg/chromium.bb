@@ -21,8 +21,10 @@ TEST(AutocompleteMatchTest, MoreRelevant) {
     {  -5, -10, true },
   };
 
-  AutocompleteMatch m1(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED);
-  AutocompleteMatch m2(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED);
+  AutocompleteMatch m1(NULL, 0, false,
+                       AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+  AutocompleteMatch m2(NULL, 0, false,
+                       AutocompleteMatchType::URL_WHAT_YOU_TYPED);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     m1.relevance = cases[i].r1;

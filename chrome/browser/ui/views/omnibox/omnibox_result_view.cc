@@ -125,8 +125,8 @@ OmniboxResultView::OmniboxResultView(
   if (default_icon_size_ == 0) {
     default_icon_size_ =
         location_bar_->GetThemeProvider()->GetImageSkiaNamed(
-        AutocompleteMatch::TypeToIcon(AutocompleteMatch::URL_WHAT_YOU_TYPED))->
-        width();
+            AutocompleteMatch::TypeToIcon(
+                AutocompleteMatchType::URL_WHAT_YOU_TYPED))->width();
   }
   keyword_icon_->set_owned_by_client();
   keyword_icon_->EnableCanvasFlippingForRTLUI(true);

@@ -1714,8 +1714,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedItemReadback) {
     InstantAutocompleteResult res;
     res.provider = ASCIIToUTF16(AutocompleteProvider::TypeToString(
         AutocompleteProvider::TYPE_BUILTIN));
-    res.type = ASCIIToUTF16(AutocompleteMatch::TypeToString(
-        AutocompleteMatch::SEARCH_WHAT_YOU_TYPED)),
+    res.type = ASCIIToUTF16(AutocompleteMatchType::ToString(
+        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED)),
     res.description = ASCIIToUTF16(description);
     res.destination_url = ASCIIToUTF16(url);
     res.transition = content::PAGE_TRANSITION_TYPED;
@@ -1806,7 +1806,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_HasBookmarkProvider) {
   const AutocompleteResult& result = omnibox()->model()->result();
   for (AutocompleteResult::const_iterator iter = result.begin();
        !found_bookmark_match && iter != result.end(); ++iter) {
-    found_bookmark_match = iter->type == AutocompleteMatch::BOOKMARK_TITLE;
+    found_bookmark_match = iter->type == AutocompleteMatchType::BOOKMARK_TITLE;
   }
 
   EXPECT_TRUE(found_bookmark_match);

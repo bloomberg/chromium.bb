@@ -3009,7 +3009,7 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
        ++i) {
     const AutocompleteMatch& match = *i;
     DictionaryValue* item = new DictionaryValue;  // owned by return_value
-    item->SetString("type", AutocompleteMatch::TypeToString(match.type));
+    item->SetString("type", AutocompleteMatchType::ToString(match.type));
     item->SetBoolean("starred", match.starred);
     item->SetString("destination_url", match.destination_url.spec());
     item->SetString("contents", match.contents);

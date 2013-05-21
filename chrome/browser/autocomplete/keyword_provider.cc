@@ -503,8 +503,8 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
                            input.allow_exact_keyword_match());
   }
   AutocompleteMatch match(this, relevance, false,
-      supports_replacement ? AutocompleteMatch::SEARCH_OTHER_ENGINE :
-                             AutocompleteMatch::HISTORY_KEYWORD);
+      supports_replacement ? AutocompleteMatchType::SEARCH_OTHER_ENGINE :
+                             AutocompleteMatchType::HISTORY_KEYWORD);
   match.fill_into_edit.assign(keyword);
   if (!remaining_input.empty() || !keyword_complete || supports_replacement)
     match.fill_into_edit.push_back(L' ');

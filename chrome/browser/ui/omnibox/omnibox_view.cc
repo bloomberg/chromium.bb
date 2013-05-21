@@ -95,7 +95,8 @@ bool OmniboxView::IsEditingOrEmpty() const {
 int OmniboxView::GetIcon() const {
   if (IsEditingOrEmpty()) {
     return AutocompleteMatch::TypeToLocationBarIcon(model_.get() ?
-          model_->CurrentTextType() : AutocompleteMatch::URL_WHAT_YOU_TYPED);
+          model_->CurrentTextType() :
+              AutocompleteMatchType::URL_WHAT_YOU_TYPED);
   } else {
     return toolbar_model_->GetIcon();
   }
