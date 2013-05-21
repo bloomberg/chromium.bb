@@ -27,10 +27,11 @@
 #ifndef FEBlendNEON_h
 #define FEBlendNEON_h
 
+#include "core/platform/graphics/filters/FEBlend.h"
+
 #if HAVE(ARM_NEON_INTRINSICS)
 
 #include <arm_neon.h>
-#include "core/platform/graphics/filters/FEBlend.h"
 
 namespace WebCore {
 
