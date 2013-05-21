@@ -226,6 +226,23 @@ class NET_EXPORT NetworkChangeNotifier {
   // should be called from the network thread to avoid race conditions.
   static void InitHistogramWatcher();
 
+  // Allows a second NetworkChangeNotifier to be created for unit testing, so
+  // the test suite can create a MockNetworkChangeNotifier, but platform
+  // specific NetworkChangeNotifiers can also be created for testing.  To use,
+  // create an DisableForTest object, and then create the new
+  // NetworkChangeNotifier object.  The NetworkChangeNotifier must be
+  // destroyed before the DisableForTest object, as its destruction will restore
+  // the original NetworkChangeNotifier.
+  class NET_EXPORT DisableForTest {
+   public:
+    DisableForTest();
+    ~DisableForTest();
+
+   private:
+    // The original NetworkChangeNotifier to be restored on destruction.
+    NetworkChangeNotifier* network_change_notifier_;
+  };
+
  protected:
   // NetworkChanged signal is calculated from the IPAddressChanged and
   // ConnectionTypeChanged signals. Delay parameters control how long to delay
@@ -279,23 +296,6 @@ class NET_EXPORT NetworkChangeNotifier {
 
   class NetworkState;
   class NetworkChangeCalculator;
-
-  // Allows a second NetworkChangeNotifier to be created for unit testing, so
-  // the test suite can create a MockNetworkChangeNotifier, but platform
-  // specific NetworkChangeNotifiers can also be created for testing.  To use,
-  // create an DisableForTest object, and then create the new
-  // NetworkChangeNotifier object.  The NetworkChangeNotifier must be
-  // destroyed before the DisableForTest object, as its destruction will restore
-  // the original NetworkChangeNotifier.
-  class NET_EXPORT_PRIVATE DisableForTest {
-   public:
-    DisableForTest();
-    ~DisableForTest();
-
-   private:
-    // The original NetworkChangeNotifier to be restored on destruction.
-    NetworkChangeNotifier* network_change_notifier_;
-  };
 
   const scoped_refptr<ObserverListThreadSafe<IPAddressObserver> >
       ip_address_observer_list_;
