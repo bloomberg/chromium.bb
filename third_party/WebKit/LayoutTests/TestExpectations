@@ -32,7 +32,7 @@ crbug.com/24182 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/events/tabindex-focus-blur-all.html [ Slow ]
 crbug.com/24182 [ Win Linux Debug ] fast/frames/invalid.html [ Slow ]
 webkit.org/b/24182 [ Debug ] fast/dom/css-delete-doc.html [ Slow ]
-webkit.org/b/102463 [ Debug ] fast/forms/validation-message-appearance.html [ Pass ImageOnlyFailure ]
+webkit.org/b/102463 fast/forms/validation-message-appearance.html [ Pass ImageOnlyFailure ]
 webkit.org/b/103744 [ Debug ] svg/dom/viewspec-parser-7.html [ Timeout ]
 webkit.org/b/103744 [ Debug ] svg/dom/viewspec-parser-6.html [ Timeout ]
 webkit.org/b/106606 [ Debug ] fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
@@ -329,7 +329,7 @@ crbug.com/38353 http/tests/plugins/plugin-document-has-focus.html [ Timeout ]
 
 # Tests differences from switching to webkit.org's test netscape plugin rather
 # than chromium's old forked copy.
-crbug.com/108833 plugins/geturlnotify-during-document-teardown.html [ Crash ]
+crbug.com/108833 plugins/geturlnotify-during-document-teardown.html [ Failure Crash ]
 webkit.org/b/48655 [ Debug ] plugins/js-from-destroy.html [ Crash ]
 
 # Requires testRunner.dispatchPendingLoadRequests
@@ -734,7 +734,7 @@ crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-horizontal-bt.html
 # https://bugs.webkit.org/show_bug.cgi?id=49182
 crbug.com/62138 animations/stop-animation-on-suspend.html [ Failure Pass Timeout ]
 
-crbug.com/61739 [ Debug ] animations/suspend-resume-animation-events.html [ Failure Pass ]
+crbug.com/61739 animations/suspend-resume-animation-events.html [ Failure Pass ]
 
 # FIXME: Need to add tooling support for V8 bugs.
 code.google.com/p/v8/issues/detail?id=953 fast/regex/pcre-test-1.html [ Timeout ]
@@ -938,9 +938,8 @@ webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_ev
 
 # Animations tests use an inherently-flaky timer-based design.
 webkit.org/b/66953 [ Mac Win Debug ] animations/change-one-anim.html [ Failure Pass ]
-webkit.org/b/66953 [ Debug ] animations/play-state-paused.html [ Failure Pass ]
+webkit.org/b/66953 animations/play-state-paused.html [ Failure Pass ]
 webkit.org/b/66953 [ Debug ] animations/play-state-suspend.html [ Failure Pass ]
-webkit.org/b/66953 [ Debug ] animations/suspend-resume-animation.html [ Failure Pass ]
 webkit.org/b/66953 [ Mac Win Debug ] animations/animation-direction-reverse.html [ Failure Pass ]
 
 webkit.org/b/111612 animations/animation-delay-changed.html [ Failure Pass ]
@@ -995,7 +994,7 @@ webkit.org/b/81050 fast/forms/file/recover-file-input-in-unposted-form.html [ Fa
 webkit.org/b/81145 [ Lion MountainLion ] animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure ]
 webkit.org/b/81145 [ Mac ] fast/frames/invalid.html [ Pass ImageOnlyFailure Slow ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
-webkit.org/b/81145 [ Lion Linux ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
+webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
 
 webkit.org/b/81537 fast/events/touch/gesture/pad-gesture-fling.html [ Failure Pass ]
@@ -1003,7 +1002,7 @@ webkit.org/b/81537 fast/events/touch/gesture/pad-gesture-fling.html [ Failure Pa
 webkit.org/b/81638 [ Mac Debug ] editing/selection/iframe.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/81931 [ Debug ] fast/images/destroyed-image-load-event.html [ Pass Timeout ]
-webkit.org/b/81931 [ Debug ] virtual/deferred/fast/images/destroyed-image-load-event.html [ Pass Timeout ]
+webkit.org/b/81931 virtual/deferred/fast/images/destroyed-image-load-event.html [ Pass Timeout ]
 
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Failure Pass ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ Failure Pass ]
@@ -1233,7 +1232,7 @@ webkit.org/b/101229 [ Debug ] inspector-protocol/debugger-pause-dedicated-worker
 # Flaky on win7 since at least r162410
 webkit.org/b/99886 [ Win7 Debug ] fast/dom/shadow/input-with-validation.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/79446 [ Debug ] svg/repaint/image-with-clip-path.svg [ Pass ImageOnlyFailure ]
+webkit.org/b/79446 svg/repaint/image-with-clip-path.svg [ Pass ImageOnlyFailure ]
 
 # Only ready for JSC so far, not fixed in v8 yet.
 webkit.org/b/97499 http/tests/security/script-crossorigin-onerror-information.html [ Failure ]
@@ -1678,7 +1677,7 @@ crbug.com/231946 virtual/threaded/compositing/webgl/webgl-no-alpha.html [ ImageO
 crbug.com/231946 virtual/threaded/compositing/webgl/webgl-nonpremultiplied-blend.html [ ImageOnlyFailure ]
 crbug.com/231946 virtual/threaded/compositing/webgl/webgl-reflection.html [ ImageOnlyFailure ]
 crbug.com/231946 virtual/threaded/compositing/visibility/layer-visible-content.html [ ImageOnlyFailure ]
-crbug.com/231946 virtual/threaded/compositing/visibility/visibility-composited-transforms.html [ ImageOnlyFailure ]
+crbug.com/231946 virtual/threaded/compositing/visibility/visibility-composited-transforms.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/231946 virtual/threaded/compositing/visibility/visibility-composited.html [ ImageOnlyFailure ]
 crbug.com/231946 virtual/threaded/compositing/visibility/visibility-image-layers.html [ ImageOnlyFailure ]
 crbug.com/231946 virtual/threaded/compositing/visibility/visibility-simple-canvas2d-layer.html [ ImageOnlyFailure ]
@@ -1784,3 +1783,68 @@ crbug.com/111316 fast/js/constructor-length.html [ Failure ]
 
 crbug.com/242444 [ Win7 ] editing/undo/undo-after-event-edited.html [ Crash Pass ]
 crbug.com/242454 fast/autoresize [ Skip ]
+
+# New failures on content shell linux bots
+crbug.com/242467 [ Linux ] animations/3d/change-transform-in-end-event.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] animations/additive-transform-animations.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] animations/animation-direction-normal.html [ ImageOnlyFailure Timeout Pass ]
+crbug.com/242467 [ Linux ] animations/suspend-resume-animation.html [ Failure ]
+crbug.com/242467 [ Linux ] compositing/overflow/overflow-positioning.html [ ImageOnlyFailure ]
+crbug.com/242467 [ Linux ] compositing/reflections/nested-reflection-animated.html [ ImageOnlyFailure ]
+crbug.com/242467 [ Linux ] compositing/transitions/scale-transition-no-start.html [ ImageOnlyFailure Pass ]
+crbug.com/242467 [ Linux ] editing/pasteboard/drop-file-svg.html [ Crash ]
+crbug.com/242467 [ Linux ] editing/pasteboard/file-drag-to-editable.html [ Crash ]
+crbug.com/242467 [ Linux ] editing/pasteboard/file-input-files-access.html [ Failure ]
+crbug.com/242467 [ Linux ] fast/canvas/webgl/oes-vertex-array-object.html [ Failure ]
+crbug.com/242467 [ Linux ] fast/dom/HTMLProgressElement/progress-element.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] fast/dynamic/window-resize-scrollbars-test.html [ Failure Pass ]
+crbug.com/242467 [ Linux ] fast/events/drag-dataTransferItemList-file-handling.html [ Failure ]
+crbug.com/242467 [ Linux ] fast/forms/file/file-input-change-event.html [ Failure ]
+crbug.com/242467 [ Linux ] fast/forms/file/input-file-value.html [ Failure ]
+crbug.com/242467 [ Linux ] fast/forms/file/input-file-write-files.html [ Failure ]
+crbug.com/242467 [ Linux ] fast/forms/file/selected-files-from-history-state.html [ Failure ]
+crbug.com/242467 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
+crbug.com/242467 [ Linux ] fast/images/gif-loop-count.html [ ImageOnlyFailure ]
+crbug.com/242467 [ Linux ] fast/layers/no-clipping-overflow-hidden-added-after-transform.html [ ImageOnlyFailure Pass ]
+crbug.com/242467 [ Linux ] fast/layers/no-clipping-overflow-hidden-added-after-transition.html [ ImageOnlyFailure Pass ]
+crbug.com/242467 [ Linux ] fast/layers/no-clipping-overflow-hidden-hardware-acceleration.html [ ImageOnlyFailure Pass ]
+crbug.com/242467 [ Linux ] fast/loader/recursive-before-unload-crash.html [ Crash ]
+crbug.com/242467 [ Linux ] fast/text/chromium-linux-text-subpixel-positioning.html [ Failure ]
+crbug.com/242467 [ Linux ] fast/text/international/arabic-vertical-offset.html [ ImageOnlyFailure ]
+crbug.com/242467 [ Linux ] fast/writing-mode/broken-ideographic-font.html [ Failure ]
+crbug.com/242467 [ Linux ] fast/writing-mode/broken-ideograph-small-caps.html [ ImageOnlyFailure ]
+crbug.com/242467 [ Linux ] http/tests/appcache/different-https-origin-resource-main.html [ Failure ]
+crbug.com/242467 [ Linux ] http/tests/misc/image-checks-for-accept.html [ Failure ]
+crbug.com/242467 [ Linux ] http/tests/misc/webtiming-ssl.php [ Failure ]
+crbug.com/242467 [ Linux ] http/tests/navigation/back-twice-without-commit.html [ Failure ]
+crbug.com/242467 [ Linux ] http/tests/plugins/local-geturl-from-remote.html [ Failure ]
+crbug.com/242467 [ Linux ] http/tests/plugins/third-party-cookie-accept-policy.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
+crbug.com/242467 [ Linux ] http/tests/security/cross-frame-access-put.html [ Failure ]
+crbug.com/242467 [ Linux ] http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_exceptions.htm [ Failure ]
+crbug.com/242467 [ Linux ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure Pass ]
+crbug.com/242467 [ Linux ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash ]
+crbug.com/242467 [ Linux ] plugins/npruntime/plugin-scriptable-object-invoke-default.html [ Failure ]
+crbug.com/242467 [ Linux ] plugins/plugin-initiate-popup-window.html [ Failure ]
+crbug.com/242467 [ Linux ] plugins/reloadplugins-no-pages.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] plugins/resize-from-plugin.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] plugins/return-error-from-new-stream-doesnt-invoke-destroy-stream.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] plugins/return-negative-one-from-write.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] plugins/return-npobject.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] storage/websql/quota-tracking.html [ Failure Pass ]
+crbug.com/242467 [ Linux ] svg/filters/filter-hidden-content.svg [ Failure ]
+crbug.com/242467 [ Linux ] transitions/extra-transition.html [ Failure Pass ]
+crbug.com/242467 [ Linux ] virtual/deferred/fast/images/animated-background-image-crash.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] virtual/deferred/fast/images/gif-large-checkerboard.html [ ImageOnlyFailure ]
+crbug.com/242467 [ Linux ] virtual/deferred/fast/images/gif-loop-count.html [ ImageOnlyFailure ]
+crbug.com/242467 [ Linux ] virtual/deferred/fast/images/repaint-subrect-grid.html [ Failure ]
+crbug.com/242467 [ Linux ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure ]
+crbug.com/242467 [ Linux ] virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Timeout ]
+crbug.com/242467 [ Linux ] virtual/gpu/fast/canvas/webgl/oes-vertex-array-object.html [ Failure ]
+crbug.com/242467 [ Linux ] virtual/gpu/fast/hidpi/broken-image-icon-hidpi.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] virtual/gpu/fast/hidpi/image-set-border-image-comparison.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] virtual/gpu/fast/hidpi/image-set-border-image-dynamic.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] virtual/softwarecompositing/repaint/opacity-between-absolute.html [ ImageOnlyFailure Pass ]
+crbug.com/242467 [ Linux ] virtual/threaded/compositing/visibility/visibility-composited-animation.html [ Timeout Pass ]
+crbug.com/242467 [ Linux ] webexposed/global-constructors-listing.html [ Failure ]
