@@ -14,6 +14,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 
@@ -33,6 +34,7 @@ enum ResourceRequestAction {
 class CONTENT_EXPORT InterstitialPageImpl
     : public NON_EXPORTED_BASE(InterstitialPage),
       public NotificationObserver,
+      public WebContentsObserver,
       public RenderViewHostDelegate,
       public RenderWidgetHostDelegate {
  public:
@@ -88,6 +90,9 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
+
+  // WebContentsObserver implementation:
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
   // RenderViewHostDelegate implementation:
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
@@ -161,6 +166,8 @@ class CONTENT_EXPORT InterstitialPageImpl
 
   // Shutdown the RVH.  We will be deleted by the time this method returns.
   void Shutdown(RenderViewHostImpl* render_view_host);
+
+  void OnNavigatingAwayOrTabClosing();
 
   // Executes the passed action on the ResourceDispatcher (on the IO thread).
   // Used to block/resume/cancel requests for the RenderViewHost hidden by this

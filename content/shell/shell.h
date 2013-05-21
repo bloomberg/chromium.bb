@@ -150,6 +150,8 @@ class Shell : public WebContentsDelegate,
     STOP_BUTTON
   };
 
+  class DevToolsWebContentsObserver;
+
   explicit Shell(WebContents* web_contents);
 
   // Helper to create a new Shell given a newly created WebContents.
@@ -191,6 +193,8 @@ class Shell : public WebContentsDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  void OnDevToolsWebContentsDestroyed();
+
 #if defined(OS_WIN) && !defined(USE_AURA)
   static ATOM RegisterWindowClass();
   static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -217,6 +221,7 @@ class Shell : public WebContentsDelegate,
 
   scoped_ptr<WebContents> web_contents_;
 
+  scoped_ptr<DevToolsWebContentsObserver> devtools_observer_;
   ShellDevToolsFrontend* devtools_frontend_;
 
   bool is_fullscreen_;

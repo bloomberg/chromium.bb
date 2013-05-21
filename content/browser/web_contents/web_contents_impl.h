@@ -508,6 +508,8 @@ class CONTENT_EXPORT WebContentsImpl
   // TODO(brettw) TestWebContents shouldn't exist!
   friend class TestWebContents;
 
+  class DestructionObserver;
+
   // See WebContents::Create for a description of these parameters.
   WebContentsImpl(BrowserContext* browser_context,
                   WebContentsImpl* opener);
@@ -520,7 +522,15 @@ class CONTENT_EXPORT WebContentsImpl
   void RemoveObserver(WebContentsObserver* observer);
 
   // Clears this tab's opener if it has been closed.
-  void OnWebContentsDestroyed(WebContents* web_contents);
+  void OnWebContentsDestroyed(WebContentsImpl* web_contents);
+
+  // Creates and adds to the map a destruction observer watching |web_contents|.
+  // No-op if such an observer already exists.
+  void AddDestructionObserver(WebContentsImpl* web_contents);
+
+  // Deletes and removes from the map a destruction observer
+  // watching |web_contents|. No-op if there is no such observer.
+  void RemoveDestructionObserver(WebContentsImpl* web_contents);
 
   // Callback function when showing JS dialogs.
   void OnDialogClosed(RenderViewHost* rvh,
@@ -742,6 +752,9 @@ class CONTENT_EXPORT WebContentsImpl
   // that haven't shown yet.
   typedef std::map<int, RenderWidgetHostView*> PendingWidgetViews;
   PendingWidgetViews pending_widget_views_;
+
+  typedef std::map<WebContentsImpl*, DestructionObserver*> DestructionObservers;
+  DestructionObservers destruction_observers_;
 
   // A list of observers notified when page state changes. Weak references.
   // This MUST be listed above render_manager_ since at destruction time the

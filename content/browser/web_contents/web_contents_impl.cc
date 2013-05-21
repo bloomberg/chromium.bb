@@ -284,6 +284,26 @@ WebContents* WebContents::FromRenderViewHost(const RenderViewHost* rvh) {
   return rvh->GetDelegate()->GetAsWebContents();
 }
 
+// WebContentsImpl::DestructionObserver ----------------------------------------
+
+class WebContentsImpl::DestructionObserver : public WebContentsObserver {
+ public:
+  DestructionObserver(WebContentsImpl* owner, WebContents* watched_contents)
+      : WebContentsObserver(watched_contents),
+        owner_(owner) {
+  }
+
+  // WebContentsObserver:
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+    owner_->OnWebContentsDestroyed(static_cast<WebContentsImpl*>(web_contents));
+  }
+
+ private:
+  WebContentsImpl* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
+};
+
 // WebContentsImpl -------------------------------------------------------------
 
 WebContentsImpl::WebContentsImpl(
@@ -371,6 +391,9 @@ WebContentsImpl::~WebContentsImpl() {
                     WebContentsImplDestroyed());
 
   SetDelegate(NULL);
+
+  STLDeleteContainerPairSecondPointers(destruction_observers_.begin(),
+                                       destruction_observers_.end());
 }
 
 WebContentsImpl* WebContentsImpl::CreateWithOpener(
@@ -1120,9 +1143,6 @@ void WebContentsImpl::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   switch (type) {
-    case NOTIFICATION_WEB_CONTENTS_DESTROYED:
-      OnWebContentsDestroyed(Source<WebContents>(source).ptr());
-      break;
     case NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
       RenderWidgetHost* host = Source<RenderWidgetHost>(source).ptr();
       for (PendingWidgetViews::iterator i = pending_widget_views_.begin();
@@ -1172,10 +1192,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   view_->CreateView(initial_size, params.context);
 
   // Listen for whether our opener gets destroyed.
-  if (opener_) {
-    registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                   Source<WebContents>(opener_));
-  }
+  if (opener_)
+    AddDestructionObserver(opener_);
 
   registrar_.Add(this,
                  NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
@@ -1190,11 +1208,11 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 #endif
 }
 
-void WebContentsImpl::OnWebContentsDestroyed(WebContents* web_contents) {
+void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
+  RemoveDestructionObserver(web_contents);
+
   // Clear the opener if it has been closed.
   if (web_contents == opener_) {
-    registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                      Source<WebContents>(opener_));
     opener_ = NULL;
     return;
   }
@@ -1205,11 +1223,25 @@ void WebContentsImpl::OnWebContentsDestroyed(WebContents* web_contents) {
     if (iter->second != web_contents)
       continue;
     pending_contents_.erase(iter);
-    registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                      Source<WebContents>(web_contents));
     return;
   }
   NOTREACHED();
+}
+
+void WebContentsImpl::AddDestructionObserver(WebContentsImpl* web_contents) {
+  if (!ContainsKey(destruction_observers_, web_contents)) {
+    destruction_observers_[web_contents] =
+        new DestructionObserver(this, web_contents);
+  }
+}
+
+void WebContentsImpl::RemoveDestructionObserver(WebContentsImpl* web_contents) {
+  DestructionObservers::iterator iter =
+      destruction_observers_.find(web_contents);
+  if (iter != destruction_observers_.end()) {
+    delete destruction_observers_[web_contents];
+    destruction_observers_.erase(iter);
+  }
 }
 
 void WebContentsImpl::AddObserver(WebContentsObserver* observer) {
@@ -1420,8 +1452,7 @@ void WebContentsImpl::CreateNewWindow(
     // later.
     DCHECK_NE(MSG_ROUTING_NONE, route_id);
     pending_contents_[route_id] = new_contents;
-    registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                   Source<WebContents>(new_contents));
+    AddDestructionObserver(new_contents);
   }
 
   if (delegate_) {
@@ -1556,8 +1587,7 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
 
   WebContentsImpl* new_contents = iter->second;
   pending_contents_.erase(route_id);
-  registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    Source<WebContents>(new_contents));
+  RemoveDestructionObserver(new_contents);
 
   // Don't initialize the guest WebContents immediately.
   if (new_contents->GetRenderProcessHost()->IsGuest())
@@ -3016,8 +3046,7 @@ void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {
   if (opener_) {
     // Clear our opener so that future cross-process navigations don't have an
     // opener assigned.
-    registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                      Source<WebContents>(opener_));
+    RemoveDestructionObserver(opener_);
     opener_ = NULL;
   }
 

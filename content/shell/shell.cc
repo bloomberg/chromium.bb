@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/shell/common/shell_messages.h"
@@ -41,6 +42,24 @@ std::vector<Shell*> Shell::windows_;
 base::Callback<void(Shell*)> Shell::shell_created_callback_;
 
 bool Shell::quit_message_loop_ = true;
+
+class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
+ public:
+  DevToolsWebContentsObserver(Shell* shell, WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        shell_(shell) {
+  }
+
+  // WebContentsObserver
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+    shell_->OnDevToolsWebContentsDestroyed();
+  }
+
+ private:
+  Shell* shell_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsWebContentsObserver);
+};
 
 Shell::Shell(WebContents* web_contents)
     : devtools_frontend_(NULL),
@@ -192,19 +211,14 @@ void Shell::ShowDevTools() {
     return;
   }
   devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents());
-  registrar_.Add(this,
-                 NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 Source<WebContents>(
-                     devtools_frontend_->frontend_shell()->web_contents()));
+  devtools_observer_.reset(new DevToolsWebContentsObserver(
+      this, devtools_frontend_->frontend_shell()->web_contents()));
 }
 
 void Shell::CloseDevTools() {
   if (!devtools_frontend_)
     return;
-  registrar_.Remove(this,
-                    NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    Source<WebContents>(
-                        devtools_frontend_->frontend_shell()->web_contents()));
+  devtools_observer_.reset();
   devtools_frontend_->Close();
   devtools_frontend_ = NULL;
 }
@@ -321,12 +335,14 @@ void Shell::Observe(int type,
       string16 text = title->first->GetTitle();
       PlatformSetTitle(text);
     }
-  } else if (type == NOTIFICATION_WEB_CONTENTS_DESTROYED) {
-    devtools_frontend_ = NULL;
-    registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED, source);
   } else {
     NOTREACHED();
   }
+}
+
+void Shell::OnDevToolsWebContentsDestroyed() {
+  devtools_observer_.reset();
+  devtools_frontend_ = NULL;
 }
 
 }  // namespace content

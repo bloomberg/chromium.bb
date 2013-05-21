@@ -135,7 +135,8 @@ InterstitialPageImpl::InterstitialPageImpl(WebContents* web_contents,
                                            bool new_navigation,
                                            const GURL& url,
                                            InterstitialPageDelegate* delegate)
-    : web_contents_(static_cast<WebContentsImpl*>(web_contents)),
+    : WebContentsObserver(web_contents),
+      web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       url_(url),
       new_navigation_(new_navigation),
       should_discard_pending_nav_entry_(new_navigation),
@@ -224,9 +225,6 @@ void InterstitialPageImpl::Show() {
                          net::EscapePath(delegate_->GetHTMLContents());
   render_view_host_->NavigateToURL(GURL(data_url));
 
-  notification_registrar_.Add(this,
-                              NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                              Source<WebContents>(web_contents_));
   notification_registrar_.Add(this, NOTIFICATION_NAV_ENTRY_COMMITTED,
       Source<NavigationController>(&web_contents_->GetController()));
   notification_registrar_.Add(this, NOTIFICATION_NAV_ENTRY_PENDING,
@@ -324,19 +322,8 @@ void InterstitialPageImpl::Observe(
         TakeActionOnResourceDispatcher(CANCEL);
       }
       break;
-    case NOTIFICATION_WEB_CONTENTS_DESTROYED:
     case NOTIFICATION_NAV_ENTRY_COMMITTED:
-      if (action_taken_ == NO_ACTION) {
-        // We are navigating away from the interstitial or closing a tab with an
-        // interstitial.  Default to DontProceed(). We don't just call Hide as
-        // subclasses will almost certainly override DontProceed to do some work
-        // (ex: close pending connections).
-        DontProceed();
-      } else {
-        // User decided to proceed and either the navigation was committed or
-        // the tab was closed before that.
-        Hide();
-      }
+      OnNavigatingAwayOrTabClosing();
       break;
     case NOTIFICATION_DOM_OPERATION_RESPONSE:
       if (enabled()) {
@@ -348,6 +335,10 @@ void InterstitialPageImpl::Observe(
     default:
       NOTREACHED();
   }
+}
+
+void InterstitialPageImpl::WebContentsDestroyed(WebContents* web_contents) {
+  OnNavigatingAwayOrTabClosing();
 }
 
 RenderViewHostDelegateView* InterstitialPageImpl::GetDelegateView() {
@@ -719,6 +710,20 @@ void InterstitialPageImpl::Disable() {
 void InterstitialPageImpl::Shutdown(RenderViewHostImpl* render_view_host) {
   render_view_host->Shutdown();
   // We are deleted now.
+}
+
+void InterstitialPageImpl::OnNavigatingAwayOrTabClosing() {
+  if (action_taken_ == NO_ACTION) {
+    // We are navigating away from the interstitial or closing a tab with an
+    // interstitial.  Default to DontProceed(). We don't just call Hide as
+    // subclasses will almost certainly override DontProceed to do some work
+    // (ex: close pending connections).
+    DontProceed();
+  } else {
+    // User decided to proceed and either the navigation was committed or
+    // the tab was closed before that.
+    Hide();
+  }
 }
 
 void InterstitialPageImpl::TakeActionOnResourceDispatcher(

@@ -20,6 +20,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -313,6 +314,28 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(orig_site_instance, noref_site_instance);
 }
 
+namespace {
+
+class WebContentsDestroyedObserver : public WebContentsObserver {
+ public:
+  WebContentsDestroyedObserver(WebContents* web_contents,
+                               const base::Closure& callback)
+      : WebContentsObserver(web_contents),
+        callback_(callback) {
+  }
+
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+    callback_.Run();
+  }
+
+ private:
+  base::Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedObserver);
+};
+
+}  // namespace
+
 // Test for crbug.com/116192.  Targeted links should still work after the
 // named target window has swapped processes.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
@@ -386,15 +409,15 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   NavigateToURL(new_shell, https_server.GetURL("files/title1.html"));
   EXPECT_EQ(new_site_instance,
             new_shell->web_contents()->GetSiteInstance());
-  WindowedNotificationObserver close_observer(
-        NOTIFICATION_WEB_CONTENTS_DESTROYED,
-        Source<WebContents>(new_shell->web_contents()));
+  scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
+  WebContentsDestroyedObserver close_observer(new_shell->web_contents(),
+                                              loop_runner->QuitClosure());
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       shell()->web_contents(),
       "window.domAutomationController.send(testCloseWindow());",
       &success));
   EXPECT_TRUE(success);
-  close_observer.Wait();
+  loop_runner->Run();
 }
 
 // Test that setting the opener to null in a window affects cross-process

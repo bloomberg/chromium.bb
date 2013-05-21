@@ -170,15 +170,13 @@ void TestWebContents::SetOpener(TestWebContents* opener) {
   // This is normally only set in the WebContents constructor, which also
   // registers an observer for when the opener gets closed.
   opener_ = opener;
-  registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 Source<WebContents>(opener_));
+  AddDestructionObserver(opener_);
 }
 
 void TestWebContents::AddPendingContents(TestWebContents* contents) {
   // This is normally only done in WebContentsImpl::CreateNewWindow.
   pending_contents_[contents->GetRenderViewHost()->GetRoutingID()] = contents;
-  registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 Source<WebContents>(contents));
+  AddDestructionObserver(contents);
 }
 
 void TestWebContents::ExpectSetHistoryLengthAndPrune(
