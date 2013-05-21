@@ -304,6 +304,8 @@ EventSender::EventSender()
     bindMethod("zoomPageOut", &EventSender::zoomPageOut);
     bindMethod("scalePageBy", &EventSender::scalePageBy);
 
+    bindProperty("forceLayoutOnEvents", &forceLayoutOnEvents);
+
     // When set to true (the default value), we batch mouse move and mouse up
     // events so we can simulate drag & drop.
     bindProperty("dragMode", &dragMode);
@@ -337,6 +339,7 @@ void EventSender::reset()
     currentDragEffectsAllowed = WebKit::WebDragOperationNone;
     pressedButton = WebMouseEvent::ButtonNone;
     dragMode.set(true);
+    forceLayoutOnEvents.set(true);
 #ifdef WIN32
     wmKeyDown.set(WM_KEYDOWN);
     wmKeyUp.set(WM_KEYUP);
@@ -424,6 +427,9 @@ void EventSender::mouseDown(const CppArgumentList& arguments, CppVariant* result
     if (result) // Could be 0 if invoked asynchronously.
         result->setNull();
 
+    if (shouldForceLayoutOnEvents())
+        webview()->layout();
+
     int buttonNumber = getButtonNumberFromSingleArg(arguments);
     WEBKIT_ASSERT(buttonNumber != -1);
 
@@ -443,6 +449,9 @@ void EventSender::mouseUp(const CppArgumentList& arguments, CppVariant* result)
 {
     if (result) // Could be 0 if invoked asynchronously.
         result->setNull();
+
+    if (shouldForceLayoutOnEvents())
+        webview()->layout();
 
     int buttonNumber = getButtonNumberFromSingleArg(arguments);
     WEBKIT_ASSERT(buttonNumber != -1);
@@ -502,6 +511,8 @@ void EventSender::mouseMoveTo(const CppArgumentList& arguments, CppVariant* resu
 
     if (arguments.size() < 2 || !arguments[0].isNumber() || !arguments[1].isNumber())
         return;
+    if (shouldForceLayoutOnEvents())
+        webview()->layout();
 
     WebPoint mousePos(arguments[0].toInt32(), arguments[1].toInt32());
 
@@ -654,7 +665,8 @@ void EventSender::keyDown(const CppArgumentList& arguments, CppVariant* result)
     eventUp.type = WebInputEvent::KeyUp;
     // EventSender.m forces a layout here, with at least one
     // test (fast/forms/focus-control-to-page.html) relying on this.
-    webview()->layout();
+    if (shouldForceLayoutOnEvents())
+        webview()->layout();
 
     // In the browser, if a keyboard event corresponds to an editor command,
     // the command will be dispatched to the renderer just before dispatching
@@ -700,7 +712,8 @@ void EventSender::dispatchMessage(const CppArgumentList& arguments, CppVariant* 
         if (msg == WM_DEADCHAR || msg == WM_SYSDEADCHAR)
             return;
 
-        webview()->layout();
+        if (shouldForceLayoutOnEvents())
+            webview()->layout();
 
         unsigned long lparam = static_cast<unsigned long>(arguments[2].toDouble());
         webview()->handleInputEvent(WebInputEventFactory::keyboardEvent(0, msg, arguments[1].toInt32(), lparam));
@@ -854,7 +867,8 @@ static vector<WebString> makeMenuItemStringsFor(WebContextMenuData* contextMenu,
 
 void EventSender::contextClick(const CppArgumentList& arguments, CppVariant* result)
 {
-    webview()->layout();
+    if (shouldForceLayoutOnEvents())
+        webview()->layout();
 
     updateClickCountForButton(WebMouseEvent::ButtonRight);
 
@@ -1035,7 +1049,8 @@ void EventSender::cancelTouchPoint(const CppArgumentList& arguments, CppVariant*
 void EventSender::sendCurrentTouchEvent(const WebInputEvent::Type type)
 {
     WEBKIT_ASSERT(static_cast<unsigned>(WebTouchEvent::touchesLengthCap) > touchPoints.size());
-    webview()->layout();
+    if (shouldForceLayoutOnEvents())
+        webview()->layout();
 
     WebTouchEvent touchEvent;
     touchEvent.type = type;
@@ -1071,6 +1086,12 @@ void EventSender::handleMouseWheel(const CppArgumentList& arguments, CppVariant*
 
     if (arguments.size() < 2 || !arguments[0].isNumber() || !arguments[1].isNumber())
         return;
+
+    // Force a layout here just to make sure every position has been
+    // determined before we send events (as well as all the other methods
+    // that send an event do).
+    if (shouldForceLayoutOnEvents())
+        webview()->layout();
 
     int horizontal = arguments[0].toInt32();
     int vertical = arguments[1].toInt32();
@@ -1285,6 +1306,10 @@ void EventSender::gestureEvent(WebInputEvent::Type type, const CppArgumentList& 
     event.globalX = event.x;
     event.globalY = event.y;
     event.timeStampSeconds = getCurrentEventTimeSec(m_delegate);
+
+    if (shouldForceLayoutOnEvents())
+        webview()->layout();
+
     webview()->handleInputEvent(event);
 
     // Long press might start a drag drop session. Complete it if so.
@@ -1302,6 +1327,10 @@ void EventSender::gestureFlingCancel(const CppArgumentList&, CppVariant* result)
     WebGestureEvent event;
     event.type = WebInputEvent::GestureFlingCancel;
     event.timeStampSeconds = getCurrentEventTimeSec(m_delegate);
+
+    if (shouldForceLayoutOnEvents())
+        webview()->layout();
+
     webview()->handleInputEvent(event);
 }
 
@@ -1326,6 +1355,10 @@ void EventSender::gestureFlingStart(const CppArgumentList& arguments, CppVariant
     event.data.flingStart.velocityX = static_cast<float>(arguments[2].toDouble());
     event.data.flingStart.velocityY = static_cast<float>(arguments[3].toDouble());
     event.timeStampSeconds = getCurrentEventTimeSec(m_delegate);
+
+    if (shouldForceLayoutOnEvents())
+        webview()->layout();
+
     webview()->handleInputEvent(event);
 }
 

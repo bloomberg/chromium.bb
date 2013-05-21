@@ -122,6 +122,10 @@ public:
     void gestureTwoFingerTap(const CppArgumentList&, CppVariant*);
     void gestureEvent(WebKit::WebInputEvent::Type, const CppArgumentList&);
 
+    // Setting this to false makes EventSender not force layout() calls.
+    // This makes it possible to test the standard WebCore event dispatch.
+    CppVariant forceLayoutOnEvents;
+
     // Unimplemented stubs
     void enableDOMUIEventLogging(const CppArgumentList&, CppVariant*);
     void fireKeyboardEventsToElement(const CppArgumentList&, CppVariant*);
@@ -146,6 +150,8 @@ private:
 
     // Returns true if dragMode is true.
     bool isDragMode() { return dragMode.isBool() && dragMode.toBoolean(); }
+
+    bool shouldForceLayoutOnEvents() const { return forceLayoutOnEvents.isBool() && forceLayoutOnEvents.toBoolean(); }
 
     // Sometimes we queue up mouse move and mouse up events for drag drop
     // handling purposes. These methods dispatch the event.

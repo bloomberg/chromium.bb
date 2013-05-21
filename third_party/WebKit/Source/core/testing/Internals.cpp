@@ -1074,6 +1074,8 @@ PassRefPtr<DOMPoint> Internals::touchPositionAdjustedToBestClickableNode(long x,
         return 0;
     }
 
+    document->updateLayout();
+
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
 
@@ -1094,6 +1096,8 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width
         return 0;
     }
 
+    document->updateLayout();
+
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
 
@@ -1109,6 +1113,8 @@ PassRefPtr<DOMPoint> Internals::touchPositionAdjustedToBestContextMenuNode(long 
         ec = INVALID_ACCESS_ERR;
         return 0;
     }
+
+    document->updateLayout();
 
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
@@ -1130,6 +1136,8 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(long x, long y, long wid
         return 0;
     }
 
+    document->updateLayout();
+
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
 
@@ -1145,6 +1153,8 @@ PassRefPtr<ClientRect> Internals::bestZoomableAreaForTouchPoint(long x, long y, 
         ec = INVALID_ACCESS_ERR;
         return 0;
     }
+
+    document->updateLayout();
 
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
