@@ -609,15 +609,6 @@ bool JPEGImageDecoder::isSizeAvailable()
     return ImageDecoder::isSizeAvailable();
 }
 
-bool JPEGImageDecoder::setSize(unsigned width, unsigned height)
-{
-    if (!ImageDecoder::setSize(width, height))
-        return false;
-
-    prepareScaleDataIfNecessary();
-    return true;
-}
-
 ImageFrame* JPEGImageDecoder::frameBufferAtIndex(size_t index)
 {
     if (index)
@@ -668,43 +659,32 @@ void setPixel(ImageFrame& buffer, ImageFrame::PixelData* currentAddress, JSAMPAR
     }
 }
 
-template <J_COLOR_SPACE colorSpace, bool isScaled>
+template <J_COLOR_SPACE colorSpace>
 bool JPEGImageDecoder::outputScanlines(ImageFrame& buffer)
 {
     JSAMPARRAY samples = m_reader->samples();
     jpeg_decompress_struct* info = m_reader->info();
-    int width = isScaled ? m_scaledColumns.size() : info->output_width;
+    int width = info->output_width;
 
     while (info->output_scanline < info->output_height) {
         // jpeg_read_scanlines will increase the scanline counter, so we
         // save the scanline before calling it.
-        int sourceY = info->output_scanline;
-        /* Request one scanline.  Returns 0 or 1 scanlines. */
+        int y = info->output_scanline;
+        // Request one scanline: returns 0 or 1 scanlines.
         if (jpeg_read_scanlines(info, samples, 1) != 1)
             return false;
-
-        int destY = scaledY(sourceY);
-        if (destY < 0)
-            continue;
-
 #if USE(QCMSLIB)
         if (m_reader->colorTransform() && colorSpace == JCS_RGB)
             qcms_transform_data(m_reader->colorTransform(), *samples, *samples, info->output_width);
 #endif
-
-        ImageFrame::PixelData* currentAddress = buffer.getAddr(0, destY);
+        ImageFrame::PixelData* currentAddress = buffer.getAddr(0, y);
         for (int x = 0; x < width; ++x) {
-            setPixel<colorSpace>(buffer, currentAddress, samples, isScaled ? m_scaledColumns[x] : x);
+            setPixel<colorSpace>(buffer, currentAddress, samples, x);
             ++currentAddress;
         }
     }
-    return true;
-}
 
-template <J_COLOR_SPACE colorSpace>
-bool JPEGImageDecoder::outputScanlines(ImageFrame& buffer)
-{
-    return m_scaled ? outputScanlines<colorSpace, true>(buffer) : outputScanlines<colorSpace, false>(buffer);
+    return true;
 }
 
 bool JPEGImageDecoder::outputScanlines()
@@ -715,7 +695,7 @@ bool JPEGImageDecoder::outputScanlines()
     // Initialize the framebuffer if needed.
     ImageFrame& buffer = m_frameBufferCache[0];
     if (buffer.status() == ImageFrame::FrameEmpty) {
-        if (!buffer.setSize(scaledSize().width(), scaledSize().height()))
+        if (!buffer.setSize(size().width(), size().height()))
             return setFailed();
         buffer.setStatus(ImageFrame::FramePartial);
         // The buffer is transparent outside the decoded area while the image is
@@ -729,7 +709,7 @@ bool JPEGImageDecoder::outputScanlines()
     jpeg_decompress_struct* info = m_reader->info();
 
 #if defined(TURBO_JPEG_RGB_SWIZZLE)
-    if (!m_scaled && turboSwizzled(info->out_color_space)) {
+    if (turboSwizzled(info->out_color_space)) {
         while (info->output_scanline < info->output_height) {
             unsigned char* row = reinterpret_cast<unsigned char*>(buffer.getAddr(0, info->output_scanline));
             if (jpeg_read_scanlines(info, &row, 1) != 1)

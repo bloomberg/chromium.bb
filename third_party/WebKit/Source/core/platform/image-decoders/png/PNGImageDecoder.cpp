@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2006 Apple Computer, Inc.
- * Copyright (C) 2007-2009 Torch Mobile, Inc.
  * Copyright (C) Research In Motion Limited 2009-2010. All rights reserved.
  *
  * Portions are Copyright (C) 2001 mozilla.org
@@ -235,15 +234,6 @@ bool PNGImageDecoder::isSizeAvailable()
     return ImageDecoder::isSizeAvailable();
 }
 
-bool PNGImageDecoder::setSize(unsigned width, unsigned height)
-{
-    if (!ImageDecoder::setSize(width, height))
-        return false;
-
-    prepareScaleDataIfNecessary();
-    return true;
-}
-
 ImageFrame* PNGImageDecoder::frameBufferAtIndex(size_t index)
 {
     if (index)
@@ -411,7 +401,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
     ImageFrame& buffer = m_frameBufferCache[0];
     if (buffer.status() == ImageFrame::FrameEmpty) {
         png_structp png = m_reader->pngPtr();
-        if (!buffer.setSize(scaledSize().width(), scaledSize().height())) {
+        if (!buffer.setSize(size().width(), size().height())) {
             longjmp(JMPBUF(png), 1);
             return;
         }
@@ -458,8 +448,8 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
     // make our lives easier.
     if (!rowBuffer)
         return;
-    int y = !m_scaled ? rowIndex : scaledY(rowIndex);
-    if (y < 0 || y >= scaledSize().height())
+    int y = rowIndex;
+    if (y < 0 || y >= size().height())
         return;
 
     /* libpng comments (continued).
@@ -499,25 +489,15 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
 
     // Write the decoded row pixels to the frame buffer.
     ImageFrame::PixelData* address = buffer.getAddr(0, y);
-    int width = scaledSize().width();
     bool nonTrivialAlpha = false;
+    int width = size().width();
 
-#if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
-    for (int x = 0; x < width; ++x) {
-        png_bytep pixel = row + (m_scaled ? m_scaledColumns[x] : x) * colorChannels;
-        unsigned alpha = hasAlpha ? pixel[3] : 255;
-        buffer.setRGBA(address++, pixel[0], pixel[1], pixel[2], alpha);
-        nonTrivialAlpha |= alpha < 255;
-    }
-#else
-    ASSERT(!m_scaled);
     png_bytep pixel = row;
     for (int x = 0; x < width; ++x, pixel += colorChannels) {
         unsigned alpha = hasAlpha ? pixel[3] : 255;
         buffer.setRGBA(address++, pixel[0], pixel[1], pixel[2], alpha);
         nonTrivialAlpha |= alpha < 255;
     }
-#endif
 
     if (nonTrivialAlpha && !buffer.hasAlpha())
         buffer.setHasAlpha(nonTrivialAlpha);

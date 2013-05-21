@@ -172,7 +172,7 @@ void WEBPImageDecoder::readColorProfile(const uint8_t* data, size_t size)
     WebPDemuxDelete(demuxer);
 }
 
-void WEBPImageDecoder::applyColorProfile(const uint8_t* data, size_t size, ImageFrame& buffer)
+void WEBPImageDecoder::applyColorProfile(const uint8_t* data, size_t dataSize, ImageFrame& buffer)
 {
     int width;
     int decodedHeight;
@@ -182,12 +182,12 @@ void WEBPImageDecoder::applyColorProfile(const uint8_t* data, size_t size, Image
         return;
 
     if (!m_haveReadProfile) {
-        readColorProfile(data, size);
+        readColorProfile(data, dataSize);
         m_haveReadProfile = true;
     }
 
-    ASSERT(width == scaledSize().width());
-    ASSERT(decodedHeight <= scaledSize().height());
+    ASSERT(width == size().width());
+    ASSERT(decodedHeight <= size().height());
 
     for (int y = m_decodedHeight; y < decodedHeight; ++y) {
         uint8_t* row = reinterpret_cast<uint8_t*>(buffer.getAddr(0, y));

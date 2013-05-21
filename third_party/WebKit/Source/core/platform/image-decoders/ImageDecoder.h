@@ -1,8 +1,6 @@
 /*
  * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
- * Copyright (C) 2008-2009 Torch Mobile, Inc.
  * Copyright (C) Research In Motion Limited 2009-2010. All rights reserved.
- * Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -205,20 +203,14 @@ namespace WebCore {
     };
 
     // ImageDecoder is a base for all format-specific decoders
-    // (e.g. JPEGImageDecoder).  This base manages the ImageFrame cache.
-    //
-    // ENABLE(IMAGE_DECODER_DOWN_SAMPLING) allows image decoders to downsample
-    // at decode time.  Image decoders will downsample any images larger than
-    // |m_maxNumPixels|.  FIXME: Not yet supported by all decoders.
+    // (e.g. JPEGImageDecoder). This base manages the ImageFrame cache.
     class ImageDecoder {
         WTF_MAKE_NONCOPYABLE(ImageDecoder); WTF_MAKE_FAST_ALLOCATED;
     public:
         ImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
-            : m_scaled(false)
-            , m_premultiplyAlpha(alphaOption == ImageSource::AlphaPremultiplied)
+            : m_premultiplyAlpha(alphaOption == ImageSource::AlphaPremultiplied)
             , m_ignoreGammaAndColorProfile(gammaAndColorProfileOption == ImageSource::GammaAndColorProfileIgnored)
             , m_sizeAvailable(false)
-            , m_maxNumPixels(-1)
             , m_isAllDataReceived(false)
             , m_failed(false) { }
 
@@ -250,11 +242,6 @@ namespace WebCore {
         }
 
         virtual IntSize size() const { return m_size; }
-
-        IntSize scaledSize() const
-        {
-            return m_scaled ? IntSize(m_scaledColumns.size(), m_scaledRows.size()) : size();
-        }
 
         // This will only differ from size() for ICO (where each frame is a
         // different icon) or other formats where different frames are different
@@ -376,10 +363,6 @@ namespace WebCore {
         // compositing).
         virtual void clearFrameBufferCache(size_t) { }
 
-#if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
-        void setMaxNumPixels(int m) { m_maxNumPixels = m; }
-#endif
-
         // If the image has a cursor hot-spot, stores it in the argument
         // and returns true. Otherwise returns false.
         virtual bool hotSpot(IntPoint&) const { return false; }
@@ -395,18 +378,8 @@ namespace WebCore {
         }
 
     protected:
-        void prepareScaleDataIfNecessary();
-        int upperBoundScaledX(int origX, int searchStart = 0);
-        int lowerBoundScaledX(int origX, int searchStart = 0);
-        int upperBoundScaledY(int origY, int searchStart = 0);
-        int lowerBoundScaledY(int origY, int searchStart = 0);
-        int scaledY(int origY, int searchStart = 0);
-
         RefPtr<SharedBuffer> m_data; // The encoded data.
         Vector<ImageFrame, 1> m_frameBufferCache;
-        bool m_scaled;
-        Vector<int> m_scaledColumns;
-        Vector<int> m_scaledRows;
         bool m_premultiplyAlpha;
         bool m_ignoreGammaAndColorProfile;
         ImageOrientation m_orientation;
@@ -423,7 +396,6 @@ namespace WebCore {
 
         IntSize m_size;
         bool m_sizeAvailable;
-        int m_maxNumPixels;
         bool m_isAllDataReceived;
         bool m_failed;
     };

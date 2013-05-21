@@ -2,7 +2,6 @@
  * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2007 Alp Toker <alp.toker@collabora.co.uk>
  * Copyright (C) 2008, Google Inc. All rights reserved.
- * Copyright (C) 2007-2009 Torch Mobile, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,10 +38,6 @@
 
 namespace WebCore {
 
-#if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
-unsigned ImageSource::s_maxPixelsPerDecodedImage = 1024 * 1024;
-#endif
-
 ImageSource::ImageSource(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
     : m_alphaOption(alphaOption)
     , m_gammaAndColorProfileOption(gammaAndColorProfileOption)
@@ -78,13 +73,8 @@ void ImageSource::setData(SharedBuffer* data, bool allDataReceived)
     // This method will examine the data and instantiate an instance of the appropriate decoder plugin.
     // If insufficient bytes are available to determine the image type, no decoder plugin will be
     // made.
-    if (!m_decoder) {
+    if (!m_decoder)
         m_decoder = NativeImageDecoder::create(*data, m_alphaOption, m_gammaAndColorProfileOption);
-#if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
-        if (m_decoder && s_maxPixelsPerDecodedImage)
-            m_decoder->setMaxNumPixels(s_maxPixelsPerDecodedImage);
-#endif
-    }
 
     if (m_decoder)
         m_decoder->setData(data, allDataReceived);

@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2004, 2005, 2006 Apple Computer, Inc.  All rights reserved.
- * Copyright (C) 2007-2008 Torch Mobile, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -136,11 +135,6 @@ public:
     // decoded then return 0.
     unsigned frameBytesAtIndex(size_t) const;
 
-#if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
-    static unsigned maxPixelsPerDecodedImage() { return s_maxPixelsPerDecodedImage; }
-    static void setMaxPixelsPerDecodedImage(unsigned maxPixels) { s_maxPixelsPerDecodedImage = maxPixels; }
-#endif
-
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
@@ -148,9 +142,6 @@ private:
 
     AlphaOption m_alphaOption;
     GammaAndColorProfileOption m_gammaAndColorProfileOption;
-#if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
-    static unsigned s_maxPixelsPerDecodedImage;
-#endif
 };
 
 }

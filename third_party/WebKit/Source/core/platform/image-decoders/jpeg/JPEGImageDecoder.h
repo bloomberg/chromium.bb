@@ -48,18 +48,11 @@ namespace WebCore {
         // ImageDecoder
         virtual String filenameExtension() const { return "jpg"; }
         virtual bool isSizeAvailable();
-        virtual bool setSize(unsigned width, unsigned height);
         virtual ImageFrame* frameBufferAtIndex(size_t index);
         // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
         // accessing deleted memory, especially when calling this from inside
         // JPEGImageReader!
         virtual bool setFailed();
-
-        bool willDownSample()
-        {
-            ASSERT(ImageDecoder::isSizeAvailable());
-            return m_scaled;
-        }
 
         bool outputScanlines();
         void jpegComplete();
@@ -73,9 +66,6 @@ namespace WebCore {
         void decode(bool onlySize);
 
         template <J_COLOR_SPACE colorSpace>
-        bool outputScanlines(ImageFrame& buffer);
-
-        template <J_COLOR_SPACE colorSpace, bool isScaled>
         bool outputScanlines(ImageFrame& buffer);
 
         OwnPtr<JPEGImageReader> m_reader;

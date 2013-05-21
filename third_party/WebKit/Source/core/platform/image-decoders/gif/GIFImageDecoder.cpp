@@ -62,18 +62,6 @@ bool GIFImageDecoder::isSizeAvailable()
     return ImageDecoder::isSizeAvailable();
 }
 
-bool GIFImageDecoder::setSize(unsigned width, unsigned height)
-{
-    if (ImageDecoder::isSizeAvailable() && size() == IntSize(width, height))
-        return true;
-
-    if (!ImageDecoder::setSize(width, height))
-        return false;
-
-    prepareScaleDataIfNecessary();
-    return true;
-}
-
 size_t GIFImageDecoder::frameCount()
 {
     decode(std::numeric_limits<unsigned>::max(), GIFFrameCountQuery);
@@ -204,10 +192,10 @@ bool GIFImageDecoder::haveDecodedRow(unsigned frameIndex, const Vector<unsigned 
     // that width == (size().width() - frameContext->xOffset), so
     // we must ensure we don't run off the end of either the source data or the
     // row's X-coordinates.
-    int xBegin = upperBoundScaledX(frameContext->xOffset);
-    int yBegin = upperBoundScaledY(frameContext->yOffset + rowNumber);
-    int xEnd = lowerBoundScaledX(std::min(static_cast<int>(frameContext->xOffset + width), size().width()) - 1, xBegin + 1) + 1;
-    int yEnd = lowerBoundScaledY(std::min(static_cast<int>(frameContext->yOffset + rowNumber + repeatCount), size().height()) - 1, yBegin + 1) + 1;
+    int xBegin = frameContext->xOffset;
+    int yBegin = frameContext->yOffset + rowNumber;
+    int xEnd = std::min(static_cast<int>(frameContext->xOffset + width), size().width());
+    int yEnd = std::min(static_cast<int>(frameContext->yOffset + rowNumber + repeatCount), size().height());
     if (rowBuffer.isEmpty() || (xBegin < 0) || (yBegin < 0) || (xEnd <= xBegin) || (yEnd <= yBegin))
         return true;
 
@@ -232,7 +220,7 @@ bool GIFImageDecoder::haveDecodedRow(unsigned frameIndex, const Vector<unsigned 
     ImageFrame::PixelData* currentAddress = buffer.getAddr(xBegin, yBegin);
     // Write one row's worth of data into the frame.  
     for (int x = xBegin; x < xEnd; ++x) {
-        const unsigned char sourceValue = rowBuffer[(m_scaled ? m_scaledColumns[x] : x) - frameContext->xOffset];
+        const unsigned char sourceValue = rowBuffer[x - frameContext->xOffset];
         if ((!frameContext->isTransparent || (sourceValue != frameContext->tpixel)) && (sourceValue < colorMapSize)) {
             const size_t colorIndex = static_cast<size_t>(sourceValue) * 3;
             buffer.setRGBA(currentAddress, colorMap[colorIndex], colorMap[colorIndex + 1], colorMap[colorIndex + 2], 255);
@@ -273,7 +261,7 @@ bool GIFImageDecoder::frameComplete(unsigned frameIndex, unsigned frameDuration,
     if (!m_currentBufferSawAlpha) {
         // The whole frame was non-transparent, so it's possible that the entire
         // resulting buffer was non-transparent, and we can setHasAlpha(false).
-        if (buffer.originalFrameRect().contains(IntRect(IntPoint(), scaledSize())))
+        if (buffer.originalFrameRect().contains(IntRect(IntPoint(), size())))
             buffer.setHasAlpha(false);
         else if (frameIndex) {
             // Tricky case.  This frame does not have alpha only if everywhere
@@ -364,15 +352,11 @@ bool GIFImageDecoder::initFrameBuffer(unsigned frameIndex)
         frameRect.setHeight(size().height() - frameContext->yOffset);
 
     ImageFrame* const buffer = &m_frameBufferCache[frameIndex];
-    int left = upperBoundScaledX(frameRect.x());
-    int right = lowerBoundScaledX(frameRect.maxX(), left);
-    int top = upperBoundScaledY(frameRect.y());
-    int bottom = lowerBoundScaledY(frameRect.maxY(), top);
-    buffer->setOriginalFrameRect(IntRect(left, top, right - left, bottom - top));
+    buffer->setOriginalFrameRect(frameRect);
     
     if (!frameIndex) {
         // This is the first frame, so we're not relying on any previous data.
-        if (!buffer->setSize(scaledSize().width(), scaledSize().height()))
+        if (!buffer->setSize(size().width(), size().height()))
             return setFailed();
     } else {
         // The starting state for this frame depends on the previous frame's
@@ -399,8 +383,8 @@ bool GIFImageDecoder::initFrameBuffer(unsigned frameIndex)
             // We want to clear the previous frame to transparent, without
             // affecting pixels in the image outside of the frame.
             const IntRect& prevRect = prevBuffer->originalFrameRect();
-            const IntSize& bufferSize = scaledSize();
-            if (!frameIndex || prevRect.contains(IntRect(IntPoint(), scaledSize()))) {
+            const IntSize& bufferSize = size();
+            if (!frameIndex || prevRect.contains(IntRect(IntPoint(), size()))) {
                 // Clearing the first frame, or a frame the size of the whole
                 // image, results in a completely empty image.
                 if (!buffer->setSize(bufferSize.width(), bufferSize.height()))
