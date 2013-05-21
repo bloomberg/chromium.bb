@@ -504,7 +504,7 @@ uint64 WriteBlockWithAdditional(IMkvWriter* writer,
                                       block_more_payload_size;
   const uint64 block_additions_payload_size = block_more_elem_size;
   const uint64 block_additions_elem_size = EbmlMasterElementSize(
-                                               kMkvBlockMore,
+                                               kMkvBlockAdditions,
                                                block_additions_payload_size) +
                                            block_additions_payload_size;
   const uint64 block_group_payload_size = block_elem_size +
