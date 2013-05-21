@@ -263,7 +263,6 @@ static inline bool isCSSTokenAString(int yytype)
 %type <boolean> supports_conjunction
 %type <boolean> supports_disjunction
 %type <boolean> supports_declaration_condition
-%type <boolean> supports_error
 
 %type <string> keyframe_name
 %type <keyframe> keyframe_rule
@@ -417,9 +416,7 @@ charset:
      parser->startEndUnknownRule();
      $$ = 0;
   }
-  | CHARSET_SYM error invalid_block {
-  }
-  | CHARSET_SYM error ';' {
+  | CHARSET_SYM at_rule_recovery {
   }
 ;
 
@@ -537,11 +534,7 @@ import:
         $$ = 0;
         parser->endRuleBody(true);
     }
-  | before_import_rule IMPORT_SYM error ';' {
-        $$ = 0;
-        parser->endRuleBody(true);
-    }
-  | before_import_rule IMPORT_SYM error invalid_block {
+  | before_import_rule IMPORT_SYM at_rule_recovery {
         $$ = 0;
         parser->endRuleBody(true);
     }
@@ -555,10 +548,7 @@ NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space ';' {
 | NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space invalid_block {
     $$ = 0;
 }
-| NAMESPACE_SYM error invalid_block {
-    $$ = 0;
-}
-| NAMESPACE_SYM error ';' {
+| NAMESPACE_SYM at_rule_recovery {
     $$ = 0;
 }
 ;
@@ -710,17 +700,10 @@ supports:
     before_supports_rule SUPPORTS_SYM maybe_space supports_condition at_supports_rule_header_end '{' at_rule_body_start maybe_space block_rule_list save_block {
         $$ = parser->createSupportsRule($4, $9);
     }
-    | before_supports_rule SUPPORTS_SYM supports_error {
+    | before_supports_rule SUPPORTS_SYM at_rule_recovery {
         $$ = 0;
         parser->endRuleBody(true);
         parser->popSupportsRuleData();
-    }
-    ;
-
-supports_error:
-    error ';' {
-    }
-    | error invalid_block {
     }
     ;
 
@@ -878,11 +861,7 @@ page:
             parser->endRuleBody(true);
         }
     }
-    | before_page_rule PAGE_SYM error invalid_block {
-      parser->endRuleBody(true);
-      $$ = 0;
-    }
-    | before_page_rule PAGE_SYM error ';' {
+    | before_page_rule PAGE_SYM at_rule_recovery {
       parser->endRuleBody(true);
       $$ = 0;
     }
@@ -986,11 +965,7 @@ font_face:
     '{' at_rule_body_start maybe_space_before_declaration declaration_list closing_brace {
         $$ = parser->createFontFaceRule();
     }
-    | before_font_face_rule FONT_FACE_SYM error invalid_block {
-      $$ = 0;
-      parser->endRuleBody(true);
-    }
-    | before_font_face_rule FONT_FACE_SYM error ';' {
+    | before_font_face_rule FONT_FACE_SYM at_rule_recovery {
       $$ = 0;
       parser->endRuleBody(true);
     }
@@ -1027,12 +1002,7 @@ viewport:
         $$ = parser->createViewportRule();
         parser->markViewportRuleBodyEnd();
     }
-    | before_viewport_rule WEBKIT_VIEWPORT_RULE_SYM error invalid_block {
-        $$ = 0;
-        parser->endRuleBody(true);
-        parser->markViewportRuleBodyEnd();
-    }
-    | before_viewport_rule WEBKIT_VIEWPORT_RULE_SYM error ';' {
+    | before_viewport_rule WEBKIT_VIEWPORT_RULE_SYM at_rule_recovery {
         $$ = 0;
         parser->endRuleBody(true);
         parser->markViewportRuleBodyEnd();
@@ -1922,12 +1892,14 @@ save_block:
     ;
 
 invalid_at:
-    ATKEYWORD error invalid_block {
+    ATKEYWORD at_rule_recovery {
         $$ = 0;
     }
-  | ATKEYWORD error ';' {
-        $$ = 0;
-    }
+    ;
+
+at_rule_recovery:
+    error ';'
+  | error invalid_block
     ;
 
 invalid_rule:
