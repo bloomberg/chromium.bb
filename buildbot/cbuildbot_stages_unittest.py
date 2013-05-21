@@ -1056,7 +1056,8 @@ class UploadPrebuiltsStageTest(AbstractStageTest,
       self.assertCommandContains([self.CMD, '--set-version',
                                   self.archive_stage.version])
       count -= 1
-    self.assertEqual(count, 0, 'Number of asserts performed does not match')
+    self.assertEqual(count, 0,
+        'Number of asserts performed does not match (%d remaining)' % count)
 
   def testFullPrebuiltsUpload(self):
     """Test uploading of full builder prebuilts."""
@@ -1070,9 +1071,8 @@ class UploadPrebuiltsStageTest(AbstractStageTest,
 
   def testChromeUpload(self):
     """Test uploading of prebuilts for chrome build."""
-    board_map = {'amd64-generic': True, 'daisy': True,
-                 'x86-alex': False, 'lumpy': False}
-    self.VerifyBoardMap('x86-generic-chromium-pfq', 9, board_map,
+    board_map = {'amd64-generic': True, 'daisy': True}
+    self.VerifyBoardMap('x86-generic-chromium-pfq', 5, board_map,
                         public_args=['--board', 'x86-generic'])
 
   def testPaladinMasterUpload(self):
