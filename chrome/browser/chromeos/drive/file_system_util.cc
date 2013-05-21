@@ -263,11 +263,6 @@ std::string EscapeUtf8FileName(const std::string& input) {
   return input;
 }
 
-std::string ExtractResourceIdFromUrl(const GURL& url) {
-  return net::UnescapeURLComponent(url.ExtractFileName(),
-                                   net::UnescapeRule::URL_SPECIAL_CHARS);
-}
-
 void ParseCacheFilePath(const base::FilePath& path,
                         std::string* resource_id,
                         std::string* md5,

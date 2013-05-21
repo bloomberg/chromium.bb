@@ -170,17 +170,6 @@ TEST(FileSystemUtilTest, EscapeUtf8FileName) {
   EXPECT_EQ("\xE2\x88\x95\xE2\x88\x95\xE2\x88\x95", EscapeUtf8FileName("///"));
 }
 
-TEST(FileSystemUtilTest, ExtractResourceIdFromUrl) {
-  EXPECT_EQ("file:2_file_resource_id", ExtractResourceIdFromUrl(
-      GURL("https://file1_link_self/file:2_file_resource_id")));
-  // %3A should be unescaped.
-  EXPECT_EQ("file:2_file_resource_id", ExtractResourceIdFromUrl(
-      GURL("https://file1_link_self/file%3A2_file_resource_id")));
-
-  // The resource ID cannot be extracted, hence empty.
-  EXPECT_EQ("", ExtractResourceIdFromUrl(GURL("https://www.example.com/")));
-}
-
 TEST(FileSystemUtilTest, GetCacheRootPath) {
   TestingProfile profile;
   base::FilePath profile_path = profile.GetPath();

@@ -13,6 +13,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google_apis/drive_switches.h"
+#include "googleurl/src/gurl.h"
+#include "net/base/escape.h"
 
 namespace google_apis {
 namespace util {
@@ -113,6 +115,11 @@ std::string TranslateQuery(const std::string& original_query) {
   }
 
   return result;
+}
+
+std::string ExtractResourceIdFromUrl(const GURL& url) {
+  return net::UnescapeURLComponent(url.ExtractFileName(),
+                                   net::UnescapeRule::URL_SPECIAL_CHARS);
 }
 
 }  // namespace util
