@@ -41,6 +41,7 @@ class PPB_TCPServerSocket_Private_Proxy : public InterfaceProxy {
   void OnMsgListenACK(uint32 plugin_dispatcher_id,
                       PP_Resource socket_resource,
                       uint32 socket_id,
+                      const PP_NetAddress_Private& local_addr,
                       int32_t status);
   void OnMsgAcceptACK(uint32 plugin_dispatcher_id,
                       uint32 server_socket_id,

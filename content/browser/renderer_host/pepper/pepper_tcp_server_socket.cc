@@ -84,6 +84,7 @@ void PepperTCPServerSocket::CancelListenRequest() {
       plugin_dispatcher_id_,
       socket_resource_,
       0,
+      NetAddressPrivateImpl::kInvalidNetAddress,
       PP_ERROR_FAILED));
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -107,15 +108,27 @@ void PepperTCPServerSocket::OnListenCompleted(int result) {
 
   if (result != net::OK) {
     CancelListenRequest();
-  } else {
-    manager_->Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(
-        routing_id_,
-        plugin_dispatcher_id_,
-        socket_resource_,
-        socket_id_,
-        PP_OK));
-    state_ = LISTENING;
+    return;
   }
+
+  net::IPEndPoint end_point;
+  PP_NetAddress_Private addr;
+  if (socket_->GetLocalAddress(&end_point) != net::OK ||
+      !NetAddressPrivateImpl::IPEndPointToNetAddress(end_point.address(),
+                                                     end_point.port(),
+                                                     &addr)) {
+    CancelListenRequest();
+    return;
+  }
+
+  manager_->Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(
+      routing_id_,
+      plugin_dispatcher_id_,
+      socket_resource_,
+      socket_id_,
+      addr,
+      PP_OK));
+  state_ = LISTENING;
 }
 
 void PepperTCPServerSocket::OnAcceptCompleted(

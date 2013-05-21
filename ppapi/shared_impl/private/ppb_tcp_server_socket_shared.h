@@ -38,9 +38,12 @@ class PPAPI_SHARED_EXPORT PPB_TCPServerSocket_Shared
                          scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Accept(PP_Resource* tcp_socket,
                          scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t GetLocalAddress(PP_NetAddress_Private* addr) OVERRIDE;
   virtual void StopListening() OVERRIDE;
 
-  void OnListenCompleted(uint32 socket_id, int32_t status);
+  void OnListenCompleted(uint32 socket_id,
+                         const PP_NetAddress_Private& local_addr,
+                         int32_t status);
   virtual void OnAcceptCompleted(bool succeeded,
                                  uint32 accepted_socket_id,
                                  const PP_NetAddress_Private& local_addr,
@@ -65,6 +68,7 @@ class PPAPI_SHARED_EXPORT PPB_TCPServerSocket_Shared
   };
 
   uint32 socket_id_;
+  PP_NetAddress_Private local_addr_;
   State state_;
 
   scoped_refptr<TrackedCallback> listen_callback_;

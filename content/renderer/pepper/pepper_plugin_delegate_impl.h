@@ -356,6 +356,7 @@ class PepperPluginDelegateImpl
   void OnTCPServerSocketListenACK(uint32 plugin_dispatcher_id,
                                   PP_Resource socket_resource,
                                   uint32 socket_id,
+                                  const PP_NetAddress_Private& local_addr,
                                   int32_t status);
   void OnTCPServerSocketAcceptACK(uint32 plugin_dispatcher_id,
                                   uint32 socket_id,

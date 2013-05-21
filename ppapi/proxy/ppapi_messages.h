@@ -719,10 +719,11 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPBTCPSocket_SetBoolOptionACK,
 // initialized (if needed) but Listen call is failed.
 // |status| == PP_OK means that socket is correctly initialized (if
 // needed) and Listen call succeeds.
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPServerSocket_ListenACK,
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPServerSocket_ListenACK,
                     uint32 /* plugin_dispatcher_id */,
                     PP_Resource /* socket_resource */,
                     uint32 /* socket_id */,
+                    PP_NetAddress_Private /* local_addr */,
                     int32_t /* status */)
 IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPServerSocket_AcceptACK,
                     uint32 /* plugin_dispatcher_id */,

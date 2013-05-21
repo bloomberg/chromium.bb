@@ -5,15 +5,18 @@
 #include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
 
 #include <cstddef>
+#include <cstring>
 
 #include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/private/net_address_private_impl.h"
 
 namespace ppapi {
 
 PPB_TCPServerSocket_Shared::PPB_TCPServerSocket_Shared(PP_Instance instance)
     : Resource(OBJECT_IS_IMPL, instance),
       socket_id_(0),
+      local_addr_(),
       state_(BEFORE_LISTENING),
       tcp_socket_buffer_(NULL) {
 }
@@ -22,6 +25,7 @@ PPB_TCPServerSocket_Shared::PPB_TCPServerSocket_Shared(
     const HostResource& resource)
     : Resource(OBJECT_IS_PROXY, resource),
       socket_id_(0),
+      local_addr_(),
       state_(BEFORE_LISTENING),
       tcp_socket_buffer_(NULL) {
 }
@@ -69,6 +73,16 @@ int32_t PPB_TCPServerSocket_Shared::Accept(
   return PP_OK_COMPLETIONPENDING;
 }
 
+int32_t PPB_TCPServerSocket_Shared::GetLocalAddress(
+    PP_NetAddress_Private* addr) {
+  if (!addr)
+    return PP_ERROR_BADARGUMENT;
+  if (state_ != LISTENING)
+    return PP_ERROR_FAILED;
+  *addr = local_addr_;
+  return PP_OK;
+}
+
 void PPB_TCPServerSocket_Shared::StopListening() {
   if (state_ == CLOSED)
     return;
@@ -85,8 +99,10 @@ void PPB_TCPServerSocket_Shared::StopListening() {
   tcp_socket_buffer_ = NULL;
 }
 
-void PPB_TCPServerSocket_Shared::OnListenCompleted(uint32 socket_id,
-                                                   int32_t status) {
+void PPB_TCPServerSocket_Shared::OnListenCompleted(
+    uint32 socket_id,
+    const PP_NetAddress_Private& local_addr,
+    int32_t status) {
   if (state_ != BEFORE_LISTENING ||
       !TrackedCallback::IsPending(listen_callback_)) {
     NOTREACHED();
@@ -95,6 +111,7 @@ void PPB_TCPServerSocket_Shared::OnListenCompleted(uint32 socket_id,
 
   if (status == PP_OK) {
     socket_id_ = socket_id;
+    local_addr_ = local_addr;
     state_ = LISTENING;
   }
 

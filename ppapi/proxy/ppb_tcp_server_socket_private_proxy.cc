@@ -158,15 +158,16 @@ void PPB_TCPServerSocket_Private_Proxy::OnMsgListenACK(
     uint32 plugin_dispatcher_id,
     PP_Resource socket_resource,
     uint32 socket_id,
+    const PP_NetAddress_Private& local_addr,
     int32_t status) {
- thunk::EnterResourceNoLock<thunk::PPB_TCPServerSocket_Private_API>
+  thunk::EnterResourceNoLock<thunk::PPB_TCPServerSocket_Private_API>
      enter(socket_resource, true);
   if (enter.succeeded()) {
     PPB_TCPServerSocket_Shared* server_socket =
         static_cast<PPB_TCPServerSocket_Shared*>(enter.object());
     if (status == PP_OK)
       id_to_server_socket_[socket_id] = server_socket;
-    server_socket->OnListenCompleted(socket_id, status);
+    server_socket->OnListenCompleted(socket_id, local_addr, status);
   } else if (socket_id != 0 && status == PP_OK) {
     IPC::Message* msg =
         new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id);

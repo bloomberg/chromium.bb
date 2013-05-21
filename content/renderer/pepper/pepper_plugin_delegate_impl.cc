@@ -1553,6 +1553,7 @@ void PepperPluginDelegateImpl::OnTCPServerSocketListenACK(
     uint32 plugin_dispatcher_id,
     PP_Resource socket_resource,
     uint32 socket_id,
+    const PP_NetAddress_Private& local_addr,
     int32_t status) {
   ppapi::thunk::EnterResource<ppapi::thunk::PPB_TCPServerSocket_Private_API>
       enter(socket_resource, true);
@@ -1561,7 +1562,7 @@ void PepperPluginDelegateImpl::OnTCPServerSocketListenACK(
         static_cast<ppapi::PPB_TCPServerSocket_Shared*>(enter.object());
     if (status == PP_OK)
       tcp_server_sockets_.AddWithID(socket, socket_id);
-    socket->OnListenCompleted(socket_id, status);
+    socket->OnListenCompleted(socket_id, local_addr, status);
   } else if (socket_id != 0 && status == PP_OK) {
     // StopListening was called before completion of Listen.
     render_view_->Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id));

@@ -262,6 +262,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_5;
@@ -2990,6 +2991,40 @@ static void Pnacl_M18_PPB_TCPServerSocket_Private_StopListening(PP_Resource tcp_
 
 /* End wrapper methods for PPB_TCPServerSocket_Private_0_1 */
 
+/* Begin wrapper methods for PPB_TCPServerSocket_Private_0_2 */
+
+static PP_Resource Pnacl_M28_PPB_TCPServerSocket_Private_Create(PP_Instance instance) {
+  const struct PPB_TCPServerSocket_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M28_PPB_TCPServerSocket_Private_IsTCPServerSocket(PP_Resource resource) {
+  const struct PPB_TCPServerSocket_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2.real_iface;
+  return iface->IsTCPServerSocket(resource);
+}
+
+static int32_t Pnacl_M28_PPB_TCPServerSocket_Private_Listen(PP_Resource tcp_server_socket, const struct PP_NetAddress_Private* addr, int32_t backlog, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPServerSocket_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2.real_iface;
+  return iface->Listen(tcp_server_socket, addr, backlog, *callback);
+}
+
+static int32_t Pnacl_M28_PPB_TCPServerSocket_Private_Accept(PP_Resource tcp_server_socket, PP_Resource* tcp_socket, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPServerSocket_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2.real_iface;
+  return iface->Accept(tcp_server_socket, tcp_socket, *callback);
+}
+
+static int32_t Pnacl_M28_PPB_TCPServerSocket_Private_GetLocalAddress(PP_Resource tcp_server_socket, struct PP_NetAddress_Private* addr) {
+  const struct PPB_TCPServerSocket_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2.real_iface;
+  return iface->GetLocalAddress(tcp_server_socket, addr);
+}
+
+static void Pnacl_M28_PPB_TCPServerSocket_Private_StopListening(PP_Resource tcp_server_socket) {
+  const struct PPB_TCPServerSocket_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2.real_iface;
+  iface->StopListening(tcp_server_socket);
+}
+
+/* End wrapper methods for PPB_TCPServerSocket_Private_0_2 */
+
 /* Begin wrapper methods for PPB_TCPSocket_Private_0_3 */
 
 static PP_Resource Pnacl_M17_PPB_TCPSocket_Private_Create(PP_Instance instance) {
@@ -4413,6 +4448,15 @@ struct PPB_TCPServerSocket_Private_0_1 Pnacl_Wrappers_PPB_TCPServerSocket_Privat
     .StopListening = (void (*)(PP_Resource tcp_server_socket))&Pnacl_M18_PPB_TCPServerSocket_Private_StopListening
 };
 
+struct PPB_TCPServerSocket_Private_0_2 Pnacl_Wrappers_PPB_TCPServerSocket_Private_0_2 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M28_PPB_TCPServerSocket_Private_Create,
+    .IsTCPServerSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M28_PPB_TCPServerSocket_Private_IsTCPServerSocket,
+    .Listen = (int32_t (*)(PP_Resource tcp_server_socket, const struct PP_NetAddress_Private* addr, int32_t backlog, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_TCPServerSocket_Private_Listen,
+    .Accept = (int32_t (*)(PP_Resource tcp_server_socket, PP_Resource* tcp_socket, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_TCPServerSocket_Private_Accept,
+    .GetLocalAddress = (int32_t (*)(PP_Resource tcp_server_socket, struct PP_NetAddress_Private* addr))&Pnacl_M28_PPB_TCPServerSocket_Private_GetLocalAddress,
+    .StopListening = (void (*)(PP_Resource tcp_server_socket))&Pnacl_M28_PPB_TCPServerSocket_Private_StopListening
+};
+
 struct PPB_TCPSocket_Private_0_3 Pnacl_Wrappers_PPB_TCPSocket_Private_0_3 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M17_PPB_TCPSocket_Private_Create,
     .IsTCPSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M17_PPB_TCPSocket_Private_IsTCPSocket,
@@ -5358,6 +5402,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2 = {
+  .iface_macro = PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE_0_2,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TCPServerSocket_Private_0_2,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_3 = {
   .iface_macro = PPB_TCPSOCKET_PRIVATE_INTERFACE_0_3,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TCPSocket_Private_0_3,
@@ -5580,6 +5630,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_2,
   &Pnacl_WrapperInfo_PPB_Talk_Private_1_0,
   &Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1,
+  &Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2,
   &Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_3,
   &Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_4,
   &Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_5,

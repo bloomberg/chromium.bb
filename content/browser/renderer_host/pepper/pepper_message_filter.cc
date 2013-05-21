@@ -365,20 +365,24 @@ void PepperMessageFilter::DoTCPServerListen(bool allowed,
                                             int32_t backlog) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!allowed) {
-    Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(routing_id,
-                                                   plugin_dispatcher_id,
-                                                   socket_resource,
-                                                   0,
-                                                   PP_ERROR_FAILED));
+    Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(
+        routing_id,
+        plugin_dispatcher_id,
+        socket_resource,
+        0,
+        NetAddressPrivateImpl::kInvalidNetAddress,
+        PP_ERROR_FAILED));
     return;
   }
   uint32 socket_id = GenerateSocketID();
   if (socket_id == kInvalidSocketID) {
-    Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(routing_id,
-                                                   plugin_dispatcher_id,
-                                                   socket_resource,
-                                                   0,
-                                                   PP_ERROR_NOSPACE));
+    Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(
+        routing_id,
+        plugin_dispatcher_id,
+        socket_resource,
+        0,
+        NetAddressPrivateImpl::kInvalidNetAddress,
+        PP_ERROR_NOSPACE));
     return;
   }
   PepperTCPServerSocket* socket = new PepperTCPServerSocket(

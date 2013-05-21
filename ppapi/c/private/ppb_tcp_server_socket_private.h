@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_tcp_server_socket_private.idl,
- *   modified Thu Mar 28 10:31:11 2013.
+ *   modified Mon May 20 12:45:38 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_TCP_SERVER_SOCKET_PRIVATE_H_
@@ -20,8 +20,10 @@
 
 #define PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE_0_1 \
     "PPB_TCPServerSocket_Private;0.1"
+#define PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE_0_2 \
+    "PPB_TCPServerSocket_Private;0.2"
 #define PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE \
-    PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE_0_1
+    PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE_0_2
 
 /**
  * @file
@@ -37,7 +39,7 @@
  * The <code>PPB_TCPServerSocket_Private</code> interface provides TCP
  * server socket operations.
  */
-struct PPB_TCPServerSocket_Private_0_1 {
+struct PPB_TCPServerSocket_Private_0_2 {
   /**
    * Allocates a TCP server socket resource.
    */
@@ -71,6 +73,13 @@ struct PPB_TCPServerSocket_Private_0_1 {
                     PP_Resource* tcp_socket,
                     struct PP_CompletionCallback callback);
   /**
+   * Returns the current address to which the socket is bound, in the
+   * buffer pointed to by |addr|. This method can be called only after
+   * successful Listen() call and before StopListening() call.
+   */
+  int32_t (*GetLocalAddress)(PP_Resource tcp_server_socket,
+                             struct PP_NetAddress_Private* addr);
+  /**
    * Cancels all pending callbacks reporting PP_ERROR_ABORTED and
    * closes the socket. Note: this method is implicitly called when
    * server socket is destroyed.
@@ -78,7 +87,20 @@ struct PPB_TCPServerSocket_Private_0_1 {
   void (*StopListening)(PP_Resource tcp_server_socket);
 };
 
-typedef struct PPB_TCPServerSocket_Private_0_1 PPB_TCPServerSocket_Private;
+typedef struct PPB_TCPServerSocket_Private_0_2 PPB_TCPServerSocket_Private;
+
+struct PPB_TCPServerSocket_Private_0_1 {
+  PP_Resource (*Create)(PP_Instance instance);
+  PP_Bool (*IsTCPServerSocket)(PP_Resource resource);
+  int32_t (*Listen)(PP_Resource tcp_server_socket,
+                    const struct PP_NetAddress_Private* addr,
+                    int32_t backlog,
+                    struct PP_CompletionCallback callback);
+  int32_t (*Accept)(PP_Resource tcp_server_socket,
+                    PP_Resource* tcp_socket,
+                    struct PP_CompletionCallback callback);
+  void (*StopListening)(PP_Resource tcp_server_socket);
+};
 /**
  * @}
  */

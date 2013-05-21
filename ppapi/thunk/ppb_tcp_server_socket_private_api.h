@@ -24,6 +24,7 @@ public:
                          scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Accept(PP_Resource* tcp_socket,
                          scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t GetLocalAddress(PP_NetAddress_Private* addr) = 0;
   virtual void StopListening() = 0;
 };
 

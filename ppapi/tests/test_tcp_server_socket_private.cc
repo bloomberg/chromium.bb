@@ -4,6 +4,7 @@
 
 #include "ppapi/tests/test_tcp_server_socket_private.h"
 
+#include <cstdio>
 #include <vector>
 
 #include "ppapi/cpp/pass_ref.h"
@@ -132,25 +133,16 @@ std::string TestTCPServerSocketPrivate::SyncListen(
     int32_t backlog) {
   PP_NetAddress_Private base_address;
   ASSERT_SUBTEST_SUCCESS(GetLocalAddress(&base_address));
-
-  // TODO (ygorshenin): find more efficient way to select available
-  // ports.
-  bool is_free_port_found = false;
-  for (uint16_t port = kPortScanFrom; port < kPortScanTo; ++port) {
-    if (!NetAddressPrivate::ReplacePort(base_address, port, address))
-      return ReportError("PPB_NetAddress_Private::ReplacePort", 0);
-
-    TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-    callback.WaitForResult(
-        socket->Listen(address, backlog, callback.GetCallback()));
-    CHECK_CALLBACK_BEHAVIOR(callback);
-    if (callback.result() == PP_OK) {
-      is_free_port_found = true;
-      break;
-    }
-  }
-
-  ASSERT_TRUE(is_free_port_found);
+  if (!NetAddressPrivate::ReplacePort(base_address, 0, address))
+    return ReportError("PPB_NetAddress_Private::ReplacePort", 0);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+      socket->Listen(address, backlog, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+  int32_t rv = socket->GetLocalAddress(address);
+  ASSERT_EQ(PP_OK, rv);
+  ASSERT_TRUE(NetAddressPrivate::GetPort(*address) != 0);
   PASS();
 }
 
@@ -158,14 +150,12 @@ std::string TestTCPServerSocketPrivate::TestListen() {
   static const int kBacklog = 2;
 
   TCPServerSocketPrivate server_socket(instance_);
-
   PP_NetAddress_Private address;
   ASSERT_SUBTEST_SUCCESS(SyncListen(&server_socket, &address, kBacklog));
 
   // We can't use a blocking callback for Accept, because it will wait forever
   // for the client to connect, since the client connects after.
-  TestCompletionCallback accept_callback(instance_->pp_instance(),
-                                         PP_REQUIRED);
+  TestCompletionCallback accept_callback(instance_->pp_instance(), PP_REQUIRED);
   // We need to make sure there's a message loop to run accept_callback on.
   pp::MessageLoop current_thread_loop(pp::MessageLoop::GetCurrent());
   if (current_thread_loop.is_null() && testing_interface_->IsOutOfProcess()) {
@@ -209,7 +199,6 @@ std::string TestTCPServerSocketPrivate::TestBacklog() {
   static const size_t kBacklog = 5;
 
   TCPServerSocketPrivate server_socket(instance_);
-
   PP_NetAddress_Private address;
   ASSERT_SUBTEST_SUCCESS(SyncListen(&server_socket, &address, 2 * kBacklog));
 

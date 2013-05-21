@@ -30,6 +30,7 @@ class TCPServerSocketPrivate : public Resource {
   // |callback| is called or StopListening method is called.
   int32_t Accept(PP_Resource* socket,
                  const CompletionCallback& callback);
+  int32_t GetLocalAddress(PP_NetAddress_Private* addr);
   void StopListening();
 };
 

@@ -62,22 +62,17 @@ std::string TestTCPServerSocketPrivateDisallowed::TestListen() {
   ASSERT_TRUE(socket != 0);
   ASSERT_TRUE(tcp_server_socket_private_interface_->IsTCPServerSocket(socket));
 
-  PP_NetAddress_Private base_address, current_address;
+  PP_NetAddress_Private base_address, address;
   pp::NetAddressPrivate::GetAnyAddress(false, &base_address);
-
-  for (uint16_t port = kPortScanFrom; port < kPortScanTo; ++port) {
-    ASSERT_TRUE(pp::NetAddressPrivate::ReplacePort(base_address,
-                                                   port,
-                                                   &current_address));
-    TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-    callback.WaitForResult(tcp_server_socket_private_interface_->Listen(
-        socket,
-        &current_address,
-        1,
-        callback.GetCallback().pp_completion_callback()));
-    CHECK_CALLBACK_BEHAVIOR(callback);
-    ASSERT_NE(PP_OK, callback.result());
-  }
-
+  ASSERT_TRUE(pp::NetAddressPrivate::ReplacePort(
+      base_address, 0, &address));
+  TestCompletionCallback callback(instance_->pp_instance());
+  callback.WaitForResult(tcp_server_socket_private_interface_->Listen(
+      socket,
+      &address,
+      1,
+      callback.GetCallback().pp_completion_callback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_NE(PP_OK, callback.result());
   PASS();
 }

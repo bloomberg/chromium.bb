@@ -49,13 +49,21 @@ int32_t Accept(PP_Resource tcp_server_socket,
   return enter.SetResult(enter.object()->Accept(tcp_socket, enter.callback()));
 }
 
+int32_t GetLocalAddress(PP_Resource tcp_server_socket,
+                        PP_NetAddress_Private* addr) {
+  EnterTCPServer enter(tcp_server_socket, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+  return enter.object()->GetLocalAddress(addr);
+}
+
 void StopListening(PP_Resource tcp_server_socket) {
   EnterTCPServer enter(tcp_server_socket, true);
   if (enter.succeeded())
     enter.object()->StopListening();
 }
 
-const PPB_TCPServerSocket_Private g_ppb_tcp_server_socket_thunk = {
+const PPB_TCPServerSocket_Private_0_1 g_ppb_tcp_server_socket_thunk_0_1 = {
   Create,
   IsTCPServerSocket,
   Listen,
@@ -63,10 +71,25 @@ const PPB_TCPServerSocket_Private g_ppb_tcp_server_socket_thunk = {
   StopListening
 };
 
+const PPB_TCPServerSocket_Private_0_2 g_ppb_tcp_server_socket_thunk_0_2 = {
+  Create,
+  IsTCPServerSocket,
+  Listen,
+  Accept,
+  GetLocalAddress,
+  StopListening,
+};
+
 }  // namespace
 
-const PPB_TCPServerSocket_Private* GetPPB_TCPServerSocket_Private_0_1_Thunk() {
-  return &g_ppb_tcp_server_socket_thunk;
+const PPB_TCPServerSocket_Private_0_1*
+GetPPB_TCPServerSocket_Private_0_1_Thunk() {
+  return &g_ppb_tcp_server_socket_thunk_0_1;
+}
+
+const PPB_TCPServerSocket_Private_0_2*
+GetPPB_TCPServerSocket_Private_0_2_Thunk() {
+  return &g_ppb_tcp_server_socket_thunk_0_2;
 }
 
 }  // namespace thunk
