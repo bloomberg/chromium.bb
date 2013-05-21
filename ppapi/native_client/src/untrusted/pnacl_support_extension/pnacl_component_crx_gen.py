@@ -361,7 +361,7 @@ def GeneratePrivateKey(options):
                                    [],
                                    False)
   CRXGen.RunCRXGen(options.chrome_path, ext_dir)
-  shutil.copy2(J(tempdir, 'dummy_extension.pem'),
+  shutil.copy(J(tempdir, 'dummy_extension.pem'),
                PnaclDirs.OutputDir())
   shutil.rmtree(tempdir)
   logging.info('\n<<< Fresh key is now in %s/dummy_extension.pem >>>\n' %
@@ -392,7 +392,7 @@ def BuildArchCRXForComponentUpdater(version_quad, arch, lib_overrides,
   if arch in lib_overrides:
     for override in lib_overrides[arch]:
       logging.info('Copying override %s to %s' % (override, target_dir))
-      shutil.copy2(override, target_dir)
+      shutil.copy(override, target_dir)
 
   # Skip the CRX generation if we are only building the unpacked version
   # for commandline testing.
@@ -507,7 +507,7 @@ def CopyFlattenDirsAndPrefix(src_dir, arch, dest_dir):
       assert (f == os.path.basename(f))
       full_name = J(root, f)
       target_name = UseWhitelistedChars(f, arch)
-      shutil.copy2(full_name, J(dest_dir, target_name))
+      shutil.copy(full_name, J(dest_dir, target_name))
 
 
 def BuildArchForInstaller(version_quad, arch, lib_overrides, options):
@@ -532,7 +532,7 @@ def BuildArchForInstaller(version_quad, arch, lib_overrides, options):
     for override in lib_overrides[arch]:
       override_base = os.path.basename(override)
       target_name = UseWhitelistedChars(override_base, arch)
-      shutil.copy2(override, J(target_dir, target_name))
+      shutil.copy(override, J(target_dir, target_name))
 
 
 def BuildInstallerStyle(version_quad, lib_overrides, options):
