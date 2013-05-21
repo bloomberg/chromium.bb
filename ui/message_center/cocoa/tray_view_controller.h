@@ -13,6 +13,7 @@
 #import "base/memory/scoped_nsobject.h"
 #include "ui/message_center/message_center_export.h"
 
+@class HoverImageButton;
 @class MCNotificationController;
 
 namespace message_center {
@@ -37,6 +38,12 @@ MESSAGE_CENTER_EXPORT
   // Map of notification IDs to weak pointers of the view controllers in
   // |notifications_|.
   std::map<std::string, MCNotificationController*> notificationsMap_;
+
+  // The pause button that enters quiet mode.
+  scoped_nsobject<HoverImageButton> pauseButton_;
+
+  // The clear all notifications button. Hidden when there are no notifications.
+  scoped_nsobject<HoverImageButton> clearAllButton_;
 }
 
 // Designated initializer.
@@ -60,6 +67,8 @@ MESSAGE_CENTER_EXPORT
 
 @interface MCTrayViewController (TestingAPI)
 - (NSScrollView*)scrollView;
+- (HoverImageButton*)pauseButton;
+- (HoverImageButton*)clearAllButton;
 @end
 
 #endif  // UI_MESSAGE_CENTER_COCOA_TRAY_VIEW_CONTROLLER_H_

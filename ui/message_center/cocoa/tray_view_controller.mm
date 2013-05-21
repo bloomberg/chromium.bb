@@ -7,9 +7,12 @@
 #include <cmath>
 
 #include "base/time.h"
+#include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 #import "ui/message_center/cocoa/notification_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
@@ -23,6 +26,10 @@ namespace {
 
 // The height of the bar at the top of the tray that contains buttons.
 const CGFloat kControlAreaHeight = 50;
+
+// Amount of spacing between control buttons. There is kMarginBetweenItems
+// between a button and the edge of the tray, though.
+const CGFloat kButtonXMargin = 20;
 
 // Amount of padding to leave between the bottom of the screen and the bottom
 // of the message center tray.
@@ -153,13 +160,34 @@ const CGFloat kTrayBottomMargin = 75;
   // Resize the scroll view.
   scrollViewFrame.size.height = NSHeight(frame) - kControlAreaHeight;
   [scrollView_ setFrame:scrollViewFrame];
+
+  // Hide the clear-all button if there are no notifications. Simply swap the
+  // X position of it and the pause button in that case.
+  BOOL hidden = modelNotifications.size() == 0;
+  if ([clearAllButton_ isHidden] != hidden) {
+    [clearAllButton_ setHidden:hidden];
+
+    NSRect pauseButtonFrame = [pauseButton_ frame];
+    NSRect clearAllButtonFrame = [clearAllButton_ frame];
+    std::swap(clearAllButtonFrame.origin.x, pauseButtonFrame.origin.x);
+    [pauseButton_ setFrame:pauseButtonFrame];
+    [clearAllButton_ setFrame:clearAllButtonFrame];
+  }
 }
 
 - (void)toggleQuietMode:(id)sender {
-  if (messageCenter_->IsQuietMode())
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  if (messageCenter_->IsQuietMode()) {
     messageCenter_->SetQuietMode(false);
-  else
+    [pauseButton_ setTrackingEnabled:YES];
+    [pauseButton_ setDefaultImage:
+        rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE).ToNSImage()];
+  } else {
     messageCenter_->EnterQuietModeWithExpire(base::TimeDelta::FromDays(1));
+    [pauseButton_ setTrackingEnabled:NO];
+    [pauseButton_ setDefaultImage:
+        rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE_PRESSED).ToNSImage()];
+  }
 }
 
 - (void)clearAllNotifications:(id)sender {
@@ -174,6 +202,14 @@ const CGFloat kTrayBottomMargin = 75;
 
 - (NSScrollView*)scrollView {
   return scrollView_.get();
+}
+
+- (HoverImageButton*)pauseButton {
+  return pauseButton_.get();
+}
+
+- (HoverImageButton*)clearAllButton {
+  return clearAllButton_.get();
 }
 
 // Private /////////////////////////////////////////////////////////////////////
@@ -215,6 +251,78 @@ const CGFloat kTrayBottomMargin = 75;
       message_center::kFooterDelimiterColor)];
   [divider setTitlePosition:NSNoTitle];
   [view addSubview:divider];
+
+  auto getButtonFrame = ^NSRect(CGFloat maxX, NSImage* image) {
+      NSSize size = [image size];
+      return NSMakeRect(
+          maxX - size.width,
+          kControlAreaHeight/2 - size.height/2,
+          size.width,
+          size.height);
+  };
+
+  auto configureButton = ^(HoverImageButton* button) {
+      [[button cell] setHighlightsBy:NSOnState];
+      [button setTrackingEnabled:YES];
+      [button setBordered:NO];
+      [button setAutoresizingMask:NSViewMinYMargin];
+      [button setTarget:self];
+  };
+
+  // Create the settings button at the far-right.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  NSImage* defaultImage =
+      rb.GetNativeImageNamed(IDR_NOTIFICATION_SETTINGS).ToNSImage();
+  NSRect settingsButtonFrame = getButtonFrame(
+      NSWidth([view frame]) - message_center::kMarginBetweenItems,
+      defaultImage);
+  scoped_nsobject<HoverImageButton> settingsButton(
+      [[HoverImageButton alloc] initWithFrame:settingsButtonFrame]);
+  [settingsButton setDefaultImage:defaultImage];
+  [settingsButton setHoverImage:
+      rb.GetNativeImageNamed(IDR_NOTIFICATION_SETTINGS_HOVER).ToNSImage()];
+  [settingsButton setPressedImage:
+      rb.GetNativeImageNamed(IDR_NOTIFICATION_SETTINGS_PRESSED).ToNSImage()];
+  [settingsButton setToolTip:
+      l10n_util::GetNSString(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL)];
+  [settingsButton setAction:@selector(showSettings:)];
+  configureButton(settingsButton);
+  [view addSubview:settingsButton];
+
+  // Create the clear all button.
+  defaultImage = rb.GetNativeImageNamed(IDR_NOTIFICATION_CLEAR_ALL).ToNSImage();
+  NSRect clearAllButtonFrame = getButtonFrame(
+      NSMinX(settingsButtonFrame) - kButtonXMargin,
+      defaultImage);
+  clearAllButton_.reset(
+      [[HoverImageButton alloc] initWithFrame:clearAllButtonFrame]);
+  [clearAllButton_ setDefaultImage:defaultImage];
+  [clearAllButton_ setHoverImage:
+      rb.GetNativeImageNamed(IDR_NOTIFICATION_CLEAR_ALL_HOVER).ToNSImage()];
+  [clearAllButton_ setPressedImage:
+      rb.GetNativeImageNamed(IDR_NOTIFICATION_CLEAR_ALL_PRESSED).ToNSImage()];
+  [clearAllButton_ setToolTip:
+      l10n_util::GetNSString(IDS_MESSAGE_CENTER_CLEAR_ALL)];
+  [clearAllButton_ setAction:@selector(clearAllNotifications:)];
+  configureButton(clearAllButton_);
+  [view addSubview:clearAllButton_];
+
+  // Create the pause button.
+  defaultImage = rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE).ToNSImage();
+  NSRect pauseButtonFrame = getButtonFrame(
+      NSMinX(clearAllButtonFrame) - kButtonXMargin,
+      defaultImage);
+  pauseButton_.reset([[HoverImageButton alloc] initWithFrame:pauseButtonFrame]);
+  [pauseButton_ setDefaultImage:defaultImage];
+  [pauseButton_ setHoverImage:
+      rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE_HOVER).ToNSImage()];
+  [pauseButton_ setPressedImage:
+      rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE_PRESSED).ToNSImage()];
+  [pauseButton_ setToolTip:
+      l10n_util::GetNSString(IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP)];
+  [pauseButton_ setAction:@selector(toggleQuietMode:)];
+  configureButton(pauseButton_);
+  [view addSubview:pauseButton_];
 }
 
 @end

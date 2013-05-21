@@ -95,3 +95,50 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
   EXPECT_EQ(0u, [[view subviews] count]);
   EXPECT_CGFLOAT_EQ(0, NSHeight([view frame]));
 }
+
+TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
+  EXPECT_TRUE([tray_ pauseButton]);
+  EXPECT_TRUE([tray_ clearAllButton]);
+
+  // With no notifications, the clear all button should be hidden.
+  EXPECT_TRUE([[tray_ clearAllButton] isHidden]);
+  EXPECT_LT(NSMinX([[tray_ clearAllButton] frame]),
+            NSMinX([[tray_ pauseButton] frame]));
+
+  // Add a notification.
+  center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                           "1",
+                           ASCIIToUTF16("First notification"),
+                           ASCIIToUTF16("This is a simple test."),
+                           string16(),
+                           std::string(),
+                           NULL);
+  [tray_ onMessageCenterTrayChanged];
+
+  // Clear all should now be visible.
+  EXPECT_FALSE([[tray_ clearAllButton] isHidden]);
+  EXPECT_GT(NSMinX([[tray_ clearAllButton] frame]),
+            NSMinX([[tray_ pauseButton] frame]));
+
+  // Adding a second notification should keep things still visible.
+  center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                           "2",
+                           ASCIIToUTF16("Second notification"),
+                           ASCIIToUTF16("This is a simple test."),
+                           string16(),
+                           std::string(),
+                           NULL);
+  [tray_ onMessageCenterTrayChanged];
+  EXPECT_FALSE([[tray_ clearAllButton] isHidden]);
+  EXPECT_GT(NSMinX([[tray_ clearAllButton] frame]),
+            NSMinX([[tray_ pauseButton] frame]));
+
+  // Clear all notifications.
+  [tray_ clearAllNotifications:nil];
+  [tray_ onMessageCenterTrayChanged];
+
+  // The button should be hidden again.
+  EXPECT_TRUE([[tray_ clearAllButton] isHidden]);
+  EXPECT_LT(NSMinX([[tray_ clearAllButton] frame]),
+            NSMinX([[tray_ pauseButton] frame]));
+}
