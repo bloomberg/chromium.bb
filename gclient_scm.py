@@ -69,7 +69,11 @@ class GitDiffFilterer(DiffFiltererWrapper):
     return re.sub("[a|b]/" + self._current_file, self._replacement_file, line)
 
 
-def ask_for_data(prompt):
+def ask_for_data(prompt, options):
+  if options.jobs > 1:
+    raise gclient_utils.Error("Background task requires input. Rerun "
+                              "gclient with --jobs=1 so that\n"
+                              "interaction is possible.")
   try:
     return raw_input(prompt)
   except KeyboardInterrupt:
@@ -454,17 +458,16 @@ class GitWrapper(SCMWrapper):
           merge_args.append('--ff-only')
         merge_args.append(upstream_branch)
         merge_output = scm.GIT.Capture(merge_args, cwd=self.checkout_path)
-      except subprocess2.CalledProcessError, e:
+      except subprocess2.CalledProcessError as e:
         if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
           if not printed_path:
             print('\n_____ %s%s' % (self.relpath, rev_str))
             printed_path = True
           while True:
             try:
-              # TODO(maruel): That can't work with --jobs.
               action = ask_for_data(
                   'Cannot fast-forward merge, attempt to rebase? '
-                  '(y)es / (q)uit / (s)kip : ')
+                  '(y)es / (q)uit / (s)kip : ', options)
             except ValueError:
               raise gclient_utils.Error('Invalid Character')
             if re.match(r'yes|y', action, re.I):
@@ -755,7 +758,7 @@ class GitWrapper(SCMWrapper):
               'Cannot rebase because of unstaged changes.\n'
               '\'git reset --hard HEAD\' ?\n'
               'WARNING: destroys any uncommitted work in your current branch!'
-              ' (y)es / (q)uit / (s)how : ')
+              ' (y)es / (q)uit / (s)how : ', options)
           if re.match(r'yes|y', rebase_action, re.I):
             self._Run(['reset', '--hard', 'HEAD'], options)
             # Should this be recursive?
