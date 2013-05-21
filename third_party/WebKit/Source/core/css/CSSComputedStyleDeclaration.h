@@ -64,9 +64,7 @@ public:
     PassRefPtr<CSSValue> getPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
     PassRefPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
     bool useFixedFontDefaultSize() const;
-#if ENABLE(SVG)
     PassRefPtr<CSSValue> getSVGPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
-#endif
 
     PassRefPtr<StylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 
@@ -103,9 +101,7 @@ private:
 
     PassRefPtr<CSSValue> valueForShadow(const ShadowData*, CSSPropertyID, const RenderStyle*) const;
     PassRefPtr<CSSPrimitiveValue> currentColorOrValidColor(RenderStyle*, const Color&) const;
-#if ENABLE(SVG)
     PassRefPtr<SVGPaint> adjustSVGPaintForCurrentColor(PassRefPtr<SVGPaint>, RenderStyle*) const;
-#endif
 
     PassRefPtr<CSSValue> valueForFilter(const RenderObject*, const RenderStyle*) const;
 

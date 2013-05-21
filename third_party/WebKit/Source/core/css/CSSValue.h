@@ -91,20 +91,14 @@ public:
     bool isWebKitCSSMixFunctionValue() const { return m_classType == WebKitCSSMixFunctionValueClass; }
     bool isWebKitCSSShaderValue() const { return m_classType == WebKitCSSShaderClass; }
     bool isVariableValue() const { return m_classType == VariableClass; }
-#if ENABLE(SVG)
     bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }
     bool isSVGPaint() const { return m_classType == SVGPaintClass; }
     bool isWebKitCSSSVGDocumentValue() const { return m_classType == WebKitCSSSVGDocumentClass; }
-#endif
     
     bool isCSSOMSafe() const { return m_isCSSOMSafe; }
     bool isSubtypeExposedToCSSOM() const
     { 
-        return isPrimitiveValue() 
-#if ENABLE(SVG)
-            || isSVGColor()
-#endif
-            || isValueList();
+        return isPrimitiveValue() || isSVGColor() || isValueList();
     }
 
     PassRefPtr<CSSValue> cloneForCSSOM() const;
@@ -156,11 +150,11 @@ protected:
         CalculationClass,
         WebKitCSSShaderClass,
         VariableClass,
-#if ENABLE(SVG)
+
+        // SVG classes.
         SVGColorClass,
         SVGPaintClass,
         WebKitCSSSVGDocumentClass,
-#endif
 
         // List class types must appear after ValueListClass.
         ValueListClass,

@@ -53,15 +53,12 @@
 #include "core/css/WebKitCSSArrayFunctionValue.h"
 #include "core/css/WebKitCSSFilterValue.h"
 #include "core/css/WebKitCSSMixFunctionValue.h"
+#include "core/css/WebKitCSSSVGDocumentValue.h"
 #include "core/css/WebKitCSSShaderValue.h"
 #include "core/css/WebKitCSSTransformValue.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/svg/SVGColor.h"
 #include "core/svg/SVGPaint.h"
-
-#if ENABLE(SVG)
-#include "core/css/WebKitCSSSVGDocumentValue.h"
-#endif
 
 namespace WebCore {
 
@@ -237,7 +234,6 @@ void CSSValue::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     case VariableClass:
         static_cast<const CSSVariableValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
-#if ENABLE(SVG)
     case SVGColorClass:
         static_cast<const SVGColor*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
@@ -247,7 +243,6 @@ void CSSValue::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     case WebKitCSSSVGDocumentClass:
         static_cast<const WebKitCSSSVGDocumentValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
-#endif
     case ValueListClass:
         toCSSValueList(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
@@ -341,14 +336,12 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<WebKitCSSShaderValue>(*this, other);
         case VariableClass:
             return compareCSSValues<CSSVariableValue>(*this, other);
-#if ENABLE(SVG)
         case SVGColorClass:
             return compareCSSValues<SVGColor>(*this, other);
         case SVGPaintClass:
             return compareCSSValues<SVGPaint>(*this, other);
         case WebKitCSSSVGDocumentClass:
             return compareCSSValues<WebKitCSSSVGDocumentValue>(*this, other);
-#endif
         default:
             ASSERT_NOT_REACHED();
             return false;
@@ -431,14 +424,12 @@ String CSSValue::cssText() const
         return static_cast<const WebKitCSSShaderValue*>(this)->customCssText();
     case VariableClass:
         return static_cast<const CSSVariableValue*>(this)->value();
-#if ENABLE(SVG)
     case SVGColorClass:
         return static_cast<const SVGColor*>(this)->customCssText();
     case SVGPaintClass:
         return static_cast<const SVGPaint*>(this)->customCssText();
     case WebKitCSSSVGDocumentClass:
         return static_cast<const WebKitCSSSVGDocumentValue*>(this)->customCssText();
-#endif
     }
     ASSERT_NOT_REACHED();
     return String();
@@ -563,7 +554,6 @@ void CSSValue::destroy()
     case VariableClass:
         delete static_cast<CSSVariableValue*>(this);
         return;
-#if ENABLE(SVG)
     case SVGColorClass:
         delete static_cast<SVGColor*>(this);
         return;
@@ -573,7 +563,6 @@ void CSSValue::destroy()
     case WebKitCSSSVGDocumentClass:
         delete static_cast<WebKitCSSSVGDocumentValue*>(this);
         return;
-#endif
     }
     ASSERT_NOT_REACHED();
 }
@@ -598,12 +587,10 @@ PassRefPtr<CSSValue> CSSValue::cloneForCSSOM() const
         return static_cast<const WebKitCSSTransformValue*>(this)->cloneForCSSOM();
     case ImageSetClass:
         return static_cast<const CSSImageSetValue*>(this)->cloneForCSSOM();
-#if ENABLE(SVG)
     case SVGColorClass:
         return static_cast<const SVGColor*>(this)->cloneForCSSOM();
     case SVGPaintClass:
         return static_cast<const SVGPaint*>(this)->cloneForCSSOM();
-#endif
     default:
         ASSERT(!isSubtypeExposedToCSSOM());
         return TextCloneCSSValue::create(classType(), cssText());

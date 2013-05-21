@@ -33,6 +33,7 @@
 #include "HTMLNames.h"
 #include "MathMLNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "SVGNames.h"
 #include "UserAgentStyleSheets.h"
 #include "WebKitFontFamilyNames.h"
 #include "XMLNames.h"
@@ -44,6 +45,7 @@
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSFontSelector.h"
+#include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSPageRule.h"
 #include "core/css/CSSParser.h"
@@ -77,7 +79,10 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/WebKitCSSKeyframeRule.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
+#include "core/css/WebKitCSSMixFunctionValue.h"
 #include "core/css/WebKitCSSRegionRule.h"
+#include "core/css/WebKitCSSSVGDocumentValue.h"
+#include "core/css/WebKitCSSShaderValue.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -100,14 +105,24 @@
 #include "core/html/HTMLProgressElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/track/WebVTTElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/CachedSVGDocument.h"
+#include "core/loader/cache/CachedSVGDocumentReference.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/CalculationValue.h"
 #include "core/platform/LinkHash.h"
+#include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
+#include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
 #include "core/platform/text/LocaleToScriptMapping.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderScrollbar.h"
@@ -122,44 +137,25 @@
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/ShadowData.h"
 #include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleCachedImageSet.h"
+#include "core/rendering/style/StyleCachedShader.h"
+#include "core/rendering/style/StyleCustomFilterProgram.h"
+#include "core/rendering/style/StyleCustomFilterProgramCache.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
+#include "core/rendering/style/StylePendingShader.h"
+#include "core/rendering/style/StyleShader.h"
+#include "core/svg/SVGDocument.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGFontFaceElement.h"
+#include "core/svg/SVGURIReference.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/MemoryInstrumentationHashMap.h"
 #include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#include "core/css/WebKitCSSSVGDocumentValue.h"
-#include "core/loader/cache/CachedSVGDocument.h"
-#include "core/loader/cache/CachedSVGDocumentReference.h"
-#include "core/svg/SVGDocument.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGURIReference.h"
-#endif
-
-#include "core/css/CSSImageSetValue.h"
-#include "core/css/WebKitCSSMixFunctionValue.h"
-#include "core/css/WebKitCSSShaderValue.h"
-#include "core/html/track/WebVTTElement.h"
-#include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
-#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
-#include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
-#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
-#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
-#include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
-#include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
-#include "core/rendering/style/StyleCachedImageSet.h"
-#include "core/rendering/style/StyleCachedShader.h"
-#include "core/rendering/style/StyleCustomFilterProgram.h"
-#include "core/rendering/style/StyleCustomFilterProgramCache.h"
-#include "core/rendering/style/StylePendingShader.h"
-#include "core/rendering/style/StyleShader.h"
 
 using namespace std;
 
@@ -563,13 +559,9 @@ void StyleResolver::matchAllRules(ElementRuleCollector& collector, bool matchAut
         collector.addElementStyleProperties(m_state.styledElement()->inlineStyle(), isInlineStyleCacheable);
     }
 
-#if ENABLE(SVG)
     // Now check SMIL animation override style.
     if (includeSMILProperties && matchAuthorAndUserStyles && m_state.styledElement() && m_state.styledElement()->isSVGElement())
         collector.addElementStyleProperties(toSVGElement(m_state.styledElement())->animatedSMILStyleProperties(), false /* isCacheable */);
-#else
-    UNUSED_PARAM(includeSMILProperties);
-#endif
 
     if (m_state.styledElement() && m_state.styledElement()->hasActiveAnimations())
         collector.matchedResult().isCacheable = false;
@@ -607,10 +599,8 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
     StyledElement* p = static_cast<StyledElement*>(parent);
     if (p->inlineStyle())
         return 0;
-#if ENABLE(SVG)
     if (p->isSVGElement() && toSVGElement(p)->animatedSMILStyleProperties())
         return 0;
-#endif
     if (p->hasID() && m_features.idsInRules.contains(p->idForStyleResolution().impl()))
         return 0;
 
@@ -723,20 +713,16 @@ bool StyleResolver::sharingCandidateHasIdenticalStyleAffectingAttributes(StyledE
         if (sharingCandidate->hasClass() && classNamesAffectedByRules(sharingCandidate->classNames()))
             return false;
     } else if (sharingCandidate->hasClass()) {
-#if ENABLE(SVG)
         // SVG elements require a (slow!) getAttribute comparision because "class" is an animatable attribute for SVG.
         if (state.element()->isSVGElement()) {
             if (state.element()->getAttribute(classAttr) != sharingCandidate->getAttribute(classAttr))
                 return false;
-        } else {
-#endif
-            if (state.element()->classNames() != sharingCandidate->classNames())
-                return false;
-#if ENABLE(SVG)
+        } else if (state.element()->classNames() != sharingCandidate->classNames()) {
+            return false;
         }
-#endif
-    } else
+    } else {
         return false;
+    }
 
     if (state.styledElement()->presentationAttributeStyle() != sharingCandidate->presentationAttributeStyle())
         return false;
@@ -766,10 +752,8 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
         return false;
     if (element->needsStyleRecalc())
         return false;
-#if ENABLE(SVG)
     if (element->isSVGElement() && toSVGElement(element)->animatedSMILStyleProperties())
         return false;
-#endif
     if (element->isLink() != state.element()->isLink())
         return false;
     if (element->hovered() != state.element()->hovered())
@@ -857,10 +841,8 @@ RenderStyle* StyleResolver::locateSharedStyle()
     // If the element has inline style it is probably unique.
     if (state.styledElement()->inlineStyle())
         return 0;
-#if ENABLE(SVG)
     if (state.styledElement()->isSVGElement() && toSVGElement(state.styledElement())->animatedSMILStyleProperties())
         return 0;
-#endif
     // Ids stop style sharing if they show up in the stylesheets.
     if (state.styledElement()->hasID() && m_features.idsInRules.contains(state.styledElement()->idForStyleResolution().impl()))
         return 0;
@@ -1695,7 +1677,6 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 
     adjustGridItemPosition(style);
 
-#if ENABLE(SVG)
     if (e && e->isSVGElement()) {
         // Spec: http://www.w3.org/TR/SVG/masking.html#OverflowProperty
         if (style->overflowY() == OSCROLL)
@@ -1717,7 +1698,6 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         if (e->hasTagName(SVGNames::foreignObjectTag))
             style->setEffectiveZoom(RenderStyle::initialZoom());
     }
-#endif
 }
 
 void StyleResolver::adjustGridItemPosition(RenderStyle* style) const
@@ -2152,7 +2132,9 @@ inline bool isValidVisitedLinkProperty(CSSPropertyID id)
     case CSSPropertyBorderTopColor:
     case CSSPropertyBorderBottomColor:
     case CSSPropertyColor:
+    case CSSPropertyFill:
     case CSSPropertyOutlineColor:
+    case CSSPropertyStroke:
     case CSSPropertyWebkitColumnRuleColor:
 #if ENABLE(CSS3_TEXT)
     case CSSPropertyWebkitTextDecorationColor:
@@ -2160,10 +2142,6 @@ inline bool isValidVisitedLinkProperty(CSSPropertyID id)
     case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTextStrokeColor:
-#if ENABLE(SVG)
-    case CSSPropertyFill:
-    case CSSPropertyStroke:
-#endif
         return true;
     default:
         break;
@@ -3336,10 +3314,8 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         ASSERT_NOT_REACHED();
         return;
     default:
-#if ENABLE(SVG)
         // Try the SVG properties
         applySVGProperty(id, value);
-#endif
         return;
     }
 }
@@ -3643,7 +3619,6 @@ bool StyleResolver::affectedByViewportChange() const
     return false;
 }
 
-#if ENABLE(SVG)
 void StyleResolver::loadPendingSVGDocuments()
 {
     StyleResolverState& state = m_state;
@@ -3670,7 +3645,6 @@ void StyleResolver::loadPendingSVGDocuments()
     }
     state.pendingSVGDocuments().clear();
 }
-#endif
 
 void StyleResolver::loadPendingShaders()
 {
@@ -3830,10 +3804,8 @@ void StyleResolver::loadPendingResources()
     // Start loading the shaders referenced by this style.
     loadPendingShaders();
 
-#if ENABLE(SVG)
     // Start loading the SVG Documents referenced by this style.
     loadPendingSVGDocuments();
-#endif
 }
 
 inline StyleResolver::MatchedProperties::MatchedProperties()

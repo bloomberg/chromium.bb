@@ -28,7 +28,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/css/resolver/StyleResolver.h"
 
 #include <stdlib.h>
@@ -610,5 +609,3 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
 }
 
 }
-
-#endif

@@ -24,7 +24,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/css/WebKitCSSSVGDocumentValue.h"
 
 #include "core/css/CSSParser.h"
@@ -80,5 +79,3 @@ void WebKitCSSSVGDocumentValue::reportDescendantMemoryUsage(MemoryObjectInfo* me
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SVG)

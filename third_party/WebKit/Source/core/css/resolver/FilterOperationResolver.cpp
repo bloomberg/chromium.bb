@@ -46,10 +46,7 @@
 #include "core/rendering/style/StyleCustomFilterProgram.h"
 #include "core/rendering/style/StyleCustomFilterProgramCache.h"
 #include "core/rendering/style/StyleShader.h"
-
-#if ENABLE(SVG)
 #include "core/svg/SVGURIReference.h"
-#endif
 
 namespace WebCore {
 
@@ -405,7 +402,6 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
             continue;
         }
         if (operationType == FilterOperation::REFERENCE) {
-#if ENABLE(SVG)
             if (filterValue->length() != 1)
                 continue;
             CSSValue* argument = filterValue->itemWithoutBoundsCheck(0);
@@ -424,7 +420,6 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
                     operation->setCachedSVGDocumentReference(adoptPtr(new CachedSVGDocumentReference(svgDocumentValue->cachedSVGDocument())));
             }
             operations.operations().append(operation);
-#endif
             continue;
         }
 

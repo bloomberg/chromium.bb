@@ -254,30 +254,54 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyBorderCollapse:
     case CSSPropertyBorderSpacing:
     case CSSPropertyCaptionSide:
+    case CSSPropertyClipRule:
     case CSSPropertyColor:
+    case CSSPropertyColorInterpolation:
+    case CSSPropertyColorInterpolationFilters:
+    case CSSPropertyColorRendering:
     case CSSPropertyCursor:
     case CSSPropertyDirection:
     case CSSPropertyEmptyCells:
+    case CSSPropertyFill:
+    case CSSPropertyFillOpacity:
+    case CSSPropertyFillRule:
     case CSSPropertyFont:
     case CSSPropertyFontFamily:
     case CSSPropertyFontSize:
     case CSSPropertyFontStyle:
     case CSSPropertyFontVariant:
     case CSSPropertyFontWeight:
+    case CSSPropertyGlyphOrientationHorizontal:
+    case CSSPropertyGlyphOrientationVertical:
     case CSSPropertyImageRendering:
+    case CSSPropertyKerning:
     case CSSPropertyLetterSpacing:
     case CSSPropertyLineHeight:
     case CSSPropertyListStyle:
     case CSSPropertyListStyleImage:
-    case CSSPropertyListStyleType:
     case CSSPropertyListStylePosition:
+    case CSSPropertyListStyleType:
+    case CSSPropertyMarker:
+    case CSSPropertyMarkerEnd:
+    case CSSPropertyMarkerMid:
+    case CSSPropertyMarkerStart:
     case CSSPropertyOrphans:
     case CSSPropertyPointerEvents:
     case CSSPropertyQuotes:
     case CSSPropertyResize:
+    case CSSPropertyShapeRendering:
     case CSSPropertySpeak:
+    case CSSPropertyStroke:
+    case CSSPropertyStrokeDasharray:
+    case CSSPropertyStrokeDashoffset:
+    case CSSPropertyStrokeLinecap:
+    case CSSPropertyStrokeLinejoin:
+    case CSSPropertyStrokeMiterlimit:
+    case CSSPropertyStrokeOpacity:
+    case CSSPropertyStrokeWidth:
     case CSSPropertyTabSize:
     case CSSPropertyTextAlign:
+    case CSSPropertyTextAnchor:
     case CSSPropertyTextDecoration:
     case CSSPropertyTextIndent:
     case CSSPropertyTextRendering:
@@ -312,6 +336,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:
+    case CSSPropertyWebkitTapHighlightColor:
     case CSSPropertyWebkitTextCombine:
 #if ENABLE(CSS3_TEXT)
     case CSSPropertyWebkitTextDecorationLine:
@@ -337,37 +362,9 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWordBreak:
     case CSSPropertyWordSpacing:
     case CSSPropertyWordWrap:
-#if ENABLE(SVG)
-    case CSSPropertyClipRule:
-    case CSSPropertyColorInterpolation:
-    case CSSPropertyColorInterpolationFilters:
-    case CSSPropertyColorRendering:
-    case CSSPropertyFill:
-    case CSSPropertyFillOpacity:
-    case CSSPropertyFillRule:
-    case CSSPropertyGlyphOrientationHorizontal:
-    case CSSPropertyGlyphOrientationVertical:
-    case CSSPropertyKerning:
-    case CSSPropertyMarker:
-    case CSSPropertyMarkerEnd:
-    case CSSPropertyMarkerMid:
-    case CSSPropertyMarkerStart:
-    case CSSPropertyStroke:
-    case CSSPropertyStrokeDasharray:
-    case CSSPropertyStrokeDashoffset:
-    case CSSPropertyStrokeLinecap:
-    case CSSPropertyStrokeLinejoin:
-    case CSSPropertyStrokeMiterlimit:
-    case CSSPropertyStrokeOpacity:
-    case CSSPropertyStrokeWidth:
-    case CSSPropertyShapeRendering:
-    case CSSPropertyTextAnchor:
     case CSSPropertyWritingMode:
-#endif
-    case CSSPropertyWebkitTapHighlightColor:
         return true;
-    case CSSPropertyDisplay:
-    case CSSPropertyZoom:
+    case CSSPropertyAlignmentBaseline:
     case CSSPropertyBackground:
     case CSSPropertyBackgroundAttachment:
     case CSSPropertyBackgroundBlendMode:
@@ -382,6 +379,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyBackgroundRepeatX:
     case CSSPropertyBackgroundRepeatY:
     case CSSPropertyBackgroundSize:
+    case CSSPropertyBaselineShift:
     case CSSPropertyBorder:
     case CSSPropertyBorderBottom:
     case CSSPropertyBorderBottomColor:
@@ -416,20 +414,32 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyBottom:
     case CSSPropertyBoxShadow:
     case CSSPropertyBoxSizing:
+    case CSSPropertyBufferedRendering:
     case CSSPropertyClear:
     case CSSPropertyClip:
+    case CSSPropertyClipPath:
+    case CSSPropertyColorProfile:
     case CSSPropertyContent:
     case CSSPropertyCounterIncrement:
     case CSSPropertyCounterReset:
+    case CSSPropertyDisplay:
+    case CSSPropertyDominantBaseline:
+    case CSSPropertyEnableBackground:
+    case CSSPropertyFilter:
     case CSSPropertyFloat:
+    case CSSPropertyFloodColor:
+    case CSSPropertyFloodOpacity:
     case CSSPropertyFontStretch:
     case CSSPropertyHeight:
     case CSSPropertyLeft:
+    case CSSPropertyLightingColor:
     case CSSPropertyMargin:
     case CSSPropertyMarginBottom:
     case CSSPropertyMarginLeft:
     case CSSPropertyMarginRight:
     case CSSPropertyMarginTop:
+    case CSSPropertyMask:
+    case CSSPropertyMaskType:
     case CSSPropertyMaxHeight:
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:
@@ -458,6 +468,8 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyRight:
     case CSSPropertySize:
     case CSSPropertySrc:
+    case CSSPropertyStopColor:
+    case CSSPropertyStopOpacity:
     case CSSPropertyTableLayout:
     case CSSPropertyTextLineThrough:
     case CSSPropertyTextLineThroughColor:
@@ -483,9 +495,11 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyTransitionTimingFunction:
     case CSSPropertyUnicodeBidi:
     case CSSPropertyUnicodeRange:
+    case CSSPropertyVectorEffect:
     case CSSPropertyVerticalAlign:
-    case CSSPropertyWidth:
-    case CSSPropertyZIndex:
+    case CSSPropertyWebkitAlignContent:
+    case CSSPropertyWebkitAlignItems:
+    case CSSPropertyWebkitAlignSelf:
     case CSSPropertyWebkitAnimation:
     case CSSPropertyWebkitAnimationDelay:
     case CSSPropertyWebkitAnimationDirection:
@@ -546,9 +560,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitColumnWidth:
     case CSSPropertyWebkitColumns:
     case CSSPropertyWebkitFilter:
-    case CSSPropertyWebkitAlignContent:
-    case CSSPropertyWebkitAlignItems:
-    case CSSPropertyWebkitAlignSelf:
     case CSSPropertyWebkitFlex:
     case CSSPropertyWebkitFlexBasis:
     case CSSPropertyWebkitFlexDirection:
@@ -556,37 +567,37 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitFlexGrow:
     case CSSPropertyWebkitFlexShrink:
     case CSSPropertyWebkitFlexWrap:
-    case CSSPropertyWebkitJustifyContent:
-    case CSSPropertyWebkitOrder:
     case CSSPropertyWebkitFontSizeDelta:
+    case CSSPropertyWebkitGridAfter:
     case CSSPropertyWebkitGridAutoColumns:
     case CSSPropertyWebkitGridAutoFlow:
     case CSSPropertyWebkitGridAutoRows:
+    case CSSPropertyWebkitGridBefore:
+    case CSSPropertyWebkitGridColumn:
     case CSSPropertyWebkitGridColumns:
+    case CSSPropertyWebkitGridEnd:
+    case CSSPropertyWebkitGridRow:
     case CSSPropertyWebkitGridRows:
     case CSSPropertyWebkitGridStart:
-    case CSSPropertyWebkitGridEnd:
-    case CSSPropertyWebkitGridBefore:
-    case CSSPropertyWebkitGridAfter:
-    case CSSPropertyWebkitGridColumn:
-    case CSSPropertyWebkitGridRow:
+    case CSSPropertyWebkitJustifyContent:
     case CSSPropertyWebkitLineClamp:
-    case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
+    case CSSPropertyWebkitLogicalWidth:
+    case CSSPropertyWebkitMarginAfter:
     case CSSPropertyWebkitMarginAfterCollapse:
+    case CSSPropertyWebkitMarginBefore:
     case CSSPropertyWebkitMarginBeforeCollapse:
     case CSSPropertyWebkitMarginBottomCollapse:
-    case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyWebkitMarginCollapse:
-    case CSSPropertyWebkitMarginAfter:
-    case CSSPropertyWebkitMarginBefore:
     case CSSPropertyWebkitMarginEnd:
     case CSSPropertyWebkitMarginStart:
+    case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyWebkitMarquee:
     case CSSPropertyWebkitMarqueeDirection:
     case CSSPropertyWebkitMarqueeIncrement:
     case CSSPropertyWebkitMarqueeRepetition:
     case CSSPropertyWebkitMarqueeSpeed:
+    case CSSPropertyWebkitOrder:
     case CSSPropertyWebkitMarqueeStyle:
     case CSSPropertyWebkitMask:
     case CSSPropertyWebkitMaskBoxImage:
@@ -646,33 +657,18 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitShapePadding:
     case CSSPropertyWebkitShapeInside:
     case CSSPropertyWebkitShapeOutside:
-    case CSSPropertyWebkitWrapThrough:
-#if ENABLE(SVG)
-    case CSSPropertyClipPath:
-    case CSSPropertyMask:
-    case CSSPropertyMaskType:
-    case CSSPropertyEnableBackground:
-    case CSSPropertyFilter:
-    case CSSPropertyFloodColor:
-    case CSSPropertyFloodOpacity:
-    case CSSPropertyLightingColor:
-    case CSSPropertyStopColor:
-    case CSSPropertyStopOpacity:
-    case CSSPropertyColorProfile:
-    case CSSPropertyAlignmentBaseline:
-    case CSSPropertyBaselineShift:
-    case CSSPropertyDominantBaseline:
-    case CSSPropertyVectorEffect:
-    case CSSPropertyBufferedRendering:
     case CSSPropertyWebkitSvgShadow:
-#endif
+    case CSSPropertyWebkitWrapThrough:
     case CSSPropertyWebkitAppRegion:
+    case CSSPropertyWidth:
 #if ENABLE(CSS_DEVICE_ADAPTATION)
     case CSSPropertyMaxZoom:
     case CSSPropertyMinZoom:
     case CSSPropertyOrientation:
     case CSSPropertyUserZoom:
 #endif
+    case CSSPropertyZIndex:
+    case CSSPropertyZoom:
         return false;
     case CSSPropertyInvalid:
         ASSERT_NOT_REACHED();

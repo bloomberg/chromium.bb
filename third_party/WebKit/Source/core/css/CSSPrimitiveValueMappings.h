@@ -3670,8 +3670,6 @@ template<> inline CSSPrimitiveValue::operator BlendMode() const
     return BlendModeNormal;
 }
 
-#if ENABLE(SVG)
-
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(LineCap e)
     : CSSValue(PrimitiveClass)
 {
@@ -3840,8 +3838,6 @@ template<> inline CSSPrimitiveValue::operator EAlignmentBaseline() const
     ASSERT_NOT_REACHED();
     return AB_AUTO;
 }
-
-#endif
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBorderCollapse e)
     : CSSValue(PrimitiveClass)
@@ -4159,8 +4155,6 @@ template<int supported> Length CSSPrimitiveValue::convertToLength(RenderStyle* s
         return viewportPercentageLength();
     return Length(Undefined);
 }
-
-#if ENABLE(SVG)
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBufferedRendering e)
     : CSSValue(PrimitiveClass)
@@ -4504,8 +4498,6 @@ template<> inline CSSPrimitiveValue::operator EMaskType() const
     ASSERT_NOT_REACHED();
     return MT_LUMINANCE;
 }
-
-#endif // ENABLE(SVG)
 
 }
 

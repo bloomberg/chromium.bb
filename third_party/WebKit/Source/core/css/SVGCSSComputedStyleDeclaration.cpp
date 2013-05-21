@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
 #include "core/css/CSSComputedStyleDeclaration.h"
 
 #include "CSSPropertyNames.h"
@@ -211,7 +210,3 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSValue(CSSProp
 }
 
 }
-
-#endif // ENABLE(SVG)
-
-// vim:ts=4:noet

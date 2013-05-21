@@ -69,6 +69,7 @@
 #include "core/css/WebKitCSSKeyframeRule.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/css/WebKitCSSMixFunctionValue.h"
+#include "core/css/WebKitCSSSVGDocumentValue.h"
 #include "core/css/WebKitCSSShaderValue.h"
 #include "core/css/WebKitCSSTransformValue.h"
 #include "core/dom/Document.h"
@@ -89,10 +90,6 @@
 #include "wtf/text/StringImpl.h"
 #include "wtf/text/TextEncoding.h"
 #include <limits.h>
-
-#if ENABLE(SVG)
-#include "core/css/WebKitCSSSVGDocumentValue.h"
-#endif
 
 #define YYDEBUG 0
 
@@ -2711,17 +2708,15 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             return parseFontVariantLigatures(important);
         break;
     case CSSPropertyWebkitClipPath:
-        if (id == CSSValueNone)
+        if (id == CSSValueNone) {
             validPrimitive = true;
-        else if (value->unit == CSSParserValue::Function)
+        } else if (value->unit == CSSParserValue::Function) {
             return parseBasicShape(propId, important);
-#if ENABLE(SVG)
-        else if (value->unit == CSSPrimitiveValue::CSS_URI) {
+        } else if (value->unit == CSSPrimitiveValue::CSS_URI) {
             parsedValue = CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::CSS_URI);
             addProperty(propId, parsedValue.release(), important);
             return true;
         }
-#endif
         break;
     case CSSPropertyWebkitShapeInside:
     case CSSPropertyWebkitShapeOutside:
@@ -2856,10 +2851,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         validPrimitive = false;
         break;
 #endif
-#if ENABLE(SVG)
     default:
         return parseSVGValue(propId, important);
-#endif
     }
 
     if (validPrimitive) {
@@ -6077,11 +6070,9 @@ PassRefPtr<CSSValueList> CSSParser::parseShadow(CSSParserValueList* valueList, C
                 // Other operators aren't legal or we aren't done with the current shadow
                 // value.  Treat as invalid.
                 return 0;
-#if ENABLE(SVG)
             // -webkit-svg-shadow does not support multiple values.
             if (propId == CSSPropertyWebkitSvgShadow)
                 return 0;
-#endif
             // The value is good.  Commit it.
             context.commitValue();
         } else if (validUnit(val, FLength, CSSStrictMode)) {
@@ -8578,11 +8569,9 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
 
         // See if the specified primitive is one we understand.
         if (value->unit == CSSPrimitiveValue::CSS_URI) {
-#if ENABLE(SVG)
             RefPtr<WebKitCSSFilterValue> referenceFilterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::ReferenceFilterOperation);
             list->append(referenceFilterValue);
             referenceFilterValue->append(WebKitCSSSVGDocumentValue::create(value->string));
-#endif
         } else {
             const CSSParserString name = value->function->name;
             unsigned maximumArgumentCount = 1;
@@ -10389,7 +10378,6 @@ restartAfterComment:
             break;
         }
 
-#if ENABLE(SVG)
         // Use SVG parser for numbers on SVG presentation attributes.
         if (m_context.mode == SVGAttributeMode) {
             // We need to take care of units like 'em' or 'ex'.
@@ -10408,9 +10396,9 @@ restartAfterComment:
             }
             if (!parseSVGNumber(tokenStart<SrcCharacterType>(), character - tokenStart<SrcCharacterType>(), yylval->number))
                 break;
-        } else
-#endif
+        } else {
             yylval->number = charactersToDouble(tokenStart<SrcCharacterType>(), currentCharacter<SrcCharacterType>() - tokenStart<SrcCharacterType>());
+        }
 
         // Type of the function.
         if (isIdentifierStart<SrcCharacterType>()) {

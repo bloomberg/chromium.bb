@@ -383,14 +383,12 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
         return getLayeredShorthandValue(webkitAnimationShorthand());
     case CSSPropertyWebkitWrap:
         return getShorthandValue(webkitWrapShorthand());
-#if ENABLE(SVG)
     case CSSPropertyMarker: {
         RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyMarkerStart);
         if (value)
             return value->cssText();
         return String();
     }
-#endif
     case CSSPropertyBorderRadius:
         return get4Values(borderRadiusShorthand());
     default:

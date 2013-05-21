@@ -38,9 +38,7 @@
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
-#if ENABLE(SVG)
 #include "core/css/WebKitCSSSVGDocumentValue.h"
-#endif
 #include "core/css/WebKitCSSKeyframeRule.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/css/resolver/ViewportStyleResolver.h"

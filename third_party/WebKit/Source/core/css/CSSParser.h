@@ -32,6 +32,7 @@
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/MediaQuery.h"
+#include "core/css/WebKitCSSFilterValue.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/graphics/Color.h"
 #include <wtf/HashMap.h>
@@ -39,8 +40,6 @@
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/text/AtomicString.h>
 #include <wtf/Vector.h>
-
-#include "core/css/WebKitCSSFilterValue.h"
 
 namespace WebCore {
 
@@ -198,12 +197,10 @@ public:
     bool parseFontFaceSrc();
     bool parseFontFaceUnicodeRange();
 
-#if ENABLE(SVG)
     bool parseSVGValue(CSSPropertyID propId, bool important);
     PassRefPtr<CSSValue> parseSVGPaint();
     PassRefPtr<CSSValue> parseSVGColor();
     PassRefPtr<CSSValue> parseSVGStrokeDasharray();
-#endif
 
     // CSS3 Parsing Routines (for properties specific to CSS3)
     PassRefPtr<CSSValueList> parseShadow(CSSParserValueList*, CSSPropertyID);

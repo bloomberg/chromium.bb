@@ -25,9 +25,7 @@
 #include "CSSPropertyNames.h"
 
 #include "core/css/CSSValueList.h"
-#if ENABLE(SVG)
 #include "core/css/WebKitCSSSVGDocumentValue.h"
-#endif
 #include "core/dom/Element.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
@@ -45,9 +43,7 @@ class RenderRegion;
 class StyledElement;
 
 typedef HashMap<CSSPropertyID, RefPtr<CSSValue> > PendingImagePropertyMap;
-#if ENABLE(SVG)
 typedef HashMap<FilterOperation*, RefPtr<WebKitCSSSVGDocumentValue> > PendingSVGDocumentMap;
-#endif
 
 class StyleResolverState {
 WTF_MAKE_NONCOPYABLE(StyleResolverState);
@@ -100,9 +96,7 @@ public:
     bool applyPropertyToRegularStyle() const { return m_applyPropertyToRegularStyle; }
     bool applyPropertyToVisitedLinkStyle() const { return m_applyPropertyToVisitedLinkStyle; }
     PendingImagePropertyMap& pendingImageProperties() { return m_pendingImageProperties; }
-#if ENABLE(SVG)
     PendingSVGDocumentMap& pendingSVGDocuments() { return m_pendingSVGDocuments; }
-#endif
     void setHasPendingShaders(bool hasPendingShaders) { m_hasPendingShaders = hasPendingShaders; }
     bool hasPendingShaders() const { return m_hasPendingShaders; }
 
@@ -152,9 +146,7 @@ private:
 
     PendingImagePropertyMap m_pendingImageProperties;
     bool m_hasPendingShaders;
-#if ENABLE(SVG)
     PendingSVGDocumentMap m_pendingSVGDocuments;
-#endif
     CSSValue* m_lineHeightValue;
     bool m_fontDirty;
 

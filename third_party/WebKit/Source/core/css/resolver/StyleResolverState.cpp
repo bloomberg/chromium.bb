@@ -51,9 +51,7 @@ void StyleResolverState::clear()
     m_regionForStyling = 0;
     m_pendingImageProperties.clear();
     m_hasPendingShaders = false;
-#if ENABLE(SVG)
     m_pendingSVGDocuments.clear();
-#endif
 }
 
 void StyleResolverState::initElement(Element* e)

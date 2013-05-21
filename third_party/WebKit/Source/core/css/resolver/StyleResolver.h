@@ -34,9 +34,7 @@
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
-#if ENABLE(SVG)
 #include "core/css/WebKitCSSSVGDocumentValue.h"
-#endif
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -291,9 +289,7 @@ public:
     void invalidateMatchedPropertiesCache();
 
     void loadPendingShaders();
-#if ENABLE(SVG)
     void loadPendingSVGDocuments();
-#endif
 
     void loadPendingResources();
 
@@ -430,9 +426,7 @@ private:
 
     void applyProperty(CSSPropertyID, CSSValue*);
 
-#if ENABLE(SVG)
     void applySVGProperty(CSSPropertyID, CSSValue*);
-#endif
 
     PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*);
     void loadPendingImages();

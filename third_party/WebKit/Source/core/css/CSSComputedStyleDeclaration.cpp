@@ -340,7 +340,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitShapeMargin,
     CSSPropertyWebkitShapePadding,
     CSSPropertyWebkitWrapThrough,
-#if ENABLE(SVG)
     CSSPropertyBufferedRendering,
     CSSPropertyClipPath,
     CSSPropertyClipRule,
@@ -380,7 +379,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyGlyphOrientationVertical,
     CSSPropertyWebkitSvgShadow,
     CSSPropertyVectorEffect
-#endif
 };
 
 static const Vector<CSSPropertyID>& computableProperties()
@@ -2563,12 +2561,10 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             if (ClipPathOperation* operation = style->clipPath()) {
                 if (operation->getOperationType() == ClipPathOperation::SHAPE)
                     return valueForBasicShape(static_cast<ShapeClipPathOperation*>(operation)->basicShape());
-#if ENABLE(SVG)
-                else if (operation->getOperationType() == ClipPathOperation::REFERENCE) {
+                if (operation->getOperationType() == ClipPathOperation::REFERENCE) {
                     ReferenceClipPathOperation* referenceOperation = static_cast<ReferenceClipPathOperation*>(operation);
                     return CSSPrimitiveValue::create(referenceOperation->url(), CSSPrimitiveValue::CSS_URI);
                 }
-#endif
             }
             return cssValuePool().createIdentifierValue(CSSValueNone);
         case CSSPropertyWebkitFlowInto:
@@ -2755,7 +2751,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             break;
 #endif
 
-#if ENABLE(SVG)
         case CSSPropertyBufferedRendering:
         case CSSPropertyClipPath:
         case CSSPropertyClipRule:
@@ -2799,7 +2794,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWritingMode:
         case CSSPropertyWebkitSvgShadow:
             return getSVGPropertyCSSValue(propertyID, DoNotUpdateLayout);
-#endif
     }
 
     logUnimplementedPropertyID(propertyID);
