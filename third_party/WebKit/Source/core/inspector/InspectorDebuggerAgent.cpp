@@ -415,6 +415,16 @@ void InspectorDebuggerAgent::cancelPauseOnNextStatement()
     scriptDebugServer().setPauseOnNextStatement(false);
 }
 
+void InspectorDebuggerAgent::didFireTimer()
+{
+    cancelPauseOnNextStatement();
+}
+
+void InspectorDebuggerAgent::didHandleEvent()
+{
+    cancelPauseOnNextStatement();
+}
+
 void InspectorDebuggerAgent::pause(ErrorString*)
 {
     if (m_javaScriptPauseScheduled)

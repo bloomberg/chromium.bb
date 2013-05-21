@@ -32,6 +32,7 @@
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 
 #include "InspectorFrontend.h"
+#include "core/dom/Event.h"
 #include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
@@ -60,6 +61,13 @@ const int domBreakpointDerivedTypeShift = 16;
 }
 
 namespace WebCore {
+
+static const char* const requestAnimationFrameEventName = "requestAnimationFrame";
+static const char* const cancelAnimationFrameEventName = "cancelAnimationFrame";
+static const char* const animationFrameFiredEventName = "animationFrameFired";
+static const char* const setTimerEventName = "setTimer";
+static const char* const clearTimerEventName = "clearTimer";
+static const char* const timerFiredEventName = "timerFired";
 
 namespace DOMDebuggerAgentState {
 static const char eventListenerBreakpoints[] = "eventListenerBreakpoints";
@@ -389,6 +397,41 @@ void InspectorDOMDebuggerAgent::pauseOnNativeEventIfNeeded(bool isDOMEvent, cons
         m_debuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::EventListener, eventData.release());
     else
         m_debuggerAgent->schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::EventListener, eventData.release());
+}
+
+void InspectorDOMDebuggerAgent::didInstallTimer(ScriptExecutionContext* context, int timerId, int timeout, bool singleShot)
+{
+    pauseOnNativeEventIfNeeded(false, setTimerEventName, true);
+}
+
+void InspectorDOMDebuggerAgent::didRemoveTimer(ScriptExecutionContext* context, int timerId)
+{
+    pauseOnNativeEventIfNeeded(false, clearTimerEventName, true);
+}
+
+void InspectorDOMDebuggerAgent::willFireTimer(ScriptExecutionContext* context, int timerId)
+{
+    pauseOnNativeEventIfNeeded(false, timerFiredEventName, false);
+}
+
+void InspectorDOMDebuggerAgent::didRequestAnimationFrame(Document* document, int callbackId)
+{
+    pauseOnNativeEventIfNeeded(false, requestAnimationFrameEventName, true);
+}
+
+void InspectorDOMDebuggerAgent::didCancelAnimationFrame(Document* document, int callbackId)
+{
+    pauseOnNativeEventIfNeeded(false, cancelAnimationFrameEventName, true);
+}
+
+void InspectorDOMDebuggerAgent::willFireAnimationFrame(Document* document, int callbackId)
+{
+    pauseOnNativeEventIfNeeded(false, animationFrameFiredEventName, false);
+}
+
+void InspectorDOMDebuggerAgent::willHandleEvent(Event* event)
+{
+    pauseOnNativeEventIfNeeded(true, event->type(), false);
 }
 
 void InspectorDOMDebuggerAgent::setXHRBreakpoint(ErrorString*, const String& url)

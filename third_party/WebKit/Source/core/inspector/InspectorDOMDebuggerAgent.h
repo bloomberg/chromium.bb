@@ -41,7 +41,9 @@
 
 namespace WebCore {
 
+class Document;
 class Element;
+class Event;
 class InspectorAgent;
 class InspectorDOMAgent;
 class InspectorDebuggerAgent;
@@ -78,7 +80,13 @@ public:
     void didRemoveDOMNode(Node*);
     void willModifyDOMAttr(Element*, const AtomicString&, const AtomicString&);
     void willSendXMLHttpRequest(const String& url);
-    void pauseOnNativeEventIfNeeded(bool isDOMEvent, const String& eventName, bool synchronous);
+    void didInstallTimer(ScriptExecutionContext*, int timerId, int timeout, bool singleShot);
+    void didRemoveTimer(ScriptExecutionContext*, int timerId);
+    void willFireTimer(ScriptExecutionContext*, int timerId);
+    void didRequestAnimationFrame(Document*, int callbackId);
+    void didCancelAnimationFrame(Document*, int callbackId);
+    void willFireAnimationFrame(Document*, int callbackId);
+    void willHandleEvent(Event*);
 
     void didProcessTask();
 
@@ -87,6 +95,8 @@ public:
 
 private:
     InspectorDOMDebuggerAgent(InstrumentingAgents*, InspectorCompositeState*, InspectorDOMAgent*, InspectorDebuggerAgent*, InspectorAgent*);
+
+    void pauseOnNativeEventIfNeeded(bool isDOMEvent, const String& eventName, bool synchronous);
 
     // InspectorDebuggerAgent::Listener implementation.
     virtual void debuggerWasEnabled();

@@ -38,7 +38,6 @@
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DeviceOrientationData.h"
-#include "core/dom/Event.h"
 #include "core/dom/EventContext.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorAgent.h"
@@ -80,13 +79,6 @@
 
 namespace WebCore {
 
-static const char* const requestAnimationFrameEventName = "requestAnimationFrame";
-static const char* const cancelAnimationFrameEventName = "cancelAnimationFrame";
-static const char* const animationFrameFiredEventName = "animationFrameFired";
-static const char* const setTimerEventName = "setTimer";
-static const char* const clearTimerEventName = "clearTimer";
-static const char* const timerFiredEventName = "timerFired";
-
 namespace {
 static HashSet<InstrumentingAgents*>* instrumentingAgentsSet = 0;
 }
@@ -127,10 +119,6 @@ InspectorInstrumentationCookie::~InspectorInstrumentationCookie()
 }
 
 namespace InspectorInstrumentation {
-
-void pauseOnNativeEventIfNeeded(InstrumentingAgents*, bool isDOMEvent, const String& eventName, bool synchronous);
-
-void cancelPauseOnNativeEvent(InstrumentingAgents*);
 
 InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCookie&);
 
@@ -289,14 +277,16 @@ void didScheduleResourceRequestImpl(InstrumentingAgents* instrumentingAgents, Do
 
 void didInstallTimerImpl(InstrumentingAgents* instrumentingAgents, ScriptExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
-    pauseOnNativeEventIfNeeded(instrumentingAgents, false, setTimerEventName, true);
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->didInstallTimer(context, timerId, timeout, singleShot);
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->didInstallTimer(context, timerId, timeout, singleShot);
 }
 
 void didRemoveTimerImpl(InstrumentingAgents* instrumentingAgents, ScriptExecutionContext* context, int timerId)
 {
-    pauseOnNativeEventIfNeeded(instrumentingAgents, false, clearTimerEventName, true);
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->didRemoveTimer(context, timerId);
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->didRemoveTimer(context, timerId);
 }
@@ -345,13 +335,15 @@ InspectorInstrumentationCookie willDispatchEventImpl(InstrumentingAgents* instru
 
 InspectorInstrumentationCookie willHandleEventImpl(InstrumentingAgents* instrumentingAgents, Event* event)
 {
-    pauseOnNativeEventIfNeeded(instrumentingAgents, true, event->type(), false);
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->willHandleEvent(event);
     return InspectorInstrumentationCookie(instrumentingAgents, 0);
 }
 
 void didHandleEventImpl(const InspectorInstrumentationCookie& cookie)
 {
-    cancelPauseOnNativeEvent(cookie.instrumentingAgents());
+    if (InspectorDebuggerAgent* debuggerAgent = cookie.instrumentingAgents()->inspectorDebuggerAgent())
+        debuggerAgent->didHandleEvent();
 }
 
 void didDispatchEventImpl(const InspectorInstrumentationCookie& cookie)
@@ -406,8 +398,8 @@ void didCreateIsolatedContextImpl(InstrumentingAgents* instrumentingAgents, Fram
 
 InspectorInstrumentationCookie willFireTimerImpl(InstrumentingAgents* instrumentingAgents, ScriptExecutionContext* context, int timerId)
 {
-    pauseOnNativeEventIfNeeded(instrumentingAgents, false, timerFiredEventName, false);
-
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->willFireTimer(context, timerId);
     int timelineAgentId = 0;
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
         if (timelineAgent->willFireTimer(context, timerId))
@@ -418,8 +410,8 @@ InspectorInstrumentationCookie willFireTimerImpl(InstrumentingAgents* instrument
 
 void didFireTimerImpl(const InspectorInstrumentationCookie& cookie)
 {
-    cancelPauseOnNativeEvent(cookie.instrumentingAgents());
-
+    if (InspectorDebuggerAgent* debuggerAgent = cookie.instrumentingAgents()->inspectorDebuggerAgent())
+        debuggerAgent->didFireTimer();
     if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
         timelineAgent->didFireTimer();
 }
@@ -939,24 +931,24 @@ void didWriteHTMLImpl(const InspectorInstrumentationCookie& cookie, unsigned end
 
 void didRequestAnimationFrameImpl(InstrumentingAgents* instrumentingAgents, Document* document, int callbackId)
 {
-    pauseOnNativeEventIfNeeded(instrumentingAgents, false, requestAnimationFrameEventName, true);
-
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->didRequestAnimationFrame(document, callbackId);
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->didRequestAnimationFrame(document, callbackId);
 }
 
 void didCancelAnimationFrameImpl(InstrumentingAgents* instrumentingAgents, Document* document, int callbackId)
 {
-    pauseOnNativeEventIfNeeded(instrumentingAgents, false, cancelAnimationFrameEventName, true);
-
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->didCancelAnimationFrame(document, callbackId);
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->didCancelAnimationFrame(document, callbackId);
 }
 
 InspectorInstrumentationCookie willFireAnimationFrameImpl(InstrumentingAgents* instrumentingAgents, Document* document, int callbackId)
 {
-    pauseOnNativeEventIfNeeded(instrumentingAgents, false, animationFrameFiredEventName, false);
-
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->willFireAnimationFrame(document, callbackId);
     int timelineAgentId = 0;
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
         if (timelineAgent->willFireAnimationFrame(document, callbackId))
@@ -1181,18 +1173,6 @@ bool timelineAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
     InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(scriptExecutionContext);
     return instrumentingAgents && instrumentingAgents->inspectorTimelineAgent();
-}
-
-void pauseOnNativeEventIfNeeded(InstrumentingAgents* instrumentingAgents, bool isDOMEvent, const String& eventName, bool synchronous)
-{
-    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
-        domDebuggerAgent->pauseOnNativeEventIfNeeded(isDOMEvent, eventName, synchronous);
-}
-
-void cancelPauseOnNativeEvent(InstrumentingAgents* instrumentingAgents)
-{
-    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
-        debuggerAgent->cancelPauseOnNextStatement();
 }
 
 void registerInstrumentingAgents(InstrumentingAgents* instrumentingAgents)

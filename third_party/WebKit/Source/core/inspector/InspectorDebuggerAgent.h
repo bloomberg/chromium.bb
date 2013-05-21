@@ -113,7 +113,8 @@ public:
     virtual void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<InspectorObject>& in_newValue, const String* in_callFrame, const String* in_functionObjectId);
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<InspectorObject> data);
-    void cancelPauseOnNextStatement();
+    void didFireTimer();
+    void didHandleEvent();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<InspectorObject> data);
     virtual void scriptExecutionBlockedByCSP(const String& directiveText);
 
@@ -148,6 +149,8 @@ protected:
     void reset();
 
 private:
+    void cancelPauseOnNextStatement();
+
     bool enabled();
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
