@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
@@ -20,7 +21,6 @@
 #include "jni/WebsiteSettingsPopup_jni.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/android/java_bitmap.h"
 
 using base::android::CheckException;
 using base::android::ConvertUTF8ToJavaString;
@@ -29,7 +29,6 @@ using base::android::GetClass;
 using base::android::ScopedJavaLocalRef;
 using content::CertStore;
 using content::WebContents;
-using gfx::ConvertToJavaBitmap;
 
 static jobjectArray GetCertificateChain(JNIEnv* env,
                                         jobject obj,
@@ -106,11 +105,8 @@ void WebsiteSettingsPopupAndroid::SetIdentityInfo(
   JNIEnv* env = base::android::AttachCurrentThread();
 
   {
-    const gfx::Image& icon_image = WebsiteSettingsUI::GetIdentityIcon(
-        identity_info.identity_status);
-    // Creates a java version of the bitmap and makes a copy of the pixels
-    ScopedJavaLocalRef<jobject> icon = ConvertToJavaBitmap(
-        icon_image.ToSkBitmap());
+    int icon_id = ResourceMapper::MapFromChromiumId(
+        WebsiteSettingsUI::GetIdentityIconID(identity_info.identity_status));
 
     // The headline and the certificate dialog link of the site's identity
     // section is only displayed if the site's identity was verified. If the
@@ -124,7 +120,7 @@ void WebsiteSettingsPopupAndroid::SetIdentityInfo(
 
     ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
         env, identity_info.identity_status_description);
-    Java_WebsiteSettingsPopup_addSection(env, popup_jobject_.obj(), icon.obj(),
+    Java_WebsiteSettingsPopup_addSection(env, popup_jobject_.obj(), icon_id,
         ConvertUTF8ToJavaString(env, headline).obj(), description.obj());
 
     string16 certificate_label =
@@ -138,17 +134,16 @@ void WebsiteSettingsPopupAndroid::SetIdentityInfo(
   }
 
   {
-     const gfx::Image& icon_image = WebsiteSettingsUI::GetConnectionIcon(
-         identity_info.connection_status);
-     ScopedJavaLocalRef<jobject> icon = ConvertToJavaBitmap(
-         icon_image.ToSkBitmap());
+    int icon_id = ResourceMapper::MapFromChromiumId(
+        WebsiteSettingsUI::GetConnectionIconID(
+            identity_info.connection_status));
 
-     ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
-         env, identity_info.connection_status_description);
-     Java_WebsiteSettingsPopup_addSection(env, popup_jobject_.obj(), icon.obj(),
-         NULL, description.obj());
+    ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
+        env, identity_info.connection_status_description);
+    Java_WebsiteSettingsPopup_addSection(env, popup_jobject_.obj(), icon_id,
+        NULL, description.obj());
 
-     Java_WebsiteSettingsPopup_addDivider(env, popup_jobject_.obj());
+    Java_WebsiteSettingsPopup_addDivider(env, popup_jobject_.obj());
   }
 
   Java_WebsiteSettingsPopup_addMoreInfoLink(env, popup_jobject_.obj(),

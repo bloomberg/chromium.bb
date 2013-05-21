@@ -34,12 +34,17 @@
     'include_path%': '<(DEPTH)',
     'output_dir': '<(SHARED_INTERMEDIATE_DIR)/templates/<(package_name)',
   },
-  # Ensure that the output directory is used in the class path
-  # when building targets that depend on this one.
   'direct_dependent_settings': {
     'variables': {
+      # Ensure that the output directory is used in the class path
+      # when building targets that depend on this one.
       'generated_src_dirs': [
         '<(output_dir)/',
+      ],
+      # Ensure dependents are rebuilt when sources for this rule change.
+      'additional_input_paths': [
+        '<@(_sources)',
+        '<@(template_deps)',
       ],
     },
   },

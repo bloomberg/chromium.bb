@@ -110,6 +110,9 @@
         'browser/android/provider/chrome_browser_provider.cc',
         'browser/android/provider/chrome_browser_provider.h',
         'browser/android/provider/run_on_ui_thread_blocking.h',
+        'browser/android/resource_mapper.cc',
+        'browser/android/resource_mapper.h',
+        'browser/android/resource_id.h',
         'browser/android/tab_android.cc',
         'browser/android/tab_android.h',
         'browser/app_controller_mac.h',
@@ -3171,6 +3174,18 @@
             'jni_gen_package': 'chrome',
           },
           'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'resource_id_java',
+          'type': 'none',
+          'sources': [
+            'android/java/ResourceId.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/chrome/browser',
+            'template_deps': ['browser/android/resource_id.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
           'target_name': 'profile_sync_service_model_type_selection_java',

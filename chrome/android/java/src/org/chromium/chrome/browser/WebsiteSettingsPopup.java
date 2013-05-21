@@ -65,10 +65,12 @@ class WebsiteSettingsPopup implements OnClickListener {
 
     /** Adds a section, which contains an icon, a headline, and a description. */
     @CalledByNative
-    private void addSection(Bitmap icon, String headline, String description) {
+    private void addSection(int enumeratedIconId, String headline, String description) {
         View section = LayoutInflater.from(mContext).inflate(R.layout.website_settings, null);
         ImageView i = (ImageView) section.findViewById(R.id.website_settings_icon);
-        i.setImageBitmap(icon);
+        int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
+        i.setImageResource(drawableId);
+
         TextView h = (TextView) section.findViewById(R.id.website_settings_headline);
         h.setText(headline);
         if (TextUtils.isEmpty(headline)) h.setVisibility(View.GONE);

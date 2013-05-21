@@ -1122,6 +1122,7 @@
           'dependencies': [
             'chrome_resources.gyp:chrome_strings',
             'profile_sync_service_model_type_selection_java',
+            'resource_id_java',
             'toolbar_model_security_levels_java',
             '../base/base.gyp:base',
             '../components/components.gyp:autofill_java',
