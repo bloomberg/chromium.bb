@@ -368,13 +368,6 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
         # The driver doesn't respond to closing stdin, so we might as well stop the driver immediately.
         return 0.0
 
-    def driver_name(self):
-        if self.get_option('driver_name'):
-            return self.get_option('driver_name')
-        if self.get_option('content_shell'):
-            return self.CONTENT_SHELL_NAME
-        return 'DumpRenderTree'
-
     def default_child_processes(self):
         if self._devices:
             return len(self._devices)

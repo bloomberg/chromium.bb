@@ -173,8 +173,6 @@ def parse_args(args):
             help="Alternative DumpRenderTree binary to use"),
         optparse.make_option("--content-shell", action="store_true",
             help="Use Content Shell instead of DumpRenderTree"),
-        optparse.make_option("--dump-render-tree", action="store_true",
-            help="Use DumpRenderTree instead of Content Shell"),
         optparse.make_option("--additional-platform-directory", action="append",
             default=[], help="Additional directory where to look for test "
                  "baselines (will take precendence over platform baselines). "
