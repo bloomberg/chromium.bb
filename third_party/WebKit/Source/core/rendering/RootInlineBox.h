@@ -183,7 +183,7 @@ public:
 
 #if ENABLE(CSS3_TEXT)
     // Used to calculate the underline offset for TextUnderlinePositionUnder.
-    float maxLogicalTop() const { return m_maxLogicalTop; }
+    float maxLogicalTop() const;
 #endif // CSS3_TEXT
 
     Node* getLogicalStartBoxWithNode(InlineBox*&) const;
@@ -219,12 +219,6 @@ private:
 
     LayoutUnit m_lineTopWithLeading;
     LayoutUnit m_lineBottomWithLeading;
-
-#if ENABLE(CSS3_TEXT)
-    // Maximum logicalTop among all children of an InlineFlowBox. Used to
-    // calculate the offset for TextUnderlinePositionUnder.
-    float m_maxLogicalTop;
-#endif // CSS3_TEXT
 
     struct LineFragmentationData {
         WTF_MAKE_NONCOPYABLE(LineFragmentationData); WTF_MAKE_FAST_ALLOCATED;
