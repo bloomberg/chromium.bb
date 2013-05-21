@@ -49,6 +49,8 @@
 #include "components/autofill/browser/wallet/wallet_signin_helper.h"
 #include "components/autofill/common/form_data.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -232,6 +234,14 @@ string16 GetValueForType(const DetailOutputMap& output,
   }
   NOTREACHED();
   return string16();
+}
+
+// Signals that the user has opted in to geolocation services.  Factored out
+// into a separate method because all interaction with the geolocation provider
+// needs to happen on the IO thread, which is not the thread
+// AutofillDialogController lives on.
+void UserDidOptIntoLocationServices() {
+  content::GeolocationProvider::GetInstance()->UserDidOptIntoLocationServices();
 }
 
 }  // namespace
@@ -2235,6 +2245,10 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
   active_instrument_id_.clear();
   active_address_id_.clear();
   full_wallet_.reset();
+
+  content::BrowserThread::PostTask(
+     content::BrowserThread::IO, FROM_HERE,
+     base::Bind(&UserDidOptIntoLocationServices));
 
   GetWalletClient()->AcceptLegalDocuments(
       wallet_items_->legal_documents(),
