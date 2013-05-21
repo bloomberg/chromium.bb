@@ -20,13 +20,13 @@ class WebThreadBase : public WebKit::WebThread {
   virtual void addTaskObserver(TaskObserver* observer);
   virtual void removeTaskObserver(TaskObserver* observer);
 
+  virtual bool isCurrentThread() const = 0;
+
  protected:
   WebThreadBase();
 
  private:
   class TaskObserverAdapter;
-
-  virtual bool IsCurrentThread() const = 0;
 
   typedef std::map<TaskObserver*, TaskObserverAdapter*> TaskObserverMap;
   TaskObserverMap task_observer_map_;
@@ -46,7 +46,7 @@ class WebThreadImpl : public WebThreadBase {
   base::MessageLoop* message_loop() const { return thread_->message_loop(); }
 
  private:
-  virtual bool IsCurrentThread() const OVERRIDE;
+  virtual bool isCurrentThread() const OVERRIDE;
   scoped_ptr<base::Thread> thread_;
 };
 
@@ -63,7 +63,7 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
   virtual void exitRunLoop();
 
  private:
-  virtual bool IsCurrentThread() const OVERRIDE;
+  virtual bool isCurrentThread() const OVERRIDE;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
 };
 

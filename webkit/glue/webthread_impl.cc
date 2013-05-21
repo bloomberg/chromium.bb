@@ -37,7 +37,7 @@ private:
 };
 
 void WebThreadBase::addTaskObserver(TaskObserver* observer) {
-  CHECK(IsCurrentThread());
+  CHECK(isCurrentThread());
   std::pair<TaskObserverMap::iterator, bool> result = task_observer_map_.insert(
       std::make_pair(observer, static_cast<TaskObserverAdapter*>(NULL)));
   if (result.second)
@@ -46,7 +46,7 @@ void WebThreadBase::addTaskObserver(TaskObserver* observer) {
 }
 
 void WebThreadBase::removeTaskObserver(TaskObserver* observer) {
-  CHECK(IsCurrentThread());
+  CHECK(isCurrentThread());
   TaskObserverMap::iterator iter = task_observer_map_.find(observer);
   if (iter == task_observer_map_.end())
     return;
@@ -74,18 +74,18 @@ void WebThreadImpl::postDelayedTask(
 }
 
 void WebThreadImpl::enterRunLoop() {
-  CHECK(IsCurrentThread());
+  CHECK(isCurrentThread());
   CHECK(!thread_->message_loop()->is_running()); // We don't support nesting.
   thread_->message_loop()->Run();
 }
 
 void WebThreadImpl::exitRunLoop() {
-  CHECK(IsCurrentThread());
+  CHECK(isCurrentThread());
   CHECK(thread_->message_loop()->is_running());
   thread_->message_loop()->Quit();
 }
 
-bool WebThreadImpl::IsCurrentThread() const {
+bool WebThreadImpl::isCurrentThread() const {
   return thread_->thread_id() == base::PlatformThread::CurrentId();
 }
 
@@ -112,19 +112,19 @@ void WebThreadImplForMessageLoop::postDelayedTask(
 }
 
 void WebThreadImplForMessageLoop::enterRunLoop() {
-  CHECK(IsCurrentThread());
+  CHECK(isCurrentThread());
   CHECK(!base::MessageLoop::current()
             ->is_running());  // We don't support nesting.
   base::MessageLoop::current()->Run();
 }
 
 void WebThreadImplForMessageLoop::exitRunLoop() {
-  CHECK(IsCurrentThread());
+  CHECK(isCurrentThread());
   CHECK(base::MessageLoop::current()->is_running());
   base::MessageLoop::current()->Quit();
 }
 
-bool WebThreadImplForMessageLoop::IsCurrentThread() const {
+bool WebThreadImplForMessageLoop::isCurrentThread() const {
   return message_loop_->BelongsToCurrentThread();
 }
 
