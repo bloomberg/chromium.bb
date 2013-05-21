@@ -374,9 +374,16 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_UsesOverlayIfTabNotReady) {
   EXPECT_TRUE(instant()->UseTabForSuggestions());
 }
 
+// Flaky on Mac Tests bot. crbug.com/242415
+#if defined(OS_MACOSX)
+#define MAYBE_MiddleClickOnSuggestionOpensInNewTab DISABLED_MiddleClickOnSuggestionOpensInNewTab
+#else
+#define MAYBE_MiddleClickOnSuggestionOpensInNewTab MiddleClickOnSuggestionOpensInNewTab
+#endif
+
 // Test that middle clicking on a suggestion opens the result in a new tab.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       MiddleClickOnSuggestionOpensInNewTab) {
+                       MAYBE_MiddleClickOnSuggestionOpensInNewTab) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
