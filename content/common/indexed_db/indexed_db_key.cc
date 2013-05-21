@@ -125,12 +125,11 @@ int IndexedDBKey::Compare(const IndexedDBKey& other) const {
       return (number_ < other.number_) ? -1 : (number_ > other.number_) ? 1 : 0;
     case WebIDBKey::InvalidType:
     case WebIDBKey::NullType:
+    default:
+      // This is a placeholder for WebKit::WebIDBKey::MinType
       NOTREACHED();
       return 0;
   }
-
-  NOTREACHED();
-  return 0;
 }
 
 bool IndexedDBKey::IsLessThan(const IndexedDBKey& other) const {

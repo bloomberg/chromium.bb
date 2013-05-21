@@ -78,9 +78,11 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
     case WebIDBKey::NullType:
       *r = IndexedDBKey(web_type);
       return true;
+    default:
+      // This is a placeholder for WebKit::WebIDBKey::MinType
+      NOTREACHED();
+      return false;
   }
-  NOTREACHED();
-  return false;
 }
 
 void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
