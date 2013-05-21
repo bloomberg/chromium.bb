@@ -30,9 +30,10 @@ void OnGetPropertiesError(
       "Failed to call org.chromium.shill.Service.GetProperties for: " +
       service_path.value() + ": " + error_name + ": " + error_message;
 
-  // Suppress ERROR log if error name is
-  // "org.freedesktop.DBus.Error.UnknownMethod". crbug.com/130660
-  if (error_name == DBUS_ERROR_UNKNOWN_METHOD)
+  // Suppress ERROR messages for UnknownMethod/Object" since this can
+  // happen under normal conditions. See crbug.com/130660 and crbug.com/222210.
+  if (error_name == DBUS_ERROR_UNKNOWN_METHOD ||
+      error_name == DBUS_ERROR_UNKNOWN_OBJECT)
     VLOG(1) << log_string;
   else
     LOG(ERROR) << log_string;
