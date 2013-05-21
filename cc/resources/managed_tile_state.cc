@@ -11,7 +11,7 @@
 namespace cc {
 namespace {
 
-scoped_ptr<base::Value> MemoryStateAsValue(DrawingInfoMemoryState state) {
+scoped_ptr<base::Value> MemoryStateAsValue(TileVersionMemoryState state) {
   switch (state) {
     case NOT_ALLOWED_TO_USE_MEMORY:
       return scoped_ptr<base::Value>(
@@ -26,9 +26,9 @@ scoped_ptr<base::Value> MemoryStateAsValue(DrawingInfoMemoryState state) {
       return scoped_ptr<base::Value>(
           base::Value::CreateStringValue("USING_RELEASABLE_MEMORY"));
     default:
-      NOTREACHED() << "Unrecognized DrawingInfoMemoryState value " << state;
+      NOTREACHED() << "Unrecognized TileVersionMemoryState value " << state;
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "<unknown DrawingInfoMemoryState value>"));
+          "<unknown TileVersionMemoryState value>"));
   }
 }
 
@@ -46,19 +46,19 @@ ManagedTileState::ManagedTileState()
   }
 }
 
-ManagedTileState::DrawingInfo::DrawingInfo()
+ManagedTileState::TileVersion::TileVersion()
     : mode_(RESOURCE_MODE),
       resource_format_(GL_RGBA),
       memory_state_(NOT_ALLOWED_TO_USE_MEMORY),
       forced_upload_(false) {
 }
 
-ManagedTileState::DrawingInfo::~DrawingInfo() {
+ManagedTileState::TileVersion::~TileVersion() {
   DCHECK(!resource_);
   DCHECK(memory_state_ == NOT_ALLOWED_TO_USE_MEMORY);
 }
 
-bool ManagedTileState::DrawingInfo::IsReadyToDraw() const {
+bool ManagedTileState::TileVersion::IsReadyToDraw() const {
   switch (mode_) {
     case RESOURCE_MODE:
       return resource_ &&
@@ -74,7 +74,7 @@ bool ManagedTileState::DrawingInfo::IsReadyToDraw() const {
   }
 }
 
-size_t ManagedTileState::DrawingInfo::GPUMemoryUsageInBytes() const {
+size_t ManagedTileState::TileVersion::GPUMemoryUsageInBytes() const {
   if (!resource_)
     return 0;
   return resource_->bytes();
@@ -85,9 +85,9 @@ ManagedTileState::~ManagedTileState() {
 
 scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->SetBoolean("has_resource", drawing_info.resource_.get() != 0);
+  state->SetBoolean("has_resource", tile_version.resource_.get() != 0);
   state->Set("memory_state",
-      MemoryStateAsValue(drawing_info.memory_state_).release());
+      MemoryStateAsValue(tile_version.memory_state_).release());
   state->Set("bin.0", TileManagerBinAsValue(bin[ACTIVE_TREE]).release());
   state->Set("bin.1", TileManagerBinAsValue(bin[PENDING_TREE]).release());
   state->Set("gpu_memmgr_stats_bin",

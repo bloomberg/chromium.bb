@@ -149,12 +149,12 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
          ++iter) {
       SkColor color;
       float width;
-      if (*iter && iter->drawing_info().IsReadyToDraw()) {
-        ManagedTileState::DrawingInfo::Mode mode = iter->drawing_info().mode();
-        if (mode == ManagedTileState::DrawingInfo::SOLID_COLOR_MODE) {
+      if (*iter && iter->tile_version().IsReadyToDraw()) {
+        ManagedTileState::TileVersion::Mode mode = iter->tile_version().mode();
+        if (mode == ManagedTileState::TileVersion::SOLID_COLOR_MODE) {
           color = DebugColors::SolidColorTileBorderColor();
           width = DebugColors::SolidColorTileBorderWidth(layer_tree_impl());
-        } else if (mode == ManagedTileState::DrawingInfo::PICTURE_PILE_MODE) {
+        } else if (mode == ManagedTileState::TileVersion::PICTURE_PILE_MODE) {
           color = DebugColors::PictureTileBorderColor();
           width = DebugColors::PictureTileBorderWidth(layer_tree_impl());
         } else if (iter->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION) {
@@ -193,7 +193,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
        iter;
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
-    if (!*iter || !iter->drawing_info().IsReadyToDraw()) {
+    if (!*iter || !iter->tile_version().IsReadyToDraw()) {
       if (DrawCheckerboardForMissingTiles()) {
         // TODO(enne): Figure out how to show debug "invalidated checker" color
         scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
@@ -229,9 +229,9 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       continue;
     }
 
-    const ManagedTileState::DrawingInfo& drawing_info = iter->drawing_info();
-    switch (drawing_info.mode()) {
-      case ManagedTileState::DrawingInfo::RESOURCE_MODE: {
+    const ManagedTileState::TileVersion& tile_version = iter->tile_version();
+    switch (tile_version.mode()) {
+      case ManagedTileState::TileVersion::RESOURCE_MODE: {
         gfx::RectF texture_rect = iter.texture_rect();
         gfx::Rect opaque_rect = iter->opaque_rect();
         opaque_rect.Intersect(content_rect);
@@ -243,14 +243,14 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         quad->SetNew(shared_quad_state,
                      geometry_rect,
                      opaque_rect,
-                     drawing_info.get_resource_id(),
+                     tile_version.get_resource_id(),
                      texture_rect,
                      iter.texture_size(),
-                     drawing_info.contents_swizzled());
+                     tile_version.contents_swizzled());
         quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
         break;
       }
-      case ManagedTileState::DrawingInfo::PICTURE_PILE_MODE: {
+      case ManagedTileState::TileVersion::PICTURE_PILE_MODE: {
         gfx::RectF texture_rect = iter.texture_rect();
         gfx::Rect opaque_rect = iter->opaque_rect();
         opaque_rect.Intersect(content_rect);
@@ -261,18 +261,18 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      opaque_rect,
                      texture_rect,
                      iter.texture_size(),
-                     drawing_info.contents_swizzled(),
+                     tile_version.contents_swizzled(),
                      iter->content_rect(),
                      iter->contents_scale(),
                      pile_);
         quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
         break;
       }
-      case ManagedTileState::DrawingInfo::SOLID_COLOR_MODE: {
+      case ManagedTileState::TileVersion::SOLID_COLOR_MODE: {
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
         quad->SetNew(shared_quad_state,
                      geometry_rect,
-                     drawing_info.get_solid_color(),
+                     tile_version.get_solid_color(),
                      false);
         quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
         break;
@@ -596,14 +596,14 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
        ++iter) {
     // Mask resource not ready yet.
     if (!*iter ||
-        iter->drawing_info().mode() !=
-            ManagedTileState::DrawingInfo::RESOURCE_MODE ||
-        !iter->drawing_info().IsReadyToDraw())
+        iter->tile_version().mode() !=
+            ManagedTileState::TileVersion::RESOURCE_MODE ||
+        !iter->tile_version().IsReadyToDraw())
       return 0;
     // Masks only supported if they fit on exactly one tile.
     if (iter.geometry_rect() != content_rect)
       return 0;
-    return iter->drawing_info().get_resource_id();
+    return iter->tile_version().get_resource_id();
   }
   return 0;
 }
@@ -656,7 +656,7 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
         layer_tree_impl()->tile_manager()->ForceTileUploadToComplete(*iter);
 
       // A null tile (i.e. no recording) is considered "ready".
-      if (!*iter || iter->drawing_info().IsReadyToDraw())
+      if (!*iter || iter->tile_version().IsReadyToDraw())
         missing_region.Subtract(iter.geometry_rect());
     }
   }

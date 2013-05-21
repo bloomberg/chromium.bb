@@ -48,11 +48,11 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
 
   scoped_ptr<base::Value> AsValue() const;
 
-  const ManagedTileState::DrawingInfo& drawing_info() const {
-    return managed_state_.drawing_info;
+  const ManagedTileState::TileVersion& tile_version() const {
+    return managed_state_.tile_version;
   }
-  ManagedTileState::DrawingInfo& drawing_info() {
-    return managed_state_.drawing_info;
+  ManagedTileState::TileVersion& tile_version() {
+    return managed_state_.tile_version;
   }
 
   gfx::Rect opaque_rect() const { return opaque_rect_; }
@@ -73,7 +73,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   }
 
   bool IsAssignedGpuMemory() const {
-    return drawing_info().memory_state_ != NOT_ALLOWED_TO_USE_MEMORY;
+    return tile_version().memory_state_ != NOT_ALLOWED_TO_USE_MEMORY;
   }
 
  private:

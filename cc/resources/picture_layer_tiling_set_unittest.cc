@@ -74,14 +74,14 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
       tiling->CreateAllTilesForTesting();
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
       for (size_t i = 0; i < tiles.size(); ++i) {
-        EXPECT_FALSE(tiles[i]->drawing_info().GetResourceForTesting());
+        EXPECT_FALSE(tiles[i]->tile_version().GetResourceForTesting());
 
-        tiles[i]->drawing_info().GetResourceForTesting() =
+        tiles[i]->tile_version().GetResourceForTesting() =
             make_scoped_ptr(new ResourcePool::Resource(
                 resource_provider.get(),
                 gfx::Size(1, 1),
                 resource_provider->best_texture_format()));
-        tiles[i]->drawing_info().SetMemoryStateForTesting(
+        tiles[i]->tile_version().SetMemoryStateForTesting(
             USING_RELEASABLE_MEMORY);
       }
     }

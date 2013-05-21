@@ -497,7 +497,7 @@ size_t PictureLayerTiling::GPUMemoryUsageInBytes() const {
   size_t amount = 0;
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     const Tile* tile = it->second;
-    amount += tile->drawing_info().GPUMemoryUsageInBytes();
+    amount += tile->tile_version().GPUMemoryUsageInBytes();
   }
   return amount;
 }

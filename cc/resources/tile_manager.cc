@@ -320,22 +320,22 @@ void TileManager::ManageTiles() {
 void TileManager::CheckForCompletedTileUploads() {
   while (!tiles_with_pending_upload_.empty()) {
     Tile* tile = tiles_with_pending_upload_.front();
-    DCHECK(tile->drawing_info().resource_);
+    DCHECK(tile->tile_version().resource_);
 
     // Set pixel tasks complete in the order they are posted.
     if (!resource_pool_->resource_provider()->DidSetPixelsComplete(
-          tile->drawing_info().resource_->id())) {
+          tile->tile_version().resource_->id())) {
       break;
     }
 
     // It's now safe to release the pixel buffer.
     resource_pool_->resource_provider()->ReleasePixelBuffer(
-        tile->drawing_info().resource_->id());
+        tile->tile_version().resource_->id());
 
     bytes_pending_upload_ -= tile->bytes_consumed_if_allocated();
     // Reset forced_upload_ since we now got the upload completed notification.
-    tile->drawing_info().forced_upload_ = false;
-    tile->drawing_info().memory_state_ = USING_RELEASABLE_MEMORY;
+    tile->tile_version().forced_upload_ = false;
+    tile->tile_version().memory_state_ = USING_RELEASABLE_MEMORY;
     DidFinishTileInitialization(tile);
 
     tiles_with_pending_upload_.pop();
@@ -347,13 +347,13 @@ void TileManager::CheckForCompletedTileUploads() {
 void TileManager::AbortPendingTileUploads() {
   while (!tiles_with_pending_upload_.empty()) {
     Tile* tile = tiles_with_pending_upload_.front();
-    DCHECK(tile->drawing_info().resource_);
+    DCHECK(tile->tile_version().resource_);
 
     resource_pool_->resource_provider()->AbortSetPixels(
-        tile->drawing_info().resource_->id());
+        tile->tile_version().resource_->id());
     resource_pool_->resource_provider()->ReleasePixelBuffer(
-        tile->drawing_info().resource_->id());
-    tile->drawing_info().memory_state_ = USING_RELEASABLE_MEMORY;
+        tile->tile_version().resource_->id());
+    tile->tile_version().memory_state_ = USING_RELEASABLE_MEMORY;
 
     FreeResourcesForTile(tile);
 
@@ -364,18 +364,18 @@ void TileManager::AbortPendingTileUploads() {
 
 void TileManager::ForceTileUploadToComplete(Tile* tile) {
   DCHECK(tile);
-  if (tile->drawing_info().resource_ &&
-      tile->drawing_info().memory_state_ == USING_UNRELEASABLE_MEMORY &&
-      !tile->drawing_info().forced_upload_) {
+  if (tile->tile_version().resource_ &&
+      tile->tile_version().memory_state_ == USING_UNRELEASABLE_MEMORY &&
+      !tile->tile_version().forced_upload_) {
     resource_pool_->resource_provider()->
-        ForceSetPixelsToComplete(tile->drawing_info().resource_->id());
+        ForceSetPixelsToComplete(tile->tile_version().resource_->id());
 
     // We have to set the memory state to be unreleasable, to ensure
     // that the tile will not be freed until we get the upload finished
     // notification. However, setting |forced_upload_| to true makes
     // this tile ready to draw.
-    tile->drawing_info().memory_state_ = USING_UNRELEASABLE_MEMORY;
-    tile->drawing_info().forced_upload_ = true;
+    tile->tile_version().memory_state_ = USING_UNRELEASABLE_MEMORY;
+    tile->tile_version().forced_upload_ = true;
     DidFinishTileInitialization(tile);
   }
 
@@ -396,7 +396,7 @@ void TileManager::GetMemoryStats(
        it != tiles_.end();
        ++it) {
     const Tile* tile = *it;
-    if (!tile->drawing_info().requires_resource())
+    if (!tile->tile_version().requires_resource())
       continue;
 
     const ManagedTileState& mts = tile->managed_state();
@@ -405,7 +405,7 @@ void TileManager::GetMemoryStats(
       *memory_required_bytes += tile_bytes;
     if (mts.gpu_memmgr_stats_bin != NEVER_BIN)
       *memory_nice_to_have_bytes += tile_bytes;
-    if (tile->drawing_info().memory_state_ != NOT_ALLOWED_TO_USE_MEMORY)
+    if (tile->tile_version().memory_state_ != NOT_ALLOWED_TO_USE_MEMORY)
       *memory_used_bytes += tile_bytes;
   }
 }
@@ -471,7 +471,7 @@ void TileManager::AssignGpuMemoryToTiles() {
        it != tiles_.end();
        ++it) {
     const Tile* tile = *it;
-    if (tile->drawing_info().memory_state_ == USING_UNRELEASABLE_MEMORY)
+    if (tile->tile_version().memory_state_ == USING_UNRELEASABLE_MEMORY)
       unreleasable_bytes += tile->bytes_consumed_if_allocated();
   }
 
@@ -490,12 +490,12 @@ void TileManager::AssignGpuMemoryToTiles() {
        ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
-    ManagedTileState::DrawingInfo& drawing_info = tile->drawing_info();
+    ManagedTileState::TileVersion& tile_version = tile->tile_version();
 
     // If this tile doesn't need a resource, or if the memory
     // is unreleasable, then we do not need to do anything.
-    if (!drawing_info.requires_resource() ||
-        drawing_info.memory_state_ == USING_UNRELEASABLE_MEMORY) {
+    if (!tile_version.requires_resource() ||
+        tile_version.memory_state_ == USING_UNRELEASABLE_MEMORY) {
       continue;
     }
 
@@ -503,23 +503,23 @@ void TileManager::AssignGpuMemoryToTiles() {
     // If the tile is not needed, free it up.
     if (mts.is_in_never_bin_on_both_trees()) {
       FreeResourcesForTile(tile);
-      drawing_info.memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
+      tile_version.memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
       continue;
     }
     // Tile is OOM.
     if (tile_bytes > bytes_left) {
       FreeResourcesForTile(tile);
-      tile->drawing_info().set_rasterize_on_demand();
+      tile->tile_version().set_rasterize_on_demand();
       if (mts.tree_bin[PENDING_TREE] == NOW_BIN) {
         tiles_requiring_memory_but_oomed.push_back(tile);
         bytes_oom_in_now_bin_on_pending_tree += tile_bytes;
       }
       continue;
     }
-    drawing_info.set_use_resource();
+    tile_version.set_use_resource();
     bytes_left -= tile_bytes;
-    if (!drawing_info.resource_ &&
-        drawing_info.memory_state_ == CAN_USE_MEMORY) {
+    if (!tile_version.resource_ &&
+        tile_version.memory_state_ == CAN_USE_MEMORY) {
       tiles_that_need_to_be_rasterized_.push_back(tile);
     }
   }
@@ -531,13 +531,13 @@ void TileManager::AssignGpuMemoryToTiles() {
     for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
       Tile* tile = *it;
       ManagedTileState& mts = tile->managed_state();
-      ManagedTileState::DrawingInfo& drawing_info = tile->drawing_info();
-      if ((drawing_info.memory_state_ == CAN_USE_MEMORY ||
-           drawing_info.memory_state_ == USING_RELEASABLE_MEMORY) &&
+      ManagedTileState::TileVersion& tile_version = tile->tile_version();
+      if ((tile_version.memory_state_ == CAN_USE_MEMORY ||
+           tile_version.memory_state_ == USING_RELEASABLE_MEMORY) &&
           mts.tree_bin[PENDING_TREE] == NEVER_BIN &&
           mts.tree_bin[ACTIVE_TREE] != NOW_BIN) {
         FreeResourcesForTile(tile);
-        drawing_info.set_rasterize_on_demand();
+        tile_version.set_rasterize_on_demand();
         bytes_freed += tile->bytes_consumed_if_allocated();
         TileVector::iterator it = std::find(
                 tiles_that_need_to_be_rasterized_.begin(),
@@ -557,7 +557,7 @@ void TileManager::AssignGpuMemoryToTiles() {
       size_t bytes_needed = tile->bytes_consumed_if_allocated();
       if (bytes_needed > bytes_freed)
         continue;
-      tile->drawing_info().set_use_resource();
+      tile->tile_version().set_use_resource();
       bytes_freed -= bytes_needed;
       tiles_that_need_to_be_rasterized_.push_back(tile);
     }
@@ -586,12 +586,12 @@ void TileManager::AssignGpuMemoryToTiles() {
 }
 
 void TileManager::FreeResourcesForTile(Tile* tile) {
-  DCHECK(tile->drawing_info().memory_state_ != USING_UNRELEASABLE_MEMORY);
-  if (tile->drawing_info().resource_) {
+  DCHECK(tile->tile_version().memory_state_ != USING_UNRELEASABLE_MEMORY);
+  if (tile->tile_version().resource_) {
     resource_pool_->ReleaseResource(
-        tile->drawing_info().resource_.Pass());
+        tile->tile_version().resource_.Pass());
   }
-  tile->drawing_info().memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
+  tile->tile_version().memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
 }
 
 bool TileManager::CanDispatchRasterTask(Tile* tile) const {
@@ -613,7 +613,7 @@ void TileManager::DispatchMoreTasks() {
   while (!tiles_that_need_to_be_rasterized_.empty()) {
     Tile* tile = tiles_that_need_to_be_rasterized_.back();
 
-    DCHECK(tile->drawing_info().requires_resource());
+    DCHECK(tile->tile_version().requires_resource());
 
     if (DispatchImageDecodeTasksForTile(tile)) {
       tiles_with_image_decoding_tasks.push_back(tile);
@@ -710,10 +710,10 @@ scoped_ptr<ResourcePool::Resource> TileManager::PrepareTileForRaster(
     Tile* tile) {
   scoped_ptr<ResourcePool::Resource> resource = resource_pool_->AcquireResource(
       tile->tile_size_.size(),
-      tile->drawing_info().resource_format_);
+      tile->tile_version().resource_format_);
   resource_pool_->resource_provider()->AcquirePixelBuffer(resource->id());
 
-  tile->drawing_info().memory_state_ = USING_UNRELEASABLE_MEMORY;
+  tile->tile_version().memory_state_ = USING_UNRELEASABLE_MEMORY;
 
   return resource.Pass();
 }
@@ -784,14 +784,14 @@ void TileManager::OnRasterTaskCompleted(
   // Release raster resources.
   resource_pool_->resource_provider()->UnmapPixelBuffer(resource->id());
 
-  tile->drawing_info().memory_state_ = USING_RELEASABLE_MEMORY;
+  tile->tile_version().memory_state_ = USING_RELEASABLE_MEMORY;
 
   ManagedTileState& managed_tile_state = tile->managed_state();
   managed_tile_state.picture_pile_analysis = *analysis;
   managed_tile_state.picture_pile_analyzed = true;
 
   if (analysis->is_solid_color) {
-    tile->drawing_info().set_solid_color(analysis->solid_color);
+    tile->tile_version().set_solid_color(analysis->solid_color);
     resource_pool_->resource_provider()->ReleasePixelBuffer(resource->id());
     resource_pool_->ReleaseResource(resource.Pass());
     DidFinishTileInitialization(tile);
@@ -808,14 +808,14 @@ void TileManager::OnRasterTaskCompleted(
     AssignGpuMemoryToTiles();
 
   // Finish resource initialization we're still using memory.
-  if (tile->drawing_info().memory_state_ == USING_RELEASABLE_MEMORY) {
+  if (tile->tile_version().memory_state_ == USING_RELEASABLE_MEMORY) {
     // Tile resources can't be freed until upload has completed.
-    tile->drawing_info().memory_state_ = USING_UNRELEASABLE_MEMORY;
+    tile->tile_version().memory_state_ = USING_UNRELEASABLE_MEMORY;
 
     resource_pool_->resource_provider()->BeginSetPixels(resource->id());
     has_performed_uploads_since_last_flush_ = true;
 
-    tile->drawing_info().resource_ = resource.Pass();
+    tile->tile_version().resource_ = resource.Pass();
 
     bytes_pending_upload_ += tile->bytes_consumed_if_allocated();
     tiles_with_pending_upload_.push(tile);
