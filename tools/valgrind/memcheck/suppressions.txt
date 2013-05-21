@@ -7223,3 +7223,17 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7WebCore14V8MessageEvent20dataAttrGetterCustomEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
    fun:_ZN7WebCore22MessageEventV8InternalL22dataAttrGetterCallbackEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
 }
+{
+   bug_242672
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
+   fun:_ZN3WTF9BitVector15resizeOutOfLineEm
+   fun:_ZN3WTF9BitVector10ensureSizeEm
+   fun:_ZN7WebCore10UseCounterC1Ev
+   fun:_ZN7WebCore4PageC1ERNS0_11PageClientsE
+   fun:_ZN6WebKit11WebViewImplC1EPNS_13WebViewClientE
+   fun:_ZN6WebKit7WebView6createEPNS_13WebViewClientE
+   fun:_ZN7content14RenderViewImpl10InitializeEPNS_20RenderViewImplParamsE
+}
