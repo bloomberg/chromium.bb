@@ -1446,10 +1446,6 @@ crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-
 crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 
 # These tests use paths and need a rebaseline after crbug.com/227397
-crbug.com/227397 ietestcenter/css3/bordersbackgrounds/border-radius-style-001.htm [ Pass ImageOnlyFailure ]
-crbug.com/227397 ietestcenter/css3/bordersbackgrounds/border-radius-style-002.htm [ Pass ImageOnlyFailure ]
-crbug.com/227397 svg/W3C-SVG-1.1/animate-elem-08-t.svg [ Pass Failure ]
-crbug.com/227397 svg/W3C-SVG-1.1/text-path-01-b.svg [ Pass Failure ]
 crbug.com/227397 svg/animations/animate-elem-06-t-drt.html [ Pass Failure ]
 crbug.com/227397 svg/animations/animate-elem-07-t-drt.html [ Pass Failure ]
 crbug.com/227397 svg/animations/animate-elem-08-t-drt.html [ Pass Failure ]

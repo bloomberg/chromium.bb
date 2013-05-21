@@ -16,7 +16,7 @@ layer at (0,0) size 480x360
         RenderSVGText {text} at (155,203) size 40x15 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 40x15
             chunk 1 (middle anchor) text run 1 at (155.00,215.00) startOffset 0 endOffset 7 width 40.00: "6+ sec."
-        RenderSVGPath {path} at (0,208) size 27x34 [transform={m=((0.00,-1.00)(1.00,0.00)) t=(25.00,225.00)}] [stroke={[type=SOLID] [color=#FF0000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#0000FF]}] [data="M -15 0 L 0 -30 L 15 0 Z"]
+        RenderSVGPath {path} at (0,208) size 26x34 [transform={m=((0.00,-1.00)(1.00,0.00)) t=(25.00,225.00)}] [stroke={[type=SOLID] [color=#FF0000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#0000FF]}] [data="M -15 0 L 0 -30 L 15 0 Z"]
         RenderSVGText {text} at (60,247) size 80x16 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 79x16
             chunk 1 (middle anchor) text run 1 at (60.50,260.00) startOffset 0 endOffset 13 width 79.00: "rotate='auto'"
@@ -29,7 +29,7 @@ layer at (0,0) size 480x360
         RenderSVGText {text} at (405,203) size 40x15 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 40x15
             chunk 1 (middle anchor) text run 1 at (405.00,215.00) startOffset 0 endOffset 7 width 40.00: "6+ sec."
-        RenderSVGPath {path} at (273,208) size 35x34 [transform={m=((-0.00,1.00)(-1.00,-0.00)) t=(275.00,225.00)}] [stroke={[type=SOLID] [color=#FF0000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#0000FF]}] [data="M -15 0 L 0 -30 L 15 0 Z"]
+        RenderSVGPath {path} at (274,208) size 34x34 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(275.00,225.00)}] [stroke={[type=SOLID] [color=#FF0000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#0000FF]}] [data="M -15 0 L 0 -30 L 15 0 Z"]
         RenderSVGText {text} at (284,247) size 132x16 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 132x16
             chunk 1 (middle anchor) text run 1 at (284.00,260.00) startOffset 0 endOffset 21 width 132.00: "rotate='auto-reverse'"
