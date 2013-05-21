@@ -1446,10 +1446,6 @@ crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-
 crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 
 # These tests use paths and need a rebaseline after crbug.com/227397
-crbug.com/227397 svg/animations/animate-elem-06-t-drt.html [ Pass Failure ]
-crbug.com/227397 svg/animations/animate-elem-07-t-drt.html [ Pass Failure ]
-crbug.com/227397 svg/animations/animate-elem-08-t-drt.html [ Pass Failure ]
-crbug.com/227397 svg/animations/animate-text-nested-transforms.html [ Pass Failure ]
 crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ Pass ImageOnlyFailure ]
 crbug.com/227397 svg/batik/text/smallFonts.svg [ Pass Failure ]
 crbug.com/227397 svg/batik/text/textGlyphOrientationHorizontal.svg [ Pass Failure ]
@@ -1466,8 +1462,6 @@ crbug.com/227397 svg/text/text-path-01-b.svg [ Pass Failure ]
 crbug.com/227397 svg/text/text-path-middle-align.svg [ Pass Failure ]
 crbug.com/227397 svg/text/textPathBoundsBug.svg [ Pass ImageOnlyFailure ]
 crbug.com/227397 svg/W3C-SVG-1.1/types-basicDOM-01-b.svg [ Pass Failure ]
-crbug.com/227397 svg/W3C-SVG-1.1/text-align-04-b.svg [ Pass Failure ]
-crbug.com/227397 svg/text/text-align-04-b.svg [ Pass Failure ]
 
 crbug.com/234758 [ Debug ] inspector-protocol/nmi-webaudio-leak-test.html [ Timeout Crash Pass ]
 crbug.com/234758 [ Win Debug ] tables/mozilla/other/test3.html [ Pass Crash ]

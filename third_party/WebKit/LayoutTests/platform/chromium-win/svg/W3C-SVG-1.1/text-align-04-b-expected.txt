@@ -33,7 +33,7 @@ layer at (0,0) size 480x360
             RenderSVGInlineText {#text} at (0,0) size 154x35
               chunk 1 (end anchor) text run 1 at (66.00,220.00) startOffset 0 endOffset 13 width 154.00: "end text tref"
           RenderSVGInlineText {#text} at (0,0) size 0x0
-        RenderSVGText {text} at (-7,232) size 227x35 contains 1 chunk(s)
+        RenderSVGText {text} at (-8,232) size 228x35 contains 1 chunk(s)
           RenderSVGTextPath {textPath} at (0,0) size 227x35
             RenderSVGInlineText {#text} at (0,0) size 227x35
               chunk 1 (end anchor) text run 1 at (-3.00,260.00) startOffset 11 endOffset 12 width 8.00: ":"
