@@ -162,8 +162,8 @@ public:
     void setDocument(Document*);
     void releaseDanglingNodes();
 
-    void mainFrameDOMContentLoaded();
-    void loadEventFired(Document*);
+    void domContentLoadedEventFired(Frame*);
+    void loadEventFired(Frame*);
 
     void didInsertDOMNode(Node*);
     void didRemoveDOMNode(Node*);

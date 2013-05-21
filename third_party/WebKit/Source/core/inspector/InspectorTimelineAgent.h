@@ -168,8 +168,8 @@ public:
     void didEvaluateScript();
 
     void didTimeStamp(Frame*, const String&);
-    void didMarkDOMContentEvent(Frame*);
-    void didMarkLoadEvent(Frame*);
+    void domContentLoadedEventFired(Frame*);
+    void loadEventFired(Frame*);
 
     void time(Frame*, const String&);
     void timeEnd(Frame*, const String&);

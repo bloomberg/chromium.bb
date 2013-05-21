@@ -133,8 +133,11 @@ void InspectorAgent::disable(ErrorString*)
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, false);
 }
 
-void InspectorAgent::domContentLoadedEventFired()
+void InspectorAgent::domContentLoadedEventFired(Frame* frame)
 {
+    if (frame->page()->mainFrame() != frame)
+        return;
+
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
 }
 

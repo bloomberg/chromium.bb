@@ -131,8 +131,8 @@ public:
 
     // InspectorInstrumentation API
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
-    void domContentEventFired();
-    void loadEventFired();
+    void domContentLoadedEventFired(Frame*);
+    void loadEventFired(Frame*);
     void frameNavigated(DocumentLoader*);
     void frameDetachedFromParent(Frame*);
     void loaderDetachedFromFrame(DocumentLoader*);

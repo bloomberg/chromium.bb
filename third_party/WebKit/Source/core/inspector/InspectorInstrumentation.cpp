@@ -797,34 +797,28 @@ void didReceiveScriptResponseImpl(InstrumentingAgents* instrumentingAgents, unsi
 void domContentLoadedEventFiredImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
 {
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->didMarkDOMContentEvent(frame);
-
-    if (frame->page()->mainFrame() != frame)
-        return;
+        timelineAgent->domContentLoadedEventFired(frame);
 
     if (InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent())
-        inspectorAgent->domContentLoadedEventFired();
+        inspectorAgent->domContentLoadedEventFired(frame);
 
     if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-        domAgent->mainFrameDOMContentLoaded();
+        domAgent->domContentLoadedEventFired(frame);
 
     if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
-        pageAgent->domContentEventFired();
+        pageAgent->domContentLoadedEventFired(frame);
 }
 
 void loadEventFiredImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
 {
     if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-        domAgent->loadEventFired(frame->document());
+        domAgent->loadEventFired(frame);
 
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->didMarkLoadEvent(frame);
-
-    if (frame->page()->mainFrame() != frame)
-        return;
+        timelineAgent->loadEventFired(frame);
 
     if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
-        pageAgent->loadEventFired();
+        pageAgent->loadEventFired(frame);
 }
 
 void frameDetachedFromParentImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)

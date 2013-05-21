@@ -553,13 +553,16 @@ void InspectorTimelineAgent::timeEnd(Frame* frame, const String& message)
     appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeEnd, true, frame);
 }
 
-void InspectorTimelineAgent::didMarkDOMContentEvent(Frame* frame)
+void InspectorTimelineAgent::domContentLoadedEventFired(Frame* frame)
 {
+    if (frame->page()->mainFrame() != frame)
+        return;
+
     bool isMainFrame = frame && m_pageAgent && (frame == m_pageAgent->mainFrame());
     appendRecord(TimelineRecordFactory::createMarkData(isMainFrame), TimelineRecordType::MarkDOMContent, false, frame);
 }
 
-void InspectorTimelineAgent::didMarkLoadEvent(Frame* frame)
+void InspectorTimelineAgent::loadEventFired(Frame* frame)
 {
     bool isMainFrame = frame && m_pageAgent && (frame == m_pageAgent->mainFrame());
     appendRecord(TimelineRecordFactory::createMarkData(isMainFrame), TimelineRecordType::MarkLoad, false, frame);

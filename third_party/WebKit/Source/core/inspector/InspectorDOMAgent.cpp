@@ -1577,17 +1577,20 @@ bool InspectorDOMAgent::isWhitespace(Node* node)
     return node && node->nodeType() == Node::TEXT_NODE && node->nodeValue().stripWhiteSpace().length() == 0;
 }
 
-void InspectorDOMAgent::mainFrameDOMContentLoaded()
+void InspectorDOMAgent::domContentLoadedEventFired(Frame* frame)
 {
+    if (frame->page()->mainFrame() != frame)
+        return;
+
     // Re-push document once it is loaded.
     discardFrontendBindings();
     if (m_state->getBoolean(DOMAgentState::documentRequested))
         m_frontend->documentUpdated();
 }
 
-void InspectorDOMAgent::loadEventFired(Document* document)
+void InspectorDOMAgent::loadEventFired(Frame* frame)
 {
-    Element* frameOwner = document->ownerElement();
+    Element* frameOwner = frame->document()->ownerElement();
     if (!frameOwner)
         return;
 

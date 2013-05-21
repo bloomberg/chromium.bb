@@ -817,13 +817,16 @@ void InspectorPageAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWor
         frame->script()->executeScript(m_scriptToEvaluateOnLoadOnce);
 }
 
-void InspectorPageAgent::domContentEventFired()
+void InspectorPageAgent::domContentLoadedEventFired(Frame* frame)
 {
+    if (frame->page()->mainFrame() != frame)
+        return;
+
     m_isFirstLayoutAfterOnLoad = true;
     m_frontend->domContentEventFired(currentTime());
 }
 
-void InspectorPageAgent::loadEventFired()
+void InspectorPageAgent::loadEventFired(Frame*)
 {
     m_frontend->loadEventFired(currentTime());
 }
