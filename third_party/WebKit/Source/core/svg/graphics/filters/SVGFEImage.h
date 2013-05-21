@@ -43,6 +43,7 @@ public:
     virtual FilterEffectType filterEffectType() const { return FilterEffectTypeImage; }
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
+    virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
     
 private:
     virtual ~FEImage() { }

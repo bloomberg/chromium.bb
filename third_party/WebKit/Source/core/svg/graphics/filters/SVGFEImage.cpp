@@ -25,6 +25,7 @@
 
 #include "core/svg/graphics/filters/SVGFEImage.h"
 
+#include "SkBitmapSource.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
@@ -154,6 +155,17 @@ TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const
     ts << " image-size=\"" << imageSize.width() << "x" << imageSize.height() << "\"]\n";
     // FIXME: should this dump also object returned by SVGFEImage::image() ?
     return ts;
+}
+
+SkImageFilter* FEImage::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    if (!m_image)
+        return 0;
+
+    if (!m_image->nativeImageForCurrentFrame())
+        return 0;
+
+    return new SkBitmapSource(m_image->nativeImageForCurrentFrame()->bitmap());
 }
 
 } // namespace WebCore
