@@ -110,7 +110,7 @@ Texture::Texture(GLuint service_id)
       stream_texture_(false),
       immutable_(false),
       estimated_size_(0),
-      can_render_condition_(CAN_RENDER_NEVER) {
+      can_render_condition_(CAN_RENDER_ALWAYS) {
 }
 
 Texture::~Texture() {
@@ -185,7 +185,7 @@ Texture::LevelInfo::~LevelInfo() {
 
 Texture::CanRenderCondition Texture::GetCanRenderCondition() const {
   if (target_ == 0)
-    return CAN_RENDER_NEVER;
+    return CAN_RENDER_ALWAYS;
 
   if (target_ == GL_TEXTURE_EXTERNAL_OES) {
     if (!IsStreamTexture()) {

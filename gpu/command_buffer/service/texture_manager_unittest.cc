@@ -458,7 +458,7 @@ TEST_F(TextureTest, Basic) {
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_EQ(0, texture->num_uncleared_mips());
-  EXPECT_FALSE(manager_->CanRender(texture_ref_));
+  EXPECT_TRUE(manager_->CanRender(texture_ref_));
   EXPECT_TRUE(texture->SafeToRenderFrom());
   EXPECT_FALSE(texture->IsImmutable());
   EXPECT_EQ(static_cast<GLenum>(GL_NEAREST_MIPMAP_LINEAR),
@@ -466,7 +466,7 @@ TEST_F(TextureTest, Basic) {
   EXPECT_EQ(static_cast<GLenum>(GL_LINEAR), texture->mag_filter());
   EXPECT_EQ(static_cast<GLenum>(GL_REPEAT), texture->wrap_s());
   EXPECT_EQ(static_cast<GLenum>(GL_REPEAT), texture->wrap_t());
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
+  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
   EXPECT_EQ(0u, texture->estimated_size());
 }
@@ -1678,7 +1678,7 @@ TEST_F(SharedTextureTest, TextureSafetyAccounting) {
 
   // Newly created texture is unrenderable.
   scoped_refptr<TextureRef> ref1 = texture_manager1_->CreateTexture(10, 10);
-  EXPECT_TRUE(texture_manager1_->HaveUnrenderableTextures());
+  EXPECT_FALSE(texture_manager1_->HaveUnrenderableTextures());
   EXPECT_FALSE(texture_manager1_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager1_->HaveUnclearedMips());
 
@@ -1686,13 +1686,20 @@ TEST_F(SharedTextureTest, TextureSafetyAccounting) {
   // too.
   scoped_refptr<TextureRef> ref2 = new TextureRef(texture_manager2_.get(),
                                                   ref1->texture());
-  EXPECT_TRUE(texture_manager2_->HaveUnrenderableTextures());
+  EXPECT_FALSE(texture_manager2_->HaveUnrenderableTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnclearedMips());
 
   // Make texture renderable but uncleared on one texture manager, should affect
   // other one.
   texture_manager1_->SetTarget(ref1, GL_TEXTURE_2D);
+  EXPECT_TRUE(texture_manager1_->HaveUnrenderableTextures());
+  EXPECT_FALSE(texture_manager1_->HaveUnsafeTextures());
+  EXPECT_FALSE(texture_manager1_->HaveUnclearedMips());
+  EXPECT_TRUE(texture_manager2_->HaveUnrenderableTextures());
+  EXPECT_FALSE(texture_manager2_->HaveUnsafeTextures());
+  EXPECT_FALSE(texture_manager2_->HaveUnclearedMips());
+
   texture_manager1_->SetLevelInfo(ref1, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
                                   GL_RGBA, GL_UNSIGNED_BYTE, false);
   EXPECT_FALSE(texture_manager1_->HaveUnrenderableTextures());
