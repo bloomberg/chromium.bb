@@ -12,7 +12,10 @@ ImmersiveModeControllerStub::ImmersiveModeControllerStub() {
 ImmersiveModeControllerStub::~ImmersiveModeControllerStub() {
 }
 
-void ImmersiveModeControllerStub::Init(BrowserView* browser_view) {
+void ImmersiveModeControllerStub::Init(
+    Delegate* delegate,
+    views::Widget* widget,
+    TopContainerView* top_container) {
 }
 
 void ImmersiveModeControllerStub::SetEnabled(bool enabled) {

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -45,7 +46,6 @@ class BrowserViewLayout;
 class ContentsContainer;
 class DownloadShelfView;
 class FullscreenExitBubbleViews;
-class ImmersiveModeController;
 class InfoBarContainerView;
 class InstantOverlayControllerViews;
 class LocationBarView;
@@ -96,6 +96,7 @@ class BrowserView : public BrowserWindow,
                     public views::WidgetDelegate,
                     public views::WidgetObserver,
                     public views::ClientView,
+                    public ImmersiveModeController::Delegate,
                     public InfoBarContainer::Delegate,
                     public views::SingleSplitViewListener,
                     public gfx::SysColorChangeListener,
@@ -216,10 +217,6 @@ class BrowserView : public BrowserWindow,
   // Returns true if the specified point(BrowserView coordinates) is in
   // in the window caption area of the browser window.
   bool IsPositionInWindowCaption(const gfx::Point& point);
-
-  // Invoked from the frame when the full screen state changes. This is only
-  // used on Linux.
-  void FullScreenStateChanged();
 
   // See ImmersiveModeController for description.
   ImmersiveModeController* immersive_mode_controller() const {
@@ -426,6 +423,13 @@ class BrowserView : public BrowserWindow,
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
 
+  // ImmersiveModeController::Delegate overrides:
+  virtual BookmarkBarView* GetBookmarkBar() OVERRIDE;
+  virtual FullscreenController* GetFullscreenController() OVERRIDE;
+  virtual void FocusLocationBar() OVERRIDE;
+  virtual void FullscreenStateChanged() OVERRIDE;
+  virtual void SetImmersiveStyle(bool immersive) OVERRIDE;
+
   // InfoBarContainer::Delegate overrides
   virtual SkColor GetInfoBarSeparatorColor() const OVERRIDE;
   virtual void InfoBarContainerStateChanged(bool is_animating) OVERRIDE;
@@ -470,19 +474,6 @@ class BrowserView : public BrowserWindow,
   enum FullscreenType {
     FOR_DESKTOP,
     FOR_METRO
-  };
-
-  // We store this on linux because we must call ProcessFullscreen()
-  // asynchronously from FullScreenStateChanged() instead of directly from
-  // EnterFullscreen().
-  struct PendingFullscreenRequest {
-    PendingFullscreenRequest()
-        : pending(false),
-          bubble_type(FEB_TYPE_NONE) {}
-
-    bool pending;
-    GURL url;
-    FullscreenExitBubbleType bubble_type;
   };
 
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
@@ -769,8 +760,6 @@ class BrowserView : public BrowserWindow,
   // If this flag is set then SetFocusToLocationBar() will set focus to the
   // location bar even if the browser window is not active.
   bool force_location_bar_focus_;
-
-  PendingFullscreenRequest fullscreen_request_;
 
   scoped_ptr<ImmersiveModeController> immersive_mode_controller_;
 

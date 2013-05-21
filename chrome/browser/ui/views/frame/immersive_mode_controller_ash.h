@@ -16,6 +16,8 @@
 #include "ui/views/widget/widget_observer.h"
 
 class BrowserView;
+class BookmarkBarView;
+class TopContainerView;
 
 namespace aura {
 class Window;
@@ -54,7 +56,9 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   void MaybeRevealWithoutAnimation();
 
   // ImmersiveModeController overrides:
-  virtual void Init(BrowserView* browser_view) OVERRIDE;
+  virtual void Init(Delegate* delegate,
+                    views::Widget* widget,
+                    TopContainerView* top_container) OVERRIDE;
   virtual void SetEnabled(bool enabled) OVERRIDE;
   virtual bool IsEnabled() const OVERRIDE;
   virtual bool ShouldHideTabIndicators() const OVERRIDE;
@@ -200,8 +204,10 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // to detect a swipe in.
   bool IsNearTopContainer(gfx::Point location) const;
 
-  // Browser view holding the views to be shown and hidden. Not owned.
-  BrowserView* browser_view_;
+  // Injected dependencies. Not owned.
+  Delegate* delegate_;
+  views::Widget* widget_;
+  TopContainerView* top_container_;
 
   // True if the window observers are enabled.
   bool observers_enabled_;

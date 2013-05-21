@@ -901,22 +901,6 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
   return fullscreen_bubble_ != NULL;
 }
 
-void BrowserView::FullScreenStateChanged() {
-  if (IsFullscreen()) {
-    if (fullscreen_request_.pending) {
-      fullscreen_request_.pending = false;
-      ProcessFullscreen(true, FOR_DESKTOP,
-                        fullscreen_request_.url,
-                        fullscreen_request_.bubble_type);
-    } else {
-      ProcessFullscreen(true, FOR_DESKTOP, GURL(),
-                        FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
-    }
-  } else {
-    ProcessFullscreen(false, FOR_DESKTOP, GURL(), FEB_TYPE_NONE);
-  }
-}
-
 #if defined(OS_WIN)
 void BrowserView::SetMetroSnapMode(bool enable) {
   HISTOGRAM_COUNTS("Metro.SnapModeToggle", enable);
@@ -1926,6 +1910,41 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return chrome::ExecuteCommand(browser_.get(), command_id);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, ImmersiveModeController::Delegate overrides:
+
+BookmarkBarView* BrowserView::GetBookmarkBar() {
+  return bookmark_bar_view_.get();
+}
+
+FullscreenController* BrowserView::GetFullscreenController() {
+  // Cannot be injected into ImmersiveModeController because it is constructed
+  // after BrowserView.
+  return browser()->fullscreen_controller();
+}
+
+void BrowserView::FocusLocationBar() {
+  SetFocusToLocationBar(false);
+}
+
+void BrowserView::FullscreenStateChanged() {
+  if (IsFullscreen()) {
+    ProcessFullscreen(true, FOR_DESKTOP, GURL(),
+                      FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
+  } else {
+    ProcessFullscreen(false, FOR_DESKTOP, GURL(), FEB_TYPE_NONE);
+  }
+}
+
+void BrowserView::SetImmersiveStyle(bool immersive) {
+  // Only the tab strip changes its painting style for immersive fullscreen.
+  if (tabstrip_)
+    tabstrip_->SetImmersiveStyle(immersive);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, InfoBarContainer::Delegate overrides:
+
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   // NOTE: Keep this in sync with ToolbarView::OnPaint()!
   return (IsTabStripVisible() || !frame_->ShouldUseNativeFrame()) ?
@@ -1972,9 +1991,6 @@ void BrowserView::InitViews() {
   // can get it later when all we have is a native view.
   GetWidget()->SetNativeWindowProperty(Profile::kProfileKey,
                                        browser_->profile());
-
-  // Initialize after |this| has a Widget and native window.
-  immersive_mode_controller_->Init(this);
 
   // Start a hung plugin window detector for this browser object (as long as
   // hang detection is not disabled).
@@ -2041,6 +2057,8 @@ void BrowserView::InitViews() {
 
   overlay_controller_.reset(
       new InstantOverlayControllerViews(browser(), overlay_container_));
+
+  immersive_mode_controller_->Init(this, GetWidget(), top_container_);
 
   BrowserViewLayout* browser_view_layout = new BrowserViewLayout;
   browser_view_layout->Init(new BrowserViewLayoutDelegateImpl(this),

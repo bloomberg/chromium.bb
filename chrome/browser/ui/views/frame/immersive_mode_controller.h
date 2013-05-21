@@ -7,7 +7,9 @@
 
 #include "base/compiler_specific.h"
 
-class BrowserView;
+class BookmarkBarView;
+class FullscreenController;
+class TopContainerView;
 
 namespace views {
 class Widget;
@@ -33,10 +35,33 @@ class ImmersiveModeController {
     ANIMATE_REVEAL_NO
   };
 
+  class Delegate {
+   public:
+    // Returns the bookmark bar, or NULL if the window does not support one.
+    virtual BookmarkBarView* GetBookmarkBar() = 0;
+
+    // Returns the browser's FullscreenController.
+    virtual FullscreenController* GetFullscreenController() = 0;
+
+    // Puts focus in the location bar.
+    virtual void FocusLocationBar() = 0;
+
+    // Notifies the delegate that fullscreen has been entered or exited.
+    virtual void FullscreenStateChanged() = 0;
+
+    // Requests that the tab strip be painted in a short, "light bar" style.
+    virtual void SetImmersiveStyle(bool immersive) = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
   virtual ~ImmersiveModeController() {}
 
   // Must initialize after browser view has a Widget and native window.
-  virtual void Init(BrowserView* browser_view) = 0;
+  virtual void Init(Delegate* delegate,
+                    views::Widget* widget,
+                    TopContainerView* top_container) = 0;
 
   // Enables or disables immersive mode.
   virtual void SetEnabled(bool enabled) = 0;

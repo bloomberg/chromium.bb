@@ -94,7 +94,9 @@ class MockImmersiveModeController : public ImmersiveModeController {
   virtual ~MockImmersiveModeController() {}
 
   // ImmersiveModeController overrides:
-  virtual void Init(BrowserView* browser_view) OVERRIDE {}
+  virtual void Init(Delegate* delegate,
+                    views::Widget* widget,
+                    TopContainerView* top_container) OVERRIDE {}
   virtual void SetEnabled(bool enabled) OVERRIDE {}
   virtual bool IsEnabled() const OVERRIDE { return false; }
   virtual bool ShouldHideTabIndicators() const OVERRIDE { return false; }
