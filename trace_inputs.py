@@ -46,8 +46,6 @@ elif sys.platform == 'darwin':
   import Carbon.File  #  pylint: disable=F0401
   import MacOS  # pylint: disable=F0401
 
-import run_isolated
-
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
@@ -465,6 +463,29 @@ if sys.platform != 'win32':  # All non-Windows OSes.
         break
       index += 1
     return relfile, None, None
+
+
+class Unbuffered(object):
+  """Disable buffering on a file object."""
+  def __init__(self, stream):
+    self.stream = stream
+
+  def write(self, data):
+    self.stream.write(data)
+    if '\n' in data:
+      self.stream.flush()
+
+  def __getattr__(self, attr):
+    return getattr(self.stream, attr)
+
+
+def disable_buffering():
+  """Makes this process and child processes stdout unbuffered."""
+  if not os.environ.get('PYTHONUNBUFFERED'):
+    # Since sys.stdout is a C++ object, it's impossible to do
+    # sys.stdout.write = lambda...
+    sys.stdout = Unbuffered(sys.stdout)
+    os.environ['PYTHONUNBUFFERED'] = 'x'
 
 
 def fix_python_path(cmd):
@@ -3593,7 +3614,7 @@ def main_impl(argv):
   return command(argv[1:])
 
 def main(argv):
-  run_isolated.disable_buffering()
+  disable_buffering()
   try:
     main_impl(argv)
   except TracingFailure, e:
