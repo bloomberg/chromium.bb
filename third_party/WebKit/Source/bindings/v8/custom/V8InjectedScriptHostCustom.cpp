@@ -277,23 +277,25 @@ v8::Handle<v8::Value> V8InjectedScriptHost::inspectMethodCustom(const v8::Argume
 
 v8::Handle<v8::Value> V8InjectedScriptHost::databaseIdMethodCustom(const v8::Arguments& args)
 {
-    if (args.Length() < 1)
-        return v8::Undefined();
-    InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
-    Database* database = V8Database::toNative(v8::Handle<v8::Object>::Cast(args[0]));
-    if (database)
-        return v8StringOrUndefined(host->databaseIdImpl(database), args.GetIsolate());
+    if (args.Length() > 0 && V8Database::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
+        Database* database = V8Database::toNative(v8::Handle<v8::Object>::Cast(args[0]));
+        if (database) {
+            InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
+            return v8StringOrUndefined(host->databaseIdImpl(database), args.GetIsolate());
+        }
+    }
     return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8InjectedScriptHost::storageIdMethodCustom(const v8::Arguments& args)
 {
-    if (args.Length() < 1)
-        return v8::Undefined();
-    InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
-    Storage* storage = V8Storage::toNative(v8::Handle<v8::Object>::Cast(args[0]));
-    if (storage)
-        return v8StringOrUndefined(host->storageIdImpl(storage), args.GetIsolate());
+    if (args.Length() > 0 && V8Storage::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
+        Storage* storage = V8Storage::toNative(v8::Handle<v8::Object>::Cast(args[0]));
+        if (storage) {
+            InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
+            return v8StringOrUndefined(host->storageIdImpl(storage), args.GetIsolate());
+        }
+    }
     return v8::Undefined();
 }
 
