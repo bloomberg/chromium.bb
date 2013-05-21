@@ -168,6 +168,14 @@ class SummarizedResultsTest(unittest.TestCase):
         self.assertTrue(summary['tests']['passes']['text.html'])
         self.assertTrue('is_unexpected' not in summary['tests']['passes']['text.html'])
 
+    def test_summarized_results_expected_only_include_failing(self):
+        self.port._options.builder_name = 'dummy builder'
+        summary = summarized_results(self.port, expected=True, passing=False, flaky=False, only_include_failing=True)
+        self.assertNotIn('passes', summary['tests'])
+        self.assertTrue(summary['tests']['failures']['expected']['audio.html'])
+        self.assertTrue(summary['tests']['failures']['expected']['timeout.html'])
+        self.assertTrue(summary['tests']['failures']['expected']['crash.html'])
+
     def test_summarized_results_skipped(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False)

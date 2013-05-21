@@ -883,7 +883,7 @@ class EndToEndTest(unittest.TestCase):
         _, _, _ = logging_run(['--no-show-results', 'reftests/foo/'], tests_included=True, host=host)
         file_list = host.filesystem.written_files.keys()
 
-        json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
+        json_string = host.filesystem.read_text_file('/tmp/layout-test-results/failing_results.json')
         json = parse_full_results(json_string)
         self.assertTrue("multiple-match-success.html" not in json["tests"]["reftests"]["foo"])
         self.assertTrue("multiple-mismatch-success.html" not in json["tests"]["reftests"]["foo"])

@@ -170,27 +170,9 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
         if only_include_failing and result.type == test_expectations.SKIP:
             continue
 
-        test_dict = {}
-
-        rounded_run_time = round(result.test_run_time, 1)
-        if rounded_run_time:
-            test_dict['time'] = rounded_run_time
-
-        if result.has_stderr:
-            test_dict['has_stderr'] = True
-
-        bugs = expectations.model().get_expectation_line(test_name).parsed_bug_modifiers
-        if bugs:
-            test_dict['bugs'] = bugs
-
-        if result.reftest_type:
-            test_dict.update(reftest_type=list(result.reftest_type))
-
         if result_type == test_expectations.PASS:
             num_passes += 1
-            # FIXME: Once we migrate garden-o-matic to using failing_results.json, include all results when
-            # only_include_failing is False.
-            if not result.has_stderr and (only_include_failing or (expected == 'PASS' and result.test_run_time < 1)):
+            if not result.has_stderr and only_include_failing:
                 continue
         elif result_type == test_expectations.CRASH:
             if test_name in initial_results.unexpected_results_by_name:
@@ -214,6 +196,22 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
                     num_regressions += 1
             else:
                 num_regressions += 1
+
+        test_dict = {}
+
+        rounded_run_time = round(result.test_run_time, 1)
+        if rounded_run_time:
+            test_dict['time'] = rounded_run_time
+
+        if result.has_stderr:
+            test_dict['has_stderr'] = True
+
+        bugs = expectations.model().get_expectation_line(test_name).parsed_bug_modifiers
+        if bugs:
+            test_dict['bugs'] = bugs
+
+        if result.reftest_type:
+            test_dict.update(reftest_type=list(result.reftest_type))
 
         test_dict['expected'] = expected
         test_dict['actual'] = " ".join(actual)
