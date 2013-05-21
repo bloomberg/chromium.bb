@@ -226,7 +226,7 @@ def GenerateMasterMakefile(pepperdir, out_path, targets):
   """
   in_path = os.path.join(SDK_EXAMPLE_DIR, 'Makefile')
   out_path = os.path.join(out_path, 'Makefile')
-  rel_path = os.path.relpath(pepperdir, out_path)
+  rel_path = os.path.relpath(pepperdir, os.path.dirname(out_path))
   template_dict = {
     'projects': targets,
     'rel_sdk' : rel_path,

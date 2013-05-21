@@ -31,10 +31,15 @@ all:
 # each project can be built in parallel.
 #
 define TARGET
-TARGET_LIST+=$(1)_TARGET
-.PHONY: $(1)_TARGET
-$(1)_TARGET:
-	+$(MAKE) -C $(1) $(TOOLCHAIN_ARG) $(MAKECMDGOALS)
+ALL_TARGET_LIST+=$(1)_ALL_TARGET
+.PHONY: $(1)_ALL_TARGET
+$(1)_ALL_TARGET:
+	+$(MAKE) -C $(1) $(TOOLCHAIN_ARG) all
+
+CLEAN_TARGET_LIST+=$(1)_CLEAN_TARGET
+.PHONY: $(1)_CLEAN_TARGET
+$(1)_CLEAN_TARGET:
+	+$(MAKE) -C $(1) $(TOOLCHAIN_ARG) clean
 endef
 
 
@@ -42,11 +47,11 @@ endef
 $(foreach proj,$(PROJECTS),$(eval $(call TARGET,$(proj))))
 
 .PHONY: all
-all: $(TARGET_LIST)
+all: $(ALL_TARGET_LIST)
 	@echo Done building targets.
 
 .PHONY: clean
-clean: $(TARGET_LIST)
+clean: $(CLEAN_TARGET_LIST)
 	@echo Done cleaning targets.
 
 .PHONY: run
