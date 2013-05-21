@@ -1781,3 +1781,5 @@ crbug.com/239769 [ Win ] svg/zoom/page/zoom-svg-through-object-with-percentage-s
 crbug.com/240673 http/tests/security/filesystem-iframe-from-remote.html [ Failure Pass ]
 crbug.com/111316 fast/dom/call-a-constructor-as-a-function.html [ Failure ]
 crbug.com/111316 fast/js/constructor-length.html [ Failure ]
+
+crbug.com/242444 [ Win7 ] editing/undo/undo-after-event-edited.html [ Crash Pass ]
