@@ -126,7 +126,7 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
     var resultsObject = createResultsObjectForTest(test, builderName);
     resultsObject.rawResults = [[1, 'F']];
     resultsObject.rawTimes = [[1, 0]];
-    resultsObject.bugs = "crbug.com/1234"
+    resultsObject.bugs = ["crbug.com/1234", "webkit.org/5678"];
     g_testToResultsMap[test] = [resultsObject];
 
     equal(htmlForIndividualTestOnAllBuildersWithResultsLinks(test),
@@ -140,7 +140,8 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
             '<tbody><tr>' +
                 '<td class="test-link"><span class="link" onclick="g_history.setQueryParameter(\'tests\',\'dummytest.html\');">dummytest.html</span>' +
                 '<td class=options-container>' +
-                    'crbug.com/1234' +
+                    '<div><a href="http://crbug.com/1234">crbug.com/1234</a></div>' +
+                    '<div><a href="http://webkit.org/5678">webkit.org/5678</a></div>' +
                 '<td class=options-container><td><td title="TEXT. Click for more info." class="results F" onclick=\'showPopupForBuild(event, "WebKit Linux",0,"dummytest.html")\'>&nbsp;' +
                 '<td title="NO DATA. Click for more info." class="results N" onclick=\'showPopupForBuild(event, "WebKit Linux",1,"dummytest.html")\'>&nbsp;' +
             '</tbody>' +
@@ -204,6 +205,14 @@ test('htmlForIndividualTests', 4, function() {
         htmlForIndividualTestOnAllBuildersWithResultsLinks(test2));
 });
 
+test('linkifyBugs', 4, function() {
+    equal(linkifyBugs(["crbug.com/1234", "webkit.org/5678"]),
+        '<div><a href="http://crbug.com/1234">crbug.com/1234</a></div><div><a href="http://webkit.org/5678">webkit.org/5678</a></div>');
+    equal(linkifyBugs(["crbug.com/1234"]), '<div><a href="http://crbug.com/1234">crbug.com/1234</a></div>');
+    equal(linkifyBugs(["Bug(nick)"]), '<div>Bug(nick)</div>');
+    equal(linkifyBugs([]), '');
+});
+
 test('htmlForSingleTestRow', 1, function() {
     var historyInstance = resetGlobals();
     var builder = 'dummyBuilder';
@@ -215,7 +224,7 @@ test('htmlForSingleTestRow', 1, function() {
     test.rawTimes = [[1, 0], [2, 5]];
     var expected = '<tr>' +
         '<td class="test-link"><span class="link" onclick="g_history.setQueryParameter(\'tests\',\'foo/exists.html\');">foo/exists.html</span>' +
-        '<td class=options-container><a href="https://code.google.com/p/chromium/issues/entry?template=Layout%20Test%20Failure&summary=Layout%20Test%20foo%2Fexists.html%20is%20failing&comment=The%20following%20layout%20test%20is%20failing%20on%20%5Binsert%20platform%5D%0A%0Afoo%2Fexists.html%0A%0AProbable%20cause%3A%0A%0A%5Binsert%20probable%20cause%5D" class="file-bug">FILE BUG</a>' +
+        '<td class=options-container><a href="https://code.google.com/p/chromium/issues/entry?template=Layout%20Test%20Failure&summary=Layout%20Test%20foo%2Fexists.html%20is%20failing&comment=The%20following%20layout%20test%20is%20failing%20on%20%5Binsert%20platform%5D%0A%0Afoo%2Fexists.html%0A%0AProbable%20cause%3A%0A%0A%5Binsert%20probable%20cause%5D">File new bug</a>' +
         '<td class=options-container>' +
         '<td>' +
         '<td title="TEXT. Click for more info." class="results F" onclick=\'showPopupForBuild(event, "dummyBuilder",0,"foo/exists.html")\'>&nbsp;' +

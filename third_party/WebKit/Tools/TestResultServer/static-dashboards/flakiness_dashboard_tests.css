@@ -233,10 +233,6 @@ pre.expectation {
     right: 0;
     z-index: 1;
 }
-.file-bug {
-    font-weight: bold;
-    font-size: 11px;
-}
 .pngchecksum {
     position: absolute;
     right: 0;

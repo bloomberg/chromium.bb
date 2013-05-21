@@ -226,7 +226,7 @@ function createResultsObjectForTest(test, builder)
         slowestTime: 0,
         slowestNonTimeoutCrashTime: 0,
         isFlaky: false,
-        bugs: '',
+        bugs: [],
         expectations : '',
         rawResults: '',
         // List of all the results the test actually has.
@@ -427,7 +427,9 @@ function processTestRunsForBuilder(builderName)
 
         if (rawTest.expected)
             resultsForTest.expectations = rawTest.expected;
-        // FIXME: Include bugs in results.json and populate resultsObject.bugs here.
+
+        if (rawTest.bugs)
+            resultsForTest.bugs = rawTest.bugs;
 
         // FIXME: Switch to resultsByBuild
         var times = resultsForTest.rawTimes;
@@ -661,7 +663,7 @@ function createBugHTML(test)
         '[insert probable cause]');
     
     url = 'https://code.google.com/p/chromium/issues/entry?template=Layout%20Test%20Failure&summary=' + title + '&comment=' + description;
-    return '<a href="' + url + '" class="file-bug">FILE BUG</a>';
+    return '<a href="' + url + '">File new bug</a>';
 }
 
 function isCrossBuilderView()
@@ -685,6 +687,20 @@ function tableHeaders(opt_getAll)
     return headers;
 }
 
+function linkifyBugs(bugs)
+{
+    var html = '';
+    bugs.forEach(function(bug) {
+        var bugHtml;
+        if (string.startsWith(bug, 'Bug('))
+            bugHtml = bug;
+        else
+            bugHtml = '<a href="http://' + bug + '">' + bug + '</a>';
+        html += '<div>' + bugHtml + '</div>'
+    });
+    return html;
+}
+
 function htmlForSingleTestRow(test)
 {
     var headers = tableHeaders();
@@ -701,7 +717,7 @@ function htmlForSingleTestRow(test)
             html += '<tr><td class="' + testCellClassName + '">' + testCellHTML;
         } else if (string.startsWith(header, 'bugs'))
             // FIXME: linkify bugs.
-            html += '<td class=options-container>' + (test.bugs || createBugHTML(test));
+            html += '<td class=options-container>' + (linkifyBugs(test.bugs) || createBugHTML(test));
         else if (string.startsWith(header, 'expectations'))
             html += '<td class=options-container>' + test.expectations;
         else if (string.startsWith(header, 'slowest'))
