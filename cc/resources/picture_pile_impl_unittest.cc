@@ -131,6 +131,21 @@ TEST(PicturePileImplTest, AnalyzeIsSolidScaled) {
   EXPECT_EQ(analysis.solid_color, solid_color);
 }
 
+TEST(PicturePileImplTest, AnalyzeIsSolidEmpty) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 400);
+
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  PicturePileImpl::Analysis analysis;
+  EXPECT_FALSE(analysis.is_solid_color);
+
+  pile->AnalyzeInRect(gfx::Rect(0, 0, 400, 400), 1.f, &analysis);
+
+  EXPECT_TRUE(analysis.is_solid_color);
+  EXPECT_EQ(analysis.solid_color, SkColorSetARGB(0, 0, 0, 0));
+}
+
 TEST(PicturePileImplTest, PixelRefIteratorEmpty) {
   gfx::Size tile_size(128, 128);
   gfx::Size layer_bounds(256, 256);

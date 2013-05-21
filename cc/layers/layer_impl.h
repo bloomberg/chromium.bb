@@ -424,6 +424,11 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void AppendDebugBorderQuad(QuadSink* quad_sink,
                              const SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data) const;
+  void AppendDebugBorderQuad(QuadSink* quad_sink,
+                             const SharedQuadState* shared_quad_state,
+                             AppendQuadsData* append_quads_data,
+                             SkColor color,
+                             float width) const;
 
   virtual void DumpLayerProperties(std::string* str, int indent) const;
   static std::string IndentString(int indent);

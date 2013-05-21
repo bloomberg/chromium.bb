@@ -71,13 +71,12 @@ AnalysisDevice::AnalysisDevice(const SkBitmap& bm)
   : INHERITED(bm)
   , isForcedNotSolid_(false)
   , isForcedNotTransparent_(false)
-  , isSolidColor_(false)
-  , isTransparent_(false)
+  , isSolidColor_(true)
+  , isTransparent_(true)
   , hasText_(false) {
 }
 
 AnalysisDevice::~AnalysisDevice() {
-
 }
 
 bool AnalysisDevice::getColorIfSolid(SkColor* color) const {

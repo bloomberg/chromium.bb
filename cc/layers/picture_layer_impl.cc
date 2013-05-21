@@ -112,9 +112,19 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
-  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
-  if (!append_quads_data->allow_tile_draw_quads) {
+  bool draw_direct_to_backbuffer =
+      draw_properties().can_draw_directly_to_backbuffer &&
+      layer_tree_impl()->settings().force_direct_layer_drawing;
+
+  if (draw_direct_to_backbuffer || !append_quads_data->allow_tile_draw_quads) {
+    AppendDebugBorderQuad(
+        quad_sink,
+        shared_quad_state,
+        append_quads_data,
+        DebugColors::DirectPictureBorderColor(),
+        DebugColors::DirectPictureBorderWidth(layer_tree_impl()));
+
     gfx::Rect geometry_rect = rect;
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
     gfx::Size texture_size = rect.size();
@@ -131,11 +141,14 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                  false,
                  quad_content_rect,
                  contents_scale,
+                 draw_direct_to_backbuffer,
                  pile_);
     if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
       append_quads_data->num_missing_tiles++;
     return;
   }
+
+  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   bool clipped = false;
   gfx::QuadF target_quad = MathUtil::MapQuad(
@@ -264,6 +277,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      tile_version.contents_swizzled(),
                      iter->content_rect(),
                      iter->contents_scale(),
+                     draw_direct_to_backbuffer,
                      pile_);
         quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
         break;
@@ -370,8 +384,17 @@ void PictureLayerImpl::CalculateContentsScale(
     float* contents_scale_x,
     float* contents_scale_y,
     gfx::Size* content_bounds) {
-  if (!DrawsContent()) {
-    DCHECK(!tilings_->num_tilings());
+  if (!CanHaveTilings()) {
+    ideal_page_scale_ = page_scale_factor;
+    ideal_device_scale_ = device_scale_factor;
+    ideal_contents_scale_ = ideal_contents_scale;
+    ideal_source_scale_ =
+        ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
+    *contents_scale_x = ideal_contents_scale_;
+    *contents_scale_y = ideal_contents_scale_;
+    *content_bounds = gfx::ToCeiledSize(gfx::ScaleSize(bounds(),
+                                                       ideal_contents_scale_,
+                                                       ideal_contents_scale_));
     return;
   }
 
@@ -714,9 +737,7 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   DCHECK(ideal_page_scale_);
   DCHECK(ideal_device_scale_);
   DCHECK(ideal_source_scale_);
-
-  if (!CanHaveTilings())
-    return;
+  DCHECK(CanHaveTilings());
 
   bool change_target_tiling =
       raster_page_scale_ == 0.f ||
@@ -941,6 +962,9 @@ bool PictureLayerImpl::CanHaveTilings() const {
   if (pile_->recorded_region().IsEmpty())
     return false;
   if (!layer_tree_impl()->tile_manager())
+    return false;
+  if (draw_properties().can_draw_directly_to_backbuffer &&
+      layer_tree_impl()->settings().force_direct_layer_drawing)
     return false;
   return true;
 }

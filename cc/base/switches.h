@@ -24,6 +24,7 @@ CC_EXPORT extern const char kEnableCompositorFrameMessage[];
 CC_EXPORT extern const char kEnableImplSidePainting[];
 CC_EXPORT extern const char kEnableRightAlignedScheduling[];
 CC_EXPORT extern const char kEnableTopControlsPositionCalculation[];
+CC_EXPORT extern const char kForceDirectLayerDrawing[];
 CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
 CC_EXPORT extern const char kNumRasterThreads[];
 CC_EXPORT extern const char kTopControlsHeight[];

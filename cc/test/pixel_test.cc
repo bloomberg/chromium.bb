@@ -113,7 +113,7 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
                         comparator);
 }
 
-void PixelTest::SetUpGLRenderer() {
+void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
   CHECK(fake_client_);
   CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
 
@@ -127,7 +127,8 @@ void PixelTest::SetUpGLRenderer() {
   renderer_ = GLRenderer::Create(fake_client_.get(),
                                  output_surface_.get(),
                                  resource_provider_.get(),
-                                 0).PassAs<DirectRenderer>();
+                                 0,
+                                 use_skia_gpu_backend).PassAs<DirectRenderer>();
 
   scoped_refptr<webkit::gpu::ContextProviderInProcess> offscreen_contexts =
       webkit::gpu::ContextProviderInProcess::Create();

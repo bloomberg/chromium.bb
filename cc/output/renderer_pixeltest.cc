@@ -97,6 +97,16 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
 typedef ::testing::Types<GLRenderer, SoftwareRenderer> RendererTypes;
 TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
 
+typedef ::testing::Types<GLRenderer,
+                         GLRendererWithSkiaGPUBackend,
+                         SoftwareRenderer> RendererTypesWithSkiaGPUBackend;
+template <typename RendererType>
+class RendererPixelTestWithSkiaGPUBackend
+    : public RendererPixelTest<RendererType> {
+};
+TYPED_TEST_CASE(RendererPixelTestWithSkiaGPUBackend,
+                RendererTypesWithSkiaGPUBackend);
+
 // All pixels can be off by one, but any more than that is an error.
 class FuzzyPixelOffByOneComparator : public FuzzyPixelComparator {
  public:
@@ -119,17 +129,17 @@ class FuzzyForSoftwareOnlyPixelComparator : public PixelComparator {
 };
 
 template<>
-bool FuzzyForSoftwareOnlyPixelComparator<GLRenderer>::Compare(
-    const SkBitmap& actual_bmp,
-    const SkBitmap& expected_bmp) const {
-  return exact_.Compare(actual_bmp, expected_bmp);
-}
-
-template<>
 bool FuzzyForSoftwareOnlyPixelComparator<SoftwareRenderer>::Compare(
     const SkBitmap& actual_bmp,
     const SkBitmap& expected_bmp) const {
   return fuzzy_.Compare(actual_bmp, expected_bmp);
+}
+
+template<typename RendererType>
+bool FuzzyForSoftwareOnlyPixelComparator<RendererType>::Compare(
+    const SkBitmap& actual_bmp,
+    const SkBitmap& expected_bmp) const {
+  return exact_.Compare(actual_bmp, expected_bmp);
 }
 
 #if !defined(OS_ANDROID)
@@ -570,8 +580,10 @@ class RendererPixelTestWithBackgroundFilter
   gfx::Rect filter_pass_content_rect_;
 };
 
-typedef ::testing::Types<GLRenderer, SoftwareRenderer> RendererTypes;
-TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter, RendererTypes);
+typedef ::testing::Types<GLRenderer, SoftwareRenderer>
+    BackgroundFilterRendererTypes;
+TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter,
+                BackgroundFilterRendererTypes);
 
 typedef RendererPixelTestWithBackgroundFilter<GLRenderer>
 GLRendererPixelTestWithBackgroundFilter;
@@ -729,9 +741,10 @@ TEST_F(GLRendererPixelTest, ForceAntiAliasingOff) {
       ExactPixelComparator(false)));
 }
 
-TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
+TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
+  bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
   // TODO(enne): the renderer should figure this out on its own.
   bool contents_swizzled = !PlatformColor::SameComponentOrder(GL_RGBA);
 
@@ -774,6 +787,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
                     contents_swizzled,
                     viewport,
                     1.f,
+                    use_skia_gpu_backend,
                     blue_pile);
   pass->quad_list.push_back(blue_quad.PassAs<DrawQuad>());
 
@@ -798,6 +812,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
                      contents_swizzled,
                      viewport,
                      1.f,
+                     use_skia_gpu_backend,
                      green_pile);
   pass->quad_list.push_back(green_quad.PassAs<DrawQuad>());
 
@@ -810,9 +825,11 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
       ExactPixelComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
+TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
+           PictureDrawQuadNonIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
+  bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
   // TODO(enne): the renderer should figure this out on its own.
   bool contents_swizzled = !PlatformColor::SameComponentOrder(GL_RGBA);
 
@@ -851,6 +868,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
                       contents_swizzled,
                       green_rect1,
                       1.f,
+                      use_skia_gpu_backend,
                       green_pile);
   pass->quad_list.push_back(green_quad1.PassAs<DrawQuad>());
 
@@ -863,6 +881,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
                       contents_swizzled,
                       green_rect2,
                       1.f,
+                      use_skia_gpu_backend,
                       green_pile);
   pass->quad_list.push_back(green_quad2.PassAs<DrawQuad>());
 
@@ -899,10 +918,13 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
 
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFilledPile(pile_tile_size, layer_rect.size());
-  pile->add_draw_rect_with_paint(layer_rect, red_paint);
-  SkPaint transparent_paint;
-  transparent_paint.setXfermodeMode(SkXfermode::kClear_Mode);
-  pile->add_draw_rect_with_paint(union_layer_rect, transparent_paint);
+
+  Region outside(layer_rect);
+  outside.Subtract(gfx::ToEnclosingRect(union_layer_rect));
+  for (Region::Iterator iter(outside); iter.has_rect(); iter.next()) {
+    pile->add_draw_rect_with_paint(iter.rect(), red_paint);
+  }
+
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   pile->add_draw_rect_with_paint(blue_layer_rect1, blue_paint);
@@ -931,6 +953,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
                     contents_swizzled,
                     content_union_rect,
                     contents_scale,
+                    use_skia_gpu_backend,
                     pile);
   pass->quad_list.push_back(blue_quad.PassAs<DrawQuad>());
 

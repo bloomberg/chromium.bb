@@ -47,7 +47,16 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   // NULL. When slow-down-raster-scale-factor is set to a value
   // greater than 1, the reported rasterize time is the minimum
   // measured value over all runs.
-  void Raster(
+  void RasterDirect(
+      SkCanvas* canvas,
+      gfx::Rect canvas_rect,
+      float contents_scale,
+      RasterStats* raster_stats);
+
+  // Similar to the above RasterDirect method, but this is a convenience method
+  // for when it is known that the raster is going to an intermediate bitmap
+  // that itself will then be blended and thus that a canvas clear is required.
+  void RasterToBitmap(
       SkCanvas* canvas,
       gfx::Rect canvas_rect,
       float contents_scale,

@@ -168,19 +168,15 @@ class PictureLayerImplTest : public testing::Test {
     std::vector<SkRect>::const_iterator rect_iter = rects.begin();
     for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
       MockCanvas mock_canvas(&device);
-      active_pile->Raster(&mock_canvas,
-                          (*tile_iter)->content_rect(),
-                          1.0f,
-                          NULL);
+      active_pile->RasterDirect(
+          &mock_canvas, (*tile_iter)->content_rect(), 1.0f, NULL);
 
       // This test verifies that when drawing the contents of a specific tile
       // at content scale 1.0, the playback canvas never receives content from
       // neighboring tiles which indicates that the tile grid embedded in
       // SkPicture is perfectly aligned with the compositor's tiles.
-      // Note: There are two rects: the initial clear and the explicitly
-      // recorded rect. We only care about the second one.
-      EXPECT_EQ(2u, mock_canvas.rects_.size());
-      EXPECT_RECT_EQ(*rect_iter, mock_canvas.rects_[1]);
+      EXPECT_EQ(1u, mock_canvas.rects_.size());
+      EXPECT_RECT_EQ(*rect_iter, mock_canvas.rects_[0]);
       rect_iter++;
     }
   }

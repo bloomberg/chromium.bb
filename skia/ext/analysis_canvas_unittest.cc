@@ -25,9 +25,10 @@ TEST(AnalysisCanvasTest, EmptyCanvas) {
   emptyBitmap.setConfig(SkBitmap::kNo_Config, 255, 255);
   skia::AnalysisDevice device(emptyBitmap);
   skia::AnalysisCanvas canvas(&device);
-  
+
   SkColor color;
-  EXPECT_FALSE(canvas.getColorIfSolid(&color));
+  EXPECT_TRUE(canvas.getColorIfSolid(&color));
+  EXPECT_EQ(color, SkColorSetARGB(0, 0, 0, 0));
 }
 
 TEST(AnalysisCanvasTest, ClearCanvas) {

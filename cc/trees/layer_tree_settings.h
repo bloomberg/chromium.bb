@@ -58,6 +58,7 @@ class CC_EXPORT LayerTreeSettings {
   size_t max_tiles_for_interest_area;
   size_t max_unused_resource_memory_percentage;
   int highp_threshold_min;
+  bool force_direct_layer_drawing;  // With Skia GPU backend.
   bool strict_layer_property_change_checking;
 
   LayerTreeDebugState initial_debug_state;

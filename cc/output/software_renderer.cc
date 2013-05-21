@@ -31,19 +31,6 @@ namespace cc {
 
 namespace {
 
-void ToSkMatrix(SkMatrix* flattened, const gfx::Transform& m) {
-  // Convert from 4x4 to 3x3 by dropping the third row and column.
-  flattened->set(0, SkDoubleToScalar(m.matrix().getDouble(0, 0)));
-  flattened->set(1, SkDoubleToScalar(m.matrix().getDouble(0, 1)));
-  flattened->set(2, SkDoubleToScalar(m.matrix().getDouble(0, 3)));
-  flattened->set(3, SkDoubleToScalar(m.matrix().getDouble(1, 0)));
-  flattened->set(4, SkDoubleToScalar(m.matrix().getDouble(1, 1)));
-  flattened->set(5, SkDoubleToScalar(m.matrix().getDouble(1, 3)));
-  flattened->set(6, SkDoubleToScalar(m.matrix().getDouble(3, 0)));
-  flattened->set(7, SkDoubleToScalar(m.matrix().getDouble(3, 1)));
-  flattened->set(8, SkDoubleToScalar(m.matrix().getDouble(3, 3)));
-}
-
 bool IsScaleAndTranslate(const SkMatrix& matrix) {
   return SkScalarNearlyZero(matrix[SkMatrix::kMSkewX]) &&
          SkScalarNearlyZero(matrix[SkMatrix::kMSkewY]) &&
@@ -228,7 +215,8 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
       frame->window_matrix * frame->projection_matrix * quad_rect_matrix;
   contents_device_transform.FlattenTo2d();
   SkMatrix sk_device_matrix;
-  ToSkMatrix(&sk_device_matrix, contents_device_transform);
+  gfx::TransformToFlattenedSkMatrix(contents_device_transform,
+                                    &sk_device_matrix);
   current_canvas_->setMatrix(sk_device_matrix);
 
   current_paint_.reset();
@@ -309,7 +297,7 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
     SkDevice temp_device(temp_bitmap);
     SkCanvas temp_canvas(&temp_device);
 
-    quad->picture_pile->Raster(
+    quad->picture_pile->RasterToBitmap(
         &temp_canvas, quad->content_rect, quad->contents_scale, NULL);
 
     current_paint_.setFilterBitmap(true);
@@ -317,7 +305,7 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
   } else {
     TRACE_EVENT0("cc",
                  "SoftwareRenderer::DrawPictureQuad direct from PicturePile");
-    quad->picture_pile->Raster(
+    quad->picture_pile->RasterDirect(
         current_canvas_, quad->content_rect, quad->contents_scale, NULL);
   }
 }

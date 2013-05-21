@@ -35,6 +35,11 @@ const char kEnableRightAlignedScheduling[] = "enable-right-aligned-scheduling";
 const char kEnableTopControlsPositionCalculation[] =
     "enable-top-controls-position-calculation";
 
+// For any layers that can get drawn directly to screen, draw them with the Skia
+// GPU backend.  Only valid with gl rendering + threaded compositing + impl-side
+// painting.
+const char kForceDirectLayerDrawing[] = "force-direct-layer-drawing";
+
 // The height of the movable top controls.
 const char kTopControlsHeight[] = "top-controls-height";
 

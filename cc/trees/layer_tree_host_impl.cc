@@ -1436,7 +1436,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
       renderer_ = GLRenderer::Create(this,
                                      output_surface.get(),
                                      resource_provider.get(),
-                                     settings_.highp_threshold_min);
+                                     settings_.highp_threshold_min,
+                                     settings_.force_direct_layer_drawing);
     } else if (output_surface->software_device()) {
       renderer_ = SoftwareRenderer::Create(this,
                                            output_surface.get(),

@@ -612,6 +612,8 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   attributes.noAutomaticFlushes = true;
   attributes.depth = false;
   attributes.stencil = false;
+  if (command_line.HasSwitch(cc::switches::kForceDirectLayerDrawing))
+    attributes.stencil = true;
   WebGraphicsContext3DCommandBufferImpl* context =
       CreateGraphicsContext3D(attributes);
   if (!context)

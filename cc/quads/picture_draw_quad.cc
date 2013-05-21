@@ -24,12 +24,14 @@ void PictureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              bool swizzle_contents,
                              gfx::Rect content_rect,
                              float contents_scale,
+                             bool can_draw_direct_to_backbuffer,
                              scoped_refptr<PicturePileImpl> picture_pile) {
   ContentDrawQuadBase::SetNew(shared_quad_state, DrawQuad::PICTURE_CONTENT,
                               rect, opaque_rect, tex_coord_rect, texture_size,
                               swizzle_contents);
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
+  this->can_draw_direct_to_backbuffer = can_draw_direct_to_backbuffer;
   this->picture_pile = picture_pile;
 }
 
@@ -43,6 +45,7 @@ void PictureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              bool swizzle_contents,
                              gfx::Rect content_rect,
                              float contents_scale,
+                             bool can_draw_direct_to_backbuffer,
                              scoped_refptr<PicturePileImpl> picture_pile) {
   ContentDrawQuadBase::SetAll(shared_quad_state,
                               DrawQuad::PICTURE_CONTENT, rect, opaque_rect,
@@ -50,6 +53,7 @@ void PictureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               texture_size, swizzle_contents);
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
+  this->can_draw_direct_to_backbuffer = can_draw_direct_to_backbuffer;
   this->picture_pile = picture_pile;
 }
 

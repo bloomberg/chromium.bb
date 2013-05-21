@@ -136,6 +136,14 @@ int DebugColors::PictureTileBorderWidth(const LayerTreeImpl* tree_impl) {
   return Scale(1, tree_impl);
 }
 
+// Direct picture borders are chartreuse.
+SkColor DebugColors::DirectPictureBorderColor() {
+  return SkColorSetARGB(255, 127, 255, 0);
+}
+int DebugColors::DirectPictureBorderWidth(const LayerTreeImpl* tree_impl) {
+  return Scale(1, tree_impl);
+}
+
 // ======= Checkerboard colors =======
 
 // Non-debug checkerboards are grey.

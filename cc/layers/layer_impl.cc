@@ -194,12 +194,20 @@ void LayerImpl::AppendDebugBorderQuad(
     QuadSink* quad_sink,
     const SharedQuadState* shared_quad_state,
     AppendQuadsData* append_quads_data) const {
-  if (!ShowDebugBorders())
-    return;
-
   SkColor color;
   float width;
   GetDebugBorderProperties(&color, &width);
+  AppendDebugBorderQuad(
+      quad_sink, shared_quad_state, append_quads_data, color, width);
+}
+
+void LayerImpl::AppendDebugBorderQuad(QuadSink* quad_sink,
+                                      const SharedQuadState* shared_quad_state,
+                                      AppendQuadsData* append_quads_data,
+                                      SkColor color,
+                                      float width) const {
+  if (!ShowDebugBorders())
+    return;
 
   gfx::Rect content_rect(content_bounds());
   scoped_ptr<DebugBorderDrawQuad> debug_border_quad =

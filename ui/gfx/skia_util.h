@@ -23,6 +23,7 @@ class ImageSkiaRep;
 class Rect;
 class RectF;
 class ShadowValue;
+class Transform;
 
 // Convert between Skia and gfx rect types.
 UI_EXPORT SkRect RectToSkRect(const Rect& rect);
@@ -30,6 +31,9 @@ UI_EXPORT SkIRect RectToSkIRect(const Rect& rect);
 UI_EXPORT Rect SkIRectToRect(const SkIRect& rect);
 UI_EXPORT SkRect RectFToSkRect(const RectF& rect);
 UI_EXPORT RectF SkRectToRectF(const SkRect& rect);
+
+UI_EXPORT void TransformToFlattenedSkMatrix(const gfx::Transform& transform,
+                                            SkMatrix* flattened);
 
 // Creates a bitmap shader for the image rep with the image rep's scale factor.
 // Sets the created shader's local matrix such that it displays the image rep at

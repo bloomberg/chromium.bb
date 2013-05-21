@@ -27,7 +27,8 @@ struct CC_EXPORT DrawProperties {
         contents_scale_x(1.f),
         contents_scale_y(1.f),
         num_descendants_that_draw_content(0),
-        descendants_can_clip_selves(false) {}
+        descendants_can_clip_selves(false),
+        can_draw_directly_to_backbuffer(false) {}
 
   // Transforms objects from content space to target surface space, where
   // this layer would be drawn.
@@ -89,6 +90,8 @@ struct CC_EXPORT DrawProperties {
   // If true, every descendant in the sub-tree can clip itself without the
   // need to use hardware sissoring or a new render target.
   bool descendants_can_clip_selves;
+
+  bool can_draw_directly_to_backbuffer;
 };
 
 }  // namespace cc

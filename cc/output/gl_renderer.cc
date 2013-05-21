@@ -42,10 +42,12 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include "third_party/skia/include/gpu/SkGrTexturePixelRef.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
 
@@ -103,11 +105,17 @@ struct GLRenderer::PendingAsyncReadPixels {
 scoped_ptr<GLRenderer> GLRenderer::Create(RendererClient* client,
                                           OutputSurface* output_surface,
                                           ResourceProvider* resource_provider,
-                                          int highp_threshold_min) {
+                                          int highp_threshold_min,
+                                          bool use_skia_gpu_backend) {
   scoped_ptr<GLRenderer> renderer(new GLRenderer(
       client, output_surface, resource_provider, highp_threshold_min));
   if (!renderer->Initialize())
     return scoped_ptr<GLRenderer>();
+  if (use_skia_gpu_backend) {
+    renderer->InitializeGrContext();
+    DCHECK(renderer->CanUseSkiaGPUBackend())
+        << "Requested Skia GPU backend, but can't use it.";
+  }
 
   return renderer.Pass();
 }
@@ -193,16 +201,24 @@ bool GLRenderer::Initialize() {
   is_using_bind_uniform_ =
       extensions.count("GL_CHROMIUM_bind_uniform_location") > 0;
 
-  // Make sure scissoring starts as disabled.
-  GLC(context_, context_->disable(GL_SCISSOR_TEST));
-  DCHECK(!is_scissor_enabled_);
-
   if (!InitializeSharedObjects())
     return false;
 
   // Make sure the viewport and context gets initialized, even if it is to zero.
   ViewportChanged();
   return true;
+}
+
+void GLRenderer::InitializeGrContext() {
+  skia::RefPtr<GrGLInterface> interface = skia::AdoptRef(
+      context_->createGrGLInterface());
+  if (!interface)
+    return;
+
+  gr_context_ = skia::AdoptRef(GrContext::Create(
+      kOpenGL_GrBackend,
+      reinterpret_cast<GrBackendContext>(interface.get())));
+  ReinitializeGrCanvas();
 }
 
 GLRenderer::~GLRenderer() {
@@ -261,7 +277,10 @@ void GLRenderer::SendManagedMemoryStats(size_t bytes_visible,
 
 void GLRenderer::ReleaseRenderPassTextures() { render_pass_textures_.clear(); }
 
-void GLRenderer::ViewportChanged() { is_viewport_changed_ = true; }
+void GLRenderer::ViewportChanged() {
+  is_viewport_changed_ = true;
+  ReinitializeGrCanvas();
+}
 
 void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
   // On DEBUG builds, opaque render passes are cleared to blue to easily see
@@ -271,10 +290,18 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
   else
     GLC(context_, context_->clearColor(0, 0, 1, 1));
 
-#ifdef NDEBUG
-  if (frame->current_render_pass->has_transparent_background)
+  bool always_clear = false;
+#ifndef NDEBUG
+  always_clear = true;
 #endif
-    context_->clear(GL_COLOR_BUFFER_BIT);
+  if (always_clear || frame->current_render_pass->has_transparent_background) {
+    GLbitfield clear_bits = GL_COLOR_BUFFER_BIT;
+    // Only the Skia GPU backend uses the stencil buffer.  No need to clear it
+    // otherwise.
+    if (CanUseSkiaGPUBackend())
+      clear_bits |= GL_STENCIL_BUFFER_BIT;
+    context_->clear(clear_bits);
+  }
 }
 
 void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
@@ -294,17 +321,8 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   }
 
   MakeContextCurrent();
-  // Bind the common vertex attributes used for drawing all the layers.
-  shared_geometry_->PrepareForDraw();
 
-  GLC(context_, context_->disable(GL_DEPTH_TEST));
-  GLC(context_, context_->disable(GL_CULL_FACE));
-  GLC(context_, context_->colorMask(true, true, true, true));
-  GLC(context_, context_->enable(GL_BLEND));
-  blend_shadow_ = true;
-  GLC(context_, context_->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
-  GLC(Context(), Context()->activeTexture(GL_TEXTURE0));
-  program_shadow_ = 0;
+  ReinitializeGLState();
 }
 
 void GLRenderer::DoNoOp() {
@@ -1467,8 +1485,57 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
                    program->vertex_shader().matrix_location());
 }
 
+void GLRenderer::DrawPictureQuadDirectToBackbuffer(
+    const DrawingFrame* frame,
+    const PictureDrawQuad* quad) {
+  DCHECK(CanUseSkiaGPUBackend());
+  DCHECK_EQ(quad->opacity(), 1.f) << "Need to composite to a bitmap or a "
+                                     "render surface for non-1 opacity quads";
+
+  // TODO(enne): This should be done more lazily / efficiently.
+  gr_context_->resetContext();
+
+  // Reset the canvas matrix to identity because the clip rect is in target
+  // space.
+  SkMatrix sk_identity;
+  sk_identity.setIdentity();
+  sk_canvas_->setMatrix(sk_identity);
+
+  if (is_scissor_enabled_) {
+    sk_canvas_->clipRect(gfx::RectToSkRect(scissor_rect_),
+                         SkRegion::kReplace_Op);
+  } else {
+    sk_canvas_->clipRect(gfx::RectToSkRect(gfx::Rect(ViewportSize())),
+                         SkRegion::kReplace_Op);
+  }
+
+  gfx::Transform contents_device_transform = frame->window_matrix *
+    frame->projection_matrix * quad->quadTransform();
+  contents_device_transform.Translate(quad->rect.x(),
+                                      quad->rect.y());
+  contents_device_transform.FlattenTo2d();
+  SkMatrix sk_device_matrix;
+  gfx::TransformToFlattenedSkMatrix(contents_device_transform,
+                                    &sk_device_matrix);
+  sk_canvas_->setMatrix(sk_device_matrix);
+
+  quad->picture_pile->RasterDirect(
+      sk_canvas_.get(), quad->content_rect, quad->contents_scale, NULL);
+
+  // Flush any drawing buffers that have been deferred.
+  sk_canvas_->flush();
+
+  // TODO(enne): This should be done more lazily / efficiently.
+  ReinitializeGLState();
+}
+
 void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
                                  const PictureDrawQuad* quad) {
+  if (quad->can_draw_direct_to_backbuffer && CanUseSkiaGPUBackend()) {
+    DrawPictureQuadDirectToBackbuffer(frame, quad);
+    return;
+  }
+
   if (on_demand_tile_raster_bitmap_.width() != quad->texture_size.width() ||
       on_demand_tile_raster_bitmap_.height() != quad->texture_size.height()) {
     on_demand_tile_raster_bitmap_.setConfig(
@@ -1490,8 +1557,8 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
   SkDevice device(on_demand_tile_raster_bitmap_);
   SkCanvas canvas(&device);
 
-  quad->picture_pile->Raster(&canvas, quad->content_rect, quad->contents_scale,
-                             NULL);
+  quad->picture_pile->RasterToBitmap(&canvas, quad->content_rect,
+                                     quad->contents_scale, NULL);
 
   resource_provider_->SetPixels(
       on_demand_tile_raster_resource_id_,
@@ -2796,6 +2863,51 @@ void GLRenderer::CleanupSharedObjects() {
     resource_provider_->DeleteResource(on_demand_tile_raster_resource_id_);
 
   ReleaseRenderPassTextures();
+}
+
+void GLRenderer::ReinitializeGrCanvas() {
+  if (!CanUseSkiaGPUBackend())
+    return;
+
+  GrBackendRenderTargetDesc desc;
+  desc.fWidth = ViewportWidth();
+  desc.fHeight = ViewportHeight();
+  desc.fConfig = kRGBA_8888_GrPixelConfig;
+  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+  desc.fSampleCnt = 1;
+  desc.fStencilBits = 8;
+  desc.fRenderTargetHandle = 0;
+
+  skia::RefPtr<GrSurface> surface(
+      skia::AdoptRef(gr_context_->wrapBackendRenderTarget(desc)));
+  skia::RefPtr<SkDevice> device(
+      skia::AdoptRef(SkGpuDevice::Create(surface.get())));
+  sk_canvas_ = skia::AdoptRef(new SkCanvas(device.get()));
+}
+
+void GLRenderer::ReinitializeGLState() {
+  // Bind the common vertex attributes used for drawing all the layers.
+  shared_geometry_->PrepareForDraw();
+
+  GLC(context_, context_->disable(GL_STENCIL_TEST));
+  GLC(context_, context_->disable(GL_DEPTH_TEST));
+  GLC(context_, context_->disable(GL_CULL_FACE));
+  GLC(context_, context_->colorMask(true, true, true, true));
+  GLC(context_, context_->enable(GL_BLEND));
+  blend_shadow_ = true;
+  GLC(context_, context_->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
+  GLC(context_, context_->activeTexture(GL_TEXTURE0));
+  program_shadow_ = 0;
+
+  // Make sure scissoring starts as disabled.
+  is_scissor_enabled_ = false;
+  GLC(context_, context_->disable(GL_SCISSOR_TEST));
+}
+
+bool GLRenderer::CanUseSkiaGPUBackend() const {
+  // The Skia GPU backend requires a stencil buffer.  See ReinitializeGrCanvas
+  // implementation.
+  return gr_context_ && context_->getContextAttributes().stencil;
 }
 
 bool GLRenderer::IsContextLost() {
