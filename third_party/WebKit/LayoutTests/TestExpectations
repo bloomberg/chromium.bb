@@ -1410,7 +1410,7 @@ crbug.com/239811 webkit.org/b/112598 http/tests/security/mixedContent/insecure-a
 crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure Pass ]
 crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/insecure-image-in-main-frame-blocked.html [ Failure Pass ]
 
-crbug.com/230554 [ Linux Debug ] plugins/drag-events.html [ Crash ]
+crbug.com/230554 [ Linux Mac Debug ] plugins/drag-events.html [ Crash Pass ]
 
 # Failing tests after r148246
 # The Linux results are different between 32 and 64 bit (as per the bots).
