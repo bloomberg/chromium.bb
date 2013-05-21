@@ -47,7 +47,7 @@ class TestParser(object):
 
     def load_file(self, filename):
         if self.filesystem.exists(filename):
-            self.test_doc = Parser(self.filesystem.read_text_file(filename))
+            self.test_doc = Parser(self.filesystem.read_binary_file(filename))
         else:
             self.test_doc = None
         self.ref_doc = None
@@ -92,7 +92,7 @@ class TestParser(object):
             # support files.
             #
             # *But*, there is exactly one case in the entire css2.1 suite where
-            # at test depends on a file that lives in a different directory,
+            # a test depends on a file that lives in a different directory,
             # which depends on another file that lives outside of its
             # directory. This code covers that case :)
             if matches[0]['href'].startswith('..'):
@@ -127,8 +127,8 @@ class TestParser(object):
         urls = []
         for url in doc.findAll(text=url_pattern):
             url = re.search(url_pattern, url)
-            url = re.sub('url\([\'\"]', '', url.group(0))
-            url = re.sub('[\'\"]\)', '', url)
+            url = re.sub('url\([\'\"]?', '', url.group(0))
+            url = re.sub('[\'\"]?\)', '', url)
             urls.append(url)
 
         src_paths = [src_tag['src'] for src_tag in elements_with_src_attributes]

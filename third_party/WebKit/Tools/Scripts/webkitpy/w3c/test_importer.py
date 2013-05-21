@@ -72,7 +72,7 @@
             list of what needs prefixes is read from Source/WebCore/CSS/CSSProperties.in
          4. Each reftest has its own copy of its reference file following the naming conventions
             new-run-webkit-tests expects
-         5. If a a reference files lives outside the directory of the test that uses it, it is checked
+         5. If a reference files lives outside the directory of the test that uses it, it is checked
             for paths to support files as it will be imported into a different relative position to the
             test file (in the same directory)
 
@@ -185,17 +185,11 @@ class TestImporter(object):
             reftests = 0
             jstests = 0
 
-            # Ignore any repo stuff
-            if '.git' in dirs:
-                dirs.remove('.git')
-            if '.hg' in dirs:
-                dirs.remove('.hg')
-
-            # archive and data dirs are internal csswg things that live in every approved directory
-            if 'data' in dirs:
-                dirs.remove('data')
-            if 'archive' in dirs:
-                dirs.remove('archive')
+            # "archive" and "data" dirs are internal csswg things that live in every approved directory.
+            DIRS_TO_SKIP = ('.git', '.hg', 'data', 'archive')
+            for d in DIRS_TO_SKIP:
+                if d in dirs:
+                    dirs.remove(d)
 
             copy_list = []
 
@@ -258,10 +252,10 @@ class TestImporter(object):
                 if 'support' in dirs:
                     dirs.remove('support')
 
-                if copy_list:
-                    # Only add this directory to the list if there's something to import
-                    self.import_list.append({'dirname': root, 'copy_list': copy_list,
-                        'reftests': reftests, 'jstests': jstests, 'total_tests': total_tests})
+            if copy_list:
+                # Only add this directory to the list if there's something to import
+                self.import_list.append({'dirname': root, 'copy_list': copy_list,
+                    'reftests': reftests, 'jstests': jstests, 'total_tests': total_tests})
 
     def import_tests(self):
         if self.import_list:
@@ -335,7 +329,7 @@ class TestImporter(object):
                         shutil.copyfile(orig_filepath, new_filepath)  # The file was unmodified.
                     else:
                         prefixed_properties.extend(set(converted_file[0]) - set(prefixed_properties))
-                        outfile = open(new_filepath, 'w')
+                        outfile = open(new_filepath, 'wb')
                         outfile.write(converted_file[1])
                         outfile.close()
                 else:

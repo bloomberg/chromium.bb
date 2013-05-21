@@ -40,6 +40,11 @@ class W3CTestConverter(object):
         self._filesystem = self._host.filesystem
         self._host.initialize_scm()
         self._webkit_root = self._host.scm().checkout_root
+
+        # These settings might vary between WebKit and Blink
+        self._css_property_file = self.path_from_webkit_root('Source', 'core', 'css', 'CSSPropertyNames.in')
+        self._css_property_split_string = 'alias_for='
+
         self.prefixed_properties = self.read_webkit_prefixed_css_property_list()
 
     def path_from_webkit_root(self, *comps):
@@ -48,14 +53,14 @@ class W3CTestConverter(object):
     def read_webkit_prefixed_css_property_list(self):
         prefixed_properties = []
 
-        contents = self._filesystem.read_text_file(self.path_from_webkit_root('Source', 'core', 'css', 'CSSPropertyNames.in'))
+        contents = self._filesystem.read_text_file(self._css_property_file)
         for line in contents.splitlines():
             # Find lines starting with the -webkit- prefix.
             match = re.match('-webkit-[\w|-]*', line)
             if match:
                 # Ignore lines where both the prefixed and non-prefixed property
                 # are supported - denoted by -webkit-some-property = some-property.
-                fields = line.split('alias_for=')
+                fields = line.split(self._css_property_split_string)
                 if len(fields) == 2 and fields[1].strip() in fields[0].strip():
                     continue
                 prefixed_properties.append(match.group(0))
@@ -66,7 +71,7 @@ class W3CTestConverter(object):
         """ Converts a file's |contents| so it will function correctly in its |new_path| in Webkit.
 
         Returns the list of modified properties and the modified text if the file was modifed, None otherwise."""
-        contents = self._filesystem.read_text_file(filename)
+        contents = self._filesystem.read_binary_file(filename)
         if filename.endswith('.css'):
             return self.convert_css(contents)
         return self.convert_html(new_path, contents)
@@ -98,6 +103,7 @@ class W3CTestConverter(object):
         resources_relpath = self._filesystem.relpath(resources_path, new_path)
 
         for tag in testharness_tags:
+            # FIXME: We need to handle img, audio, video tags also.
             attr = 'src'
             if tag.name != 'script':
                 attr = 'href'
@@ -154,6 +160,8 @@ class W3CTestConverter(object):
         converted_properties = []
 
         for prefixed_property in self.prefixed_properties:
+            # FIXME: add in both the prefixed and unprefixed versions, rather than just replacing them?
+            # That might allow the imported test to work in other browsers more easily.
 
             unprefixed_property = prefixed_property.replace('-webkit-', '')
 
@@ -166,7 +174,7 @@ class W3CTestConverter(object):
                 converted_properties.append(prefixed_property)
                 text = re.sub(pattern, prefixed_property + ':', text)
 
-        # FIXME: Handle the JS versions of these properties, too.
+        # FIXME: Handle the JS versions of these properties and GetComputedStyle, too.
         return (converted_properties, text)
 
     def replace_tag(self, old_tag, new_tag):
