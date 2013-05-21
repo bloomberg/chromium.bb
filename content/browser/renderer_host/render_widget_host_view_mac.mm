@@ -552,6 +552,8 @@ void RenderWidgetHostViewMac::WasHidden() {
   // disableScreenUpdatesUntilFlush prevents the transparent flash by avoiding
   // screen updates until the next tab draws.
   [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
+
+  web_contents_switch_paint_time_ = base::TimeTicks();
 }
 
 void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {

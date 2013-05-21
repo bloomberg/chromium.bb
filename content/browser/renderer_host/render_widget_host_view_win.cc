@@ -488,6 +488,8 @@ void RenderWidgetHostViewWin::WasHidden() {
 
   if (GetBrowserAccessibilityManager())
     GetBrowserAccessibilityManager()->WasHidden();
+
+  web_contents_switch_paint_time_ = base::TimeTicks();
 }
 
 void RenderWidgetHostViewWin::SetSize(const gfx::Size& size) {
