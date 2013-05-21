@@ -27,7 +27,7 @@ var results = results || {};
 
 (function() {
 
-var kResultsName = 'full_results.json';
+var kResultsName = 'failing_results.json';
 
 var kBuildLinkRegexp = /a href="\d+\/"/g;
 var kBuildNumberRegexp = /\d+/;
