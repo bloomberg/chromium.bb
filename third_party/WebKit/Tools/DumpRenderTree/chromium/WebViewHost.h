@@ -101,6 +101,8 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     virtual void applyPreferences() OVERRIDE;
     virtual std::string makeURLErrorDescription(const WebKit::WebURLError&) OVERRIDE;
     virtual void setClientWindowRect(const WebKit::WebRect&) OVERRIDE;
+    virtual void enableAutoResizeMode(const WebKit::WebSize&, const WebKit::WebSize&) OVERRIDE;
+    virtual void disableAutoResizeMode(const WebKit::WebSize&) OVERRIDE;
     virtual void showDevTools() OVERRIDE;
     virtual void closeDevTools() OVERRIDE;
     virtual void evaluateInWebInspector(long, const std::string&) OVERRIDE;

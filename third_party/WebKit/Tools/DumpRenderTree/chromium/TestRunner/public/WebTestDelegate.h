@@ -45,6 +45,7 @@ class WebHistoryItem;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 struct WebRect;
+struct WebSize;
 struct WebURLError;
 }
 
@@ -98,6 +99,10 @@ public:
 
     // Resizes the WebView to the given size.
     virtual void setClientWindowRect(const WebKit::WebRect&) = 0;
+
+    // Controls auto resize mode.
+    virtual void enableAutoResizeMode(const WebKit::WebSize& minSize, const WebKit::WebSize& maxSize) { }
+    virtual void disableAutoResizeMode(const WebKit::WebSize&) { }
 
     // Opens and closes the inspector.
     virtual void showDevTools() = 0;
