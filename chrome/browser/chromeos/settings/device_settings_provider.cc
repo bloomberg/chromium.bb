@@ -61,7 +61,6 @@ const char* kKnownSettings[] = {
   kReportDeviceVersionInfo,
   kScreenSaverExtensionId,
   kScreenSaverTimeout,
-  kSettingProxyEverywhere,
   kSignedDataRoamingEnabled,
   kStartUpFlags,
   kStartUpUrls,
@@ -297,17 +296,6 @@ void DeviceSettingsProvider::SetInPolicy() {
     else
       NOTREACHED();
     ApplyRoamingSetting(roaming_value);
-  } else if (prop == kSettingProxyEverywhere) {
-    // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
-    std::string proxy_value;
-    if (value->GetAsString(&proxy_value)) {
-      bool success =
-          device_settings_.mutable_device_proxy_settings()->ParseFromString(
-              proxy_value);
-      DCHECK(success);
-    } else {
-      NOTREACHED();
-    }
   } else if (prop == kReleaseChannel) {
     em::ReleaseChannelProto* release_channel =
         device_settings_.mutable_release_channel();
@@ -608,13 +596,6 @@ void DeviceSettingsProvider::DecodeNetworkPolicies(
       policy.has_data_roaming_enabled() &&
       policy.data_roaming_enabled().has_data_roaming_enabled() &&
       policy.data_roaming_enabled().data_roaming_enabled());
-
-  // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
-  std::string serialized;
-  if (policy.has_device_proxy_settings() &&
-      policy.device_proxy_settings().SerializeToString(&serialized)) {
-    new_values_cache->SetString(kSettingProxyEverywhere, serialized);
-  }
 }
 
 void DeviceSettingsProvider::DecodeReportingPolicies(

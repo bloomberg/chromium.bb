@@ -16,11 +16,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
-#include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -32,8 +29,6 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace em = enterprise_management;
 
 namespace chromeos {
 
@@ -113,70 +108,6 @@ bool IsNetworkProxySettingsEditable(const Network* network) {
       onc::network_config::kProxySettings);
   return proxy_settings_ui_data.IsEditable();
 }
-
-// Only unblock if needed for debugging.
-#if defined(NEED_DEBUG_LOG)
-std::ostream& operator<<(
-    std::ostream& out,
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) {
-  out << (proxy.server.is_valid() ? proxy.server.ToURI() : "") << "\n";
-  return out;
-}
-
-std::ostream& operator<<(std::ostream& out,
-                         const ProxyConfigServiceImpl::ProxyConfig& config) {
-  switch (config.mode) {
-    case ProxyConfigServiceImpl::ProxyConfig::MODE_DIRECT:
-    case ProxyConfigServiceImpl::ProxyConfig::MODE_AUTO_DETECT:
-      out << ModeToString(config.mode) << ", "
-          << ConfigStateToString(config.state) << "\n";
-      break;
-    case ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT:
-      out << ModeToString(config.mode) << ", "
-          << ConfigStateToString(config.state)
-          << "\n  PAC: " << config.automatic_proxy.pac_url << "\n";
-      break;
-    case ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY:
-      out << ModeToString(config.mode) << ", "
-          << ConfigStateToString(config.state) << "\n  " << config.single_proxy;
-      break;
-    case ProxyConfigServiceImpl::ProxyConfig::MODE_PROXY_PER_SCHEME:
-      out << ModeToString(config.mode) << ", "
-          << ConfigStateToString(config.state) << "\n"
-          << "  HTTP:  " << config.http_proxy
-          << "  HTTPS: " << config.https_proxy
-          << "  FTP: " << config.ftp_proxy
-          << "  SOCKS: " << config.socks_proxy;
-      break;
-    default:
-      NOTREACHED() << "Unrecognized proxy config mode";
-      break;
-  }
-  if (config.mode == ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY ||
-      config.mode ==
-          ProxyConfigServiceImpl::ProxyConfig::MODE_PROXY_PER_SCHEME) {
-    out << "Bypass list: ";
-    if (config.bypass_rules.rules().empty()) {
-      out << "[None]";
-    } else {
-      const net::ProxyBypassRules& bypass_rules = config.bypass_rules;
-      net::ProxyBypassRules::RuleList::const_iterator it;
-      for (it = bypass_rules.rules().begin();
-           it != bypass_rules.rules().end(); ++it) {
-        out << "\n    " << (*it)->ToString();
-      }
-    }
-  }
-  return out;
-}
-
-std::string ProxyConfigToString(
-    const ProxyConfigServiceImpl::ProxyConfig& proxy_config) {
-  std::ostringstream stream;
-  stream << proxy_config;
-  return stream.str();
-}
-#endif  // defined(NEED_DEBUG_LOG)
 
 }  // namespace
 
@@ -289,63 +220,6 @@ ProxyConfigServiceImpl::ProxyConfig::ManualProxy*
   return NULL;
 }
 
-bool ProxyConfigServiceImpl::ProxyConfig::DeserializeForDevice(
-    const std::string& input) {
-  em::DeviceProxySettingsProto proxy_proto;
-  if (!proxy_proto.ParseFromString(input))
-    return false;
-
-  const std::string& mode_string(proxy_proto.proxy_mode());
-  if (mode_string == ProxyPrefs::kDirectProxyModeName) {
-    mode = MODE_DIRECT;
-  } else if (mode_string == ProxyPrefs::kAutoDetectProxyModeName) {
-    mode = MODE_AUTO_DETECT;
-  } else if (mode_string == ProxyPrefs::kPacScriptProxyModeName) {
-    mode = MODE_PAC_SCRIPT;
-    if (proxy_proto.has_proxy_pac_url())
-      automatic_proxy.pac_url = GURL(proxy_proto.proxy_pac_url());
-  } else if (mode_string == ProxyPrefs::kFixedServersProxyModeName) {
-    net::ProxyConfig::ProxyRules rules;
-    rules.ParseFromString(proxy_proto.proxy_server());
-    switch (rules.type) {
-      case net::ProxyConfig::ProxyRules::TYPE_NO_RULES:
-        return false;
-      case net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY:
-        if (rules.single_proxies.IsEmpty())
-          return false;
-        mode = MODE_SINGLE_PROXY;
-        single_proxy.server = rules.single_proxies.Get();
-        return true;
-      case net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME:
-        // Make sure we have valid server for at least one of the protocols.
-        if (rules.proxies_for_http.IsEmpty() &&
-            rules.proxies_for_https.IsEmpty() &&
-            rules.proxies_for_ftp.IsEmpty() &&
-            rules.fallback_proxies.IsEmpty()) {
-          return false;
-        }
-        mode = MODE_PROXY_PER_SCHEME;
-        if (!rules.proxies_for_http.IsEmpty())
-          http_proxy.server = rules.proxies_for_http.Get();
-        if (!rules.proxies_for_https.IsEmpty())
-          https_proxy.server = rules.proxies_for_https.Get();
-        if (!rules.proxies_for_ftp.IsEmpty())
-          ftp_proxy.server = rules.proxies_for_ftp.Get();
-        if (!rules.fallback_proxies.IsEmpty())
-          socks_proxy.server = rules.fallback_proxies.Get();
-        break;
-    }
-  } else {
-    NOTREACHED() << "Unrecognized proxy config mode";
-    return false;
-  }
-
-  if (proxy_proto.has_proxy_bypass_list())
-    bypass_rules.ParseFromString(proxy_proto.proxy_bypass_list());
-
-  return true;
-}
-
 bool ProxyConfigServiceImpl::ProxyConfig::SerializeForNetwork(
     std::string* output) {
   scoped_ptr<DictionaryValue> proxy_dict_ptr(ToPrefProxyConfig());
@@ -400,8 +274,6 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
         base::Bind(&ProxyConfigServiceImpl::OnUseSharedProxiesChanged,
                    base::Unretained(this)));
   }
-
-  FetchProxyPolicy();
 
   // Register for shill network notifications.
   NetworkLibrary* network_lib = CrosLibrary::Get()->GetNetworkLibrary();
@@ -677,14 +549,8 @@ void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
   // Register observer for new network.
   network_lib->AddNetworkObserver(active_network_, this);
 
-  // If necessary, migrate config to shill.
-  if (active_network->proxy_config().empty() && !device_config_.empty()) {
-    VLOG(1) << "Try migrating device config to " << active_network_;
-    SetProxyConfigForNetwork(active_network_, device_config_, true);
-  } else  {
-    // Otherwise, determine and activate possibly new effective proxy config.
-    DetermineEffectiveConfig(active_network, true);
-  }
+  // Determine and activate possibly new effective proxy config.
+  DetermineEffectiveConfig(active_network, true);
 }
 
 void ProxyConfigServiceImpl::SetProxyConfigForNetwork(
@@ -848,37 +714,6 @@ void ProxyConfigServiceImpl::OnUISetCurrentNetwork(const Network* network) {
 void ProxyConfigServiceImpl::ResetUICache() {
   current_ui_network_.clear();
   current_ui_config_ = ProxyConfig();
-}
-
-void ProxyConfigServiceImpl::FetchProxyPolicy() {
-  if (CrosSettingsProvider::TRUSTED !=
-      CrosSettings::Get()->PrepareTrustedValues(
-          base::Bind(&ProxyConfigServiceImpl::FetchProxyPolicy,
-                     pointer_factory_.GetWeakPtr()))) {
-    return;
-  }
-
-  std::string policy_value;
-  if (!CrosSettings::Get()->GetString(kSettingProxyEverywhere,
-                                      &policy_value)) {
-    VLOG(1) << "No proxy configuration exists in the device settings.";
-    device_config_.clear();
-    return;
-  }
-
-  VLOG(1) << "Retrieved proxy setting from device, value=["
-          << policy_value << "]";
-  ProxyConfig device_config;
-  if (!device_config.DeserializeForDevice(policy_value) ||
-      !device_config.SerializeForNetwork(&device_config_)) {
-    LOG(WARNING) << "Can't deserialize device setting or serialize for network";
-    device_config_.clear();
-    return;
-  }
-  if (!active_network_.empty()) {
-    VLOG(1) << "Try migrating device config to " << active_network_;
-    SetProxyConfigForNetwork(active_network_, device_config_, true);
-  }
 }
 
 }  // namespace chromeos

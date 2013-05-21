@@ -32,8 +32,6 @@ enum DeviceLocalAccountType {
   DEVICE_LOCAL_ACCOUNT_TYPE_KIOSK_APP,
 };
 
-extern const char kSettingProxyEverywhere[];
-
 extern const char kSignedDataRoamingEnabled[];
 
 extern const char kSystemTimezonePolicy[];

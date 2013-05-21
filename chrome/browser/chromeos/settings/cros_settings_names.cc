@@ -33,9 +33,6 @@ const char kAccountsPrefDeviceLocalAccountAutoLoginDelay[] =
 const char kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[] =
     "cros.accounts.deviceLocalAccountAutoLoginBailoutEnabled";
 
-// Name of signed setting persisted on device, writeable only by owner.
-const char kSettingProxyEverywhere[] = "cros.proxy.everywhere";
-
 // All cros.signed.* settings are stored in SignedSettings.
 const char kSignedDataRoamingEnabled[] = "cros.signed.data_roaming_enabled";
 

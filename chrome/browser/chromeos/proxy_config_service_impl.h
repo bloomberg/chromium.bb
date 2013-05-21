@@ -27,8 +27,6 @@ namespace chromeos {
 //   thread) to handle proxy from prefs (via PrefProxyConfigTrackerImpl) and
 //   system i.e. network (via shill notifications)
 // - exists one per profile and one per local state
-// - retrieves initial system proxy configuration from cros settings persisted
-//   on chromeos device from chromeos revisions before migration to shill,
 // - persists proxy setting per network in flimflim
 // - provides network stack with latest effective proxy configuration for
 //   currently active network via PrefProxyConfigTrackerImpl's mechanism of
@@ -99,12 +97,6 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
     // Map |scheme| (one of "http", "https", "ftp" or "socks") to the correct
     // ManualProxy.  Returns NULL if scheme is invalid.
     ManualProxy* MapSchemeToProxy(const std::string& scheme);
-
-    // We've migrated device settings to shill, so we only need to
-    // deserialize previously persisted device settings.
-    // Deserializes from signed setting on device as std::string into a
-    // protobuf and then into the config.
-    bool DeserializeForDevice(const std::string& input);
 
     // Serializes config into a ProxyConfigDictionary and then std::string
     // persisted as string property in shill for a network.
@@ -227,8 +219,7 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
 
   // Called from OnNetworkManagerChanged and OnNetworkChanged for currently
   // active network, to handle previously active network, new active network,
-  // and if necessary, migrates device settings to shill and/or activates
-  // proxy setting of new network.
+  // and if necessary, activates proxy setting of new network.
   void OnActiveNetworkChanged(NetworkLibrary* cros,
                               const Network* active_network);
 
@@ -277,10 +268,6 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
 
   // Active proxy configuration, which could be from prefs or network.
   net::ProxyConfig active_config_;
-
-  // Proxy config retreived from device, in format generated from
-  // SerializeForNetwork, that can be directly set into shill.
-  std::string device_config_;
 
   // Service path of network whose proxy configuration is being displayed or
   // edited via UI, separate from |active_network_| which may be same or
