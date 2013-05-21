@@ -101,7 +101,7 @@ TEST_F(PointCoordTest, MAYBE_RenderTo) {
   GLint position_loc = glGetAttribLocation(program, "a_position");
   GLint pointsize_loc = glGetUniformLocation(program, "u_pointsize");
 
-  GLint range[2] = { 0, };
+  GLint range[2] = { 0, 0 };
   glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, &range[0]);
   GLint max_point_size = range[1];
   EXPECT_GE(max_point_size, 1);

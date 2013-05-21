@@ -2506,7 +2506,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.MaxDrawBuffers = group_->max_draw_buffers();
 
 #if (ANGLE_SH_VERSION >= 110)
-  GLint range[2];
+  GLint range[2] = { 0, 0 };
   GLint precision = 0;
   GetShaderPrecisionFormatImpl(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT,
                                range, &precision);
@@ -8549,7 +8549,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
 
   result->success = 1;  // true
 
-  GLint range[2] = {0, 0};
+  GLint range[2] = { 0, 0 };
   GLint precision = 0;
   GetShaderPrecisionFormatImpl(shader_type, precision_type, range, &precision);
 
