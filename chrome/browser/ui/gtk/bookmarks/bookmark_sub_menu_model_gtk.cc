@@ -166,6 +166,7 @@ void BookmarkSubMenuModel::MenuWillShow() {
   AddItemWithStringId(IDC_IMPORT_SETTINGS, IDS_IMPORT_SETTINGS_MENU_LABEL);
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_BOOKMARK_PAGE, IDS_BOOKMARK_THIS_PAGE);
+  AddItemWithStringId(IDC_BOOKMARK_ALL_TABS, IDS_BOOKMARK_OPEN_PAGES);
   fixed_items_ = bookmark_end_ = GetItemCount();
   if (!model()) {
     set_model(BookmarkModelFactory::GetForProfile(browser_->profile()));
