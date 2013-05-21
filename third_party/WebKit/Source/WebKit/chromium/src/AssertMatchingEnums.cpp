@@ -489,6 +489,8 @@ COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::ArrayType, IDBKey::ArrayType);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::StringType, IDBKey::StringType);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::DateType, IDBKey::DateType);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::NumberType, IDBKey::NumberType);
+// MinType is specific to the backing store, and is not plumbed through the Platform API, so this match is not required, and thus is purposefully absent.
+// COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::MinType, IDBKey::MinType);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyPath::NullType, IDBKeyPath::NullType);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyPath::StringType, IDBKeyPath::StringType);

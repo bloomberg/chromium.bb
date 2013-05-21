@@ -71,6 +71,7 @@ public:
         DateType,
         NumberType,
         NullType,
+        MinType,
     };
 
     WEBKIT_EXPORT Type type() const;
