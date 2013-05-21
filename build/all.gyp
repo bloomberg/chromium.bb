@@ -423,6 +423,13 @@
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
           ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:crash_service',
+              ],
+            }],
+          ],
         },  # target_name: chromium_builder_webrtc
         {
           'target_name': 'chromium_builder_chromedriver',
