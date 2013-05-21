@@ -1049,7 +1049,7 @@ class Command(object):
 
   See COMMANDS in main().
   """
-  _DEVICE_LIB_PATTERN = re.compile(r'(/data/app-lib/.*-[0-9])/.*')
+  _DEVICE_LIB_BASEDIRS = ['/data/data/', '/data/app-lib/']
 
   def __init__(self, usage):
     self._parser = optparse.OptionParser(usage)
@@ -1111,18 +1111,19 @@ class Command(object):
 
     Returns:
         A dict that maps a path in the Android device to a path in the host.
-        If a file in "/data/app-lib" is found in /proc/maps, it assumes the
-        process was running on Android and maps the path to "out/Debug/lib"
-        in the Chromium directory.  An empty dict is returned unless Android.
+        If a file in Command._DEVICE_LIB_BASEDIRS is found in /proc/maps, it
+        assumes the process was running on Android and maps the path to
+        "out/Debug/lib" in the Chromium directory.  An empty dict is returned
+        unless Android.
     """
     device_lib_path_candidates = set()
 
     with open(prefix + '.maps') as maps_f:
       maps = proc_maps.ProcMaps.load(maps_f)
       for entry in maps:
-        matched = Command._DEVICE_LIB_PATTERN.match(entry.as_dict()['name'])
-        if matched:
-          device_lib_path_candidates.add(matched.group(1))
+        name = entry.as_dict()['name']
+        if any([base_dir in name for base_dir in Command._DEVICE_LIB_BASEDIRS]):
+          device_lib_path_candidates.add(os.path.dirname(name))
 
     if len(device_lib_path_candidates) == 1:
       return {device_lib_path_candidates.pop(): os.path.join(
