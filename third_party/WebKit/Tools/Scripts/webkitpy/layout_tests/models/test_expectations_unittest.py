@@ -257,9 +257,9 @@ class SkippedTests(Base):
         expectations_to_lint = expectations_dict if lint else None
         exp = TestExpectations(port, ['failures/expected/text.html'], expectations_to_lint=expectations_to_lint)
 
-        # Check that the expectation is for BUG_DUMMY SKIP : ... [ Pass ]
+        # Check that the expectation is for SKIP : ... [ Pass ]
         self.assertEqual(exp.get_modifiers('failures/expected/text.html'),
-                          [TestExpectationParser.DUMMY_BUG_MODIFIER, TestExpectationParser.SKIP_MODIFIER, TestExpectationParser.WONTFIX_MODIFIER])
+                          [TestExpectationParser.SKIP_MODIFIER, TestExpectationParser.WONTFIX_MODIFIER])
         self.assertEqual(exp.get_expectations('failures/expected/text.html'), set([PASS]))
 
     def test_skipped_tests_work(self):
