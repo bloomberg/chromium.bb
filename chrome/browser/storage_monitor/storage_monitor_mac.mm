@@ -253,6 +253,8 @@ void StorageMonitorMac::UpdateDisk(
 
 bool StorageMonitorMac::GetStorageInfoForPath(const base::FilePath& path,
                                               StorageInfo* device_info) const {
+  DCHECK(device_info);
+
   if (!path.IsAbsolute())
     return false;
 

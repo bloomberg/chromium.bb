@@ -217,6 +217,8 @@ void StorageMonitorCros::SetMediaTransferProtocolManagerForTest(
 bool StorageMonitorCros::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
+  DCHECK(device_info);
+
   if (media_transfer_protocol_device_observer_->GetStorageInfoForPath(
           path, device_info)) {
     return true;
@@ -235,8 +237,7 @@ bool StorageMonitorCros::GetStorageInfoForPath(
   if (info_it == mount_map_.end())
     return false;
 
-  if (device_info)
-    *device_info = info_it->second;
+  *device_info = info_it->second;
   return true;
 }
 

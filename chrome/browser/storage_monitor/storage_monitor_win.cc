@@ -76,6 +76,8 @@ void StorageMonitorWin::Init() {
 
 bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
                                               StorageInfo* device_info) const {
+  DCHECK(device_info);
+
   // TODO(gbillock): Move this logic up to StorageMonitor.
   // If we already know the StorageInfo for the path, just return it.
   // This will account for portable devices as well.
@@ -96,8 +98,7 @@ bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
     }
   }
   if (best_parent != attached_devices.size()) {
-    if (device_info)
-      *device_info = attached_devices[best_parent];
+    *device_info = attached_devices[best_parent];
     return true;
   }
 

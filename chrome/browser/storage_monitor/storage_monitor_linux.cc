@@ -296,6 +296,7 @@ void StorageMonitorLinux::Init() {
 bool StorageMonitorLinux::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
+  DCHECK(device_info);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(thestig) |media_transfer_protocol_device_observer_| should always be
@@ -316,8 +317,7 @@ bool StorageMonitorLinux::GetStorageInfoForPath(
   MountMap::const_iterator mount_info = mount_info_map_.find(current);
   if (mount_info == mount_info_map_.end())
     return false;
-  if (device_info)
-    *device_info = mount_info->second.storage_info;
+  *device_info = mount_info->second.storage_info;
   return true;
 }
 

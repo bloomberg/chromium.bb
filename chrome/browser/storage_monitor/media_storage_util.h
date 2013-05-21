@@ -41,7 +41,7 @@ class MediaStorageUtil {
                                     const base::Closure& done);
 
   // Given |path|, fill in |device_info|, and |relative_path|
-  // (from the root of the device) if they are not NULL.
+  // (from the root of the device).
   static bool GetDeviceInfoFromPath(const base::FilePath& path,
                                     StorageInfo* device_info,
                                     base::FilePath* relative_path);

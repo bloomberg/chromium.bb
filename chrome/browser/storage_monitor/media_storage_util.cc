@@ -152,6 +152,9 @@ void MediaStorageUtil::FilterAttachedDevices(DeviceIdSet* devices,
 bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
                                              StorageInfo* device_info,
                                              base::FilePath* relative_path) {
+  DCHECK(device_info);
+  DCHECK(relative_path);
+
   if (!path.IsAbsolute())
     return false;
 
@@ -167,11 +170,8 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
       DCHECK(success);
     }
 
-    if (device_info)
-      *device_info = info;
-    if (relative_path)
-      *relative_path = sub_folder_path;
-
+    *device_info = info;
+    *relative_path = sub_folder_path;
     return true;
   }
 
@@ -192,10 +192,8 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
   // and don't do this here.
   info.device_id = StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
                                              path.AsUTF8Unsafe());
-  if (device_info)
-    *device_info = info;
-  if (relative_path)
-    *relative_path = base::FilePath();
+  *device_info = info;
+  *relative_path = base::FilePath();
   return true;
 }
 

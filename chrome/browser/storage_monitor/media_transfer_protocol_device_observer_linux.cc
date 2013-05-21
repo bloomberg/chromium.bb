@@ -157,6 +157,8 @@ MediaTransferProtocolDeviceObserverLinux::
 bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* storage_info) const {
+  DCHECK(storage_info);
+
   if (!path.IsAbsolute())
     return false;
 
@@ -173,8 +175,7 @@ bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
   if (info_it == storage_map_.end())
     return false;
 
-  if (storage_info)
-    *storage_info = info_it->second;
+  *storage_info = info_it->second;
   return true;
 }
 

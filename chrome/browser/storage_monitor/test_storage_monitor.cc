@@ -42,16 +42,16 @@ void TestStorageMonitor::MarkInitialized() {
 bool TestStorageMonitor::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
+  DCHECK(device_info);
+
   if (!path.IsAbsolute())
     return false;
 
-  if (device_info) {
-    device_info->device_id = StorageInfo::MakeDeviceId(
-        StorageInfo::FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
-    device_info->name = path.BaseName().LossyDisplayName();
-    device_info->location = path.value();
-    device_info->total_size_in_bytes = 0;
-  }
+  device_info->device_id = StorageInfo::MakeDeviceId(
+      StorageInfo::FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
+  device_info->name = path.BaseName().LossyDisplayName();
+  device_info->location = path.value();
+  device_info->total_size_in_bytes = 0;
   return true;
 }
 

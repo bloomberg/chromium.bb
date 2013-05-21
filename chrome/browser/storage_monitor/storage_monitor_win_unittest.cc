@@ -98,7 +98,7 @@ void StorageMonitorWinTest::TearDown() {
   RunUntilIdle();
   monitor_->RemoveObserver(&observer_);
   volume_mount_watcher_->ShutdownWorkerPool();
-  monitor_.reset(NULL);
+  monitor_.reset();
 }
 
 void StorageMonitorWinTest::PreAttachDevices() {
@@ -453,16 +453,17 @@ TEST_F(StorageMonitorWinTest, DuplicateAttachCheckSuppressed) {
 TEST_F(StorageMonitorWinTest, DeviceInfoForPath) {
   PreAttachDevices();
 
+  StorageInfo device_info;
   // An invalid path.
   EXPECT_FALSE(monitor_->GetStorageInfoForPath(base::FilePath(L"COM1:\\"),
-                                               NULL));
+                                               &device_info));
 
   // An unconnected removable device.
-  EXPECT_FALSE(monitor_->GetStorageInfoForPath(base::FilePath(L"E:\\"), NULL));
+  EXPECT_FALSE(monitor_->GetStorageInfoForPath(base::FilePath(L"E:\\"),
+                                               &device_info));
 
   // A connected removable device.
   base::FilePath removable_device(L"F:\\");
-  StorageInfo device_info;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(removable_device, &device_info));
 
   StorageInfo info;

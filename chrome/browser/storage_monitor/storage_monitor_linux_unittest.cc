@@ -632,8 +632,8 @@ TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
   EXPECT_EQ(string16(), device_info.name);
 
   // An invalid path.
-  EXPECT_FALSE(
-      notifier()->GetStorageInfoForPath(base::FilePath(kInvalidPath), NULL));
+  EXPECT_FALSE(notifier()->GetStorageInfoForPath(base::FilePath(kInvalidPath),
+                                                 &device_info));
 
   // Test filling in of the mount point.
   EXPECT_TRUE(
