@@ -902,14 +902,12 @@ String Internals::configurationForViewport(Document* document, float devicePixel
 
     const int defaultLayoutWidthForNonMobilePages = 980;
 
-    // FIXME(aelias): Remove this argument from all the fast/viewport tests.
-    ASSERT(devicePixelRatio == 1);
-
     ViewportArguments arguments = page->viewportArguments();
-    PageScaleConstraints constraints = arguments.resolve(IntSize(availableWidth, availableHeight), FloatSize(deviceWidth, deviceHeight), defaultLayoutWidthForNonMobilePages);
-    constraints.fitToContentsWidth(constraints.layoutSize.width(), availableWidth);
+    ViewportAttributes attributes = computeViewportAttributes(arguments, defaultLayoutWidthForNonMobilePages, deviceWidth, deviceHeight, devicePixelRatio, IntSize(availableWidth, availableHeight));
+    restrictMinimumScaleFactorToViewportSize(attributes, IntSize(availableWidth, availableHeight), devicePixelRatio);
+    restrictScaleFactorToInitialScaleIfNotUserScalable(attributes);
 
-    return "viewport size " + String::number(constraints.layoutSize.width()) + "x" + String::number(constraints.layoutSize.height()) + " scale " + String::number(constraints.initialScale) + " with limits [" + String::number(constraints.minimumScale) + ", " + String::number(constraints.maximumScale) + "] and userScalable " + (arguments.userZoom ? "true" : "false");
+    return "viewport size " + String::number(attributes.layoutSize.width()) + "x" + String::number(attributes.layoutSize.height()) + " scale " + String::number(attributes.initialScale) + " with limits [" + String::number(attributes.minimumScale) + ", " + String::number(attributes.maximumScale) + "] and userScalable " + (attributes.userScalable ? "true" : "false");
 }
 
 bool Internals::wasLastChangeUserEdit(Element* textField, ExceptionCode& ec)
