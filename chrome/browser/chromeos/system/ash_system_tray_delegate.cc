@@ -66,7 +66,6 @@
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
-#include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/google/google_util.h"
@@ -123,19 +122,6 @@ const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
 
 // The maximum session length limit that can be set.
 const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
-
-ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network) {
-  ash::NetworkIconInfo info;
-  info.name = network->type() == TYPE_ETHERNET ?
-      l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET) :
-      UTF8ToUTF16(network->name());
-  info.image = NetworkMenuIcon::GetImage(network, NetworkMenuIcon::COLOR_DARK);
-  info.service_path = network->service_path();
-  info.connecting = network->connecting();
-  info.connected = network->connected();
-  info.is_cellular = network->type() == TYPE_CELLULAR;
-  return info;
-}
 
 void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
@@ -239,10 +225,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public AudioHandler::VolumeObserver,
                            public PowerManagerClient::Observer,
                            public SessionManagerClient::Observer,
-                           public NetworkMenuIcon::Delegate,
                            public NetworkMenu::Delegate,
                            public NetworkLibrary::NetworkManagerObserver,
-                           public NetworkLibrary::NetworkObserver,
                            public drive::JobListObserver,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
@@ -256,12 +240,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   SystemTrayDelegate()
       : ui_weak_ptr_factory_(
             new base::WeakPtrFactory<SystemTrayDelegate>(this)),
-        network_icon_(new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE)),
-        network_icon_dark_(
-            new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE)),
-        network_icon_vpn_(
-            new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE)),
-        network_menu_(new NetworkMenu(this)),
         clock_type_(base::k24HourClock),
         search_key_mapped_to_(input_method::kSearchKey),
         screen_locked_(false),
@@ -271,6 +249,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         cellular_activating_(false),
         cellular_out_of_credits_(false),
         volume_control_delegate_(new VolumeController()) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
+      network_menu_.reset(new NetworkMenu(this));
+    }
+
     // Register notifications on construction so that events such as
     // PROFILE_CREATED do not get missed if they happen before Initialize().
     registrar_.Add(this,
@@ -322,10 +305,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
-
-    network_icon_->SetResourceColorTheme(NetworkMenuIcon::COLOR_LIGHT);
-    network_icon_dark_->SetResourceColorTheme(NetworkMenuIcon::COLOR_DARK);
-    network_icon_vpn_->SetResourceColorTheme(NetworkMenuIcon::COLOR_DARK);
 
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&SystemTrayDelegate::InitializeOnAdapterReady,
@@ -436,6 +415,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual bool IsOobeCompleted() const OVERRIDE {
+    if (!base::chromeos::IsRunningOnChromeOS() &&
+        LoginState::Get()->GetLoggedInState() == LoginState::LOGGED_IN_ACTIVE)
+      return true;
     return StartupUtils::IsOobeCompleted();
   }
 
@@ -757,131 +739,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         integration_service->job_list()->GetJobInfoList());
   }
 
-
-  virtual void GetMostRelevantNetworkIcon(ash::NetworkIconInfo* info,
-                                          bool dark) OVERRIDE {
-    NetworkMenuIcon* icon =
-        dark ? network_icon_dark_.get() : network_icon_.get();
-    info->image = icon->GetIconAndText(&info->description);
-    info->tray_icon_visible = icon->ShouldShowIconInTray();
-  }
-
-  virtual void GetVirtualNetworkIcon(ash::NetworkIconInfo* info) OVERRIDE {
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    if (crosnet->virtual_network_connected()) {
-      NetworkMenuIcon* icon = network_icon_vpn_.get();
-      info->image = icon->GetVpnIconAndText(&info->description);
-      info->tray_icon_visible = false;
-    } else {
-      gfx::ImageSkia* image = NetworkMenuIcon::GetVirtualNetworkImage();
-      info->image = *image;
-      info->description = l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED);
-    }
-  }
-
-  virtual void GetAvailableNetworks(
-      std::vector<ash::NetworkIconInfo>* list) OVERRIDE {
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-
-    std::set<const Network*> added;
-
-    // Add the active network first.
-    if (crosnet->active_nonvirtual_network())
-      AddNetworkToList(list, &added, crosnet->active_nonvirtual_network());
-
-    if (crosnet->ethernet_network() &&
-        crosnet->ethernet_network()->connecting_or_connected()) {
-      AddNetworkToList(list, &added, crosnet->ethernet_network());
-    }
-    if (crosnet->cellular_network()
-        && crosnet->cellular_network()->connecting_or_connected()) {
-      AddNetworkToList(list, &added, crosnet->cellular_network());
-    }
-    if (crosnet->wimax_network()
-        && crosnet->wimax_network()->connecting_or_connected()) {
-      AddNetworkToList(list, &added, crosnet->wimax_network());
-    }
-    if (crosnet->wifi_network()
-        && crosnet->wifi_network()->connecting_or_connected()) {
-      AddNetworkToList(list, &added, crosnet->wifi_network());
-    }
-
-    // Add remaining networks by type.
-
-    // Ethernet.
-    if (crosnet->ethernet_available() && crosnet->ethernet_enabled()) {
-      const EthernetNetwork* ethernet_network = crosnet->ethernet_network();
-      if (ethernet_network)
-        AddNetworkToList(list, &added, ethernet_network);
-    }
-
-    // Cellular.
-    if (crosnet->cellular_available() && crosnet->cellular_enabled()) {
-      const CellularNetworkVector& cell = crosnet->cellular_networks();
-      for (size_t i = 0; i < cell.size(); ++i)
-        AddNetworkToList(list, &added, cell[i]);
-    }
-
-    // Wimax.
-    if (crosnet->wimax_available() && crosnet->wimax_enabled()) {
-      const WimaxNetworkVector& wimax = crosnet->wimax_networks();
-      for (size_t i = 0; i < wimax.size(); ++i)
-        AddNetworkToList(list, &added, wimax[i]);
-    }
-
-    // Wifi.
-    if (crosnet->wifi_available() && crosnet->wifi_enabled()) {
-      const WifiNetworkVector& wifi = crosnet->wifi_networks();
-      for (size_t i = 0; i < wifi.size(); ++i)
-        AddNetworkToList(list, &added, wifi[i]);
-    }
-  }
-
-  virtual void GetVirtualNetworks(
-      std::vector<ash::NetworkIconInfo>* list) OVERRIDE {
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    std::set<const Network*> added;
-
-    // Add connected/connecting vpn first.
-    if (crosnet->virtual_network()
-        && crosnet->virtual_network()->connecting_or_connected()) {
-      AddNetworkToList(list, &added, crosnet->virtual_network());
-    }
-
-    // VPN (only if logged in).
-    if (GetUserLoginStatus() != ash::user::LOGGED_IN_NONE &&
-        (crosnet->connected_network() ||
-         crosnet->virtual_network_connected())) {
-      const VirtualNetworkVector& vpns = crosnet->virtual_networks();
-      for (size_t i = 0; i < vpns.size(); ++i)
-        AddNetworkToList(list, &added, vpns[i]);
-    }
-  }
-
-  virtual void GetNetworkAddresses(std::string* ip_address,
-                                   std::string* ethernet_mac_address,
-                                   std::string* wifi_mac_address) OVERRIDE {
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    if (crosnet->Connected())
-      *ip_address = crosnet->IPAddress();
-    else
-      *ip_address = std::string();
-
-    *ethernet_mac_address = std::string();
-    const NetworkDevice* ether = crosnet->FindEthernetDevice();
-    if (ether)
-      crosnet->GetIPConfigsAndBlock(ether->device_path(), ethernet_mac_address,
-          NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
-
-    *wifi_mac_address = std::string();
-    const NetworkDevice* wifi = crosnet->wifi_enabled() ?
-        crosnet->FindWifiDevice() : NULL;
-    if (wifi)
-      crosnet->GetIPConfigsAndBlock(wifi->device_path(), wifi_mac_address,
-          NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
-  }
-
   virtual void ConfigureNetwork(const std::string& network_id) OVERRIDE {
     const chromeos::NetworkState* network = network_id.empty() ? NULL :
         chromeos::NetworkStateHandler::Get()->GetNetworkState(network_id);
@@ -919,11 +776,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       ShowNetworkSettings("");
   }
 
-  virtual void RequestNetworkScan() OVERRIDE {
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    crosnet->RequestNetworkScan();
-  }
-
   virtual void AddBluetoothDevice() OVERRIDE {
     // Open the Bluetooth device dialog, which automatically starts the
     // discovery process.
@@ -931,20 +783,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         content::UserMetricsAction("OpenAddBluetoothDeviceDialog"));
     chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
                                 chrome::kBluetoothAddDeviceSubPage);
-  }
-
-  virtual void ToggleAirplaneMode() OVERRIDE {
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    crosnet->EnableOfflineMode(!crosnet->offline_mode());
-  }
-
-  virtual void ToggleWifi() OVERRIDE {
-    GetSystemTrayNotifier()->NotifyWillToggleWifi();
-    network_menu_->ToggleWifi();
-  }
-
-  virtual void ToggleMobile() OVERRIDE {
-    network_menu_->ToggleMobile();
   }
 
   virtual void ToggleBluetooth() OVERRIDE {
@@ -959,49 +797,23 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowOtherWifi() OVERRIDE {
-    network_menu_->ShowOtherWifi();
+    NetworkConfigView::ShowForType(chromeos::TYPE_WIFI, GetNativeWindow());
   }
 
   virtual void ShowOtherVPN() OVERRIDE {
-    network_menu_->ShowOtherVPN();
+    NetworkConfigView::ShowForType(chromeos::TYPE_VPN, GetNativeWindow());
   }
 
   virtual void ShowOtherCellular() OVERRIDE {
-    network_menu_->ShowOtherCellular();
-  }
-
-  virtual bool IsNetworkConnected() OVERRIDE {
-    return CrosLibrary::Get()->GetNetworkLibrary()->Connected();
-  }
-
-  virtual bool GetWifiAvailable() OVERRIDE {
-    return CrosLibrary::Get()->GetNetworkLibrary()->wifi_available();
-  }
-
-  virtual bool GetMobileAvailable() OVERRIDE {
-    return CrosLibrary::Get()->GetNetworkLibrary()->mobile_available();
+    ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
   }
 
   virtual bool GetBluetoothAvailable() OVERRIDE {
     return bluetooth_adapter_->IsPresent();
   }
 
-  virtual bool GetWifiEnabled() OVERRIDE {
-    return CrosLibrary::Get()->GetNetworkLibrary()->wifi_enabled();
-  }
-
-  virtual bool GetMobileEnabled() OVERRIDE {
-    return CrosLibrary::Get()->GetNetworkLibrary()->mobile_enabled();
-  }
-
   virtual bool GetBluetoothEnabled() OVERRIDE {
     return bluetooth_adapter_->IsPowered();
-  }
-
-  virtual bool GetMobileScanSupported() OVERRIDE {
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    const NetworkDevice* mobile = crosnet->FindMobileDevice();
-    return mobile ? mobile->support_network_scan() : false;
   }
 
   virtual bool GetCellularCarrierInfo(std::string* carrier_id,
@@ -1032,14 +844,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       }
     }
     return result;
-  }
-
-  virtual bool GetWifiScanning() OVERRIDE {
-    return CrosLibrary::Get()->GetNetworkLibrary()->wifi_scanning();
-  }
-
-  virtual bool GetCellularInitializing() OVERRIDE {
-    return CrosLibrary::Get()->GetNetworkLibrary()->cellular_initializing();
   }
 
   virtual void ShowCellularURL(const std::string& url) OVERRIDE {
@@ -1180,88 +984,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     GetSystemTrayNotifier()->NotifySessionLengthLimitChanged();
   }
 
-  void NotifyRefreshNetwork() {
-    chromeos::NetworkLibrary* crosnet =
-        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-    const Network* network = crosnet->connected_network();
-    ash::NetworkIconInfo info;
-    if (network)
-      info = CreateNetworkIconInfo(network);
-    info.image = network_icon_->GetIconAndText(&info.description);
-    info.tray_icon_visible = network_icon_->ShouldShowIconInTray();
-    GetSystemTrayNotifier()->NotifyRefreshNetwork(info);
-    GetSystemTrayNotifier()->NotifyVpnRefreshNetwork(info);
-  }
-
-  void RefreshNetworkObserver(NetworkLibrary* crosnet) {
-    const Network* network = crosnet->active_nonvirtual_network();
-    std::string new_path = network ? network->service_path() : std::string();
-    if (active_network_path_ != new_path) {
-      if (!active_network_path_.empty())
-        crosnet->RemoveNetworkObserver(active_network_path_, this);
-      if (!new_path.empty())
-        crosnet->AddNetworkObserver(new_path, this);
-      active_network_path_ = new_path;
-    }
-  }
-
-  void AddNetworkToList(std::vector<ash::NetworkIconInfo>* list,
-                        std::set<const Network*>* added,
-                        const Network* network) {
-    // Only add networks to the list once.
-    if (added->find(network) != added->end())
-      return;
-
-    ash::NetworkIconInfo info = CreateNetworkIconInfo(network);
-    switch (network->type()) {
-      case TYPE_ETHERNET:
-        if (info.name.empty()) {
-          info.name =
-              l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-        }
-        break;
-      case TYPE_CELLULAR: {
-        const CellularNetwork* cellular =
-            static_cast<const CellularNetwork*>(network);
-        ActivationState state = cellular->activation_state();
-        if (state == ACTIVATION_STATE_NOT_ACTIVATED ||
-            state == ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
-          // If a cellular network needs to be activated,
-          // then do not show it in the lock screen.
-          if (GetUserLoginStatus() == ash::user::LOGGED_IN_LOCKED)
-            return;
-
-          info.description = l10n_util::GetStringFUTF16(
-              IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE, info.name);
-        } else if (state == ACTIVATION_STATE_ACTIVATING) {
-          info.description = l10n_util::GetStringFUTF16(
-              IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING, info.name);
-        } else if (network->connecting()) {
-          info.description = l10n_util::GetStringFUTF16(
-              IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-              info.name, l10n_util::GetStringUTF16(
-                  IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
-        }
-        break;
-      }
-      case TYPE_VPN:
-      case TYPE_WIFI:
-      case TYPE_WIMAX:
-      case TYPE_BLUETOOTH:
-      case TYPE_UNKNOWN:
-        break;
-    }
-    if (network->connecting()) {
-      info.description = l10n_util::GetStringFUTF16(
-          IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-          info.name,
-          l10n_util::GetStringUTF16(
-              IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
-    }
-    added->insert(network);
-    list->push_back(info);
-  }
-
   // Overridden from AudioHandler::VolumeObserver.
   virtual void OnVolumeChanged() OVERRIDE {
     float level = AudioHandler::GetInstance()->GetVolumePercent() / 100.f;
@@ -1299,11 +1021,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // TODO(sad): Override more from PowerManagerClient::Observer here.
 
-  // Overridden from NetworkMenuIcon::Delegate.
-  virtual void NetworkMenuIconChanged() OVERRIDE {
-    NotifyRefreshNetwork();
-  }
-
   // Overridden from NetworkMenu::Delegate.
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE {
     return GetNativeWindowByStatus(GetUserLoginStatus());
@@ -1318,18 +1035,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // Overridden from NetworkLibrary::NetworkManagerObserver.
   virtual void OnNetworkManagerChanged(NetworkLibrary* crosnet) OVERRIDE {
-    RefreshNetworkObserver(crosnet);
+    // TODO(stevenjb): Migrate to NetworkStateHandler.
     data_promo_notification_->ShowOptionalMobileDataPromoNotification(
         crosnet, GetPrimarySystemTray(), this);
     UpdateCellular();
-
-    NotifyRefreshNetwork();
-  }
-
-  // Overridden from NetworkLibrary::NetworkObserver.
-  virtual void OnNetworkChanged(NetworkLibrary* crosnet,
-      const Network* network) OVERRIDE {
-    NotifyRefreshNetwork();
   }
 
   // content::NotificationObserver implementation.
@@ -1581,40 +1290,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
               NULL,
               ash::NetworkObserver::MESSAGE_DATA_PROMO,
               type,
-              l10n_util::GetStringUTF16(
-                  IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
-              l10n_util::GetStringFUTF16(
-                  IDS_NETWORK_CELLULAR_ACTIVATED,
-                  UTF8ToUTF16((cellular->name()))),
-                  std::vector<string16>());
-    }
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshDisableNewNetworkStatusArea)) {
-      return;
-    }
-    // Trigger "Out of credits" notification (for NetworkLibrary impl)
-    if (cellular->out_of_credits() && !cellular_out_of_credits_) {
-      cellular_out_of_credits_ = true;
-      ash::NetworkObserver::NetworkType type = NetworkTypeForCellular(cellular);
-      std::vector<string16> links;
-      links.push_back(
-          l10n_util::GetStringFUTF16(IDS_NETWORK_OUT_OF_CREDITS_LINK,
-                                     UTF8ToUTF16(cellular->name())));
-      ash::Shell::GetInstance()->system_tray_notifier()->
-          NotifySetNetworkMessage(
-              this, ash::NetworkObserver::ERROR_OUT_OF_CREDITS, type,
-              l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE),
-              l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_BODY),
-              links);
-    } else if (!cellular->out_of_credits() && cellular_out_of_credits_) {
-      cellular_out_of_credits_ = false;
+              l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
+              l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
+                                         UTF8ToUTF16((cellular->name()))),
+              std::vector<string16>());
     }
   }
 
   scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
-  scoped_ptr<NetworkMenuIcon> network_icon_;
-  scoped_ptr<NetworkMenuIcon> network_icon_dark_;
-  scoped_ptr<NetworkMenuIcon> network_icon_vpn_;
   scoped_ptr<NetworkMenu> network_menu_;
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar local_state_registrar_;

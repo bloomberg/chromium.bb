@@ -35,8 +35,6 @@ class NetworkObserver {
 
   virtual ~NetworkObserver() {}
 
-  virtual void OnNetworkRefresh(const NetworkIconInfo& info) = 0;
-
   // Sets a network message notification.
   // |message_type| identifies the type of message.
   // |network_type| identifies the type of network involved.
@@ -48,13 +46,14 @@ class NetworkObserver {
                                  const base::string16& title,
                                  const base::string16& message,
                                  const std::vector<base::string16>& links) = 0;
+
   // Clears the message notification for |message_type|.
   virtual void ClearNetworkMessage(MessageType message_type) = 0;
 
-  // Called when the user attempted to toggle Wi-Fi enable/disable.
+  // Called to request toggling Wi-Fi enable/disable, e.g. from an accelerator.
   // NOTE: Toggling is asynchronous and subsequent calls to query the current
   // state may return the old value.
-  virtual void OnWillToggleWifi() = 0;
+  virtual void RequestToggleWifi() = 0;
 };
 
 }  // namespace ash

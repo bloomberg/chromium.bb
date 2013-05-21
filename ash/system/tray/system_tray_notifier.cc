@@ -133,14 +133,6 @@ void SystemTrayNotifier::RemoveNetworkObserver(NetworkObserver* observer) {
   network_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddVpnObserver(NetworkObserver* observer) {
-  vpn_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveVpnObserver(NetworkObserver* observer) {
-  vpn_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddSmsObserver(SmsObserver* observer) {
   sms_observers_.AddObserver(observer);
 }
@@ -292,12 +284,6 @@ void SystemTrayNotifier::NotifyMuteToggled() {
                     OnMuteToggled());
 }
 
-void SystemTrayNotifier::NotifyRefreshNetwork(const NetworkIconInfo &info) {
-  FOR_EACH_OBSERVER(NetworkObserver,
-                    network_observers_,
-                    OnNetworkRefresh(info));
-}
-
 void SystemTrayNotifier::NotifySetNetworkMessage(
     NetworkTrayDelegate* delegate,
     NetworkObserver::MessageType message_type,
@@ -323,16 +309,10 @@ void SystemTrayNotifier::NotifyClearNetworkMessage(
                     ClearNetworkMessage(message_type));
 }
 
-void SystemTrayNotifier::NotifyVpnRefreshNetwork(const NetworkIconInfo &info) {
-  FOR_EACH_OBSERVER(NetworkObserver,
-                    vpn_observers_,
-                    OnNetworkRefresh(info));
-}
-
-void SystemTrayNotifier::NotifyWillToggleWifi() {
+void SystemTrayNotifier::NotifyRequestToggleWifi() {
   FOR_EACH_OBSERVER(NetworkObserver,
                     network_observers_,
-                    OnWillToggleWifi());
+                    RequestToggleWifi());
 }
 
 void SystemTrayNotifier::NotifyAddSmsMessage(

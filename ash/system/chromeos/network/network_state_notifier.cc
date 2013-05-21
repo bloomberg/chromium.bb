@@ -4,11 +4,9 @@
 
 #include "ash/system/chromeos/network/network_state_notifier.h"
 
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "base/command_line.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -173,10 +171,6 @@ void NetworkStateNotifier::NetworkConnectionStateChanged(
 void NetworkStateNotifier::NetworkPropertiesUpdated(
     const NetworkState* network) {
   DCHECK(network);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshDisableNewNetworkStatusArea)) {
-    return;
-  }
   // Trigger "Out of credits" notification if the cellular network is the most
   // recent default network (i.e. we have not switched to another network).
   if (network->type() == flimflam::kTypeCellular &&
@@ -211,7 +205,7 @@ void NetworkStateNotifier::NotificationLinkClicked(
   if (message_type == ash::NetworkObserver::ERROR_OUT_OF_CREDITS) {
     if (!cellular_network_.empty()) {
       // This will trigger the activation / portal code.
-      Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
+      Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
           cellular_network_);
     }
     ash::Shell::GetInstance()->system_tray_notifier()->

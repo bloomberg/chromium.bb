@@ -95,6 +95,7 @@ void ChromeShellDelegate::OpenCrosh() {
 }
 
 void ChromeShellDelegate::OpenMobileSetup(const std::string& service_path) {
+  // TODO(stevenjb): Replace with non-NetworkLibrary UI.
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   const chromeos::CellularNetwork* cellular =

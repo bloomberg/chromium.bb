@@ -14,7 +14,7 @@ namespace internal {
 namespace tray {
 
 // Abstract base class for all NetworkDetailedView derived subclasses,
-// which includes NetworkWifiDetailedView and NetworkListDetailedViewBase.
+// which includes NetworkWifiDetailedView and NetworkStateListDetailedView.
 class NetworkDetailedView : public TrayDetailsView {
  public:
   typedef chromeos::NetworkStateHandler::NetworkStateList NetworkStateList;

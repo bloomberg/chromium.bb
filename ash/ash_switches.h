@@ -30,7 +30,6 @@ ASH_EXPORT extern const char kAshDisableDisplayChangeLimiter[];
 ASH_EXPORT extern const char kAshDisableImmersiveFullscreen[];
 ASH_EXPORT extern const char kAshDisableNewAudioHandler[];
 ASH_EXPORT extern const char kAshDisableNewLockAnimations[];
-ASH_EXPORT extern const char kAshDisableNewNetworkStatusArea[];
 ASH_EXPORT extern const char kAshDisablePerAppLauncher[];
 ASH_EXPORT extern const char kAshDisableUIScaling[];
 ASH_EXPORT extern const char kAshDisableDisplayRotation[];

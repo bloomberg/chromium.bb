@@ -16,11 +16,13 @@ namespace internal {
 
 TrayNetworkStateObserver::TrayNetworkStateObserver(Delegate* delegate)
     : delegate_(delegate) {
-  chromeos::NetworkStateHandler::Get()->AddObserver(this);
+  if (chromeos::NetworkStateHandler::IsInitialized())
+    chromeos::NetworkStateHandler::Get()->AddObserver(this);
 }
 
 TrayNetworkStateObserver::~TrayNetworkStateObserver() {
-  chromeos::NetworkStateHandler::Get()->RemoveObserver(this);
+  if (chromeos::NetworkStateHandler::IsInitialized())
+    chromeos::NetworkStateHandler::Get()->RemoveObserver(this);
 }
 
 void TrayNetworkStateObserver::NetworkManagerChanged() {

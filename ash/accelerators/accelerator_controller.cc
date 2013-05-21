@@ -37,6 +37,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/volume_control_delegate.h"
@@ -554,7 +555,7 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
     case TOGGLE_WIFI:
-      Shell::GetInstance()->system_tray_delegate()->ToggleWifi();
+      Shell::GetInstance()->system_tray_notifier()->NotifyRequestToggleWifi();
       return true;
     case TOUCH_HUD_CLEAR: {
       internal::RootWindowController* controller =

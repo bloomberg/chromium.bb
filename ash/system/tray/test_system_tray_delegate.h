@@ -65,41 +65,20 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void CancelDriveOperation(int32 operation_id) OVERRIDE;
   virtual void GetDriveOperationStatusList(
       ash::DriveOperationStatusList*) OVERRIDE;
-  virtual void GetMostRelevantNetworkIcon(NetworkIconInfo* info,
-                                          bool large) OVERRIDE;
-  virtual void GetVirtualNetworkIcon(ash::NetworkIconInfo* info) OVERRIDE;
-  virtual void GetAvailableNetworks(
-      std::vector<NetworkIconInfo>* list) OVERRIDE;
-  virtual void GetVirtualNetworks(std::vector<NetworkIconInfo>* list) OVERRIDE;
   virtual void ConfigureNetwork(const std::string& network_id) OVERRIDE;
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE;
-  virtual void GetNetworkAddresses(std::string* ip_address,
-                                   std::string* ethernet_mac_address,
-                                   std::string* wifi_mac_address) OVERRIDE;
-  virtual void RequestNetworkScan() OVERRIDE;
   virtual void AddBluetoothDevice() OVERRIDE;
-  virtual void ToggleAirplaneMode() OVERRIDE;
-  virtual void ToggleWifi() OVERRIDE;
-  virtual void ToggleMobile() OVERRIDE;
   virtual void ToggleBluetooth() OVERRIDE;
   virtual bool IsBluetoothDiscovering() OVERRIDE;
   virtual void ShowMobileSimDialog() OVERRIDE;
   virtual void ShowOtherWifi() OVERRIDE;
   virtual void ShowOtherVPN() OVERRIDE;
   virtual void ShowOtherCellular() OVERRIDE;
-  virtual bool IsNetworkConnected() OVERRIDE;
-  virtual bool GetWifiAvailable() OVERRIDE;
-  virtual bool GetMobileAvailable() OVERRIDE;
   virtual bool GetBluetoothAvailable() OVERRIDE;
-  virtual bool GetWifiEnabled() OVERRIDE;
-  virtual bool GetMobileEnabled() OVERRIDE;
   virtual bool GetBluetoothEnabled() OVERRIDE;
-  virtual bool GetMobileScanSupported() OVERRIDE;
   virtual bool GetCellularCarrierInfo(std::string* carrier_id,
                                       std::string* topup_url,
                                       std::string* setup_url) OVERRIDE;
-  virtual bool GetWifiScanning() OVERRIDE;
-  virtual bool GetCellularInitializing() OVERRIDE;
   virtual void ShowCellularURL(const std::string& url) OVERRIDE;
   virtual void ChangeProxySettings() OVERRIDE;
   virtual VolumeControlDelegate* GetVolumeControlDelegate() const OVERRIDE;
@@ -115,8 +94,6 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE;
 
  private:
-  bool wifi_enabled_;
-  bool cellular_enabled_;
   bool bluetooth_enabled_;
   bool caps_lock_enabled_;
   scoped_ptr<VolumeControlDelegate> volume_control_delegate_;

@@ -51,9 +51,7 @@ class TestVolumeControlDelegate : public VolumeControlDelegate {
 }  // namespace
 
 TestSystemTrayDelegate::TestSystemTrayDelegate()
-    : wifi_enabled_(true),
-      cellular_enabled_(true),
-      bluetooth_enabled_(true),
+    : bluetooth_enabled_(true),
       caps_lock_enabled_(false),
       volume_control_delegate_(new TestVolumeControlDelegate) {
 }
@@ -213,51 +211,13 @@ void TestSystemTrayDelegate::GetDriveOperationStatusList(
     ash::DriveOperationStatusList*) {
 }
 
-void TestSystemTrayDelegate::GetMostRelevantNetworkIcon(NetworkIconInfo* info,
-                                                        bool large) {
-}
-
-void TestSystemTrayDelegate::GetVirtualNetworkIcon(ash::NetworkIconInfo* info) {
-}
-
-void TestSystemTrayDelegate::GetAvailableNetworks(
-    std::vector<NetworkIconInfo>* list) {
-}
-
-void TestSystemTrayDelegate::GetVirtualNetworks(
-    std::vector<NetworkIconInfo>* list) {
-}
-
 void TestSystemTrayDelegate::ConfigureNetwork(const std::string& network_id) {
 }
 
 void TestSystemTrayDelegate::ConnectToNetwork(const std::string& network_id) {
 }
 
-void TestSystemTrayDelegate::GetNetworkAddresses(
-    std::string* ip_address,
-    std::string* ethernet_mac_address,
-    std::string* wifi_mac_address) {
-  *ip_address = "127.0.0.1";
-  *ethernet_mac_address = "00:11:22:33:44:55";
-  *wifi_mac_address = "66:77:88:99:00:11";
-}
-
-void TestSystemTrayDelegate::RequestNetworkScan() {
-}
-
 void TestSystemTrayDelegate::AddBluetoothDevice() {
-}
-
-void TestSystemTrayDelegate::ToggleAirplaneMode() {
-}
-
-void TestSystemTrayDelegate::ToggleWifi() {
-  wifi_enabled_ = !wifi_enabled_;
-}
-
-void TestSystemTrayDelegate::ToggleMobile() {
-  cellular_enabled_ = !cellular_enabled_;
 }
 
 void TestSystemTrayDelegate::ToggleBluetooth() {
@@ -280,49 +240,17 @@ void TestSystemTrayDelegate::ShowOtherVPN() {
 void TestSystemTrayDelegate::ShowOtherCellular() {
 }
 
-bool TestSystemTrayDelegate::IsNetworkConnected() {
-  return true;
-}
-
-bool TestSystemTrayDelegate::GetWifiAvailable() {
-  return true;
-}
-
-bool TestSystemTrayDelegate::GetMobileAvailable() {
-  return true;
-}
-
 bool TestSystemTrayDelegate::GetBluetoothAvailable() {
   return true;
-}
-
-bool TestSystemTrayDelegate::GetWifiEnabled() {
-  return wifi_enabled_;
-}
-
-bool TestSystemTrayDelegate::GetMobileEnabled() {
-  return cellular_enabled_;
 }
 
 bool TestSystemTrayDelegate::GetBluetoothEnabled() {
   return bluetooth_enabled_;
 }
 
-bool TestSystemTrayDelegate::GetMobileScanSupported() {
-  return true;
-}
-
 bool TestSystemTrayDelegate::GetCellularCarrierInfo(std::string* carrier_id,
                                                     std::string* topup_url,
                                                     std::string* setup_url) {
-  return false;
-}
-
-bool TestSystemTrayDelegate::GetWifiScanning() {
-  return false;
-}
-
-bool TestSystemTrayDelegate::GetCellularInitializing() {
   return false;
 }
 

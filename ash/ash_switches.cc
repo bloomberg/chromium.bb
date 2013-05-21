@@ -56,10 +56,6 @@ const char kAshDisableNewAudioHandler[] = "ash-disable-new-audio-handler";
 // If present new lock animations are enabled.
 const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
 
-// Disable new network handlers in the status area.
-const char kAshDisableNewNetworkStatusArea[] =
-    "ash-disable-new-network-status-area";
-
 // Disable the per application grouping version of the launcher.
 const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
 

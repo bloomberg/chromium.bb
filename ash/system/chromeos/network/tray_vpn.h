@@ -5,7 +5,6 @@
 #ifndef ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_VPN_H
 #define ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_VPN_H
 
-#include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,7 +21,6 @@ class VpnDetailedView;
 }
 
 class TrayVPN : public SystemTrayItem,
-                public NetworkObserver,
                 public TrayNetworkStateObserver::Delegate {
  public:
   explicit TrayVPN(SystemTray* system_tray);
@@ -41,18 +39,6 @@ class TrayVPN : public SystemTrayItem,
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
   virtual void UpdateAfterShelfAlignmentChange(
       ShelfAlignment alignment) OVERRIDE;
-
-  // NetworkObserver
-  virtual void OnNetworkRefresh(const NetworkIconInfo& info) OVERRIDE;
-  virtual void SetNetworkMessage(
-      NetworkTrayDelegate* delegate,
-      MessageType message_type,
-      NetworkType network_type,
-      const base::string16& title,
-      const base::string16& message,
-      const std::vector<base::string16>& links) OVERRIDE;
-  virtual void ClearNetworkMessage(MessageType message_type) OVERRIDE;
-  virtual void OnWillToggleWifi() OVERRIDE;
 
   // TrayNetworkStateObserver::Delegate
   virtual void NetworkStateChanged(bool list_changed) OVERRIDE;

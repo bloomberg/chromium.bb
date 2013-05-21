@@ -240,46 +240,14 @@ class SystemTrayDelegate {
   virtual void GetDriveOperationStatusList(
       DriveOperationStatusList* list) = 0;
 
-  // Returns information about the most relevant network. Relevance is
-  // determined by the implementor (e.g. a connecting network may be more
-  // relevant over a connected network etc.)
-  virtual void GetMostRelevantNetworkIcon(NetworkIconInfo* info,
-                                          bool large) = 0;
-
-  virtual void GetVirtualNetworkIcon(ash::NetworkIconInfo* info) = 0;
-
-  // Returns information about the available networks.
-  virtual void GetAvailableNetworks(std::vector<NetworkIconInfo>* list) = 0;
-
-  // Returns the information about all virtual networks.
-  virtual void GetVirtualNetworks(std::vector<NetworkIconInfo>* list) = 0;
-
   // Shows UI to configure or activate the network specified by |network_id|.
   virtual void ConfigureNetwork(const std::string& network_id) = 0;
 
   // Sends a connect request for the network specified by |network_id|.
   virtual void ConnectToNetwork(const std::string& network_id) = 0;
 
-  // Gets the network IP address, and the mac addresses for the ethernet and
-  // wifi devices. If any of this is unavailable, empty strings are returned.
-  virtual void GetNetworkAddresses(std::string* ip_address,
-                                   std::string* ethernet_mac_address,
-                                   std::string* wifi_mac_address) = 0;
-
-  // Requests network scan when list of networks is opened.
-  virtual void RequestNetworkScan() = 0;
-
-  // Shous UI to add a new bluetooth device.
+  // Shows UI to add a new bluetooth device.
   virtual void AddBluetoothDevice() = 0;
-
-  // Toggles airplane mode.
-  virtual void ToggleAirplaneMode() = 0;
-
-  // Toggles wifi network.
-  virtual void ToggleWifi() = 0;
-
-  // Toggles mobile network.
-  virtual void ToggleMobile() = 0;
 
   // Toggles bluetooth.
   virtual void ToggleBluetooth() = 0;
@@ -296,29 +264,11 @@ class SystemTrayDelegate {
   // Shows UI to search for cellular networks.
   virtual void ShowOtherCellular() = 0;
 
-  // Returns whether the system is connected to any network.
-  virtual bool IsNetworkConnected() = 0;
-
-  // Returns whether wifi is available.
-  virtual bool GetWifiAvailable() = 0;
-
-  // Returns whether mobile networking (cellular or wimax) is available.
-  virtual bool GetMobileAvailable() = 0;
-
   // Returns whether bluetooth capability is available.
   virtual bool GetBluetoothAvailable() = 0;
 
-  // Returns whether wifi is enabled.
-  virtual bool GetWifiEnabled() = 0;
-
-  // Returns whether mobile (cellular or wimax) networking is enabled.
-  virtual bool GetMobileEnabled() = 0;
-
   // Returns whether bluetooth is enabled.
   virtual bool GetBluetoothEnabled() = 0;
-
-  // Returns whether mobile scanning is supported.
-  virtual bool GetMobileScanSupported() = 0;
 
   // Retrieves information about the carrier and locale specific |setup_url|.
   // If none of the carrier info/setup URL cannot be retrieved, returns false.
@@ -326,12 +276,6 @@ class SystemTrayDelegate {
   virtual bool GetCellularCarrierInfo(std::string* carrier_id,
                                       std::string* topup_url,
                                       std::string* setup_url) = 0;
-
-  // Returns whether the network manager is scanning for wifi networks.
-  virtual bool GetWifiScanning() = 0;
-
-  // Returns whether the network manager is initializing the cellular modem.
-  virtual bool GetCellularInitializing() = 0;
 
   // Opens the cellular network specific URL.
   virtual void ShowCellularURL(const std::string& url) = 0;

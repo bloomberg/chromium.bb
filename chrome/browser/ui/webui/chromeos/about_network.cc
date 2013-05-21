@@ -9,8 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
@@ -78,160 +76,6 @@ std::string GetEventLogSection(bool debug) {
   output.append("</pre>");
   return output;
 }
-
-// NetworkLibrary tables
-
-std::string NetworkToHtmlTableHeader(const Network* network) {
-  std::string str =
-      WrapWithTH("Name") +
-      WrapWithTH("Active") +
-      WrapWithTH("State");
-  if (network->type() != TYPE_ETHERNET)
-    str += WrapWithTH("Auto-Connect");
-  if (network->type() == TYPE_WIFI ||
-      network->type() == TYPE_CELLULAR) {
-    str += WrapWithTH("Strength");
-  }
-  if (network->type() == TYPE_WIFI) {
-    str += WrapWithTH("Encryption");
-    str += WrapWithTH("Passphrase");
-    str += WrapWithTH("Identity");
-    str += WrapWithTH("Frequency");
-  }
-  if (network->type() == TYPE_CELLULAR) {
-    str += WrapWithTH("Technology");
-    str += WrapWithTH("Connectivity");
-    str += WrapWithTH("Activation");
-    str += WrapWithTH("Roaming");
-  }
-  if (network->type() == TYPE_VPN) {
-    str += WrapWithTH("Host");
-    str += WrapWithTH("Provider Type");
-    str += WrapWithTH("PSK Passphrase");
-    str += WrapWithTH("Username");
-    str += WrapWithTH("User Passphrase");
-  }
-  str += WrapWithTH("Error");
-  str += WrapWithTH("IP Address");
-  return WrapWithTR(str);
-}
-
-// Helper function to create an Html table row for a Network.
-std::string NetworkToHtmlTableRow(const Network* network) {
-  std::string str =
-      WrapWithTD(network->name()) +
-      WrapWithTD(base::IntToString(network->is_active())) +
-      WrapWithTD(network->GetStateString());
-  if (network->type() != TYPE_ETHERNET)
-    str += WrapWithTD(base::IntToString(network->auto_connect()));
-  if (network->type() == TYPE_WIFI ||
-      network->type() == TYPE_CELLULAR) {
-    const WirelessNetwork* wireless =
-        static_cast<const WirelessNetwork*>(network);
-    str += WrapWithTD(base::IntToString(wireless->strength()));
-  }
-  if (network->type() == TYPE_WIFI) {
-    const WifiNetwork* wifi =
-        static_cast<const WifiNetwork*>(network);
-    str += WrapWithTD(wifi->GetEncryptionString());
-    str += WrapWithTD(std::string(wifi->passphrase().length(), '*'));
-    str += WrapWithTD(wifi->identity());
-    str += WrapWithTD(base::IntToString(wifi->frequency()));
-  }
-  if (network->type() == TYPE_CELLULAR) {
-    const CellularNetwork* cell =
-        static_cast<const CellularNetwork*>(network);
-    str += WrapWithTH(cell->GetNetworkTechnologyString());
-    str += WrapWithTH(cell->GetActivationStateString());
-    str += WrapWithTH(cell->GetRoamingStateString());
-  }
-  if (network->type() == TYPE_VPN) {
-    const VirtualNetwork* vpn =
-        static_cast<const VirtualNetwork*>(network);
-    str += WrapWithTH(vpn->server_hostname());
-    str += WrapWithTH(vpn->GetProviderTypeString());
-    str += WrapWithTD(std::string(vpn->psk_passphrase().length(), '*'));
-    str += WrapWithTH(vpn->username());
-    str += WrapWithTD(std::string(vpn->user_passphrase().length(), '*'));
-  }
-  str += WrapWithTD(network->failed() ? network->GetErrorString() : "");
-  str += WrapWithTD(network->ip_address());
-  return WrapWithTR(str);
-}
-
-std::string GetCrosNetworkHtmlInfo() {
-  std::string output;
-
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-
-  const EthernetNetwork* ethernet = cros->ethernet_network();
-  if (cros->ethernet_enabled() && ethernet) {
-    output.append(WrapWithH3(
-        l10n_util::GetStringUTF8(IDS_ABOUT_NETWORK_ETHERNET)));
-    output.append("<table border=1>");
-    output.append(NetworkToHtmlTableHeader(ethernet));
-    output.append(NetworkToHtmlTableRow(ethernet));
-    output.append("</table>");
-  }
-
-  const WifiNetworkVector& wifi_networks = cros->wifi_networks();
-  if (cros->wifi_enabled() && wifi_networks.size() > 0) {
-    output.append(WrapWithH3(
-        l10n_util::GetStringUTF8(IDS_ABOUT_NETWORK_WIFI)));
-    output.append("<table border=1>");
-    for (size_t i = 0; i < wifi_networks.size(); ++i) {
-      if (i == 0)
-        output.append(NetworkToHtmlTableHeader(wifi_networks[i]));
-      output.append(NetworkToHtmlTableRow(wifi_networks[i]));
-    }
-    output.append("</table>");
-  }
-
-  const CellularNetworkVector& cellular_networks = cros->cellular_networks();
-  if (cros->cellular_enabled() && cellular_networks.size() > 0) {
-    output.append(WrapWithH3(
-        l10n_util::GetStringUTF8(IDS_ABOUT_NETWORK_CELLULAR)));
-    output.append("<table border=1>");
-    for (size_t i = 0; i < cellular_networks.size(); ++i) {
-      if (i == 0)
-        output.append(NetworkToHtmlTableHeader(cellular_networks[i]));
-      output.append(NetworkToHtmlTableRow(cellular_networks[i]));
-    }
-    output.append("</table>");
-  }
-
-  const VirtualNetworkVector& virtual_networks = cros->virtual_networks();
-  if (virtual_networks.size() > 0) {
-    output.append(WrapWithH3(
-        l10n_util::GetStringUTF8(IDS_ABOUT_NETWORK_VIRTUAL)));
-    output.append("<table border=1>");
-    for (size_t i = 0; i < virtual_networks.size(); ++i) {
-      if (i == 0)
-        output.append(NetworkToHtmlTableHeader(virtual_networks[i]));
-      output.append(NetworkToHtmlTableRow(virtual_networks[i]));
-    }
-    output.append("</table>");
-  }
-
-  const WifiNetworkVector& remembered_wifi_networks =
-      cros->remembered_wifi_networks();
-  if (remembered_wifi_networks.size() > 0) {
-    output.append(WrapWithH3(
-        l10n_util::GetStringUTF8(IDS_ABOUT_NETWORK_REMEMBERED_WIFI)));
-    output.append("<table border=1>");
-    for (size_t i = 0; i < remembered_wifi_networks.size(); ++i) {
-      if (i == 0)
-        output.append(NetworkToHtmlTableHeader(remembered_wifi_networks[i]));
-      output.append(NetworkToHtmlTableRow(remembered_wifi_networks[i]));
-    }
-    output.append("</table>");
-  }
-
-  ::about_ui::AppendFooter(&output);
-  return output;
-}
-
-// NetworkStateHandler tables
 
 std::string NetworkStateToHtmlTableHeader() {
   std::string str =
@@ -310,12 +154,7 @@ std::string AboutNetwork(const std::string& query) {
   std::string output = GetHeaderHtmlInfo(refresh);
   if (network_event_log::IsInitialized())
     output += GetEventLogSection(debug);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshDisableNewNetworkStatusArea)) {
-    output += GetNetworkStateHtmlInfo();
-  } else {
-    output += GetCrosNetworkHtmlInfo();
-  }
+  output += GetNetworkStateHtmlInfo();
   return output;
 }
 

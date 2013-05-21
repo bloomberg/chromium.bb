@@ -7,8 +7,6 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_icon_animation.h"
-#include "ash/system/chromeos/network/network_list_detailed_view.h"
-#include "ash/system/chromeos/network/network_list_detailed_view_base.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/chromeos/network/network_state_notifier.h"
 #include "ash/system/chromeos/network/network_tray_delegate.h"
@@ -62,12 +60,6 @@ int GetMessageIcon(NetworkObserver::MessageType message_type,
   return 0;
 }
 
-bool UseNewNetworkHandlers() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshDisableNewNetworkStatusArea) &&
-      NetworkStateHandler::IsInitialized();
-}
-
 }  // namespace
 
 namespace ash {
@@ -116,34 +108,18 @@ class NetworkTrayView : public TrayItemView,
     image_view_ = new views::ImageView;
     AddChildView(image_view_);
 
-    NetworkIconInfo info;
-    if (UseNewNetworkHandlers()) {
-      UpdateNetworkStateHandlerIcon();
-    } else {
-      Shell::GetInstance()->system_tray_delegate()->
-          GetMostRelevantNetworkIcon(&info, false);
-      UpdateIcon(info.tray_icon_visible, info.image);
-    }
+    UpdateNetworkStateHandlerIcon();
   }
 
   virtual ~NetworkTrayView() {
-    if (UseNewNetworkHandlers())
-      network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+    network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   }
 
   virtual const char* GetClassName() const OVERRIDE {
     return "NetworkTrayView";
   }
 
-  void Update(const NetworkIconInfo& info) {
-    if (UseNewNetworkHandlers())
-      return;
-    UpdateIcon(info.tray_icon_visible, info.image);
-    UpdateConnectionStatus(info.name, info.connected);
-  }
-
   void UpdateNetworkStateHandlerIcon() {
-    DCHECK(UseNewNetworkHandlers());
     NetworkStateHandler* handler = NetworkStateHandler::Get();
     gfx::ImageSkia image;
     base::string16 name;
@@ -173,8 +149,7 @@ class NetworkTrayView : public TrayItemView,
 
   // network_icon::AnimationObserver
   virtual void NetworkIconChanged() OVERRIDE {
-    if (UseNewNetworkHandlers())
-      UpdateNetworkStateHandlerIcon();
+    UpdateNetworkStateHandlerIcon();
   }
 
  private:
@@ -216,32 +191,22 @@ class NetworkDefaultView : public TrayItemMore,
   }
 
   virtual ~NetworkDefaultView() {
-    if (UseNewNetworkHandlers())
-      network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+    network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   }
 
   void Update() {
-    if (UseNewNetworkHandlers()) {
-      gfx::ImageSkia image;
-      base::string16 label;
-      bool animating = false;
-      network_tray_->GetNetworkStateHandlerImageAndLabel(
-          network_icon::ICON_TYPE_DEFAULT_VIEW, &image, &label, &animating);
-      if (animating)
-        network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
-      else
-        network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
-      SetImage(&image);
-      SetLabel(label);
-      SetAccessibleName(label);
-    } else {
-      NetworkIconInfo info;
-      Shell::GetInstance()->system_tray_delegate()->
-          GetMostRelevantNetworkIcon(&info, true);
-      SetImage(&info.image);
-      SetLabel(info.description);
-      SetAccessibleName(info.description);
-    }
+    gfx::ImageSkia image;
+    base::string16 label;
+    bool animating = false;
+    network_tray_->GetNetworkStateHandlerImageAndLabel(
+        network_icon::ICON_TYPE_DEFAULT_VIEW, &image, &label, &animating);
+    if (animating)
+      network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
+    else
+      network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+    SetImage(&image);
+    SetLabel(label);
+    SetAccessibleName(label);
   }
 
   // network_icon::AnimationObserver
@@ -257,30 +222,25 @@ class NetworkDefaultView : public TrayItemMore,
 
 class NetworkWifiDetailedView : public NetworkDetailedView {
  public:
-  NetworkWifiDetailedView(SystemTrayItem* owner, bool wifi_enabled)
+  explicit NetworkWifiDetailedView(SystemTrayItem* owner)
       : NetworkDetailedView(owner) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                           kTrayPopupPaddingHorizontal,
                                           10,
                                           kTrayPopupPaddingBetweenItems));
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* image = new views::ImageView;
-    const int image_id = wifi_enabled ?
-        IDR_AURA_UBER_TRAY_WIFI_ENABLED : IDR_AURA_UBER_TRAY_WIFI_DISABLED;
-    image->SetImage(bundle.GetImageNamed(image_id).ToImageSkia());
-    AddChildView(image);
+    image_view_ = new views::ImageView;
+    AddChildView(image_view_);
 
-    const int string_id = wifi_enabled ?
-        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED:
-        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
-    views::Label* label =
-        new views::Label(bundle.GetLocalizedString(string_id));
-    label->SetMultiLine(true);
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(label);
+    label_view_ = new views::Label();
+    label_view_->SetMultiLine(true);
+    label_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    AddChildView(label_view_);
+
+    Update();
   }
 
-  virtual ~NetworkWifiDetailedView() {}
+  virtual ~NetworkWifiDetailedView() {
+  }
 
   // Overridden from NetworkDetailedView:
 
@@ -292,9 +252,11 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
   }
 
   virtual void ManagerChanged() OVERRIDE {
+    Update();
   }
 
   virtual void NetworkListChanged() OVERRIDE {
+    Update();
   }
 
   virtual void NetworkServiceChanged(
@@ -302,6 +264,23 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
   }
 
  private:
+  void Update() {
+    bool wifi_enabled =
+        NetworkStateHandler::Get()->IsTechnologyEnabled(flimflam::kTypeWifi);
+    const int image_id = wifi_enabled ?
+        IDR_AURA_UBER_TRAY_WIFI_ENABLED : IDR_AURA_UBER_TRAY_WIFI_DISABLED;
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    image_view_->SetImage(bundle.GetImageNamed(image_id).ToImageSkia());
+
+    const int string_id = wifi_enabled ?
+        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED :
+        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
+    label_view_->SetText(bundle.GetLocalizedString(string_id));
+  }
+
+  views::ImageView* image_view_;
+  views::Label* label_view_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkWifiDetailedView);
 };
 
@@ -421,8 +400,7 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       notification_(NULL),
       messages_(new tray::NetworkMessages()),
       request_wifi_view_(false) {
-  if (UseNewNetworkHandlers())
-    network_state_observer_.reset(new TrayNetworkStateObserver(this));
+  network_state_observer_.reset(new TrayNetworkStateObserver(this));
   if (NetworkStateHandler::IsInitialized())
     network_state_notifier_.reset(new NetworkStateNotifier());
   Shell::GetInstance()->system_tray_notifier()->AddNetworkObserver(this);
@@ -435,12 +413,16 @@ TrayNetwork::~TrayNetwork() {
 
 views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
   CHECK(tray_ == NULL);
+  if (!chromeos::NetworkStateHandler::IsInitialized())
+    return NULL;
   tray_ = new tray::NetworkTrayView(this);
   return tray_;
 }
 
 views::View* TrayNetwork::CreateDefaultView(user::LoginStatus status) {
   CHECK(default_ == NULL);
+  if (!chromeos::NetworkStateHandler::IsInitialized())
+    return NULL;
   CHECK(tray_ != NULL);
   default_ = new tray::NetworkDefaultView(
       this, status != user::LOGGED_IN_LOCKED);
@@ -449,23 +431,17 @@ views::View* TrayNetwork::CreateDefaultView(user::LoginStatus status) {
 
 views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
   CHECK(detailed_ == NULL);
+  if (!chromeos::NetworkStateHandler::IsInitialized())
+    return NULL;
   // Clear any notifications when showing the detailed view.
   messages_->messages().clear();
   HideNotificationView();
   if (request_wifi_view_) {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
-    // The Wi-Fi state is not toggled yet at this point.
-    detailed_ = new tray::NetworkWifiDetailedView(this,
-                                                  !delegate->GetWifiEnabled());
+    detailed_ = new tray::NetworkWifiDetailedView(this);
     request_wifi_view_ = false;
   } else {
-    if (UseNewNetworkHandlers()) {
-      detailed_ = new tray::NetworkStateListDetailedView(
-          this, tray::NetworkStateListDetailedView::LIST_TYPE_NETWORK, status);
-    } else {
-      detailed_ = new tray::NetworkListDetailedView(
-          this, status, IDS_ASH_STATUS_TRAY_NETWORK);
-    }
+    detailed_ = new tray::NetworkStateListDetailedView(
+        this, tray::NetworkStateListDetailedView::LIST_TYPE_NETWORK, status);
     detailed_->Init();
   }
   return detailed_;
@@ -499,16 +475,8 @@ void TrayNetwork::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
 void TrayNetwork::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  SetTrayImageItemBorder(tray_, alignment);
-}
-
-void TrayNetwork::OnNetworkRefresh(const NetworkIconInfo& info) {
   if (tray_)
-    tray_->Update(info);
-  if (default_)
-    default_->Update();
-  if (detailed_)
-    detailed_->ManagerChanged();
+    SetTrayImageItemBorder(tray_, alignment);
 }
 
 void TrayNetwork::SetNetworkMessage(NetworkTrayDelegate* delegate,
@@ -539,17 +507,22 @@ void TrayNetwork::ClearNetworkMessage(MessageType message_type) {
     ShowNotificationView();
 }
 
-void TrayNetwork::OnWillToggleWifi() {
-  // Triggered by a user action (e.g. keyboard shortcut)
+void TrayNetwork::RequestToggleWifi() {
+  // This will always be triggered by a user action (e.g. keyboard shortcut)
   if (!detailed_ ||
       detailed_->GetViewType() == tray::NetworkDetailedView::WIFI_VIEW) {
     request_wifi_view_ = true;
     PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
   }
+  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  bool enabled = handler->IsTechnologyEnabled(flimflam::kTypeWifi);
+  handler->SetTechnologyEnabled(
+      flimflam::kTypeWifi, !enabled,
+      chromeos::network_handler::ErrorCallback());
 }
 
 void TrayNetwork::NetworkStateChanged(bool list_changed) {
-  if (tray_  && UseNewNetworkHandlers())
+  if (tray_)
     tray_->UpdateNetworkStateHandlerIcon();
   if (default_)
     default_->Update();

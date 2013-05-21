@@ -83,9 +83,6 @@ public:
   void AddNetworkObserver(NetworkObserver* observer);
   void RemoveNetworkObserver(NetworkObserver* observer);
 
-  void AddVpnObserver(NetworkObserver* observer);
-  void RemoveVpnObserver(NetworkObserver* observer);
-
   void AddSmsObserver(SmsObserver* observer);
   void RemoveSmsObserver(SmsObserver* observer);
 
@@ -119,7 +116,6 @@ public:
 #if defined(OS_CHROMEOS)
   void NotifyVolumeChanged(float level);
   void NotifyMuteToggled();
-  void NotifyRefreshNetwork(const NetworkIconInfo &info);
   void NotifySetNetworkMessage(NetworkTrayDelegate* delegate,
                                NetworkObserver::MessageType message_type,
                                NetworkObserver::NetworkType network_type,
@@ -127,8 +123,7 @@ public:
                                const base::string16& message,
                                const std::vector<base::string16>& links);
   void NotifyClearNetworkMessage(NetworkObserver::MessageType message_type);
-  void NotifyVpnRefreshNetwork(const NetworkIconInfo &info);
-  void NotifyWillToggleWifi();
+  void NotifyRequestToggleWifi();
   void NotifyAddSmsMessage(const base::DictionaryValue& message);
   void NotifyEnterpriseDomainChanged();
   void NotifyScreenCaptureStart(const base::Closure& stop_callback,
@@ -152,7 +147,6 @@ public:
 #if defined(OS_CHROMEOS)
   ObserverList<AudioObserver> audio_observers_;
   ObserverList<NetworkObserver> network_observers_;
-  ObserverList<NetworkObserver> vpn_observers_;
   ObserverList<SmsObserver> sms_observers_;
   ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
   ObserverList<ScreenCaptureObserver> screen_capture_observers_;

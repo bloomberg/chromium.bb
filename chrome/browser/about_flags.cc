@@ -1159,12 +1159,6 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(chromeos::switches::kUseNewNetworkConfigurationHandlers),
   },
-  { "ash-disable-new-network-status-area",
-    IDS_FLAGS_ASH_DISABLE_NEW_NETWORK_STATUS_AREA_NAME,
-    IDS_FLAGS_ASH_DISABLE_NEW_NETWORK_STATUS_AREA_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshDisableNewNetworkStatusArea),
-  },
   {
     "ash-enable-new-audio-handler2",
     IDS_FLAGS_ASH_ENABLE_NEW_AUDIO_HANDLER_NAME,
