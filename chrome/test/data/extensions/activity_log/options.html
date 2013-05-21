@@ -4,6 +4,7 @@
     <script src="options.js"></script>
   </head>
   <body>
+    <h1>Chrome API calls</h1>
     <button id="api_call">Make a successful API call</button><br />
     <button id="special_call">Make a special API call</button><br />
     <button id="double">Check we don't double log API calls</button><br />
@@ -11,8 +12,6 @@
     <button id="blocked_call">Make a blocked API call</button><br />
     <button id="inject_cs">Inject a content script</button><br />
     <button id="inject_blob">Inject a blob of code</button><br />
-    <button id="background_xhr">Do a background XHR</button><br />
-    <button id="cs_xhr">Do a content script XHR</button><br />
     <button id="webrequest">Modify HTTP headers with webRequest</button><br />
     <button id="object_properties">Read and change an object's 
         properties</button><br />
@@ -23,6 +22,30 @@
     <button id="connect_other">Connect to another ext</button><br />
     <button id="tab_ids">Tab ID translation</button><br />
     <br />
-    <b>Status:</b> <div id="status"></div>
+    <h1>DOM and HTML5 API calls</h1>
+    <button id="background_xhr">Do a XHR from background page</button><br />
+    <button id="cs_xhr">Do a XHR from content script</button><br />
+    <button id="location_access">
+        Acccess Location</button><br />
+    <button id="dom_mutation1">
+        Mutate DOM tree - test1</button><br />
+    <button id="dom_mutation2">
+        Mutate DOM tree - test2</button><br />
+    <button id="navigator_access">
+        Access HTML5 Navigator API</button><br />
+    <button id="web_storage_access1">
+        Access HTML5 WebStorage API - test1</button><br />
+    <button id="web_storage_access2">
+        Access HTML5 WebStorage API - test2</button><br />
+    <button id="notification_access">
+        Access HTML5 Notifcation API</button><br />
+    <button id="application_cache_access">
+        Access HTML5 ApplicationCache API</button><br />
+    <button id="web_database_access">
+        Access HTML5 WebDatabase API</button><br />
+    <button id="canvas_access">
+        Access HTML5 Canvas API</button><br />
+    <br />
+    <h1>Status:</h1> <div id="status"></div>
   </body>
 </html>

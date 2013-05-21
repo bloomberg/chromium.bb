@@ -119,37 +119,6 @@ function injectScriptBlob() {
   window.open('http://www.google.com');
 }
 
-// Does an XHR from this [privileged] context.
-function doBackgroundXHR() {
-  var request = new XMLHttpRequest();
-  request.open('GET', 'http://www.google.com', false);
-  try {
-    request.send();
-  } catch(err) {
-    // doesn't matter if it works or not; should be recorded either way
-  }
-  setCompleted('doBackgroundXHR');
-}
-
-// Does an XHR from inside a content script.
-function doContentScriptXHR() {
-  var xhr = 'var request = new XMLHttpRequest(); ' +
-            'request.open("GET", "http://www.cnn.com", false); ' +
-            'request.send(); ' +
-            'document.write("sent an XHR");';
-  chrome.tabs.onUpdated.addListener(
-    function doCSXHR(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === "complete" && tab.url.match(/google\.cn/g)) {
-        chrome.tabs.executeScript(tab.id, {'code': xhr},
-                                  removeTabCallbackMaker(tabId));
-        chrome.tabs.onUpdated.removeListener(doCSXHR);
-        setCompleted('doContentScriptXHR');
-      }
-    }
-  );
-  window.open('http://www.google.cn');
-}
-
 // Modifies the headers sent and received in an HTTP request using the
 // webRequest API.
 function doWebRequestModifications() {
@@ -296,6 +265,236 @@ function tabIdTranslation() {
 
   window.open('http://www.google.com.au');
 }
+// Does an XHR from this [privileged] context.
+function doBackgroundXHR() {
+  var request = new XMLHttpRequest();
+  request.open('POST', 'http://www.google.com', false);
+  request.setRequestHeader("Content-type", "text/plain;charset=UTF-8");
+  try {
+    request.send();
+  } catch(err) {
+    // doesn't matter if it works or not; should be recorded either way
+  }
+  setCompleted('doBackgroundXHR');
+}
+
+// Does an XHR from inside a content script.
+function doContentScriptXHR() {
+  var code = 'var request = new XMLHttpRequest(); ' +
+             'request.open("POST", "http://www.cnn.com", false); ' +
+             'request.setRequestHeader("Content-type", ' +
+             '                         "text/plain;charset=UTF-8"); ' +
+             'request.send(); ' +
+             'document.write("sent an XHR");';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doContentScriptXHR');
+      }
+    }
+  );
+  window.open('http://www.google.com');
+}
+
+// Accesses the Location object from inside a content script.
+function doLocationAccess() {
+  var code = 'window.location = "http://www.google.com/#foo"; ' +
+             'document.location = "http://www.google.com/#bar"; ' +
+             'var loc = window.location; ' +
+             'loc.assign("http://www.google.com/#foo"); ' +
+             'loc.replace("http://www.google.com/#bar");';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doLocationAccess');
+      }
+    }
+  );
+  window.open('http://www.google.com');
+}
+
+// Mutates the DOM tree from inside a content script.
+function doDOMMutation1() {
+  var code = 'var d1 = document.createElement("div"); ' +
+             'var d2 = document.createElement("div"); ' +
+             'document.body.appendChild(d1); ' +
+             'document.body.insertBefore(d2, d1); ' +
+             'document.body.replaceChild(d1, d2);';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doDOMMutation1');
+      }
+    }
+  );
+  window.open('http://www.google.com');
+}
+
+function doDOMMutation2() {
+  var code = 'document.write("Hello using document.write"); ' +
+             'document.writeln("Hello using document.writeln"); ' +
+             'document.body.innerHTML = "Hello using innerHTML";';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doDOMMutation2');
+      }
+    }
+  );
+  window.open('http://www.google.com');
+}
+
+// Accesses the HTML5 Navigator API from inside a content script.
+function doNavigatorAPIAccess() {
+  var code = 'var geo = navigator.geolocation; ' +
+             'var successCallback = function(x) { }; ' +
+             'var errorCallback = function(x) { }; ' +
+             'geo.getCurrentPosition(successCallback, errorCallback); ';
+             'var id = geo.watchPosition(successCallback, errorCallback);';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doNavigatorAPIAccess');
+      }
+    }
+  );
+  window.open('http://www.google.com');
+}
+
+// Accesses the HTML5 WebStorage API from inside a content script.
+function doWebStorageAPIAccess1() {
+  var code = 'var store = window.sessionStorage; ' +
+             'store.setItem("foo", 42); ' +
+             'var val = store.getItem("foo"); ' +
+             'store.removeItem("foo"); ' +
+             'store.clear();';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doWebStorageAPIAccess1');
+      }
+    }
+   );
+  window.open('http://www.google.com');
+}
+
+function doWebStorageAPIAccess2() {
+  var code = 'var store = window.localStorage; ' +
+             'store.setItem("foo", 42); ' +
+             'var val = store.getItem("foo"); ' +
+             'store.removeItem("foo"); ' +
+             'store.clear();';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doWebStorageAPIAccess2');
+      }
+    }
+  );
+  window.open('http://www.google.com');
+}
+
+// Accesses the HTML5 Notification API from inside a content script.
+function doNotificationAPIAccess() {
+  var code = 'try {' +
+             '  webkitNotifications.createNotification("myIcon.png", ' +
+             '                                         "myTitle", ' +
+             '                                         "myContent");' +
+             '} catch (e) {}';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doNotificationAPIAccess');
+      }
+    }
+  );
+  window.open('http://www.google.com');
+}
+
+// Accesses the HTML5 ApplicationCache API from inside a content script.
+function doApplicationCacheAPIAccess() {
+  var code = 'var appCache = window.applicationCache;';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doApplicationCacheAPIAccess');
+      }
+    }
+  );
+  window.open('http://www.google.com');
+}
+
+// Accesses the HTML5 WebDatabase API from inside a content script.
+function doWebDatabaseAPIAccess() {
+  var code = 'var db = openDatabase("testdb", "1.0", "test database", ' +
+             '                      1024 * 1024);';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doWebDatabaseAPIAccess');
+      }
+    }
+  );
+  window.open('http://www.google.com');
+}
+
+// Accesses the HTML5 Canvas API from inside a content script.
+function doCanvasAPIAccess() {
+  var code = 'var test_canvas = document.createElement("canvas"); ' +
+             'var test_context = test_canvas.getContext("2d");';
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.executeScript(tab.id, {'code': code},
+                                  removeTabCallbackMaker(tabId));
+        chrome.tabs.onUpdated.removeListener(callback);
+        setCompleted('doCanvasAPIAccess');
+      }
+    }
+  );
+  window.open('http://www.google.com');
+}
 
 // REGISTER YOUR TESTS HERE
 // Attach the tests to buttons.
@@ -305,8 +504,6 @@ function setupEvents() {
   $('blocked_call').addEventListener('click', makeBlockedApiCall);
   $('inject_cs').addEventListener('click', injectContentScript);
   $('inject_blob').addEventListener('click', injectScriptBlob);
-  $('background_xhr').addEventListener('click', doBackgroundXHR);
-  $('cs_xhr').addEventListener('click', doContentScriptXHR);
   $('webrequest').addEventListener('click', doWebRequestModifications);
   $('double').addEventListener('click', checkNoDoubleLogging);
   $('app_bindings').addEventListener('click', checkAppCalls);
@@ -316,8 +513,23 @@ function setupEvents() {
   $('message_self').addEventListener('click', sendMessageToSelf);
   $('message_other').addEventListener('click', sendMessageToOther);
   $('connect_other').addEventListener('click', connectToOther);
-  $('tab_ids').addEventListener('click', tabIdTranslation)
-
+  $('tab_ids').addEventListener('click', tabIdTranslation);
+  $('background_xhr').addEventListener('click', doBackgroundXHR);
+  $('cs_xhr').addEventListener('click', doContentScriptXHR);
+  $('location_access').addEventListener('click', doLocationAccess);
+  $('dom_mutation1').addEventListener('click', doDOMMutation1);
+  $('dom_mutation2').addEventListener('click', doDOMMutation2);
+  $('navigator_access').addEventListener('click', doNavigatorAPIAccess);
+  $('web_storage_access1').addEventListener('click',
+                                            doWebStorageAPIAccess1);
+  $('web_storage_access2').addEventListener('click',
+                                            doWebStorageAPIAccess2);
+  $('notification_access').addEventListener('click', doNotificationAPIAccess);
+  $('application_cache_access').addEventListener(
+      'click',
+      doApplicationCacheAPIAccess);
+  $('web_database_access').addEventListener('click', doWebDatabaseAPIAccess);
+  $('canvas_access').addEventListener('click', doCanvasAPIAccess);
   completed = 0;
   total = document.getElementsByTagName('button').length;
 }
