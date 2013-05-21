@@ -425,7 +425,8 @@ function processTestRunsForBuilder(builderName)
         var rawResults = rawTest.results;
         resultsForTest.rawResults = rawResults;
 
-        resultsForTest.expectations = rawTest.expected;
+        if (rawTest.expected)
+            resultsForTest.expectations = rawTest.expected;
         // FIXME: Include bugs in results.json and populate resultsObject.bugs here.
 
         // FIXME: Switch to resultsByBuild
