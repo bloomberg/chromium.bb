@@ -39,7 +39,6 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/ImageObserver.h"
-#include "core/platform/graphics/cpu/arm/GraphicsContext3DNEON.h"
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 #include "wtf/ArrayBufferView.h"

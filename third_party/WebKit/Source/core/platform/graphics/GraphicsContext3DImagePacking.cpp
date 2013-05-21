@@ -30,6 +30,7 @@
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CheckedInt.h"
 #include "core/platform/graphics/ImageObserver.h"
+#include "core/platform/graphics/cpu/arm/GraphicsContext3DNEON.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 
 namespace WebCore {
