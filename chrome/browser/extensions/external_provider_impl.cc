@@ -444,14 +444,15 @@ void ExternalProviderImpl::CreateExternalProviders(
 #endif
 
 #if defined(OS_CHROMEOS)
-    policy::BrowserPolicyConnector* connector =
-        g_browser_process->browser_policy_connector();
-    if (is_chromeos_demo_session && connector->GetAppPackUpdater()) {
+    policy::AppPackUpdater* app_pack_updater =
+        g_browser_process->browser_policy_connector()->GetAppPackUpdater();
+    if (is_chromeos_demo_session && app_pack_updater &&
+        !app_pack_updater->created_external_loader()) {
       provider_list->push_back(
           linked_ptr<ExternalProviderInterface>(
             new ExternalProviderImpl(
                 service,
-                connector->GetAppPackUpdater()->CreateExternalLoader(),
+                app_pack_updater->CreateExternalLoader(),
                 Manifest::EXTERNAL_PREF,
                 Manifest::INVALID_LOCATION,
                 Extension::NO_FLAGS)));

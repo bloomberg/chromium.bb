@@ -54,6 +54,10 @@ class AppPackUpdater : public content::NotificationObserver,
                  EnterpriseInstallAttributes* install_attributes);
   virtual ~AppPackUpdater();
 
+  // Returns true if the ExternalLoader for the app pack has already been
+  // created.
+  bool created_external_loader() const { return created_extension_loader_; }
+
   // Creates an extensions::ExternalLoader that will load the crx files
   // downloaded by the AppPackUpdater. This can be called at most once, and the
   // caller owns the returned value.
