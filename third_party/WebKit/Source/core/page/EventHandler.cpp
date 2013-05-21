@@ -2378,6 +2378,10 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
 
     m_longTapShouldInvokeContextMenu = false;
     if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled() && m_frame->view()) {
+        PlatformMouseEvent mouseDownEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MousePressed, 1,
+            gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), WTF::currentTime());
+        m_mouseDown = mouseDownEvent;
+
         PlatformMouseEvent mouseDragEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MouseMoved, 1,
             gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), WTF::currentTime());
         HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::DisallowShadowContent);

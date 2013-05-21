@@ -18,13 +18,16 @@ function test()
     if (window.internals)
         internals.settings.setTouchDragDropEnabled(true);
 
-    document.ondragstart = function() { document.getElementById("dragResult").innerHTML = "PASS"; }
-    document.onmousedown = function() { document.getElementById("mouseDownResult").innerHTML = "FAIL"; }
-
     var dragableDiv = document.getElementById("draggableDiv");
 
     var x = draggableDiv.offsetParent.offsetLeft + draggableDiv.offsetLeft + 4;
     var y = draggableDiv.offsetParent.offsetTop + draggableDiv.offsetTop + draggableDiv.offsetHeight / 2;
+
+    document.ondragstart = function(e) {
+      if (e.x == x && e.y == y)
+        document.getElementById("dragResult").innerHTML = "PASS";
+    };
+    document.onmousedown = function() { document.getElementById("mouseDownResult").innerHTML = "FAIL"; };
 
     if (!window.eventSender)
         return;
