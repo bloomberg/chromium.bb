@@ -248,7 +248,7 @@ struct StatsTable::TLSData {
 };
 
 // We keep a singleton table which can be easily accessed.
-StatsTable* StatsTable::global_table_ = NULL;
+StatsTable* global_table = NULL;
 
 StatsTable::StatsTable(const std::string& name, int max_threads,
                        int max_counters)
@@ -281,8 +281,16 @@ StatsTable::~StatsTable() {
   delete impl_;
 
   // If we are the global table, unregister ourselves.
-  if (global_table_ == this)
-    global_table_ = NULL;
+  if (global_table == this)
+    global_table = NULL;
+}
+
+StatsTable* StatsTable::current() {
+  return global_table;
+}
+
+void StatsTable::set_current(StatsTable* value) {
+  global_table = value;
 }
 
 int StatsTable::GetSlot() const {

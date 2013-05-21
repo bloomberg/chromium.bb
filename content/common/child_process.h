@@ -54,7 +54,7 @@ class CONTENT_EXPORT ChildProcess {
   void ReleaseProcess();
 
   // Getter for the one ChildProcess object for this process.
-  static ChildProcess* current() { return child_process_; }
+  static ChildProcess* current();
 
   static void WaitForDebugger(const std::string& label);
  private:
@@ -70,9 +70,6 @@ class CONTENT_EXPORT ChildProcess {
   // it depends on it (indirectly through IPC::SyncChannel).  Same for
   // io_thread_.
   scoped_ptr<ChildThread> main_thread_;
-
-  // The singleton instance for this process.
-  static ChildProcess* child_process_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcess);
 };

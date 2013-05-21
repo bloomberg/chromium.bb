@@ -49,13 +49,7 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   virtual ~PpapiGlobals();
 
   // Getter for the global singleton.
-  inline static PpapiGlobals* Get() {
-    if (ppapi_globals_)
-      return ppapi_globals_;
-    // In unit tests, the following might be valid (see
-    // SetPpapiGlobalsOnThreadForTest). Normally, this will just return NULL.
-    return GetThreadLocalPointer();
-  }
+  static PpapiGlobals* Get();
 
   // This allows us to set a given PpapiGlobals object as the PpapiGlobals for
   // a given thread. After setting the PpapiGlobals for a thread, Get() will
@@ -136,8 +130,6 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // should always be NULL when running in production. It allows separate
   // threads to have distinct "globals".
   static PpapiGlobals* GetThreadLocalPointer();
-
-  static PpapiGlobals* ppapi_globals_;
 
   scoped_refptr<base::MessageLoopProxy> main_loop_proxy_;
 

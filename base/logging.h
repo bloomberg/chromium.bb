@@ -648,7 +648,8 @@ enum { DEBUG_MODE = ENABLE_DLOG };
 
 #if defined(NDEBUG)
 
-BASE_EXPORT extern DcheckState g_dcheck_state;
+BASE_EXPORT DcheckState get_dcheck_state();
+BASE_EXPORT void set_dcheck_state(DcheckState state);
 
 #if defined(DCHECK_ALWAYS_ON)
 
@@ -665,7 +666,7 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
 #define COMPACT_GOOGLE_LOG_DCHECK COMPACT_GOOGLE_LOG_ERROR_REPORT
 const LogSeverity LOG_DCHECK = LOG_ERROR_REPORT;
 #define DCHECK_IS_ON()                                                  \
-  ((::logging::g_dcheck_state ==                                        \
+  ((::logging::get_dcheck_state() ==                                        \
     ::logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS) &&        \
    LOG_IS_ON(DCHECK))
 

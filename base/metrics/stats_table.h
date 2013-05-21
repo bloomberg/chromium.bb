@@ -52,10 +52,10 @@ class BASE_EXPORT StatsTable {
 
   // For convenience, we create a static table.  This is generally
   // used automatically by the counters.
-  static StatsTable* current() { return global_table_; }
+  static StatsTable* current();
 
   // Set the global table for use in this process.
-  static void set_current(StatsTable* value) { global_table_ = value; }
+  static void set_current(StatsTable* value);
 
   // Get the slot id for the calling thread. Returns 0 if no
   // slot is assigned.
@@ -184,8 +184,6 @@ class BASE_EXPORT StatsTable {
   // have created it.
   CountersMap counters_;
   ThreadLocalStorage::Slot tls_index_;
-
-  static StatsTable* global_table_;
 
   DISALLOW_COPY_AND_ASSIGN(StatsTable);
 };
