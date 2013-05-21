@@ -54,8 +54,8 @@ class ChangeListProcessor {
   typedef std::map<std::string /* resource_id */, ResourceEntry>
       ResourceEntryMap;
 
-  // Class used to record UMA stats with FeedToEntryProtoMap().
-  class ChangeListToEntryProtoMapUMAStats;
+  // Class used to record UMA stats with FeedToEntryMap().
+  class ChangeListToEntryMapUMAStats;
 
   explicit ChangeListProcessor(ResourceMetadata* resource_metadata);
   ~ChangeListProcessor();
@@ -76,7 +76,7 @@ class ChangeListProcessor {
   // |uma_stats| may be NULL.
   static void FeedToEntryMap(ScopedVector<ChangeList> change_lists,
                              ResourceEntryMap* entry_map,
-                             ChangeListToEntryProtoMapUMAStats* uma_stats);
+                             ChangeListToEntryMapUMAStats* uma_stats);
 
   // The set of changed directories as a result of feed processing.
   const std::set<base::FilePath>& changed_dirs() const { return changed_dirs_; }
@@ -85,16 +85,15 @@ class ChangeListProcessor {
   // Applies the pre-processed feed from entry_map_ onto the filesystem.
   // If this is not delta feed update (i.e. |is_delta_feed| is false),
   // |about_resource| must not be null.
-  void ApplyEntryProtoMap(
-      bool is_delta_feed,
-      scoped_ptr<google_apis::AboutResource> about_resource);
+  void ApplyEntryMap(bool is_delta_feed,
+                     scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Apply the next item from entry_map_ to the file system. The async
   // version posts to the message loop to avoid recursive stack-overflow.
-  void ApplyNextEntryProto();
+  void ApplyNextEntry();
 
   // Apply |entry| to resource_metadata_.
-  void ApplyEntryProto(const ResourceEntry& entry);
+  void ApplyEntry(const ResourceEntry& entry);
 
   // Helper function to add |entry| to its parent. Updates changed_dirs_
   // as a side effect.

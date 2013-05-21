@@ -28,9 +28,9 @@ ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
 
 ChangeList::~ChangeList() {}
 
-class ChangeListProcessor::ChangeListToEntryProtoMapUMAStats {
+class ChangeListProcessor::ChangeListToEntryMapUMAStats {
  public:
-  ChangeListToEntryProtoMapUMAStats()
+  ChangeListToEntryMapUMAStats()
     : num_regular_files_(0),
       num_hosted_documents_(0),
       num_shared_with_me_entries_(0) {
@@ -94,7 +94,7 @@ void ChangeListProcessor::ApplyFeeds(
     NOTREACHED();
   }
 
-  ChangeListToEntryProtoMapUMAStats uma_stats;
+  ChangeListToEntryMapUMAStats uma_stats;
   FeedToEntryMap(change_lists.Pass(), &entry_map_, &uma_stats);
 
   // Add the largest changestamp for directories.
@@ -106,7 +106,7 @@ void ChangeListProcessor::ApplyFeeds(
     }
   }
 
-  ApplyEntryProtoMap(is_delta_feed, about_resource.Pass());
+  ApplyEntryMap(is_delta_feed, about_resource.Pass());
 
   // Update the root entry and finish.
   UpdateRootEntry(largest_changestamp);
@@ -122,7 +122,7 @@ void ChangeListProcessor::ApplyFeeds(
     uma_stats.UpdateFileCountUmaHistograms();
 }
 
-void ChangeListProcessor::ApplyEntryProtoMap(
+void ChangeListProcessor::ApplyEntryMap(
     bool is_delta_feed,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   if (!is_delta_feed) {  // Full update.
@@ -137,8 +137,7 @@ void ChangeListProcessor::ApplyEntryProtoMap(
     changed_dirs_.insert(util::GetDriveMyDriveRootPath());
 
     // Create the MyDrive root directory.
-    ApplyEntryProto(
-        util::CreateMyDriveRootEntry(about_resource->root_folder_id()));
+    ApplyEntry(util::CreateMyDriveRootEntry(about_resource->root_folder_id()));
   }
 
   // Apply all entries to the metadata.
@@ -156,13 +155,13 @@ void ChangeListProcessor::ApplyEntryProtoMap(
     std::reverse(entries.begin(), entries.end());
     for (size_t i = 0; i < entries.size(); ++i) {
       ResourceEntryMap::iterator it = entries[i];
-      ApplyEntryProto(it->second);
+      ApplyEntry(it->second);
       entry_map_.erase(it);
     }
   }
 }
 
-void ChangeListProcessor::ApplyEntryProto(const ResourceEntry& entry) {
+void ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
   // Lookup the entry.
   FileError error =
       resource_metadata_->GetResourceEntryById(entry.resource_id(), NULL, NULL);
@@ -254,7 +253,7 @@ void ChangeListProcessor::RefreshEntry(const ResourceEntry& entry) {
 void ChangeListProcessor::FeedToEntryMap(
     ScopedVector<ChangeList> change_lists,
     ResourceEntryMap* entry_map,
-    ChangeListToEntryProtoMapUMAStats* uma_stats) {
+    ChangeListToEntryMapUMAStats* uma_stats) {
   for (size_t i = 0; i < change_lists.size(); ++i) {
     ChangeList* change_list = change_lists[i];
 

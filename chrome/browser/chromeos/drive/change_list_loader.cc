@@ -618,7 +618,7 @@ void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
     return;
   }
 
-  // Build entry proto map for grand root directory, which has two entries;
+  // Build entry map for grand root directory, which has two entries;
   // "/drive/root" and "/drive/other".
   ResourceEntryMap grand_root_entry_map;
   const std::string& root_resource_id = about_resource->root_folder_id();
