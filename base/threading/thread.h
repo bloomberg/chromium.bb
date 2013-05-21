@@ -142,6 +142,9 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Returns true if the thread has been started, and not yet stopped.
   bool IsRunning() const;
 
+  // Sets the thread priority. The thread must already be started.
+  void SetPriority(ThreadPriority priority);
+
  protected:
   // Called just prior to starting the message loop
   virtual void Init() {}

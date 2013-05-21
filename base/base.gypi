@@ -471,6 +471,8 @@
           'threading/non_thread_safe_impl.cc',
           'threading/non_thread_safe_impl.h',
           'threading/platform_thread.h',
+          'threading/platform_thread_android.cc',
+          'threading/platform_thread_linux.cc',
           'threading/platform_thread_mac.mm',
           'threading/platform_thread_posix.cc',
           'threading/platform_thread_win.cc',
@@ -653,8 +655,11 @@
                'threading/sequenced_worker_pool.cc',
                'third_party/dynamic_annotations/dynamic_annotations.c',
             ],
-            # Metrics won't work in the NaCl sandbox.
-            'sources/': [ ['exclude', '^metrics/'] ],
+            'sources/': [
+              # Metrics won't work in the NaCl sandbox.
+              ['exclude', '^metrics/'],
+              ['include', '^threading/platform_thread_linux\\.cc$'],
+            ],
           }],
           ['OS == "android" and >(nacl_untrusted_build)==0', {
             'sources!': [
@@ -670,6 +675,12 @@
               ['include', '^strings/sys_string_conversions_posix\\.cc$'],
               ['include', '^sys_info_linux\\.cc$'],
               ['include', '^worker_pool_linux\\.cc$'],
+            ],
+          }],
+          ['OS == "android" and _toolset == "host" and host_os == "linux"', {
+            'sources/': [
+              # Pull in specific files for host builds.
+              ['include', '^threading/platform_thread_linux\\.cc$'],
             ],
           }],
           ['OS == "ios" and _toolset != "host"', {

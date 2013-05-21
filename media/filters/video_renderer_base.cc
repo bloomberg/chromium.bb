@@ -48,7 +48,7 @@ VideoRendererBase::VideoRendererBase(
 VideoRendererBase::~VideoRendererBase() {
   base::AutoLock auto_lock(lock_);
   CHECK(state_ == kStopped || state_ == kUninitialized) << state_;
-  CHECK_EQ(thread_, base::kNullThreadHandle);
+  CHECK(thread_.is_null());
 }
 
 void VideoRendererBase::Play(const base::Closure& callback) {
@@ -101,14 +101,14 @@ void VideoRendererBase::Stop(const base::Closure& callback) {
 
   // Clean up our thread if present.
   base::PlatformThreadHandle thread_to_join = base::kNullThreadHandle;
-  if (thread_ != base::kNullThreadHandle) {
+  if (!thread_.is_null()) {
     // Signal the thread since it's possible to get stopped with the video
     // thread waiting for a read to complete.
     frame_available_.Signal();
     std::swap(thread_, thread_to_join);
   }
 
-  if (thread_to_join != base::kNullThreadHandle) {
+  if (!thread_to_join.is_null()) {
     base::AutoUnlock auto_unlock(lock_);
     base::PlatformThread::Join(thread_to_join);
   }
@@ -212,7 +212,7 @@ void VideoRendererBase::OnVideoFrameStreamInitialized(bool success,
 #if defined(OS_WIN)
   // Bump up our priority so our sleeping is more accurate.
   // TODO(scherkus): find out if this is necessary, but it seems to help.
-  ::SetThreadPriority(thread_, THREAD_PRIORITY_ABOVE_NORMAL);
+  ::SetThreadPriority(thread_.platform_handle(), THREAD_PRIORITY_ABOVE_NORMAL);
 #endif  // defined(OS_WIN)
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
 }
