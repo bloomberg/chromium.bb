@@ -1,0 +1,6 @@
+Tests error recovery in CSS selectors.
+Test test6 failed.
+Test test8 failed.
+Test test9 failed.
+Test test10 failed.
+Test test11 failed.

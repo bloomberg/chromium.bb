@@ -1320,6 +1320,9 @@ attrib:
         $$->setMatch((CSSSelector::Match)$5);
         $$->setValue($7);
     }
+    | '[' selector_recovery ']' {
+        YYERROR;
+    }
   ;
 
 match:
@@ -1392,6 +1395,9 @@ pseudo:
         } else
             $$ = 0;
     }
+    | ':' ':' CUEFUNCTION selector_recovery ')' {
+        YYERROR;
+    }
     | ':' ':' DISTRIBUTEDFUNCTION maybe_space selector maybe_space ')' {
         if (!$5)
             $$ = 0;
@@ -1402,6 +1408,9 @@ pseudo:
             $3.lower();
             $$->setValue($3);
         }
+    }
+    | ':' ':' DISTRIBUTEDFUNCTION selector_recovery ')' {
+        YYERROR;
     }
     // use by :-webkit-any.
     // FIXME: should we support generic selectors here or just simple_selectors?
@@ -1420,6 +1429,9 @@ pseudo:
                 $$ = 0;
         } else
             $$ = 0;
+    }
+    | ':' ANYFUNCTION selector_recovery ')' {
+        YYERROR;
     }
     // used by :nth-*(ax+b)
     | ':' FUNCTION maybe_space NTH maybe_space ')' {
@@ -1459,6 +1471,9 @@ pseudo:
                 $$ = 0;
         }
     }
+    | ':' FUNCTION selector_recovery ')' {
+        YYERROR;
+    }
     // used by :not
     | ':' NOTFUNCTION maybe_space simple_selector maybe_space ')' {
         if (!$4 || !$4->isSimple())
@@ -1475,7 +1490,13 @@ pseudo:
             $$->setValue($2);
         }
     }
+    | ':' NOTFUNCTION selector_recovery ')' {
+        YYERROR;
+    }
   ;
+
+selector_recovery:
+    error error_location error_recovery;
 
 declaration_list:
     /* empty */ { $$ = false; }
