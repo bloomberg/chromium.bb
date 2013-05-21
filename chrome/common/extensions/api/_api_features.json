@@ -33,6 +33,18 @@
     "dependencies": ["permission:bookmarks"],
     "contexts": ["blessed_extension"]
   },
+  "bookmarks.export": {
+    "channel": "stable",
+    "extension_types": ["extension"],
+    "contexts": ["blessed_extension"],
+    "location": "component"
+  },
+  "bookmarks.import": {
+    "channel": "stable",
+    "extension_types": ["extension"],
+    "contexts": ["blessed_extension"],
+    "location": "component"
+  },
   "downloadsInternal": {
     "internal": true,
     "channel": "stable",
