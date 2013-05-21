@@ -1399,6 +1399,8 @@ PassRefPtr<RenderStyle> Element::styleForRenderer()
 
 void Element::recalcStyle(StyleChange change)
 {
+    ASSERT(document()->inStyleRecalc());
+
     if (hasCustomStyleCallbacks())
         willRecalcStyle(change);
 
