@@ -3511,7 +3511,6 @@ void RenderLayer::paintOverlayScrollbars(GraphicsContext* context, const LayoutR
     m_containsDirtyOverlayScrollbars = false;
 }
 
-#ifndef DISABLE_ROUNDED_CORNER_CLIPPING
 static bool inContainingBlockChain(RenderLayer* startLayer, RenderLayer* endLayer)
 {
     if (startLayer == endLayer)
@@ -3525,7 +3524,6 @@ static bool inContainingBlockChain(RenderLayer* startLayer, RenderLayer* endLaye
     
     return false;
 }
-#endif
 
 void RenderLayer::clipToRect(RenderLayer* rootLayer, GraphicsContext* context, const LayoutRect& paintDirtyRect, const ClipRect& clipRect,
                              BorderRadiusClippingRule rule)
@@ -3538,7 +3536,6 @@ void RenderLayer::clipToRect(RenderLayer* rootLayer, GraphicsContext* context, c
     if (!clipRect.hasRadius())
         return;
 
-#ifndef DISABLE_ROUNDED_CORNER_CLIPPING
     // If the clip rect has been tainted by a border radius, then we have to walk up our layer chain applying the clips from
     // any layers with overflow. The condition for being able to apply these clips is that the overflow object be in our
     // containing block chain so we check that also.
@@ -3552,7 +3549,6 @@ void RenderLayer::clipToRect(RenderLayer* rootLayer, GraphicsContext* context, c
         if (layer == rootLayer)
             break;
     }
-#endif
 }
 
 void RenderLayer::restoreClip(GraphicsContext* context, const LayoutRect& paintDirtyRect, const ClipRect& clipRect)
