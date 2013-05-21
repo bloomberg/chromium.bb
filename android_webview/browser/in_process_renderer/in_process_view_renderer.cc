@@ -406,7 +406,8 @@ void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {
 
 void InProcessViewRenderer::Invalidate() {
   continuous_invalidate_task_pending_ = false;
-  client_->Invalidate();
+  if (continuous_invalidate_)
+    client_->Invalidate();
 }
 
 void InProcessViewRenderer::EnsureContinuousInvalidation() {
