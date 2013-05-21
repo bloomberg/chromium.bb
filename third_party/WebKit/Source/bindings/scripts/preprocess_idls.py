@@ -40,13 +40,13 @@ def parse_options():
     parser.add_option('--window-constructors-file', help='output file')
     parser.add_option('--write-file-only-if-changed', type='int')
     options, args = parser.parse_args()
-    if not hasattr(options, 'supplemental_dependency_file'):
+    if options.supplemental_dependency_file is None:
         parser.error('Must specify an output file using --supplemental-dependency-file.')
-    if not hasattr(options, 'window_constructors_file'):
+    if options.window_constructors_file is None:
         parser.error('Must specify an output file using --window-constructors-file.')
-    if not hasattr(options, 'idl_files_list'):
+    if options.idl_files_list is None:
         parser.error('Must specify the file listing all IDLs using --idl-files-list.')
-    if not hasattr(options, 'write_file_only_if_changed'):
+    if options.write_file_only_if_changed is None:
         parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
     options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
     if args:
