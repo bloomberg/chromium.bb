@@ -1783,3 +1783,4 @@ crbug.com/111316 fast/dom/call-a-constructor-as-a-function.html [ Failure ]
 crbug.com/111316 fast/js/constructor-length.html [ Failure ]
 
 crbug.com/242444 [ Win7 ] editing/undo/undo-after-event-edited.html [ Crash Pass ]
+crbug.com/242454 fast/autoresize [ Skip ]
