@@ -926,6 +926,17 @@ endif
 	    mv libthread_db-1.0.so "$$fulllib" ; \
 	    ln -sfn "$$fulllib" libthread_db-1.0.so ; \
 	  done ; \
+	  chmod a+x libgcc_s.so.1 ; \
+	  for fulllib in libgfortran.so.3.* ; do \
+	    mv "$$fulllib" libgfortran.so.3 ; \
+	    ln -sfn libgfortran.so.3 "$$fulllib" ; \
+	    ln -sfn libgfortran.so.3 libgfortran.so ; \
+	  done ; \
+	  for fulllib in libobjc.so.2.* ; do \
+	    mv "$$fulllib" libobjc.so.2 ; \
+	    ln -sfn libobjc.so.2 "$$fulllib" ; \
+	    ln -sfn libobjc.so.2 libobjc.so ; \
+	  done ; \
 	  for fulllib in libstdc++.so.6.* ; do \
 	    mv "$$fulllib" libstdc++.so.6 ; \
 	    ln -sfn libstdc++.so.6 "$$fulllib" ; \
