@@ -989,7 +989,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     bool breakAll = (styleToUse->wordBreak() == BreakAllWordBreak || styleToUse->wordBreak() == BreakWordBreak) && styleToUse->autoWrap();
 
     for (int i = 0; i < len; i++) {
-        UChar c = characterAt(i);
+        UChar c = uncheckedCharacterAt(i);
 
         bool previousCharacterIsSpace = isSpace;
 
@@ -1041,7 +1041,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             j++;
             if (j == len)
                 break;
-            c = characterAt(j);
+            c = uncheckedCharacterAt(j);
             if (isBreakable(breakIterator, j, nextBreakable) && characterAt(j - 1) != softHyphen)
                 break;
             if (breakAll) {
