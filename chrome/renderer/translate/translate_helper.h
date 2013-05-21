@@ -113,7 +113,7 @@ class TranslateHelper : public content::RenderViewObserver {
   // Returns whether the page associated with |document| is a candidate for
   // translation.  Some pages can explictly specify (via a meta-tag) that they
   // should not be translated.
-  static bool IsPageTranslatable(WebKit::WebDocument* document);
+  static bool IsTranslationAllowed(WebKit::WebDocument* document);
 
 #if defined(ENABLE_LANGUAGE_DETECTION)
   // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'

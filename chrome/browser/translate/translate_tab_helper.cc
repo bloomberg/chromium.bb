@@ -42,8 +42,8 @@ void TranslateTabHelper::DidNavigateAnyFrame(
 }
 
 void TranslateTabHelper::OnLanguageDetermined(const std::string& language,
-                                              bool page_translatable) {
-  language_state_.LanguageDetermined(language, page_translatable);
+                                              bool page_needs_translation) {
+  language_state_.LanguageDetermined(language, page_needs_translation);
 
   std::string lang = language;
   content::NotificationService::current()->Notify(

@@ -1424,12 +1424,12 @@ TEST_F(TranslateManagerBrowserTest, NonTranslatablePage) {
   // We should not have an infobar.
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
-  // The context menu should be disabled.
+  // The context menu is enabled to allow users to force translation.
   scoped_ptr<TestRenderViewContextMenu> menu(
       TestRenderViewContextMenu::CreateContextMenu(web_contents()));
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
-  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 }
 
 // Tests that the script is expired and refetched as expected.

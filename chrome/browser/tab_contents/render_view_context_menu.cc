@@ -1215,7 +1215,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // translate a page that might contains text fragments in a different
       // language.
       return !!(params_.edit_flags & WebContextMenuData::CanTranslate) &&
-             translate_tab_helper->language_state().page_translatable() &&
              !original_lang.empty() &&  // Did we receive the page language yet?
              // Only allow translating languages we explitly support and the
              // unknown language (in which case the page language is detected on

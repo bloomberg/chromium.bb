@@ -444,7 +444,7 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageContents,
 // Notification that the language for the tab has been determined.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_TranslateLanguageDetermined,
                     std::string  /* page ISO639_1 language code */,
-                    bool         /* whether the page can be translated */)
+                    bool         /* whether the page needs translation */)
 
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_UpdatedCacheStats,
                      WebKit::WebCache::UsageStats /* stats */)

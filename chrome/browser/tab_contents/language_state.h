@@ -33,10 +33,10 @@ class LanguageState {
   void DidNavigate(const content::LoadCommittedDetails& details);
 
   // Should be called when the language of the page has been determined.
-  // |page_translatable| when false indicates that the browser should not offer
-  // to translate the page.
+  // |page_needs_translation| when false indicates that the browser should not
+  // offer to translate the page.
   void LanguageDetermined(const std::string& page_language,
-                          bool page_translatable);
+                          bool page_needs_translation);
 
   // Returns the language the current page should be translated to, based on the
   // previous page languages and the transition.  This should be called after
@@ -57,7 +57,7 @@ class LanguageState {
   }
   const std::string& current_language() const { return current_lang_; }
 
-  bool page_translatable() const { return page_translatable_; }
+  bool page_needs_translation() const { return page_needs_translation_; }
 
   // Whether the page is currently in the process of being translated.
   bool translation_pending() const { return translation_pending_; }
@@ -89,7 +89,7 @@ class LanguageState {
   // Whether it is OK to offer to translate the page.  Some pages explictly
   // specify that they should not be translated by the browser (this is the case
   // for GMail for example, which provides its own translation features).
-  bool page_translatable_;
+  bool page_needs_translation_;
 
   // Whether a translation is currently pending (WebContents waiting for the
   // PAGE_TRANSLATED notification).  This is needed to avoid sending duplicate

@@ -355,8 +355,8 @@ void TranslateManager::Observe(int type,
 
       // When doing a page reload, TAB_LANGUAGE_DETERMINED is not sent,
       // so the translation needs to be explicitly initiated, but only when the
-      // page is translatable.
-      if (!translate_tab_helper->language_state().page_translatable())
+      // page needs translation.
+      if (!translate_tab_helper->language_state().page_needs_translation())
         return;
       // Note that we delay it as the TranslateManager gets this notification
       // before the WebContents and the WebContents processing might remove the
@@ -381,7 +381,7 @@ void TranslateManager::Observe(int type,
         return;
 
       LanguageState& language_state = translate_tab_helper->language_state();
-      if (language_state.page_translatable() &&
+      if (language_state.page_needs_translation() &&
           !language_state.translation_pending() &&
           !language_state.translation_declined() &&
           !language_state.IsPageTranslated()) {

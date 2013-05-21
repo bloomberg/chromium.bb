@@ -67,33 +67,6 @@ const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
   {"tl", "fil"},
 };
 
-void GetMetaElementsWithAttribute(WebDocument* document,
-                                  const WebString& attribute_name,
-                                  const WebString& attribute_value,
-                                  std::vector<WebElement>* meta_elements) {
-  DCHECK(document);
-  DCHECK(meta_elements);
-
-  meta_elements->clear();
-  WebElement head = document->head();
-  if (head.isNull() || !head.hasChildNodes())
-    return;
-
-  WebNodeList children = head.childNodes();
-  for (size_t i = 0; i < children.length(); ++i) {
-    WebNode node = children.item(i);
-    if (!node.isElementNode())
-      continue;
-    WebElement element = node.to<WebElement>();
-    if (!element.hasTagName("meta"))
-      continue;
-    WebString value = element.getAttribute(attribute_name);
-    if (value.isNull() || value != attribute_value)
-      continue;
-    meta_elements->push_back(element);
-  }
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -123,13 +96,13 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   WebDocument document = GetMainFrame()->document();
   std::string content_language = document.contentLanguage().utf8();
   std::string language = DeterminePageLanguage(content_language, contents);
-  if (language.empty())
-    return;
 
   language_determined_time_ = base::TimeTicks::Now();
 
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
-      routing_id(), language, IsPageTranslatable(&document)));
+      routing_id(),
+      language,
+      IsTranslationAllowed(&document) && !language.empty()));
 }
 
 void TranslateHelper::CancelPendingTranslation() {
@@ -386,17 +359,34 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
 }
 
 // static
-bool TranslateHelper::IsPageTranslatable(WebDocument* document) {
-  std::vector<WebElement> meta_elements;
-  GetMetaElementsWithAttribute(document,
-                               WebString::fromUTF8("name"),
-                               WebString::fromUTF8("google"),
-                               &meta_elements);
-  std::vector<WebElement>::const_iterator iter;
-  for (iter = meta_elements.begin(); iter != meta_elements.end(); ++iter) {
-    WebString attribute = iter->getAttribute("value");
-    if (attribute.isNull())  // We support both 'value' and 'content'.
-      attribute = iter->getAttribute("content");
+bool TranslateHelper::IsTranslationAllowed(WebDocument* document) {
+  WebElement head = document->head();
+  if (head.isNull() || !head.hasChildNodes())
+    return true;
+
+  const WebString meta(ASCIIToUTF16("meta"));
+  const WebString name(ASCIIToUTF16("name"));
+  const WebString google(ASCIIToUTF16("google"));
+  const WebString value(ASCIIToUTF16("value"));
+  const WebString content(ASCIIToUTF16("content"));
+
+  WebNodeList children = head.childNodes();
+  for (size_t i = 0; i < children.length(); ++i) {
+    WebNode node = children.item(i);
+    if (!node.isElementNode())
+      continue;
+    WebElement element = node.to<WebElement>();
+    // Check if a tag is <meta>.
+    if (!element.hasTagName(meta))
+      continue;
+    // Check if the tag contains name="google".
+    WebString attribute = element.getAttribute(name);
+    if (attribute.isNull() || attribute != google)
+      continue;
+    // Check if the tag contains value="notranslate", or content="notranslate".
+    attribute = element.getAttribute(value);
+    if (attribute.isNull())
+      attribute = element.getAttribute(content);
     if (attribute.isNull())
       continue;
     if (LowerCaseEqualsASCII(attribute, "notranslate"))

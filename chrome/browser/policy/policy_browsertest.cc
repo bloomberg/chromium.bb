@@ -1542,7 +1542,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
   ASSERT_TRUE(translate_tab_helper);
   LanguageState& language_state = translate_tab_helper->language_state();
   EXPECT_EQ("fr", language_state.original_language());
-  EXPECT_TRUE(language_state.page_translatable());
+  EXPECT_TRUE(language_state.page_needs_translation());
   EXPECT_FALSE(language_state.translation_pending());
   EXPECT_FALSE(language_state.translation_declined());
   EXPECT_FALSE(language_state.IsPageTranslated());
