@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/tracing",
   "+content/gpu",  # For gpu_info_collector.h and in-process GPU
   "+content/port/browser",
   "+content/public/browser",
@@ -8,6 +7,11 @@ include_rules = [
   "+sql",
   "+ui/webui",
   "+win8/util",
+
+  # TODO(joi): This was misplaced; need to move it somewhere else,
+  # since //content shouldn't depend on //components, which is a layer
+  # above.
+  "+components/tracing",
 
   # Other libraries.
   "+third_party/iaccessible2",
@@ -22,7 +26,7 @@ include_rules = [
 
   "-webkit/renderer",
 
-  # DO NOT ADD ANY CHROME INCLUDES HERE!!!
+  # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.
 ]
