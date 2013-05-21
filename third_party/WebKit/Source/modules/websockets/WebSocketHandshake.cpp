@@ -39,6 +39,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CookieJar.h"
 #include "core/platform/Cookie.h"
+#include "core/platform/HistogramSupport.h"
 #include "core/platform/KURL.h"
 #include "core/platform/Logging.h"
 #include "core/platform/network/HTTPHeaderMap.h"
@@ -131,6 +132,7 @@ WebSocketHandshake::WebSocketHandshake(const KURL& url, const String& protocol, 
 
 WebSocketHandshake::~WebSocketHandshake()
 {
+    HistogramSupport::histogramEnumeration("WebCore.WebSocket.HandshakeResult", m_mode, WebSocketHandshake::ModeMax);
 }
 
 const KURL& WebSocketHandshake::url() const

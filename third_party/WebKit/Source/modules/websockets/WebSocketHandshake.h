@@ -46,8 +46,11 @@ class ScriptExecutionContext;
 class WebSocketHandshake {
     WTF_MAKE_NONCOPYABLE(WebSocketHandshake); WTF_MAKE_FAST_ALLOCATED;
 public:
+    // This enum is reused for histogram. When this needs to be modified, add a
+    // new enum for histogram and convert mode values into values in the new
+    // enum to keep new data consistent with old one.
     enum Mode {
-        Incomplete, Normal, Failed, Connected
+        Incomplete, Normal, Failed, Connected, ModeMax
     };
     WebSocketHandshake(const KURL&, const String& protocol, ScriptExecutionContext*);
     ~WebSocketHandshake();
@@ -67,6 +70,8 @@ public:
     CString clientHandshakeMessage() const;
     PassRefPtr<WebSocketHandshakeRequest> clientHandshakeRequest() const;
 
+    // We're collecting data for histogram in the destructor. Note that calling
+    // this method affects that.
     void reset();
     void clearScriptExecutionContext();
 

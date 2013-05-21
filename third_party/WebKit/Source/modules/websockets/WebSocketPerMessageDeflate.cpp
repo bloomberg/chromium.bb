@@ -32,6 +32,7 @@
 
 #include "modules/websockets/WebSocketPerMessageDeflate.h"
 
+#include "core/platform/HistogramSupport.h"
 #include "modules/websockets/WebSocketExtensionParser.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/CString.h"
@@ -116,6 +117,7 @@ bool CompressionMessageExtensionProcessor::processResponse(const HashMap<String,
         m_failureReason = "Received an unexpected permessage-deflate extension parameter";
         return false;
     }
+    HistogramSupport::histogramEnumeration("WebCore.WebSocket.PerMessageDeflateContextTakeOverMode", mode, WebSocketDeflater::ContextTakeOverModeMax);
     m_compress.enable(windowBits, mode);
     return true;
 }

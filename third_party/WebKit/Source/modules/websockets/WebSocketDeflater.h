@@ -44,9 +44,13 @@ namespace WebCore {
 class WebSocketDeflater {
     WTF_MAKE_FAST_ALLOCATED;
 public:
+    // This enum is reused for histogram. When this needs to be modified, add a
+    // new enum for histogram and convert mode values into values in the new
+    // enum to keep new data consistent with old one.
     enum ContextTakeOverMode {
         DoNotTakeOverContext,
-        TakeOverContext
+        TakeOverContext,
+        ContextTakeOverModeMax,
     };
     static PassOwnPtr<WebSocketDeflater> create(int windowBits, ContextTakeOverMode = TakeOverContext);
 
