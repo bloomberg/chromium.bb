@@ -314,6 +314,7 @@
     'common/pepper_renderer_instance_data.h',
     'common/plugin_carbon_interpose_constants_mac.cc',
     'common/plugin_carbon_interpose_constants_mac.h',
+    'common/plugin_process_messages.h',
     'common/process_type.cc',
     'common/quota_messages.h',
     'common/quota_dispatcher.cc',

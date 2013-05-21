@@ -6,7 +6,7 @@
 
 #include "content/common/child_process.h"
 #include "content/common/java_bridge_messages.h"
-#include "content/common/plugin_messages.h"
+#include "content/common_child/plugin_messages.h"
 
 namespace content {
 

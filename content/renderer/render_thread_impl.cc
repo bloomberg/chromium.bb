@@ -35,12 +35,12 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 #include "content/common/indexed_db/indexed_db_message_filter.h"
-#include "content/common/npobject_util.h"
-#include "content/common/plugin_messages.h"
 #include "content/common/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
+#include "content/common_child/npobject_util.h"
+#include "content/common_child/plugin_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -106,7 +106,7 @@
 #else
 // TODO(port)
 #include "base/memory/scoped_handle.h"
-#include "content/common/np_channel_base.h"
+#include "content/common_child/np_channel_base.h"
 #endif
 
 #if defined(OS_POSIX)

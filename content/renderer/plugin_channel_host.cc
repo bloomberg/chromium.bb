@@ -7,8 +7,8 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "content/common/child_process.h"
-#include "content/common/npobject_base.h"
-#include "content/common/plugin_messages.h"
+#include "content/common_child/npobject_base.h"
+#include "content/common_child/plugin_messages.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"

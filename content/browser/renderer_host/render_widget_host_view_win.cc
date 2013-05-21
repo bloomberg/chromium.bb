@@ -6,12 +6,12 @@
 
 #include <dwmapi.h>
 #include <InputScope.h>
+#include <wtsapi32.h>
+#pragma comment(lib, "wtsapi32.lib")
 
 #include <algorithm>
 #include <map>
 #include <stack>
-#include <wtsapi32.h>
-#pragma comment(lib, "wtsapi32.lib")
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -40,7 +40,6 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -52,11 +51,11 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/process_type.h"
 #include "skia/ext/skia_utils_win.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/ime/composition_text.h"

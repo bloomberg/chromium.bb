@@ -13,6 +13,7 @@ enum IPCMessageStart {
   ViewMsgStart,
   InputMsgStart,
   PluginMsgStart,
+  PluginProcessMsgStart,
   ProfileImportMsgStart,
   TestMsgStart,
   DevToolsMsgStart,

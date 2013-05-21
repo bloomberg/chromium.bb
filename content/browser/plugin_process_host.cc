@@ -25,7 +25,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/plugin_messages.h"
+#include "content/common/plugin_process_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"

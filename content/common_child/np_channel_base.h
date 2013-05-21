@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_NP_CHANNEL_BASE_H_
-#define CONTENT_COMMON_NP_CHANNEL_BASE_H_
+#ifndef CONTENT_COMMON_CHILD_NP_CHANNEL_BASE_H_
+#define CONTENT_COMMON_CHILD_NP_CHANNEL_BASE_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "content/common/message_router.h"
-#include "content/common/npobject_base.h"
+#include "content/common_child/npobject_base.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 
@@ -200,4 +200,4 @@ class NPChannelBase : public IPC::Listener,
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_NP_CHANNEL_BASE_H_
+#endif  // CONTENT_COMMON_CHILD_NP_CHANNEL_BASE_H_

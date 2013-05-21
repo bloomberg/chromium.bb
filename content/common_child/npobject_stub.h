@@ -5,14 +5,14 @@
 // A class that receives IPC messages from an NPObjectProxy and calls the real
 // NPObject.
 
-#ifndef CONTENT_COMMON_NPOBJECT_STUB_H_
-#define CONTENT_COMMON_NPOBJECT_STUB_H_
+#ifndef CONTENT_COMMON_CHILD_NPOBJECT_STUB_H_
+#define CONTENT_COMMON_CHILD_NPOBJECT_STUB_H_
 
 #include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/npobject_base.h"
+#include "content/common_child/npobject_base.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -96,4 +96,4 @@ class NPObjectStub : public IPC::Listener,
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_NPOBJECT_STUB_H_
+#endif  // CONTENT_COMMON_CHILD_NPOBJECT_STUB_H_

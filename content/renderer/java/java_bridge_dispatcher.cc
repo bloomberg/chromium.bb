@@ -6,7 +6,7 @@
 
 #include "content/common/child_process.h"
 #include "content/common/java_bridge_messages.h"
-#include "content/common/npobject_util.h"  // For CreateNPVariant()
+#include "content/common_child/npobject_util.h"  // For CreateNPVariant()
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/java/java_bridge_channel.h"

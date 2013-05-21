@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/npobject_stub.h"
+#include "content/common_child/npobject_stub.h"
 
-#include "content/common/np_channel_base.h"
-#include "content/common/npobject_util.h"
-#include "content/common/plugin_messages.h"
+#include "content/common_child/np_channel_base.h"
+#include "content/common_child/npobject_util.h"
+#include "content/common_child/plugin_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/npapi/plugin_host.h"
 
 #if defined(OS_WIN)

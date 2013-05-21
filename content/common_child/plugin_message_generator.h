@@ -4,4 +4,4 @@
 
 // Multiply-included file, hence no include guard.
 
-#include "content/common/plugin_messages.h"
+#include "content/common_child/plugin_messages.h"

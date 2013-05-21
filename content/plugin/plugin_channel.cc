@@ -12,7 +12,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "content/common/child_process.h"
-#include "content/common/plugin_messages.h"
+#include "content/common/plugin_process_messages.h"
+#include "content/common_child/plugin_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/plugin/plugin_thread.h"
 #include "content/plugin/webplugin_delegate_stub.h"
@@ -250,7 +251,7 @@ bool PluginChannel::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PluginMsg_DestroyInstance,
                                     OnDestroyInstance)
     IPC_MESSAGE_HANDLER(PluginMsg_GenerateRouteID, OnGenerateRouteID)
-    IPC_MESSAGE_HANDLER(PluginMsg_ClearSiteData, OnClearSiteData)
+    IPC_MESSAGE_HANDLER(PluginProcessMsg_ClearSiteData, OnClearSiteData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -317,7 +318,7 @@ void PluginChannel::OnClearSiteData(const std::string& site,
       success = (err == NPERR_NO_ERROR);
     }
   }
-  Send(new PluginHostMsg_ClearSiteDataResult(success));
+  Send(new PluginProcessHostMsg_ClearSiteDataResult(success));
 }
 
 }  // namespace content

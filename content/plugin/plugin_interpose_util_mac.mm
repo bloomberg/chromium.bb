@@ -7,7 +7,7 @@
 #import <AppKit/AppKit.h>
 #import <objc/runtime.h>
 
-#include "content/common/plugin_messages.h"
+#include "content/common/plugin_process_messages.h"
 #include "content/plugin/plugin_thread.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 

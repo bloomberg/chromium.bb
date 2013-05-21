@@ -6,3 +6,10 @@ include_rules = [
   "-webkit/browser",
   "-webkit/renderer",
 ]
+
+specific_include_rules = {
+# Java bridge code passes NPAPI types to the browser process. Crazy!
+  "java_bridge_messages\.h": [
+    "+content/common_child"
+  ]
+}

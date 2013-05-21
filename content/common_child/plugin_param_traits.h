@@ -11,8 +11,8 @@
 // public members, or because the same type is being used in multiple
 // *_messages.h headers.
 
-#ifndef CONTENT_COMMON_PLUGIN_PARAM_TRAITS_H_
-#define CONTENT_COMMON_PLUGIN_PARAM_TRAITS_H_
+#ifndef CONTENT_COMMON_CHILD_PLUGIN_PARAM_TRAITS_H_
+#define CONTENT_COMMON_CHILD_PLUGIN_PARAM_TRAITS_H_
 
 #include <string>
 #include "ipc/ipc_message.h"
