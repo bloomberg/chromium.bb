@@ -743,10 +743,11 @@ def main(_argv):
   acl = 'public-read'
   binhost_base_url = options.binhost_base_url
 
-  if target and options.private:
+  if options.private:
     binhost_base_url = options.upload
-    board_path = GetBoardOverlay(options.build_path, target)
-    acl = os.path.join(board_path, _GOOGLESTORAGE_ACL_FILE)
+    if target:
+      board_path = GetBoardOverlay(options.build_path, target)
+      acl = os.path.join(board_path, _GOOGLESTORAGE_ACL_FILE)
 
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
                               pkg_indexes, options.build_path,
