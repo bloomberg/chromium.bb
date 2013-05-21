@@ -34,23 +34,16 @@ class PepperFlashDeviceIDHost : public ppapi::host::ResourceHost {
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
-  // Called by the fetcher when the DRM ID was retrieved, or the empty string
-  // on error.
-  void GotDeviceID(const std::string& contents);
-
  private:
   // IPC message handler.
   int32_t OnHostMsgGetDeviceID(const ppapi::host::HostMessageContext* context);
 
-  base::WeakPtrFactory<PepperFlashDeviceIDHost> factory_;
+  // Called by the fetcher when the device ID was retrieved, or the empty string
+  // on error.
+  void GotDeviceID(ppapi::host::ReplyMessageContext reply_context,
+                   const std::string& contents);
 
-  content::BrowserPpapiHost* browser_ppapi_host_;
-
-  // When a request is pending, the reply context will have the appropriate
-  // routing info set for the reply.
   scoped_refptr<DeviceIDFetcher> fetcher_;
-  ppapi::host::ReplyMessageContext reply_context_;
-  bool in_progress_;
 
   base::WeakPtrFactory<PepperFlashDeviceIDHost> weak_factory_;
 

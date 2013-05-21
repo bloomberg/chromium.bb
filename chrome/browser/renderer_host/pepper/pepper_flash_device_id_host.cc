@@ -22,13 +22,10 @@ PepperFlashDeviceIDHost::PepperFlashDeviceIDHost(BrowserPpapiHost* host,
                                                  PP_Instance instance,
                                                  PP_Resource resource)
     : ppapi::host::ResourceHost(host->GetPpapiHost(), instance, resource),
-      factory_(this),
-      browser_ppapi_host_(host),
-      in_progress_(false),
       weak_factory_(this){
-  fetcher_ = new DeviceIDFetcher(
-      base::Bind(&PepperFlashDeviceIDHost::GotDeviceID,
-                 weak_factory_.GetWeakPtr()), instance);
+  int render_process_id, unused;
+  host->GetRenderViewIDsForInstance(instance, &render_process_id, &unused);
+  fetcher_ = new DeviceIDFetcher(render_process_id);
 }
 
 PepperFlashDeviceIDHost::~PepperFlashDeviceIDHost() {
@@ -46,20 +43,20 @@ int32_t PepperFlashDeviceIDHost::OnResourceMessageReceived(
 
 int32_t PepperFlashDeviceIDHost::OnHostMsgGetDeviceID(
     const ppapi::host::HostMessageContext* context) {
-  if (in_progress_)
+  if (!fetcher_->Start(base::Bind(&PepperFlashDeviceIDHost::GotDeviceID,
+                                  weak_factory_.GetWeakPtr(),
+                                  context->MakeReplyMessageContext()))) {
     return PP_ERROR_INPROGRESS;
-
-  in_progress_ = true;
-  fetcher_->Start(browser_ppapi_host_);
-  reply_context_ = context->MakeReplyMessageContext();
+  }
   return PP_OK_COMPLETIONPENDING;
 }
 
-void PepperFlashDeviceIDHost::GotDeviceID(const std::string& id) {
-  in_progress_ = false;
-  reply_context_.params.set_result(
+void PepperFlashDeviceIDHost::GotDeviceID(
+    ppapi::host::ReplyMessageContext reply_context,
+    const std::string& id) {
+  reply_context.params.set_result(
       id.empty() ? PP_ERROR_FAILED : PP_OK);
-  host()->SendReply(reply_context_,
+  host()->SendReply(reply_context,
                     PpapiPluginMsg_FlashDeviceID_GetDeviceIDReply(id));
 }
 

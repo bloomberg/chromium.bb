@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/pepper/pepper_flash_device_id_host.h"
 #include "chrome/common/pref_names.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/cryptohome/cryptohome_library.h"
@@ -39,27 +38,28 @@ const uint32_t kSaltLength = 32;
 
 }  // namespace
 
-DeviceIDFetcher::DeviceIDFetcher(const IDCallback& callback,
-                                 PP_Instance instance)
-    : callback_(callback),
-      instance_(instance) {
+DeviceIDFetcher::DeviceIDFetcher(int render_process_id)
+    : in_progress_(false),
+      render_process_id_(render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 DeviceIDFetcher::~DeviceIDFetcher() {
 }
 
-void DeviceIDFetcher::Start(BrowserPpapiHost* browser_host) {
+bool DeviceIDFetcher::Start(const IDCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  int process_id = 0;
-  int unused = 0;
-  browser_host->GetRenderViewIDsForInstance(instance_,
-                                            &process_id,
-                                            &unused);
+  if (in_progress_)
+    return false;
+
+  in_progress_ = true;
+  callback_ = callback;
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DeviceIDFetcher::CheckPrefsOnUIThread, this, process_id));
+      base::Bind(&DeviceIDFetcher::CheckPrefsOnUIThread, this));
+  return true;
 }
 
 // static
@@ -84,12 +84,12 @@ base::FilePath DeviceIDFetcher::GetLegacyDeviceIDPath(
 
 // TODO(raymes): Change this to just return the device id salt and call it with
 // PostTaskAndReply once the legacy ChromeOS codepath is removed.
-void DeviceIDFetcher::CheckPrefsOnUIThread(int process_id) {
+void DeviceIDFetcher::CheckPrefsOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile = NULL;
   RenderProcessHost* render_process_host =
-      RenderProcessHost::FromID(process_id);
+      RenderProcessHost::FromID(render_process_id_);
   if (render_process_host && render_process_host->GetBrowserContext()) {
     profile = Profile::FromBrowserContext(
         render_process_host->GetBrowserContext());
@@ -187,6 +187,7 @@ void DeviceIDFetcher::RunCallbackOnIOThread(const std::string& id) {
         base::Bind(&DeviceIDFetcher::RunCallbackOnIOThread, this, id));
     return;
   }
+  in_progress_ = false;
   callback_.Run(id);
 }
 

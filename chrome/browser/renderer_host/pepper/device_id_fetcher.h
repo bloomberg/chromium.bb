@@ -26,18 +26,18 @@ class PrefRegistrySyncable;
 
 namespace chrome {
 
-class PepperFlashDeviceIDHost;
-
 // This class allows asynchronously fetching a unique device ID. The callback
-// passed in on creation will be called when the ID has been fetched.
+// passed in when calling Start() will be called when the ID has been fetched
+// or on error.
 class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
  public:
   typedef base::Callback<void(const std::string&)> IDCallback;
 
-  explicit DeviceIDFetcher(const IDCallback& callback, PP_Instance instance);
+  explicit DeviceIDFetcher(int render_process_id);
 
-  // Schedules the request operation.
-  void Start(content::BrowserPpapiHost* browser_host);
+  // Schedules the request operation. Returns false if a request is in progress,
+  // true otherwise.
+  bool Start(const IDCallback& callback);
 
   // Called to register the |kEnableDRM| and |kDRMSalt| preferences.
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* prefs);
@@ -51,7 +51,7 @@ class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
 
   // Checks the preferences for DRM (whether DRM is enabled and getting the drm
   // salt) on the UI thread. These are passed to |ComputeOnIOThread|.
-  void CheckPrefsOnUIThread(int process_id);
+  void CheckPrefsOnUIThread();
 
   // Compute the device ID on the IO thread with the given salt.
   void ComputeOnIOThread(const std::string& salt);
@@ -59,8 +59,8 @@ class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
   void ComputeOnBlockingPool(const base::FilePath& profile_path,
                              const std::string& salt);
 
-  // Calls back into the PepperFlashDeviceIDHost on the IO thread with the
-  // device ID or the empty string on failure.
+  // Runs the callback passed into Start() on the IO thread with the device ID
+  // or the empty string on failure.
   void RunCallbackOnIOThread(const std::string& id);
 
   // Helper which returns an ID unique to the system. Returns an empty string if
@@ -72,7 +72,10 @@ class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
   // The callback to run when the ID has been fetched.
   IDCallback callback_;
 
-  PP_Instance instance_;
+  // Whether a request is in progress.
+  bool in_progress_;
+
+  int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceIDFetcher);
 };
