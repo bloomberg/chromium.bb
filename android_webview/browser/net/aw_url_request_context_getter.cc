@@ -12,6 +12,8 @@
 #include "android_webview/browser/net/aw_network_delegate.h"
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/browser/net/init_native_callback.h"
+#include "android_webview/common/aw_switches.h"
+#include "base/command_line.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -62,15 +64,20 @@ void AwURLRequestContextGetter::Init() {
       AwContentBrowserClient::GetAcceptLangsImpl()));
 
   url_request_context_.reset(builder.Build());
-
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
   net::HttpNetworkSession::Params network_session_params;
+
+  net::BackendType cache_type = net::CACHE_BACKEND_SIMPLE;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableSimpleCache)) {
+    cache_type = net::CACHE_BACKEND_BLOCKFILE;
+  }
   PopulateNetworkSessionParams(&network_session_params);
   net::HttpCache* main_cache = new net::HttpCache(
       network_session_params,
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE,
-          net::CACHE_BACKEND_DEFAULT,
+          cache_type,
           browser_context_->GetPath().Append(FILE_PATH_LITERAL("Cache")),
           10 * 1024 * 1024,  // 10M
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));

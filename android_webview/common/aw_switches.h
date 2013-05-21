@@ -7,6 +7,9 @@
 
 namespace switches {
 
+// When set, falls back to using the old disk cache.
+extern const char kDisableSimpleCache[];
+
 // Do not merge the Browser UI and the renderer compositor threads.
 extern const char kNoMergeUIAndRendererCompositorThreads[];
 
