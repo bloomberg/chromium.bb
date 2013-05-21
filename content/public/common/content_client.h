@@ -30,6 +30,10 @@ namespace gfx {
 class Image;
 }
 
+namespace gpu {
+struct GPUInfo;
+}
+
 namespace sandbox {
 class TargetPolicy;
 }
@@ -51,7 +55,6 @@ class ContentClient;
 class ContentPluginClient;
 class ContentRendererClient;
 class ContentUtilityClient;
-struct GPUInfo;
 struct PepperPluginInfo;
 
 // Setter and getter for the client.  The client should be set early, before any
@@ -99,7 +102,7 @@ class CONTENT_EXPORT ContentClient {
   virtual void SetActiveURL(const GURL& url) {}
 
   // Sets the data on the current gpu.
-  virtual void SetGpuInfo(const content::GPUInfo& gpu_info) {}
+  virtual void SetGpuInfo(const gpu::GPUInfo& gpu_info) {}
 
   // Gives the embedder a chance to register its own pepper plugins.
   virtual void AddPepperPlugins(

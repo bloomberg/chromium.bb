@@ -23,7 +23,7 @@ class ChromeContentClient : public content::ContentClient {
   static std::string GetProductImpl();
 
   virtual void SetActiveURL(const GURL& url) OVERRIDE;
-  virtual void SetGpuInfo(const content::GPUInfo& gpu_info) OVERRIDE;
+  virtual void SetGpuInfo(const gpu::GPUInfo& gpu_info) OVERRIDE;
   virtual void AddPepperPlugins(
       std::vector<content::PepperPluginInfo>* plugins) OVERRIDE;
   virtual void AddNPAPIPlugins(

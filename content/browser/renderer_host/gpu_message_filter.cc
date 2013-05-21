@@ -225,7 +225,7 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
 void GpuMessageFilter::EstablishChannelCallback(
     IPC::Message* reply,
     const IPC::ChannelHandle& channel,
-    const GPUInfo& gpu_info) {
+    const gpu::GPUInfo& gpu_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   GpuHostMsg_EstablishGpuChannel::WriteReplyParams(

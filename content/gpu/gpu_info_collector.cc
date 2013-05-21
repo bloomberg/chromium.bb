@@ -77,9 +77,9 @@ std::string GetVersionFromString(const std::string& version_string) {
 
 }  // namespace anonymous
 
-namespace gpu_info_collector {
+namespace gpu {
 
-bool CollectGraphicsInfoGL(content::GPUInfo* gpu_info) {
+bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   TRACE_EVENT0("startup", "gpu_info_collector::CollectGraphicsInfoGL");
   if (!gfx::GLSurface::InitializeOneOff()) {
     LOG(ERROR) << "gfx::GLSurface::InitializeOneOff() failed";
@@ -111,8 +111,8 @@ bool CollectGraphicsInfoGL(content::GPUInfo* gpu_info) {
   return CollectDriverInfoGL(gpu_info);
 }
 
-void MergeGPUInfoGL(content::GPUInfo* basic_gpu_info,
-                    const content::GPUInfo& context_gpu_info) {
+void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
+                    const GPUInfo& context_gpu_info) {
   DCHECK(basic_gpu_info);
   basic_gpu_info->gl_renderer = context_gpu_info.gl_renderer;
   basic_gpu_info->gl_vendor = context_gpu_info.gl_vendor;
@@ -136,5 +136,5 @@ void MergeGPUInfoGL(content::GPUInfo* basic_gpu_info,
   basic_gpu_info->initialization_time = context_gpu_info.initialization_time;
 }
 
-}  // namespace gpu_info_collector
+}  // namespace gpu
 

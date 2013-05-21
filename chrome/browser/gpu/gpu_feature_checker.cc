@@ -13,14 +13,14 @@ namespace {
 // A false return value is always valid, but a true one is only valid if full
 // GPU info has been collected in a GPU process.
 bool IsFeatureAllowed(content::GpuDataManager* manager,
-                      content::GpuFeatureType feature) {
+                      gpu::GpuFeatureType feature) {
   return (manager->GpuAccessAllowed(NULL) &&
           !manager->IsFeatureBlacklisted(feature));
 }
 
 }  // namespace
 
-GPUFeatureChecker::GPUFeatureChecker(content::GpuFeatureType feature,
+GPUFeatureChecker::GPUFeatureChecker(gpu::GpuFeatureType feature,
                                      FeatureAvailableCallback callback)
     : feature_(feature),
       callback_(callback) {

@@ -26,6 +26,8 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
 
+namespace gpu {
+
 namespace {
 
 // This checks if a system supports PCI bus.
@@ -97,7 +99,7 @@ const uint32 kVendorIDIntel = 0x8086;
 const uint32 kVendorIDNVidia = 0x10de;
 const uint32 kVendorIDAMD = 0x1002;
 
-bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
+bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   if (IsPciSupported() == false) {
@@ -126,7 +128,7 @@ bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
     if (device->device_class != 0x0300)  // Device class is DISPLAY_VGA.
       continue;
 
-    content::GPUInfo::GPUDevice gpu;
+    GPUInfo::GPUDevice gpu;
     gpu.vendor_id = device->vendor_id;
     gpu.device_id = device->device_id;
 
@@ -162,9 +164,7 @@ bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
 
 }  // namespace anonymous
 
-namespace gpu_info_collector {
-
-bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
@@ -194,7 +194,7 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   *vendor_id = 0;
   *device_id = 0;
 
-  content::GPUInfo gpu_info;
+  GPUInfo gpu_info;
   if (CollectPCIVideoCardInfo(&gpu_info)) {
     *vendor_id = gpu_info.gpu.vendor_id;
     *device_id = gpu_info.gpu.device_id;
@@ -203,7 +203,7 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   return kGpuIDFailure;
 }
 
-bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
+bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   bool rt = CollectPCIVideoCardInfo(gpu_info);
@@ -241,7 +241,7 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   return rt;
 }
 
-bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
+bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   std::string gl_version_string = gpu_info->gl_version_string;
@@ -266,9 +266,9 @@ bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
   return true;
 }
 
-void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
-                  const content::GPUInfo& context_gpu_info) {
+void MergeGPUInfo(GPUInfo* basic_gpu_info,
+                  const GPUInfo& context_gpu_info) {
   MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
 }
 
-}  // namespace gpu_info_collector
+}  // namespace gpu

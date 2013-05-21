@@ -206,6 +206,18 @@
         'command_buffer/service/transfer_buffer_manager_unittest.cc',
         'command_buffer/service/vertex_attrib_manager_unittest.cc',
         'command_buffer/service/vertex_array_manager_unittest.cc',
+        'config/gpu_blacklist_unittest.cc',
+        'config/gpu_control_list_entry_unittest.cc',
+        'config/gpu_control_list_machine_model_info_unittest.cc',
+        'config/gpu_control_list_number_info_unittest.cc',
+        'config/gpu_control_list_os_info_unittest.cc',
+        'config/gpu_control_list_string_info_unittest.cc',
+        'config/gpu_control_list_unittest.cc',
+        'config/gpu_control_list_version_info_unittest.cc',
+        'config/gpu_driver_bug_list_unittest.cc',
+        'config/gpu_info_unittest.cc',
+        'config/gpu_switching_list_unittest.cc',
+        'config/gpu_util_unittest.cc',
       ],
       'conditions': [
         ['OS == "android" and gtest_target_type == "shared_library"', {
@@ -320,6 +332,7 @@
             'command_buffer_common',
             'command_buffer_service',
             'gles2_cmd_helper',
+            'gpu_config',
             'gpu_ipc',
           ],
           'sources': [
@@ -390,6 +403,13 @@
             'command_buffer_common',
           ],
         },
+        {
+          'target_name': 'gpu_config',
+          'type': 'static_library',
+          'includes': [
+            'gpu_config.gypi',
+          ],
+        },
       ],
     },
     { # component != static_library
@@ -412,6 +432,7 @@
             'command_buffer_common.gypi',
             'command_buffer_service.gypi',
             'gles2_cmd_helper.gypi',
+            'gpu_config.gypi',
             'gpu_ipc.gypi',
           ],
           'defines': [

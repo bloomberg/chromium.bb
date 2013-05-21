@@ -17,12 +17,14 @@
 // Functions in this file depend on functions exported from dxguid.dll.
 #pragma comment(lib, "dxguid.lib")
 
+namespace gpu {
+
 namespace {
 
 // Traverses the IDxDiagContainer tree and populates a tree of DxDiagNode
 // structures that contains property name / value pairs and subtrees of DirectX
 // diagnostic information.
-void RecurseDiagnosticTree(content::DxDiagNode* output,
+void RecurseDiagnosticTree(DxDiagNode* output,
                            IDxDiagContainer* container,
                            int depth) {
   HRESULT hr;
@@ -76,7 +78,7 @@ void RecurseDiagnosticTree(content::DxDiagNode* output,
                                                 arraysize(child_name16));
         if (SUCCEEDED(hr)) {
           std::string child_name8 = WideToUTF8(child_name16);
-          content::DxDiagNode* output_child =
+          DxDiagNode* output_child =
               &output->children[child_name8];
 
           IDxDiagContainer* child_container = NULL;
@@ -93,9 +95,7 @@ void RecurseDiagnosticTree(content::DxDiagNode* output,
 }
 }  // namespace anonymous
 
-namespace gpu_info_collector {
-
-bool GetDxDiagnostics(content::DxDiagNode* output) {
+bool GetDxDiagnostics(DxDiagNode* output) {
   HRESULT hr;
   bool success = false;
   base::win::ScopedCOMInitializer com_initializer;
@@ -136,4 +136,4 @@ bool GetDxDiagnostics(content::DxDiagNode* output) {
 
   return success;
 }
-}  // namespace gpu_info_collector
+}  // namespace gpu

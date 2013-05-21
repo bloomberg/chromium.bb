@@ -25,9 +25,9 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/gpu_feature_type.h"
-#include "content/public/common/gpu_info.h"
 #include "content/public/common/url_constants.h"
+#include "gpu/config/gpu_feature_type.h"
+#include "gpu/config/gpu_info.h"
 #include "grit/content_resources.h"
 #include "third_party/angle/src/common/version.h"
 
@@ -76,7 +76,7 @@ base::Value* NewStatusValue(const char* name, const char* status) {
 
 #if defined(OS_WIN)
 // Output DxDiagNode tree as nested array of {description,value} pairs
-base::ListValue* DxDiagNodeToList(const DxDiagNode& node) {
+base::ListValue* DxDiagNodeToList(const gpu::DxDiagNode& node) {
   base::ListValue* list = new ListValue();
   for (std::map<std::string, std::string>::const_iterator it =
       node.values.begin();
@@ -85,7 +85,7 @@ base::ListValue* DxDiagNodeToList(const DxDiagNode& node) {
     list->Append(NewDescriptionValuePair(it->first, it->second));
   }
 
-  for (std::map<std::string, DxDiagNode>::const_iterator it =
+  for (std::map<std::string, gpu::DxDiagNode>::const_iterator it =
       node.children.begin();
       it != node.children.end();
       ++it) {
@@ -96,7 +96,7 @@ base::ListValue* DxDiagNodeToList(const DxDiagNode& node) {
 }
 #endif
 
-std::string GPUDeviceToString(const GPUInfo::GPUDevice& gpu) {
+std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
   std::string vendor = base::StringPrintf("0x%04x", gpu.vendor_id);
   if (!gpu.vendor_string.empty())
     vendor += " [" + gpu.vendor_string + "]";
@@ -108,7 +108,7 @@ std::string GPUDeviceToString(const GPUInfo::GPUDevice& gpu) {
 }
 
 base::DictionaryValue* GpuInfoAsDictionaryValue() {
-  GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
+  gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
   base::ListValue* basic_info = new base::ListValue();
   basic_info->Append(NewDescriptionValuePair(
       "Initialization time",
@@ -202,7 +202,8 @@ base::Value* GetFeatureStatus() {
   const GpuFeatureInfo kGpuFeatureInfo[] = {
       {
           "2d_canvas",
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
+          manager->IsFeatureBlacklisted(
+              gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
           command_line.HasSwitch(switches::kDisableAccelerated2dCanvas) ||
           !SupportsAccelerated2dCanvas(),
           "Accelerated 2D canvas is unavailable: either disabled at the command"
@@ -212,7 +213,7 @@ base::Value* GetFeatureStatus() {
       {
           "compositing",
           manager->IsFeatureBlacklisted(
-              GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING),
+              gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING),
           command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
           "Accelerated compositing has been disabled, either via about:flags or"
           " command line. This adversely affects performance of all hardware"
@@ -222,8 +223,8 @@ base::Value* GetFeatureStatus() {
       {
           "3d_css",
           manager->IsFeatureBlacklisted(
-              GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_3D_CSS),
+              gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_3D_CSS),
           command_line.HasSwitch(switches::kDisableAcceleratedLayers),
           "Accelerated layers have been disabled at the command line.",
           false
@@ -231,8 +232,8 @@ base::Value* GetFeatureStatus() {
       {
           "css_animation",
           manager->IsFeatureBlacklisted(
-              GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_3D_CSS),
+              gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_3D_CSS),
           command_line.HasSwitch(cc::switches::kDisableThreadedAnimation) ||
           command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
           command_line.HasSwitch(switches::kDisableAcceleratedLayers),
@@ -241,7 +242,7 @@ base::Value* GetFeatureStatus() {
       },
       {
           "webgl",
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL),
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL),
 #if defined(OS_ANDROID)
           !command_line.HasSwitch(switches::kEnableExperimentalWebGL),
 #else
@@ -252,7 +253,7 @@ base::Value* GetFeatureStatus() {
       },
       {
           "multisampling",
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_MULTISAMPLING),
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_MULTISAMPLING),
           command_line.HasSwitch(switches::kDisableGLMultisampling),
           "Multisampling has been disabled, either via about:flags or command"
           " line.",
@@ -260,7 +261,7 @@ base::Value* GetFeatureStatus() {
       },
       {
           "flash_3d",
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_FLASH3D),
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH3D),
           command_line.HasSwitch(switches::kDisableFlash3d),
           "Using 3d in flash has been disabled, either via about:flags or"
           " command line.",
@@ -268,7 +269,7 @@ base::Value* GetFeatureStatus() {
       },
       {
           "flash_stage3d",
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_FLASH_STAGE3D),
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
           command_line.HasSwitch(switches::kDisableFlashStage3d),
           "Using Stage3d in Flash has been disabled, either via about:flags or"
           " command line.",
@@ -277,8 +278,8 @@ base::Value* GetFeatureStatus() {
       {
           "flash_stage3d_baseline",
           manager->IsFeatureBlacklisted(
-              GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE) ||
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_FLASH_STAGE3D),
+              gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE) ||
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
           command_line.HasSwitch(switches::kDisableFlashStage3d),
           "Using Stage3d Baseline profile in Flash has been disabled, either"
           " via about:flags or command line.",
@@ -286,7 +287,7 @@ base::Value* GetFeatureStatus() {
       },
       {
           "texture_sharing",
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_TEXTURE_SHARING),
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_TEXTURE_SHARING),
           command_line.HasSwitch(switches::kDisableImageTransportSurface),
           "Sharing textures between processes has been disabled, either via"
           " about:flags or command line.",
@@ -295,7 +296,7 @@ base::Value* GetFeatureStatus() {
       {
           "video_decode",
           manager->IsFeatureBlacklisted(
-              GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
+              gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
           command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
           "Accelerated video decode has been disabled, either via about:flags"
           " or command line.",
@@ -303,7 +304,8 @@ base::Value* GetFeatureStatus() {
       },
       {
           "video",
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_VIDEO),
+          manager->IsFeatureBlacklisted(
+              gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO),
           command_line.HasSwitch(switches::kDisableAcceleratedVideo) ||
           command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
           "Accelerated video presentation has been disabled, either via"
@@ -312,7 +314,7 @@ base::Value* GetFeatureStatus() {
       },
       {
           "panel_fitting",
-          manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_PANEL_FITTING),
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_PANEL_FITTING),
 #if defined(OS_CHROMEOS)
           command_line.HasSwitch(switches::kDisablePanelFitting),
 #else
@@ -325,11 +327,11 @@ base::Value* GetFeatureStatus() {
       {
           "force_compositing_mode",
           manager->IsFeatureBlacklisted(
-              GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE) &&
+              gpu::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE) &&
           !IsForceCompositingModeEnabled(),
           !IsForceCompositingModeEnabled() &&
           !manager->IsFeatureBlacklisted(
-              GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE),
+              gpu::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE),
           "Force compositing mode is off, either disabled at the command"
           " line or not supported by the current system.",
           false
@@ -384,7 +386,7 @@ base::Value* GetFeatureStatus() {
         if (kGpuFeatureInfo[i].name == "webgl" &&
             (command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
              manager->IsFeatureBlacklisted(
-                 GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)))
+                 gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)))
           status += "_readback";
         bool has_thread = IsThreadedCompositingEnabled();
         if (kGpuFeatureInfo[i].name == "compositing") {
@@ -409,18 +411,18 @@ base::Value* GetFeatureStatus() {
       feature_status_list->Append(
           NewStatusValue(kGpuFeatureInfo[i].name.c_str(), status.c_str()));
     }
-    GpuSwitchingOption gpu_switching_option =
+    gpu::GpuSwitchingOption gpu_switching_option =
         GpuDataManagerImpl::GetInstance()->GetGpuSwitchingOption();
-    if (gpu_switching_option != GPU_SWITCHING_OPTION_UNKNOWN) {
+    if (gpu_switching_option != gpu::GPU_SWITCHING_OPTION_UNKNOWN) {
       std::string gpu_switching;
       switch (gpu_switching_option) {
-        case GPU_SWITCHING_OPTION_AUTOMATIC:
+      case gpu::GPU_SWITCHING_OPTION_AUTOMATIC:
           gpu_switching = "gpu_switching_automatic";
           break;
-        case GPU_SWITCHING_OPTION_FORCE_DISCRETE:
+      case gpu::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
           gpu_switching = "gpu_switching_force_discrete";
           break;
-        case GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
+      case gpu::GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
           gpu_switching = "gpu_switching_force_integrated";
           break;
         default:

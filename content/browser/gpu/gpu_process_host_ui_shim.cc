@@ -248,7 +248,8 @@ void GpuProcessHostUIShim::OnLogMessage(
       level, header, message);
 }
 
-void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
+void GpuProcessHostUIShim::OnGraphicsInfoCollected(
+    const gpu::GPUInfo& gpu_info) {
   // OnGraphicsInfoCollected is sent back after the GPU process successfully
   // initializes GL.
   TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");

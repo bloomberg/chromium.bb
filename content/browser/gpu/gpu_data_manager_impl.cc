@@ -19,7 +19,7 @@ GpuDataManagerImpl* GpuDataManagerImpl::GetInstance() {
 }
 
 void GpuDataManagerImpl::InitializeForTesting(
-    const std::string& gpu_blacklist_json, const GPUInfo& gpu_info) {
+    const std::string& gpu_blacklist_json, const gpu::GPUInfo& gpu_info) {
   base::AutoLock auto_lock(lock_);
   private_->InitializeForTesting(gpu_blacklist_json, gpu_info);
 }
@@ -29,7 +29,7 @@ bool GpuDataManagerImpl::IsFeatureBlacklisted(int feature) const {
   return private_->IsFeatureBlacklisted(feature);
 }
 
-GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
+gpu::GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGPUInfo();
 }
@@ -117,7 +117,7 @@ void GpuDataManagerImpl::Initialize() {
   private_->Initialize();
 }
 
-void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
+void GpuDataManagerImpl::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   base::AutoLock auto_lock(lock_);
   private_->UpdateGpuInfo(gpu_info);
 }
@@ -152,7 +152,7 @@ void GpuDataManagerImpl::UpdateRendererWebPrefs(
   private_->UpdateRendererWebPrefs(prefs);
 }
 
-GpuSwitchingOption GpuDataManagerImpl::GetGpuSwitchingOption() const {
+gpu::GpuSwitchingOption GpuDataManagerImpl::GetGpuSwitchingOption() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuSwitchingOption();
 }

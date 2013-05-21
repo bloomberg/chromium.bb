@@ -24,6 +24,8 @@
 #import <Foundation/Foundation.h>
 #import <IOKit/IOKitLib.h>
 
+namespace gpu {
+
 namespace {
 
 const UInt32 kVendorIDIntel = 0x8086;
@@ -52,8 +54,8 @@ UInt32 GetEntryProperty(io_registry_entry_t entry, CFStringRef property_name) {
 }
 
 // Find the info of the current GPU.
-content::GPUInfo::GPUDevice GetActiveGPU() {
-  content::GPUInfo::GPUDevice gpu;
+GPUInfo::GPUDevice GetActiveGPU() {
+  GPUInfo::GPUDevice gpu;
   io_registry_entry_t dsp_port = CGDisplayIOServicePort(kCGDirectMainDisplay);
   gpu.vendor_id = GetEntryProperty(dsp_port, CFSTR("vendor-id"));
   gpu.device_id = GetEntryProperty(dsp_port, CFSTR("device-id"));
@@ -61,7 +63,7 @@ content::GPUInfo::GPUDevice GetActiveGPU() {
 }
 
 // Scan IO registry for PCI video cards.
-bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
+bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   // Collect all GPUs' info.
@@ -69,13 +71,13 @@ bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
   // to release it.
   CFMutableDictionaryRef match_dictionary = IOServiceMatching("IOPCIDevice");
   io_iterator_t entry_iterator;
-  std::vector<content::GPUInfo::GPUDevice> gpu_list;
+  std::vector<GPUInfo::GPUDevice> gpu_list;
   if (IOServiceGetMatchingServices(kIOMasterPortDefault,
                                    match_dictionary,
                                    &entry_iterator) == kIOReturnSuccess) {
     io_registry_entry_t entry;
     while ((entry = IOIteratorNext(entry_iterator))) {
-      content::GPUInfo::GPUDevice gpu;
+      GPUInfo::GPUDevice gpu;
       if (GetEntryProperty(entry, CFSTR("class-code")) != 0x30000) {
         // 0x30000 : DISPLAY_VGA
         continue;
@@ -127,7 +129,7 @@ bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
       }
     default:
       {
-        content::GPUInfo::GPUDevice active_gpu = GetActiveGPU();
+        GPUInfo::GPUDevice active_gpu = GetActiveGPU();
         size_t current = gpu_list.size();
         if (active_gpu.vendor_id && active_gpu.device_id) {
           for (size_t i = 0; i < gpu_list.size(); ++i) {
@@ -156,9 +158,7 @@ bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
 
 }  // namespace anonymous
 
-namespace gpu_info_collector {
-
-bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
@@ -174,7 +174,7 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   *vendor_id = 0;
   *device_id = 0;
 
-  content::GPUInfo gpu_info;
+  GPUInfo gpu_info;
   if (CollectPCIVideoCardInfo(&gpu_info)) {
     *vendor_id = gpu_info.gpu.vendor_id;
     *device_id = gpu_info.gpu.device_id;
@@ -183,7 +183,7 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   return kGpuIDFailure;
 }
 
-bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
+bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   std::string model_name;
@@ -197,7 +197,7 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   return CollectPCIVideoCardInfo(gpu_info);
 }
 
-bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
+bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   // Extract the OpenGL driver version string from the GL_VERSION string.
@@ -212,9 +212,9 @@ bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
   return true;
 }
 
-void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
-                  const content::GPUInfo& context_gpu_info) {
+void MergeGPUInfo(GPUInfo* basic_gpu_info,
+                  const GPUInfo& context_gpu_info) {
   MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
 }
 
-}  // namespace gpu_info_collector
+}  // namespace gpu

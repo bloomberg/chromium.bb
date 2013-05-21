@@ -24,7 +24,6 @@
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common_child/npobject_util.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/gpu_info.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
@@ -35,6 +34,7 @@
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/websharedworkerrepository_impl.h"
 #include "googleurl/src/gurl.h"
+#include "gpu/config/gpu_info.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_hardware_config.h"
@@ -619,7 +619,7 @@ bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
   if (!host)
     return false;
 
-  const GPUInfo& gpu_info = host->gpu_info();
+  const gpu::GPUInfo& gpu_info = host->gpu_info();
   if (gpu_info.can_lose_context || gpu_info.software_rendering)
     return false;
 

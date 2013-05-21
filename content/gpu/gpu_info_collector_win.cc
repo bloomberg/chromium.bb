@@ -35,6 +35,8 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 
+namespace gpu {
+
 namespace {
 
 // This must be kept in sync with histograms.xml.
@@ -57,13 +59,13 @@ float ReadXMLFloatValue(XmlReader* reader) {
   return static_cast<float>(score);
 }
 
-content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
+GpuPerformanceStats RetrieveGpuPerformanceStats() {
   TRACE_EVENT0("gpu", "RetrieveGpuPerformanceStats");
 
   // If the user re-runs the assessment without restarting, the COM API
   // returns WINSAT_ASSESSMENT_STATE_NOT_AVAILABLE. Because of that and
   // http://crbug.com/124325, read the assessment result files directly.
-  content::GpuPerformanceStats stats;
+  GpuPerformanceStats stats;
 
   // Get path to WinSAT results files.
   wchar_t winsat_results_path[MAX_PATH];
@@ -144,10 +146,10 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
   return stats;
 }
 
-content::GpuPerformanceStats RetrieveGpuPerformanceStatsWithHistograms() {
+GpuPerformanceStats RetrieveGpuPerformanceStatsWithHistograms() {
   base::TimeTicks start_time = base::TimeTicks::Now();
 
-  content::GpuPerformanceStats stats = RetrieveGpuPerformanceStats();
+  GpuPerformanceStats stats = RetrieveGpuPerformanceStats();
 
   UMA_HISTOGRAM_TIMES("GPU.WinSAT.ReadResultsFileTime",
                       base::TimeTicks::Now() - start_time);
@@ -203,7 +205,7 @@ bool IsLenovoDCuteInstalled() {
 
 // Determines whether D3D11 won't work, either because it is not supported on
 // the machine or because it is known it is likely to crash.
-bool D3D11ShouldWork(const content::GPUInfo& gpu_info) {
+bool D3D11ShouldWork(const GPUInfo& gpu_info) {
   // Windows XP never supports D3D11.
   if (base::win::GetVersion() <= base::win::VERSION_XP)
     return false;
@@ -369,8 +371,6 @@ void CollectD3D11Support() {
 }
 }  // namespace anonymous
 
-namespace gpu_info_collector {
-
 #if !defined(GOOGLE_CHROME_BUILD)
 AMDVideoCardType GetAMDVideocardType() {
   return STANDALONE;
@@ -382,7 +382,7 @@ AMDVideoCardType GetAMDVideocardType();
 #endif
 
 bool CollectDriverInfoD3D(const std::wstring& device_id,
-                          content::GPUInfo* gpu_info) {
+                          GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
 
   // create device info for the display device
@@ -461,7 +461,7 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
   return found;
 }
 
-bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectGraphicsInfo");
 
   DCHECK(gpu_info);
@@ -547,7 +547,7 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   return kGpuIDFailure;
 }
 
-bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
+bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectPreliminaryGraphicsInfo");
 
   DCHECK(gpu_info);
@@ -613,7 +613,7 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   return true;
 }
 
-bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
+bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoGL");
 
   if (!gpu_info->driver_version.empty())
@@ -626,8 +626,8 @@ bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
                            &gpu_info->driver_version);
 }
 
-void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
-                  const content::GPUInfo& context_gpu_info) {
+void MergeGPUInfo(GPUInfo* basic_gpu_info,
+                  const GPUInfo& context_gpu_info) {
   DCHECK(basic_gpu_info);
 
   if (context_gpu_info.software_rendering) {
@@ -640,4 +640,4 @@ void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
   basic_gpu_info->dx_diagnostics = context_gpu_info.dx_diagnostics;
 }
 
-}  // namespace gpu_info_collector
+}  // namespace gpu
