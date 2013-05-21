@@ -306,9 +306,17 @@ void FileCache::StoreOnUIThread(const std::string& resource_id,
       FROM_HERE,
       base::Bind(&FileCache::Store,
                  base::Unretained(this),
-                 resource_id, md5, source_path, file_operation_type,
-                 CACHED_FILE_FROM_SERVER),
+                 resource_id, md5, source_path, file_operation_type),
       callback);
+}
+
+FileError FileCache::Store(const std::string& resource_id,
+                           const std::string& md5,
+                           const base::FilePath& source_path,
+                           FileOperationType file_operation_type) {
+  AssertOnSequencedWorkerPool();
+  return StoreInternal(resource_id, md5, source_path, file_operation_type,
+                       CACHED_FILE_FROM_SERVER);
 }
 
 void FileCache::StoreLocallyModifiedOnUIThread(
@@ -323,7 +331,7 @@ void FileCache::StoreLocallyModifiedOnUIThread(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&FileCache::Store,
+      base::Bind(&FileCache::StoreInternal,
                  base::Unretained(this),
                  resource_id, md5, source_path, file_operation_type,
                  CACHED_FILE_LOCALLY_MODIFIED),
@@ -571,11 +579,11 @@ scoped_ptr<FileCache::GetFileResult> FileCache::GetFile(
   return result.Pass();
 }
 
-FileError FileCache::Store(const std::string& resource_id,
-                           const std::string& md5,
-                           const base::FilePath& source_path,
-                           FileOperationType file_operation_type,
-                           CachedFileOrigin origin) {
+FileError FileCache::StoreInternal(const std::string& resource_id,
+                                   const std::string& md5,
+                                   const base::FilePath& source_path,
+                                   FileOperationType file_operation_type,
+                                   CachedFileOrigin origin) {
   AssertOnSequencedWorkerPool();
 
   int64 file_size = 0;

@@ -158,8 +158,8 @@ class FileCache {
                          const std::string& md5,
                          const GetFileFromCacheCallback& callback);
 
-  // Stores |source_path| as a cache of the remote content of the file
-  // identified by |resource_id| and |md5|.
+  // Runs Store() on |blocking_task_runner_|, and calls |callback| with
+  // the result asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void StoreOnUIThread(const std::string& resource_id,
@@ -167,6 +167,13 @@ class FileCache {
                        const base::FilePath& source_path,
                        FileOperationType file_operation_type,
                        const FileOperationCallback& callback);
+
+  // Stores |source_path| as a cache of the remote content of the file
+  // with |resource_id| and |md5|.
+  FileError Store(const std::string& resource_Id,
+                  const std::string& md5,
+                  const base::FilePath& source_path,
+                  FileOperationType file_operation_type);
 
   // Stores |source_path| to the cache and mark it as dirty, i.e., needs to be
   // uploaded to the remove server for syncing.
@@ -335,12 +342,14 @@ class FileCache {
   scoped_ptr<GetFileResult> GetFile(const std::string& resource_id,
                                     const std::string& md5);
 
-  // Used to implement StoreOnUIThread.
-  FileError Store(const std::string& resource_id,
-                  const std::string& md5,
-                  const base::FilePath& source_path,
-                  FileOperationType file_operation_type,
-                  CachedFileOrigin origin);
+  // Used to implement Store and StoreLocallyModifiedOnUIThread.
+  // TODO(hidehiko): Merge this method with Store(), after
+  // StoreLocallyModifiedOnUIThread is removed.
+  FileError StoreInternal(const std::string& resource_id,
+                          const std::string& md5,
+                          const base::FilePath& source_path,
+                          FileOperationType file_operation_type,
+                          CachedFileOrigin origin);
 
   // Used to implement PinOnUIThread.
   FileError Pin(const std::string& resource_id,

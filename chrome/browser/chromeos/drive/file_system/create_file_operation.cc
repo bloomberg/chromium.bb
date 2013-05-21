@@ -25,10 +25,90 @@ namespace {
 
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
-// Wraps |callback| and always passes FILE_ERROR_OK when invoked.
-// This is used for adopting |callback| to wait for a non-fatal operation.
-void IgnoreError(const FileOperationCallback& callback, FileError error) {
-  callback.Run(FILE_ERROR_OK);
+// Part of CreateFileOperation::CreateFile(), runs on |blocking_task_runner_|
+// of the operation, before server-side file creation.
+FileError CheckPreConditionForCreateFile(internal::ResourceMetadata* metadata,
+                                         const base::FilePath& file_path,
+                                         bool is_exclusive,
+                                         std::string* parent_resource_id,
+                                         std::string* mime_type) {
+  DCHECK(metadata);
+  DCHECK(parent_resource_id);
+  DCHECK(mime_type);
+
+  ResourceEntry entry;
+  FileError error = metadata->GetResourceEntryByPath(file_path, &entry);
+  if (error == FILE_ERROR_OK) {
+    // Error if an exclusive mode is requested, or the entry is not a file.
+    return (is_exclusive ||
+            entry.file_info().is_directory() ||
+            entry.file_specific_info().is_hosted_document()) ?
+        FILE_ERROR_EXISTS : FILE_ERROR_OK;
+  }
+
+  // If the file is not found, an actual request to create a new file will be
+  // sent to the server.
+  if (error == FILE_ERROR_NOT_FOUND) {
+    // If parent path is not a directory, it is an error.
+    ResourceEntry parent;
+    if (metadata->GetResourceEntryByPath(
+            file_path.DirName(), &parent) != FILE_ERROR_OK ||
+        !parent.file_info().is_directory())
+      return FILE_ERROR_NOT_A_DIRECTORY;
+
+    // In the request, parent_resource_id and mime_type are needed.
+    // Here, populate them.
+    *parent_resource_id = parent.resource_id();
+
+    // If mime type is unsure, use octet stream by default.
+    if (!net::GetMimeTypeFromFile(file_path, mime_type))
+      *mime_type = kMimeTypeOctetStream;
+  }
+
+  return error;
+}
+
+// Part of CreateFileOperation::CreateFile(), runs on |blocking_task_runner_|
+// of the operation, after server side file creation.
+FileError UpdateLocalStateForCreateFile(
+    internal::ResourceMetadata* metadata,
+    internal::FileCache* cache,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry,
+    base::FilePath* file_path) {
+  DCHECK(metadata);
+  DCHECK(cache);
+  DCHECK(resource_entry);
+  DCHECK(file_path);
+
+  // Add the entry to the local resource metadata.
+  ResourceEntry entry = ConvertToResourceEntry(*resource_entry);
+  FileError error = metadata->AddEntry(entry);
+
+  // Depending on timing, the metadata may have inserted via change list feed
+  // already. So, FILE_ERROR_EXISTS is not an error.
+  if (error == FILE_ERROR_EXISTS)
+    error = FILE_ERROR_OK;
+
+  if (error == FILE_ERROR_OK) {
+    // At this point, upload to the server is fully succeeded.
+    // Populate the |file_path| which will be used to notify the observer.
+    *file_path = metadata->GetFilePath(entry.resource_id());
+
+    // Also store the entry to the cache. Here, failure is not a fatal error,
+    // so ignore the returned code.
+    FileError cache_store_error = cache->Store(
+        entry.resource_id(),
+        entry.file_specific_info().file_md5(),
+        base::FilePath(util::kSymLinkToDevNull),
+        internal::FileCache::FILE_OPERATION_COPY);
+
+    DLOG_IF(WARNING, cache_store_error != FILE_ERROR_OK)
+        << "Failed to store a cache file: "
+        << FileErrorToString(cache_store_error)
+        << ", resource_id: " << entry.resource_id();
+  }
+
+  return error;
 }
 
 }  // namespace
@@ -58,82 +138,43 @@ void CreateFileOperation::CreateFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // First, checks the existence of a file at |file_path|.
-  metadata_->GetResourceEntryPairByPathsOnUIThread(
-      file_path.DirName(),
-      file_path,
-      base::Bind(&CreateFileOperation::CreateFileAfterGetResourceEntry,
+  std::string* parent_resource_id = new std::string;
+  std::string* mime_type = new std::string;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&CheckPreConditionForCreateFile,
+                 metadata_, file_path, is_exclusive,
+                 parent_resource_id, mime_type),
+      base::Bind(&CreateFileOperation::CreateFileAfterCheckPreCondition,
                  weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 is_exclusive,
-                 callback));
+                 file_path, callback,
+                 base::Owned(parent_resource_id), base::Owned(mime_type)));
 }
 
-void CreateFileOperation::CreateFileAfterGetResourceEntry(
+void CreateFileOperation::CreateFileAfterCheckPreCondition(
     const base::FilePath& file_path,
-    bool is_exclusive,
     const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> pair_result) {
+    std::string* parent_resource_id,
+    std::string* mime_type,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(parent_resource_id);
+  DCHECK(mime_type);
 
-  FileError error = pair_result->second.error;
-  scoped_ptr<ResourceEntry> parent(pair_result->first.entry.Pass());
-
-  // If parent path is not a directory, it is an error.
-  if (!parent || !parent->file_info().is_directory()) {
-    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
-    return;
-  }
-
-  // If an entry already exists at |path|:
-  if (error == FILE_ERROR_OK) {
-    scoped_ptr<ResourceEntry> entry(pair_result->second.entry.Pass());
-    // Error if an exclusive mode is requested, or the entry is not a file.
-    if (is_exclusive ||
-        entry->file_info().is_directory() ||
-        entry->file_specific_info().is_hosted_document()) {
-      callback.Run(FILE_ERROR_EXISTS);
-    } else {
-      callback.Run(FILE_ERROR_OK);
-    }
-    return;
-  }
-
-  // Otherwise, the error code must be ERROR_NOT_FOUND.
+  // If the file is found, or an error other than "not found" is found,
+  // runs callback and quit the operation.
   if (error != FILE_ERROR_NOT_FOUND) {
     callback.Run(error);
     return;
   }
 
-  // Get the mime type from the file name extension.
-  std::string* content_type = new std::string;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&net::GetMimeTypeFromFile,
-                 file_path,
-                 base::Unretained(content_type)),
-      base::Bind(&CreateFileOperation::CreateFileAfterGetMimeType,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 parent->resource_id(),
-                 callback,
-                 base::Owned(content_type)));
-}
-
-void CreateFileOperation::CreateFileAfterGetMimeType(
-    const base::FilePath& file_path,
-    const std::string& parent_resource_id,
-    const FileOperationCallback& callback,
-    const std::string* content_type,
-    bool got_content_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   scheduler_->CreateFile(
-      parent_resource_id,
+      *parent_resource_id,
       file_path,
       file_path.BaseName().value(),
-      got_content_type ? *content_type : kMimeTypeOctetStream,
+      *mime_type,
       DriveClientContext(USER_INITIATED),
       base::Bind(&CreateFileOperation::CreateFileAfterUpload,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -142,52 +183,42 @@ void CreateFileOperation::CreateFileAfterGetMimeType(
 
 void CreateFileOperation::CreateFileAfterUpload(
     const FileOperationCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::GDataErrorCode gdata_error,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == google_apis::HTTP_SUCCESS && resource_entry) {
-    // Add the entry to the local resource metadata.
-    ResourceEntry entry = ConvertToResourceEntry(*resource_entry);
-    metadata_->AddEntryOnUIThread(
-        entry,
-        base::Bind(&CreateFileOperation::CreateFileAfterAddToMetadata,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   entry,
-                   callback));
-  } else {
-    callback.Run(util::GDataToFileError(error));
-  }
-}
-
-void CreateFileOperation::CreateFileAfterAddToMetadata(
-    const ResourceEntry& entry,
-    const FileOperationCallback& callback,
-    FileError error,
-    const base::FilePath& drive_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Depending on timing, the metadata may have inserted via change list feed
-  // already. So, FILE_ERROR_EXISTS is not an error.
-  if (error == FILE_ERROR_EXISTS)
-    error = FILE_ERROR_OK;
-
+  FileError error = util::GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
+  DCHECK(resource_entry);
 
-  observer_->OnDirectoryChangedByOperation(drive_path.DirName());
+  base::FilePath* file_path = new base::FilePath;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&UpdateLocalStateForCreateFile,
+                 metadata_, cache_, base::Passed(&resource_entry), file_path),
+      base::Bind(&CreateFileOperation::CreateFileAfterUpdateLocalState,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, base::Owned(file_path)));
+}
 
-  // At this point, upload to the server is fully succeeded. Failure to store to
-  // cache is not a fatal error, so we wrap the callback with IgnoreError, and
-  // always return success to the caller.
-  cache_->StoreOnUIThread(entry.resource_id(),
-                          entry.file_specific_info().file_md5(),
-                          base::FilePath(util::kSymLinkToDevNull),
-                          internal::FileCache::FILE_OPERATION_COPY,
-                          base::Bind(&IgnoreError, callback));
+void CreateFileOperation::CreateFileAfterUpdateLocalState(
+    const FileOperationCallback& callback,
+    base::FilePath* file_path,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(file_path);
+
+  // Notify observer if the file creation process is successfully done.
+  if (error == FILE_ERROR_OK)
+    observer_->OnDirectoryChangedByOperation(file_path->DirName());
+
+  callback.Run(error);
 }
 
 }  // namespace file_system

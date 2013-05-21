@@ -58,27 +58,24 @@ class CreateFileOperation {
                   const FileOperationCallback& callback);
 
  private:
-  void CreateFileAfterGetResourceEntry(
-      const base::FilePath& file_path,
-      bool is_exclusive,
-      const FileOperationCallback& callback,
-      scoped_ptr<EntryInfoPairResult> pair_result);
+  // Part of CreateFile(). Called after the precondition check is completed.
+  void CreateFileAfterCheckPreCondition(const base::FilePath& file_path,
+                                        const FileOperationCallback& callback,
+                                        std::string* parent_resource_id,
+                                        std::string* mime_type,
+                                        FileError error);
 
-  void CreateFileAfterGetMimeType(const base::FilePath& file_path,
-                                  const std::string& parent_resource_id,
-                                  const FileOperationCallback& callback,
-                                  const std::string* content_type,
-                                  bool got_content_type);
-
+  // Part of CreateFile(). Called after the server side file creation is
+  // completed.
   void CreateFileAfterUpload(
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
-  void CreateFileAfterAddToMetadata(const ResourceEntry& entry,
-                                    const FileOperationCallback& callback,
-                                    FileError error,
-                                    const base::FilePath& drive_path);
+  // Part of CreateFile(). Called after the updating local state is completed.
+  void CreateFileAfterUpdateLocalState(const FileOperationCallback& callback,
+                                       base::FilePath* file_path,
+                                       FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
