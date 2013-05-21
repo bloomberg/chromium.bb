@@ -83,6 +83,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   views::ScrollView* scroller_;
   MessageListView* message_list_view_;
   MessageCenterButtonBar* button_bar_;
+  views::View* no_notifications_message_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterView);
 };

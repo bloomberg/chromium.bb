@@ -239,7 +239,6 @@ RichMessageCenterButtonBar::RichMessageCenterButtonBar(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_NOTIFICATION_SETTINGS);
   int image_margin = std::max(0, (kButtonSize - settings_image->width()) / 2);
-  LOG(INFO) << settings_image->size().ToString();
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   layout->SetInsets(
@@ -644,7 +643,8 @@ int RichMessageListView::GetActualIndex(int index) {
 }
 
 bool RichMessageListView::IsValidChild(views::View* child) {
-  return deleting_views_.find(child) == deleting_views_.end() &&
+  return child->visible() &&
+      deleting_views_.find(child) == deleting_views_.end() &&
       deleted_when_done_.find(child) == deleted_when_done_.end();
 }
 
@@ -769,6 +769,11 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
 
   message_list_view_ = IsRichNotificationEnabled() ?
       new RichMessageListView() : new MessageListView();
+  no_notifications_message_view_ = new NoNotificationMessageView();
+  // Set the default visibility to false, otherwise the notification has slide
+  // in animation when the center is shown.
+  no_notifications_message_view_->SetVisible(false);
+  message_list_view_->AddChildView(no_notifications_message_view_);
   scroller_->SetContents(message_list_view_);
 
   AddChildView(scroller_);
@@ -782,7 +787,6 @@ MessageCenterView::~MessageCenterView() {
 void MessageCenterView::SetNotifications(
     const NotificationList::Notifications& notifications)  {
   message_views_.clear();
-  message_list_view_->RemoveAllChildViews(true);
   int index = 0;
   for (NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end();
@@ -822,9 +826,6 @@ void MessageCenterView::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void MessageCenterView::OnNotificationAdded(const std::string& id) {
-  if (message_views_.empty())
-    message_list_view_->RemoveAllChildViews(true);
-
   int index = 0;
   const NotificationList::Notifications& notifications =
       message_center_->GetNotifications();
@@ -907,10 +908,11 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
 
 void MessageCenterView::NotificationsChanged() {
   if (!message_views_.empty()) {
+    no_notifications_message_view_->SetVisible(false);
     button_bar_->SetCloseAllVisible(true);
     scroller_->set_focusable(true);
-  } else if (!message_list_view_->has_children()) {
-    message_list_view_->AddChildView(new NoNotificationMessageView());
+  } else {
+    no_notifications_message_view_->SetVisible(true);
     button_bar_->SetCloseAllVisible(false);
     scroller_->set_focusable(false);
   }
@@ -920,7 +922,6 @@ void MessageCenterView::NotificationsChanged() {
 }
 
 void MessageCenterView::SetNotificationViewForTest(views::View* view) {
-  message_list_view_->RemoveAllChildViews(true);
   message_list_view_->AddNotificationAt(view, 0);
 }
 
