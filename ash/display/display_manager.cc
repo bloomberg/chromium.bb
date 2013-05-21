@@ -86,32 +86,6 @@ struct ScaleComparator {
   float scale;
 };
 
-std::vector<float> GetScalesForDisplay(const DisplayInfo& info) {
-  std::vector<float> ret;
-  if (info.device_scale_factor() == 2.0f) {
-    ret.assign(kUIScalesFor2x, kUIScalesFor2x + arraysize(kUIScalesFor2x));
-    return ret;
-  }
-  switch (info.bounds_in_pixel().width()) {
-    case 1280:
-      ret.assign(kUIScalesFor1280,
-                 kUIScalesFor1280 + arraysize(kUIScalesFor1280));
-      break;
-    case 1366:
-      ret.assign(kUIScalesFor1366,
-                 kUIScalesFor1366 + arraysize(kUIScalesFor1366));
-      break;
-    default:
-      ret.assign(kUIScalesFor1280,
-                 kUIScalesFor1280 + arraysize(kUIScalesFor1280));
-#if defined(OS_CHROMEOS)
-      if (base::chromeos::IsRunningOnChromeOS())
-        NOTREACHED() << "Unknown resolution:" << info.ToString();
-#endif
-  }
-  return ret;
-}
-
 gfx::Display& GetInvalidDisplay() {
   static gfx::Display* invalid_display = new gfx::Display();
   return *invalid_display;
@@ -140,6 +114,34 @@ DisplayManager::DisplayManager()
 }
 
 DisplayManager::~DisplayManager() {
+}
+
+// static
+std::vector<float> DisplayManager::GetScalesForDisplay(
+    const DisplayInfo& info) {
+  std::vector<float> ret;
+  if (info.device_scale_factor() == 2.0f) {
+    ret.assign(kUIScalesFor2x, kUIScalesFor2x + arraysize(kUIScalesFor2x));
+    return ret;
+  }
+  switch (info.bounds_in_pixel().width()) {
+    case 1280:
+      ret.assign(kUIScalesFor1280,
+                 kUIScalesFor1280 + arraysize(kUIScalesFor1280));
+      break;
+    case 1366:
+      ret.assign(kUIScalesFor1366,
+                 kUIScalesFor1366 + arraysize(kUIScalesFor1366));
+      break;
+    default:
+      ret.assign(kUIScalesFor1280,
+                 kUIScalesFor1280 + arraysize(kUIScalesFor1280));
+#if defined(OS_CHROMEOS)
+      if (base::chromeos::IsRunningOnChromeOS())
+        NOTREACHED() << "Unknown resolution:" << info.ToString();
+#endif
+  }
+  return ret;
 }
 
 // static

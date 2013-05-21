@@ -27,7 +27,6 @@
 #display-configurations {
   background-color: white;
   border-top: 1px solid lightgrey;
-  height: 65px;
   padding: 15px;
 }
 
@@ -45,28 +44,21 @@
   z-index: 1;
 }
 
-#display-options-buttons-container {
-  float: right;
-  z-index: 2;
-}
-
-html[dir=rtl] #display-options-buttons-container {
-  float: left;
-}
-
-
 #selected-display-data-container {
-  float: left;
-  line-height: 200%;
   z-index: 2;
-}
-
-html[dir=rtl] #selected-display-data-container {
-  float: right;
 }
 
 #selected-display-name {
-  font-weight: bold;
+  font-size: large;
+  font-weight: normal;
+  margin-bottom: 10px;
+  margin-top: 5px;
+  padding: 0;
+}
+
+.selected-display-option-title {
+  display: inline-block;
+  margin-right: 10px;
 }
 
 .displays-display {
@@ -88,10 +80,10 @@ html[dir=rtl] #selected-display-data-container {
   color: rgb(0, 138, 255);
 }
 
-.display-options-single-button-container {
-  padding: 5px 0;
+.display-options-button-container {
+  margin-right: 10px;
 }
 
 .display-options-button {
-  width: 120px;
+  width: 135px;
 }

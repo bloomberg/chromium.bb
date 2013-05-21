@@ -39,6 +39,9 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   DisplayManager();
   virtual ~DisplayManager();
 
+  // Returns the list of possible UI scales for the display.
+  static std::vector<float> GetScalesForDisplay(const DisplayInfo& info);
+
   // Returns next valid UI scale.
   static float GetNextUIScale(const DisplayInfo& info, bool up);
 

@@ -155,10 +155,10 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      $('display-options-toggle-mirroring').onclick = (function() {
+      $('display-options-toggle-mirroring').onclick = function() {
         this.mirroring_ = !this.mirroring_;
         chrome.send('setMirroring', [this.mirroring_]);
-      }).bind(this);
+      }.bind(this);
 
       var container = $('display-options-displays-view-host');
       container.onmousemove = this.onMouseMove_.bind(this);
@@ -166,19 +166,37 @@ cr.define('options', function() {
       container.ontouchmove = this.onTouchMove_.bind(this);
       container.ontouchend = this.endDragging_.bind(this);
 
-      $('display-options-set-primary').onclick = (function() {
+      $('display-options-set-primary').onclick = function() {
         chrome.send('setPrimary', [this.displays_[this.focusedIndex_].id]);
-      }).bind(this);
-
-      $('selected-display-start-calibrating-overscan').onclick = (function() {
+      }.bind(this);
+      $('display-options-resolution-selection').onchange = function(ev) {
+        chrome.send('setUIScale', [this.displays_[this.focusedIndex_].id,
+                                   ev.target.value]);
+      }.bind(this);
+      $('display-options-orientation-selection').onchange = function(ev) {
+        chrome.send('setOrientation', [this.displays_[this.focusedIndex_].id,
+                                       ev.target.value]);
+      }.bind(this);
+      $('selected-display-start-calibrating-overscan').onclick = function() {
         // Passes the target display ID. Do not specify it through URL hash,
         // we do not care back/forward.
         var displayOverscan = options.DisplayOverscan.getInstance();
         displayOverscan.setDisplayId(this.displays_[this.focusedIndex_].id);
         OptionsPage.navigateToPage('displayOverscan');
-      }).bind(this);
+      }.bind(this);
 
       chrome.send('getDisplayInfo');
+    },
+
+    /** @override */
+    didShowPage: function() {
+      var optionTitles = document.getElementsByClassName(
+          'selected-display-option-title');
+      var maxSize = 0;
+      for (var i = 0; i < optionTitles.length; i++)
+        maxSize = Math.max(maxSize, optionTitles[i].clientWidth);
+      for (var i = 0; i < optionTitles.length; i++)
+        optionTitles[i].style.width = maxSize + 'px';
     },
 
     /** @override */
@@ -465,13 +483,15 @@ cr.define('options', function() {
           continue;
 
         display.div.classList.add('displays-focused');
-        this.dragging_ = {
-          display: display,
-          originalLocation: {
-            x: display.div.offsetLeft, y: display.div.offsetTop
-          },
-          eventLocation: eventLocation
-        };
+        if (this.displays_.length > 1) {
+          this.dragging_ = {
+            display: display,
+            originalLocation: {
+              x: display.div.offsetLeft, y: display.div.offsetTop
+            },
+            eventLocation: eventLocation
+          };
+        }
       }
 
       this.updateSelectedDisplayDescription_();
@@ -519,54 +539,115 @@ cr.define('options', function() {
     },
 
     /**
-     * Updates the description of the selected display section.
+     * Updates the description of selected display section for mirroring mode.
      * @private
      */
-    updateSelectedDisplayDescription_: function() {
-      if (this.mirroring_) {
-        $('display-configuration-arrow').hidden = true;
-        $('display-options-set-primary').hidden = true;
-        $('display-options-toggle-mirroring').hidden = false;
-        $('selected-display-data-container').hidden = false;
-        var display = this.displays_[0];
-        $('selected-display-name').textContent = '';
-        $('selected-display-resolution').textContent =
-            display.width + 'x' + display.height;
-        return;
-      }
+    updateSelectedDisplaySectionMirroring_: function() {
+      $('display-configuration-arrow').hidden = true;
+      $('display-options-set-primary').disabled = true;
+      $('display-options-toggle-mirroring').disabled = false;
+      $('selected-display-start-calibrating-overscan').disabled = true;
+      $('display-options-orientation-selection').disabled = true;
+      var display = this.displays_[0];
+      $('selected-display-name').textContent =
+          loadTimeData.getString('mirroringDisplay');
+      var resolution = $('display-options-resolution-selection');
+      resolution.appendChild(document.createElement('option'));
+      resolution.disabled = true;
+    },
 
-      if (this.focusedIndex_ == null ||
-          this.displays_[this.focusedIndex_] == null) {
-        $('selected-display-data-container').hidden = true;
-        $('display-configuration-arrow').hidden = true;
-        $('display-options-set-primary').hidden = true;
-        $('display-options-toggle-mirroring').hidden = true;
-        return;
-      }
+    /**
+     * Updates the description of selected display section when no display is
+     * selected.
+     * @private
+     */
+    updateSelectedDisplaySectionNoSelected_: function() {
+      $('display-configuration-arrow').hidden = true;
+      $('display-options-set-primary').disabled = true;
+      $('display-options-toggle-mirroring').disabled = true;
+      $('selected-display-start-calibrating-overscan').disabled = true;
+      $('display-options-orientation-selection').disabled = true;
+      $('selected-display-name').textContent = '';
+      var resolution = $('display-options-resolution-selection');
+      resolution.appendChild(document.createElement('option'));
+      resolution.disabled = true;
+    },
 
-      $('selected-display-data-container').hidden = false;
-      var display = this.displays_[this.focusedIndex_];
-      var nameElement = $('selected-display-name');
-      nameElement.textContent = display.name;
-
-      var resolutionElement = $('selected-display-resolution');
-      resolutionElement.textContent = display.width + 'x' + display.height;
-
-      $('start-calibrating-overscan-control').hidden = display.isInternal;
-
+    /**
+     * Updates the description of selected display section for the selected
+     * display.
+     * @param {Object} display The selected display object.
+     * @private
+     */
+    updateSelectedDisplaySectionForDisplay_: function(display) {
       var arrow = $('display-configuration-arrow');
       arrow.hidden = false;
       // Adding 1 px to the position to fit the border line and the border in
       // arrow precisely.
       arrow.style.top = $('display-configurations').offsetTop -
-          arrow.offsetHeight / 2 + 1 + 'px';
-      arrow.style.left = display.div.offsetLeft + display.div.offsetWidth / 2 -
-          arrow.offsetWidth / 2 + 'px';
+          arrow.offsetHeight / 2 + 'px';
+      arrow.style.left = display.div.offsetLeft +
+          display.div.offsetWidth / 2 - arrow.offsetWidth / 2 + 'px';
 
-      $('display-options-set-primary').hidden =
-          this.displays_[this.focusedIndex_].isPrimary;
-      $('display-options-toggle-mirroring').hidden =
-          (this.displays_.length <= 1 && !this.mirroring_);
+      $('display-options-set-primary').disabled = display.isPrimary;
+      $('display-options-toggle-mirroring').disabled =
+          (this.displays_.length <= 1);
+      $('selected-display-start-calibrating-overscan').disabled =
+          display.isInternal;
+
+      var orientation = $('display-options-orientation-selection');
+      orientation.disabled = false;
+      var orientationOptions = orientation.getElementsByTagName('option');
+      orientationOptions[display.orientation].selected = true;
+
+      $('selected-display-name').textContent = display.name;
+
+      var resolution = $('display-options-resolution-selection');
+      if (display.uiScales.length <= 1) {
+        var option = document.createElement('option');
+        option.value = 'default';
+        option.textContent = display.width + 'x' + display.height;
+        option.selected = true;
+        resolution.appendChild(option);
+        resolution.disabled = true;
+      } else {
+        for (var i = 0; i < display.uiScales.length; i++) {
+          var option = document.createElement('option');
+          option.value = display.uiScales[i].scale;
+          option.textContent =
+              display.uiScales[i].width + 'x' + display.uiScales[i].height;
+          if (display.uiScales[i].scale == 1.0) {
+            option.textContent += ' ' +
+                loadTimeData.getString('annotateBest');
+          }
+          option.selected = display.uiScales[i].selected;
+          resolution.appendChild(option);
+        }
+        resolution.disabled = !display.isInternal;
+      }
+    },
+
+    /**
+     * Updates the description of the selected display section.
+     * @private
+     */
+    updateSelectedDisplayDescription_: function() {
+      var resolution = $('display-options-resolution-selection');
+      resolution.textContent = '';
+      var orientation = $('display-options-orientation-selection');
+      var orientationOptions = orientation.getElementsByTagName('option');
+      for (var i = 0; i < orientationOptions.length; i++)
+        orientationOptions.selected = false;
+
+      if (this.mirroring_) {
+        this.updateSelectedDisplaySectionMirroring_();
+      } else if (this.focusedIndex_ == null ||
+          this.displays_[this.focusedIndex_] == null) {
+        this.updateSelectedDisplaySectionNoSelected_();
+      } else {
+        this.updateSelectedDisplaySectionForDisplay_(
+            this.displays_[this.focusedIndex_]);
+      }
     },
 
     /**
@@ -742,10 +823,6 @@ cr.define('options', function() {
           hasExternal = true;
           break;
         }
-      }
-      if (!hasExternal && !mirroring) {
-        OptionsPage.showDefaultPage();
-        return;
       }
 
       this.mirroring_ = mirroring;

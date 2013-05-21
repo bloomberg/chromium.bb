@@ -23,6 +23,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/screen.h"
 
 using ash::internal::DisplayManager;
@@ -33,6 +34,23 @@ namespace {
 
 DisplayManager* GetDisplayManager() {
   return ash::Shell::GetInstance()->display_manager();
+}
+
+int64 GetDisplayId(const base::ListValue* args) {
+  // Assumes the display ID is specified as the first argument.
+  std::string id_value;
+  if (!args->GetString(0, &id_value)) {
+    LOG(ERROR) << "Can't find ID";
+    return gfx::Display::kInvalidDisplayID;
+  }
+
+  int64 display_id = gfx::Display::kInvalidDisplayID;
+  if (!base::StringToInt64(id_value, &display_id)) {
+    LOG(ERROR) << "Invalid display id: " << id_value;
+    return gfx::Display::kInvalidDisplayID;
+  }
+
+  return display_id;
 }
 
 }  // namespace
@@ -50,24 +68,45 @@ void DisplayOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
   RegisterTitle(localized_strings, "displayOptionsPage",
                 IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_TAB_TITLE);
+
+  localized_strings->SetString(
+      "selectedDisplayTitleOptions", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_OPTIONS));
+  localized_strings->SetString(
+      "selectedDisplayTitleResolution", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION));
+  localized_strings->SetString(
+      "selectedDisplayTitleOrientation", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION));
+  localized_strings->SetString(
+      "selectedDisplayTitleOverscan", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_OVERSCAN));
+
   localized_strings->SetString("startMirroring", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_MIRRORING));
   localized_strings->SetString("stopMirroring", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STOP_MIRRORING));
+  localized_strings->SetString("mirroringDisplay", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_MIRRORING_DISPLAY_NAME));
   localized_strings->SetString("setPrimary", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_SET_PRIMARY));
-  localized_strings->SetString("applyResult", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_APPLY_RESULT));
-  localized_strings->SetString("resolution", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION));
-    localized_strings->SetString(
-        "startCalibratingOverscan", l10n_util::GetStringUTF16(
-            IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN));
+  localized_strings->SetString("annotateBest", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION_ANNOTATION_BEST));
+  localized_strings->SetString("orientation0", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STANDARD_ORIENTATION));
+  localized_strings->SetString("orientation90", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION_90));
+  localized_strings->SetString("orientation180", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION_180));
+  localized_strings->SetString("orientation270", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION_270));
+  localized_strings->SetString(
+      "startCalibratingOverscan", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN));
 }
 
 void DisplayOptionsHandler::InitializePage() {
   DCHECK(web_ui());
-  UpdateDisplaySectionVisibility();
 }
 
 void DisplayOptionsHandler::RegisterMessages() {
@@ -87,23 +126,21 @@ void DisplayOptionsHandler::RegisterMessages() {
       "setDisplayLayout",
       base::Bind(&DisplayOptionsHandler::HandleDisplayLayout,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setUIScale",
+      base::Bind(&DisplayOptionsHandler::HandleSetUIScale,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setOrientation",
+      base::Bind(&DisplayOptionsHandler::HandleSetOrientation,
+                 base::Unretained(this)));
 }
 
 void DisplayOptionsHandler::OnDisplayConfigurationChanging() {
 }
 
 void DisplayOptionsHandler::OnDisplayConfigurationChanged() {
-  UpdateDisplaySectionVisibility();
   SendAllDisplayInfo();
-}
-
-void DisplayOptionsHandler::UpdateDisplaySectionVisibility() {
-  DisplayManager* display_manager = GetDisplayManager();
-  size_t num_displays = display_manager->num_connected_displays();
-  base::FundamentalValue show_options(
-      num_displays > 1 || !display_manager->HasInternalDisplay());
-  web_ui()->CallJavascriptFunction(
-      "options.BrowserOptions.showDisplayOptions", show_options);
 }
 
 void DisplayOptionsHandler::SendAllDisplayInfo() {
@@ -124,21 +161,49 @@ void DisplayOptionsHandler::SendDisplayInfo(
   base::FundamentalValue mirroring(display_manager->IsMirrored());
 
   int64 primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
-  base::ListValue display_info;
+  base::ListValue js_displays;
   for (size_t i = 0; i < displays.size(); ++i) {
     const gfx::Display* display = displays[i];
+    const ash::internal::DisplayInfo& display_info =
+        display_manager->GetDisplayInfo(display->id());
     const gfx::Rect& bounds = display->bounds();
     base::DictionaryValue* js_display = new base::DictionaryValue();
     js_display->SetString("id", base::Int64ToString(display->id()));
-    js_display->SetDouble("x", bounds.x());
-    js_display->SetDouble("y", bounds.y());
-    js_display->SetDouble("width", bounds.width());
-    js_display->SetDouble("height", bounds.height());
+    js_display->SetInteger("x", bounds.x());
+    js_display->SetInteger("y", bounds.y());
+    js_display->SetInteger("width", bounds.width());
+    js_display->SetInteger("height", bounds.height());
     js_display->SetString("name",
                           display_manager->GetDisplayNameForId(display->id()));
     js_display->SetBoolean("isPrimary", display->id() == primary_id);
     js_display->SetBoolean("isInternal", display->IsInternal());
-    display_info.Set(i, js_display);
+    js_display->SetInteger("orientation",
+                           static_cast<int>(display_info.rotation()));
+    std::vector<float> ui_scales = DisplayManager::GetScalesForDisplay(
+        display_info);
+    base::ListValue* js_scales = new base::ListValue();
+    gfx::SizeF base_size = display_info.bounds_in_pixel().size();
+    base_size.Scale(1.0f / display->device_scale_factor());
+    if (display_info.rotation() == gfx::Display::ROTATE_90 ||
+        display_info.rotation() == gfx::Display::ROTATE_270) {
+      float tmp = base_size.width();
+      base_size.set_width(base_size.height());
+      base_size.set_height(tmp);
+    }
+
+    for (size_t i = 0; i < ui_scales.size(); ++i) {
+      base::DictionaryValue* scale_info = new base::DictionaryValue();
+      scale_info->SetDouble("scale", ui_scales[i]);
+      scale_info->SetInteger(
+          "width", gfx::ToFlooredInt(base_size.width() * ui_scales[i]));
+      scale_info->SetInteger(
+          "height", gfx::ToFlooredInt(base_size.height() * ui_scales[i]));
+      scale_info->SetBoolean("selected",
+                             display_info.ui_scale() == ui_scales[i]);
+      js_scales->Append(scale_info);
+    }
+    js_display->Set("uiScales", js_scales);
+    js_displays.Append(js_display);
   }
 
   scoped_ptr<base::Value> layout_value(base::Value::CreateNullValue());
@@ -152,7 +217,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
 
   web_ui()->CallJavascriptFunction(
       "options.DisplayOptions.setDisplayInfo",
-      mirroring, display_info, *layout_value.get(), *offset_value.get());
+      mirroring, js_displays, *layout_value.get(), *offset_value.get());
 }
 
 void DisplayOptionsHandler::OnFadeOutForMirroringFinished(bool is_mirroring) {
@@ -186,19 +251,10 @@ void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
 
 void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
   DCHECK(!args->empty());
-
-  int64 display_id = gfx::Display::kInvalidDisplayID;
-  std::string id_value;
-  if (!args->GetString(0, &id_value)) {
-    LOG(ERROR) << "Can't find ID";
+  int display_id = GetDisplayId(args);
+  if (display_id == gfx::Display::kInvalidDisplayID)
     return;
-  }
 
-  if (!base::StringToInt64(id_value, &display_id) ||
-      display_id == gfx::Display::kInvalidDisplayID) {
-    LOG(ERROR) << "Invalid parameter: " << id_value;
-    return;
-  }
   ash::Shell::GetInstance()->display_controller()->
       SetPrimaryDisplayId(display_id);
 }
@@ -219,6 +275,52 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
           base::Unretained(this),
           static_cast<int>(layout),
           static_cast<int>(offset)));
+}
+
+void DisplayOptionsHandler::HandleSetUIScale(const base::ListValue* args) {
+  DCHECK(!args->empty());
+
+  int64 display_id = GetDisplayId(args);
+  if (display_id == gfx::Display::kInvalidDisplayID)
+    return;
+
+  std::string ui_scale_value;
+  double ui_scale = 0.0f;
+  if (!args->GetString(1, &ui_scale_value)) {
+    LOG(ERROR) << "Ca't find new ui_scale";
+    return;
+  }
+  if (!base::StringToDouble(ui_scale_value, &ui_scale)) {
+    LOG(ERROR) << "Invalid ui_scale: " << ui_scale_value;
+    return;
+  }
+
+  GetDisplayManager()->SetDisplayUIScale(display_id, ui_scale);
+}
+
+void DisplayOptionsHandler::HandleSetOrientation(const base::ListValue* args) {
+  DCHECK(!args->empty());
+
+  int64 display_id = GetDisplayId(args);
+  if (display_id == gfx::Display::kInvalidDisplayID)
+    return;
+
+  std::string rotation_value;
+  gfx::Display::Rotation new_rotation = gfx::Display::ROTATE_0;
+  if (!args->GetString(1, &rotation_value)) {
+    LOG(ERROR) << "Can't find new orientation";
+    return;
+  }
+  if (rotation_value == "90")
+    new_rotation = gfx::Display::ROTATE_90;
+  else if (rotation_value == "180")
+    new_rotation = gfx::Display::ROTATE_180;
+  else if (rotation_value == "270")
+    new_rotation = gfx::Display::ROTATE_270;
+  else if (rotation_value != "0")
+    LOG(ERROR) << "Invalid rotation: " << rotation_value << " Falls back to 0";
+
+  GetDisplayManager()->SetDisplayRotation(display_id, new_rotation);
 }
 
 }  // namespace options

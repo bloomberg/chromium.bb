@@ -1295,14 +1295,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Show/hide the display options button on the System settings page.
-     * @private
-     */
-    showDisplayOptions_: function(show) {
-      $('display-options-section').hidden = !show;
-    },
-
-    /**
      * Activate the Bluetooth settings section on the System settings page.
      * @private
      */
@@ -1419,7 +1411,6 @@ cr.define('options', function() {
     'setupPageZoomSelector',
     'setupProxySettingsSection',
     'showBluetoothSettings',
-    'showDisplayOptions',
     'showMouseControls',
     'showTouchpadControls',
     'updateAccountPicture',
