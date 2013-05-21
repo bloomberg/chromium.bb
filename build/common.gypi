@@ -1493,7 +1493,7 @@
         ],
       }],
       ['OS=="android"', {
-        'grit_defines': ['-D', 'android',
+        'grit_defines': ['-t', 'android',
                          '-E', 'ANDROID_JAVA_TAGGED_ONLY=true'],
       }],
       ['OS=="mac"', {

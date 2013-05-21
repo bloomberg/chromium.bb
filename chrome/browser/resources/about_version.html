@@ -7,11 +7,11 @@ about:version template page
 <html id="t" i18n-values="dir:textdirection;">
   <head>
     <title i18n-content="title"></title>
-<if expr="pp_ifdef('android')">
+<if expr="is_android">
     <meta name="viewport" content="width=device-width">
 </if>
     <link rel="stylesheet" href="chrome://version/about_version.css">
-<if expr="pp_ifdef('android')">
+<if expr="is_android">
     <link rel="stylesheet" href="about_version_android.css">
 </if>
     <script src="chrome://resources/js/cr.js"></script>
@@ -37,11 +37,11 @@ about:version template page
       <table id="inner" cellpadding="0" cellspacing="0" border="0">
         <tr><td class="label" i18n-content="application_label"></td>
           <td class="version" id="version">
-<if expr="pp_ifdef('android')">
+<if expr="is_android">
             <span i18n-content="application_name"></span>
             <span i18n-content="application_version"></span>
 </if>
-<if expr="not pp_ifdef('android')">
+<if expr="not is_android">
             <span i18n-content="version"></span>
             (<span i18n-content="official">
             </span> <span i18n-content="cl"></span>)
@@ -72,7 +72,7 @@ about:version template page
             <span i18n-content="js_version"></span>
           </td>
         </tr>
-<if expr="not pp_ifdef('android')">
+<if expr="not is_android">
         <tr><td class="label" i18n-content="flash_plugin"></td>
           <td class="version" id="flash_version" i18n-content="flash_version"></td>
         </tr>
@@ -93,7 +93,7 @@ about:version template page
           <td class="label" i18n-content="variations_name"></td>
           <td class="version" id="variations-list"></td>
         </tr>
-<if expr="pp_ifdef('android')">
+<if expr="is_android">
         <tr id="build-id-section">
           <td class="label" i18n-content="build_id_name"></td>
           <td class="version" i18n-content="build_id"></td>

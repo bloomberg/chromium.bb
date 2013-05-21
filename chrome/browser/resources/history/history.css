@@ -259,7 +259,7 @@ html[dir='rtl'] .site-domain {
   line-height: 1em;
 }
 
-<if expr="not pp_ifdef('android')">
+<if expr="not is_android">
 /* Checkboxes are shown when checked or focused, or when the entry is hovered.
  * Fade in on focus, but not on hover, because it makes the UI feel laggy. */
 .site-domain-wrapper input[type=checkbox]:not(:checked),

@@ -472,12 +472,12 @@ Chromium is unable to recover your settings.
       <message name="IDS_CRASH_RECOVERY_CONTENT" desc="Text content telling the user the browser has crashed.">
         Whoa! Chromium has crashed. Relaunch now?
       </message>
-      <if expr="not pp_ifdef('android')">
+      <if expr="not is_android">
         <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password">
           Do you want Chromium to save your password?
         </message>
       </if>
-      <if expr="pp_ifdef('android')">
+      <if expr="is_android">
         <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Mobile: Info bar message to save a password">
           Do you want Chromium to save your password for this site?
         </message>
@@ -689,14 +689,14 @@ Chromium is unable to recover your settings.
       </message>
 
       <!-- about:memory -->
-      <if expr="not pp_ifdef('android')">
+      <if expr="not is_android">
         <message name="IDS_MEMORY_USAGE_SUMMARY_DESC" desc="Describes the browser summary table in the about memory page, which shows memory usage for Chromium and any other active browsers." translateable="false">
 Summary of memory used by currently active browsers. For browsers which use multiple processes, memory reflects aggregate memory used across all browser processes.
 
 For Chromium, processes used to display diagnostics information (such as this "about:memory") are excluded.
         </message>
       </if>
-      <if expr="pp_ifdef('android')">
+      <if expr="is_android">
         <message name="IDS_MEMORY_USAGE_SUMMARY_DESC" desc="Describes the browser summary table in the about memory page, which shows memory usage for Chromium." translateable="false">
 Summary of memory used by Chromium. Since Chromium uses multiple processes, memory reflects aggregate memory used across all browser processes.
 
@@ -897,11 +897,11 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
           and deselect any proxies that have been selected.
         </message>
       </if>
-      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
+      <if expr="is_android or pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Instructions for disabling use of a proxy server (leave empty for Android and iOS).">
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx and not pp_ifdef('android') and not pp_ifdef('ios')">
+      <if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx and not is_android and not pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux instructions for disabling use of a proxy server.">
           Go to
           the Chromium menu &gt;

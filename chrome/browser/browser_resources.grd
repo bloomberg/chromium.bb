@@ -20,7 +20,7 @@
       </if>
       <structure name="IDR_ABOUT_MEMORY_CSS" file="resources\about_memory.css" type="chrome_html" />
       <structure name="IDR_ABOUT_VERSION_HTML" file="resources\about_version.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-      <if expr="pp_ifdef('android')">
+      <if expr="is_android">
         <structure name="IDR_ABOUT_WELCOME_HTML" file="resources\about_welcome_android\about_welcome_android.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_ABOUT_WELCOME_CSS" file="resources\about_welcome_android\about_welcome_android.css" flattenhtml="true" type="chrome_html" />
       </if>
@@ -41,11 +41,11 @@
         <structure name="IDR_LOGIN_JS" file="resources\chromeos\login\login.js" flattenhtml="true" type="chrome_html" />
       </if>
       <structure name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="chrome_html" />
-      <if expr="not pp_ifdef('android')">
+      <if expr="not is_android">
         <structure name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="chrome_html" />
       </if>
-      <if expr="pp_ifdef('android')">
+      <if expr="is_android">
         <structure name="IDR_NEW_TAB_ANDROID_HTML" file="resources\ntp_android\new_tab.html" flattenhtml="true" type="chrome_html" />
       </if>
       <if expr="pp_ifdef('chromeos')">
@@ -79,7 +79,7 @@
       <include name="IDR_ABOUT_STATS_JS" file="resources\about_stats.js" type="BINDATA" />
       <include name="IDR_ABOUT_VERSION_JS" file="resources\about_version.js" type="BINDATA" />
       <include name="IDR_ABOUT_VERSION_CSS" file="resources\about_version.css" type="BINDATA" />
-      <if expr="pp_ifdef('android')">
+      <if expr="is_android">
         <include name="IDR_ABOUT_WELCOME_JS" file="resources\about_welcome_android\about_welcome_android.js" type="BINDATA" />
       </if>
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
@@ -102,7 +102,7 @@
       <include name="IDR_CRASHES_JS" file="resources\crashes.js" type="BINDATA" />
       <include name="IDR_CREDITS_HTML" file="${about_credits_file}" use_base_dir="false" type="BINDATA" />
       <include name="IDR_CREDITS_JS" file="resources\about_credits.js" type="BINDATA" />
-      <if expr="not pp_ifdef('android')">
+      <if expr="not is_android">
         <include name="IDR_DOWNLOADS_JS" file="resources\downloads\downloads.js" type="BINDATA" />
         <include name="IDR_EXTENSION_COMMAND_LIST_JS" file="resources\extensions\extension_command_list.js" flattenhtml="true" type="BINDATA" />
       </if>
@@ -112,7 +112,7 @@
       <if expr="not is_macosx">
         <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar.css" flattenhtml="true" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('android')">
+      <if expr="not is_android">
         <include name="IDR_EXTENSION_LIST_JS" file="resources\extensions\extension_list.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_EXTENSION_ACTIVITY_HTML" file="resources\extensions\extension_activity.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_EXTENSION_ACTIVITY_JS" file="resources\extensions\extension_activity.js" flattenhtml="true" type="BINDATA" />
@@ -123,7 +123,7 @@
       </if>
       <include name="IDR_FLAGS_HTML" file="resources\flags.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_JS" file="resources\flags.js" type="BINDATA" />
-      <if expr="not pp_ifdef('android')">
+      <if expr="not is_android">
         <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
       </if>
       <include name="IDR_HELP_JS" file="resources\help\help.js" flattenhtml="true" type="BINDATA" />
@@ -141,7 +141,7 @@
       <include name="IDR_INSTANT_JS" file="resources\instant\instant.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NET_EXPORT_HTML" file="resources\net_export\net_export.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NET_EXPORT_JS" file="resources\net_export\net_export.js" flattenhtml="true" type="BINDATA" />
-      <if expr="not pp_ifdef('android')">
+      <if expr="not is_android">
         <include name="IDR_PERFORMANCE_MONITOR_CHART_CSS" file="resources\performance_monitor\chart.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_PERFORMANCE_MONITOR_CHART_JS" file="resources\performance_monitor\chart.js" type="BINDATA" />
         <include name="IDR_PERFORMANCE_MONITOR_HTML" file="resources\performance_monitor\chart.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
@@ -150,7 +150,7 @@
       </if>
       <include name="IDR_PREDICTORS_HTML" file="resources\predictors\predictors.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_PREDICTORS_JS" file="resources\predictors\predictors.js" flattenhtml="true" type="BINDATA" />
-      <if expr="not pp_ifdef('android')">
+      <if expr="not is_android">
         <include name="IDR_NOTIFICATION_1LINE_HTML" file="resources\notification_1line.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />
@@ -186,7 +186,7 @@
       <include name="IDR_OMNIBOX_HTML" file="resources\omnibox\omnibox.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_OMNIBOX_CSS" file="resources\omnibox\omnibox.css" type="BINDATA" />
       <include name="IDR_OMNIBOX_JS" file="resources\omnibox\omnibox.js" type="BINDATA" />
-      <if expr="not pp_ifdef('android')">
+      <if expr="not is_android">
         <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PLUGINS_JS" file="resources\plugins.js" type="BINDATA" />
       </if>
@@ -239,7 +239,7 @@
       <if expr="pp_ifdef('enable_google_now')">
         <include name="IDR_GOOGLE_NOW_MANIFEST" file="resources\google_now\manifest.json" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('android')">
+      <if expr="not is_android">
         <include name="IDR_SUGGESTIONS_INTERNALS_HTML" file="resources\suggestions_internals\suggestions_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_SUGGESTIONS_INTERNALS_CSS" file="resources\suggestions_internals\suggestions_internals.css" type="BINDATA" />
         <include name="IDR_SUGGESTIONS_INTERNALS_JS" file="resources\suggestions_internals\suggestions_internals.js" type="BINDATA" />
