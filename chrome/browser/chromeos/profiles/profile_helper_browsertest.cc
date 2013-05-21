@@ -4,9 +4,11 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,19 +18,27 @@ namespace {
 static const char kActiveUserHash[] = "01234567890";
 } // namespace
 
-class ProfileHelperTest : public InProcessBrowserTest {
+// The boolean parameter, retrieved by GetParam(), is true if testing with
+// multi-profiles enabled.
+class ProfileHelperTest : public InProcessBrowserTest,
+                          public testing::WithParamInterface<bool> {
  public:
   ProfileHelperTest() {
   }
 
  protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    if (GetParam())
+      command_line->AppendSwitch(::switches::kMultiProfiles);
+  }
+
   void ActiveUserChanged(ProfileHelper* profile_helper,
                          const std::string& hash) {
     profile_helper->ActiveUserHashChanged(hash);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ProfileHelperTest, ActiveUserProfileDir) {
+IN_PROC_BROWSER_TEST_P(ProfileHelperTest, ActiveUserProfileDir) {
   ProfileHelper profile_helper;
   ActiveUserChanged(&profile_helper, kActiveUserHash);
   base::FilePath profile_dir = profile_helper.GetActiveUserProfileDir();
@@ -37,5 +47,9 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, ActiveUserProfileDir) {
   expected_dir.append(kActiveUserHash);
   EXPECT_EQ(expected_dir, profile_dir.BaseName().value());
 }
+
+INSTANTIATE_TEST_CASE_P(ProfileHelperTestInstantiation,
+                        ProfileHelperTest,
+                        testing::Bool());
 
 }  // namespace chromeos

@@ -45,7 +45,9 @@ void AssignString(std::string* out,
 
 }  // namespace
 
-class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
+class ExtensionNetworkingPrivateApiTest :
+    public ExtensionApiTest,
+    public testing::WithParamInterface<bool> {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -61,6 +63,8 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
     // Do the same as CryptohomeClientStubImpl::GetSanitizedUsername
     std::string sanitized_user = login_user + kUserIdStubHashSuffix;
     command_line->AppendSwitchASCII(switches::kLoginProfile, sanitized_user);
+    if (GetParam())
+      command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 
   bool RunNetworkingSubtest(const std::string& subtest) {
@@ -179,58 +183,58 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
 // library state is reset for each subtest run. This way they won't affect each
 // other.
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, StartConnect) {
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, StartConnect) {
   EXPECT_TRUE(RunNetworkingSubtest("startConnect")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, StartDisconnect) {
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, StartDisconnect) {
   EXPECT_TRUE(RunNetworkingSubtest("startDisconnect")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        StartConnectNonexistent) {
   EXPECT_TRUE(RunNetworkingSubtest("startConnectNonexistent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        StartDisconnectNonexistent) {
   EXPECT_TRUE(RunNetworkingSubtest("startDisconnectNonexistent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        StartGetPropertiesNonexistent) {
   EXPECT_TRUE(RunNetworkingSubtest("startGetPropertiesNonexistent"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetVisibleNetworks) {
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetVisibleNetworks) {
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworks")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        GetVisibleNetworksWifi) {
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworksWifi")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, RequestNetworkScan) {
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, RequestNetworkScan) {
   EXPECT_TRUE(RunNetworkingSubtest("requestNetworkScan")) << message_;
 }
 
 // Properties are filtered and translated through
 // ShillToONCTranslator::TranslateWiFiWithState
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetProperties) {
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetProperties) {
   EXPECT_TRUE(RunNetworkingSubtest("getProperties")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetState) {
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetState) {
   EXPECT_TRUE(RunNetworkingSubtest("getState")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, SetProperties) {
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, SetProperties) {
   EXPECT_TRUE(RunNetworkingSubtest("setProperties")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        GetManagedProperties) {
   ShillServiceClient::TestInterface* service_test =
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
@@ -282,37 +286,40 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("getManagedProperties")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        OnNetworksChangedEventConnect) {
   EXPECT_TRUE(RunNetworkingSubtest("onNetworksChangedEventConnect"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        OnNetworksChangedEventDisconnect) {
   EXPECT_TRUE(RunNetworkingSubtest("onNetworksChangedEventDisconnect"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        OnNetworkListChangedEvent) {
   EXPECT_TRUE(RunNetworkingSubtest("onNetworkListChangedEvent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        VerifyDestination) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyDestination")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        VerifyAndEncryptCredentials) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptCredentials")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        VerifyAndEncryptData) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptData")) << message_;
 }
 
+INSTANTIATE_TEST_CASE_P(ExtensionNetworkingPrivateApiTestInstantiation,
+                        ExtensionNetworkingPrivateApiTest,
+                        testing::Bool());
 
 }  // namespace chromeos

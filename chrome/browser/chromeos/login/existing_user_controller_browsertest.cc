@@ -130,7 +130,8 @@ class NotificationWatcher : public content::NotificationObserver {
 
 }  // namespace
 
-class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
+class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest,
+                                   public testing::WithParamInterface<bool> {
  protected:
   ExistingUserControllerTest()
       : mock_network_library_(NULL),
@@ -192,6 +193,8 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kLoginManager);
+    if (GetParam())
+      command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 
   virtual void SetUpUserManager() {
@@ -296,7 +299,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ExistingUserControllerTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest, ExistingUserLogin) {
   // This is disabled twice: once right after signin but before checking for
   // auto-enrollment, and again after doing an ownership status check.
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
@@ -330,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   content::RunAllPendingInMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizardPtr(WizardController::kEnrollmentScreenName,
                              _))
@@ -357,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
   content::RunAllPendingInMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest,
                        NewUserDontAutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizardPtr(WizardController::kEnrollmentScreenName,
@@ -585,7 +588,7 @@ class ExistingUserControllerPublicSessionTest
   DISALLOW_COPY_AND_ASSIGN(ExistingUserControllerPublicSessionTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
                        ConfigureAutoLoginUsingPolicy) {
   existing_user_controller()->OnSigninScreenReady();
   EXPECT_EQ("", auto_login_username());
@@ -607,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   EXPECT_FALSE(auto_login_timer()->IsRunning());
 }
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
                        AutoLoginNoDelay) {
   // Set up mocks to check login success.
   ExpectSuccessfulLogin(kAutoLoginUsername, "",
@@ -619,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   content::RunAllPendingInMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
                        AutoLoginShortDelay) {
   // Set up mocks to check login success.
   ExpectSuccessfulLogin(kAutoLoginUsername, "",
@@ -643,7 +646,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   content::RunAllPendingInMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
                        LoginStopsAutoLogin) {
   // Set up mocks to check login success.
   ExpectSuccessfulLogin(kUsername, kPassword, CreateAuthenticator);
@@ -666,7 +669,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   EXPECT_FALSE(auto_login_timer()->IsRunning());
 }
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
                        GuestModeLoginStopsAutoLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(1);
@@ -694,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   EXPECT_FALSE(auto_login_timer()->IsRunning());
 }
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
                        CompleteLoginStopsAutoLogin) {
   // Set up mocks to check login success.
   ExpectSuccessfulLogin(kUsername, kPassword, CreateAuthenticator);
@@ -719,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   EXPECT_FALSE(auto_login_timer()->IsRunning());
 }
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
                        PublicSessionLoginStopsAutoLogin) {
   // Set up mocks to check login success.
   ExpectSuccessfulLogin(kAutoLoginUsername, "",
@@ -741,5 +744,13 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
 }
+
+INSTANTIATE_TEST_CASE_P(ExistingUserControllerTestInstantiation,
+                        ExistingUserControllerTest,
+                        testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(ExistingUserControllerPublicSessionTestInstantiation,
+                        ExistingUserControllerPublicSessionTest,
+                        testing::Bool());
 
 }  // namespace chromeos
