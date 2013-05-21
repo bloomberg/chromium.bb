@@ -413,12 +413,16 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
+  EXPECT_EQ(url, contents()->GetLastCommittedURL());
+  EXPECT_EQ(url, contents()->GetActiveURL());
 
   // Navigate to new site
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
+  EXPECT_EQ(url, contents()->GetLastCommittedURL());
+  EXPECT_EQ(url2, contents()->GetActiveURL());
   TestRenderViewHost* pending_rvh =
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   int pending_rvh_delete_count = 0;
@@ -436,6 +440,8 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(pending_rvh, contents()->GetRenderViewHost());
+  EXPECT_EQ(url2, contents()->GetLastCommittedURL());
+  EXPECT_EQ(url2, contents()->GetActiveURL());
   EXPECT_NE(instance1, instance2);
   EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
   // We keep the original RVH around, swapped out.

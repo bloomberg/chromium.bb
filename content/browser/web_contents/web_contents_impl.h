@@ -305,6 +305,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool OnMessageReceived(RenderViewHost* render_view_host,
                                  const IPC::Message& message) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
+  virtual const GURL& GetActiveURL() const OVERRIDE;
+  virtual const GURL& GetLastCommittedURL() const OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;

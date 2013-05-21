@@ -721,8 +721,20 @@ BrowserContext* WebContentsImpl::GetBrowserContext() const {
 }
 
 const GURL& WebContentsImpl::GetURL() const {
-  // We may not have a navigation entry yet
+  // We may not have a navigation entry yet.
   NavigationEntry* entry = controller_.GetActiveEntry();
+  return entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
+}
+
+const GURL& WebContentsImpl::GetActiveURL() const {
+  // We may not have a navigation entry yet.
+  NavigationEntry* entry = controller_.GetActiveEntry();
+  return entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
+}
+
+const GURL& WebContentsImpl::GetLastCommittedURL() const {
+  // We may not have a navigation entry yet.
+  NavigationEntry* entry = controller_.GetLastCommittedEntry();
   return entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
 }
 
