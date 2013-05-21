@@ -1622,3 +1622,5 @@ crbug.com/242444 [ Win7 ] editing/undo/undo-after-event-edited.html [ Crash Pass
 crbug.com/242485 [ Mac Linux Debug ] http/tests/inspector/appcache/appcache-iframe-manifests.html [ Crash Pass ]
 
 crbug.com/242511 [ Mac Debug ] svg/custom/uri-reference-handling.svg [ Crash Pass ]
+
+crbug.com/242516 [ Linux ] inspector/elements/resolve-node-blocked.html [ Crash Pass ]
