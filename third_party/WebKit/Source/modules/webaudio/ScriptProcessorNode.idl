@@ -22,13 +22,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// For real-time audio stream synthesis/processing in JavaScript 
+// For real-time audio stream synthesis/processing in JavaScript
 [
-    Conditional=WEB_AUDIO,
-    EventTarget
+    Conditional=WEB_AUDIO
 ] interface ScriptProcessorNode : AudioNode {
     // Rendering callback
     attribute EventListener onaudioprocess;
-    
+
     readonly attribute long bufferSize;
 };

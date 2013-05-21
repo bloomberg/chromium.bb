@@ -24,7 +24,7 @@
 
 [
     Conditional=WEB_AUDIO
-] interface AudioNode {
+] interface AudioNode : EventTarget {
     readonly attribute AudioContext context;
     readonly attribute unsigned long numberOfInputs;
     readonly attribute unsigned long numberOfOutputs;
@@ -40,4 +40,14 @@
     [RaisesException] void connect(AudioParam? destination, [Default=Undefined] optional unsigned long output);
 
     [RaisesException] void disconnect([Default=Undefined] optional unsigned long output);
+
+
+    // EventTarget interface
+    void addEventListener(DOMString type,
+                          EventListener listener,
+                          optional boolean useCapture);
+    void removeEventListener(DOMString type,
+                             EventListener listener,
+                             optional boolean useCapture);
+    [RaisesException] boolean dispatchEvent(Event event);
 };
