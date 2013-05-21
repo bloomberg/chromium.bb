@@ -79,6 +79,13 @@
         <include name="IDR_PROFILE_AVATAR_2X_24" file="default_200_percent/profile_avatar_note.png" type="BINDATA" />
         <include name="IDR_PROFILE_AVATAR_2X_25" file="default_200_percent/profile_avatar_sun_cloud.png" type="BINDATA" />
       </if>
+      <if expr="is_macosx and pp_ifdef('enable_app_list')">
+        <!-- App Launcher icons for .app shim, dock icon. Unscaled, and chromium
+             only, until the resource loader is updated to support multiple icon
+             scales, and shortcut creation properly handles smaller icon sizes.
+             See http://crbug.com/167408 and http://crbug.com/241304 -->
+         <include name="IDR_APP_LIST_128" file="chromium/app_list_128.png" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

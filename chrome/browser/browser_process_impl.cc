@@ -117,6 +117,7 @@
 
 #if defined(OS_MACOSX)
 #include "apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -901,6 +902,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 
 #if defined(OS_MACOSX)
   app_shim_host_manager_.reset(new AppShimHostManager);
+  AppListService::InitAll(NULL);
 #endif
 }
 

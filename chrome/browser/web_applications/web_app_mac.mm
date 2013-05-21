@@ -115,6 +115,15 @@ WebAppShortcutCreator::WebAppShortcutCreator(
 WebAppShortcutCreator::~WebAppShortcutCreator() {
 }
 
+base::FilePath WebAppShortcutCreator::GetShortcutPath() const {
+  base::FilePath dst_path = GetDestinationPath();
+  if (dst_path.empty())
+    return dst_path;
+
+  base::FilePath app_name = internals::GetSanitizedFileName(info_.title);
+  return dst_path.Append(app_name.ReplaceExtension("app"));
+}
+
 bool WebAppShortcutCreator::CreateShortcut() {
   base::FilePath app_name = internals::GetSanitizedFileName(info_.title);
   base::FilePath app_file_name = app_name.ReplaceExtension("app");
@@ -282,6 +291,14 @@ void WebAppShortcutCreator::RevealGeneratedBundleInFinder(
 }  // namespace
 
 namespace web_app {
+
+base::FilePath GetAppInstallPath(
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  WebAppShortcutCreator shortcut_creator(base::FilePath(),
+                                         shortcut_info,
+                                         string16());
+  return shortcut_creator.GetShortcutPath();
+}
 
 namespace internals {
 

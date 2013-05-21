@@ -73,6 +73,7 @@ TEST(WebAppShortcutCreatorTest, CreateShortcut) {
 
   EXPECT_TRUE(shortcut_creator.CreateShortcut());
   EXPECT_TRUE(file_util::PathExists(dst_path));
+  EXPECT_EQ(dst_path.value(), shortcut_creator.GetShortcutPath().value());
 
   base::FilePath plist_path = dst_path.Append("Contents").Append("Info.plist");
   NSDictionary* plist = [NSDictionary dictionaryWithContentsOfFile:

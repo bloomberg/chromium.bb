@@ -20,6 +20,11 @@ class NSString;
 
 namespace web_app {
 
+// Returns the full path of the .app shim that would be created by
+// web_app::CreateShortcuts().
+base::FilePath GetAppInstallPath(
+    const ShellIntegration::ShortcutInfo& shortcut_info);
+
 // Creates a shortcut for a web application. The shortcut is a stub app
 // that simply loads the browser framework and runs the given app.
 class WebAppShortcutCreator {
@@ -33,6 +38,9 @@ class WebAppShortcutCreator {
       const string16& chrome_bundle_id);
 
   virtual ~WebAppShortcutCreator();
+
+  // Returns a path to the destination where the app should be written to.
+  base::FilePath GetShortcutPath() const;
 
   // Copies the app launcher template into place and fills in all relevant
   // information.
