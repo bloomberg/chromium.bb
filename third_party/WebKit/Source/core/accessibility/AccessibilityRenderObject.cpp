@@ -708,7 +708,7 @@ bool AccessibilityRenderObject::hasPlainText() const
 
     return style->fontDescription().weight() == FontWeightNormal
         && style->fontDescription().italic() == FontItalicOff
-        && style->textDecorationsInEffect() == TDNONE;
+        && style->textDecorationsInEffect() == TextDecorationNone;
 }
 
 bool AccessibilityRenderObject::hasSameFont(RenderObject* renderer) const
@@ -740,7 +740,7 @@ bool AccessibilityRenderObject::hasUnderline() const
     if (!m_renderer)
         return false;
 
-    return m_renderer->style()->textDecorationsInEffect() & UNDERLINE;
+    return m_renderer->style()->textDecorationsInEffect() & TextDecorationUnderline;
 }
 
 //
