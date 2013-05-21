@@ -223,6 +223,14 @@
     }
     );
 
+    @supports (#(display: none) {}
+        #t45 { content: "FAIL" }
+    );
+
+    @supports ((display: none#) {}
+        #t46 { content: "FAIL" }
+    );
+
 </style>
 </head>
 <body>
@@ -230,8 +238,8 @@
 
 <script>
     description("Test the @supports rule.");
-    var numTests = 45;
-    var untouchedTests = [1, 3, 5, 8, 12, 13, 14, 18, 28, 29, 34, 36, 43, 44]; // Tests whose content shouldn't change from the UNTOUCHED default.
+    var numTests = 47;
+    var untouchedTests = [1, 3, 5, 8, 12, 13, 14, 18, 28, 29, 34, 36, 43, 44, 45, 46]; // Tests whose content shouldn't change from the UNTOUCHED default.
 
     var container = document.getElementById("test_container");
     for (var i=0; i < numTests; i++) {

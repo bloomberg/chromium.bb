@@ -757,7 +757,7 @@ supports_condition_in_parens:
         $$ = $3;
     }
     | supports_declaration_condition
-    | '(' error ')' {
+    | '(' error error_recovery ')' {
         $$ = false;
     }
     ;
