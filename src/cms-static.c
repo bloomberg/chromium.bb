@@ -73,7 +73,8 @@ static void
 cms_notifier_output_created(struct wl_listener *listener, void *data)
 {
 	struct weston_output *o = (struct weston_output *) data;
-	struct cms_static *cms = container_of(listener, struct cms_static, destroy_listener);
+	struct cms_static *cms =
+		container_of(listener, struct cms_static, output_created_listener);
 	cms_output_created(cms, o);
 }
 
