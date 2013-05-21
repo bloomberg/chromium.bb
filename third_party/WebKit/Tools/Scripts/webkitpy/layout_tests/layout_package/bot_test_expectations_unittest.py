@@ -30,57 +30,50 @@ import unittest2 as unittest
 
 from webkitpy.layout_tests.layout_package import bot_test_expectations
 
+
 class BotTestExpectationsTest(unittest.TestCase):
+    # Expects newest result on left of string "PFF", means it just passed after 2 failures.
+    def _results_from_string(self, results_string):
+        results_list = []
+        last_char = None
+        for char in results_string:
+            if char != last_char:
+                results_list.insert(0, [1, char])
+            else:
+                results_list[0][0] += 1
+        return {'results': results_list}
+
+    def _assert_expectations(self, expectations, test_data, expectations_string):
+        output = expectations._generate_expectations_string(test_data)
+        self.assertMultiLineEqual(output, expectations_string)
 
     def test_basic(self):
-        expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=True)
         test_data = {
             'tests': {
                 'foo': {
-                    'veryflaky.html': {
-                        'results': [[1, 'F'], [1, 'P'], [1, 'F'], [1, 'P']]
-                    },
-                    'maybeflaky.html': {
-                        'results': [[3, 'P'], [1, 'F'], [3, 'P']]
-                    },
-                    'notflakypass.html': {
-                        'results': [[4, 'P']]
-                    },
-                    'notflakyfail.html': {
-                        'results': [[4, 'F']]
-                    },
+                    'veryflaky.html': self._results_from_string('FPFP'),
+                    'maybeflaky.html': self._results_from_string('PPFP'),
+                    'notflakypass.html': self._results_from_string('PPPP'),
+                    'notflakyfail.html': self._results_from_string('FFFF'),
                 }
             }
         }
-        output = expectations._generate_expectations_string(test_data)
-        expected_output = """Bug(auto) foo/veryflaky.html [ Failure Pass ]"""
-        self.assertMultiLineEqual(output, expected_output)
+        expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=True)
+        self._assert_expectations(expectations, test_data, """Bug(auto) foo/veryflaky.html [ Failure Pass ]""")
 
         expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=False)
-        output = expectations._generate_expectations_string(test_data)
-        expected_output = """Bug(auto) foo/veryflaky.html [ Failure Pass ]
-Bug(auto) foo/maybeflaky.html [ Failure Pass ]"""
-        self.assertMultiLineEqual(output, expected_output)
+        self._assert_expectations(expectations, test_data, """Bug(auto) foo/veryflaky.html [ Failure Pass ]
+Bug(auto) foo/maybeflaky.html [ Failure Pass ]""")
 
     def test_all_failure_types(self):
         expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=True)
         test_data = {
             'tests': {
                 'foo': {
-                    'allfailures.html': {
-                        'results': [[1, 'F'], [1, 'P'], [1, 'F'], [1, 'P'],
-                            [1, 'C'], [1, 'N'], [1, 'C'], [1, 'N'],
-                            [1, 'T'], [1, 'X'], [1, 'T'], [1, 'X'],
-                            [1, 'I'], [1, 'Z'], [1, 'I'], [1, 'Z'],
-                            [1, 'O'], [1, 'C'], [1, 'O'], [1, 'C']]
-                    },
-                    'imageplustextflake.html': {
-                        'results': [[1, 'Z'], [1, 'P'], [1, 'Z'], [1, 'P']]
-                    },
+                    'allfailures.html': self._results_from_string('FPFPCNCNTXTXIZIZOCOC'),
+                    'imageplustextflake.html': self._results_from_string('ZPZPPPPPPPPPPPPPPPPP'),
                 }
             }
         }
-        output = expectations._generate_expectations_string(test_data)
-        expected_output = """Bug(auto) foo/imageplustextflake.html [ Failure Pass ]
-Bug(auto) foo/allfailures.html [ Crash Missing ImageOnlyFailure Failure Timeout Pass ]"""
-        self.assertMultiLineEqual(output, expected_output)
+        self._assert_expectations(expectations, test_data, """Bug(auto) foo/imageplustextflake.html [ Failure Pass ]
+Bug(auto) foo/allfailures.html [ Crash Missing ImageOnlyFailure Failure Timeout Pass ]""")
