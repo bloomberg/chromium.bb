@@ -999,15 +999,12 @@ public:
     void setFullScreenRenderer(RenderFullScreen*);
     RenderFullScreen* fullScreenRenderer() const { return m_fullScreenRenderer; }
     void fullScreenRendererDestroyed();
-    
-    void setFullScreenRendererSize(const IntSize&);
-    void setFullScreenRendererBackgroundColor(Color);
-    
+
     void fullScreenChangeDelayTimerFired(Timer<Document>*);
     bool fullScreenIsAllowedForElement(Element*) const;
     void fullScreenElementRemoved();
     void removeFullScreenElementOfSubtree(Node*, bool amongChildrenOnly = false);
-    bool isAnimatingFullScreen() const;
+    bool isAnimatingFullScreen() const { return m_isAnimatingFullScreen; }
     void setAnimatingFullScreen(bool);
 
     // W3C API
