@@ -20,32 +20,31 @@ function test()
         var dispatcher = InspectorBackend._domainDispatchers["HeapProfiler"];
         var panel = WebInspector.panels.profiles;
         panel._reset();
-
         panel._createTemporaryProfile("HEAP");
-        dispatcher.addProfileHeader({
-            typeId: WebInspector.HeapSnapshotProfileType.TypeId,
-            title: "heapSnapshotSaveToFileTest",
-            uid: 42,
-            maxJSObjectId: 6
-        });
-        var profileHeader = panel.getProfileType("HEAP").getProfiles()[0];
 
+        var profileType = panel.getProfileType("HEAP");
+        profileType.addEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, snapshotLoaded, this);
+        function snapshotLoaded(event)
+        {
+            profileType.removeEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, snapshotLoaded, this);
+            if (overrideGetProfile)
+                InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
+            callback(event.data);
+        }
+
+        InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
         function getHeapSnapshotMock(uid) {
             for (var i = 0, l = sourceStringified.length; i < l; i += partSize)
                 dispatcher.addHeapSnapshotChunk(uid, sourceStringified.slice(i, i + partSize));
             dispatcher.finishHeapSnapshot(uid);
         }
 
-        function snapshotLoaded()
-        {
-            if (overrideGetProfile)
-                InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
-            callback(profileHeader);
-        }
-        InspectorTest.addSniffer(profileHeader, "_snapshotReceived", snapshotLoaded);
-
-        InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
-        panel._showProfile(profileHeader);
+        dispatcher.addProfileHeader({
+            typeId: WebInspector.HeapSnapshotProfileType.TypeId,
+            title: "heapSnapshotSaveToFileTest",
+            uid: 42,
+            maxJSObjectId: 6
+        });
     }
 
     InspectorTest.runTestSuite([
