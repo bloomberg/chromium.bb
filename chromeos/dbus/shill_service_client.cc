@@ -20,6 +20,12 @@ namespace chromeos {
 
 namespace {
 
+#ifndef DBUS_ERROR_UNKNOWN_OBJECT
+// The linux_chromeos ASAN builder has an older version of dbus-protocol.h
+// so make sure this is defined.
+#define DBUS_ERROR_UNKNOWN_OBJECT "org.freedesktop.DBus.Error.UnknownObject"
+#endif
+
 // Error callback for GetProperties.
 void OnGetPropertiesError(
     const dbus::ObjectPath& service_path,
