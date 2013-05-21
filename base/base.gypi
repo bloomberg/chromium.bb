@@ -161,6 +161,7 @@
           'files/dir_reader_posix.h',
           'files/file_path.cc',
           'files/file_path.h',
+          'files/file_path_constants.cc',
           'files/file_path_watcher.cc',
           'files/file_path_watcher.h',
           'files/file_path_watcher_kqueue.cc',

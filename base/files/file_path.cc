@@ -31,17 +31,6 @@
 
 namespace base {
 
-#if defined(FILE_PATH_USES_WIN_SEPARATORS)
-const FilePath::CharType FilePath::kSeparators[] = FILE_PATH_LITERAL("\\/");
-#else  // FILE_PATH_USES_WIN_SEPARATORS
-const FilePath::CharType FilePath::kSeparators[] = FILE_PATH_LITERAL("/");
-#endif  // FILE_PATH_USES_WIN_SEPARATORS
-
-const FilePath::CharType FilePath::kCurrentDirectory[] = FILE_PATH_LITERAL(".");
-const FilePath::CharType FilePath::kParentDirectory[] = FILE_PATH_LITERAL("..");
-
-const FilePath::CharType FilePath::kExtensionSeparator = FILE_PATH_LITERAL('.');
-
 typedef FilePath::StringType StringType;
 
 namespace {
@@ -139,7 +128,7 @@ StringType::size_type ExtensionSeparatorPosition(const StringType& path) {
       path.rfind(FilePath::kExtensionSeparator, last_dot - 1);
   const StringType::size_type last_separator =
       path.find_last_of(FilePath::kSeparators, last_dot - 1,
-                        arraysize(FilePath::kSeparators) - 1);
+                        FilePath::kSeparatorsLength - 1);
 
   if (penultimate_dot == StringType::npos ||
       (last_separator != StringType::npos &&
@@ -217,7 +206,7 @@ bool FilePath::operator!=(const FilePath& that) const {
 
 // static
 bool FilePath::IsSeparator(CharType character) {
-  for (size_t i = 0; i < arraysize(kSeparators) - 1; ++i) {
+  for (size_t i = 0; i < kSeparatorsLength - 1; ++i) {
     if (character == kSeparators[i]) {
       return true;
     }
@@ -325,7 +314,7 @@ FilePath FilePath::DirName() const {
 
   StringType::size_type last_separator =
       new_path.path_.find_last_of(kSeparators, StringType::npos,
-                                  arraysize(kSeparators) - 1);
+                                  kSeparatorsLength - 1);
   if (last_separator == StringType::npos) {
     // path_ is in the current directory.
     new_path.path_.resize(letter + 1);
@@ -363,7 +352,7 @@ FilePath FilePath::BaseName() const {
   // one character and it's a separator, leave it alone.
   StringType::size_type last_separator =
       new_path.path_.find_last_of(kSeparators, StringType::npos,
-                                  arraysize(kSeparators) - 1);
+                                  kSeparatorsLength - 1);
   if (last_separator != StringType::npos &&
       last_separator < new_path.path_.length() - 1) {
     new_path.path_.erase(0, last_separator + 1);
@@ -1269,7 +1258,7 @@ void FilePath::StripTrailingSeparatorsInternal() {
 FilePath FilePath::NormalizePathSeparators() const {
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
   StringType copy = path_;
-  for (size_t i = 1; i < arraysize(kSeparators); ++i) {
+  for (size_t i = 1; i < kSeparatorsLength; ++i) {
     std::replace(copy.begin(), copy.end(), kSeparators[i], kSeparators[0]);
   }
   return FilePath(copy);

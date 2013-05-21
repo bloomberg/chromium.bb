@@ -127,6 +127,7 @@
     (r'autofill_common\.lib$', r'switches\.obj$'),
     (r'\bbase\.lib$', r'string_util_constants\.obj$'),
     (r'base_static\.lib$', r'base_switches\.obj$'),
+    (r'\bbase\.lib$', r'file_path_constants\.obj$'),
     (r'\bcc\.lib$', r'switches\.obj$'),
     (r'\bcommon\.lib$', r'extension_constants\.obj$'),
     (r'\bcommon\.lib$', r'extension_manifest_constants\.obj$'),

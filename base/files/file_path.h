@@ -150,6 +150,9 @@ class BASE_EXPORT FilePath {
   // when composing pathnames.
   static const CharType kSeparators[];
 
+  // arraysize(kSeparators).
+  static const size_t kSeparatorsLength;
+
   // A special path component meaning "this directory."
   static const CharType kCurrentDirectory[];
 
