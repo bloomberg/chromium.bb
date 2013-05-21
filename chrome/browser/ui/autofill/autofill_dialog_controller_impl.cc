@@ -31,10 +31,12 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_data_model.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/personal_data_manager.h"
+#include "components/autofill/browser/phone_number_i18n.h"
 #include "components/autofill/browser/risk/fingerprint.h"
 #include "components/autofill/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/browser/validation.h"
@@ -1116,6 +1118,20 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
     }
   }
 
+  // Validate the phone number against the country code of the address.
+  if (field_values.count(ADDRESS_HOME_COUNTRY) &&
+      field_values.count(PHONE_HOME_WHOLE_NUMBER)) {
+    i18n::PhoneObject phone_object(
+        field_values[PHONE_HOME_WHOLE_NUMBER],
+        AutofillCountry::GetCountryCode(
+            field_values[ADDRESS_HOME_COUNTRY],
+            g_browser_process->GetApplicationLocale()));
+    if (!phone_object.IsValidNumber()) {
+      invalid_messages[PHONE_HOME_WHOLE_NUMBER] =
+          ASCIIToUTF16("Invalid phone number");
+    }
+  }
+
   return invalid_messages;
 }
 
@@ -2162,7 +2178,6 @@ bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
       break;
 
     case PHONE_HOME_WHOLE_NUMBER:  // Used in billing section.
-      // TODO(dbeam): validate with libphonenumber.
       break;
 
     default:

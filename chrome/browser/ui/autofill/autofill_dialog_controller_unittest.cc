@@ -44,6 +44,18 @@ const char kSettingsOrigin[] = "Chrome settings";
 
 using content::BrowserThread;
 
+void SetOutputValue(const DetailInputs& inputs,
+                    DetailOutputMap* outputs,
+                    AutofillFieldType type,
+                    const std::string& value) {
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    const DetailInput& input = inputs[i];
+    (*outputs)[&input] = input.type == type ?
+        ASCIIToUTF16(value) :
+        input.initial_value;
+  }
+}
+
 class TestAutofillDialogView : public AutofillDialogView {
  public:
   TestAutofillDialogView() {}
@@ -393,6 +405,80 @@ TEST_F(AutofillDialogControllerTest, ValidityCheck) {
       controller()->InputValidityMessage(iter->type, string16());
     }
   }
+}
+
+// Test for phone number validation.
+TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
+  // Construct DetailOutputMap from existing data.
+  SwitchToAutofill();
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+
+  AutofillProfile full_profile(test::GetFullProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  controller()->EditClickedForSection(SECTION_SHIPPING);
+
+  DetailOutputMap outputs;
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
+
+  // Make sure country is United States.
+  SetOutputValue(inputs, &outputs, ADDRESS_HOME_COUNTRY, "United States");
+
+  // Existing data should have no errors.
+  ValidityData validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_FINAL);
+  EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+
+  // Input an empty phone number with VALIDATE_FINAL.
+  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "");
+  validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_FINAL);
+  EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+
+  // Input an empty phone number with VALIDATE_EDIT.
+  validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_EDIT);
+  EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+
+  // Input an invalid phone number.
+  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "ABC");
+  validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_EDIT);
+  EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+
+  // Input a local phone number.
+  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "2155546699");
+  validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_EDIT);
+  EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+
+  // Input an invalid local phone number.
+  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "215554669");
+  validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_EDIT);
+  EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+
+  // Input an international phone number.
+  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "+33 892 70 12 39");
+  validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_EDIT);
+  EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+
+  // Input an invalid international phone number.
+  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER,
+                 "+112333 892 70 12 39");
+  validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_EDIT);
+  EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
