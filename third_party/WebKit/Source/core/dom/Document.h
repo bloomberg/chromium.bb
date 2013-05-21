@@ -132,6 +132,7 @@ class RenderArena;
 class RenderFullScreen;
 class RenderView;
 class RequestAnimationFrameCallback;
+class SVGDocumentExtensions;
 class ScriptElementData;
 class ScriptRunner;
 class ScriptableDocumentParser;
@@ -158,10 +159,6 @@ class XPathEvaluator;
 class XPathExpression;
 class XPathNSResolver;
 class XPathResult;
-
-#if ENABLE(SVG)
-class SVGDocumentExtensions;
-#endif
 
 struct AnnotatedRegionValue;
 
@@ -409,11 +406,7 @@ public:
     bool isPluginDocument() const { return m_documentClasses & PluginDocumentClass; }
     bool isMediaDocument() const { return m_documentClasses & MediaDocumentClass; }
 
-#if ENABLE(SVG)
     bool hasSVGRootNode() const;
-#else
-    static bool hasSVGRootNode() { return false; }
-#endif
 
     bool isFrameSet() const;
 
@@ -950,10 +943,8 @@ public:
 
     virtual void removeAllEventListeners();
 
-#if ENABLE(SVG)
     const SVGDocumentExtensions* svgExtensions();
     SVGDocumentExtensions* accessSVGExtensions();
-#endif
 
     void initSecurityContext();
     void initContentSecurityPolicy();
@@ -1342,9 +1333,7 @@ private:
 
     RefPtr<XPathEvaluator> m_xpathEvaluator;
 
-#if ENABLE(SVG)
     OwnPtr<SVGDocumentExtensions> m_svgExtensions;
-#endif
 
     Vector<AnnotatedRegionValue> m_annotatedRegions;
     bool m_hasAnnotatedRegions;

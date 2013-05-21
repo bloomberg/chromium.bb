@@ -32,6 +32,8 @@
 #include "core/platform/Pasteboard.h"
 
 #include "HTMLNames.h"
+#include "SVGNames.h"
+#include "XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
@@ -47,11 +49,6 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/rendering/RenderImage.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#include "XLinkNames.h"
-#endif
 
 #include <public/Platform.h>
 #include <public/WebClipboard.h>
@@ -148,10 +145,8 @@ void Pasteboard::writeImage(Node* node, const KURL&, const String& title)
     AtomicString urlString;
     if (node->hasTagName(HTMLNames::imgTag) || node->hasTagName(HTMLNames::inputTag))
         urlString = toElement(node)->getAttribute(HTMLNames::srcAttr);
-#if ENABLE(SVG)
     else if (node->hasTagName(SVGNames::imageTag))
         urlString = toElement(node)->getAttribute(XLinkNames::hrefAttr);
-#endif
     else if (node->hasTagName(HTMLNames::embedTag) || node->hasTagName(HTMLNames::objectTag)) {
         Element* element = toElement(node);
         urlString = element->imageSourceURL();

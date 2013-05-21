@@ -64,9 +64,7 @@ public:
         : m_charactersLength(len)
         , m_len(len)
         , m_xpos(xpos)
-#if ENABLE(SVG)
         , m_horizontalGlyphStretch(1)
-#endif
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
         , m_is8Bit(true)
@@ -87,9 +85,7 @@ public:
         : m_charactersLength(len)
         , m_len(len)
         , m_xpos(xpos)
-#if ENABLE(SVG)
         , m_horizontalGlyphStretch(1)
-#endif
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
         , m_is8Bit(false)
@@ -109,9 +105,7 @@ public:
         : m_charactersLength(s.length())
         , m_len(s.length())
         , m_xpos(xpos)
-#if ENABLE(SVG)
         , m_horizontalGlyphStretch(1)
-#endif
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
         , m_allowTabs(false)
@@ -172,10 +166,8 @@ public:
     void setText(const UChar* c, unsigned len) { m_data.characters16 = c; m_len = len; m_is8Bit = false;}
     void setCharactersLength(unsigned charactersLength) { m_charactersLength = charactersLength; }
 
-#if ENABLE(SVG)
     float horizontalGlyphStretch() const { return m_horizontalGlyphStretch; }
     void setHorizontalGlyphStretch(float scale) { m_horizontalGlyphStretch = scale; }
-#endif
 
     bool allowTabs() const { return m_allowTabs; }
     unsigned tabSize() const { return m_tabSize; }
@@ -205,11 +197,9 @@ public:
     public:
         virtual ~RenderingContext() { }
 
-#if ENABLE(SVG_FONTS)
         virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, WidthIterator&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) = 0;
         virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const = 0;
         virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, String& glyphName) const = 0;
-#endif
     };
 
     RenderingContext* renderingContext() const { return m_renderingContext.get(); }
@@ -232,9 +222,7 @@ private:
     // start of the containing block. In the case of right alignment or center alignment, left start of
     // the text line is not the same as left start of the containing block.
     float m_xpos;  
-#if ENABLE(SVG)
     float m_horizontalGlyphStretch;
-#endif
 
     float m_expansion;
     ExpansionBehavior m_expansionBehavior : 2;

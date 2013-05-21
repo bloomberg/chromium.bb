@@ -100,9 +100,7 @@ protected:
     unsigned m_arraySize : 28;
     mutable unsigned m_presentationAttributeStyleIsDirty : 1;
     mutable unsigned m_styleAttributeIsDirty : 1;
-#if ENABLE(SVG)
     mutable unsigned m_animatedSVGAttributesAreDirty : 1;
-#endif
 
     mutable RefPtr<StylePropertySet> m_inlineStyle;
     mutable SpaceSplitString m_classNames;
@@ -113,9 +111,7 @@ private:
     friend class StyledElement;
     friend class ShareableElementData;
     friend class UniqueElementData;
-#if ENABLE(SVG)
     friend class SVGElement;
-#endif
 
     const Attribute* attributeBase() const;
     const Attribute* getAttributeItem(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
@@ -553,13 +549,11 @@ public:
     bool isInert() const;
     virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const { return isInTopLayer(); }
 
-#if ENABLE(SVG)
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
     bool hasPendingResources() const;
     void setHasPendingResources();
     void clearHasPendingResources();
     virtual void buildPendingResource() { };
-#endif
 
     enum {
         ALLOW_KEYBOARD_INPUT = 1 << 0,
@@ -838,10 +832,8 @@ inline const AtomicString& Element::getClassAttribute() const
 {
     if (!hasClass())
         return nullAtom;
-#if ENABLE(SVG)
     if (isSVGElement())
         return getAttribute(HTMLNames::classAttr);
-#endif
     return fastGetAttribute(HTMLNames::classAttr);
 }
 

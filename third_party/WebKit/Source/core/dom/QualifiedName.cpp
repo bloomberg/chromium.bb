@@ -26,6 +26,7 @@
 #endif
 
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
@@ -35,16 +36,10 @@
 #include <wtf/HashSet.h>
 #include <wtf/StaticConstructors.h>
 
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#endif
-
 namespace WebCore {
 
 static const int staticQualifiedNamesCount = HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount
-#if ENABLE(SVG)
     + SVGNames::SVGTagsCount + SVGNames::SVGAttrsCount
-#endif
     + XLinkNames::XLinkAttrsCount
     + XMLNSNames::XMLNSAttrsCount
     + XMLNames::XMLAttrsCount;

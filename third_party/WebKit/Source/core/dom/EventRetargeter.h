@@ -20,18 +20,15 @@
 #ifndef EventRetargeter_h
 #define EventRetargeter_h
 
+#include "SVGNames.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/EventContext.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include <wtf/HashMap.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGUseElement.h"
-#endif
+#include "wtf/HashMap.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -77,7 +74,6 @@ inline EventTarget* EventRetargeter::eventTargetRespectingTargetRules(Node* refe
     if (referenceNode->isPseudoElement())
         return referenceNode->parentNode();
 
-#if ENABLE(SVG)
     if (!referenceNode->isSVGElement() || !referenceNode->isInShadowTree())
         return referenceNode;
 
@@ -90,7 +86,6 @@ inline EventTarget* EventRetargeter::eventTargetRespectingTargetRules(Node* refe
     SVGUseElement* useElement = static_cast<SVGUseElement*>(shadowHostElement);
     if (SVGElementInstance* instance = useElement->instanceForShadowTreeElement(referenceNode))
         return instance;
-#endif
 
     return referenceNode;
 }

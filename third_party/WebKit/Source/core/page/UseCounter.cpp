@@ -412,7 +412,6 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
 #if defined(ENABLE_DRAGGABLE_REGION) && ENABLE_DRAGGABLE_REGION
     case CSSPropertyWebkitAppRegion: return 354;
 #endif
-#if ENABLE(SVG)
     case CSSPropertyClipPath: return 355;
     case CSSPropertyClipRule: return 356;
     case CSSPropertyMask: return 357;
@@ -454,7 +453,6 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyVectorEffect: return 393;
     case CSSPropertyWritingMode: return 394;
     case CSSPropertyWebkitSvgShadow: return 395;
-#endif
 #if defined(ENABLE_CURSOR_VISIBILITY) && ENABLE_CURSOR_VISIBILITY
     case CSSPropertyWebkitCursorVisibility: return 396;
 #endif
@@ -487,9 +485,7 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitFilter: return 413;
     case CSSPropertyWebkitBoxDecorationBreak: return 414;
     case CSSPropertyWebkitTapHighlightColor: return 415;
-#if ENABLE(SVG)
     case CSSPropertyBufferedRendering: return 416;
-#endif
     case CSSPropertyWebkitGridAutoRows: return 417;
     case CSSPropertyWebkitGridAutoColumns: return 418;
     case CSSPropertyBackgroundBlendMode: return 419;

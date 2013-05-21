@@ -42,6 +42,8 @@
 #include "HTMLElementFactory.h"
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "SVGElementFactory.h"
+#include "SVGNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "bindings/v8/Dictionary.h"
@@ -143,6 +145,7 @@
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedResourceLoader.h"
+#include "core/page/CaptionUserPreferences.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContentSecurityPolicy.h"
@@ -185,6 +188,9 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
+#include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGStyleElement.h"
 #include "core/workers/SharedWorkerRepository.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "core/xml/XPathEvaluator.h"
@@ -197,16 +203,6 @@
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
-
-#if ENABLE(SVG)
-#include "SVGElementFactory.h"
-#include "SVGNames.h"
-#include "core/svg/SVGDocumentExtensions.h"
-#include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGStyleElement.h"
-#endif
-
-#include "core/page/CaptionUserPreferences.h"
 
 using namespace std;
 using namespace WTF;
@@ -1055,10 +1051,8 @@ PassRefPtr<Element> Document::createElement(const QualifiedName& qName, bool cre
     // FIXME: Use registered namespaces and look up in a hash to find the right factory.
     if (qName.namespaceURI() == xhtmlNamespaceURI)
         e = HTMLElementFactory::createHTMLElement(qName, this, 0, createdByParser);
-#if ENABLE(SVG)
     else if (qName.namespaceURI() == SVGNames::svgNamespaceURI)
         e = SVGElementFactory::createSVGElement(qName, this, createdByParser);
-#endif
 
     if (e)
         m_sawElementsInKnownNamespaces = true;
@@ -2212,13 +2206,11 @@ void Document::implicitClose()
     HTMLLinkElement::dispatchPendingLoadEvents();
     HTMLStyleElement::dispatchPendingLoadEvents();
 
-#if ENABLE(SVG)
     // To align the HTML load event and the SVGLoad event for the outermost <svg> element, fire it from
     // here, instead of doing it from SVGElement::finishedParsingChildren (if externalResourcesRequired="false",
     // which is the default, for ='true' its fired at a later time, once all external resources finished loading).
     if (svgExtensions())
         accessSVGExtensions()->dispatchSVGLoadEventToOutermostSVGElements();
-#endif
 
     dispatchWindowLoadEvent();
     enqueuePageshowEvent(PageshowEventNotPersisted);
@@ -2283,10 +2275,8 @@ void Document::implicitClose()
         }
     }
 
-#if ENABLE(SVG)
     if (svgExtensions())
         accessSVGExtensions()->startAnimations();
-#endif
 }
 
 void Document::setParsing(bool b)
@@ -4007,7 +3997,6 @@ PassRefPtr<Attr> Document::createAttributeNS(const String& namespaceURI, const S
     return Attr::create(this, qName, emptyString());
 }
 
-#if ENABLE(SVG)
 const SVGDocumentExtensions* Document::svgExtensions()
 {
     return m_svgExtensions.get();
@@ -4024,7 +4013,6 @@ bool Document::hasSVGRootNode() const
 {
     return documentElement() && documentElement()->hasTagName(SVGNames::svgTag);
 }
-#endif
 
 PassRefPtr<HTMLCollection> Document::ensureCachedCollection(CollectionType type)
 {
@@ -5515,9 +5503,7 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_transformSourceDocument, "transformSourceDocument");
     info.addMember(m_decoder, "decoder");
     info.addMember(m_xpathEvaluator, "xpathEvaluator");
-#if ENABLE(SVG)
     info.addMember(m_svgExtensions, "svgExtensions");
-#endif
     info.addMember(m_selectorQueryCache, "selectorQueryCache");
     info.addMember(m_renderer, "renderer");
     info.addMember(m_weakFactory, "weakFactory");

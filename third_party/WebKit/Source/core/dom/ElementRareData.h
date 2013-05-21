@@ -133,10 +133,8 @@ public:
         m_activeAnimations = animations;
     }
 
-#if ENABLE(SVG)
     bool hasPendingResources() const { return m_hasPendingResources; }
     void setHasPendingResources(bool has) { m_hasPendingResources = has; }
-#endif
 
     InputMethodContext* ensureInputMethodContext(HTMLElement* element)
     {
@@ -154,9 +152,7 @@ private:
     unsigned m_isInCanvasSubtree : 1;
     unsigned m_containsFullScreenElement : 1;
     unsigned m_isInTopLayer : 1;
-#if ENABLE(SVG)
     unsigned m_hasPendingResources : 1;
-#endif
     unsigned m_childrenAffectedByHover : 1;
     unsigned m_childrenAffectedByActive : 1;
     unsigned m_childrenAffectedByDrag : 1;
@@ -203,9 +199,7 @@ inline ElementRareData::ElementRareData(RenderObject* renderer)
     , m_isInCanvasSubtree(false)
     , m_containsFullScreenElement(false)
     , m_isInTopLayer(false)
-#if ENABLE(SVG)
     , m_hasPendingResources(false)
-#endif
     , m_childrenAffectedByHover(false)
     , m_childrenAffectedByActive(false)
     , m_childrenAffectedByDrag(false)

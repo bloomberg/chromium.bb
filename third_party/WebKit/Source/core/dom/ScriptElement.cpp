@@ -24,11 +24,8 @@
 #include "config.h"
 #include "core/dom/ScriptElement.h"
 
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/TextPosition.h>
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/dom/Document.h"
@@ -46,12 +43,12 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "weborigin/SecurityOrigin.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
 #include "core/svg/SVGScriptElement.h"
-#endif
+#include "weborigin/SecurityOrigin.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 
@@ -413,10 +410,8 @@ ScriptElement* toScriptElementIfPossible(Element* element)
     if (element->isHTMLElement() && element->hasTagName(HTMLNames::scriptTag))
         return static_cast<HTMLScriptElement*>(element);
 
-#if ENABLE(SVG)
     if (element->isSVGElement() && element->hasTagName(SVGNames::scriptTag))
         return static_cast<SVGScriptElement*>(element);
-#endif
 
     return 0;
 }

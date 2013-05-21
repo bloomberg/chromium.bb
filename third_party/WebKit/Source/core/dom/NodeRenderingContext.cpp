@@ -27,6 +27,7 @@
 #include "core/dom/NodeRenderingContext.h"
 
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
@@ -45,10 +46,6 @@
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#endif
 
 namespace WebCore {
 
@@ -213,12 +210,10 @@ void NodeRenderingContext::moveToFlowThreadIfNeeded()
     if (document->webkitIsFullScreen() && document->webkitCurrentFullScreenElement() == m_node)
         return;
 
-#if ENABLE(SVG)
     // Allow only svg root elements to be directly collected by a render flow thread.
     if (m_node->isSVGElement()
         && (!(m_node->hasTagName(SVGNames::svgTag) && m_node->parentNode() && !m_node->parentNode()->isSVGElement())))
         return;
-#endif
 
     m_flowThread = m_style->flowThread();
     ASSERT(m_node->document()->renderView());

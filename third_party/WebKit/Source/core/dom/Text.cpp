@@ -22,6 +22,8 @@
 #include "config.h"
 #include "core/dom/Text.h"
 
+#include "SVGNames.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeRenderingContext.h"
@@ -29,15 +31,9 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderText.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#endif
-
-#include "core/css/resolver/StyleResolver.h"
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
 
 using namespace std;
 
@@ -246,7 +242,6 @@ bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
     return true;
 }
 
-#if ENABLE(SVG)
 static bool isSVGShadowText(Text* text)
 {
     Node* parentNode = text->parentNode();
@@ -258,7 +253,6 @@ static bool isSVGText(Text* text)
     Node* parentOrShadowHostNode = text->parentOrShadowHostNode();
     return parentOrShadowHostNode->isSVGElement() && !parentOrShadowHostNode->hasTagName(SVGNames::foreignObjectTag);
 }
-#endif
 
 void Text::createTextRendererIfNeeded()
 {
@@ -267,10 +261,9 @@ void Text::createTextRendererIfNeeded()
 
 RenderText* Text::createTextRenderer(RenderArena* arena, RenderStyle* style)
 {
-#if ENABLE(SVG)
     if (isSVGText(this) || isSVGShadowText(this))
         return new (arena) RenderSVGInlineText(this, dataImpl());
-#endif
+
     if (style->hasTextCombine())
         return new (arena) RenderCombineText(this, dataImpl());
 

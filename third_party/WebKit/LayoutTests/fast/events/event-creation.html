@@ -150,18 +150,15 @@
     shouldBeTrue("document.createEvent('StorageEvent') instanceof window.Event");
     shouldBeTrue("document.createEvent('StorageEvent').constructor === window.StorageEvent");
 
-    // #if ENABLE(SVG)
     // SVGEvents (Event alternative)
     shouldBeTrue("document.createEvent('SVGEvents') instanceof window.Event");
     shouldBeTrue("document.createEvent('SVGEvents').constructor === window.Event");
 
-    // #if ENABLE(SVG)
     // SVGZoomEvent
     shouldBeTrue("document.createEvent('SVGZoomEvent') instanceof window.SVGZoomEvent");
     shouldBeTrue("document.createEvent('SVGZoomEvent') instanceof window.Event");
     shouldBeTrue("document.createEvent('SVGZoomEvent').constructor === window.SVGZoomEvent");
 
-    // #if ENABLE(SVG)
     // SVGZoomEvents (SVGZoomEvent alternative)
     shouldBeTrue("document.createEvent('SVGZoomEvents') instanceof window.SVGZoomEvent");
     shouldBeTrue("document.createEvent('SVGZoomEvents') instanceof window.Event");

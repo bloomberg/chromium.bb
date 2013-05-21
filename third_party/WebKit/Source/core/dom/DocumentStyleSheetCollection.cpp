@@ -282,11 +282,7 @@ void DocumentStyleSheetCollection::collectActiveStyleSheets(Vector<RefPtr<StyleS
                     m_document->applyXSLTransform(pi);
                 return;
             }
-        } else if ((n->isHTMLElement() && (n->hasTagName(linkTag) || n->hasTagName(styleTag)))
-#if ENABLE(SVG)
-                   ||  (n->isSVGElement() && n->hasTagName(SVGNames::styleTag))
-#endif
-                   ) {
+        } else if ((n->isHTMLElement() && (n->hasTagName(linkTag) || n->hasTagName(styleTag))) || (n->isSVGElement() && n->hasTagName(SVGNames::styleTag))) {
             Element* e = toElement(n);
             AtomicString title = e->getAttribute(titleAttr);
             bool enabledViaScript = false;
@@ -312,12 +308,9 @@ void DocumentStyleSheetCollection::collectActiveStyleSheets(Vector<RefPtr<StyleS
             }
             // Get the current preferred styleset. This is the
             // set of sheets that will be enabled.
-#if ENABLE(SVG)
             if (n->isSVGElement() && n->hasTagName(SVGNames::styleTag))
                 sheet = static_cast<SVGStyleElement*>(n)->sheet();
-            else
-#endif
-            if (e->hasLocalName(linkTag))
+            else if (e->hasLocalName(linkTag))
                 sheet = static_cast<HTMLLinkElement*>(n)->sheet();
             else
                 // <STYLE> element

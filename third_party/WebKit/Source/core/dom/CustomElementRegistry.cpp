@@ -33,6 +33,7 @@
 #include "core/dom/CustomElementRegistry.h"
 
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "bindings/v8/CustomElementHelpers.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptValue.h"
@@ -40,11 +41,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
 #include "core/svg/SVGElement.h"
-#endif
 
 namespace WebCore {
 
@@ -87,7 +84,6 @@ bool CustomElementRegistry::isValidName(const AtomicString& name)
 
     DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
     if (reservedNames.isEmpty()) {
-#if ENABLE(SVG)
         reservedNames.append(SVGNames::color_profileTag.localName());
         reservedNames.append(SVGNames::font_faceTag.localName());
         reservedNames.append(SVGNames::font_face_srcTag.localName());
@@ -95,7 +91,6 @@ bool CustomElementRegistry::isValidName(const AtomicString& name)
         reservedNames.append(SVGNames::font_face_formatTag.localName());
         reservedNames.append(SVGNames::font_face_nameTag.localName());
         reservedNames.append(SVGNames::missing_glyphTag.localName());
-#endif
     }
 
     if (notFound != reservedNames.find(name))
@@ -227,10 +222,8 @@ PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(const Qualifie
 
     if (HTMLNames::xhtmlNamespaceURI == tagName.namespaceURI())
         element = HTMLElement::create(tagName, document());
-#if ENABLE(SVG)
     else if (SVGNames::svgNamespaceURI == tagName.namespaceURI())
         element = SVGElement::create(tagName, document());
-#endif
     else
         return Element::create(tagName, document());
 

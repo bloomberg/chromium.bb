@@ -25,8 +25,8 @@
 #include "config.h"
 #include "core/dom/DOMImplementation.h"
 
-#include <wtf/StdLibExtras.h>
 #include "HTMLNames.h"
+#include "SVGNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
@@ -48,12 +48,9 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/plugins/PluginData.h"
-#include "weborigin/SecurityOrigin.h"
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
 #include "core/svg/SVGDocument.h"
-#endif
+#include "weborigin/SecurityOrigin.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 
@@ -63,8 +60,6 @@ static void addString(FeatureSet& set, const char* string)
 {
     set.add(string);
 }
-
-#if ENABLE(SVG)
 
 static bool isSVG10Feature(const String &feature, const String &version)
 {
@@ -161,7 +156,6 @@ static bool isSVG11Feature(const String &feature, const String &version)
     return feature.startsWith("http://www.w3.org/tr/svg11/feature#", false)
         && svgFeatures.contains(feature.right(feature.length() - 35));
 }
-#endif
 
 static bool isEvents2Feature(const String &feature, const String &version)
 {
@@ -232,12 +226,10 @@ bool DOMImplementation::hasFeature(const String& feature, const String& version)
     if (isEvents3Feature(feature, version))
         return true;
 
-#if ENABLE(SVG)
     if (isSVG11Feature(feature, version))
         return true;
     if (isSVG10Feature(feature, version))
         return true;
-#endif
 
     return false;
 }
@@ -261,12 +253,9 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceUR
     const String& qualifiedName, DocumentType* doctype, ExceptionCode& ec)
 {
     RefPtr<Document> doc;
-#if ENABLE(SVG)
     if (namespaceURI == SVGNames::svgNamespaceURI)
         doc = SVGDocument::create(0, KURL());
-    else
-#endif
-    if (namespaceURI == HTMLNames::xhtmlNamespaceURI)
+    else if (namespaceURI == HTMLNames::xhtmlNamespaceURI)
         doc = Document::createXHTML(0, KURL());
     else
         doc = Document::create(0, KURL());
@@ -426,11 +415,8 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& type, Frame
         return PluginDocument::create(frame, url);
     if (isTextMIMEType(type))
         return TextDocument::create(frame, url);
-
-#if ENABLE(SVG)
     if (type == "image/svg+xml")
         return SVGDocument::create(frame, url);
-#endif
     if (isXMLMIMEType(type))
         return Document::create(frame, url);
 

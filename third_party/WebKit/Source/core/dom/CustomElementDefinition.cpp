@@ -32,12 +32,9 @@
 
 #include "core/dom/CustomElementDefinition.h"
 
+#include "SVGNames.h"
 #include "bindings/v8/CustomElementHelpers.h"
 #include <wtf/Assertions.h>
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#endif
 
 namespace WebCore {
 
@@ -45,11 +42,7 @@ PassRefPtr<CustomElementDefinition> CustomElementDefinition::create(ScriptState*
 {
     ASSERT(CustomElementHelpers::isValidPrototypeParameter(prototype, state));
     ASSERT(name == type || QualifiedName(nullAtom, name, namespaceURI) == *CustomElementHelpers::findLocalName(prototype));
-#if ENABLE(SVG)
     ASSERT(namespaceURI == HTMLNames::xhtmlNamespaceURI || namespaceURI == SVGNames::svgNamespaceURI);
-#else
-    ASSERT(namespaceURI == HTMLNames::xhtmlNamespaceURI);
-#endif
 
     RefPtr<CustomElementDefinition> created = adoptRef(new CustomElementDefinition(type, name, namespaceURI, prototype));
     return created.release();
