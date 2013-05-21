@@ -30,14 +30,18 @@ const int kMinimumWindowSize = 1;
 // Overall chain of ownership is:
 // PanelWindowControllerCocoa -> PanelCocoa -> Panel.
 // static
-NativePanel* Panel::CreateNativePanel(Panel* panel, const gfx::Rect& bounds) {
-  return new PanelCocoa(panel, bounds);
+NativePanel* Panel::CreateNativePanel(Panel* panel,
+                                      const gfx::Rect& bounds,
+                                      bool always_on_top) {
+  return new PanelCocoa(panel, bounds, always_on_top);
 }
 
-PanelCocoa::PanelCocoa(Panel* panel, const gfx::Rect& bounds)
+PanelCocoa::PanelCocoa(Panel* panel,
+                       const gfx::Rect& bounds,
+                       bool always_on_top)
     : panel_(panel),
       bounds_(bounds),
-      always_on_top_(false),
+      always_on_top_(always_on_top),
       is_shown_(false),
       attention_request_id_(0),
       corner_style_(panel::ALL_ROUNDED) {

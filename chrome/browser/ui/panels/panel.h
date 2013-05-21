@@ -146,7 +146,8 @@ class Panel : public BaseWindow,
 
   // Construct a native panel implementation.
   static NativePanel* CreateNativePanel(Panel* panel,
-                                        const gfx::Rect& bounds);
+                                        const gfx::Rect& bounds,
+                                        bool always_on_top);
 
   NativePanel* native_panel() const { return native_panel_; }
 
@@ -199,7 +200,7 @@ class Panel : public BaseWindow,
   // Panel must be initialized to be "fully created" and ready for use.
   // Only called by PanelManager.
   bool initialized() const { return initialized_; }
-  void Initialize(const GURL& url, const gfx::Rect& bounds);
+  void Initialize(const GURL& url, const gfx::Rect& bounds, bool always_on_top);
 
   // This is different from BaseWindow::SetBounds():
   // * SetPanelBounds() is only called by PanelManager to manage its position.

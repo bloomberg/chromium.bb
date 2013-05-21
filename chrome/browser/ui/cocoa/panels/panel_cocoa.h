@@ -18,7 +18,7 @@ class Panel;
 // interact with this object when it needs to manipulate the window.
 class PanelCocoa : public NativePanel {
  public:
-  PanelCocoa(Panel* panel, const gfx::Rect& bounds);
+  PanelCocoa(Panel* panel, const gfx::Rect& bounds, bool always_on_top);
   virtual ~PanelCocoa();
 
   // Overridden from NativePanel

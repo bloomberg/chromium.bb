@@ -37,7 +37,7 @@ class PanelGtk : public NativePanel,
     PAINT_FOR_ATTENTION
   };
 
-  PanelGtk(Panel* panel, const gfx::Rect& bounds);
+  PanelGtk(Panel* panel, const gfx::Rect& bounds, bool always_on_top);
   virtual ~PanelGtk();
 
   void Init();

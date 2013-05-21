@@ -128,6 +128,8 @@ class PanelCollection {
 
   virtual bool IsPanelMinimized(const Panel* panel) const = 0;
 
+  virtual bool UsesAlwaysOnTopPanels() const = 0;
+
   // Saves/restores/discards the placement information of |panel|. This is
   // useful in bringing back the dragging panel to its original positioning
   // when the drag is cancelled. After the placement information is saved,

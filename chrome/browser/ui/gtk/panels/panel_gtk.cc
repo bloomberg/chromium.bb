@@ -198,16 +198,18 @@ void SetFrameSize(const gfx::Size& new_size) {
 }
 
 // static
-NativePanel* Panel::CreateNativePanel(Panel* panel, const gfx::Rect& bounds) {
-  PanelGtk* panel_gtk = new PanelGtk(panel, bounds);
+NativePanel* Panel::CreateNativePanel(Panel* panel,
+                                      const gfx::Rect& bounds,
+                                      bool always_on_top) {
+  PanelGtk* panel_gtk = new PanelGtk(panel, bounds, always_on_top);
   panel_gtk->Init();
   return panel_gtk;
 }
 
-PanelGtk::PanelGtk(Panel* panel, const gfx::Rect& bounds)
+PanelGtk::PanelGtk(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
     : panel_(panel),
       bounds_(bounds),
-      always_on_top_(false),
+      always_on_top_(always_on_top),
       is_shown_(false),
       paint_state_(PAINT_AS_INACTIVE),
       is_drawing_attention_(false),

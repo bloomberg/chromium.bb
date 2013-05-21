@@ -225,24 +225,23 @@ panel::CornerStyle NativePanelTestingWin::GetWindowCornerStyle() const {
 }  // namespace
 
 // static
-NativePanel* Panel::CreateNativePanel(Panel* panel, const gfx::Rect& bounds) {
-  return new PanelView(panel, bounds);
+NativePanel* Panel::CreateNativePanel(Panel* panel,
+                                      const gfx::Rect& bounds,
+                                      bool always_on_top) {
+  return new PanelView(panel, bounds, always_on_top);
 }
 
 // The panel window has to be created as always-on-top. We cannot create it
 // as non-always-on-top and then change it to always-on-top because Windows
 // system might deny making a window always-on-top if the application is not
-// a foreground application. In addition, we do not know if the panel should
-// be created as always-on-top at its creation time. To solve this issue,
-// always_on_top_ is default to true because we can always change from
-// always-on-top to not always-on-top but not the other way around.
-PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
+// a foreground application.
+PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
     : panel_(panel),
       bounds_(bounds),
       window_(NULL),
       window_closed_(false),
       web_view_(NULL),
-      always_on_top_(true),
+      always_on_top_(always_on_top),
       focused_(false),
       user_resizing_(false),
 #if defined(OS_WIN)
@@ -257,7 +256,7 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
   params.remove_standard_frame = true;
-  params.keep_on_top = true;
+  params.keep_on_top = always_on_top;
   params.bounds = bounds;
   window_->Init(params);
   window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
