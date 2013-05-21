@@ -62,6 +62,7 @@
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/user_script.h"
+#include "chrome/common/language_detection_details.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -1936,8 +1937,11 @@ void TabsDetectLanguageFunction::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   std::string language;
-  if (type == chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED)
-    language = *content::Details<std::string>(details).ptr();
+  if (type == chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED) {
+    const LanguageDetectionDetails* lang_det_details =
+        content::Details<const LanguageDetectionDetails>(details).ptr();
+    language = lang_det_details->adopted_language;
+  }
 
   registrar_.RemoveAll();
 

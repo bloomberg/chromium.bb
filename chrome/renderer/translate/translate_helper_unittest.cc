@@ -87,9 +87,14 @@ TEST_F(TranslateHelperTest, CLDDisagreeWithWrongLanguageCode) {
       "<body>This is a page apparently written in English. Even though "
       "content-language is provided, the value will be ignored if the value "
       "is suspicious.</body></html>");
+  std::string cld_language;
+  bool is_cld_reliable;
   std::string language =
-      TranslateHelper::DeterminePageLanguage(std::string("ja"), contents);
+      TranslateHelper::DeterminePageLanguage(std::string("ja"), contents,
+                                             &cld_language, &is_cld_reliable);
   EXPECT_EQ(chrome::kUnknownLanguageCode, language);
+  EXPECT_EQ("en", cld_language);
+  EXPECT_TRUE(is_cld_reliable);
 }
 
 // Tests that the language meta tag providing "en-US" style information is
@@ -100,9 +105,14 @@ TEST_F(TranslateHelperTest, CLDAgreeWithLanguageCodeHavingCountryCode) {
       "<body>This is a page apparently written in English. Even though "
       "content-language is provided, the value will be ignored if the value "
       "is suspicious.</body></html>");
+  std::string cld_language;
+  bool is_cld_reliable;
   std::string language =
-      TranslateHelper::DeterminePageLanguage(std::string("en-US"), contents);
+      TranslateHelper::DeterminePageLanguage(std::string("en-US"), contents,
+                                             &cld_language, &is_cld_reliable);
   EXPECT_EQ("en-US", language);
+  EXPECT_EQ("en", cld_language);
+  EXPECT_TRUE(is_cld_reliable);
 }
 
 // Tests that the language meta tag providing wrong information is ignored and
@@ -113,7 +123,12 @@ TEST_F(TranslateHelperTest, InvalidLanguageMetaTagProviding) {
       "<body>This is a page apparently written in English. Even though "
       "content-language is provided, the value will be ignored and CLD's"
       " language will be adopted if the value is invalid.</body></html>");
+  std::string cld_language;
+  bool is_cld_reliable;
   std::string language =
-      TranslateHelper::DeterminePageLanguage(std::string("utf-8"), contents);
+      TranslateHelper::DeterminePageLanguage(std::string("utf-8"), contents,
+                                             &cld_language, &is_cld_reliable);
   EXPECT_EQ("en", language);
+  EXPECT_EQ("en", cld_language);
+  EXPECT_TRUE(is_cld_reliable);
 }

@@ -21,8 +21,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using content::WebContents;
-
 namespace {
 
 // Sets the languages to |dict|. Each key is a language code and each value is

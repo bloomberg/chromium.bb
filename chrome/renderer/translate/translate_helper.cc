@@ -95,13 +95,28 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   // shouldn't affect translation.
   WebDocument document = GetMainFrame()->document();
   std::string content_language = document.contentLanguage().utf8();
-  std::string language = DeterminePageLanguage(content_language, contents);
+  std::string cld_language;
+  bool is_cld_reliable;
+  std::string language = DeterminePageLanguage(
+      content_language, contents, &cld_language, &is_cld_reliable);
+
+  if (language.empty())
+    return;
 
   language_determined_time_ = base::TimeTicks::Now();
 
+  GURL url(document.url());
+  LanguageDetectionDetails details;
+  details.time = base::Time::Now();
+  details.url = url;
+  details.content_language = content_language;
+  details.cld_language = cld_language;
+  details.is_cld_reliable = is_cld_reliable;
+  details.adopted_language = language;
+
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
       routing_id(),
-      language,
+      details,
       IsTranslationAllowed(&document) && !language.empty()));
 }
 
@@ -115,7 +130,8 @@ void TranslateHelper::CancelPendingTranslation() {
 
 #if defined(ENABLE_LANGUAGE_DETECTION)
 // static
-std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
+std::string TranslateHelper::DetermineTextLanguage(const string16& text,
+                                                   bool* is_cld_reliable) {
   std::string language = chrome::kUnknownLanguageCode;
   int num_languages = 0;
   int text_bytes = 0;
@@ -123,6 +139,9 @@ std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
   Language cld_language =
       DetectLanguageOfUnicodeText(NULL, text.c_str(), true, &is_reliable,
                                   &num_languages, NULL, &text_bytes);
+  if (is_cld_reliable != NULL)
+    *is_cld_reliable = is_reliable;
+
   // We don't trust the result if the CLD reports that the detection is not
   // reliable, or if the actual text used to detect the language was less than
   // 100 bytes (short texts can often lead to wrong results).
@@ -301,12 +320,20 @@ void TranslateHelper::ResetInvalidLanguageCode(std::string* code) {
 
 // static
 std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
-                                                   const string16& contents) {
+                                                   const string16& contents,
+                                                   std::string* cld_language_p,
+                                                   bool* is_cld_reliable_p) {
 #if defined(ENABLE_LANGUAGE_DETECTION)
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  std::string cld_language = DetermineTextLanguage(contents);
+  bool is_cld_reliable;
+  std::string cld_language = DetermineTextLanguage(contents, &is_cld_reliable);
   TranslateHelperMetrics::ReportLanguageDetectionTime(begin_time,
                                                       base::TimeTicks::Now());
+
+  if (cld_language_p != NULL)
+    *cld_language_p = cld_language;
+  if (is_cld_reliable_p != NULL)
+    *is_cld_reliable_p = is_cld_reliable;
   ConvertLanguageCodeSynonym(&cld_language);
   VLOG(9) << "CLD determined language code: " << cld_language;
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)

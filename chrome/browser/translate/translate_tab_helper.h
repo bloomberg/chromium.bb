@@ -10,6 +10,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+struct LanguageDetectionDetails;
+
 class TranslateTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<TranslateTabHelper> {
@@ -28,7 +30,7 @@ class TranslateTabHelper
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
 
-  void OnLanguageDetermined(const std::string& language,
+  void OnLanguageDetermined(const LanguageDetectionDetails& details,
                             bool page_needs_translation);
   void OnPageTranslated(int32 page_id,
                         const std::string& original_lang,

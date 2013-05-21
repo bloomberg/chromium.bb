@@ -108,7 +108,9 @@ class TranslateHelper : public content::RenderViewObserver {
 
   // Determine content page language from Content-Language code and contents.
   static std::string DeterminePageLanguage(const std::string& code,
-                                           const string16& contents);
+                                           const string16& contents,
+                                           std::string* cld_language,
+                                           bool* is_cld_reliable);
 
   // Returns whether the page associated with |document| is a candidate for
   // translation.  Some pages can explictly specify (via a meta-tag) that they
@@ -118,7 +120,10 @@ class TranslateHelper : public content::RenderViewObserver {
 #if defined(ENABLE_LANGUAGE_DETECTION)
   // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
   // if it failed.
-  static std::string DetermineTextLanguage(const string16& text);
+  // |is_cld_reliable| will be set as true if CLD says the detection is
+  // reliable.
+  static std::string DetermineTextLanguage(const string16& text,
+                                           bool* is_cld_reliable);
 #endif
 
   // RenderViewObserver implementation.

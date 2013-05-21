@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_handler.h"
 
 #include <map>
-#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -14,15 +13,41 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/common/language_detection_details.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+
+TranslateInternalsHandler::TranslateInternalsHandler() {
+  TranslateManager::GetInstance()->AddObserver(this);
+}
+
+TranslateInternalsHandler::~TranslateInternalsHandler() {
+  TranslateManager::GetInstance()->RemoveObserver(this);
+}
 
 void TranslateInternalsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("removePrefItem", base::Bind(
       &TranslateInternalsHandler::OnRemovePrefItem, base::Unretained(this)));
   web_ui()->RegisterMessageCallback("requestInfo", base::Bind(
       &TranslateInternalsHandler::OnRequestInfo, base::Unretained(this)));
+}
+
+void TranslateInternalsHandler::OnLanguageDetection(
+    const LanguageDetectionDetails& details) {
+  base::DictionaryValue dict;
+  dict.Set("time",
+           new base::FundamentalValue(details.time.ToJsTime()));
+  dict.Set("url",
+           new base::StringValue(details.url.spec()));
+  dict.Set("content_language",
+           new base::StringValue(details.content_language));
+  dict.Set("cld_language",
+           new base::StringValue(details.cld_language));
+  dict.Set("is_cld_reliable",
+           new base::FundamentalValue(details.is_cld_reliable));
+  dict.Set("language", new base::StringValue(details.adopted_language));
+  SendMessageToJs("languageDetectionInfoAdded", dict);
 }
 
 void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {

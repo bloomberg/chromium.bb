@@ -331,6 +331,8 @@
         'common/json_schema/json_schema_constants.h',
         'common/json_schema/json_schema_validator.cc',
         'common/json_schema/json_schema_validator.h',
+        'common/language_detection_details.cc',
+        'common/language_detection_details.h',
         'common/localized_error.cc',
         'common/localized_error.h',
         'common/logging_chrome.cc',

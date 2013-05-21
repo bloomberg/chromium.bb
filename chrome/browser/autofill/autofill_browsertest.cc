@@ -950,9 +950,11 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillAfterTranslate) {
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Get translation bar.
+  LanguageDetectionDetails details;
+  details.adopted_language = "ja";
   RenderViewHostTester::TestOnMessageReceived(
       render_view_host(),
-      ChromeViewHostMsg_TranslateLanguageDetermined(0, "ja", true));
+      ChromeViewHostMsg_TranslateLanguageDetermined(0, details, true));
   TranslateInfoBarDelegate* infobar = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents())->infobar_at(0)->
           AsTranslateInfoBarDelegate();

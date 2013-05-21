@@ -10,6 +10,24 @@ h2 {
   font-size: 110%;
 }
 
+table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+th,
+td {
+  border-color: #666;
+  border-style: solid;
+  border-width: 1px;
+  padding: 1px 4px;
+}
+
+tabpanel {
+  padding-bottom: 10px;
+}
+
 tabpanel > div {
   display: -webkit-flex;
 }
@@ -41,4 +59,32 @@ tabpanel > div > div {
   cursor: pointer;
   font-size: 110%;
   margin-left: 1em;
+}
+
+.detection-logs-time {
+  width: 20%;
+}
+
+.detection-logs-url {
+  width: 40%;
+}
+
+td.detection-logs-url {
+  word-wrap: break-word;
+}
+
+.detection-logs-content-language {
+  width: 10%;
+}
+
+.detection-logs-cld-language {
+  width: 10%;
+}
+
+.detection-logs-is-cld-reliable {
+  width: 10%;
+}
+
+.detection-logs-language {
+  width: 10%;
 }

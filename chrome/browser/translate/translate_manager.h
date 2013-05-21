@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/time.h"
 #include "chrome/common/translate_errors.h"
@@ -23,6 +24,7 @@
 
 template <typename T> struct DefaultSingletonTraits;
 class GURL;
+struct LanguageDetectionDetails;
 struct PageTranslatedDetails;
 class PrefService;
 struct ShortcutConfiguration;
@@ -116,6 +118,18 @@ class TranslateManager : public content::NotificationObserver,
   // static const values shared with our browser tests.
   static const char kLanguageListCallbackName[];
   static const char kTargetLanguagesKey[];
+
+  // The observer class for TranslateManager.
+  class Observer {
+   public:
+    virtual void OnLanguageDetection(
+        const LanguageDetectionDetails& details) = 0;
+  };
+
+  // Adds/removes observer.
+  void AddObserver(Observer* obs);
+  void RemoveObserver(Observer* obs);
+
  protected:
   TranslateManager();
 
@@ -174,6 +188,9 @@ class TranslateManager : public content::NotificationObserver,
   // to translate it).
   void RequestTranslateScript();
 
+  // Notifies to the observers when a language is detected.
+  void NotifyLanguageDetection(const LanguageDetectionDetails& details);
+
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the
   // translation service:
@@ -224,6 +241,9 @@ class TranslateManager : public content::NotificationObserver,
 
   // The languages supported by the translation server.
   static base::LazyInstance<std::set<std::string> > supported_languages_;
+
+  // List of registered observers.
+  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManager);
 };

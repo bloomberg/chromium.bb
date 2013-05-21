@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/language_detection_details.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -112,10 +113,12 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
 
   void SimulateOnTranslateLanguageDetermined(const std::string& lang,
                                              bool page_translatable) {
+    LanguageDetectionDetails details;
+    details.adopted_language = lang;
     RenderViewHostTester::TestOnMessageReceived(
         rvh(),
         ChromeViewHostMsg_TranslateLanguageDetermined(
-            0, lang, page_translatable));
+            0, details, page_translatable));
   }
 
   bool GetTranslateMessage(int* page_id,
@@ -1499,7 +1502,8 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
       TranslateTabHelper::FromWebContents(current_web_contents);
   content::Source<WebContents> source(current_web_contents);
 
-  ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
+  ui_test_utils::WindowedNotificationObserverWithDetails<
+    LanguageDetectionDetails>
       fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                                   source);
 
@@ -1507,10 +1511,10 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("french_page.html")));
   ui_test_utils::NavigateToURL(browser(), french_url);
   fr_language_detected_signal.Wait();
-  std::string lang;
+  LanguageDetectionDetails details;
   EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
-        source.map_key(), &lang));
-  EXPECT_EQ("fr", lang);
+        source.map_key(), &details));
+  EXPECT_EQ("fr", details.adopted_language);
   EXPECT_EQ("fr", translate_tab_helper->language_state().original_language());
 }
 
@@ -1524,7 +1528,8 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, MAYBE_TranslateSessionRestore) {
       browser()->tab_strip_model()->GetActiveWebContents();
   content::Source<WebContents> source(current_web_contents);
 
-  ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
+  ui_test_utils::WindowedNotificationObserverWithDetails<
+    LanguageDetectionDetails>
       fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                                   source);
   fr_language_detected_signal.Wait();

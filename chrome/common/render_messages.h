@@ -20,6 +20,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/language_detection_details.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_provider.h"
@@ -241,6 +242,15 @@ IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::UsageStats)
   IPC_STRUCT_TRAITS_MEMBER(deadSize)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(LanguageDetectionDetails)
+  IPC_STRUCT_TRAITS_MEMBER(time)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(content_language)
+  IPC_STRUCT_TRAITS_MEMBER(cld_language)
+  IPC_STRUCT_TRAITS_MEMBER(is_cld_reliable)
+  IPC_STRUCT_TRAITS_MEMBER(adopted_language)
+IPC_STRUCT_TRAITS_END()
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
@@ -453,8 +463,8 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageContents,
 
 // Notification that the language for the tab has been determined.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_TranslateLanguageDetermined,
-                    std::string  /* page ISO639_1 language code */,
-                    bool         /* whether the page needs translation */)
+                    LanguageDetectionDetails /* details about lang detection */,
+                    bool /* whether the page needs translation */)
 
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_UpdatedCacheStats,
                      WebKit::WebCache::UsageStats /* stats */)

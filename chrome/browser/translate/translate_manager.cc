@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/language_detection_details.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/translate_errors.h"
@@ -372,6 +374,10 @@ void TranslateManager::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED: {
+      const LanguageDetectionDetails* lang_det_details =
+          content::Details<const LanguageDetectionDetails>(details).ptr();
+      NotifyLanguageDetection(*lang_det_details);
+
       WebContents* tab = content::Source<WebContents>(source).ptr();
       // We may get this notifications multiple times.  Make sure to translate
       // only once.
@@ -385,7 +391,7 @@ void TranslateManager::Observe(int type,
           !language_state.translation_pending() &&
           !language_state.translation_declined() &&
           !language_state.IsPageTranslated()) {
-        std::string language = *(content::Details<std::string>(details).ptr());
+        std::string language = lang_det_details->adopted_language;
         InitiateTranslation(tab, language);
       }
       break;
@@ -507,6 +513,20 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
     }
   }
 }
+
+void TranslateManager::AddObserver(Observer* obs) {
+  observer_list_.AddObserver(obs);
+}
+
+void TranslateManager::RemoveObserver(Observer* obs) {
+  observer_list_.RemoveObserver(obs);
+}
+
+void TranslateManager::NotifyLanguageDetection(
+    const LanguageDetectionDetails& details) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnLanguageDetection(details));
+}
+
 
 TranslateManager::TranslateManager()
   : weak_method_factory_(this),
@@ -769,6 +789,7 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
     TranslateManagerMetrics::ReportUnsupportedLanguage();
     details->error_type = TranslateErrors::UNSUPPORTED_LANGUAGE;
   }
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
