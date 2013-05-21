@@ -77,6 +77,11 @@ class AutofillProfileSyncableService
   virtual void AutofillProfileChanged(
       const autofill::AutofillProfileChange& change) OVERRIDE;
 
+  // Provides a StartSyncFlare to the SyncableService. See
+  // sync_start_util for more.
+  void InjectStartSyncFlare(
+      const syncer::SyncableService::StartSyncFlare& flare);
+
  protected:
   AutofillProfileSyncableService(
       autofill::AutofillWebDataService* web_data_service,
@@ -191,6 +196,8 @@ class AutofillProfileSyncableService
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
+
+  syncer::SyncableService::StartSyncFlare flare_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileSyncableService);
 };

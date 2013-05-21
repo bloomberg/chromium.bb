@@ -273,8 +273,12 @@ void AutofillProfileSyncableService::AutofillProfileChanged(
   // up we are going to process all when MergeData..() is called. If we receive
   // notification after the sync exited, it will be sinced next time Chrome
   // starts.
-  if (sync_processor_.get())
+  if (sync_processor_.get()) {
     ActOnChange(change);
+  } else if (!flare_.is_null()) {
+    flare_.Run(syncer::AUTOFILL_PROFILE);
+    flare_.Reset();
+  }
 }
 
 bool AutofillProfileSyncableService::LoadAutofillData(
@@ -581,6 +585,11 @@ bool AutofillProfileSyncableService::MergeProfile(
 
 AutofillTable* AutofillProfileSyncableService::GetAutofillTable() const {
   return AutofillTable::FromWebDatabase(web_data_service_->GetDatabase());
+}
+
+void AutofillProfileSyncableService::InjectStartSyncFlare(
+    const syncer::SyncableService::StartSyncFlare& flare) {
+  flare_ = flare;
 }
 
 AutofillProfileSyncableService::DataBundle::DataBundle() {}

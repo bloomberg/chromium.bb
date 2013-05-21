@@ -41,7 +41,7 @@ void ProfileErrorCallback(sql::InitStatus status) {
 
 void InitSyncableServicesOnDBThread(
     scoped_refptr<AutofillWebDataService> autofill_web_data,
-    const syncer::SyncableService::StartSyncFlare& flare,
+    const base::FilePath& profile_path,
     const std::string& app_locale) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
@@ -49,9 +49,13 @@ void InitSyncableServicesOnDBThread(
   // all the database data should migrate to this API over time.
   AutocompleteSyncableService::CreateForWebDataService(autofill_web_data);
   AutocompleteSyncableService::FromWebDataService(
-      autofill_web_data)->InjectStartSyncFlare(flare);
+      autofill_web_data)->InjectStartSyncFlare(
+          sync_start_util::GetFlareForSyncableService(profile_path));
   AutofillProfileSyncableService::CreateForWebDataService(
       autofill_web_data, app_locale);
+  AutofillProfileSyncableService::FromWebDataService(
+      autofill_web_data)->InjectStartSyncFlare(
+          sync_start_util::GetFlareForSyncableService(profile_path));
 }
 
 }  // namespace
@@ -99,7 +103,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
       BrowserThread::DB, FROM_HERE,
       base::Bind(&InitSyncableServicesOnDBThread,
                  autofill_web_data_,
-                 sync_start_util::GetFlareForSyncableService(profile_path),
+                 profile_path,
                  g_browser_process->GetApplicationLocale()));
 }
 
