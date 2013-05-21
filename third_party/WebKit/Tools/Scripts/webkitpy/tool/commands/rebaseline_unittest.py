@@ -498,6 +498,11 @@ class TestRebaselineExpectations(_BaseTestCase):
         self.assertDictEqual(self.command._tests_to_rebaseline(self.lion_port), {'userscripts/another-test.html': set(['png', 'txt', 'wav'])})
         self.assertEqual(self._read(self.lion_expectations_path), '')
 
+    def test_rebaseline_without_other_expectations(self):
+        self._write("userscripts/another-test.html", "Dummy test contents")
+        self._write(self.lion_expectations_path, "Bug(x) userscripts/another-test.html [ Rebaseline ]\n")
+        self.assertDictEqual(self.command._tests_to_rebaseline(self.lion_port), {'userscripts/another-test.html': ('png', 'wav', 'txt')})
+
 
 class _FakeOptimizer(BaselineOptimizer):
     def read_results_by_directory(self, baseline_name):
