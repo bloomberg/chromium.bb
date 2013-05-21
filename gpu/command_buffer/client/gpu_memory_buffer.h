@@ -6,7 +6,6 @@
 #define GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_H_
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "gles2_impl_export.h"
 
@@ -23,7 +22,6 @@ namespace gpu {
 // behavior and is not allowed.
 class GLES2_IMPL_EXPORT GpuMemoryBuffer {
  public:
-  typedef base::Callback<scoped_ptr<GpuMemoryBuffer>(int, int)> Creator;
   enum AccessMode {
     READ_ONLY,
     WRITE_ONLY,

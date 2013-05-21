@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_mock.h"
 #include "gpu/command_buffer/client/image_factory_mock.h"
 #include "gpu/command_buffer/service/image_manager.h"

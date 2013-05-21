@@ -27,7 +27,6 @@
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/client/image_factory.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -302,6 +301,9 @@ AutoLockAndDecoderDetachThread::~AutoLockAndDecoderDetachThread() {
                 &DetachThread);
 }
 
+static WebGraphicsContext3DInProcessCommandBufferImpl::GpuMemoryBufferCreator*
+    g_gpu_memory_buffer_creator = NULL;
+
 class ImageFactoryInProcess
      : public ImageFactory,
        public base::RefCountedThreadSafe<ImageFactoryInProcess> {
@@ -342,10 +344,8 @@ scoped_ptr<GpuMemoryBuffer> ImageFactoryInProcess::CreateGpuMemoryBuffer(
   // For Android WebView we assume the |internalformat| will always be
   // GL_RGBA8_OES.
   DCHECK_EQ(GL_RGBA8_OES, internalformat);
-  const GpuMemoryBuffer::Creator& create_gpu_memory_buffer_callback =
-      ::gpu::gles2::GetProcessDefaultGpuMemoryBufferFactory();
   scoped_ptr<GpuMemoryBuffer> buffer =
-      create_gpu_memory_buffer_callback.Run(width, height);
+      g_gpu_memory_buffer_creator(width, height);
   scoped_refptr<gfx::GLImage> gl_image =
       gfx::GLImage::CreateGLImageForGpuMemoryBuffer(buffer->GetNativeBuffer(),
                                                     gfx::Size(width, height));
@@ -1979,6 +1979,11 @@ DELEGATE_TO_GL_9(asyncTexSubImage2DCHROMIUM, AsyncTexSubImage2DCHROMIUM,
 
 DELEGATE_TO_GL_1(waitAsyncTexImage2DCHROMIUM, WaitAsyncTexImage2DCHROMIUM,
     WGC3Denum)
+
+void WebGraphicsContext3DInProcessCommandBufferImpl::SetGpuMemoryBufferCreator(
+    GpuMemoryBufferCreator* creator) {
+  g_gpu_memory_buffer_creator = creator;
+}
 
 }  // namespace gpu
 }  // namespace webkit

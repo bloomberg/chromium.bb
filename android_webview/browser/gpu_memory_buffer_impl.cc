@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
 #include "ui/gfx/size.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace android_webview {
 
@@ -77,8 +77,8 @@ bool GpuMemoryBufferImpl::IsMapped() {
 void GpuMemoryBufferImpl::SetAwDrawGLFunctionTable(
     AwDrawGLFunctionTable* table) {
   g_gl_draw_functions = table;
-  gpu::gles2::SetProcessDefaultGpuMemoryBufferFactory(
-      base::Bind(&CreateGpuMemoryBuffer));
+  ::webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
+      SetGpuMemoryBufferCreator(&CreateGpuMemoryBuffer);
 }
 
 }  // namespace android_webview

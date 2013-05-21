@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "ui/gfx/native_widget_types.h"
@@ -45,6 +46,9 @@ class GLInProcessContext;
 class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
     : public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D) {
  public:
+  typedef scoped_ptr< ::gpu::GpuMemoryBuffer> GpuMemoryBufferCreator(
+      int width, int height);
+
   // Must be called before any WebGraphicsContext3DInProcessCommandBufferImpl
   // instances are created. Default value is false.
   static void EnableVirtualizedContext();
@@ -57,6 +61,8 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   static WebGraphicsContext3DInProcessCommandBufferImpl*
       CreateOffscreenContext(
           const WebKit::WebGraphicsContext3D::Attributes& attributes);
+
+  static void SetGpuMemoryBufferCreator(GpuMemoryBufferCreator* creator);
 
   virtual ~WebGraphicsContext3DInProcessCommandBufferImpl();
 

@@ -17,7 +17,6 @@
 #include <GLES2/gl2extchromium.h>
 #include "../client/buffer_tracker.h"
 #include "../client/gpu_memory_buffer.h"
-#include "../client/gpu_memory_buffer_factory.h"
 #include "../client/gpu_memory_buffer_tracker.h"
 #include "../client/mapped_memory.h"
 #include "../client/program_info_manager.h"
