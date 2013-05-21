@@ -138,6 +138,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
     event_args->Append(new base::StringValue("http://foo"));
     event_args->Append(new base::StringValue("blob://bar"));
     event_args->Append(new base::FundamentalValue(10));
+    event_args->Append(new base::FundamentalValue(20));
 
     scoped_ptr<Event> event(new Event(
         "streamsPrivate.onExecuteMimeTypeHandler", event_args.Pass()));

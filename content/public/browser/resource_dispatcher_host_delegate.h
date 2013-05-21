@@ -131,7 +131,8 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
       int render_process_id,
       int render_view_id,
       const std::string& target_id,
-      scoped_ptr<StreamHandle> stream);
+      scoped_ptr<StreamHandle> stream,
+      int64 expected_content_size);
 
   // Informs the delegate that a response has started.
   virtual void OnResponseStarted(

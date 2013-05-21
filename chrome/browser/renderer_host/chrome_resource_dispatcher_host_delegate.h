@@ -85,7 +85,8 @@ class ChromeResourceDispatcherHostDelegate
       int render_process_id,
       int render_view_id,
       const std::string& target_id,
-      scoped_ptr<content::StreamHandle> stream) OVERRIDE;
+      scoped_ptr<content::StreamHandle> stream,
+      int64 expected_content_size) OVERRIDE;
   virtual void OnResponseStarted(
       net::URLRequest* request,
       content::ResourceContext* resource_context,

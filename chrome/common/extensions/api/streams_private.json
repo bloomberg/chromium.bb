@@ -33,6 +33,11 @@
             "name": "tabId",
             "type": "integer",
             "description": "The ID of the tab that opened the stream. If the stream is not opened in a tab, it will be -1."
+          },
+          {
+            "name": "expectedContentSize",
+            "type": "integer",
+            "description": "The amount of data the Stream should contain, if known.  If there is no information on the size it will be -1."
           }
         ]
       }

@@ -105,6 +105,7 @@ bool ExtensionCanHandleMimeType(const Extension* extension,
 }
 
 void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
+                                     int64 expected_content_size,
                                      int render_process_id,
                                      int render_view_id,
                                      const std::string& extension_id) {
@@ -132,7 +133,7 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
   if (!streams_private)
     return;
   streams_private->ExecuteMimeTypeHandler(
-      extension_id, web_contents, stream.Pass());
+      extension_id, web_contents, stream.Pass(), expected_content_size);
 }
 
 }  // end namespace
@@ -476,12 +477,13 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
     int render_process_id,
     int render_view_id,
     const std::string& target_id,
-    scoped_ptr<content::StreamHandle> stream) {
+    scoped_ptr<content::StreamHandle> stream,
+    int64 expected_content_size) {
 #if !defined(OS_ANDROID)
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&SendExecuteMimeTypeHandlerEvent, base::Passed(&stream),
-                 render_process_id, render_view_id,
+                 expected_content_size, render_process_id, render_view_id,
                  target_id));
 #endif
 }

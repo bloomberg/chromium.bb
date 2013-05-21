@@ -36,7 +36,8 @@ class StreamsPrivateAPI : public ProfileKeyedAPI,
 
   void ExecuteMimeTypeHandler(const std::string& extension_id,
                               const content::WebContents* web_contents,
-                              scoped_ptr<content::StreamHandle> stream);
+                              scoped_ptr<content::StreamHandle> stream,
+                              int64 expected_content_size);
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<StreamsPrivateAPI>* GetFactoryInstance();

@@ -46,7 +46,8 @@ StreamsPrivateAPI::~StreamsPrivateAPI() {
 void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     const std::string& extension_id,
     const content::WebContents* web_contents,
-    scoped_ptr<content::StreamHandle> stream) {
+    scoped_ptr<content::StreamHandle> stream,
+    int64 expected_content_size) {
   // Create the event's arguments value.
   scoped_ptr<ListValue> event_args(new ListValue());
   event_args->Append(new base::StringValue(stream->GetMimeType()));
@@ -54,6 +55,11 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
   event_args->Append(new base::StringValue(stream->GetURL().spec()));
   event_args->Append(
       new base::FundamentalValue(ExtensionTabUtil::GetTabId(web_contents)));
+
+  int size = -1;
+  if (expected_content_size <= INT_MAX)
+    size = expected_content_size;
+  event_args->Append(new base::FundamentalValue(size));
 
   scoped_ptr<Event> event(new Event(events::kOnExecuteMimeTypeHandler,
                                     event_args.Pass()));

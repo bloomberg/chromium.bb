@@ -86,7 +86,8 @@ void ResourceDispatcherHostDelegate::OnStreamCreated(
     int render_process_id,
     int render_view_id,
     const std::string& target_id,
-    scoped_ptr<StreamHandle> stream) {
+    scoped_ptr<StreamHandle> stream,
+    int64 expected_content_size) {
 }
 
 void ResourceDispatcherHostDelegate::OnResponseStarted(

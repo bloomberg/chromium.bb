@@ -612,7 +612,8 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
       info->GetChildID(),
       info->GetRouteID(),
       target_id,
-      handler->stream()->CreateHandle(request->url(), mime_type));
+      handler->stream()->CreateHandle(request->url(), mime_type),
+      request->GetExpectedContentSize());
   return (scoped_ptr<ResourceHandler>(handler.release())).Pass();
 }
 
