@@ -152,6 +152,7 @@
     (r'ppapi_shared\.lib$', r'ppapi_switches\.obj$'),
     (r'printing\.lib$', r'print_job_constants\.obj$'),
     (r'skia\.lib$', r'skunpremultiply\.obj$'),
+    (r'\bui\.lib$', r'clipboard_constants\.obj$'),
     (r'\bui\.lib$', r'favicon_size\.obj$'),
     (r'\bui\.lib$', r'ui_base_switches\.obj$'),
     (r'webkit.*plugins_common\.lib$', r'plugin_switches\.obj$'),

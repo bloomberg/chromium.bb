@@ -103,13 +103,6 @@ union SourceTag2BinaryHelper {
 
 }  // namespace
 
-const char Clipboard::kMimeTypeText[] = "text/plain";
-const char Clipboard::kMimeTypeURIList[] = "text/uri-list";
-const char Clipboard::kMimeTypeDownloadURL[] = "downloadurl";
-const char Clipboard::kMimeTypeHTML[] = "text/html";
-const char Clipboard::kMimeTypeRTF[] = "text/rtf";
-const char Clipboard::kMimeTypePNG[] = "image/png";
-
 // static
 Clipboard::ObjectMapParam Clipboard::SourceTag2Binary(SourceTag tag) {
   SourceTag2BinaryHelper helper;

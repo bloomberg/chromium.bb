@@ -83,6 +83,7 @@
         'base/clipboard/clipboard_android_initialization.h',
         'base/clipboard/clipboard_aura.cc',
         'base/clipboard/clipboard_aurax11.cc',
+        'base/clipboard/clipboard_constants.cc',
         'base/clipboard/clipboard_gtk.cc',
         'base/clipboard/clipboard_mac.mm',
         'base/clipboard/clipboard_sourcetag.h',
