@@ -1071,8 +1071,9 @@ class UploadPrebuiltsStageTest(AbstractStageTest,
 
   def testChromeUpload(self):
     """Test uploading of prebuilts for chrome build."""
-    board_map = {'amd64-generic': True, 'daisy': True}
-    self.VerifyBoardMap('x86-generic-chromium-pfq', 5, board_map,
+    board_map = {'amd64-generic': True, 'daisy': True,
+                 'x86-alex': False, 'lumpy': False}
+    self.VerifyBoardMap('x86-generic-chromium-pfq', 9, board_map,
                         public_args=['--board', 'x86-generic'])
 
   def testPaladinMasterUpload(self):
