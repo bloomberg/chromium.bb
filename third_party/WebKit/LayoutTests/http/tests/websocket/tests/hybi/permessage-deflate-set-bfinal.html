@@ -10,7 +10,7 @@
 description("Test receiving compressed frames with BFINAL = 1.");
 
 window.jsTestIsAsync = true;
-window.testRunner.overridePreference("WebKitExperimentalWebSocketEnabled", true);
+window.internals.settings.setExperimentalWebSocketEnabled(true);
 
 var closeEvent;
 var ws;

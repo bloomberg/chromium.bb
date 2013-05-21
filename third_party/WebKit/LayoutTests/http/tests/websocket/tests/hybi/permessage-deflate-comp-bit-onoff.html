@@ -10,7 +10,7 @@
 description("Test compression enabled/disabled frame receiving.");
 
 window.jsTestIsAsync = true;
-window.testRunner.overridePreference("WebKitExperimentalWebSocketEnabled", true);
+window.internals.settings.setExperimentalWebSocketEnabled(true);
 
 var closeEvent;
 var ws;

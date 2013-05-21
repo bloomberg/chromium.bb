@@ -1619,8 +1619,6 @@ void TestRunner::overridePreference(const CppArgumentList& arguments, CppVariant
         prefs->experimentalCSSRegionsEnabled = cppVariantToBool(value);
     else if (key == "WebKitCSSGridLayoutEnabled")
         prefs->experimentalCSSGridLayoutEnabled = cppVariantToBool(value);
-    else if (key == "WebKitExperimentalWebSocketEnabled")
-        prefs->experimentalWebSocketEnabled = cppVariantToBool(value);
     else if (key == "WebKitHyperlinkAuditingEnabled")
         prefs->hyperlinkAuditingEnabled = cppVariantToBool(value);
     else if (key == "WebKitEnableCaretBrowsing")
