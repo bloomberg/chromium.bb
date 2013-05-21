@@ -12,6 +12,30 @@
     opacity: 1;
 }
 
+x:before { color: black }
+x:nth-child(1):hover:after { color: black }
+x:after { color: black }
+x:hover { color: black }
+x:first-letter { color: black }
+x:nth-child(2n + 1) { color: black }
+
+/* These rules should NOT be reported as unused */
+
+a:visited { text-decoration: none }
+
+img::before { color: red }
+img:after { color: red }
+
+img:hover { border: 1px solid black }
+img:focus { border: 1px solid black }
+img:active { border: 1px solid black }
+
+span:first-letter { color: red }
+
+img:nth-child(2n) { border: 1px solid blue }
+img:nth-child(2n + 1) { border: 1px solid green }
+img:nth-child(1):hover:after { border: 1px solid cyan }
+
 }
 </style>
 <script>
@@ -53,7 +77,7 @@ var test = function()
 </head>
 
 <body onload="runTest()">
-Tests audit rules.
+<p>Tests audit rules.</p>
 <style>
 .violation { color: red; -webkit-border-radius: 3px; }
 </style>
@@ -62,6 +86,8 @@ Tests audit rules.
 <img src="foo2.jpg" width=100>
 <img src="foo3.jpg" style="position: absolute">
 <img src="foo4.jpg" style="width: 16px; height: 16px">
+<span>Text</span>
+<a>Link</a>
 
 </body>
 </html>

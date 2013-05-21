@@ -1,4 +1,6 @@
-Tests audit rules.     
+Tests audit rules.
+
+   Text Link
 Page reloaded.
  Network Utilization
     Combine external JavaScript (4)
@@ -22,10 +24,16 @@ Page reloaded.
       audits-style1.css
       should be moved to the document head in 
       audits-panel-functional.html
-    Remove unused CSS rules (4)
-     4 rules (100%) of CSS not used by the current page.
-      Inline block #1: 100% is not used by the current page.
+    Remove unused CSS rules (10)
+     10 rules (50%) of CSS not used by the current page.
+      Inline block #1: 41% is not used by the current page.
        .unused
+       x:before
+       x:nth-child(1):hover:after
+       x:after
+       x:hover
+       x:first-letter
+       x:nth-child(2n + 1)
        audits-style1.css
       : 100% is not used by the current page.
        .some-style
