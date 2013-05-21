@@ -32,6 +32,8 @@
     'command_buffer/service/async_pixel_transfer_delegate_idle.h',
     'command_buffer/service/async_pixel_transfer_delegate_linux.cc',
     'command_buffer/service/async_pixel_transfer_delegate_mac.cc',
+    'command_buffer/service/async_pixel_transfer_delegate_share_group.cc',
+    'command_buffer/service/async_pixel_transfer_delegate_share_group.h',
     'command_buffer/service/async_pixel_transfer_delegate_stub.cc',
     'command_buffer/service/async_pixel_transfer_delegate_stub.h',
     'command_buffer/service/async_pixel_transfer_delegate_sync.cc',

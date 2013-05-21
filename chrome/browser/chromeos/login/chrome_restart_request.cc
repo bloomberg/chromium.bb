@@ -107,6 +107,7 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kPpapiFlashVersion,
       ::switches::kPpapiInProcess,
       ::switches::kRendererStartupDialog,
+      ::switches::kEnableShareGroupAsyncTextureUpload,
 #if defined(USE_XI2_MT)
       ::switches::kTouchCalibration,
 #endif

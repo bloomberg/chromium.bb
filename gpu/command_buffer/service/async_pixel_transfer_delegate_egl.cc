@@ -72,6 +72,15 @@ void DoFullTexSubImage2D(const AsyncTexImage2DParams& tex_params, void* data) {
       tex_params.format, tex_params.type, data);
 }
 
+void SetGlParametersForEglImageTexture() {
+  // These params are needed for EGLImage creation to succeed on several
+  // Android devices. I couldn't find this requirement in the EGLImage
+  // extension spec, but several devices fail without it.
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
+
 class TransferThread : public base::Thread {
  public:
   TransferThread() : base::Thread(kAsyncTransferThreadName) {
@@ -130,8 +139,6 @@ SafeSharedMemoryPool* safe_shared_memory_pool() {
   return g_transfer_thread.Pointer()->safe_shared_memory_pool();
 }
 
-}  // namespace
-
 // Class which holds async pixel transfers state (EGLImage).
 // The EGLImage is accessed by either thread, but everything
 // else accessed only on the main thread.
@@ -164,7 +171,7 @@ class TransferStateInternal
     DCHECK(texture_id_);
     DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
 
-    gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_);
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image_);
     bind_callback_.Run();
 
@@ -232,12 +239,110 @@ class TransferStateInternal
   }
 
   void WaitForTransferCompletion() {
+    TRACE_EVENT0("gpu", "WaitForTransferCompletion");
+    // TODO(backer): Deschedule the channel rather than blocking the main GPU
+    // thread (crbug.com/240265).
     transfer_completion_.Wait();
+  }
+
+  void PerformAsyncTexImage2D(AsyncTexImage2DParams tex_params,
+                              AsyncMemoryParams mem_params,
+                              ScopedSafeSharedMemory* safe_shared_memory) {
+    TRACE_EVENT2("gpu",
+                 "PerformAsyncTexImage",
+                 "width",
+                 tex_params.width,
+                 "height",
+                 tex_params.height);
+    DCHECK(!thread_texture_id_);
+    DCHECK_EQ(0, tex_params.level);
+    DCHECK_EQ(EGL_NO_IMAGE_KHR, egl_image_);
+
+    void* data =
+        AsyncPixelTransferDelegate::GetAddress(safe_shared_memory, mem_params);
+    {
+      TRACE_EVENT0("gpu", "glTexImage2D no data");
+      glGenTextures(1, &thread_texture_id_);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, thread_texture_id_);
+
+      SetGlParametersForEglImageTexture();
+
+      // If we need to use image_preserved, we pass the data with
+      // the allocation. Otherwise we use a NULL allocation to
+      // try to avoid any costs associated with creating the EGLImage.
+      if (use_image_preserved_)
+        DoTexImage2D(tex_params, data);
+      else
+        DoTexImage2D(tex_params, NULL);
+    }
+
+    CreateEglImageOnUploadThread();
+
+    {
+      TRACE_EVENT0("gpu", "glTexSubImage2D with data");
+
+      // If we didn't use image_preserved, we haven't uploaded
+      // the data yet, so we do this with a full texSubImage.
+      if (!use_image_preserved_)
+        DoFullTexSubImage2D(tex_params, data);
+    }
+
+    WaitForLastUpload();
+    MarkAsCompleted();
+
+    DCHECK(CHECK_GL());
+  }
+
+  void PerformAsyncTexSubImage2D(
+      AsyncTexSubImage2DParams tex_params,
+      AsyncMemoryParams mem_params,
+      ScopedSafeSharedMemory* safe_shared_memory,
+      scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats) {
+    TRACE_EVENT2("gpu",
+                 "PerformAsyncTexSubImage2D",
+                 "width",
+                 tex_params.width,
+                 "height",
+                 tex_params.height);
+
+    DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
+    DCHECK_EQ(0, tex_params.level);
+
+    void* data =
+        AsyncPixelTransferDelegate::GetAddress(safe_shared_memory, mem_params);
+
+    base::TimeTicks begin_time;
+    if (texture_upload_stats)
+      begin_time = base::TimeTicks::HighResNow();
+
+    if (!thread_texture_id_) {
+      TRACE_EVENT0("gpu", "glEGLImageTargetTexture2DOES");
+      glGenTextures(1, &thread_texture_id_);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, thread_texture_id_);
+      glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image_);
+    } else {
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, thread_texture_id_);
+    }
+    {
+      TRACE_EVENT0("gpu", "glTexSubImage2D");
+      DoTexSubImage2D(tex_params, data);
+    }
+    WaitForLastUpload();
+    MarkAsCompleted();
+
+    DCHECK(CHECK_GL());
+    if (texture_upload_stats) {
+      texture_upload_stats->AddUpload(base::TimeTicks::HighResNow() -
+                                      begin_time);
+    }
   }
 
  protected:
   friend class base::RefCountedThreadSafe<TransferStateInternal>;
-  friend class AsyncPixelTransferDelegateEGL;
+  friend class gpu::AsyncPixelTransferDelegateEGL;
 
   static void DeleteTexture(GLuint id) {
     glDeleteTextures(1, &id);
@@ -282,38 +387,6 @@ class TransferStateInternal
   bool use_image_preserved_;
 };
 
-class TextureUploadStats
-    : public base::RefCountedThreadSafe<TextureUploadStats> {
- public:
-  TextureUploadStats() : texture_upload_count_(0) {}
-
-  void AddUpload(base::TimeDelta transfer_time) {
-    base::AutoLock scoped_lock(lock_);
-    texture_upload_count_++;
-    total_texture_upload_time_ += transfer_time;
-  }
-
-  int GetStats(base::TimeDelta* total_texture_upload_time) {
-    base::AutoLock scoped_lock(lock_);
-    if (total_texture_upload_time)
-      *total_texture_upload_time = total_texture_upload_time_;
-    return texture_upload_count_;
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<TextureUploadStats>;
-
-  ~TextureUploadStats() {}
-
-  int texture_upload_count_;
-  base::TimeDelta total_texture_upload_time_;
-  base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextureUploadStats);
-};
-
-namespace {
-
 // EGL needs thread-safe ref-counting, so this just wraps
 // an internal thread-safe ref-counted state object.
 class AsyncTransferStateImpl : public AsyncPixelTransferState {
@@ -350,7 +423,7 @@ AsyncPixelTransferDelegateEGL::AsyncPixelTransferDelegateEGL() {
   is_imagination_ = vendor.find("Imagination") != std::string::npos;
   is_qualcomm_ = vendor.find("Qualcomm") != std::string::npos;
   // TODO(reveman): Skip this if --enable-gpu-benchmarking is not present.
-  texture_upload_stats_ = make_scoped_refptr(new TextureUploadStats);
+  texture_upload_stats_ = make_scoped_refptr(new AsyncPixelTransferUploadStats);
 }
 
 AsyncPixelTransferDelegateEGL::~AsyncPixelTransferDelegateEGL() {}
@@ -382,6 +455,8 @@ AsyncPixelTransferState* AsyncPixelTransferDelegateEGL::
 }
 
 void AsyncPixelTransferDelegateEGL::BindCompletedAsyncTransfers() {
+  scoped_ptr<gfx::ScopedTextureBinder> texture_binder;
+
   while(!pending_allocations_.empty()) {
     if (!pending_allocations_.front().get()) {
       pending_allocations_.pop_front();
@@ -393,6 +468,10 @@ void AsyncPixelTransferDelegateEGL::BindCompletedAsyncTransfers() {
     // Terminate early, as all transfers finish in order, currently.
     if (state->TransferIsInProgress())
       break;
+
+    if (!texture_binder)
+      texture_binder.reset(new gfx::ScopedTextureBinder(GL_TEXTURE_2D, 0));
+
     // If the transfer is finished, bind it to the texture
     // and remove it from pending list.
     state->BindTransfer();
@@ -421,7 +500,6 @@ void AsyncPixelTransferDelegateEGL::AsyncNotifyCompletion(
 
 void AsyncPixelTransferDelegateEGL::WaitForTransferCompletion(
       AsyncPixelTransferState* transfer_state) {
-  TRACE_EVENT0("gpu", "WaitForTransferCompletion");
   scoped_refptr<TransferStateInternal> state =
       static_cast<AsyncTransferStateImpl*>(transfer_state)->internal_.get();
   DCHECK(state);
@@ -482,7 +560,7 @@ void AsyncPixelTransferDelegateEGL::AsyncTexImage2D(
   // a use-after-free of the raw pixels.
   transfer_message_loop_proxy()->PostTask(FROM_HERE,
       base::Bind(
-          &AsyncPixelTransferDelegateEGL::PerformAsyncTexImage2D,
+          &TransferStateInternal::PerformAsyncTexImage2D,
           state,
           tex_params,
           mem_params,
@@ -525,7 +603,7 @@ void AsyncPixelTransferDelegateEGL::AsyncTexSubImage2D(
   // a use-after-free of the raw pixels.
   transfer_message_loop_proxy()->PostTask(FROM_HERE,
       base::Bind(
-          &AsyncPixelTransferDelegateEGL::PerformAsyncTexSubImage2D,
+          &TransferStateInternal::PerformAsyncTexSubImage2D,
           state,
           tex_params,
           mem_params,
@@ -556,17 +634,6 @@ bool AsyncPixelTransferDelegateEGL::NeedsProcessMorePendingTransfers() {
   return false;
 }
 
-namespace {
-void SetGlParametersForEglImageTexture() {
-  // These params are needed for EGLImage creation to succeed on several
-  // Android devices. I couldn't find this requirement in the EGLImage
-  // extension spec, but several devices fail without it.
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-}
-} // namespace
-
 void AsyncPixelTransferDelegateEGL::PerformNotifyCompletion(
     AsyncMemoryParams mem_params,
     ScopedSafeSharedMemory* safe_shared_memory,
@@ -575,98 +642,6 @@ void AsyncPixelTransferDelegateEGL::PerformNotifyCompletion(
   AsyncMemoryParams safe_mem_params = mem_params;
   safe_mem_params.shared_memory = safe_shared_memory->shared_memory();
   callback.Run(safe_mem_params);
-}
-
-void AsyncPixelTransferDelegateEGL::PerformAsyncTexImage2D(
-    TransferStateInternal* state,
-    AsyncTexImage2DParams tex_params,
-    AsyncMemoryParams mem_params,
-    ScopedSafeSharedMemory* safe_shared_memory) {
-  TRACE_EVENT2("gpu", "PerformAsyncTexImage",
-               "width", tex_params.width,
-               "height", tex_params.height);
-  DCHECK(state);
-  DCHECK(!state->thread_texture_id_);
-  DCHECK_EQ(0, tex_params.level);
-  DCHECK_EQ(EGL_NO_IMAGE_KHR, state->egl_image_);
-
-  void* data = GetAddress(safe_shared_memory, mem_params);
-  {
-    TRACE_EVENT0("gpu", "glTexImage2D no data");
-    glGenTextures(1, &state->thread_texture_id_);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, state->thread_texture_id_);
-
-    SetGlParametersForEglImageTexture();
-
-    // If we need to use image_preserved, we pass the data with
-    // the allocation. Otherwise we use a NULL allocation to
-    // try to avoid any costs associated with creating the EGLImage.
-    if (state->use_image_preserved_)
-       DoTexImage2D(tex_params, data);
-    else
-       DoTexImage2D(tex_params, NULL);
-  }
-
-  state->CreateEglImageOnUploadThread();
-
-  {
-    TRACE_EVENT0("gpu", "glTexSubImage2D with data");
-
-    // If we didn't use image_preserved, we haven't uploaded
-    // the data yet, so we do this with a full texSubImage.
-    if (!state->use_image_preserved_)
-      DoFullTexSubImage2D(tex_params, data);
-  }
-
-  state->WaitForLastUpload();
-  state->MarkAsCompleted();
-
-  DCHECK(CHECK_GL());
-}
-
-void AsyncPixelTransferDelegateEGL::PerformAsyncTexSubImage2D(
-    TransferStateInternal* state,
-    AsyncTexSubImage2DParams tex_params,
-    AsyncMemoryParams mem_params,
-    ScopedSafeSharedMemory* safe_shared_memory,
-    scoped_refptr<TextureUploadStats> texture_upload_stats) {
-  TRACE_EVENT2("gpu", "PerformAsyncTexSubImage2D",
-               "width", tex_params.width,
-               "height", tex_params.height);
-
-  DCHECK(state);
-  DCHECK_NE(EGL_NO_IMAGE_KHR, state->egl_image_);
-  DCHECK_EQ(0, tex_params.level);
-
-  void* data = GetAddress(safe_shared_memory, mem_params);
-
-  base::TimeTicks begin_time;
-  if (texture_upload_stats)
-    begin_time = base::TimeTicks::HighResNow();
-
-  if (!state->thread_texture_id_) {
-    TRACE_EVENT0("gpu", "glEGLImageTargetTexture2DOES");
-    glGenTextures(1, &state->thread_texture_id_);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, state->thread_texture_id_);
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, state->egl_image_);
-  } else {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, state->thread_texture_id_);
-  }
-  {
-    TRACE_EVENT0("gpu", "glTexSubImage2D");
-    DoTexSubImage2D(tex_params, data);
-  }
-  state->WaitForLastUpload();
-  state->MarkAsCompleted();
-
-  DCHECK(CHECK_GL());
-  if (texture_upload_stats) {
-    texture_upload_stats->AddUpload(
-        base::TimeTicks::HighResNow() - begin_time);
-  }
 }
 
 namespace {

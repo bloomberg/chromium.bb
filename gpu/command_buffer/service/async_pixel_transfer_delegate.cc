@@ -25,6 +25,25 @@ void* GetAddressImpl(base::SharedMemory* shared_memory,
 
 }  // namespace
 
+AsyncPixelTransferUploadStats::AsyncPixelTransferUploadStats()
+    : texture_upload_count_(0) {}
+
+AsyncPixelTransferUploadStats::~AsyncPixelTransferUploadStats() {}
+
+void AsyncPixelTransferUploadStats::AddUpload(base::TimeDelta transfer_time) {
+  base::AutoLock scoped_lock(lock_);
+  texture_upload_count_++;
+  total_texture_upload_time_ += transfer_time;
+}
+
+int AsyncPixelTransferUploadStats::GetStats(
+    base::TimeDelta* total_texture_upload_time) {
+  base::AutoLock scoped_lock(lock_);
+  if (total_texture_upload_time)
+    *total_texture_upload_time = total_texture_upload_time_;
+  return texture_upload_count_;
+}
+
 AsyncPixelTransferState::AsyncPixelTransferState(){}
 
 AsyncPixelTransferState::~AsyncPixelTransferState(){}
@@ -52,4 +71,4 @@ void* AsyncPixelTransferDelegate::GetAddress(
                         mem_params.shm_data_size);
 }
 
-}// namespace gpu
+}  // namespace gpu

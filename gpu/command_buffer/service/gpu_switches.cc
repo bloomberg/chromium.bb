@@ -62,6 +62,10 @@ const char kTraceGL[]       = "trace-gl";
 // Disables the GPU shader on disk cache.
 const char kDisableGpuShaderDiskCache[]     = "disable-gpu-shader-disk-cache";
 
+// Allows async texture uploads (off main thread) via GL context sharing.
+const char kEnableShareGroupAsyncTextureUpload[] =
+    "enable-share-group-async-texture-upload";
+
 const char* kGpuSwitches[] = {
   kCompileShaderAlwaysSucceeds,
   kDisableGLErrorLimit,
@@ -80,6 +84,7 @@ const char* kGpuSwitches[] = {
   kGpuProgramCacheSizeKb,
   kTraceGL,
   kDisableGpuShaderDiskCache,
+  kEnableShareGroupAsyncTextureUpload,
 };
 
 const int kNumGpuSwitches = arraysize(kGpuSwitches);

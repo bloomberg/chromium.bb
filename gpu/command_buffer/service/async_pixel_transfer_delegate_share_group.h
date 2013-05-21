@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_EGL_H_
-#define GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_EGL_H_
-
-#include <list>
+#ifndef GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_SHARE_GROUP_H_
+#define GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_SHARE_GROUP_H_
 
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 
-namespace gpu {
-class ScopedSafeSharedMemory;
+#include <list>
 
-// Class which handles async pixel transfers using EGLImageKHR and another
-// upload thread
-class AsyncPixelTransferDelegateEGL
-    : public AsyncPixelTransferDelegate,
-      public base::SupportsWeakPtr<AsyncPixelTransferDelegateEGL> {
+#include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+
+namespace gpu {
+
+class AsyncPixelTransferDelegateShareGroup : public AsyncPixelTransferDelegate {
  public:
-  AsyncPixelTransferDelegateEGL();
-  virtual ~AsyncPixelTransferDelegateEGL();
+  explicit AsyncPixelTransferDelegateShareGroup(gfx::GLContext* context);
+  virtual ~AsyncPixelTransferDelegateShareGroup();
 
   // Implement AsyncPixelTransferDelegate:
   virtual AsyncPixelTransferState* CreatePixelTransferState(
@@ -46,32 +45,14 @@ class AsyncPixelTransferDelegateEGL
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
 
  private:
-  static void PerformNotifyCompletion(
-      AsyncMemoryParams mem_params,
-      ScopedSafeSharedMemory* safe_shared_memory,
-      const CompletionCallback& callback);
-
-  // Returns true if a work-around was used.
-  bool WorkAroundAsyncTexImage2D(
-      AsyncPixelTransferState* state,
-      const AsyncTexImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params,
-      const base::Closure& bind_callback);
-  bool WorkAroundAsyncTexSubImage2D(
-      AsyncPixelTransferState* state,
-      const AsyncTexSubImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params);
-
   typedef std::list<base::WeakPtr<AsyncPixelTransferState> > TransferQueue;
   TransferQueue pending_allocations_;
 
   scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats_;
-  bool is_imagination_;
-  bool is_qualcomm_;
 
-  DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateEGL);
+  DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateShareGroup);
 };
 
 }  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_EGL_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_SHARE_GROUP_H_

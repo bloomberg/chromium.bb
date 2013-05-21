@@ -1126,6 +1126,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kDisableSeccompFilterSandbox,
     switches::kEnableGpuSandbox,
     switches::kEnableLogging,
+    switches::kEnableShareGroupAsyncTextureUpload,
     switches::kEnableVirtualGLContexts,
     switches::kGpuStartupDialog,
     switches::kLoggingLevel,

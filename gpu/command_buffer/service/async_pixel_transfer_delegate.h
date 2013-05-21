@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "gpu/gpu_export.h"
 #include "ui/gl/gl_bindings.h"
@@ -50,6 +51,26 @@ struct AsyncMemoryParams {
   uint32 shm_data_size;
 };
 
+class AsyncPixelTransferUploadStats
+    : public base::RefCountedThreadSafe<AsyncPixelTransferUploadStats> {
+ public:
+  AsyncPixelTransferUploadStats();
+
+  void AddUpload(base::TimeDelta transfer_time);
+  int GetStats(base::TimeDelta* total_texture_upload_time);
+
+ private:
+  friend class base::RefCountedThreadSafe<AsyncPixelTransferUploadStats>;
+
+  ~AsyncPixelTransferUploadStats();
+
+  int texture_upload_count_;
+  base::TimeDelta total_texture_upload_time_;
+  base::Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferUploadStats);
+};
+
 // AsyncPixelTransferState holds the resources required to do async
 // transfers on one texture. It should stay alive for the lifetime
 // of the texture to allow multiple transfers.
@@ -62,7 +83,6 @@ class GPU_EXPORT AsyncPixelTransferState :
   virtual bool TransferIsInProgress() = 0;
 
  protected:
-  friend class base::RefCounted<AsyncPixelTransferState>;
   AsyncPixelTransferState();
 
  private:

@@ -1422,6 +1422,7 @@ ErrorCode GpuProcessPolicy(Sandbox *sandbox, int sysno,
     case __NR_mprotect:
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:
+    case __NR_setpriority:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
     case __NR_access:
     case __NR_open:
