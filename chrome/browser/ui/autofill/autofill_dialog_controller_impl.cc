@@ -1469,8 +1469,15 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
     SuggestionsMenuModel* model,
     size_t index) {
   if (model->GetItemKeyAt(index) == kManageItemsKey) {
-    GURL url = IsPayingWithWallet() ? wallet::GetManageItemsUrl() :
-        GURL(chrome::kChromeUISettingsURL).Resolve(chrome::kAutofillSubPage);
+    GURL url;
+    if (!IsPayingWithWallet()) {
+      GURL settings_url(chrome::kChromeUISettingsURL);
+      url = settings_url.Resolve(chrome::kAutofillSubPage);
+    } else {
+      url = SectionForSuggestionsMenuModel(*model) == SECTION_SHIPPING ?
+          wallet::GetManageAddressesUrl() : wallet::GetManageInstrumentsUrl();
+    }
+
     OpenTabWithUrl(url);
     return;
   }

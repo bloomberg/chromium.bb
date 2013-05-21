@@ -74,8 +74,12 @@ GURL GetGetFullWalletUrl() {
   return GetBaseAutocheckoutUrl().Resolve("getFullWalletJwtless");
 }
 
-GURL GetManageItemsUrl() {
+GURL GetManageInstrumentsUrl() {
   return GetBaseSecureUrl().Resolve("manage/w/0/#paymentMethods:");
+}
+
+GURL GetManageAddressesUrl() {
+  return GetBaseSecureUrl().Resolve("manage/w/0/#settings:addresses");
 }
 
 GURL GetAcceptLegalDocumentsUrl() {

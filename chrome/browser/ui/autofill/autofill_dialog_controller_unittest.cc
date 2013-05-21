@@ -786,19 +786,29 @@ TEST_F(AutofillDialogControllerTest, ManageItem) {
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   SwitchToAutofill();
 
-  SuggestionsMenuModel* model = static_cast<SuggestionsMenuModel*>(
+  SuggestionsMenuModel* shipping = static_cast<SuggestionsMenuModel*>(
       controller()->MenuModelForSection(SECTION_SHIPPING));
-  model->ExecuteCommand(model->GetItemCount() - 1, 0);
+  shipping->ExecuteCommand(shipping->GetItemCount() - 1, 0);
   GURL autofill_manage_url = controller()->open_tab_url();
   EXPECT_EQ("chrome", autofill_manage_url.scheme());
 
   SwitchToWallet();
-  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
-  controller()->SuggestionItemSelected(model, model->GetItemCount() - 1);
-  GURL wallet_manage_url = controller()->open_tab_url();
-  EXPECT_EQ("https", wallet_manage_url.scheme());
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
 
-  EXPECT_NE(autofill_manage_url, wallet_manage_url);
+  controller()->SuggestionItemSelected(shipping, shipping->GetItemCount() - 1);
+  GURL wallet_manage_addresses_url = controller()->open_tab_url();
+  EXPECT_EQ("https", wallet_manage_addresses_url.scheme());
+
+  SuggestionsMenuModel* billing = static_cast<SuggestionsMenuModel*>(
+      controller()->MenuModelForSection(SECTION_CC_BILLING));
+  controller()->SuggestionItemSelected(billing, billing->GetItemCount() - 1);
+  GURL wallet_manage_instruments_url = controller()->open_tab_url();
+  EXPECT_EQ("https", wallet_manage_instruments_url.scheme());
+
+  EXPECT_NE(autofill_manage_url, wallet_manage_instruments_url);
+  EXPECT_NE(wallet_manage_instruments_url, wallet_manage_addresses_url);
 }
 
 TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {

@@ -10,31 +10,36 @@ namespace autofill {
 namespace wallet {
 
 TEST(WalletServiceUrl, CheckDefaultUrls) {
-  ASSERT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
+  EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
            "autocheckout/v1/getWalletItemsJwtless",
             GetGetWalletItemsUrl().spec());
-  ASSERT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
+  EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
             "autocheckout/v1/getFullWalletJwtless",
             GetGetFullWalletUrl().spec());
-  ASSERT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
+  EXPECT_EQ("https://wallet-web.sandbox.google.com/manage/w/0/#paymentMethods:",
+            GetManageInstrumentsUrl().spec());
+  EXPECT_EQ("https://wallet-web.sandbox.google.com/manage/w/0/"
+            "#settings:addresses",
+            GetManageAddressesUrl().spec());
+  EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
             "autocheckout/v1/acceptLegalDocument",
             GetAcceptLegalDocumentsUrl().spec());
-  ASSERT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
+  EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
             "autocheckout/v1/authenticateInstrument",
             GetAuthenticateInstrumentUrl().spec());
-  ASSERT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
+  EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
             "autocheckout/v1/reportStatus",
             GetSendStatusUrl().spec());
-  ASSERT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
+  EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
             "autocheckout/v1/saveToWallet",
             GetSaveToWalletUrl().spec());
-  ASSERT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/"
+  EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/"
             "passiveauth",
             GetPassiveAuthUrl().spec());
-  ASSERT_EQ("https://wallet-web.sandbox.google.com/online-secure/"
+  EXPECT_EQ("https://wallet-web.sandbox.google.com/online-secure/"
             "temporarydata/cvv?s7e=cvv",
             GetEncryptionUrl().spec());
-  ASSERT_EQ("https://wallet-web.sandbox.google.com/checkout/dehEfe?"
+  EXPECT_EQ("https://wallet-web.sandbox.google.com/checkout/dehEfe?"
             "s7e=cardNumber%3Bcvv",
             GetEscrowUrl().spec());
 }
