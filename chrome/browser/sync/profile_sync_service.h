@@ -797,7 +797,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // |invalidator_registrar_| is not NULL).
   void UpdateInvalidatorRegistrarState();
 
-  // Factory used to create various dependent objects.
+  // Returns the username (in form of an email address) that should be used in
+  // the credentials.
+  std::string GetEffectiveUsername();
+
+ // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
   // The profile whose data we are synchronizing.

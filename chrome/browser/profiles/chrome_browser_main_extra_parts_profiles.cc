@@ -100,6 +100,10 @@
 #endif
 #endif
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
@@ -147,7 +151,7 @@ ChromeBrowserMainExtraPartsProfiles::~ChromeBrowserMainExtraPartsProfiles() {
 void
 ChromeBrowserMainExtraPartsProfiles::EnsureProfileKeyedServiceFactoriesBuilt() {
   AboutSigninInternalsFactory::GetInstance();
-
+  autofill::PersonalDataManagerFactory::GetInstance();
 #if defined(ENABLE_BACKGROUND)
   BackgroundContentsServiceFactory::GetInstance();
 #endif
@@ -156,6 +160,12 @@ ChromeBrowserMainExtraPartsProfiles::EnsureProfileKeyedServiceFactoriesBuilt() {
   captive_portal::CaptivePortalServiceFactory::GetInstance();
 #endif
   ChromeGeolocationPermissionContextFactory::GetInstance();
+#if defined(OS_CHROMEOS)
+  chromeos::NetworkingPrivateEventRouterFactory::GetInstance();
+#endif
+#if defined(ENABLE_INPUT_SPEECH)
+  ChromeSpeechRecognitionPreferences::InitializeFactory();
+#endif
 #if defined(ENABLE_PRINTING)
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
@@ -226,16 +236,15 @@ ChromeBrowserMainExtraPartsProfiles::EnsureProfileKeyedServiceFactoriesBuilt() {
   GlobalErrorServiceFactory::GetInstance();
   GoogleURLTrackerFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
-#if !defined(OS_ANDROID)
-  notifier::ChromeNotifierServiceFactory::GetInstance();
-  MediaGalleriesPreferencesFactory::GetInstance();
+#if defined(ENABLE_MANAGED_USERS)
+  ManagedUserServiceFactory::GetInstance();
 #endif
-#if defined(OS_CHROMEOS)
-  chromeos::NetworkingPrivateEventRouterFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  MediaGalleriesPreferencesFactory::GetInstance();
+  notifier::ChromeNotifierServiceFactory::GetInstance();
 #endif
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
-  autofill::PersonalDataManagerFactory::GetInstance();
 #if !defined(OS_ANDROID)
   PinnedTabServiceFactory::GetInstance();
 #endif
@@ -263,12 +272,9 @@ ChromeBrowserMainExtraPartsProfiles::EnsureProfileKeyedServiceFactoriesBuilt() {
   SessionServiceFactory::GetInstance();
 #endif
   ShortcutsBackendFactory::GetInstance();
-  ThumbnailServiceFactory::GetInstance();
   SigninManagerFactory::GetInstance();
-#if defined(ENABLE_INPUT_SPEECH)
-  ChromeSpeechRecognitionPreferences::InitializeFactory();
-#endif
   SpellcheckServiceFactory::GetInstance();
+  ThumbnailServiceFactory::GetInstance();
   TabRestoreServiceFactory::GetInstance();
   TemplateURLFetcherFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();

@@ -77,6 +77,10 @@
 #include "sync/util/cryptographer.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "sync/internal_api/public/read_transaction.h"
 #endif
@@ -185,8 +189,8 @@ bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {
   if (IsManaged() || sync_prefs_.IsStartSuppressed())
     return false;
 
-  // Sync is logged in if there is a non-empty authenticated username.
-  return !signin_->GetAuthenticatedUsername().empty();
+  // Sync is logged in if there is a non-empty effective username.
+  return !GetEffectiveUsername().empty();
 }
 
 bool ProfileSyncService::IsSyncTokenAvailable() {
@@ -234,7 +238,7 @@ void ProfileSyncService::Initialize() {
 
   RegisterAuthNotifications();
 
-  if (!HasSyncSetupCompleted() || signin_->GetAuthenticatedUsername().empty()) {
+  if (!HasSyncSetupCompleted() || GetEffectiveUsername().empty()) {
     // Clean up in case of previous crash / setup abort / signout.
     DisableForUser();
   }
@@ -420,7 +424,7 @@ void ProfileSyncService::InitSettings() {
 
 SyncCredentials ProfileSyncService::GetCredentials() {
   SyncCredentials credentials;
-  credentials.email = signin_->GetAuthenticatedUsername();
+  credentials.email = GetEffectiveUsername();
   DCHECK(!credentials.email.empty());
   TokenService* service = TokenServiceFactory::GetForProfile(profile_);
   if (service->HasTokenForService(GaiaConstants::kSyncService)) {
@@ -2095,3 +2099,15 @@ void ProfileSyncService::UpdateInvalidatorRegistrarState() {
            << syncer::InvalidatorStateToString(effective_state);
   invalidator_registrar_->UpdateInvalidatorState(effective_state);
 }
+
+std::string ProfileSyncService::GetEffectiveUsername() {
+#if defined(ENABLE_MANAGED_USERS)
+  if (ManagedUserService::ProfileIsManaged(profile_)) {
+    DCHECK_EQ(std::string(), signin_->GetAuthenticatedUsername());
+    return ManagedUserService::GetManagedUserPseudoEmail();
+  }
+#endif
+
+  return signin_->GetAuthenticatedUsername();
+}
+

@@ -364,7 +364,6 @@ void UserPolicySigninService::Observe(
   // Note that the profile manager is NULL in unit tests.
   if (g_browser_process->profile_manager() &&
       g_browser_process->profile_manager()->will_import()) {
-    DCHECK_EQ(chrome::NOTIFICATION_PROFILE_ADDED, type);
     return;
   }
 

@@ -50,6 +50,10 @@ class ManagedUserService : public ProfileKeyedService,
 
   bool ProfileIsManaged() const;
 
+  // Checks whether the given profile is managed without constructing a
+  // ManagedUserService (which could lead to cyclic dependencies).
+  static bool ProfileIsManaged(Profile* profile);
+
   // Returns the elevation state for specific WebContents.
   bool IsElevatedForWebContents(const content::WebContents* web_contents) const;
 
@@ -108,8 +112,8 @@ class ManagedUserService : public ProfileKeyedService,
   // Marks the profile as managed and initializes it.
   void InitForTesting();
 
-  // Initializes this object for syncing managed-user-related data with the
-  // server.
+  // Initializes this profile for syncing, using the provided |token| to
+  // authenticate requests.
   void InitSync(const std::string& token);
 
   // Convenience method that registers this managed user with
@@ -118,6 +122,10 @@ class ManagedUserService : public ProfileKeyedService,
   // not this one.
   void RegisterAndInitSync(
       ManagedUserRegistrationService* registration_service);
+
+  // Returns a pseudo-email address for systems that expect well-formed email
+  // addresses (like Sync), even though we're not signed in.
+  static const char* GetManagedUserPseudoEmail();
 
   void set_elevated_for_testing(bool skip) {
     elevated_for_testing_ = skip;

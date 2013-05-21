@@ -9,7 +9,6 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -233,9 +232,7 @@ void ProfileMetrics::LogProfileLaunch(Profile* profile) {
                             GetProfileType(profile_path),
                             NUM_PROFILE_TYPE_METRICS);
 
-  ManagedUserService* service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-  if (service->ProfileIsManaged()) {
+  if (ManagedUserService::ProfileIsManaged(profile)) {
     content::RecordAction(
         content::UserMetricsAction("ManagedMode_NewManagedUserWindow"));
   }

@@ -40,6 +40,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientManagedUserSettingsSyncTest, Sanity) {
         new base::FundamentalValue(true));
     policy_provider->SetPolicy(policy::key::kSigninAllowed,
                                allow_signin.PassAs<Value>());
+
+    // The user should not be signed in.
+    std::string username;
+    // ProfileSyncServiceHarness sets the password, which can't be empty.
+    std::string password = "password";
+    GetClient(i)->SetCredentials(username, password);
   }
   ASSERT_TRUE(SetupSync());
 }

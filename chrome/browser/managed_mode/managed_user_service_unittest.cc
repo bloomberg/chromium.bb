@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,57 +55,63 @@ class ManagedModeURLFilterObserver : public ManagedModeURLFilter::Observer {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 };
 
+class ManagedUserServiceTest : public ::testing::Test {
+ public:
+  ManagedUserServiceTest() : ui_thread_(content::BrowserThread::UI,
+                                        &message_loop_),
+                             managed_user_service_(&profile_) {}
+  virtual ~ManagedUserServiceTest() {}
+
+ protected:
+  MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
+  TestingProfile profile_;
+  ManagedUserService managed_user_service_;
+};
+
 }  // namespace
 
-TEST(ManagedUserServiceTest, ExtensionManagementPolicyProvider) {
-  MessageLoop message_loop;
-  TestingProfile profile;
-  {
-    ManagedUserService managed_user_service(&profile);
-    EXPECT_FALSE(managed_user_service.ProfileIsManaged());
+TEST_F(ManagedUserServiceTest, ExtensionManagementPolicyProviderUnmanaged) {
+  EXPECT_FALSE(managed_user_service_.ProfileIsManaged());
 
-    string16 error_1;
-    EXPECT_TRUE(managed_user_service.UserMayLoad(NULL, &error_1));
-    EXPECT_EQ(string16(), error_1);
+  string16 error_1;
+  EXPECT_TRUE(managed_user_service_.UserMayLoad(NULL, &error_1));
+  EXPECT_EQ(string16(), error_1);
 
-    string16 error_2;
-    EXPECT_TRUE(managed_user_service.UserMayModifySettings(NULL, &error_2));
-    EXPECT_EQ(string16(), error_2);
-  }
-
-  {
-    ManagedUserService managed_user_service(&profile);
-    ManagedModeURLFilterObserver observer(
-        managed_user_service.GetURLFilterForUIThread());
-    managed_user_service.InitForTesting();
-    EXPECT_TRUE(managed_user_service.ProfileIsManaged());
-
-    string16 error_1;
-    EXPECT_FALSE(managed_user_service.UserMayLoad(NULL, &error_1));
-    EXPECT_FALSE(error_1.empty());
-
-    string16 error_2;
-    EXPECT_FALSE(managed_user_service.UserMayModifySettings(NULL, &error_2));
-    EXPECT_FALSE(error_2.empty());
-
-#ifndef NDEBUG
-    EXPECT_FALSE(managed_user_service.GetDebugPolicyProviderName().empty());
-#endif
-    // Wait for the initial update to finish (otherwise we'll get leaks).
-    observer.Wait();
-  }
+  string16 error_2;
+  EXPECT_TRUE(managed_user_service_.UserMayModifySettings(NULL, &error_2));
+  EXPECT_EQ(string16(), error_2);
 }
 
-TEST(ManagedUserServiceTest, GetManualExceptionsForHost) {
-  TestingProfile profile;
-  ManagedUserService managed_user_service(&profile);
+TEST_F(ManagedUserServiceTest, ExtensionManagementPolicyProviderManaged) {
+  ManagedModeURLFilterObserver observer(
+      managed_user_service_.GetURLFilterForUIThread());
+  managed_user_service_.InitForTesting();
+  EXPECT_TRUE(managed_user_service_.ProfileIsManaged());
+
+  string16 error_1;
+  EXPECT_FALSE(managed_user_service_.UserMayLoad(NULL, &error_1));
+  EXPECT_FALSE(error_1.empty());
+
+  string16 error_2;
+  EXPECT_FALSE(managed_user_service_.UserMayModifySettings(NULL, &error_2));
+  EXPECT_FALSE(error_2.empty());
+
+#ifndef NDEBUG
+  EXPECT_FALSE(managed_user_service_.GetDebugPolicyProviderName().empty());
+#endif
+  // Wait for the initial update to finish (otherwise we'll get leaks).
+  observer.Wait();
+}
+
+TEST_F(ManagedUserServiceTest, GetManualExceptionsForHost) {
   GURL kExampleFooURL("http://www.example.com/foo");
   GURL kExampleBarURL("http://www.example.com/bar");
   GURL kExampleFooNoWWWURL("http://example.com/foo");
   GURL kBlurpURL("http://blurp.net/bla");
   GURL kMooseURL("http://moose.org/baz");
   {
-    DictionaryPrefUpdate update(profile.GetPrefs(),
+    DictionaryPrefUpdate update(profile_.GetPrefs(),
                                 prefs::kManagedModeManualURLs);
     base::DictionaryValue* dict = update.Get();
     dict->SetBooleanWithoutPathExpansion(kExampleFooURL.spec(), true);
@@ -114,24 +121,24 @@ TEST(ManagedUserServiceTest, GetManualExceptionsForHost) {
   }
 
   EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
-            managed_user_service.GetManualBehaviorForURL(kExampleFooURL));
+            managed_user_service_.GetManualBehaviorForURL(kExampleFooURL));
   EXPECT_EQ(ManagedUserService::MANUAL_BLOCK,
-            managed_user_service.GetManualBehaviorForURL(kExampleBarURL));
+            managed_user_service_.GetManualBehaviorForURL(kExampleBarURL));
   EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
-            managed_user_service.GetManualBehaviorForURL(kExampleFooNoWWWURL));
+            managed_user_service_.GetManualBehaviorForURL(kExampleFooNoWWWURL));
   EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
-            managed_user_service.GetManualBehaviorForURL(kBlurpURL));
+            managed_user_service_.GetManualBehaviorForURL(kBlurpURL));
   EXPECT_EQ(ManagedUserService::MANUAL_NONE,
-            managed_user_service.GetManualBehaviorForURL(kMooseURL));
+            managed_user_service_.GetManualBehaviorForURL(kMooseURL));
   std::vector<GURL> exceptions;
-  managed_user_service.GetManualExceptionsForHost("www.example.com",
+  managed_user_service_.GetManualExceptionsForHost("www.example.com",
                                                    &exceptions);
   ASSERT_EQ(2u, exceptions.size());
   EXPECT_EQ(kExampleBarURL, exceptions[0]);
   EXPECT_EQ(kExampleFooURL, exceptions[1]);
 
   {
-    DictionaryPrefUpdate update(profile.GetPrefs(),
+    DictionaryPrefUpdate update(profile_.GetPrefs(),
                                 prefs::kManagedModeManualURLs);
     base::DictionaryValue* dict = update.Get();
     for (std::vector<GURL>::iterator it = exceptions.begin();
@@ -141,15 +148,15 @@ TEST(ManagedUserServiceTest, GetManualExceptionsForHost) {
   }
 
   EXPECT_EQ(ManagedUserService::MANUAL_NONE,
-            managed_user_service.GetManualBehaviorForURL(kExampleFooURL));
+            managed_user_service_.GetManualBehaviorForURL(kExampleFooURL));
   EXPECT_EQ(ManagedUserService::MANUAL_NONE,
-            managed_user_service.GetManualBehaviorForURL(kExampleBarURL));
+            managed_user_service_.GetManualBehaviorForURL(kExampleBarURL));
   EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
-            managed_user_service.GetManualBehaviorForURL(kExampleFooNoWWWURL));
+            managed_user_service_.GetManualBehaviorForURL(kExampleFooNoWWWURL));
   EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
-            managed_user_service.GetManualBehaviorForURL(kBlurpURL));
+            managed_user_service_.GetManualBehaviorForURL(kBlurpURL));
   EXPECT_EQ(ManagedUserService::MANUAL_NONE,
-            managed_user_service.GetManualBehaviorForURL(kMooseURL));
+            managed_user_service_.GetManualBehaviorForURL(kMooseURL));
 }
 
 class ManagedUserServiceExtensionTest : public ExtensionServiceTestBase {

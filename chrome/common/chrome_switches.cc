@@ -872,14 +872,15 @@ const char kLoadExtension[]                 = "load-extension";
 // to a separate file if a file name is given.
 const char kLogNetLog[]                     = "log-net-log";
 
-// Uninstalls an extension with the specified extension id.
-const char kUninstallExtension[]            = "uninstall-extension";
+// Makes Chrome default browser
+const char kMakeDefaultBrowser[]            = "make-default-browser";
+
+// Used to authenticate requests to the Sync service for managed users. Setting
+// this switch also causes Sync to be set up for a managed user.
+const char kManagedUserSyncToken[]          = "managed-user-sync-token";
 
 // Starts the browser in managed mode.
 const char kManaged[]                       = "managed";
-
-// Makes Chrome default browser
-const char kMakeDefaultBrowser[]            = "make-default-browser";
 
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
@@ -1411,6 +1412,9 @@ const char kTrustedSpdyProxy[]              = "trusted-spdy-proxy";
 // Experimental. Shows a dialog asking the user to try chrome. This flag is to
 // be used only by the upgrade process.
 const char kTryChromeAgain[]                = "try-chrome-again";
+
+// Uninstalls an extension with the specified extension id.
+const char kUninstallExtension[]            = "uninstall-extension";
 
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";

@@ -8,6 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "sync/api/sync_error_factory.h"
+#include "sync/api/syncable_service.h"
 
 class PersistentPrefStore;
 class Profile;
@@ -23,7 +25,8 @@ namespace policy {
 // JSON format.
 class ManagedModePolicyProvider
     : public ConfigurationPolicyProvider,
-      public PrefStore::Observer {
+      public PrefStore::Observer,
+      public syncer::SyncableService {
  public:
   // The dictionary key under which we store the policy dictionary. Public for
   // testing.
@@ -80,6 +83,19 @@ class ManagedModePolicyProvider
   virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
   virtual void OnInitializationCompleted(bool success) OVERRIDE;
 
+  // SyncableService implementation:
+  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+      syncer::ModelType type,
+      const syncer::SyncDataList& initial_sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
+  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+  virtual syncer::SyncDataList GetAllSyncData(
+      syncer::ModelType type) const OVERRIDE;
+  virtual syncer::SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const syncer::SyncChangeList& change_list) OVERRIDE;
+
  private:
   base::DictionaryValue* GetCachedPolicy() const;
   void UpdatePolicyFromCache();
@@ -87,6 +103,9 @@ class ManagedModePolicyProvider
   // Used for persisting policies. Unlike other PrefStores, this one is not
   // hooked up to the PrefService.
   scoped_refptr<PersistentPrefStore> store_;
+
+  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  scoped_ptr<syncer::SyncErrorFactory> error_handler_;
 };
 
 }  // namespace policy
