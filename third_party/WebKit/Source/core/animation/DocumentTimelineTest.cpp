@@ -43,17 +43,30 @@ using namespace WebCore;
 
 namespace {
 
+class EmptyAnimationEffect : public AnimationEffect {
+public:
+    static PassRefPtr<EmptyAnimationEffect> create()
+    {
+        return adoptRef(new EmptyAnimationEffect);
+    }
+    virtual PassOwnPtr<CompositableValueMap> sample(int iteration, double fraction) const
+    {
+        return adoptPtr(new CompositableValueMap);
+    }
+private:
+    EmptyAnimationEffect() { }
+};
+
 TEST(DocumentTimeline, AddAnAnimation)
 {
     RefPtr<Document> d = Document::create(0, KURL());
     RefPtr<Element> e = Element::create(nullQName() , d.get());
     RefPtr<DocumentTimeline> timeline = DocumentTimeline::create(d.get());
     Timing timing;
-    RefPtr<Animation> anim = Animation::create(e.get(), AnimationEffect::create(), timing);
+    RefPtr<Animation> anim = Animation::create(e.get(), EmptyAnimationEffect::create(), timing);
     timeline->play(anim);
     timeline->serviceAnimations(0);
-    StylePropertySet* styleSet = anim->cachedStyle();
-    ASSERT_EQ(0u, styleSet->propertyCount());
+    ASSERT_TRUE(anim->compositableValues()->isEmpty());
 }
 
 }

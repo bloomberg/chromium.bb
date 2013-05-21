@@ -28,26 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/animation/AnimationEffect.h"
+#ifndef AnimatableValue_h
+#define AnimatableValue_h
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSValue.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-PassRefPtr<AnimationEffect> AnimationEffect::create()
-{
-    return adoptRef(new AnimationEffect());
-}
+// FIXME: This class is currently just a stub.
+class AnimatableValue {
+public:
+    PassRefPtr<CSSValue> toCSSValue() const;
+};
 
-AnimationEffect::AnimationEffect()
-{
-}
+} // namespace WebCore
 
-// FIXME: This shouldn't directly generate StylePropertySet values.
-PassRefPtr<StylePropertySet> AnimationEffect::sample(double fraction, int iteration)
-{
-    return StylePropertySet::create(0, 0);
-}
-
-} // namespace
+#endif // AnimatableValue_h

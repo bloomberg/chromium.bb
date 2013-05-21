@@ -33,7 +33,6 @@
 
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/TimedItem.h"
-#include "core/css/StylePropertySet.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -46,10 +45,10 @@ public:
     static PassRefPtr<Animation> create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect>, Timing&);
     virtual ~Animation();
 
-    StylePropertySet* cachedStyle()
+    const AnimationEffect::CompositableValueMap* compositableValues() const
     {
-        ASSERT(m_cachedStyle.get());
-        return m_cachedStyle.get();
+        ASSERT(m_compositableValues);
+        return m_compositableValues.get();
     }
 
 protected:
@@ -63,7 +62,7 @@ private:
     RefPtr<Element> m_target;
     RefPtr<AnimationEffect> m_effect;
     bool m_isInTargetActiveAnimationsList;
-    RefPtr<StylePropertySet> m_cachedStyle;
+    OwnPtr<AnimationEffect::CompositableValueMap> m_compositableValues;
 };
 
 } // namespace

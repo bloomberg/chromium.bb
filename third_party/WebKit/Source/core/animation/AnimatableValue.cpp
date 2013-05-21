@@ -29,56 +29,14 @@
  */
 
 #include "config.h"
-#include "core/animation/Animation.h"
-
-#include "core/dom/Element.h"
+#include "core/animation/AnimatableValue.h"
 
 namespace WebCore {
 
-PassRefPtr<Animation> Animation::create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, Timing& timing)
+PassRefPtr<CSSValue> AnimatableValue::toCSSValue() const
 {
-    return adoptRef(new Animation(target, effect, timing));
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
-Animation::Animation(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, Timing& timing)
-    : TimedItem(timing)
-    , m_target(target)
-    , m_effect(effect)
-    , m_isInTargetActiveAnimationsList(false)
-{
-}
-
-Animation::~Animation()
-{
-    if (m_isInTargetActiveAnimationsList)
-        m_target->removeActiveAnimation(this);
-}
-
-void Animation::applyEffects(bool previouslyActiveOrInEffect)
-{
-    if (!previouslyActiveOrInEffect) {
-        m_target->addActiveAnimation(this);
-        m_isInTargetActiveAnimationsList = true;
-    }
-    m_compositableValues = m_effect->sample(currentIteration(), 0.0);
-    m_target->setNeedsStyleRecalc(SyntheticStyleChange);
-}
-
-void Animation::clearEffects()
-{
-    m_target->removeActiveAnimation(this);
-    m_isInTargetActiveAnimationsList = false;
-    m_compositableValues.clear();
-}
-
-void Animation::updateChildrenAndEffects(bool wasActiveOrInEffect) const
-{
-    const bool isActiveOrInEffect = isActive() || isInEffect();
-    ASSERT(m_isInTargetActiveAnimationsList == wasActiveOrInEffect);
-    if (wasActiveOrInEffect && !isActiveOrInEffect)
-        const_cast<Animation*>(this)->clearEffects();
-    else if (isActiveOrInEffect)
-        const_cast<Animation*>(this)->applyEffects(wasActiveOrInEffect);
-}
-
-} // namespace
+} // namespace WebCore

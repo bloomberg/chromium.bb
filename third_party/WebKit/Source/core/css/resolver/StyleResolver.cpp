@@ -36,6 +36,7 @@
 #include "UserAgentStyleSheets.h"
 #include "WebKitFontFamilyNames.h"
 #include "XMLNames.h"
+#include "core/animation/AnimatableValue.h"
 #include "core/animation/Animation.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSCalculationValue.h"
@@ -1842,28 +1843,28 @@ void StyleResolver::applyAnimatedProperties(const Element* target)
 
     for (size_t i = 0; i < animations->size(); ++i) {
         RefPtr<Animation> animation = animations->at(i);
-        RefPtr<StylePropertySet> properties = animation->cachedStyle();
-        for (unsigned j = 0; j < properties->propertyCount(); ++j) {
-            StylePropertySet::PropertyReference current = properties->propertyAt(j);
-            CSSPropertyID property = current.id();
+        const AnimationEffect::CompositableValueMap* compositableValues = animation->compositableValues();
+        for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
+            CSSPropertyID property = iter->key;
+            // FIXME: Composite onto the underlying value.
+            RefPtr<CSSValue> value = iter->value->composite(AnimatableValue()).toCSSValue();
             switch (pass) {
             case VariableDefinitions:
                 ASSERT_NOT_REACHED();
                 continue;
             case HighPriorityProperties:
                 if (property < CSSPropertyLineHeight)
-                    applyProperty(current.id(), current.value());
+                    applyProperty(property, value.get());
                 else if (property == CSSPropertyLineHeight)
-                    m_state.setLineHeightValue(current.value());
+                    m_state.setLineHeightValue(value.get());
                 continue;
             case LowPriorityProperties:
                 if (property > CSSPropertyLineHeight)
-                    applyProperty(current.id(), current.value());
+                    applyProperty(property, value.get());
                 continue;
             }
         }
     }
-
 }
 
 template <StyleResolver::StyleApplicationPass pass>

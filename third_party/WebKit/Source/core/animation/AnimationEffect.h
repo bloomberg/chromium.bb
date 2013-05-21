@@ -31,22 +31,29 @@
 #ifndef AnimationEffect_h
 #define AnimationEffect_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "CSSPropertyNames.h"
+#include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class StylePropertySet;
+class AnimatableValue;
 
 class AnimationEffect : public RefCounted<AnimationEffect> {
-
 public:
-    static PassRefPtr<AnimationEffect> create();
+    // Encapsulates the value which results from applying a set of composition operations onto an
+    // underlying value. It is used to represent the output of the effect phase of the Web
+    // Animations model.
+    class CompositableValue : public RefCounted<CompositableValue> {
+    public:
+        virtual ~CompositableValue() { }
+        virtual AnimatableValue composite(const AnimatableValue&) const = 0;
+    };
 
-    PassRefPtr<StylePropertySet> sample(double fraction, int iteration);
-
-private:
-    AnimationEffect();
+    virtual ~AnimationEffect() { }
+    typedef HashMap<CSSPropertyID, RefPtr<CompositableValue> > CompositableValueMap;
+    virtual PassOwnPtr<CompositableValueMap> sample(int iteration, double fraction) const = 0;
 };
 
 } // namespace WebCore
