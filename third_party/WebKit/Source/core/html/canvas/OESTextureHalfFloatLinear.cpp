@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,48 +23,43 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLExtension_h
-#define WebGLExtension_h
+#include "config.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/OESTextureHalfFloatLinear.h"
+
+#include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
-class WebGLExtension {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    // Extension names are needed to properly wrap instances in JavaScript objects.
-    enum ExtensionName {
-        WebGLLoseContextName,
-        EXTDrawBuffersName,
-        EXTTextureFilterAnisotropicName,
-        OESTextureFloatName,
-        OESTextureHalfFloatName,
-        OESStandardDerivativesName,
-        OESVertexArrayObjectName,
-        WebGLDebugRendererInfoName,
-        WebGLDebugShadersName,
-        WebGLCompressedTextureS3TCName,
-        WebGLDepthTextureName,
-        OESElementIndexUintName,
-        WebGLCompressedTextureATCName,
-        WebGLCompressedTexturePVRTCName,
-        OESTextureFloatLinearName,
-        OESTextureHalfFloatLinearName,
-    };
+OESTextureHalfFloatLinear::OESTextureHalfFloatLinear(WebGLRenderingContext* context)
+    : WebGLExtension(context)
+{
+    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_texture_half_float_linear");
+}
 
-    void ref() { m_context->ref(); }
-    void deref() { m_context->deref(); }
-    WebGLRenderingContext* context() { return m_context; }
+OESTextureHalfFloatLinear::~OESTextureHalfFloatLinear()
+{
+}
 
-    virtual ~WebGLExtension();
-    virtual ExtensionName getName() const = 0;
+WebGLExtension::ExtensionName OESTextureHalfFloatLinear::getName() const
+{
+    return OESTextureHalfFloatLinearName;
+}
 
-protected:
-    WebGLExtension(WebGLRenderingContext*);
-    WebGLRenderingContext* m_context;
-};
+PassOwnPtr<OESTextureHalfFloatLinear> OESTextureHalfFloatLinear::create(WebGLRenderingContext* context)
+{
+    return adoptPtr(new OESTextureHalfFloatLinear(context));
+}
+
+bool OESTextureHalfFloatLinear::supported(WebGLRenderingContext* context)
+{
+    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    return extensions->supports("GL_OES_texture_half_float_linear");
+}
+
+const char* OESTextureHalfFloatLinear::getExtensionName()
+{
+    return "OES_texture_half_float_linear";
+}
 
 } // namespace WebCore
-
-#endif // WebGLExtension_h

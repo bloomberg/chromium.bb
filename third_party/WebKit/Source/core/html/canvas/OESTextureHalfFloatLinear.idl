@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,48 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLExtension_h
-#define WebGLExtension_h
-
-#include "core/html/canvas/WebGLRenderingContext.h"
-
-namespace WebCore {
-
-class WebGLExtension {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    // Extension names are needed to properly wrap instances in JavaScript objects.
-    enum ExtensionName {
-        WebGLLoseContextName,
-        EXTDrawBuffersName,
-        EXTTextureFilterAnisotropicName,
-        OESTextureFloatName,
-        OESTextureHalfFloatName,
-        OESStandardDerivativesName,
-        OESVertexArrayObjectName,
-        WebGLDebugRendererInfoName,
-        WebGLDebugShadersName,
-        WebGLCompressedTextureS3TCName,
-        WebGLDepthTextureName,
-        OESElementIndexUintName,
-        WebGLCompressedTextureATCName,
-        WebGLCompressedTexturePVRTCName,
-        OESTextureFloatLinearName,
-        OESTextureHalfFloatLinearName,
-    };
-
-    void ref() { m_context->ref(); }
-    void deref() { m_context->deref(); }
-    WebGLRenderingContext* context() { return m_context; }
-
-    virtual ~WebGLExtension();
-    virtual ExtensionName getName() const = 0;
-
-protected:
-    WebGLExtension(WebGLRenderingContext*);
-    WebGLRenderingContext* m_context;
+[
+    NoInterfaceObject,
+    Conditional=WEBGL,
+] interface OESTextureHalfFloatLinear {
 };
-
-} // namespace WebCore
-
-#endif // WebGLExtension_h

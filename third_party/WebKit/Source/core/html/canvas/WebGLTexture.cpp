@@ -48,6 +48,8 @@ WebGLTexture::WebGLTexture(WebGLRenderingContext* ctx)
     , m_isNPOT(false)
     , m_isComplete(false)
     , m_needToUseBlackTexture(false)
+    , m_isFloatType(false)
+    , m_isHalfFloatType(false)
 {
     setObject(ctx->graphicsContext3D()->createTexture());
 }
@@ -230,11 +232,17 @@ bool WebGLTexture::isNPOT() const
     return m_isNPOT;
 }
 
-bool WebGLTexture::needToUseBlackTexture() const
+bool WebGLTexture::needToUseBlackTexture(TextureExtensionFlag flag) const
 {
     if (!object())
         return false;
-    return m_needToUseBlackTexture;
+    if (m_needToUseBlackTexture)
+        return true;
+    if ((m_isFloatType && !(flag & TextureFloatLinearExtensionEnabled)) || (m_isHalfFloatType && !(flag && TextureHalfFloatLinearExtensionEnabled))) {
+        if (m_magFilter != GraphicsContext3D::NEAREST || (m_minFilter != GraphicsContext3D::NEAREST && m_minFilter != GraphicsContext3D::NEAREST_MIPMAP_NEAREST))
+            return true;
+    }
+    return false;
 }
 
 void WebGLTexture::deleteObjectImpl(GraphicsContext3D* context3d, Platform3DObject object)
@@ -337,6 +345,28 @@ void WebGLTexture::update()
                     break;
                 }
 
+            }
+        }
+    }
+    m_isFloatType = false;
+    if (m_isComplete)
+        m_isFloatType = m_info[0][0].type == GraphicsContext3D::FLOAT;
+    else {
+        for (size_t ii = 0; ii < m_info.size(); ++ii) {
+            if (m_info[ii][0].type == GraphicsContext3D::FLOAT) {
+                m_isFloatType = true;
+                break;
+            }
+        }
+    }
+    m_isHalfFloatType = false;
+    if (m_isComplete)
+        m_isHalfFloatType = m_info[0][0].type == GraphicsContext3D::HALF_FLOAT_OES;
+    else {
+        for (size_t ii = 0; ii < m_info.size(); ++ii) {
+            if (m_info[ii][0].type == GraphicsContext3D::HALF_FLOAT_OES) {
+                m_isHalfFloatType = true;
+                break;
             }
         }
     }

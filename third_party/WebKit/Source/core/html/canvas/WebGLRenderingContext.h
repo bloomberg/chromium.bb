@@ -53,6 +53,8 @@ class IntSize;
 class OESStandardDerivatives;
 class OESTextureFloat;
 class OESTextureHalfFloat;
+class OESTextureFloatLinear;
+class OESTextureHalfFloatLinear;
 class OESVertexArrayObject;
 class OESElementIndexUint;
 class WebGLActiveInfo;
@@ -523,7 +525,9 @@ public:
     OwnPtr<EXTDrawBuffers> m_extDrawBuffers;
     OwnPtr<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
     OwnPtr<OESTextureFloat> m_oesTextureFloat;
+    OwnPtr<OESTextureFloatLinear> m_oesTextureFloatLinear;
     OwnPtr<OESTextureHalfFloat> m_oesTextureHalfFloat;
+    OwnPtr<OESTextureHalfFloatLinear> m_oesTextureHalfFloatLinear;
     OwnPtr<OESStandardDerivatives> m_oesStandardDerivatives;
     OwnPtr<OESVertexArrayObject> m_oesVertexArrayObject;
     OwnPtr<OESElementIndexUint> m_oesElementIndexUint;
@@ -560,8 +564,7 @@ public:
     void texSubImage2DBase(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, const void* pixels, ExceptionCode&);
     void texSubImage2DImpl(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset, GC3Denum format, GC3Denum type, Image*, GraphicsContext3D::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha, ExceptionCode&);
 
-    void handleNPOTTextures(const char*, bool);
-
+    void handleTextureCompleteness(const char*, bool);
     void createFallbackBlackTextures1x1();
 
     // Helper function for copyTex{Sub}Image, check whether the internalformat
