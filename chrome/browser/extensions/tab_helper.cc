@@ -93,6 +93,8 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   SessionTabHelper::CreateForWebContents(web_contents);
+  if (web_contents->GetRenderViewHost())
+    SetTabId(web_contents->GetRenderViewHost());
   active_tab_permission_granter_.reset(new ActiveTabPermissionGranter(
       web_contents,
       SessionID::IdForTab(web_contents),
@@ -185,9 +187,7 @@ SkBitmap* TabHelper::GetExtensionAppIcon() {
 }
 
 void TabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
-  render_view_host->Send(
-      new ExtensionMsg_SetTabId(render_view_host->GetRoutingID(),
-                                SessionID::IdForTab(web_contents())));
+  SetTabId(render_view_host);
 }
 
 void TabHelper::DidNavigateMainFrame(
@@ -458,6 +458,12 @@ void TabHelper::Observe(int type,
       }
     }
   }
+}
+
+void TabHelper::SetTabId(RenderViewHost* render_view_host) {
+  render_view_host->Send(
+      new ExtensionMsg_SetTabId(render_view_host->GetRoutingID(),
+                                SessionID::IdForTab(web_contents())));
 }
 
 }  // namespace extensions

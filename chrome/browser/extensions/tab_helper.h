@@ -217,6 +217,9 @@ class TabHelper : public content::WebContentsObserver,
   // the data is available.
   void GetApplicationInfo(int32 page_id);
 
+  // Sends our tab ID to |render_view_host|.
+  void SetTabId(content::RenderViewHost* render_view_host);
+
   // Data for app extensions ---------------------------------------------------
 
   // Our content script observers. Declare at top so that it will outlive all
