@@ -394,9 +394,9 @@ class Port(object):
     def driver_name(self):
         if self.get_option('driver_name'):
             return self.get_option('driver_name')
-        if self.get_option('content_shell'):
-            return self.CONTENT_SHELL_NAME
-        return 'DumpRenderTree'
+        if self.get_option('dump_render_tree'):
+            return 'DumpRenderTree'
+        return self.CONTENT_SHELL_NAME
 
     def expected_baselines_by_extension(self, test_name):
         """Returns a dict mapping baseline suffix to relative path for each baseline in
