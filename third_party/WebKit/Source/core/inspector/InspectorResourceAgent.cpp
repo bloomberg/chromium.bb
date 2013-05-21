@@ -294,8 +294,13 @@ void InspectorResourceAgent::didReceiveData(unsigned long identifier, const char
     m_frontend->dataReceived(requestId, currentTime(), dataLength, encodedDataLength);
 }
 
-void InspectorResourceAgent::didFinishLoading(unsigned long identifier, DocumentLoader* loader, double finishTime)
+void InspectorResourceAgent::didFinishLoading(unsigned long identifier, DocumentLoader* loader, double monotonicFinishTime)
 {
+    double finishTime = 0.0;
+    // FIXME: Expose all of the timing details to inspector and have it calculate finishTime.
+    if (monotonicFinishTime)
+        finishTime = loader->timing()->monotonicTimeToPseudoWallTime(monotonicFinishTime);
+
     String requestId = IdentifiersFactory::requestId(identifier);
     if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::DocumentResource) {
         RefPtr<SharedBuffer> buffer = loader->frameLoader()->documentLoader()->mainResourceData();

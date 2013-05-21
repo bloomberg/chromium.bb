@@ -178,7 +178,7 @@ public:
     void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&);
     bool willReceiveResourceResponse(Frame*, unsigned long, const ResourceResponse&);
     void didReceiveResourceResponse(unsigned long, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
-    void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);
+    void didFinishLoading(unsigned long, DocumentLoader*, double monotonicFinishTime);
     void didFailLoading(unsigned long identifier, DocumentLoader* loader, const ResourceError& error);
     bool willReceiveResourceData(Frame*, unsigned long identifier, int length);
     void didReceiveResourceData();
@@ -222,6 +222,8 @@ private:
     };
         
     InspectorTimelineAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorMemoryAgent*, InspectorDOMAgent*, InspectorCompositeState*, InspectorType, InspectorClient*);
+
+    void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);
 
     void sendEvent(PassRefPtr<InspectorObject>);
     void appendRecord(PassRefPtr<InspectorObject> data, const String& type, bool captureCallStack, Frame*);

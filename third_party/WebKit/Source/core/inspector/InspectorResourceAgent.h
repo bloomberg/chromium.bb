@@ -96,7 +96,7 @@ public:
     void markResourceAsCached(unsigned long identifier);
     void didReceiveResourceResponse(unsigned long identifier, DocumentLoader* laoder, const ResourceResponse&, ResourceLoader*);
     void didReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
-    void didFinishLoading(unsigned long identifier, DocumentLoader*, double finishTime);
+    void didFinishLoading(unsigned long identifier, DocumentLoader*, double monotonicFinishTime);
     void didFailLoading(unsigned long identifier, DocumentLoader*, const ResourceError&);
     void didLoadResourceFromMemoryCache(DocumentLoader*, CachedResource*);
     void didCommitLoad(Frame*, DocumentLoader*);

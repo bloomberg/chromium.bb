@@ -689,20 +689,10 @@ void didReceiveDataImpl(InstrumentingAgents* instrumentingAgents, unsigned long 
 
 void didFinishLoadingImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, double monotonicFinishTime)
 {
-    InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent();
-    InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent();
-    if (!timelineAgent && !resourceAgent)
-        return;
-
-    double finishTime = 0.0;
-    // FIXME: Expose all of the timing details to inspector and have it calculate finishTime.
-    if (monotonicFinishTime)
-        finishTime = loader->timing()->monotonicTimeToPseudoWallTime(monotonicFinishTime);
-
-    if (timelineAgent)
-        timelineAgent->didFinishLoadingResource(identifier, false, finishTime, loader->frame());
-    if (resourceAgent)
-        resourceAgent->didFinishLoading(identifier, loader, finishTime);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didFinishLoading(identifier, loader, monotonicFinishTime);
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didFinishLoading(identifier, loader, monotonicFinishTime);
 }
 
 void didFailLoadingImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, const ResourceError& error)

@@ -533,6 +533,16 @@ void InspectorTimelineAgent::didFinishLoadingResource(unsigned long identifier, 
     appendRecord(TimelineRecordFactory::createResourceFinishData(IdentifiersFactory::requestId(identifier), didFail, finishTime * 1000), TimelineRecordType::ResourceFinish, false, frame);
 }
 
+void InspectorTimelineAgent::didFinishLoading(unsigned long identifier, DocumentLoader* loader, double monotonicFinishTime)
+{
+    double finishTime = 0.0;
+    // FIXME: Expose all of the timing details to inspector and have it calculate finishTime.
+    if (monotonicFinishTime)
+        finishTime = loader->timing()->monotonicTimeToPseudoWallTime(monotonicFinishTime);
+
+    didFinishLoadingResource(identifier, false, finishTime, loader->frame());
+}
+
 void InspectorTimelineAgent::didFailLoading(unsigned long identifier, DocumentLoader* loader, const ResourceError& error)
 {
     didFinishLoadingResource(identifier, true, 0, loader->frame());
