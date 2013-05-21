@@ -181,7 +181,7 @@ int ShowUninstallBrowserPrompt(bool show_delete_profile) {
   UninstallView* view = new UninstallView(&result,
                                           run_loop.QuitClosure(),
                                           show_delete_profile);
-  views::Widget::CreateWindow(view)->Show();
+  views::DialogDelegate::CreateDialogWidget(view, NULL, NULL)->Show();
   run_loop.Run();
   return result;
 }
