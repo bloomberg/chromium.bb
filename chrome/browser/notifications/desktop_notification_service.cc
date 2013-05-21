@@ -365,6 +365,8 @@ DesktopNotificationService::DesktopNotificationService(
       base::Bind(
           &DesktopNotificationService::OnDisabledSystemComponentIdsChanged,
           base::Unretained(this)));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::Source<Profile>(profile_));
 }
 
 DesktopNotificationService::~DesktopNotificationService() {
@@ -619,4 +621,18 @@ WebKit::WebNotificationPresenter::Permission
     return WebKit::WebNotificationPresenter::PermissionNotAllowed;
   NOTREACHED() << "Invalid notifications settings value: " << setting;
   return WebKit::WebNotificationPresenter::PermissionNotAllowed;
+}
+
+void DesktopNotificationService::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNINSTALLED, type);
+
+  extensions::Extension* extension =
+      content::Details<extensions::Extension>(details).ptr();
+  if (IsExtensionEnabled(extension->id()))
+    return;
+
+  SetExtensionEnabled(extension->id(), true);
 }
