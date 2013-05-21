@@ -101,8 +101,8 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests.
 #
-TOTAL_TESTS = 83
-TOTAL_SKIPS = 7
+TOTAL_TESTS = 104
+TOTAL_SKIPS = 28
 TOTAL_RETRIES = 14
 
 UNEXPECTED_PASSES = 6
@@ -142,6 +142,7 @@ def unit_test_list():
     tests.add('failures/expected/newlines_with_excess_CR.html',
               expected_text="foo\r\r\r\n", actual_text="foo\n")
     tests.add('failures/expected/text.html', actual_text='text_fail-png')
+    tests.add('failures/expected/skip_text.html', actual_text='text diff')
     tests.add('failures/flaky/text.html')
     tests.add('failures/unexpected/missing_text.html', expected_text=None)
     tests.add('failures/unexpected/missing_check.html', expected_image='missing-check-png')
@@ -169,6 +170,7 @@ layer at (0,0) size 800x34
               actual_checksum='text-image-checksum_fail-checksum')
     tests.add('failures/unexpected/checksum-with-matching-image.html',
               actual_checksum='text-image-checksum_fail-checksum')
+    tests.add('failures/unexpected/skip_pass.html')
     tests.add('failures/unexpected/text.html', actual_text='text_fail-txt')
     tests.add('failures/unexpected/timeout.html', timeout=True)
     tests.add('http/tests/passes/text.html')
@@ -443,6 +445,11 @@ class TestPort(Port):
     def webkit_base(self):
         return '/test.checkout'
 
+    def _skipped_tests_for_unsupported_features(self, test_list):
+        return set(['failures/expected/skip_text.html',
+                    'failures/unexpected/skip_pass.html',
+                    'virtual/skipped'])
+
     def name(self):
         return self._name
 
@@ -532,6 +539,7 @@ class TestPort(Port):
     def virtual_test_suites(self):
         return [
             VirtualTestSuite('virtual/passes', 'passes', ['--virtual-arg']),
+            VirtualTestSuite('virtual/skipped', 'failures/expected', ['--virtual-arg2']),
         ]
 
 

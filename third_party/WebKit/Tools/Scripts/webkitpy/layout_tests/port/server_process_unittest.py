@@ -47,6 +47,9 @@ class TrivialMockPort(object):
     def results_directory(self):
         return "/mock-results"
 
+    def check_for_leaks(self, process_name, process_pid):
+        pass
+
     def process_kill_time(self):
         return 1
 
