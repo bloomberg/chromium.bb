@@ -48,6 +48,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"

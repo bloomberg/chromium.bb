@@ -28,7 +28,6 @@
 #ifndef Document_h
 #define Document_h
 
-#include "core/animation/DocumentTimeline.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/DocumentEventQueue.h"
@@ -88,6 +87,7 @@ class DocumentMarkerController;
 class DocumentParser;
 class DocumentSharedObjectPool;
 class DocumentStyleSheetCollection;
+class DocumentTimeline;
 class DocumentType;
 class Element;
 class Event;
