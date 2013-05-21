@@ -70,6 +70,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(switches::kEnableSynchronousRendererCompositor);
     cl->AppendSwitch(switches::kEnableVsyncNotification);
   }
+
+  // WebView uses the existing Android View edge effect for overscroll glow.
+  cl->AppendSwitch(switches::kDisableOverscrollEdgeEffect);
+
   return false;
 }
 
