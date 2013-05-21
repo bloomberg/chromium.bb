@@ -46,6 +46,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
                     MediaPlayerManager* manager);
   virtual ~MediaPlayerBridge();
 
+  // Initialize this object and extract the metadata from the media.
+  virtual void Initialize();
+
   // MediaPlayerAndroid implementation.
   virtual void SetVideoSurface(jobject surface) OVERRIDE;
   virtual void Start() OVERRIDE;
@@ -81,9 +84,6 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   void OnMediaPrepared();
 
  private:
-  // Initialize this object and extract the metadata from the media.
-  void Initialize();
-
   // Create the actual android media player.
   void CreateMediaPlayer();
 

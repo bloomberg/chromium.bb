@@ -40,12 +40,14 @@ MediaPlayerAndroid* MediaPlayerAndroid::Create(
     bool hide_url_log,
     MediaPlayerManager* manager) {
   if (!is_media_source) {
-      return new MediaPlayerBridge(
-          player_id,
-          url,
-          first_party_for_cookies,
-          hide_url_log,
-          manager);
+    MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
+        player_id,
+        url,
+        first_party_for_cookies,
+        hide_url_log,
+        manager);
+    media_player_bridge->Initialize();
+    return media_player_bridge;
   } else {
     return new MediaSourcePlayer(
         player_id,
@@ -76,7 +78,6 @@ MediaPlayerBridge::MediaPlayerBridge(
       weak_this_(this),
       listener_(base::MessageLoopProxy::current(),
                 weak_this_.GetWeakPtr()) {
-  Initialize();
 }
 
 MediaPlayerBridge::~MediaPlayerBridge() {
@@ -92,7 +93,6 @@ void MediaPlayerBridge::Initialize() {
 
   media::MediaResourceGetter* resource_getter =
       manager()->GetMediaResourceGetter();
-
   if (url_.SchemeIsFileSystem()) {
     cookies_.clear();
     resource_getter->GetPlatformPathFromFileSystemURL(url_, base::Bind(
