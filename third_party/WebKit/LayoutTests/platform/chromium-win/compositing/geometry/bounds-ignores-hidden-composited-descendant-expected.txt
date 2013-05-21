@@ -6,7 +6,6 @@
     (GraphicsLayer
       (bounds 800.00 600.00)
       (contentsOpaque 1)
-      (drawsContent 1)
       (children 2
         (GraphicsLayer
           (position 10.00 10.00)

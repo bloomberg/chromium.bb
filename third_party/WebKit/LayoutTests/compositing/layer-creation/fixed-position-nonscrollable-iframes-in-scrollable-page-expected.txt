@@ -5,7 +5,6 @@ In all iframes, the green fixed-position element should not be composited.
     (GraphicsLayer
       (bounds 785.00 4016.00)
       (contentsOpaque 1)
-      (drawsContent 1)
       (children 3
         (GraphicsLayer
           (position 50.00 360.00)

@@ -258,6 +258,8 @@ private:
 
     bool isMainFrame() const;
     
+    void rootLayerAttachmentChanged();
+
     void updateOverflowControlsLayers();
 
     void notifyIFramesOfCompositingChange();

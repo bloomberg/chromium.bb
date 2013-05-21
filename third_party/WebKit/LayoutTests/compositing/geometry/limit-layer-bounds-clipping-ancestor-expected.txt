@@ -10,7 +10,6 @@ middlebottom
     (GraphicsLayer
       (bounds 785.00 2618.00)
       (contentsOpaque 1)
-      (drawsContent 1)
       (children 6
         (GraphicsLayer
           (position 21.00 21.00)

@@ -6,7 +6,6 @@ Even though we can opt-out of fixed-position compositing for unscrollable fixed-
     (GraphicsLayer
       (bounds 800.00 4024.00)
       (contentsOpaque 1)
-      (drawsContent 1)
       (children 2
         (GraphicsLayer
           (position 10.00 100.00)

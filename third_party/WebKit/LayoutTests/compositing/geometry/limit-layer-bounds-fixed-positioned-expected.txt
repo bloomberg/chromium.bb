@@ -5,7 +5,6 @@ Text here
     (GraphicsLayer
       (bounds 785.00 1021.00)
       (contentsOpaque 1)
-      (drawsContent 1)
       (children 3
         (GraphicsLayer
           (position 29.00 134.00)

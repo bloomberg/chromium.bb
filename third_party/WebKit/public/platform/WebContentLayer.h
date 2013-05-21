@@ -48,6 +48,11 @@ public:
     // to false.
     virtual void setAutomaticallyComputeRasterScale(bool) { }
 
+    // Set to render text in this layer with LCD antialiasing. Only set if you know that this layer will be
+    // drawn in a way where this makes sense - i.e. opaque background, not rotated or scaled, etc.
+    // Defaults to false;
+    virtual void setUseLCDText(bool) = 0;
+
     // Set to draw a system-defined checkerboard if the compositor would otherwise draw a tile in this layer
     // and the actual contents are unavailable. If false, the compositor will draw the layer's background color
     // for these tiles.

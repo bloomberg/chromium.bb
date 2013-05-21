@@ -434,8 +434,10 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
         }
 
         if (RenderLayer* compositingLayer = layer->enclosingCompositingLayerForRepaint()) {
-            frameView()->setCannotBlitToWindow();
-            break;
+            if (!compositingLayer->backing()->paintsIntoWindow()) {
+                frameView()->setCannotBlitToWindow();
+                break;
+            }
         }
     }
 

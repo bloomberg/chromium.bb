@@ -1522,8 +1522,13 @@ void RenderLayer::setFilterBackendNeedsRepaintingInRect(const LayoutRect& rect)
     LayoutRect parentLayerRect = renderer()->localToContainerQuad(repaintQuad, parentLayer->renderer()).enclosingBoundingBox();
     
     if (parentLayer->isComposited()) {
-        parentLayer->setBackingNeedsRepaintInRect(parentLayerRect);
-        return;
+        if (!parentLayer->backing()->paintsIntoWindow()) {
+            parentLayer->setBackingNeedsRepaintInRect(parentLayerRect);
+            return;
+        }
+        // If the painting goes to window, redirect the painting to the parent RenderView.
+        parentLayer = renderer()->view()->layer();
+        parentLayerRect = renderer()->localToContainerQuad(repaintQuad, parentLayer->renderer()).enclosingBoundingBox();
     }
 
     if (parentLayer->paintsWithFilters()) {
@@ -3592,7 +3597,8 @@ void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& 
         // but we need to ensure that we don't cache clip rects computed with the wrong root in this case.
         if (context->updatingControlTints() || (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers))
             paintFlags |= PaintLayerTemporaryClipRects;
-        else if (!backing()->paintsIntoCompositedAncestor()
+        else if (!backing()->paintsIntoWindow()
+            && !backing()->paintsIntoCompositedAncestor()
             && !shouldDoSoftwarePaint(this, paintFlags & PaintLayerPaintingReflection)) {
             // If this RenderLayer should paint into its backing, that will be done via RenderLayerBacking::paintIntoLayer().
             return;
@@ -5504,7 +5510,8 @@ GraphicsLayer* RenderLayer::layerForScrollCorner() const
 
 bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const
 {
-    return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || !isComposited());
+    bool paintsToWindow = !isComposited() || backing()->paintsIntoWindow();
+    return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || paintsToWindow);
 }
 
 bool RenderLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
@@ -5760,7 +5767,14 @@ void RenderLayer::repaintIncludingDescendants()
 void RenderLayer::setBackingNeedsRepaint()
 {
     ASSERT(isComposited());
-    backing()->setContentsNeedDisplay();
+    if (backing()->paintsIntoWindow()) {
+        // If we're trying to repaint the placeholder document layer, propagate the
+        // repaint to the native view system.
+        RenderView* view = renderer()->view();
+        if (view)
+            view->repaintViewRectangle(absoluteBoundingBox());
+    } else
+        backing()->setContentsNeedDisplay();
 }
 
 void RenderLayer::setBackingNeedsRepaintInRect(const LayoutRect& r)
@@ -5768,7 +5782,7 @@ void RenderLayer::setBackingNeedsRepaintInRect(const LayoutRect& r)
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
     ASSERT(isComposited());
-    if (!isComposited()) {
+    if (!isComposited() || backing()->paintsIntoWindow()) {
         // If we're trying to repaint the placeholder document layer, propagate the
         // repaint to the native view system.
         LayoutRect absRect(r);

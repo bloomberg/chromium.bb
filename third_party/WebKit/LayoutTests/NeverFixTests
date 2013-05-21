@@ -38,7 +38,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ImageOnlyFailure ]
 # that is not supported on other platforms.
 [ Win Linux ] rubberbanding [ WontFix ]
 [ Win Linux ] compositing/rubberbanding [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/rubberbanding [ WontFix ]
 
 # This requires usp10.dll version 1.600 or greater on Windows and
 # it isn't installed on XP by default.
