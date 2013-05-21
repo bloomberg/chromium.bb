@@ -44,7 +44,8 @@ html.loading * {
   display: none;
 }
 
-.developer-extras > div {
+.developer-extras > div,
+.permanent-warnings > div {
   margin: 5px 0;
 }
 
