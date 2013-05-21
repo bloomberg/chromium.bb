@@ -1552,7 +1552,7 @@
         # See http://crbug.com/145503.
         'component': "static_library",
         # TODO(glider): we do not strip ASan binaries until the dynamic ASan
-        # runtime is fully adopted. See http://crbug.com/170629.
+        # runtime is fully adopted. See http://crbug.com/242503.
         'mac_strip_release': 0,
       }],
       ['tsan==1', {
@@ -3727,10 +3727,7 @@
                 '$(inherited)', '-std=gnu++11',
               ],
             }],
-            # TODO(thakis): Reenable plugins with once
-            # tools/clang/scripts/update.sh no longer pins clang to an ancient
-            # version for asan (http://crbug.com/170629)
-            ['clang==1 and clang_use_chrome_plugins==1 and asan!=1', {
+            ['clang==1 and clang_use_chrome_plugins==1', {
               'OTHER_CFLAGS': [
                 '<@(clang_chrome_plugins_flags)',
               ],
