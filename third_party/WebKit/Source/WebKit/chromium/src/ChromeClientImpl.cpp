@@ -607,75 +607,9 @@ void ChromeClientImpl::setToolTip(const String& tooltipText, TextDirection dir)
         tooltipText, textDirection);
 }
 
-
-static float calculateTargetDensityDPIFactor(const ViewportArguments& arguments, float deviceScaleFactor)
-{
-    if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueDeviceDPI)
-        return 1.0f / deviceScaleFactor;
-
-    float targetDPI = -1.0f;
-    if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueLowDPI)
-        targetDPI = 120.0f;
-    else if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueMediumDPI)
-        targetDPI = 160.0f;
-    else if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueHighDPI)
-        targetDPI = 240.0f;
-    else if (arguments.deprecatedTargetDensityDPI != ViewportArguments::ValueAuto)
-        targetDPI = arguments.deprecatedTargetDensityDPI;
-    return targetDPI > 0 ? (deviceScaleFactor * 120.0f) / targetDPI : 1.0f;
-}
-
-static float getLayoutWidthForNonWideViewport(const ViewportArguments& arguments, const FloatSize& deviceSize, float initialScale)
-{
-    return arguments.zoom == ViewportArguments::ValueAuto ? deviceSize.width() : deviceSize.width() / initialScale;
-}
-
 void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportArguments& arguments) const
 {
-    if (!m_webView->settings()->viewportEnabled() || !m_webView->isFixedLayoutModeEnabled() || !m_webView->client() || !m_webView->page())
-        return;
-
-    IntSize viewportSize = m_webView->size();
-    float deviceScaleFactor = m_webView->client()->screenInfo().deviceScaleFactor;
-
-    // If the window size has not been set yet don't attempt to set the viewport.
-    if (!viewportSize.width() || !viewportSize.height())
-        return;
-
-    ViewportAttributes computed = arguments.resolve(viewportSize, viewportSize, m_webView->page()->settings()->layoutFallbackWidth());
-    restrictScaleFactorToInitialScaleIfNotUserScalable(computed);
-
-    if (m_webView->ignoreViewportTagMaximumScale()) {
-        computed.maximumScale = max(computed.maximumScale, m_webView->maxPageScaleFactor);
-        computed.userScalable = true;
-    }
-    float initialScale = computed.initialScale;
-    if (arguments.zoom == ViewportArguments::ValueAuto && !m_webView->settingsImpl()->initializeAtMinimumPageScale()) {
-        if (arguments.width == ViewportArguments::ValueAuto
-            || (m_webView->settingsImpl()->useWideViewport()
-                && arguments.width != ViewportArguments::ValueAuto && arguments.width != ViewportArguments::ValueDeviceWidth))
-            computed.initialScale = 1.0f;
-    }
-    if (m_webView->settingsImpl()->supportDeprecatedTargetDensityDPI()) {
-        float targetDensityDPIFactor = calculateTargetDensityDPIFactor(arguments, deviceScaleFactor);
-        computed.initialScale *= targetDensityDPIFactor;
-        computed.minimumScale *= targetDensityDPIFactor;
-        computed.maximumScale *= targetDensityDPIFactor;
-
-        if (m_webView->settingsImpl()->useWideViewport() && arguments.width == ViewportArguments::ValueAuto && arguments.zoom != 1.0f)
-            computed.layoutSize.setWidth(m_webView->page()->settings()->layoutFallbackWidth());
-        else {
-            if (!m_webView->settingsImpl()->useWideViewport())
-                computed.layoutSize.setWidth(getLayoutWidthForNonWideViewport(arguments, viewportSize, initialScale));
-            if (!m_webView->settingsImpl()->useWideViewport() || arguments.width == ViewportArguments::ValueAuto || arguments.width == ViewportArguments::ValueDeviceWidth)
-                computed.layoutSize.scale(1.0f / targetDensityDPIFactor);
-        }
-    }
-
-    m_webView->setInitialPageScaleFactor(computed.initialScale);
-    m_webView->setFixedLayoutSize(flooredIntSize(computed.layoutSize));
-    m_webView->setDeviceScaleFactor(deviceScaleFactor);
-    m_webView->setPageScaleFactorLimits(computed.minimumScale, computed.maximumScale);
+    m_webView->updatePageDefinedPageScaleConstraints(arguments);
 }
 
 void ChromeClientImpl::print(Frame* frame)

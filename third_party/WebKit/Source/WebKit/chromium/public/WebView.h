@@ -233,10 +233,6 @@ public:
     // is scaled up, < 1.0 is scaled down.
     virtual float pageScaleFactor() const = 0;
 
-    // Indicates whether the page scale factor has been set since navigating
-    // to a new page.
-    virtual bool isPageScaleFactorSet() const = 0;
-
     // Scales the page and the scroll offset by a given factor, while ensuring
     // that the new scroll position does not go beyond the edge of the page.
     virtual void setPageScaleFactorPreservingScrollOffset(float) = 0;
@@ -265,15 +261,18 @@ public:
     // Reset any saved values for the scroll and scale state.
     virtual void resetScrollAndScaleState() = 0;
 
-    // Prevent the web page from setting a maximum scale via the viewport meta
+    // Prevent the web page from setting min/max scale via the viewport meta
     // tag. This is an accessibility feature that lets folks zoom in to web
     // pages even if the web page tries to block scaling.
-    virtual void setIgnoreViewportTagMaximumScale(bool) = 0;
+    virtual void setIgnoreViewportTagScaleLimits(bool) = 0;
+
+    // FIXME(aelias): Delete this after Chromium switches to the other name.
+    void setIgnoreViewportTagMaximumScale(bool ignore) { setIgnoreViewportTagScaleLimits(ignore); }
 
     // The ratio of the current device's screen DPI to the target device's screen DPI.
     virtual float deviceScaleFactor() const = 0;
 
-    // Sets the ratio as computed by computeViewportAttributes.
+    // Sets the ratio as computed by computePageScaleConstraints.
     virtual void setDeviceScaleFactor(float) = 0;
 
 

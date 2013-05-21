@@ -46,6 +46,7 @@
 #include "WebView.h"
 #include "WebViewBenchmarkSupportImpl.h"
 #include "core/page/PagePopupDriver.h"
+#include "core/page/PageScaleConstraintsSet.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsLayer.h"
@@ -223,7 +224,6 @@ public:
                                    double maximumZoomLevel);
     virtual void setInitialPageScaleOverride(float);
     virtual float pageScaleFactor() const;
-    virtual bool isPageScaleFactorSet() const;
     virtual void setPageScaleFactorPreservingScrollOffset(float);
     virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin);
     virtual void setPageScaleFactorLimits(float minPageScale, float maxPageScale);
@@ -232,7 +232,7 @@ public:
     virtual void saveScrollAndScaleState();
     virtual void restoreScrollAndScaleState();
     virtual void resetScrollAndScaleState();
-    virtual void setIgnoreViewportTagMaximumScale(bool);
+    virtual void setIgnoreViewportTagScaleLimits(bool);
 
     virtual float deviceScaleFactor() const;
     virtual void setDeviceScaleFactor(float);
@@ -440,8 +440,6 @@ public:
         return m_maxAutoSize;
     }
 
-    WebCore::IntSize scaledSize(float) const;
-
     // Set the disposition for how this webview is to be initially shown.
     void setInitialNavigationPolicy(WebNavigationPolicy policy)
     {
@@ -463,8 +461,7 @@ public:
         return m_emulatedTextZoomFactor;
     }
 
-    void setInitialPageScaleFactor(float initialPageScaleFactor) { m_initialPageScaleFactor = initialPageScaleFactor; }
-    bool ignoreViewportTagMaximumScale() const { return m_ignoreViewportTagMaximumScale; }
+    void updatePageDefinedPageScaleConstraints(const WebCore::ViewportArguments&);
 
     // Determines whether a page should e.g. be opened in a background tab.
     // Returns false if it has no opinion, in which case it doesn't set *policy.
@@ -582,9 +579,10 @@ public:
     WebSettingsImpl* settingsImpl();
 
 private:
-    void computePageScaleFactorLimits();
-    float clampPageScaleFactorToLimits(float scale);
-    WebCore::IntPoint clampOffsetAtScale(const WebCore::IntPoint& offset, float scale) const;
+    void refreshPageScaleFactorAfterLayout();
+    void setUserAgentPageScaleConstraints(WebCore::PageScaleConstraints newConstraints);
+    float clampPageScaleFactorToLimits(float) const;
+    WebCore::IntPoint clampOffsetAtScale(const WebCore::IntPoint& offset, float scale);
     WebCore::IntSize contentsSize() const;
 
     void resetSavedScrollAndScaleState();
@@ -714,15 +712,7 @@ private:
 
     double m_maximumZoomLevel;
 
-    // State related to the page scale
-    float m_pageDefinedMinimumPageScaleFactor;
-    float m_pageDefinedMaximumPageScaleFactor;
-    float m_minimumPageScaleFactor;
-    float m_maximumPageScaleFactor;
-    float m_initialPageScaleFactorOverride;
-    float m_initialPageScaleFactor;
-    bool m_ignoreViewportTagMaximumScale;
-    bool m_pageScaleFactorIsSet;
+    WebCore::PageScaleConstraintsSet m_pageScaleConstraintsSet;
 
     // Saved page scale state.
     float m_savedPageScaleFactor; // 0 means that no page scale factor is saved.
