@@ -28,44 +28,67 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Animation_h
-#define Animation_h
+#ifndef Timing_h
+#define Timing_h
 
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/TimedItem.h"
-#include "core/css/StylePropertySet.h"
+#include "core/platform/animation/TimingFunction.h"
+#include "wtf/MathExtras.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class Element;
+struct Timing {
+    enum FillMode {
+        FillModeNone,
+        FillModeForwards,
+        FillModeBackwards,
+        FillModeBoth
+    };
 
-class Animation FINAL : public TimedItem {
+    enum PlaybackDirection {
+        PlaybackDirectionNormal,
+        PlaybackDirectionReverse,
+        PlaybackDirectionAlternate,
+        PlaybackDirectionAlternateReverse
+    };
 
-public:
-    static PassRefPtr<Animation> create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect>, Timing&);
-    virtual ~Animation();
-
-    StylePropertySet* cachedStyle()
+    Timing()
+        : startDelay(0)
+        , fillMode(FillModeForwards)
+        , iterationStart(0)
+        , iterationCount(1)
+        , hasIterationDuration(false)
+        , iterationDuration(0)
+        , playbackRate(1)
+        , direction(PlaybackDirectionNormal)
+        , timingFunction(0)
     {
-        ASSERT(m_cachedStyle.get());
-        return m_cachedStyle.get();
     }
 
-protected:
-    virtual void applyEffects(bool previouslyActiveOrInEffect);
-    virtual void clearEffects();
-    virtual void updateChildrenAndEffects(bool) const OVERRIDE FINAL;
+    void assertValid() const
+    {
+        ASSERT(std::isfinite(startDelay));
+        ASSERT(std::isfinite(iterationStart));
+        ASSERT(iterationStart >= 0);
+        ASSERT(iterationCount >= 0);
+        ASSERT(iterationDuration >= 0);
+        ASSERT(std::isfinite(playbackRate));
+    }
 
-private:
-    Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, Timing&);
+    double startDelay;
+    FillMode fillMode;
+    double iterationStart;
+    double iterationCount;
+    bool hasIterationDuration;
+    double iterationDuration;
+    // FIXME: Add activeDuration.
+    double playbackRate;
+    PlaybackDirection direction;
+    // FIXME: Placeholder for timing function.
+    const RefPtr<TimingFunction> timingFunction;
 
-    RefPtr<Element> m_target;
-    RefPtr<AnimationEffect> m_effect;
-    bool m_isInTargetActiveAnimationsList;
-    RefPtr<StylePropertySet> m_cachedStyle;
 };
 
-} // namespace
+} // namespace WebCore
 
 #endif

@@ -31,31 +31,69 @@
 #ifndef TimedItem_h
 #define TimedItem_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "core/animation/Timing.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class Element;
+static inline bool isNull(double value)
+{
+    return std::isnan(value);
+}
+
+static inline double nullValue()
+{
+    return std::numeric_limits<double>::quiet_NaN();
+}
 
 class TimedItem : public RefCounted<TimedItem> {
 public:
-    enum ChildAnimationState {
-        BeforeAnimation,
-        AnimationInProgress,
-        AnimationCompleted
-    };
-
     virtual ~TimedItem() { }
 
-    virtual ChildAnimationState serviceAnimations(double time) = 0;
+    bool isScheduled() const { return ensureCalculated().isScheduled; }
+    bool isActive() const { return ensureCalculated().isActive; }
+    bool isCurrent() const { return ensureCalculated().isCurrent; }
+    bool isInEffect() const { return ensureCalculated().isInEffect; }
+
+    double startTime() const { return m_startTime; }
+
+    double currentIteration() const { return ensureCalculated().currentIteration; }
+    double activeDuration() const { return ensureCalculated().activeDuration; }
+    double timeFraction() const { return ensureCalculated().timeFraction; }
 
 protected:
-    TimedItem();
-    void updateTimeFraction(double time);
+    TimedItem(const Timing&);
 
-    double m_timeFraction;
-    int m_currentIteration;
+    // When TimedItem receives a new inherited time via updateInheritedTime
+    // it will (if necessary) recalculate timings and (if necessary) call
+    // updateChildrenAndEffects.
+    void updateInheritedTime(double inheritedTime) const;
+    virtual void updateChildrenAndEffects(bool wasActiveOrInEffect) const = 0;
+    virtual double intrinsicIterationDuration() const { return 0; };
+
+    friend class DocumentTimeline; // Calls updateInheritedTime.
+
+private:
+    // FIXME: m_parent and m_startTime are placeholders, they depend on timing groups.
+    TimedItem* const m_parent;
+    const double m_startTime;
+
+    Timing m_specified;
+
+    // FIXME: Should be versioned by monotonic value on player.
+    mutable struct CalculatedTiming {
+        CalculatedTiming();
+        double activeDuration;
+        double currentIteration;
+        double timeFraction;
+        bool isScheduled;
+        bool isActive;
+        bool isCurrent;
+        bool isInEffect;
+    } m_calculated;
+
+    // FIXME: Should check the version and reinherit time if inconsistent.
+    const CalculatedTiming& ensureCalculated() const { return m_calculated; }
 };
 
 } // namespace WebCore

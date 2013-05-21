@@ -48,7 +48,8 @@ TEST(DocumentTimeline, AddAnAnimation)
     RefPtr<Document> d = Document::create(0, KURL());
     RefPtr<Element> e = Element::create(nullQName() , d.get());
     RefPtr<DocumentTimeline> timeline = DocumentTimeline::create(d.get());
-    RefPtr<Animation> anim = Animation::create(e.get(), AnimationEffect::create());
+    Timing timing;
+    RefPtr<Animation> anim = Animation::create(e.get(), AnimationEffect::create(), timing);
     timeline->play(anim);
     timeline->serviceAnimations(0);
     StylePropertySet* styleSet = anim->cachedStyle();
