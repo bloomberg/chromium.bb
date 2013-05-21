@@ -330,10 +330,6 @@ class ServerProcess(object):
         if not self._proc:
             return (None, None)
 
-        # Only bother to check for leaks or stderr if the process is still running.
-        if self.poll() is None:
-            self._port.check_for_leaks(self.name(), self.pid())
-
         now = time.time()
         if self._proc.stdin:
             self._proc.stdin.close()

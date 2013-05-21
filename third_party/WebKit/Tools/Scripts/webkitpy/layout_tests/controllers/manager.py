@@ -235,7 +235,6 @@ class Manager(object):
         self._printer.print_results(end_time - start_time, initial_results, summarized_failing_results)
 
         if not self._options.dry_run:
-            self._port.print_leaks_summary()
             self._write_json_files(summarized_full_results, summarized_failing_results, initial_results)
             self._upload_json_files()
 
