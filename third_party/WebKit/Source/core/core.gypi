@@ -2692,6 +2692,7 @@
             'platform/graphics/Gradient.cpp',
             'platform/graphics/GraphicsContext.cpp',
             'platform/graphics/GraphicsContext3D.cpp',
+            'platform/graphics/GraphicsContext3DImagePacking.cpp',
             'platform/graphics/GraphicsLayer.cpp',
             'platform/graphics/GraphicsLayerAnimation.cpp',
             'platform/graphics/GraphicsLayerAnimation.h',

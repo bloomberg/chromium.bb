@@ -476,30 +476,6 @@ public:
                                      unsigned int* imageSizeInBytes,
                                      unsigned int* paddingInBytes);
 
-    // Extracts the contents of the given ImageData into the passed Vector,
-    // packing the pixel data according to the given format and type,
-    // and obeying the flipY and premultiplyAlpha flags. Returns true
-    // upon success.
-    static bool extractImageData(ImageData*,
-                          GC3Denum format,
-                          GC3Denum type,
-                          bool flipY,
-                          bool premultiplyAlpha,
-                          Vector<uint8_t>& data);
-
-    // Helper function which extracts the user-supplied texture
-    // data, applying the flipY and premultiplyAlpha parameters.
-    // If the data is not tightly packed according to the passed
-    // unpackAlignment, the output data will be tightly packed.
-    // Returns true if successful, false if any error occurred.
-    static bool extractTextureData(unsigned int width, unsigned int height,
-                            GC3Denum format, GC3Denum type,
-                            unsigned int unpackAlignment,
-                            bool flipY, bool premultiplyAlpha,
-                            const void* pixels,
-                            Vector<uint8_t>& data);
-
-
     // Attempt to enumerate all possible native image formats to
     // reduce the amount of temporary allocations during texture
     // uploading. This enum must be public because it is accessed
@@ -760,11 +736,6 @@ public:
         HtmlDomNone = 3
     };
 
-    // Packs the contents of the given Image which is passed in |pixels| into the passed Vector
-    // according to the given format and type, and obeying the flipY and AlphaOp flags.
-    // Returns true upon success.
-    static bool packImageData(Image*, const void* pixels, GC3Denum format, GC3Denum type, bool flipY, AlphaOp, DataFormat sourceFormat, unsigned width, unsigned height, unsigned sourceUnpackAlignment, Vector<uint8_t>& data);
-
     class ImageExtractor {
     public:
         ImageExtractor(Image*, ImageHtmlDomSource, bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
@@ -797,6 +768,28 @@ public:
         unsigned m_imageSourceUnpackAlignment;
     };
 
+    // The Following functions are implemented in GraphicsContext3DImagePacking.cpp
+
+    // Packs the contents of the given Image which is passed in |pixels| into the passed Vector
+    // according to the given format and type, and obeying the flipY and AlphaOp flags.
+    // Returns true upon success.
+    static bool packImageData(Image*, const void* pixels, GC3Denum format, GC3Denum type, bool flipY, AlphaOp, DataFormat sourceFormat, unsigned width, unsigned height, unsigned sourceUnpackAlignment, Vector<uint8_t>& data);
+
+    // Extracts the contents of the given ImageData into the passed Vector,
+    // packing the pixel data according to the given format and type,
+    // and obeying the flipY and premultiplyAlpha flags. Returns true
+    // upon success.
+    static bool extractImageData(ImageData*, GC3Denum format, GC3Denum type, bool flipY, bool premultiplyAlpha, Vector<uint8_t>& data);
+
+    // Helper function which extracts the user-supplied texture
+    // data, applying the flipY and premultiplyAlpha parameters.
+    // If the data is not tightly packed according to the passed
+    // unpackAlignment, the output data will be tightly packed.
+    // Returns true if successful, false if any error occurred.
+    static bool extractTextureData(unsigned width, unsigned height, GC3Denum format, GC3Denum type, unsigned unpackAlignment, bool flipY, bool premultiplyAlpha, const void* pixels, Vector<uint8_t>& data);
+
+    // End GraphicsContext3DImagePacking.cpp functions
+
 private:
     friend class Extensions3D;
 
@@ -808,6 +801,7 @@ private:
     // A sourceUnpackAlignment of zero indicates that the source
     // data is tightly packed. Non-zero values may take a slow path.
     // Destination data will have no gaps between rows.
+    // Implemented in GraphicsContext3DImagePacking.cpp
     static bool packPixels(const uint8_t* sourceData, DataFormat sourceDataFormat, unsigned width, unsigned height, unsigned sourceUnpackAlignment, unsigned destinationFormat, unsigned destinationType, AlphaOp, void* destinationData, bool flipY);
 
     void paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer*);
