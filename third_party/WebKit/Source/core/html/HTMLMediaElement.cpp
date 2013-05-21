@@ -1407,16 +1407,6 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
     }
 }
 
-Document* HTMLMediaElement::mediaPlayerOwningDocument()
-{
-    Document* d = document();
-
-    if (!d)
-        d = ownerDocument();
-
-    return d;
-}
-
 void HTMLMediaElement::mediaPlayerNetworkStateChanged(MediaPlayer*)
 {
     beginProcessingMediaPlayerCallback();
@@ -3192,7 +3182,11 @@ void HTMLMediaElement::mediaPlayerDurationChanged(MediaPlayer* player)
     beginProcessingMediaPlayerCallback();
 
     scheduleEvent(eventNames().durationchangeEvent);
-    mediaPlayerCharacteristicChanged(player);
+
+    if (hasMediaControls())
+        mediaControls()->reset();
+    if (renderer())
+        renderer()->updateFromElement();
 
     double now = currentTime();
     double dur = duration();
@@ -3273,50 +3267,10 @@ void HTMLMediaElement::mediaPlayerSizeChanged(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
-bool HTMLMediaElement::mediaPlayerRenderingCanBeAccelerated(MediaPlayer*)
-{
-    if (renderer() && renderer()->isVideo()) {
-        ASSERT(renderer()->view());
-        return renderer()->view()->compositor()->canAccelerateVideoRendering(toRenderVideo(renderer()));
-    }
-    return false;
-}
-
-void HTMLMediaElement::mediaPlayerRenderingModeChanged(MediaPlayer*)
-{
-    LOG(Media, "HTMLMediaElement::mediaPlayerRenderingModeChanged");
-
-    // Kick off a fake recalcStyle that will update the compositing tree.
-    setNeedsStyleRecalc(SyntheticStyleChange);
-}
-
 void HTMLMediaElement::mediaPlayerEngineUpdated(MediaPlayer*)
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerEngineUpdated");
     beginProcessingMediaPlayerCallback();
-    if (renderer())
-        renderer()->updateFromElement();
-    endProcessingMediaPlayerCallback();
-}
-
-void HTMLMediaElement::mediaPlayerFirstVideoFrameAvailable(MediaPlayer*)
-{
-    LOG(Media, "HTMLMediaElement::mediaPlayerFirstVideoFrameAvailable");
-    beginProcessingMediaPlayerCallback();
-    if (displayMode() == PosterWaitingForVideo) {
-        setDisplayMode(Video);
-        mediaPlayerRenderingModeChanged(m_player.get());
-    }
-    endProcessingMediaPlayerCallback();
-}
-
-void HTMLMediaElement::mediaPlayerCharacteristicChanged(MediaPlayer*)
-{
-    LOG(Media, "HTMLMediaElement::mediaPlayerCharacteristicChanged");
-
-    beginProcessingMediaPlayerCallback();
-    if (hasMediaControls())
-        mediaControls()->reset();
     if (renderer())
         renderer()->updateFromElement();
     endProcessingMediaPlayerCallback();
@@ -4110,25 +4064,6 @@ void HTMLMediaElement::applyMediaFragmentURI()
     }
 }
 
-String HTMLMediaElement::mediaPlayerReferrer() const
-{
-    Frame* frame = document()->frame();
-    if (!frame)
-        return String();
-
-    return SecurityPolicy::generateReferrerHeader(document()->referrerPolicy(), m_currentSrc, frame->loader()->outgoingReferrer());
-}
-
-String HTMLMediaElement::mediaPlayerUserAgent() const
-{
-    Frame* frame = document()->frame();
-    if (!frame)
-        return String();
-
-    return frame->loader()->userAgent(m_currentSrc);
-
-}
-
 MediaPlayerClient::CORSMode HTMLMediaElement::mediaPlayerCORSMode() const
 {
     if (!fastHasAttribute(HTMLNames::crossoriginAttr))
@@ -4136,79 +4071,6 @@ MediaPlayerClient::CORSMode HTMLMediaElement::mediaPlayerCORSMode() const
     if (equalIgnoringCase(fastGetAttribute(HTMLNames::crossoriginAttr), "use-credentials"))
         return UseCredentials;
     return Anonymous;
-}
-
-void HTMLMediaElement::mediaPlayerEnterFullscreen()
-{
-    enterFullscreen();
-}
-
-void HTMLMediaElement::mediaPlayerExitFullscreen()
-{
-    exitFullscreen();
-}
-
-bool HTMLMediaElement::mediaPlayerIsFullscreen() const
-{
-    return isFullscreen();
-}
-
-bool HTMLMediaElement::mediaPlayerIsFullscreenPermitted() const
-{
-    return !userGestureRequiredForFullscreen() || ScriptController::processingUserGesture();
-}
-
-bool HTMLMediaElement::mediaPlayerIsVideo() const
-{
-    return isVideo();
-}
-
-LayoutRect HTMLMediaElement::mediaPlayerContentBoxRect() const
-{
-    if (renderer())
-        return renderer()->enclosingBox()->contentBoxRect();
-    return LayoutRect();
-}
-
-void HTMLMediaElement::mediaPlayerSetSize(const IntSize& size)
-{
-    setAttribute(widthAttr, String::number(size.width()));
-    setAttribute(heightAttr, String::number(size.height()));
-}
-
-void HTMLMediaElement::mediaPlayerPause()
-{
-    pause();
-}
-
-void HTMLMediaElement::mediaPlayerPlay()
-{
-    play();
-}
-
-bool HTMLMediaElement::mediaPlayerIsPaused() const
-{
-    return paused();
-}
-
-bool HTMLMediaElement::mediaPlayerIsLooping() const
-{
-    return loop();
-}
-
-HostWindow* HTMLMediaElement::mediaPlayerHostWindow()
-{
-    return mediaPlayerOwningDocument()->view()->hostWindow();
-}
-
-IntRect HTMLMediaElement::mediaPlayerWindowClipRect()
-{
-    return mediaPlayerOwningDocument()->view()->windowClipRect();
-}
-
-CachedResourceLoader* HTMLMediaElement::mediaPlayerCachedResourceLoader()
-{
-    return mediaPlayerOwningDocument()->cachedResourceLoader();
 }
 
 void HTMLMediaElement::removeBehaviorsRestrictionsAfterFirstUserGesture()

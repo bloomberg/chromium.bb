@@ -364,25 +364,19 @@ private:
     void setReadyState(MediaPlayer::ReadyState);
     void setNetworkState(MediaPlayer::NetworkState);
 
-    virtual Document* mediaPlayerOwningDocument();
-    virtual void mediaPlayerNetworkStateChanged(MediaPlayer*);
-    virtual void mediaPlayerReadyStateChanged(MediaPlayer*);
-    virtual void mediaPlayerTimeChanged(MediaPlayer*);
-    virtual void mediaPlayerVolumeChanged(MediaPlayer*);
-    virtual void mediaPlayerMuteChanged(MediaPlayer*);
-    virtual void mediaPlayerDurationChanged(MediaPlayer*);
-    virtual void mediaPlayerRateChanged(MediaPlayer*);
-    virtual void mediaPlayerPlaybackStateChanged(MediaPlayer*);
-    virtual void mediaPlayerSawUnsupportedTracks(MediaPlayer*);
-    virtual void mediaPlayerResourceNotSupported(MediaPlayer*);
-    virtual void mediaPlayerRepaint(MediaPlayer*);
-    virtual void mediaPlayerSizeChanged(MediaPlayer*);
-    virtual bool mediaPlayerRenderingCanBeAccelerated(MediaPlayer*);
-    virtual void mediaPlayerRenderingModeChanged(MediaPlayer*);
-    virtual void mediaPlayerEngineUpdated(MediaPlayer*);
-    
-    virtual void mediaPlayerFirstVideoFrameAvailable(MediaPlayer*);
-    virtual void mediaPlayerCharacteristicChanged(MediaPlayer*);
+    virtual void mediaPlayerNetworkStateChanged(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerReadyStateChanged(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerTimeChanged(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerVolumeChanged(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerMuteChanged(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerDurationChanged(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerRateChanged(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerPlaybackStateChanged(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerSawUnsupportedTracks(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerResourceNotSupported(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerRepaint(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerSizeChanged(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerEngineUpdated(MediaPlayer*) OVERRIDE;
 
     virtual void mediaPlayerKeyAdded(MediaPlayer*, const String& keySystem, const String& sessionId) OVERRIDE;
     virtual void mediaPlayerKeyError(MediaPlayer*, const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
@@ -390,27 +384,10 @@ private:
     virtual bool mediaPlayerKeyNeeded(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
-    virtual bool mediaPlayerKeyNeeded(MediaPlayer*, Uint8Array*);
+    virtual bool mediaPlayerKeyNeeded(MediaPlayer*, Uint8Array*) OVERRIDE;
 #endif
 
-    virtual String mediaPlayerReferrer() const OVERRIDE;
-    virtual String mediaPlayerUserAgent() const OVERRIDE;
     virtual CORSMode mediaPlayerCORSMode() const OVERRIDE;
-
-    virtual void mediaPlayerEnterFullscreen() OVERRIDE;
-    virtual void mediaPlayerExitFullscreen() OVERRIDE;
-    virtual bool mediaPlayerIsFullscreen() const OVERRIDE;
-    virtual bool mediaPlayerIsFullscreenPermitted() const OVERRIDE;
-    virtual bool mediaPlayerIsVideo() const OVERRIDE;
-    virtual LayoutRect mediaPlayerContentBoxRect() const OVERRIDE;
-    virtual void mediaPlayerSetSize(const IntSize&) OVERRIDE;
-    virtual void mediaPlayerPause() OVERRIDE;
-    virtual void mediaPlayerPlay() OVERRIDE;
-    virtual bool mediaPlayerIsPaused() const OVERRIDE;
-    virtual bool mediaPlayerIsLooping() const OVERRIDE;
-    virtual HostWindow* mediaPlayerHostWindow() OVERRIDE;
-    virtual IntRect mediaPlayerWindowClipRect() OVERRIDE;
-    virtual CachedResourceLoader* mediaPlayerCachedResourceLoader() OVERRIDE;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);

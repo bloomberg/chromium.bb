@@ -41,7 +41,6 @@
 namespace WebCore {
 
 class AudioSourceProvider;
-class CachedResourceLoader;
 class ContentType;
 class Document;
 class FrameView;
@@ -63,97 +62,61 @@ public:
 
     virtual ~MediaPlayerClient() { }
 
-    // Get the document which the media player is owned by
-    virtual Document* mediaPlayerOwningDocument() { return 0; }
-
     // the network state has changed
-    virtual void mediaPlayerNetworkStateChanged(MediaPlayer*) { }
+    virtual void mediaPlayerNetworkStateChanged(MediaPlayer*) = 0;
 
     // the ready state has changed
-    virtual void mediaPlayerReadyStateChanged(MediaPlayer*) { }
+    virtual void mediaPlayerReadyStateChanged(MediaPlayer*) = 0;
 
     // the volume state has changed
-    virtual void mediaPlayerVolumeChanged(MediaPlayer*) { }
+    virtual void mediaPlayerVolumeChanged(MediaPlayer*) = 0;
 
     // the mute state has changed
-    virtual void mediaPlayerMuteChanged(MediaPlayer*) { }
+    virtual void mediaPlayerMuteChanged(MediaPlayer*) = 0;
 
     // time has jumped, eg. not as a result of normal playback
-    virtual void mediaPlayerTimeChanged(MediaPlayer*) { }
+    virtual void mediaPlayerTimeChanged(MediaPlayer*) = 0;
 
     // the media file duration has changed, or is now known
-    virtual void mediaPlayerDurationChanged(MediaPlayer*) { }
+    virtual void mediaPlayerDurationChanged(MediaPlayer*) = 0;
 
     // the playback rate has changed
-    virtual void mediaPlayerRateChanged(MediaPlayer*) { }
+    virtual void mediaPlayerRateChanged(MediaPlayer*) = 0;
 
     // the play/pause status changed
-    virtual void mediaPlayerPlaybackStateChanged(MediaPlayer*) { }
+    virtual void mediaPlayerPlaybackStateChanged(MediaPlayer*) = 0;
 
     // The MediaPlayer has found potentially problematic media content.
     // This is used internally to trigger swapping from a <video>
     // element to an <embed> in standalone documents
-    virtual void mediaPlayerSawUnsupportedTracks(MediaPlayer*) { }
+    virtual void mediaPlayerSawUnsupportedTracks(MediaPlayer*) = 0;
 
     // The MediaPlayer could not discover an engine which supports the requested resource.
-    virtual void mediaPlayerResourceNotSupported(MediaPlayer*) { }
+    virtual void mediaPlayerResourceNotSupported(MediaPlayer*) = 0;
 
 // Presentation-related methods
     // a new frame of video is available
-    virtual void mediaPlayerRepaint(MediaPlayer*) { }
+    virtual void mediaPlayerRepaint(MediaPlayer*) = 0;
 
     // the movie size has changed
-    virtual void mediaPlayerSizeChanged(MediaPlayer*) { }
+    virtual void mediaPlayerSizeChanged(MediaPlayer*) = 0;
 
-    virtual void mediaPlayerEngineUpdated(MediaPlayer*) { }
-
-    // The first frame of video is available to render. A media engine need only make this callback if the
-    // first frame is not available immediately when prepareForRendering is called.
-    virtual void mediaPlayerFirstVideoFrameAvailable(MediaPlayer*) { }
-
-    // A characteristic of the media file, eg. video, audio, closed captions, etc, has changed.
-    virtual void mediaPlayerCharacteristicChanged(MediaPlayer*) { }
-    
-    // whether the rendering system can accelerate the display of this MediaPlayer.
-    virtual bool mediaPlayerRenderingCanBeAccelerated(MediaPlayer*) { return false; }
-
-    // called when the media player's rendering mode changed, which indicates a change in the
-    // availability of the platformLayer().
-    virtual void mediaPlayerRenderingModeChanged(MediaPlayer*) { }
+    virtual void mediaPlayerEngineUpdated(MediaPlayer*) = 0;
 
     enum MediaKeyErrorCode { UnknownError = 1, ClientError, ServiceError, OutputError, HardwareChangeError, DomainError };
-    virtual void mediaPlayerKeyAdded(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */) { }
-    virtual void mediaPlayerKeyError(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */, MediaKeyErrorCode, unsigned short /* systemCode */) { }
-    virtual void mediaPlayerKeyMessage(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */, const unsigned char* /* message */, unsigned /* messageLength */, const KURL& /* defaultURL */) { }
-    virtual bool mediaPlayerKeyNeeded(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */, const unsigned char* /* initData */, unsigned /* initDataLength */) { return false; }
+    virtual void mediaPlayerKeyAdded(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */) = 0;
+    virtual void mediaPlayerKeyError(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */, MediaKeyErrorCode, unsigned short /* systemCode */) = 0;
+    virtual void mediaPlayerKeyMessage(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */, const unsigned char* /* message */, unsigned /* messageLength */, const KURL& /* defaultURL */) = 0;
+    virtual bool mediaPlayerKeyNeeded(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */, const unsigned char* /* initData */, unsigned /* initDataLength */) = 0;
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
-    virtual bool mediaPlayerKeyNeeded(MediaPlayer*, Uint8Array*) { return false; }
+    virtual bool mediaPlayerKeyNeeded(MediaPlayer*, Uint8Array*) = 0;
 #endif
     
-    virtual String mediaPlayerReferrer() const { return String(); }
-    virtual String mediaPlayerUserAgent() const { return String(); }
-    virtual CORSMode mediaPlayerCORSMode() const { return Unspecified; }
-    virtual void mediaPlayerEnterFullscreen() { }
-    virtual void mediaPlayerExitFullscreen() { }
-    virtual bool mediaPlayerIsFullscreen() const { return false; }
-    virtual bool mediaPlayerIsFullscreenPermitted() const { return false; }
-    virtual bool mediaPlayerIsVideo() const { return false; }
-    virtual LayoutRect mediaPlayerContentBoxRect() const { return LayoutRect(); }
-    virtual void mediaPlayerSetSize(const IntSize&) { }
-    virtual void mediaPlayerPause() { }
-    virtual void mediaPlayerPlay() { }
-    virtual bool mediaPlayerIsPaused() const { return true; }
-    virtual bool mediaPlayerIsLooping() const { return false; }
-    virtual HostWindow* mediaPlayerHostWindow() { return 0; }
-    virtual IntRect mediaPlayerWindowClipRect() { return IntRect(); }
-    virtual CachedResourceLoader* mediaPlayerCachedResourceLoader() { return 0; }
+    virtual CORSMode mediaPlayerCORSMode() const = 0;
 
-    virtual void mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>) { }
-    virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) { }
-
-    virtual void textTrackRepresentationBoundsChanged(const IntRect&) { }
-    virtual void paintTextTrackRepresentation(GraphicsContext*, const IntRect&) { }
+    virtual void mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>) = 0;
+    virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) = 0;
 };
 
 class MediaPlayer {
@@ -334,11 +297,6 @@ public:
 #if ENABLE(ENCRYPTED_MEDIA_V2)
     bool keyNeeded(Uint8Array* initData);
 #endif
-
-    String referrer() const;
-    String userAgent() const;
-
-    CachedResourceLoader* cachedResourceLoader();
 
     void addTextTrack(PassRefPtr<InbandTextTrackPrivate>);
     void removeTextTrack(PassRefPtr<InbandTextTrackPrivate>);

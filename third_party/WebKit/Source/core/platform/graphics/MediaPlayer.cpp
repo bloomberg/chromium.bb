@@ -734,18 +734,6 @@ void MediaPlayer::playbackStateChanged()
         m_mediaPlayerClient->mediaPlayerPlaybackStateChanged(this);
 }
 
-void MediaPlayer::firstVideoFrameAvailable()
-{
-    if (m_mediaPlayerClient)
-        m_mediaPlayerClient->mediaPlayerFirstVideoFrameAvailable(this);
-}
-
-void MediaPlayer::characteristicChanged()
-{
-    if (m_mediaPlayerClient)
-        m_mediaPlayerClient->mediaPlayerCharacteristicChanged(this);
-}
-
 #if ENABLE(WEB_AUDIO)
 AudioSourceProvider* MediaPlayer::audioSourceProvider()
 {
@@ -786,30 +774,6 @@ bool MediaPlayer::keyNeeded(Uint8Array* initData)
     return false;
 }
 #endif
-
-String MediaPlayer::referrer() const
-{
-    if (!m_mediaPlayerClient)
-        return String();
-
-    return m_mediaPlayerClient->mediaPlayerReferrer();
-}
-
-String MediaPlayer::userAgent() const
-{
-    if (!m_mediaPlayerClient)
-        return String();
-    
-    return m_mediaPlayerClient->mediaPlayerUserAgent();
-}
-
-CachedResourceLoader* MediaPlayer::cachedResourceLoader()
-{
-    if (!m_mediaPlayerClient)
-        return 0;
-
-    return m_mediaPlayerClient->mediaPlayerCachedResourceLoader();
-}
 
 void MediaPlayer::addTextTrack(PassRefPtr<InbandTextTrackPrivate> track)
 {
