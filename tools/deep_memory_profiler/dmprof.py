@@ -778,8 +778,9 @@ class Dump(object):
       r'^ ([ \(])([a-f0-9]+)([ \)])-([ \(])([a-f0-9]+)([ \)])\s+'
       r'(hooked|unhooked)\s+(.+)$', re.IGNORECASE)
 
-  _TIME_PATTERN = re.compile(
+  _TIME_PATTERN_FORMAT = re.compile(
       r'^Time: ([0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+)(\.[0-9]+)?')
+  _TIME_PATTERN_SECONDS = re.compile(r'^Time: ([0-9]+)$')
 
   def __init__(self, path, modified_time):
     self._path = path
@@ -934,12 +935,15 @@ class Dump(object):
 
     while True:
       if self._lines[ln].startswith('Time:'):
-        matched = self._TIME_PATTERN.match(self._lines[ln])
-        if matched:
+        matched_seconds = self._TIME_PATTERN_SECONDS.match(self._lines[ln])
+        matched_format = self._TIME_PATTERN_FORMAT.match(self._lines[ln])
+        if matched_format:
           self._time = time.mktime(datetime.datetime.strptime(
-              matched.group(1), '%Y/%m/%d %H:%M:%S').timetuple())
-          if matched.group(2):
-            self._time += float(matched.group(2)[1:]) / 1000.0
+              matched_format.group(1), '%Y/%m/%d %H:%M:%S').timetuple())
+          if matched_format.group(2):
+            self._time += float(matched_format.group(2)[1:]) / 1000.0
+        elif matched_seconds:
+          self._time = float(matched_seconds.group(1))
       else:
         break
       ln += 1

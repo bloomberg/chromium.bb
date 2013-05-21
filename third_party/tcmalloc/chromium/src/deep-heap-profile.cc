@@ -13,9 +13,6 @@
 #include <algorithm>
 #include <fcntl.h>
 #include <sys/stat.h>
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
 #include <sys/types.h>
 #include <time.h>
 #ifdef HAVE_UNISTD_H
@@ -240,17 +237,9 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
   int64 starting_cycles = CycleClock::Now();
 #endif
 
-  // Get the time before starting snapshot.  gettimeofday() and localtime_r()
-  // acquire the timezone lock which may invoke malloc.
-  struct tm local_time;
-#ifdef HAVE_SYS_TIME_H
-  struct timeval time_value;
-  gettimeofday(&time_value, NULL);
-  localtime_r(&time_value.tv_sec, &local_time);
-#else
+  // Get the time before starting snapshot.
+  // TODO(dmikurube): Consider gettimeofday if available.
   time_t time_value = time(NULL);
-  localtime_r(&time_value, &local_time);
-#endif
 
   ++dump_count_;
 
@@ -283,21 +272,7 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
   buffer.AppendString(kMetaInformationHeader, 0);
 
   buffer.AppendString("Time: ", 0);
-  buffer.AppendInt(local_time.tm_year + 1900, 4, true);
-  buffer.AppendChar('/');
-  buffer.AppendInt(local_time.tm_mon + 1, 2, true);
-  buffer.AppendChar('/');
-  buffer.AppendInt(local_time.tm_mday, 2, true);
-  buffer.AppendChar(' ');
-  buffer.AppendInt(local_time.tm_hour, 2, true);
-  buffer.AppendChar(':');
-  buffer.AppendInt(local_time.tm_min, 2, true);
-  buffer.AppendChar(':');
-  buffer.AppendInt(local_time.tm_sec, 2, true);
-#ifdef HAVE_SYS_TIME_H
-  buffer.AppendChar('.');
-  buffer.AppendInt(static_cast<int>(time_value.tv_usec / 1000), 3, true);
-#endif
+  buffer.AppendUnsignedLong(time_value, 0);
   buffer.AppendChar('\n');
 
   // Fill buffer with the global stats.
