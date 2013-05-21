@@ -14,7 +14,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "media/video/capture/screen/differ.h"
 #include "media/video/capture/screen/mouse_cursor_shape.h"
 #include "media/video/capture/screen/screen_capture_frame_queue.h"
@@ -345,7 +344,7 @@ void ScreenCapturerLinux::CaptureCursor() {
 
   // Xlib stores 32-bit data in longs, even if longs are 64-bits long.
   unsigned long* src = img->pixels;
-  uint32* dst = reinterpret_cast<uint32*>(string_as_array(&cursor->data));
+  uint32* dst = reinterpret_cast<uint32*>(&*(cursor->data.begin()));
   uint32* dst_end = dst + (img->width * img->height);
   while (dst < dst_end) {
     *dst++ = static_cast<uint32>(*src++);

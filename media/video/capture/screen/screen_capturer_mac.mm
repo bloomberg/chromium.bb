@@ -10,17 +10,13 @@
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <OpenGL/CGLMacro.h>
 #include <OpenGL/OpenGL.h>
+#include <sys/utsname.h>
 #include <stddef.h>
 #include <set>
 
-#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_native_library.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/time.h"
 #include "media/video/capture/screen/mac/desktop_configuration.h"
 #include "media/video/capture/screen/mac/scoped_pixel_buffer_object.h"
 #include "media/video/capture/screen/mouse_cursor_shape.h"
@@ -80,6 +76,36 @@ void CopyRect(const uint8* src_plane,
     src_plane += src_plane_stride;
     dest_plane += dest_plane_stride;
   }
+}
+
+int GetDarwinVersion() {
+  struct utsname uname_info;
+  if (uname(&uname_info) != 0) {
+    LOG(ERROR) << "uname failed";
+    return 0;
+  }
+
+  if (strcmp(uname_info.sysname, "Darwin") != 0)
+    return 0;
+
+  char* dot;
+  int result = strtol(uname_info.release, &dot, 10);
+  if (*dot != '.') {
+    LOG(ERROR) << "Failed to parse version";
+    return 0;
+  }
+
+  return result;
+}
+
+bool IsOSLionOrLater() {
+  static int darwin_version = GetDarwinVersion();
+
+  // Verify that the version has been parsed correctly.
+  CHECK(darwin_version >= 6);
+
+  // Darwin major version 11 corresponds to OSX 10.7.
+  return darwin_version >= 11;
 }
 
 // The amount of time allowed for displays to reconfigure.
@@ -151,8 +177,8 @@ class ScreenCapturerMac : public ScreenCapturer {
   // recently captured screen.
   ScreenCapturerHelper helper_;
 
-  // Image of the last cursor that we sent to the client.
-  base::mac::ScopedCFTypeRef<CGImageRef> current_cursor_;
+  // The last cursor that we sent to the client.
+  MouseCursorShape last_cursor_;
 
   // Contains an invalid region from the previous capture.
   webrtc::DesktopRegion last_invalid_region_;
@@ -172,11 +198,11 @@ class ScreenCapturerMac : public ScreenCapturer {
   IOPMAssertionID power_assertion_id_user_;
 
   // Dynamically link to deprecated APIs for Mac OS X 10.6 support.
-  base::ScopedNativeLibrary app_services_library_;
+  void* app_services_library_;
   CGDisplayBaseAddressFunc cg_display_base_address_;
   CGDisplayBytesPerRowFunc cg_display_bytes_per_row_;
   CGDisplayBitsPerPixelFunc cg_display_bits_per_pixel_;
-  base::ScopedNativeLibrary opengl_library_;
+  void* opengl_library_;
   CGLSetFullScreenFunc cgl_set_full_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCapturerMac);
@@ -202,9 +228,11 @@ ScreenCapturerMac::ScreenCapturerMac()
       display_configuration_capture_event_(false, true),
       power_assertion_id_display_(kIOPMNullAssertionID),
       power_assertion_id_user_(kIOPMNullAssertionID),
+      app_services_library_(NULL),
       cg_display_base_address_(NULL),
       cg_display_bytes_per_row_(NULL),
       cg_display_bits_per_pixel_(NULL),
+      opengl_library_(NULL),
       cgl_set_full_screen_(NULL) {
 }
 
@@ -222,9 +250,11 @@ ScreenCapturerMac::~ScreenCapturerMac() {
   UnregisterRefreshAndMoveHandlers();
   CGError err = CGDisplayRemoveReconfigurationCallback(
       ScreenCapturerMac::DisplaysReconfiguredCallback, this);
-  if (err != kCGErrorSuccess) {
+  if (err != kCGErrorSuccess)
     LOG(ERROR) << "CGDisplayRemoveReconfigurationCallback " << err;
-  }
+
+  dlclose(app_services_library_);
+  dlclose(opengl_library_);
 }
 
 bool ScreenCapturerMac::Init() {
@@ -303,7 +333,7 @@ void ScreenCapturerMac::Capture(
   webrtc::DesktopFrame* current_frame = queue_.current_frame();
 
   bool flip = false;  // GL capturers need flipping.
-  if (base::mac::IsOSLionOrLater()) {
+  if (IsOSLionOrLater()) {
     // Lion requires us to use their new APIs for doing screen capture. These
     // APIS currently crash on 10.6.8 if there is no monitor attached.
     CgBlitPostLion(*current_frame, region);
@@ -352,10 +382,12 @@ void ScreenCapturerMac::SetMouseShapeObserver(
 }
 
 void ScreenCapturerMac::CaptureCursor() {
-  NSCursor* cursor = [NSCursor currentSystemCursor];
-  if (cursor == nil) {
+  if (!mouse_shape_observer_)
     return;
-  }
+
+  NSCursor* cursor = [NSCursor currentSystemCursor];
+  if (cursor == nil)
+    return;
 
   NSImage* nsimage = [cursor image];
   NSPoint hotspot = [cursor hotSpot];
@@ -363,9 +395,8 @@ void ScreenCapturerMac::CaptureCursor() {
   CGImageRef image = [nsimage CGImageForProposedRect:NULL
                                              context:nil
                                                hints:nil];
-  if (image == nil) {
+  if (image == nil)
     return;
-  }
 
   if (CGImageGetBitsPerPixel(image) != 32 ||
       CGImageGetBytesPerRow(image) != (size.width * 4) ||
@@ -373,46 +404,11 @@ void ScreenCapturerMac::CaptureCursor() {
     return;
   }
 
-  // Compare the current cursor with the last one we sent to the client
-  // and exit if the cursor is the same.
-  if (current_cursor_.get() != NULL) {
-    CGImageRef current = current_cursor_.get();
-    if (CGImageGetWidth(image) == CGImageGetWidth(current) &&
-        CGImageGetHeight(image) == CGImageGetHeight(current) &&
-        CGImageGetBitsPerPixel(image) == CGImageGetBitsPerPixel(current) &&
-        CGImageGetBytesPerRow(image) == CGImageGetBytesPerRow(current) &&
-        CGImageGetBitsPerComponent(image) ==
-            CGImageGetBitsPerComponent(current)) {
-      CGDataProviderRef provider_new = CGImageGetDataProvider(image);
-      base::mac::ScopedCFTypeRef<CFDataRef> data_ref_new(
-          CGDataProviderCopyData(provider_new));
-      CGDataProviderRef provider_current = CGImageGetDataProvider(current);
-      base::mac::ScopedCFTypeRef<CFDataRef> data_ref_current(
-          CGDataProviderCopyData(provider_current));
-
-      if (data_ref_new.get() != NULL && data_ref_current.get() != NULL) {
-        int data_size = CFDataGetLength(data_ref_new);
-        CHECK(data_size == CFDataGetLength(data_ref_current));
-        const uint8* data_new = CFDataGetBytePtr(data_ref_new);
-        const uint8* data_current = CFDataGetBytePtr(data_ref_current);
-        if (memcmp(data_new, data_current, data_size) == 0) {
-          return;
-        }
-      }
-    }
-  }
-
-  // Record the last cursor image.
-  current_cursor_.reset(CGImageCreateCopy(image));
-
-  VLOG(3) << "Sending cursor: " << size.width << "x" << size.height;
-
   CGDataProviderRef provider = CGImageGetDataProvider(image);
-  base::mac::ScopedCFTypeRef<CFDataRef> image_data_ref(
-      CGDataProviderCopyData(provider));
-  if (image_data_ref.get() == NULL) {
+  CFDataRef image_data_ref = CGDataProviderCopyData(provider);
+  if (image_data_ref == NULL)
     return;
-  }
+
   const char* cursor_src_data =
       reinterpret_cast<const char*>(CFDataGetBytePtr(image_data_ref));
   int data_size = CFDataGetLength(image_data_ref);
@@ -424,8 +420,21 @@ void ScreenCapturerMac::CaptureCursor() {
   cursor_shape->hotspot.set(hotspot.x, hotspot.y);
   cursor_shape->data.assign(cursor_src_data, cursor_src_data + data_size);
 
-  if (mouse_shape_observer_)
-    mouse_shape_observer_->OnCursorShapeChanged(cursor_shape.Pass());
+  CFRelease(image_data_ref);
+
+  // Compare the current cursor with the last one we sent to the client. If
+  // they're the same, then don't bother sending the cursor again.
+  if (last_cursor_.size.equals(cursor_shape->size) &&
+      last_cursor_.hotspot.equals(cursor_shape->hotspot) &&
+      last_cursor_.data == cursor_shape->data) {
+    return;
+  }
+
+  // Record the last cursor image that we sent to the client.
+  last_cursor_ = *cursor_shape;
+
+  VLOG(3) << "Sending cursor: " << size.width << "x" << size.height;
+  mouse_shape_observer_->OnCursorShapeChanged(cursor_shape.Pass());
 }
 
 void ScreenCapturerMac::GlBlitFast(const webrtc::DesktopFrame& frame,
@@ -596,17 +605,14 @@ void ScreenCapturerMac::CgBlitPostLion(const webrtc::DesktopFrame& frame,
     copy_region.Translate(-display_bounds.left(), -display_bounds.top());
 
     // Create an image containing a snapshot of the display.
-    base::mac::ScopedCFTypeRef<CGImageRef> image(
-        CGDisplayCreateImage(display_config.id));
-    if (image.get() == NULL)
+    CGImageRef image = CGDisplayCreateImage(display_config.id);
+    if (image == NULL)
       continue;
 
     // Request access to the raw pixel data via the image's DataProvider.
     CGDataProviderRef provider = CGImageGetDataProvider(image);
-    base::mac::ScopedCFTypeRef<CFDataRef> data(
-        CGDataProviderCopyData(provider));
-    if (data.get() == NULL)
-      continue;
+    CFDataRef data = CGDataProviderCopyData(provider);
+    CHECK(data);
 
     const uint8* display_base_address = CFDataGetBytePtr(data);
     int src_bytes_per_row = CGImageGetBytesPerRow(image);
@@ -627,6 +633,9 @@ void ScreenCapturerMac::CgBlitPostLion(const webrtc::DesktopFrame& frame,
                src_bytes_per_pixel,
                i.rect());
     }
+
+    CFRelease(data);
+    CFRelease(image);
   }
 }
 
@@ -653,33 +662,29 @@ void ScreenCapturerMac::ScreenConfigurationChanged() {
   // contents. Although the API exists in OS 10.6, it crashes the caller if
   // the machine has no monitor connected, so we fall back to depcreated APIs
   // when running on 10.6.
-  if (base::mac::IsOSLionOrLater()) {
+  if (IsOSLionOrLater()) {
     LOG(INFO) << "Using CgBlitPostLion.";
     // No need for any OpenGL support on Lion
     return;
   }
 
   // Dynamically link to the deprecated pre-Lion capture APIs.
-  std::string app_services_library_error;
-  base::FilePath app_services_path(kApplicationServicesLibraryName);
-  app_services_library_.Reset(
-      base::LoadNativeLibrary(app_services_path, &app_services_library_error));
-  CHECK(app_services_library_.is_valid()) << app_services_library_error;
+  app_services_library_ = dlopen(kApplicationServicesLibraryName,
+                                 RTLD_LAZY);
+  CHECK(app_services_library_)
+      << "Failed to open " << kApplicationServicesLibraryName;
 
-  std::string opengl_library_error;
-  base::FilePath opengl_path(kOpenGlLibraryName);
-  opengl_library_.Reset(
-      base::LoadNativeLibrary(opengl_path, &opengl_library_error));
-  CHECK(opengl_library_.is_valid()) << opengl_library_error;
+  opengl_library_ = dlopen(kOpenGlLibraryName, RTLD_LAZY);
+  CHECK(opengl_library_) << "Failed to open " << kOpenGlLibraryName;
 
   cg_display_base_address_ = reinterpret_cast<CGDisplayBaseAddressFunc>(
-      app_services_library_.GetFunctionPointer("CGDisplayBaseAddress"));
+      dlsym(app_services_library_, "CGDisplayBaseAddress"));
   cg_display_bytes_per_row_ = reinterpret_cast<CGDisplayBytesPerRowFunc>(
-      app_services_library_.GetFunctionPointer("CGDisplayBytesPerRow"));
+      dlsym(app_services_library_, "CGDisplayBytesPerRow"));
   cg_display_bits_per_pixel_ = reinterpret_cast<CGDisplayBitsPerPixelFunc>(
-      app_services_library_.GetFunctionPointer("CGDisplayBitsPerPixel"));
+      dlsym(app_services_library_, "CGDisplayBitsPerPixel"));
   cgl_set_full_screen_ = reinterpret_cast<CGLSetFullScreenFunc>(
-      opengl_library_.GetFunctionPointer("CGLSetFullScreen"));
+      dlsym(opengl_library_, "CGLSetFullScreen"));
   CHECK(cg_display_base_address_ && cg_display_bytes_per_row_ &&
         cg_display_bits_per_pixel_ && cgl_set_full_screen_);
 
