@@ -771,6 +771,9 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
             mmap_dump_buffer->AppendString(kMapsRegionTypeDict[type], 0);
             mmap_dump_buffer->AppendString(" ", 0);
             mmap_dump_buffer->AppendInt64(committed_size, 0);
+            mmap_dump_buffer->AppendString(" / ", 0);
+            mmap_dump_buffer->AppendInt64(
+                last_address_of_unhooked - cursor + 1, 0);
             mmap_dump_buffer->AppendString("\n", 0);
           }
           cursor = last_address_of_unhooked + 1;
@@ -781,6 +784,17 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
             mmap_dump_buffer) {
           bool trailing = mmap_iter->start_addr < vma_start_addr;
           bool continued = mmap_iter->end_addr - 1 > vma_last_addr;
+          uint64 partial_first_address, partial_last_address;
+          if (trailing)
+            partial_first_address = vma_start_addr;
+          else
+            partial_first_address = mmap_iter->start_addr;
+          if (continued)
+            partial_last_address = vma_last_addr;
+          else
+            partial_last_address = mmap_iter->end_addr - 1;
+          uint64 committed_size = memory_residence_info_getter->CommittedSize(
+              partial_first_address, partial_last_address);
           mmap_dump_buffer->AppendString(trailing ? " (" : "  ", 0);
           mmap_dump_buffer->AppendPtr(mmap_iter->start_addr, 0);
           mmap_dump_buffer->AppendString(trailing ? ")" : " ", 0);
@@ -790,6 +804,11 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
           mmap_dump_buffer->AppendString(continued ? ")" : " ", 0);
           mmap_dump_buffer->AppendString(" hooked ", 0);
           mmap_dump_buffer->AppendString(kMapsRegionTypeDict[type], 0);
+          mmap_dump_buffer->AppendString(" ", 0);
+          mmap_dump_buffer->AppendInt64(committed_size, 0);
+          mmap_dump_buffer->AppendString(" / ", 0);
+          mmap_dump_buffer->AppendInt64(
+              partial_last_address - partial_first_address + 1, 0);
           mmap_dump_buffer->AppendString(" @ ", 0);
           if (deep_bucket != NULL) {
             mmap_dump_buffer->AppendInt(deep_bucket->id, 0, false);
