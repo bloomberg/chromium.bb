@@ -1,107 +1,107 @@
 {
   "bundles": [
     {
-      "name": "sdk_tools",
-      "description": "Native Client SDK Tools, revision 186432",
-      "stability": "stable",
-      "recommended": "yes",
-      "version": 1,
       "archives": [
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.186432/sdk_tools.tgz",
           "checksum": {
-            "sha1": "afecddc8adf89e89c4c7e6cbd6e015dd49ad4661"
+            "sha1": "9c9af9e050cce3d490c7c1dd612910bed3f32b59"
           },
           "host_os": "all",
-          "size": 32905
+          "size": 29354,
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.201132/sdk_tools.tgz"
         }
       ],
-      "revision": 186432
+      "description": "Native Client SDK Tools, revision 201132",
+      "name": "sdk_tools",
+      "recommended": "yes",
+      "revision": 201132,
+      "stability": "stable",
+      "version": 1
     },
     {
-      "name": "vs_addin",
-      "description": "Visual Studio Add-In for building and debugging NaCl applications",
-      "stability": "dev",
-      "recommended": "no",
-      "version": 0,
-      "repath": "vs_addin",
       "archives": [
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/sdk/${revision}/vs_addin.tgz",
-          "host_os": "win"
+          "host_os": "win",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/sdk/${revision}/vs_addin.tgz"
         }
       ],
-      "revision": 1507
-    },
-    {
-      "name": "pepper_23",
-      "description": "Chrome 23 bundle, revision xxxxx",
-      "stability": "post_stable",
+      "description": "Visual Studio Add-In for building and debugging NaCl applications",
+      "name": "vs_addin",
       "recommended": "no",
-      "version": 23,
-      "repath": "pepper_23",
-      "archives": [],
-      "revision": 0
-    },
-    {
-      "name": "pepper_24",
-      "description": "Chrome 24 bundle, revision xxxxx",
-      "stability": "post_stable",
-      "recommended": "no",
-      "version": 24,
-      "repath": "pepper_24",
-      "archives": [],
-      "revision": 0
-    },
-    {
-      "name": "pepper_25",
-      "description": "Chrome 25 bundle, revision xxxxx",
-      "stability": "post_stable",
-      "recommended": "no",
-      "version": 25,
-      "repath": "pepper_25",
-      "archives": [],
-      "revision": 0
-    },
-    {
-      "name": "pepper_26",
-      "description": "Chrome 26 bundle, revision xxxxx",
-      "stability": "stable",
-      "recommended": "yes",
-      "version": 26,
-      "repath": "pepper_26",
-      "archives": [],
-      "revision": 0
-    },
-    {
-      "name": "pepper_27",
-      "description": "Chrome 27 bundle, revision xxxxx",
-      "stability": "beta",
-      "recommended": "no",
-      "version": 27,
-      "repath": "pepper_27",
-      "archives": [],
-      "revision": 0
-    },
-    {
-      "name": "pepper_28",
-      "description": "Chrome 28 bundle, revision xxxxx",
+      "repath": "vs_addin",
+      "revision": 1507,
       "stability": "dev",
-      "recommended": "no",
-      "version": 28,
-      "repath": "pepper_28",
-      "archives": [],
-      "revision": 0
+      "version": 0
     },
     {
-      "name": "pepper_canary",
-      "description": "Chrome Canary",
-      "stability": "canary",
-      "recommended": "no",
-      "version": 0,
-      "repath": "",
       "archives": [],
-      "revision": 0
+      "description": "Chrome 23 bundle, revision xxxxx",
+      "name": "pepper_23",
+      "recommended": "no",
+      "repath": "pepper_23",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 23
+    },
+    {
+      "archives": [],
+      "description": "Chrome 24 bundle, revision xxxxx",
+      "name": "pepper_24",
+      "recommended": "no",
+      "repath": "pepper_24",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 24
+    },
+    {
+      "archives": [],
+      "description": "Chrome 25 bundle, revision xxxxx",
+      "name": "pepper_25",
+      "recommended": "no",
+      "repath": "pepper_25",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 25
+    },
+    {
+      "archives": [],
+      "description": "Chrome 26 bundle, revision xxxxx",
+      "name": "pepper_26",
+      "recommended": "yes",
+      "repath": "pepper_26",
+      "revision": 0,
+      "stability": "stable",
+      "version": 26
+    },
+    {
+      "archives": [],
+      "description": "Chrome 27 bundle, revision xxxxx",
+      "name": "pepper_27",
+      "recommended": "no",
+      "repath": "pepper_27",
+      "revision": 0,
+      "stability": "beta",
+      "version": 27
+    },
+    {
+      "archives": [],
+      "description": "Chrome 28 bundle, revision xxxxx",
+      "name": "pepper_28",
+      "recommended": "no",
+      "repath": "pepper_28",
+      "revision": 0,
+      "stability": "dev",
+      "version": 28
+    },
+    {
+      "archives": [],
+      "description": "Chrome Canary",
+      "name": "pepper_canary",
+      "recommended": "no",
+      "repath": "",
+      "revision": 0,
+      "stability": "canary",
+      "version": 0
     }
   ],
   "manifest_version": 2
