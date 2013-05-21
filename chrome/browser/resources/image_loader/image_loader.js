@@ -21,6 +21,13 @@ var ImageLoader = function() {
    */
   this.cache_ = new ImageLoader.Cache();
 
+  /**
+   * Manages pending requests and runs them in order of priorities.
+   * @type {ImageLoader.Worker}
+   * @private
+   */
+  this.worker_ = new ImageLoader.Worker();
+
   chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
     // TODO(mtomasz): Handle.
   });
@@ -63,9 +70,10 @@ ImageLoader.prototype.onMessage_ = function(senderId, request, callback) {
     }
     return false;  // No callback calls.
   } else {
-    // Start a task.
-    this.requests_[requestId] =
-        new ImageLoader.Request(this.cache_, request, callback);
+    // Create a request task and add it to the worker (queue).
+    var requestTask = new ImageLoader.Request(this.cache_, request, callback);
+    this.requests_[requestId] = requestTask;
+    this.worker_.add(requestTask);
     return true;  // Request will call the callback.
   }
 };
@@ -230,17 +238,56 @@ ImageLoader.Request = function(cache, request, callback) {
    */
   this.context_ = this.canvas_.getContext('2d');
 
-  // Process the request. Try to load from cache. If it fails, then download.
+  /**
+   * Callback to be called once downloading is finished.
+   * @type {function()}
+   * @private
+   */
+  this.downloadCallback_ = null;
+};
+
+/**
+ * Returns priority of the request. The higher priority, the faster it will
+ * be handled. The highest priority is 0. The default one is 2.
+ *
+ * @return {number} Priority.
+ */
+ImageLoader.Request.prototype.getPriority = function() {
+  return (this.request_.priority !== undefined) ? this.request_.priority : 2;
+};
+
+/**
+ * Tries to load the image from cache if exists and sends the response.
+ *
+ * @param {function()} onSuccess Success callback.
+ * @param {function()} onFailure Failure callback.
+ */
+ImageLoader.Request.prototype.loadFromCacheAndProcess = function(
+    onSuccess, onFailure) {
   this.loadFromCache_(
-      this.sendImageData_.bind(this),
-      function() {  // Failure, not in cache.
-        this.downloadOriginal_(this.onImageLoad_.bind(this),
-                               this.onImageError_.bind(this));
-      }.bind(this));
+      function(data) {  // Found in cache.
+        this.sendImageData_(data);
+        onSuccess();
+      }.bind(this),
+      onFailure);  // Not found in cache.
+};
+
+/**
+ * Tries to download the image, resizes and sends the response.
+ * @param {function()} callback Completion callback.
+ */
+ImageLoader.Request.prototype.downloadAndProcess = function(callback) {
+  if (this.downloadCallback_)
+    throw new Error('Downloading already started.');
+
+  this.downloadCallback_ = callback;
+  this.downloadOriginal_(this.onImageLoad_.bind(this),
+                         this.onImageError_.bind(this));
 };
 
 /**
  * Fetches the image from the persistent cache.
+ *
  * @param {function()} onSuccess Success callback.
  * @param {function()} onFailure Failure callback.
  * @private
@@ -270,6 +317,7 @@ ImageLoader.Request.prototype.loadFromCache_ = function(onSuccess, onFailure) {
 
 /**
  * Saves the image to the persistent cache.
+ *
  * @param {string} data The image's data.
  * @private
  */
@@ -287,6 +335,7 @@ ImageLoader.Request.prototype.saveToCache_ = function(data) {
 
 /**
  * Downloads an image directly or for remote resources using the XmlHttpRequest.
+ *
  * @param {function()} onSuccess Success callback.
  * @param {function()} onFailure Failure callback.
  * @private
@@ -296,7 +345,7 @@ ImageLoader.Request.prototype.downloadOriginal_ = function(
   this.image_.onload = onSuccess;
   this.image_.onerror = onFailure;
 
-  if (window.harness || !this.request_.url.match(/^https?:/)) {
+  if (!this.request_.url.match(/^https?:/)) {
     // Download directly.
     this.image_.src = this.request_.url;
     return;
@@ -363,24 +412,28 @@ ImageLoader.Request.prototype.sendImageData_ = function(data) {
  * Handler, when contents are loaded into the image element. Performs resizing
  * and finalizes the request process.
  *
+ * @param {function()} callback Completion callback.
  * @private
  */
-ImageLoader.Request.prototype.onImageLoad_ = function() {
+ImageLoader.Request.prototype.onImageLoad_ = function(callback) {
   ImageLoader.resize(this.image_, this.canvas_, this.request_);
   this.sendImage_();
   this.cleanup_();
+  this.downloadCallback_();
 };
 
 /**
  * Handler, when loading of the image fails. Sends a failure response and
  * finalizes the request process.
  *
+ * @param {function()} callback Completion callback.
  * @private
  */
-ImageLoader.Request.prototype.onImageError_ = function() {
+ImageLoader.Request.prototype.onImageError_ = function(callback) {
   this.sendResponse_({status: 'error',
                       taskId: this.request_.taskId});
   this.cleanup_();
+  this.downloadCallback_();
 };
 
 /**
@@ -388,6 +441,10 @@ ImageLoader.Request.prototype.onImageError_ = function() {
  */
 ImageLoader.Request.prototype.cancel = function() {
   this.cleanup_();
+
+  // If downloading has started, then call the callback.
+  if (this.downloadCallback_)
+    this.downloadCallback_();
 };
 
 /**
@@ -409,6 +466,94 @@ ImageLoader.Request.prototype.cleanup_ = function() {
   // Dispose memory allocated by Canvas.
   this.canvas_.width = 0;
   this.canvas_.height = 0;
+};
+
+/**
+ * Worker for requests. Fetches requests from a queue and processes them
+ * synchronously, taking into account priorities. The highest priority is 0.
+ */
+ImageLoader.Worker = function() {
+  /**
+   * List of pending requests.
+   * @type {ImageLoader.Request}
+   * @private
+   */
+  this.pendingRequests_ = [];
+
+  /**
+   * List of requests being processed.
+   * @type {ImageLoader.Request}
+   * @private
+   */
+  this.activeRequests_ = [];
+};
+
+/**
+ * Maximum requests to be run in parallel.
+ * @type {number}
+ * @const
+ */
+ImageLoader.Worker.MAXIMUM_IN_PARALLEL = 5;
+
+/**
+ * Adds a request to the internal priority queue and executes it when requests
+ * with higher priorities are finished. If the result is cached, then it is
+ * processed immediately.
+ *
+ * @param {ImageLoader.Request} request Request object.
+ */
+ImageLoader.Worker.prototype.add = function(request) {
+  request.loadFromCacheAndProcess(function() { }, function() {
+    // Not found in cache, then add to pending requests.
+    this.pendingRequests_.push(request);
+
+    // Sort requests by priorities.
+    this.pendingRequests_.sort(function(a, b) {
+      return a.getPriority() - b.getPriority();
+    });
+
+    // Handle the most important requests (if possible).
+    this.continue_();
+  }.bind(this));
+};
+
+/**
+ * Processes pending requests from the queue. There is no guarantee that
+ * all of the tasks will be processed at once.
+ *
+ * @private
+ */
+ImageLoader.Worker.prototype.continue_ = function() {
+  for (var index = 0; index < this.pendingRequests_.length; index++) {
+    var request = this.pendingRequests_[index];
+
+    // Run only up to MAXIMUM_IN_PARALLEL in the same time.
+    if (Object.keys(this.activeRequests_).length ==
+        ImageLoader.Worker.MAXIMUM_IN_PARALLEL) {
+      return;
+    }
+
+    delete this.pendingRequests_.splice(index, 1);
+    this.activeRequests_.push(request);
+
+    request.downloadAndProcess(this.finish_.bind(this, request));
+  }
+};
+
+/**
+ * Handles finished requests.
+ *
+ * @param {ImageLoader.Request} request Finished request.
+ * @private
+ */
+ImageLoader.Worker.prototype.finish_ = function(request) {
+  var index = this.activeRequests_.indexOf(request);
+  if (index < 0)
+    console.warn('Request not found.');
+  delete this.activeRequests_.splice(index, 1);
+
+  // Handle the most important requests (if possible).
+  this.continue_();
 };
 
 /**
@@ -460,7 +605,7 @@ ImageLoader.Cache.DB_NAME = 'image-loader';
  * @type {number}
  * @const
  */
-ImageLoader.Cache.DB_VERSION = 8;
+ImageLoader.Cache.DB_VERSION = 11;
 
 /**
  * Memory limit for images data in bytes.

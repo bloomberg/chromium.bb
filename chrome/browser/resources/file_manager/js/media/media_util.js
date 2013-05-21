@@ -16,15 +16,17 @@
  * @param {string=} opt_mediaType Media type.
  * @param {ThumbnailLoader.UseEmbedded=} opt_useEmbedded If to use embedded
  *     jpeg thumbnail if available. Default: USE_EMBEDDED.
+ * @param {number=} opt_priority Priority, the highest is 0. default: 2.
  * @constructor
  */
-function ThumbnailLoader(
-    url, opt_loaderType, opt_metadata, opt_mediaType, opt_useEmbedded) {
+function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType,
+    opt_useEmbedded, opt_priority) {
   opt_useEmbedded = opt_useEmbedded || ThumbnailLoader.UseEmbedded.USE_EMBEDDED;
 
   this.mediaType_ = opt_mediaType || FileType.getMediaType(url);
   this.loaderType_ = opt_loaderType || ThumbnailLoader.LoaderType.IMAGE;
   this.metadata_ = opt_metadata;
+  this.priority_ = (opt_priority !== undefined) ? opt_priority : 2;
 
   if (!opt_metadata) {
     this.thumbnailUrl_ = url;  // Use the URL directly.
@@ -155,8 +157,10 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
     if (this.fallbackUrl_) {
       new ThumbnailLoader(this.fallbackUrl_,
                           this.loaderType_,
-                          null,
-                          this.mediaType_).
+                          null,  // No metadata.
+                          this.mediaType_,
+                          undefined,  // Default value for use-embedded.
+                          this.priority_).
           load(box, fillMode, opt_onSuccess);
     } else {
       box.setAttribute('generic-thumbnail', this.mediaType_);
@@ -180,6 +184,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
       { maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
         cache: true,
+        priority: this.priority_,
         timestamp: modificationTime },
       function() {
         if (opt_optimizationMode ==
@@ -261,6 +266,7 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
       { maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
         cache: true,
+        priority: this.priority_,
         timestamp: modificationTime });
 };
 

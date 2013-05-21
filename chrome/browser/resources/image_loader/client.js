@@ -269,7 +269,6 @@ ImageLoader.Client.Cache.prototype.evictCache_ = function(size) {
  */
 ImageLoader.Client.Cache.prototype.saveImage = function(
     key, data, opt_timestamp) {
-
   // If the image is currently in cache, then remove it.
   if (this.images_[key])
     this.removeImage(key);

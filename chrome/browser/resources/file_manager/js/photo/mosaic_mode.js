@@ -1715,6 +1715,9 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
   this.markUnloaded();
   this.left_ = null;  // Mark as not laid out.
 
+  // Set higher priority for the selected elements to load them first.
+  var priority = this.getAttribute('selected') ? 1 : 2;
+
   // Use embedded thumbnails on Drive, since they have higher resolution.
   this.thumbnailLoader_ = new ThumbnailLoader(
       this.getItem().getUrl(),
@@ -1723,7 +1726,8 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
       undefined,  // Media type.
       FileType.isOnDrive(this.getItem().getUrl()) ?
           ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-          ThumbnailLoader.UseEmbedded.NO_EMBEDDED);
+          ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
+      priority);
 
   var setDimensions = function(width, height) {
     if (width > height) {

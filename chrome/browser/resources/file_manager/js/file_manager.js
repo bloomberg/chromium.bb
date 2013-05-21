@@ -1392,7 +1392,8 @@ DialogType.isModal = function(type) {
               undefined,  // Media type.
               FileType.isOnDrive(url) ?
                   ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-                  ThumbnailLoader.UseEmbedded.NO_EMBEDDED);
+                  ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
+              10);  // Very low priority.
               thumbnailLoader_.loadDetachedImage(function(success) {});
         });
       }
