@@ -327,8 +327,10 @@ PlatformFileError ErrnoToPlatformFileError(int saved_errno) {
     case ENOTDIR:
       return PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
     default:
+#if !defined(OS_NACL)  // NaCl build has no metrics code.
       UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownErrors.Posix",
                                   saved_errno);
+#endif
       return PLATFORM_FILE_ERROR_FAILED;
   }
 }
