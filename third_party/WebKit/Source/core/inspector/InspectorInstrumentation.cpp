@@ -528,12 +528,10 @@ void didScheduleStyleRecalculationImpl(InstrumentingAgents* instrumentingAgents,
 InspectorInstrumentationCookie willMatchRuleImpl(InstrumentingAgents* instrumentingAgents, StyleRule* rule, InspectorCSSOMWrappers& inspectorCSSOMWrappers, DocumentStyleSheetCollection* sheetCollection)
 {
     InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent();
-    if (cssAgent) {
+    if (cssAgent)
         cssAgent->willMatchRule(rule, inspectorCSSOMWrappers, sheetCollection);
-        return InspectorInstrumentationCookie(instrumentingAgents, 1);
-    }
 
-    return InspectorInstrumentationCookie();
+    return InspectorInstrumentationCookie(instrumentingAgents, 0);
 }
 
 void didMatchRuleImpl(const InspectorInstrumentationCookie& cookie, bool matched)
@@ -545,12 +543,10 @@ void didMatchRuleImpl(const InspectorInstrumentationCookie& cookie, bool matched
 InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents* instrumentingAgents, StyleRule* rule, StyleResolver* styleResolver)
 {
     InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent();
-    if (cssAgent) {
+    if (cssAgent)
         cssAgent->willProcessRule(rule, styleResolver);
-        return InspectorInstrumentationCookie(instrumentingAgents, 1);
-    }
 
-    return InspectorInstrumentationCookie();
+    return InspectorInstrumentationCookie(instrumentingAgents, 0);
 }
 
 void didProcessRuleImpl(const InspectorInstrumentationCookie& cookie)
