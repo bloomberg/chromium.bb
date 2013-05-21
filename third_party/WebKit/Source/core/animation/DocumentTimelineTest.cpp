@@ -32,11 +32,11 @@
 #include "core/animation/DocumentTimeline.h"
 
 #include "core/animation/Animation.h"
+#include "core/animation/TimedItem.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
 #include "core/platform/KURL.h"
-
 #include <gtest/gtest.h>
 
 using namespace WebCore;
@@ -64,9 +64,17 @@ TEST(DocumentTimeline, AddAnAnimation)
     RefPtr<DocumentTimeline> timeline = DocumentTimeline::create(d.get());
     Timing timing;
     RefPtr<Animation> anim = Animation::create(e.get(), EmptyAnimationEffect::create(), timing);
-    timeline->play(anim);
+    ASSERT_TRUE(isNull(timeline->currentTime()));
+
+    timeline->play(anim.get());
+    ASSERT_TRUE(isNull(timeline->currentTime()));
+
     timeline->serviceAnimations(0);
+    ASSERT_EQ(0, timeline->currentTime());
     ASSERT_TRUE(anim->compositableValues()->isEmpty());
+
+    timeline->serviceAnimations(100);
+    ASSERT_EQ(100, timeline->currentTime());
 }
 
 }

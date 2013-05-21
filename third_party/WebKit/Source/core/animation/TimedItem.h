@@ -71,7 +71,7 @@ protected:
     virtual void updateChildrenAndEffects(bool wasActiveOrInEffect) const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
 
-    friend class DocumentTimeline; // Calls updateInheritedTime.
+    friend class Player; // Calls updateInheritedTime.
 
 private:
     // FIXME: m_parent and m_startTime are placeholders, they depend on timing groups.

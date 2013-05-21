@@ -523,6 +523,8 @@
             'animation/AnimationEffect.h',
             'animation/DocumentTimeline.cpp',
             'animation/DocumentTimeline.h',
+            'animation/Player.cpp',
+            'animation/Player.h',
             'animation/TimedItem.cpp',
             'animation/TimedItem.h',
             'animation/TimedItemCalculations.h',
@@ -3653,6 +3655,7 @@
         ],
         'core_unittest_files': [
             'animation/DocumentTimelineTest.cpp',
+            'animation/PlayerTest.cpp',
             'animation/TimedItemCalculationsTest.cpp',
             'animation/TimedItemTest.cpp',
             'platform/DecimalTest.cpp',

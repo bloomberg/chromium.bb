@@ -28,33 +28,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DocumentTimeline_h
-#define DocumentTimeline_h
+#ifndef Player_h
+#define Player_h
 
-#include "core/animation/Player.h"
-#include "wtf/RefCounted.h"
+#include "core/animation/TimedItem.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class Document;
-class TimedItem;
+class DocumentTimeline;
 
-// DocumentTimeline is constructed and owned by Document, and tied to its lifecycle.
-class DocumentTimeline : public RefCounted<DocumentTimeline> {
+class Player FINAL : public RefCounted<Player> {
 
 public:
-    static PassRefPtr<DocumentTimeline> create(Document*);
-    void serviceAnimations(double);
-    PassRefPtr<Player> play(TimedItem*);
-    double currentTime() { return m_currentTime; }
+    static PassRefPtr<Player> create(DocumentTimeline*, TimedItem*);
+
+    // Returns whether this player is still current or in effect.
+    bool update();
+    double currentTime() const;
+    void setCurrentTime(double);
+    bool paused() const { return !isNull(m_pauseStartTime); }
+    void setPaused(bool);
+    double playbackRate() const { return m_playbackRate; }
+    void setPlaybackRate(double);
+    double startTime() const { return m_startTime; }
+    double timeDrift() const;
 
 private:
-    DocumentTimeline(Document*);
-    double m_currentTime;
-    Document* m_document;
-    Vector<RefPtr<Player> > m_players;
+    Player(DocumentTimeline*, TimedItem*);
+    static double effectiveTime(double time) { return isNull(time) ? 0 : time; }
+    inline double pausedTimeDrift() const;
+    inline double currentTimeBeforeDrift() const;
+
+    double m_pauseStartTime;
+    double m_playbackRate;
+    double m_timeDrift;
+    const double m_startTime;
+
+    RefPtr<TimedItem> m_content;
+    DocumentTimeline* const m_timeline;
 };
 
 } // namespace

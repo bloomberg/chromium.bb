@@ -32,6 +32,7 @@
 #include "core/animation/DocumentTimeline.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "core/animation/Player.h"
 #include "core/dom/Document.h"
 #include "core/page/FrameView.h"
 
@@ -43,33 +44,37 @@ PassRefPtr<DocumentTimeline> DocumentTimeline::create(Document* document)
 }
 
 DocumentTimeline::DocumentTimeline(Document* document)
+    : m_currentTime(nullValue())
+    , m_document(document)
 {
     ASSERT(document);
-    m_document = document;
 }
 
-void DocumentTimeline::play(PassRefPtr<TimedItem> child)
+PassRefPtr<Player> DocumentTimeline::play(TimedItem* child)
 {
-    m_children.append(child);
+    RefPtr<Player> player = Player::create(this, child);
+    m_players.append(player);
 
     if (m_document->view())
         m_document->view()->scheduleAnimation();
+
+    return player.release();
 }
 
 void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 {
-    Vector<size_t> expiredIndices;
+    m_currentTime = monotonicAnimationStartTime;
 
-    for (size_t i = 0; i < m_children.size(); ++i) {
-        m_children[i]->updateInheritedTime(monotonicAnimationStartTime);
-        if (!(m_children[i]->isCurrent() || m_children[i]->isInEffect()))
+    Vector<size_t> expiredIndices;
+    for (size_t i = 0; i < m_players.size(); ++i) {
+        if (!m_players[i]->update())
             expiredIndices.append(i);
     }
 
     for (int i = expiredIndices.size() - 1; i >= 0; i--)
-        m_children.remove(expiredIndices[i]);
+        m_players.remove(expiredIndices[i]);
 
-    if (m_document->view())
+    if (m_document->view() && !m_players.isEmpty())
         m_document->view()->scheduleAnimation();
 }
 
