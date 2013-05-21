@@ -1072,7 +1072,7 @@ bool Node::containsIncludingHostElements(const Node* node) const
 void Node::attach()
 {
     ASSERT(!attached());
-    ASSERT(!renderer() || (renderer()->style() && renderer()->parent()));
+    ASSERT(!renderer() || (renderer()->style() && (renderer()->parent() || renderer()->isRenderView())));
 
     // If this node got a renderer it may be the previousRenderer() of sibling text nodes and thus affect the
     // result of Text::textRendererIsNeeded() for those nodes.

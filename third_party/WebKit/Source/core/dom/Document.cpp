@@ -1849,12 +1849,7 @@ void Document::attach()
 
     recalcStyle(Force);
 
-    RenderObject* render = renderer();
-    setRenderer(0);
-
     ContainerNode::attach();
-
-    setRenderer(render);
 }
 
 void Document::detach()
