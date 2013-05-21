@@ -19,6 +19,8 @@ from chromite.lib import gs
 
 
 TWO_WEEKS = 60 * 60 * 24 * 7 * 2
+HTTP_FORBIDDEN_CODES = (401, 403)
+HTTP_NOT_FOUND_CODES = (404, 410)
 
 _Package = collections.namedtuple('_Package', ['mtime', 'uri'])
 
@@ -295,7 +297,7 @@ def GrabRemotePackageIndex(binhost_url):
 
   Returns:
     A PackageIndex object, if the Packages file can be retrieved. If the
-    server returns status code 404, None is returned.
+    packages file cannot be retrieved, then None is returned.
   """
   url = '%s/Packages' % binhost_url.rstrip('/')
   pkgindex = PackageIndex()
@@ -303,7 +305,12 @@ def GrabRemotePackageIndex(binhost_url):
     try:
       f = _RetryUrlOpen(url)
     except urllib2.HTTPError as e:
-      if e.code == 404:
+      if e.code in HTTP_FORBIDDEN_CODES:
+        cros_build_lib.PrintBuildbotStepWarnings()
+        cros_build_lib.Error('Cannot GET %s: %s' % (url, str(e)))
+        return None
+      # Not found errors are normal if old prebuilts were cleaned out.
+      if e.code in HTTP_NOT_FOUND_CODES:
         return None
       raise
   elif binhost_url.startswith('gs://'):
@@ -312,7 +319,8 @@ def GrabRemotePackageIndex(binhost_url):
       output = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
                                          print_cmd=False).output
     except cros_build_lib.RunCommandError as e:
-      print 'Cannot GET %s: %s' % (url, str(e))
+      cros_build_lib.PrintBuildbotStepWarnings()
+      cros_build_lib.Error('Cannot GET %s: %s' % (url, str(e)))
       return None
     f = cStringIO.StringIO(output)
   else:
