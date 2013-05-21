@@ -49,6 +49,12 @@ public:
         m_value = handle.ClearAndLeak();
     }
 
+    UnsafePersistent(v8::Isolate* isolate, v8::Handle<T>& handle)
+    {
+        v8::Persistent<T> persistent(isolate, handle);
+        m_value = persistent.ClearAndLeak();
+    }
+
     T* value() const
     {
         return m_value;
@@ -73,6 +79,11 @@ public:
     {
         persistent()->Dispose(isolate);
         m_value = 0;
+    }
+
+    v8::Local<T> newLocal(v8::Isolate* isolate)
+    {
+        return v8::Local<T>::New(isolate, *persistent());
     }
 
 private:
