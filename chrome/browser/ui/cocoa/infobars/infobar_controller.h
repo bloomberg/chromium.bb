@@ -91,6 +91,8 @@ class InfoBarService;
 // space.
 - (void)removeButtons;
 
+- (void)setHasTip:(BOOL)hasTip;
+
 @property(nonatomic, assign) id<InfoBarContainer> containerController;
 @property(nonatomic, readonly) InfoBarDelegate* delegate;
 

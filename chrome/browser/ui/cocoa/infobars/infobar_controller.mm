@@ -205,6 +205,10 @@ const float kAnimateCloseDuration = 0.12;
   [label_.get() setFrame:labelFrame];
 }
 
+- (void)setHasTip:(BOOL)hasTip {
+  [infoBarView_ setHasTip:hasTip];
+}
+
 - (void)disablePopUpMenu:(NSMenu*)menu {
   // Remove the menu if visible.
   [menu cancelTracking];

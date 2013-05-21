@@ -14,11 +14,13 @@
 @interface InfoBarGradientView : VerticalGradientView {
  @private
   NSPoint tipApex_;
+  BOOL hasTip_;
 }
 
 // The point, in window coordinates, at which the infobar tip is the highest and
 // pointing at the omnibox decoration.
 @property(assign, nonatomic) NSPoint tipApex;
+@property(assign, nonatomic) BOOL hasTip;
 
 // Sets the infobar type. This will change the view's gradient.
 - (void)setInfobarType:(InfoBarDelegate::Type)infobarType;

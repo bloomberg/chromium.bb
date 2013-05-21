@@ -68,7 +68,12 @@ const CGFloat kTipHeight = 12.0;
   // InfoBarNotificationObserver object, which proxies them back to us.
   content::NotificationRegistrar registrar_;
   scoped_ptr<InfoBarNotificationObserver> infoBarObserver_;
+
+  // If YES then the first info bar doesn't draw a tip.
+  BOOL shouldSuppressTopInfoBarTip_;
 }
+
+@property(nonatomic, assign) BOOL shouldSuppressTopInfoBarTip;
 
 - (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate;
 

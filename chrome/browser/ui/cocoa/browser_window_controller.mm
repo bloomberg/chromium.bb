@@ -1975,6 +1975,11 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
   [self updateContentOffsets];
   [self updateSubviewZOrder:[self inPresentationMode]];
+
+  // If the overlay is open then hide the infobar tip.
+  [infoBarContainerController_
+      setShouldSuppressTopInfoBarTip:[self currentInstantUIState] !=
+      browser_window_controller::kInstantUINone];
 }
 
 @end  // @implementation BrowserWindowController

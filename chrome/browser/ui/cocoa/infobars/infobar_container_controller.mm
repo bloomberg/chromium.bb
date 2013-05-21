@@ -83,6 +83,8 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
 
 @implementation InfoBarContainerController
 
+@synthesize shouldSuppressTopInfoBarTip = shouldSuppressTopInfoBarTip_;
+
 - (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate {
   DCHECK(resizeDelegate);
   if ((self = [super initWithNibName:@"InfoBarContainer"
@@ -187,6 +189,13 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
     [resizeDelegate_ setAnimationInProgress:inProgress];
 }
 
+- (void)setShouldSuppressTopInfoBarTip:(BOOL)flag {
+  if (shouldSuppressTopInfoBarTip_ == flag)
+    return;
+  shouldSuppressTopInfoBarTip_ = flag;
+  [self positionInfoBarsAndRedraw];
+}
+
 @end
 
 @implementation InfoBarContainerController (PrivateMethods)
@@ -270,6 +279,9 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
     [view setFrame:frame];
 
     minY += NSHeight(frame) - infobars::kTipHeight;
+
+    BOOL isTop = [controller isEqual:[infobarControllers_ objectAtIndex:0]];
+    [controller setHasTip:!shouldSuppressTopInfoBarTip_ || !isTop];
   }
 
   [resizeDelegate_ resizeView:[self view] newHeight:[self desiredHeight]];

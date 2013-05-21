@@ -133,6 +133,15 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
            animate:NO];
   }
 
+  void HideInstant() {
+    SearchMode mode;
+    browser()->search_model()->SetMode(mode);
+    browser()->search_model()->SetTopBarsVisible(true);
+    EXPECT_TRUE(browser()->search_model()->mode().is_default());
+    EXPECT_EQ(browser_window_controller::kInstantUINone,
+              [controller() currentInstantUIState]);
+  }
+
   NSView* GetViewWithID(ViewID view_id) const {
     switch (view_id) {
       case VIEW_ID_FULLSCREEN_FLOATING_BAR:
@@ -565,4 +574,20 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   // Close the application window.
   popup_browser->tab_strip_model()->CloseSelectedTabs();
   [controller close];
+}
+
+// Verify that the info bar tip is hidden when the instant overlay is visible.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
+                       InfoBarTipHiddenForInstant) {
+  ShowInfoBar();
+  EXPECT_FALSE(
+      [[controller() infoBarContainerController] shouldSuppressTopInfoBarTip]);
+
+  ShowInstantResults();
+  EXPECT_TRUE(
+      [[controller() infoBarContainerController] shouldSuppressTopInfoBarTip]);
+
+  HideInstant();
+  EXPECT_FALSE(
+      [[controller() infoBarContainerController] shouldSuppressTopInfoBarTip]);
 }
