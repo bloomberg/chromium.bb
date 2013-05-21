@@ -9,7 +9,7 @@ import os
 import sys
 
 import buildbot_common
-import build_utils
+import build_version
 from build_paths import SCRIPT_DIR
 
 GS_MANIFEST_PATH = 'gs://nativeclient-mirror/nacl/nacl_sdk/'
@@ -169,7 +169,7 @@ def main(args):
   if buildername == 'linux-sdk-mono32':
     assert buildbot_revision
     sdk_revision = buildbot_revision.split(':')[0]
-    pepper_revision = build_utils.ChromeMajorVersion()
+    pepper_revision = build_version.ChromeMajorVersion()
     build_and_upload_mono(sdk_revision, pepper_revision, None,
                           'trunk.' + sdk_revision, args)
   elif buildername == 'linux-sdk-mono64':

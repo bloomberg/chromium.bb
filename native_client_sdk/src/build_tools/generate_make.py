@@ -6,7 +6,7 @@ import os
 import sys
 
 import buildbot_common
-import build_utils
+import build_version
 import getos
 from buildbot_common import ErrorExit
 from easy_template import RunTemplateFileIfChanged
@@ -142,7 +142,7 @@ def GenerateManifest(srcroot, dstroot, desc):
       'name': desc['TITLE'],
       'description': '%s Example' % desc['TITLE'],
       'permissions': desc.get('PERMISSIONS', []),
-      'version': build_utils.ChromeVersionNoTrunk()
+      'version': build_version.ChromeVersionNoTrunk()
   }
   RunTemplateFileIfChanged(srcpath, dstpath, replace)
 

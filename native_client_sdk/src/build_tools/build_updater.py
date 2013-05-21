@@ -10,7 +10,7 @@ tool users run to download new bundles, update existing bundles, etc.
 """
 
 import buildbot_common
-import build_utils
+import build_version
 import glob
 import optparse
 import os
@@ -125,7 +125,7 @@ def UpdateRevisionNumber(out_dir, revision_number):
         current Chrome revision (as retrieved through svn/git).
   """
   if revision_number is None:
-    revision_number = build_utils.ChromeRevision()
+    revision_number = build_version.ChromeRevision()
 
   SDK_UPDATE_MAIN = os.path.join(out_dir,
       'nacl_sdk/sdk_tools/sdk_update_main.py')

@@ -18,7 +18,6 @@ BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 TOOLS_DIR = os.path.join(os.path.dirname(BUILD_TOOLS_DIR), 'tools')
 
 sys.path.extend([BUILD_TOOLS_DIR, TOOLS_DIR])
-import build_utils
 import getos
 import manifest_util
 import oshelpers
