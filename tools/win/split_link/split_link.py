@@ -19,6 +19,12 @@ import tempfile
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+# This can be set to ignore data exports. The resulting DLLs will probably not
+# run, but at least they can be generated. The log of data exports will still
+# be output.
+IGNORE_DATA = 0
+
+
 def Log(message):
   print 'split_link:', message
 
@@ -237,8 +243,9 @@ def GenerateDefFiles(unresolved_by_part):
       for j, part in enumerate(unresolved_by_part):
         if i == j:
           continue
-        is_data = [' DATA' if IsDataDefinition(export) else ''
-                   for export in part]
+        is_data = \
+            [' DATA' if IsDataDefinition(export) and not IGNORE_DATA else ''
+             for export in part]
         print >> f, '\n'.join('  ' + export + data
                               for export, data in zip(part, is_data))
     deffiles.append(deffile)
@@ -378,7 +385,7 @@ def main():
     deffiles = GenerateDefFiles(unresolved_by_part)
     import_libs = BuildImportLibs(flags, inputs_by_part, deffiles)
   else:
-    if data_exports:
+    if data_exports and not IGNORE_DATA:
       print '%d data exports found, see report above.' % data_exports
       print('These cannot be exported, and must be either duplicated to the '
             'target DLL (if constant), or wrapped in a function.')
