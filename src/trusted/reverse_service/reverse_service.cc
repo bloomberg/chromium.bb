@@ -25,8 +25,8 @@
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 
-#include "native_client/src/trusted/reverse_service/nacl_file_info.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/validator/nacl_file_info.h"
 
 namespace {
 
@@ -294,7 +294,7 @@ bool ReverseInterface::OpenManifestEntry(nacl::string url_key,
 // TODO(ncbray) convert to a pure virtual.
 bool ReverseInterface::OpenManifestEntry(nacl::string url_key,
                                          struct NaClFileInfo* info) {
-  info->nonce = 0;
+  memset(info, 0, sizeof(*info));
   return OpenManifestEntry(url_key, &info->desc);
 }
 

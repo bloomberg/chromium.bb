@@ -19,6 +19,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
+#include "native_client/src/trusted/validator/nacl_file_info.h"
 #include "native_client/src/trusted/validator/rich_file_info.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 
@@ -112,7 +113,7 @@ static void NaClManifestNameServiceLookupRpc(
   uint32_t                            cookie_size = sizeof cookie;
   int                                 status;
   struct NaClDesc                     *desc;
-  uint64_t                            nonce;
+  struct NaClFileToken                file_token;
   NaClSrpcError                       srpc_error;
 
   NaClLog(4, "NaClManifestNameServiceLookupRpc\n");
@@ -134,7 +135,8 @@ static void NaClManifestNameServiceLookupRpc(
                                  flags,
                                  &status,
                                  &desc,
-                                 &nonce,
+                                 &file_token.lo,
+                                 &file_token.hi,
                                  &cookie_size,
                                  cookie))) {
     NaClLog(LOG_ERROR,
@@ -155,9 +157,17 @@ static void NaClManifestNameServiceLookupRpc(
             "NaClManifestNameServiceLookupRpc: got cookie %.*s\n",
             cookie_size, cookie);
 
-    if (nonce != 0 && validation_cache->ResolveFileNonce != NULL &&
-        validation_cache->ResolveFileNonce(validation_cache->handle, nonce,
-                                           &new_fd, &file_path,
+    /*
+     * Not all file loading paths will produce a token.  Zero is an invalid
+     * token value that indicates there is nothing to resolve.  In this case,
+     * assume nothing about the providence of the file.
+     */
+    if (!(file_token.lo == 0 && file_token.hi == 0) &&
+        validation_cache->ResolveFileToken != NULL &&
+        validation_cache->ResolveFileToken(validation_cache->handle,
+                                           &file_token,
+                                           &new_fd,
+                                           &file_path,
                                            &file_path_length)) {
       struct RichFileInfo info;
       uint32_t flags;

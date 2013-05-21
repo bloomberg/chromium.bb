@@ -25,11 +25,11 @@
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 
 #include "native_client/src/trusted/reverse_service/manifest_rpc.h"
-#include "native_client/src/trusted/reverse_service/nacl_file_info.h"
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/validator/nacl_file_info.h"
 
 struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[]; /* fwd */
 
@@ -374,7 +374,8 @@ static void NaClReverseServiceManifestLookupRpc(
     out_args[0]->u.ival = NACL_ABI_ENOENT; /* failed */
     out_args[1]->u.hval = (struct NaClDesc *) NaClDescInvalidMake();
     out_args[2]->u.lval = 0;
-    out_args[3]->u.count = 0;
+    out_args[3]->u.lval = 0;
+    out_args[4]->u.count = 0;
     goto done;
   }
   NaClLog(4, "ManifestLookupRpc: OpenManifestEntry returned desc %d.\n",
@@ -388,9 +389,10 @@ static void NaClReverseServiceManifestLookupRpc(
 
   out_args[0]->u.ival = 0;  /* OK */
   out_args[1]->u.hval = nacl_desc;
-  out_args[2]->u.lval = (int64_t) info.nonce;
-  out_args[3]->u.count = 10;
-  strncpy(out_args[3]->arrays.carr, "123456789", 10);
+  out_args[2]->u.lval = (int64_t) info.file_token.lo;
+  out_args[3]->u.lval = (int64_t) info.file_token.hi;
+  out_args[4]->u.count = 10;
+  strncpy(out_args[4]->arrays.carr, "123456789", 10);
   /*
    * TODO(phosek): the array should be an object reference (issue 3035).
    */

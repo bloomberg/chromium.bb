@@ -14,6 +14,7 @@
 
 EXTERN_C_BEGIN
 
+struct NaClFileToken;
 struct NaClValidationMetadata;
 
 /*
@@ -57,8 +58,9 @@ struct NaClValidationCache {
   void (*SetKnownToValidate)(void *query);
   void (*DestroyQuery)(void *query);
   int (*CachingIsInexpensive)(const struct NaClValidationMetadata *metadata);
-  int (*ResolveFileNonce)(void *handle, uint64_t nonce, int32_t *fd,
-                          char **file_path, uint32_t *file_path_length);
+  int (*ResolveFileToken)(void *handle, struct NaClFileToken *file_token,
+                          int32_t *fd, char **file_path,
+                          uint32_t *file_path_length);
 };
 
 extern int CachingIsInexpensive(struct NaClValidationCache *cache,

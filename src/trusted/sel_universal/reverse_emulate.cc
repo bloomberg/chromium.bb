@@ -5,6 +5,7 @@
 
 #include "native_client/src/trusted/sel_universal/reverse_emulate.h"
 #include <stdio.h>
+#include <cstring>
 #include <map>
 #include <set>
 #include <string>
@@ -22,10 +23,10 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-#include "native_client/src/trusted/reverse_service/nacl_file_info.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/srpc_helper.h"
+#include "native_client/src/trusted/validator/nacl_file_info.h"
 
 
 // Mock of ReverseInterface for use by nexes.
@@ -245,6 +246,7 @@ bool ReverseEmulate::OpenManifestEntry(nacl::string url_key,
                                        struct NaClFileInfo* info) {
   NaClLog(1, "ReverseEmulate::OpenManifestEntry (url_key=%s)\n",
           url_key.c_str());
+  memset(info, 0, sizeof(*info));
   info->desc = -1;
   // Find the pathname for the key.
   if (g_key_to_file.find(url_key) == g_key_to_file.end()) {
@@ -257,7 +259,6 @@ bool ReverseEmulate::OpenManifestEntry(nacl::string url_key,
   // TODO(ncbray): provide more information so that fast validation caching and
   // mmaping can be enabled.
   info->desc = OPEN(pathname.c_str(), O_RDONLY);
-  info->nonce = 0;
   return info->desc >= 0;
 }
 
