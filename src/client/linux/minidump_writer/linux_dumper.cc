@@ -77,6 +77,9 @@ LinuxDumper::LinuxDumper(pid_t pid)
       threads_(&allocator_, 8),
       mappings_(&allocator_),
       auxv_(&allocator_, AT_MAX + 1) {
+  // The passed-in size to the constructor (above) is only a hint.
+  // Must call .resize() to do actual initialization of the elements.
+  auxv_.resize(AT_MAX + 1);
 }
 
 LinuxDumper::~LinuxDumper() {
@@ -90,8 +93,7 @@ bool
 LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
                                          bool member,
                                          unsigned int mapping_id,
-                                         uint8_t identifier[sizeof(MDGUID)])
-{
+                                         uint8_t identifier[sizeof(MDGUID)]) {
   assert(!member || mapping_id < mappings_.size());
   my_memset(identifier, 0, sizeof(MDGUID));
   if (IsMappedFileOpenUnsafe(mapping))
@@ -273,7 +275,8 @@ bool LinuxDumper::GetStackInfo(const void** stack, size_t* stack_len,
   const MappingInfo* mapping = FindMapping(stack_pointer);
   if (!mapping)
     return false;
-  const ptrdiff_t offset = stack_pointer - (uint8_t*) mapping->start_addr;
+  const ptrdiff_t offset = stack_pointer -
+      reinterpret_cast<uint8_t*>(mapping->start_addr);
   const ptrdiff_t distance_to_end =
       static_cast<ptrdiff_t>(mapping->size) - offset;
   *stack_len = distance_to_end > kStackToCapture ?

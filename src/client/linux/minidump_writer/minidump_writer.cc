@@ -1127,8 +1127,8 @@ class MinidumpWriter {
           return false;
         MDRawLinkMap entry;
         entry.name = location.rva;
-        entry.addr = (void*)map.l_addr;
-        entry.ld = (void*)map.l_ld;
+        entry.addr = reinterpret_cast<void*>(map.l_addr);
+        entry.ld = reinterpret_cast<void*>(map.l_ld);
         linkmap.CopyIndex(idx++, &entry);
       }
     }
@@ -1144,11 +1144,14 @@ class MinidumpWriter {
     debug.get()->version = debug_entry.r_version;
     debug.get()->map = linkmap_rva;
     debug.get()->dso_count = dso_count;
-    debug.get()->brk = (void*)debug_entry.r_brk;
-    debug.get()->ldbase = (void*)debug_entry.r_ldbase;
+    debug.get()->brk = reinterpret_cast<void*>(debug_entry.r_brk);
+    debug.get()->ldbase = reinterpret_cast<void*>(debug_entry.r_ldbase);
     debug.get()->dynamic = dynamic;
 
     wasteful_vector<char> dso_debug_data(dumper_->allocator(), dynamic_length);
+    // The passed-in size to the constructor (above) is only a hint.
+    // Must call .resize() to do actual initialization of the elements.
+    dso_debug_data.resize(dynamic_length);
     dumper_->CopyFromProcess(&dso_debug_data[0], GetCrashThread(), dynamic,
                              dynamic_length);
     debug.CopyIndexAfterObject(0, &dso_debug_data[0], dynamic_length);
@@ -1420,10 +1423,11 @@ class MinidumpWriter {
           const char* p = value;
           if (value[0] == '0' && value[1] == 'x') {
             p = my_read_hex_ptr(&result, value+2);
-          } else if (entry->format == 'x')
+          } else if (entry->format == 'x') {
             p = my_read_hex_ptr(&result, value);
-          else
+          } else {
             p = my_read_decimal_ptr(&result, value);
+          }
           if (p == value)
             continue;
 
