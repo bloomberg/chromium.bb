@@ -1,16 +1,29 @@
-# This file dictates which directories can be included in the source files of this folder.
 # Please run Tools/Scripts/check-blink-deps after modifying this file.
 
 include_rules = [
-    "+Platform",
     "+bindings",
     "+core",
     "+mozilla",
     "+sys",
     "+unicode",
     "+weborigin",
-    "+wtf",
 
-    "!modules",
     "-WebKit",
+    "-modules",
+# core/ should not depend on modules/ at all, but there are a number of pieces
+# of code that do. Please don't add to this list of exceptions.
+    "+modules/battery",
+    "+modules/device_orientation",
+    "+modules/filesystem",
+    "+modules/gamepad",
+    "+modules/geolocation",
+    "+modules/indexeddb",
+    "+modules/mediasource",
+    "+modules/mediastream",
+    "+modules/notifications",
+    "+modules/speech",
+    "+modules/webaudio",
+    "+modules/webdatabase",
+    "+modules/websockets",
+    "+modules/websockets",
 ]

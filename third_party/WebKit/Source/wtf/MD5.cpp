@@ -47,14 +47,14 @@
  */
 
 #include "config.h"
-#include "MD5.h"
+#include "wtf/MD5.h"
 
-#include "Assertions.h"
+#include "wtf/Assertions.h"
 #ifndef NDEBUG
-#include "StringExtras.h"
-#include "text/CString.h"
+#include "wtf/StringExtras.h"
+#include "wtf/text/CString.h"
 #endif
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 
 namespace WTF {
 

@@ -33,12 +33,12 @@
 // The names of functions and variables (such as "a", "b", and "f") follow notations in RFC 3174.
 
 #include "config.h"
-#include "SHA1.h"
+#include "wtf/SHA1.h"
 
-#include "Assertions.h"
+#include "wtf/Assertions.h"
 
-#include "StringExtras.h"
-#include "text/CString.h"
+#include "wtf/StringExtras.h"
+#include "wtf/text/CString.h"
 
 namespace WTF {
 

@@ -29,24 +29,24 @@
  */
 
 #include "config.h"
-#include "Threading.h"
+#include "wtf/Threading.h"
 
 #if USE(PTHREADS)
 
-#include "DateMath.h"
-#include "dtoa.h"
-#include "dtoa/cached-powers.h"
-#include "HashMap.h"
-#include "RandomNumberSeed.h"
-#include "StackStats.h"
-#include "StdLibExtras.h"
-#include "ThreadFunctionInvocation.h"
-#include "ThreadIdentifierDataPthreads.h"
-#include "ThreadSpecific.h"
+#include "wtf/DateMath.h"
+#include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/RandomNumberSeed.h"
+#include "wtf/StackStats.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/ThreadFunctionInvocation.h"
+#include "wtf/ThreadIdentifierDataPthreads.h"
+#include "wtf/ThreadSpecific.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/WTFThreadData.h"
+#include "wtf/dtoa.h"
+#include "wtf/dtoa/cached-powers.h"
 #include <errno.h>
 
 #if !COMPILER(MSVC)
