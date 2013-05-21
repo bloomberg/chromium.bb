@@ -143,7 +143,7 @@ void ScriptExecutionContext::createdMessagePort(MessagePort* port)
 {
     ASSERT(port);
     ASSERT((isDocument() && isMainThread())
-        || (isWorkerContext() && currentThread() == static_cast<WorkerContext*>(this)->thread()->threadID()));
+        || (isWorkerContext() && static_cast<WorkerContext*>(this)->thread()->isCurrentThread()));
 
     m_messagePorts.add(port);
 }
@@ -152,7 +152,7 @@ void ScriptExecutionContext::destroyedMessagePort(MessagePort* port)
 {
     ASSERT(port);
     ASSERT((isDocument() && isMainThread())
-        || (isWorkerContext() && currentThread() == static_cast<WorkerContext*>(this)->thread()->threadID()));
+        || (isWorkerContext() && static_cast<WorkerContext*>(this)->thread()->isCurrentThread()));
 
     m_messagePorts.remove(port);
 }

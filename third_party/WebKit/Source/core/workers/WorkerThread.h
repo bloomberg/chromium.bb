@@ -31,10 +31,10 @@
 #include "core/page/GroupSettings.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "weborigin/SecurityOrigin.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -54,7 +54,7 @@ namespace WebCore {
         bool start();
         void stop();
 
-        ThreadIdentifier threadID() const { return m_threadID; }
+        bool isCurrentThread() const;
         WorkerRunLoop& runLoop() { return m_runLoop; }
         WorkerLoaderProxy& workerLoaderProxy() const { return m_workerLoaderProxy; }
         WorkerReportingProxy& workerReportingProxy() const { return m_workerReportingProxy; }
@@ -82,6 +82,7 @@ namespace WebCore {
     private:
         // Static function executed as the core routine on the new thread. Passed a pointer to a WorkerThread object.
         static void workerThreadStart(void*);
+
         void workerThread();
 
         ThreadIdentifier m_threadID;

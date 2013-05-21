@@ -99,7 +99,7 @@ WorkerContext::WorkerContext(const KURL& url, const String& userAgent, PassOwnPt
 
 WorkerContext::~WorkerContext()
 {
-    ASSERT(currentThread() == thread()->threadID());
+    ASSERT(thread()->isCurrentThread());
 
     // Make sure we have no observers.
     notifyObserversOfStop();
@@ -302,7 +302,7 @@ void WorkerContext::addMessageToWorkerConsole(MessageSource source, MessageLevel
 
 bool WorkerContext::isContextThread() const
 {
-    return currentThread() == thread()->threadID();
+    return thread()->isCurrentThread();
 }
 
 bool WorkerContext::isJSExecutionForbidden() const

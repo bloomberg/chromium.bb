@@ -147,7 +147,7 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerContext* context, const Mo
 {
     ASSERT(context);
     ASSERT(context->thread());
-    ASSERT(context->thread()->threadID() == currentThread());
+    ASSERT(context->thread()->isCurrentThread());
 
     double absoluteTime = 0.0;
     if (waitMode == WaitForMessage)
@@ -178,7 +178,7 @@ void WorkerRunLoop::runCleanupTasks(WorkerContext* context)
 {
     ASSERT(context);
     ASSERT(context->thread());
-    ASSERT(context->thread()->threadID() == currentThread());
+    ASSERT(context->thread()->isCurrentThread());
     ASSERT(m_messageQueue.killed());
 
     while (true) {

@@ -247,14 +247,14 @@ WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject)
 {
     ASSERT(m_workerObject);
     ASSERT((m_scriptExecutionContext->isDocument() && isMainThread())
-           || (m_scriptExecutionContext->isWorkerContext() && currentThread() == static_cast<WorkerContext*>(m_scriptExecutionContext.get())->thread()->threadID()));
+           || (m_scriptExecutionContext->isWorkerContext() && static_cast<WorkerContext*>(m_scriptExecutionContext.get())->thread()->isCurrentThread()));
 }
 
 WorkerMessagingProxy::~WorkerMessagingProxy()
 {
     ASSERT(!m_workerObject);
     ASSERT((m_scriptExecutionContext->isDocument() && isMainThread())
-           || (m_scriptExecutionContext->isWorkerContext() && currentThread() == static_cast<WorkerContext*>(m_scriptExecutionContext.get())->thread()->threadID()));
+           || (m_scriptExecutionContext->isWorkerContext() && static_cast<WorkerContext*>(m_scriptExecutionContext.get())->thread()->isCurrentThread()));
 }
 
 void WorkerMessagingProxy::startWorkerContext(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode)

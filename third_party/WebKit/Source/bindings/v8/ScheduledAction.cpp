@@ -107,7 +107,7 @@ void ScheduledAction::execute(Frame* frame)
 
 void ScheduledAction::execute(WorkerContext* worker)
 {
-    ASSERT(worker->thread()->threadID() == currentThread());
+    ASSERT(worker->thread()->isCurrentThread());
 
     V8RecursionScope recursionScope(worker);
 

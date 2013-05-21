@@ -258,6 +258,11 @@ void WorkerThread::stop()
     m_runLoop.terminate();
 }
 
+bool WorkerThread::isCurrentThread() const
+{
+    return m_threadID == currentThread();
+}
+
 class ReleaseFastMallocFreeMemoryTask : public ScriptExecutionContext::Task {
     virtual void performTask(ScriptExecutionContext*) OVERRIDE { WTF::releaseFastMallocFreeMemory(); }
 };

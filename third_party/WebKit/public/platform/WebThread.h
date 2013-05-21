@@ -51,6 +51,8 @@ public:
     virtual void postTask(Task*) = 0;
     virtual void postDelayedTask(Task*, long long delayMs) = 0;
 
+    virtual bool isCurrentThread() const = 0;
+
     virtual void addTaskObserver(TaskObserver*) { }
     virtual void removeTaskObserver(TaskObserver*) { }
 
