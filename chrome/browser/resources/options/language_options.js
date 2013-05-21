@@ -189,27 +189,6 @@ cr.define('options', function() {
         };
       }
 
-      if (cr.isChromeOS) {
-        // Listen to user click on the extension ime button.
-        $('language-options-extension-ime-button').addEventListener(
-            'click',
-            this.handleExtensionImeButtonClick_.bind(this));
-
-        // Check if there is an Extension IME.
-        var hasExtensionIme = false;
-        var inputMethods = ($('language-options-input-method-list')
-            .querySelectorAll('.input-method'));
-        for (var i = 0, inputMethod; inputMethod = inputMethods[i]; ++i) {
-          if (inputMethod.querySelector('input')
-              .inputMethodId.match(/^_ext_ime_/)) {
-            hasExtensionIme = true;
-            break;
-          }
-        }
-        // Show the Extension IME button only if available.
-        $('language-options-extension-ime-button').hidden = !hasExtensionIme;
-      }
-
       // Listen to add language dialog ok button.
       $('add-language-overlay-ok-button').addEventListener(
           'click', this.handleAddLanguageOkButtonClick_.bind(this));
@@ -251,32 +230,14 @@ cr.define('options', function() {
      */
     initializeInputMethodList_: function() {
       var inputMethodList = $('language-options-input-method-list');
-      var inputMethodListData = loadTimeData.getValue('inputMethodList');
       var inputMethodPrototype = $('language-options-input-method-template');
 
       // Add all input methods, but make all of them invisible here. We'll
       // change the visibility in handleLanguageOptionsListChange_() based
       // on the selected language. Note that we only have less than 100
       // input methods, so creating DOM nodes at once here should be ok.
-      this.appendInputMethodElement_(inputMethodListData);
-
-      var extensionImeList = loadTimeData.getValue('extensionImeList');
-      for (var i = 0; i < extensionImeList.length; i++) {
-        var inputMethod = extensionImeList[i];
-        var element = inputMethodPrototype.cloneNode(true);
-        element.id = '';
-        element.languageCodeSet = {};
-        var input = element.querySelector('input');
-        input.inputMethodId = inputMethod.id;
-        var span = element.querySelector('span');
-        span.textContent = inputMethod.displayName;
-
-        input.addEventListener('click',
-                               this.handleExtensionCheckboxClick_.bind(this));
-
-        inputMethodList.appendChild(element);
-      }
-
+      this.appendInputMethodElement_(loadTimeData.getValue('inputMethodList'));
+      this.appendInputMethodElement_(loadTimeData.getValue('extensionImeList'));
       this.appendComponentExtensionIme_(
           loadTimeData.getValue('componentExtensionImeList'));
 
@@ -745,6 +706,12 @@ cr.define('options', function() {
      */
     handleCheckboxClick_: function(e) {
       var checkbox = e.target;
+
+      if (checkbox.inputMethodId.match(/^_ext_ime_/)) {
+        this.updateEnabledExtensionsFromCheckboxes_();
+        this.saveEnabledExtensionPref_();
+        return;
+      }
       if (this.preloadEngines_.length == 1 && !checkbox.checked) {
         // Don't allow disabling the last input method.
         this.showNotification_(
@@ -761,50 +728,6 @@ cr.define('options', function() {
       this.updatePreloadEnginesFromCheckboxes_();
       this.preloadEngines_ = this.sortPreloadEngines_(this.preloadEngines_);
       this.savePreloadEnginesPref_();
-    },
-
-    /**
-     * Handles extension input method checkbox's click event.
-     * @param {Event} e Click event.
-     * @private
-     */
-    handleExtensionCheckboxClick_: function(e) {
-      var checkbox = e.target;
-      this.updateEnabledExtensionsFromCheckboxes_();
-      this.saveEnabledExtensionPref_();
-    },
-
-    /**
-     * Handles extension IME button.
-     */
-    handleExtensionImeButtonClick_: function() {
-      $('language-options-list').clearSelection();
-
-      var languageName = $('language-options-language-name');
-      languageName.textContent = loadTimeData.getString('extension_ime_label');
-
-      var uiLanguageMessage = $('language-options-ui-language-message');
-      uiLanguageMessage.textContent =
-          loadTimeData.getString('extension_ime_description');
-
-      var uiLanguageButton = $('language-options-ui-language-button');
-      uiLanguageButton.onclick = null;
-      uiLanguageButton.hidden = true;
-
-      this.updateSpellCheckLanguageButton_();
-
-      // Hide all input method checkboxes that aren't extension IMEs.
-      var inputMethodList = $('language-options-input-method-list');
-      var methods = inputMethodList.querySelectorAll('.input-method');
-      for (var i = 0; i < methods.length; i++) {
-        var method = methods[i];
-        var input = method.querySelector('input');
-        // Give it focus if the ID matches.
-        if (input.inputMethodId.match(/^_ext_ime_/))
-          method.hidden = false;
-        else
-          method.hidden = true;
-      }
     },
 
     handleAddLanguageOkButtonClick_: function() {
