@@ -14,6 +14,8 @@ namespace extensions {
 const char* BlockedAction::kTableName = "activitylog_blocked";
 const char* BlockedAction::kTableContentFields[] =
     {"api_call", "args", "reason", "extra"};
+const char* BlockedAction::kTableFieldTypes[] =
+    {"LONGVARCHAR", "LONGVARCHAR", "INTEGER", "LONGVARCHAR"};
 
 BlockedAction::BlockedAction(const std::string& extension_id,
                              const base::Time& time,
@@ -32,7 +34,7 @@ BlockedAction::BlockedAction(const sql::Statement& s)
           base::Time::FromInternalValue(s.ColumnInt64(1))),
       api_call_(s.ColumnString(2)),
       args_(s.ColumnString(3)),
-      reason_(StringAsReason(s.ColumnString(4))),
+      reason_(static_cast<Reason>(s.ColumnInt(4))),
       extra_(s.ColumnString(5)) { }
 
 BlockedAction::~BlockedAction() {
@@ -50,9 +52,21 @@ bool BlockedAction::InitializeTable(sql::Connection* db) {
     if (!db->Execute(drop_table.c_str()))
       return false;
   }
+  // We also now use INTEGER instead of VARCHAR for url_action_type.
+  if (db->DoesColumnExist(kTableName, "reason")) {
+    std::string select = base::StringPrintf(
+        "SELECT reason FROM %s ORDER BY rowid LIMIT 1", kTableName);
+    sql::Statement statement(db->GetUniqueStatement(select.c_str()));
+    if (statement.DeclaredColumnType(0) != sql::COLUMN_TYPE_INTEGER) {
+      std::string drop_table = base::StringPrintf("DROP TABLE %s", kTableName);
+      if (!db->Execute(drop_table.c_str()))
+        return false;
+    }
+  }
   return InitializeTableInternal(db,
                                  kTableName,
                                  kTableContentFields,
+                                 kTableFieldTypes,
                                  arraysize(kTableContentFields));
 }
 
@@ -66,14 +80,13 @@ void BlockedAction::Record(sql::Connection* db) {
   statement.BindInt64(1, time().ToInternalValue());
   statement.BindString(2, api_call_);
   statement.BindString(3, args_);
-  statement.BindString(4, ReasonAsString());
+  statement.BindInt(4, static_cast<int>(reason_));
   statement.BindString(5, extra_);
   if (!statement.Run())
     LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
 }
 
 std::string BlockedAction::PrintForDebug() {
-  // TODO(felt): implement this for real when the UI is redesigned.
   return "ID: " + extension_id() + ", blocked action " + api_call_ +
       ", reason: " + ReasonAsString();
 }
@@ -86,16 +99,6 @@ std::string BlockedAction::ReasonAsString() const {
   else
     return std::string("unknown");
 }
-
-// static
-BlockedAction::Reason BlockedAction::StringAsReason(const std::string& reason) {
-  if (reason == "access denied")
-    return ACCESS_DENIED;
-  else if (reason == "quota exceeded")
-    return QUOTA_EXCEEDED;
-  else
-    return UNKNOWN;
- }
 
 }  // namespace extensions
 

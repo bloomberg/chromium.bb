@@ -68,6 +68,7 @@
         'browser/extensions/activity_log/activity_log.h',
         'browser/extensions/activity_log/api_actions.cc',
         'browser/extensions/activity_log/api_actions.h',
+        'browser/extensions/activity_log/api_name_constants.h',
         'browser/extensions/activity_log/blocked_actions.cc',
         'browser/extensions/activity_log/blocked_actions.h',
         'browser/extensions/activity_log/dom_actions.cc',

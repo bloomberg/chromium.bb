@@ -14,14 +14,17 @@ namespace extensions {
 // problems.  See BlockedActions for API calls that did not succeed.
 class APIAction : public Action {
  public:
+  // These values should not be changed. Append any additional values to the
+  // end with sequential numbers.
   enum Type {
-    CALL,
-    EVENT_CALLBACK,
-    UNKNOWN_TYPE
+    CALL = 0,
+    EVENT_CALLBACK = 1,
+    UNKNOWN_TYPE = 2,
   };
 
   static const char* kTableName;
   static const char* kTableContentFields[];
+  static const char* kTableFieldTypes[];
   static const char* kAlwaysLog[];
   static const int kSizeAlwaysLog;
 
@@ -60,9 +63,6 @@ class APIAction : public Action {
   const std::string& args() const { return args_; }
   std::string TypeAsString() const;
   std::string extra() const { return extra_; }
-
-  // Helper method(s) for creating a APIAction.
-  static Type StringAsType(const std::string& str);
 
  protected:
   virtual ~APIAction();

@@ -15,18 +15,21 @@ namespace extensions {
 // content script insertions.
 class DOMAction : public Action {
  public:
+  // These values should not be changed. Append any additional values to the
+  // end with sequential numbers.
   enum DOMActionType {
-    GETTER,      // For Content Script DOM manipulations
-    SETTER,      // For Content Script DOM manipulations
-    METHOD,      // For Content Script DOM manipulations
-    INSERTED,    // For when Content Scripts are added to pages
-    XHR,         // When an extension core sends an XHR
-    WEBREQUEST,  // When a page request is modified with the WebRequest API
-    MODIFIED,    // For legacy, also used as a catch-all
+    GETTER = 0,      // For Content Script DOM manipulations
+    SETTER = 1,      // For Content Script DOM manipulations
+    METHOD = 2,      // For Content Script DOM manipulations
+    INSERTED = 3,    // For when Content Scripts are added to pages
+    XHR = 4,         // When an extension core sends an XHR
+    WEBREQUEST = 5,  // When a page request is modified with the WebRequest API
+    MODIFIED = 6,    // For legacy, also used as a catch-all
   };
 
   static const char* kTableName;
   static const char* kTableContentFields[];
+  static const char* kTableFieldTypes[];
 
   // Create a new database table for storing DOMActions, or update the schema if
   // it is out of date. Any existing data is preserved.
@@ -55,16 +58,13 @@ class DOMAction : public Action {
   // Print a DOMAction as a regular string for debugging purposes.
   virtual std::string PrintForDebug() OVERRIDE;
 
-  // Helper methods for retrieving the values.
+  // Helper methods for retrieving the values and debugging.
   std::string VerbAsString() const;
   const GURL& url() const { return url_; }
   const string16& url_title() const { return url_title_; }
   const std::string& api_call() const { return api_call_; }
   const std::string& args() const { return args_; }
   const std::string& extra() const { return extra_; }
-
-  // Helper methods for restoring a DOMAction from the db.
-  static DOMActionType StringAsDOMActionType(const std::string& str);
 
  protected:
   virtual ~DOMAction();

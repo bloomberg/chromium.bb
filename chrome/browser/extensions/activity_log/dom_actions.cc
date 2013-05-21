@@ -16,6 +16,9 @@ namespace extensions {
 const char* DOMAction::kTableName = "activitylog_urls";
 const char* DOMAction::kTableContentFields[] =
     {"url_action_type", "url", "url_title", "api_call", "args", "extra"};
+const char* DOMAction::kTableFieldTypes[] =
+    {"INTEGER", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR",
+    "LONGVARCHAR"};
 
 DOMAction::DOMAction(const std::string& extension_id,
                      const base::Time& time,
@@ -36,7 +39,7 @@ DOMAction::DOMAction(const std::string& extension_id,
 DOMAction::DOMAction(const sql::Statement& s)
     : Action(s.ColumnString(0),
           base::Time::FromInternalValue(s.ColumnInt64(1))),
-      verb_(StringAsDOMActionType(s.ColumnString(2))),
+      verb_(static_cast<DOMActionType>(s.ColumnInt(2))),
       url_(GURL(s.ColumnString(3))),
       url_title_(s.ColumnString16(4)),
       api_call_(s.ColumnString(5)),
@@ -58,10 +61,22 @@ bool DOMAction::InitializeTable(sql::Connection* db) {
     if (!db->Execute(drop_table.c_str()))
       return false;
   }
+  // We also now use INTEGER instead of VARCHAR for url_action_type.
+  if (db->DoesColumnExist(kTableName, "url_action_type")) {
+    std::string select = base::StringPrintf(
+        "SELECT url_action_type FROM %s ORDER BY rowid LIMIT 1", kTableName);
+    sql::Statement statement(db->GetUniqueStatement(select.c_str()));
+    if (statement.DeclaredColumnType(0) != sql::COLUMN_TYPE_INTEGER) {
+      std::string drop_table = base::StringPrintf("DROP TABLE %s", kTableName);
+      if (!db->Execute(drop_table.c_str()))
+        return false;
+    }
+  }
   // Now initialize the table.
   bool initialized = InitializeTableInternal(db,
                                              kTableName,
                                              kTableContentFields,
+                                             kTableFieldTypes,
                                              arraysize(kTableContentFields));
   return initialized;
 }
@@ -74,7 +89,7 @@ void DOMAction::Record(sql::Connection* db) {
       sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
   statement.BindString(0, extension_id());
   statement.BindInt64(1, time().ToInternalValue());
-  statement.BindString(2, VerbAsString());
+  statement.BindInt(2, static_cast<int>(verb_));
   statement.BindString(3, history::URLDatabase::GURLToDatabaseURL(url_));
   statement.BindString16(4, url_title_);
   statement.BindString(5, api_call_);
@@ -87,9 +102,10 @@ void DOMAction::Record(sql::Connection* db) {
 std::string DOMAction::PrintForDebug() {
   if (verb_ == INSERTED)
     return "Injected scripts (" + args_ + ") onto "
-      + std::string(url_.spec());
+        + std::string(url_.spec());
   else
-    return "DOM API CALL: " + api_call_ + ", ARGS: " + args_;
+    return "DOM API CALL: " + api_call_ + ", ARGS: " + args_ + ", VERB: "
+        + VerbAsString();
 }
 
 std::string DOMAction::VerbAsString() const {
@@ -111,30 +127,6 @@ std::string DOMAction::VerbAsString() const {
     default:
       NOTREACHED();
       return NULL;
-  }
-}
-
-DOMAction::DOMActionType DOMAction::StringAsDOMActionType(
-    const std::string& str) {
-  if (str == "GETTER") {
-    return GETTER;
-  } else if (str == "SETTER") {
-    return SETTER;
-  } else if (str == "METHOD") {
-    return METHOD;
-  } else if (str == "INSERTED") {
-    return INSERTED;
-  } else if (str == "XHR") {
-    return XHR;
-  } else if (str == "WEBREQUEST") {
-    return WEBREQUEST;
-  } else if (str == "MODIFIED") {   // legacy
-    return MODIFIED;
-  } else if (str == "READ") {       // legacy
-    return GETTER;
-  } else {
-    NOTREACHED();
-    return MODIFIED;  // this should never happen!
   }
 }
 

@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/memory/singleton.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/api_actions.h"
+#include "chrome/browser/extensions/activity_log/api_name_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -32,6 +35,63 @@ std::string GetURLForTabId(const int tab_id, Profile* profile) {
   }
 }
 
+// Sets up the hashmap for mapping extension strings to "ints". The hashmap is
+// only set up once because it's quite long; the value is then cached.
+class APINameMap {
+ public:
+  APINameMap() {
+    SetupMap();
+  }
+
+  // activity_log_api_name_constants.h lists all known API calls as of 5/17.
+  // This code maps each of those API calls (and events) to short strings
+  // (integers converted to strings). They're all strings because (1) sqlite
+  // databases are all strings underneath anyway and (2) the Lookup function
+  // will simply return the original api_call string if we don't have it in our
+  // lookup table.
+  void SetupMap() {
+    for (size_t i = 0;
+         i < arraysize(activity_log_api_name_constants::kNames);
+         ++i) {
+      std::string name =
+          std::string(activity_log_api_name_constants::kNames[i]);
+      std::string num = base::IntToString(i);
+      names_to_nums_[name] = num;
+      nums_to_names_[num] = name;
+    }
+  }
+
+  static APINameMap* GetInstance() {
+    return Singleton<APINameMap>::get();
+  }
+
+  // This matches an api call to a number, if it's in the lookup table. If not,
+  // it returns the original api call.
+  const std::string& ApiToShortname(const std::string& api_call) {
+    std::map<std::string, std::string>::iterator it =
+        names_to_nums_.find(api_call);
+    if (it == names_to_nums_.end())
+      return api_call;
+    else
+      return it->second;
+  }
+
+  // This matches a number to an API call -- it's the opposite of
+  // ApiToShortname.
+  const std::string& ShortnameToApi(const std::string& shortname) {
+    std::map<std::string, std::string>::iterator it =
+        nums_to_names_.find(shortname);
+    if (it == nums_to_names_.end())
+      return shortname;
+    else
+      return it->second;
+  }
+
+ private:
+  std::map<std::string, std::string> names_to_nums_;  // <name, number label>
+  std::map<std::string, std::string> nums_to_names_;  // <number label, name>
+};
+
 }  // namespace
 
 namespace extensions {
@@ -39,6 +99,8 @@ namespace extensions {
 const char* APIAction::kTableName = "activitylog_apis";
 const char* APIAction::kTableContentFields[] =
     {"api_type", "api_call", "args", "extra"};
+const char* APIAction::kTableFieldTypes[] =
+    {"INTEGER", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR"};
 
 // We should log the arguments to these API calls, even if argument logging is
 // disabled by default.
@@ -62,8 +124,8 @@ APIAction::APIAction(const std::string& extension_id,
 APIAction::APIAction(const sql::Statement& s)
     : Action(s.ColumnString(0),
           base::Time::FromInternalValue(s.ColumnInt64(1))),
-      type_(StringAsType(s.ColumnString(2))),
-      api_call_(s.ColumnString(3)),
+      type_(static_cast<Type>(s.ColumnInt(2))),
+      api_call_(APINameMap::GetInstance()->ShortnameToApi(s.ColumnString(3))),
       args_(s.ColumnString(4)),
       extra_(s.ColumnString(5)) { }
 
@@ -82,10 +144,22 @@ bool APIAction::InitializeTable(sql::Connection* db) {
     if (!db->Execute(drop_table.c_str()))
       return false;
   }
+  // We also now use INTEGER instead of VARCHAR for api_type.
+  if (db->DoesColumnExist(kTableName, "api_type")) {
+    std::string select = base::StringPrintf(
+        "SELECT api_type FROM %s ORDER BY rowid LIMIT 1", kTableName);
+    sql::Statement statement(db->GetUniqueStatement(select.c_str()));
+    if (statement.DeclaredColumnType(0) != sql::COLUMN_TYPE_INTEGER) {
+      std::string drop_table = base::StringPrintf("DROP TABLE %s", kTableName);
+      if (!db->Execute(drop_table.c_str()))
+        return false;
+    }
+  }
   // Now initialize the table.
   return InitializeTableInternal(db,
                                  kTableName,
                                  kTableContentFields,
+                                 kTableFieldTypes,
                                  arraysize(kTableContentFields));
 }
 
@@ -97,8 +171,8 @@ void APIAction::Record(sql::Connection* db) {
       sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
   statement.BindString(0, extension_id());
   statement.BindInt64(1, time().ToInternalValue());
-  statement.BindString(2, TypeAsString());
-  statement.BindString(3, api_call_);
+  statement.BindInt(2, static_cast<int>(type_));
+  statement.BindString(3, APINameMap::GetInstance()->ApiToShortname(api_call_));
   statement.BindString(4, args_);
   statement.BindString(5, extra_);
   if (!statement.Run())
@@ -160,17 +234,6 @@ std::string APIAction::TypeAsString() const {
       return "EVENT_CALLBACK";
     default:
       return "UNKNOWN_TYPE";
-  }
-}
-
-APIAction::Type APIAction::StringAsType(
-    const std::string& str) {
-  if (str == "CALL") {
-    return CALL;
-  } else if (str == "EVENT_CALLBACK") {
-    return EVENT_CALLBACK;
-  } else {
-    return UNKNOWN_TYPE;
   }
 }
 

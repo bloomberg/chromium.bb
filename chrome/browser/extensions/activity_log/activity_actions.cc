@@ -22,13 +22,15 @@ Action::Action(const std::string& extension_id,
 bool Action::InitializeTableInternal(sql::Connection* db,
                                      const char* table_name,
                                      const char* content_fields[],
+                                     const char* field_types[],
                                      const int num_content_fields) {
   if (!db->DoesTableExist(table_name)) {
     std::string table_creator = base::StringPrintf(
         "CREATE TABLE %s (%s", table_name, kTableBasicFields);
     for (int i = 0; i < num_content_fields; i++) {
-      table_creator += base::StringPrintf(", %s LONGVARCHAR",
-                                          content_fields[i]);
+      table_creator += base::StringPrintf(", %s %s",
+                                          content_fields[i],
+                                          field_types[i]);
     }
     table_creator += ")";
     if (!db->Execute(table_creator.c_str()))
@@ -39,9 +41,10 @@ bool Action::InitializeTableInternal(sql::Connection* db,
     for (int i = 0; i < num_content_fields; i++) {
       if (!db->DoesColumnExist(table_name, content_fields[i])) {
         std::string table_updater = base::StringPrintf(
-            "ALTER TABLE %s ADD COLUMN %s LONGVARCHAR; ",
+            "ALTER TABLE %s ADD COLUMN %s %s; ",
              table_name,
-             content_fields[i]);
+             content_fields[i],
+             field_types[i]);
         if (!db->Execute(table_updater.c_str()))
           return false;
       }

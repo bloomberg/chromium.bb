@@ -38,9 +38,14 @@ class Action : public base::RefCountedThreadSafe<Action> {
   virtual ~Action() {}
 
   // Initialize the table for a given action type.
+  // The content_fields array should list the names of all of the columns in
+  // the database. The field_types should specify the types of the corresponding
+  // columns (e.g., INTEGER or LONGVARCHAR). There should be the same number of
+  // field_types as content_fields, since the two arrays should correspond.
   static bool InitializeTableInternal(sql::Connection* db,
                                       const char* table_name,
                                       const char* content_fields[],
+                                      const char* field_types[],
                                       const int num_content_fields);
 
  private:

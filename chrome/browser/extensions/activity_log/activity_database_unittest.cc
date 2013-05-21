@@ -131,7 +131,7 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
   sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
   ASSERT_TRUE(statement.Step());
   ASSERT_EQ("punky", statement.ColumnString(0));
-  ASSERT_EQ("CALL", statement.ColumnString(2));
+  ASSERT_EQ(0, statement.ColumnInt(2));
   ASSERT_EQ("brewster", statement.ColumnString(3));
   ASSERT_EQ("woof", statement.ColumnString(4));
 }
@@ -168,7 +168,7 @@ TEST_F(ActivityDatabaseTest, RecordBlockedAction) {
   ASSERT_EQ("punky", statement.ColumnString(0));
   ASSERT_EQ("do.evilThings", statement.ColumnString(2));
   ASSERT_EQ("1, 2", statement.ColumnString(3));
-  ASSERT_EQ("access denied", statement.ColumnString(4));
+  ASSERT_EQ(1, statement.ColumnInt(4));
   ASSERT_EQ("extra", statement.ColumnString(5));
 }
 
@@ -222,7 +222,7 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
   // Read them back
   std::string api_print = "ID: punky, CATEGORY: CALL, "
       "API: brewster, ARGS: woof";
-  std::string dom_print = "DOM API CALL: lets, ARGS: vamoose";
+  std::string dom_print = "DOM API CALL: lets, ARGS: vamoose, VERB: MODIFIED";
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 0);
   ASSERT_EQ(2, static_cast<int>(actions->size()));
@@ -293,7 +293,7 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
   // Read them back
   std::string api_print = "ID: punky, CATEGORY: CALL, "
       "API: brewster, ARGS: woof";
-  std::string dom_print = "DOM API CALL: lets, ARGS: vamoose";
+  std::string dom_print = "DOM API CALL: lets, ARGS: vamoose, VERB: MODIFIED";
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 3);
   ASSERT_EQ(2, static_cast<int>(actions->size()));

@@ -13,14 +13,17 @@ namespace extensions {
 // See APIActions for API calls that succeeded.
 class BlockedAction : public Action {
  public:
+  // These values should not be changed. Append any additional values to the
+  // end with sequential numbers.
   enum Reason {
-      UNKNOWN,
-      ACCESS_DENIED,
-      QUOTA_EXCEEDED,
+      UNKNOWN = 0,
+      ACCESS_DENIED = 1,
+      QUOTA_EXCEEDED = 2,
   };
 
   static const char* kTableName;
   static const char* kTableContentFields[];
+  static const char* kTableFieldTypes[];
 
   // Create a new database table for storing BlockedActions, or update the
   // schema if it is out of date. Any existing data is preserved.
@@ -48,9 +51,8 @@ class BlockedAction : public Action {
   const std::string& args() const { return args_; }
   const std::string& extra() const { return extra_; }
 
-  // Helper methods for handling the Reason.
+  // Helper method for debugging.
   std::string ReasonAsString() const;
-  static Reason StringAsReason(const std::string& reason);
 
  protected:
   virtual ~BlockedAction();
