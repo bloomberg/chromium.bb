@@ -3982,6 +3982,9 @@
           # but keying off (or setting) 'clang' isn't valid for iOS as it
           # also seems to mean using the custom build of clang.
 
+          # TODO(stuartmorgan): switch to c++0x (see TODOs in the clang
+          # section above).
+          'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++0x',
           # Don't use -Wc++0x-extensions, which Xcode 4 enables by default
           # when building with clang. This warning is triggered when the
           # override keyword is used via the OVERRIDE macro from
@@ -3999,9 +4002,9 @@
             '-Wno-unused-function',
             # See comments on this flag higher up in this file.
             '-Wno-unnamed-type-template-args',
-            # This (rightfully) complains about 'override', which we use
-            # heavily.
-            '-Wno-c++11-extensions',
+            # Match OS X clang C++11 warning settings.
+            '-Wno-c++11-narrowing',
+            '-Wno-reserved-user-defined-literal',
           ],
         },
         'target_conditions': [
