@@ -19,7 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
-#include "gpu/config/gpu_feature_type.h"
+#include "content/public/common/gpu_feature_type.h"
 
 using content::BrowserThread;
 using content::GpuDataManager;
@@ -180,7 +180,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
   GpuDataManager *gpu_data_manager = GpuDataManager::GetInstance();
 
   if (!gpu_data_manager->GpuAccessAllowed(NULL) ||
-      gpu_data_manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL) ||
+      gpu_data_manager->IsFeatureBlacklisted(content::GPU_FEATURE_TYPE_WEBGL) ||
       gpu_data_manager->ShouldUseSwiftShader()) {
     gpu_data_manager->RemoveObserver(this);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

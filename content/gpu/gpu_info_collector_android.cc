@@ -43,9 +43,9 @@ std::string GetDriverVersionFromString(const std::string& version_string) {
 
 }
 
-namespace gpu {
+namespace gpu_info_collector {
 
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
   return CollectBasicGraphicsInfo(gpu_info);
 }
 
@@ -56,7 +56,7 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   return kGpuIDNotSupported;
 }
 
-bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   gpu_info->can_lose_context = false;
   gpu_info->finalized = true;
 
@@ -66,15 +66,15 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   return CollectGraphicsInfoGL(gpu_info);
 }
 
-bool CollectDriverInfoGL(GPUInfo* gpu_info) {
+bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
   gpu_info->driver_version = GetDriverVersionFromString(
       gpu_info->gl_version_string);
   return true;
 }
 
-void MergeGPUInfo(GPUInfo* basic_gpu_info,
-                  const GPUInfo& context_gpu_info) {
+void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
+                  const content::GPUInfo& context_gpu_info) {
   MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
 }
 
-}  // namespace gpu
+}  // namespace gpu_info_collector

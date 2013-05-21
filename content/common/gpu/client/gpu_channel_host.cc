@@ -66,7 +66,7 @@ void GpuChannelHost::Connect(
   state_ = kConnected;
 }
 
-void GpuChannelHost::set_gpu_info(const gpu::GPUInfo& gpu_info) {
+void GpuChannelHost::set_gpu_info(const GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
 }
 
@@ -74,7 +74,7 @@ void GpuChannelHost::SetStateLost() {
   state_ = kLost;
 }
 
-const gpu::GPUInfo& GpuChannelHost::gpu_info() const {
+const GPUInfo& GpuChannelHost::gpu_info() const {
   return gpu_info_;
 }
 

@@ -237,7 +237,7 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannelOnIO(
 void BrowserGpuChannelHostFactory::GpuChannelEstablishedOnIO(
     EstablishRequest* request,
     const IPC::ChannelHandle& channel_handle,
-    const gpu::GPUInfo& gpu_info) {
+    const GPUInfo& gpu_info) {
   if (channel_handle.name.empty() && request->reused_gpu_process) {
     // We failed after re-using the GPU process, but it may have died in the
     // mean time. Retry to have a chance to create a fresh GPU process.

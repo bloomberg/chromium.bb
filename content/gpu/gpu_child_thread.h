@@ -18,7 +18,7 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_config.h"
 #include "content/common/gpu/x_util.h"
-#include "gpu/config/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace sandbox {
@@ -36,7 +36,7 @@ class GpuChildThread : public ChildThread {
  public:
   explicit GpuChildThread(GpuWatchdogThread* gpu_watchdog_thread,
                           bool dead_on_arrival,
-                          const gpu::GPUInfo& gpu_info);
+                          const GPUInfo& gpu_info);
 
   // For single-process mode.
   explicit GpuChildThread(const std::string& channel_id);
@@ -82,7 +82,7 @@ class GpuChildThread : public ChildThread {
   scoped_ptr<GpuChannelManager> gpu_channel_manager_;
 
   // Information about the GPU, such as device and vendor ID.
-  gpu::GPUInfo gpu_info_;
+  GPUInfo gpu_info_;
 
   // Whether the GPU thread is running in the browser process.
   bool in_browser_process_;

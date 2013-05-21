@@ -15,8 +15,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
-#include "gpu/config/gpu_info.h"
 
 namespace child_process_logging {
 
@@ -127,7 +127,7 @@ void SetGpuKeyValue(const char* param_name, const std::string& value_str,
   set_key_func(param_name, value_str);
 }
 
-void SetGpuInfoImpl(const gpu::GPUInfo& gpu_info,
+void SetGpuInfoImpl(const content::GPUInfo& gpu_info,
                     SetCrashKeyValueFuncT set_key_func) {
   SetGpuKeyValue(kGPUVendorIdParamName,
                  base::StringPrintf("0x%04x", gpu_info.gpu.vendor_id),
@@ -149,7 +149,7 @@ void SetGpuInfoImpl(const gpu::GPUInfo& gpu_info,
                  set_key_func);
 }
 
-void SetGpuInfo(const gpu::GPUInfo& gpu_info) {
+void SetGpuInfo(const content::GPUInfo& gpu_info) {
   SetGpuInfoImpl(gpu_info, SetCrashKeyValue);
 }
 

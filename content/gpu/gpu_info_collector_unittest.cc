@@ -4,7 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/gpu/gpu_info_collector.h"
-#include "gpu/config/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
@@ -12,8 +12,6 @@
 
 using ::gfx::MockGLInterface;
 using ::testing::Return;
-
-namespace gpu {
 
 class GPUInfoCollectorTest : public testing::Test {
  public:
@@ -108,7 +106,7 @@ class GPUInfoCollectorTest : public testing::Test {
  public:
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
-  GPUInfo test_values_;
+  content::GPUInfo test_values_;
 };
 
 // TODO(rlp): Test the vendor and device id collection if deemed necessary as
@@ -117,8 +115,8 @@ class GPUInfoCollectorTest : public testing::Test {
 // TODO(kbr): re-enable these tests; see http://crbug.com/100285 .
 
 TEST_F(GPUInfoCollectorTest, DISABLED_DriverVendorGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
+  content::GPUInfo gpu_info;
+  gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.driver_vendor,
             gpu_info.driver_vendor);
 }
@@ -126,61 +124,58 @@ TEST_F(GPUInfoCollectorTest, DISABLED_DriverVendorGL) {
 // Skip Windows because the driver version is obtained from bot registry.
 #if !defined(OS_WIN)
 TEST_F(GPUInfoCollectorTest, DISABLED_DriverVersionGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
+  content::GPUInfo gpu_info;
+  gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.driver_version,
             gpu_info.driver_version);
 }
 #endif
 
 TEST_F(GPUInfoCollectorTest, DISABLED_PixelShaderVersionGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
+  content::GPUInfo gpu_info;
+  gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.pixel_shader_version,
             gpu_info.pixel_shader_version);
 }
 
 TEST_F(GPUInfoCollectorTest, DISABLED_VertexShaderVersionGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
+  content::GPUInfo gpu_info;
+  gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.vertex_shader_version,
             gpu_info.vertex_shader_version);
 }
 
 TEST_F(GPUInfoCollectorTest, DISABLED_GLVersionGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
+  content::GPUInfo gpu_info;
+  gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.gl_version,
             gpu_info.gl_version);
 }
 
 TEST_F(GPUInfoCollectorTest, DISABLED_GLVersionStringGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
+  content::GPUInfo gpu_info;
+  gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.gl_version_string,
             gpu_info.gl_version_string);
 }
 
 TEST_F(GPUInfoCollectorTest, DISABLED_GLRendererGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
+  content::GPUInfo gpu_info;
+  gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.gl_renderer,
             gpu_info.gl_renderer);
 }
 
 TEST_F(GPUInfoCollectorTest, DISABLED_GLVendorGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
+  content::GPUInfo gpu_info;
+  gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.gl_vendor,
             gpu_info.gl_vendor);
 }
 
 TEST_F(GPUInfoCollectorTest, DISABLED_GLExtensionsGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
+  content::GPUInfo gpu_info;
+  gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.gl_extensions,
             gpu_info.gl_extensions);
 }
-
-}  // namespace gpu
-

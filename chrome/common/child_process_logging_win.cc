@@ -14,8 +14,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
-#include "gpu/config/gpu_info.h"
 
 namespace child_process_logging {
 
@@ -157,7 +157,7 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   }
 }
 
-void SetGpuInfo(const gpu::GPUInfo& gpu_info) {
+void SetGpuInfo(const content::GPUInfo& gpu_info) {
   static MainSetGpuInfo set_gpu_info = NULL;
   // note: benign race condition on set_gpu_info.
   if (!set_gpu_info) {

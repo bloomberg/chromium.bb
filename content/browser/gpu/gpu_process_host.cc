@@ -706,14 +706,14 @@ void GpuProcessHost::EstablishGpuChannel(
 
   // If GPU features are already blacklisted, no need to establish the channel.
   if (!GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL)) {
-    callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
+    callback.Run(IPC::ChannelHandle(), GPUInfo());
     return;
   }
 
   if (Send(new GpuMsg_EstablishChannel(client_id, share_context))) {
     channel_requests_.push(callback);
   } else {
-    callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
+    callback.Run(IPC::ChannelHandle(), GPUInfo());
   }
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -793,7 +793,7 @@ void GpuProcessHost::OnChannelEstablished(
   if (!channel_handle.name.empty() &&
       !GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL)) {
     Send(new GpuMsg_CloseChannel(channel_handle));
-    callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
+    callback.Run(IPC::ChannelHandle(), GPUInfo());
     RouteOnUIThread(GpuHostMsg_OnLogMessage(
         logging::LOG_WARNING,
         "WARNING",
@@ -1190,7 +1190,7 @@ void GpuProcessHost::SendOutstandingReplies() {
   while (!channel_requests_.empty()) {
     EstablishChannelCallback callback = channel_requests_.front();
     channel_requests_.pop();
-    callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
+    callback.Run(IPC::ChannelHandle(), GPUInfo());
   }
 
   while (!create_command_buffer_requests_.empty()) {
@@ -1212,7 +1212,7 @@ void GpuProcessHost::BlockLiveOffscreenContexts() {
 
 std::string GpuProcessHost::GetShaderPrefixKey() {
   if (shader_prefix_key_.empty()) {
-    gpu::GPUInfo info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
+    GPUInfo info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
 
     std::string in_str = GetContentClient()->GetProduct() + "-" +
         info.gl_vendor + "-" + info.gl_renderer + "-" +

@@ -12,7 +12,7 @@
 #include "base/sys_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
-#include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/command_buffer/service/gpu_driver_bug_workaround_type.h"
 #include "gpu/gpu_export.h"
 
 class CommandLine;

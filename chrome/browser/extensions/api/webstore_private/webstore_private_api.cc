@@ -613,7 +613,7 @@ bool SetStoreLoginFunction::RunImpl() {
 
 GetWebGLStatusFunction::GetWebGLStatusFunction() {
   feature_checker_ = new GPUFeatureChecker(
-      gpu::GPU_FEATURE_TYPE_WEBGL,
+      content::GPU_FEATURE_TYPE_WEBGL,
       base::Bind(&GetWebGLStatusFunction::OnFeatureCheck,
           base::Unretained(this)));
 }

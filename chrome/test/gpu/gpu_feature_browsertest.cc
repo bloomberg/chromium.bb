@@ -19,10 +19,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/gpu_feature_type.h"
+#include "content/public/common/gpu_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/test/gpu/gpu_test_config.h"
-#include "gpu/config/gpu_feature_type.h"
-#include "gpu/config/gpu_info.h"
 #include "net/base/net_util.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/compositor/compositor_setup.h"
@@ -35,7 +35,7 @@
 #endif
 
 using content::GpuDataManager;
-using gpu::GpuFeatureType;
+using content::GpuFeatureType;
 using trace_analyzer::Query;
 using trace_analyzer::TraceAnalyzer;
 using trace_analyzer::TraceEventVector;
@@ -73,7 +73,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
   }
 
   void SetupBlacklist(const std::string& json_blacklist) {
-    gpu::GPUInfo gpu_info;
+    content::GPUInfo gpu_info;
     GpuDataManager::GetInstance()->InitializeForTesting(
         json_blacklist, gpu_info);
   }
@@ -185,7 +185,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_AcceleratedCompositingAllowed) {
   EXPECT_FALSE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING));
+      content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING));
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunEventTest(url, kSwapBuffersEvent, true);
@@ -222,7 +222,7 @@ class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
 IN_PROC_BROWSER_TEST_F(AcceleratedCompositingBlockedTest,
     MAYBE_AcceleratedCompositingBlocked) {
   EXPECT_TRUE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING));
+      content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING));
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunEventTest(url, kSwapBuffersEvent, false);
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
 // Times out on CrOS: http://crbug.com/166060
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_WebGLAllowed) {
   EXPECT_FALSE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_WEBGL));
+      content::GPU_FEATURE_TYPE_WEBGL));
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
   RunEventTest(url, kWebGLCreationEvent, true);
@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
       "}";
   SetupBlacklist(json_blacklist);
   EXPECT_TRUE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_WEBGL));
+      content::GPU_FEATURE_TYPE_WEBGL));
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
   RunEventTest(url, kWebGLCreationEvent, false);
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
   EXPECT_FALSE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_MULTISAMPLING));
+      content::GPU_FEATURE_TYPE_MULTISAMPLING));
 
   // Multisampling is not supported if running on top of osmesa.
   std::string use_gl = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingBlocked) {
       "}";
   SetupBlacklist(json_blacklist);
   EXPECT_TRUE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_MULTISAMPLING));
+      content::GPU_FEATURE_TYPE_MULTISAMPLING));
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
   RunTest(url, "\"FALSE\"", true);
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
     return;
 
   EXPECT_FALSE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
+      content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
   RunEventTest(url, kAcceleratedCanvasCreationEvent, true);
@@ -395,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
       "}";
   SetupBlacklist(json_blacklist);
   EXPECT_TRUE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
+      content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
   RunEventTest(url, kAcceleratedCanvasCreationEvent, false);

@@ -22,7 +22,7 @@ void ChromeContentClient::SetActiveURL(const GURL& url) {
   NOTIMPLEMENTED();
 }
 
-void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
+void ChromeContentClient::SetGpuInfo(const content::GPUInfo& gpu_info) {
   NOTIMPLEMENTED();
 }
 

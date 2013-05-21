@@ -54,7 +54,7 @@ bool GpuProcessLogMessageHandler(int severity,
 
 GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
                                bool dead_on_arrival,
-                               const gpu::GPUInfo& gpu_info)
+                               const GPUInfo& gpu_info)
     : dead_on_arrival_(dead_on_arrival),
       gpu_info_(gpu_info),
       in_browser_process_(false) {
@@ -176,15 +176,15 @@ void GpuChildThread::OnCollectGraphicsInfo() {
          in_browser_process_);
 #endif  // OS_WIN
 
-  if (!gpu::CollectContextGraphicsInfo(&gpu_info_))
-    VLOG(1) << "gpu::CollectGraphicsInfo failed";
+  if (!gpu_info_collector::CollectContextGraphicsInfo(&gpu_info_))
+    VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
   GetContentClient()->SetGpuInfo(gpu_info_);
 
 #if defined(OS_WIN)
   // This is slow, but it's the only thing the unsandboxed GPU process does,
   // and GpuDataManager prevents us from sending multiple collecting requests,
   // so it's OK to be blocking.
-  gpu::GetDxDiagnostics(&gpu_info_.dx_diagnostics);
+  gpu_info_collector::GetDxDiagnostics(&gpu_info_.dx_diagnostics);
   gpu_info_.finalized = true;
 #endif  // OS_WIN
 

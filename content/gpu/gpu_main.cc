@@ -23,6 +23,7 @@
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/gpu_switching_option.h"
 #include "content/public/common/main_function_params.h"
 #include "crypto/hmac.h"
 #include "ui/gl/gl_implementation.h"
@@ -55,7 +56,7 @@ namespace content {
 namespace {
 void WarmUpSandbox();
 #if defined(OS_LINUX)
-bool StartSandboxLinux(const gpu::GPUInfo&, GpuWatchdogThread*, bool);
+bool StartSandboxLinux(const GPUInfo&, GpuWatchdogThread*, bool);
 #elif defined(OS_WIN)
 bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo*);
 #endif
@@ -154,7 +155,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     watchdog_thread->Start();
   }
 
-  gpu::GPUInfo gpu_info;
+  GPUInfo gpu_info;
   // Get vendor_id, device_id, driver_version from browser process through
   // commandline switches.
   DCHECK(command_line.HasSwitch(switches::kGpuVendorID) &&
@@ -200,8 +201,8 @@ int GpuMain(const MainFunctionParams& parameters) {
     // because the basic GPU information is passed down from browser process
     // and we already registered them through SetGpuInfo() above.
 #if !defined(OS_MACOSX)
-    if (!gpu::CollectContextGraphicsInfo(&gpu_info))
-      VLOG(1) << "gpu::CollectGraphicsInfo failed";
+    if (!gpu_info_collector::CollectContextGraphicsInfo(&gpu_info))
+      VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
     GetContentClient()->SetGpuInfo(gpu_info);
 
 #if defined(OS_LINUX)
@@ -343,7 +344,7 @@ void WarmUpSandbox() {
 }
 
 #if defined(OS_LINUX)
-void WarmUpSandboxNvidia(const gpu::GPUInfo& gpu_info,
+void WarmUpSandboxNvidia(const GPUInfo& gpu_info,
                          bool should_initialize_gl_context) {
   // We special case Optimus since the vendor_id we see may not be Nvidia.
   bool uses_nvidia_driver = (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA.
@@ -355,7 +356,7 @@ void WarmUpSandboxNvidia(const gpu::GPUInfo& gpu_info,
   }
 }
 
-bool StartSandboxLinux(const gpu::GPUInfo& gpu_info,
+bool StartSandboxLinux(const GPUInfo& gpu_info,
                        GpuWatchdogThread* watchdog_thread,
                        bool should_initialize_gl_context) {
   TRACE_EVENT0("gpu", "Initialize sandbox");

@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "gpu/config/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 
-namespace gpu {
+namespace gpu_info_collector {
 
 enum GpuIDResult {
   kGpuIDFailure,
@@ -25,33 +25,34 @@ CONTENT_EXPORT GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id);
 // the danger of crashing), including vendor_id and device_id.
 // This is called at browser process startup time.
 // The subset each platform collects may be different.
-CONTENT_EXPORT bool CollectBasicGraphicsInfo(GPUInfo* gpu_info);
+CONTENT_EXPORT bool CollectBasicGraphicsInfo(
+    content::GPUInfo* gpu_info);
 
 // Create a GL/DirectX context and collect related info.
 // This is called at GPU process startup time.
 // Returns true on success.
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info);
+bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info);
 
 #if defined(OS_WIN)
 // Collect the DirectX Disagnostics information about the attached displays.
-bool GetDxDiagnostics(DxDiagNode* output);
+bool GetDxDiagnostics(content::DxDiagNode* output);
 #endif  // OS_WIN
 
 // Create a GL context and collect GL strings and versions.
-CONTENT_EXPORT bool CollectGraphicsInfoGL(GPUInfo* gpu_info);
+CONTENT_EXPORT bool CollectGraphicsInfoGL(content::GPUInfo* gpu_info);
 
 // Each platform stores the driver version on the GL_VERSION string differently
-bool CollectDriverInfoGL(GPUInfo* gpu_info);
+bool CollectDriverInfoGL(content::GPUInfo* gpu_info);
 
 // Merge GPUInfo from CollectContextGraphicsInfo into basic GPUInfo.
 // This is platform specific, depending on which info are collected at which
 // stage.
-void MergeGPUInfo(GPUInfo* basic_gpu_info,
-                  const GPUInfo& context_gpu_info);
+void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
+                  const content::GPUInfo& context_gpu_info);
 
 // MergeGPUInfo() when GL driver is used.
-void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
-                    const GPUInfo& context_gpu_info);
+void MergeGPUInfoGL(content::GPUInfo* basic_gpu_info,
+                    const content::GPUInfo& context_gpu_info);
 
 // Advanced Micro Devices has interesting configurations on laptops were
 // there are two videocards that can alternatively a given process output.
@@ -62,6 +63,6 @@ enum AMDVideoCardType {
   SWITCHABLE
 };
 
-}  // namespace gpu
+}  // namespace gpu_info_collector
 
 #endif  // CONTENT_GPU_GPU_INFO_COLLECTOR_H_

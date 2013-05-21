@@ -19,13 +19,10 @@ class FilePath;
 class ListValue;
 }
 
-namespace gpu {
-struct GPUInfo;
-}
-
 namespace content {
 
 class GpuDataManagerObserver;
+struct GPUInfo;
 
 // This class is fully thread-safe.
 class GpuDataManager {
@@ -37,11 +34,11 @@ class GpuDataManager {
   CONTENT_EXPORT static GpuDataManager* GetInstance();
 
   virtual void InitializeForTesting(const std::string& gpu_blacklist_json,
-                                    const gpu::GPUInfo& gpu_info) = 0;
+                                    const content::GPUInfo& gpu_info) = 0;
 
   virtual bool IsFeatureBlacklisted(int feature) const = 0;
 
-  virtual gpu::GPUInfo GetGPUInfo() const = 0;
+  virtual GPUInfo GetGPUInfo() const = 0;
 
   // Retrieves a list of process handles for all gpu processes.
   virtual void GetGpuProcessHandles(

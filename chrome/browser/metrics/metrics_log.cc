@@ -43,11 +43,11 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/gpu_info.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "googleurl/src/gurl.h"
-#include "gpu/config/gpu_info.h"
 #include "ui/gfx/screen.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -785,7 +785,7 @@ void MetricsLog::RecordEnvironment(
 
   {
     OPEN_ELEMENT_FOR_SCOPE("gpu");
-    const gpu::GPUInfo& gpu_info =
+    const content::GPUInfo& gpu_info =
         GpuDataManager::GetInstance()->GetGPUInfo();
 
     // Write the XML version.
@@ -885,7 +885,7 @@ void MetricsLog::RecordEnvironmentProto(
       base::android::BuildInfo::GetInstance()->android_build_fp());
 #endif
 
-  const gpu::GPUInfo& gpu_info =
+  const content::GPUInfo& gpu_info =
       GpuDataManager::GetInstance()->GetGPUInfo();
   SystemProfileProto::Hardware::Graphics* gpu = hardware->mutable_gpu();
   gpu->set_vendor_id(gpu_info.gpu.vendor_id);

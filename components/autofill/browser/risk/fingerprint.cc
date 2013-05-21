@@ -26,7 +26,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/geoposition.h"
-#include "gpu/config/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScreenInfo.h"
 #include "ui/gfx/rect.h"
@@ -159,7 +159,7 @@ void AddCpuInfoToFingerprint(Fingerprint_MachineCharacteristics* machine) {
 
 // Writes info about the machine's GPU into the |machine|.
 void AddGpuInfoToFingerprint(Fingerprint_MachineCharacteristics* machine) {
-  const gpu::GPUInfo& gpu_info =
+  const content::GPUInfo& gpu_info =
       content::GpuDataManager::GetInstance()->GetGPUInfo();
   DCHECK(gpu_info.finalized);
 

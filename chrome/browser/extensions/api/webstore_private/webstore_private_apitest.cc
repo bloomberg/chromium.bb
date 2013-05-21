@@ -26,13 +26,13 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/gpu_feature_type.h"
+#include "content/public/common/gpu_info.h"
 #include "content/public/test/browser_test_utils.h"
-#include "gpu/config/gpu_feature_type.h"
-#include "gpu/config/gpu_info.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/gl/gl_switches.h"
 
-using gpu::GpuFeatureType;
+using content::GpuFeatureType;
 
 namespace utils = extension_function_test_utils;
 
@@ -484,11 +484,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
       "    }\n"
       "  ]\n"
       "}";
-  gpu::GPUInfo gpu_info;
+  content::GPUInfo gpu_info;
   content::GpuDataManager::GetInstance()->InitializeForTesting(
       json_blacklist, gpu_info);
   EXPECT_TRUE(content::GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_WEBGL));
+      content::GPU_FEATURE_TYPE_WEBGL));
 
   bool webgl_allowed = false;
   RunTest(webgl_allowed);

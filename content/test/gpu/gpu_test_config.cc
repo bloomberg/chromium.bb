@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "content/gpu/gpu_info_collector.h"
+#include "content/public/common/gpu_info.h"
 #include "content/test/gpu/gpu_test_expectations_parser.h"
-#include "gpu/config/gpu_info.h"
 
 namespace {
 
@@ -141,7 +141,7 @@ void GPUTestBotConfig::AddGPUVendor(uint32 gpu_vendor) {
   GPUTestConfig::AddGPUVendor(gpu_vendor);
 }
 
-bool GPUTestBotConfig::SetGPUInfo(const gpu::GPUInfo& gpu_info) {
+bool GPUTestBotConfig::SetGPUInfo(const content::GPUInfo& gpu_info) {
   DCHECK(validate_gpu_info_);
   if (gpu_info.gpu.device_id == 0 || gpu_info.gpu.vendor_id == 0)
     return false;
@@ -218,14 +218,14 @@ bool GPUTestBotConfig::Matches(const std::string& config_data) const {
   return Matches(config);
 }
 
-bool GPUTestBotConfig::LoadCurrentConfig(const gpu::GPUInfo* gpu_info) {
+bool GPUTestBotConfig::LoadCurrentConfig(const content::GPUInfo* gpu_info) {
   bool rt;
   if (gpu_info == NULL) {
-    gpu::GPUInfo my_gpu_info;
-    gpu::GpuIDResult result;
-    result = gpu::CollectGpuID(&my_gpu_info.gpu.vendor_id,
-                               &my_gpu_info.gpu.device_id);
-    if (result == gpu::kGpuIDNotSupported) {
+    content::GPUInfo my_gpu_info;
+    gpu_info_collector::GpuIDResult result;
+    result = gpu_info_collector::CollectGpuID(&my_gpu_info.gpu.vendor_id,
+                                              &my_gpu_info.gpu.device_id);
+    if (result == gpu_info_collector::kGpuIDNotSupported) {
       DisableGPUInfoValidation();
       rt = true;
     } else {
