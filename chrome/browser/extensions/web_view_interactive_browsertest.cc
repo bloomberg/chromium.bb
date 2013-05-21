@@ -253,7 +253,8 @@ class WebViewInteractiveTest
 // is for Windows and Linux only.
 #if (defined(OS_WIN) || defined(OS_LINUX))
 
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
+// TODO(mkwst): Disabled until Blink r150797 rolls into Chromium.
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PointerLock) {
   SetupTest("web_view/pointer_lock",
             "files/extensions/platform_apps/web_view/pointer_lock/guest.html");
 
