@@ -26,12 +26,13 @@
 #ifndef MediaError_h
 #define MediaError_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class MediaError : public RefCounted<MediaError> {
+class MediaError : public RefCounted<MediaError>, public ScriptWrappable {
 public:
     enum Code {
         MEDIA_ERR_ABORTED = 1,
@@ -46,7 +47,10 @@ public:
     Code code() const { return m_code; }
 
 private:
-    MediaError(Code code) : m_code(code) { }
+    MediaError(Code code) : m_code(code)
+    {
+        ScriptWrappable::init(this);
+    }
 
     Code m_code;
 };

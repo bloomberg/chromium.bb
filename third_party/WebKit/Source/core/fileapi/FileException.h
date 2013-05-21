@@ -31,11 +31,12 @@
 #ifndef FileException_h
 #define FileException_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionBase.h"
 
 namespace WebCore {
 
-class FileException : public ExceptionBase {
+class FileException : public ExceptionBase, public ScriptWrappable {
 public:
     static PassRefPtr<FileException> create(const ExceptionCodeDescription& description)
     {
@@ -73,6 +74,7 @@ private:
     FileException(const ExceptionCodeDescription& description)
         : ExceptionBase(description)
     {
+        ScriptWrappable::init(this);
     }
 };
 

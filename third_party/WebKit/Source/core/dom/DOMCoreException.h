@@ -29,11 +29,12 @@
 #ifndef DOMCoreException_h
 #define DOMCoreException_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionBase.h"
 
 namespace WebCore {
 
-class DOMCoreException : public ExceptionBase {
+class DOMCoreException : public ExceptionBase, public ScriptWrappable {
 public:
     static PassRefPtr<DOMCoreException> create(const ExceptionCodeDescription& description)
     {
@@ -46,6 +47,7 @@ private:
     explicit DOMCoreException(const ExceptionCodeDescription& description)
         : ExceptionBase(description)
     {
+        ScriptWrappable::init(this);
     }
 };
 

@@ -31,11 +31,12 @@
 #ifndef SQLException_h
 #define SQLException_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionBase.h"
 
 namespace WebCore {
 
-class SQLException : public ExceptionBase {
+class SQLException : public ExceptionBase, public ScriptWrappable {
 public:
     static PassRefPtr<SQLException> create(const ExceptionCodeDescription& description)
     {
@@ -62,6 +63,7 @@ private:
     explicit SQLException(const ExceptionCodeDescription& description)
         : ExceptionBase(description)
     {
+        ScriptWrappable::init(this);
     }
 };
 

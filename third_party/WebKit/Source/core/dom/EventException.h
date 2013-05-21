@@ -29,11 +29,12 @@
 #ifndef EventException_h
 #define EventException_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionBase.h"
 
 namespace WebCore {
 
-class EventException : public ExceptionBase {
+class EventException : public ExceptionBase, public ScriptWrappable {
 public:
     static PassRefPtr<EventException> create(const ExceptionCodeDescription& description)
     {
@@ -54,6 +55,7 @@ private:
     explicit EventException(const ExceptionCodeDescription& description)
         : ExceptionBase(description)
     {
+        ScriptWrappable::init(this);
     }
 };
 

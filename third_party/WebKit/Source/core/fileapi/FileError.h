@@ -31,12 +31,13 @@
 #ifndef FileError_h
 #define FileError_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class FileError : public RefCounted<FileError> {
+class FileError : public RefCounted<FileError>, public ScriptWrappable {
 public:
     enum ErrorCode {
         OK = 0,
@@ -61,7 +62,9 @@ public:
 private:
     FileError(ErrorCode code)
         : m_code(code)
-    { }
+    {
+        ScriptWrappable::init(this);
+    }
 
     ErrorCode m_code;
 };

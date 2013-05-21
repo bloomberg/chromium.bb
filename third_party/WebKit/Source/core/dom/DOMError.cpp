@@ -33,6 +33,7 @@ namespace WebCore {
 DOMError::DOMError(const String& name)
     : m_name(name)
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

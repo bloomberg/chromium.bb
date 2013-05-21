@@ -29,11 +29,12 @@
 #ifndef XPathException_h
 #define XPathException_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionBase.h"
 
 namespace WebCore {
 
-class XPathException : public ExceptionBase {
+class XPathException : public ExceptionBase, public ScriptWrappable {
 public:
     static PassRefPtr<XPathException> create(const ExceptionCodeDescription& description)
     {
@@ -54,6 +55,7 @@ private:
     explicit XPathException(const ExceptionCodeDescription& description)
         : ExceptionBase(description)
     {
+        ScriptWrappable::init(this);
     }
 };
 

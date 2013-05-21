@@ -29,12 +29,13 @@
 #ifndef SQLError_h
 #define SQLError_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class SQLError : public ThreadSafeRefCounted<SQLError> {
+class SQLError : public ThreadSafeRefCounted<SQLError>, public ScriptWrappable {
 public:
     static PassRefPtr<SQLError> create(unsigned code, const String& message) { return adoptRef(new SQLError(code, message)); }
     static PassRefPtr<SQLError> create(unsigned code, const char* message, int sqliteCode)
@@ -61,7 +62,11 @@ public:
     };
 
 private:
-    SQLError(unsigned code, const String& message) : m_code(code), m_message(message.isolatedCopy()) { }
+    SQLError(unsigned code, const String& message) : m_code(code), m_message(message.isolatedCopy())
+    {
+        ScriptWrappable::init(this);
+    }
+
     unsigned m_code;
     String m_message;
 };
