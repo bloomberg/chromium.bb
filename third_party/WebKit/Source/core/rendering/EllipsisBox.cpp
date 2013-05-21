@@ -21,6 +21,7 @@
 #include "core/rendering/EllipsisBox.h"
 
 #include "core/dom/Document.h"
+#include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/TextRun.h"
@@ -29,8 +30,8 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
-
-#include <algorithm>
+#include "core/rendering/style/ShadowData.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -50,11 +51,32 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
         // Select the correct color for painting the text.
         Color foreground = paintInfo.forceBlackText() ? Color::black : renderer()->selectionForegroundColor();
         if (foreground.isValid() && foreground != styleTextColor)
-            textColor = foreground;
+            context->setFillColor(foreground, style->colorSpace());
+    }
+
+    const ShadowData* shadow = style->textShadow();
+    bool hasShadow = shadow;
+    if (hasShadow) {
+        // FIXME: it would be better if we could get the shadows top-to-bottom from the style.
+        Vector<const ShadowData*, 4> shadows;
+        do {
+            shadows.append(shadow);
+        } while ((shadow = shadow->next()));
+
+        DrawLooper drawLooper;
+        drawLooper.addUnmodifiedContent();
+        for (int i = shadows.size() - 1; i >= 0; i--) {
+            shadow = shadows[i];
+            int shadowX = isHorizontal() ? shadow->x() : shadow->y();
+            int shadowY = isHorizontal() ? shadow->y() : -shadow->x();
+            FloatSize offset(shadowX, shadowY);
+            drawLooper.addShadow(offset, shadow->blur(), shadow->color(),
+                DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
+        }
+        context->setDrawLooper(drawLooper);
     }
 
     // FIXME: Why is this always LTR? Fix by passing correct text run flags below.
-    const ShadowData* shadow = style->textShadow();
     FloatPoint boxOrigin(paintOffset);
     boxOrigin.move(x(), y());
     FloatRect boxRect(boxOrigin, LayoutSize(logicalWidth(), logicalHeight()));
@@ -62,46 +84,14 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
     TextRun textRun = RenderBlock::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
     TextRunPaintInfo textRunPaintInfo(textRun);
     textRunPaintInfo.bounds = boxRect;
-
-    bool opaque = textColor.alpha() == 255;
-    if (!opaque)
-        context->setFillColor(Color::black, style->colorSpace());
-    else
-        context->setFillColor(textColor, style->colorSpace());
-
-    do {
-        IntSize extraOffset;
-        if (shadow) {
-            FloatSize shadowOffset(shadow->x(), shadow->y());
-            if (shadow->next() || !opaque) {
-                FloatRect shadowRect(boxRect);
-                shadowRect.inflate(shadow->blur());
-                shadowRect.move(shadowOffset);
-                context->save();
-                context->clip(shadowRect);
-                extraOffset = IntSize(0, 2 * boxRect.height() + std::max(0.0f, shadowOffset.height()) + shadow->blur());
-                shadowOffset -= extraOffset;
-            }
-            context->setShadow(shadowOffset, shadow->blur(), shadow->color(), style->colorSpace());
-        } else if (!opaque)
-            context->setFillColor(textColor, style->colorSpace());
-
-        context->drawText(font, textRunPaintInfo, textOrigin + extraOffset);
-
-        if (!shadow)
-            break;
-
-        if (shadow->next() || !opaque)
-            context->restore();
-        else
-            context->clearShadow();
-
-        shadow = shadow->next();
-    } while (shadow || !opaque);
+    context->drawText(font, textRunPaintInfo, textOrigin);
 
     // Restore the regular fill color.
     if (styleTextColor != context->fillColor())
         context->setFillColor(styleTextColor, style->colorSpace());
+
+    if (hasShadow)
+        context->clearDrawLooper();
 
     paintMarkupBox(paintInfo, paintOffset, lineTop, lineBottom, style);
 }

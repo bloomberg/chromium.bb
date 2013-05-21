@@ -31,6 +31,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
+#include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/Path.h"
@@ -520,7 +521,7 @@ static void applyBoxShadowForBackground(GraphicsContext* context, RenderStyle* s
         boxShadow = boxShadow->next();
 
     FloatSize shadowOffset(boxShadow->x(), boxShadow->y());
-    context->setShadow(shadowOffset, boxShadow->blur(), boxShadow->color(), style->colorSpace());
+    context->setShadow(shadowOffset, boxShadow->blur(), boxShadow->color(), DrawLooper::ShadowIgnoresAlpha);
 }
 
 void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, const Color& color, const FillLayer* bgLayer, const LayoutRect& rect,
@@ -2392,7 +2393,7 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             IntSize extraOffset(paintRect.pixelSnappedWidth() + max(0, shadowOffset.width()) + shadowBlur + 2 * shadowSpread + 1, 0);
             shadowOffset -= extraOffset;
             fillRect.move(extraOffset);
-            context->setShadow(shadowOffset, shadowBlur, shadowColor, s->colorSpace());
+            context->setShadow(shadowOffset, shadowBlur, shadowColor, DrawLooper::ShadowIgnoresAlpha);
 
             if (hasBorderRadius) {
                 RoundedRect rectToClipOut = border;
@@ -2482,7 +2483,7 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             IntSize extraOffset(2 * paintRect.pixelSnappedWidth() + max(0, shadowOffset.width()) + shadowBlur - 2 * shadowSpread + 1, 0);
             context->translate(extraOffset.width(), extraOffset.height());
             shadowOffset -= extraOffset;
-            context->setShadow(shadowOffset, shadowBlur, shadowColor, s->colorSpace());
+            context->setShadow(shadowOffset, shadowBlur, shadowColor, DrawLooper::ShadowIgnoresAlpha);
             context->fillRectWithRoundedHole(outerRect, roundedHole, fillColor, s->colorSpace());
         }
     }

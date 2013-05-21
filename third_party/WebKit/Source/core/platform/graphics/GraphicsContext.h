@@ -30,6 +30,7 @@
 
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/DashArray.h"
+#include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextState.h"
@@ -316,10 +317,14 @@ public:
     void beginLayerClippedToImage(const FloatRect&, const ImageBuffer*);
 
     bool hasShadow() const;
-    void setShadow(const FloatSize&, float blur, const Color&, ColorSpace);
+    void setShadow(const FloatSize& offset, float blur, const Color&,
+        DrawLooper::ShadowAlphaMode = DrawLooper::ShadowRespectsAlpha);
+    void clearShadow() { clearDrawLooper(); }
 
-    bool getShadow(FloatSize&, float&, Color&, ColorSpace&) const;
-    void clearShadow();
+    // It is assumed that this draw looper is used only for shadows
+    // (i.e. a draw looper is set if and only if there is a shadow).
+    void setDrawLooper(DrawLooper&);
+    void clearDrawLooper();
 
     void drawFocusRing(const Vector<IntRect>&, int width, int offset, const Color&);
     void drawFocusRing(const Path&, int width, int offset, const Color&);

@@ -1184,7 +1184,7 @@ void CanvasRenderingContext2D::applyShadow()
         return;
 
     if (shouldDrawShadows())
-        c->setShadow(state().m_shadowOffset, state().m_shadowBlur, state().m_shadowColor, ColorSpaceDeviceRGB);
+        c->setShadow(state().m_shadowOffset, state().m_shadowBlur, state().m_shadowColor);
     else
         c->clearShadow();
 }

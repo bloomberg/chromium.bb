@@ -40,8 +40,8 @@
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
-#include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 
 #include <wtf/Assertions.h>
 #include <wtf/MathExtras.h>
@@ -181,97 +181,47 @@ void GraphicsContext::setStrokeColor(const Color& color, ColorSpace colorSpace)
     m_state->m_strokePattern.clear();
 }
 
-void GraphicsContext::setShadow(const FloatSize& size, float blur, const Color& color, ColorSpace colorSpace)
+void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color& color, DrawLooper::ShadowAlphaMode shadowAlphaMode)
 {
     if (paintingDisabled())
         return;
 
-    m_state->m_shadowOffset = size;
-    m_state->m_shadowBlur = blur;
-    m_state->m_shadowColor = color;
-    m_state->m_shadowColorSpace = colorSpace;
-
-    // Detect when there's no effective shadow and clear the looper.
-    if (!size.width() && !size.height() && !blur) {
-        setDrawLooper(0);
+    if (!color.isValid() || !color.alpha() || (!offset.width() && !offset.height() && !blur)) {
+        clearShadow();
         return;
     }
 
-    double width = size.width();
-    double height = size.height();
-
-    uint32_t mfFlags = SkBlurMaskFilter::kHighQuality_BlurFlag;
-
+    DrawLooper::ShadowTransformMode shadowTransformMode;
     if (m_state->m_shadowsIgnoreTransforms)
-        mfFlags |= SkBlurMaskFilter::kIgnoreTransform_BlurFlag;
-
-    SkColor c;
-    if (color.isValid())
-        c = color.rgb();
+        shadowTransformMode = DrawLooper::ShadowIgnoresTransforms;
     else
-        c = SkColorSetARGB(0xFF/3, 0, 0, 0);    // "std" apple shadow color.
+        shadowTransformMode = DrawLooper::ShadowRespectsTransforms;
 
-    // TODO(tc): Should we have a max value for the blur?  CG clamps at 1000.0
-    // for perf reasons.
-
-    SkLayerDrawLooper* dl = new SkLayerDrawLooper;
-    SkAutoUnref aur(dl);
-
-    // top layer, we just draw unchanged
-    dl->addLayer();
-
-    // lower layer contains our offset, blur, and colorfilter
-    SkLayerDrawLooper::LayerInfo info;
-
-    // Since CSS box-shadow ignores the original alpha, we used to default to kSrc_Mode here and
-    // only switch to kDst_Mode for Canvas. But that precaution is not really necessary because
-    // RenderBoxModelObject performs a dedicated shadow fill with opaque black to ensure
-    // cross-platform consistent results.
-    info.fColorMode = SkXfermode::kDst_Mode;
-    info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit; // our blur
-    info.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
-    info.fOffset.set(width, height);
-    info.fPostTranslate = m_state->m_shadowsIgnoreTransforms;
-
-    SkMaskFilter* mf = SkBlurMaskFilter::Create((double)blur / 2.0, SkBlurMaskFilter::kNormal_BlurStyle, mfFlags);
-
-    SkColorFilter* cf = SkColorFilter::CreateModeFilter(c, SkXfermode::kSrcIn_Mode);
-
-    SkPaint* paint = dl->addLayer(info);
-    SkSafeUnref(paint->setMaskFilter(mf));
-    SkSafeUnref(paint->setColorFilter(cf));
-
-    // dl is now built, just install it
-    setDrawLooper(dl);
+    DrawLooper drawLooper;
+    drawLooper.addUnmodifiedContent();
+    drawLooper.addShadow(offset, blur, color, shadowTransformMode, shadowAlphaMode);
+    setDrawLooper(drawLooper);
 }
 
-void GraphicsContext::clearShadow()
+void GraphicsContext::setDrawLooper(DrawLooper& drawLooper)
 {
     if (paintingDisabled())
         return;
 
-    m_state->m_shadowOffset = FloatSize();
-    m_state->m_shadowBlur = 0;
-    m_state->m_shadowColor = Color();
-    m_state->m_shadowColorSpace = ColorSpaceDeviceRGB;
+    setDrawLooper(drawLooper.skDrawLooper());
+}
+
+void GraphicsContext::clearDrawLooper()
+{
+    if (paintingDisabled())
+        return;
 
     setDrawLooper(0);
 }
 
 bool GraphicsContext::hasShadow() const
 {
-    return m_state->m_shadowColor.isValid() && m_state->m_shadowColor.alpha()
-        && (m_state->m_shadowBlur || m_state->m_shadowOffset.width() || m_state->m_shadowOffset.height());
-}
-
-bool GraphicsContext::getShadow(FloatSize& offset, float& blur, Color& color, ColorSpace& colorSpace) const
-{
-    offset = m_state->m_shadowOffset;
-    blur = m_state->m_shadowBlur;
-    color = m_state->m_shadowColor;
-    colorSpace = m_state->m_shadowColorSpace;
-
-    return hasShadow();
+    return !!m_state->m_looper;
 }
 
 float GraphicsContext::strokeThickness() const

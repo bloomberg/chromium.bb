@@ -2669,6 +2669,8 @@
             'platform/graphics/Color.cpp',
             'platform/graphics/CrossfadeGeneratedImage.cpp',
             'platform/graphics/CrossfadeGeneratedImage.h',
+            'platform/graphics/DrawLooper.cpp',
+            'platform/graphics/DrawLooper.h',
             'platform/graphics/Extensions3D.cpp',
             'platform/graphics/Extensions3D.h',
             'platform/graphics/Font.cpp',

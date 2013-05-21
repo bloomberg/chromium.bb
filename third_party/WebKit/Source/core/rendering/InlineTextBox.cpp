@@ -34,6 +34,7 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
+#include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/EllipsisBox.h"
@@ -47,8 +48,10 @@
 #include "core/rendering/RenderRubyText.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/break_lines.h"
+#include "core/rendering/style/ShadowData.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
-#include <wtf/text/CString.h>
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
 
 using namespace std;
 
@@ -417,7 +420,7 @@ FloatSize InlineTextBox::applyShadowToGraphicsContext(GraphicsContext* context, 
         shadowOffset -= extraOffset;
     }
 
-    context->setShadow(shadowOffset, shadowBlur, shadowColor, context->fillColorSpace());
+    context->setShadow(shadowOffset, shadowBlur, shadowColor);
     return extraOffset;
 }
 
@@ -427,57 +430,59 @@ static void paintTextWithShadows(GraphicsContext* context, const Font& font, con
                                  const FloatPoint& textOrigin, const FloatRect& boxRect,
                                  const ShadowData* shadow, bool stroked, bool horizontal)
 {
+    bool hasShadow = shadow;
     Color fillColor = context->fillColor();
-    ColorSpace fillColorSpace = context->fillColorSpace();
-    bool opaque = fillColor.alpha() == 255;
-    if (!opaque)
-        context->setFillColor(Color::black, fillColorSpace);
+
+    if (hasShadow) {
+        // FIXME: it would be better if we could get the shadows top-to-bottom from the style.
+        Vector<const ShadowData*, 4> shadows;
+        do {
+            shadows.append(shadow);
+        } while ((shadow = shadow->next()));
+
+        DrawLooper drawLooper;
+        drawLooper.addUnmodifiedContent();
+        for (int i = shadows.size() - 1; i >= 0; i--) {
+            shadow = shadows[i];
+            int shadowX = horizontal ? shadow->x() : shadow->y();
+            int shadowY = horizontal ? shadow->y() : -shadow->x();
+            FloatSize offset(shadowX, shadowY);
+            drawLooper.addShadow(offset, shadow->blur(), shadow->color(),
+                DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
+        }
+        context->setDrawLooper(drawLooper);
+    }
 
     TextRunPaintInfo textRunPaintInfo(textRun);
     textRunPaintInfo.bounds = boxRect;
-    do {
-        IntSize extraOffset;
-        if (shadow)
-            extraOffset = roundedIntSize(InlineTextBox::applyShadowToGraphicsContext(context, shadow, boxRect, stroked, opaque, horizontal));
-        else if (!opaque)
-            context->setFillColor(fillColor, fillColorSpace);
-
-        if (startOffset <= endOffset) {
-            textRunPaintInfo.from = startOffset;
+    if (startOffset <= endOffset) {
+        textRunPaintInfo.from = startOffset;
+        textRunPaintInfo.to = endOffset;
+        if (emphasisMark.isEmpty())
+            context->drawText(font, textRunPaintInfo, textOrigin);
+        else
+            context->drawEmphasisMarks(font, textRunPaintInfo, emphasisMark, textOrigin + IntSize(0, emphasisMarkOffset));
+    } else {
+        if (endOffset > 0) {
+            textRunPaintInfo.from = 0;
             textRunPaintInfo.to = endOffset;
             if (emphasisMark.isEmpty())
-                context->drawText(font, textRunPaintInfo, textOrigin + extraOffset);
+                context->drawText(font, textRunPaintInfo, textOrigin);
             else
-                context->drawEmphasisMarks(font, textRunPaintInfo, emphasisMark, textOrigin + extraOffset + IntSize(0, emphasisMarkOffset));
-        } else {
-            if (endOffset > 0) {
-                textRunPaintInfo.from = 0;
-                textRunPaintInfo.to = endOffset;
-                if (emphasisMark.isEmpty())
-                    context->drawText(font, textRunPaintInfo, textOrigin + extraOffset);
-                else
-                    context->drawEmphasisMarks(font, textRunPaintInfo, emphasisMark, textOrigin + extraOffset + IntSize(0, emphasisMarkOffset));
-            }
-            if (startOffset < truncationPoint) {
-                textRunPaintInfo.from = startOffset;
-                textRunPaintInfo.to = truncationPoint;
-                if (emphasisMark.isEmpty())
-                    context->drawText(font, textRunPaintInfo, textOrigin + extraOffset);
-                else
-                    context->drawEmphasisMarks(font, textRunPaintInfo, emphasisMark, textOrigin + extraOffset + IntSize(0, emphasisMarkOffset));
-            }
+                context->drawEmphasisMarks(font, textRunPaintInfo, emphasisMark, textOrigin + IntSize(0, emphasisMarkOffset));
         }
+        if (startOffset < truncationPoint) {
+            textRunPaintInfo.from = startOffset;
+            textRunPaintInfo.to = truncationPoint;
+            if (emphasisMark.isEmpty())
+                context->drawText(font, textRunPaintInfo, textOrigin);
+            else
+                context->drawEmphasisMarks(font, textRunPaintInfo, emphasisMark, textOrigin + IntSize(0, emphasisMarkOffset));
+        }
+    }
 
-        if (!shadow)
-            break;
-
-        if (shadow->next() || stroked || !opaque)
-            context->restore();
-        else
-            context->clearShadow();
-
-        shadow = shadow->next();
-    } while (shadow || stroked || !opaque);
+    if (hasShadow)
+        context->clearDrawLooper();
 }
 
 bool InlineTextBox::getEmphasisMarkPosition(RenderStyle* style, TextEmphasisPosition& emphasisPosition) const
@@ -1175,7 +1180,7 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
             }
             int shadowX = isHorizontal() ? shadow->x() : shadow->y();
             int shadowY = isHorizontal() ? shadow->y() : -shadow->x();
-            context->setShadow(FloatSize(shadowX, shadowY - extraOffset), shadow->blur(), shadow->color(), colorSpace);
+            context->setShadow(FloatSize(shadowX, shadowY - extraOffset), shadow->blur(), shadow->color());
             shadow = shadow->next();
         }
 
