@@ -661,7 +661,7 @@
 
       If you disable this setting, Safe Browsing is never active.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      If you enable or disable this setting, users cannot change or override the "Enable phishing and malware protection" setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this policy is left not set, this will be enabled but the user will be able to change it.''',
     },
