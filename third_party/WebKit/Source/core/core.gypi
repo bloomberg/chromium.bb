@@ -2347,8 +2347,6 @@
             'html/parser/NestingLevelIncrementer.h',
             'html/parser/TextDocumentParser.cpp',
             'html/parser/TextDocumentParser.h',
-            'html/parser/TextViewSourceParser.cpp',
-            'html/parser/TextViewSourceParser.h',
             'html/parser/XSSAuditor.cpp',
             'html/parser/XSSAuditor.h',
             'html/parser/XSSAuditorDelegate.cpp',

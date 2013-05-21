@@ -27,25 +27,20 @@
 #include "core/html/parser/HTMLViewSourceParser.h"
 
 #include "HTMLNames.h"
+#include "core/dom/DOMImplementation.h"
 #include "core/html/HTMLViewSourceDocument.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserOptions.h"
+#include "core/html/parser/HTMLToken.h"
 
 namespace WebCore {
 
-HTMLViewSourceParser::HTMLViewSourceParser(HTMLViewSourceDocument* document)
+HTMLViewSourceParser::HTMLViewSourceParser(HTMLViewSourceDocument* document, const String& mimeType)
     : DecodedDataDocumentParser(document)
     , m_tokenizer(HTMLTokenizer::create(HTMLParserOptions(document)))
 {
-}
-
-HTMLViewSourceParser::~HTMLViewSourceParser()
-{
-}
-
-void HTMLViewSourceParser::insert(const SegmentedString&)
-{
-    ASSERT_NOT_REACHED();
+    if (mimeType != "text/html" && !DOMImplementation::isXMLMIMEType(mimeType))
+        m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
 }
 
 void HTMLViewSourceParser::pumpTokenizer()
@@ -53,11 +48,14 @@ void HTMLViewSourceParser::pumpTokenizer()
     while (true) {
         m_sourceTracker.start(m_input.current(), m_tokenizer.get(), m_token);
         if (!m_tokenizer->nextToken(m_input.current(), m_token))
-            break;
+            return;
         m_sourceTracker.end(m_input.current(), m_tokenizer.get(), m_token);
 
-        document()->addSource(sourceForToken(), m_token);
-        updateTokenizerState();
+        document()->addSource(m_sourceTracker.sourceForToken(m_token), m_token);
+
+        // FIXME: The tokenizer should do this work for us.
+        if (m_token.type() == HTMLToken::StartTag)
+            m_tokenizer->updateStateFor(AtomicString(m_token.name()));
         m_token.clear();
     }
 }
@@ -66,19 +64,6 @@ void HTMLViewSourceParser::append(PassRefPtr<StringImpl> input)
 {
     m_input.appendToEnd(String(input));
     pumpTokenizer();
-}
-
-String HTMLViewSourceParser::sourceForToken()
-{
-    return m_sourceTracker.sourceForToken(m_token);
-}
-
-void HTMLViewSourceParser::updateTokenizerState()
-{
-    // FIXME: The tokenizer should do this work for us.
-    if (m_token.type() != HTMLToken::StartTag)
-        return;
-    m_tokenizer->updateStateFor(AtomicString(m_token.name()));
 }
 
 void HTMLViewSourceParser::finish()

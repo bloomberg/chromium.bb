@@ -27,7 +27,6 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
-#include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Text.h"
 #include "core/html/HTMLAnchorElement.h"
@@ -42,7 +41,6 @@
 #include "core/html/HTMLTableSectionElement.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLViewSourceParser.h"
-#include "core/html/parser/TextViewSourceParser.h"
 #include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {
@@ -56,16 +54,14 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(Frame* frame, const KURL& url, co
     styleSheetCollection()->setUsesBeforeAfterRulesOverride(true);
     setIsViewSource(true);
 
+    // FIXME: Why do view-source pages need to load in quirks mode?
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
 }
 
 PassRefPtr<DocumentParser> HTMLViewSourceDocument::createParser()
 {
-    if (m_type == "text/html" || m_type == "application/xhtml+xml" || m_type == "image/svg+xml" || DOMImplementation::isXMLMIMEType(m_type))
-        return HTMLViewSourceParser::create(this);
-
-    return TextViewSourceParser::create(this);
+    return HTMLViewSourceParser::create(this, m_type);
 }
 
 void HTMLViewSourceDocument::createContainingTable()

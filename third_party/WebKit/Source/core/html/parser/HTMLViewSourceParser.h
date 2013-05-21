@@ -30,42 +30,29 @@
 #include "core/html/HTMLViewSourceDocument.h"
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLSourceTracker.h"
-#include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
-#include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 
-class HTMLTokenizer;
-class HTMLScriptRunner;
-class HTMLTreeBuilder;
-class HTMLPreloadScanner;
-class ScriptController;
-class ScriptSourceCode;
-
-class HTMLViewSourceParser :  public DecodedDataDocumentParser {
+class HTMLViewSourceParser FINAL :  public DecodedDataDocumentParser {
 public:
-    static PassRefPtr<HTMLViewSourceParser> create(HTMLViewSourceDocument* document)
+    static PassRefPtr<HTMLViewSourceParser> create(HTMLViewSourceDocument* document, const String& mimeType)
     {
-        return adoptRef(new HTMLViewSourceParser(document));
+        return adoptRef(new HTMLViewSourceParser(document, mimeType));
     }
-    virtual ~HTMLViewSourceParser();
-
-protected:
-    explicit HTMLViewSourceParser(HTMLViewSourceDocument*);
-
-    HTMLTokenizer* tokenizer() const { return m_tokenizer.get(); }
+    virtual ~HTMLViewSourceParser() { }
 
 private:
+    HTMLViewSourceParser(HTMLViewSourceDocument*, const String& mimeType);
+
     // DocumentParser
-    virtual void insert(const SegmentedString&);
-    virtual void append(PassRefPtr<StringImpl>);
-    virtual void finish();
+    virtual void insert(const SegmentedString&) OVERRIDE { ASSERT_NOT_REACHED(); }
+    virtual void append(PassRefPtr<StringImpl>) OVERRIDE;
+    virtual void finish() OVERRIDE;
 
     HTMLViewSourceDocument* document() const { return static_cast<HTMLViewSourceDocument*>(DecodedDataDocumentParser::document()); }
 
     void pumpTokenizer();
-    String sourceForToken();
     void updateTokenizerState();
 
     HTMLInputStream m_input;
