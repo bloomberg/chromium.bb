@@ -1,9 +1,9 @@
 # Copyright (C) 2009 Google Inc. All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
-# 
+#
 #     * Redistributions of source code must retain the above copyright
 # notice, this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above
@@ -13,7 +13,7 @@
 #     * Neither the name of Google Inc. nor the names of its
 # contributors may be used to endorse or promote products derived from
 # this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -27,12 +27,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import sys
 
 from webkitpy.tool import steps
 
 from webkitpy.common.checkout.scm import CheckoutNeedsUpdate
 from webkitpy.common.system.executive import ScriptError
-from webkitpy.tool.bot.queueengine import QueueEngine
 
 _log = logging.getLogger(__name__)
 
@@ -66,6 +66,14 @@ class StepSequence(object):
         for step in self._steps:
             step(tool, options).run(state)
 
+    # Child processes exit with a special code to the parent queue process can detect the error was handled.
+    handled_error_code = 2
+
+    @classmethod
+    def exit_after_handled_error(cls, error):
+        _log.error(error)
+        sys.exit(cls.handled_error_code)
+
     def run_and_handle_errors(self, tool, options, state=None):
         if not state:
             state = {}
@@ -76,11 +84,11 @@ class StepSequence(object):
             if options.parent_command:
                 command = tool.command_by_name(options.parent_command)
                 command.handle_checkout_needs_update(tool, state, options, e)
-            QueueEngine.exit_after_handled_error(e)
+            self.exit_after_handled_error(e)
         except ScriptError, e:
             if not options.quiet:
                 _log.error(e.message_with_output())
             if options.parent_command:
                 command = tool.command_by_name(options.parent_command)
                 command.handle_script_error(tool, state, e)
-            QueueEngine.exit_after_handled_error(e)
+            self.exit_after_handled_error(e)
