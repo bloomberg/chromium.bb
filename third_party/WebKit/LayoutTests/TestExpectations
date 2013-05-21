@@ -1620,3 +1620,5 @@ Bug(trchen) virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-inc
 crbug.com/242444 [ Win7 ] editing/undo/undo-after-event-edited.html [ Crash Pass ]
 
 crbug.com/242485 [ Mac Linux Debug ] http/tests/inspector/appcache/appcache-iframe-manifests.html [ Crash Pass ]
+
+crbug.com/242511 [ Mac Debug ] svg/custom/uri-reference-handling.svg [ Crash Pass ]
