@@ -26,6 +26,7 @@ namespace WebCore {
 SVGElementInstanceList::SVGElementInstanceList(PassRefPtr<SVGElementInstance> rootInstance)
     : m_rootInstance(rootInstance)
 {
+    ScriptWrappable::init(this);
 }
 
 SVGElementInstanceList::~SVGElementInstanceList()

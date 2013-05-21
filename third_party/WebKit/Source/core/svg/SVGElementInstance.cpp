@@ -51,6 +51,7 @@ SVGElementInstance::SVGElementInstance(SVGUseElement* correspondingUseElement, S
 {
     ASSERT(m_correspondingUseElement);
     ASSERT(m_element);
+    ScriptWrappable::init(this);
 
     // Register as instance for passed element.
     m_element->mapInstanceToElement(this);

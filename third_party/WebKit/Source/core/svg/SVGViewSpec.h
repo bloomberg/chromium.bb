@@ -20,6 +20,7 @@
 #ifndef SVGViewSpec_h
 #define SVGViewSpec_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGFitToViewBox.h"
@@ -31,9 +32,7 @@ namespace WebCore {
 class SVGElement;
 class SVGTransformListPropertyTearOff;
 
-class SVGViewSpec : public RefCounted<SVGViewSpec>
-                  , public SVGZoomAndPan
-                  , public SVGFitToViewBox {
+class SVGViewSpec : public RefCounted<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
 public:
     virtual ~SVGViewSpec() { }
 

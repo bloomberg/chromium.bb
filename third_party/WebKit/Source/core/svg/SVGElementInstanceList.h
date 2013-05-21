@@ -20,12 +20,13 @@
 #ifndef SVGElementInstanceList_h
 #define SVGElementInstanceList_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGElementInstance.h"
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class SVGElementInstanceList : public RefCounted<SVGElementInstanceList> {
+class SVGElementInstanceList : public RefCounted<SVGElementInstanceList>, public ScriptWrappable {
 public:
     static PassRefPtr<SVGElementInstanceList> create(PassRefPtr<SVGElementInstance> root) { return adoptRef(new SVGElementInstanceList(root)); }
     virtual ~SVGElementInstanceList();

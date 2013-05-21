@@ -36,6 +36,7 @@ private:
     SVGPathSegClosePath(SVGPathElement* element, SVGPathSegRole role)
         : SVGPathSegWithContext(element, role)
     {
+        ScriptWrappable::init(this);
     }
 
     virtual unsigned short pathSegType() const { return PATHSEG_CLOSEPATH; }

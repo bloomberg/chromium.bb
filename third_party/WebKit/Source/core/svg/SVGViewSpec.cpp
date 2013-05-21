@@ -82,6 +82,7 @@ SVGViewSpec::SVGViewSpec(SVGElement* contextElement)
     , m_zoomAndPan(SVGZoomAndPanMagnify)
 {
     ASSERT(m_contextElement);
+    ScriptWrappable::init(this);
 }
 
 const AtomicString& SVGViewSpec::viewBoxIdentifier()

@@ -21,6 +21,7 @@
 #ifndef SVGElementInstance_h
 #define SVGElementInstance_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
 #include "core/platform/TreeShared.h"
 #include "core/svg/SVGElement.h"
@@ -37,7 +38,7 @@ class SVGElementInstanceList;
 class SVGStyledElement;
 
 // SVGElementInstance mimics Node, but without providing all its functionality
-class SVGElementInstance : public EventTarget, public TreeShared<SVGElementInstance> {
+class SVGElementInstance : public EventTarget, public ScriptWrappable, public TreeShared<SVGElementInstance> {
 public:
     static PassRefPtr<SVGElementInstance> create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtr<SVGElement> originalElement)
     {
@@ -78,7 +79,7 @@ public:
 
     class InvalidationGuard {
         WTF_MAKE_NONCOPYABLE(InvalidationGuard);
-    public:    
+    public:
         InvalidationGuard(SVGElement* element) : m_element(element) { }
         ~InvalidationGuard() { SVGElementInstance::invalidateAllInstancesOfElement(m_element); }
     private:
@@ -94,7 +95,7 @@ public:
     private:
         SVGStyledElement* m_targetElement;
     };
-    
+
     static void invalidateAllInstancesOfElement(SVGElement*);
 
     using TreeShared<SVGElementInstance>::ref;
@@ -171,7 +172,7 @@ private:
     void setLastChild(SVGElementInstance* child) { m_lastChild = child; }
 
     void setNextSibling(SVGElementInstance* sibling) { m_nextSibling = sibling; }
-    void setPreviousSibling(SVGElementInstance* sibling) { m_previousSibling = sibling; }    
+    void setPreviousSibling(SVGElementInstance* sibling) { m_previousSibling = sibling; }
 
     virtual void refEventTarget() { ref(); }
     virtual void derefEventTarget() { deref(); }

@@ -20,13 +20,14 @@
 #ifndef SVGAnimatedPropertyTearOff_h
 #define SVGAnimatedPropertyTearOff_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 
 namespace WebCore {
 
 template<typename PropertyType>
-class SVGAnimatedPropertyTearOff : public SVGAnimatedProperty {
+class SVGAnimatedPropertyTearOff : public SVGAnimatedProperty, public ScriptWrappable {
 public:
     typedef SVGPropertyTearOff<PropertyType> PropertyTearOff;
     typedef PropertyType ContentType;
@@ -110,6 +111,7 @@ private:
         : SVGAnimatedProperty(contextElement, attributeName, animatedPropertyType)
         , m_property(property)
     {
+        ScriptWrappable::init(this);
     }
 
     PropertyType& m_property;

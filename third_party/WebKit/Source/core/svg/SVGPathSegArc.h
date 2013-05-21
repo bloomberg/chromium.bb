@@ -110,6 +110,7 @@ private:
     SVGPathSegArcAbs(SVGPathElement* element, SVGPathSegRole role, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
         : SVGPathSegArc(element, role, x, y, r1, r2, angle, largeArcFlag, sweepFlag)
     {
+        ScriptWrappable::init(this);
     }
 
     virtual unsigned short pathSegType() const { return PATHSEG_ARC_ABS; }
@@ -127,6 +128,7 @@ private:
     SVGPathSegArcRel(SVGPathElement* element, SVGPathSegRole role, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
         : SVGPathSegArc(element, role, x, y, r1, r2, angle, largeArcFlag, sweepFlag)
     {
+        ScriptWrappable::init(this);
     }
 
     virtual unsigned short pathSegType() const { return PATHSEG_ARC_REL; }

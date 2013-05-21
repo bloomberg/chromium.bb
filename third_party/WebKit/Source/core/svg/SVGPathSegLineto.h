@@ -25,7 +25,7 @@
 
 namespace WebCore {
 
-class SVGPathSegLinetoAbs : public SVGPathSegSingleCoordinate { 
+class SVGPathSegLinetoAbs : public SVGPathSegSingleCoordinate {
 public:
     static PassRefPtr<SVGPathSegLinetoAbs> create(SVGPathElement* element, SVGPathSegRole role, float x, float y)
     {
@@ -36,13 +36,14 @@ private:
     SVGPathSegLinetoAbs(SVGPathElement* element, SVGPathSegRole role, float x, float y)
         : SVGPathSegSingleCoordinate(element, role, x, y)
     {
+        ScriptWrappable::init(this);
     }
 
     virtual unsigned short pathSegType() const { return PATHSEG_LINETO_ABS; }
     virtual String pathSegTypeAsLetter() const { return "L"; }
 };
 
-class SVGPathSegLinetoRel : public SVGPathSegSingleCoordinate { 
+class SVGPathSegLinetoRel : public SVGPathSegSingleCoordinate {
 public:
     static PassRefPtr<SVGPathSegLinetoRel> create(SVGPathElement* element, SVGPathSegRole role, float x, float y)
     {
@@ -53,6 +54,7 @@ private:
     SVGPathSegLinetoRel(SVGPathElement* element, SVGPathSegRole role, float x, float y)
         : SVGPathSegSingleCoordinate(element, role, x, y)
     {
+        ScriptWrappable::init(this);
     }
 
     virtual unsigned short pathSegType() const { return PATHSEG_LINETO_REL; }
