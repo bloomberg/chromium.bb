@@ -131,6 +131,7 @@ void didRequestAnimationFrameImpl(InstrumentingAgents*, Document*, int callbackI
 void didCancelAnimationFrameImpl(InstrumentingAgents*, Document*, int callbackId);
 InspectorInstrumentationCookie willFireAnimationFrameImpl(InstrumentingAgents*, Document*, int callbackId);
 void didFireAnimationFrameImpl(const InspectorInstrumentationCookie&);
+void didDispatchDOMStorageEventImpl(InstrumentingAgents*, const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*);
 void didStartWorkerContextImpl(InstrumentingAgents*, WorkerContextProxy*, const KURL&);
 void workerContextTerminatedImpl(InstrumentingAgents*, WorkerContextProxy*);
 void didCreateWebSocketImpl(InstrumentingAgents*, Document*, unsigned long identifier, const KURL& requestURL, const String& protocol);
@@ -801,6 +802,14 @@ inline void didFireAnimationFrame(const InspectorInstrumentationCookie& cookie)
     if (cookie.isValid())
         didFireAnimationFrameImpl(cookie);
 }
+
+inline void didDispatchDOMStorageEvent(Page* page, const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
+        didDispatchDOMStorageEventImpl(instrumentingAgents, key, oldValue, newValue, storageType, securityOrigin);
+}
+
 
 inline void didStartWorkerContext(ScriptExecutionContext* context, WorkerContextProxy* proxy, const KURL& url)
 {

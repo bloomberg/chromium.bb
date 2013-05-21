@@ -44,7 +44,6 @@ void continueAfterXFrameOptionsDeniedImpl(Frame*, DocumentLoader*, unsigned long
 void continueWithPolicyDownloadImpl(Frame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
 void continueWithPolicyIgnoreImpl(Frame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
 void willDestroyCachedResourceImpl(CachedResource*);
-void didDispatchDOMStorageEventImpl(InstrumentingAgents*, const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*, Page*);
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
 
 bool canvasAgentEnabled(ScriptExecutionContext*);
@@ -114,13 +113,6 @@ inline void willDestroyCachedResource(CachedResource* cachedResource)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     willDestroyCachedResourceImpl(cachedResource);
-}
-
-inline void didDispatchDOMStorageEvent(const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin, Page* page)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        didDispatchDOMStorageEventImpl(instrumentingAgents, key, oldValue, newValue, storageType, securityOrigin, page);
 }
 
 inline bool collectingHTMLParseErrors(Page* page)
