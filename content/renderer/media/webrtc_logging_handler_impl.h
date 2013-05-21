@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/shared_memory.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "third_party/libjingle/overrides/logging/log_message_delegate.h"
@@ -26,7 +27,8 @@ class WebRtcLoggingMessageFilter;
 // WebRtcLoggingHandlerHost and receives logging messages from libjingle and
 // writes them to a shared memory buffer.
 class CONTENT_EXPORT WebRtcLoggingHandlerImpl
-    : public NON_EXPORTED_BASE(talk_base::LogMessageDelegate) {
+    : public NON_EXPORTED_BASE(talk_base::LogMessageDelegate),
+      public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
   WebRtcLoggingHandlerImpl(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);

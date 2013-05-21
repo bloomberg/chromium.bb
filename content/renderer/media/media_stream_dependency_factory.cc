@@ -16,10 +16,13 @@
 #include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
+#include "content/renderer/media/webrtc_logging_handler_impl.h"
+#include "content/renderer/media/webrtc_logging_message_filter.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/port_allocator.h"
+#include "content/renderer/render_thread_impl.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
@@ -34,6 +37,10 @@
 #endif
 
 namespace content {
+
+// The constraint key for the PeerConnection constructor for enabling diagnostic
+// WebRTC logging. It's a Google specific key, hence the "goog" prefix.
+const char kWebRtcLoggingConstraint[] = "googLog";
 
 // Constant constraint keys which disables all audio constraints.
 // Only used in combination with WebAudio sources.
@@ -206,7 +213,8 @@ MediaStreamDependencyFactory::MediaStreamDependencyFactory(
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
       signaling_thread_(NULL),
       worker_thread_(NULL),
-      chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
+      chrome_worker_thread_("Chrome_libJingle_WorkerThread"),
+      webrtc_log_open_(false) {
 }
 
 MediaStreamDependencyFactory::~MediaStreamDependencyFactory() {
@@ -482,6 +490,23 @@ MediaStreamDependencyFactory::CreatePeerConnection(
     webrtc::PeerConnectionObserver* observer) {
   CHECK(web_frame);
   CHECK(observer);
+
+  webrtc::MediaConstraintsInterface::Constraints optional_constraints =
+      constraints->GetOptional();
+  std::string constraint_value;
+  if (!webrtc_log_open_ &&
+      optional_constraints.FindFirst(kWebRtcLoggingConstraint,
+                                     &constraint_value)) {
+    webrtc_log_open_ = true;
+
+    RenderThreadImpl::current()->GetIOMessageLoopProxy()->PostTask(
+        FROM_HERE, base::Bind(
+            &MediaStreamDependencyFactory::CreateWebRtcLoggingHandler,
+            base::Unretained(this),
+            RenderThreadImpl::current()->webrtc_logging_message_filter(),
+            constraint_value));
+  }
+
   scoped_refptr<P2PPortAllocatorFactory> pa_factory =
         new talk_base::RefCountedObject<P2PPortAllocatorFactory>(
             p2p_socket_dispatcher_.get(),
@@ -750,6 +775,16 @@ void MediaStreamDependencyFactory::CleanupPeerConnectionFactory() {
       NOTREACHED() << "Worker thread not running.";
     }
   }
+}
+
+void MediaStreamDependencyFactory::CreateWebRtcLoggingHandler(
+    WebRtcLoggingMessageFilter* filter,
+    const std::string& app_session_id) {
+  WebRtcLoggingHandlerImpl* handler =
+      new WebRtcLoggingHandlerImpl(filter->io_message_loop());
+
+  // TODO(grunell): Give app session id as parameter.
+  filter->InitLogging(handler);
 }
 
 }  // namespace content

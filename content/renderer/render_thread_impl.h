@@ -264,6 +264,11 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     return vc_manager_.get();
   }
 
+  const scoped_refptr<WebRtcLoggingMessageFilter>&
+  webrtc_logging_message_filter() const {
+    return webrtc_logging_message_filter_;
+  }
+
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
   GpuChannelHost* GetGpuChannel();

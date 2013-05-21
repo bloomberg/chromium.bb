@@ -18,6 +18,7 @@ WebRtcLoggingHandlerImpl::WebRtcLoggingHandlerImpl(
 }
 
 WebRtcLoggingHandlerImpl::~WebRtcLoggingHandlerImpl() {
+  DCHECK(CalledOnValidThread());
 }
 
 void WebRtcLoggingHandlerImpl::LogMessage(const std::string& message) {
@@ -36,12 +37,13 @@ void WebRtcLoggingHandlerImpl::LogMessage(const std::string& message) {
 }
 
 void WebRtcLoggingHandlerImpl::OnFilterRemoved() {
+  DCHECK(CalledOnValidThread());
 }
 
 void WebRtcLoggingHandlerImpl::OnLogOpened(
     base::SharedMemoryHandle handle,
     uint32 length) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   shared_memory_.reset(new base::SharedMemory(handle, false));
   CHECK(shared_memory_->Map(length));
@@ -49,10 +51,12 @@ void WebRtcLoggingHandlerImpl::OnLogOpened(
       new content::PartialCircularBuffer(shared_memory_->memory(),
                                          length,
                                          length / 2));
+
+  talk_base::InitDiagnosticLoggingDelegate(this);
 }
 
 void WebRtcLoggingHandlerImpl::OnOpenLogFailed() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   DLOG(ERROR) << "Could not open log.";
   // TODO(grunell): Implement.
   NOTIMPLEMENTED();

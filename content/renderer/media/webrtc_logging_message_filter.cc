@@ -52,11 +52,12 @@ void WebRtcLoggingMessageFilter::OnChannelClosing() {
   logging_handler_->OnFilterRemoved();
 }
 
-void WebRtcLoggingMessageFilter::SetDelegate(
+void WebRtcLoggingMessageFilter::InitLogging(
     WebRtcLoggingHandlerImpl* logging_handler) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   DCHECK(!logging_handler_);
   logging_handler_ = logging_handler;
+  OpenLog();
 }
 
 void WebRtcLoggingMessageFilter::OpenLog() {

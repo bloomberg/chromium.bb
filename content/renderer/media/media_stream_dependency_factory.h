@@ -44,6 +44,8 @@ class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class VideoCaptureImplManager;
 class WebRtcAudioDeviceImpl;
+class WebRtcLoggingHandlerImpl;
+class WebRtcLoggingMessageFilter;
 struct StreamDeviceInfo;
 
 // Object factory for RTC MediaStreams and RTC PeerConnections.
@@ -194,6 +196,9 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   void DeleteIpcNetworkManager();
   void CleanupPeerConnectionFactory();
 
+  void CreateWebRtcLoggingHandler(WebRtcLoggingMessageFilter* filter,
+                                  const std::string& app_session_id);
+
   // We own network_manager_, must be deleted on the worker thread.
   // The network manager uses |p2p_socket_dispatcher_|.
   IpcNetworkManager* network_manager_;
@@ -210,6 +215,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   talk_base::Thread* signaling_thread_;
   talk_base::Thread* worker_thread_;
   base::Thread chrome_worker_thread_;
+
+  bool webrtc_log_open_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDependencyFactory);
 };

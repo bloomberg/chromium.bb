@@ -27,9 +27,13 @@ class CONTENT_EXPORT WebRtcLoggingMessageFilter
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
 
   // We take owbership of |logging_handler|. See also comment below.
-  virtual void SetDelegate(WebRtcLoggingHandlerImpl* logging_handler);
+  virtual void InitLogging(WebRtcLoggingHandlerImpl* logging_handler);
 
   virtual void OpenLog();
+
+  const scoped_refptr<base::MessageLoopProxy>& io_message_loop() {
+    return io_message_loop_;
+  }
 
  protected:
   virtual ~WebRtcLoggingMessageFilter();
