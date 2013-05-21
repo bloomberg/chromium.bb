@@ -156,9 +156,10 @@ bool SVGTests::handleAttributeChange(SVGElement* targetElement, const QualifiedN
         return true;
 
     bool valid = targetElement->isValid();
-    if (valid && !targetElement->attached())
-        targetElement->lazyAttach();
-    else if (!valid && targetElement->attached())
+    bool attached = targetElement->attached();
+    if (valid && !attached && targetElement->parentNode()->attached())
+        targetElement->attach();
+    else if (!valid && attached)
         targetElement->detach();
 
     return true;
