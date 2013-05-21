@@ -14,4 +14,9 @@ type: keyup
 keyCode: 65
 keyIdentifier: U+0041
 
+-----Event-----
+type: keypress
+keyCode: 1513
+charCode: 1513
+
 
