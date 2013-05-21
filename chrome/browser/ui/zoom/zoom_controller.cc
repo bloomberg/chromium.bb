@@ -33,13 +33,14 @@ ZoomController::ZoomController(content::WebContents* web_contents)
   default_zoom_level_.Init(prefs::kDefaultZoomLevel, profile->GetPrefs(),
                            base::Bind(&ZoomController::UpdateState,
                                       base::Unretained(this),
-                                      std::string()));
+                                      std::string(),
+                                      false));
 
   content::HostZoomMap::GetForBrowserContext(
       browser_context_)->AddZoomLevelChangedCallback(
           zoom_callback_);
 
-  UpdateState(std::string());
+  UpdateState(std::string(), false);
 }
 
 ZoomController::~ZoomController() {
@@ -65,16 +66,19 @@ void ZoomController::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   // If the main frame's content has changed, the new page may have a different
   // zoom level from the old one.
-  UpdateState(std::string());
+  UpdateState(std::string(), false);
 }
 
 void ZoomController::OnZoomLevelChanged(
     const content::HostZoomMap::ZoomLevelChange& change) {
-  if (change.mode != content::HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM)
-    UpdateState(change.host);
+// If this is a temporary zoom change, force the bubble.
+  bool force_bubble =
+      change.mode == content::HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM;
+  UpdateState(change.host, force_bubble);
 }
 
-void ZoomController::UpdateState(const std::string& host) {
+void ZoomController::UpdateState(const std::string& host,
+                                 bool force_bubble) {
   // If |host| is empty, all observers should be updated.
   if (!host.empty()) {
     // Use the active navigation entry's URL instead of the WebContents' so
@@ -89,7 +93,6 @@ void ZoomController::UpdateState(const std::string& host) {
 
   bool dummy;
   zoom_percent_ = web_contents()->GetZoomPercent(&dummy, &dummy);
-
   if (observer_)
-    observer_->OnZoomChanged(web_contents(), !host.empty());
+    observer_->OnZoomChanged(web_contents(), !host.empty() || force_bubble);
 }
