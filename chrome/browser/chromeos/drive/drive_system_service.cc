@@ -129,7 +129,7 @@ DriveSystemService::DriveSystemService(
       util::GetCacheRootPath(profile),
       blocking_task_runner_,
       NULL /* free_disk_space_getter */));
-  webapps_registry_.reset(new DriveWebAppsRegistry);
+  webapps_registry_.reset(new DriveWebAppsRegistry(scheduler_.get()));
 
   // We can call FileCache::GetCacheDirectoryPath safely even before the cache
   // gets initialized.
@@ -142,7 +142,6 @@ DriveSystemService::DriveSystemService(
                                     cache_.get(),
                                     drive_service_.get(),
                                     scheduler_.get(),
-                                    webapps_registry(),
                                     resource_metadata_.get(),
                                     blocking_task_runner_));
   file_write_helper_.reset(new FileWriteHelper(file_system()));
@@ -191,6 +190,7 @@ void DriveSystemService::RemoveObserver(DriveSystemServiceObserver* observer) {
 
 void DriveSystemService::OnNotificationReceived() {
   file_system_->CheckForUpdates();
+  webapps_registry_->Update();
 }
 
 void DriveSystemService::OnPushNotificationEnabled(bool enabled) {
@@ -235,6 +235,7 @@ void DriveSystemService::AddBackDriveMountPoint(
   }
 
   file_system_->Initialize();
+  webapps_registry_->Update();
   AddDriveMountPoint();
 
   callback.Run(true);
@@ -245,6 +246,7 @@ void DriveSystemService::ReloadAndRemountFileSystem() {
 
   RemoveDriveMountPoint();
   file_system_->Reload();
+  webapps_registry_->Update();
 
   // Reload() is asynchronous. But we can add back the mount point right away
   // because every operation waits until loading is complete.
@@ -341,6 +343,7 @@ void DriveSystemService::InitializeAfterResourceMetadataInitialized(
     util::Log("Push notification is %s", status);
   }
 
+  webapps_registry_->Update();
   AddDriveMountPoint();
 }
 

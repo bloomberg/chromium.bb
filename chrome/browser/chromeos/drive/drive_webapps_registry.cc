@@ -12,6 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -92,7 +94,9 @@ DriveWebAppsRegistry::WebAppFileSelector::~WebAppFileSelector() {
 
 // DriveWebAppsRegistry implementation.
 
-DriveWebAppsRegistry::DriveWebAppsRegistry() {
+DriveWebAppsRegistry::DriveWebAppsRegistry(JobScheduler* scheduler)
+    : scheduler_(scheduler),
+      weak_ptr_factory_(this) {
 }
 
 DriveWebAppsRegistry::~DriveWebAppsRegistry() {
@@ -131,15 +135,32 @@ void DriveWebAppsRegistry::GetWebAppsForFile(
   }
 }
 
-void DriveWebAppsRegistry::UpdateFromAppList(
-    const google_apis::AppList& applist) {
+void DriveWebAppsRegistry::Update() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scheduler_->GetAppList(
+      base::Bind(&DriveWebAppsRegistry::UpdateAfterGetAppList,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveWebAppsRegistry::UpdateAfterGetAppList(
+    google_apis::GDataErrorCode gdata_error,
+    scoped_ptr<google_apis::AppList> app_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  FileError error = util::GDataToFileError(gdata_error);
+  if (error != FILE_ERROR_OK) {
+    // Failed to fetch the data from the server. We can do nothing here.
+    return;
+  }
+
+  DCHECK(app_list);
 
   url_to_name_map_.clear();
   STLDeleteValues(&webapp_extension_map_);
   STLDeleteValues(&webapp_mimetypes_map_);
-  for (size_t i = 0; i < applist.items().size(); ++i) {
-    const google_apis::AppResource& app = *applist.items()[i];
+  for (size_t i = 0; i < app_list->items().size(); ++i) {
+    const google_apis::AppResource& app = *app_list->items()[i];
     if (app.product_url().is_empty())
       continue;
 

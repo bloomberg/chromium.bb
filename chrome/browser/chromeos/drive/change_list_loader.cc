@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
-#include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/logging.h"
@@ -29,12 +28,10 @@ namespace internal {
 ChangeListLoader::ChangeListLoader(
     base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
-    JobScheduler* scheduler,
-    DriveWebAppsRegistry* webapps_registry)
+    JobScheduler* scheduler)
     : blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
-      webapps_registry_(webapps_registry),
       last_known_remote_changestamp_(0),
       loaded_(false),
       weak_ptr_factory_(this) {
@@ -263,23 +260,6 @@ void ChangeListLoader::LoadFromServerIfNeeded(
     const DirectoryFetchInfo& directory_fetch_info,
     int64 local_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Drive v2 needs a separate application list fetch operation.
-  // On GData WAPI, it is not necessary in theory, because the response
-  // of account metadata can include both about account information (such as
-  // quota) and an application list at once.
-  // However, for Drive API v2 migration, we connect to the server twice
-  // (one for about account information and another for an application list)
-  // regardless of underlying API, so that we can simplify the code.
-  // Note that the size of account metadata on GData WAPI seems small enough
-  // and (by controlling the query parameter) the response for GetAboutResource
-  // operation doesn't contain application list. Thus, the effect should be
-  // small cost.
-  // TODO(haruki): Application list rarely changes and is not necessarily
-  // refreshed as often as files.
-  scheduler_->GetAppList(
-      base::Bind(&ChangeListLoader::OnGetAppList,
-                 weak_ptr_factory_.GetWeakPtr()));
 
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
@@ -678,18 +658,6 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
                       OnDirectoryChanged(directory_path));
   }
-}
-
-void ChangeListLoader::OnGetAppList(google_apis::GDataErrorCode status,
-                                    scoped_ptr<google_apis::AppList> app_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  FileError error = util::GDataToFileError(status);
-  if (error != FILE_ERROR_OK)
-    return;
-
-  if (app_list.get())
-    webapps_registry_->UpdateFromAppList(*app_list);
 }
 
 void ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed(

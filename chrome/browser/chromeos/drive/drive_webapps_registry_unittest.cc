@@ -10,10 +10,14 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,6 +31,21 @@ class DriveWebAppsRegistryTest : public testing::Test {
  protected:
   DriveWebAppsRegistryTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    profile_.reset(new TestingProfile);
+
+    // The fake object will be manually deleted in TearDown().
+    fake_drive_service_.reset(new google_apis::FakeDriveService);
+    fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
+
+    scheduler_.reset(
+        new JobScheduler(profile_.get(), fake_drive_service_.get()));
+
+    web_apps_registry_.reset(new DriveWebAppsRegistry(scheduler_.get()));
+    web_apps_registry_->Update();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   bool VerifyApp(const ScopedVector<DriveWebAppInfo>& list,
@@ -67,35 +86,27 @@ class DriveWebAppsRegistryTest : public testing::Test {
               is_primary);
   }
 
- private:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
+
+  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<JobScheduler> scheduler_;
+  scoped_ptr<DriveWebAppsRegistry> web_apps_registry_;
 };
 
 TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
-  scoped_ptr<Value> document =
-      google_apis::test_util::LoadJSONFile("chromeos/drive/applist.json");
-  ASSERT_TRUE(document.get());
-  ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
-
-  // Load feed.
-  scoped_ptr<google_apis::AppList> app_list(
-      google_apis::AppList::CreateFrom(*document));
-  ASSERT_TRUE(app_list.get());
-  scoped_ptr<DriveWebAppsRegistry> web_apps(new DriveWebAppsRegistry);
-  web_apps->UpdateFromAppList(*app_list.get());
-
   // Find by primary extension 'exe'.
   ScopedVector<DriveWebAppInfo> ext_results;
   base::FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
-  web_apps->GetWebAppsForFile(ext_file, std::string(), &ext_results);
+  web_apps_registry_->GetWebAppsForFile(ext_file, std::string(), &ext_results);
   ASSERT_EQ(1U, ext_results.size());
   VerifyApp(ext_results, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
             "Drive app 1", "", true);
 
   // Find by primary MIME type.
   ScopedVector<DriveWebAppInfo> primary_app;
-  web_apps->GetWebAppsForFile(base::FilePath(),
+  web_apps_registry_->GetWebAppsForFile(base::FilePath(),
       "application/vnd.google-apps.drive-sdk.123456788192", &primary_app);
   ASSERT_EQ(1U, primary_app.size());
   VerifyApp(primary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
@@ -103,7 +114,8 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
 
   // Find by secondary MIME type.
   ScopedVector<DriveWebAppInfo> secondary_app;
-  web_apps->GetWebAppsForFile(base::FilePath(), "text/html", &secondary_app);
+  web_apps_registry_->GetWebAppsForFile(
+      base::FilePath(), "text/html", &secondary_app);
   ASSERT_EQ(1U, secondary_app.size());
   VerifyApp(secondary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
             "Drive app 1", "", false);

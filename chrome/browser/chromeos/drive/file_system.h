@@ -35,7 +35,6 @@ class ResourceEntry;
 
 namespace drive {
 
-class DriveWebAppsRegistry;
 class FileCacheEntry;
 class FileSystemObserver;
 class JobScheduler;
@@ -54,7 +53,6 @@ class FileSystem : public FileSystemInterface,
              internal::FileCache* cache,
              google_apis::DriveServiceInterface* drive_service,
              JobScheduler* scheduler,
-             DriveWebAppsRegistry* webapps_registry,
              internal::ResourceMetadata* resource_metadata,
              base::SequencedTaskRunner* blocking_task_runner);
   virtual ~FileSystem();
@@ -449,7 +447,6 @@ class FileSystem : public FileSystemInterface,
   internal::FileCache* cache_;
   google_apis::DriveServiceInterface* drive_service_;
   JobScheduler* scheduler_;
-  DriveWebAppsRegistry* webapps_registry_;
   internal::ResourceMetadata* resource_metadata_;
 
   // Time of the last update check.

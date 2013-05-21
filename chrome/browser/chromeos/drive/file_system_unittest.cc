@@ -19,7 +19,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -147,8 +146,6 @@ class DriveFileSystemTest : public testing::Test {
                                          blocking_task_runner_,
                                          fake_free_disk_space_getter_.get()));
 
-    drive_webapps_registry_.reset(new DriveWebAppsRegistry);
-
     mock_cache_observer_.reset(new StrictMock<MockCacheObserver>);
     cache_->AddObserver(mock_cache_observer_.get());
 
@@ -169,7 +166,6 @@ class DriveFileSystemTest : public testing::Test {
                                       cache_.get(),
                                       fake_drive_service_.get(),
                                       scheduler_.get(),
-                                      drive_webapps_registry_.get(),
                                       resource_metadata_.get(),
                                       blocking_task_runner_));
     file_system_->AddObserver(mock_directory_observer_.get());
@@ -447,7 +443,6 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<FileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
-  scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
@@ -2202,32 +2197,6 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
 
   // It must fail.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-}
-
-// TODO(satorux): Testing if WebAppsRegistry is loaded here is awkward. We
-// should move this to change_list_loader_unittest.cc. crbug.com/161703
-TEST_F(DriveFileSystemTest, WebAppsRegistryIsLoaded) {
-  ASSERT_TRUE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
-
-  // No apps should be found as the webapps registry is empty.
-  ScopedVector<DriveWebAppInfo> apps;
-  drive_webapps_registry_->GetWebAppsForFile(
-      base::FilePath::FromUTF8Unsafe("foo.exe"),
-      "" /* mime_type */,
-      &apps);
-  EXPECT_TRUE(apps.empty());
-
-  // Kicks loading of cached file system and query for server update. This
-  // will cause GetAboutResource() to be called, to check the server-side
-  // changestamp, and the webapps registry will be loaded at the same time.
-  EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
-
-  // An app for foo.exe should now be found, as the registry was loaded.
-  drive_webapps_registry_->GetWebAppsForFile(
-      base::FilePath(FILE_PATH_LITERAL("foo.exe")),
-      "" /* mime_type */,
-      &apps);
-  EXPECT_EQ(1U, apps.size());
 }
 
 TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {

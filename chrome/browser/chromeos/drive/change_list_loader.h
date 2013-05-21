@@ -26,14 +26,12 @@ class SequencedTaskRunner;
 
 namespace google_apis {
 class AboutResource;
-class AppList;
 class ResourceList;
 }  // namespace google_apis
 
 namespace drive {
 
 class DirectoryFetchInfo;
-class DriveWebAppsRegistry;
 class JobScheduler;
 class ResourceEntry;
 
@@ -54,8 +52,7 @@ class ChangeListLoader {
  public:
   ChangeListLoader(base::SequencedTaskRunner* blocking_task_runner,
                    ResourceMetadata* resource_metadata,
-                   JobScheduler* scheduler,
-                   DriveWebAppsRegistry* webapps_registry);
+                   JobScheduler* scheduler);
   ~ChangeListLoader();
 
   // Indicates whether there is a feed refreshing server request is in flight.
@@ -253,12 +250,6 @@ class ChangeListLoader {
 
   // ================= Implementation for other stuff =================
 
-  // Callback for handling response from |DriveAPIService::GetAppList|.
-  // If the application list is successfully parsed, passes the list to
-  // Drive webapps registry.
-  void OnGetAppList(google_apis::GDataErrorCode status,
-                    scoped_ptr<google_apis::AppList> app_list);
-
   // Part of UpdateFromFeed().
   // Callback for ChangeListProcessor::ApplyFeeds.
   void NotifyDirectoryChangedAfterApplyFeed(
@@ -270,7 +261,6 @@ class ChangeListLoader {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
-  DriveWebAppsRegistry* webapps_registry_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;
   typedef std::map<std::string, std::vector<FileOperationCallback> >
       LoadCallbackMap;

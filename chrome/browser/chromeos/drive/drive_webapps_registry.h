@@ -9,7 +9,10 @@
 #include <set>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "googleurl/src/gurl.h"
 
@@ -22,6 +25,8 @@ class AppList;
 }  // namespace AppList
 
 namespace drive {
+
+class JobScheduler;
 
 // Data structure that defines WebApp
 struct DriveWebAppInfo {
@@ -55,7 +60,7 @@ struct DriveWebAppInfo {
 // Keeps the track of installed drive web application and provider in-memory.
 class DriveWebAppsRegistry {
  public:
-  DriveWebAppsRegistry();
+  explicit DriveWebAppsRegistry(JobScheduler* scheduler);
   ~DriveWebAppsRegistry();
 
   // Returns a list of web app information for the |file| with |mime_type|.
@@ -63,8 +68,8 @@ class DriveWebAppsRegistry {
                          const std::string& mime_type,
                          ScopedVector<DriveWebAppInfo>* apps);
 
-  // Updates this registry based on the |applist| fetched from the server.
-  void UpdateFromAppList(const google_apis::AppList& applist);
+  // Updates this registry by fetching the data from the server.
+  void Update();
 
  private:
   // Defines WebApp application details that are associated with a given
@@ -104,6 +109,11 @@ class DriveWebAppsRegistry {
   typedef std::map<const WebAppFileSelector*,
                    DriveWebAppInfo*> SelectorWebAppList;
 
+  // Part of Update(). Runs upon the completion of fetching the web apps
+  // data from the server.
+  void UpdateAfterGetAppList(google_apis::GDataErrorCode gdata_error,
+                             scoped_ptr<google_apis::AppList> app_list);
+
   // Helper function for loading web application file |selectors| into
   // corresponding |map|.
   static void AddAppSelectorList(
@@ -121,6 +131,8 @@ class DriveWebAppsRegistry {
                               const WebAppFileSelectorMap& map,
                               SelectorWebAppList* apps);
 
+  JobScheduler* scheduler_;
+
   // Map of web store product URL to application name.
   std::map<GURL, std::string> url_to_name_map_;
 
@@ -130,6 +142,9 @@ class DriveWebAppsRegistry {
   // Map of MIME type to application info.
   WebAppFileSelectorMap webapp_mimetypes_map_;
 
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate the weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<DriveWebAppsRegistry> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DriveWebAppsRegistry);
 };
 

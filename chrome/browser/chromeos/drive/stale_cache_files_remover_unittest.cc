@@ -9,7 +9,6 @@
 #include "base/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -59,8 +58,6 @@ class StaleCacheFilesRemoverTest : public testing::Test {
                                blocking_task_runner_,
                                fake_free_disk_space_getter_.get()));
 
-    drive_webapps_registry_.reset(new DriveWebAppsRegistry);
-
     resource_metadata_.reset(new ResourceMetadata(
         cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
         blocking_task_runner_));
@@ -69,7 +66,6 @@ class StaleCacheFilesRemoverTest : public testing::Test {
                                       cache_.get(),
                                       fake_drive_service_.get(),
                                       scheduler_.get(),
-                                      drive_webapps_registry_.get(),
                                       resource_metadata_.get(),
                                       blocking_task_runner_));
 
@@ -105,7 +101,6 @@ class StaleCacheFilesRemoverTest : public testing::Test {
   scoped_ptr<FileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
-  scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;

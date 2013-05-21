@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
-#include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -58,10 +57,8 @@ class CreateDirectoryOperationTest
     scheduler_.reset(
         new JobScheduler(profile_.get(), fake_drive_service_.get()));
 
-    DriveWebAppsRegistry drive_web_apps_registry;
     internal::ChangeListLoader change_list_loader(
-        blocking_task_runner_, metadata_.get(), scheduler_.get(),
-        &drive_web_apps_registry);
+        blocking_task_runner_, metadata_.get(), scheduler_.get());
 
     // Makes sure the FakeDriveService's content is loaded to the metadata_.
     change_list_loader.LoadIfNeeded(

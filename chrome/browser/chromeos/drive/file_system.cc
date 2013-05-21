@@ -205,14 +205,12 @@ FileSystem::FileSystem(
     internal::FileCache* cache,
     google_apis::DriveServiceInterface* drive_service,
     JobScheduler* scheduler,
-    DriveWebAppsRegistry* webapps_registry,
     internal::ResourceMetadata* resource_metadata,
     base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
       cache_(cache),
       drive_service_(drive_service),
       scheduler_(scheduler),
-      webapps_registry_(webapps_registry),
       resource_metadata_(resource_metadata),
       last_update_check_error_(FILE_ERROR_OK),
       hide_hosted_docs_(false),
@@ -264,8 +262,7 @@ void FileSystem::ReloadAfterReset(FileError error) {
 
 void FileSystem::SetupChangeListLoader() {
   change_list_loader_.reset(new internal::ChangeListLoader(
-      blocking_task_runner_, resource_metadata_, scheduler_,
-      webapps_registry_));
+      blocking_task_runner_, resource_metadata_, scheduler_));
   change_list_loader_->AddObserver(this);
 }
 
