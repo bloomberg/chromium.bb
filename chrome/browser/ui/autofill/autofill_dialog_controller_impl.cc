@@ -86,6 +86,11 @@ const char kAddNewItemKey[] = "add-new-item";
 const char kManageItemsKey[] = "manage-items";
 const char kSameAsBillingKey[] = "same-as-billing";
 
+// This string is stored along with saved addresses and credit cards in the
+// WebDB, and hence should not be modified, so that it remains consistent over
+// time.
+const char kAutofillDialogOrigin[] = "Chrome Autofill dialog";
+
 // Returns true if |input| should be shown when |field_type| has been requested.
 bool InputTypeMatchesFieldType(const DetailInput& input,
                                AutofillFieldType field_type) {
@@ -1938,6 +1943,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
 
     if (section == SECTION_CC) {
       CreditCard card;
+      card.set_origin(kAutofillDialogOrigin);
       FillFormGroupFromOutputs(output, &card);
 
       if (ShouldSaveDetailsLocally())
@@ -1949,6 +1955,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       SetCvcResult(GetValueForType(output, CREDIT_CARD_VERIFICATION_CODE));
     } else {
       AutofillProfile profile;
+      profile.set_origin(kAutofillDialogOrigin);
       FillFormGroupFromOutputs(output, &profile);
 
       // For billing, the profile name has to come from the CC section.

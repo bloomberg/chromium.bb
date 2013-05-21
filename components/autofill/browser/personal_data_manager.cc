@@ -231,6 +231,10 @@ bool PersonalDataManager::ImportFormData(
   scoped_ptr<AutofillProfile> imported_profile(new AutofillProfile);
   scoped_ptr<CreditCard> local_imported_credit_card(new CreditCard);
 
+  const std::string origin = form.source_url().spec();
+  imported_profile->set_origin(origin);
+  local_imported_credit_card->set_origin(origin);
+
   // Parse the form and construct a profile based on the information that is
   // possible to import.
   int importable_credit_card_fields = 0;

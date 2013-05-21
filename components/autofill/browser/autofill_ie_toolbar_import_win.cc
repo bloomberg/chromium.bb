@@ -44,6 +44,11 @@ const wchar_t* const kCreditCardKey =
 const wchar_t* const kPasswordHashValue = L"password_hash";
 const wchar_t* const kSaltValue = L"salt";
 
+// This string is stored along with saved addresses and credit cards in the
+// WebDB, and hence should not be modified, so that it remains consistent over
+// time.
+const char kIEToolbarImportOrigin[] = "Imported from Internet Explorer";
+
 // This is RC4 decryption for Toolbar credit card data. This is necessary
 // because it is not standard, so Crypto API cannot be used.
 std::wstring DecryptCCNumber(const std::wstring& data) {
@@ -259,6 +264,7 @@ bool ImportCurrentUserProfiles(const std::string& app_locale,
     key_name.append(iterator_profiles.Name());
     RegKey key(HKEY_CURRENT_USER, key_name.c_str(), KEY_READ);
     AutofillProfile profile;
+    profile.set_origin(kIEToolbarImportOrigin);
     if (ImportSingleProfile(app_locale, key, reg_to_field, &profile)) {
       // Combine phones into whole phone #.
       profiles->push_back(profile);
@@ -282,6 +288,7 @@ bool ImportCurrentUserProfiles(const std::string& app_locale,
       key_name.append(iterator_cc.Name());
       RegKey key(HKEY_CURRENT_USER, key_name.c_str(), KEY_READ);
       CreditCard credit_card;
+      credit_card.set_origin(kIEToolbarImportOrigin);
       if (ImportSingleFormGroup(
               key, reg_to_field, app_locale, &credit_card, NULL)) {
         base::string16 cc_number = credit_card.GetRawInfo(CREDIT_CARD_NUMBER);
