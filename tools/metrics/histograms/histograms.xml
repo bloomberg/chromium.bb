@@ -2060,6 +2060,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="LevelDBEnv.IDB.RetryRecoveredFromErrorIn"
+    enum="PlatformFileError">
+  <summary>
+    When IDB LevelDBEnv successfully retries an operation that had failed,
+    record the error from the most recent failed attempt.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.IDB.TimeTo" units="milliseconds">
   <obsolete>
     Deprecated 2013-04. As of m28 use LevelDBEnv.IDB.TimeUntilSuccessFor.
@@ -2121,6 +2129,13 @@ other types of suffix sets.
   <summary>
     File descriptor limit recorded every time LevelDB calls NewRandomAccessFile
     for clients other than IndexedDB.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.RetryRecoveredFromErrorIn" enum="PlatformFileError">
+  <summary>
+    When Non-IDB LevelDBEnv successfully retries an operation that had failed,
+    record the error from the most recent failed attempt.
   </summary>
 </histogram>
 
@@ -14132,13 +14147,6 @@ other types of suffix sets.
   <affected-histogram name="Renderer4.StartToFinish"/>
 </fieldtrial>
 
-<fieldtrial name="LevelDBEnvExponentialRetryTimes" separator="">
-  <group name="RenameFile" label="RenameFile"/>
-  <group name="LockFile" label="LockFile"/>
-  <affected-histogram name="LevelDBEnv.IDB.TimeUntilSuccessFor"/>
-  <affected-histogram name="LevelDBEnv.TimeUntilSuccessFor"/>
-</fieldtrial>
-
 <fieldtrial name="LevelDBEnvMaxFDs" separator=".">
   <group name="Success"
       label="This histogram shows the limit when open succeeded."/>
@@ -14160,9 +14168,18 @@ other types of suffix sets.
   <affected-histogram name="LevelDBEnv.IOError."/>
 </fieldtrial>
 
+<fieldtrial name="LevelDBEnvRetry" separator="">
+  <group name="RenameFile" label="RenameFile"/>
+  <group name="LockFile" label="LockFile"/>
+  <affected-histogram name="LevelDBEnv.IDB.RetryRecoveredFromErrorIn"/>
+  <affected-histogram name="LevelDBEnv.IDB.TimeUntilSuccessFor"/>
+  <affected-histogram name="LevelDBEnv.RetryRecoveredFromErrorIn"/>
+  <affected-histogram name="LevelDBEnv.TimeUntilSuccessFor"/>
+</fieldtrial>
+
 <fieldtrial name="LevelDBEnvRetryTimes" separator="">
   <obsolete>
-    Deprecated 2013-04 in favor of LevelDBEnvExponentialRetryTimes.
+    Deprecated 2013-04 in favor of LevelDBEnvRetry.
   </obsolete>
   <group name="Rename" label="RenameFile"/>
   <group name="LockFile" label="LockFile"/>

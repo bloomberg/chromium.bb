@@ -206,6 +206,14 @@ class UMALogger {
       const = 0;
 };
 
+class RetrierProvider {
+ public:
+  virtual int MaxRetryTimeMillis() const = 0;
+  virtual base::HistogramBase* GetRetryTimeHistogram(MethodID method) const = 0;
+  virtual base::HistogramBase* GetRecoveredFromErrorHistogram(
+      MethodID method) const = 0;
+};
+
 static const base::FilePath::CharType kLevelDBTestDirectoryPrefix[]
     = FILE_PATH_LITERAL("leveldb-test-");
 
@@ -394,7 +402,7 @@ class ChromiumFileLock : public FileLock {
   ::base::PlatformFile file_;
 };
 
-class ChromiumEnv : public Env, public UMALogger {
+class ChromiumEnv : public Env, public UMALogger, public RetrierProvider {
  public:
   ChromiumEnv();
   virtual ~ChromiumEnv() {
@@ -531,19 +539,28 @@ class ChromiumEnv : public Env, public UMALogger {
 
   class Retrier {
    public:
-    Retrier(base::HistogramBase* histogram, const int kMaxRetryMillis)
+    Retrier(MethodID method, RetrierProvider* provider)
         : start_(base::TimeTicks::Now()),
-          limit_(start_ + base::TimeDelta::FromMilliseconds(kMaxRetryMillis)),
+          limit_(start_ + base::TimeDelta::FromMilliseconds(
+                              provider->MaxRetryTimeMillis())),
           last_(start_),
           time_to_sleep_(base::TimeDelta::FromMilliseconds(10)),
           success_(true),
-          histogram_(histogram) {}
-
+          method_(method),
+          last_error_(base::PLATFORM_FILE_OK),
+          provider_(provider) {}
     ~Retrier() {
-      if (success_)
-        histogram_->AddTime(last_ - start_);
+      if (success_) {
+        provider_->GetRetryTimeHistogram(method_)->AddTime(last_ - start_);
+        if (last_error_ != base::PLATFORM_FILE_OK) {
+          DCHECK(last_error_ < 0);
+          provider_->GetRecoveredFromErrorHistogram(method_)->Add(-last_error_);
+        }
+      }
     }
-    bool ShouldKeepTrying() {
+    bool ShouldKeepTrying(base::PlatformFileError last_error) {
+      DCHECK_NE(last_error, base::PLATFORM_FILE_OK);
+      last_error_ = last_error;
       if (last_ < limit_) {
         base::PlatformThread::Sleep(time_to_sleep_);
         last_ = base::TimeTicks::Now();
@@ -558,7 +575,9 @@ class ChromiumEnv : public Env, public UMALogger {
     base::TimeTicks last_;
     base::TimeDelta time_to_sleep_;
     bool success_;
-    base::HistogramBase* histogram_;
+    MethodID method_;
+    base::PlatformFileError last_error_;
+    RetrierProvider* provider_;
   };
 
   virtual Status RenameFile(const std::string& src, const std::string& dst) {
@@ -568,7 +587,7 @@ class ChromiumEnv : public Env, public UMALogger {
       return result;
     base::FilePath destination = CreateFilePath(dst);
 
-    Retrier retrier(GetRetryTimeHistogram(kRenameFile), kMaxRetryTimeMillis);
+    Retrier retrier(kRenameFile, this);
     base::PlatformFileError error = base::PLATFORM_FILE_OK;
     do {
       if (::file_util::ReplaceFileAndGetError(
@@ -578,7 +597,7 @@ class ChromiumEnv : public Env, public UMALogger {
           sync_parent(src);
         return result;
       }
-    } while (retrier.ShouldKeepTrying());
+    } while (retrier.ShouldKeepTrying(error));
 
     DCHECK(error != base::PLATFORM_FILE_OK);
     RecordOSError(kRenameFile, error);
@@ -599,12 +618,12 @@ class ChromiumEnv : public Env, public UMALogger {
     bool created;
     ::base::PlatformFileError error_code;
     ::base::PlatformFile file;
-    Retrier retrier(GetRetryTimeHistogram(kLockFile), kMaxRetryTimeMillis);
+    Retrier retrier(kLockFile, this);
     do {
       file = ::base::CreatePlatformFile(
           CreateFilePath(fname), flags, &created, &error_code);
     } while (error_code != ::base::PLATFORM_FILE_OK &&
-             retrier.ShouldKeepTrying());
+             retrier.ShouldKeepTrying(error_code));
 
     if (error_code == ::base::PLATFORM_FILE_ERROR_NOT_FOUND) {
       ::base::FilePath parent = CreateFilePath(fname).DirName();
@@ -723,10 +742,18 @@ class ChromiumEnv : public Env, public UMALogger {
   }
 
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
-  base::HistogramBase* GetRetryTimeHistogram(MethodID method) const;
   base::HistogramBase* GetMethodIOErrorHistogram() const;
   base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
   base::HistogramBase* GetLockFileAncestorHistogram() const;
+
+  // RetrierProvider implementation.
+  virtual int MaxRetryTimeMillis() const {
+    return kMaxRetryTimeMillis;
+  }
+  virtual base::HistogramBase* GetRetryTimeHistogram(MethodID method) const;
+  virtual base::HistogramBase* GetRecoveredFromErrorHistogram(
+      MethodID method) const;
+
   base::FilePath test_directory_;
 
   ::base::Lock mu_;
@@ -752,21 +779,6 @@ base::HistogramBase* ChromiumEnv::GetOSErrorHistogram(MethodID method,
   // TODO(dgrogan): This is probably not the best way to concatenate strings.
   uma_name.append(".IOError.").append(MethodIDToString(method));
   return base::LinearHistogram::FactoryGet(uma_name, 1, limit, limit + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
-}
-
-base::HistogramBase* ChromiumEnv::GetRetryTimeHistogram(MethodID method) const {
-  std::string uma_name(name_);
-  // TODO(dgrogan): This is probably not the best way to concatenate strings.
-  uma_name.append(".TimeUntilSuccessFor").append(MethodIDToString(method));
-
-  const int kBucketSizeMillis = 25;
-  // Add 2, 1 for each of the buckets <1 and >max.
-  const int kNumBuckets = kMaxRetryTimeMillis / kBucketSizeMillis + 2;
-  return base::Histogram::FactoryTimeGet(
-      uma_name, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromMilliseconds(kMaxRetryTimeMillis + 1),
-      kNumBuckets,
       base::Histogram::kUmaTargetedHistogramFlag);
 }
 
@@ -799,6 +811,30 @@ base::HistogramBase* ChromiumEnv::GetLockFileAncestorHistogram() const {
   return base::LinearHistogram::FactoryGet(
       uma_name, kMin, kMax, kNumBuckets,
       base::Histogram::kUmaTargetedHistogramFlag);
+}
+
+base::HistogramBase* ChromiumEnv::GetRetryTimeHistogram(MethodID method) const {
+  std::string uma_name(name_);
+  // TODO(dgrogan): This is probably not the best way to concatenate strings.
+  uma_name.append(".TimeUntilSuccessFor").append(MethodIDToString(method));
+
+  const int kBucketSizeMillis = 25;
+  // Add 2, 1 for each of the buckets <1 and >max.
+  const int kNumBuckets = kMaxRetryTimeMillis / kBucketSizeMillis + 2;
+  return base::Histogram::FactoryTimeGet(
+      uma_name, base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMilliseconds(kMaxRetryTimeMillis + 1),
+      kNumBuckets,
+      base::Histogram::kUmaTargetedHistogramFlag);
+}
+
+base::HistogramBase* ChromiumEnv::GetRecoveredFromErrorHistogram(
+    MethodID method) const {
+  std::string uma_name(name_);
+  uma_name.append(".RetryRecoveredFromErrorIn")
+      .append(MethodIDToString(method));
+  return base::LinearHistogram::FactoryGet(uma_name, 1, kNumEntries,
+      kNumEntries + 1, base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 class Thread : public ::base::PlatformThread::Delegate {
