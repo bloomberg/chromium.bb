@@ -145,7 +145,8 @@
     (r'content_common\.lib$', r'page_zoom\.obj$'),
     (r'content_common\.lib$', r'url_constants\.obj$'),
     (r'gl_wrapper\.lib$', r'gl_switches\.obj$'),
-    # TODO(scottmg): This one is not solely constants, but looks safe.
+    # TODO(scottmg): These are not solely constants, but look safe.
+    (r'libjingle_webrtc_common\.lib$', r'localaudiosource\.obj$'),
     (r'libjingle_webrtc_common\.lib$', r'mediaconstraintsinterface\.obj$'),
     (r'\bmedia\.lib$', r'audio_manager_base\.obj$'),
     (r'\bmedia\.lib$', r'media_switches\.obj$'),
