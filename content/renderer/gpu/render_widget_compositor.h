@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "cc/debug/rendering_stats.h"
+#include "cc/input/top_controls_state.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "skia/ext/refptr.h"
@@ -42,8 +43,8 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   void SetRasterizeOnlyVisibleContent();
   void GetRenderingStats(cc::RenderingStats* stats);
   skia::RefPtr<SkPicture> CapturePicture();
-  void UpdateTopControlsState(bool enable_hiding,
-                              bool enable_showing,
+  void UpdateTopControlsState(cc::TopControlsState constraints,
+                              cc::TopControlsState current,
                               bool animate);
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
   void SetNeedsRedrawRect(gfx::Rect damage_rect);

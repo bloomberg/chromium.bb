@@ -212,6 +212,10 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_AddStrictSecurityHost,
                         OnAddStrictSecurityHost)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_NPAPINotSupported, OnNPAPINotSupported)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateTopControlsState,
+                        OnUpdateTopControlsState)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -278,6 +282,15 @@ void ChromeRenderViewObserver::OnNPAPINotSupported() {
   NOTREACHED();
 #endif
 }
+
+#if defined(OS_ANDROID)
+void ChromeRenderViewObserver::OnUpdateTopControlsState(
+    content::TopControlsState constraints,
+    content::TopControlsState current,
+    bool animate) {
+  render_view()->UpdateTopControlsState(constraints, current, animate);
+}
+#endif
 
 void ChromeRenderViewObserver::Navigate(const GURL& url) {
   // Execute cache clear operations that were postponed until a navigation

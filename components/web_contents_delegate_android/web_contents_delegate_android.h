@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/gfx/vector2d.h"
 
 class GURL;
 
@@ -86,14 +87,15 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool TakeFocus(content::WebContents* source, bool reverse) OVERRIDE;
-
   virtual void ShowRepostFormWarningDialog(
       content::WebContents* source) OVERRIDE;
-
   virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
                                           bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const OVERRIDE;
+  virtual void DidProgrammaticallyScroll(
+      content::WebContents* web_contents,
+      const gfx::Vector2d& scroll_point) OVERRIDE;
 
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;

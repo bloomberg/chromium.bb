@@ -48,6 +48,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -1611,6 +1612,14 @@ void RenderWidget::show(WebNavigationPolicy) {
   // process will impose a default position otherwise.
   Send(new ViewHostMsg_ShowWidget(opener_id_, routing_id_, initial_pos_));
   SetPendingWindowRect(initial_pos_);
+}
+
+void RenderWidget::didProgrammaticallyScroll(
+    const WebKit::WebPoint& scroll_point) {
+  if (!compositor_)
+    return;
+  Send(new ViewHostMsg_DidProgrammaticallyScroll(
+    routing_id_, gfx::Vector2d(scroll_point.x, scroll_point.y)));
 }
 
 void RenderWidget::didFocus() {

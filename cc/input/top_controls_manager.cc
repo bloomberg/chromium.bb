@@ -40,7 +40,7 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
                                        float top_controls_hide_threshold)
     : client_(client),
       animation_direction_(NO_ANIMATION),
-      visibility_restriction_(NONE),
+      permitted_state_(BOTH),
       controls_top_offset_(0.f),
       top_controls_height_(top_controls_height),
       current_scroll_delta_(0.f),
@@ -55,31 +55,37 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
 TopControlsManager::~TopControlsManager() {
 }
 
-void TopControlsManager::UpdateTopControlsState(bool enable_hiding,
-                                                bool enable_showing,
+void TopControlsManager::UpdateTopControlsState(TopControlsState constraints,
+                                                TopControlsState current,
                                                 bool animate) {
-  float final_controls_position = 0.f;
+  DCHECK(!(constraints == SHOWN && current == HIDDEN));
+  DCHECK(!(constraints == HIDDEN && current == SHOWN));
 
-  if (enable_hiding && enable_showing) {
-    visibility_restriction_ = NONE;
-  } else if (enable_showing || !enable_hiding) {
-    visibility_restriction_ = ALWAYS_SHOWN;
-  } else {
-    visibility_restriction_ = ALWAYS_HIDDEN;
+  permitted_state_ = constraints;
+
+  // Don't do anything if it doesn't matter which state the controls are in.
+  if (constraints == BOTH && current == BOTH)
+    return;
+
+  // Don't do anything if there is no change in offset.
+  float final_controls_position = 0.f;
+  if (constraints == HIDDEN || current == HIDDEN) {
     final_controls_position = -top_controls_height_;
   }
-
-  if (visibility_restriction_ != NONE &&
-      final_controls_position != controls_top_offset_) {
-    ResetAnimations();
-    if (animate) {
-      SetupAnimation(visibility_restriction_ == ALWAYS_SHOWN ?
-          SHOWING_CONTROLS : HIDING_CONTROLS);
-    } else {
-      controls_top_offset_ = final_controls_position;
-    }
-    client_->DidChangeTopControlsPosition();
+  if (final_controls_position == controls_top_offset_) {
+    return;
   }
+
+  AnimationDirection animation_direction = SHOWING_CONTROLS;
+  if (constraints == HIDDEN || current == HIDDEN)
+    animation_direction = HIDING_CONTROLS;
+  ResetAnimations();
+  if (animate) {
+    SetupAnimation(animation_direction);
+  } else {
+    controls_top_offset_ = final_controls_position;
+  }
+  client_->DidChangeTopControlsPosition();
 }
 
 void TopControlsManager::ScrollBegin() {
@@ -90,9 +96,9 @@ void TopControlsManager::ScrollBegin() {
 
 gfx::Vector2dF TopControlsManager::ScrollBy(
     const gfx::Vector2dF pending_delta) {
-  if (visibility_restriction_ == ALWAYS_SHOWN && pending_delta.y() > 0)
+  if (permitted_state_ == SHOWN && pending_delta.y() > 0)
     return pending_delta;
-  else if (visibility_restriction_ == ALWAYS_HIDDEN && pending_delta.y() < 0)
+  else if (permitted_state_ == HIDDEN && pending_delta.y() < 0)
     return pending_delta;
 
   current_scroll_delta_ += pending_delta.y();
@@ -153,6 +159,19 @@ void TopControlsManager::ResetAnimations() {
 }
 
 void TopControlsManager::SetupAnimation(AnimationDirection direction) {
+  DCHECK(direction != NO_ANIMATION);
+
+  if (direction == SHOWING_CONTROLS && controls_top_offset_ == 0)
+    return;
+
+  if (direction == HIDING_CONTROLS &&
+      controls_top_offset_ == -top_controls_height_) {
+    return;
+  }
+
+  if (top_controls_animation_ && animation_direction_ == direction)
+    return;
+
   top_controls_animation_ = KeyframedFloatAnimationCurve::Create();
   double start_time =
       (base::TimeTicks::Now() - base::TimeTicks()).InMillisecondsF();
@@ -166,6 +185,7 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
                             controls_top_offset_ + max_ending_offset,
                             EaseTimingFunction::Create()));
   animation_direction_ = direction;
+  client_->DidChangeTopControlsPosition();
 }
 
 void TopControlsManager::StartAnimationIfNecessary() {
@@ -187,11 +207,8 @@ void TopControlsManager::StartAnimationIfNecessary() {
           SHOWING_CONTROLS : HIDING_CONTROLS;
     }
 
-    if (show_controls != NO_ANIMATION &&
-        (!top_controls_animation_ || animation_direction_ != show_controls)) {
+    if (show_controls != NO_ANIMATION)
       SetupAnimation(show_controls);
-      client_->DidChangeTopControlsPosition();
-    }
   }
 }
 

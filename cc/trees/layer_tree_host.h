@@ -20,6 +20,7 @@
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/debug/latency_info.h"
 #include "cc/input/input_handler.h"
+#include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/output/output_surface.h"
 #include "cc/scheduler/rate_limiter.h"
@@ -230,8 +231,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
-  void UpdateTopControlsState(bool enable_hiding,
-                              bool enable_showing,
+  void UpdateTopControlsState(TopControlsState constraints,
+                              TopControlsState current,
                               bool animate);
 
   HeadsUpDisplayLayer* hud_layer() const { return hud_layer_.get(); }

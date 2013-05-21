@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "content/public/common/top_controls_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
@@ -139,6 +140,11 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   void OnGetFPS();
   void OnAddStrictSecurityHost(const std::string& host);
   void OnNPAPINotSupported();
+#if defined(OS_ANDROID)
+  void OnUpdateTopControlsState(content::TopControlsState constraints,
+                                content::TopControlsState current,
+                                bool animate);
+#endif
 
   void CapturePageInfoLater(bool preliminary_capture, base::TimeDelta delay);
 

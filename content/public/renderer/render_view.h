@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/common/top_controls_state.h"
 #include "ipc/ipc_sender.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
@@ -169,6 +170,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // performance impact and should not be used for other purposes.
   // Requires enabling the impl-side painting feature in the compositor.
   virtual skia::RefPtr<SkPicture> CapturePicture() = 0;
+  virtual void UpdateTopControlsState(TopControlsState constraints,
+                                      TopControlsState current,
+                                      bool animate) = 0;
 #endif
 
  protected:

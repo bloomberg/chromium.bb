@@ -334,11 +334,12 @@ skia::RefPtr<SkPicture> RenderWidgetCompositor::CapturePicture() {
   return layer_tree_host_->CapturePicture();
 }
 
-void RenderWidgetCompositor::UpdateTopControlsState(bool enable_hiding,
-                                                    bool enable_showing,
-                                                    bool animate) {
-  layer_tree_host_->UpdateTopControlsState(enable_hiding,
-                                           enable_showing,
+void RenderWidgetCompositor::UpdateTopControlsState(
+    cc::TopControlsState constraints,
+    cc::TopControlsState current,
+    bool animate) {
+  layer_tree_host_->UpdateTopControlsState(constraints,
+                                           current,
                                            animate);
 }
 

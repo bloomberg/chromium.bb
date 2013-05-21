@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_impl.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d_f.h"
@@ -31,12 +32,6 @@ class CC_EXPORT TopControlsManager
     HIDING_CONTROLS
   };
 
-  enum VisibilityRestriction {
-    ALWAYS_SHOWN,
-    ALWAYS_HIDDEN,
-    NONE
-  };
-
   static scoped_ptr<TopControlsManager> Create(
       TopControlsManagerClient* client,
       float top_controls_height,
@@ -53,8 +48,8 @@ class CC_EXPORT TopControlsManager
   }
   AnimationDirection animation_direction() { return animation_direction_; }
 
-  void UpdateTopControlsState(bool enable_hiding,
-                              bool enable_showing,
+  void UpdateTopControlsState(TopControlsState constraints,
+                              TopControlsState current,
                               bool animate);
 
   void ScrollBegin();
@@ -81,7 +76,7 @@ class CC_EXPORT TopControlsManager
 
   scoped_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
   AnimationDirection animation_direction_;
-  VisibilityRestriction visibility_restriction_;
+  TopControlsState permitted_state_;
   float controls_top_offset_;
   float top_controls_height_;
 

@@ -364,6 +364,7 @@
             'content_common',
             'page_transition_types_java',
             'result_codes_java',
+            'top_controls_state_java',
             'content_native_libraries_gen',
           ],
           'variables': {
@@ -405,6 +406,18 @@
           'variables': {
             'package_name': 'org/chromium/content/common',
             'template_deps': ['public/common/result_codes_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
+          'target_name': 'top_controls_state_java',
+          'type': 'none',
+          'sources': [
+            'public/android/java/src/org/chromium/content/common/TopControlsState.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/content/common',
+            'template_deps': ['public/common/top_controls_state_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },

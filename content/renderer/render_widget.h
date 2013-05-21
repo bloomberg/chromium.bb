@@ -142,6 +142,7 @@ class CONTENT_EXPORT RenderWidget
   virtual void closeWidgetSoon();
   virtual void show(WebKit::WebNavigationPolicy);
   virtual void runModal() {}
+  virtual void didProgrammaticallyScroll(const WebKit::WebPoint& scroll_point);
   virtual WebKit::WebRect windowRect();
   virtual void setToolTipText(const WebKit::WebString& text,
                               WebKit::WebTextDirection hint);

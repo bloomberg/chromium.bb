@@ -971,8 +971,8 @@ void LayerTreeHost::SetDeviceScaleFactor(float device_scale_factor) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::UpdateTopControlsState(bool enable_hiding,
-                                           bool enable_showing,
+void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
+                                           TopControlsState current,
                                            bool animate) {
   if (!settings_.calculate_top_controls_position)
     return;
@@ -981,8 +981,8 @@ void LayerTreeHost::UpdateTopControlsState(bool enable_hiding,
   proxy_->ImplThread()->PostTask(
       base::Bind(&TopControlsManager::UpdateTopControlsState,
                  top_controls_manager_weak_ptr_,
-                 enable_hiding,
-                 enable_showing,
+                 constraints,
+                 current,
                  animate));
 }
 

@@ -26,6 +26,7 @@
 #include "chrome/common/search_types.h"
 #include "chrome/common/translate_errors.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/top_controls_state.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -126,6 +127,7 @@ IPC_ENUM_TRAITS(ThemeBackgroundImageAlignment)
 IPC_ENUM_TRAITS(ThemeBackgroundImageTiling)
 IPC_ENUM_TRAITS(TranslateErrors::Type)
 IPC_ENUM_TRAITS(WebKit::WebConsoleMessage::Level)
+IPC_ENUM_TRAITS(content::TopControlsState)
 
 IPC_STRUCT_TRAITS_BEGIN(ChromeViewHostMsg_GetPluginInfo_Status)
 IPC_STRUCT_TRAITS_MEMBER(value)
@@ -409,6 +411,14 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
 // This message asks frame sniffer start.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_StartFrameSniffer,
                     string16 /* frame-name */)
+
+// Notifies the renderer whether hiding/showing the top controls is enabled,
+// what the current state should be, and whether or not to animate to the
+// proper state.
+IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateTopControlsState,
+                    content::TopControlsState /* constraints */,
+                    content::TopControlsState /* current */,
+                    bool /* animate */)
 
 // JavaScript related messages -----------------------------------------------
 

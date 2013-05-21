@@ -94,6 +94,8 @@
     'public/common/ssl_status.h',
     'public/common/stop_find_action.h',
     'public/common/three_d_api_types.h',
+    'public/common/top_controls_state.h',
+    'public/common/top_controls_state_list.h',
     'public/common/url_constants.cc',
     'public/common/url_constants.h',
     'public/common/url_fetcher.h',
