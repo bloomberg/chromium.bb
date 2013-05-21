@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/css/PageRuleCollector.h"
 
-#include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 

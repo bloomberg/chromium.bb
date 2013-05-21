@@ -24,7 +24,6 @@
 
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
-#include "core/dom/TreeScope.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"

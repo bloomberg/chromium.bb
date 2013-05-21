@@ -37,7 +37,6 @@
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
-#include "core/platform/KURL.h"
 #include "core/rendering/style/StyleCachedShader.h"
 #include "core/rendering/style/StylePendingShader.h"
 

@@ -28,7 +28,6 @@
 
 #include "CSSValueKeywords.h"
 #include "core/css/CSSParser.h"
-#include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValueList.h"
 
 namespace WebCore {

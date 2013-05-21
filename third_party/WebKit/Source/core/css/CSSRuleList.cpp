@@ -23,7 +23,6 @@
 #include "core/css/CSSRuleList.h"
 
 #include "core/css/CSSRule.h"
-#include "core/css/CSSStyleSheet.h"
 #include <wtf/MemoryInstrumentationVector.h>
 
 namespace WebCore {

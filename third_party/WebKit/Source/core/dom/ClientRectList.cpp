@@ -28,7 +28,6 @@
 #include "core/dom/ClientRectList.h"
 
 #include "core/dom/ClientRect.h"
-#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 

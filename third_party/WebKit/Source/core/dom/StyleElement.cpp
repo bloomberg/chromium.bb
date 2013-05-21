@@ -24,7 +24,6 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Element.h"

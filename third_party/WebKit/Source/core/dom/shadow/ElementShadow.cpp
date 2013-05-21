@@ -28,7 +28,6 @@
 #include "core/dom/shadow/ElementShadow.h"
 
 #include "core/dom/ContainerNodeAlgorithms.h"
-#include "core/inspector/InspectorInstrumentation.h"
 
 namespace WebCore {
 

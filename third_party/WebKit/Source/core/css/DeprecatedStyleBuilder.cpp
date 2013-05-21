@@ -39,7 +39,6 @@
 #include "core/dom/Element.h"
 #include "core/page/Settings.h"
 #include "core/rendering/ClipPathOperation.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/CursorList.h"

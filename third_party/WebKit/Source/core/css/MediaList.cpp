@@ -20,7 +20,6 @@
 #include "config.h"
 #include "core/css/MediaList.h"
 
-#include "core/css/CSSImportRule.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaFeatureNames.h"
@@ -28,9 +27,7 @@
 #include "core/css/MediaQueryExp.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/page/Console.h"
 #include "core/page/DOMWindow.h"
 #include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/text/StringBuilder.h"

@@ -23,7 +23,6 @@
 #include "config.h"
 #include "core/dom/Attr.h"
 
-#include "HTMLNames.h"
 #include "XMLNSNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/ExceptionCode.h"

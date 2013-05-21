@@ -27,7 +27,6 @@
 
 #include "core/dom/Touch.h"
 
-#include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 

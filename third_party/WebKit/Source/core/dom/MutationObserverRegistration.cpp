@@ -32,7 +32,6 @@
 
 #include "core/dom/MutationObserverRegistration.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/dom/QualifiedName.h"
 

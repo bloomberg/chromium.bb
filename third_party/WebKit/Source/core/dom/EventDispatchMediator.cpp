@@ -33,8 +33,6 @@
 
 #include "core/dom/Event.h"
 #include "core/dom/EventDispatcher.h"
-#include "core/dom/EventRetargeter.h"
-#include "core/dom/Node.h"
 
 namespace WebCore {
 

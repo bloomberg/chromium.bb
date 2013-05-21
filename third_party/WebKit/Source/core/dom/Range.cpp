@@ -26,7 +26,6 @@
 #include "core/dom/Range.h"
 
 #include <stdio.h>
-#include "HTMLNames.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DocumentFragment.h"
@@ -40,12 +39,8 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
 #include "core/html/HTMLElement.h"
-#include "core/page/Frame.h"
-#include "core/page/FrameView.h"
-#include "core/page/Page.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderText.h"

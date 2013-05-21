@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/css/FontFeatureValue.h"
 
-#include "CSSValueKeywords.h"
-#include "core/css/CSSParser.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/text/StringBuilder.h>
 

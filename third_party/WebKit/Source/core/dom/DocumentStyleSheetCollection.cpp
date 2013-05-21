@@ -30,12 +30,9 @@
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
-#include "bindings/v8/DOMWrapperWorld.h"
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/SelectorChecker.h"
 #include "core/css/StyleInvalidationAnalysis.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"

@@ -30,9 +30,7 @@
 #include "core/css/resolver/TransformBuilder.h"
 
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/WebKitCSSFilterValue.h"
 #include "core/css/WebKitCSSTransformValue.h"
-#include "core/platform/graphics/filters/FilterOperation.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
 #include "core/platform/graphics/transforms/MatrixTransformOperation.h"
 #include "core/platform/graphics/transforms/PerspectiveTransformOperation.h"

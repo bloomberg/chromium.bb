@@ -23,8 +23,6 @@
 #include "config.h"
 #include "core/dom/ContainerNode.h"
 
-#include "HTMLNames.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
 #include "core/dom/EventNames.h"
@@ -33,21 +31,10 @@
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/html/HTMLCollection.h"
-#include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/cache/MemoryCache.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Frame.h"
-#include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/rendering/InlineTextBox.h"
-#include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderWidget.h"
-#include "core/rendering/RootInlineBox.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/Vector.h>
 

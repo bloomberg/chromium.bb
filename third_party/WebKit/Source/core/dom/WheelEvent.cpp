@@ -24,7 +24,6 @@
 #include "core/dom/WheelEvent.h"
 
 #include "core/dom/Clipboard.h"
-#include "core/dom/EventDispatcher.h"
 #include "core/dom/EventNames.h"
 #include "core/platform/PlatformWheelEvent.h"
 

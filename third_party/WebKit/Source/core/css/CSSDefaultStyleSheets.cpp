@@ -33,9 +33,6 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace WebCore {

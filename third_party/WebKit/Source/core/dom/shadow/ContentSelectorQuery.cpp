@@ -31,7 +31,6 @@
 #include "core/css/SelectorChecker.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/shadow/InsertionPoint.h"
-#include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {
 

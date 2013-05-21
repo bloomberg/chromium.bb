@@ -26,11 +26,9 @@
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "core/css/CSSCharsetRule.h"
-#include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSRuleList.h"
-#include "core/css/CSSStyleRule.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
@@ -38,7 +36,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {

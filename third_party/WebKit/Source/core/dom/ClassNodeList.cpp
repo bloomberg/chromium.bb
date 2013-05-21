@@ -32,7 +32,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/NodeRareData.h"
-#include "core/dom/StyledElement.h"
 
 namespace WebCore {
 

@@ -36,7 +36,6 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
-#include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"

@@ -27,7 +27,6 @@
 
 #include <wtf/StdLibExtras.h>
 #include "HTMLNames.h"
-#include "XMLNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
@@ -42,10 +41,8 @@
 #include "core/html/PluginDocument.h"
 #include "core/html/TextDocument.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
 #include "core/platform/ContentType.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/Image.h"

@@ -27,11 +27,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/dom/Document.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

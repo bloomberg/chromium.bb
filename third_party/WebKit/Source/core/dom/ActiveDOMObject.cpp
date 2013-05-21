@@ -29,8 +29,6 @@
 
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/workers/WorkerContext.h"
-#include "core/workers/WorkerThread.h"
 
 namespace WebCore {
 

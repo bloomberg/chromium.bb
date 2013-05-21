@@ -32,7 +32,6 @@
 #include "core/css/FontLoader.h"
 #include "core/dom/Document.h"
 #include "RuntimeEnabledFeatures.h"
-#include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SimpleFontData.h"
 
 namespace WebCore {

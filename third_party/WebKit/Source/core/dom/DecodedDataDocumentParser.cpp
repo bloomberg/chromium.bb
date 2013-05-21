@@ -28,7 +28,6 @@
 
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {
 

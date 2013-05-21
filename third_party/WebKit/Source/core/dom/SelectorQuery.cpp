@@ -33,7 +33,6 @@
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/Document.h"
 #include "core/dom/StaticNodeList.h"
-#include "core/dom/StyledElement.h"
 
 namespace WebCore {
 

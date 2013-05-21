@@ -31,7 +31,6 @@
 #include "core/css/CSSGradientValue.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/Image.h"
-#include "core/rendering/RenderObject.h"
 #include <wtf/MemoryInstrumentationHashCountedSet.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/text/WTFString.h>

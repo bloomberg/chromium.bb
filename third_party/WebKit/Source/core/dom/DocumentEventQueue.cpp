@@ -30,7 +30,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/SuspendableTimer.h"

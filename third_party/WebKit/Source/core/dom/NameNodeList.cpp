@@ -23,7 +23,6 @@
 #include "config.h"
 #include "core/dom/NameNodeList.h"
 
-#include "HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
 #include <wtf/Assertions.h>

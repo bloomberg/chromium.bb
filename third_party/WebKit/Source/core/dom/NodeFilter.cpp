@@ -25,8 +25,6 @@
 #include "config.h"
 #include "core/dom/NodeFilter.h"
 
-#include "core/dom/Node.h"
-
 namespace WebCore {
 
 short NodeFilter::acceptNode(ScriptState* state, Node* node) const

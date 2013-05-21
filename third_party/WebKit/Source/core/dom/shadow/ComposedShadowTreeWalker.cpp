@@ -29,12 +29,9 @@
 #include "core/dom/shadow/ComposedShadowTreeWalker.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/PseudoElement.h"
 #include "core/dom/shadow/ContentDistributor.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
-#include "core/html/shadow/HTMLContentElement.h"
-#include "core/html/shadow/HTMLShadowElement.h"
 
 namespace WebCore {
 

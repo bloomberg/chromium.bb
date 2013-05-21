@@ -28,9 +28,7 @@
 
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
-#include "core/dom/Document.h"
 #include "core/loader/cache/CachedFont.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
@@ -42,7 +40,6 @@
 #include "core/svg/SVGFontData.h"
 #include "core/svg/SVGFontElement.h"
 #include "core/svg/SVGFontFaceElement.h"
-#include "core/svg/SVGURIReference.h"
 #endif
 
 namespace WebCore {

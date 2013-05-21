@@ -32,8 +32,6 @@
 
 #include "core/dom/ChildListMutationScope.h"
 
-#include "core/dom/DocumentFragment.h"
-#include "core/dom/Element.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/Node.h"

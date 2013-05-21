@@ -31,10 +31,8 @@
 #include "config.h"
 #include "core/css/CSSCalculationValue.h"
 
-#include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/platform/Length.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

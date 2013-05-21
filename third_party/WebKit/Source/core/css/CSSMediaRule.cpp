@@ -23,11 +23,7 @@
 #include "config.h"
 #include "core/css/CSSMediaRule.h"
 
-#include "core/css/CSSParser.h"
-#include "core/css/CSSRuleList.h"
-#include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleRule.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>

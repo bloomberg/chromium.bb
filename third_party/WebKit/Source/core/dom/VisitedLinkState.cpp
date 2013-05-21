@@ -32,7 +32,6 @@
 #include "HTMLNames.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLAnchorElement.h"
-#include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include <public/Platform.h>
 

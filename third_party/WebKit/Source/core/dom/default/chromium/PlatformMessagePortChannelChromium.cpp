@@ -33,7 +33,6 @@
 
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/MessagePort.h"
-#include "core/dom/ScriptExecutionContext.h"
 
 #include <public/Platform.h>
 #include <public/WebMessagePortChannel.h>

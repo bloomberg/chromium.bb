@@ -25,8 +25,6 @@
 #if ENABLE(SVG)
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "core/css/CSSInheritedValue.h"
-#include "core/css/CSSInitialValue.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSValueList.h"
 #include "core/rendering/RenderTheme.h"

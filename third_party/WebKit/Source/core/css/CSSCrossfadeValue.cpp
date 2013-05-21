@@ -29,12 +29,9 @@
 #include "core/css/CSSImageValue.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/graphics/CrossfadeGeneratedImage.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/StyleCachedImage.h"
-#include "core/rendering/style/StyleGeneratedImage.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

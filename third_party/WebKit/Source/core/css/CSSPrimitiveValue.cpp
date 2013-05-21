@@ -35,10 +35,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/platform/CalculationValue.h"
 #include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/Font.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/DecimalNumber.h>

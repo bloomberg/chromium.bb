@@ -22,7 +22,6 @@
 
 #include "V8MediaQueryList.h"
 #include "bindings/v8/ScriptFunctionCall.h"
-#include "core/css/MediaQueryList.h"
 
 namespace WebCore {
 

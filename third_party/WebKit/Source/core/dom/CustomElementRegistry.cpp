@@ -33,7 +33,6 @@
 #include "core/dom/CustomElementRegistry.h"
 
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/CustomElementHelpers.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptValue.h"

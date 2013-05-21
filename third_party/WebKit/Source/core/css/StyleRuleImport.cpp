@@ -23,14 +23,12 @@
 #include "core/css/StyleRuleImport.h"
 
 #include <wtf/StdLibExtras.h>
-#include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

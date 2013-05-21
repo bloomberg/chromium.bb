@@ -21,17 +21,13 @@
 #include "config.h"
 #include "core/css/CSSImageValue.h"
 
-#include "CSSValueKeywords.h"
-#include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
-#include "core/loader/cache/MemoryCache.h"
 #include "core/rendering/style/StyleCachedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
 
