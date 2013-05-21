@@ -47,6 +47,7 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
         "media": {
             "encrypted-media": {
                 "encrypted-media-v2-events.html": {
+                    "bugs": ["crbug.com/1234"],
                     "expected": "TIMEOUT",
                     "actual": "TIMEOUT",
                     "time": 6.0
@@ -57,31 +58,31 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
                 }
             },
             "progress-events-generated-correctly.html": {
-                  "expected": "PASS FAIL IMAGE TIMEOUT CRASH MISSING",
-                  "actual": "TIMEOUT",
-                  "time": 6.0
+                "expected": "PASS FAIL IMAGE TIMEOUT CRASH MISSING",
+                "actual": "TIMEOUT",
+                "time": 6.0
             },
             "W3C": {
                 "audio": {
                     "src": {
                         "src_removal_does_not_trigger_loadstart.html": {
-                              "expected": "PASS",
-                              "actual": "PASS",
-                              "time": 3.5
+                            "expected": "PASS",
+                            "actual": "PASS",
+                            "time": 3.5
                         }
                     }
                 },
                 "video": {
                     "src": {
                         "src_removal_does_not_trigger_loadstart.html": {
-                              "expected": "PASS",
-                              "actual": "PASS",
-                              "time": 1.1
+                            "expected": "PASS",
+                            "actual": "PASS",
+                            "time": 1.1
                         },
                         "notrun.html": {
-                              "expected": "NOTRUN",
-                              "actual": "SKIP",
-                              "time": 1.1
+                            "expected": "NOTRUN",
+                            "actual": "SKIP",
+                            "time": 1.1
                         }
                     }
                 }
@@ -310,6 +311,7 @@ class JsonResultsTest(unittest.TestCase):
                     '},'
                     '"encrypted-media":{'
                         '"encrypted-media-v2-events.html":{'
+                            '"bugs":["crbug.com/1234"],'
                             '"expected":"TIMEOUT",'
                             '"results":[[1,"T"]],'
                             '"times":[[1,6]]'
@@ -710,6 +712,7 @@ class JsonResultsTest(unittest.TestCase):
                         }
                     },
                     "002.html": {
+                        "bugs": ["crbug.com/1234"],
                         "expected": "FAIL",
                         "results": [[10, "F"]],
                         "times": [[10, 0]]
@@ -717,6 +720,10 @@ class JsonResultsTest(unittest.TestCase):
                     "003.html": {
                         "expected": "FAIL",
                         "results": [[190, 'P'], [9, 'N'], [1,"F"]],
+                        "times": [[200, 0]]
+                    },
+                    "004.html": {
+                        "results": [[199, 'P'], [1,"F"]],
                         "times": [[200, 0]]
                     },
                 }
@@ -735,6 +742,11 @@ class JsonResultsTest(unittest.TestCase):
                         "results": [[1, "P"]],
                         "times": [[1, 0]]
                     },
+                    "004.html": {
+                        "bugs": ["crbug.com/1234"],
+                        "results": [[1, "P"]],
+                        "times": [[1, 0]]
+                    },
                 }
             },
             # Expected results
@@ -748,6 +760,11 @@ class JsonResultsTest(unittest.TestCase):
                     "003.html": {
                         "expected": "TIMEOUT",
                         "results": [[191, 'P'], [9, 'N']],
+                        "times": [[200, 0]]
+                    },
+                    "004.html": {
+                        "bugs": ["crbug.com/1234"],
+                        "results": [[200, 'P']],
                         "times": [[200, 0]]
                     },
                 }

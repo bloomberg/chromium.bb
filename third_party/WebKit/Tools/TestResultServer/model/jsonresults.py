@@ -59,6 +59,7 @@ JSON_RESULTS_MAX_BUILDS_SMALL = 100
 FAILURES_BY_TYPE_KEY = "num_failures_by_type"
 FAILURE_MAP_KEY = "failure_map"
 EXPECTED_KEY = "expected"
+BUG_KEY = "bugs"
 
 FAILURE_TO_CHAR = {
     "PASS": JSON_RESULTS_PASS,
@@ -124,8 +125,11 @@ class JsonResults(object):
             item = aggregated_json[key]
             if _is_directory(item):
                 cls._delete_expected_entries(item)
-            elif EXPECTED_KEY in item:
-                del item[EXPECTED_KEY]
+            else:
+                if EXPECTED_KEY in item:
+                    del item[EXPECTED_KEY]
+                if BUG_KEY in item:
+                    del item[BUG_KEY]
 
     @classmethod
     def _merge_non_test_data(cls, aggregated_json, incremental_json, num_runs):
@@ -190,6 +194,8 @@ class JsonResults(object):
                 times = incremental_sub_result[JSON_RESULTS_TIMES]
                 if EXPECTED_KEY in incremental_sub_result and incremental_sub_result[EXPECTED_KEY] != "PASS":
                     aggregated_test[EXPECTED_KEY] = incremental_sub_result[EXPECTED_KEY]
+                if BUG_KEY in incremental_sub_result:
+                    aggregated_test[BUG_KEY] = incremental_sub_result[BUG_KEY]
             else:
                 results = [[1, JSON_RESULTS_NO_DATA]]
                 times = [[1, 0]]
@@ -227,6 +233,9 @@ class JsonResults(object):
     @classmethod
     def _should_delete_leaf(cls, leaf):
         if leaf.get(EXPECTED_KEY, 'PASS') != 'PASS':
+            return False
+
+        if BUG_KEY in leaf:
             return False
 
         deletable_types = set((JSON_RESULTS_PASS, JSON_RESULTS_NO_DATA, JSON_RESULTS_NOTRUN))
@@ -292,6 +301,9 @@ class JsonResults(object):
                 # FIXME: Include the retry result as well and find a nice way to display it in the flakiness dashboard.
                 first_actual_failure = full_results['actual'].split(' ')[0]
             new_results['results'] = [[1, FAILURE_TO_CHAR[first_actual_failure]]]
+
+            if BUG_KEY in full_results:
+                new_results[BUG_KEY] = full_results[BUG_KEY]
             return
 
         for key in full_results:
