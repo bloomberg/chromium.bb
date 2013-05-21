@@ -48,7 +48,7 @@ public:
     static PassOwnPtr<PageDebuggerAgent> create(InstrumentingAgents*, InspectorCompositeState*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     virtual ~PageDebuggerAgent();
 
-    void didClearMainFrameWindowObject();
+    void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
 
 protected:
     virtual void enable();

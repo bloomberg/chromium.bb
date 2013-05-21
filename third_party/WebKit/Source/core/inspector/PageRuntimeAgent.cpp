@@ -109,8 +109,11 @@ void PageRuntimeAgent::disable(ErrorString* errorString)
     m_state->setBoolean(PageRuntimeAgentState::runtimeEnabled, false);
 }
 
-void PageRuntimeAgent::didCreateMainWorldContext(Frame* frame)
+void PageRuntimeAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* world)
 {
+    if (world != mainThreadNormalWorld())
+        return;
+
     m_mainWorldContextCreated = true;
 
     if (!m_enabled)

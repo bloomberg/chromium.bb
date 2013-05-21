@@ -124,19 +124,14 @@ InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCook
 
 void didClearWindowObjectInWorldImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, DOMWrapperWorld* world)
 {
-    InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent();
-    if (pageAgent)
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
         pageAgent->didClearWindowObjectInWorld(frame, world);
     if (InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent())
         inspectorAgent->didClearWindowObjectInWorld(frame, world);
-    if (PageDebuggerAgent* debuggerAgent = instrumentingAgents->pageDebuggerAgent()) {
-        if (pageAgent && world == mainThreadNormalWorld() && frame == pageAgent->mainFrame())
-            debuggerAgent->didClearMainFrameWindowObject();
-    }
-    if (PageRuntimeAgent* pageRuntimeAgent = instrumentingAgents->pageRuntimeAgent()) {
-        if (world == mainThreadNormalWorld())
-            pageRuntimeAgent->didCreateMainWorldContext(frame);
-    }
+    if (PageDebuggerAgent* debuggerAgent = instrumentingAgents->pageDebuggerAgent())
+        debuggerAgent->didClearWindowObjectInWorld(frame, world);
+    if (PageRuntimeAgent* pageRuntimeAgent = instrumentingAgents->pageRuntimeAgent())
+        pageRuntimeAgent->didClearWindowObjectInWorld(frame, world);
 }
 
 bool isDebuggerPausedImpl(InstrumentingAgents* instrumentingAgents)

@@ -56,7 +56,7 @@ public:
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
 
-    void didCreateMainWorldContext(Frame*);
+    void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
     void didCreateIsolatedContext(Frame*, ScriptState*, SecurityOrigin*);
 
 private:

@@ -110,8 +110,11 @@ void PageDebuggerAgent::setOverlayMessage(ErrorString*, const String* message)
     m_overlay->setPausedInDebuggerMessage(message);
 }
 
-void PageDebuggerAgent::didClearMainFrameWindowObject()
+void PageDebuggerAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* world)
 {
+    if (world != mainThreadNormalWorld() || frame != m_pageAgent->mainFrame())
+        return;
+
     reset();
     scriptDebugServer().setScriptPreprocessor(m_pageAgent->scriptPreprocessor());
 }
