@@ -16,6 +16,7 @@
 using content::BrowserThread;
 
 namespace drive {
+namespace internal {
 
 namespace {
 
@@ -101,7 +102,7 @@ bool IsEligibleEntry(const ResourceEntry& entry, int options) {
 // Used to implement SearchMetadata.
 // Adds entry to the result when appropriate.
 void MaybeAddEntryToResult(
-    internal::ResourceMetadata* resource_metadata,
+    ResourceMetadata* resource_metadata,
     const std::string& query,
     int options,
     size_t at_most_num_matches,
@@ -134,7 +135,7 @@ void MaybeAddEntryToResult(
 
 // Implements SearchMetadata().
 scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
-    internal::ResourceMetadata* resource_metadata,
+    ResourceMetadata* resource_metadata,
     const std::string& query,
     int options,
     int at_most_num_matches) {
@@ -142,8 +143,7 @@ scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
                       MetadataSearchResultComparator> result_candidates;
 
   // Iterate over entries.
-  scoped_ptr<internal::ResourceMetadata::Iterator> it =
-      resource_metadata->GetIterator();
+  scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     MaybeAddEntryToResult(resource_metadata, query, options,
                           at_most_num_matches, &result_candidates, it->Get());
@@ -166,7 +166,7 @@ scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
 
 void SearchMetadata(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    internal::ResourceMetadata* resource_metadata,
+    ResourceMetadata* resource_metadata,
     const std::string& query,
     int options,
     int at_most_num_matches,
@@ -231,4 +231,5 @@ bool FindAndHighlight(const std::string& text,
   return true;
 }
 
+}  // namespace internal
 }  // namespace drive

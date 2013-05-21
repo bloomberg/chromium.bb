@@ -11,10 +11,9 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 
 namespace drive {
-
 namespace internal {
+
 class ResourceMetadata;
-}  // namespace internal
 
 // Searches the local resource metadata, and returns the entries
 // |at_most_num_matches| that contain |query| in their base names. Search is
@@ -25,7 +24,7 @@ class ResourceMetadata;
 // be the same one as |resource_metadata| uses.
 void SearchMetadata(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    internal::ResourceMetadata* resource_metadata,
+    ResourceMetadata* resource_metadata,
     const std::string& query,
     int search_options,
     int at_most_num_matches,
@@ -40,6 +39,7 @@ bool FindAndHighlight(const std::string& text,
                       const std::string& query,
                       std::string* highlighted_text);
 
+}  // namespace internal
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_SEARCH_METADATA_H_

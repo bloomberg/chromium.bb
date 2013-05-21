@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
+namespace internal {
 
 namespace {
 
@@ -34,9 +35,8 @@ class SearchMetadataTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    resource_metadata_.reset(new internal::ResourceMetadata(
-        temp_dir_.path(),
-        blocking_task_runner_));
+    resource_metadata_.reset(
+        new ResourceMetadata(temp_dir_.path(), blocking_task_runner_));
 
     FileError error = FILE_ERROR_FAILED;
     resource_metadata_->Initialize(
@@ -119,7 +119,7 @@ class SearchMetadataTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
+  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
 };
 
@@ -440,4 +440,5 @@ TEST(SearchMetadataSimpleTest, FindAndHighlight_MoreMetaChars) {
   EXPECT_EQ("a&amp;<b>b&amp;c</b>&amp;d", highlighted_text);
 }
 
-}   // namespace drive
+}  // namespace internal
+}  // namespace drive
