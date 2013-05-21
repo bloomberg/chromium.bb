@@ -99,7 +99,7 @@ public:
     void didFinishLoading(unsigned long identifier, DocumentLoader*, double finishTime);
     void didFailLoading(unsigned long identifier, DocumentLoader*, const ResourceError&);
     void didLoadResourceFromMemoryCache(DocumentLoader*, CachedResource*);
-    void mainFrameNavigated(DocumentLoader*);
+    void didCommitLoad(Frame*, DocumentLoader*);
     void scriptImported(unsigned long identifier, const String& sourceString);
     void didReceiveScriptResponse(unsigned long identifier);
 

@@ -55,6 +55,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
@@ -770,6 +771,14 @@ void InspectorCSSAgent::disable(ErrorString*)
 {
     m_instrumentingAgents->setInspectorCSSAgent(0);
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
+}
+
+void InspectorCSSAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+{
+    if (loader->frame() != frame->page()->mainFrame())
+        return;
+
+    reset();
 }
 
 void InspectorCSSAgent::mediaQueryResultChanged()

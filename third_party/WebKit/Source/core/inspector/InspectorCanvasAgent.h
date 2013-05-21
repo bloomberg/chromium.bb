@@ -44,6 +44,7 @@
 namespace WebCore {
 
 class Frame;
+class DocumentLoader;
 class InjectedScriptCanvasModule;
 class InjectedScriptManager;
 class InspectorPageAgent;
@@ -65,7 +66,7 @@ public:
     virtual void clearFrontend();
     virtual void restore();
 
-    void frameNavigated(Frame*);
+    void didCommitLoad(Frame*, DocumentLoader*);
     void frameDetachedFromParent(Frame*);
     void didBeginFrame();
 

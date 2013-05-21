@@ -638,8 +638,11 @@ void InspectorResourceAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)
         memoryCache()->evictResources();
 }
 
-void InspectorResourceAgent::mainFrameNavigated(DocumentLoader* loader)
+void InspectorResourceAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
 {
+    if (loader->frame() != frame->page()->mainFrame())
+        return;
+
     if (m_state->getBoolean(ResourceAgentState::cacheDisabled))
         memoryCache()->evictResources();
 

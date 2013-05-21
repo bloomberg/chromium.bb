@@ -111,8 +111,11 @@ void InspectorAgent::clearFrontend()
     disable(&error);
 }
 
-void InspectorAgent::didCommitLoad()
+void InspectorAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
 {
+    if (loader->frame() != frame->page()->mainFrame())
+        return;
+
     m_injectedScriptManager->discardInjectedScripts();
 }
 

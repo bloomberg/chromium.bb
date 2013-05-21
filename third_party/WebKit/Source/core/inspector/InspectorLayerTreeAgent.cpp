@@ -38,6 +38,8 @@
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/page/Page.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
@@ -98,6 +100,14 @@ void InspectorLayerTreeAgent::disable(ErrorString*)
         return;
     m_state->setBoolean(LayerTreeAgentState::layerTreeAgentEnabled, false);
     m_instrumentingAgents->setInspectorLayerTreeAgent(0);
+}
+
+void InspectorLayerTreeAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+{
+    if (loader->frame() != frame->page()->mainFrame())
+        return;
+
+    reset();
 }
 
 void InspectorLayerTreeAgent::layerTreeDidChange()

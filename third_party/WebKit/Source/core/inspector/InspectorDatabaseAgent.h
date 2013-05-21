@@ -38,6 +38,8 @@
 namespace WebCore {
 
 class Database;
+class DocumentLoader;
+class Frame;
 class InspectorArray;
 class InspectorDatabaseResource;
 class InspectorFrontend;
@@ -58,7 +60,7 @@ public:
     virtual void clearFrontend();
     virtual void restore();
 
-    void clearResources();
+    void didCommitLoad(Frame*, DocumentLoader*);
 
     // Called from the front-end.
     virtual void enable(ErrorString*);

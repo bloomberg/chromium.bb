@@ -59,6 +59,7 @@ public:
     virtual void restore();
     void reset();
 
+    void didCommitLoad(Frame*, DocumentLoader*);
     void layerTreeDidChange();
     void renderLayerDestroyed(const RenderLayer*);
     void pseudoElementDestroyed(PseudoElement*);

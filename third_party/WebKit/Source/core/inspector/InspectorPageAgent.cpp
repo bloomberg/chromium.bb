@@ -831,7 +831,7 @@ void InspectorPageAgent::loadEventFired(Frame*)
     m_frontend->loadEventFired(currentTime());
 }
 
-void InspectorPageAgent::frameNavigated(DocumentLoader* loader)
+void InspectorPageAgent::didCommitLoad(Frame*, DocumentLoader* loader)
 {
     if (loader->frame() == m_page->mainFrame()) {
         m_scriptToEvaluateOnLoadOnce = m_pendingScriptToEvaluateOnLoadOnce;

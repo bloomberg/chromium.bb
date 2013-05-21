@@ -44,6 +44,7 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
@@ -303,8 +304,9 @@ bool InspectorCanvasAgent::checkIsEnabled(ErrorString* errorString) const
     return false;
 }
 
-void InspectorCanvasAgent::frameNavigated(Frame* frame)
+void InspectorCanvasAgent::didCommitLoad(Frame*, DocumentLoader* loader)
 {
+    Frame* frame = loader->frame();
     if (!m_enabled)
         return;
     if (frame == m_pageAgent->mainFrame()) {

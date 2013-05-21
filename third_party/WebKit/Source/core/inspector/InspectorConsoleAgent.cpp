@@ -39,8 +39,11 @@
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/Console.h"
 #include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
@@ -251,6 +254,13 @@ void InspectorConsoleAgent::frameWindowDiscarded(DOMWindow* window)
     for (size_t i = 0; i < messageCount; ++i)
         m_consoleMessages[i]->windowCleared(window);
     m_injectedScriptManager->discardInjectedScriptsFor(window);
+}
+
+void InspectorConsoleAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+{
+    if (loader->frame() != frame->page()->mainFrame())
+        return;
+    reset();
 }
 
 void InspectorConsoleAgent::didFinishXHRLoading(ThreadableLoaderClient*, unsigned long requestIdentifier, const String&, const String& url, const String& sendURL, unsigned sendLineNumber)

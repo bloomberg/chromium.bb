@@ -164,6 +164,7 @@ public:
 
     void domContentLoadedEventFired(Frame*);
     void loadEventFired(Frame*);
+    void didCommitLoad(Frame*, DocumentLoader*);
 
     void didInsertDOMNode(Node*);
     void didRemoveDOMNode(Node*);

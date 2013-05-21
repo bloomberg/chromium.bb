@@ -38,6 +38,9 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/sql/SQLValue.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/SQLError.h"
@@ -207,8 +210,11 @@ void InspectorDatabaseAgent::didOpenDatabase(PassRefPtr<Database> database, cons
         resource->bind(m_frontend);
 }
 
-void InspectorDatabaseAgent::clearResources()
+void InspectorDatabaseAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
 {
+    if (loader->frame() != frame->page()->mainFrame())
+        return;
+
     m_resources.clear();
 }
 

@@ -825,31 +825,24 @@ void frameDetachedFromParentImpl(InstrumentingAgents* instrumentingAgents, Frame
 
 void didCommitLoadImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, DocumentLoader* loader)
 {
-    InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent();
-    if (!inspectorAgent)
-        return;
-
-    Frame* mainFrame = frame->page()->mainFrame();
-    if (loader->frame() == mainFrame) {
-        if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
-            consoleAgent->reset();
-
-        if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
-            resourceAgent->mainFrameNavigated(loader);
-        if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
-            cssAgent->reset();
-        if (InspectorDatabaseAgent* databaseAgent = instrumentingAgents->inspectorDatabaseAgent())
-            databaseAgent->clearResources();
-        if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-            domAgent->setDocument(mainFrame->document());
-        if (InspectorLayerTreeAgent* layerTreeAgent = instrumentingAgents->inspectorLayerTreeAgent())
-            layerTreeAgent->reset();
-        inspectorAgent->didCommitLoad();
-    }
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->didCommitLoad(frame, loader);
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didCommitLoad(frame, loader);
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->didCommitLoad(frame, loader);
+    if (InspectorDatabaseAgent* databaseAgent = instrumentingAgents->inspectorDatabaseAgent())
+        databaseAgent->didCommitLoad(frame, loader);
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->didCommitLoad(frame, loader);
+    if (InspectorLayerTreeAgent* layerTreeAgent = instrumentingAgents->inspectorLayerTreeAgent())
+        layerTreeAgent->didCommitLoad(frame, loader);
+    if (InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent())
+        inspectorAgent->didCommitLoad(frame, loader);
     if (InspectorCanvasAgent* canvasAgent = instrumentingAgents->inspectorCanvasAgent())
-        canvasAgent->frameNavigated(loader->frame());
+        canvasAgent->didCommitLoad(frame, loader);
     if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
-        pageAgent->frameNavigated(loader);
+        pageAgent->didCommitLoad(frame, loader);
 }
 
 void frameDocumentUpdatedImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)

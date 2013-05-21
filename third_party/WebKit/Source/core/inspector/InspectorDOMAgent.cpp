@@ -80,6 +80,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/CookieJar.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
@@ -1607,6 +1608,15 @@ void InspectorDOMAgent::loadEventFired(Frame* frame)
     Node* previousSibling = innerPreviousSibling(frameOwner);
     int prevId = previousSibling ? m_documentNodeToIdMap.get(previousSibling) : 0;
     m_frontend->childNodeInserted(parentId, prevId, value.release());
+}
+
+void InspectorDOMAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+{
+    Frame* mainFrame = frame->page()->mainFrame();
+    if (loader->frame() != mainFrame)
+        return;
+
+    setDocument(mainFrame->document());
 }
 
 void InspectorDOMAgent::didInsertDOMNode(Node* node)

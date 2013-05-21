@@ -106,6 +106,7 @@ public:
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     void reset();
+    void didCommitLoad(Frame*, DocumentLoader*);
     void mediaQueryResultChanged();
     void didCreateNamedFlow(Document*, NamedFlow*);
     void willRemoveNamedFlow(Document*, NamedFlow*);

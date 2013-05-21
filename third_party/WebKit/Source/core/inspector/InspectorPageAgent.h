@@ -133,7 +133,7 @@ public:
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
     void domContentLoadedEventFired(Frame*);
     void loadEventFired(Frame*);
-    void frameNavigated(DocumentLoader*);
+    void didCommitLoad(Frame*, DocumentLoader*);
     void frameDetachedFromParent(Frame*);
     void loaderDetachedFromFrame(DocumentLoader*);
     void frameStartedLoading(Frame*);
