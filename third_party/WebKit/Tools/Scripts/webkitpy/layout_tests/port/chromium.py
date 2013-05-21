@@ -294,13 +294,6 @@ class ChromiumPort(Port):
         except AssertionError:
             return self._build_path('layout-test-results')
 
-    def _missing_symbol_to_skipped_tests(self):
-        # FIXME: Should WebKitPort have these definitions also?
-        return {
-            "ff_mp3_decoder": ["webaudio/codec-tests/mp3"],
-            "ff_aac_decoder": ["webaudio/codec-tests/aac"],
-        }
-
     def setup_test_run(self):
         super(ChromiumPort, self).setup_test_run()
         # Delete the disk cache if any to ensure a clean test run.
