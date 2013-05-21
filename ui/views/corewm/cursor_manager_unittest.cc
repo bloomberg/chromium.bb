@@ -38,6 +38,12 @@ class TestingCursorManager : public views::corewm::NativeCursorManager {
     delegate->CommitMouseEventsEnabled(enabled);
   }
 
+  virtual void SetScale(
+      float scale,
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+    delegate->CommitScale(scale);
+  }
+
   virtual void SetCursorResourceModule(const string16& module_name) OVERRIDE {
   }
 
@@ -181,6 +187,23 @@ TEST_F(CursorManagerTest, EnableDisableMouseEvents) {
   cursor_manager_.LockCursor();
   cursor_manager_.UnlockCursor();
   EXPECT_FALSE(cursor_manager_.IsMouseEventsEnabled());
+}
+
+TEST_F(CursorManagerTest, SetScale) {
+  EXPECT_EQ(1.f, cursor_manager_.GetCurrentScale());
+  cursor_manager_.SetScale(2.f);
+  EXPECT_EQ(2.f, cursor_manager_.GetCurrentScale());
+
+  // Cusror scale does change even while cursor is locked.
+  cursor_manager_.LockCursor();
+  EXPECT_EQ(2.f, cursor_manager_.GetCurrentScale());
+  cursor_manager_.SetScale(2.5f);
+  EXPECT_EQ(2.5f, cursor_manager_.GetCurrentScale());
+  cursor_manager_.UnlockCursor();
+
+  EXPECT_EQ(2.5f, cursor_manager_.GetCurrentScale());
+  cursor_manager_.SetScale(1.f);
+  EXPECT_EQ(1.f, cursor_manager_.GetCurrentScale());
 }
 
 TEST_F(CursorManagerTest, IsMouseEventsEnabled) {

@@ -46,6 +46,9 @@ class VIEWS_EXPORT DesktopNativeCursorManager
   virtual void SetVisibility(
       bool visible,
       views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+  virtual void SetScale(
+      float scale,
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetMouseEventsEnabled(
       bool enabled,
       views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;

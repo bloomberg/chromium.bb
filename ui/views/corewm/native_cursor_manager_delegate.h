@@ -20,10 +20,12 @@ class VIEWS_EXPORT NativeCursorManagerDelegate {
 
   virtual gfx::NativeCursor GetCurrentCursor() const = 0;
   virtual bool GetCurrentVisibility() const = 0;
+  virtual float GetCurrentScale() const = 0;
   virtual bool GetMouseEventsEnabled() const = 0;
 
   virtual void CommitCursor(gfx::NativeCursor cursor) = 0;
   virtual void CommitVisibility(bool visible) = 0;
+  virtual void CommitScale(float scale) = 0;
   virtual void CommitMouseEventsEnabled(bool enabled) = 0;
 };
 

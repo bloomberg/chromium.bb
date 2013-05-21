@@ -37,6 +37,9 @@ class ASH_EXPORT ImageCursors {
   // Returns true if the cursor image is reloaded.
   bool SetDisplay(const gfx::Display& display);
 
+  // Sets the scale of the mouse cursor icon.
+  void SetScale(float scale);
+
   // Sets the platform cursor based on the native type of |cursor|.
   void SetPlatformCursor(gfx::NativeCursor* cursor);
 
@@ -44,7 +47,11 @@ class ASH_EXPORT ImageCursors {
   void SetCursorResourceModule(const base::string16& module_name);
 
  private:
+  // Reloads the all loaded cursors in the cursor loader.
+  void ReloadCursors();
+
   scoped_ptr<ui::CursorLoader> cursor_loader_;
+  float scale_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageCursors);
 };

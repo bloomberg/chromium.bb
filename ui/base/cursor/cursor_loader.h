@@ -16,7 +16,7 @@ namespace ui {
 
 class UI_EXPORT CursorLoader {
  public:
-  CursorLoader() {}
+  CursorLoader() : scale_(1.f) {}
   virtual ~CursorLoader() {}
 
   // Returns the display the loader loads images for.
@@ -27,6 +27,16 @@ class UI_EXPORT CursorLoader {
   // Sets the display the loader loads images for.
   void set_display(const gfx::Display& display) {
     display_ = display;
+  }
+
+  // Returns the current scale of the mouse cursor icon.
+  float scale() const {
+    return scale_;
+  }
+
+  // Sets the scale of the mouse cursor icon.
+  void set_scale(const float scale) {
+    scale_ = scale;
   }
 
   // Creates a cursor from an image resource and puts it in the cursor map.
@@ -60,6 +70,11 @@ class UI_EXPORT CursorLoader {
  private:
   // The display the loader loads images for.
   gfx::Display display_;
+
+  // The current scale of the mouse cursor icon.
+  float scale_;
+
+  DISALLOW_COPY_AND_ASSIGN(CursorLoader);
 };
 
 }  // namespace ui

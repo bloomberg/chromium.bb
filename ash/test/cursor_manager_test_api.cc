@@ -22,6 +22,11 @@ CursorManagerTestApi::CursorManagerTestApi(
 CursorManagerTestApi::~CursorManagerTestApi() {
 }
 
+float CursorManagerTestApi::GetCurrentScale() const {
+  return static_cast<views::corewm::NativeCursorManagerDelegate*>(
+      cursor_manager_)->GetCurrentScale();
+}
+
 gfx::NativeCursor CursorManagerTestApi::GetCurrentCursor() const {
   return static_cast<views::corewm::NativeCursorManagerDelegate*>(
       cursor_manager_)->GetCurrentCursor();

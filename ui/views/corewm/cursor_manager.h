@@ -45,6 +45,8 @@ class VIEWS_EXPORT CursorManager : public aura::client::CursorClient,
   virtual void ShowCursor() OVERRIDE;
   virtual void HideCursor() OVERRIDE;
   virtual bool IsCursorVisible() const OVERRIDE;
+  virtual void SetScale(float scale) OVERRIDE;
+  virtual float GetCurrentScale() const OVERRIDE;
   virtual void EnableMouseEvents() OVERRIDE;
   virtual void DisableMouseEvents() OVERRIDE;
   virtual bool IsMouseEventsEnabled() const OVERRIDE;
@@ -64,6 +66,7 @@ class VIEWS_EXPORT CursorManager : public aura::client::CursorClient,
   virtual bool GetMouseEventsEnabled() const OVERRIDE;
   virtual void CommitCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void CommitVisibility(bool visible) OVERRIDE;
+  virtual void CommitScale(float scale) OVERRIDE;
   virtual void CommitMouseEventsEnabled(bool enabled) OVERRIDE;
 
   scoped_ptr<NativeCursorManager> delegate_;

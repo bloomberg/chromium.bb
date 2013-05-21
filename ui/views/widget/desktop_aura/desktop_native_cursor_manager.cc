@@ -62,6 +62,13 @@ void DesktopNativeCursorManager::SetVisibility(
   root_window_->OnCursorVisibilityChanged(visible);
 }
 
+
+void DesktopNativeCursorManager::SetScale(
+    float scale,
+    views::corewm::NativeCursorManagerDelegate* delegate) {
+  NOTIMPLEMENTED();
+}
+
 void DesktopNativeCursorManager::SetMouseEventsEnabled(
     bool enabled,
     views::corewm::NativeCursorManagerDelegate* delegate) {

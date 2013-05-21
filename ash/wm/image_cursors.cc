@@ -4,6 +4,8 @@
 
 #include "ash/wm/image_cursors.h"
 
+#include <float.h>
+
 #include "base/logging.h"
 #include "base/string16.h"
 #include "ui/base/cursor/cursor.h"
@@ -54,7 +56,7 @@ const int kAnimatedCursorIds[] = {
   ui::kCursorProgress
 };
 
-ImageCursors::ImageCursors() {
+ImageCursors::ImageCursors() : scale_(1.f) {
 }
 
 ImageCursors::~ImageCursors() {
@@ -74,14 +76,23 @@ bool ImageCursors::SetDisplay(const gfx::Display& display) {
   float device_scale_factor = display.device_scale_factor();
   if (!cursor_loader_) {
     cursor_loader_.reset(ui::CursorLoader::Create());
+    cursor_loader_->set_scale(scale_);
   } else if (cursor_loader_->display().rotation() == display.rotation() &&
              cursor_loader_->display().device_scale_factor() ==
              device_scale_factor) {
     return false;
   }
 
-  cursor_loader_->UnloadAll();
   cursor_loader_->set_display(display);
+  ReloadCursors();
+  return true;
+}
+
+void ImageCursors::ReloadCursors() {
+  const gfx::Display& display = cursor_loader_->display();
+  float device_scale_factor = display.device_scale_factor();
+
+  cursor_loader_->UnloadAll();
 
   for (size_t i = 0; i < arraysize(kImageCursorIds); ++i) {
     int resource_id = -1;
@@ -106,7 +117,20 @@ bool ImageCursors::SetDisplay(const gfx::Display& display) {
                                        hot_point,
                                        ui::kAnimatedCursorFrameDelayMs);
   }
-  return true;
+}
+
+void ImageCursors::SetScale(float scale) {
+  if (scale < FLT_EPSILON) {
+    NOTREACHED() << "Scale must be bigger than 0.";
+    scale = 1.0f;
+  }
+
+  scale_ = scale;
+
+  if (cursor_loader_.get()) {
+    cursor_loader_->set_scale(scale);
+    ReloadCursors();
+  }
 }
 
 void ImageCursors::SetPlatformCursor(gfx::NativeCursor* cursor) {

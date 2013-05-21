@@ -43,6 +43,11 @@ class VIEWS_EXPORT NativeCursorManager {
     bool visible,
     views::corewm::NativeCursorManagerDelegate* delegate) = 0;
 
+  // A request to set the scale of the cursor icon.
+  virtual void SetScale(
+      float scale,
+      views::corewm::NativeCursorManagerDelegate* delegate) = 0;
+
   // A request to set whether mouse events are disabled. At minimum,
   // implementer should call NativeCursorManagerDelegate::
   // CommitMouseEventsEnabled() with whether mouse events are actually enabled.

@@ -69,6 +69,13 @@ void AshNativeCursorManager::SetCursor(
     SetCursorOnAllRootWindows(new_cursor);
 }
 
+void AshNativeCursorManager::SetScale(
+    float scale,
+    views::corewm::NativeCursorManagerDelegate* delegate) {
+  image_cursors_->SetScale(scale);
+  delegate->CommitScale(scale);
+}
+
 void AshNativeCursorManager::SetVisibility(
     bool visible,
     views::corewm::NativeCursorManagerDelegate* delegate) {
