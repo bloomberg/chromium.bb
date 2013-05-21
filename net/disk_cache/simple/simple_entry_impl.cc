@@ -418,6 +418,7 @@ void SimpleEntryImpl::OpenEntryInternal(const CompletionCallback& callback,
     return;
   }
   DCHECK_EQ(STATE_UNINITIALIZED, state_);
+  DCHECK(!synchronous_entry_);
   state_ = STATE_IO_PENDING;
   const base::TimeTicks start_time = base::TimeTicks::Now();
   typedef SimpleSynchronousEntry* PointerToSimpleSynchronousEntry;
@@ -444,6 +445,7 @@ void SimpleEntryImpl::CreateEntryInternal(const CompletionCallback& callback,
     return;
   }
   DCHECK_EQ(STATE_UNINITIALIZED, state_);
+  DCHECK(!synchronous_entry_);
 
   state_ = STATE_IO_PENDING;
 
@@ -488,7 +490,7 @@ void SimpleEntryImpl::CloseInternal() {
       }
     }
   } else {
-    DCHECK_EQ(STATE_FAILURE, state_);
+    DCHECK(STATE_UNINITIALIZED == state_ || STATE_FAILURE == state_);
   }
 
   if (synchronous_entry_) {
@@ -631,7 +633,6 @@ void SimpleEntryImpl::CreationOperationComplete(
           completion_callback, net::ERR_FAILED));
     }
     MakeUninitialized();
-    state_ = STATE_FAILURE;
     return;
   }
   // If out_entry is NULL, it means we already called ReturnEntryToCaller from
@@ -759,7 +760,8 @@ void SimpleEntryImpl::ChecksumOperationComplete(
 void SimpleEntryImpl::CloseOperationComplete() {
   DCHECK(!synchronous_entry_);
   DCHECK_EQ(0, open_count_);
-  DCHECK(STATE_IO_PENDING == state_ || STATE_FAILURE == state_);
+  DCHECK(STATE_IO_PENDING == state_ || STATE_FAILURE == state_ ||
+         STATE_UNINITIALIZED == state_);
   MakeUninitialized();
   RunNextOperationIfNeeded();
 }

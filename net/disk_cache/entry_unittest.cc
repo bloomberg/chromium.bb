@@ -2749,6 +2749,40 @@ TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheCreateDoomRace) {
   }
 }
 
+// Checks that an optimistic Create would fail later on a racing Open.
+TEST_F(DiskCacheEntryTest, SimpleCacheOptimisticCreateFailsOnOpen) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  // Create a corrupt entry file.
+  const char key[] = "the key";
+  base::FilePath entry_file_path = cache_path_.AppendASCII(
+      disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 0));
+  int flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
+  base::PlatformFile entry_file =
+      base::CreatePlatformFile(entry_file_path, flags, NULL, NULL);
+  ASSERT_NE(base::kInvalidPlatformFileValue, entry_file);
+  ASSERT_EQ(1, base::WritePlatformFile(entry_file, 0, key, 1));
+  EXPECT_TRUE(base::ClosePlatformFile(entry_file));
+
+  net::TestCompletionCallback cb;
+  disk_cache::Entry* entry = NULL;
+  disk_cache::Entry* entry2 = NULL;
+
+  // Create optimistically and issue an Open without waiting.
+  EXPECT_EQ(net::OK, cache_->CreateEntry(key, &entry, cb.callback()));
+  ASSERT_TRUE(NULL != entry);
+  ASSERT_NE(net::OK, OpenEntry(key, &entry2));
+
+  // Check that we are not leaking.
+  EXPECT_TRUE(
+      static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
+
+  entry->Close();
+  entry = NULL;
+  DisableIntegrityCheck();
+}
+
 // Tests that old entries are evicted while new entries remain in the index.
 // This test relies on non-mandatory properties of the simple Cache Backend:
 // LRU eviction, specific values of high-watermark and low-watermark etc.
@@ -2890,6 +2924,25 @@ TEST_F(DiskCacheEntryTest, SimpleCacheInFlightRead) {
   EXPECT_EQ(kBufferSize, read_callback.last_result());
   EXPECT_EQ(0, memcmp(write_buffer->data(), read_buffer->data(), kBufferSize));
   entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheOpenCreateRaceWithNoIndex) {
+  SetSimpleCacheMode();
+  DisableIntegrityCheck();
+  InitCache();
+
+  // Assume the index is not initialized, which is likely, since we are blocking
+  // the IO thread from executing the index finalization step.
+  disk_cache::Entry* entry1;
+  net::TestCompletionCallback cb1;
+  disk_cache::Entry* entry2;
+  net::TestCompletionCallback cb2;
+  int rv1 = cache_->OpenEntry("key", &entry1, cb1.callback());
+  int rv2 = cache_->CreateEntry("key", &entry2, cb2.callback());
+
+  ASSERT_EQ(net::OK, cb2.GetResult(rv2));
+  EXPECT_EQ(net::ERR_FAILED, cb1.GetResult(rv1));
+  entry2->Close();
 }
 
 #endif  // defined(OS_POSIX)
