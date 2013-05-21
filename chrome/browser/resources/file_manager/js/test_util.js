@@ -237,6 +237,8 @@ test.util.selectVolume = function(contentWindow, iconName, callback) {
         steps.sendEvents();
         return;
       }
+      // If the target volume is sub-volume of drive, we must click 'drive'
+      // before clicking the sub-item.
       if (!preSelection) {
         if (!isDriveSubVolume) {
           callback(false);
@@ -266,22 +268,13 @@ test.util.selectVolume = function(contentWindow, iconName, callback) {
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {Array.<Array.<string>>} expected Expected contents of file list.
- * @param {number} timeoutMs Number of milliseconds of timeout. If this is 0,
- *     waitForFiles waits for exptected files forever.
  * @param {function(boolean)} callback Callback function to notify the caller
  *     whether expected files turned up or not.
  */
 test.util.waitForFiles = function(contentWindow,
                                   expected,
-                                  timeoutMs,
                                   callback) {
-  var startTime = new Date().getTime();
   var step = function() {
-    if (timeoutMs != 0 &&
-        startTime + timeoutMs < new Date().getTime()) {
-      callback(false);
-      return;
-    }
     if (chrome.test.checkDeepEq(expected,
                                 test.util.getFileList(contentWindow))) {
       callback(true);
@@ -466,10 +459,7 @@ test.util.registerRemoteTestUtils = function() {
           sendResponse(test.util.deleteFile(contentWindow, request.args[0]));
           return false;
         case 'waitForFiles':
-          test.util.waitForFiles(contentWindow,
-                                 request.args[0],
-                                 request.args[1],
-                                 sendResponse);
+          test.util.waitForFiles(contentWindow, request.args[0], sendResponse);
           return true;
         case 'execCommand':
           sendResponse(contentWindow.document.execCommand(request.args[0]));

@@ -39,13 +39,6 @@ var EXPECTED_NEWLY_ADDED_FILE = [
 ];
 
 /**
- * Time out value to be used for waitForFiles.
- * @type {number}
- * @const
- */
-var WAIT_FOR_FILES_TIME_OUT = 3000;
-
-/**
  * @param {boolean} isDrive True if the test is for Drive.
  * @return {Array.<Array.<string>>} A sorted list of expected entries at the
  *     initial state.
@@ -337,48 +330,52 @@ testcase.intermediate.copyBetweenVolumes = function(targetFile,
                                                     dstContents) {
   var appId;
   var steps = [
+    // Set up File Manager.
     function() {
       setupAndWaitUntilReady('/Downloads', steps.shift());
     },
+    // Select the source volume.
     function(inAppId) {
       appId = inAppId;
       callRemoteTestUtil('selectVolume', appId, [srcName], steps.shift());
     },
+    // Wait for the expected files to appear in the file list.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [srcContents, WAIT_FOR_FILES_TIME_OUT],
-                         steps.shift());
+      callRemoteTestUtil('waitForFiles', appId, [srcContents], steps.shift());
     },
+    // Select the source file.
     function(result) {
       chrome.test.assertTrue(result);
       callRemoteTestUtil('selectFile', appId, [targetFile], steps.shift());
     },
+    // Copy the file.
     function(result) {
       chrome.test.assertTrue(result);
       callRemoteTestUtil('execCommand', appId, ['copy'], steps.shift());
     },
+    // Select the destination volume.
     function(result) {
       chrome.test.assertTrue(result);
       callRemoteTestUtil('selectVolume', appId, [dstName], steps.shift());
     },
+    // Wait for the expected files to appear in the file list.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [dstContents, WAIT_FOR_FILES_TIME_OUT],
-                         steps.shift());
+      callRemoteTestUtil('waitForFiles', appId, [dstContents], steps.shift());
     },
+    // Paste the file.
     function(result) {
       chrome.test.assertTrue(result);
       callRemoteTestUtil('execCommand', appId, ['paste'], steps.shift());
     },
+    // Wait for the file list to change.
     function(result) {
       chrome.test.assertTrue(result);
       callRemoteTestUtil('waitForFileListChange', appId,
                          [dstContents.length], steps.shift());
     },
+    // Check the last contents of file list.
     function(actualFilesAfter) {
       chrome.test.assertEq(dstContents.length + 1,
                            actualFilesAfter.length);
@@ -392,6 +389,8 @@ testcase.intermediate.copyBetweenVolumes = function(targetFile,
       chrome.test.assertTrue(copiedItem != null);
       for (var i = 0; i < dstContents.length; i++) {
         if (dstContents[i][0] == targetFile) {
+          // Replace the last '.' in filename with ' (1).'.
+          // e.g. 'my.note.txt' -> 'my.note (1).txt'
           copiedItem[0] = copiedItem[0].replace(/\.(?=[^\.]+$)/, ' (1).');
           break;
         }
