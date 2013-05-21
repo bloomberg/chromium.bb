@@ -193,7 +193,7 @@ bool ActivityReplay::ParseEntry(DictionaryValue* entry) {
 }
 
 bool ActivityReplay::ParseHardwareState(DictionaryValue* entry) {
-  HardwareState hs;
+  HardwareState hs = HardwareState();
   if (!entry->GetInteger(ActivityLog::kKeyHardwareStateButtonsDown,
                          &hs.buttons_down)) {
     Err("Unable to parse hardware state buttons down");
@@ -236,28 +236,29 @@ bool ActivityReplay::ParseHardwareState(DictionaryValue* entry) {
   double temp_double;
   if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelX,
                         &temp_double)) {
-    Err("Unable to parse hardware state rel_x");
-    return false;
+    // There may not have rel_ entries for old logs
+    Log("Unable to parse hardware state rel_x");
+  } else {
+    hs.rel_x = temp_double;
+    if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelY,
+                          &temp_double)) {
+      Err("Unable to parse hardware state rel_y");
+      return false;
+    }
+    hs.rel_y = temp_double;
+    if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelWheel,
+                          &temp_double)) {
+      Err("Unable to parse hardware state rel_wheel");
+      return false;
+    }
+    hs.rel_wheel = temp_double;
+    if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelHWheel,
+                          &temp_double)) {
+      Err("Unable to parse hardware state rel_hwheel");
+      return false;
+    }
+    hs.rel_hwheel = temp_double;
   }
-  hs.rel_x = temp_double;
-  if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelY,
-                        &temp_double)) {
-    Err("Unable to parse hardware state rel_y");
-    return false;
-  }
-  hs.rel_y = temp_double;
-  if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelWheel,
-                        &temp_double)) {
-    Err("Unable to parse hardware state rel_wheel");
-    return false;
-  }
-  hs.rel_wheel = temp_double;
-  if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelHWheel,
-                        &temp_double)) {
-    Err("Unable to parse hardware state rel_hwheel");
-    return false;
-  }
-  hs.rel_hwheel = temp_double;
   log_.LogHardwareState(hs);
   return true;
 }
