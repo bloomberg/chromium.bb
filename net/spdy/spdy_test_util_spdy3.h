@@ -28,17 +28,6 @@ namespace test_spdy3 {
 // Can't find a function you're looking for?  ttuttle is migrating functions
 // from here into methods in the SpdyTestUtil class in spdy_test_common.h.
 
-// Construct a single SPDY header entry, for validation.
-// |extra_headers| are the extra header-value pairs.
-// |buffer| is the buffer we're filling in.
-// |index| is the index of the header we want.
-// Returns the number of bytes written into |buffer|.
-int ConstructSpdyHeader(const char* const extra_headers[],
-                        int extra_header_count,
-                        char* buffer,
-                        int buffer_length,
-                        int index);
-
 // Constructs a standard SPDY GET SYN frame, optionally compressed
 // for the url |url|.
 // |extra_headers| are the extra header-value pairs, which typically

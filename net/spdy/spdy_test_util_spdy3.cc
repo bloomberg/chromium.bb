@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -116,41 +115,6 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
 }
 
 }  // namespace
-
-int ConstructSpdyHeader(const char* const extra_headers[],
-                        int extra_header_count,
-                        char* buffer,
-                        int buffer_length,
-                        int index) {
-  const char* this_header = NULL;
-  const char* this_value = NULL;
-  if (!buffer || !buffer_length)
-    return 0;
-  *buffer = '\0';
-  // Sanity check: Non-empty header list.
-  DCHECK(NULL != extra_headers) << "NULL extra headers pointer";
-  // Sanity check: Index out of range.
-  DCHECK((index >= 0) && (index < extra_header_count))
-      << "Index " << index
-      << " out of range [0, " << extra_header_count << ")";
-  this_header = extra_headers[index * 2];
-  // Sanity check: Non-empty header.
-  if (!*this_header)
-    return 0;
-  std::string::size_type header_len = strlen(this_header);
-  if (!header_len)
-    return 0;
-  this_value = extra_headers[1 + (index * 2)];
-  // Sanity check: Non-empty value.
-  if (!*this_value)
-    this_value = "";
-  int n = base::snprintf(buffer,
-                         buffer_length,
-                         "%s: %s\r\n",
-                         this_header,
-                         this_value);
-  return n;
-}
 
 SpdyFrame* ConstructSpdyGet(const char* const url,
                             bool compressed,
