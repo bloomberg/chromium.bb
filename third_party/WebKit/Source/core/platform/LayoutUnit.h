@@ -170,6 +170,12 @@ public:
         return fraction;
     }
 
+    bool mightBeSaturated() const
+    {
+        return rawValue() == std::numeric_limits<int>::max()
+            || rawValue() == std::numeric_limits<int>::min();
+    }
+
     static float epsilon() { return 1.0f / kFixedPointDenominator; }
 
     static const LayoutUnit max()
