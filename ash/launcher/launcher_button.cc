@@ -392,17 +392,21 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void LauncherButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
-   int x_offset = 0, y_offset = 0;
-   gfx::Rect icon_bounds;
-   if (shelf_layout_manager_->IsHorizontalAlignment()) {
-    icon_bounds.SetRect(
-        button_bounds.x(), button_bounds.y() + kIconPad,
-        button_bounds.width(), kIconSize);
-  } else {
-    icon_bounds.SetRect(
-        button_bounds.x() + kIconPad, button_bounds.y(),
-        kIconSize, button_bounds.height());
-  }
+  int x_offset = shelf_layout_manager_->PrimaryAxisValue(0, kIconPad);
+  int y_offset = shelf_layout_manager_->PrimaryAxisValue(kIconPad, 0);
+
+  int icon_width = std::min(kIconSize,
+      button_bounds.width() - x_offset);
+  int icon_height = std::min(kIconSize,
+      button_bounds.height() - y_offset);
+
+  // If on the left or top 'invert' the inset so the constant gap is on
+  // the interior (towards the center of display) edge of the shelf.
+  if (SHELF_ALIGNMENT_LEFT == shelf_layout_manager_->GetAlignment())
+    x_offset = button_bounds.width() - (kIconSize + kIconPad);
+
+  if (SHELF_ALIGNMENT_TOP == shelf_layout_manager_->GetAlignment())
+    y_offset = button_bounds.height() - (kIconSize + kIconPad);
 
   if (ShouldHop(state_)) {
     x_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
@@ -411,9 +415,26 @@ void LauncherButton::Layout() {
         -kHopSpacing, 0, 0, kHopSpacing);
   }
 
-  icon_bounds.Offset(x_offset, y_offset);
-  icon_view_->SetBoundsRect(icon_bounds);
-  bar_->SetBarBoundsRect(GetContentsBounds());
+  // Center icon with respect to the secondary axis, and ensure
+  // that the icon doesn't occlude the bar highlight.
+  if (shelf_layout_manager_->IsHorizontalAlignment()) {
+    x_offset = std::max(0, button_bounds.width() - icon_width) / 2;
+    if (y_offset + icon_height + kBarSize > button_bounds.height())
+      icon_height = button_bounds.height() - (y_offset + kBarSize);
+  } else {
+    y_offset = std::max(0, button_bounds.height() - icon_height) / 2;
+    if (x_offset + icon_width + kBarSize > button_bounds.width())
+      icon_width = button_bounds.width() - (x_offset + kBarSize);
+  }
+
+  icon_view_->SetBoundsRect(gfx::Rect(
+      button_bounds.x() + x_offset,
+      button_bounds.y() + y_offset,
+      icon_width,
+      icon_height));
+
+  bar_->SetBarBoundsRect(button_bounds);
+
   UpdateState();
 }
 

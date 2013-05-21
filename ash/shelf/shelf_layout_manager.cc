@@ -212,9 +212,7 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
     return false;
 
   alignment_ = alignment;
-  if (shelf_->launcher())
-    shelf_->launcher()->SetAlignment(alignment);
-  shelf_->status_area_widget()->SetShelfAlignment(alignment);
+  shelf_->SetAlignment(alignment);
   LayoutShelf();
   return true;
 }
@@ -643,9 +641,9 @@ void ShelfLayoutManager::GetShelfSize(int* width, int* height) {
   gfx::Size status_size(
       shelf_->status_area_widget()->GetWindowBoundsInScreen().size());
   if (IsHorizontalAlignment())
-    *height = std::max(kLauncherPreferredSize, status_size.height());
+    *height = kLauncherPreferredSize;
   else
-    *width = std::max(kLauncherPreferredSize, status_size.width());
+    *width = kLauncherPreferredSize;
 }
 
 void ShelfLayoutManager::AdjustBoundsBasedOnAlignment(int inset,
@@ -697,7 +695,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
       gfx::Rect(available_bounds.x(), available_bounds.y(),
                     available_bounds.width(), shelf_height));
 
-  int status_inset = (kLauncherPreferredSize -
+  int status_inset = std::max(0, kLauncherPreferredSize -
       PrimaryAxisValue(status_size.height(), status_size.width()));
 
   target_bounds->status_bounds_in_shelf = SelectValueForShelfAlignment(
@@ -741,8 +739,10 @@ void ShelfLayoutManager::CalculateTargetBounds(
       gfx::Rect(base::i18n::IsRTL() ? status_size.width() : 0, 0,
                     shelf_width - status_size.width(),
                     target_bounds->shelf_bounds_in_root.height()),
-      gfx::Rect(0, 0, shelf_width, shelf_height - status_size.height()),
-      gfx::Rect(0, 0, shelf_width, shelf_height - status_size.height()),
+      gfx::Rect(0, 0, target_bounds->shelf_bounds_in_root.width(),
+                shelf_height - status_size.height()),
+      gfx::Rect(0, 0, target_bounds->shelf_bounds_in_root.width(),
+                shelf_height - status_size.height()),
       gfx::Rect(base::i18n::IsRTL() ? status_size.width() : 0, 0,
                     shelf_width - status_size.width(),
                     target_bounds->shelf_bounds_in_root.height()));
@@ -801,11 +801,15 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     target_bounds->status_bounds_in_shelf.set_y(status_y.y());
   } else {
     // Move and size the launcher with the gesture.
-    int shelf_width = target_bounds->shelf_bounds_in_root.width() - translate;
+    int shelf_width = target_bounds->shelf_bounds_in_root.width();
+    if (alignment_ == SHELF_ALIGNMENT_RIGHT)
+      shelf_width -= translate;
+    else
+      shelf_width += translate;
     shelf_width = std::max(shelf_width, kAutoHideSize);
     target_bounds->shelf_bounds_in_root.set_width(shelf_width);
     if (alignment_ == SHELF_ALIGNMENT_RIGHT) {
-      target_bounds->shelf_bounds_in_root.set_y(
+      target_bounds->shelf_bounds_in_root.set_x(
           available_bounds.right() - shelf_width);
     }
 

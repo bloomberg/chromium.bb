@@ -482,8 +482,9 @@ ShelfAlignment ShelfWidget::GetAlignment() const {
 }
 
 void ShelfWidget::SetAlignment(ShelfAlignment alignment) {
-  shelf_layout_manager_->SetAlignment(alignment);
-  shelf_layout_manager_->LayoutShelf();
+  if (launcher_)
+    launcher_->SetAlignment(alignment);
+  status_area_widget_->SetShelfAlignment(alignment);
   delegate_view_->SchedulePaint();
 }
 

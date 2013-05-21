@@ -1138,12 +1138,12 @@ TEST_F(WorkspaceManagerTest, MoveOnSwitch) {
   w2->Show();
   wm::ActivateWindow(w2.get());
 
-  // Increase the size of the shelf. This would make |w1| fall completely out of
-  // the display work area.
-  gfx::Size size(shelf_widget()->status_area_widget()->
-      GetWindowBoundsInScreen().size());
-  size.Enlarge(0, 30);
-  shelf_widget()->status_area_widget()->SetSize(size);
+  // Increase the size of the WorkAreaInsets. This would make |w1| fall
+  // completely out of the display work area.
+  gfx::Insets insets =
+      Shell::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
+  insets.Set(0, 0, insets.bottom() + 30, 0);
+  Shell::GetInstance()->SetDisplayWorkAreaInsets(w1.get(), insets);
 
   // Switch to w1. The window should have moved.
   wm::ActivateWindow(w1.get());
