@@ -285,7 +285,8 @@ void FileSystem::OnUpdateChecked(FileError error) {
 }
 
 FileSystem::~FileSystem() {
-  // This should be called from UI thread, from DriveSystemService shutdown.
+  // This should be called from UI thread, from DriveIntegrationService
+  // shutdown.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   change_list_loader_->RemoveObserver(this);

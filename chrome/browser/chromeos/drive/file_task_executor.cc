@@ -10,7 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -55,12 +55,12 @@ bool FileTaskExecutor::ExecuteAndNotify(
     raw_paths.push_back(path);
   }
 
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile());
+  DriveIntegrationService* integration_service =
+      DriveIntegrationServiceFactory::GetForProfile(profile());
   DCHECK(current_index_ == 0);
-  if (!system_service || !system_service->file_system())
+  if (!integration_service || !integration_service->file_system())
     return false;
-  FileSystemInterface* file_system = system_service->file_system();
+  FileSystemInterface* file_system = integration_service->file_system();
 
   // Reset the index, so we know when we're done.
   current_index_ = raw_paths.size();
@@ -81,20 +81,20 @@ void FileTaskExecutor::OnFileEntryFetched(
   if (!current_index_)
     return;
 
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile());
+  DriveIntegrationService* integration_service =
+      DriveIntegrationServiceFactory::GetForProfile(profile());
 
   // Here, we are only interested in files.
   if (entry.get() && !entry->has_file_specific_info())
     error = FILE_ERROR_NOT_FOUND;
 
-  if (!system_service || error != FILE_ERROR_OK) {
+  if (!integration_service || error != FILE_ERROR_OK) {
     Done(false);
     return;
   }
 
   google_apis::DriveServiceInterface* drive_service =
-      system_service->drive_service();
+      integration_service->drive_service();
 
   // Send off a request for the drive service to authorize the apps for the
   // current document entry for this document so we can get the
@@ -117,10 +117,10 @@ void FileTaskExecutor::OnAppAuthorized(
   if (!current_index_)
     return;
 
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile());
+  DriveIntegrationService* integration_service =
+      DriveIntegrationServiceFactory::GetForProfile(profile());
 
-  if (!system_service || error != google_apis::HTTP_SUCCESS) {
+  if (!integration_service || error != google_apis::HTTP_SUCCESS) {
     Done(false);
     return;
   }

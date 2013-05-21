@@ -12,7 +12,7 @@
 #include "base/path_service.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -324,9 +324,10 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     PathService::Get(base::DIR_TEMP, &tmp_dir_path);
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDirUnderPath(tmp_dir_path));
 
-    drive::DriveSystemServiceFactory::SetFactoryForTest(
-        base::Bind(&DriveFileSystemExtensionApiTest::CreateDriveSystemService,
-                   base::Unretained(this)));
+    drive::DriveIntegrationServiceFactory::SetFactoryForTest(
+        base::Bind(
+            &DriveFileSystemExtensionApiTest::CreateDriveIntegrationService,
+            base::Unretained(this)));
   }
 
   // FileSystemExtensionApiTestBase OVERRIDE.
@@ -335,18 +336,19 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
   }
 
  protected:
-  // DriveSystemService factory function for this test.
-  drive::DriveSystemService* CreateDriveSystemService(Profile* profile) {
+  // DriveIntegrationService factory function for this test.
+  drive::DriveIntegrationService* CreateDriveIntegrationService(
+      Profile* profile) {
     fake_drive_service_ = new google_apis::FakeDriveService;
     fake_drive_service_->LoadResourceListForWapi(kTestRootFeed);
     fake_drive_service_->LoadAccountMetadataForWapi(
         "chromeos/gdata/account_metadata.json");
     fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
 
-    return new drive::DriveSystemService(profile,
-                                         fake_drive_service_,
-                                         test_cache_root_.path(),
-                                         NULL);
+    return new drive::DriveIntegrationService(profile,
+                                              fake_drive_service_,
+                                              test_cache_root_.path(),
+                                              NULL);
   }
 
   base::ScopedTempDir test_cache_root_;

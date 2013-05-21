@@ -19,7 +19,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"
@@ -353,7 +353,7 @@ class DriveTestVolume : public TestVolume,
                         public drive::FileSystemObserver {
  public:
   DriveTestVolume() : fake_drive_service_(NULL),
-                      system_service_(NULL),
+                      integration_service_(NULL),
                       waiting_for_directory_change_(false) {
   }
 
@@ -363,8 +363,8 @@ class DriveTestVolume : public TestVolume,
   bool SetUp() {
     if (!test_cache_root_.CreateUniqueTempDir())
       return false;
-    drive::DriveSystemServiceFactory::SetFactoryForTest(
-        base::Bind(&DriveTestVolume::CreateDriveSystemService,
+    drive::DriveIntegrationServiceFactory::SetFactoryForTest(
+        base::Bind(&DriveTestVolume::CreateDriveIntegrationService,
                    base::Unretained(this)));
     return true;
   }
@@ -467,12 +467,12 @@ class DriveTestVolume : public TestVolume,
   }
 
   virtual bool PathExists(const base::FilePath& file_path) const OVERRIDE {
-    DCHECK(system_service_);
-    DCHECK(system_service_->file_system());
+    DCHECK(integration_service_);
+    DCHECK(integration_service_->file_system());
 
     drive::FileError error = drive::FILE_ERROR_FAILED;
     scoped_ptr<drive::ResourceEntry> entry_proto;
-    system_service_->file_system()->GetResourceEntryByPath(
+    integration_service_->file_system()->GetResourceEntryByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
     google_apis::test_util::RunBlockingPoolTask();
@@ -512,8 +512,8 @@ class DriveTestVolume : public TestVolume,
   // Notifies FileSystem that the contents in FakeDriveService are
   // changed, hence the new contents should be fetched.
   void CheckForUpdates() {
-    if (system_service_ && system_service_->file_system()) {
-      system_service_->file_system()->CheckForUpdates();
+    if (integration_service_ && integration_service_->file_system()) {
+      integration_service_->file_system()->CheckForUpdates();
     }
   }
 
@@ -528,12 +528,12 @@ class DriveTestVolume : public TestVolume,
   bool FileIsPresentWithSize(
       const base::FilePath& file_path,
       int64 file_size) {
-    DCHECK(system_service_);
-    DCHECK(system_service_->file_system());
+    DCHECK(integration_service_);
+    DCHECK(integration_service_->file_system());
 
     drive::FileError error = drive::FILE_ERROR_FAILED;
     scoped_ptr<drive::ResourceEntry> entry_proto;
-    system_service_->file_system()->GetResourceEntryByPath(
+    integration_service_->file_system()->GetResourceEntryByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
     google_apis::test_util::RunBlockingPoolTask();
@@ -545,12 +545,12 @@ class DriveTestVolume : public TestVolume,
   // Returns true if a file is not present at |file_path|.
   bool FileIsNotPresent(
       const base::FilePath& file_path) {
-    DCHECK(system_service_);
-    DCHECK(system_service_->file_system());
+    DCHECK(integration_service_);
+    DCHECK(integration_service_->file_system());
 
     drive::FileError error = drive::FILE_ERROR_FAILED;
     scoped_ptr<drive::ResourceEntry> entry_proto;
-    system_service_->file_system()->GetResourceEntryByPath(
+    integration_service_->file_system()->GetResourceEntryByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
     google_apis::test_util::RunBlockingPoolTask();
@@ -558,25 +558,27 @@ class DriveTestVolume : public TestVolume,
     return error == drive::FILE_ERROR_NOT_FOUND;
   }
 
-  drive::DriveSystemService* CreateDriveSystemService(Profile* profile) {
+  drive::DriveIntegrationService* CreateDriveIntegrationService(
+      Profile* profile) {
     fake_drive_service_ = new google_apis::FakeDriveService;
     fake_drive_service_->LoadResourceListForWapi(
         "chromeos/gdata/empty_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
         "chromeos/gdata/account_metadata.json");
     fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
-    system_service_ = new drive::DriveSystemService(profile,
-                                                    fake_drive_service_,
-                                                    test_cache_root_.path(),
-                                                    NULL);
-    system_service_->file_system()->AddObserver(this);
-    return system_service_;
+    integration_service_ = new drive::DriveIntegrationService(
+        profile,
+        fake_drive_service_,
+        test_cache_root_.path(),
+        NULL);
+    integration_service_->file_system()->AddObserver(this);
+    return integration_service_;
   }
 
  private:
   base::ScopedTempDir test_cache_root_;
   google_apis::FakeDriveService* fake_drive_service_;
-  drive::DriveSystemService* system_service_;
+  drive::DriveIntegrationService* integration_service_;
   bool waiting_for_directory_change_;
 };
 

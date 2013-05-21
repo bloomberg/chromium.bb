@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -97,7 +97,7 @@ std::string GetDriveUserAgent() {
 
 }  // namespace
 
-DriveSystemService::DriveSystemService(
+DriveIntegrationService::DriveIntegrationService(
     Profile* profile,
     google_apis::DriveServiceInterface* test_drive_service,
     const base::FilePath& test_cache_root,
@@ -154,20 +154,20 @@ DriveSystemService::DriveSystemService(
       new DebugInfoCollector(file_system(), cache_.get()));
 }
 
-DriveSystemService::~DriveSystemService() {
+DriveIntegrationService::~DriveIntegrationService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void DriveSystemService::Initialize() {
+void DriveIntegrationService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   drive_service_->Initialize(profile_);
   file_system_->Initialize();
   cache_->RequestInitialize(
-      base::Bind(&DriveSystemService::InitializeAfterCacheInitialized,
+      base::Bind(&DriveIntegrationService::InitializeAfterCacheInitialized,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DriveSystemService::Shutdown() {
+void DriveIntegrationService::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   google_apis::DriveNotificationManager* drive_notification_manager =
@@ -178,27 +178,29 @@ void DriveSystemService::Shutdown() {
   RemoveDriveMountPoint();
 }
 
-void DriveSystemService::AddObserver(DriveSystemServiceObserver* observer) {
+void DriveIntegrationService::AddObserver(
+    DriveIntegrationServiceObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
-void DriveSystemService::RemoveObserver(DriveSystemServiceObserver* observer) {
+void DriveIntegrationService::RemoveObserver(
+    DriveIntegrationServiceObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
 
-void DriveSystemService::OnNotificationReceived() {
+void DriveIntegrationService::OnNotificationReceived() {
   file_system_->CheckForUpdates();
   webapps_registry_->Update();
 }
 
-void DriveSystemService::OnPushNotificationEnabled(bool enabled) {
+void DriveIntegrationService::OnPushNotificationEnabled(bool enabled) {
   const char* status = (enabled ? "enabled" : "disabled");
   util::Log("Push notification is %s", status);
 }
 
-bool DriveSystemService::IsDriveEnabled() {
+bool DriveIntegrationService::IsDriveEnabled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!IsDriveEnabledForProfile(profile_))
@@ -211,19 +213,19 @@ bool DriveSystemService::IsDriveEnabled() {
   return true;
 }
 
-void DriveSystemService::ClearCacheAndRemountFileSystem(
+void DriveIntegrationService::ClearCacheAndRemountFileSystem(
     const base::Callback<void(bool)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   RemoveDriveMountPoint();
   cache_->ClearAllOnUIThread(base::Bind(
-      &DriveSystemService::AddBackDriveMountPoint,
+      &DriveIntegrationService::AddBackDriveMountPoint,
       weak_ptr_factory_.GetWeakPtr(),
       callback));
 }
 
-void DriveSystemService::AddBackDriveMountPoint(
+void DriveIntegrationService::AddBackDriveMountPoint(
     const base::Callback<void(bool)>& callback,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -241,7 +243,7 @@ void DriveSystemService::AddBackDriveMountPoint(
   callback.Run(true);
 }
 
-void DriveSystemService::ReloadAndRemountFileSystem() {
+void DriveIntegrationService::ReloadAndRemountFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RemoveDriveMountPoint();
@@ -253,7 +255,7 @@ void DriveSystemService::ReloadAndRemountFileSystem() {
   AddDriveMountPoint();
 }
 
-void DriveSystemService::AddDriveMountPoint() {
+void DriveIntegrationService::AddDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!file_system_proxy_.get());
 
@@ -272,17 +274,17 @@ void DriveSystemService::AddDriveMountPoint() {
 
   if (success) {
     util::Log("Drive mount point is added");
-    FOR_EACH_OBSERVER(DriveSystemServiceObserver, observers_,
+    FOR_EACH_OBSERVER(DriveIntegrationServiceObserver, observers_,
                       OnFileSystemMounted());
   }
 }
 
-void DriveSystemService::RemoveDriveMountPoint() {
+void DriveIntegrationService::RemoveDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   job_list()->CancelAllJobs();
 
-  FOR_EACH_OBSERVER(DriveSystemServiceObserver, observers_,
+  FOR_EACH_OBSERVER(DriveIntegrationServiceObserver, observers_,
                     OnFileSystemBeingUnmounted());
 
   fileapi::ExternalMountPoints* mount_points =
@@ -298,7 +300,7 @@ void DriveSystemService::RemoveDriveMountPoint() {
   util::Log("Drive mount point is removed");
 }
 
-void DriveSystemService::InitializeAfterCacheInitialized(bool success) {
+void DriveIntegrationService::InitializeAfterCacheInitialized(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!success) {
@@ -309,11 +311,11 @@ void DriveSystemService::InitializeAfterCacheInitialized(bool success) {
 
   resource_metadata_->Initialize(
       base::Bind(
-          &DriveSystemService::InitializeAfterResourceMetadataInitialized,
+          &DriveIntegrationService::InitializeAfterResourceMetadataInitialized,
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DriveSystemService::InitializeAfterResourceMetadataInitialized(
+void DriveIntegrationService::InitializeAfterResourceMetadataInitialized(
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -325,8 +327,8 @@ void DriveSystemService::InitializeAfterResourceMetadataInitialized(
   }
 
   content::DownloadManager* download_manager =
-    g_browser_process->download_status_updater() ?
-        BrowserContext::GetDownloadManager(profile_) : NULL;
+      g_browser_process->download_status_updater() ?
+      BrowserContext::GetDownloadManager(profile_) : NULL;
   download_handler_->Initialize(
       download_manager,
       cache_->GetCacheDirectoryPath(
@@ -347,7 +349,7 @@ void DriveSystemService::InitializeAfterResourceMetadataInitialized(
   AddDriveMountPoint();
 }
 
-void DriveSystemService::DisableDrive() {
+void DriveIntegrationService::DisableDrive() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drive_disabled_ = true;
@@ -361,12 +363,12 @@ void DriveSystemService::DisableDrive() {
   }
 }
 
-//===================== DriveSystemServiceFactory =============================
+//===================== DriveIntegrationServiceFactory =======================
 
 // static
-DriveSystemService* DriveSystemServiceFactory::GetForProfile(
+DriveIntegrationService* DriveIntegrationServiceFactory::GetForProfile(
     Profile* profile) {
-  DriveSystemService* service = GetForProfileRegardlessOfStates(profile);
+  DriveIntegrationService* service = GetForProfileRegardlessOfStates(profile);
   if (service && !service->IsDriveEnabled())
     return NULL;
 
@@ -374,16 +376,17 @@ DriveSystemService* DriveSystemServiceFactory::GetForProfile(
 }
 
 // static
-DriveSystemService* DriveSystemServiceFactory::GetForProfileRegardlessOfStates(
+DriveIntegrationService*
+DriveIntegrationServiceFactory::GetForProfileRegardlessOfStates(
     Profile* profile) {
-  return static_cast<DriveSystemService*>(
+  return static_cast<DriveIntegrationService*>(
       GetInstance()->GetServiceForProfile(profile, true));
 }
 
 // static
-DriveSystemService* DriveSystemServiceFactory::FindForProfile(
+DriveIntegrationService* DriveIntegrationServiceFactory::FindForProfile(
     Profile* profile) {
-  DriveSystemService* service = FindForProfileRegardlessOfStates(profile);
+  DriveIntegrationService* service = FindForProfileRegardlessOfStates(profile);
   if (service && !service->IsDriveEnabled())
     return NULL;
 
@@ -391,42 +394,45 @@ DriveSystemService* DriveSystemServiceFactory::FindForProfile(
 }
 
 // static
-DriveSystemService* DriveSystemServiceFactory::FindForProfileRegardlessOfStates(
+DriveIntegrationService*
+DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
     Profile* profile) {
-  return static_cast<DriveSystemService*>(
+  return static_cast<DriveIntegrationService*>(
       GetInstance()->GetServiceForProfile(profile, false));
 }
 
 // static
-DriveSystemServiceFactory* DriveSystemServiceFactory::GetInstance() {
-  return Singleton<DriveSystemServiceFactory>::get();
+DriveIntegrationServiceFactory* DriveIntegrationServiceFactory::GetInstance() {
+  return Singleton<DriveIntegrationServiceFactory>::get();
 }
 
 // static
-void DriveSystemServiceFactory::SetFactoryForTest(
+void DriveIntegrationServiceFactory::SetFactoryForTest(
     const FactoryCallback& factory_for_test) {
   GetInstance()->factory_for_test_ = factory_for_test;
 }
 
-DriveSystemServiceFactory::DriveSystemServiceFactory()
-    : ProfileKeyedServiceFactory("DriveSystemService",
+DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
+    : ProfileKeyedServiceFactory("DriveIntegrationService",
                                  ProfileDependencyManager::GetInstance()) {
   DependsOn(google_apis::DriveNotificationManagerFactory::GetInstance());
   DependsOn(DownloadServiceFactory::GetInstance());
 }
 
-DriveSystemServiceFactory::~DriveSystemServiceFactory() {
+DriveIntegrationServiceFactory::~DriveIntegrationServiceFactory() {
 }
 
-ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
+ProfileKeyedService* DriveIntegrationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
-  DriveSystemService* service = NULL;
-  if (factory_for_test_.is_null())
-    service = new DriveSystemService(profile, NULL, base::FilePath(), NULL);
-  else
+  DriveIntegrationService* service = NULL;
+  if (factory_for_test_.is_null()) {
+    service = new DriveIntegrationService(
+        profile, NULL, base::FilePath(), NULL);
+  } else {
     service = factory_for_test_.Run(profile);
+  }
 
   service->Initialize();
   return service;

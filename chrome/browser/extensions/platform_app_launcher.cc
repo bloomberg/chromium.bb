@@ -34,7 +34,7 @@
 #include "webkit/fileapi/file_system_types.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -167,8 +167,8 @@ class PlatformAppPathLauncher
   void GetMimeTypeAndLaunchForDriveFile() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    drive::DriveSystemService* service =
-        drive::DriveSystemServiceFactory::FindForProfile(profile_);
+    drive::DriveIntegrationService* service =
+        drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
     if (!service) {
       LaunchWithNoLaunchData();
       return;

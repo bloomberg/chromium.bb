@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/drive_url_request_job.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,9 +29,9 @@ FileSystemInterface* GetFileSystem(void* profile_id) {
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return NULL;
 
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::FindForProfile(profile);
-  return system_service ? system_service->file_system() : NULL;
+  DriveIntegrationService* integration_service =
+      DriveIntegrationServiceFactory::FindForProfile(profile);
+  return integration_service ? integration_service->file_system() : NULL;
 }
 
 }  // namespace

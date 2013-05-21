@@ -137,8 +137,8 @@ class SyncClient : public FileSystemObserver, public FileCacheObserver {
   void OnUploadFileComplete(const std::string& resource_id,
                             FileError error);
 
-  FileSystemInterface* file_system_;  // Owned by DriveSystemService.
-  FileCache* cache_;  // Owned by DriveSystemService.
+  FileSystemInterface* file_system_;  // Owned by DriveIntegrationService.
+  FileCache* cache_;  // Owned by DriveIntegrationService.
 
   // List of the resource ids of resources which have a fetch task created.
   std::set<std::string> fetch_list_;

@@ -50,7 +50,7 @@
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
@@ -111,8 +111,8 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using drive::DriveSystemService;
-using drive::DriveSystemServiceFactory;
+using drive::DriveIntegrationService;
+using drive::DriveIntegrationServiceFactory;
 
 namespace chromeos {
 
@@ -383,9 +383,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     bluetooth_adapter_->RemoveObserver(this);
 
     // Stop observing gdata operations.
-    DriveSystemService* system_service = FindDriveSystemService();
-    if (system_service)
-      system_service->job_list()->RemoveObserver(this);
+    DriveIntegrationService* integration_service =
+        FindDriveIntegrationService();
+    if (integration_service)
+      integration_service->job_list()->RemoveObserver(this);
 
     policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
         g_browser_process->browser_policy_connector()->
@@ -737,21 +738,23 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void CancelDriveOperation(int32 operation_id) OVERRIDE {
-    DriveSystemService* system_service = FindDriveSystemService();
-    if (!system_service)
+    DriveIntegrationService* integration_service =
+        FindDriveIntegrationService();
+    if (!integration_service)
       return;
 
-    system_service->job_list()->CancelJob(operation_id);
+    integration_service->job_list()->CancelJob(operation_id);
   }
 
   virtual void GetDriveOperationStatusList(
       ash::DriveOperationStatusList* list) OVERRIDE {
-    DriveSystemService* system_service = FindDriveSystemService();
-    if (!system_service)
+    DriveIntegrationService* integration_service =
+        FindDriveIntegrationService();
+    if (!integration_service)
       return;
 
     *list = ConvertToDriveStatusList(
-        system_service->job_list()->GetJobInfoList());
+        integration_service->job_list()->GetJobInfoList());
   }
 
 
@@ -1130,9 +1133,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void ObserveGDataUpdates() {
-    DriveSystemService* system_service = FindDriveSystemService();
-    if (system_service)
-      system_service->job_list()->AddObserver(this);
+    DriveIntegrationService* integration_service =
+        FindDriveIntegrationService();
+    if (integration_service)
+      integration_service->job_list()->AddObserver(this);
   }
 
   void UpdateClockType() {
@@ -1438,9 +1442,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);
   }
 
-  DriveSystemService* FindDriveSystemService() {
+  DriveIntegrationService* FindDriveIntegrationService() {
     Profile* profile = ProfileManager::GetDefaultProfile();
-    return DriveSystemServiceFactory::FindForProfile(profile);
+    return DriveIntegrationServiceFactory::FindForProfile(profile);
   }
 
   // Overridden from system::TimezoneSettings::Observer.

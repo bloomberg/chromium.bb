@@ -27,12 +27,12 @@ void EmitDebugLogForCloseFile(const base::FilePath& file_path,
 FileWriteHelper::FileWriteHelper(FileSystemInterface* file_system)
     : file_system_(file_system),
       weak_ptr_factory_(this) {
-  // Must be created in DriveSystemService.
+  // Must be created in DriveIntegrationService.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 FileWriteHelper::~FileWriteHelper() {
-  // Must be destroyed in DriveSystemService.
+  // Must be destroyed in DriveIntegrationService.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

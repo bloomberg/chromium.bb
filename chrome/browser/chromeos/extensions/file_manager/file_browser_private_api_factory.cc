@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
 
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -28,7 +28,7 @@ FileBrowserPrivateAPIFactory::FileBrowserPrivateAPIFactory()
     : ProfileKeyedServiceFactory(
           "FileBrowserPrivateAPI",
           ProfileDependencyManager::GetInstance()) {
-  DependsOn(drive::DriveSystemServiceFactory::GetInstance());
+  DependsOn(drive::DriveIntegrationServiceFactory::GetInstance());
   DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 

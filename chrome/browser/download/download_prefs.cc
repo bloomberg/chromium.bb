@@ -30,7 +30,7 @@
 #include "content/public/browser/save_page_type.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #endif
 
@@ -134,11 +134,11 @@ DownloadPrefs* DownloadPrefs::FromBrowserContext(
 
 base::FilePath DownloadPrefs::DownloadPath() const {
 #if defined(OS_CHROMEOS)
-  // If the download path is under /drive, and DriveSystemService isn't
+  // If the download path is under /drive, and DriveIntegrationService isn't
   // available (which it isn't for incognito mode, for instance), use the
   // default download directory (/Downloads).
   if (drive::util::IsUnderDriveMountPoint(*download_path_) &&
-      !drive::DriveSystemServiceFactory::GetForProfile(profile_))
+      !drive::DriveIntegrationServiceFactory::GetForProfile(profile_))
     return download_util::GetDefaultDownloadDirectory();
 #endif
   return *download_path_;

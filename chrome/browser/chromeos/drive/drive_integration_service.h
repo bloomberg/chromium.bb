@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SYSTEM_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SYSTEM_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_INTEGRATION_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_INTEGRATION_SERVICE_H_
 
 #include <string>
 
@@ -45,9 +45,9 @@ class StaleCacheFilesRemover;
 class SyncClient;
 }  // namespace internal
 
-// Interface for classes that need to observe events from DriveSystemService.
-// All events are notified on UI thread.
-class DriveSystemServiceObserver {
+// Interface for classes that need to observe events from
+// DriveIntegrationService.  All events are notified on UI thread.
+class DriveIntegrationServiceObserver {
  public:
   // Triggered when the file system is mounted.
   virtual void OnFileSystemMounted() {
@@ -58,27 +58,30 @@ class DriveSystemServiceObserver {
   }
 
  protected:
-  virtual ~DriveSystemServiceObserver() {}
+  virtual ~DriveIntegrationServiceObserver() {}
 };
 
-// DriveSystemService runs the Drive system, including the Drive file system
-// implementation for the file manager, and some other sub systems.
+// DriveIntegrationService is used to integrate Drive to Chrome. This class
+// exposes the file system representation built on top of Drive and some
+// other Drive related objects to the file manager, and some other sub
+// systems.
 //
 // The class is essentially a container that manages lifetime of the objects
-// that are used to run the Drive system. The DriveSystemService object is
+// that are used to integrate Drive to Chrome. The object of this class is
 // created per-profile.
-class DriveSystemService
+class DriveIntegrationService
     : public ProfileKeyedService,
       public google_apis::DriveNotificationObserver {
  public:
   // test_drive_service, test_cache_root and test_file_system are used by tests
   // to inject customized instances.
   // Pass NULL or the empty value when not interested.
-  DriveSystemService(Profile* profile,
-                     google_apis::DriveServiceInterface* test_drive_service,
-                     const base::FilePath& test_cache_root,
-                     FileSystemInterface* test_file_system);
-  virtual ~DriveSystemService();
+  DriveIntegrationService(
+      Profile* profile,
+      google_apis::DriveServiceInterface* test_drive_service,
+      const base::FilePath& test_cache_root,
+      FileSystemInterface* test_file_system);
+  virtual ~DriveIntegrationService();
 
   // Initializes the object. This function should be called before any
   // other functions.
@@ -88,8 +91,8 @@ class DriveSystemService
   virtual void Shutdown() OVERRIDE;
 
   // Adds and removes the observer.
-  void AddObserver(DriveSystemServiceObserver* observer);
-  void RemoveObserver(DriveSystemServiceObserver* observer);
+  void AddObserver(DriveIntegrationServiceObserver* observer);
+  void RemoveObserver(DriveIntegrationServiceObserver* observer);
 
   // google_apis::DriveNotificationObserver implementation.
   virtual void OnNotificationReceived() OVERRIDE;
@@ -146,7 +149,7 @@ class DriveSystemService
   // Must be called on UI thread.
   void DisableDrive();
 
-  friend class DriveSystemServiceFactory;
+  friend class DriveIntegrationServiceFactory;
 
   Profile* profile_;
   // True if Drive is disabled due to initialization errors.
@@ -167,56 +170,59 @@ class DriveSystemService
   scoped_refptr<FileSystemProxy> file_system_proxy_;
   scoped_ptr<DebugInfoCollector> debug_info_collector_;
 
-  ObserverList<DriveSystemServiceObserver> observers_;
+  ObserverList<DriveIntegrationServiceObserver> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveSystemService> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(DriveSystemService);
+  base::WeakPtrFactory<DriveIntegrationService> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DriveIntegrationService);
 };
 
-// Singleton that owns all DriveSystemServices and associates them with
-// Profiles.
-class DriveSystemServiceFactory : public ProfileKeyedServiceFactory {
+// Singleton that owns all instances of DriveIntegrationService and
+// associates them with Profiles.
+class DriveIntegrationServiceFactory : public ProfileKeyedServiceFactory {
  public:
   // Factory function used by tests.
-  typedef base::Callback<DriveSystemService*(Profile* profile)> FactoryCallback;
+  typedef base::Callback<DriveIntegrationService*(Profile* profile)>
+      FactoryCallback;
 
-  // Returns the DriveSystemService for |profile|, creating it if it is not
-  // yet created.
+  // Returns the DriveIntegrationService for |profile|, creating it if it is
+  // not yet created.
   //
   // This function starts returning NULL if Drive is disabled, even if this
   // function previously returns a non-NULL object. In other words, clients
   // can assume that Drive is enabled if this function returns a non-NULL
   // object.
-  static DriveSystemService* GetForProfile(Profile* profile);
+  static DriveIntegrationService* GetForProfile(Profile* profile);
 
-  // Similar to GetForProfile(), but returns the instance regardless of if Drive
-  // is enabled/disabled.
-  static DriveSystemService* GetForProfileRegardlessOfStates(Profile* profile);
+  // Similar to GetForProfile(), but returns the instance regardless of if
+  // Drive is enabled/disabled.
+  static DriveIntegrationService* GetForProfileRegardlessOfStates(
+      Profile* profile);
 
-  // Returns the DriveSystemService that is already associated with |profile|,
-  // if it is not yet created it will return NULL.
+  // Returns the DriveIntegrationService that is already associated with
+  // |profile|, if it is not yet created it will return NULL.
   //
   // This function starts returning NULL if Drive is disabled. See also the
   // comment at GetForProfile().
-  static DriveSystemService* FindForProfile(Profile* profile);
+  static DriveIntegrationService* FindForProfile(Profile* profile);
 
   // Similar to FindForProfile(), but returns the instance regardless of if
   // Drive is enabled/disabled.
-  static DriveSystemService* FindForProfileRegardlessOfStates(Profile* profile);
+  static DriveIntegrationService* FindForProfileRegardlessOfStates(
+      Profile* profile);
 
-  // Returns the DriveSystemServiceFactory instance.
-  static DriveSystemServiceFactory* GetInstance();
+  // Returns the DriveIntegrationServiceFactory instance.
+  static DriveIntegrationServiceFactory* GetInstance();
 
   // Sets a factory function for tests.
   static void SetFactoryForTest(const FactoryCallback& factory_for_test);
 
  private:
-  friend struct DefaultSingletonTraits<DriveSystemServiceFactory>;
+  friend struct DefaultSingletonTraits<DriveIntegrationServiceFactory>;
 
-  DriveSystemServiceFactory();
-  virtual ~DriveSystemServiceFactory();
+  DriveIntegrationServiceFactory();
+  virtual ~DriveIntegrationServiceFactory();
 
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
@@ -227,4 +233,4 @@ class DriveSystemServiceFactory : public ProfileKeyedServiceFactory {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SYSTEM_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_INTEGRATION_SERVICE_H_

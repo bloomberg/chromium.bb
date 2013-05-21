@@ -440,10 +440,10 @@ class FileSystem : public FileSystemInterface,
   // Cancels the job with |id| in the scheduler.
   void CancelJobInScheduler(JobID id);
 
-  // The profile hosts the FileSystem via DriveSystemService.
+  // The profile hosts the FileSystem via DriveIntegrationService.
   Profile* profile_;
 
-  // Sub components owned by DriveSystemService.
+  // Sub components owned by DriveIntegrationService.
   internal::FileCache* cache_;
   google_apis::DriveServiceInterface* drive_service_;
   JobScheduler* scheduler_;

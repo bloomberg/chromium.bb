@@ -16,7 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,15 +57,15 @@ const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_ASYNC;
 
 FileSystemInterface* GetFileSystem(Profile* profile) {
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile);
-  return system_service ? system_service->file_system() : NULL;
+  DriveIntegrationService* integration_service =
+      DriveIntegrationServiceFactory::GetForProfile(profile);
+  return integration_service ? integration_service->file_system() : NULL;
 }
 
 FileWriteHelper* GetFileWriteHelper(Profile* profile) {
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile);
-  return system_service ? system_service->file_write_helper() : NULL;
+  DriveIntegrationService* integration_service =
+      DriveIntegrationServiceFactory::GetForProfile(profile);
+  return integration_service ? integration_service->file_write_helper() : NULL;
 }
 
 }  // namespace

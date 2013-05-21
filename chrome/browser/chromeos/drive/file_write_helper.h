@@ -46,8 +46,7 @@ class FileWriteHelper {
       const base::FilePath& local_cache_path);
   void PrepareWritableFileAndRunAfterCallback(const base::FilePath& file_path);
 
-  // File system owned by DriveSystemService.
-  FileSystemInterface* file_system_;
+  FileSystemInterface* file_system_;  // Owned by DriveIntegrationService.
 
   // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and

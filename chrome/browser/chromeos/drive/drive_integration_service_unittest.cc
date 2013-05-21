@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/mock_file_system.h"
@@ -15,24 +15,25 @@
 
 namespace drive {
 
-class DriveSystemServiceTest : public testing::Test {
+class DriveIntegrationServiceTest : public testing::Test {
  public:
-  DriveSystemServiceTest() :
+  DriveIntegrationServiceTest() :
       ui_thread_(content::BrowserThread::UI, &message_loop_),
       file_system_(NULL),
-      system_service_(NULL) {}
+      integration_service_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
     file_system_ = new MockFileSystem;
-    system_service_ = new DriveSystemService(profile_.get(),
-                                             new google_apis::DummyDriveService,
-                                             base::FilePath(),
-                                             file_system_);
+    integration_service_ = new DriveIntegrationService(
+        profile_.get(),
+        new google_apis::DummyDriveService,
+        base::FilePath(),
+        file_system_);
   }
 
   virtual void TearDown() OVERRIDE {
-    delete system_service_;
+    delete integration_service_;
     file_system_ = NULL;
     google_apis::test_util::RunBlockingPoolTask();
     profile_.reset();
@@ -45,13 +46,13 @@ class DriveSystemServiceTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
 
   MockFileSystem* file_system_;
-  DriveSystemService* system_service_;
+  DriveIntegrationService* integration_service_;
 };
 
-TEST_F(DriveSystemServiceTest, InitializeAndShutdown) {
-  system_service_->Initialize();
+TEST_F(DriveIntegrationServiceTest, InitializeAndShutdown) {
+  integration_service_->Initialize();
   google_apis::test_util::RunBlockingPoolTask();
-  system_service_->Shutdown();
+  integration_service_->Shutdown();
 }
 
 }  // namespace drive

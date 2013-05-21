@@ -569,7 +569,7 @@
         'browser/chromeos/display/display_preferences_unittest.cc',
         'browser/chromeos/drive/download_handler_unittest.cc',
         'browser/chromeos/drive/drive_file_stream_reader_unittest.cc',
-        'browser/chromeos/drive/drive_system_service_unittest.cc',
+        'browser/chromeos/drive/drive_integration_service_unittest.cc',
         'browser/chromeos/drive/drive_url_request_job_unittest.cc',
         'browser/chromeos/drive/drive_webapps_registry_unittest.cc',
         'browser/chromeos/drive/fake_file_system.cc',

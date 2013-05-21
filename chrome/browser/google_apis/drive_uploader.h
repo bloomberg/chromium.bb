@@ -191,10 +191,9 @@ class DriveUploader : public DriveUploaderInterface {
   void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
                     GDataErrorCode error);
 
-  // Pointers to DriveServiceInterface object owned by DriveSystemService.
-  // The lifetime of this object is guaranteed to exceed that of the
+  // The lifetime of this object should be guaranteed to exceed that of the
   // DriveUploader instance.
-  DriveServiceInterface* drive_service_;
+  DriveServiceInterface* drive_service_;  // Not owned by this class.
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
@@ -19,18 +19,19 @@ const char kDriveMountPointName[] = "drive";
 
 // Helper class used to wait for |OnFileSystemMounted| event from a drive file
 // system.
-class DriveMountPointWaiter : public drive::DriveSystemServiceObserver {
+class DriveMountPointWaiter : public drive::DriveIntegrationServiceObserver {
  public:
-  explicit DriveMountPointWaiter(drive::DriveSystemService* system_service)
-      : system_service_(system_service) {
-    system_service_->AddObserver(this);
+  explicit DriveMountPointWaiter(
+      drive::DriveIntegrationService* integration_service)
+      : integration_service_(integration_service) {
+    integration_service_->AddObserver(this);
   }
 
   virtual ~DriveMountPointWaiter() {
-    system_service_->RemoveObserver(this);
+    integration_service_->RemoveObserver(this);
   }
 
-  // DriveSystemServiceObserver override.
+  // DriveIntegrationServiceObserver override.
   virtual void OnFileSystemMounted() OVERRIDE {
     // Note that it is OK for |run_loop_.Quit| to be called before
     // |run_loop_.Run|. In this case |Run| will return immediately.
@@ -43,7 +44,7 @@ class DriveMountPointWaiter : public drive::DriveSystemServiceObserver {
   }
 
  private:
-  drive::DriveSystemService* system_service_;
+  drive::DriveIntegrationService* integration_service_;
   base::RunLoop run_loop_;
 };
 
@@ -59,12 +60,12 @@ void WaitUntilDriveMountPointIsAdded(Profile* profile) {
   // drive mount point is added before continuing. If this is not the case,
   // drive file system is observed for FileSystemMounted event (by
   // |mount_point_waiter|) and test continues once the event is encountered.
-  drive::DriveSystemService* system_service =
-      drive::DriveSystemServiceFactory::FindForProfileRegardlessOfStates(
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
           profile);
-  DCHECK(system_service);
+  DCHECK(integration_service);
 
-  DriveMountPointWaiter mount_point_waiter(system_service);
+  DriveMountPointWaiter mount_point_waiter(integration_service);
 
   base::FilePath ignored;
   // GetRegisteredPath succeeds iff the mount point exists.

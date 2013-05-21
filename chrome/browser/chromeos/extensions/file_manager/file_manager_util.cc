@@ -16,7 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
@@ -899,11 +899,11 @@ bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
 
   if (IsCRXFile(file_extension.data())) {
     if (drive::util::IsUnderDriveMountPoint(path)) {
-      drive::DriveSystemService* system_service =
-          drive::DriveSystemServiceFactory::GetForProfile(profile);
-      if (!system_service)
+      drive::DriveIntegrationService* integration_service =
+          drive::DriveIntegrationServiceFactory::GetForProfile(profile);
+      if (!integration_service)
         return false;
-      system_service->file_system()->GetFileByPath(
+      integration_service->file_system()->GetFileByPath(
           drive::util::ExtractDrivePath(path),
           base::Bind(&OnCRXDownloadCallback, browser));
     } else {

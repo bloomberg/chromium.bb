@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
@@ -107,9 +107,9 @@ DownloadHandler::~DownloadHandler() {
 
 // static
 DownloadHandler* DownloadHandler::GetForProfile(Profile* profile) {
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::FindForProfile(profile);
-  return system_service ? system_service->download_handler() : NULL;
+  DriveIntegrationService* integration_service =
+      DriveIntegrationServiceFactory::FindForProfile(profile);
+  return integration_service ? integration_service->download_handler() : NULL;
 }
 
 void DownloadHandler::Initialize(
