@@ -99,11 +99,10 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     return result;
 }
 
-v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, v8::Local<v8::Context> context)
+v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate)
 {
     v8::Local<v8::Value> result;
-    if (context.IsEmpty())
-        context = v8::Context::New(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
     if (context.IsEmpty())
         return result;
     {
