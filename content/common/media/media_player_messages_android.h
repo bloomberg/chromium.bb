@@ -17,7 +17,6 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MediaPlayerMsgStart
 
-#if defined(OS_ANDROID)
 #include "media/base/android/demuxer_stream_player_params.h"
 
 IPC_ENUM_TRAITS(media::AudioCodec)
@@ -61,7 +60,6 @@ IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
   IPC_STRUCT_TRAITS_MEMBER(clear_bytes)
   IPC_STRUCT_TRAITS_MEMBER(cypher_bytes)
 IPC_STRUCT_TRAITS_END()
-#endif
 
 // Messages for notifying the render process of media playback status -------
 
@@ -123,13 +121,11 @@ IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidMediaPlayerPlay,
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidMediaPlayerPause,
                     int /* player_id */)
 
-#if defined(OS_ANDROID)
 // The media source player reads data from demuxer
 IPC_MESSAGE_ROUTED3(MediaPlayerMsg_ReadFromDemuxer,
                     int /* player_id */,
                     media::DemuxerStream::Type /* type */,
                     bool /* seek_done */)
-#endif
 
 // Messages for controllering the media playback in browser process ----------
 
@@ -172,7 +168,6 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen,
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_ExitFullscreen,
                     int /* player_id */)
 
-#if defined(OS_ANDROID)
 // Inform the media source player that the demuxer is ready.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_DemuxerReady,
                     int /* player_id */,
@@ -182,7 +177,6 @@ IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_DemuxerReady,
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_ReadFromDemuxerAck,
                     int /* player_id */,
                     media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params)
-#endif
 
 #if defined(GOOGLE_TV)
 // Notify the player about the external surface, requesting it if necessary.

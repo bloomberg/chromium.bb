@@ -6,7 +6,7 @@
 
 #include "content/browser/android/media_resource_getter_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
-#include "content/common/media/media_player_messages.h"
+#include "content/common/media/media_player_messages_android.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"

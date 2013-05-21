@@ -31,7 +31,9 @@
 #include "content/common/input_messages.h"
 #include "content/common/java_bridge_messages.h"
 #include "content/common/media/audio_messages.h"
-#include "content/common/media/media_player_messages.h"
+#if defined(OS_ANDROID)
+#include "content/common/media/media_player_messages_android.h"
+#endif
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/common/media/video_capture_messages.h"
