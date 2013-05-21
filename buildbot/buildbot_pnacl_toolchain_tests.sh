@@ -355,18 +355,6 @@ archived-pexe-translator-test() {
   ls -l ${dir}
   file ${dir}/*
 
-  # The llc.pexe compile finishes with -translate-fast, but the result
-  # has bugs on x86-64, so we cannot test it below.
-  # Known error is: assertion "InChain.getValueType() == MVT::Other &&
-  # "Not a chain"" failed:
-  # file "../llvm/lib/CodeGen/SelectionDAG/SelectionDAGISel.cpp", line 1927,
-  # function: llvm::SDValue HandleMergeInputChains(
-  #    SmallVectorImpl<llvm::SDNode *> &, llvm::SelectionDAG *)
-  # To test, run with the original fast_override_flags:
-  if [[ ${arch} = x86-64 ]]; then
-    fast_override_flags="\
-      --pnacl-driver-set-LD_SB=${dir}/ld-${arch}.fast_trans.nexe"
-  fi
   echo "=== Running the translated archived translator to test."
   ${sb_translator} ${flags} ${override_flags} ${dir}/ld${ld_ext} \
       -o ${dir}/ld-${arch}.2.nexe
