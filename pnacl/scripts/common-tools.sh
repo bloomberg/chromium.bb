@@ -616,12 +616,12 @@ RunWithLog() {
   shift 1
   local ret=1
   if ${PNACL_VERBOSE}; then
-    echo "RUNNING: " "$@" | tee -a "${log}" "${TC_LOG_ALL}"
-    "$@" 2>&1 | tee -a "${log}" "${TC_LOG_ALL}"
+    echo "RUNNING: " "$@" | tee "${log}" | tee -a "${TC_LOG_ALL}"
+    "$@" 2>&1 | tee "${log}" | tee -a "${TC_LOG_ALL}"
     ret=${PIPESTATUS[0]}
   else
-    echo "RUNNING: " "$@" | tee -a "${log}" "${TC_LOG_ALL}" &> /dev/null
-    "$@" 2>&1 | tee -a "${log}" "${TC_LOG_ALL}" &> /dev/null
+    echo "RUNNING: " "$@" | tee -a "${TC_LOG_ALL}" &> "${log}"
+    "$@" 2>&1 | tee -a "${TC_LOG_ALL}" &> "${log}"
     ret=${PIPESTATUS[0]}
   fi
   if [ ${ret} -ne 0 ]; then
