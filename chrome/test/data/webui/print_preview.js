@@ -224,6 +224,10 @@ function checkElementDisplayed(el, isDisplayed) {
 
 // Test that disabled settings hide the disabled sections.
 TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
+  checkSectionVisible($('layout-settings'), true);
+  checkSectionVisible($('color-settings'), true);
+  checkSectionVisible($('copies-settings'), true);
+
   var initialSettingsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
   initialSettingsSetEvent.initialSettings = this.initialSettings_;
@@ -233,10 +237,6 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
       new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
   localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
   this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  checkSectionVisible($('layout-settings'), true);
-  checkSectionVisible($('color-settings'), true);
-  checkSectionVisible($('copies-settings'), true);
 
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);

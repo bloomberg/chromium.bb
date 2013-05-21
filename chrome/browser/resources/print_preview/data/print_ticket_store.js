@@ -272,6 +272,8 @@ cr.define('print_preview', function() {
         this.cssBackground_.updateValue(this.appState_.getField(
             print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED));
       }
+      this.isInitialized_ = true;
+      cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.INITIALIZE);
     },
 
     /** @return {boolean} Whether the header-footer capability is available. */
@@ -519,10 +521,7 @@ cr.define('print_preview', function() {
       var caps = this.destinationStore_.selectedDestination.capabilities;
       var isFirstUpdate = this.capabilitiesHolder_.get() == null;
       this.capabilitiesHolder_.set(caps);
-      if (isFirstUpdate) {
-        this.isInitialized_ = true;
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.INITIALIZE);
-      } else {
+      if (!isFirstUpdate) {
         // Reset user selection for certain ticket items.
         this.customMargins_.updateValue(null);
         this.appState_.persistCustomMargins(null);

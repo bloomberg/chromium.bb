@@ -182,7 +182,7 @@ cr.define('print_preview', function() {
       };
 
       // Set 'cloudPrintID' only if the destination is not local.
-      if (!destination.isLocal) {
+      if (destination && !destination.isLocal) {
         ticket['cloudPrintID'] = destination.id;
       }
 
