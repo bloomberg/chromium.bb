@@ -33,14 +33,28 @@ GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
 void GpuMemoryBufferImpl::Map(gpu::GpuMemoryBuffer::AccessMode mode,
     void** vaddr) {
   DCHECK(buffer_id_ != 0);
-  int err = g_gl_draw_functions->lock(buffer_id_, mode, vaddr);
+  AwMapMode map_mode = MAP_READ_ONLY;
+  switch (mode) {
+    case GpuMemoryBuffer::READ_ONLY:
+      map_mode = MAP_READ_ONLY;
+      break;
+    case GpuMemoryBuffer::WRITE_ONLY:
+      map_mode = MAP_WRITE_ONLY;
+      break;
+    case GpuMemoryBuffer::READ_WRITE:
+      map_mode = MAP_READ_WRITE;
+      break;
+    default:
+      LOG(DFATAL) << "Unknown map mode: " << mode;
+  }
+  int err = g_gl_draw_functions->map(buffer_id_, map_mode, vaddr);
   DCHECK(err == 0);
   mapped_ = true;
 }
 
 void GpuMemoryBufferImpl::Unmap() {
   DCHECK(buffer_id_ != 0);
-  int err = g_gl_draw_functions->unlock(buffer_id_);
+  int err = g_gl_draw_functions->unmap(buffer_id_);
   DCHECK(err == 0);
   mapped_ = false;
 }
