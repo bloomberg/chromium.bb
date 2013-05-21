@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_
+#define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_
 
 #include <set>
 #include <string>
@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "webkit/fileapi/file_system_quota_util.h"
+#include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/storage/webkit_storage_export.h"
@@ -69,4 +69,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemQuotaClient
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_

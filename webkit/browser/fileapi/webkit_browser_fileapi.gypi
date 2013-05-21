@@ -5,9 +5,15 @@
 {
   'variables': {
     'webkit_browser_fileapi_sources': [
+      '../browser/fileapi/copy_or_move_file_validator.h',
+      '../browser/fileapi/cross_operation_delegate.cc',
+      '../browser/fileapi/cross_operation_delegate.h',
       '../browser/fileapi/file_system_dir_url_request_job.cc',
       '../browser/fileapi/file_system_dir_url_request_job.h',
       '../browser/fileapi/file_system_mount_point_provider.h',
+      '../browser/fileapi/file_system_quota_client.cc',
+      '../browser/fileapi/file_system_quota_client.h',
+      '../browser/fileapi/file_system_quota_util.h',
       '../browser/fileapi/file_system_url_request_job.cc',
       '../browser/fileapi/file_system_url_request_job.h',
       '../browser/fileapi/file_system_url_request_job_factory.cc',
@@ -16,6 +22,8 @@
       '../browser/fileapi/file_system_usage_cache.h',
       '../browser/fileapi/obfuscated_file_util.cc',
       '../browser/fileapi/obfuscated_file_util.h',
+      '../browser/fileapi/recursive_operation_delegate.cc',
+      '../browser/fileapi/recursive_operation_delegate.h',
       '../browser/fileapi/sandbox_directory_database.cc',
       '../browser/fileapi/sandbox_directory_database.h',
       '../browser/fileapi/sandbox_file_stream_writer.cc',

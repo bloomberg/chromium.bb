@@ -12,9 +12,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_types.h"
 
 using content::BrowserThread;

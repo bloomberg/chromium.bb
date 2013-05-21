@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_CROSS_OPERATION_DELEGATE_H_
-#define WEBKIT_FILEAPI_CROSS_OPERATION_DELEGATE_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_CROSS_OPERATION_DELEGATE_H_
+#define WEBKIT_BROWSER_FILEAPI_CROSS_OPERATION_DELEGATE_H_
 
 #include <stack>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/fileapi/recursive_operation_delegate.h"
+#include "webkit/browser/fileapi/recursive_operation_delegate.h"
 
 namespace webkit_blob {
 class ShareableFileReference;
@@ -120,4 +120,4 @@ class CrossOperationDelegate
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_CROSS_OPERATION_DELEGATE_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_CROSS_OPERATION_DELEGATE_H_

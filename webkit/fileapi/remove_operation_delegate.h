@@ -7,7 +7,7 @@
 
 #include <stack>
 
-#include "webkit/fileapi/recursive_operation_delegate.h"
+#include "webkit/browser/fileapi/recursive_operation_delegate.h"
 
 namespace fileapi {
 
