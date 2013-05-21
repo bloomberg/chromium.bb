@@ -589,7 +589,8 @@ LogMessage::~LogMessage() {
 #if defined(OS_WIN)
     OutputDebugStringA(str_newline.c_str());
 #elif defined(OS_ANDROID)
-    android_LogPriority priority = ANDROID_LOG_UNKNOWN;
+    android_LogPriority priority =
+        (severity_ < 0) ? ANDROID_LOG_VERBOSE : ANDROID_LOG_UNKNOWN;
     switch (severity_) {
       case LOG_INFO:
         priority = ANDROID_LOG_INFO;
