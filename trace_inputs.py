@@ -20,6 +20,7 @@ from the log.
 
 import codecs
 import csv
+import errno
 import getpass
 import glob
 import json
@@ -3479,37 +3480,46 @@ def CMDread(args):
   data = api.parse_log(options.log, blacklist, options.trace_name)
   # Process each trace.
   output_as_json = []
-  for item in data:
-    if 'exception' in item:
-      # Do not abort the other traces.
-      print >> sys.stderr, (
-          'Trace %s: Got an exception: %s' % (
-            item['trace'], item['exception'][1]))
-      continue
-    results = item['results']
-    if options.root_dir:
-      results = results.strip_root(options.root_dir)
+  try:
+    for item in data:
+      if 'exception' in item:
+        # Do not abort the other traces.
+        print >> sys.stderr, (
+            'Trace %s: Got an exception: %s' % (
+              item['trace'], item['exception'][1]))
+        continue
+      results = item['results']
+      if options.root_dir:
+        results = results.strip_root(options.root_dir)
+
+      if options.json:
+        output_as_json.append(results.flatten())
+      else:
+        simplified = extract_directories(
+            options.root_dir, results.files, blacklist)
+        simplified = [f.replace_variables(variables) for f in simplified]
+        if len(data) > 1:
+          print('Trace: %s' % item['trace'])
+        print('Total: %d' % len(results.files))
+        print('Non existent: %d' % len(results.non_existent))
+        for f in results.non_existent:
+          print('  %s' % f.path)
+        print(
+            'Interesting: %d reduced to %d' % (
+                len(results.existent), len(simplified)))
+        for f in simplified:
+          print('  %s' % f.path)
 
     if options.json:
-      output_as_json.append(results.flatten())
-    else:
-      simplified = extract_directories(
-          options.root_dir, results.files, blacklist)
-      simplified = [f.replace_variables(variables) for f in simplified]
-      if len(data) > 1:
-        print('Trace: %s' % item['trace'])
-      print('Total: %d' % len(results.files))
-      print('Non existent: %d' % len(results.non_existent))
-      for f in results.non_existent:
-        print('  %s' % f.path)
-      print(
-          'Interesting: %d reduced to %d' % (
-              len(results.existent), len(simplified)))
-      for f in simplified:
-        print('  %s' % f.path)
-
-  if options.json:
-    write_json(sys.stdout, output_as_json, False)
+      write_json(sys.stdout, output_as_json, False)
+  except KeyboardInterrupt:
+    return 1
+  except IOError as e:
+    if e.errno == errno.EPIPE:
+      # Do not print a stack trace when the output is piped to less and the user
+      # quits before the whole output was written.
+      return 1
+    raise
   return 0
 
 
