@@ -8878,6 +8878,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.WebSocket.HandshakeResult"
+    enum="WebSocketHandshakeResult">
+  <summary>
+    Count the number of WebSocket handshake for each result. Use this histogram
+    as a baseline for investigating feature usage counters.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.WebSocket.PerMessageDeflateContextTakeOverMode"
+    enum="WebSocketPerMessageDeflateContextTakeOverMode">
+  <summary>
+    Count the number of WebSockets that accepted permessage-deflate extension
+    for each context take over mode.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.XHR.send.ArrayBufferOrView"
     enum="XMLHttpRequestSendArrayBufferOrView">
   <summary>
@@ -13780,6 +13796,18 @@ other types of suffix sets.
   <int value="9" label="Verify CVV"/>
   <int value="10" label="Invalid form field"/>
   <int value="11" label="Require phone number"/>
+</enum>
+
+<enum name="WebSocketHandshakeResult" type="int">
+  <int value="0" label="Incomplete"/>
+  <int value="1" label="Normal"/>
+  <int value="2" label="Failed"/>
+  <int value="3" label="Connected"/>
+</enum>
+
+<enum name="WebSocketPerMessageDeflateContextTakeOverMode" type="int">
+  <int value="0" label="DoNotTakeOverContext"/>
+  <int value="1" label="TakeOverContext"/>
 </enum>
 
 <enum name="WiFiReasonCode" type="int">
