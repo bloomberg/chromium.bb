@@ -485,13 +485,13 @@ void didPaintImpl(InstrumentingAgents* instrumentingAgents, RenderObject* render
 
 InspectorInstrumentationCookie willRecalculateStyleImpl(InstrumentingAgents* instrumentingAgents, Document* document)
 {
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->willRecalculateStyle(document);
     int timelineAgentId = 0;
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
         if (timelineAgent->willRecalculateStyle(document))
             timelineAgentId = timelineAgent->id();
     }
-    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
-        resourceAgent->willRecalculateStyle(document);
     return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
 }
 
