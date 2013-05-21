@@ -399,10 +399,10 @@ void AutofillDialogControllerImpl::Show() {
   // If signed-in, fetch the user's Wallet data.
   // Otherwise, see if the user could be signed in passively.
   // TODO(aruslan): UMA metrics for sign-in.
-  if (account_chooser_model_.WalletIsSelected())
-    GetWalletItems();
-  else
-    LogDialogLatencyToShow();
+  GetWalletItems();
+
+  if (!account_chooser_model_.WalletIsSelected())
+   LogDialogLatencyToShow();
 }
 
 void AutofillDialogControllerImpl::Hide() {
@@ -594,9 +594,6 @@ void AutofillDialogControllerImpl::HideSignIn() {
 }
 
 void AutofillDialogControllerImpl::SignedInStateUpdated() {
-  if (!account_chooser_model_.WalletIsSelected())
-    return;
-
   switch (SignedInState()) {
     case SIGNED_IN:
       // Start fetching the user name if we don't know it yet.
@@ -1575,8 +1572,6 @@ void AutofillDialogControllerImpl::OnAutomaticSigninFailure(
 
 void AutofillDialogControllerImpl::OnDidGetWalletItems(
     scoped_ptr<wallet::WalletItems> wallet_items) {
-  DCHECK(account_chooser_model_.WalletIsSelected());
-
   legal_documents_text_.clear();
   legal_document_link_ranges_.clear();
 
