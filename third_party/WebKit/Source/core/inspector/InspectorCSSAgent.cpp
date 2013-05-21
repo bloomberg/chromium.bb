@@ -636,22 +636,37 @@ bool InspectorCSSAgent::cssErrorFilter(const CSSParserLocation& location, int pr
 {
     const CSSParserString & content = location.content;
     const size_t contentLength = content.length();
-    // Ignore errors like "*property: value". This trick is used for IE7: http://stackoverflow.com/questions/4563651/what-does-an-asterisk-do-in-a-css-property-name
-    if (errorType == CSSParser::PropertyDeclarationError && contentLength && content[0] == '*')
-        return false;
 
-    // The "filter" property is commonly used instead of "opacity" for IE9.
-    if (propertyId == CSSPropertyFilter && (errorType == CSSParser::PropertyDeclarationError || errorType == CSSParser::InvalidPropertyValueError))
-        return false;
+    switch (errorType) {
+    case CSSParser::PropertyDeclarationError:
+        // Ignore errors like "*property: value". This trick is used for IE7: http://stackoverflow.com/questions/4563651/what-does-an-asterisk-do-in-a-css-property-name
+        if (contentLength && content[0] == '*')
+            return false;
 
-    if (errorType == CSSParser::InvalidPropertyValueError && hasNonWebkitVendorSpecificPrefix(content))
-        return false;
+        // The "filter" property is commonly used instead of "opacity" for IE9.
+        if (propertyId == CSSPropertyFilter)
+            return false;
+        break;
 
-    if (propertyId == CSSPropertyCursor && errorType == CSSParser::InvalidPropertyValueError && content.equalIgnoringCase("hand"))
-        return false;
+    case CSSParser::InvalidPropertyValueError:
+        // The "filter" property is commonly used instead of "opacity" for IE9.
+        if (propertyId == CSSPropertyFilter)
+            return false;
 
-    // When errorType == CSSParser::InvalidPropertyError content is property name.
-    if (errorType == CSSParser::InvalidPropertyError) {
+        // Value might be a vendor-specific function.
+        if (hasNonWebkitVendorSpecificPrefix(content))
+            return false;
+
+        // IE-only "cursor: hand".
+        if (propertyId == CSSPropertyCursor && content.equalIgnoringCase("hand"))
+            return false;
+
+        // Ignore properties like "property: value \9". This trick used in bootsrtap for IE-only properies.
+        if (contentLength > 2 && content[contentLength - 2] == '\\' && content[contentLength - 1] == '9')
+            return false;
+        break;
+
+    case CSSParser::InvalidPropertyError:
         if (hasNonWebkitVendorSpecificPrefix(content))
             return false;
 
@@ -666,8 +681,8 @@ bool InspectorCSSAgent::cssErrorFilter(const CSSParserLocation& location, int pr
         // Unsupported standard property.
         if (content.equalIgnoringCase("font-size-adjust"))
             return false;
+        break;
     }
-
     return true;
 }
 
