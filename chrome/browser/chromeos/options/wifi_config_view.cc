@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -480,13 +481,13 @@ void WifiConfigView::RefreshEapFields() {
   phase_2_auth_combobox_->SetSelectedIndex(0);
   bool phase_2_auth_enabled = Phase2AuthActive();
   phase_2_auth_combobox_->SetEnabled(phase_2_auth_enabled &&
-                                     phase_2_auth_ui_data_.editable());
+                                     phase_2_auth_ui_data_.IsEditable());
   phase_2_auth_label_->SetEnabled(phase_2_auth_enabled);
 
   // Passphrase.
   bool passphrase_enabled = PassphraseActive();
   passphrase_textfield_->SetEnabled(passphrase_enabled &&
-                                    passphrase_ui_data_.editable());
+                                    passphrase_ui_data_.IsEditable());
   passphrase_label_->SetEnabled(passphrase_enabled);
   if (!passphrase_enabled)
     passphrase_textfield_->SetText(string16());
@@ -498,7 +499,7 @@ void WifiConfigView::RefreshEapFields() {
   bool have_user_certs = !certs_loading && HaveUserCerts();
   user_cert_combobox_->SetEnabled(user_cert_enabled &&
                                   have_user_certs &&
-                                  user_cert_ui_data_.editable());
+                                  user_cert_ui_data_.IsEditable());
   user_cert_combobox_->ModelChanged();
   user_cert_combobox_->SetSelectedIndex(0);
 
@@ -507,14 +508,14 @@ void WifiConfigView::RefreshEapFields() {
   server_ca_cert_label_->SetEnabled(ca_cert_enabled);
   server_ca_cert_combobox_->SetEnabled(ca_cert_enabled &&
                                        !certs_loading &&
-                                       server_ca_cert_ui_data_.editable());
+                                       server_ca_cert_ui_data_.IsEditable());
   server_ca_cert_combobox_->ModelChanged();
   server_ca_cert_combobox_->SetSelectedIndex(0);
 
   // No anonymous identity if no phase 2 auth.
   bool identity_anonymous_enabled = phase_2_auth_enabled;
   identity_anonymous_textfield_->SetEnabled(
-      identity_anonymous_enabled && identity_anonymous_ui_data_.editable());
+      identity_anonymous_enabled && identity_anonymous_ui_data_.IsEditable());
   identity_anonymous_label_->SetEnabled(identity_anonymous_enabled);
   if (!identity_anonymous_enabled)
     identity_anonymous_textfield_->SetText(string16());
@@ -627,7 +628,7 @@ void WifiConfigView::OnSelectedIndexChanged(views::Combobox* combobox) {
     bool passphrase_enabled = PassphraseActive();
     passphrase_label_->SetEnabled(passphrase_enabled);
     passphrase_textfield_->SetEnabled(passphrase_enabled &&
-                                      passphrase_ui_data_.editable());
+                                      passphrase_ui_data_.IsEditable());
     if (!passphrase_enabled)
       passphrase_textfield_->SetText(string16());
     RefreshShareCheckbox();
@@ -854,7 +855,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     ParseWiFiEAPUIProperty(&user_cert_ui_data_, wifi, onc::eap::kClientCertRef);
     ParseWiFiEAPUIProperty(&server_ca_cert_ui_data_, wifi,
                            onc::eap::kServerCARef);
-    if (server_ca_cert_ui_data_.managed()) {
+    if (server_ca_cert_ui_data_.IsManaged()) {
       ParseWiFiEAPUIProperty(&server_ca_cert_ui_data_, wifi,
                              onc::eap::kUseSystemCAs);
     }
@@ -943,7 +944,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
         eap_method_combobox_model_.get());
     eap_method_combobox_->SetAccessibleName(eap_label_text);
     eap_method_combobox_->set_listener(this);
-    eap_method_combobox_->SetEnabled(eap_method_ui_data_.editable());
+    eap_method_combobox_->SetEnabled(eap_method_ui_data_.IsEditable());
     layout->AddView(eap_method_combobox_);
     layout->AddView(new ControlledSettingIndicatorView(eap_method_ui_data_));
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -1014,7 +1015,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     identity_textfield_->SetController(this);
     if (wifi && !wifi->identity().empty())
       identity_textfield_->SetText(UTF8ToUTF16(wifi->identity()));
-    identity_textfield_->SetEnabled(identity_ui_data_.editable());
+    identity_textfield_->SetEnabled(identity_ui_data_.IsEditable());
     layout->AddView(identity_textfield_);
     layout->AddView(new ControlledSettingIndicatorView(identity_ui_data_));
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -1033,11 +1034,11 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     passphrase_textfield_->SetText(UTF8ToUTF16(wifi->GetPassphrase()));
   // Disable passphrase input initially for other network.
   passphrase_label_->SetEnabled(wifi != NULL);
-  passphrase_textfield_->SetEnabled(wifi && passphrase_ui_data_.editable());
+  passphrase_textfield_->SetEnabled(wifi && passphrase_ui_data_.IsEditable());
   passphrase_textfield_->SetAccessibleName(passphrase_label_text);
   layout->AddView(passphrase_textfield_);
 
-  if (passphrase_ui_data_.managed()) {
+  if (passphrase_ui_data_.IsManaged()) {
     layout->AddView(new ControlledSettingIndicatorView(passphrase_ui_data_));
   } else {
     // Password visible button.
@@ -1099,7 +1100,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
         l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS));
     save_credentials_checkbox_->SetEnabled(
-        save_credentials_ui_data_.editable());
+        save_credentials_ui_data_.IsEditable());
     layout->SkipColumns(1);
     layout->AddView(save_credentials_checkbox_);
     layout->AddView(
@@ -1253,7 +1254,7 @@ void WifiConfigView::ParseWiFiUIProperty(
     const std::string& key) {
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   property_ui_data->ParseOncProperty(
-      network->ui_data(),
+      network->ui_data().onc_source(),
       network_library->FindOncForNetwork(network->unique_id()),
       base::StringPrintf("%s.%s", onc::network_config::kWiFi, key.c_str()));
 }

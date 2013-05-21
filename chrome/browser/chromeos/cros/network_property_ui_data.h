@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "chromeos/network/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -17,54 +18,35 @@ class Value;
 
 namespace chromeos {
 
-class NetworkUIData;
-
 // Holds meta information for a network property: Whether the property is under
-// policy control, if it is user-editable, and whether the policy-provided
-// default value, if applicable.
+// policy control, if it is user-editable, and policy-provided default value, if
+// available.
 class NetworkPropertyUIData {
  public:
-  // Enum values indicating the entity controlling the property.
-  enum Controller {
-    // Property is managed by policy.
-    CONTROLLER_POLICY,
-    // The user controls the policy.
-    CONTROLLER_USER,
-  };
-
-  // Initializes the object with CONTROLLER_USER and no default value.
+  // Initializes with ONC_SOURCE_NONE and no default value.
   NetworkPropertyUIData();
+
+  // Initializes with the given |onc_source| and no default value.
+  explicit NetworkPropertyUIData(onc::ONCSource onc_source);
+
   ~NetworkPropertyUIData();
-
-  // Initializes the object by calling Reset() with the provided ui_data.
-  explicit NetworkPropertyUIData(const NetworkUIData& ui_data);
-
-  // Resets the property to the controller specified by the given |ui_data| and
-  // clears the default value.
-  void Reset(const NetworkUIData& ui_data);
 
   // Update the property object from dictionary, reading the key given by
   // |property_key|.
-  void ParseOncProperty(const NetworkUIData& ui_data,
+  void ParseOncProperty(onc::ONCSource onc_source,
                         const base::DictionaryValue* onc,
                         const std::string& property_key);
 
   const base::Value* default_value() const { return default_value_.get(); }
-  bool managed() const { return controller_ == CONTROLLER_POLICY; }
-  bool recommended() const {
-    return controller_ == CONTROLLER_USER && default_value_.get();
+  bool IsManaged() const {
+    return (onc_source_ == onc::ONC_SOURCE_DEVICE_POLICY ||
+            onc_source_ == onc::ONC_SOURCE_USER_POLICY);
   }
-  bool editable() const { return controller_ == CONTROLLER_USER; }
+  bool IsEditable() const { return !IsManaged(); }
 
  private:
-  Controller controller_;
+  onc::ONCSource onc_source_;
   scoped_ptr<base::Value> default_value_;
-
-  static const char kKeyController[];
-  static const char kKeyDefaultValue[];
-
-  // So it can access the kKeyXYZ constants.
-  friend class NetworkUIDataTest;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPropertyUIData);
 };

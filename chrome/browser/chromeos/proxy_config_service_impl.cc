@@ -108,10 +108,10 @@ bool IsNetworkProxySettingsEditable(const Network* network) {
 
   NetworkPropertyUIData proxy_settings_ui_data;
   proxy_settings_ui_data.ParseOncProperty(
-      network->ui_data(),
+      network->ui_data().onc_source(),
       onc,
       onc::network_config::kProxySettings);
-  return proxy_settings_ui_data.editable();
+  return proxy_settings_ui_data.IsEditable();
 }
 
 // Only unblock if needed for debugging.

@@ -49,6 +49,7 @@
 #include "chrome/common/time_format.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_ip_config.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -498,7 +499,7 @@ void SetValueDictionary(
   // DictionaryValue::Set() takes ownership of |value|.
   dict->Set(kTagValue, value);
   const base::Value* recommended_value = ui_data.default_value();
-  if (ui_data.managed())
+  if (ui_data.IsManaged())
     dict->SetString(kTagControlledBy, kTagPolicy);
   else if (recommended_value && recommended_value->Equals(value))
     dict->SetString(kTagControlledBy, kTagRecommended);
@@ -522,7 +523,7 @@ void PopulateVPNDetails(
 
   chromeos::NetworkPropertyUIData hostname_ui_data;
   hostname_ui_data.ParseOncProperty(
-      vpn->ui_data(), &onc,
+      vpn->ui_data().onc_source(), &onc,
       base::StringPrintf("%s.%s",
                          chromeos::onc::network_config::kVPN,
                          chromeos::onc::vpn::kHost));
@@ -1267,7 +1268,7 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
       service_path);
 
   const chromeos::NetworkUIData& ui_data = network->ui_data();
-  const chromeos::NetworkPropertyUIData property_ui_data(ui_data);
+  const chromeos::NetworkPropertyUIData property_ui_data(ui_data.onc_source());
   const base::DictionaryValue* onc =
       cros_->FindOncForNetwork(network->unique_id());
 
@@ -1361,7 +1362,7 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
                      new base::FundamentalValue(network->preferred()),
                      property_ui_data);
 
-  chromeos::NetworkPropertyUIData auto_connect_ui_data(ui_data);
+  chromeos::NetworkPropertyUIData auto_connect_ui_data(ui_data.onc_source());
   std::string onc_path_to_auto_connect;
   if (type == chromeos::TYPE_WIFI) {
     onc_path_to_auto_connect = base::StringPrintf(
@@ -1376,7 +1377,7 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
   }
   if (!onc_path_to_auto_connect.empty()) {
     auto_connect_ui_data.ParseOncProperty(
-        ui_data,
+        ui_data.onc_source(),
         onc,
         onc_path_to_auto_connect);
   }
@@ -1497,7 +1498,7 @@ void InternetOptionsHandler::PopulateCellularDetails(
       cros_->FindNetworkDeviceByPath(cellular->device_path());
   if (device) {
     const chromeos::NetworkPropertyUIData cellular_property_ui_data(
-        cellular->ui_data());
+        cellular->ui_data().onc_source());
     dictionary->SetString(kTagManufacturer, device->manufacturer());
     dictionary->SetString(kTagModelId, device->model_id());
     dictionary->SetString(kTagFirmwareRevision, device->firmware_revision());

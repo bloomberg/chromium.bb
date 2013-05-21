@@ -272,10 +272,10 @@ ControlledSettingIndicatorView::~ControlledSettingIndicatorView() {}
 
 void ControlledSettingIndicatorView::Update(
     const NetworkPropertyUIData& ui_data) {
-  if (managed_ == ui_data.managed())
+  if (managed_ == ui_data.IsManaged())
     return;
 
-  managed_ = ui_data.managed();
+  managed_ = ui_data.IsManaged();
   PreferredSizeChanged();
 }
 

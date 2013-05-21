@@ -5,37 +5,27 @@
 #include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 
 #include "base/values.h"
-#include "chromeos/network/network_ui_data.h"
 
 namespace chromeos {
 
-// Property names for the per-property dictionary.
-const char NetworkPropertyUIData::kKeyController[] = "controller";
-const char NetworkPropertyUIData::kKeyDefaultValue[] = "default_value";
-
 NetworkPropertyUIData::NetworkPropertyUIData()
-    : controller_(CONTROLLER_USER) {
+    : onc_source_(onc::ONC_SOURCE_NONE) {
+}
+
+NetworkPropertyUIData::NetworkPropertyUIData(onc::ONCSource onc_source)
+    : onc_source_(onc_source) {
 }
 
 NetworkPropertyUIData::~NetworkPropertyUIData() {
 }
 
-NetworkPropertyUIData::NetworkPropertyUIData(
-    const NetworkUIData& ui_data) {
-  Reset(ui_data);
-}
-
-void NetworkPropertyUIData::Reset(const NetworkUIData& ui_data) {
+void NetworkPropertyUIData::ParseOncProperty(onc::ONCSource onc_source,
+                                             const base::DictionaryValue* onc,
+                                             const std::string& property_key) {
   default_value_.reset();
-  controller_ = ui_data.is_managed() ? CONTROLLER_POLICY : CONTROLLER_USER;
-}
+  onc_source_ = onc_source;
 
-void NetworkPropertyUIData::ParseOncProperty(
-    const NetworkUIData& ui_data,
-    const base::DictionaryValue* onc,
-    const std::string& property_key) {
-  Reset(ui_data);
-  if (!onc || controller_ == CONTROLLER_USER)
+  if (!onc || !IsManaged())
     return;
 
   size_t pos = property_key.find_last_of('.');
@@ -51,7 +41,7 @@ void NetworkPropertyUIData::ParseOncProperty(
   if (onc->GetList(recommended_property_key, &recommended_keys)) {
     base::StringValue basename_value(property_basename);
     if (recommended_keys->Find(basename_value) != recommended_keys->end()) {
-      controller_ = CONTROLLER_USER;
+      onc_source_ = onc::ONC_SOURCE_NONE;
       const base::Value* default_value = NULL;
       if (onc->Get(property_key, &default_value))
         default_value_.reset(default_value->DeepCopy());

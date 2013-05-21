@@ -8,9 +8,11 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -626,7 +628,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME)));
   username_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
   username_textfield_->SetController(this);
-  username_textfield_->SetEnabled(username_ui_data_.editable());
+  username_textfield_->SetEnabled(username_ui_data_.IsEditable());
   if (vpn && !vpn->username().empty())
     username_textfield_->SetText(UTF8ToUTF16(vpn->username()));
   layout->AddView(username_textfield_);
@@ -640,7 +642,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   bool has_user_passphrase = vpn && !vpn->IsUserPassphraseRequired();
   user_passphrase_textfield_ = new PassphraseTextfield(has_user_passphrase);
   user_passphrase_textfield_->SetController(this);
-  user_passphrase_textfield_->SetEnabled(user_passphrase_ui_data_.editable());
+  user_passphrase_textfield_->SetEnabled(user_passphrase_ui_data_.IsEditable());
   layout->AddView(user_passphrase_textfield_);
   layout->AddView(new ControlledSettingIndicatorView(user_passphrase_ui_data_));
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -684,7 +686,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   save_credentials_checkbox_ = new views::Checkbox(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS));
-  save_credentials_checkbox_->SetEnabled(save_credentials_ui_data_.editable());
+  save_credentials_checkbox_->SetEnabled(
+      save_credentials_ui_data_.IsEditable());
   bool save_credentials = vpn ? vpn->save_credentials() : false;
   save_credentials_checkbox_->SetChecked(save_credentials);
   layout->SkipColumns(1);
@@ -782,19 +785,19 @@ void VPNConfigView::UpdateControls() {
     psk_passphrase_label_->SetEnabled(enable_psk_passphrase_);
   if (psk_passphrase_textfield_)
     psk_passphrase_textfield_->SetEnabled(enable_psk_passphrase_ &&
-                                          psk_passphrase_ui_data_.editable());
+                                          psk_passphrase_ui_data_.IsEditable());
 
   if (user_cert_label_)
     user_cert_label_->SetEnabled(enable_user_cert_);
   if (user_cert_combobox_)
     user_cert_combobox_->SetEnabled(enable_user_cert_ &&
-                                    user_cert_ui_data_.editable());
+                                    user_cert_ui_data_.IsEditable());
 
   if (server_ca_cert_label_)
     server_ca_cert_label_->SetEnabled(enable_server_ca_cert_);
   if (server_ca_cert_combobox_)
     server_ca_cert_combobox_->SetEnabled(enable_server_ca_cert_ &&
-                                         ca_cert_ui_data_.editable());
+                                         ca_cert_ui_data_.IsEditable());
 
   if (otp_label_)
     otp_label_->SetEnabled(enable_otp_);
@@ -805,7 +808,7 @@ void VPNConfigView::UpdateControls() {
     group_name_label_->SetEnabled(enable_group_name_);
   if (group_name_textfield_)
     group_name_textfield_->SetEnabled(enable_group_name_ &&
-                                      group_name_ui_data_.editable());
+                                      group_name_ui_data_.IsEditable());
 }
 
 void VPNConfigView::UpdateErrorLabel() {
@@ -897,7 +900,7 @@ void VPNConfigView::ParseVPNUIProperty(NetworkPropertyUIData* property_ui_data,
   VLOG_IF(1, !onc) << "No ONC found for VPN network " << network->unique_id();
 
   property_ui_data->ParseOncProperty(
-      network->ui_data(), onc,
+      network->ui_data().onc_source(), onc,
       base::StringPrintf("%s.%s.%s",
                          onc::network_config::kVPN,
                          dict_key.c_str(),
