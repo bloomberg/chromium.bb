@@ -21,7 +21,7 @@
 #include "native_client/src/include/elf_constants.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/include/nacl/nacl_minidump.h"
-#include "native_client/src/untrusted/minidump_generator/build_id.c"
+#include "native_client/src/untrusted/minidump_generator/build_id.h"
 
 
 extern char __executable_start[];  // Start of code segment

@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/untrusted/minidump_generator/build_id.h"
+
 #include <assert.h>
 #include <string.h>
 
