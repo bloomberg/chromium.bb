@@ -529,7 +529,8 @@ def strace_process_quoted_arguments(text):
         state = INSIDE_STRING
       else:
         raise ValueError(
-            'Can\'t process char at column %d for: %r' % (index, text),
+            'Can\'t process char \'%s\' at column %d for: %r' % (
+              char, index, text),
             index,
             text)
     elif char == ',':
@@ -542,7 +543,8 @@ def strace_process_quoted_arguments(text):
         state = INSIDE_STRING
       else:
         raise ValueError(
-            'Can\'t process char at column %d for: %r' % (index, text),
+            'Can\'t process char \'%s\' at column %d for: %r' % (
+              char, index, text),
             index,
             text)
     elif char == ' ':
@@ -555,13 +557,16 @@ def strace_process_quoted_arguments(text):
         state = INSIDE_STRING
       else:
         raise ValueError(
-            'Can\'t process char at column %d for: %r' % (index, text),
+            'Can\'t process char \'%s\' at column %d for: %r' % (
+              char, index, text),
             index,
             text)
     elif char == '.':
-      if state == NEED_COMMA_OR_DOT:
+      if state in (NEED_QUOTE, NEED_COMMA_OR_DOT):
         # The string is incomplete, this mean the strace -s flag should be
         # increased.
+        # For NEED_QUOTE, the input string would look like '"foo", ...'.
+        # For NEED_COMMA_OR_DOT, the input string would look like '"foo"...'
         state = NEED_DOT_2
       elif state == NEED_DOT_2:
         state = NEED_DOT_3
@@ -574,7 +579,8 @@ def strace_process_quoted_arguments(text):
         state = INSIDE_STRING
       else:
         raise ValueError(
-            'Can\'t process char at column %d for: %r' % (index, text),
+            'Can\'t process char \'%s\' at column %d for: %r' % (
+              char, index, text),
             index,
             text)
     elif char == '\\':
@@ -585,7 +591,8 @@ def strace_process_quoted_arguments(text):
         state = ESCAPED
       else:
         raise ValueError(
-            'Can\'t process char at column %d for: %r' % (index, text),
+            'Can\'t process char \'%s\' at column %d for: %r' % (
+              char, index, text),
             index,
             text)
     else:
@@ -593,7 +600,8 @@ def strace_process_quoted_arguments(text):
         out[-1] += char
       else:
         raise ValueError(
-            'Can\'t process char at column %d for: %r' % (index, text),
+            'Can\'t process char \'%s\' at column %d for: %r' % (
+              char, index, text),
             index,
             text)
   if state not in (NEED_COMMA, NEED_COMMA_OR_DOT):
@@ -1143,7 +1151,7 @@ class Strace(ApiBase):
       """
       # Function names are using ([a-z_0-9]+)
       # This is the most common format. function(args) = result
-      RE_HEADER = re.compile(r'^([a-z_0-9]+)\((.+?)\)\s+= (.+)$')
+      RE_HEADER = re.compile(r'^([a-z_0-9]+)\((.*?)\)\s+= (.+)$')
       # An interrupted function call, only grab the minimal header.
       RE_UNFINISHED = re.compile(r'^([^\(]+)(.*) \<unfinished \.\.\.\>$')
       # A resumed function call.
@@ -1257,16 +1265,16 @@ class Strace(ApiBase):
       def on_line(self, line):
         assert isinstance(line, str)
         self._line_number += 1
-        if self._done:
-          raise TracingFailure(
-              'Found a trace for a terminated process or corrupted log',
-              None, None, None)
-
-        if self.RE_SIGNAL.match(line):
-          # Ignore signals.
-          return
-
         try:
+          if self._done:
+            raise TracingFailure(
+                'Found a trace for a terminated process or corrupted log',
+                None, None, None)
+
+          if self.RE_SIGNAL.match(line):
+            # Ignore signals.
+            return
+
           match = self.RE_KILLED.match(line)
           if match:
             # Converts a '+++ killed by Foo +++' trace into an exit_group().
@@ -1314,6 +1322,7 @@ class Strace(ApiBase):
             # The line is corrupted. It happens occasionally when a process is
             # killed forcibly with activity going on. Assume the process died.
             # No other line can be processed afterward.
+            logging.debug('%d is done: %s', self.pid, line)
             self._done = True
             return
 
@@ -1352,24 +1361,7 @@ class Strace(ApiBase):
         logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
 
       def handle_clone(self, _args, result):
-        """Transfers cwd."""
-        if result.startswith(('?', '-1')):
-          # The call failed.
-          return
-        # Update the other process right away.
-        childpid = int(result)
-        child = self._root().get_or_set_proc(childpid)
-        if child.parentid is not None or childpid in self.children:
-          raise TracingFailure(
-              'Found internal inconsitency in process lifetime detection '
-              'during a clone() call',
-              None, None, None)
-
-        # Copy the cwd object.
-        child.initial_cwd = self.get_cwd()
-        child.parentid = self.pid
-        # It is necessary because the logs are processed out of order.
-        self.children.append(child)
+        self._handling_forking('clone', result)
 
       def handle_close(self, _args, _result):
         pass
@@ -1388,7 +1380,12 @@ class Strace(ApiBase):
         filepath = args[0]
         self._handle_file(filepath, False)
         self.executable = self.RelativePath(self.get_cwd(), filepath)
-        self.command = strace_process_quoted_arguments(args[1])
+        try:
+          self.command = strace_process_quoted_arguments(args[1])
+        except ValueError as e:
+          raise TracingFailure(
+              'Failed to process command line argument:\n%s' % e.args[0],
+              None, None, None)
 
       def handle_exit_group(self, _args, _result):
         """Removes cwd."""
@@ -1480,8 +1477,8 @@ class Strace(ApiBase):
       def handle_utimensat(self, _args, _result):
         pass
 
-      def handle_vfork(self, args, result):
-        self._handle_unknown('vfork', args, result)
+      def handle_vfork(self, _args, result):
+        self._handling_forking('vfork', result)
 
       @staticmethod
       def _handle_unknown(function, args, result):
@@ -1489,6 +1486,26 @@ class Strace(ApiBase):
             'Unexpected/unimplemented trace %s(%s)= %s' %
             (function, args, result),
             None, None, None)
+
+      def _handling_forking(self, name, result):
+        """Transfers cwd."""
+        if result.startswith(('?', '-1')):
+          # The call failed.
+          return
+        # Update the other process right away.
+        childpid = int(result)
+        child = self._root().get_or_set_proc(childpid)
+        if child.parentid is not None or childpid in self.children:
+          raise TracingFailure(
+              'Found internal inconsitency in process lifetime detection '
+              'during a %s() call' % name,
+              None, None, None)
+
+        # Copy the cwd object.
+        child.initial_cwd = self.get_cwd()
+        child.parentid = self.pid
+        # It is necessary because the logs are processed out of order.
+        self.children.append(child)
 
       def _handle_file(self, filepath, touch_only):
         filepath = self.RelativePath(self.get_cwd(), filepath)

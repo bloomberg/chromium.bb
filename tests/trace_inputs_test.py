@@ -44,6 +44,10 @@ class TraceInputs(unittest.TestCase):
         '"/browser_tests", "--ignored=\\" --type=renderer \\""',
         ['/browser_tests', '--ignored=" --type=renderer "']
       ),
+      (
+        '"/Release+Asserts/bin/clang", "-cc1", ...',
+        ['/Release+Asserts/bin/clang', '-cc1'],
+      ),
     )
     for actual, expected in test_cases:
       self.assertEqual(
@@ -723,6 +727,32 @@ if sys.platform != 'win32':
         },
       ]
       self._test_lines(lines, u'/home/foo_bar_user/src', files)
+
+    def test_vfork(self):
+      # vfork is the only function traced that doesn't take parameters.
+      lines = [
+          (self._ROOT_PID, 'vfork() = %d' % self._CHILD_PID),
+      ]
+      expected = {
+         'root': {
+           'children': [
+             {
+               'children': [],
+               'command': None,
+               'executable': None,
+               'files': [],
+                'initial_cwd': unicode(ROOT_DIR),
+               'pid': self._CHILD_PID,
+              }
+            ],
+           'command': None,
+           'executable': None,
+           'files': [],
+           'initial_cwd': unicode(ROOT_DIR),
+           'pid': self._ROOT_PID,
+         },
+       }
+      self.assertContext(lines, ROOT_DIR, expected, False)
 
 
 if __name__ == '__main__':
