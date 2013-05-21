@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Protocol buffer definitions for serializing Drive files and directories.
+// Protocol buffer definitions for representing Drive files and directories,
+// and serializing them for the resource metadata database.
 
 syntax = "proto2";
 
@@ -27,43 +28,68 @@ message FileSpecificInfo {
   // stale thumbnail URLs are handled.
   optional string thumbnail_url = 1;
 
-  // This URL is used for opening hosted documents with Google Docs's web
+  // This URL is used for opening hosted documents with Google Drive's web
   // interface.
   optional string alternate_url = 2;
 
   // Content mime type like "text/plain".
   optional string content_mime_type = 3;
 
-  // The MD5 of contents of a regular file.
+  // The MD5 of contents of a regular file. Hosted files don't have MD5.
   optional string file_md5 = 4;
 
   // File extension, including the dot, used for hosted documents
-  // (ex. ".gsheet" for hosted spreadsheet documents).
+  // (ex. ".gsheet" for hosted spreadsheets).
   optional string document_extension = 5;
 
-  // True if the file is a hosted document.
+  // True if the file is a hosted document (i.e. document hosted on
+  // drive.google.com such as documents, spreadsheets, and presentations).
   optional bool is_hosted_document = 6;
 }
 
 // Directory specific info, which is a part of ResourceEntry.
 message DirectorySpecificInfo {
   // The changestamp of this directory. This value can be larger than the
-  // changestamp of DriveResourceMetadata, if this directory was
+  // changestamp of ResourceMetadata, if this directory was
   // "fast-fetched". See crbug.com/178348 for details about the "fast-fetch"
   // feature.
   optional int64 changestamp = 1;
 }
 
-// Represents an entry in the resource metadata.
+// Represents metadata of a resource (file or directory) on Drive.
 message ResourceEntry {
   optional PlatformFileInfoProto file_info = 1;
+  // Base name of the entry. The base name is used for file paths. Usually
+  // identical to |title|, but some extra number is inserted if multiple
+  // entries with the same title exist in the same directory, to ensure that
+  // file paths are unique. For instance, if two files titled "foo.jpg" exist
+  // in the same directory, which is allowed on drive.google.com, one of them
+  // will have a base name of "foo (2).jpg".
   optional string base_name = 2;
+
+  // Title of the entry. See the comment at |base_name|.
   optional string title = 3;
+
+  // Resource ID of the entry. Guaranteed to be unique.
   optional string resource_id = 4;
+
+  // Resource ID of the parent entry. Every entry is guaranteed to have the
+  // single parent resource ID in ResourceMetadata. This requirement is
+  // needed to represent contents in Drive as a file system tree, and
+  // achieved as follows:
+  //
+  // 1) Entries without parents are allowed on drive.google.com. These
+  // entries are collected to "drive/other", and have the resource ID of
+  // "drive/other" as the parent resource ID.
+  //
+  // 2) Entries with multiple parents are allowed on drive.google.com. For
+  // these entries, the first parent resource ID is chosen.
   optional string parent_resource_id = 7;
-  // This field is used for processing the feeds from the server. Deleted
-  // entries won't be stored in the metadata storage.
+
+  // This field is used for processing the change list from the
+  // server. Deleted entries won't be stored in ResourceMetadata.
   optional bool deleted = 11;
+
   // True if the entry is labeled with "shared-with-me".
   optional bool shared_with_me = 14;
 
