@@ -45,4 +45,4 @@ if __name__ == '__main__':
   import page_sets # pylint: disable=F0401
   page_set_filenames = page_sets.GetAllPageSetFilenames()
 
-  sys.exit(page_test_runner.Main(test_dir, page_set_filenames))
+  sys.exit(page_test_runner.Main(test_dir, '', page_set_filenames))
