@@ -18,6 +18,7 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -284,6 +285,58 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   virtual void TearDown() {
     test_user_share_.TearDown();
+  }
+
+  // Inserts a folder directly to the share.
+  // Do not use this after model association is complete.
+  //
+  // This function differs from the AddFolder() function declared elsewhere in
+  // this file in that it only affects the sync model.  It would be invalid to
+  // change the sync model directly after ModelAssociation.  This function can
+  // be invoked prior to model association to set up first-time sync model
+  // association scenarios.
+  int64 AddFolderToShare(syncer::WriteTransaction* trans, std::string title) {
+    EXPECT_FALSE(model_associator_);
+
+    // Be sure to call CreatePermanentBookmarkNodes(), otherwise this will fail.
+    syncer::ReadNode bookmark_bar(trans);
+    EXPECT_EQ(BaseNode::INIT_OK, bookmark_bar.InitByTagLookup("bookmark_bar"));
+
+    syncer::WriteNode node(trans);
+    EXPECT_TRUE(node.InitBookmarkByCreation(bookmark_bar, NULL));
+    node.SetIsFolder(true);
+    node.SetTitle(ASCIIToWide(title));
+
+    return node.GetId();
+  }
+
+  // Inserts a bookmark directly to the share.
+  // Do not use this after model association is complete.
+  //
+  // This function differs from the AddURL() function declared elsewhere in this
+  // file in that it only affects the sync model.  It would be invalid to change
+  // the sync model directly after ModelAssociation.  This function can be
+  // invoked prior to model association to set up first-time sync model
+  // association scenarios.
+  int64 AddBookmarkToShare(syncer::WriteTransaction *trans,
+                           int64 parent_id,
+                           std::string title) {
+    EXPECT_FALSE(model_associator_);
+
+    syncer::ReadNode parent(trans);
+    EXPECT_EQ(BaseNode::INIT_OK, parent.InitByIdLookup(parent_id));
+
+    sync_pb::BookmarkSpecifics specifics;
+    specifics.set_url("http://www.google.com/search?q=" + title);
+    specifics.set_title(title);
+
+    syncer::WriteNode node(trans);
+    EXPECT_TRUE(node.InitBookmarkByCreation(parent, NULL));
+    node.SetIsFolder(false);
+    node.SetTitle(ASCIIToWide(title));
+    node.SetBookmarkSpecifics(specifics);
+
+    return node.GetId();
   }
 
   // Load (or re-load) the bookmark model.  |load| controls use of the
@@ -623,6 +676,41 @@ TEST_F(ProfileSyncServiceBookmarkTest, InitialState) {
 
   ExpectModelMatch();
 }
+
+// Populate the sync database then start model association.  Sync's bookmarks
+// should end up being copied into the native model, resulting in a successful
+// "ExpectModelMatch()".
+//
+// This code has some use for verifying correctness.  It's also a very useful
+// for profiling bookmark ModelAssociation, an important part of some first-time
+// sync scenarios.  Simply increase the kNumFolders and kNumBookmarksPerFolder
+// as desired, then run the test under a profiler to find hot spots in the model
+// association code.
+TEST_F(ProfileSyncServiceBookmarkTest, InitialModelAssociate) {
+  const int kNumBookmarksPerFolder = 10;
+  const int kNumFolders = 10;
+
+  CreatePermanentBookmarkNodes();
+
+  {
+    syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
+    for (int i = 0; i < kNumFolders; ++i) {
+      int64 folder_id = AddFolderToShare(&trans,
+                                         base::StringPrintf("folder%05d", i));
+      for (int j = 0; j < kNumBookmarksPerFolder; ++j) {
+        AddBookmarkToShare(&trans,
+                           folder_id,
+                           base::StringPrintf("bookmark%05d", j));
+      }
+    }
+  }
+
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  StartSync();
+
+  ExpectModelMatch();
+}
+
 
 TEST_F(ProfileSyncServiceBookmarkTest, BookmarkModelOperations) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);

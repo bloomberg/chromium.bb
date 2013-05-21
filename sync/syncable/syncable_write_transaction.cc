@@ -40,9 +40,7 @@ void WriteTransaction::SaveOriginal(const EntryKernel* entry) {
   const int64 handle = entry->ref(META_HANDLE);
   EntryKernelMutationMap::iterator it = mutations_.lower_bound(handle);
   if (it == mutations_.end() || it->first != handle) {
-    EntryKernelMutation mutation;
-    mutation.original = *entry;
-    ignore_result(mutations_.insert(it, std::make_pair(handle, mutation)));
+    mutations_[handle].original = *entry;
   }
 }
 
