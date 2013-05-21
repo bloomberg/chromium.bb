@@ -243,6 +243,7 @@ class Shell : public WebContentsDelegate,
 
   int content_width_;
   int content_height_;
+  int ui_elements_height_; // height of menubar, toolbar, etc.
 #elif defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 #elif defined(USE_AURA)
