@@ -296,6 +296,15 @@ CSSParser::~CSSParser()
     deleteAllValues(m_floatingFunctions);
 }
 
+AtomicString CSSParserString::atomicSubstring(unsigned position, unsigned length) const
+{
+    ASSERT(m_length >= position + length);
+
+    if (is8Bit())
+        return AtomicString(characters8() + position, length);
+    return AtomicString(characters16() + position, length);
+}
+
 void CSSParser::setupParser(const char* prefix, unsigned prefixLength, const String& string, const char* suffix, unsigned suffixLength)
 {
     m_parsedTextPrefixLength = prefixLength;
@@ -1576,8 +1585,7 @@ inline PassRefPtr<CSSPrimitiveValue> CSSParser::createPrimitiveStringValue(CSSPa
 inline PassRefPtr<CSSPrimitiveValue> CSSParser::createPrimitiveVariableNameValue(CSSParserValue* value)
 {
     ASSERT(value->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME);
-    AtomicString variableName = value->string;
-    return CSSPrimitiveValue::create(variableName, CSSPrimitiveValue::CSS_VARIABLE_NAME);
+    return CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::CSS_VARIABLE_NAME);
 }
 
 static inline bool isComma(CSSParserValue* value)
@@ -3058,7 +3066,7 @@ void CSSParser::storeVariableDeclaration(const CSSParserString& name, PassOwnPtr
     static const unsigned prefixLength = sizeof("-webkit-var-") - 1;
 
     ASSERT(name.length() > prefixLength);
-    AtomicString variableName = String(name).substring(prefixLength, name.length() - prefixLength);
+    AtomicString variableName = name.atomicSubstring(prefixLength, name.length() - prefixLength);
 
     StringBuilder builder;
     for (unsigned i = 0, size = value->size(); i < size; i++) {
