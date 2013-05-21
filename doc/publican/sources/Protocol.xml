@@ -453,7 +453,7 @@
 	<para>
 	  When the drag ends, the receiving client receives a
 	  <function>wl_data_device.drop</function> event at which it is expect
-	  to trasnfer the data using the
+	  to transfer the data using the
 	  <function>wl_data_offer.receive</function> request.
 	</para>
       </section>
