@@ -43,7 +43,7 @@ WrenchIconPainter::Severity WrenchIconPainter::SeverityFromUpgradeLevel(
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
       return SEVERITY_HIGH;
     case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-      return SEVERITY_MEDIUM;
+      return SEVERITY_HIGH;
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
       return SEVERITY_HIGH;
   }

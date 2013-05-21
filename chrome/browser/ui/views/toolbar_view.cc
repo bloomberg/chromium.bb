@@ -247,8 +247,7 @@ void ToolbarView::Init() {
   app_menu_->set_id(VIEW_ID_APP_MENU);
 
   // Add any necessary badges to the menu item based on the system state.
-  if (ShouldShowUpgradeRecommended() || ShouldShowIncompatibilityWarning())
-    UpdateAppMenuState();
+  UpdateAppMenuState();
   LoadImages();
 
   // Always add children in order from left to right, for accessibility.
