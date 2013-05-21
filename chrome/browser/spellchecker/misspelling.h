@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MISSPELLING_H_
-#define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MISSPELLING_H_
+#ifndef CHROME_BROWSER_SPELLCHECKER_MISSPELLING_H_
+#define CHROME_BROWSER_SPELLCHECKER_MISSPELLING_H_
 
 #include <vector>
 
@@ -11,14 +11,15 @@
 #include "chrome/browser/spellchecker/spellcheck_action.h"
 
 // Spellcheck misspelling.
-class SpellcheckMisspelling {
+class Misspelling {
  public:
-  SpellcheckMisspelling();
-  SpellcheckMisspelling(const string16& context,
-                        size_t location,
-                        size_t length,
-                        const std::vector<string16>& suggestions);
-  ~SpellcheckMisspelling();
+  Misspelling();
+  Misspelling(const string16& context,
+              size_t location,
+              size_t length,
+              const std::vector<string16>& suggestions,
+              uint32 hash);
+  ~Misspelling();
 
   // Serializes the data in this object into a dictionary value. The caller owns
   // the result.
@@ -37,6 +38,9 @@ class SpellcheckMisspelling {
   // Spelling suggestions.
   std::vector<string16> suggestions;
 
+  // The hash that identifies the misspelling.
+  uint32 hash;
+
   // User action.
   SpellcheckAction action;
 
@@ -44,4 +48,4 @@ class SpellcheckMisspelling {
   base::Time timestamp;
 };
 
-#endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MISSPELLING_H_
+#endif  // CHROME_BROWSER_SPELLCHECKER_MISSPELLING_H_

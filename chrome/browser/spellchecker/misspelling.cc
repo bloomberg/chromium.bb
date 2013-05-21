@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/spellchecker/spellcheck_misspelling.h"
+#include "chrome/browser/spellchecker/misspelling.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
 namespace {
@@ -25,31 +26,35 @@ base::Value* BuildUserActionValue(const SpellcheckAction& action) {
 
 }  // namespace
 
-SpellcheckMisspelling::SpellcheckMisspelling()
-    : location(0), length(0), timestamp(base::Time::Now()) {
+Misspelling::Misspelling()
+    : location(0), length(0), hash(0), timestamp(base::Time::Now()) {
 }
 
-SpellcheckMisspelling::SpellcheckMisspelling(
-    const string16& context,
-    size_t location,
-    size_t length,
-    const std::vector<string16>& suggestions)
+Misspelling::Misspelling(const string16& context,
+                         size_t location,
+                         size_t length,
+                         const std::vector<string16>& suggestions,
+                         uint32 hash)
     : context(context),
       location(location),
       length(length),
       suggestions(suggestions),
+      hash(hash),
       timestamp(base::Time::Now()) {
 }
 
-SpellcheckMisspelling::~SpellcheckMisspelling() {
+Misspelling::~Misspelling() {
 }
 
-base::DictionaryValue* SpellcheckMisspelling::Serialize() const {
+base::DictionaryValue* Misspelling::Serialize() const {
   base::DictionaryValue* result = new base::DictionaryValue;
-  result->SetString("originalText", context);
-  result->SetInteger("misspelledStart", location);
+  result->SetString(
+      "timestamp",
+      base::Int64ToString(static_cast<long>(timestamp.ToJsTime())));
   result->SetInteger("misspelledLength", length);
-  result->SetDouble("timestamp", timestamp.ToJsTime());
+  result->SetInteger("misspelledStart", location);
+  result->SetString("originalText", context);
+  result->SetString("suggestionId", base::UintToString(hash));
   result->Set("suggestions", BuildSuggestionsValue(suggestions));
   result->Set("userActions", BuildUserActionValue(action));
   return result;

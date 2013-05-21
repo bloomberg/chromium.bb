@@ -24,14 +24,16 @@ struct SpellCheckResult {
       Type t = SPELLING,
       int loc = 0,
       int len = 0,
-      const string16& rep = string16())
-      : type(t), location(loc), length(len), replacement(rep) {
+      const string16& rep = string16(),
+      uint32 h = 0)
+      : type(t), location(loc), length(len), replacement(rep), hash(h) {
   }
 
   Type type;
   int location;
   int length;
   string16 replacement;
+  uint32 hash;
 };
 
 #endif  // CHROME_COMMON_SPELLCHECK_RESULT_H_

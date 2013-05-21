@@ -5,22 +5,24 @@
 #include "base/json/json_reader.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/spellchecker/spellcheck_misspelling.h"
+#include "chrome/browser/spellchecker/misspelling.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(SpellcheckMisspellingTest, SerializeTest) {
-  SpellcheckMisspelling misspelling;
+TEST(MisspellingTest, SerializeTest) {
+  Misspelling misspelling;
   misspelling.context = ASCIIToUTF16("How doe sit know");
   misspelling.location = 4;
   misspelling.length = 7;
   misspelling.timestamp = base::Time::FromJsTime(42);
+  misspelling.hash = 9001;
   misspelling.suggestions.push_back(ASCIIToUTF16("does it"));
 
   scoped_ptr<base::Value> expected(base::JSONReader::Read(
       "{\"originalText\": \"How doe sit know\","
       "\"misspelledStart\": 4,"
       "\"misspelledLength\": 7,"
-      "\"timestamp\": 42.0,"
+      "\"timestamp\": \"42\","
+      "\"suggestionId\":\"9001\","
       "\"suggestions\": [\"does it\"],"
       "\"userActions\": [{\"actionType\": \"PENDING\"}]}"));
 

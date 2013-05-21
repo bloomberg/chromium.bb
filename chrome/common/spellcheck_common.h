@@ -15,6 +15,14 @@ class FilePath;
 namespace chrome {
 namespace spellcheck_common {
 
+// The number of hours that a session of feedback for spelling service lasts.
+// After this number of hours passes, all feedback.
+static const int kSessionHours = 6;
+
+// The number of context words to keep on either side of a misspelling for
+// spelling service feedback.
+static const int kContextWordCount = 2;
+
 // The number of seconds between sending feedback to spelling service.
 static const int kFeedbackIntervalSeconds = 1800;  // 30 minutes
 
