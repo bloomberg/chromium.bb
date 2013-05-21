@@ -105,7 +105,11 @@ _OS_NEGATIVE_FILTER['win'] = [
     'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
 ]
 _OS_NEGATIVE_FILTER['linux'] = []
-_OS_NEGATIVE_FILTER['mac'] = []
+_OS_NEGATIVE_FILTER['mac'] = [
+    'AlertsTest.testShouldAllowUsersToDismissAnAlertManually',
+    'AlertsTest.testAlertShouldNotAllowAdditionalCommandsIfDismissed',
+    'FormHandlingTest.handleFormWithJavascriptAction',
+]
 _OS_NEGATIVE_FILTER['android'] = [
     'AlertsTest.*',
     'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
