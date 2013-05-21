@@ -172,7 +172,7 @@ public class AutofillDialogView extends FrameLayout {
     public void initialize(AutofillDialog dialog) {
         mDialog = dialog;
 
-        mDialog.getWindow().getDecorView().setBackground(null);
+        mDialog.getWindow().getDecorView().setBackgroundResource(0);
 
         FrameLayout.LayoutParams layoutParams =
                 (android.widget.FrameLayout.LayoutParams) getLayoutParams();
