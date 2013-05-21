@@ -2971,15 +2971,16 @@ Element* RenderObject::offsetParent() const
     // chain return the nearest ancestor map HTML element and stop this algorithm.
     // FIXME: Implement!
 
-    // FIXME: Figure out the right behavior for elements inside a flow thread.
-    // https://bugs.webkit.org/show_bug.cgi?id=113276
-
     float effectiveZoom = style()->effectiveZoom();
     Node* node = 0;
     for (RenderObject* ancestor = parent(); ancestor; ancestor = ancestor->parent()) {
-        node = ancestor->node();
-
         // Spec: http://www.w3.org/TR/cssom-view/#offset-attributes
+
+        // CSS regions specification says that region flows should return the body element as their offsetParent.
+        if (ancestor->isRenderNamedFlowThread())
+            return document()->body();
+
+        node = ancestor->node();
 
         if (!node)
             continue;
