@@ -66,7 +66,7 @@ private:
     // vectors (hfonts_, etc).  Otherwise, it gets next SimpleFontData from
     // WebKit and adds them to in hfonts_ and friends so that font data can be
     // returned quickly next time they're requested.
-    virtual bool nextWinFontData(HFONT*, SCRIPT_CACHE**, SCRIPT_FONTPROPERTIES**, int* ascent);
+    virtual bool nextWinFontData(HFONT&, SCRIPT_CACHE*&, SCRIPT_FONTPROPERTIES*&, int& ascent, WORD& spaceGlyph);
     virtual void resetFontIndex();
 
     // Reference to WebKit::Font that contains all the information about fonts
@@ -86,6 +86,7 @@ private:
     Vector<SCRIPT_CACHE*, kNumberOfFonts> m_scriptCaches;
     Vector<SCRIPT_FONTPROPERTIES*, kNumberOfFonts> m_fontProperties;
     Vector<int, kNumberOfFonts> m_ascents;
+    Vector<WORD> m_spaceGlyphs;
 
     // Index of the fallback font we're currently using for NextWinFontData.
     int m_fontIndex;

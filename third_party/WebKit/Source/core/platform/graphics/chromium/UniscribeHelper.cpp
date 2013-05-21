@@ -678,7 +678,7 @@ bool UniscribeHelper::shape(const UChar* input,
 
         // The current font can't render this run, try next font.
         if (!m_disableFontFallback &&
-            nextWinFontData(&hfont, &scriptCache, &fontProperties, &ascent)) {
+            nextWinFontData(hfont, scriptCache, fontProperties, ascent, spaceGlyph)) {
             // The primary font does not support this run. Try next font.
             // In case of web page rendering, they come from fonts specified in
             // CSS stylesheets.

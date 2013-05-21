@@ -86,10 +86,11 @@ void UniscribeHelperTextRun::tryToPreloadFont(HFONT font)
 }
 
 bool UniscribeHelperTextRun::nextWinFontData(
-    HFONT* hfont,
-    SCRIPT_CACHE** scriptCache,
-    SCRIPT_FONTPROPERTIES** fontProperties,
-    int* ascent)
+    HFONT& hfont,
+    SCRIPT_CACHE*& scriptCache,
+    SCRIPT_FONTPROPERTIES*& fontProperties,
+    int& ascent,
+    WORD& spaceGlyph)
 {
     // This check is necessary because NextWinFontData can be called again
     // after we already ran out of fonts. fontDataAt behaves in a strange
@@ -124,12 +125,14 @@ bool UniscribeHelperTextRun::nextWinFontData(
         m_scriptCaches.append(simpleFontData->platformData().scriptCache());
         m_fontProperties.append(simpleFontData->platformData().scriptFontProperties());
         m_ascents.append(simpleFontData->fontMetrics().ascent());
+        m_spaceGlyphs.append(simpleFontData->spaceGlyph());
     }
 
-    *hfont = m_hfonts[m_fontIndex - 1];
-    *scriptCache = m_scriptCaches[m_fontIndex - 1];
-    *fontProperties = m_fontProperties[m_fontIndex - 1];
-    *ascent = m_ascents[m_fontIndex - 1];
+    hfont = m_hfonts[m_fontIndex - 1];
+    scriptCache = m_scriptCaches[m_fontIndex - 1];
+    fontProperties = m_fontProperties[m_fontIndex - 1];
+    ascent = m_ascents[m_fontIndex - 1];
+    spaceGlyph = m_spaceGlyphs[m_fontIndex - 1];
     return true;
 }
 

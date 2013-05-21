@@ -373,7 +373,7 @@ private:
     // of fonts. When there's no more font available, returns false
     // without touching any of out params. Need to call ResetFontIndex
     // to start scanning of the font list from the beginning.
-    virtual bool nextWinFontData(HFONT*, SCRIPT_CACHE**, SCRIPT_FONTPROPERTIES**, int* ascent)
+    virtual bool nextWinFontData(HFONT&, SCRIPT_CACHE*&, SCRIPT_FONTPROPERTIES*&, int&, WORD&)
     {
         return false;
     }
