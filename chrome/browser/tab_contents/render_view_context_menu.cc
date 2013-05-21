@@ -93,10 +93,6 @@
 #include "ui/gfx/favicon_size.h"
 #include "webkit/glue/webmenuitem.h"
 
-#ifdef FILE_MANAGER_EXTENSION
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
-#endif
-
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
 using WebKit::WebPluginAction;
@@ -348,19 +344,6 @@ void AddCustomItemsToMenu(const std::vector<WebMenuItem>& items,
         break;
     }
   }
-}
-
-bool ShouldShowTranslateItem(const GURL& page_url) {
-  if (page_url.SchemeIs("chrome"))
-    return false;
-
-#ifdef FILE_MANAGER_EXTENSION
-  if (page_url.SchemeIs("chrome-extension") &&
-      page_url.DomainIs(kFileBrowserDomain))
-    return false;
-#endif
-
-  return true;
 }
 
 void DevToolsInspectElementAt(RenderViewHost* rvh, int x, int y) {
@@ -922,7 +905,7 @@ void RenderViewContextMenu::AppendPageItems() {
                                   IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
 
-  if (ShouldShowTranslateItem(params_.page_url)) {
+  if (TranslateManager::IsTranslatableURL(params_.page_url)) {
     std::string locale = g_browser_process->GetApplicationLocale();
     locale = TranslateManager::GetLanguageCode(locale);
     string16 language = l10n_util::GetDisplayNameForLocale(locale, locale,
@@ -1223,7 +1206,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
                  TranslateManager::IsSupportedLanguage(original_lang)) &&
              !translate_tab_helper->language_state().IsPageTranslated() &&
              !source_web_contents_->GetInterstitialPage() &&
-             TranslateManager::IsTranslatableURL(params_.page_url) &&
              // There are some application locales which can't be used as a
              // target language for translation.
              TranslateManager::IsSupportedLanguage(target_lang);
