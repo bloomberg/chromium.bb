@@ -115,7 +115,6 @@ double TextureUploader::EstimatedTexturesPerSecond() {
   // Use the median as our estimate.
   std::multiset<double>::iterator median = textures_per_second_history_.begin();
   std::advance(median, textures_per_second_history_.size() / 2);
-  TRACE_COUNTER_ID1("cc", "EstimatedTexturesPerSecond", context_, *median);
   return *median;
 }
 

@@ -286,13 +286,10 @@ void TileManager::AssignBinsToTiles() {
     for (int i = 0; i < NUM_BIN_PRIORITIES; ++i)
       mts.bin[i] = bin_map[mts.bin[i]];
   }
-
-  TRACE_COUNTER_ID1("cc", "TileCount", this, tiles_.size());
 }
 
 void TileManager::SortTiles() {
   TRACE_EVENT0("cc", "TileManager::SortTiles");
-  TRACE_COUNTER_ID1("cc", "TileCount", this, tiles_.size());
 
   // Sort by bin, resolution and time until needed.
   std::sort(tiles_.begin(), tiles_.end(), BinComparator());
@@ -300,7 +297,6 @@ void TileManager::SortTiles() {
 
 void TileManager::ManageTiles() {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
-  TRACE_COUNTER_ID1("cc", "TileCount", this, tiles_.size());
 
   manage_tiles_pending_ = false;
   ++manage_tiles_call_count_;
