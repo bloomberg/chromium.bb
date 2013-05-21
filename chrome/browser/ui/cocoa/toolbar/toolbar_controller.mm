@@ -72,11 +72,11 @@ using content::WebContents;
 namespace {
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
-const CGFloat kBaseToolbarHeightNormal = 35.0;
+const CGFloat kBaseToolbarHeightNormal = 34.0;
 
 // Height of the toolbar in pixels when the bookmark bar is if instant extended
 // is enabled.
-const CGFloat kBaseToolbarHeightInstantExtended = 36.0;
+const CGFloat kBaseToolbarHeightInstantExtended = 35.0;
 
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;

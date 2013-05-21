@@ -378,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffset) {
   OverlayableContentsController* overlay =
       [controller() overlayableContentsController];
   // Just toolbar.
-  EXPECT_EQ(bookmarks::kBookmarkBarOverlap - 1,
+  EXPECT_EQ(bookmarks::kBookmarkBarOverlap,
             [overlay activeContainerOffset]);
 
   // Plus bookmark bar.
@@ -457,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstantNTP) {
       [controller() overlayableContentsController];
 
   // Just toolbar.
-  EXPECT_EQ(bookmarks::kBookmarkBarOverlap - 1,
+  EXPECT_EQ(bookmarks::kBookmarkBarOverlap,
             [overlay activeContainerOffset]);
 
   // Plus bookmark bar.
