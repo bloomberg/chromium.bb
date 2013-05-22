@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_CONSTANTS_H_
-#define UI_MESSAGE_CENTER_MESSAGE_CENTER_CONSTANTS_H_
+#ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_
+#define UI_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -85,4 +85,4 @@ extern const SkColor kFooterTextColor;       // Text color for tray labels.
 
 }  // namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_CONSTANTS_H_
+#endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_

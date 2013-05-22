@@ -17,7 +17,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_constants.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/views/notification_view.h"

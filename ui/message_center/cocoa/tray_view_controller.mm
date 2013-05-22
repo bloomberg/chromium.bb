@@ -15,7 +15,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #import "ui/message_center/cocoa/notification_controller.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_constants.h"
+#include "ui/message_center/message_center_style.h"
 
 @interface MCTrayViewController (Private)
 // Creates all the views for the control area of the tray.

@@ -12,7 +12,7 @@
 #import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_constants.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 
 @interface MCNotificationButtonCell : NSButtonCell {

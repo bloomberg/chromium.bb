@@ -7,8 +7,8 @@
 #import "ui/message_center/cocoa/notification_controller.h"
 #import "ui/message_center/cocoa/popup_controller.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/message_center_style.h"
 
 @interface MCPopupCollection (Private)
 // Returns the primary screen's visible frame rectangle.

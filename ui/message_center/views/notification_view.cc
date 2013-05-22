@@ -14,7 +14,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_constants.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification.h"
