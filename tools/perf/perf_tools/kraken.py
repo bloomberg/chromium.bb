@@ -14,7 +14,7 @@ def _Mean(l):
   return float(sum(l)) / len(l) if len(l) > 0 else 0.0
 
 class Kraken(page_measurement.PageMeasurement):
-  def CreatePageSet(self, options):
+  def CreatePageSet(self, _, options):
     return page_set.PageSet.FromDict({
         'archive_data_file': '../data/kraken.json',
         'pages': [

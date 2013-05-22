@@ -35,7 +35,7 @@ SCORE_TRACE_NAME = 'score'
 
 
 class DomPerf(page_measurement.PageMeasurement):
-  def CreatePageSet(self, options):
+  def CreatePageSet(self, _, options):
     BASE_PAGE = 'file:///../../../data/dom_perf/run.html?reportInJS=1&run='
     return page_set.PageSet.FromDict({
         'pages': [

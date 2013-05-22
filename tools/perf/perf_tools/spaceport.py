@@ -12,7 +12,7 @@ from telemetry.page import page_measurement
 from telemetry.page import page_set
 
 class SpaceportMeasurement(page_measurement.PageMeasurement):
-  def CreatePageSet(self, options):
+  def CreatePageSet(self, _, options):
     return page_set.PageSet.FromDict({
         'pages': [
           {'url':
