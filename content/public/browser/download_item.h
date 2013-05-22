@@ -222,11 +222,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // return the path requested.
   virtual const base::FilePath& GetForcedFilePath() const = 0;
 
-  // Returns the user-verified target file path for the download.
-  // This returns the same path as GetTargetFilePath() for safe downloads
-  // but does not for dangerous downloads until the name is verified.
-  virtual base::FilePath GetUserVerifiedFilePath() const = 0;
-
   // Returns the file-name that should be reported to the user. If a display
   // name has been explicitly set using SetDisplayName(), this function returns
   // that display name. Otherwise returns the final target filename.

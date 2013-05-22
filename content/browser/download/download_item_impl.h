@@ -127,7 +127,6 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual const base::FilePath& GetFullPath() const OVERRIDE;
   virtual const base::FilePath& GetTargetFilePath() const OVERRIDE;
   virtual const base::FilePath& GetForcedFilePath() const OVERRIDE;
-  virtual base::FilePath GetUserVerifiedFilePath() const OVERRIDE;
   virtual base::FilePath GetFileNameToReportUser() const OVERRIDE;
   virtual TargetDisposition GetTargetDisposition() const OVERRIDE;
   virtual const std::string& GetHash() const OVERRIDE;

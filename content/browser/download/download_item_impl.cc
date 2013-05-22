@@ -594,13 +594,6 @@ const base::FilePath& DownloadItemImpl::GetForcedFilePath() const {
   return forced_file_path_;
 }
 
-// TODO(asanka): Get rid of GetUserVerifiedFilePath().  http://crbug.com/134237.
-base::FilePath DownloadItemImpl::GetUserVerifiedFilePath() const {
-  return (IsDangerous() ||
-          danger_type_ == DOWNLOAD_DANGER_TYPE_USER_VALIDATED) ?
-      GetFullPath() : GetTargetFilePath();
-}
-
 base::FilePath DownloadItemImpl::GetFileNameToReportUser() const {
   if (!display_name_.empty())
     return display_name_;
@@ -705,7 +698,7 @@ bool DownloadItemImpl::CanOpenDownload() {
 }
 
 bool DownloadItemImpl::ShouldOpenFileBasedOnExtension() {
-  return delegate_->ShouldOpenFileBasedOnExtension(GetUserVerifiedFilePath());
+  return delegate_->ShouldOpenFileBasedOnExtension(GetTargetFilePath());
 }
 
 bool DownloadItemImpl::GetOpenWhenComplete() const {

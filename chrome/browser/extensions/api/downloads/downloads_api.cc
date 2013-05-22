@@ -1132,7 +1132,7 @@ bool DownloadsDragFunction::RunImpl() {
   }
   RecordApiFunctions(DOWNLOADS_FUNCTION_DRAG);
   gfx::Image* icon = g_browser_process->icon_manager()->LookupIconFromFilepath(
-      download_item->GetUserVerifiedFilePath(), IconLoader::NORMAL);
+      download_item->GetTargetFilePath(), IconLoader::NORMAL);
   gfx::NativeView view = web_contents->GetView()->GetNativeView();
   {
     // Enable nested tasks during DnD, while |DragDownload()| blocks.

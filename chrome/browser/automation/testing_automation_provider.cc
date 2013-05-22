@@ -2643,7 +2643,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
   } else if (action == "toggle_open_files_like_this") {
     DownloadPrefs* prefs =
         DownloadPrefs::FromBrowserContext(selected_item->GetBrowserContext());
-    base::FilePath path = selected_item->GetUserVerifiedFilePath();
+    base::FilePath path = selected_item->GetTargetFilePath();
     if (!selected_item->ShouldOpenFileBasedOnExtension())
       prefs->EnableAutoOpenBasedOnExtension(path);
     else

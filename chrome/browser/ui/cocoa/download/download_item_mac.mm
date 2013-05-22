@@ -35,12 +35,9 @@ void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
     [item_controller_ clearDangerousMode];
   }
 
-  if (download->GetUserVerifiedFilePath() != lastFilePath_) {
-    // Turns out the file path is "Unconfirmed %d.crdownload" for dangerous
-    // downloads. When the download is confirmed, the file is renamed on
-    // another thread, so reload the icon if the download filename changes.
+  if (download->GetTargetFilePath() != lastFilePath_) {
     LoadIcon();
-    lastFilePath_ = download->GetUserVerifiedFilePath();
+    lastFilePath_ = download->GetTargetFilePath();
 
     [item_controller_ updateToolTip];
   }
@@ -82,7 +79,7 @@ void DownloadItemMac::LoadIcon() {
   }
 
   // We may already have this particular image cached.
-  base::FilePath file = download_model_.download()->GetUserVerifiedFilePath();
+  base::FilePath file = download_model_.download()->GetTargetFilePath();
   gfx::Image* icon = icon_manager->LookupIconFromFilepath(
       file, IconLoader::ALL);
   if (icon) {

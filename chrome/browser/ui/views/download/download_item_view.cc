@@ -408,7 +408,7 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
     if (download()->IsComplete()) {
       IconManager* im = g_browser_process->icon_manager();
       gfx::Image* icon = im->LookupIconFromFilepath(
-          download()->GetUserVerifiedFilePath(), IconLoader::SMALL);
+          download()->GetTargetFilePath(), IconLoader::SMALL);
       if (icon) {
         views::Widget* widget = GetWidget();
         download_util::DragDownload(download(), icon,
@@ -775,7 +775,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   // Load the icon.
   IconManager* im = g_browser_process->icon_manager();
   gfx::Image* image = im->LookupIconFromFilepath(
-      download()->GetUserVerifiedFilePath(),IconLoader::SMALL);
+      download()->GetTargetFilePath(), IconLoader::SMALL);
   const gfx::ImageSkia* icon = NULL;
   if (IsShowingWarningDialog())
     icon = warning_icon_;
@@ -843,7 +843,7 @@ void DownloadItemView::OpenDownload() {
 
 void DownloadItemView::LoadIcon() {
   IconManager* im = g_browser_process->icon_manager();
-  last_download_item_path_ = download()->GetUserVerifiedFilePath();
+  last_download_item_path_ = download()->GetTargetFilePath();
   im->LoadIcon(last_download_item_path_,
                IconLoader::SMALL,
                base::Bind(&DownloadItemView::OnExtractIconComplete,
@@ -852,7 +852,7 @@ void DownloadItemView::LoadIcon() {
 }
 
 void DownloadItemView::LoadIconIfItemPathChanged() {
-  base::FilePath current_download_path = download()->GetUserVerifiedFilePath();
+  base::FilePath current_download_path = download()->GetTargetFilePath();
   if (last_download_item_path_ == current_download_path)
     return;
 
