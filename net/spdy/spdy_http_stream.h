@@ -85,7 +85,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   // SpdyStream::Delegate implementation.
   virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
-  virtual int OnSendBody() OVERRIDE;
+  virtual void OnSendBody() OVERRIDE;
   virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
@@ -98,14 +98,20 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
  private:
   void OnStreamCreated(const CompletionCallback& callback, int rv);
 
-  // Reads the data (whether chunked or not) from the request body stream and
-  // sends the data by calling WriteStreamData on the underlying SpdyStream.
-  int SendData();
+  // Reads the data (whether chunked or not) from the request body
+  // stream and sends it. The read and subsequent sending may happen
+  // asynchronously.
+  void ReadAndSendRequestBodyData();
+
+  // Called when data has just been read from the request body stream;
+  // does the actual sending of data.
+  void OnRequestBodyReadCompleted(int status);
+
+  // Queues some request body data to be sent.
+  void SendRequestBodyData();
 
   // Call the user callback.
   void DoCallback(int rv);
-
-  int OnRequestBodyReadCompleted(int status);
 
   void ScheduleBufferedReadCallback();
 

@@ -468,18 +468,17 @@ SpdySendStatus SpdyProxyClientSocket::OnSendHeadersComplete() {
   return NO_MORE_DATA_TO_SEND;
 }
 
-int SpdyProxyClientSocket::OnSendBody() {
+void SpdyProxyClientSocket::OnSendBody() {
   // Because we use |spdy_stream_| via STATE_OPEN (ala WebSockets)
-  // OnSendBody() should never be called.
-  NOTREACHED();
-  return ERR_UNEXPECTED;
+  // OnSendBody() must never be called.
+  CHECK(false);
 }
 
 SpdySendStatus SpdyProxyClientSocket::OnSendBodyComplete(
     size_t /*bytes_sent*/) {
   // Because we use |spdy_stream_| via STATE_OPEN (ala WebSockets)
-  // OnSendBodyComplete() should never be called.
-  NOTREACHED();
+  // OnSendBodyComplete() must never be called.
+  CHECK(false);
   return NO_MORE_DATA_TO_SEND;
 }
 

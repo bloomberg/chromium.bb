@@ -27,7 +27,7 @@ class ClosingDelegate : public SpdyStream::Delegate {
 
   // SpdyStream::Delegate implementation.
   virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
-  virtual int OnSendBody() OVERRIDE;
+  virtual void OnSendBody() OVERRIDE;
   virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
@@ -52,7 +52,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   virtual ~StreamDelegateBase();
 
   virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
-  virtual int OnSendBody() = 0;
+  virtual void OnSendBody() = 0;
   virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) = 0;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
@@ -103,7 +103,7 @@ class StreamDelegateDoNothing : public StreamDelegateBase {
   StreamDelegateDoNothing(const base::WeakPtr<SpdyStream>& stream);
   virtual ~StreamDelegateDoNothing();
 
-  virtual int OnSendBody() OVERRIDE;
+  virtual void OnSendBody() OVERRIDE;
   virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
 };
 
@@ -116,7 +116,7 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
                               base::StringPiece data);
   virtual ~StreamDelegateSendImmediate();
 
-  virtual int OnSendBody() OVERRIDE;
+  virtual void OnSendBody() OVERRIDE;
   virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
@@ -135,7 +135,7 @@ class StreamDelegateWithBody : public StreamDelegateBase {
   virtual ~StreamDelegateWithBody();
 
   virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
-  virtual int OnSendBody() OVERRIDE;
+  virtual void OnSendBody() OVERRIDE;
   virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
 
   int body_data_sent() const { return body_data_sent_; }

@@ -24,8 +24,8 @@ SpdySendStatus ClosingDelegate::OnSendHeadersComplete() {
   return NO_MORE_DATA_TO_SEND;
 }
 
-int ClosingDelegate::OnSendBody() {
-  return OK;
+void ClosingDelegate::OnSendBody() {
+  ADD_FAILURE() << "OnSendBody should not be called";
 }
 
 SpdySendStatus ClosingDelegate::OnSendBodyComplete(size_t /*bytes_sent*/) {
@@ -131,9 +131,10 @@ StreamDelegateDoNothing::StreamDelegateDoNothing(
 StreamDelegateDoNothing::~StreamDelegateDoNothing() {
 }
 
-int StreamDelegateDoNothing::OnSendBody() {
-  return OK;
+void StreamDelegateDoNothing::OnSendBody() {
+  ADD_FAILURE() << "OnSendBody should not be called";
 }
+
 SpdySendStatus StreamDelegateDoNothing::OnSendBodyComplete(
     size_t /*bytes_sent*/) {
   return NO_MORE_DATA_TO_SEND;
@@ -150,10 +151,10 @@ StreamDelegateSendImmediate::StreamDelegateSendImmediate(
 StreamDelegateSendImmediate::~StreamDelegateSendImmediate() {
 }
 
-int StreamDelegateSendImmediate::OnSendBody() {
+void StreamDelegateSendImmediate::OnSendBody() {
   ADD_FAILURE() << "OnSendBody should not be called";
-  return ERR_UNEXPECTED;
 }
+
 SpdySendStatus StreamDelegateSendImmediate::OnSendBodyComplete(
     size_t /*bytes_sent*/) {
   ADD_FAILURE() << "OnSendBodyComplete should not be called";
@@ -192,10 +193,9 @@ SpdySendStatus StreamDelegateWithBody::OnSendHeadersComplete() {
   return MORE_DATA_TO_SEND;
 }
 
-int StreamDelegateWithBody::OnSendBody() {
+void StreamDelegateWithBody::OnSendBody() {
   stream()->QueueStreamData(buf_.get(), buf_->BytesRemaining(),
                             DATA_FLAG_NONE);
-  return ERR_IO_PENDING;
 }
 
 SpdySendStatus StreamDelegateWithBody::OnSendBodyComplete(size_t bytes_sent) {

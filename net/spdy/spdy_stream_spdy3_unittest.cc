@@ -544,8 +544,8 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjustRequestResponse) {
 }
 
 // Given an unstall function, runs a test to make sure that a
-// bidrectional (i.e., non-HTTP-like) stream resumes after a stall and
-// unstall.
+// bidirectional (i.e., non-HTTP-like) stream resumes after a stall
+// and unstall.
 void SpdyStreamSpdy3Test::RunResumeAfterUnstallBidirectionalTest(
     const UnstallFunction& unstall_function) {
   GURL url(kStreamUrl);

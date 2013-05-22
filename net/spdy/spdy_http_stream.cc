@@ -8,7 +8,6 @@
 #include <list>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
@@ -281,56 +280,21 @@ void SpdyHttpStream::Cancel() {
   }
 }
 
-void SpdyHttpStream::OnStreamCreated(
-    const CompletionCallback& callback,
-    int rv) {
-  if (rv == OK) {
-    stream_ = stream_request_.ReleaseStream();
-    stream_->SetDelegate(this);
-  }
-  callback.Run(rv);
-}
-
-int SpdyHttpStream::SendData() {
-  CHECK(request_info_ && request_info_->upload_data_stream);
-  CHECK_EQ(0, request_body_buf_->BytesRemaining());
-
-  // Read the data from the request body stream.
-  const int bytes_read = request_info_->upload_data_stream->Read(
-      raw_request_body_buf_, raw_request_body_buf_->size(),
-      base::Bind(
-          base::IgnoreResult(&SpdyHttpStream::OnRequestBodyReadCompleted),
-          weak_factory_.GetWeakPtr()));
-
-  if (bytes_read == ERR_IO_PENDING)
-    return ERR_IO_PENDING;
-  // ERR_IO_PENDING is the only possible error.
-  DCHECK_GE(bytes_read, 0);
-  return OnRequestBodyReadCompleted(bytes_read);
-}
-
 SpdySendStatus SpdyHttpStream::OnSendHeadersComplete() {
   if (!callback_.is_null())
     DoCallback(OK);
   return has_upload_data_ ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND;
 }
 
-int SpdyHttpStream::OnSendBody() {
+void SpdyHttpStream::OnSendBody() {
   CHECK(request_info_ && request_info_->upload_data_stream);
-  const bool eof = request_info_->upload_data_stream->IsEOF();
   if (request_body_buf_->BytesRemaining() > 0) {
-    stream_->QueueStreamData(
-        request_body_buf_,
-        request_body_buf_->BytesRemaining(),
-        eof ? DATA_FLAG_FIN : DATA_FLAG_NONE);
-    return ERR_IO_PENDING;
+    SendRequestBodyData();
+  } else {
+    // We shouldn't be called if there's no more data to read.
+    CHECK(!request_info_->upload_data_stream->IsEOF());
+    ReadAndSendRequestBodyData();
   }
-
-  // The entire body data has been sent.
-  if (eof)
-    return OK;
-
-  return SendData();
 }
 
 SpdySendStatus SpdyHttpStream::OnSendBodyComplete(size_t bytes_sent) {
@@ -461,6 +425,52 @@ void SpdyHttpStream::OnClose(int status) {
     DoCallback(status);
 }
 
+void SpdyHttpStream::OnStreamCreated(
+    const CompletionCallback& callback,
+    int rv) {
+  if (rv == OK) {
+    stream_ = stream_request_.ReleaseStream();
+    stream_->SetDelegate(this);
+  }
+  callback.Run(rv);
+}
+
+void SpdyHttpStream::ReadAndSendRequestBodyData() {
+  CHECK(request_info_ && request_info_->upload_data_stream);
+  CHECK_EQ(0, request_body_buf_->BytesRemaining());
+
+  // Read the data from the request body stream.
+  const int rv = request_info_->upload_data_stream->Read(
+      raw_request_body_buf_, raw_request_body_buf_->size(),
+      base::Bind(
+          &SpdyHttpStream::OnRequestBodyReadCompleted,
+          weak_factory_.GetWeakPtr()));
+
+  if (rv != ERR_IO_PENDING) {
+    // ERR_IO_PENDING is the only possible error.
+    CHECK_GE(rv, 0);
+    OnRequestBodyReadCompleted(rv);
+  }
+}
+
+void SpdyHttpStream::OnRequestBodyReadCompleted(int status) {
+  CHECK_GE(status, 0);
+  request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_, status);
+  SendRequestBodyData();
+}
+
+void SpdyHttpStream::SendRequestBodyData() {
+  const bool eof = request_info_->upload_data_stream->IsEOF();
+  if (eof) {
+    CHECK_GE(request_body_buf_->BytesRemaining(), 0);
+  } else {
+    CHECK_GT(request_body_buf_->BytesRemaining(), 0);
+  }
+  stream_->QueueStreamData(request_body_buf_,
+                           request_body_buf_->BytesRemaining(),
+                           eof ? DATA_FLAG_FIN : DATA_FLAG_NONE);
+}
+
 void SpdyHttpStream::ScheduleBufferedReadCallback() {
   // If there is already a scheduled DoBufferedReadCallback, don't issue
   // another one.  Mark that we have received more data and return.
@@ -532,18 +542,6 @@ void SpdyHttpStream::DoCallback(int rv) {
   CompletionCallback c = callback_;
   callback_.Reset();
   c.Run(rv);
-}
-
-int SpdyHttpStream::OnRequestBodyReadCompleted(int status) {
-  DCHECK_GE(status, 0);
-
-  request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_, status);
-
-  const bool eof = request_info_->upload_data_stream->IsEOF();
-  stream_->QueueStreamData(request_body_buf_,
-                           request_body_buf_->BytesRemaining(),
-                           eof ? DATA_FLAG_FIN : DATA_FLAG_NONE);
-  return ERR_IO_PENDING;
 }
 
 void SpdyHttpStream::GetSSLInfo(SSLInfo* ssl_info) {

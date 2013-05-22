@@ -86,13 +86,12 @@ SpdySendStatus SpdyWebSocketStream::OnSendHeadersComplete() {
   return NO_MORE_DATA_TO_SEND;
 }
 
-int SpdyWebSocketStream::OnSendBody() {
-  NOTREACHED();
-  return ERR_UNEXPECTED;
+void SpdyWebSocketStream::OnSendBody() {
+  CHECK(false);
 }
 
 SpdySendStatus SpdyWebSocketStream::OnSendBodyComplete(size_t bytes_sent) {
-  NOTREACHED();
+  CHECK(false);
   return NO_MORE_DATA_TO_SEND;
 }
 

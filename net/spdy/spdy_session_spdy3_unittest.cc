@@ -3200,13 +3200,12 @@ class StreamClosingDelegate : public test::StreamDelegateWithBody {
     stream_to_close_ = stream_to_close;
   }
 
-  virtual int OnSendBody() OVERRIDE {
-    int rv = test::StreamDelegateWithBody::OnSendBody();
+  virtual void OnSendBody() OVERRIDE {
+    test::StreamDelegateWithBody::OnSendBody();
     if (stream_to_close_) {
       stream_to_close_->Close();
       EXPECT_EQ(NULL, stream_to_close_.get());
     }
-    return rv;
   }
 
  private:

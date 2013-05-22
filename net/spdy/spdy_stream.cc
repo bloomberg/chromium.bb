@@ -910,9 +910,8 @@ int SpdyStream::DoSendBody() {
   // data portion, of course.
   io_state_ = STATE_SEND_BODY_COMPLETE;
   CHECK(delegate_);
-  int status = delegate_->OnSendBody();
-  CHECK(status == OK || status == ERR_IO_PENDING);
-  return status;
+  delegate_->OnSendBody();
+  return ERR_IO_PENDING;
 }
 
 int SpdyStream::DoSendBodyComplete(int result) {

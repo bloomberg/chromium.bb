@@ -60,10 +60,14 @@ class NET_EXPORT_PRIVATE SpdyStream {
     // Returns true if no more data to be sent after SYN frame.
     virtual SpdySendStatus OnSendHeadersComplete() = 0;
 
-    // Called when stream is ready to send data.
-    // Returns network error code. OK when it successfully sent data.
-    // ERR_IO_PENDING when performing operation asynchronously.
-    virtual int OnSendBody() = 0;
+    // Called when the stream is ready to send body data.  The
+    // delegate must call QueueStreamData() on the stream, either
+    // immediately or asynchronously (e.g., if the data to be send has
+    // to be read asynchronously).
+    //
+    // Called only when OnSendHeadersComplete() or
+    // OnSendBodyComplete() returns MORE_DATA_TO_SEND.
+    virtual void OnSendBody() = 0;
 
     // Called when body data has been sent. |bytes_sent| is the number
     // of bytes that has been sent (may be zero). Must return whether
