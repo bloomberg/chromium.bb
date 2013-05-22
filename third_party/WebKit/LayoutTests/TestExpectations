@@ -1610,4 +1610,11 @@ crbug.com/242511 [ Mac Debug ] svg/custom/uri-reference-handling.svg [ Crash Pas
 
 crbug.com/242516 [ Linux ] inspector/elements/resolve-node-blocked.html [ Crash Pass ]
 
-
+# Started failing after content shell's reversion. :/
+crbug.com/242876 [ Linux ] editing/pasteboard/file-input-files-access.html [ Failure ]
+crbug.com/242876 [ Linux ] fast/events/drag-dataTransferItemList-file-handling.html [ Failure ]
+crbug.com/242876 [ Linux ] fast/forms/file/file-input-change-event.html [ Failure ]
+crbug.com/242876 [ Linux ] fast/forms/file/input-file-value.html [ Failure ]
+crbug.com/242876 [ Linux ] fast/forms/file/input-file-write-files.html [ Failure ]
+crbug.com/242876 [ Linux ] fast/forms/file/selected-files-from-history-state.html [ Failure ]
+crbug.com/242876 [ Linux ] http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
