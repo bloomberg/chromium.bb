@@ -53,7 +53,7 @@ class LocationBarLayout {
                      views::View* view);
 
   // Add a non-resizable decoration with standard padding.
-  void AddDecoration(int height, int builtin_padding, views::View* view);
+  void AddDecoration(int y, int height, int builtin_padding, views::View* view);
 
   void AddSeparator(int y,
                     int height,

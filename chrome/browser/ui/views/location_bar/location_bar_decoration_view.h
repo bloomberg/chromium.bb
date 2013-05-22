@@ -43,6 +43,7 @@ class LocationBarDecorationView : public views::View,
   LocationBarDecorationView(LocationBarView* parent,
                             const int background_images[],
                             const gfx::Font& font,
+                            int font_y_offset,
                             SkColor font_color);
   virtual ~LocationBarDecorationView();
 

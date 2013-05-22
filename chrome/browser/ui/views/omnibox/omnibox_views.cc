@@ -30,14 +30,19 @@ OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                Profile* profile,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
-                               LocationBarView* location_bar) {
+                               LocationBarView* location_bar,
+                               const gfx::Font& font,
+                               int font_y_offset) {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  if (!views::Textfield::IsViewsTextfieldEnabled())
-    return new OmniboxViewWin(controller, toolbar_model, location_bar,
-        command_updater, popup_window_mode, location_bar);
+  if (!views::Textfield::IsViewsTextfieldEnabled()) {
+    return new OmniboxViewWin(
+        controller, toolbar_model, location_bar, command_updater,
+        popup_window_mode, location_bar, font, font_y_offset);
+  }
 #endif
-  OmniboxViewViews* omnibox = new OmniboxViewViews(controller, toolbar_model,
-      profile, command_updater, popup_window_mode, location_bar);
+  OmniboxViewViews* omnibox = new OmniboxViewViews(
+      controller, toolbar_model, profile, command_updater, popup_window_mode,
+      location_bar, font, font_y_offset);
   omnibox->Init();
   return omnibox;
 }

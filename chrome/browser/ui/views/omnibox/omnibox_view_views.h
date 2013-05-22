@@ -46,7 +46,9 @@ class OmniboxViewViews
                    Profile* profile,
                    CommandUpdater* command_updater,
                    bool popup_window_mode,
-                   LocationBarView* location_bar);
+                   LocationBarView* location_bar,
+                   const gfx::Font& font,
+                   int font_y_offset);
   virtual ~OmniboxViewViews();
 
   // Initialize, create the underlying views, etc;

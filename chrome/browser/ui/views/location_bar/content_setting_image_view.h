@@ -24,6 +24,7 @@ class ContentSettingImageView : public LocationBarDecorationView,
                           const int background_images[],
                           LocationBarView* parent,
                           const gfx::Font& font,
+                          int font_y_offset,
                           SkColor font_color);
   virtual ~ContentSettingImageView();
 

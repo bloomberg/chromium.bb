@@ -23,12 +23,12 @@
 
 using content::WebContents;
 
+
 namespace {
 // Animation parameters.
 const int kOpenTimeMs = 150;
 const int kFullOpenedTimeMs = 3200;
 const int kMoveTimeMs = kFullOpenedTimeMs + 2 * kOpenTimeMs;
-
 
 // The fraction of the animation we'll spend animating the string into view, and
 // then again animating it closed -  total animation (slide out, show, then
@@ -36,13 +36,16 @@ const int kMoveTimeMs = kFullOpenedTimeMs + 2 * kOpenTimeMs;
 const double kAnimatingFraction = kOpenTimeMs * 1.0 / kMoveTimeMs;
 }
 
+
 ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
     const int background_images[],
     LocationBarView* parent,
     const gfx::Font& font,
+    int font_y_offset,
     SkColor font_color)
-    : LocationBarDecorationView(parent, background_images, font, font_color),
+    : LocationBarDecorationView(parent, background_images, font, font_y_offset,
+                                font_color),
       content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),

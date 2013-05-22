@@ -14,35 +14,33 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+
 SelectedKeywordView::SelectedKeywordView(const int background_images[],
                                          int contained_image,
+                                         const gfx::Font& font,
+                                         int font_y_offset,
                                          SkColor color,
                                          Profile* profile)
-    : IconLabelBubbleView(background_images, contained_image, color),
+    : IconLabelBubbleView(background_images, contained_image, font,
+                          font_y_offset, color, false),
       profile_(profile) {
+  full_label_.SetFont(font);
   full_label_.SetVisible(false);
+  partial_label_.SetFont(font);
   partial_label_.SetVisible(false);
 }
 
 SelectedKeywordView::~SelectedKeywordView() {
 }
 
-void SelectedKeywordView::SetFont(const gfx::Font& font) {
-  IconLabelBubbleView::SetFont(font);
-  full_label_.SetFont(font);
-  partial_label_.SetFont(font);
-}
-
 gfx::Size SelectedKeywordView::GetPreferredSize() {
-  gfx::Size size(GetNonLabelSize());
-  size.Enlarge(full_label_.GetPreferredSize().width(), 0);
-  return size;
+  // Height will be ignored by the LocationBarView.
+  return GetSizeForLabelWidth(full_label_.GetPreferredSize().width());
 }
 
 gfx::Size SelectedKeywordView::GetMinimumSize() {
-  gfx::Size size(GetNonLabelSize());
-  size.Enlarge(partial_label_.GetMinimumSize().width(), 0);
-  return size;
+  // Height will be ignored by the LocationBarView.
+  return GetSizeForLabelWidth(partial_label_.GetMinimumSize().width());
 }
 
 void SelectedKeywordView::Layout() {

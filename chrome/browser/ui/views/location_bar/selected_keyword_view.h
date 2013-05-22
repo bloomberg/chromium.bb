@@ -22,11 +22,11 @@ class SelectedKeywordView : public IconLabelBubbleView {
  public:
   SelectedKeywordView(const int background_images[],
                       int contained_image,
+                      const gfx::Font& font,
+                      int font_y_offset,
                       SkColor color,
                       Profile* profile);
   virtual ~SelectedKeywordView();
-
-  void SetFont(const gfx::Font& font);
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
@@ -51,7 +51,7 @@ class SelectedKeywordView : public IconLabelBubbleView {
 
   Profile* profile_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SelectedKeywordView);
+  DISALLOW_COPY_AND_ASSIGN(SelectedKeywordView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_SELECTED_KEYWORD_VIEW_H_

@@ -31,6 +31,7 @@ LocationBarDecorationView::LocationBarDecorationView(
     LocationBarView* parent,
     const int background_images[],
     const gfx::Font& font,
+    int font_y_offset,
     SkColor font_color)
     : parent_(parent),
       text_label_(NULL),
@@ -62,9 +63,8 @@ void LocationBarDecorationView::SetTooltipText(const string16& tooltip) {
 }
 
 gfx::Size LocationBarDecorationView::GetPreferredSize() {
+  // Height will be ignored by the LocationBarView.
   gfx::Size preferred_size(views::View::GetPreferredSize());
-  preferred_size.set_height(std::max(
-      preferred_size.height(), background_painter_.GetMinimumSize().height()));
   int non_label_width = preferred_size.width() -
       (text_label_ ? text_label_->GetPreferredSize().width() : 0);
   // When view is animated |visible_text_size_| > 0, it is 0 otherwise.

@@ -119,13 +119,13 @@ void LocationBarLayout::AddDecoration(int y,
       edge_item_padding, item_padding, builtin_padding, view));
 }
 
-void LocationBarLayout::AddDecoration(int height,
+void LocationBarLayout::AddDecoration(int y,
+                                      int height,
                                       int builtin_padding,
                                       views::View* view) {
   decorations_.push_back(new LocationBarDecoration(
-      NORMAL, LocationBarView::kVerticalEdgeThickness, height, 0,
-      LocationBarView::GetEdgeItemPadding(), LocationBarView::GetItemPadding(),
-      builtin_padding, view));
+      NORMAL, y, height, 0, LocationBarView::GetEdgeItemPadding(),
+      LocationBarView::GetItemPadding(), builtin_padding, view));
 }
 
 void LocationBarLayout::AddSeparator(int y,

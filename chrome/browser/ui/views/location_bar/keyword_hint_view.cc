@@ -18,33 +18,25 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 
-// Amount of space to offset the tab image from the top of the view by.
-static const int kTabImageYOffset = 1;
-
-// The tab key image.
-static const gfx::ImageSkia* kTabButtonImage = NULL;
 
 KeywordHintView::KeywordHintView(Profile* profile,
+                                 const gfx::Font& font,
+                                 int font_y_offset,
                                  const LocationBarView* location_bar_view)
-    : profile_(profile) {
-  leading_label_ = CreateLabel(location_bar_view);
-  trailing_label_ = CreateLabel(location_bar_view);
-
-  if (!kTabButtonImage) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    kTabButtonImage = rb.GetImageSkiaNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB);
-  }
+    : profile_(profile),
+      tab_image_(new views::ImageView()) {
+  leading_label_ = CreateLabel(font, font_y_offset, location_bar_view);
+  tab_image_->SetImage(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_LOCATION_BAR_KEYWORD_HINT_TAB));
+  AddChildView(tab_image_);
+  trailing_label_ = CreateLabel(font, font_y_offset, location_bar_view);
 }
 
 KeywordHintView::~KeywordHintView() {
-}
-
-void KeywordHintView::SetFont(const gfx::Font& font) {
-  leading_label_->SetFont(font);
-  trailing_label_->SetFont(font);
 }
 
 void KeywordHintView::SetKeyword(const string16& keyword) {
@@ -59,85 +51,58 @@ void KeywordHintView::SetKeyword(const string16& keyword) {
 
   std::vector<size_t> content_param_offsets;
   bool is_extension_keyword;
-  string16 short_name = url_service->GetKeywordShortName(keyword,
-                                                         &is_extension_keyword);
+  string16 short_name(
+      url_service->GetKeywordShortName(keyword, &is_extension_keyword));
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
   const string16 keyword_hint = l10n_util::GetStringFUTF16(
-      message_id,
-      string16(),
-      short_name,
-      &content_param_offsets);
-  if (content_param_offsets.size() == 2) {
-    leading_label_->SetText(
-        keyword_hint.substr(0, content_param_offsets.front()));
-    trailing_label_->SetText(
-        keyword_hint.substr(content_param_offsets.front()));
-  } else {
-    // See comments on an identical NOTREACHED() in search_provider.cc.
-    NOTREACHED();
-  }
-}
-
-void KeywordHintView::OnPaint(gfx::Canvas* canvas) {
-  int image_x = leading_label_->visible() ? leading_label_->width() : 0;
-
-  // Since we paint the button image directly on the canvas (instead of using a
-  // child view), we must mirror the button's position manually if the locale
-  // is right-to-left.
-  gfx::Rect tab_button_bounds(image_x,
-                              kTabImageYOffset,
-                              kTabButtonImage->width(),
-                              kTabButtonImage->height());
-  tab_button_bounds.set_x(GetMirroredXForRect(tab_button_bounds));
-  canvas->DrawImageInt(*kTabButtonImage,
-                       tab_button_bounds.x(),
-                       tab_button_bounds.y());
+      message_id, string16(), short_name, &content_param_offsets);
+  DCHECK_EQ(2U, content_param_offsets.size());
+  leading_label_->SetText(
+      keyword_hint.substr(0, content_param_offsets.front()));
+  trailing_label_->SetText(keyword_hint.substr(content_param_offsets.front()));
 }
 
 gfx::Size KeywordHintView::GetPreferredSize() {
-  // TODO(sky): currently height doesn't matter, once baseline support is
-  // added this should check baselines.
-  gfx::Size prefsize = leading_label_->GetPreferredSize();
-  int width = prefsize.width();
-  width += kTabButtonImage->width();
-  prefsize = trailing_label_->GetPreferredSize();
-  width += prefsize.width();
-  return gfx::Size(width, prefsize.height());
+  // Height will be ignored by the LocationBarView.
+  return gfx::Size(leading_label_->GetPreferredSize().width() +
+                       tab_image_->GetPreferredSize().width() +
+                       trailing_label_->GetPreferredSize().width(),
+                   0);
 }
 
 gfx::Size KeywordHintView::GetMinimumSize() {
-  // TODO(sky): currently height doesn't matter, once baseline support is
-  // added this should check baselines.
-  return gfx::Size(kTabButtonImage->width(), 0);
+  // Height will be ignored by the LocationBarView.
+  return tab_image_->GetPreferredSize();
 }
 
 void KeywordHintView::Layout() {
-  // TODO(sky): baseline layout.
-  bool show_labels = (width() != kTabButtonImage->width());
-
-  leading_label_->SetVisible(show_labels);
-  trailing_label_->SetVisible(show_labels);
-  int x = 0;
-  gfx::Size pref;
-
-  if (show_labels) {
-    pref = leading_label_->GetPreferredSize();
-    leading_label_->SetBounds(x, 0, pref.width(), height());
-
-    x += pref.width() + kTabButtonImage->width();
-    pref = trailing_label_->GetPreferredSize();
-    trailing_label_->SetBounds(x, 0, pref.width(), height());
-  }
+  gfx::Size tab_size(tab_image_->GetPreferredSize());
+  bool show_labels = (width() != tab_size.width());
+  gfx::Size leading_size(leading_label_->GetPreferredSize());
+  leading_label_->SetBounds(0, 0, show_labels ? leading_size.width() : 0,
+                            leading_size.height());
+  // Amount of space to offset the tab image from the top of the view by.
+  const int kTabImageYOffset = 1;
+  tab_image_->SetBounds(leading_label_->bounds().right(), kTabImageYOffset,
+                        tab_size.width(), tab_size.height());
+  gfx::Size trailing_size(trailing_label_->GetPreferredSize());
+  trailing_label_->SetBounds(tab_image_->bounds().right(), 0,
+                             show_labels ? trailing_size.width() : 0,
+                             trailing_size.height());
 }
 
 views::Label* KeywordHintView::CreateLabel(
+    const gfx::Font& font,
+    int font_y_offset,
     const LocationBarView* location_bar_view) {
   views::Label* label = new views::Label();
-  label->SetBackgroundColor(location_bar_view->GetColor(
-      ToolbarModel::NONE, LocationBarView::BACKGROUND));
+  label->set_border(views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
+  label->SetFont(font);
   label->SetEnabledColor(location_bar_view->GetColor(
       ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT));
+  label->SetBackgroundColor(location_bar_view->GetColor(
+      ToolbarModel::NONE, LocationBarView::BACKGROUND));
   AddChildView(label);
   return label;
 }

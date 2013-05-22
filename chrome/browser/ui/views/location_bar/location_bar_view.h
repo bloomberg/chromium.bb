@@ -76,7 +76,7 @@ class LocationBarView : public LocationBar,
   // The location bar view's class name.
   static const char kViewClassName[];
 
-  // DropdownBarHostDelegate
+  // DropdownBarHostDelegate:
   virtual void SetFocusAndSelection(bool select_all) OVERRIDE;
   virtual void SetAnimationOffset(int offset) OVERRIDE;
 
@@ -224,8 +224,6 @@ class LocationBarView : public LocationBar,
   // in the toolbar in full keyboard accessibility mode.
   virtual void SelectAll();
 
-  const gfx::Font& font() const { return font_; }
-
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Event Handlers
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
@@ -241,7 +239,7 @@ class LocationBarView : public LocationBar,
 
   views::View* location_entry_view() const { return location_entry_view_; }
 
-  // Overridden from OmniboxEditController:
+  // OmniboxEditController:
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     content::PageTransition transition,
@@ -256,7 +254,7 @@ class LocationBarView : public LocationBar,
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
 
-  // Overridden from views::View:
+  // views::View:
   virtual const char* GetClassName() const OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(
       const ui::KeyEvent& event) OVERRIDE;
@@ -264,7 +262,7 @@ class LocationBarView : public LocationBar,
   virtual bool HasFocus() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
-  // Overridden from views::DragController:
+  // views::DragController:
   virtual void WriteDragDataForView(View* sender,
                                     const gfx::Point& press_pt,
                                     OSExchangeData* data) OVERRIDE;
@@ -274,7 +272,7 @@ class LocationBarView : public LocationBar,
                                    const gfx::Point& press_pt,
                                    const gfx::Point& p) OVERRIDE;
 
-  // Overridden from LocationBar:
+  // LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE;
   virtual void SetInstantSuggestion(
       const InstantSuggestion& suggestion) OVERRIDE;
@@ -294,7 +292,7 @@ class LocationBarView : public LocationBar,
   virtual OmniboxView* GetLocationEntry() OVERRIDE;
   virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE;
 
-  // Overridden from LocationBarTesting:
+  // LocationBarTesting:
   virtual int PageActionCount() OVERRIDE;
   virtual int PageActionVisibleCount() OVERRIDE;
   virtual ExtensionAction* GetPageAction(size_t index) OVERRIDE;
@@ -303,10 +301,10 @@ class LocationBarView : public LocationBar,
   virtual void TestActionBoxMenuItemSelected(int command_id) OVERRIDE;
   virtual bool GetBookmarkStarVisibility() OVERRIDE;
 
-  // Overridden from TemplateURLServiceObserver
+  // TemplateURLServiceObserver:
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
-  // Overridden from content::NotificationObserver
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -326,13 +324,13 @@ class LocationBarView : public LocationBar,
   // Thickness of the left and right edges of the omnibox, in normal mode.
   static const int kNormalHorizontalEdgeThickness;
   // The same, but for popup mode.
-  static const int kPopupHorizontalEdgeThickness;
+  static const int kPopupEdgeThickness;
   // Thickness of the top and bottom edges of the omnibox.
-  static const int kVerticalEdgeThickness;
+  static const int kNormalVerticalEdgeThickness;
   // Amount of padding built into the standard omnibox icons.
   static const int kIconInternalPadding;
   // Space between the edge and a bubble.
-  static const int kBubbleHorizontalPadding;
+  static const int kBubblePadding;
 
  protected:
   virtual void OnFocus() OVERRIDE;
@@ -346,6 +344,11 @@ class LocationBarView : public LocationBar,
 
   // Returns the thickness of any visible left and right edge, in pixels.
   int GetHorizontalEdgeThickness() const;
+
+  // The same, but for the top and bottom edges.
+  int vertical_edge_thickness() const {
+    return is_popup_mode_ ? kPopupEdgeThickness : kNormalVerticalEdgeThickness;
+  }
 
   // Update the visibility state of the Content Blocked icons to reflect what is
   // actually blocked on the current page.
@@ -415,9 +418,6 @@ class LocationBarView : public LocationBar,
 
   // The transition type to use for the navigation
   content::PageTransition transition_;
-
-  // Font used by edit and some of the hints.
-  gfx::Font font_;
 
   // An object used to paint the normal-mode background.
   scoped_ptr<views::Painter> background_painter_;
@@ -500,7 +500,7 @@ class LocationBarView : public LocationBar,
   // Used to register for notifications received by NotificationObserver.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
+  DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_VIEW_H_

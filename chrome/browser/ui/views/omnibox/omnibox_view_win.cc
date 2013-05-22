@@ -465,11 +465,13 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
                                LocationBarView* parent_view,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
-                               views::View* location_bar)
+                               views::View* location_bar,
+                               const gfx::Font& font,
+                               int font_y_offset)
     : OmniboxView(parent_view->profile(), controller, toolbar_model,
-          command_updater),
-      popup_view_(OmniboxPopupContentsView::Create(
-          parent_view->font(), this, model(), location_bar)),
+                  command_updater),
+      popup_view_(
+          OmniboxPopupContentsView::Create(font, this, model(), location_bar)),
       parent_view_(parent_view),
       popup_window_mode_(popup_window_mode),
       force_hidden_(false),
@@ -479,7 +481,8 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
       can_discard_mousemove_(false),
       ignore_ime_messages_(false),
       delete_at_end_pressed_(false),
-      font_(parent_view->font()),
+      font_(font),
+      font_y_adjustment_(font_y_offset),
       possible_drag_(false),
       in_drag_(false),
       initiated_drag_(false),
@@ -503,7 +506,8 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
   Create(location_bar->GetWidget()->GetNativeView(), 0, 0, 0,
          l10n_util::GetExtendedStyles());
   SetReadOnly(popup_window_mode_);
-  SetFont(font_.GetNativeFont());
+  gfx::NativeFont native_font(font_.GetNativeFont());
+  SetFont(native_font);
 
   // IMF_DUALFONT (on by default) is supposed to use one font for ASCII text
   // and a different one for Asian text.  In some cases, ASCII characters may
@@ -526,7 +530,7 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
 
   // Get the metrics for the font.
   base::win::ScopedGetDC screen_dc(NULL);
-  base::win::ScopedSelectObject font_in_dc(screen_dc, font_.GetNativeFont());
+  base::win::ScopedSelectObject font_in_dc(screen_dc, native_font);
   TEXTMETRIC tm = {0};
   GetTextMetrics(screen_dc, &tm);
   int cap_height = font_.GetBaseline() - tm.tmInternalLeading;
@@ -536,12 +540,6 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
   const float kXHeightRatio = 0.7f;
   font_x_height_ = static_cast<int>(
       (static_cast<float>(cap_height) * kXHeightRatio) + 0.5);
-
-  // We set font_y_adjustment_ so that the ascender of the font gets
-  // centered on the available height of the view.
-  font_y_adjustment_ =
-      (parent_view->GetInternalHeight(true) - cap_height) / 2 -
-      tm.tmInternalLeading;
 
   // Get the number of twips per pixel, which we need below to offset our text
   // by the desired number of pixels.
@@ -2535,12 +2533,12 @@ void OmniboxViewWin::DrawSlashForInsecureScheme(HDC hdc,
   const SkScalar kStrokeWidthPixels = SkIntToScalar(2);
   const int kAdditionalSpaceOutsideFont =
       static_cast<int>(ceil(kStrokeWidthPixels * 1.5f));
-  const CRect scheme_rect(PosFromChar(insecure_scheme_component_.begin).x,
-                          font_top + font_.GetBaseline() - font_x_height_ -
-                              kAdditionalSpaceOutsideFont,
-                          PosFromChar(insecure_scheme_component_.end()).x,
-                          font_top + font_.GetBaseline() +
-                              kAdditionalSpaceOutsideFont);
+  const int font_ascent = font_.GetBaseline();
+  const CRect scheme_rect(
+      PosFromChar(insecure_scheme_component_.begin).x,
+      font_top + font_ascent - font_x_height_ - kAdditionalSpaceOutsideFont,
+      PosFromChar(insecure_scheme_component_.end()).x,
+      font_top + font_ascent + kAdditionalSpaceOutsideFont);
 
   // Clip to the portion we care about and translate to canvas coordinates
   // (see the canvas creation below) for use later.

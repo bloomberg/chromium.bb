@@ -9,7 +9,6 @@
 
 #include "base/string16.h"
 #include "ui/gfx/size.h"
-#include "ui/views/painter.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -21,6 +20,7 @@ class ImageSkia;
 namespace views {
 class ImageView;
 class Label;
+class Painter;
 }
 
 // View used to draw a bubble to the left of the address, containing an icon and
@@ -28,37 +28,36 @@ class Label;
 // tab-to-search UI.
 class IconLabelBubbleView : public views::View {
  public:
+  // The label will be positioned |font_y_offset| px. from the top of the view.
   IconLabelBubbleView(const int background_images[],
                       int contained_image,
-                      SkColor color);
+                      const gfx::Font& font,
+                      int font_y_offset,
+                      SkColor color,
+                      bool elide_in_middle);
   virtual ~IconLabelBubbleView();
 
-  void SetFont(const gfx::Font& font);
   void SetLabel(const string16& label);
   void SetImage(const gfx::ImageSkia& image);
   void set_is_extension_icon(bool is_extension_icon) {
     is_extension_icon_ = is_extension_icon;
   }
 
-  // Sets the label's text background color to |color|. Needed for correct
-  // sub-pixel text rendering.
-  void SetLabelBackgroundColor(SkColor color);
-
-  // views::View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+ protected:
+  // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
 
- protected:
-  void SetElideInMiddle(bool elide_in_middle);
-  gfx::Size GetNonLabelSize() const;
+  gfx::Size GetSizeForLabelWidth(int width) const;
 
  private:
+  // views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
   int GetPreLabelWidth() const;
-  int GetNonLabelWidth() const;
 
   // For painting the background.
-  views::HorizontalPainter background_painter_;
+  scoped_ptr<views::Painter> background_painter_;
 
   // The contents of the bubble.
   views::ImageView* image_;
@@ -66,7 +65,7 @@ class IconLabelBubbleView : public views::View {
 
   bool is_extension_icon_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IconLabelBubbleView);
+  DISALLOW_COPY_AND_ASSIGN(IconLabelBubbleView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ICON_LABEL_BUBBLE_VIEW_H_

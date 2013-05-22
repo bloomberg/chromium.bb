@@ -14,6 +14,10 @@ class OmniboxViewWin;
 class Profile;
 class ToolbarModel;
 
+namespace gfx {
+class Font;
+}
+
 namespace views {
 class View;
 }
@@ -32,6 +36,8 @@ OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                Profile* profile,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
-                               LocationBarView* location_bar);
+                               LocationBarView* location_bar,
+                               const gfx::Font& font,
+                               int font_y_offset);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEWS_H_

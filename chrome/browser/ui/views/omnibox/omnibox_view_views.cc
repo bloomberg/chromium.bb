@@ -118,7 +118,9 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    Profile* profile,
                                    CommandUpdater* command_updater,
                                    bool popup_window_mode,
-                                   LocationBarView* location_bar)
+                                   LocationBarView* location_bar,
+                                   const gfx::Font& font,
+                                   int font_y_offset)
     : OmniboxView(profile, controller, toolbar_model, command_updater),
       popup_window_mode_(popup_window_mode),
       security_level_(ToolbarModel::NONE),
@@ -147,9 +149,6 @@ OmniboxViewViews::~OmniboxViewViews() {
 // OmniboxViewViews public:
 
 void OmniboxViewViews::Init() {
-  // The height of the text view is going to change based on the font used.  We
-  // don't want to stretch the height, and we want it vertically centered.
-  // TODO(oshima): make sure the above happens with views.
   SetController(this);
   SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
   SetBackgroundColor(location_bar_view_->GetColor(
@@ -166,11 +165,6 @@ void OmniboxViewViews::Init() {
   popup_view_.reset(OmniboxPopupContentsView::Create(
       font(), this, model(), location_bar_view_));
 
-  // A null-border to zero out the focused border on textfield.
-  const int vertical_margin = !popup_window_mode_ ?
-      kAutocompleteVerticalMargin : kAutocompleteVerticalMarginInPopup;
-  set_border(views::Border::CreateEmptyBorder(vertical_margin, 0,
-                                              vertical_margin, 0));
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InputMethodManager::Get()->
       AddCandidateWindowObserver(this);

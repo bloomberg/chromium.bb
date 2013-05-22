@@ -4,25 +4,26 @@
 
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 
+
 EVBubbleView::EVBubbleView(const int background_images[],
                            int contained_image,
+                           const gfx::Font& font,
+                           int font_y_offset,
                            SkColor color,
                            LocationBarView* location_bar)
-    : IconLabelBubbleView(background_images, contained_image, color),
+    : IconLabelBubbleView(background_images, contained_image, font,
+                          font_y_offset, color, true),
       page_info_helper_(this, location_bar) {
-  SetElideInMiddle(true);
 }
 
 EVBubbleView::~EVBubbleView() {
 }
 
 gfx::Size EVBubbleView::GetMinimumSize() {
-
-  // Set the minimum size for elided EV bubbles to 150 px.
-  static const int kMinBubbleWidth = 150;
-
+  // Height will be ignored by the LocationBarView.
   gfx::Size minimum(GetPreferredSize());
-  minimum.set_width(std::min(kMinBubbleWidth, minimum.width()));
+  static const int kMinBubbleWidth = 150;
+  minimum.ClampToMin(gfx::Size(kMinBubbleWidth, 0));
   return minimum;
 }
 
