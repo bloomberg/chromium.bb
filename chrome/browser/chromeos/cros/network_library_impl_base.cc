@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_normalizer.h"
@@ -1202,6 +1203,9 @@ void NetworkLibraryImplBase::LoadOncNetworks(
   } else if (source == onc::ONC_SOURCE_USER_IMPORT && !removal_ids.empty()) {
     ForgetNetworksById(source, removal_ids, true);
   }
+  // Ensure NetworkStateHandler properties are up-to-date.
+  if (NetworkStateHandler::IsInitialized())
+    NetworkStateHandler::Get()->RequestUpdateForAllNetworks();
 }
 
 ////////////////////////////////////////////////////////////////////////////

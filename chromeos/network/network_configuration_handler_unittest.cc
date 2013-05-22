@@ -12,6 +12,7 @@
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_service_client.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -87,13 +88,14 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     mock_service_client_ =
         mock_dbus_thread_manager->mock_shill_service_client();
 
-    // Initialize DBusThreadManager with a stub implementation.
+    NetworkStateHandler::Initialize();
     NetworkConfigurationHandler::Initialize();
     message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
     NetworkConfigurationHandler::Shutdown();
+    NetworkStateHandler::Shutdown();
     DBusThreadManager::Shutdown();
   }
 

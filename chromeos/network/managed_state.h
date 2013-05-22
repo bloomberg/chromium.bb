@@ -57,6 +57,10 @@ class ManagedState {
   const std::string& type() const { return type_; }
   bool is_observed() const { return is_observed_; }
   void set_is_observed(bool is_observed) { is_observed_ = is_observed; }
+  bool update_requested() const { return update_requested_; }
+  void set_update_requested(bool update_requested) {
+    update_requested_ = update_requested;
+  }
 
  protected:
   ManagedState(ManagedType type, const std::string& path);
@@ -93,6 +97,9 @@ class ManagedState {
 
   // Tracks when the state is being observed.
   bool is_observed_;
+
+  // Tracks when an update has been requested.
+  bool update_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedState);
 };

@@ -294,6 +294,29 @@ void NetworkStateHandler::ConnectToBestWifiNetwork() {
                          shill_property_handler_->AsWeakPtr()));
 }
 
+bool NetworkStateHandler::RequestUpdateForNetwork(
+    const std::string& service_path) {
+  NetworkState* network = GetModifiableNetworkState(service_path);
+  if (!network)
+    return false;  // Only request an update for known networks.
+  network->set_update_requested(true);
+  NET_LOG_EVENT("RequestUpdate", service_path);
+  shill_property_handler_->RequestProperties(
+      ManagedState::MANAGED_TYPE_NETWORK, service_path);
+  return true;
+}
+
+void NetworkStateHandler::RequestUpdateForAllNetworks() {
+  NET_LOG_EVENT("RequestUpdateForAllNetworks", "");
+  for (ManagedStateList::iterator iter = network_list_.begin();
+       iter != network_list_.end(); ++iter) {
+    ManagedState* network = *iter;
+    network->set_update_requested(true);
+    shill_property_handler_->RequestProperties(
+        ManagedState::MANAGED_TYPE_NETWORK, network->path());
+  }
+}
+
 void NetworkStateHandler::SetConnectingNetwork(
     const std::string& service_path) {
   connecting_network_ = service_path;
@@ -395,7 +418,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
   managed->InitialPropertiesReceived();
   NET_LOG_DEBUG("PropertiesReceived", GetManagedStateLogName(managed));
   // Notify observers.
-  if (network_property_updated) {
+  if (network_property_updated || managed->update_requested()) {
     NetworkState* network = managed->AsNetworkState();
     DCHECK(network);
     // Signal connection state changed after all properties have been updated.
@@ -403,6 +426,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
       OnNetworkConnectionStateChanged(network);
     NetworkPropertiesUpdated(network);
   }
+  managed->set_update_requested(false);
 }
 
 void NetworkStateHandler::UpdateNetworkServiceProperty(

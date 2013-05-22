@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/network/cros_network_functions.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -1352,6 +1353,10 @@ void NetworkLibraryImplCros::SetIPParametersCallback(
 
   if (!something_changed)
     return;
+
+  // Ensure NetworkStateHandler properties are up-to-date.
+  if (NetworkStateHandler::IsInitialized())
+    NetworkStateHandler::Get()->RequestUpdateForNetwork(service_path);
 
   // Attempt to refresh its IP parameters, so that the changes to the service
   // properties can take effect.

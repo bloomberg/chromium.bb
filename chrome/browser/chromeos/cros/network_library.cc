@@ -376,6 +376,9 @@ void Network::SetValueProperty(const char* prop, const base::Value& value) {
   if (!EnsureCrosLoaded())
     return;
   CrosSetNetworkServiceProperty(service_path_, prop, value);
+  // Ensure NetworkStateHandler properties are up-to-date.
+  if (NetworkStateHandler::IsInitialized())
+    NetworkStateHandler::Get()->RequestUpdateForNetwork(service_path());
 }
 
 void Network::ClearProperty(const char* prop) {
@@ -383,6 +386,9 @@ void Network::ClearProperty(const char* prop) {
   if (!EnsureCrosLoaded())
     return;
   CrosClearNetworkServiceProperty(service_path_, prop);
+  // Ensure NetworkStateHandler properties are up-to-date.
+  if (NetworkStateHandler::IsInitialized())
+    NetworkStateHandler::Get()->RequestUpdateForNetwork(service_path());
 }
 
 void Network::SetStringProperty(

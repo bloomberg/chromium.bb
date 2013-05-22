@@ -16,6 +16,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/network_state_handler.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -96,6 +97,11 @@ void RunCreateNetworkCallback(
     const network_handler::StringResultCallback& callback,
     const dbus::ObjectPath& service_path) {
   callback.Run(service_path.value());
+  // This may also get called when CreateConfiguration is used to update an
+  // existing configuration, so request a service update just in case.
+  // TODO(pneubeck): Separate 'Create' and 'Update' calls and only trigger
+  // this on an update.
+  NetworkStateHandler::Get()->RequestUpdateForNetwork(service_path.value());
 }
 
 void IgnoreObjectPathCallback(const base::Closure& callback,
@@ -147,6 +153,7 @@ void NetworkConfigurationHandler::SetProperties(
       base::Bind(&IgnoreObjectPathCallback, callback),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
                  service_path, error_callback));
+  NetworkStateHandler::Get()->RequestUpdateForNetwork(service_path);
 }
 
 void NetworkConfigurationHandler::ClearProperties(
