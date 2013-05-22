@@ -59,7 +59,6 @@ struct rdp_output;
 
 struct rdp_compositor {
 	struct weston_compositor base;
-	struct weston_seat main_seat;
 
 	freerdp_listener *listener;
 	struct wl_event_source *listener_events[MAX_FREERDP_FDS];
@@ -498,10 +497,6 @@ rdp_restore(struct weston_compositor *ec)
 static void
 rdp_destroy(struct weston_compositor *ec)
 {
-	struct rdp_compositor *c = (struct rdp_compositor *) ec;
-
-	weston_seat_release(&c->main_seat);
-
 	ec->renderer->destroy(ec);
 	weston_compositor_shutdown(ec);
 
@@ -944,7 +939,6 @@ rdp_compositor_create(struct wl_display *display,
 				   config_fd) < 0)
 		goto err_free;
 
-	weston_seat_init(&c->main_seat, &c->base);
 	c->base.destroy = rdp_destroy;
 	c->base.restore = rdp_restore;
 	c->rdp_key = config->rdp_key ? strdup(config->rdp_key) : NULL;
@@ -1004,7 +998,6 @@ err_free_strings:
 		free(c->server_cert);
 	if(c->server_key)
 		free(c->server_key);
-	weston_seat_release(&c->main_seat);
 err_free:
 	free(c);
 	return NULL;
