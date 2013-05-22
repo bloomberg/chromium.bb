@@ -264,6 +264,13 @@ void FileCache::IterateOnUIThread(
       completion_callback);
 }
 
+void FileCache::Iterate(const CacheIterateCallback& iteration_callback) {
+  AssertOnSequencedWorkerPool();
+  DCHECK(!iteration_callback.is_null());
+
+  metadata_->Iterate(iteration_callback);
+}
+
 void FileCache::FreeDiskSpaceIfNeededForOnUIThread(
     int64 num_bytes,
     const InitializeCacheCallback& callback) {
@@ -454,6 +461,57 @@ void FileCache::RemoveOnUIThread(const std::string& resource_id,
       callback);
 }
 
+FileError FileCache::Remove(const std::string& resource_id) {
+  AssertOnSequencedWorkerPool();
+
+  // MD5 is not passed into RemoveCacheEntry because we would delete all
+  // cache files corresponding to <resource_id> regardless of the md5.
+  // So, search for entry in cache without taking md5 into account.
+  FileCacheEntry cache_entry;
+
+  // If entry doesn't exist or is dirty or mounted in cache, nothing to do.
+  const bool entry_found =
+      GetCacheEntry(resource_id, std::string(), &cache_entry);
+  if (!entry_found || cache_entry.is_dirty() || cache_entry.is_mounted()) {
+    DVLOG(1) << "Entry is "
+             << (entry_found ?
+                 (cache_entry.is_dirty() ? "dirty" : "mounted") :
+                 "non-existent")
+             << " in cache, not removing";
+    return FILE_ERROR_OK;
+  }
+
+  // Determine paths to delete all cache versions of |resource_id| in
+  // persistent, tmp and pinned directories.
+  std::vector<base::FilePath> paths_to_delete;
+
+  // For files in persistent and tmp dirs, delete files that match
+  // "<resource_id>.*".
+  paths_to_delete.push_back(GetCacheFilePath(resource_id,
+                                             util::kWildCard,
+                                             CACHE_TYPE_PERSISTENT,
+                                             CACHED_FILE_FROM_SERVER));
+  paths_to_delete.push_back(GetCacheFilePath(resource_id,
+                                             util::kWildCard,
+                                             CACHE_TYPE_TMP,
+                                             CACHED_FILE_FROM_SERVER));
+
+  // Don't delete locally modified files.
+  base::FilePath path_to_keep = GetCacheFilePath(resource_id,
+                                                 std::string(),
+                                                 CACHE_TYPE_PERSISTENT,
+                                                 CACHED_FILE_LOCALLY_MODIFIED);
+
+  for (size_t i = 0; i < paths_to_delete.size(); ++i) {
+    DeleteFilesSelectively(paths_to_delete[i], path_to_keep);
+  }
+
+  // Now that all file operations have completed, remove from metadata.
+  metadata_->RemoveCacheEntry(resource_id);
+
+  return FILE_ERROR_OK;
+}
+
 void FileCache::ClearAllOnUIThread(const InitializeCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -522,13 +580,6 @@ void FileCache::InitializeOnBlockingPoolForTesting() {
 void FileCache::DestroyOnBlockingPool() {
   AssertOnSequencedWorkerPool();
   delete this;
-}
-
-void FileCache::Iterate(const CacheIterateCallback& iteration_callback) {
-  AssertOnSequencedWorkerPool();
-  DCHECK(!iteration_callback.is_null());
-
-  metadata_->Iterate(iteration_callback);
 }
 
 bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
@@ -966,57 +1017,6 @@ FileError FileCache::ClearDirty(const std::string& resource_id,
   cache_entry.set_is_dirty(false);
   cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
   metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-  return FILE_ERROR_OK;
-}
-
-FileError FileCache::Remove(const std::string& resource_id) {
-  AssertOnSequencedWorkerPool();
-
-  // MD5 is not passed into RemoveCacheEntry because we would delete all
-  // cache files corresponding to <resource_id> regardless of the md5.
-  // So, search for entry in cache without taking md5 into account.
-  FileCacheEntry cache_entry;
-
-  // If entry doesn't exist or is dirty or mounted in cache, nothing to do.
-  const bool entry_found =
-      GetCacheEntry(resource_id, std::string(), &cache_entry);
-  if (!entry_found || cache_entry.is_dirty() || cache_entry.is_mounted()) {
-    DVLOG(1) << "Entry is "
-             << (entry_found ?
-                 (cache_entry.is_dirty() ? "dirty" : "mounted") :
-                 "non-existent")
-             << " in cache, not removing";
-    return FILE_ERROR_OK;
-  }
-
-  // Determine paths to delete all cache versions of |resource_id| in
-  // persistent, tmp and pinned directories.
-  std::vector<base::FilePath> paths_to_delete;
-
-  // For files in persistent and tmp dirs, delete files that match
-  // "<resource_id>.*".
-  paths_to_delete.push_back(GetCacheFilePath(resource_id,
-                                             util::kWildCard,
-                                             CACHE_TYPE_PERSISTENT,
-                                             CACHED_FILE_FROM_SERVER));
-  paths_to_delete.push_back(GetCacheFilePath(resource_id,
-                                             util::kWildCard,
-                                             CACHE_TYPE_TMP,
-                                             CACHED_FILE_FROM_SERVER));
-
-  // Don't delete locally modified files.
-  base::FilePath path_to_keep = GetCacheFilePath(resource_id,
-                                                 std::string(),
-                                                 CACHE_TYPE_PERSISTENT,
-                                                 CACHED_FILE_LOCALLY_MODIFIED);
-
-  for (size_t i = 0; i < paths_to_delete.size(); ++i) {
-    DeleteFilesSelectively(paths_to_delete[i], path_to_keep);
-  }
-
-  // Now that all file operations have completed, remove from metadata.
-  metadata_->RemoveCacheEntry(resource_id);
-
   return FILE_ERROR_OK;
 }
 

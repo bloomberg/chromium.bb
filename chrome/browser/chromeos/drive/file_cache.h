@@ -137,11 +137,16 @@ class FileCache {
                      const std::string& md5,
                      FileCacheEntry* entry);
 
-  // Iterates all files in the cache and calls |iteration_callback| for each
-  // file. |completion_callback| is run upon completion.
-  // Must be called on the UI thread.
+  // Runs Iterate() with |iteration_callback| on |blocking_task_runner_| and
+  // runs |completion_callback| upon completion.
+  // Must be called on UI thread.
   void IterateOnUIThread(const CacheIterateCallback& iteration_callback,
                          const base::Closure& completion_callback);
+
+  // Iterates all files in the cache and calls |iteration_callback| for each
+  // file. |completion_callback| is run upon completion.
+  // TODO(hashimoto): Stop using callbacks for this method. crbug.com/242818
+  void Iterate(const CacheIterateCallback& iteration_callback);
 
   // Frees up disk space to store the given number of bytes, while keeping
   // kMinFreeSpace bytes on the disk, if needed.
@@ -250,14 +255,15 @@ class FileCache {
                             const std::string& md5,
                             const FileOperationCallback& callback);
 
-  // Does the following:
-  // - remove all delete stale cache versions corresponding to |resource_id| in
-  //   persistent, tmp and pinned directories
-  // - remove entry corresponding to |resource_id| from cache map.
-  // |callback| must not be null.
+  // Runs Remove() on |blocking_task_runner_| and runs |callback| with the
+  // result.
   // Must be called on the UI thread.
   void RemoveOnUIThread(const std::string& resource_id,
                         const FileOperationCallback& callback);
+
+  // Removes the specified cache entry and delete cache files if available.
+  // Synchronous version of RemoveOnUIThread().
+  FileError Remove(const std::string& resource_id);
 
   // Does the following:
   // - remove all the files in the cache directory.
@@ -332,9 +338,6 @@ class FileCache {
   // Destroys the cache on the blocking pool.
   void DestroyOnBlockingPool();
 
-  // Used to implement IterateOnUIThread().
-  void Iterate(const CacheIterateCallback& iteration_callback);
-
   // Used to implement FreeDiskSpaceIfNeededForOnUIThread().
   bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
 
@@ -373,9 +376,6 @@ class FileCache {
   // Used to implement ClearDirtyOnUIThread.
   FileError ClearDirty(const std::string& resource_id,
                        const std::string& md5);
-
-  // Used to implement RemoveOnUIThread.
-  FileError Remove(const std::string& resource_id);
 
   // Used to implement ClearAllOnUIThread.
   bool ClearAll();

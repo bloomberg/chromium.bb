@@ -41,7 +41,6 @@ class JobListInterface;
 namespace internal {
 class FileCache;
 class ResourceMetadata;
-class StaleCacheFilesRemover;
 class SyncClient;
 }  // namespace internal
 
@@ -166,7 +165,6 @@ class DriveIntegrationService
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DownloadHandler> download_handler_;
   scoped_ptr<internal::SyncClient> sync_client_;
-  scoped_ptr<internal::StaleCacheFilesRemover> stale_cache_files_remover_;
   scoped_refptr<FileSystemProxy> file_system_proxy_;
   scoped_ptr<DebugInfoCollector> debug_info_collector_;
 

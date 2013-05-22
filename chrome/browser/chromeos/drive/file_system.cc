@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
+#include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -1238,6 +1239,11 @@ void FileSystem::OnFeedFromServerLoaded() {
 
 void FileSystem::OnInitialFeedLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  blocking_task_runner_->PostTask(FROM_HERE,
+                                  base::Bind(&internal::RemoveStaleCacheFiles,
+                                             cache_,
+                                             resource_metadata_));
 
   FOR_EACH_OBSERVER(FileSystemObserver,
                     observers_,

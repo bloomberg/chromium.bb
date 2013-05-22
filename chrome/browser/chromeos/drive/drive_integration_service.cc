@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/logging.h"
-#include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -148,8 +147,6 @@ DriveIntegrationService::DriveIntegrationService(
   download_handler_.reset(new DownloadHandler(file_write_helper(),
                                               file_system()));
   sync_client_.reset(new internal::SyncClient(file_system(), cache_.get()));
-  stale_cache_files_remover_.reset(
-      new internal::StaleCacheFilesRemover(file_system(), cache_.get()));
   debug_info_collector_.reset(
       new DebugInfoCollector(file_system(), cache_.get()));
 }
