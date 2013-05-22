@@ -80,8 +80,11 @@ void WorkerRuntimeAgent::run(ErrorString*)
     m_paused = false;
 }
 
-void WorkerRuntimeAgent::pauseWorkerContext(WorkerContext* context)
+void WorkerRuntimeAgent::willEvaluateWorkerScript(WorkerContext* context, int workerThreadStartMode)
 {
+    if (workerThreadStartMode != PauseWorkerContextOnStart)
+        return;
+
     m_paused = true;
     MessageQueueWaitResult result;
     do {

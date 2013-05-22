@@ -1038,15 +1038,10 @@ void didStartWorkerContextImpl(InstrumentingAgents* instrumentingAgents, WorkerC
         workerAgent->didStartWorkerContext(workerContextProxy, url);
 }
 
-void willEvaluateWorkerScript(WorkerContext* workerContext, int workerThreadStartMode)
+void willEvaluateWorkerScriptImpl(InstrumentingAgents* instrumentingAgents, WorkerContext* workerContext, int workerThreadStartMode)
 {
-    if (workerThreadStartMode != PauseWorkerContextOnStart)
-        return;
-    InstrumentingAgents* instrumentingAgents = instrumentationForWorkerContext(workerContext);
-    if (!instrumentingAgents)
-        return;
     if (WorkerRuntimeAgent* runtimeAgent = instrumentingAgents->workerRuntimeAgent())
-        runtimeAgent->pauseWorkerContext(workerContext);
+        runtimeAgent->willEvaluateWorkerScript(workerContext, workerThreadStartMode);
 }
 
 void workerContextTerminatedImpl(InstrumentingAgents* instrumentingAgents, WorkerContextProxy* proxy)

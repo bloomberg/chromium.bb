@@ -49,7 +49,7 @@ public:
     // Protocol commands.
     virtual void run(ErrorString*);
 
-    void pauseWorkerContext(WorkerContext*);
+    void willEvaluateWorkerScript(WorkerContext*, int workerThreadStartMode);
 
 private:
     WorkerRuntimeAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, WorkerContext*);

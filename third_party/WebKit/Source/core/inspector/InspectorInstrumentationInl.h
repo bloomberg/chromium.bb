@@ -135,6 +135,7 @@ InspectorInstrumentationCookie willFireAnimationFrameImpl(InstrumentingAgents*, 
 void didFireAnimationFrameImpl(const InspectorInstrumentationCookie&);
 void didDispatchDOMStorageEventImpl(InstrumentingAgents*, const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*);
 void didStartWorkerContextImpl(InstrumentingAgents*, WorkerContextProxy*, const KURL&);
+void willEvaluateWorkerScriptImpl(InstrumentingAgents*, WorkerContext*, int workerThreadStartMode);
 void workerContextTerminatedImpl(InstrumentingAgents*, WorkerContextProxy*);
 void didCreateWebSocketImpl(InstrumentingAgents*, Document*, unsigned long identifier, const KURL& requestURL, const String& protocol);
 void willSendWebSocketHandshakeRequestImpl(InstrumentingAgents*, Document*, unsigned long identifier, const WebSocketHandshakeRequest&);
@@ -831,6 +832,12 @@ inline void didStartWorkerContext(ScriptExecutionContext* context, WorkerContext
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
         didStartWorkerContextImpl(instrumentingAgents, proxy, url);
+}
+
+inline void willEvaluateWorkerScript(WorkerContext* context, int workerThreadStartMode)
+{
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForWorkerContext(context))
+        willEvaluateWorkerScriptImpl(instrumentingAgents, context, workerThreadStartMode);
 }
 
 inline void workerContextTerminated(ScriptExecutionContext* context, WorkerContextProxy* proxy)

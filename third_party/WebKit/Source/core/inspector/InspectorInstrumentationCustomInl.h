@@ -47,7 +47,6 @@ bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
 bool canvasAgentEnabled(ScriptExecutionContext*);
 bool consoleAgentEnabled(ScriptExecutionContext*);
 bool timelineAgentEnabled(ScriptExecutionContext*);
-void willEvaluateWorkerScript(WorkerContext*, int workerThreadStartMode);
 
 inline bool profilerEnabled(Page* page)
 {
