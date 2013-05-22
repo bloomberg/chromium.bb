@@ -14,6 +14,10 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#endif  // OS_CHROMEOS
+
 namespace extensions {
 
 namespace GetIsCrashReportingEnabled =
