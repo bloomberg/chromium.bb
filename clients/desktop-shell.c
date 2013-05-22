@@ -49,6 +49,7 @@ extern char **environ; /* defined by libc */
 struct desktop {
 	struct display *display;
 	struct desktop_shell *shell;
+	uint32_t interface_version;
 	struct unlock_dialog *unlock_dialog;
 	struct task unlock_task;
 	struct wl_list outputs;
@@ -57,6 +58,8 @@ struct desktop {
 	struct widget *grab_widget;
 
 	enum cursor_type grab_cursor;
+
+	int painted;
 };
 
 struct surface {
@@ -72,12 +75,14 @@ struct panel {
 	struct widget *widget;
 	struct wl_list launcher_list;
 	struct panel_clock *clock;
+	int painted;
 };
 
 struct background {
 	struct surface base;
 	struct window *window;
 	struct widget *widget;
+	int painted;
 };
 
 struct output {
@@ -175,6 +180,38 @@ show_menu(struct panel *panel, struct input *input, uint32_t time)
 			 x - 10, y - 10, menu_func, entries, 4);
 }
 
+static int
+is_desktop_painted(struct desktop *desktop)
+{
+	struct output *output;
+
+	wl_list_for_each(output, &desktop->outputs, link) {
+		if (output->panel && !output->panel->painted)
+			return 0;
+		if (output->background && !output->background->painted)
+			return 0;
+	}
+
+	return 1;
+}
+
+static void
+check_desktop_ready(struct window *window)
+{
+	struct display *display;
+	struct desktop *desktop;
+
+	display = window_get_display(window);
+	desktop = display_get_user_data(display);
+
+	if (!desktop->painted && is_desktop_painted(desktop)) {
+		desktop->painted = 1;
+
+		if (desktop->interface_version >= 2)
+			desktop_shell_desktop_ready(desktop->shell);
+	}
+}
+
 static void
 panel_launcher_activate(struct panel_launcher *widget)
 {
@@ -261,6 +298,8 @@ panel_redraw_handler(struct widget *widget, void *data)
 	cairo_destroy(cr);
 	surface = window_get_surface(panel->window);
 	cairo_surface_destroy(surface);
+	panel->painted = 1;
+	check_desktop_ready(panel->window);
 }
 
 static int
@@ -690,6 +729,9 @@ background_draw(struct widget *widget, void *data)
 		      allocation.width, allocation.height);
 	wl_surface_set_opaque_region(window_get_wl_surface(background->window), opaque);
 	wl_region_destroy(opaque);
+
+	background->painted = 1;
+	check_desktop_ready(background->window);
 }
 
 static void
@@ -1095,8 +1137,10 @@ global_handler(struct display *display, uint32_t id,
 	struct desktop *desktop = data;
 
 	if (!strcmp(interface, "desktop_shell")) {
+		desktop->interface_version = (version < 2) ? version : 2;
 		desktop->shell = display_bind(desktop->display,
-					      id, &desktop_shell_interface, 1);
+					      id, &desktop_shell_interface,
+					      desktop->interface_version);
 		desktop_shell_add_listener(desktop->shell, &listener, desktop);
 	} else if (!strcmp(interface, "wl_output")) {
 		create_output(desktop, id);

@@ -156,6 +156,7 @@ struct desktop_shell {
 		struct weston_surface *surface;
 		struct weston_surface_animation *animation;
 		enum fade_type type;
+		struct wl_event_source *startup_timer;
 	} fade;
 
 	uint32_t binding_modifier;
@@ -274,6 +275,9 @@ shell_surface_get_shell(struct shell_surface *shsurf);
 
 static void
 surface_rotate(struct shell_surface *surface, struct weston_seat *seat);
+
+static void
+shell_fade_startup(struct desktop_shell *shell);
 
 static bool
 shell_surface_is_top_fullscreen(struct shell_surface *shsurf)
@@ -2548,12 +2552,22 @@ desktop_shell_set_grab_surface(struct wl_client *client,
 	shell->grab_surface = surface_resource->data;
 }
 
+static void
+desktop_shell_desktop_ready(struct wl_client *client,
+			    struct wl_resource *resource)
+{
+	struct desktop_shell *shell = resource->data;
+
+	shell_fade_startup(shell);
+}
+
 static const struct desktop_shell_interface desktop_shell_implementation = {
 	desktop_shell_set_background,
 	desktop_shell_set_panel,
 	desktop_shell_set_lock_surface,
 	desktop_shell_unlock,
-	desktop_shell_set_grab_surface
+	desktop_shell_set_grab_surface,
+	desktop_shell_desktop_ready
 };
 
 static enum shell_surface_type
@@ -3031,11 +3045,28 @@ shell_fade_done(struct weston_surface_animation *animation, void *data)
 	}
 }
 
-static void
-shell_fade(struct desktop_shell *shell, enum fade_type type)
+static struct weston_surface *
+shell_fade_create_surface(struct desktop_shell *shell)
 {
 	struct weston_compositor *compositor = shell->compositor;
 	struct weston_surface *surface;
+
+	surface = weston_surface_create(compositor);
+	if (!surface)
+		return NULL;
+
+	weston_surface_configure(surface, 0, 0, 8192, 8192);
+	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1.0);
+	wl_list_insert(&compositor->fade_layer.surface_list,
+		       &surface->layer_link);
+	pixman_region32_init(&surface->input);
+
+	return surface;
+}
+
+static void
+shell_fade(struct desktop_shell *shell, enum fade_type type)
+{
 	float tint;
 
 	switch (type) {
@@ -3053,18 +3084,12 @@ shell_fade(struct desktop_shell *shell, enum fade_type type)
 	shell->fade.type = type;
 
 	if (shell->fade.surface == NULL) {
-		surface = weston_surface_create(compositor);
-		if (!surface)
+		shell->fade.surface = shell_fade_create_surface(shell);
+		if (!shell->fade.surface)
 			return;
 
-		weston_surface_configure(surface, 0, 0, 8192, 8192);
-		weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1.0);
-		surface->alpha = 1.0 - tint;
-		wl_list_insert(&compositor->fade_layer.surface_list,
-			       &surface->layer_link);
-		weston_surface_update_transform(surface);
-		shell->fade.surface = surface;
-		pixman_region32_init(&surface->input);
+		shell->fade.surface->alpha = 1.0 - tint;
+		weston_surface_update_transform(shell->fade.surface);
 	}
 
 	if (shell->fade.animation)
@@ -3075,6 +3100,67 @@ shell_fade(struct desktop_shell *shell, enum fade_type type)
 			weston_fade_run(shell->fade.surface,
 					1.0 - tint, tint, 30.0,
 					shell_fade_done, shell);
+}
+
+static void
+do_shell_fade_startup(void *data)
+{
+	struct desktop_shell *shell = data;
+
+	shell_fade(shell, FADE_IN);
+}
+
+static void
+shell_fade_startup(struct desktop_shell *shell)
+{
+	struct wl_event_loop *loop;
+
+	if (!shell->fade.startup_timer)
+		return;
+
+	wl_event_source_remove(shell->fade.startup_timer);
+	shell->fade.startup_timer = NULL;
+
+	loop = wl_display_get_event_loop(shell->compositor->wl_display);
+	wl_event_loop_add_idle(loop, do_shell_fade_startup, shell);
+}
+
+static int
+fade_startup_timeout(void *data)
+{
+	struct desktop_shell *shell = data;
+
+	shell_fade_startup(shell);
+	return 0;
+}
+
+static void
+shell_fade_init(struct desktop_shell *shell)
+{
+	/* Make compositor output all black, and wait for the desktop-shell
+	 * client to signal it is ready, then fade in. The timer triggers a
+	 * fade-in, in case the desktop-shell client takes too long.
+	 */
+
+	struct wl_event_loop *loop;
+
+	if (shell->fade.surface != NULL) {
+		weston_log("%s: warning: fade surface already exists\n",
+			   __func__);
+		return;
+	}
+
+	shell->fade.surface = shell_fade_create_surface(shell);
+	if (!shell->fade.surface)
+		return;
+
+	weston_surface_update_transform(shell->fade.surface);
+	weston_surface_damage(shell->fade.surface);
+
+	loop = wl_display_get_event_loop(shell->compositor->wl_display);
+	shell->fade.startup_timer =
+		wl_event_loop_add_timer(loop, fade_startup_timeout, shell);
+	wl_event_source_timer_update(shell->fade.startup_timer, 15000);
 }
 
 static void
@@ -3444,6 +3530,7 @@ desktop_shell_sigchld(struct weston_process *process, int status)
 
 	weston_log("weston-desktop-shell died, respawning...\n");
 	launch_desktop_shell_process(shell);
+	shell_fade_startup(shell);
 }
 
 static void
@@ -3497,6 +3584,10 @@ bind_desktop_shell(struct wl_client *client,
 	if (client == shell->child.client) {
 		resource->destroy = unbind_desktop_shell;
 		shell->child.desktop_shell = resource;
+
+		if (version < 2)
+			shell_fade_startup(shell);
+
 		return;
 	}
 
@@ -4391,7 +4482,7 @@ module_init(struct weston_compositor *ec,
 
 	shell_add_bindings(ec, shell);
 
-	shell_fade(shell, FADE_IN);
+	shell_fade_init(shell);
 
 	return 0;
 }
