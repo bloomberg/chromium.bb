@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "remoting/protocol/channel_authenticator.h"
+#include "remoting/protocol/pairing_client_authenticator.h"
 #include "remoting/protocol/v2_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -19,11 +20,15 @@ namespace remoting {
 namespace protocol {
 
 NegotiatingClientAuthenticator::NegotiatingClientAuthenticator(
+    const std::string& client_pairing_id,
+    const std::string& shared_secret,
     const std::string& authentication_tag,
     const FetchSecretCallback& fetch_secret_callback,
     scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher> token_fetcher,
     const std::vector<AuthenticationMethod>& methods)
     : NegotiatingAuthenticatorBase(MESSAGE_READY),
+      client_pairing_id_(client_pairing_id),
+      shared_secret_(shared_secret),
       authentication_tag_(authentication_tag),
       fetch_secret_callback_(fetch_secret_callback),
       token_fetcher_(token_fetcher.Pass()),
@@ -76,12 +81,13 @@ void NegotiatingClientAuthenticator::ProcessMessage(
 
 scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
+
   // This is the first message to the host, send a list of supported methods.
   if (!current_method_.is_valid()) {
     // If no authentication method has been chosen, see if we can optimistically
     // choose one.
     scoped_ptr<buzz::XmlElement> result;
-    current_authenticator_ = CreatePreferredAuthenticator();
+    CreatePreferredAuthenticator();
     if (current_authenticator_) {
       DCHECK(current_authenticator_->state() == MESSAGE_READY);
       result = GetNextMessageInternal();
@@ -117,16 +123,28 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
         token_fetcher_.Pass()));
     resume_callback.Run();
   } else {
+    DCHECK(current_method_.type() == AuthenticationMethod::SPAKE2 ||
+           current_method_.type() == AuthenticationMethod::SPAKE2_PAIR);
+    // TODO(jamiewalch): Add a bool parameter to the fetch secret callback to
+    // indicate whether or not to show the "remember me" checkbox. Set it to
+    // (current_method_.type() == AuthenticationMethod::SPAKE2_PAIR).
     fetch_secret_callback_.Run(base::Bind(
         &NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret,
         weak_factory_.GetWeakPtr(), preferred_initial_state, resume_callback));
   }
 }
 
-scoped_ptr<Authenticator>
-NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
-  NOTIMPLEMENTED();
-  return scoped_ptr<Authenticator>();
+void NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
+  if (!client_pairing_id_.empty() && !shared_secret_.empty() &&
+      std::find(methods_.begin(), methods_.end(),
+                AuthenticationMethod::Spake2Pair()) != methods_.end()) {
+    // If the client specified a pairing id and shared secret, then create a
+    // PairingAuthenticator.
+    current_authenticator_.reset(new PairingClientAuthenticator(
+        client_pairing_id_, shared_secret_, fetch_secret_callback_,
+        authentication_tag_));
+    current_method_ = AuthenticationMethod::Spake2Pair();
+  }
 }
 
 void NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret(

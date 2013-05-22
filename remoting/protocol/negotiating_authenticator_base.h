@@ -71,7 +71,11 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   // Calls |current_authenticator_| to process |message|, passing the supplied
   // |resume_callback|.
   void ProcessMessageInternal(const buzz::XmlElement* message,
-                                      const base::Closure& resume_callback);
+                              const base::Closure& resume_callback);
+
+  const AuthenticationMethod& current_method_for_testing() const {
+    return current_method_;
+  }
 
  protected:
   static const buzz::StaticQName kMethodAttributeQName;

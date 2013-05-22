@@ -63,12 +63,14 @@ scoped_ptr<AuthenticatorFactory>
 Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-    const SharedSecretHash& shared_secret_hash) {
+    const SharedSecretHash& shared_secret_hash,
+    scoped_refptr<PairingRegistry> pairing_registry) {
   scoped_ptr<Me2MeHostAuthenticatorFactory> result(
       new Me2MeHostAuthenticatorFactory());
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
   result->shared_secret_hash_ = shared_secret_hash;
+  result->pairing_registry_ = pairing_registry;
   return scoped_ptr<AuthenticatorFactory>(result.Pass());
 }
 
@@ -131,7 +133,7 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
 
     return NegotiatingHostAuthenticator::CreateWithSharedSecret(
         local_cert_, key_pair_, shared_secret_hash_.value,
-        shared_secret_hash_.hash_function);
+        shared_secret_hash_.hash_function, pairing_registry_);
   }
 
   return scoped_ptr<Authenticator>(new RejectingAuthenticator());

@@ -19,15 +19,14 @@
 namespace remoting {
 namespace protocol {
 
-typedef base::Callback<void(const std::string& secret)> SecretFetchedCallback;
-typedef base::Callback<void(
-    const SecretFetchedCallback& secret_fetched_callback)> FetchSecretCallback;
-
 // Client-side implementation of NegotiatingAuthenticatorBase.
 // See comments in negotiating_authenticator_base.h for a general explanation.
 class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
  public:
+  // TODO(jamiewalch): Pass ClientConfig instead of separate parameters.
   NegotiatingClientAuthenticator(
+      const std::string& client_pairing_id,
+      const std::string& shared_secret,
       const std::string& authentication_tag,
       const FetchSecretCallback& fetch_secret_callback,
       scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher> token_fetcher_,
@@ -55,9 +54,10 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
   // and to instead reply with an alternative method. See the comments
   // in negotiating_authenticator_base.h for more details.
   //
-  // Returns the preferred authenticator if possible, or NULL otherwise.
-  scoped_ptr<Authenticator> CreatePreferredAuthenticator();
-
+  // Sets |current_authenticator_| and |current_method_| iff the client
+  // has a preferred authenticator that can optimistically send an initial
+  // message.
+  void CreatePreferredAuthenticator();
 
   // Creates a V2Authenticator in state |initial_state| with the given
   // |shared_secret|, then runs |resume_callback|.
@@ -66,7 +66,11 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
       const base::Closure& resume_callback,
       const std::string& shared_secret);
 
-  // Used for both authenticators.
+  // Used for pairing authenticators
+  std::string client_pairing_id_;
+  std::string shared_secret_;
+
+  // Used for all authenticators.
   std::string authentication_tag_;
 
   // Used for shared secret authenticators.

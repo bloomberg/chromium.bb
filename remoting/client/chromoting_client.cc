@@ -55,8 +55,12 @@ void ChromotingClient::Start(
     scoped_ptr<protocol::TransportFactory> transport_factory) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  // TODO(jamiewalch): Add the plumbing required to get the client id and
+  // shared secret from the web-app.
+  std::string client_id, shared_secret;
   scoped_ptr<protocol::Authenticator> authenticator(
       new protocol::NegotiatingClientAuthenticator(
+          client_id, shared_secret,
           config_.authentication_tag, config_.fetch_secret_callback,
           user_interface_->GetTokenFetcher(config_.host_public_key),
           config_.authentication_methods));

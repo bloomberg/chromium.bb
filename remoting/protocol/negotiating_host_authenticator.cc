@@ -13,6 +13,8 @@
 #include "base/strings/string_split.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
+#include "remoting/protocol/pairing_host_authenticator.h"
+#include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/v2_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -32,11 +34,16 @@ scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithSharedSecret(
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     const std::string& shared_secret_hash,
-    AuthenticationMethod::HashFunction hash_function) {
+    AuthenticationMethod::HashFunction hash_function,
+    scoped_refptr<PairingRegistry> pairing_registry) {
   scoped_ptr<NegotiatingHostAuthenticator> result(
       new NegotiatingHostAuthenticator(local_cert, key_pair));
   result->shared_secret_hash_ = shared_secret_hash;
+  result->pairing_registry_ = pairing_registry;
   result->AddMethod(AuthenticationMethod::Spake2(hash_function));
+  if (pairing_registry) {
+    result->AddMethod(AuthenticationMethod::Spake2Pair());
+  }
   return scoped_ptr<Authenticator>(result.Pass());
 }
 
@@ -72,8 +79,9 @@ void NegotiatingHostAuthenticator::ProcessMessage(
     return;
   }
 
-  // If the client did not specify auth method or specified unknown method,
-  // then select the first known method from the supported-methods attribute.
+  // If the client did not specify a preferred auth method, or specified an
+  // unknown or unsupported method, then select the first known method from
+  // the supported-methods attribute.
   if (!method.is_valid() ||
       std::find(methods_.begin(), methods_.end(), method) == methods_.end()) {
     method = AuthenticationMethod::Invalid();
@@ -155,12 +163,25 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
     DCHECK(token_validator_);
     current_authenticator_.reset(new ThirdPartyHostAuthenticator(
         local_cert_, local_key_pair_, token_validator_.Pass()));
+  } else if (current_method_ == AuthenticationMethod::Spake2Pair() &&
+             preferred_initial_state == WAITING_MESSAGE) {
+    // If the client requested Spake2Pair and sent an initial message, attempt
+    // the paired connection protocol.
+    current_authenticator_.reset(new PairingHostAuthenticator(
+        pairing_registry_, local_cert_, local_key_pair_, shared_secret_hash_));
   } else {
+    // In all other cases, use the V2 protocol. Note that this includes the
+    // case where the protocol is Spake2Pair but the client is not yet paired.
+    // In this case, the on-the-wire protocol is plain Spake2, advertised as
+    // Spake2Pair so that the client knows that the host supports pairing and
+    // that it can therefore present the option to the user when they enter
+    // the PIN.
+    DCHECK(current_method_.type() == AuthenticationMethod::SPAKE2 ||
+           current_method_.type() == AuthenticationMethod::SPAKE2_PAIR);
     current_authenticator_ = V2Authenticator::CreateForHost(
         local_cert_, local_key_pair_, shared_secret_hash_,
         preferred_initial_state);
   }
-
   resume_callback.Run();
 }
 

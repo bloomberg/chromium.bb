@@ -19,6 +19,10 @@ namespace protocol {
 
 class ChannelAuthenticator;
 
+typedef base::Callback<void(const std::string& secret)> SecretFetchedCallback;
+typedef base::Callback<void(
+    const SecretFetchedCallback& secret_fetched_callback)> FetchSecretCallback;
+
 // Authenticator is an abstract interface for authentication protocol
 // implementations. Different implementations of this interface may be
 // used on each side of the connection depending of type of the auth

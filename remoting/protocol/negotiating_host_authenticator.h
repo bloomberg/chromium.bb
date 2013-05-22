@@ -11,10 +11,10 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/negotiating_authenticator_base.h"
+#include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/third_party_host_authenticator.h"
 
 namespace remoting {
@@ -30,11 +30,14 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   virtual ~NegotiatingHostAuthenticator();
 
   // Creates a host authenticator, using a fixed shared secret/PIN hash.
+  // If |pairing_registry| is non-NULL then the Spake2Pair method will
+  // be offered, supporting PIN-less authentication.
   static scoped_ptr<Authenticator> CreateWithSharedSecret(
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& shared_secret_hash,
-      AuthenticationMethod::HashFunction hash_function);
+      AuthenticationMethod::HashFunction hash_function,
+      scoped_refptr<PairingRegistry> pairing_registry);
 
   // Creates a host authenticator, using third party authentication.
   static scoped_ptr<Authenticator> CreateWithThirdPartyAuth(
@@ -67,6 +70,9 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
 
   // Used only for third party host authenticators.
   scoped_ptr<ThirdPartyHostAuthenticator::TokenValidator> token_validator_;
+
+  // Used only for pairing authenticators.
+  scoped_refptr<PairingRegistry> pairing_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(NegotiatingHostAuthenticator);
 };

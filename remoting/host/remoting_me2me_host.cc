@@ -67,6 +67,7 @@
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
+#include "remoting/protocol/pairing_registry.h"
 
 #if defined(OS_POSIX)
 #include <signal.h>
@@ -466,8 +467,12 @@ void HostProcess::CreateAuthenticatorFactory() {
   scoped_ptr<protocol::AuthenticatorFactory> factory;
 
   if (token_url_.is_empty() && token_validation_url_.is_empty()) {
+    // TODO(jamiewalch): Add a pairing registry here once all the code
+    // is committed.
+    scoped_refptr<remoting::protocol::PairingRegistry> pairing_registry;
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
-        local_certificate, key_pair_, host_secret_hash_);
+        local_certificate, key_pair_, host_secret_hash_, pairing_registry);
+
   } else if (token_url_.is_valid() && token_validation_url_.is_valid()) {
     scoped_ptr<protocol::ThirdPartyHostAuthenticator::TokenValidatorFactory>
         token_validator_factory(new TokenValidatorFactoryImpl(
@@ -475,6 +480,7 @@ void HostProcess::CreateAuthenticatorFactory() {
             context_->url_request_context_getter()));
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
         local_certificate, key_pair_, token_validator_factory.Pass());
+
   } else {
     // TODO(rmsousa): If the policy is bad the host should not go online. It
     // should keep running, but not connected, until the policies are fixed.

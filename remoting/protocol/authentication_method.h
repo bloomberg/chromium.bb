@@ -24,6 +24,7 @@ class AuthenticationMethod {
   enum MethodType {
     INVALID,
     SPAKE2,
+    SPAKE2_PAIR,
     THIRD_PARTY
   };
 
@@ -35,6 +36,7 @@ class AuthenticationMethod {
   // Constructors for various authentication methods.
   static AuthenticationMethod Invalid();
   static AuthenticationMethod Spake2(HashFunction hash_function);
+  static AuthenticationMethod Spake2Pair();
   static AuthenticationMethod ThirdParty();
 
   // Parses a string that defines an authentication method. Returns an

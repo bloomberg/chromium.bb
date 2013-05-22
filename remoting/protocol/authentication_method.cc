@@ -23,6 +23,11 @@ AuthenticationMethod AuthenticationMethod::Spake2(HashFunction hash_function) {
 }
 
 // static
+AuthenticationMethod AuthenticationMethod::Spake2Pair() {
+  return AuthenticationMethod(SPAKE2_PAIR, HMAC_SHA256);
+}
+
+// static
 AuthenticationMethod AuthenticationMethod::ThirdParty() {
   return AuthenticationMethod(THIRD_PARTY, NONE);
 }
@@ -30,7 +35,9 @@ AuthenticationMethod AuthenticationMethod::ThirdParty() {
 // static
 AuthenticationMethod AuthenticationMethod::FromString(
     const std::string& value) {
-  if (value == "spake2_plain") {
+  if (value == "spake2_pair") {
+    return Spake2Pair();
+  } else if (value == "spake2_plain") {
     return Spake2(NONE);
   } else if (value == "spake2_hmac") {
     return Spake2(HMAC_SHA256);
@@ -90,16 +97,25 @@ AuthenticationMethod::HashFunction AuthenticationMethod::hash_function() const {
 const std::string AuthenticationMethod::ToString() const {
   DCHECK(is_valid());
 
-  if (type_ == THIRD_PARTY)
-    return "third_party";
+  switch (type_) {
+    case INVALID:
+      NOTREACHED();
+      break;
 
-  DCHECK_EQ(type_, SPAKE2);
+    case SPAKE2_PAIR:
+      return "spake2_pair";
 
-  switch (hash_function_) {
-    case NONE:
-      return "spake2_plain";
-    case HMAC_SHA256:
-      return "spake2_hmac";
+    case SPAKE2:
+      switch (hash_function_) {
+        case NONE:
+          return "spake2_plain";
+        case HMAC_SHA256:
+          return "spake2_hmac";
+      }
+      break;
+
+    case THIRD_PARTY:
+      return "third_party";
   }
 
   return "invalid";
