@@ -1282,12 +1282,10 @@ void RenderText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset,
             RootInlineBox* root = curr->root();
             if (!firstRootBox) {
                 firstRootBox = root;
-                if (!dirtiedLines) {
-                    // The affected area was in between two runs. Go ahead and mark the root box of
-                    // the run after the affected area as dirty.
-                    firstRootBox->markDirty();
-                    dirtiedLines = true;
-                }
+                // The affected area was in between two runs. Go ahead and mark the root box of
+                // the run after the affected area as dirty.
+                firstRootBox->markDirty();
+                dirtiedLines = true;
             }
             lastRootBox = root;
         } else if (curr->end() >= offset && curr->end() <= end) {

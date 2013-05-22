@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      if (window.testRunner)
+        testRunner.dumpAsText();
+
+      var aoScriptElements = document.getElementsByTagName("script");
+      for(var i = 0; i < aoScriptElements.length; i++) {
+        aoScriptElements[i].parentNode.removeChild(aoScriptElements[i]);
+      }
+
+      function event_handler_384_readystatechange() {
+         var oSelection = window.getSelection();
+         oSelection.deleteFromDocument();
+         document.execCommand("SelectAll", false);
+      }
+      document.addEventListener("readystatechange", event_handler_384_readystatechange, false);
+
+      var event_handler_387_DOMCharacterDataModified_active = false;
+      function event_handler_387_DOMCharacterDataModified() {
+        if (event_handler_387_DOMCharacterDataModified_active) return;
+        event_handler_387_DOMCharacterDataModified_active = true;
+        var oElement = event.srcElement;
+        if (oElement.parentNode) {
+          oElement.parentNode.replaceChild((function(){
+              var aoElements = document.getElementsByTagName("*");
+              return aoElements[66 % aoElements.length].cloneNode(true);
+          })(), oElement);
+        }
+        var oSelection=window.getSelection();
+        var oSelectionElement = (function(){
+          var aoElements = document.getElementsByTagName("*");
+          if (aoElements.length) return aoElements[84 % aoElements.length];
+        })();
+        oSelection.collapse(oSelectionElement, oSelectionElement.textContent.length?34 % oSelectionElement.textContent.length:0);
+        oSelection.modify('extend', 'backward', 'sentence');
+        var oRange = oSelection.rangeCount ? oSelection.getRangeAt(15 % oSelection.rangeCount) : null;
+        if (oRange) oSelection.addRange(oRange.cloneRange());
+        oSelection.modify('extend', 'forward', 'line');
+        var oRange = oSelection.rangeCount ? oSelection.getRangeAt(41 % oSelection.rangeCount) : null;
+        if (oRange) {
+          var oDocumentFragment = oRange.extractContents();
+          if (oDocumentFragment) {
+            var oParent = (function(){
+              var aoElements = document.getElementsByTagName("*");
+               if (aoElements.length) return aoElements[21 % aoElements.length];
+            })();
+            if (oParent) {
+              oParent.appendChild(oDocumentFragment);
+            }
+          }
+        }
+        event_handler_387_DOMCharacterDataModified_active = false;
+      }
+      document.addEventListener("DOMCharacterDataModified", event_handler_387_DOMCharacterDataModified, true);
+
+    </script>
+    <style>
+      .CLASS1{display:inline;-webkit-writing-mode:vertical-rl;}
+      .CLASS5{top:inherit;-webkit-text-combine:horizontal;}
+    </style>
+  </head>
+  <body>
+    <meta>
+      <pre>
+<tt>
+<rb>
+<svg></svg>
+<button>
+<div class="CLASS1 CLASS5">
+<fieldset>
+</fieldset>
+<table>
+<caption>
+<textarea></textarea>
+<select>
+</select>
+<select>
+<optgroup>
+<option>
+</select>
+TestPassesIfItDoesNotCrash.TestPassesIfItDoesNotCrash.TestPassesIfItDoesNotCrash.
+</table>
+A
+</div>
+</button>
+</rb>
+</tt>
+      </pre>
+    </meta>
+  </body>
+</html>

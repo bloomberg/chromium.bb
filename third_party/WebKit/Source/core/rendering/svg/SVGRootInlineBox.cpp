@@ -65,6 +65,14 @@ void SVGRootInlineBox::paint(PaintInfo& paintInfo, const LayoutPoint&, LayoutUni
     }
 }
 
+void SVGRootInlineBox::markDirty(bool dirty)
+{
+    if (dirty)
+        for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
+            child->markDirty(true);
+    RootInlineBox::markDirty(dirty);
+}
+
 void SVGRootInlineBox::computePerCharacterLayoutInformation()
 {
     RenderSVGText* textRoot = toRenderSVGText(block());

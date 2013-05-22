@@ -311,7 +311,9 @@ void RenderTable::updateLogicalWidth()
 
     // We should NEVER shrink the table below the min-content logical width, or else the table can't accomodate
     // its own content which doesn't match CSS nor what authors expect.
-    ASSERT(logicalWidth() >= minPreferredLogicalWidth());
+    // FIXME: When we convert to sub-pixel layout for tables we can remove the int conversion
+    // https://code.google.com/p/chromium/issues/detail?id=241198
+    ASSERT(logicalWidth().toInt() >= minPreferredLogicalWidth().toInt());
 }
 
 // This method takes a RenderStyle's logical width, min-width, or max-width length and computes its actual value.
