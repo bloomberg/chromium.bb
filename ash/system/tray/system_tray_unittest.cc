@@ -27,6 +27,8 @@ namespace test {
 
 namespace {
 
+const int kStatusTrayOffsetFromScreenEdgeForTest = 4;
+
 SystemTray* GetSystemTray() {
   return Shell::GetPrimaryRootWindowController()->shelf()->
       status_area_widget()->system_tray();
@@ -298,14 +300,16 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   widget->SetShelfAlignment(SHELF_ALIGNMENT_BOTTOM);
   gfx::Rect window_bounds = widget->GetWindowBoundsInScreen();
   gfx::Rect tray_bounds = tray->GetBoundsInScreen();
-  EXPECT_EQ(window_bounds.bottom(), tray_bounds.bottom());
+  EXPECT_EQ(window_bounds.bottom(),
+            tray_bounds.bottom() + kStatusTrayOffsetFromScreenEdgeForTest);
   EXPECT_EQ(window_bounds.right(), tray_bounds.right());
 
   // Test in the top alignment. Top and right edges should match.
   widget->SetShelfAlignment(SHELF_ALIGNMENT_TOP);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
-  EXPECT_EQ(window_bounds.y(), tray_bounds.y());
+  EXPECT_EQ(window_bounds.y(),
+            tray_bounds.y() - kStatusTrayOffsetFromScreenEdgeForTest);
   EXPECT_EQ(window_bounds.right(), tray_bounds.right());
 
   // Test in the left alignment. Left and bottom edges should match.
@@ -313,7 +317,8 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
   EXPECT_EQ(window_bounds.bottom(), tray_bounds.bottom());
-  EXPECT_EQ(window_bounds.x(), tray_bounds.x());
+  EXPECT_EQ(window_bounds.x(),
+            tray_bounds.x() - kStatusTrayOffsetFromScreenEdgeForTest);
 
   // Test in the right alignment. Right and bottom edges should match.
   widget->SetShelfAlignment(SHELF_ALIGNMENT_LEFT);
