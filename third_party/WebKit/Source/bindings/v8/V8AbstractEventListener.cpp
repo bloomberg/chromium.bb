@@ -179,11 +179,13 @@ bool V8AbstractEventListener::shouldPreventDefault(v8::Local<v8::Value> returnVa
 
 v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ScriptExecutionContext* context, Event* event)
 {
-    if (!m_listener.isEmpty() && !m_listener->IsFunction())
-        return v8::Local<v8::Object>::New(m_listener.get());
+    v8::Isolate* isolate = toV8Context(context, world())->GetIsolate();
+    v8::Local<v8::Object> listener = m_listener.newLocal(isolate);
+    if (!m_listener.isEmpty() && !listener->IsFunction())
+        return listener;
 
     EventTarget* target = event->currentTarget();
-    v8::Handle<v8::Value> value = toV8(target, v8::Handle<v8::Object>(), toV8Context(context, world())->GetIsolate());
+    v8::Handle<v8::Value> value = toV8(target, v8::Handle<v8::Object>(), isolate);
     if (value.IsEmpty())
         return v8::Local<v8::Object>();
     return v8::Local<v8::Object>::New(v8::Handle<v8::Object>::Cast(value));

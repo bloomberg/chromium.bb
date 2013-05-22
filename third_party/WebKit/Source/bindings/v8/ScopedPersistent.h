@@ -52,14 +52,17 @@ public:
         clear();
     }
 
+    ALWAYS_INLINE v8::Local<T> newLocal(v8::Isolate* isolate) const
+    {
+        return v8::Local<T>::New(isolate, m_handle);
+    }
+
     ALWAYS_INLINE v8::Persistent<T> get() const { return m_handle; }
-    ALWAYS_INLINE v8::Persistent<T> operator->() const { return m_handle; }
 
     bool isEmpty() const { return m_handle.IsEmpty(); }
 
     void set(v8::Handle<T> handle)
     {
-        clear();
         m_handle.Reset(v8::Isolate::GetCurrent(), handle);
     }
 
@@ -68,7 +71,7 @@ public:
     {
         if (m_handle.IsEmpty())
             return;
-        m_handle.Dispose(v8::Isolate::GetCurrent());
+        m_handle.Dispose();
         m_handle.Clear();
     }
 

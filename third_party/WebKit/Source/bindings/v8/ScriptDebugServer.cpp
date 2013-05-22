@@ -98,7 +98,8 @@ public:
 
     String preprocessSourceCode(const String& sourceCode, const String& sourceName)
     {
-        v8::HandleScope scope;
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope handleScope(isolate);
 
         if (m_preprocessorFunction.isEmpty())
             return sourceCode;
@@ -113,7 +114,7 @@ public:
 
         v8::TryCatch tryCatch;
         V8RecursionScope::MicrotaskSuppression recursionScope;
-        v8::Handle<v8::Value> resultValue = m_preprocessorFunction->Call(context->Global(), 2, argv);
+        v8::Handle<v8::Value> resultValue = m_preprocessorFunction.newLocal(isolate)->Call(context->Global(), 2, argv);
 
         if (tryCatch.HasCaught())
             return sourceCode;

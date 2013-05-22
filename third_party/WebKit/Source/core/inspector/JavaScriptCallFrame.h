@@ -69,6 +69,7 @@ private:
     RefPtr<JavaScriptCallFrame> m_caller;
     ScopedPersistent<v8::Context> m_debuggerContext;
     ScopedPersistent<v8::Object> m_callFrame;
+    v8::Isolate* m_isolate;
 };
 
 } // namespace WebCore

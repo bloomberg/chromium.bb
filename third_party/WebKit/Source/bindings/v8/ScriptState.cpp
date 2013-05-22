@@ -53,6 +53,7 @@ void WeakHandleListener<ScriptState>::callback(v8::Isolate* isolate, v8::Persist
 
 ScriptState::ScriptState(v8::Handle<v8::Context> context)
     : m_context(context)
+    , m_isolate(context->GetIsolate())
 {
     WeakHandleListener<ScriptState>::makeWeak(context->GetIsolate(), m_context.get(), this);
 }

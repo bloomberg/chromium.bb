@@ -53,16 +53,19 @@ short V8NodeFilterCondition::acceptNode(ScriptState* state, Node* node) const
 {
     ASSERT(v8::Context::InContext());
 
-    if (!m_filter->IsObject())
+    v8::Isolate* isolate = state->isolate();
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Value> filter = m_filter.newLocal(isolate);
+    if (!filter->IsObject())
         return NodeFilter::FILTER_ACCEPT;
 
     v8::TryCatch exceptionCatcher;
 
     v8::Handle<v8::Function> callback;
-    if (m_filter->IsFunction())
-        callback = v8::Handle<v8::Function>::Cast(m_filter.get());
+    if (filter->IsFunction())
+        callback = v8::Handle<v8::Function>::Cast(filter);
     else {
-        v8::Local<v8::Value> value = m_filter->ToObject()->Get(v8::String::NewSymbol("acceptNode"));
+        v8::Local<v8::Value> value = filter->ToObject()->Get(v8::String::NewSymbol("acceptNode"));
         if (!value->IsFunction()) {
             throwTypeError("NodeFilter object does not have an acceptNode function", state->isolate());
             return NodeFilter::FILTER_REJECT;

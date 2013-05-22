@@ -71,14 +71,15 @@ int RegularExpression::match(const String& string, int startFrom, int* matchLeng
     if (string.length() > INT_MAX)
          return -1;
 
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context = V8PerIsolateData::current()->ensureRegexContext();
     v8::Context::Scope scope(context);
     v8::TryCatch tryCatch;
 
     V8RecursionScope::MicrotaskSuppression microtaskScope;
 
-    v8::Local<v8::Function> exec = m_regex->Get(v8::String::NewSymbol("exec")).As<v8::Function>();
+    v8::Local<v8::Function> exec = m_regex.newLocal(isolate)->Get(v8::String::NewSymbol("exec")).As<v8::Function>();
 
     v8::Handle<v8::Value> argv[] = { v8String(string.substringSharingImpl(startFrom), context->GetIsolate()) };
     v8::Local<v8::Value> returnValue = exec->Call(m_regex.get(), 1, argv);

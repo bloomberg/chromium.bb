@@ -122,7 +122,7 @@ void ScheduledAction::execute(WorkerContext* worker)
 
         Vector<v8::Handle<v8::Value> > args;
         createLocalHandlesForArgs(&args);
-        m_function->Call(context->Global(), args.size(), args.data());
+        m_function.newLocal(m_isolate)->Call(context->Global(), args.size(), args.data());
     } else
         worker->script()->evaluate(m_code);
 }
