@@ -211,36 +211,73 @@ rdp_peer_refresh_nsc(pixman_region32_t *damage, pixman_image_t *image, freerdp_p
 }
 
 static void
+pixman_image_flipped_subrect(const pixman_box32_t *rect, pixman_image_t *img, BYTE *dest) {
+	int stride = pixman_image_get_stride(img);
+	int h;
+	int toCopy = (rect->x2 - rect->x1) * 4;
+	int height = (rect->y2 - rect->y1);
+	const BYTE *src = (const BYTE *)pixman_image_get_data(img);
+	src += ((rect->y2-1) * stride) + (rect->x1 * 4);
+
+	for (h = 0; h < height; h++, src -= stride, dest += toCopy)
+		   memcpy(dest, src, toCopy);
+}
+
+static void
 rdp_peer_refresh_raw(pixman_region32_t *region, pixman_image_t *image, freerdp_peer *peer)
 {
-	pixman_image_t *tile;
 	rdpUpdate *update = peer->update;
 	SURFACE_BITS_COMMAND *cmd = &update->surface_bits_command;
-	pixman_box32_t *extends = pixman_region32_extents(region);
+	SURFACE_FRAME_MARKER *marker = &update->surface_frame_marker;
+	pixman_box32_t *rect, subrect;
+	int nrects, i;
+	int heightIncrement, remainingHeight, top;
+
+	rect = pixman_region32_rectangles(region, &nrects);
+	if (!nrects)
+		return;
+
+	marker->frameId++;
+	marker->frameAction = SURFACECMD_FRAMEACTION_BEGIN;
+	update->SurfaceFrameMarker(peer->context, marker);
 
 	cmd->bpp = 32;
 	cmd->codecID = 0;
-	cmd->width = (extends->x2 - extends->x1);
-	cmd->height = (extends->y2 - extends->y1);;
-	cmd->bitmapDataLength = cmd->width * cmd->height * 4;
-	tile = pixman_image_create_bits(PIXMAN_x8r8g8b8, cmd->width, cmd->height, 0, cmd->width * 4);
-	pixman_image_composite32(PIXMAN_OP_SRC,	image, NULL, /* op, src, mask */
-		tile, extends->x1, extends->y1, /* dest, src_x, src_y */
-		0, 0, /* mask_x, mask_y */
-		0, 0, /* dest_x, dest_y */
-		cmd->width, cmd->height /* width, height */
-	);
-	freerdp_image_flip((BYTE *)pixman_image_get_data(tile),
-			(BYTE *)pixman_image_get_data(tile),
-			cmd->width, cmd->height, cmd->bpp
-	);
-	cmd->bitmapData = (BYTE *)pixman_image_get_data(tile);
-	cmd->destLeft = extends->x1;
-	cmd->destTop = extends->y1;
-	cmd->destRight = extends->x2;
-	cmd->destBottom = extends->y2;
-	update->SurfaceBits(peer->context, cmd);
-	pixman_image_unref(tile);
+
+	for (i = 0; i < nrects; i++, rect++) {
+		/*weston_log("rect(%d,%d, %d,%d)\n", rect->x1, rect->y1, rect->x2, rect->y2);*/
+		cmd->destLeft = rect->x1;
+		cmd->destRight = rect->x2;
+		cmd->width = rect->x2 - rect->x1;
+
+		heightIncrement = peer->settings->MultifragMaxRequestSize / (16 + cmd->width * 4);
+		remainingHeight = rect->y2 - rect->y1;
+		top = rect->y1;
+
+		subrect.x1 = rect->x1;
+		subrect.x2 = rect->x2;
+
+		while (remainingHeight) {
+			   cmd->height = (remainingHeight > heightIncrement) ? heightIncrement : remainingHeight;
+			   cmd->destTop = top;
+			   cmd->destBottom = top + cmd->height;
+			   cmd->bitmapDataLength = cmd->width * cmd->height * 4;
+			   cmd->bitmapData = (BYTE *)realloc(cmd->bitmapData, cmd->bitmapDataLength);
+
+			   subrect.y1 = top;
+			   subrect.y2 = top + cmd->height;
+			   pixman_image_flipped_subrect(&subrect, image, cmd->bitmapData);
+
+			   /*weston_log("*  sending (%d,%d, %d,%d)\n", subrect.x1, subrect.y1, subrect.x2, subrect.y2); */
+			   update->SurfaceBits(peer->context, cmd);
+
+			   remainingHeight -= cmd->height;
+			   top += cmd->height;
+		}
+	}
+
+	marker->frameAction = SURFACECMD_FRAMEACTION_END;
+	update->SurfaceFrameMarker(peer->context, marker);
 }
 
 static void
@@ -249,20 +286,13 @@ rdp_peer_refresh_region(pixman_region32_t *region, freerdp_peer *peer)
 	RdpPeerContext *context = (RdpPeerContext *)peer->context;
 	struct rdp_output *output = context->rdpCompositor->output;
 	rdpSettings *settings = peer->settings;
-	pixman_box32_t *extents = pixman_region32_extents(region);
 
-	int regionSz = (extents->x2 - extents->x1) * (extents->y2 - extents->y1);
-
-	if(regionSz > 64 * 64) {
-		if(settings->RemoteFxCodec)
-			rdp_peer_refresh_rfx(region, output->shadow_surface, peer);
-		else if(settings->NSCodec)
-			rdp_peer_refresh_nsc(region, output->shadow_surface, peer);
-		else
-			rdp_peer_refresh_raw(region, output->shadow_surface, peer);
-	} else {
+	if (settings->RemoteFxCodec)
+		rdp_peer_refresh_rfx(region, output->shadow_surface, peer);
+	else if (settings->NSCodec)
+		rdp_peer_refresh_nsc(region, output->shadow_surface, peer);
+	else
 		rdp_peer_refresh_raw(region, output->shadow_surface, peer);
-	}
 }
 
 static void
