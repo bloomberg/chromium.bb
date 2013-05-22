@@ -847,8 +847,14 @@ void Window::StackChildRelativeTo(Window* child,
   // for an explanation of this.
   size_t final_target_i = target_i;
   while (final_target_i > 0 &&
-         children_[final_target_i]->layer()->delegate() == NULL)
+         children_[final_target_i]->layer()->delegate() == NULL) {
     --final_target_i;
+  }
+
+  // Allow stacking immediately below a window with a NULL layer.
+  if (direction == STACK_BELOW && target_i != final_target_i)
+    direction = STACK_ABOVE;
+
   Window* final_target = children_[final_target_i];
 
   // If we couldn't find a valid target position, don't move anything.

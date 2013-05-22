@@ -85,6 +85,8 @@
       'sources': [
         'test/compositor_test_support.cc',
         'test/compositor_test_support.h',
+        'test/test_layers.cc',
+        'test/test_layers.h',
       ],
       'conditions': [
         ['os_posix == 1 and OS != "mac"', {

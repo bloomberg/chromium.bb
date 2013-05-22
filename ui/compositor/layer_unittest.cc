@@ -22,6 +22,7 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/test/test_compositor_host.h"
+#include "ui/compositor/test/test_layers.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/gfx_paths.h"
@@ -32,20 +33,6 @@ using cc::MatchesPNGFile;
 namespace ui {
 
 namespace {
-
-// Returns a comma-separated list of the names of |layer|'s children in
-// bottom-to-top stacking order.
-std::string GetLayerChildrenNames(const Layer& layer) {
-  std::string names;
-  for (std::vector<Layer*>::const_iterator it = layer.children().begin();
-       it != layer.children().end(); ++it) {
-    if (!names.empty())
-      names += ",";
-    names += (*it)->name();
-  }
-  return names;
-}
-
 
 // There are three test classes in here that configure the Compositor and
 // Layer's slightly differently:
@@ -694,49 +681,49 @@ TEST_F(LayerWithNullDelegateTest, Stacking) {
   root->Add(l1.get());
 
   // Layers' children are stored in bottom-to-top order.
-  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("3 2 1", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackAtTop(l3.get());
-  EXPECT_EQ("2,1,3", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("2 1 3", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackAtTop(l1.get());
-  EXPECT_EQ("2,3,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("2 3 1", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackAtTop(l1.get());
-  EXPECT_EQ("2,3,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("2 3 1", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackAbove(l2.get(), l3.get());
-  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("3 2 1", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackAbove(l1.get(), l3.get());
-  EXPECT_EQ("3,1,2", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("3 1 2", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackAbove(l2.get(), l1.get());
-  EXPECT_EQ("3,1,2", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("3 1 2", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackAtBottom(l2.get());
-  EXPECT_EQ("2,3,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("2 3 1", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackAtBottom(l3.get());
-  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("3 2 1", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackAtBottom(l3.get());
-  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("3 2 1", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackBelow(l2.get(), l3.get());
-  EXPECT_EQ("2,3,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("2 3 1", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackBelow(l1.get(), l3.get());
-  EXPECT_EQ("2,1,3", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("2 1 3", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackBelow(l3.get(), l2.get());
-  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("3 2 1", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackBelow(l3.get(), l2.get());
-  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("3 2 1", test::ChildLayerNamesAsString(*root.get()));
 
   root->StackBelow(l3.get(), l1.get());
-  EXPECT_EQ("2,3,1", GetLayerChildrenNames(*root.get()));
+  EXPECT_EQ("2 3 1", test::ChildLayerNamesAsString(*root.get()));
 }
 
 // Verifies SetBounds triggers the appropriate painting/drawing.
