@@ -89,6 +89,7 @@ void WebRtcAudioDeviceImpl::CaptureData(const int16* audio_data,
     // Store the reported audio delay locally.
     input_delay_ms_ = audio_delay_milliseconds;
     output_delay_ms = output_delay_ms_;
+    DVLOG(2) << "total delay: " << input_delay_ms_ + output_delay_ms_;
 
     // Map internal volume range of [0.0, 1.0] into [0, 255] used by the
     // webrtc::VoiceEngine.

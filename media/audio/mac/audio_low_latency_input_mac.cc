@@ -503,7 +503,10 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
 
   // Deliver recorded data to the client as soon as the FIFO contains a
   // sufficient amount.
-  while (fifo_->forward_bytes() >= requested_size_bytes_) {
+  if (fifo_->forward_bytes() >= requested_size_bytes_) {
+    // Account for the extra delay added by the FIFO.
+    capture_delay_bytes += fifo_->forward_bytes();
+
     // Read from FIFO into temporary data buffer.
     fifo_->Read(data_->GetWritableData(), requested_size_bytes_);
 
