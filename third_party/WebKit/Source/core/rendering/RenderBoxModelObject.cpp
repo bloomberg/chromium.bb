@@ -40,6 +40,8 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderNamedFlowThread.h"
+#include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderView.h"
 #include <wtf/CurrentTime.h>
 
@@ -293,25 +295,30 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
     if (const RenderBoxModelObject* offsetParent = element->renderBoxModelObject()) {
         if (offsetParent->isBox() && !offsetParent->isBody())
             referencePoint.move(-toRenderBox(offsetParent)->borderLeft(), -toRenderBox(offsetParent)->borderTop());
-        if (!isOutOfFlowPositioned()) {
+        if (!isOutOfFlowPositioned() || flowThreadContainingBlock()) {
             if (isRelPositioned())
                 referencePoint.move(relativePositionOffset());
             else if (isStickyPositioned())
                 referencePoint.move(stickyPositionOffset());
 
-            // FIXME: The offset position for elements inside named flow threads is not correctly computed when the offsetParent is body.
-            // See https://code.google.com/p/chromium/issues/detail?id=242168
-
             // CSS regions specification says that region flows should return the body element as their offsetParent.
             // Since we will bypass the body’s renderer anyway, just end the loop if we encounter a region flow (named flow thread).
             // See http://dev.w3.org/csswg/css-regions/#cssomview-offset-attributes
-            for (const RenderObject* current = parent(); current != offsetParent && !current->isRenderNamedFlowThread() && current->parent(); current = current->parent()) {
+            RenderObject* current;
+            for (current = parent(); current != offsetParent && !current->isRenderNamedFlowThread() && current->parent(); current = current->parent()) {
                 // FIXME: What are we supposed to do inside SVG content?
-                if (current->isBox() && !current->isTableRow())
-                    referencePoint.moveBy(toRenderBox(current)->topLeftLocation());
-                referencePoint.move(current->parent()->offsetForColumns(referencePoint));
+                if (!isOutOfFlowPositioned()) {
+                    if (current->isBox() && !current->isTableRow())
+                        referencePoint.moveBy(toRenderBox(current)->topLeftLocation());
+                    referencePoint.move(current->parent()->offsetForColumns(referencePoint));
+                }
             }
-            if (offsetParent->isBox() && offsetParent->isBody() && !offsetParent->isPositioned())
+
+            // Compute the offset position for elements inside named flow threads for which the offsetParent was the body.
+            // See https://code.google.com/p/chromium/issues/detail?id=242168
+            if (current->isRenderNamedFlowThread())
+                referencePoint = toRenderNamedFlowThread(current)->adjustedPositionRelativeToOffsetParent(*this, referencePoint);
+            else if (offsetParent->isBox() && offsetParent->isBody() && !offsetParent->isPositioned())
                 referencePoint.moveBy(toRenderBox(offsetParent)->topLeftLocation());
         }
     }

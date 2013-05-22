@@ -98,6 +98,8 @@ public:
 
     void repaintRectangleInRegions(const LayoutRect&) const;
 
+    LayoutPoint adjustedPositionRelativeToOffsetParent(const RenderBoxModelObject&, const LayoutPoint&);
+
     LayoutUnit pageLogicalTopForOffset(LayoutUnit);
     LayoutUnit pageLogicalWidthForOffset(LayoutUnit);
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit);
