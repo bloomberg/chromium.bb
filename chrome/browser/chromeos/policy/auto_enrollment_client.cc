@@ -292,6 +292,11 @@ void AutoEnrollmentClient::OnRequestCompletion(
   } else {
     // Server should have sent down a list of hashes to try.
     should_auto_enroll_ = IsSerialInProtobuf(enrollment_response.hash());
+    // Cache the current decision in local_state, so that it is reused in case
+    // the device reboots before enrolling.
+    local_state_->SetBoolean(prefs::kShouldAutoEnroll, should_auto_enroll_);
+    local_state_->SetInteger(prefs::kAutoEnrollmentPowerLimit, power_limit_);
+    local_state_->CommitPendingWrite();
     LOG(INFO) << "Auto enrollment complete, should_auto_enroll = "
               << should_auto_enroll_;
   }
@@ -323,12 +328,6 @@ void AutoEnrollmentClient::OnProtocolDone() {
     base::TimeDelta delta = now - time_start_;
     UMA_HISTOGRAM_CUSTOM_TIMES(kUMAProtocolTime, delta, kMin, kMax, kBuckets);
     time_start_ = base::Time();
-
-    // The decision is cached only if the protocol was actually started, which
-    // is the case only if |time_start_| was not null.
-    local_state_->SetBoolean(prefs::kShouldAutoEnroll, should_auto_enroll_);
-    local_state_->SetInteger(prefs::kAutoEnrollmentPowerLimit, power_limit_);
-    local_state_->CommitPendingWrite();
   }
   base::TimeDelta delta = kZero;
   if (!time_extra_start_.is_null()) {

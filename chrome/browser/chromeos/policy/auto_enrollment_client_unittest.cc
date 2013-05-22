@@ -99,6 +99,10 @@ class AutoEnrollmentClientTest : public testing::Test {
         .WillOnce(service_->SucceedJob(response));
   }
 
+  bool HasCachedDecision() {
+    return local_state_->GetUserPref(prefs::kShouldAutoEnroll);
+  }
+
   void VerifyCachedResult(bool should_enroll, int power_limit) {
     base::FundamentalValue value_should_enroll(should_enroll);
     base::FundamentalValue value_power_limit(power_limit);
@@ -130,7 +134,7 @@ TEST_F(AutoEnrollmentClientTest, NetworkFailure) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
+  EXPECT_FALSE(HasCachedDecision());
 }
 
 TEST_F(AutoEnrollmentClientTest, EmptyReply) {
@@ -161,7 +165,7 @@ TEST_F(AutoEnrollmentClientTest, AskForMoreThenFail) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
+  EXPECT_FALSE(HasCachedDecision());
 }
 
 TEST_F(AutoEnrollmentClientTest, AskForMoreThenEvenMore) {
@@ -171,7 +175,7 @@ TEST_F(AutoEnrollmentClientTest, AskForMoreThenEvenMore) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
+  EXPECT_FALSE(HasCachedDecision());
 }
 
 TEST_F(AutoEnrollmentClientTest, AskForLess) {
@@ -201,7 +205,7 @@ TEST_F(AutoEnrollmentClientTest, AskForSameTwice) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
+  EXPECT_FALSE(HasCachedDecision());
 }
 
 TEST_F(AutoEnrollmentClientTest, AskForTooMuch) {
@@ -209,7 +213,7 @@ TEST_F(AutoEnrollmentClientTest, AskForTooMuch) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
+  EXPECT_FALSE(HasCachedDecision());
 }
 
 TEST_F(AutoEnrollmentClientTest, AskNonPowerOf2) {
@@ -247,8 +251,7 @@ TEST_F(AutoEnrollmentClientTest, NoSerial) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  EXPECT_FALSE(local_state_->GetUserPref(prefs::kShouldAutoEnroll));
-  EXPECT_FALSE(local_state_->GetUserPref(prefs::kAutoEnrollmentPowerLimit));
+  EXPECT_FALSE(HasCachedDecision());
 }
 
 TEST_F(AutoEnrollmentClientTest, NoBitsUploaded) {
