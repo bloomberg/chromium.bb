@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/shell_util.h"
@@ -141,6 +142,8 @@ class ProfileShortcutManagerTest : public testing::Test {
     EXPECT_TRUE(file_util::PathExists(icon_path)) << location.ToString();
 
     base::win::ShortcutProperties expected_properties;
+    expected_properties.set_app_id(
+        ShellIntegration::GetChromiumModelIdForProfile(profile_path));
     expected_properties.set_target(GetExePath());
     expected_properties.set_description(GetDistribution()->GetAppDescription());
     expected_properties.set_dual_mode(false);

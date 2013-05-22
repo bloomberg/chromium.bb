@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
@@ -366,6 +367,9 @@ void CreateOrUpdateDesktopShortcutsForProfile(
     // |ShellUtil::CreateOrUpdateShortcut| updates that part of the shortcut.
     properties.set_arguments(string16());
   }
+
+  properties.set_app_id(
+      ShellIntegration::GetChromiumModelIdForProfile(profile_path));
 
   ShellUtil::ShortcutOperation operation =
       ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING;
