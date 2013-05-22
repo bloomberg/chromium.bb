@@ -7,12 +7,17 @@
 #include <algorithm>
 
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/extensions/api/metrics_private.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 
 namespace extensions {
 
+namespace GetIsCrashReportingEnabled =
+    api::metrics_private::GetIsCrashReportingEnabled;
 namespace RecordUserAction = api::metrics_private::RecordUserAction;
 namespace RecordValue = api::metrics_private::RecordValue;
 namespace RecordPercentage = api::metrics_private::RecordPercentage;
@@ -29,6 +34,33 @@ const size_t kMaxBuckets = 10000; // We don't ever want more than these many
                                   // buckets; there is no real need for them
                                   // and would cause crazy memory usage
 } // namespace
+
+// Returns true if the user opted in to sending crash reports.
+// TODO(vadimt): Unify with CrashesUI::CrashReportingUIEnabled
+static bool IsCrashReportingEnabled() {
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
+  bool reporting_enabled = false;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &reporting_enabled);
+  return reporting_enabled;
+#elif defined(OS_ANDROID)
+  // Android has its own settings for metrics / crash uploading.
+  PrefService* prefs = g_browser_process->local_state();
+  return prefs->GetBoolean(prefs::kCrashReportingEnabled);
+#else
+  PrefService* prefs = g_browser_process->local_state();
+  return prefs->GetBoolean(prefs::kMetricsReportingEnabled);
+#endif
+#else
+  return false;
+#endif
+}
+
+bool MetricsPrivateGetIsCrashReportingEnabledFunction::RunImpl() {
+  SetResult(new base::FundamentalValue(IsCrashReportingEnabled()));
+  return true;
+}
 
 bool MetricsPrivateRecordUserActionFunction::RunImpl() {
   scoped_ptr<RecordUserAction::Params> params(

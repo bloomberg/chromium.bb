@@ -26,6 +26,21 @@
     ],
     "functions": [
       {
+        "name": "getIsCrashReportingEnabled",
+        "description": "Returns true if the user opted in to sending crash reports.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              { "name": "is_enabled", "type": "boolean" }
+            ]
+          }
+        ]
+      },
+      {
         "name": "recordUserAction",
         "type": "function",
         "description": "Records an action performed by the user.",

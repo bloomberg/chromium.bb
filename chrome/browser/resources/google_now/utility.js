@@ -10,6 +10,14 @@
  * @fileoverview Utility objects and functions for Google Now extension.
  */
 
+// TODO(vadimt): Figure out the server name. Use it in the manifest and for
+// NOTIFICATION_CARDS_URL. Meanwhile, to use the feature, you need to manually
+// set the server name via local storage.
+/**
+ * Notification server URL.
+ */
+var NOTIFICATION_CARDS_URL = localStorage['server_url'];
+
 /**
  * Checks for internal errors.
  * @param {boolean} condition Condition that must be true.
@@ -19,6 +27,21 @@
 function verify(condition, message) {
   if (!condition)
     throw new Error('ASSERT: ' + message);
+}
+
+/**
+ * Builds a request to the notification server.
+ * @param {string} handlerName Server handler to send the request to.
+ * @return {XMLHttpRequest} Server request.
+ */
+function buildServerRequest(handlerName) {
+  var request = new XMLHttpRequest();
+
+  request.responseType = 'text';
+  request.open('POST', NOTIFICATION_CARDS_URL + '/' + handlerName, true);
+  request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+  return request;
 }
 
 /**
@@ -136,8 +159,21 @@ function buildTaskManager(areConflicting) {
     stepName = step;
   }
 
-  // Limiting 1 alert per background page load.
-  var alertShown = false;
+  // Limiting 1 error report per background page load.
+  var errorReported = false;
+
+  /**
+   * Sends an error report to the server.
+   * @param {Error} error Error to report.
+   */
+  function sendErrorReport(error) {
+    var requestParameters = 'stack=' + escape(error.stack);
+    var request = buildServerRequest('exception');
+    request.onloadend = function(event) {
+      console.log('sendErrorReport status: ' + request.status);
+    };
+    request.send(requestParameters);
+  }
 
   /**
    * Adds error processing to an API callback.
@@ -152,8 +188,12 @@ function buildTaskManager(areConflicting) {
       } catch (error) {
         var message = 'Uncaught exception:\n' + error.stack;
         console.error(message);
-        if (!alertShown) {
-          alertShown = true;
+        if (!errorReported) {
+          errorReported = true;
+          chrome.metricsPrivate.getIsCrashReportingEnabled(function(isEnabled) {
+            if (isEnabled)
+              sendErrorReport(error);
+          });
           alert(message);
         }
       }

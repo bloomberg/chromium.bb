@@ -27,14 +27,6 @@
 // ones from verify()), unfinished and infinite tasks, chrome.* API errors and
 // malformed server responses.
 
-// TODO(vadimt): Figure out the server name. Use it in the manifest and for
-// NOTIFICATION_CARDS_URL. Meanwhile, to use the feature, you need to manually
-// set the server name via local storage.
-/**
- * URL to retrieve notification cards.
- */
-var NOTIFICATION_CARDS_URL = localStorage['server_url'];
-
 /**
  * Standard response code for successful HTTP requests. This is the only success
  * code the server will send.
@@ -336,9 +328,8 @@ function requestNotificationCards(position, callback) {
       ',' + position.coords.accuracy;
 
   // TODO(vadimt): Figure out how to send user's identity to the server.
-  var request = new XMLHttpRequest();
+  var request = buildServerRequest('notifications');
 
-  request.responseType = 'text';
   request.onloadend = tasks.wrapCallback(function(event) {
     console.log('requestNotificationCards-onloadend ' + request.status);
     if (request.status == HTTP_OK) {
@@ -349,11 +340,6 @@ function requestNotificationCards(position, callback) {
     }
   });
 
-  request.open(
-      'POST',
-      NOTIFICATION_CARDS_URL + '/notifications',
-      true);
-  request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   tasks.debugSetStepName('requestNotificationCards-send-request');
   request.send(requestParameters);
 }
@@ -407,8 +393,7 @@ function requestCardDismissal(
   // Send a dismiss request to the server.
   var requestParameters = 'id=' + notificationId +
                           '&dismissalAge=' + (Date.now() - dismissalTimeMs);
-  var request = new XMLHttpRequest();
-  request.responseType = 'text';
+  var request = buildServerRequest('dismiss');
   request.onloadend = tasks.wrapCallback(function(event) {
     console.log('requestDismissingCard-onloadend ' + request.status);
     if (request.status == HTTP_OK)
@@ -417,11 +402,6 @@ function requestCardDismissal(
     callbackBoolean(request.status == HTTP_OK);
   });
 
-  request.open(
-      'POST',
-      NOTIFICATION_CARDS_URL + '/dismiss',
-      true);
-  request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   tasks.debugSetStepName('requestCardDismissal-send-request');
   request.send(requestParameters);
 }

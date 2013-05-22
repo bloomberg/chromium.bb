@@ -12,6 +12,19 @@
 
 namespace extensions {
 
+class MetricsPrivateGetIsCrashReportingEnabledFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.getIsCrashReportingEnabled",
+                             METRICSPRIVATE_GETISCRASHRECORDINGENABLED)
+
+ protected:
+  virtual ~MetricsPrivateGetIsCrashReportingEnabledFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class MetricsPrivateRecordUserActionFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordUserAction",
