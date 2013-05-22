@@ -225,6 +225,7 @@ def IsStdinInput(f):
 def HandleDashX(arg):
   if arg == 'none':
     SetForcedFileType(None)
+    return
   SetForcedFileType(GCCTypeToFileType(arg))
 
 CustomPatterns = [

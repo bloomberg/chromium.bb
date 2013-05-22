@@ -361,19 +361,31 @@ def UnrecognizedOption(*args):
 # File Type Tools
 ######################################################################
 
-def SimpleCache(f):
-  """ Cache results of a function using a dictionary """
-  cache = dict()
-  def wrapper(*args):
-    if args in cache:
-      return cache[args]
+class SimpleCache(object):
+  """ Cache results of a function using a dictionary. """
+  def __init__(self, f):
+    self.cache = dict()
+    self.func = f
+
+  def __call__(self, *args):
+    if args in self.cache:
+      return self.cache[args]
     else:
-      result = f(*args)
-      cache[args] = result
+      result = self.func(*args)
+      self.cache[args] = result
       return result
-  wrapper.__name__ = f.__name__
-  wrapper.__cache = cache
-  return wrapper
+
+  def __repr__(self):
+    return self.func.__doc__
+
+  def OverrideValue(self, value, *args):
+    """ Force a function call with |args| to return |value|. """
+    self.cache[args] = value
+
+  def ClearCache(self):
+    """ Clear all cached function results. """
+    self.cache.clear()
+
 
 @SimpleCache
 def IsNative(filename):
@@ -547,8 +559,8 @@ def SetBitcodeMetadata(filename, is_shared, soname, needed_libs):
 # If FORCED_FILE_TYPE is set, FileType() will return FORCED_FILE_TYPE for all
 # future input files. This is useful for the "as" incarnation, which
 # needs to accept files of any extension and treat them as ".s" (or ".ll")
-# files. Also useful for gcc's "-x", which causes all files to be treated
-# in a certain way.
+# files. Also useful for gcc's "-x", which causes all files between the
+# current -x and the next -x to be treated in a certain way.
 FORCED_FILE_TYPE = None
 def SetForcedFileType(t):
   global FORCED_FILE_TYPE
@@ -562,7 +574,10 @@ def ForceFileType(filename, newtype = None):
     if FORCED_FILE_TYPE is None:
       return
     newtype = FORCED_FILE_TYPE
-  FileType.__cache[filename] = newtype
+  FileType.OverrideValue(newtype, filename)
+
+def ClearFileTypeCache():
+  FileType.ClearCache()
 
 # File Extension -> Type string
 # TODO(pdox): Add types for sources which should not be preprocessed.
@@ -920,14 +935,14 @@ def Run(args,
 
   if errexit and p.returncode != 0:
     if redirect_stdout == subprocess.PIPE:
-        Log.Error('--------------stdout: begin')
-        Log.Error(result_stdout)
-        Log.Error('--------------stdout: end')
+      Log.Error('--------------stdout: begin')
+      Log.Error(result_stdout)
+      Log.Error('--------------stdout: end')
 
     if redirect_stderr == subprocess.PIPE:
-        Log.Error('--------------stderr: begin')
-        Log.Error(result_stderr)
-        Log.Error('--------------stderr: end')
+      Log.Error('--------------stderr: begin')
+      Log.Error(result_stderr)
+      Log.Error('--------------stderr: end')
     DriverExit(p.returncode)
 
   return p.returncode, result_stdout, result_stderr
