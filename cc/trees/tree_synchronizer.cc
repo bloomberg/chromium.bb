@@ -5,8 +5,10 @@
 #include "cc/trees/tree_synchronizer.h"
 
 #include "base/debug/trace_event.h"
+#include "base/hash_tables.h"
 #include "base/logging.h"
 #include "cc/animation/scrollbar_animation_controller.h"
+#include "cc/input/scrollbar.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/scrollbar_layer.h"
@@ -163,7 +165,7 @@ void UpdateScrollbarLayerPointersRecursiveInternal(
   DCHECK(scrollbar_layer_impl);
   DCHECK(scroll_layer_impl);
 
-  if (scrollbar_layer->Orientation() == WebKit::WebScrollbar::Horizontal)
+  if (scrollbar_layer->Orientation() == HORIZONTAL)
     scroll_layer_impl->SetHorizontalScrollbarLayer(scrollbar_layer_impl);
   else
     scroll_layer_impl->SetVerticalScrollbarLayer(scrollbar_layer_impl);

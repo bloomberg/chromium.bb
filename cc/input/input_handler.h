@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "cc/base/cc_export.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
+#include "cc/input/scrollbar.h"
 
 namespace gfx {
 class Point;
@@ -81,7 +81,7 @@ class CC_EXPORT InputHandler {
 
   virtual bool ScrollVerticallyByPage(
       gfx::Point viewport_point,
-      WebKit::WebScrollbar::ScrollDirection direction) = 0;
+      ScrollDirection direction) = 0;
 
   // Returns ScrollStarted if a layer was being actively being scrolled,
   // ScrollIgnored if not.

@@ -16,7 +16,6 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationDelegate.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerScrollClient.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect_conversions.h"
 

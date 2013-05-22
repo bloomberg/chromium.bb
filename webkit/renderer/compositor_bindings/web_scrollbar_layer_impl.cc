@@ -5,12 +5,11 @@
 #include "webkit/renderer/compositor_bindings/web_scrollbar_layer_impl.h"
 
 #include "cc/layers/scrollbar_layer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
+#include "webkit/renderer/compositor_bindings/scrollbar_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
-#include "webkit/renderer/compositor_bindings/web_to_ccscrollbar_theme_painter_adapter.h"
 
 using cc::ScrollbarLayer;
-using cc::ScrollbarThemePainter;
-using WebKit::WebScrollbarThemePainter;
 
 namespace webkit {
 
@@ -19,12 +18,10 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     WebKit::WebScrollbarThemePainter painter,
     WebKit::WebScrollbarThemeGeometry* geometry)
     : layer_(new WebLayerImpl(ScrollbarLayer::Create(
-          make_scoped_ptr(scrollbar),
-          WebToCCScrollbarThemePainterAdapter::Create(
-              make_scoped_ptr(new WebScrollbarThemePainter(painter)))
-              .PassAs<ScrollbarThemePainter>(),
-          make_scoped_ptr(geometry),
-          0))) {}
+          scoped_ptr<cc::Scrollbar>(new ScrollbarImpl(
+              make_scoped_ptr(scrollbar),
+              painter,
+              make_scoped_ptr(geometry))).Pass(), 0))) {}
 
 WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {}
 

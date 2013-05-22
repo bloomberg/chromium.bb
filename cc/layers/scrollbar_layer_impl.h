@@ -6,10 +6,8 @@
 #define CC_LAYERS_SCROLLBAR_LAYER_IMPL_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/input/scrollbar.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/scrollbar_geometry_fixed_thumb.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
 namespace cc {
 
@@ -21,42 +19,11 @@ class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
   static scoped_ptr<ScrollbarLayerImpl> Create(
       LayerTreeImpl* tree_impl,
       int id,
-      scoped_ptr<ScrollbarGeometryFixedThumb> geometry);
+      ScrollbarOrientation orientation);
   virtual ~ScrollbarLayerImpl();
 
+  // LayerImpl implementation.
   virtual ScrollbarLayerImpl* ToScrollbarLayer() OVERRIDE;
-  int scroll_layer_id() const { return scroll_layer_id_; }
-  void set_scroll_layer_id(int id) { scroll_layer_id_ = id; }
-
-  void SetScrollbarData(WebKit::WebScrollbar* scrollbar);
-  void SetThumbSize(gfx::Size size);
-
-  void set_vertical_adjust(float vertical_adjust) {
-    vertical_adjust_ = vertical_adjust;
-  }
-  void SetViewportWithinScrollableArea(gfx::RectF scrollable_viewport,
-      gfx::SizeF scrollable_area);
-
-  void set_back_track_resource_id(ResourceProvider::ResourceId id) {
-    back_track_resource_id_ = id;
-  }
-  void set_fore_track_resource_id(ResourceProvider::ResourceId id) {
-    fore_track_resource_id_ = id;
-  }
-  void set_thumb_resource_id(ResourceProvider::ResourceId id) {
-    thumb_resource_id_ = id;
-  }
-
-  float CurrentPos() const;
-  int TotalSize() const;
-  int Maximum() const;
-
-  void SetCurrentPos(float current_pos) { current_pos_ = current_pos; }
-  void SetTotalSize(int total_size) { total_size_ = total_size; }
-  void SetMaximum(int maximum) { maximum_ = maximum; }
-
-  WebKit::WebScrollbar::Orientation Orientation() const;
-
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
@@ -66,77 +33,71 @@ class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
 
   virtual void DidLoseOutputSurface() OVERRIDE;
 
+  int scroll_layer_id() const { return scroll_layer_id_; }
+  void set_scroll_layer_id(int id) { scroll_layer_id_ = id; }
+
+  ScrollbarOrientation Orientation() const;
+  float CurrentPos() const;
+  int Maximum() const;
+
+  void set_thumb_thickness(int thumb_thickness) {
+    thumb_thickness_ = thumb_thickness;
+  }
+  void set_thumb_length(int thumb_length) {
+    thumb_length_ = thumb_length;
+  }
+  void set_track_start(int track_start) {
+    track_start_ = track_start;
+  }
+  void set_track_length(int track_length) {
+    track_length_ = track_length;
+  }
+  void set_vertical_adjust(float vertical_adjust) {
+    vertical_adjust_ = vertical_adjust;
+  }
+  void set_track_resource_id(ResourceProvider::ResourceId id) {
+    track_resource_id_ = id;
+  }
+  void set_thumb_resource_id(ResourceProvider::ResourceId id) {
+    thumb_resource_id_ = id;
+  }
+  void set_visible_to_total_length_ratio(float ratio) {
+    visible_to_total_length_ratio_ = ratio;
+  }
+
+  void SetCurrentPos(float current_pos) { current_pos_ = current_pos; }
+  void SetMaximum(int maximum) { maximum_ = maximum; }
+
+  gfx::Rect ComputeThumbQuadRect() const;
+
  protected:
   ScrollbarLayerImpl(LayerTreeImpl* tree_impl,
                      int id,
-                     scoped_ptr<ScrollbarGeometryFixedThumb> geometry);
+                     ScrollbarOrientation orientation);
 
  private:
-  // nested class only to avoid namespace problem
-  class Scrollbar : public WebKit::WebScrollbar {
-   public:
-    explicit Scrollbar(ScrollbarLayerImpl* owner) : owner_(owner) {}
-
-    // WebScrollbar implementation
-    virtual bool isOverlay() const;
-    virtual int value() const;
-    virtual WebKit::WebPoint location() const;
-    virtual WebKit::WebSize size() const;
-    virtual bool enabled() const;
-    virtual int maximum() const;
-    virtual int totalSize() const;
-    virtual bool isScrollViewScrollbar() const;
-    virtual bool isScrollableAreaActive() const;
-    virtual void getTickmarks(
-        WebKit::WebVector<WebKit::WebRect>& tickmarks /* NOLINT */) const;
-    virtual WebScrollbar::ScrollbarControlSize controlSize() const;
-    virtual WebScrollbar::ScrollbarPart pressedPart() const;
-    virtual WebScrollbar::ScrollbarPart hoveredPart() const;
-    virtual WebScrollbar::ScrollbarOverlayStyle scrollbarOverlayStyle() const;
-    virtual WebScrollbar::Orientation orientation() const;
-    virtual bool isCustomScrollbar() const;
-
-   private:
-    ScrollbarLayerImpl* owner_;
-
-    DISALLOW_COPY_AND_ASSIGN(Scrollbar);
-  };
-
   virtual const char* LayerTypeAsString() const OVERRIDE;
 
   gfx::Rect ScrollbarLayerRectToContentRect(gfx::RectF layer_rect) const;
 
-  Scrollbar scrollbar_;
-
-  ResourceProvider::ResourceId back_track_resource_id_;
-  ResourceProvider::ResourceId fore_track_resource_id_;
+  ResourceProvider::ResourceId track_resource_id_;
   ResourceProvider::ResourceId thumb_resource_id_;
 
-  scoped_ptr<ScrollbarGeometryFixedThumb> geometry_;
-
   float current_pos_;
-  int total_size_;
   int maximum_;
-  gfx::Size thumb_size_;
+  int thumb_thickness_;
+  int thumb_length_;
+  int track_start_;
+  int track_length_;
+  ScrollbarOrientation orientation_;
 
   // Difference between the clip layer's height and the visible viewport
   // height (which may differ in the presence of top-controls hiding).
   float vertical_adjust_;
 
-  // Specifies the position and size of the viewport within the scrollable
-  // area (normalized as if the scrollable area is a unit-sized box
-  // [0, 0, 1, 1]).
-  gfx::RectF normalized_viewport_;
+  float visible_to_total_length_ratio_;
 
   int scroll_layer_id_;
-
-  // Data to implement Scrollbar
-  WebKit::WebScrollbar::ScrollbarOverlayStyle scrollbar_overlay_style_;
-  WebKit::WebVector<WebKit::WebRect> tickmarks_;
-  WebKit::WebScrollbar::Orientation orientation_;
-  WebKit::WebScrollbar::ScrollbarControlSize control_size_;
-  WebKit::WebScrollbar::ScrollbarPart pressed_part_;
-  WebKit::WebScrollbar::ScrollbarPart hovered_part_;
 
   bool is_scrollable_area_active_;
   bool is_scroll_view_scrollbar_;

@@ -20,6 +20,7 @@
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/debug/latency_info.h"
 #include "cc/input/input_handler.h"
+#include "cc/input/scrollbar.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/output/output_surface.h"
@@ -30,10 +31,11 @@
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/proxy.h"
 #include "skia/ext/refptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/rect.h"
+
+namespace WebKit { class WebGraphicsContext3D; }
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {

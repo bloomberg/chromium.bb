@@ -105,9 +105,8 @@ class CC_EXPORT LayerTreeHostImpl
       InputHandler::ScrollInputType type) OVERRIDE;
   virtual bool ScrollBy(gfx::Point viewport_point,
                         gfx::Vector2dF scroll_delta) OVERRIDE;
-  virtual bool ScrollVerticallyByPage(
-      gfx::Point viewport_point,
-      WebKit::WebScrollbar::ScrollDirection direction) OVERRIDE;
+  virtual bool ScrollVerticallyByPage(gfx::Point viewport_point,
+                                      ScrollDirection direction) OVERRIDE;
   virtual void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) OVERRIDE;
   virtual void OnRootLayerDelegatedScrollOffsetChanged() OVERRIDE;

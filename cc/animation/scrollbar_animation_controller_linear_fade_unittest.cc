@@ -7,7 +7,6 @@
 #include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,11 +20,8 @@ class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
  protected:
   virtual void SetUp() {
     scroll_layer_ = LayerImpl::Create(host_impl_.active_tree(), 1);
-    scoped_ptr<ScrollbarGeometryFixedThumb> geometry(
-        ScrollbarGeometryFixedThumb::Create(
-            FakeWebScrollbarThemeGeometry::Create(false)));
     scrollbar_layer_ = ScrollbarLayerImpl::Create(
-        host_impl_.active_tree(), 2, geometry.Pass());
+        host_impl_.active_tree(), 2, HORIZONTAL);
 
     scroll_layer_->SetMaxScrollOffset(gfx::Vector2d(50, 50));
     scroll_layer_->SetBounds(gfx::Size(50, 50));

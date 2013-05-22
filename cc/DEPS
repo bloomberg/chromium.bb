@@ -9,8 +9,14 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
   "+ui/surface",
+  # DO NOT ADD ANY NEW WEBKIT HEADERS TO THIS LIST.
   # TODO(danakj): Drop dependencies on WebKit Platform API from cc.
-  "+third_party/WebKit/Source/Platform/chromium/public",
-# TODO(jamesr): Remove once cc depends on GLES2Interface instead of WGC3D
+  "+third_party/WebKit/Source/Platform/chromium/public/WebAnimationDelegate.h",
+  "+third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h",
+  "+third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h",
+  "+third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h",
+  "+third_party/WebKit/Source/Platform/chromium/public/WebGraphicsMemoryAllocation.h",
+  "+third_party/WebKit/Source/Platform/chromium/public/WebLayerScrollClient.h",
+  # TODO(jamesr): Remove once cc depends on GLES2Interface instead of WGC3D
   "+webkit/gpu",
 ]

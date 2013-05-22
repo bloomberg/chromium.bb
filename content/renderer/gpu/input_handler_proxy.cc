@@ -16,7 +16,6 @@ using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebPoint;
-using WebKit::WebScrollbar;
 using WebKit::WebTouchEvent;
 
 namespace content {

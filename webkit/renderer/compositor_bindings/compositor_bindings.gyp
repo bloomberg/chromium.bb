@@ -6,6 +6,8 @@
   'variables': {
     'chromium_code': 1,
     'webkit_compositor_bindings_sources': [
+      'scrollbar_impl.cc',
+      'scrollbar_impl.h',
       'web_animation_curve_common.cc',
       'web_animation_curve_common.h',
       'web_animation_impl.cc',

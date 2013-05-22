@@ -14,7 +14,6 @@
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_update_queue.h"
 #include "cc/trees/layer_tree_host.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
@@ -22,34 +21,23 @@ namespace cc {
 scoped_ptr<LayerImpl> ScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return ScrollbarLayerImpl::Create(
-      tree_impl,
-      id(),
-      ScrollbarGeometryFixedThumb::Create(make_scoped_ptr(geometry_->clone())))
-      .PassAs<LayerImpl>();
+      tree_impl, id(), scrollbar_->Orientation()).PassAs<LayerImpl>();
 }
 
 scoped_refptr<ScrollbarLayer> ScrollbarLayer::Create(
-    scoped_ptr<WebKit::WebScrollbar> scrollbar,
-    scoped_ptr<ScrollbarThemePainter> painter,
-    scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry,
+    scoped_ptr<Scrollbar> scrollbar,
     int scroll_layer_id) {
   return make_scoped_refptr(new ScrollbarLayer(scrollbar.Pass(),
-                                               painter.Pass(),
-                                               geometry.Pass(),
                                                scroll_layer_id));
 }
 
 ScrollbarLayer::ScrollbarLayer(
-    scoped_ptr<WebKit::WebScrollbar> scrollbar,
-    scoped_ptr<ScrollbarThemePainter> painter,
-    scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry,
+    scoped_ptr<Scrollbar> scrollbar,
     int scroll_layer_id)
     : scrollbar_(scrollbar.Pass()),
-      painter_(painter.Pass()),
-      geometry_(geometry.Pass()),
       scroll_layer_id_(scroll_layer_id),
       texture_format_(GL_INVALID_ENUM) {
-  if (!scrollbar_->isOverlay())
+  if (!scrollbar_->IsOverlay())
     SetShouldScrollOnMainThread(true);
 }
 
@@ -64,11 +52,11 @@ void ScrollbarLayer::SetScrollLayerId(int id) {
 }
 
 bool ScrollbarLayer::OpacityCanAnimateOnImplThread() const {
-  return scrollbar_->isOverlay();
+  return scrollbar_->IsOverlay();
 }
 
-WebKit::WebScrollbar::Orientation ScrollbarLayer::Orientation() const {
-  return scrollbar_->orientation();
+ScrollbarOrientation ScrollbarLayer::Orientation() const {
+  return scrollbar_->Orientation();
 }
 
 int ScrollbarLayer::MaxTextureSize() {
@@ -116,22 +104,34 @@ void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
   ScrollbarLayerImpl* scrollbar_layer = static_cast<ScrollbarLayerImpl*>(layer);
 
-  scrollbar_layer->SetScrollbarData(scrollbar_.get());
-  scrollbar_layer->SetThumbSize(thumb_size_);
-
-  if (back_track_ && back_track_->texture()->have_backing_texture()) {
-    scrollbar_layer->set_back_track_resource_id(
-        back_track_->texture()->resource_id());
+  if (layer_tree_host() &&
+      layer_tree_host()->settings().solid_color_scrollbars) {
+    int thickness_override =
+        layer_tree_host()->settings().solid_color_scrollbar_thickness_dip;
+    if (thickness_override != -1) {
+      scrollbar_layer->set_thumb_thickness(thickness_override);
+    } else {
+      if (Orientation() == HORIZONTAL)
+        scrollbar_layer->set_thumb_thickness(bounds().height());
+      else
+        scrollbar_layer->set_thumb_thickness(bounds().width());
+    }
   } else {
-    scrollbar_layer->set_back_track_resource_id(0);
+    scrollbar_layer->set_thumb_thickness(thumb_thickness_);
+  }
+  scrollbar_layer->set_thumb_length(thumb_length_);
+  if (Orientation() == HORIZONTAL) {
+    scrollbar_layer->set_track_start(track_rect_.x());
+    scrollbar_layer->set_track_length(track_rect_.width());
+  } else {
+    scrollbar_layer->set_track_start(track_rect_.y());
+    scrollbar_layer->set_track_length(track_rect_.height());
   }
 
-  if (fore_track_ && fore_track_->texture()->have_backing_texture()) {
-    scrollbar_layer->set_fore_track_resource_id(
-        fore_track_->texture()->resource_id());
-  } else {
-    scrollbar_layer->set_fore_track_resource_id(0);
-  }
+  if (track_ && track_->texture()->have_backing_texture())
+    scrollbar_layer->set_track_resource_id(track_->texture()->resource_id());
+  else
+    scrollbar_layer->set_track_resource_id(0);
 
   if (thumb_ && thumb_->texture()->have_backing_texture())
     scrollbar_layer->set_thumb_resource_id(thumb_->texture()->resource_id());
@@ -143,120 +143,35 @@ ScrollbarLayer* ScrollbarLayer::ToScrollbarLayer() {
   return this;
 }
 
-class ScrollbarBackgroundPainter : public LayerPainter {
- public:
-  static scoped_ptr<ScrollbarBackgroundPainter> Create(
-      WebKit::WebScrollbar* scrollbar,
-      ScrollbarThemePainter *painter,
-      WebKit::WebScrollbarThemeGeometry* geometry,
-      WebKit::WebScrollbar::ScrollbarPart trackPart) {
-    return make_scoped_ptr(new ScrollbarBackgroundPainter(scrollbar,
-                                                          painter,
-                                                          geometry,
-                                                          trackPart));
-  }
-
-  virtual void Paint(SkCanvas* canvas,
-                     gfx::Rect content_rect,
-                     gfx::RectF* opaque) OVERRIDE {
-    // The following is a simplification of ScrollbarThemeComposite::paint.
-    painter_->PaintScrollbarBackground(canvas, content_rect);
-
-    if (geometry_->hasButtons(scrollbar_)) {
-      gfx::Rect back_button_start_paint_rect =
-          geometry_->backButtonStartRect(scrollbar_);
-      painter_->PaintBackButtonStart(canvas, back_button_start_paint_rect);
-
-      gfx::Rect back_button_end_paint_rect =
-          geometry_->backButtonEndRect(scrollbar_);
-      painter_->PaintBackButtonEnd(canvas, back_button_end_paint_rect);
-
-      gfx::Rect forward_button_start_paint_rect =
-          geometry_->forwardButtonStartRect(scrollbar_);
-      painter_->PaintForwardButtonStart(canvas,
-                                        forward_button_start_paint_rect);
-
-      gfx::Rect forward_button_end_paint_rect =
-          geometry_->forwardButtonEndRect(scrollbar_);
-      painter_->PaintForwardButtonEnd(canvas, forward_button_end_paint_rect);
-    }
-
-    gfx::Rect track_paint_rect = geometry_->trackRect(scrollbar_);
-    painter_->PaintTrackBackground(canvas, track_paint_rect);
-
-    bool thumb_present = geometry_->hasThumb(scrollbar_);
-    if (thumb_present) {
-      if (track_part_ == WebKit::WebScrollbar::ForwardTrackPart)
-        painter_->PaintForwardTrackPart(canvas, track_paint_rect);
-      else
-        painter_->PaintBackTrackPart(canvas, track_paint_rect);
-    }
-
-    painter_->PaintTickmarks(canvas, track_paint_rect);
-  }
-
- private:
-  ScrollbarBackgroundPainter(WebKit::WebScrollbar* scrollbar,
-                             ScrollbarThemePainter *painter,
-                             WebKit::WebScrollbarThemeGeometry* geometry,
-                             WebKit::WebScrollbar::ScrollbarPart trackPart)
-      : scrollbar_(scrollbar),
-        painter_(painter),
-        geometry_(geometry),
-        track_part_(trackPart) {}
-
-  WebKit::WebScrollbar* scrollbar_;
-  ScrollbarThemePainter* painter_;
-  WebKit::WebScrollbarThemeGeometry* geometry_;
-  WebKit::WebScrollbar::ScrollbarPart track_part_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollbarBackgroundPainter);
-};
-
-class ScrollbarThumbPainter : public LayerPainter {
- public:
-  static scoped_ptr<ScrollbarThumbPainter> Create(
-      WebKit::WebScrollbar* scrollbar,
-      ScrollbarThemePainter* painter,
-      WebKit::WebScrollbarThemeGeometry* geometry) {
-    return make_scoped_ptr(new ScrollbarThumbPainter(scrollbar,
-                                                     painter,
-                                                     geometry));
-  }
-
-  virtual void Paint(SkCanvas* canvas,
-                     gfx::Rect content_rect,
-                     gfx::RectF* opaque) OVERRIDE {
-    // Consider the thumb to be at the origin when painting.
-    gfx::Rect thumb_rect = geometry_->thumbRect(scrollbar_);
-    painter_->PaintThumb(canvas, gfx::Rect(thumb_rect.size()));
-  }
-
- private:
-  ScrollbarThumbPainter(WebKit::WebScrollbar* scrollbar,
-                        ScrollbarThemePainter* painter,
-                        WebKit::WebScrollbarThemeGeometry* geometry)
-      : scrollbar_(scrollbar),
-        painter_(painter),
-        geometry_(geometry) {}
-
-  WebKit::WebScrollbar* scrollbar_;
-  ScrollbarThemePainter* painter_;
-  WebKit::WebScrollbarThemeGeometry* geometry_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollbarThumbPainter);
-};
-
 void ScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
   if (!host || host != layer_tree_host()) {
-    back_track_updater_ = NULL;
-    back_track_.reset();
+    track_updater_ = NULL;
+    track_.reset();
     thumb_updater_ = NULL;
     thumb_.reset();
   }
 
   ContentsScalingLayer::SetLayerTreeHost(host);
 }
+
+class ScrollbarPartPainter : public LayerPainter {
+ public:
+  ScrollbarPartPainter(Scrollbar* scrollbar, ScrollbarPart part)
+      : scrollbar_(scrollbar),
+        part_(part) {}
+  virtual ~ScrollbarPartPainter() {}
+
+  // LayerPainter implementation
+  virtual void Paint(SkCanvas* canvas,
+                     gfx::Rect content_rect,
+                     gfx::RectF* opaque) OVERRIDE {
+    scrollbar_->PaintPart(canvas, part_, content_rect);
+  }
+
+ private:
+  Scrollbar* scrollbar_;
+  ScrollbarPart part_;
+};
 
 void ScrollbarLayer::CreateUpdaterIfNeeded() {
   if (layer_tree_host()->settings().solid_color_scrollbars)
@@ -265,49 +180,26 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
   texture_format_ =
       layer_tree_host()->GetRendererCapabilities().best_texture_format;
 
-  if (!back_track_updater_) {
-    back_track_updater_ = CachingBitmapContentLayerUpdater::Create(
-        ScrollbarBackgroundPainter::Create(
-            scrollbar_.get(),
-            painter_.get(),
-            geometry_.get(),
-            WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>(),
+  if (!track_updater_) {
+    track_updater_ = CachingBitmapContentLayerUpdater::Create(
+        scoped_ptr<LayerPainter>(
+          new ScrollbarPartPainter(scrollbar_.get(), TRACK)).Pass(),
         rendering_stats_instrumentation(),
         id());
   }
-  if (!back_track_) {
-    back_track_ = back_track_updater_->CreateResource(
+  if (!track_) {
+    track_ = track_updater_->CreateResource(
         layer_tree_host()->contents_texture_manager());
-  }
-
-  // Only create two-part track if we think the two parts could be different in
-  // appearance.
-  if (scrollbar_->isCustomScrollbar()) {
-    if (!fore_track_updater_) {
-      fore_track_updater_ = CachingBitmapContentLayerUpdater::Create(
-          ScrollbarBackgroundPainter::Create(
-              scrollbar_.get(),
-              painter_.get(),
-              geometry_.get(),
-              WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>(),
-          rendering_stats_instrumentation(),
-          id());
-    }
-    if (!fore_track_) {
-      fore_track_ = fore_track_updater_->CreateResource(
-          layer_tree_host()->contents_texture_manager());
-    }
   }
 
   if (!thumb_updater_) {
     thumb_updater_ = CachingBitmapContentLayerUpdater::Create(
-        ScrollbarThumbPainter::Create(scrollbar_.get(),
-                                      painter_.get(),
-                                      geometry_.get()).PassAs<LayerPainter>(),
+        scoped_ptr<LayerPainter>(
+            new ScrollbarPartPainter(scrollbar_.get(), THUMB)).Pass(),
         rendering_stats_instrumentation(),
         id());
   }
-  if (!thumb_) {
+  if (!thumb_ && scrollbar_->HasThumb()) {
     thumb_ = thumb_updater_->CreateResource(
         layer_tree_host()->contents_texture_manager());
   }
@@ -384,20 +276,13 @@ void ScrollbarLayer::SetTexturePriorities(
   CreateUpdaterIfNeeded();
 
   bool draws_to_root = !render_target()->parent();
-  if (back_track_) {
-    back_track_->texture()->SetDimensions(content_bounds(), texture_format_);
-    back_track_->texture()->set_request_priority(
-        PriorityCalculator::UIPriority(draws_to_root));
-  }
-  if (fore_track_) {
-    fore_track_->texture()->SetDimensions(content_bounds(), texture_format_);
-    fore_track_->texture()->set_request_priority(
+  if (track_) {
+    track_->texture()->SetDimensions(content_bounds(), texture_format_);
+    track_->texture()->set_request_priority(
         PriorityCalculator::UIPriority(draws_to_root));
   }
   if (thumb_) {
-    gfx::Rect thumb_layer_rect = geometry_->thumbRect(scrollbar_.get());
-    gfx::Size thumb_size =
-        ScrollbarLayerRectToContentRect(thumb_layer_rect).size();
+    gfx::Size thumb_size = OriginThumbRect().size();
     thumb_->texture()->SetDimensions(thumb_size, texture_format_);
     thumb_->texture()->set_request_priority(
         PriorityCalculator::UIPriority(draws_to_root));
@@ -407,6 +292,11 @@ void ScrollbarLayer::SetTexturePriorities(
 void ScrollbarLayer::Update(ResourceUpdateQueue* queue,
                             const OcclusionTracker* occlusion,
                             RenderingStats* stats) {
+  track_rect_ = scrollbar_->TrackRect();
+
+  if (layer_tree_host()->settings().solid_color_scrollbars)
+    return;
+
   {
     base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
                                                   true);
@@ -422,34 +312,39 @@ void ScrollbarLayer::Update(ResourceUpdateQueue* queue,
   CreateUpdaterIfNeeded();
 
   gfx::Rect content_rect = ScrollbarLayerRectToContentRect(
-      gfx::Rect(scrollbar_->location(), bounds()));
-  UpdatePart(back_track_updater_.get(),
-             back_track_.get(),
+      gfx::Rect(scrollbar_->Location(), bounds()));
+  UpdatePart(track_updater_.get(),
+             track_.get(),
              content_rect,
              queue,
              stats);
-  if (fore_track_ && fore_track_updater_) {
-    UpdatePart(fore_track_updater_.get(),
-               fore_track_.get(),
-               content_rect,
-               queue,
-               stats);
-  }
 
-  // Consider the thumb to be at the origin when painting.
-  gfx::Rect thumb_rect = geometry_->thumbRect(scrollbar_.get());
-  thumb_size_ = thumb_rect.size();
-  gfx::Rect origin_thumb_rect =
-      ScrollbarLayerRectToContentRect(gfx::Rect(thumb_rect.size()));
-  if (!origin_thumb_rect.IsEmpty()) {
-    UpdatePart(thumb_updater_.get(),
-               thumb_.get(),
-               origin_thumb_rect,
-               queue,
-               stats);
+  if (scrollbar_->HasThumb()) {
+    thumb_thickness_ = scrollbar_->ThumbThickness();
+    thumb_length_ = scrollbar_->ThumbLength();
+    gfx::Rect origin_thumb_rect = OriginThumbRect();
+    if (!origin_thumb_rect.IsEmpty()) {
+      UpdatePart(thumb_updater_.get(),
+                 thumb_.get(),
+                 origin_thumb_rect,
+                 queue,
+                 stats);
+    }
   }
 
   dirty_rect_ = gfx::RectF();
+}
+
+gfx::Rect ScrollbarLayer::OriginThumbRect() const {
+  gfx::Size thumb_size;
+  if (Orientation() == HORIZONTAL) {
+    thumb_size = gfx::Size(scrollbar_->ThumbLength(),
+                           scrollbar_->ThumbThickness());
+  } else {
+    thumb_size = gfx::Size(scrollbar_->ThumbThickness(),
+                           scrollbar_->ThumbLength());
+  }
+  return ScrollbarLayerRectToContentRect(gfx::Rect(thumb_size));
 }
 
 }  // namespace cc

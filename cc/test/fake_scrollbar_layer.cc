@@ -5,21 +5,17 @@
 #include "cc/test/fake_scrollbar_layer.h"
 
 #include "cc/resources/resource_update_queue.h"
-#include "cc/test/fake_scrollbar_theme_painter.h"
-#include "cc/test/fake_web_scrollbar.h"
-#include "cc/test/fake_web_scrollbar_theme_geometry.h"
+#include "cc/test/fake_scrollbar.h"
 
 namespace cc {
 
 FakeScrollbarLayer::FakeScrollbarLayer(bool paint_during_update,
                                        bool has_thumb,
                                        int scrolling_layer_id)
-    : ScrollbarLayer(FakeWebScrollbar::Create().PassAs<WebKit::WebScrollbar>(),
-                     FakeScrollbarThemePainter::Create(paint_during_update).
-                         PassAs<ScrollbarThemePainter>(),
-                     FakeWebScrollbarThemeGeometry::Create(has_thumb).
-                         PassAs<WebKit::WebScrollbarThemeGeometry>(),
-                     scrolling_layer_id),
+    : ScrollbarLayer(
+          scoped_ptr<Scrollbar>(
+              new FakeScrollbar(paint_during_update, has_thumb, false)).Pass(),
+          scrolling_layer_id),
       update_count_(0),
       last_update_full_upload_size_(0),
       last_update_partial_upload_size_(0) {

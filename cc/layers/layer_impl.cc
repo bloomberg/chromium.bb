@@ -848,17 +848,15 @@ void LayerImpl::UpdateScrollbarPositions() {
                              max_scroll_offset_.y() + bounds_.height());
   if (horizontal_scrollbar_layer_) {
     horizontal_scrollbar_layer_->SetCurrentPos(current_offset.x());
-    horizontal_scrollbar_layer_->SetTotalSize(bounds_.width());
     horizontal_scrollbar_layer_->SetMaximum(max_scroll_offset_.x());
-    horizontal_scrollbar_layer_->SetViewportWithinScrollableArea(
-        viewport, scrollable_size);
+    horizontal_scrollbar_layer_->set_visible_to_total_length_ratio(
+        viewport.width() / scrollable_size.width());
   }
   if (vertical_scrollbar_layer_) {
     vertical_scrollbar_layer_->SetCurrentPos(current_offset.y());
-    vertical_scrollbar_layer_->SetTotalSize(bounds_.height());
     vertical_scrollbar_layer_->SetMaximum(max_scroll_offset_.y());
-    vertical_scrollbar_layer_->SetViewportWithinScrollableArea(
-        viewport, scrollable_size);
+    vertical_scrollbar_layer_->set_visible_to_total_length_ratio(
+        viewport.height() / scrollable_size.height());
   }
 
   if (current_offset == last_scroll_offset_)

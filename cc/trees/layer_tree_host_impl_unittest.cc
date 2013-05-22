@@ -17,7 +17,6 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/layers/render_surface_impl.h"
-#include "cc/layers/scrollbar_geometry_fixed_thumb.h"
 #include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/layers/solid_color_layer_impl.h"
 #include "cc/layers/texture_layer_impl.h"
@@ -36,7 +35,6 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/fake_video_frame_provider.h"
-#include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/render_pass_test_common.h"
@@ -680,25 +678,25 @@ TEST_F(LayerTreeHostImplTest, ScrollVerticallyByPageReturnsCorrectValue) {
 
   // Trying to scroll without a vertical scrollbar will fail.
   EXPECT_FALSE(host_impl_->ScrollVerticallyByPage(
-      gfx::Point(), WebKit::WebScrollbar::ScrollForward));
+      gfx::Point(), SCROLL_FORWARD));
   EXPECT_FALSE(host_impl_->ScrollVerticallyByPage(
-      gfx::Point(), WebKit::WebScrollbar::ScrollBackward));
+      gfx::Point(), SCROLL_BACKWARD));
 
   scoped_ptr<cc::ScrollbarLayerImpl> vertical_scrollbar(
       cc::ScrollbarLayerImpl::Create(
           host_impl_->active_tree(),
           20,
-          scoped_ptr<ScrollbarGeometryFixedThumb>()));
+          VERTICAL));
   vertical_scrollbar->SetBounds(gfx::Size(15, 1000));
   host_impl_->RootScrollLayer()->SetVerticalScrollbarLayer(
       vertical_scrollbar.get());
 
   // Trying to scroll with a vertical scrollbar will succeed.
   EXPECT_TRUE(host_impl_->ScrollVerticallyByPage(
-      gfx::Point(), WebKit::WebScrollbar::ScrollForward));
+      gfx::Point(), SCROLL_FORWARD));
   EXPECT_FLOAT_EQ(875.f, host_impl_->RootScrollLayer()->ScrollDelta().y());
   EXPECT_TRUE(host_impl_->ScrollVerticallyByPage(
-      gfx::Point(), WebKit::WebScrollbar::ScrollBackward));
+      gfx::Point(), SCROLL_BACKWARD));
 }
 
 TEST_F(LayerTreeHostImplTest,

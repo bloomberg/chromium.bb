@@ -24,11 +24,9 @@
 #include "cc/test/fake_delegated_renderer_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_scrollbar.h"
 #include "cc/test/fake_scrollbar_layer.h"
-#include "cc/test/fake_scrollbar_theme_painter.h"
 #include "cc/test/fake_video_frame_provider.h"
-#include "cc/test/fake_web_scrollbar.h"
-#include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -1176,14 +1174,8 @@ class LayerTreeHostContextTestDontUseLostResources
     debug_state.show_property_changed_rects = true;
     layer_tree_host()->SetDebugState(debug_state);
 
-    bool paint_scrollbar = true;
-    bool has_thumb = true;
     scoped_refptr<ScrollbarLayer> scrollbar_ = ScrollbarLayer::Create(
-        FakeWebScrollbar::Create().PassAs<WebKit::WebScrollbar>(),
-        FakeScrollbarThemePainter::Create(paint_scrollbar)
-            .PassAs<ScrollbarThemePainter>(),
-        FakeWebScrollbarThemeGeometry::Create(has_thumb)
-            .PassAs<WebKit::WebScrollbarThemeGeometry>(),
+        scoped_ptr<Scrollbar>(new FakeScrollbar).Pass(),
         content_->id());
     scrollbar_->SetBounds(gfx::Size(10, 10));
     scrollbar_->SetAnchorPoint(gfx::PointF());

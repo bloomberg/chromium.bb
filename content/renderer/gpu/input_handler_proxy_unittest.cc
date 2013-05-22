@@ -45,7 +45,7 @@ class MockInputHandler : public cc::InputHandler {
                bool(gfx::Point viewport_point, gfx::Vector2dF scroll_delta));
   MOCK_METHOD2(ScrollVerticallyByPage,
                bool(gfx::Point viewport_point,
-                    WebKit::WebScrollbar::ScrollDirection direction));
+                    cc::ScrollDirection direction));
   MOCK_METHOD0(ScrollEnd, void());
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
 
