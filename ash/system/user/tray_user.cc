@@ -8,6 +8,7 @@
 #include <climits>
 #include <vector>
 
+#include "ash/popup_message.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -104,6 +105,9 @@ const int kPublicAccountLogoutButtonBorderImagesHovered[] = {
     IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
     IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
 };
+
+// Offsetting the popup message relative to the tray menu.
+const int kPopupMessageOffset = 25;
 
 }  // namespace
 
@@ -262,6 +266,7 @@ class UserView : public views::View,
   MultiProfileIndex multiprofile_index_;
   views::View* user_card_;
   views::View* logout_button_;
+  scoped_ptr<ash::PopupMessage> popup_message_;
   scoped_ptr<views::Widget> add_menu_option_;
 
   // The mouse watcher which takes care of out of window hover events.
@@ -279,6 +284,9 @@ class AddUserView : public views::CustomButton,
   // will get notified when this item gets clicked.
   AddUserView(UserCard* owner, views::ButtonListener* listener);
   virtual ~AddUserView();
+
+  // Get the anchor view for a message.
+  views::View* anchor() { return anchor_; }
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
@@ -301,6 +309,9 @@ class AddUserView : public views::CustomButton,
 
   // This is the owner view of this item.
   UserCard* owner_;
+
+  // The anchor view for targetted bubble messages.
+  views::View* anchor_;
 
   DISALLOW_COPY_AND_ASSIGN(AddUserView);
 };
@@ -591,8 +602,7 @@ UserView::UserView(SystemTrayItem* owner,
 UserView::~UserView() {}
 
 void UserView::MouseMovedOutOfHost() {
-  // Make sure that the MouseWatcher does not outlive our add menu option.
-  DCHECK(!add_menu_option_.get());
+  popup_message_.reset();
   mouse_watcher_.reset();
   add_menu_option_.reset();
 }
@@ -832,6 +842,7 @@ void UserView::AddLoggedInPublicModeUserCardContent(SystemTrayItem* owner) {
 
 void UserView::ToggleAddUserMenuOption() {
   if (add_menu_option_.get()) {
+    popup_message_.reset();
     mouse_watcher_.reset();
     add_menu_option_.reset();
     return;
@@ -865,14 +876,21 @@ void UserView::ToggleAddUserMenuOption() {
   add_menu_option_->SetBounds(bounds);
 
   // Show the content.
-  add_menu_option_->SetContentsView(new AddUserView(
-      static_cast<UserCard*>(user_card_), this));
+  AddUserView* add_user_view = new AddUserView(
+      static_cast<UserCard*>(user_card_), this);
+  add_menu_option_->SetContentsView(add_user_view);
   add_menu_option_->SetAlwaysOnTop(true);
   add_menu_option_->Show();
   if (cannot_add_more_users) {
-    // TODO(skuhne): Use IDS_ASH_STATUS_TRAY_CAPTION_CANNOT_ADD_USER and
-    // IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER when showing the error
-    // message that no more users can be added.
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    popup_message_.reset(new PopupMessage(
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAPTION_CANNOT_ADD_USER),
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER),
+        PopupMessage::ICON_WARNING,
+        add_user_view->anchor(),
+        views::BubbleBorder::TOP_LEFT,
+        gfx::Size(parent()->bounds().width() - kPopupMessageOffset, 0),
+        2 * kPopupMessageOffset));
   }
   // Find the screen area which encloses both elements and sets then a mouse
   // watcher which will close the "menu".
@@ -888,7 +906,8 @@ AddUserView::AddUserView(UserCard* owner, views::ButtonListener* listener)
     : CustomButton(listener_),
       add_user_(NULL),
       listener_(listener),
-      owner_(owner) {
+      owner_(owner),
+      anchor_(NULL) {
   AddContent();
   owner_->ForceBorderVisible(true);
 }
@@ -942,13 +961,13 @@ void AddUserView::AddContent() {
       views::BoxLayout::kHorizontal, 0, 0 , kTrayPopupPaddingBetweenItems));
   AddChildViewAt(add_user_, 0);
 
-  // Add the [+] icon.
+  // Add the [+] icon which is also the anchor for messages.
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   RoundedImageView* icon = new RoundedImageView(kProfileRoundedCornerRadius,
                                                 true);
-  // TODO(skuhne): Add the resource and load the proper icon.
+  anchor_ = icon;
   icon->SetImage(*ui::ResourceBundle::GetSharedInstance().
-      GetImageNamed(IDR_AURA_UBER_TRAY_GUEST_ICON).ToImageSkia(),
+      GetImageNamed(IDR_AURA_UBER_TRAY_ADD_MULTIPROFILE_USER).ToImageSkia(),
       gfx::Size(kUserIconSize, kUserIconSize));
   add_user_->AddChildView(icon);
 
@@ -1010,7 +1029,7 @@ views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
 
   // Do not show more UserView's then there are logged in users.
   if (multiprofile_index_ >= logged_in_users)
-    return NULL;;
+    return NULL;
 
   user_ = new tray::UserView(this, status, multiprofile_index_);
   return user_;

@@ -161,6 +161,8 @@
         'magnifier/magnifier_constants.h',
         'magnifier/partial_magnification_controller.cc',
         'magnifier/partial_magnification_controller.h',
+        'popup_message.cc',
+        'popup_message.h',
         'root_window_controller.cc',
         'root_window_controller.h',
         'rotator/screen_rotation.cc',
