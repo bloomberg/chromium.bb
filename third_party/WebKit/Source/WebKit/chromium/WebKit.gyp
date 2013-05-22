@@ -553,6 +553,8 @@
                 'src/WebWorkerClientImpl.h',
                 'src/WebWorkerInfo.cpp',
                 'src/WebWorkerRunLoop.cpp',
+                'src/WorkerAllowMainThreadBridgeBase.cpp',
+                'src/WorkerAllowMainThreadBridgeBase.h',
                 'src/WorkerAsyncFileSystemChromium.cpp',
                 'src/WorkerAsyncFileSystemChromium.h',
                 'src/WorkerAsyncFileWriterChromium.cpp',

@@ -43,6 +43,7 @@
 #include "WebViewImpl.h"
 #include "WebWorkerBase.h"
 #include "WebWorkerClientImpl.h"
+#include "WorkerAllowMainThreadBridgeBase.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ScriptExecutionContext.h"
@@ -82,77 +83,37 @@ IDBFactoryBackendProxy::~IDBFactoryBackendProxy()
 
 static const char allowIndexedDBMode[] = "allowIndexedDBMode";
 
-class AllowIndexedDBMainThreadBridge : public ThreadSafeRefCounted<AllowIndexedDBMainThreadBridge> {
+class AllowIndexedDBMainThreadBridge : public WorkerAllowMainThreadBridgeBase {
 public:
-    static PassRefPtr<AllowIndexedDBMainThreadBridge> create(WebWorkerBase* webWorkerBase, const String& mode, const String& name)
+    static PassRefPtr<AllowIndexedDBMainThreadBridge> create(WorkerContext* workerContext, WebWorkerBase* webWorkerBase, const String& mode, const String& name)
     {
-        return adoptRef(new AllowIndexedDBMainThreadBridge(webWorkerBase, mode, name));
-    }
-
-    // These methods are invoked on the worker context.
-    void cancel()
-    {
-        MutexLocker locker(m_mutex);
-        m_webWorkerBase = 0;
-    }
-
-    bool result()
-    {
-        return m_result;
-    }
-
-    // This method is invoked on the main thread.
-    void signalCompleted(bool result, const String& mode)
-    {
-        MutexLocker locker(m_mutex);
-        if (m_webWorkerBase)
-            m_webWorkerBase->workerLoaderProxy()->postTaskForModeToWorkerContext(createCallbackTask(&didComplete, this, result), mode);
+        return adoptRef(new AllowIndexedDBMainThreadBridge(workerContext, webWorkerBase, mode, name));
     }
 
 private:
-    AllowIndexedDBMainThreadBridge(WebWorkerBase* webWorkerBase, const String& mode, const String& name)
-        : m_result(false)
-        , m_webWorkerBase(webWorkerBase)
+    class AllowIDBParams : public AllowParams
     {
-        WebCommonWorkerClient* commonClient = webWorkerBase->commonClient();
-        // See note about thread-safety below.
-        WebWorkerBase::dispatchTaskToMainThread(
-            createCallbackTask(&allowIndexedDBTask, this, WebCore::AllowCrossThreadAccess(commonClient), name, mode));
-    }
-
-    static void allowIndexedDBTask(ScriptExecutionContext*, PassRefPtr<AllowIndexedDBMainThreadBridge> bridge, WebCommonWorkerClient* commonClient, const String& name, const String& mode)
-    {
-        if (!commonClient) {
-            bridge->signalCompleted(false, mode);
-            return;
+    public:
+        AllowIDBParams(const String& mode, const String& name)
+            : AllowParams(mode)
+            , m_name(name.isolatedCopy())
+        {
         }
-        bool allowed = commonClient->allowIndexedDB(name);
-        bridge->signalCompleted(allowed, mode);
-    }
+        String m_name;
+    };
 
-    static void didComplete(ScriptExecutionContext* context, PassRefPtr<AllowIndexedDBMainThreadBridge> bridge, bool result)
+    AllowIndexedDBMainThreadBridge(WorkerContext* workerContext, WebWorkerBase* webWorkerBase, const String& mode, const String& name)
+        : WorkerAllowMainThreadBridgeBase(workerContext, webWorkerBase)
     {
-        bridge->m_result = result;
+        postTaskToMainThread(adoptPtr(new AllowIDBParams(mode, name)));
     }
 
-    bool m_result;
-    Mutex m_mutex;
-    // AllowIndexedDBMainThreadBridge uses two non-threadsafe classes across
-    // threads: WebWorkerBase and WebCommonWorkerClient.
-    // In the dedicated worker case, these are both the same object of type
-    // WebWorkerClientImpl, which isn't deleted for the life of the renderer
-    // process so we don't have to worry about use-after-frees.
-    // In the shared worker case, these are of type WebSharedWorkerImpl and
-    // chromium's WebSharedWorkerClientProxy, respectively. These are both
-    // deleted on the main thread in response to a request on the worker thread,
-    // but only after the worker run loop stops processing tasks. So even in
-    // the most interleaved case, we have:
-    // W AllowIndexedDBMainThreadBridge schedules allowIndexedDBTask
-    // M workerRunLoop marked as killed
-    // W runLoop stops and schedules object deletion on main thread
-    // M allowIndexedDBTask calls commonClient->allowIndexedDB()
-    // M WebWorkerBase and WebCommonWorkerClient are deleted
-    WebWorkerBase* m_webWorkerBase;
+    virtual bool allowOnMainThread(WebCommonWorkerClient* commonClient, AllowParams* params)
+    {
+        ASSERT(isMainThread());
+        AllowIDBParams* allowIDBParams = static_cast<AllowIDBParams*>(params);
+        return commonClient->allowIndexedDB(allowIDBParams->m_name);
+    }
 };
 
 bool IDBFactoryBackendProxy::allowIndexedDB(ScriptExecutionContext* context, const String& name, const WebSecurityOrigin& origin, PassRefPtr<IDBCallbacks> callbacks)
@@ -172,7 +133,7 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ScriptExecutionContext* context, con
 
         String mode = allowIndexedDBMode;
         mode.append(String::number(runLoop.createUniqueId()));
-        RefPtr<AllowIndexedDBMainThreadBridge> bridge = AllowIndexedDBMainThreadBridge::create(webWorkerBase, mode, name);
+        RefPtr<AllowIndexedDBMainThreadBridge> bridge = AllowIndexedDBMainThreadBridge::create(workerContext, webWorkerBase, mode, name);
 
         // Either the bridge returns, or the queue gets terminated.
         if (runLoop.runInMode(workerContext, mode) == MessageQueueTerminated) {
