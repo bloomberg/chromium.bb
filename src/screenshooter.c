@@ -432,6 +432,7 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 	}
 
 	pixman_region32_fini(&damage);
+	recorder->count++;
 }
 
 static void
@@ -525,13 +526,13 @@ recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *da
 		recorder = container_of(listener, struct weston_recorder,
 					frame_listener);
 
-		fprintf(stderr,
+		weston_log(
 			"stopping recorder, total file size %dM, %d frames\n",
 			recorder->total / (1024 * 1024), recorder->count);
 
 		weston_recorder_destroy(recorder);
 	} else {
-		fprintf(stderr, "starting recorder, file %s\n", filename);
+		weston_log("starting recorder, file %s\n", filename);
 		weston_recorder_create(output, filename);
 	}
 }
