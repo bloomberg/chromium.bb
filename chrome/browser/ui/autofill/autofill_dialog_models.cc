@@ -32,27 +32,32 @@ SuggestionsMenuModel::SuggestionsMenuModel(
 SuggestionsMenuModel::~SuggestionsMenuModel() {}
 
 void SuggestionsMenuModel::AddKeyedItem(
-    const std::string& key, const string16& item) {
-  items_.push_back(std::make_pair(key, item));
-  AddCheckItem(items_.size() - 1, item);
+    const std::string& key, const string16& display_label) {
+  Item item = { key, true };
+  items_.push_back(item);
+  AddCheckItem(items_.size() - 1, display_label);
 }
 
 void SuggestionsMenuModel::AddKeyedItemWithIcon(
-    const std::string& key, const string16& item, const gfx::Image& icon) {
-  AddKeyedItem(key, item);
+    const std::string& key,
+    const string16& display_label,
+    const gfx::Image& icon) {
+  AddKeyedItem(key, display_label);
   SetIcon(items_.size() - 1, icon);
 }
 
 void SuggestionsMenuModel::AddKeyedItemWithSublabel(
     const std::string& key,
-    const string16& display_label, const string16& display_sublabel) {
+    const string16& display_label,
+    const string16& display_sublabel) {
   AddKeyedItem(key, display_label);
   SetSublabel(items_.size() - 1, display_sublabel);
 }
 
 void SuggestionsMenuModel::AddKeyedItemWithSublabelAndIcon(
     const std::string& key,
-    const string16& display_label, const string16& display_sublabel,
+    const string16& display_label,
+    const string16& display_sublabel,
     const gfx::Image& icon) {
   AddKeyedItemWithIcon(key, display_label, icon);
   SetSublabel(items_.size() - 1, display_sublabel);
@@ -65,30 +70,28 @@ void SuggestionsMenuModel::Reset() {
 }
 
 std::string SuggestionsMenuModel::GetItemKeyAt(int index) const {
-  return items_[index].first;
+  return items_[index].key;
 }
 
 std::string SuggestionsMenuModel::GetItemKeyForCheckedItem() const {
   if (items_.empty())
     return std::string();
 
-  return items_[checked_item_].first;
+  return items_[checked_item_].key;
 }
 
 void SuggestionsMenuModel::SetCheckedItem(const std::string& item_key) {
-  for (size_t i = 0; i < items_.size(); ++i) {
-    if (items_[i].first == item_key) {
-      checked_item_ = i;
-      return;
-    }
-  }
-
-  NOTREACHED();
+  checked_item_ = GetItemIndex(item_key);
 }
 
 void SuggestionsMenuModel::SetCheckedIndex(size_t index) {
-  DCHECK_LE(index, items_.size());
+  DCHECK_LT(index, items_.size());
   checked_item_ = index;
+}
+
+void SuggestionsMenuModel::SetEnabled(const std::string& item_key,
+                                      bool enabled) {
+  items_[GetItemIndex(item_key)].enabled = enabled;
 }
 
 bool SuggestionsMenuModel::IsCommandIdChecked(
@@ -98,7 +101,10 @@ bool SuggestionsMenuModel::IsCommandIdChecked(
 
 bool SuggestionsMenuModel::IsCommandIdEnabled(
     int command_id) const {
-  return true;
+  // Please note: command_id is same as the 0-based index in |items_|.
+  DCHECK_GE(command_id, 0);
+  DCHECK_LT(static_cast<size_t>(command_id), items_.size());
+  return items_[command_id].enabled;
 }
 
 bool SuggestionsMenuModel::GetAcceleratorForCommandId(
@@ -109,6 +115,16 @@ bool SuggestionsMenuModel::GetAcceleratorForCommandId(
 
 void SuggestionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
   delegate_->SuggestionItemSelected(this, command_id);
+}
+
+size_t SuggestionsMenuModel::GetItemIndex(const std::string& item_key) {
+  for (size_t i = 0; i < items_.size(); ++i) {
+    if (items_[i].key == item_key)
+      return i;
+  }
+
+  NOTREACHED();
+  return 0;
 }
 
 // MonthComboboxModel ----------------------------------------------------------
