@@ -1063,6 +1063,7 @@ shm_surface_prepare(struct toysurface *base, int dx, int dy,
 	if (leaf->cairo_surface)
 		cairo_surface_destroy(leaf->cairo_surface);
 
+#ifdef USE_RESIZE_POOL
 	if (resize_hint && !leaf->resize_pool) {
 		/* Create a big pool to allocate from, while continuously
 		 * resizing. Mmapping a new pool in the server
@@ -1073,6 +1074,7 @@ shm_surface_prepare(struct toysurface *base, int dx, int dy,
 		leaf->resize_pool = shm_pool_create(surface->display,
 						    6 * 1024 * 1024);
 	}
+#endif
 
 	rect.width = width;
 	rect.height = height;

@@ -239,6 +239,13 @@ if test x$enable_clients = xyes; then
   PKG_CHECK_MODULES(PANGO, [pangocairo], [have_pango=yes], [have_pango=no])
 fi
 
+AC_ARG_ENABLE(resize-optimization,
+              AS_HELP_STRING([--disable-resize-optimization],
+                             [disable resize optimization allocating a big buffer in toytoolkit]),,
+              enable_resize_optimization=yes)
+AS_IF([test "x$enable_resize_optimization" = "xyes"],
+      [AC_DEFINE([USE_RESIZE_POOL], [1], [Use resize memory pool as a performance optimization])])
+
 AC_ARG_ENABLE(weston-launch, [  --enable-weston-launch],, enable_weston_launch=yes)
 AM_CONDITIONAL(BUILD_WESTON_LAUNCH, test x$enable_weston_launch == xyes)
 if test x$enable_weston_launch == xyes; then
