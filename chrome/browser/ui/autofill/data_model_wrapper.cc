@@ -162,13 +162,6 @@ string16 WalletAddressWrapper::GetInfo(AutofillFieldType type) {
   return address_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
-string16 WalletAddressWrapper::GetDisplayText() {
-  if (!address_->is_complete_address())
-    return string16();
-
-  return DataModelWrapper::GetDisplayText();
-}
-
 // WalletInstrumentWrapper
 
 WalletInstrumentWrapper::WalletInstrumentWrapper(
@@ -190,10 +183,8 @@ gfx::Image WalletInstrumentWrapper::GetIcon() {
 
 string16 WalletInstrumentWrapper::GetDisplayText() {
   // TODO(dbeam): handle other instrument statuses? http://crbug.com/233048
-  if (instrument_->status() == wallet::WalletItems::MaskedInstrument::EXPIRED ||
-      !instrument_->address().is_complete_address()) {
+  if (instrument_->status() == wallet::WalletItems::MaskedInstrument::EXPIRED)
     return string16();
-  }
 
   // TODO(estade): descriptive_name() is user-provided. Should we use it or
   // just type + last 4 digits?

@@ -88,7 +88,6 @@ const char kValidAddress[] =
     "{"
     "  \"id\":\"id\","
     "  \"phone_number\":\"phone_number\","
-    "  \"is_minimal_address\":\"true\","
     "  \"postal_address\":"
     "  {"
     "    \"recipient_name\":\"recipient_name\","
@@ -146,8 +145,7 @@ const char kClientValidAddress[] =
   "  \"state\":\"state\","
   "  \"postal_code\":\"postal_code\","
   "  \"phone_number\":\"phone_number\","
-  "  \"country_code\":\"country_code\","
-  "  \"type\":\"FULL\""
+  "  \"country_code\":\"country_code\""
   "}";
 
 }  // anonymous namespace
@@ -216,7 +214,6 @@ TEST_F(WalletAddressTest, CreateAddressWithID) {
                   ASCIIToUTF16("postal_code_number"),
                   ASCIIToUTF16("phone_number"),
                   "id");
-  address.set_is_complete_address(false);
   ASSERT_EQ(address, *Address::CreateAddress(*dict_));
   ASSERT_EQ(address, *Address::CreateAddressWithID(*dict_));
 }
