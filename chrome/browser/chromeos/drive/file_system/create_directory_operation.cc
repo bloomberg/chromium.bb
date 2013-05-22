@@ -18,66 +18,39 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
-struct CreateDirectoryOperation::CreateDirectoryParams {
-  CreateDirectoryParams(const base::FilePath& target_directory_path,
-                        bool is_exclusive,
-                        bool is_recursive,
-                        const FileOperationCallback& callback)
-      : target_directory_path(target_directory_path),
-        is_exclusive(is_exclusive),
-        is_recursive(is_recursive),
-        callback(callback) {}
-  ~CreateDirectoryParams() {}
+namespace {
 
-  const base::FilePath target_directory_path;
-  const bool is_exclusive;
-  const bool is_recursive;
-  FileOperationCallback callback;
-};
+// Part of CreateDirectoryRecursively(). Adds an |entry| for new directory
+// to |metadata|, and return the status. If succeeded, |file_path| will store
+// the path to the result file.
+FileError UpdateLocalStateForCreateDirectoryRecursively(
+    internal::ResourceMetadata* metadata,
+    const ResourceEntry& entry,
+    base::FilePath* file_path) {
+  DCHECK(metadata);
+  DCHECK(file_path);
 
-// CreateDirectoryOperation::FindFirstMissingParentDirectoryResult
-// implementation.
-CreateDirectoryOperation::FindFirstMissingParentDirectoryResult::
-FindFirstMissingParentDirectoryResult()
-    : error(CreateDirectoryOperation::FIND_FIRST_FOUND_INVALID) {
+  FileError result = metadata->AddEntry(entry);
+  // Depending on timing, a metadata may be updated by delta feed already.
+  // So, FILE_ERROR_EXISTS is not an error.
+  if (result == FILE_ERROR_EXISTS)
+    result = FILE_ERROR_OK;
+
+  if (result == FILE_ERROR_OK)
+    *file_path = metadata->GetFilePath(entry.resource_id());
+
+  return result;
 }
 
-void CreateDirectoryOperation::FindFirstMissingParentDirectoryResult::Init(
-    FindFirstMissingParentDirectoryError in_error,
-    base::FilePath in_first_missing_parent_path,
-    const std::string& in_last_dir_resource_id) {
-  error = in_error;
-  first_missing_parent_path = in_first_missing_parent_path;
-  last_dir_resource_id = in_last_dir_resource_id;
-}
-
-CreateDirectoryOperation::FindFirstMissingParentDirectoryResult::
-~FindFirstMissingParentDirectoryResult() {
-}
-
-struct CreateDirectoryOperation::FindFirstMissingParentDirectoryParams {
-  FindFirstMissingParentDirectoryParams(
-      const std::vector<base::FilePath::StringType>& path_parts,
-      const FindFirstMissingParentDirectoryCallback& callback)
-      : path_parts(path_parts),
-        index(0),
-        callback(callback) {
-    DCHECK(!callback.is_null());
-  }
-  ~FindFirstMissingParentDirectoryParams() {}
-
-  std::vector<base::FilePath::StringType> path_parts;
-  size_t index;
-  base::FilePath current_path;
-  std::string last_dir_resource_id;
-  const FindFirstMissingParentDirectoryCallback callback;
-};
+}  // namespace
 
 CreateDirectoryOperation::CreateDirectoryOperation(
+    base::SequencedTaskRunner* blocking_task_runner,
     OperationObserver* observer,
     JobScheduler* scheduler,
     internal::ResourceMetadata* metadata)
-    : observer_(observer),
+    : blocking_task_runner_(blocking_task_runner),
+      observer_(observer),
       scheduler_(scheduler),
       metadata_(metadata),
       weak_ptr_factory_(this) {
@@ -96,188 +69,169 @@ void CreateDirectoryOperation::CreateDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<CreateDirectoryParams> params(new CreateDirectoryParams(
-      directory_path, is_exclusive, is_recursive, callback));
-
-  FindFirstMissingParentDirectory(
-      directory_path,
-      base::Bind(
-          &CreateDirectoryOperation::CreateDirectoryAfterFindFirstMissingPath,
-          weak_ptr_factory_.GetWeakPtr(),
-          base::Passed(&params)));
-}
-
-void CreateDirectoryOperation::CreateDirectoryAfterFindFirstMissingPath(
-    scoped_ptr<CreateDirectoryParams> params,
-    const FindFirstMissingParentDirectoryResult& result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params->callback.is_null());
-
-  switch (result.error) {
-    case FIND_FIRST_FOUND_INVALID: {
-      params->callback.Run(FILE_ERROR_NOT_FOUND);
-      return;
-    }
-    case FIND_FIRST_DIRECTORY_ALREADY_PRESENT: {
-      params->callback.Run(
-          params->is_exclusive ? FILE_ERROR_EXISTS : FILE_ERROR_OK);
-      return;
-    }
-    case FIND_FIRST_FOUND_MISSING: {
-      // There is a missing folder to be created here, move on with the rest of
-      // this function.
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
-  }
-
-  // Do we have a parent directory here as well? We can't then create target
-  // directory if this is not a recursive operation.
-  if (params->target_directory_path != result.first_missing_parent_path &&
-      !params->is_recursive) {
-    params->callback.Run(FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  scheduler_->AddNewDirectory(
-      result.last_dir_resource_id,
-      result.first_missing_parent_path.BaseName().AsUTF8Unsafe(),
-      base::Bind(&CreateDirectoryOperation::AddNewDirectory,
+  ResourceEntry* entry = new ResourceEntry;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&CreateDirectoryOperation::GetExistingDeepestDirectory,
+                 metadata_, directory_path, entry),
+      base::Bind(&CreateDirectoryOperation
+                     ::CreateDirectoryAfterGetExistingDeepestDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&params),
-                 result.first_missing_parent_path));
+                 directory_path, is_exclusive, is_recursive,
+                 callback, base::Owned(entry)));
 }
 
-void CreateDirectoryOperation::AddNewDirectory(
-    scoped_ptr<CreateDirectoryParams> params,
-    const base::FilePath& created_directory_path,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params->callback.is_null());
-
-  FileError error = util::GDataToFileError(status);
-  if (error != FILE_ERROR_OK) {
-    params->callback.Run(error);
-    return;
-  }
-
-  metadata_->AddEntryOnUIThread(
-      ConvertToResourceEntry(*entry),
-      base::Bind(&CreateDirectoryOperation::ContinueCreateDirectory,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&params),
-                 created_directory_path));
-}
-
-void CreateDirectoryOperation::ContinueCreateDirectory(
-    scoped_ptr<CreateDirectoryParams> params,
-    const base::FilePath& created_directory_path,
-    FileError error,
-    const base::FilePath& moved_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params->callback.is_null());
-
-  // Depending on timing, a metadata may be updated by delta feed already.
-  // So, FILE_ERROR_EXISTS is not an error.
-  if (error == FILE_ERROR_EXISTS)
-    error = FILE_ERROR_OK;
-
-  if (error != FILE_ERROR_OK) {
-    params->callback.Run(error);
-    return;
-  }
-
-  observer_->OnDirectoryChangedByOperation(moved_file_path.DirName());
-
-  // Not done yet with recursive directory creation?
-  if (params->target_directory_path != created_directory_path &&
-      params->is_recursive) {
-    CreateDirectory(
-        params->target_directory_path, params->is_exclusive,
-        params->is_recursive, params->callback);
-  } else {
-    // Finally done with the create request.
-    params->callback.Run(FILE_ERROR_OK);
-  }
-}
-
-void CreateDirectoryOperation::FindFirstMissingParentDirectory(
+// static
+base::FilePath CreateDirectoryOperation::GetExistingDeepestDirectory(
+    internal::ResourceMetadata* metadata,
     const base::FilePath& directory_path,
-    const FindFirstMissingParentDirectoryCallback& callback) {
+    ResourceEntry* entry) {
+  DCHECK(metadata);
+  DCHECK(entry);
+
+  std::vector<base::FilePath::StringType> components;
+  directory_path.GetComponents(&components);
+
+  if (components.empty() || components[0] != util::kDriveGrandRootDirName)
+    return base::FilePath();
+
+  std::string resource_id = util::kDriveGrandRootSpecialResourceId;
+  for (size_t i = 1; i < components.size(); ++i) {
+    std::string child_resource_id =
+        metadata->GetChildResourceId(resource_id, components[i]);
+    if (child_resource_id.empty())
+      break;
+    resource_id = child_resource_id;
+  }
+
+  FileError error = metadata->GetResourceEntryById(resource_id, NULL, entry);
+  DCHECK_EQ(FILE_ERROR_OK, error);
+
+  if (!entry->file_info().is_directory())
+    return base::FilePath();
+
+  return metadata->GetFilePath(resource_id);
+}
+
+void CreateDirectoryOperation::CreateDirectoryAfterGetExistingDeepestDirectory(
+    const base::FilePath& directory_path,
+    bool is_exclusive,
+    bool is_recursive,
+    const FileOperationCallback& callback,
+    ResourceEntry* existing_deepest_directory_entry,
+    const base::FilePath& existing_deepest_directory_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(existing_deepest_directory_entry);
+
+  if (existing_deepest_directory_path.empty()) {
+    callback.Run(FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  if (directory_path == existing_deepest_directory_path) {
+    callback.Run(is_exclusive ? FILE_ERROR_EXISTS : FILE_ERROR_OK);
+    return;
+  }
+
+  // If it is not recursive creation, the found directory must be the direct
+  // parent of |directory_path| to ensure creating exact one directory.
+  if (!is_recursive &&
+      existing_deepest_directory_path != directory_path.DirName()) {
+    callback.Run(FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  // Create directories under the found directory.
+  base::FilePath remaining_path;
+  existing_deepest_directory_path.AppendRelativePath(
+      directory_path, &remaining_path);
+  CreateDirectoryRecursively(existing_deepest_directory_entry->resource_id(),
+                             remaining_path, callback);
+}
+
+void CreateDirectoryOperation::CreateDirectoryRecursively(
+    const std::string& parent_resource_id,
+    const base::FilePath& relative_file_path,
+    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  std::vector<base::FilePath::StringType> path_parts;
-  directory_path.GetComponents(&path_parts);
+  // Split the first component and remaining ones of |relative_file_path|.
+  std::vector<base::FilePath::StringType> components;
+  relative_file_path.GetComponents(&components);
+  DCHECK(!components.empty());
+  // TODO(hidehiko): Rename this variable to "title" with other variable names.
+  // crbug.com/242794.
+  base::FilePath name(components[0]);
+  base::FilePath remaining_path;
+  name.AppendRelativePath(relative_file_path, &remaining_path);
 
-  scoped_ptr<FindFirstMissingParentDirectoryParams> params(
-      new FindFirstMissingParentDirectoryParams(path_parts, callback));
-
-  // Have to post because FindFirstMissingParentDirectoryInternal calls
-  // the callback directly.
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &CreateDirectoryOperation::FindFirstMissingParentDirectoryInternal,
-          weak_ptr_factory_.GetWeakPtr(),
-          base::Passed(&params)));
+  scheduler_->AddNewDirectory(
+      parent_resource_id,
+      name.AsUTF8Unsafe(),
+      base::Bind(&CreateDirectoryOperation
+                     ::CreateDirectoryRecursivelyAfterAddNewDirectory,
+                 weak_ptr_factory_.GetWeakPtr(), remaining_path, callback));
 }
 
-void CreateDirectoryOperation::FindFirstMissingParentDirectoryInternal(
-    scoped_ptr<FindFirstMissingParentDirectoryParams> params) {
+void CreateDirectoryOperation::CreateDirectoryRecursivelyAfterAddNewDirectory(
+    const base::FilePath& remaining_path,
+    const FileOperationCallback& callback,
+    google_apis::GDataErrorCode gdata_error,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(params.get());
+  DCHECK(!callback.is_null());
 
-  // Terminate recursion if we're at the last element.
-  if (params->index == params->path_parts.size()) {
-    FindFirstMissingParentDirectoryResult result;
-    result.Init(FIND_FIRST_DIRECTORY_ALREADY_PRESENT, base::FilePath(), "");
-    params->callback.Run(result);
+  FileError error = util::GDataToFileError(gdata_error);
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+  DCHECK(resource_entry);
+
+  // Note that the created directory may be renamed inside
+  // ResourceMetadata::AddEntry due to name confliction.
+  // What we actually need here is the new created path (not the path we try
+  // to create).
+  base::FilePath* file_path = new base::FilePath;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&UpdateLocalStateForCreateDirectoryRecursively,
+                 metadata_, ConvertToResourceEntry(*resource_entry), file_path),
+      base::Bind(&CreateDirectoryOperation
+                     ::CreateDirectoryRecursivelyAfterUpdateLocalState,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 resource_entry->resource_id(),
+                 remaining_path, callback, base::Owned(file_path)));
+}
+
+void CreateDirectoryOperation::CreateDirectoryRecursivelyAfterUpdateLocalState(
+    const std::string& resource_id,
+    const base::FilePath& remaining_path,
+    const FileOperationCallback& callback,
+    base::FilePath* file_path,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
     return;
   }
 
-  params->current_path = params->current_path.Append(
-      params->path_parts[params->index]);
-  // Need a reference to current_path before we call base::Passed because the
-  // order of evaluation of arguments is indeterminate.
-  const base::FilePath& current_path = params->current_path;
-  metadata_->GetResourceEntryByPathOnUIThread(
-      current_path,
-      base::Bind(
-          &CreateDirectoryOperation::ContinueFindFirstMissingParentDirectory,
-          weak_ptr_factory_.GetWeakPtr(),
-          base::Passed(&params)));
-}
+  observer_->OnDirectoryChangedByOperation(file_path->DirName());
 
-void CreateDirectoryOperation::ContinueFindFirstMissingParentDirectory(
-    scoped_ptr<FindFirstMissingParentDirectoryParams> params,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(params.get());
-
-  FindFirstMissingParentDirectoryResult result;
-  if (error == FILE_ERROR_NOT_FOUND) {
-    // Found the missing parent.
-    result.Init(FIND_FIRST_FOUND_MISSING,
-                params->current_path,
-                params->last_dir_resource_id);
-    params->callback.Run(result);
-  } else if (error != FILE_ERROR_OK ||
-             !entry->file_info().is_directory()) {
-    // Unexpected error, or found a file when we were expecting a directory.
-    result.Init(FIND_FIRST_FOUND_INVALID, base::FilePath(), "");
-    params->callback.Run(result);
-  } else {
-    // This parent exists, so recursively look at the next element.
-    params->last_dir_resource_id = entry->resource_id();
-    params->index++;
-    FindFirstMissingParentDirectoryInternal(params.Pass());
+  if (remaining_path.empty()) {
+    // All directories are created successfully.
+    callback.Run(FILE_ERROR_OK);
+    return;
   }
+
+  // Create descendent directories.
+  CreateDirectoryRecursively(resource_id, remaining_path, callback);
 }
 
 }  // namespace file_system

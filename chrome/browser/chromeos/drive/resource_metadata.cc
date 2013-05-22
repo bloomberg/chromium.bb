@@ -591,6 +591,12 @@ scoped_ptr<std::set<base::FilePath> > ResourceMetadata::GetChildDirectories(
   return changed_directories.Pass();
 }
 
+std::string ResourceMetadata::GetChildResourceId(
+    const std::string& parent_resource_id, const std::string& base_name) {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  return storage_->GetChild(parent_resource_id, base_name);
+}
+
 scoped_ptr<ResourceMetadata::Iterator> ResourceMetadata::GetIterator() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 

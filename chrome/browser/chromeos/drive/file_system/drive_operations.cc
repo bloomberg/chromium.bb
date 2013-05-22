@@ -41,8 +41,11 @@ void DriveOperations::Init(OperationObserver* observer,
                                                        metadata,
                                                        cache,
                                                        file_system));
-  create_directory_operation_.reset(
-      new CreateDirectoryOperation(observer, scheduler, metadata));
+  create_directory_operation_.reset(new CreateDirectoryOperation(
+      blocking_task_runner,
+      observer,
+      scheduler,
+      metadata));
   create_file_operation_.reset(new CreateFileOperation(blocking_task_runner,
                                                        observer,
                                                        scheduler,

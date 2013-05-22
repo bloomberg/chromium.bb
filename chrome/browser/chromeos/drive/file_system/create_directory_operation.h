@@ -8,10 +8,15 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace google_apis {
 class ResourceEntry;
@@ -35,7 +40,8 @@ class OperationObserver;
 // local state and metadata to reflect the new state.
 class CreateDirectoryOperation {
  public:
-  CreateDirectoryOperation(OperationObserver* observer,
+  CreateDirectoryOperation(base::SequencedTaskRunner* blocking_task_runner,
+                           OperationObserver* observer,
                            JobScheduler* scheduler,
                            internal::ResourceMetadata* metadata);
   ~CreateDirectoryOperation();
@@ -51,96 +57,56 @@ class CreateDirectoryOperation {
                        bool is_exclusive,
                        bool is_recursive,
                        const FileOperationCallback& callback);
- private:
-  friend class CreateDirectoryOperationTest;
-  FRIEND_TEST_ALL_PREFIXES(CreateDirectoryOperationTest,
-                           FindFirstMissingParentDirectory);
 
-  // Defines set of parameters passes to intermediate callbacks during
-  // execution of CreateDirectory() method.
-  struct CreateDirectoryParams;
-
-  // Defines possible search results of FindFirstMissingParentDirectory().
-  enum FindFirstMissingParentDirectoryError {
-    // Target directory found, it's not a directory.
-    FIND_FIRST_FOUND_INVALID,
-    // Found missing directory segment while searching for given directory.
-    FIND_FIRST_FOUND_MISSING,
-    // Found target directory, it already exists.
-    FIND_FIRST_DIRECTORY_ALREADY_PRESENT,
-  };
-
-  // The result struct for FindFirstMissingParentDirectory().
-  struct FindFirstMissingParentDirectoryResult {
-    FindFirstMissingParentDirectoryResult();
-    ~FindFirstMissingParentDirectoryResult();
-
-    // Initializes the struct.
-    void Init(FindFirstMissingParentDirectoryError error,
-              base::FilePath first_missing_parent_path,
-              const std::string& last_dir_resource_id);
-
-    FindFirstMissingParentDirectoryError error;
-    // The following two fields are provided when |error| is set to
-    // FIND_FIRST_FOUND_MISSING. Otherwise, the two fields are undefined.
-
-    // Suppose "drive/foo/bar/baz/qux" is being checked, and only
-    // "drive/foo/bar" is present, "drive/foo/bar/baz" is the first missing
-    // parent path.
-    base::FilePath first_missing_parent_path;
-
-    // The resource id of the last found directory. In the above example, the
-    // resource id of "drive/foo/bar".
-    std::string last_dir_resource_id;
-  };
-
-  // Callback for FindFirstMissingParentDirectory().
-  typedef base::Callback<void(
-      const FindFirstMissingParentDirectoryResult& result)>
-      FindFirstMissingParentDirectoryCallback;
-
-  // Params for FindFirstMissingParentDirectory().
-  struct FindFirstMissingParentDirectoryParams;
-
-  // Part of CreateDirectory(). Called after
-  // FindFirstMissingParentDirectory() is complete.
-  // |callback| must not be null.
-  void CreateDirectoryAfterFindFirstMissingPath(
-      scoped_ptr<CreateDirectoryParams> params,
-      const FindFirstMissingParentDirectoryResult& result);
-
-  // Callback for handling directory create requests. Adds the directory
-  // represented by |entry| to the local filesystem.
-  void AddNewDirectory(scoped_ptr<CreateDirectoryParams> params,
-                       const base::FilePath& created_directory_path,
-                       google_apis::GDataErrorCode status,
-                       scoped_ptr<google_apis::ResourceEntry> entry);
-
-  // Callback for ResourceMetadata::AddEntryToDirectory. Continues the
-  // recursive creation of a directory path by calling CreateDirectory again.
-  void ContinueCreateDirectory(scoped_ptr<CreateDirectoryParams> params,
-                               const base::FilePath& created_directory_path,
-                               FileError error,
-                               const base::FilePath& moved_file_path);
-
-  // Finds the first missing parent directory of |directory_path|.
-  // |callback| must not be null.
-  void FindFirstMissingParentDirectory(
+  // Returns the file path to the existing deepest directory, which appears
+  // in the |file_path|, with |entry| storing the directory's resource entry.
+  // If not found, returns an empty file path.
+  // This should run on |blocking_task_runner_|.
+  // This is public for testing.
+  static base::FilePath GetExistingDeepestDirectory(
+      internal::ResourceMetadata* metadata,
       const base::FilePath& directory_path,
-      const FindFirstMissingParentDirectoryCallback& callback);
+      ResourceEntry* entry);
 
-  // Helper function for FindFirstMissingParentDirectory, for recursive search
-  // for first missing parent.
-  void FindFirstMissingParentDirectoryInternal(
-      scoped_ptr<FindFirstMissingParentDirectoryParams> params);
+ private:
+  // Part of CreateDirectory(). Called after GetExistingDeepestDirectory
+  // is completed.
+  void CreateDirectoryAfterGetExistingDeepestDirectory(
+      const base::FilePath& directory_path,
+      bool is_exclusive,
+      bool is_recursive,
+      const FileOperationCallback& callback,
+      ResourceEntry* existing_deepest_directory_entry,
+      const base::FilePath& existing_deepest_directory_path);
 
-  // Callback for ResourceMetadata::GetResourceEntryByPath from
-  // FindFirstMissingParentDirectory.
-  void ContinueFindFirstMissingParentDirectory(
-      scoped_ptr<FindFirstMissingParentDirectoryParams> params,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
+  // Creates directories specified by |relative_file_path| under the directory
+  // with |parent_resource_id|.
+  // For example, if |relative_file_path| is "a/b/c", then "a", "a/b" and
+  // "a/b/c" directories will be created.
+  // Runs |callback| upon completion.
+  void CreateDirectoryRecursively(
+      const std::string& parent_resource_id,
+      const base::FilePath& relative_file_path,
+      const FileOperationCallback& callback);
 
+  // Part of CreateDirectoryRecursively(). Called after AddNewDirectory() on
+  // the server is completed.
+  void CreateDirectoryRecursivelyAfterAddNewDirectory(
+      const base::FilePath& remaining_path,
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode gdata_error,
+      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+
+  // Part of CreateDirectoryRecursively(). Called after updating local state
+  // is completed.
+  void CreateDirectoryRecursivelyAfterUpdateLocalState(
+      const std::string& resource_id,
+      const base::FilePath& remaining_path,
+      const FileOperationCallback& callback,
+      base::FilePath* file_path,
+      FileError error);
+
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
