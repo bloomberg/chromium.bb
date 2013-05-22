@@ -714,7 +714,7 @@ bool TestRunner::isPointerLocked()
     return m_pointerLocked;
 }
 
-void TestRunner::setToolTipText(WebKit::WebString text)
+void TestRunner::setToolTipText(const WebKit::WebString& text)
 {
     m_tooltipText.set(text.utf8());
 }
