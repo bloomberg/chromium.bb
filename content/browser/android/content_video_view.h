@@ -29,7 +29,6 @@ class ContentVideoView {
   ~ContentVideoView();
 
   static bool RegisterContentVideoView(JNIEnv* env);
-  static void KeepScreenOn(bool screen_on);
 
   // Getter method called by the Java class to get the media information.
   int GetVideoWidth(JNIEnv*, jobject obj) const;
