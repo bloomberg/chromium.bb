@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_AURAWIN_H_
 #define CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_AURAWIN_H_
 
-#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 
@@ -22,6 +22,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   // Overridden from BrowserProcessPlatformPartBase:
   virtual void PlatformSpecificCommandLineProcessing(
       const CommandLine& command_line) OVERRIDE;
+  virtual void AttemptExit() OVERRIDE;
 
  private:
   // Hosts the channel for the Windows 8 metro viewer process which runs in

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/process_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -23,6 +24,10 @@ class MetroViewerProcessHost : public IPC::Listener,
  public:
   explicit MetroViewerProcessHost(const std::string& ipc_channel_name);
   virtual ~MetroViewerProcessHost();
+
+  // Returns the process id of the viewer process if one is connected to this
+  // host, returns base::kNullProcessId otherwise.
+  base::ProcessId GetViewerProcessId();
 
  private:
   // IPC::Sender implementation:

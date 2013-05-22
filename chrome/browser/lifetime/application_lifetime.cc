@@ -12,6 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -30,14 +31,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/lifetime/application_lifetime_android.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/chrome_browser_application_mac.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
@@ -92,18 +85,7 @@ void AttemptExitInternal() {
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
-#if defined(OS_ANDROID)
-  // Tell the Java code to finish() the Activity.
-  TerminateAndroid();
-#elif defined(OS_MACOSX)
-  // On the Mac, the application continues to run once all windows are closed.
-  // Terminate will result in a CloseAllBrowsers() call, and once (and if)
-  // that is done, will cause the application to exit cleanly.
-  chrome_browser_application_mac::Terminate();
-#else
-  // On most platforms, closing all windows causes the application to exit.
-  CloseAllBrowsers();
-#endif
+  g_browser_process->platform_part()->AttemptExit();
 }
 
 void CloseAllBrowsers() {

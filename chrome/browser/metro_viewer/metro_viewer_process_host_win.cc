@@ -57,6 +57,12 @@ MetroViewerProcessHost::MetroViewerProcessHost(
 MetroViewerProcessHost::~MetroViewerProcessHost() {
 }
 
+base::ProcessId MetroViewerProcessHost::GetViewerProcessId() {
+  if (channel_)
+    return channel_->peer_pid();
+  return base::kNullProcessId;
+}
+
 bool MetroViewerProcessHost::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }

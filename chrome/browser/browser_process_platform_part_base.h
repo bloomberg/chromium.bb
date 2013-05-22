@@ -24,6 +24,9 @@ class BrowserProcessPlatformPartBase {
   // Called from BrowserProcessImpl::StartTearDown().
   virtual void StartTearDown();
 
+  // Called from AttemptExitInternal().
+  virtual void AttemptExit();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPartBase);
 };
