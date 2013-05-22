@@ -504,6 +504,9 @@ output_get_wl_output(struct output *output);
 enum wl_output_transform
 output_get_transform(struct output *output);
 
+uint32_t
+output_get_scale(struct output *output);
+
 void
 keysym_modifiers_add(struct wl_array *modifiers_map,
 		     const char *name);

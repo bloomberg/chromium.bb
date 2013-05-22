@@ -322,6 +322,7 @@ struct output {
 	struct rectangle allocation;
 	struct wl_list link;
 	int transform;
+	int scale;
 
 	display_output_handler_t destroy_handler;
 	void *user_data;
@@ -4396,6 +4397,22 @@ display_handle_geometry(void *data,
 }
 
 static void
+display_handle_done(void *data,
+		     struct wl_output *wl_output)
+{
+}
+
+static void
+display_handle_scale(void *data,
+		     struct wl_output *wl_output,
+		     uint32_t scale)
+{
+	struct output *output = data;
+
+	output->scale = scale;
+}
+
+static void
 display_handle_mode(void *data,
 		    struct wl_output *wl_output,
 		    uint32_t flags,
@@ -4417,7 +4434,9 @@ display_handle_mode(void *data,
 
 static const struct wl_output_listener output_listener = {
 	display_handle_geometry,
-	display_handle_mode
+	display_handle_mode,
+	display_handle_done,
+	display_handle_scale
 };
 
 static void
@@ -4431,8 +4450,9 @@ display_add_output(struct display *d, uint32_t id)
 
 	memset(output, 0, sizeof *output);
 	output->display = d;
+	output->scale = 1;
 	output->output =
-		wl_registry_bind(d->registry, id, &wl_output_interface, 1);
+		wl_registry_bind(d->registry, id, &wl_output_interface, 2);
 	wl_list_insert(d->output_list.prev, &output->link);
 
 	wl_output_add_listener(output->output, &output_listener, output);
@@ -4534,6 +4554,12 @@ enum wl_output_transform
 output_get_transform(struct output *output)
 {
 	return output->transform;
+}
+
+uint32_t
+output_get_scale(struct output *output)
+{
+	return output->scale;
 }
 
 static void
