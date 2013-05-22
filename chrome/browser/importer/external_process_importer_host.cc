@@ -40,7 +40,11 @@ void ExternalProcessImporterHost::StartImportSettings(
   source_profile_ = &source_profile;
   items_ = items;
 
-  CheckForFirefoxLock(source_profile, items);
+  if (!CheckForFirefoxLock(source_profile)) {
+    Cancel();
+    return;
+  }
+
   CheckForLoadedModels(items);
 
   InvokeTaskIfDone();

@@ -76,6 +76,7 @@ class ImporterHost : public BaseBookmarkModelObserver,
 
   // ShowWarningDialog() asks user to close the application that is owning the
   // lock. They can retry or skip the importing process.
+  // This method should not be called if the importer is in headless mode.
   void ShowWarningDialog();
 
   // This is called when when user ends the lock dialog by clicking on either
@@ -87,9 +88,8 @@ class ImporterHost : public BaseBookmarkModelObserver,
   // to the user a dialog that notifies that is necessary to close Firefox
   // prior to continue.
   // |source_profile| - importer profile to import.
-  // |items| - specifies which data to import (bitmask of importer::ImportItem).
-  void CheckForFirefoxLock(const importer::SourceProfile& source_profile,
-                           uint16 items);
+  // Returns false iff import should be aborted.
+  bool CheckForFirefoxLock(const importer::SourceProfile& source_profile);
 
   // Make sure BookmarkModel and TemplateURLService are loaded before import
   // process starts, if bookmarks and/or search engines are among the items

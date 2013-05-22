@@ -50,11 +50,7 @@ ImporterHost::ImporterHost()
 }
 
 void ImporterHost::ShowWarningDialog() {
-  if (headless_) {
-    OnImportLockDialogEnd(false);
-    return;
-  }
-
+  DCHECK(!headless_);
   importer::ShowImportLockDialog(
       parent_window_,
       base::Bind(&ImporterHost::OnImportLockDialogEnd,
@@ -148,7 +144,10 @@ void ImporterHost::StartImportSettings(
   task_ = base::Bind(
       &Importer::StartImport, importer_, source_profile, items, bridge);
 
-  CheckForFirefoxLock(source_profile, items);
+  if (!CheckForFirefoxLock(source_profile)) {
+    NotifyImportEnded();
+    return;
+  }
 
 #if defined(OS_WIN)
   // For google toolbar import, we need the user to log in and store their GAIA
@@ -199,19 +198,25 @@ ImporterHost::~ImporterHost() {
   }
 }
 
-void ImporterHost::CheckForFirefoxLock(
-    const importer::SourceProfile& source_profile,
-    uint16 items) {
-  if (source_profile.importer_type == importer::TYPE_FIREFOX3) {
-    DCHECK(!firefox_lock_.get());
-    firefox_lock_.reset(new FirefoxProfileLock(source_profile.source_path));
-    if (!firefox_lock_->HasAcquired()) {
-      // If fail to acquire the lock, we set the source unreadable and
-      // show a warning dialog, unless running without UI.
-      is_source_readable_ = false;
-      ShowWarningDialog();
-    }
-  }
+bool ImporterHost::CheckForFirefoxLock(
+    const importer::SourceProfile& source_profile) {
+  if (source_profile.importer_type != importer::TYPE_FIREFOX3)
+    return true;
+
+  DCHECK(!firefox_lock_.get());
+  firefox_lock_.reset(new FirefoxProfileLock(source_profile.source_path));
+  if (firefox_lock_->HasAcquired())
+    return true;
+
+  // If fail to acquire the lock, we set the source unreadable and
+  // show a warning dialog, unless running without UI (in which case the import
+  // must be aborted).
+  is_source_readable_ = false;
+  if (headless_)
+    return false;
+
+  ShowWarningDialog();
+  return true;
 }
 
 void ImporterHost::CheckForLoadedModels(uint16 items) {
