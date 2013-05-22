@@ -45,7 +45,9 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      RequestPriority priority,
                                      const BoundNetLog& stream_net_log,
                                      const CompletionCallback& callback) {
-  CHECK(stream_);
+  if (!stream_)
+    return ERR_SOCKET_NOT_CONNECTED;
+
   DCHECK_EQ("http", request_info->url.scheme());
 
   stream_net_log_ = stream_net_log;

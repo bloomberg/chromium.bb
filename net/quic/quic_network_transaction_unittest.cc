@@ -403,6 +403,26 @@ TEST_F(QuicNetworkTransactionTest, ForceQuic) {
   EXPECT_EQ(stream_id, static_cast<QuicStreamId>(log_stream_id));
 }
 
+TEST_F(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
+  params_.origin_port_to_force_quic_on = 80;
+
+  MockRead quic_reads[] = {
+    MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
+  };
+  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
+                                     NULL, 0);
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  CreateSession();
+
+  scoped_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED, callback.WaitForResult());
+}
+
 TEST_F(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
   // Attempt to "force" quic on 443, which will not be honored.
   params_.origin_port_to_force_quic_on = 443;

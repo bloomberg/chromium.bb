@@ -803,6 +803,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
 
 int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   if (IsPreconnecting()) {
+    if (using_quic_)
+      return result;
     DCHECK_EQ(OK, result);
     return OK;
   }
@@ -903,6 +905,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   }
 
   if (using_quic_) {
+    if (result < 0)
+      return result;
     stream_ = quic_request_.ReleaseStream();
     next_state_ = STATE_NONE;
     return OK;
