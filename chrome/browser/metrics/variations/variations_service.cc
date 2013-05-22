@@ -97,14 +97,14 @@ chrome::VersionInfo::Channel GetChannelForVariations() {
 Study_Platform GetCurrentPlatform() {
 #if defined(OS_WIN)
   return Study_Platform_PLATFORM_WINDOWS;
+#elif defined(OS_IOS)
+  return Study_Platform_PLATFORM_IOS;
 #elif defined(OS_MACOSX)
   return Study_Platform_PLATFORM_MAC;
 #elif defined(OS_CHROMEOS)
   return Study_Platform_PLATFORM_CHROMEOS;
 #elif defined(OS_ANDROID)
   return Study_Platform_PLATFORM_ANDROID;
-#elif defined(OS_IOS)
-  return Study_Platform_PLATFORM_IOS;
 #elif defined(OS_LINUX) || defined(OS_BSD) || defined(OS_SOLARIS)
   // Default BSD and SOLARIS to Linux to not break those builds, although these
   // platforms are not officially supported by Chrome.
@@ -119,14 +119,14 @@ Study_Platform GetCurrentPlatform() {
 std::string GetPlatformString() {
 #if defined(OS_WIN)
   return "win";
+#elif defined(OS_IOS)
+  return "ios";
 #elif defined(OS_MACOSX)
   return "mac";
 #elif defined(OS_CHROMEOS)
   return "chromeos";
 #elif defined(OS_ANDROID)
   return "android";
-#elif defined(OS_IOS)
-  return "ios";
 #elif defined(OS_LINUX) || defined(OS_BSD) || defined(OS_SOLARIS)
   // Default BSD and SOLARIS to Linux to not break those builds, although these
   // platforms are not officially supported by Chrome.
