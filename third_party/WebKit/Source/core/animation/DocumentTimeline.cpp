@@ -65,14 +65,10 @@ void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 {
     m_currentTime = monotonicAnimationStartTime;
 
-    Vector<size_t> expiredIndices;
-    for (size_t i = 0; i < m_players.size(); ++i) {
+    for (int i = m_players.size() - 1; i >= 0; --i) {
         if (!m_players[i]->update())
-            expiredIndices.append(i);
+            m_players.remove(i);
     }
-
-    for (int i = expiredIndices.size() - 1; i >= 0; i--)
-        m_players.remove(expiredIndices[i]);
 
     if (m_document->view() && !m_players.isEmpty())
         m_document->view()->scheduleAnimation();
