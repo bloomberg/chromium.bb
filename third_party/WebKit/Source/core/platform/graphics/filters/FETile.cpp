@@ -45,7 +45,6 @@ PassRefPtr<FETile> FETile::create(Filter* filter)
 
 void FETile::applySoftware()
 {
-    // FIXME: See bug 47315. This is a hack to work around a compile failure, but is incorrect behavior otherwise.
     FilterEffect* in = inputEffect(0);
 
     ImageBuffer* resultImage = createImageBufferResult();
