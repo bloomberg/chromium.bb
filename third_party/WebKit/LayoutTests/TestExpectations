@@ -1212,7 +1212,7 @@ webkit.org/b/97179 http/tests/css/link-css-disabled-value-with-slow-loading-shee
 
 webkit.org/b/97296 [ Win ] fast/text/international/hebrew-selection.html [ ImageOnlyFailure ]
 
-webkit.org/b/96951 [ Linux ] compositing/gestures [ ImageOnlyFailure Pass ]
+crbug.com/b/242955 [ Linux ] compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/98275 media/event-queue-crash.html [ Skip ]
 
