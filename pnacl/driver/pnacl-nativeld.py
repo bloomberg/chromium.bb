@@ -120,10 +120,7 @@ LDPatterns = [
   ( ('-Ttext-segment=(.*)'),            "env.set('BASE_TEXT', $0)"),
   ( ('--section-start','.text=(.*)'),   "env.set('BASE_TEXT', $0)"),
   ( ('--section-start','.rodata=(.*)'), "env.set('BASE_RODATA', $0)"),
-  ( ('--section-start','.note.gnu.build-id=(.*)'),
-                                        "env.set('BASE_RODATA', $0)"),
 
-  ( '(--build-id)',               PassThrough),
   ( ('(-e)','(.*)'),              PassThrough),
   ( '(--entry=.*)',               PassThrough),
   ( '(-M)',                       PassThrough),
