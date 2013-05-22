@@ -152,7 +152,7 @@ struct toysurface {
 	 * Prepare the surface for drawing. Makes sure there is a surface
 	 * of the right size available for rendering, and returns it.
 	 * dx,dy are the x,y of wl_surface.attach.
-	 * width,height are the new surface size.
+	 * width,height are the new buffer size.
 	 * If flags has SURFACE_HINT_RESIZE set, the user is
 	 * doing continuous resizing.
 	 * Returns the Cairo surface to draw to.
@@ -208,6 +208,7 @@ struct surface {
 
 	enum window_buffer_type buffer_type;
 	enum wl_output_transform buffer_transform;
+	uint32_t buffer_scale;
 
 	cairo_surface_t *cairo_surface;
 
@@ -1339,6 +1340,9 @@ surface_create_surface(struct surface *surface, int dx, int dy, uint32_t flags)
 		break;
 	}
 
+	allocation.width *= surface->buffer_scale;
+	allocation.height *= surface->buffer_scale;
+
 	if (!surface->toysurface && display->dpy &&
 	    surface->buffer_type == WINDOW_BUFFER_TYPE_EGL_WINDOW) {
 		surface->toysurface =
@@ -1395,6 +1399,21 @@ window_set_buffer_transform(struct window *window,
 	window->main_surface->buffer_transform = transform;
 	wl_surface_set_buffer_transform(window->main_surface->surface,
 					transform);
+}
+
+void
+window_set_buffer_scale(struct window *window,
+			    uint32_t scale)
+{
+	window->main_surface->buffer_scale = scale;
+	wl_surface_set_buffer_scale(window->main_surface->surface,
+				    scale);
+}
+
+uint32_t
+window_get_buffer_scale(struct window *window)
+{
+	return window->main_surface->buffer_scale;
 }
 
 static void frame_destroy(struct frame *frame);
@@ -1635,7 +1654,8 @@ widget_cairo_update_transform(struct widget *widget, cairo_t *cr)
 	surface_width = surface->allocation.width;
 	surface_height = surface->allocation.height;
 
-	transform = window_get_buffer_transform(widget->window);
+	transform = surface->buffer_transform;
+
 	switch (transform) {
 	case WL_OUTPUT_TRANSFORM_FLIPPED:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
@@ -4071,6 +4091,7 @@ surface_create(struct window *window)
 
 	surface->window = window;
 	surface->surface = wl_compositor_create_surface(display->compositor);
+	surface->buffer_scale = 1;
 	wl_surface_add_listener(surface->surface, &surface_listener, window);
 
 	wl_list_insert(&window->subsurface_list, &surface->link);

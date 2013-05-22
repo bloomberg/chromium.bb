@@ -253,6 +253,13 @@ void
 window_set_buffer_transform(struct window *window,
 			    enum wl_output_transform transform);
 
+uint32_t
+window_get_buffer_scale(struct window *window);
+
+void
+window_set_buffer_scale(struct window *window,
+                        uint32_t scale);
+
 void
 window_destroy(struct window *window);
 
