@@ -331,13 +331,18 @@ void OmniboxViewViews::OnFocus() {
   // Don't call controller()->OnSetFocus, this view has already acquired focus.
 
   // Restore a valid saved selection on tab-to-focus.
-  if (saved_temporary_selection_.IsValid() && !select_all_on_mouse_release_)
-    SelectRange(saved_temporary_selection_);
+  if (location_bar_view_->GetWebContents() && !select_all_on_mouse_release_) {
+    const OmniboxState* state = static_cast<OmniboxState*>(
+        location_bar_view_->GetWebContents()->GetUserData(&OmniboxState::kKey));
+    if (state)
+      SelectSelectionModel(state->selection_model);
+  }
 }
 
 void OmniboxViewViews::OnBlur() {
   // Save the selection to restore on tab-to-focus.
-  saved_temporary_selection_ = GetSelectedRange();
+  if (location_bar_view_->GetWebContents())
+    SaveStateToTab(location_bar_view_->GetWebContents());
 
   views::Textfield::OnBlur();
   gfx::NativeView native_view = NULL;
@@ -399,7 +404,7 @@ void OmniboxViewViews::Update(const content::WebContents* contents) {
       // Restore the saved state and selection.
       model()->RestoreState(state->model_state);
       SelectSelectionModel(state->selection_model);
-      // TODO(oshima): Consider saving/restoring edit history.
+      // TODO(msw|oshima): Consider saving/restoring edit history.
       ClearEditHistory();
     }
   } else if (visibly_changed_permanent_text) {

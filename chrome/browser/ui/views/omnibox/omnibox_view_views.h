@@ -169,8 +169,7 @@ class OmniboxViewViews
 
   ToolbarModel::SecurityLevel security_level_;
 
-  // Selection at the point where the user started using the
-  // arrows to move around in the popup.
+  // Selection persisted across temporary text changes, like popup suggestions.
   ui::Range saved_temporary_selection_;
 
   // Tracking state before and after a possible change.

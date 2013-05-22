@@ -1463,7 +1463,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   CtrlKeyPressedWithInlineAutocompleteTest();
 }
 
-#if defined(TOOLKIT_GTK) || defined(USE_AURA)
+#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
   ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
   chrome::FocusLocationBar(browser());
@@ -1544,8 +1544,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   EXPECT_EQ(UTF8ToUTF16("\357\276\200"), omnibox_view->GetText());
 }
-
-#endif  // defined(TOOLKIT_GTK) || defined(USE_AURA)
+#endif  // defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DoesNotUpdateAutocompleteOnBlur) {
   OmniboxView* omnibox_view = NULL;
