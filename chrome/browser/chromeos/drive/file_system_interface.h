@@ -291,6 +291,18 @@ class FileSystemInterface {
                           bool is_exclusive,
                           const FileOperationCallback& callback) = 0;
 
+  // Touchs the file at |file_path| by updating the timestamp to
+  // |last_access_time| and |last_modified_time|.
+  // Upon completion, invokes |callback|.
+  // Note that, differently from unix touch command, this doesn't create a file
+  // if the target file doesn't exist.
+  //
+  // |last_access_time|, |last_modified_time| and |callback| must not be null.
+  virtual void TouchFile(const base::FilePath& file_path,
+                         const base::Time& last_access_time,
+                         const base::Time& last_modified_time,
+                         const FileOperationCallback& callback) = 0;
+
   // Pins a file at |file_path|.
   //
   // |callback| must not be null.

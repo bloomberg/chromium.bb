@@ -82,6 +82,10 @@ class FakeFileSystem : public FileSystemInterface {
   virtual void CreateFile(const base::FilePath& file_path,
                           bool is_exclusive,
                           const FileOperationCallback& callback) OVERRIDE;
+  virtual void TouchFile(const base::FilePath& file_path,
+                         const base::Time& last_access_time,
+                         const base::Time& last_modified_time,
+                         const FileOperationCallback& callback) OVERRIDE;
   virtual void Pin(const base::FilePath& file_path,
                    const FileOperationCallback& callback) OVERRIDE;
   virtual void Unpin(const base::FilePath& file_path,

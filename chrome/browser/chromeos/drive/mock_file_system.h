@@ -66,6 +66,11 @@ class MockFileSystem : public FileSystemInterface {
                void(const base::FilePath& file_path,
                     bool is_exclusive,
                     const FileOperationCallback& callback));
+  MOCK_METHOD4(TouchFile,
+               void(const base::FilePath& file_path,
+                    const base::Time& last_access_time,
+                    const base::Time& last_modified_time,
+                    const FileOperationCallback& callback));
   MOCK_METHOD2(Pin, void(const base::FilePath& file_path,
                          const FileOperationCallback& callback));
   MOCK_METHOD2(Unpin, void(const base::FilePath& file_path,

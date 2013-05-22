@@ -410,6 +410,19 @@ void FileSystem::CreateFile(const base::FilePath& file_path,
   drive_operations_.CreateFile(file_path, is_exclusive, callback);
 }
 
+void FileSystem::TouchFile(const base::FilePath& file_path,
+                           const base::Time& last_access_time,
+                           const base::Time& last_modified_time,
+                           const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!last_access_time.is_null());
+  DCHECK(!last_modified_time.is_null());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this (crbug.com/144369).
+  NOTIMPLEMENTED();
+}
+
 void FileSystem::Pin(const base::FilePath& file_path,
                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

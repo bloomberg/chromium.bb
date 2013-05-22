@@ -122,6 +122,13 @@ void FakeFileSystem::CreateFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeFileSystem::TouchFile(const base::FilePath& file_path,
+                               const base::Time& last_access_time,
+                               const base::Time& last_modified_time,
+                               const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeFileSystem::Pin(const base::FilePath& file_path,
                          const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
