@@ -56,7 +56,7 @@ function test()
         function filter(url)
         {
             for (var i = 0; i < whiteList.length; ++i) {
-                if (url.indexOf(whiteList[i]) !== -1)
+                if (url === whiteList[i])
                     return true;
             }
                 

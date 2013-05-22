@@ -232,7 +232,8 @@ bool ScriptElement::prepareScript(const TextPosition& scriptStartPosition, Legac
     } else {
         // Reset line numbering for nested writes.
         TextPosition position = document->isInDocumentWrite() ? TextPosition() : scriptStartPosition;
-        executeScript(ScriptSourceCode(scriptContent(), document->url(), position));
+        KURL scriptURL = (!document->isInDocumentWrite() && m_parserInserted) ? document->url() : KURL();
+        executeScript(ScriptSourceCode(scriptContent(), scriptURL, position));
     }
 
     return true;
