@@ -107,6 +107,15 @@
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_TL" file="bubble_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_TR" file="bubble_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED_BOTTOM" file="common/button_inactive_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED_BOTTOM_LEFT" file="common/button_inactive_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED_BOTTOM_RIGHT" file="common/button_inactive_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED_CENTER" file="common/button_inactive_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED_LEFT" file="common/button_inactive_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED_RIGHT" file="common/button_inactive_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED_TOP" file="common/button_inactive_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED_TOP_LEFT" file="common/button_inactive_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED_TOP_RIGHT" file="common/button_inactive_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_BOTTOM" file="common/button_focused_hover_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_BOTTOM_LEFT" file="common/button_focused_hover_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_BOTTOM_RIGHT" file="common/button_focused_hover_bottom_right.png" />
@@ -161,6 +170,32 @@
       <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_TOP" file="common/button_pressed_top.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_TOP_LEFT" file="common/button_pressed_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_TOP_RIGHT" file="common/button_pressed_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX" file="common/checkbox.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_CHECKED" file="common/checkbox_checked.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_CHECKED_HOVER" file="common/checkbox_checked_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_CHECKED_PRESSED" file="common/checkbox_checked_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED" file="common/checkbox_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED" file="common/checkbox_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_CHECKED" file="common/checkbox_focused_checked.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_CHECKED_HOVER" file="common/checkbox_focused_checked_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_CHECKED_PRESSED" file="common/checkbox_focused_checked_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_HOVER" file="common/checkbox_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_PRESSED" file="common/checkbox_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_HOVER" file="common/checkbox_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_PRESSED" file="common/checkbox_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO" file="common/radio.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_CHECKED" file="common/radio_checked.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_CHECKED_HOVER" file="common/radio_checked_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_CHECKED_PRESSED" file="common/radio_checked_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED" file="common/radio_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_FOCUSED" file="common/radio_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_FOCUSED_CHECKED" file="common/radio_focused_checked.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_FOCUSED_CHECKED_HOVER" file="common/radio_focused_checked_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_FOCUSED_CHECKED_PRESSED" file="common/radio_focused_checked_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_FOCUSED_HOVER" file="common/radio_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_FOCUSED_PRESSED" file="common/radio_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_HOVER" file="common/radio_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_RADIO_PRESSED" file="common/radio_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_CHECKMARK" file="common/checkmark.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_CLOSE" file="linux/linux_close.png" />
