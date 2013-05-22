@@ -569,27 +569,36 @@ void PostDelayedTask(TaskAdaptor* task, int64 delay_ms) {
 // Wrappers for FilePath and file_util
 
 WebString GetAbsoluteWebStringFromUTF8Path(const std::string& utf8_path) {
+  // WebKit is happy with a relative path if the absolute path doesn't exist,
+  // so we need to check the result of MakeAbsoluteFilePath().
 #if defined(OS_WIN)
-  base::FilePath path(UTF8ToWide(utf8_path));
-  return WebString(base::MakeAbsoluteFilePath(path).value());
+  base::FilePath orig_path(UTF8ToWide(utf8_path));
+  base::FilePath path = base::MakeAbsoluteFilePath(orig_path);
+  return WebString(path.empty() ? orig_path.value() : path.value());
 #else
-  base::FilePath path(base::SysWideToNativeMB(base::SysUTF8ToWide(utf8_path)));
+  base::FilePath orig_path(
+      base::SysWideToNativeMB(base::SysUTF8ToWide(utf8_path)));
+  base::FilePath path;
 #if defined(OS_ANDROID)
   if (WebKit::layoutTestMode()) {
     // See comment of TestEnvironment::set_mock_current_directory().
-    if (!path.IsAbsolute()) {
-      // Not using FilePath::Append() because it can't handle '..' in path.
+    if (!orig_path.IsAbsolute()) {
+      // Not using FilePath::Append() because it can't handle '..' in orig_path.
       DCHECK(test_environment);
       GURL base_url = net::FilePathToFileURL(
           test_environment->mock_current_directory()
               .Append(FILE_PATH_LITERAL("foo")));
-      net::FileURLToFilePath(base_url.Resolve(path.value()), &path);
+      net::FileURLToFilePath(base_url.Resolve(orig_path.value()), &path);
     }
   } else {
-    path = base::MakeAbsoluteFilePath(path);
+    path = base::MakeAbsoluteFilePath(orig_path);
+    if (path.empty())
+      path = orig_path;
   }
 #else
-  path = base::MakeAbsoluteFilePath(path);
+  path = base::MakeAbsoluteFilePath(orig_path);
+  if (path.empty())
+    path = orig_path;
 #endif  // else defined(OS_ANDROID)
   return WideToUTF16(base::SysNativeMBToWide(path.value()));
 #endif  // else defined(OS_WIN)
