@@ -2467,7 +2467,7 @@ binutils-gold-sb() {
   check-arch ${arch}
   StepBanner "GOLD-NATIVE-SB" "(libiberty + gold) ${arch}"
 
-  local srcdir="${TC_SRC_GOLD}"
+  local srcdir="${TC_SRC_BINUTILS}"
   assert-dir "${srcdir}" "You need to checkout gold."
 
   binutils-gold-sb-clean ${arch}
@@ -2489,14 +2489,14 @@ binutils-gold-sb-clean() {
 # binutils-gold-sb-configure - Configure binutils for gold (unsandboxed)
 binutils-gold-sb-configure() {
   local arch=$1
-  local srcdir="${TC_SRC_GOLD}"
+  local srcdir="${TC_SRC_BINUTILS}"
   local objdir="$(GetTranslatorBuildDir ${arch})/binutils-gold-sb"
   local installbin="$(GetTranslatorInstallDir ${arch})/bin"
 
   # The SRPC headers are included directly from the nacl tree, as they are
   # not in the SDK. libsrpc should have already been built by the
   # build.sh sdk-private-libs step
-  local flags="-static -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) \
+  local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
     -fno-exceptions -O3"
   local configure_env=(
     AR="${PNACL_AR}" \
@@ -2600,15 +2600,14 @@ binutils-gold-sb-make() {
   StepBanner "GOLD-NATIVE-SB" "Make (liberty) ${arch}"
   spushd "${objdir}/libiberty"
 
-  local log_prefix="binutils-gold.sb.${arch}"
-  RunWithLog "${log_prefix}".make \
+  RunWithLog "binutils-gold.liberty.sb.${arch}".make \
       env -i PATH="/usr/bin:/bin" \
       make ${MAKE_OPTS}
   spopd
 
   StepBanner "GOLD-NATIVE-SB" "Make (gold) ${arch}"
   spushd "${objdir}/gold"
-  RunWithLog "${log_prefix}".make \
+  RunWithLog "binutils-gold.sb.${arch}".make \
       env -i PATH="/usr/bin:/bin" \
       make ${MAKE_OPTS} ld-new
   spopd

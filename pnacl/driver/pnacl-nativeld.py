@@ -60,7 +60,7 @@ EXTRA_ENV = {
   #
   'LD_FLAGS'    : '${LD_FLAGS_%LINKER%} ' +
                   '-nostdlib ' +
-                  # Only relvevant for ARM where it suppresses a warning.
+                  # Only relevant for ARM where it suppresses a warning.
                   # Ignored for other archs.
                   '--no-fix-cortex-a8 ' +
                   '-m ${LD_EMUL} ' +
@@ -189,7 +189,6 @@ def main(argv):
   env.set('output', output)
 
   if env.getbool('SANDBOXED'):
-    env.set('LINKER', 'old')
     RunLDSandboxed()
   else:
     Run('${RUN_LD}')
