@@ -44,7 +44,7 @@ class ScriptExecutionContext;
 
 typedef int ExceptionCode;
 
-class FileReaderSync : public RefCounted<FileReaderSync> {
+class FileReaderSync : public RefCounted<FileReaderSync>, public ScriptWrappable {
 public:
     static PassRefPtr<FileReaderSync> create()
     {
