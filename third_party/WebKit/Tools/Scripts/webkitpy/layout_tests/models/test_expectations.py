@@ -94,21 +94,29 @@ class TestExpectationParser(object):
             expectation_lines.append(test_expectation)
         return expectation_lines
 
+    def _create_expectation_line(self, test_name, expectations, file_name):
+        expectation_line = TestExpectationLine()
+        expectation_line.original_string = test_name
+        expectation_line.name = test_name
+        expectation_line.filename = file_name
+        expectation_line.line_number = 0
+        expectation_line.expectations = expectations
+        return expectation_line
+
+    def expectation_line_for_test(self, test_name, expectations):
+        expectation_line = self._create_expectation_line(test_name, expectations, '<Bot TestExpectations>')
+        self._parse_line(expectation_line)
+        return expectation_line
+
+
     def expectation_for_skipped_test(self, test_name):
         if not self._port.test_exists(test_name):
             _log.warning('The following test %s from the Skipped list doesn\'t exist' % test_name)
-        expectation_line = TestExpectationLine()
-        expectation_line.original_string = test_name
-        expectation_line.modifiers = [TestExpectationParser.SKIP_MODIFIER]
+        expectation_line = self._create_expectation_line(test_name, [TestExpectationParser.PASS_EXPECTATION], '<Skipped file>')
         # FIXME: It's not clear what the expectations for a skipped test should be; the expectations
         # might be different for different entries in a Skipped file, or from the command line, or from
         # only running parts of the tests. It's also not clear if it matters much.
-        expectation_line.modifiers.append(TestExpectationParser.WONTFIX_MODIFIER)
-        expectation_line.name = test_name
-        # FIXME: we should pass in a more descriptive string here.
-        expectation_line.filename = '<Skipped file>'
-        expectation_line.line_number = 0
-        expectation_line.expectations = [TestExpectationParser.PASS_EXPECTATION]
+        expectation_line.modifiers = [TestExpectationParser.SKIP_MODIFIER, TestExpectationParser.WONTFIX_MODIFIER]
         expectation_line.is_skipped_outside_expectations_file = True
         self._parse_line(expectation_line)
         return expectation_line
@@ -386,6 +394,23 @@ class TestExpectationLine(object):
         self.warnings = []
         self.is_skipped_outside_expectations_file = False
 
+    def __eq__(self, other):
+        return (self.original_string == other.original_string
+            and self.filename == other.filename
+            and self.line_number == other.line_number
+            and self.name == other.name
+            and self.path == other.path
+            and self.modifiers == other.modifiers
+            and self.parsed_modifiers == other.parsed_modifiers
+            and self.parsed_bug_modifiers == other.parsed_bug_modifiers
+            and self.matching_configurations == other.matching_configurations
+            and self.expectations == other.expectations
+            and self.parsed_expectations == other.parsed_expectations
+            and self.comment == other.comment
+            and self.matching_tests == other.matching_tests
+            and self.warnings == other.warnings
+            and self.is_skipped_outside_expectations_file == other.is_skipped_outside_expectations_file)
+
     def is_invalid(self):
         return self.warnings and self.warnings != [TestExpectationParser.MISSING_BUG_WARNING]
 
@@ -598,14 +623,14 @@ class TestExpectationsModel(object):
         self._clear_expectations_for_test(test)
         del self._test_to_expectation_line[test]
 
-    def add_expectation_line(self, expectation_line, in_skipped=False):
+    def add_expectation_line(self, expectation_line, override_existing_matches=False):
         """Returns a list of warnings encountered while matching modifiers."""
 
         if expectation_line.is_invalid():
             return
 
         for test in expectation_line.matching_tests:
-            if not in_skipped and self._already_seen_better_match(test, expectation_line):
+            if not override_existing_matches and self._already_seen_better_match(test, expectation_line):
                 continue
 
             self._clear_expectations_for_test(test)
@@ -881,6 +906,7 @@ class TestExpectations(object):
 
         # FIXME: move ignore_tests into port.skipped_layout_tests()
         self.add_extra_skipped_tests(port.skipped_layout_tests(tests).union(set(port.get_option('ignore_tests', []))))
+        self.add_flaky_expectations_from_bot()
 
         self._has_warnings = False
         self._report_warnings()
@@ -1011,7 +1037,15 @@ class TestExpectations(object):
 
         for test_name in tests_to_skip:
             expectation_line = self._parser.expectation_for_skipped_test(test_name)
-            self._model.add_expectation_line(expectation_line, in_skipped=True)
+            self._model.add_expectation_line(expectation_line, override_existing_matches=True)
+
+    def add_flaky_expectations_from_bot(self):
+        # FIXME: Right now, this will show the expectations entry in the flakiness dashboard rows for each test
+        # to be whatever the bot thinks they should be. Is this a good thing?
+        bot_expectations = self._port.bot_expectations()
+        for test_name in bot_expectations:
+            expectation_line = self._parser.expectation_line_for_test(test_name, bot_expectations[test_name])
+            self._model.add_expectation_line(expectation_line, override_existing_matches=True)
 
     def add_expectation_line(self, expectation_line):
         self._model.add_expectation_line(expectation_line)

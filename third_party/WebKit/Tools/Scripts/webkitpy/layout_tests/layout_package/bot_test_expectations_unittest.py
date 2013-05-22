@@ -29,14 +29,20 @@
 import unittest2 as unittest
 
 from webkitpy.layout_tests.layout_package import bot_test_expectations
+from webkitpy.layout_tests.models import test_expectations
 
 
 class BotTestExpectationsTest(unittest.TestCase):
+    # FIXME: Find a way to import this map from Tools/TestResultServer/model/jsonresults.py.
+    FAILURE_MAP = {"A": "AUDIO", "C": "CRASH", "F": "TEXT", "I": "IMAGE", "O": "MISSING",
+        "N": "NO DATA", "P": "PASS", "T": "TIMEOUT", "Y": "NOTRUN", "X": "SKIP", "Z": "IMAGE+TEXT"}
+
     # All result_string's in this file expect newest result
     # on left: "PFF", means it just passed after 2 failures.
 
     def _assert_is_flaky(self, results_string, should_be_flaky):
         expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=True)
+        expectations._failure_map = self.FAILURE_MAP
         length_encoded = self._results_from_string(results_string)['results']
         num_actual_results = len(expectations._actual_results_for_test(length_encoded))
         if should_be_flaky:
@@ -66,8 +72,8 @@ class BotTestExpectationsTest(unittest.TestCase):
         return {'results': results_list}
 
     def _assert_expectations(self, expectations, test_data, expectations_string):
-        output = expectations._generate_expectations_string(test_data)
-        self.assertMultiLineEqual(output, expectations_string)
+        output = expectations._generate_expectations(test_data, self.FAILURE_MAP)
+        self.assertEqual(output, expectations_string)
 
     def test_basic(self):
         test_data = {
@@ -81,21 +87,27 @@ class BotTestExpectationsTest(unittest.TestCase):
             }
         }
         expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=True)
-        self._assert_expectations(expectations, test_data, """Bug(auto) foo/veryflaky.html [ Failure Pass ]""")
+        self._assert_expectations(expectations, test_data, {
+            'foo/veryflaky.html': sorted(["TEXT", "PASS"]),
+        })
 
         expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=False)
-        self._assert_expectations(expectations, test_data, """Bug(auto) foo/veryflaky.html [ Failure Pass ]
-Bug(auto) foo/maybeflaky.html [ Failure Pass ]""")
+        self._assert_expectations(expectations, test_data, {
+            'foo/veryflaky.html': sorted(["TEXT", "PASS"]),
+            'foo/maybeflaky.html': sorted(["TEXT", "PASS"]),
+        })
 
     def test_all_failure_types(self):
         expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=True)
         test_data = {
             'tests': {
                 'foo': {
-                    'allfailures.html': self._results_from_string('FPFPCNCNTXTXIZIZOCOC'),
+                    'allfailures.html': self._results_from_string('FPFPCNCNTXTXIZIZOCYOCY'),
                     'imageplustextflake.html': self._results_from_string('ZPZPPPPPPPPPPPPPPPPP'),
                 }
             }
         }
-        self._assert_expectations(expectations, test_data, """Bug(auto) foo/imageplustextflake.html [ Failure Pass ]
-Bug(auto) foo/allfailures.html [ Crash Missing ImageOnlyFailure Failure Timeout Pass ]""")
+        self._assert_expectations(expectations, test_data, {
+            'foo/imageplustextflake.html': sorted(["IMAGE+TEXT", "PASS"]),
+            'foo/allfailures.html': sorted(["TEXT", "PASS", "IMAGE+TEXT", "TIMEOUT", "CRASH", "IMAGE", "MISSING"]),
+        })
