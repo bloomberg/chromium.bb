@@ -28,9 +28,15 @@ var ImageLoader = function() {
    */
   this.worker_ = new ImageLoader.Worker();
 
+  // Grant permissions to the local file system.
   chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
     // TODO(mtomasz): Handle.
   });
+
+  // Initialize the cache database, then start handling requests.
+  this.cache_.initialize(function() {
+    this.worker_.start();
+  }.bind(this));
 
   chrome.extension.onMessageExternal.addListener(function(request,
                                                           sender,
@@ -474,7 +480,18 @@ ImageLoader.Request.prototype.cleanup_ = function() {
  */
 ImageLoader.Worker = function() {
   /**
-   * List of pending requests.
+   * List of requests waiting to be checked. If these items are available in
+   * cache, then they are processed immediately after starting the worker.
+   * However, if they have to be downloaded, then these requests are moved
+   * to pendingRequests_.
+   *
+   * @type {ImageLoader.Request}
+   * @private
+   */
+  this.newRequests_ = [];
+
+  /**
+   * List of pending requests for images to be downloaded.
    * @type {ImageLoader.Request}
    * @private
    */
@@ -486,10 +503,17 @@ ImageLoader.Worker = function() {
    * @private
    */
   this.activeRequests_ = [];
+
+  /**
+   * If the worker has been started.
+   * @type {boolean}
+   * @private
+   */
+  this.started_ = false;
 };
 
 /**
- * Maximum requests to be run in parallel.
+ * Maximum download requests to be run in parallel.
  * @type {number}
  * @const
  */
@@ -498,13 +522,30 @@ ImageLoader.Worker.MAXIMUM_IN_PARALLEL = 5;
 /**
  * Adds a request to the internal priority queue and executes it when requests
  * with higher priorities are finished. If the result is cached, then it is
- * processed immediately.
+ * processed immediately once the worker is started.
  *
  * @param {ImageLoader.Request} request Request object.
  */
 ImageLoader.Worker.prototype.add = function(request) {
-  request.loadFromCacheAndProcess(function() { }, function() {
-    // Not found in cache, then add to pending requests.
+  if (!this.started_) {
+    this.newRequests_.push(request);
+    return;
+  }
+
+  // Already started, so cache is available. Items available in cache will
+  // be served immediately, other enqueued.
+  this.serveCachedOrEnqueue_(request);
+};
+
+/**
+ * Serves cached image or adds the request to the pending list.
+ *
+ * @param {ImageLoader.Request} request Request object.
+ * @private
+ */
+ImageLoader.Worker.prototype.serveCachedOrEnqueue_ = function(request) {
+  request.loadFromCacheAndProcess(function() {}, function() {
+    // Not available in cache.
     this.pendingRequests_.push(request);
 
     // Sort requests by priorities.
@@ -512,9 +553,26 @@ ImageLoader.Worker.prototype.add = function(request) {
       return a.getPriority() - b.getPriority();
     });
 
-    // Handle the most important requests (if possible).
-    this.continue_();
+    // Continue handling the most important requests (if started).
+    if (this.started_)
+      this.continue_();
   }.bind(this));
+};
+
+/**
+ * Starts handling requests.
+ */
+ImageLoader.Worker.prototype.start = function() {
+  this.started_ = true;
+
+  // Process tasks added before worker has been started.
+  for (var index = 0; index < this.newRequests_.length; index++) {
+    this.serveCachedOrEnqueue_(this.newRequests_[index]);
+  }
+  this.newRequest_ = [];
+
+  // Start serving enqueued requests.
+  this.continue_();
 };
 
 /**
@@ -552,8 +610,9 @@ ImageLoader.Worker.prototype.finish_ = function(request) {
     console.warn('Request not found.');
   delete this.activeRequests_.splice(index, 1);
 
-  // Handle the most important requests (if possible).
-  this.continue_();
+  // Continue handling the most important requests (if started).
+  if (this.started_)
+    this.continue_();
 };
 
 /**
@@ -567,30 +626,6 @@ ImageLoader.Cache = function() {
    * @private
    */
   this.db_ = null;
-
-  // Establish a connection to the database or (re)create it if not available
-  // or not up to date. After changing the database's schema, increment
-  // ImageLoader.Cache.DB_VERSION to force database recreating.
-  var openRequest = window.webkitIndexedDB.open(ImageLoader.Cache.DB_NAME,
-                                                ImageLoader.Cache.DB_VERSION);
-
-  openRequest.onsuccess = function(e) {
-    this.db_ = e.target.result;
-  }.bind(this);
-
-  openRequest.onupgradeneeded = function(e) {
-    console.info('Cache database creating or upgrading.');
-    var db = e.target.result;
-    if (db.objectStoreNames.contains('metadata'))
-      db.deleteObjectStore('metadata');
-    if (db.objectStoreNames.contains('data'))
-      db.deleteObjectStore('data');
-    if (db.objectStoreNames.contains('settings'))
-      db.deleteObjectStore('settings');
-    db.createObjectStore('metadata', {keyPath: 'key'});
-    db.createObjectStore('data', {keyPath: 'key'});
-    db.createObjectStore('settings', {keyPath: 'key'});
-  };
 };
 
 /**
@@ -637,6 +672,39 @@ ImageLoader.Cache.createKey = function(request) {
                          height: request.height,
                          maxWidth: request.maxWidth,
                          maxHeight: request.maxHeight});
+};
+
+/**
+ * Initializes the cache database.
+ * @param {function()} callback Completion callback.
+ */
+ImageLoader.Cache.prototype.initialize = function(callback) {
+  // Establish a connection to the database or (re)create it if not available
+  // or not up to date. After changing the database's schema, increment
+  // ImageLoader.Cache.DB_VERSION to force database recreating.
+  var openRequest = window.webkitIndexedDB.open(ImageLoader.Cache.DB_NAME,
+                                                ImageLoader.Cache.DB_VERSION);
+
+  openRequest.onsuccess = function(e) {
+    this.db_ = e.target.result;
+    callback();
+  }.bind(this);
+
+  openRequest.onerror = callback;
+
+  openRequest.onupgradeneeded = function(e) {
+    console.info('Cache database creating or upgrading.');
+    var db = e.target.result;
+    if (db.objectStoreNames.contains('metadata'))
+      db.deleteObjectStore('metadata');
+    if (db.objectStoreNames.contains('data'))
+      db.deleteObjectStore('data');
+    if (db.objectStoreNames.contains('settings'))
+      db.deleteObjectStore('settings');
+    db.createObjectStore('metadata', {keyPath: 'key'});
+    db.createObjectStore('data', {keyPath: 'key'});
+    db.createObjectStore('settings', {keyPath: 'key'});
+  };
 };
 
 /**
