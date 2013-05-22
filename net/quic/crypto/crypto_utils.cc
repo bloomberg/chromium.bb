@@ -5,8 +5,6 @@
 #include "net/quic/crypto/crypto_utils.h"
 
 #include "crypto/hkdf.h"
-#include "googleurl/src/url_canon.h"
-#include "net/base/net_util.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -19,7 +17,6 @@ using std::string;
 
 namespace net {
 
-// static
 void CryptoUtils::GenerateNonce(QuicWallTime now,
                                 QuicRandom* random_generator,
                                 StringPiece orbit,
@@ -44,39 +41,6 @@ void CryptoUtils::GenerateNonce(QuicWallTime now,
                               kNonceSize - bytes_written);
 }
 
-// static
-bool CryptoUtils::IsValidSNI(StringPiece sni) {
-  // TODO(rtenneti): Support RFC2396 hostname.
-  // NOTE: Microsoft does NOT enforce this spec, so if we throw away hostnames
-  // based on the above spec, we may be losing some hostnames that windows
-  // would consider valid. By far the most common hostname character NOT
-  // accepted by the above spec is '_'.
-  url_canon::CanonHostInfo host_info;
-  string canonicalized_host(CanonicalizeHost(sni.as_string(), &host_info));
-  return !host_info.IsIPAddress() &&
-      IsCanonicalizedHostCompliant(canonicalized_host, "") &&
-      sni.find_last_of('.') != string::npos;
-}
-
-// static
-string CryptoUtils::NormalizeHostname(const char* hostname) {
-  url_canon::CanonHostInfo host_info;
-  string host(CanonicalizeHost(hostname, &host_info));
-
-  // Walk backwards over the string, skipping any trailing dots.
-  size_t host_end = host.length();
-  while (host_end != 0 && host[host_end - 1] == '.') {
-    host_end--;
-  }
-
-  // Erase the trailing dots.
-  if (host_end != host.length()) {
-    host.erase(host_end, host.length() - host_end);
-  }
-  return host;
-}
-
-// static
 void CryptoUtils::DeriveKeys(StringPiece premaster_secret,
                              QuicTag aead,
                              StringPiece client_nonce,

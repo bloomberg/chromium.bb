@@ -73,7 +73,7 @@ class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
   DISALLOW_COPY_AND_ASSIGN(TestReceiveAlgorithm);
 };
 
-// TaggingEncrypter appends kTagSize bytes of |tag| to the end of each message.
+// TaggingEncrypter appends 16 bytes of |tag| to the end of each message.
 class TaggingEncrypter : public QuicEncrypter {
  public:
   explicit TaggingEncrypter(uint8 tag)
@@ -128,14 +128,14 @@ class TaggingEncrypter : public QuicEncrypter {
 
  private:
   enum {
-    kTagSize = 12,
+    kTagSize = 16,
   };
 
   const uint8 tag_;
 };
 
-// TaggingDecrypter ensures that the final kTagSize bytes of the message all
-// have the same value and then removes them.
+// TaggingDecrypter ensures that the final 16 bytes of the message all have the
+// same value and then removes them.
 class TaggingDecrypter : public QuicDecrypter {
  public:
   virtual ~TaggingDecrypter() {}
@@ -183,7 +183,7 @@ class TaggingDecrypter : public QuicDecrypter {
 
  private:
   enum {
-    kTagSize = 12,
+    kTagSize = 16,
   };
 
   bool CheckTag(StringPiece ciphertext) {
@@ -1343,8 +1343,8 @@ TEST_F(QuicConnectionTest, RetransmitWithSameEncryptionLevel) {
       kDefaultRetransmissionTime);
   use_tagging_decrypter();
 
-  // A TaggingEncrypter puts kTagSize copies of the given byte (0x01 here) at
-  // the end of the packet. We can test this to check which encrypter was used.
+  // A TaggingEncrypter puts 16 copies of the given byte (0x01 here) at the end
+  // of the packet. We can test this to check which encrypter was used.
   connection_.SetEncrypter(ENCRYPTION_NONE, new TaggingEncrypter(0x01));
   SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);
   EXPECT_EQ(0x01010101u, final_bytes_of_last_packet());

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
+#include "net/quic/crypto/aes_128_gcm_encrypter.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
@@ -103,7 +103,7 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
 };
 
 TEST_F(QuicCryptoServerStreamTest, NotInitiallyConected) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
   }
@@ -113,7 +113,7 @@ TEST_F(QuicCryptoServerStreamTest, NotInitiallyConected) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
   }
@@ -132,7 +132,7 @@ TEST_F(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
   }
@@ -186,7 +186,7 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
 
   // This causes the client's nonce to be different and thus stops the
   // strike-register from rejecting the repeated nonce.
-  reinterpret_cast<MockRandom*>(client_conn->random_generator())->ChangeValue();
+  client_conn->random_generator()->Reseed(NULL, 0);
   client_session.reset(new TestSession(client_conn, client_config, false));
   server_session.reset(new TestSession(server_conn, config_, true));
   client.reset(new QuicCryptoClientStream(
@@ -205,7 +205,7 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, MessageAfterHandshake) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
   }
@@ -219,7 +219,7 @@ TEST_F(QuicCryptoServerStreamTest, MessageAfterHandshake) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, BadMessageType) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
   }
@@ -232,7 +232,7 @@ TEST_F(QuicCryptoServerStreamTest, BadMessageType) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, WithoutCertificates) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
   }

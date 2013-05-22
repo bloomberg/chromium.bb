@@ -257,11 +257,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // queued writes to happen.  Returns false if the socket has become blocked.
   virtual bool OnCanWrite() OVERRIDE;
 
-  // Do any work which logically would be done in OnPacket but can not be
-  // safely done until the packet is validated.  Returns true if the packet
-  // can be handled, false otherwise.
-  bool ProcessValidatedPacket();
-
   QuicTag version() const { return quic_version_; }
 
   // From QuicFramerVisitorInterface

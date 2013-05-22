@@ -4,7 +4,7 @@
 
 #include "net/quic/crypto/crypto_handshake.h"
 
-#include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
+#include "net/quic/crypto/aes_128_gcm_encrypter.h"
 #include "net/quic/crypto/crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_time.h"
@@ -49,7 +49,7 @@ TEST(QuicCryptoServerConfigTest, ServerConfig) {
 }
 
 TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
   }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/crypto/aes_128_gcm_12_decrypter.h"
+#include "net/quic/crypto/aes_128_gcm_decrypter.h"
 
 #include <openssl/evp.h>
 
@@ -17,15 +17,16 @@ namespace {
 
 const size_t kKeySize = 16;
 const size_t kNoncePrefixSize = 4;
+const size_t kAuthTagSize = 16;
 
 }  // namespace
 
-Aes128Gcm12Decrypter::Aes128Gcm12Decrypter() {}
+Aes128GcmDecrypter::Aes128GcmDecrypter() {}
 
 // static
-bool Aes128Gcm12Decrypter::IsSupported() { return true; }
+bool Aes128GcmDecrypter::IsSupported() { return true; }
 
-bool Aes128Gcm12Decrypter::SetKey(StringPiece key) {
+bool Aes128GcmDecrypter::SetKey(StringPiece key) {
   DCHECK_EQ(key.size(), sizeof(key_));
   if (key.size() != sizeof(key_)) {
     return false;
@@ -34,7 +35,7 @@ bool Aes128Gcm12Decrypter::SetKey(StringPiece key) {
   return true;
 }
 
-bool Aes128Gcm12Decrypter::SetNoncePrefix(StringPiece nonce_prefix) {
+bool Aes128GcmDecrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   DCHECK_EQ(nonce_prefix.size(), kNoncePrefixSize);
   if (nonce_prefix.size() != kNoncePrefixSize) {
     return false;
@@ -43,11 +44,11 @@ bool Aes128Gcm12Decrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   return true;
 }
 
-bool Aes128Gcm12Decrypter::Decrypt(StringPiece nonce,
-                                   StringPiece associated_data,
-                                   StringPiece ciphertext,
-                                   unsigned char* output,
-                                   size_t* output_length) {
+bool Aes128GcmDecrypter::Decrypt(StringPiece nonce,
+                                 StringPiece associated_data,
+                                 StringPiece ciphertext,
+                                 unsigned char* output,
+                                 size_t* output_length) {
   if (ciphertext.length() < kAuthTagSize ||
       nonce.size() != kNoncePrefixSize + sizeof(QuicPacketSequenceNumber)) {
     return false;
@@ -113,7 +114,7 @@ bool Aes128Gcm12Decrypter::Decrypt(StringPiece nonce,
   return true;
 }
 
-QuicData* Aes128Gcm12Decrypter::DecryptPacket(
+QuicData* Aes128GcmDecrypter::DecryptPacket(
     QuicPacketSequenceNumber sequence_number,
     StringPiece associated_data,
     StringPiece ciphertext) {
@@ -135,11 +136,11 @@ QuicData* Aes128Gcm12Decrypter::DecryptPacket(
   return new QuicData(plaintext.release(), plaintext_size, true);
 }
 
-StringPiece Aes128Gcm12Decrypter::GetKey() const {
+StringPiece Aes128GcmDecrypter::GetKey() const {
   return StringPiece(reinterpret_cast<const char*>(key_), sizeof(key_));
 }
 
-StringPiece Aes128Gcm12Decrypter::GetNoncePrefix() const {
+StringPiece Aes128GcmDecrypter::GetNoncePrefix() const {
   return StringPiece(reinterpret_cast<const char*>(nonce_), kNoncePrefixSize);
 }
 

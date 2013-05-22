@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
+#include "net/quic/crypto/aes_128_gcm_encrypter.h"
 
 #include "net/quic/test_tools/quic_test_utils.h"
 
@@ -245,7 +245,7 @@ namespace test {
 
 // EncryptWithNonce wraps the |Encrypt| method of |encrypter| to allow passing
 // in an nonce and also to allocate the buffer needed for the ciphertext.
-QuicData* EncryptWithNonce(Aes128Gcm12Encrypter* encrypter,
+QuicData* EncryptWithNonce(Aes128GcmEncrypter* encrypter,
                            StringPiece nonce,
                            StringPiece associated_data,
                            StringPiece plaintext) {
@@ -260,8 +260,8 @@ QuicData* EncryptWithNonce(Aes128Gcm12Encrypter* encrypter,
   return new QuicData(ciphertext.release(), ciphertext_size, true);
 }
 
-TEST(Aes128Gcm12EncrypterTest, Encrypt) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
+TEST(Aes128GcmEncrypterTest, Encrypt) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
   }
@@ -304,7 +304,7 @@ TEST(Aes128Gcm12EncrypterTest, Encrypt) {
       EXPECT_EQ(test_info.pt_len, ct_len * 8);
       EXPECT_EQ(test_info.tag_len, tag_len * 8);
 
-      Aes128Gcm12Encrypter encrypter;
+      Aes128GcmEncrypter encrypter;
       ASSERT_TRUE(encrypter.SetKey(StringPiece(key, key_len)));
       scoped_ptr<QuicData> encrypted(EncryptWithNonce(
           &encrypter, StringPiece(iv, iv_len),
@@ -313,13 +313,6 @@ TEST(Aes128Gcm12EncrypterTest, Encrypt) {
           // handle this case.
           StringPiece(aad_len ? aad : NULL, aad_len), StringPiece(pt, pt_len)));
       ASSERT_TRUE(encrypted.get());
-
-      // The test vectors have 16 byte authenticators but this code only uses
-      // the first 12.
-      ASSERT_LE(static_cast<size_t>(Aes128Gcm12Encrypter::kAuthTagSize),
-                tag_len);
-      tag_len = Aes128Gcm12Encrypter::kAuthTagSize;
-
       ASSERT_EQ(ct_len + tag_len, encrypted->length());
       test::CompareCharArraysWithHexError("ciphertext", encrypted->data(),
                                           ct_len, ct, ct_len);
@@ -330,18 +323,18 @@ TEST(Aes128Gcm12EncrypterTest, Encrypt) {
   }
 }
 
-TEST(Aes128Gcm12EncrypterTest, GetMaxPlaintextSize) {
-  Aes128Gcm12Encrypter encrypter;
-  EXPECT_EQ(1000u, encrypter.GetMaxPlaintextSize(1012));
-  EXPECT_EQ(100u, encrypter.GetMaxPlaintextSize(112));
-  EXPECT_EQ(10u, encrypter.GetMaxPlaintextSize(22));
+TEST(Aes128GcmEncrypterTest, GetMaxPlaintextSize) {
+  Aes128GcmEncrypter encrypter;
+  EXPECT_EQ(1000u, encrypter.GetMaxPlaintextSize(1016));
+  EXPECT_EQ(100u, encrypter.GetMaxPlaintextSize(116));
+  EXPECT_EQ(10u, encrypter.GetMaxPlaintextSize(26));
 }
 
-TEST(Aes128Gcm12EncrypterTest, GetCiphertextSize) {
-  Aes128Gcm12Encrypter encrypter;
-  EXPECT_EQ(1012u, encrypter.GetCiphertextSize(1000));
-  EXPECT_EQ(112u, encrypter.GetCiphertextSize(100));
-  EXPECT_EQ(22u, encrypter.GetCiphertextSize(10));
+TEST(Aes128GcmEncrypterTest, GetCiphertextSize) {
+  Aes128GcmEncrypter encrypter;
+  EXPECT_EQ(1016u, encrypter.GetCiphertextSize(1000));
+  EXPECT_EQ(116u, encrypter.GetCiphertextSize(100));
+  EXPECT_EQ(26u, encrypter.GetCiphertextSize(10));
 }
 
 }  // namespace test

@@ -96,21 +96,6 @@ class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   QuicErrorCode GetUint32(QuicTag tag, uint32* out) const;
   QuicErrorCode GetUint64(QuicTag tag, uint64* out) const;
 
-  // size returns 4 (message tag) + 2 (uint16, number of entries) +
-  // (4 (tag) + 4 (end offset))*tag_value_map_.size() + ∑ value sizes.
-  size_t size() const;
-
-  // set_minimum_size sets the minimum number of bytes that the message should
-  // consume. The CryptoFramer will add a PAD tag as needed when serializing in
-  // order to ensure this. Setting a value of 0 disables padding.
-  //
-  // Padding is useful in order to ensure that messages are a minimum size. A
-  // QUIC server can require a minimum size in order to reduce the
-  // amplification factor of any mirror DoS attack.
-  void set_minimum_size(size_t min_bytes);
-
-  size_t minimum_size() const;
-
   // DebugString returns a multi-line, string representation of the message
   // suitable for including in debug output.
   std::string DebugString() const;
@@ -129,8 +114,6 @@ class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
 
   QuicTag tag_;
   QuicTagValueMap tag_value_map_;
-
-  size_t minimum_size_;
 
   // The serialized form of the handshake message. This member is constructed
   // lasily.
@@ -159,8 +142,6 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   CrypterPair initial_crypters;
   CrypterPair forward_secure_crypters;
   std::string server_config_id;
-  // Normalized SNI: converted to lower case and trailing '.' removed.
-  std::string sni;
   std::string client_nonce;
   std::string server_nonce;
   // hkdf_input_suffix contains the HKDF input following the label: the GUID,

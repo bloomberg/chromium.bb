@@ -23,9 +23,6 @@ bool MockRandom::RandBool() {
 }
 
 void MockRandom::Reseed(const void* additional_entropy, size_t entropy_len) {
-}
-
-void MockRandom::ChangeValue() {
   increment_++;
 }
 

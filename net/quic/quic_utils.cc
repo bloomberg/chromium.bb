@@ -197,17 +197,6 @@ const char* QuicUtils::ErrorToString(QuicErrorCode error) {
 }
 
 // static
-const char* QuicUtils::EncryptionLevelToString(EncryptionLevel level) {
-  switch (level) {
-    RETURN_STRING_LITERAL(ENCRYPTION_NONE);
-    RETURN_STRING_LITERAL(ENCRYPTION_INITIAL);
-    RETURN_STRING_LITERAL(ENCRYPTION_FORWARD_SECURE);
-    RETURN_STRING_LITERAL(NUM_ENCRYPTION_LEVELS);
-  }
-  return "INVALID_ENCRYPTION_LEVEL";
-}
-
-// static
 string QuicUtils::TagToString(QuicTag tag) {
   char chars[4];
   bool ascii = true;

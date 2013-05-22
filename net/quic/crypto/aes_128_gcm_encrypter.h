@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CRYPTO_AES_128_GCM_12_ENCRYPTER_H_
-#define NET_QUIC_CRYPTO_AES_128_GCM_12_ENCRYPTER_H_
+#ifndef NET_QUIC_CRYPTO_AES_128_GCM_ENCRYPTER_H_
+#define NET_QUIC_CRYPTO_AES_128_GCM_ENCRYPTER_H_
 
 #include <string>
 
@@ -13,24 +13,19 @@
 namespace net {
 
 namespace test {
-class Aes128Gcm12EncrypterPeer;
+class Aes128GcmEncrypterPeer;
 }  // namespace test
 
-// An Aes128Gcm12Encrypter is a QuicEncrypter that implements the
-// AEAD_AES_128_GCM_12 algorithm specified in RFC 5282. Create an instance by
+// An Aes128GcmEncrypter is a QuicEncrypter that implements the
+// AEAD_AES_128_GCM algorithm specified in RFC 5116. Create an instance by
 // calling QuicEncrypter::Create(kAESG).
 //
-// It uses an authentication tag of 12 bytes (96 bits). The fixed prefix
+// It uses an authentication tag of 16 bytes (128 bits). The fixed prefix
 // of the nonce is four bytes.
-class NET_EXPORT_PRIVATE Aes128Gcm12Encrypter : public QuicEncrypter {
+class NET_EXPORT_PRIVATE Aes128GcmEncrypter : public QuicEncrypter {
  public:
-  enum {
-    // Authentication tags are truncated to 96 bits.
-    kAuthTagSize = 12,
-  };
-
-  Aes128Gcm12Encrypter();
-  virtual ~Aes128Gcm12Encrypter() {}
+  Aes128GcmEncrypter();
+  virtual ~Aes128GcmEncrypter() {}
 
   // Returns true if the underlying crypto library supports AES GCM.
   static bool IsSupported();
@@ -62,4 +57,4 @@ class NET_EXPORT_PRIVATE Aes128Gcm12Encrypter : public QuicEncrypter {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CRYPTO_AES_128_GCM_12_ENCRYPTER_H_
+#endif  // NET_QUIC_CRYPTO_AES_128_GCM_ENCRYPTER_H_

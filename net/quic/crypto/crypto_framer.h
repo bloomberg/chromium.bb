@@ -20,9 +20,8 @@
 namespace net {
 
 class CryptoFramer;
-class QuicData;
 class QuicDataReader;
-class QuicDataWriter;
+class QuicData;
 
 class NET_EXPORT_PRIVATE CryptoFramerVisitorInterface {
  public:
@@ -75,10 +74,6 @@ class NET_EXPORT_PRIVATE CryptoFramer {
  private:
   // Clears per-message state.  Does not clear the visitor.
   void Clear();
-
-  static bool WritePadTag(QuicDataWriter* writer,
-                          size_t pad_length,
-                          uint32* end_offset);
 
   void set_error(QuicErrorCode error) { error_ = error; }
 

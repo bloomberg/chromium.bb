@@ -100,28 +100,33 @@ void MovePackets(PacketSavingConnection* source_conn,
   }
 }
 
-// HexChar parses |c| as a hex character. If valid, it sets |*value| to the
-// value of the hex character and returns true. Otherwise it returns false.
-bool HexChar(char c, uint8* value) {
-  if (c >= '0' && c <= '9') {
-    *value = c - '0';
-    return true;
-  }
-  if (c >= 'a' && c <= 'f') {
-    *value = c - 'a';
-    return true;
-  }
-  if (c >= 'A' && c <= 'F') {
-    *value = c - 'A';
-    return true;
-  }
-  return false;
-}
-
 }  // anonymous namespace
 
 CryptoTestUtils::FakeClientOptions::FakeClientOptions()
     : dont_verify_certs(false) {
+}
+
+// static
+void CryptoTestUtils::CommunicateHandshakeMessages(
+    PacketSavingConnection* a_conn,
+    QuicCryptoStream* a,
+    PacketSavingConnection* b_conn,
+    QuicCryptoStream* b) {
+  size_t a_i = 0, b_i = 0;
+  while (!a->handshake_confirmed()) {
+    ASSERT_GT(a_conn->packets_.size(), a_i);
+    LOG(INFO) << "Processing " << a_conn->packets_.size() - a_i
+              << " packets a->b";
+    MovePackets(a_conn, &a_i, b, b_conn);
+
+    ASSERT_GT(b_conn->packets_.size(), b_i);
+    LOG(INFO) << "Processing " << b_conn->packets_.size() - b_i
+              << " packets b->a";
+    if (b_conn->packets_.size() - b_i == 2) {
+      LOG(INFO) << "here";
+    }
+    MovePackets(b_conn, &b_i, a, a_conn);
+  }
 }
 
 // static
@@ -199,29 +204,6 @@ void CryptoTestUtils::SetupCryptoServerConfigForTest(
   scoped_ptr<CryptoHandshakeMessage> scfg(
       crypto_config->AddDefaultConfig(
           rand, clock, QuicCryptoServerConfig::kDefaultExpiry));
-}
-
-// static
-void CryptoTestUtils::CommunicateHandshakeMessages(
-    PacketSavingConnection* a_conn,
-    QuicCryptoStream* a,
-    PacketSavingConnection* b_conn,
-    QuicCryptoStream* b) {
-  size_t a_i = 0, b_i = 0;
-  while (!a->handshake_confirmed()) {
-    ASSERT_GT(a_conn->packets_.size(), a_i);
-    LOG(INFO) << "Processing " << a_conn->packets_.size() - a_i
-              << " packets a->b";
-    MovePackets(a_conn, &a_i, b, b_conn);
-
-    ASSERT_GT(b_conn->packets_.size(), b_i);
-    LOG(INFO) << "Processing " << b_conn->packets_.size() - b_i
-              << " packets b->a";
-    if (b_conn->packets_.size() - b_i == 2) {
-      LOG(INFO) << "here";
-    }
-    MovePackets(b_conn, &b_i, a, a_conn);
-  }
 }
 
 // static
@@ -382,91 +364,5 @@ void CryptoTestUtils::CompareClientAndServerKeys(
                                 client_forward_secure_decrypter_iv.data(),
                                 client_forward_secure_decrypter_iv.length());
 }
-
-// static
-QuicTag CryptoTestUtils::ParseTag(const char* tagstr) {
-  const size_t len = strlen(tagstr);
-  CHECK_NE(0u, len);
-
-  QuicTag tag = 0;
-
-  if (tagstr[0] == '#') {
-    CHECK_EQ(static_cast<size_t>(1 + 2*4), len);
-    tagstr++;
-
-    for (size_t i = 0; i < 8; i++) {
-      tag <<= 4;
-
-      uint8 v;
-      CHECK(HexChar(tagstr[i], &v));
-      tag |= v;
-    }
-
-    return tag;
-  }
-
-  CHECK_LE(len, 4u);
-  for (size_t i = 0; i < 4; i++) {
-    tag >>= 8;
-    if (i < len) {
-      tag |= static_cast<uint32>(tagstr[i]) << 24;
-    }
-  }
-
-  return tag;
-}
-
-// static
-CryptoHandshakeMessage CryptoTestUtils::Message(const char* message_tag, ...) {
-  va_list ap;
-  va_start(ap, message_tag);
-
-  CryptoHandshakeMessage message = BuildMessage(message_tag, ap);
-  va_end(ap);
-  return message;
-}
-
-// static
-CryptoHandshakeMessage CryptoTestUtils::BuildMessage(const char* message_tag,
-                                                     va_list ap) {
-  CryptoHandshakeMessage msg;
-  msg.set_tag(ParseTag(message_tag));
-
-  for (;;) {
-    const char* tagstr = va_arg(ap, const char*);
-    if (tagstr == NULL) {
-      break;
-    }
-
-    const QuicTag tag = ParseTag(tagstr);
-    const char* valuestr = va_arg(ap, const char*);
-
-    size_t len = strlen(valuestr);
-    if (len > 0 && valuestr[0] == '#') {
-      valuestr++;
-      len--;
-
-      CHECK(len % 2 == 0);
-      scoped_ptr<uint8[]> buf(new uint8[len/2]);
-
-      for (size_t i = 0; i < len/2; i++) {
-        uint8 v;
-        CHECK(HexChar(valuestr[i*2], &v));
-        buf[i] = v << 4;
-        CHECK(HexChar(valuestr[i*2 + 1], &v));
-        buf[i] |= v;
-      }
-
-      msg.SetStringPiece(
-          tag, StringPiece(reinterpret_cast<char*>(buf.get()), len/2));
-      continue;
-    }
-
-    msg.SetStringPiece(tag, valuestr);
-  }
-
-  return msg;
-}
-
 }  // namespace test
 }  // namespace net

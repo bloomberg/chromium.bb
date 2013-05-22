@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "net/base/ip_endpoint.h"
-#include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_reliable_client_stream.h"
@@ -49,18 +48,10 @@ class QuicClientSessionTest : public ::testing::Test {
 };
 
 TEST_F(QuicClientSessionTest, CryptoConnect) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
   CompleteCryptoHandshake();
 }
 
 TEST_F(QuicClientSessionTest, DISABLED_MaxNumConnections) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
   // FLAGS_max_streams_per_connection = 1;
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();

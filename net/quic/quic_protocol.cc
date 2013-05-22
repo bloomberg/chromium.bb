@@ -14,13 +14,13 @@ using std::string;
 namespace net {
 
 size_t GetPacketHeaderSize(bool include_version) {
-  return kPublicFlagsSize + kQuicGuidSize +
+  return kQuicGuidSize + kPublicFlagsSize +
       (include_version ? kQuicVersionSize : 0) + kSequenceNumberSize +
       kPrivateFlagsSize + kFecGroupSize;
 }
 
 size_t GetPublicResetPacketSize() {
-  return kPublicFlagsSize + kQuicGuidSize + kPublicResetNonceSize +
+  return kQuicGuidSize + kPublicFlagsSize + kPublicResetNonceSize +
       kSequenceNumberSize;
 }
 
