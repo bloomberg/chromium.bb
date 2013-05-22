@@ -105,8 +105,8 @@ TEST_F(NetworkEventLogTest, TestNetworkEvents) {
 }
 
 TEST_F(NetworkEventLogTest, TestMaxNetworkEvents) {
-  const size_t entries_to_add =
-      kMaxNetworkEventLogEntries + 3;
+  const size_t max_entries = network_event_log::internal::GetMaxLogEntries();
+  const size_t entries_to_add = max_entries + 3;
   for (size_t i = 0; i < entries_to_add; ++i) {
     network_event_log::internal::AddEntry(
         "test", 1, LOG_LEVEL_EVENT,
@@ -114,7 +114,7 @@ TEST_F(NetworkEventLogTest, TestMaxNetworkEvents) {
   }
   std::string output = GetLogString(OLDEST_FIRST, 0);
   size_t output_lines = CountLines(output);
-  EXPECT_EQ(kMaxNetworkEventLogEntries, output_lines);
+  EXPECT_EQ(max_entries, output_lines);
 }
 
 TEST_F(NetworkEventLogTest, TestStringFormat) {
@@ -214,6 +214,30 @@ TEST_F(NetworkEventLogTest, TestMaxEvents) {
   EXPECT_EQ("event5\nerror4\nevent3\nerror2\nevent1\n",
             network_event_log::GetAsString(
                 NEWEST_FIRST, "", LOG_LEVEL_EVENT, 5));
+}
+
+TEST_F(NetworkEventLogTest, TestMaxErrors) {
+  network_event_log::internal::SetMaxLogEntries(4);
+  AddTestEvent(LOG_LEVEL_EVENT, "event1");
+  AddTestEvent(LOG_LEVEL_ERROR, "error2");
+  AddTestEvent(LOG_LEVEL_EVENT, "event3");
+  AddTestEvent(LOG_LEVEL_ERROR, "error4");
+  AddTestEvent(LOG_LEVEL_EVENT, "event5");
+  AddTestEvent(LOG_LEVEL_EVENT, "event6");
+  EXPECT_EQ("error2\nerror4\nevent5\nevent6\n", network_event_log::GetAsString(
+      OLDEST_FIRST, "", LOG_LEVEL_DEBUG, 0));
+  network_event_log::internal::SetMaxLogEntries(0);
+  EXPECT_EQ("No Log Entries.", network_event_log::GetAsString(
+      OLDEST_FIRST, "", LOG_LEVEL_DEBUG, 0));
+  network_event_log::internal::SetMaxLogEntries(4);
+  AddTestEvent(LOG_LEVEL_ERROR, "error1");
+  AddTestEvent(LOG_LEVEL_ERROR, "error2");
+  AddTestEvent(LOG_LEVEL_ERROR, "error3");
+  AddTestEvent(LOG_LEVEL_ERROR, "error4");
+  AddTestEvent(LOG_LEVEL_EVENT, "event5");
+  AddTestEvent(LOG_LEVEL_EVENT, "event6");
+  EXPECT_EQ("error3\nerror4\nevent5\nevent6\n", network_event_log::GetAsString(
+      OLDEST_FIRST, "", LOG_LEVEL_DEBUG, 0));
 }
 
 }  // namespace network_event_log

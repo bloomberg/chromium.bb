@@ -4,6 +4,8 @@
 
 #include "chromeos/network/network_event_log.h"
 
+#include <list>
+
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
@@ -16,10 +18,13 @@
 #include "net/base/escape.h"
 
 namespace chromeos {
-
 namespace network_event_log {
 
 namespace {
+
+class NetworkEventLog;
+NetworkEventLog* g_network_event_log = NULL;
+size_t g_max_network_event_log_entries = 1000;
 
 struct LogEntry {
   LogEntry(const std::string& file,
@@ -148,7 +153,7 @@ void GetFormat(const std::string& format_string,
   }
 }
 
-typedef std::deque<LogEntry> LogEntryList;
+typedef std::list<LogEntry> LogEntryList;
 
 class NetworkEventLog {
  public:
@@ -161,6 +166,8 @@ class NetworkEventLog {
                           const std::string& format,
                           LogLevel max_level,
                           size_t max_events);
+
+  LogEntryList& entries() { return entries_; }
 
  private:
   LogEntryList entries_;
@@ -179,8 +186,24 @@ void NetworkEventLog::AddLogEntry(const LogEntry& entry) {
       return;
     }
   }
-  if (entries_.size() >= kMaxNetworkEventLogEntries)
-    entries_.pop_front();
+  if (entries_.size() >= g_max_network_event_log_entries) {
+    const size_t max_error_entries = g_max_network_event_log_entries / 2;
+    // Remove the first (oldest) non-error entry, or the oldest entry if more
+    // than half the entries are errors.
+    size_t error_count = 0;
+    for (LogEntryList::iterator iter = entries_.begin();
+         iter != entries_.end(); ++iter) {
+      if (iter->log_level != LOG_LEVEL_ERROR) {
+        entries_.erase(iter);
+        break;
+      }
+      if (++error_count > max_error_entries) {
+        // Too many error entries, remove the oldest entry.
+        entries_.pop_front();
+        break;
+      }
+    }
+  }
   entries_.push_back(entry);
   entry.SendToVLogOrErrorLog();
 }
@@ -202,18 +225,23 @@ std::string NetworkEventLog::GetAsString(StringOrder order,
       // Iterate backwards through the list skipping uninteresting entries to
       // determine the first entry to include.
       size_t shown_events = 0;
-      LogEntryList::const_reverse_iterator riter;
-      for (riter = entries_.rbegin(); riter != entries_.rend(); ++riter) {
+      size_t num_entries = 0;
+      for (LogEntryList::const_reverse_iterator riter = entries_.rbegin();
+           riter != entries_.rend(); ++riter) {
+        ++num_entries;
         if (riter->log_level > max_level)
           continue;
         if (++shown_events >= max_events)
           break;
       }
-      if (riter != entries_.rend())
-        offset = entries_.rend() - riter - 1;
+      offset = entries_.size() - num_entries;
     }
-    for (LogEntryList::const_iterator iter = entries_.begin() + offset;
+    for (LogEntryList::const_iterator iter = entries_.begin();
          iter != entries_.end(); ++iter) {
+      if (offset > 0) {
+        --offset;
+        continue;
+      }
       if (iter->log_level > max_level)
         continue;
       result += (*iter).ToString(show_time, show_file, show_desc, format_html);
@@ -235,9 +263,7 @@ std::string NetworkEventLog::GetAsString(StringOrder order,
 
 }  // namespace
 
-NetworkEventLog* g_network_event_log = NULL;
 const LogLevel kDefaultLogLevel = LOG_LEVEL_EVENT;
-const size_t kMaxNetworkEventLogEntries = 1000;
 
 void Initialize() {
   if (g_network_event_log)
@@ -255,6 +281,18 @@ bool IsInitialized() {
 }
 
 namespace internal {
+
+size_t GetMaxLogEntries() {
+  return g_max_network_event_log_entries;
+}
+
+void SetMaxLogEntries(size_t max_entries) {
+  g_max_network_event_log_entries = max_entries;
+  if (!g_network_event_log)
+    return;
+  while (g_network_event_log->entries().size() > max_entries)
+    g_network_event_log->entries().pop_front();
+}
 
 void AddEntry(const char* file,
               int file_line,
@@ -291,5 +329,4 @@ std::string ValueAsString(const base::Value& value) {
 }
 
 }  // namespace network_event_log
-
 }  // namespace chromeos

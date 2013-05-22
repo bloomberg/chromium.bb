@@ -81,6 +81,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetBooleanValue(key, value, &passphrase_required_);
   } else if (key == flimflam::kErrorProperty) {
     return GetStringValue(key, value, &error_);
+  } else if (key == shill::kErrorDetailsProperty) {
+    return GetStringValue(key, value, &error_details_);
   } else if (key == IPConfigProperty(flimflam::kAddressProperty)) {
     return GetStringValue(key, value, &ip_address_);
   } else if (key == IPConfigProperty(flimflam::kNameServersProperty)) {
@@ -143,6 +145,8 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
       flimflam::kPassphraseRequiredProperty, passphrase_required_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kErrorProperty,
                                             error_);
+  dictionary->SetStringWithoutPathExpansion(shill::kErrorDetailsProperty,
+                                            error_details_);
   base::DictionaryValue* ipconfig_properties = new DictionaryValue;
   ipconfig_properties->SetStringWithoutPathExpansion(flimflam::kAddressProperty,
                                                      ip_address_);

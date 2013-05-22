@@ -428,10 +428,11 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
     }
     std::string detail = network->name() + "." + key;
     detail += " = " + network_event_log::ValueAsString(value);
-    network_event_log::LogLevel log_level =
-        (key == flimflam::kSignalStrengthProperty)
-        ? network_event_log::LOG_LEVEL_DEBUG
-        : network_event_log::LOG_LEVEL_EVENT;
+    network_event_log::LogLevel log_level = network_event_log::LOG_LEVEL_EVENT;
+    if (key == flimflam::kErrorProperty || key == shill::kErrorDetailsProperty)
+      log_level = network_event_log::LOG_LEVEL_ERROR;
+    else if (key == flimflam::kSignalStrengthProperty)
+      log_level = network_event_log::LOG_LEVEL_DEBUG;
     NET_LOG_LEVEL(log_level, "NetworkPropertyUpdated", detail);
   }
   NetworkPropertiesUpdated(network);

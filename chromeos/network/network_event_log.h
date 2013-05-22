@@ -35,9 +35,6 @@ enum LogLevel {
   LOG_LEVEL_DEBUG = 2
 };
 
-// Maximum number of event log entries, exported for testing.
-CHROMEOS_EXPORT extern const size_t kMaxNetworkEventLogEntries;
-
 // Default log level.
 CHROMEOS_EXPORT extern const LogLevel kDefaultLogLevel;
 
@@ -51,10 +48,20 @@ CHROMEOS_EXPORT bool IsInitialized();
 
 namespace internal {
 
+// Gets the maximum number of log entries.
+CHROMEOS_EXPORT size_t GetMaxLogEntries();
+
+// Sets the maximum number of entries to something other than the default. If
+// |max_entries| is less than the current maximum number of entries, this will
+// delete any existing entries in excess of |max_entries|.
+CHROMEOS_EXPORT void SetMaxLogEntries(size_t max_entries);
+
 // Adds an entry to the event log at level specified by |log_level|.
 // A maximum number of events are recorded after which new events replace
-// old ones. Does nothing unless Initialize() has been called.
-// NOTE: Generally use NET_LOG instead.
+// old ones. Error events are prioritized such that error events will only be
+// deleted if more than least half of the entries are errors (at which point
+// the oldest error entry will be replaced). Does nothing unless Initialize()
+// has been called. NOTE: Generally use NET_LOG instead.
 CHROMEOS_EXPORT void AddEntry(const char* file,
                               int file_line,
                               LogLevel log_level,
