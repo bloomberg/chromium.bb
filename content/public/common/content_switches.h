@@ -83,6 +83,9 @@ CONTENT_EXPORT extern const char kDisableWebRTC[];
 #else
 CONTENT_EXPORT extern const char kDisableWebAudio[];
 #endif
+#if defined(ENABLE_WEBRTC)
+extern const char kEnableWebRtcAecRecordings[];
+#endif
 extern const char kEnableWebMIDI[];
 extern const char kDisableWebSecurity[];
 extern const char kEnableExperimentalWebSocket[];

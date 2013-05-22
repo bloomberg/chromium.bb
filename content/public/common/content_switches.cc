@@ -219,6 +219,11 @@ const char kDisableWebRTC[]                 = "disable-webrtc";
 const char kDisableWebAudio[]               = "disable-webaudio";
 #endif
 
+#if defined(ENABLE_WEBRTC)
+// Enables WebRTC AEC recordings.
+const char kEnableWebRtcAecRecordings[]     = "enable-webrtc-aec-recordings";
+#endif
+
 // Enables Web MIDI API.
 const char kEnableWebMIDI[]                 = "enable-web-midi";
 

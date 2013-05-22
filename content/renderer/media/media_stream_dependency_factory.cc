@@ -6,8 +6,10 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
@@ -299,6 +301,14 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
         sources_created.Run(description, false);
         return;
       }
+    }
+
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    // TODO(grunell): Change hard coded string to
+    // RTCMediaConstraints::kInternalAecDump when libjingle has been rolled.
+    if (command_line.HasSwitch(switches::kEnableWebRtcAecRecordings)) {
+      native_audio_constraints.AddOptional(
+          "internalAecDump", "true");
     }
 
     // Creates a LocalAudioSource object which holds audio options.

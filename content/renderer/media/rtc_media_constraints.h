@@ -24,6 +24,7 @@ class RTCMediaConstraints : public webrtc::MediaConstraintsInterface {
   virtual ~RTCMediaConstraints();
   virtual const Constraints& GetMandatory() const OVERRIDE;
   virtual const Constraints& GetOptional() const OVERRIDE;
+  void AddOptional(const std::string& key, const std::string& value);
 
  protected:
   Constraints mandatory_;

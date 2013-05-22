@@ -864,6 +864,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableTouchEditing,
     switches::kEnableVsyncNotification,
     switches::kEnableWebPInAcceptHeader,
+#if defined(ENABLE_WEBRTC)
+    switches::kEnableWebRtcAecRecordings,
+#endif
     switches::kDisableWebKitMediaSource,
     switches::kEnableOverscrollNotifications,
     switches::kEnableStrictSiteIsolation,

@@ -4,7 +4,7 @@
 #include "content/renderer/media/rtc_media_constraints.h"
 
 #include "base/logging.h"
-
+#include "base/string_util.h"
 #include "content/common/media/media_stream_options.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
@@ -26,6 +26,14 @@ void GetNativeMediaConstraints(
     if (new_constraint.key == kMediaStreamSource ||
         new_constraint.key == kMediaStreamSourceId)
       continue;
+
+    // Ignore internal constraints set by JS.
+    // TODO(jiayl): replace the hard coded string with
+    // webrtc::MediaConstraintsInterface::kInternalConstraintPrefix when
+    // the Libjingle change is rolled.
+    if (StartsWithASCII(new_constraint.key, "internal", true))
+      continue;
+
     DVLOG(3) << "MediaStreamConstraints:" << new_constraint.key
              << " : " <<  new_constraint.value;
     native_constraints->push_back(new_constraint);
@@ -56,6 +64,11 @@ RTCMediaConstraints::GetMandatory() const  {
 const webrtc::MediaConstraintsInterface::Constraints&
 RTCMediaConstraints::GetOptional() const {
   return optional_;
+}
+
+void RTCMediaConstraints::AddOptional(const std::string& key,
+                                      const std::string& value) {
+  optional_.push_back(Constraint(key, value));
 }
 
 }  // namespace content
