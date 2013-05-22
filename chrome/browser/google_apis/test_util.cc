@@ -147,11 +147,6 @@ scoped_ptr<net::test_server::HttpResponse> CreateHttpResponseFromFile(
   return http_response.Pass();
 }
 
-void DoNothingForReAuthenticateCallback(
-    AuthenticatedOperationInterface* /* operation */) {
-  NOTREACHED();
-}
-
 scoped_ptr<net::test_server::HttpResponse> HandleDownloadRequest(
     const GURL& base_url,
     net::test_server::HttpRequest* out_request,

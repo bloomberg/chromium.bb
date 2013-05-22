@@ -161,7 +161,7 @@ void ParseOpenLinkAndRun(const std::string& app_id,
 //============================ GetResourceListOperation ========================
 
 GetResourceListOperation::GetResourceListOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const GURL& override_url,
@@ -169,7 +169,7 @@ GetResourceListOperation::GetResourceListOperation(
     const std::string& search_string,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback)
-    : GetDataOperation(registry, url_request_context_getter,
+    : GetDataOperation(runner, url_request_context_getter,
                        base::Bind(&ParseResourceListAndRun, callback)),
       url_generator_(url_generator),
       override_url_(override_url),
@@ -191,13 +191,13 @@ GURL GetResourceListOperation::GetURL() const {
 //============================ SearchByTitleOperation ==========================
 
 SearchByTitleOperation::SearchByTitleOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const std::string& title,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback)
-    : GetDataOperation(registry, url_request_context_getter,
+    : GetDataOperation(runner, url_request_context_getter,
                        base::Bind(&ParseResourceListAndRun, callback)),
       url_generator_(url_generator),
       title_(title),
@@ -215,12 +215,12 @@ GURL SearchByTitleOperation::GetURL() const {
 //============================ GetResourceEntryOperation =======================
 
 GetResourceEntryOperation::GetResourceEntryOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const std::string& resource_id,
     const GetDataCallback& callback)
-    : GetDataOperation(registry, url_request_context_getter, callback),
+    : GetDataOperation(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id) {
   DCHECK(!callback.is_null());
@@ -235,12 +235,12 @@ GURL GetResourceEntryOperation::GetURL() const {
 //========================= GetAccountMetadataOperation ========================
 
 GetAccountMetadataOperation::GetAccountMetadataOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const GetAccountMetadataCallback& callback,
     bool include_installed_apps)
-    : GetDataOperation(registry, url_request_context_getter,
+    : GetDataOperation(runner, url_request_context_getter,
                        base::Bind(&ParseAccounetMetadataAndRun, callback)),
       url_generator_(url_generator),
       include_installed_apps_(include_installed_apps) {
@@ -256,13 +256,13 @@ GURL GetAccountMetadataOperation::GetURL() const {
 //=========================== DeleteResourceOperation ==========================
 
 DeleteResourceOperation::DeleteResourceOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
     const std::string& resource_id,
     const std::string& etag)
-    : EntryActionOperation(registry, url_request_context_getter, callback),
+    : EntryActionOperation(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id),
       etag_(etag) {
@@ -289,13 +289,13 @@ DeleteResourceOperation::GetExtraRequestHeaders() const {
 //========================== CreateDirectoryOperation ==========================
 
 CreateDirectoryOperation::CreateDirectoryOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback,
     const std::string& parent_resource_id,
     const std::string& directory_name)
-    : GetDataOperation(registry, url_request_context_getter, callback),
+    : GetDataOperation(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       parent_resource_id_(parent_resource_id),
       directory_name_(directory_name) {
@@ -341,13 +341,13 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
 //============================ CopyHostedDocumentOperation =====================
 
 CopyHostedDocumentOperation::CopyHostedDocumentOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback,
     const std::string& resource_id,
     const std::string& new_name)
-    : GetDataOperation(registry, url_request_context_getter, callback),
+    : GetDataOperation(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id),
       new_name_(new_name) {
@@ -387,13 +387,13 @@ bool CopyHostedDocumentOperation::GetContentData(
 //=========================== RenameResourceOperation ==========================
 
 RenameResourceOperation::RenameResourceOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
     const std::string& resource_id,
     const std::string& new_name)
-    : EntryActionOperation(registry, url_request_context_getter, callback),
+    : EntryActionOperation(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id),
       new_name_(new_name) {
@@ -438,13 +438,13 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
 //=========================== AuthorizeAppOperation ==========================
 
 AuthorizeAppOperation::AuthorizeAppOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const AuthorizeAppCallback& callback,
     const std::string& resource_id,
     const std::string& app_id)
-    : GetDataOperation(registry, url_request_context_getter,
+    : GetDataOperation(runner, url_request_context_getter,
                        base::Bind(&ParseOpenLinkAndRun, app_id, callback)),
       url_generator_(url_generator),
       resource_id_(resource_id),
@@ -490,13 +490,13 @@ GURL AuthorizeAppOperation::GetURL() const {
 //======================= AddResourceToDirectoryOperation ======================
 
 AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
     const std::string& parent_resource_id,
     const std::string& resource_id)
-    : EntryActionOperation(registry, url_request_context_getter, callback),
+    : EntryActionOperation(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       parent_resource_id_(parent_resource_id),
       resource_id_(resource_id) {
@@ -536,13 +536,13 @@ bool AddResourceToDirectoryOperation::GetContentData(
 //==================== RemoveResourceFromDirectoryOperation ====================
 
 RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
     const std::string& parent_resource_id,
     const std::string& document_resource_id)
-    : EntryActionOperation(registry, url_request_context_getter, callback),
+    : EntryActionOperation(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(document_resource_id),
       parent_resource_id_(parent_resource_id) {
@@ -572,7 +572,7 @@ RemoveResourceFromDirectoryOperation::GetExtraRequestHeaders() const {
 //======================= InitiateUploadNewFileOperation =======================
 
 InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const InitiateUploadCallback& callback,
@@ -581,7 +581,7 @@ InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
     int64 content_length,
     const std::string& parent_resource_id,
     const std::string& title)
-    : InitiateUploadOperationBase(registry,
+    : InitiateUploadOperationBase(runner,
                                   url_request_context_getter,
                                   callback,
                                   drive_file_path,
@@ -625,7 +625,7 @@ bool InitiateUploadNewFileOperation::GetContentData(
 //===================== InitiateUploadExistingFileOperation ====================
 
 InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const InitiateUploadCallback& callback,
@@ -634,7 +634,7 @@ InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
     int64 content_length,
     const std::string& resource_id,
     const std::string& etag)
-    : InitiateUploadOperationBase(registry,
+    : InitiateUploadOperationBase(runner,
                                   url_request_context_getter,
                                   callback,
                                   drive_file_path,
@@ -679,7 +679,7 @@ InitiateUploadExistingFileOperation::GetExtraRequestHeaders() const {
 //============================ ResumeUploadOperation ===========================
 
 ResumeUploadOperation::ResumeUploadOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const UploadRangeCallback& callback,
     const ProgressCallback& progress_callback,
@@ -690,7 +690,7 @@ ResumeUploadOperation::ResumeUploadOperation(
     int64 content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path)
-    : ResumeUploadOperationBase(registry,
+    : ResumeUploadOperationBase(runner,
                                 url_request_context_getter,
                                 drive_file_path,
                                 upload_location,
@@ -720,13 +720,13 @@ void ResumeUploadOperation::OnURLFetchUploadProgress(
 //========================== GetUploadStatusOperation ==========================
 
 GetUploadStatusOperation::GetUploadStatusOperation(
-    OperationRegistry* registry,
+    OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const UploadRangeCallback& callback,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length)
-  : GetUploadStatusOperationBase(registry,
+  : GetUploadStatusOperationBase(runner,
                                  url_request_context_getter,
                                  drive_file_path,
                                  upload_url,

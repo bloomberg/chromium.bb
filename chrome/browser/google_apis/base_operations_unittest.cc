@@ -23,9 +23,9 @@ const char kInvalidJsonString[] = "$$$";
 
 class FakeGetDataOperation : public GetDataOperation {
  public:
-  explicit FakeGetDataOperation(OperationRegistry* registry,
+  explicit FakeGetDataOperation(OperationRunner* runner,
                                 const GetDataCallback& callback)
-      : GetDataOperation(registry, NULL, callback) {
+      : GetDataOperation(runner, NULL, callback) {
   }
 
   virtual ~FakeGetDataOperation() {
@@ -121,7 +121,7 @@ TEST_F(BaseOperationsTest, ParseInvalidJson) {
 TEST_F(BaseOperationsTest, GetDataOperationParseValidResponse) {
   FakeGetDataOperation* get_data_operation =
       new FakeGetDataOperation(
-          runner_->operation_registry(),
+          runner_.get(),
           base::Bind(&BaseOperationsTest::GetDataCallback,
                      base::Unretained(this)));
   get_data_operation->NotifyStart();
@@ -139,7 +139,7 @@ TEST_F(BaseOperationsTest, GetDataOperationParseValidResponse) {
 TEST_F(BaseOperationsTest, GetDataOperationParseInvalidResponse) {
   FakeGetDataOperation* get_data_operation =
       new FakeGetDataOperation(
-          runner_->operation_registry(),
+          runner_.get(),
           base::Bind(&BaseOperationsTest::GetDataCallback,
                      base::Unretained(this)));
   get_data_operation->NotifyStart();

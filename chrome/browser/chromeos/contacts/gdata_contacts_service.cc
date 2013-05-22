@@ -480,7 +480,7 @@ class GDataContactsService::DownloadContactsRequest {
     } else {
       google_apis::GetContactGroupsOperation* operation =
           new google_apis::GetContactGroupsOperation(
-              runner_->operation_registry(),
+              runner_,
               url_request_context_getter_,
               base::Bind(&DownloadContactsRequest::HandleGroupsFeedData,
                          weak_ptr_factory_.GetWeakPtr()));
@@ -588,7 +588,7 @@ class GDataContactsService::DownloadContactsRequest {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     google_apis::GetContactsOperation* operation =
         new google_apis::GetContactsOperation(
-            runner_->operation_registry(),
+            runner_,
             url_request_context_getter_,
             my_contacts_group_id_,
             min_update_time_,
@@ -745,7 +745,7 @@ class GDataContactsService::DownloadContactsRequest {
               << contact->contact_id();
       runner_->StartOperationWithRetry(
           new google_apis::GetContactPhotoOperation(
-              runner_->operation_registry(),
+              runner_,
               url_request_context_getter_,
               GURL(url),
               base::Bind(&DownloadContactsRequest::HandlePhotoData,

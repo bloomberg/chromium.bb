@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/google_apis/operation_registry.h"
+#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -49,6 +49,13 @@ class BaseOperationsServerTest : public testing::Test {
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
 
+    operation_runner_.reset(new OperationRunner(profile_.get(),
+                                                request_context_getter_,
+                                                std::vector<std::string>(),
+                                                kTestUserAgent));
+    operation_runner_->auth_service()->set_access_token_for_testing(
+        kTestAuthToken);
+
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
     test_server_.RegisterRequestHandler(
         base::Bind(&test_util::HandleDownloadRequest,
@@ -72,7 +79,7 @@ class BaseOperationsServerTest : public testing::Test {
   content::TestBrowserThread io_thread_;
   net::test_server::EmbeddedTestServer test_server_;
   scoped_ptr<TestingProfile> profile_;
-  OperationRegistry operation_registry_;
+  scoped_ptr<OperationRunner> operation_runner_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 
   // The incoming HTTP request is saved so tests can verify the request
@@ -85,7 +92,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   base::FilePath temp_file;
   DownloadFileOperation* operation = new DownloadFileOperation(
-      &operation_registry_,
+      operation_runner_.get(),
       request_context_getter_.get(),
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
@@ -96,8 +103,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
       base::FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
-  operation->Start(kTestAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   std::string contents;
@@ -121,7 +127,7 @@ TEST_F(BaseOperationsServerTest,
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   base::FilePath temp_file;
   DownloadFileOperation* operation = new DownloadFileOperation(
-      &operation_registry_,
+      operation_runner_.get(),
       request_context_getter_.get(),
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
@@ -132,8 +138,7 @@ TEST_F(BaseOperationsServerTest,
       base::FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
-  operation->Start(kTestAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   std::string contents;

@@ -28,6 +28,8 @@ class URLRequestContextGetter;
 
 namespace google_apis {
 
+class OperationRunner;
+
 // Callback used to pass parsed JSON from ParseJson(). If parsing error occurs,
 // then the passed argument is null.
 typedef base::Callback<void(scoped_ptr<base::Value> value)> ParseJsonCallback;
@@ -77,11 +79,6 @@ class AuthenticatedOperationInterface {
 
 //============================ UrlFetchOperationBase ===========================
 
-// Callback type for getting the content from URLFetcher::GetResponseAsString().
-typedef base::Callback<void(
-    GDataErrorCode error,
-    scoped_ptr<std::string> content)> GetContentCallback;
-
 // Base class for operations that are fetching URLs.
 class UrlFetchOperationBase : public AuthenticatedOperationInterface,
                               public OperationRegistry::Operation,
@@ -94,15 +91,15 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   virtual base::WeakPtr<AuthenticatedOperationInterface> GetWeakPtr() OVERRIDE;
 
  protected:
-  explicit UrlFetchOperationBase(
-      OperationRegistry* registry,
+  UrlFetchOperationBase(
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter);
   // Use this constructor when you need to implement operations that take a
   // drive file path (ex. for downloading and uploading).
   // |url_request_context_getter| is used to initialize URLFetcher.
   // TODO(satorux): Remove the drive file path hack. crbug.com/163296
   UrlFetchOperationBase(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path);
   virtual ~UrlFetchOperationBase();
@@ -207,7 +204,7 @@ class EntryActionOperation : public UrlFetchOperationBase {
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |callback| must not be null.
   EntryActionOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const EntryActionCallback& callback);
   virtual ~EntryActionOperation();
@@ -236,7 +233,7 @@ typedef base::Callback<void(GDataErrorCode error,
 class GetDataOperation : public UrlFetchOperationBase {
  public:
   // |callback| must not be null.
-  GetDataOperation(OperationRegistry* registry,
+  GetDataOperation(OperationRunner* runner,
                    net::URLRequestContextGetter* url_request_context_getter,
                    const GetDataCallback& callback);
   virtual ~GetDataOperation();
@@ -294,7 +291,7 @@ class InitiateUploadOperationBase : public UrlFetchOperationBase {
   // |content_type| and |content_length| should be the attributes of the
   // uploading file.
   InitiateUploadOperationBase(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const InitiateUploadCallback& callback,
       const base::FilePath& drive_file_path,
@@ -348,7 +345,7 @@ class UploadRangeOperationBase : public UrlFetchOperationBase {
   // for resuming an upload, but used for adding an entry to OperationRegistry.
   // TODO(satorux): Remove the drive file path hack. crbug.com/163296
   UploadRangeOperationBase(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_url);
@@ -416,7 +413,7 @@ class ResumeUploadOperationBase : public UploadRangeOperationBase {
   // See also UploadRangeOperationBase's comment for remaining parameters
   // meaining.
   ResumeUploadOperationBase(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_location,
@@ -462,7 +459,7 @@ class GetUploadStatusOperationBase : public UploadRangeOperationBase {
   // See also UploadRangeOperationBase's constructor comment for other
   // parameters.
   GetUploadStatusOperationBase(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
@@ -481,8 +478,12 @@ class GetUploadStatusOperationBase : public UploadRangeOperationBase {
 
 //============================ DownloadFileOperation ===========================
 
-// Callback type for DownloadHostedDocument/DownloadFile
-// DocumentServiceInterface calls.
+// Callback type for getting the content from DownloadFileOperation.
+typedef base::Callback<void(
+    GDataErrorCode error,
+    scoped_ptr<std::string> content)> GetContentCallback;
+
+// Callback type for receiving the completion of DownloadFileOperation.
 typedef base::Callback<void(GDataErrorCode error,
                             const base::FilePath& temp_file)>
     DownloadActionCallback;
@@ -512,7 +513,7 @@ class DownloadFileOperation : public UrlFetchOperationBase {
   //   Specifies the file path to save the downloaded file.
   //
   DownloadFileOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback,

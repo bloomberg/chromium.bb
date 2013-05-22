@@ -154,8 +154,6 @@ class GDataWapiService : public DriveServiceInterface,
       const AuthorizeAppCallback& callback) OVERRIDE;
 
  private:
-  OperationRegistry* operation_registry() const;
-
   // AuthService::Observer override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 

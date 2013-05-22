@@ -92,12 +92,6 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 scoped_ptr<net::test_server::HttpResponse> CreateHttpResponseFromFile(
     const base::FilePath& file_path);
 
-// Does nothing for ReAuthenticateCallback(). This function should be used
-// if it is not expected to reach this method as there won't be any
-// authentication failures in the test.
-void DoNothingForReAuthenticateCallback(
-    AuthenticatedOperationInterface* operation);
-
 // Handles a request for downloading a file. Reads a file from the test
 // directory and returns the content. Also, copies the |request| to the memory
 // pointed by |out_request|.

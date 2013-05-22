@@ -8,12 +8,14 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_operations.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
-#include "chrome/browser/google_apis/operation_registry.h"
+#include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -55,10 +57,18 @@ class DriveApiOperationsTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     file_thread_.Start();
     io_thread_.StartIOThread();
+    profile_.reset(new TestingProfile);
 
     request_context_getter_ = new net::TestURLRequestContextGetter(
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
+
+    operation_runner_.reset(new OperationRunner(profile_.get(),
+                                                request_context_getter_,
+                                                std::vector<std::string>(),
+                                                kTestUserAgent));
+    operation_runner_->auth_service()->set_access_token_for_testing(
+        kTestDriveApiAuthToken);
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -99,7 +109,8 @@ class DriveApiOperationsTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
   net::test_server::EmbeddedTestServer test_server_;
-  OperationRegistry operation_registry_;
+  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<OperationRunner> operation_runner_;
   scoped_ptr<DriveApiUrlGenerator> url_generator_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   base::ScopedTempDir temp_dir_;
@@ -313,14 +324,13 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidJson) {
   scoped_ptr<AboutResource> about_resource;
 
   GetAboutOperation* operation = new GetAboutOperation(
-      &operation_registry_,
+      operation_runner_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &about_resource)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -346,14 +356,13 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidJson) {
   scoped_ptr<AboutResource> about_resource;
 
   GetAboutOperation* operation = new GetAboutOperation(
-      &operation_registry_,
+      operation_runner_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &about_resource)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   // "parse error" should be returned, and the about resource should be NULL.
@@ -372,14 +381,13 @@ TEST_F(DriveApiOperationsTest, GetApplistOperation) {
   scoped_ptr<base::Value> result;
 
   GetApplistOperation* operation = new GetApplistOperation(
-      &operation_registry_,
+      operation_runner_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &result)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -397,7 +405,7 @@ TEST_F(DriveApiOperationsTest, GetChangelistOperation) {
   scoped_ptr<base::Value> result;
 
   GetChangelistOperation* operation = new GetChangelistOperation(
-      &operation_registry_,
+      operation_runner_.get(),
       request_context_getter_.get(),
       *url_generator_,
       true,  // include deleted
@@ -406,8 +414,7 @@ TEST_F(DriveApiOperationsTest, GetChangelistOperation) {
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &result)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -426,7 +433,7 @@ TEST_F(DriveApiOperationsTest, GetFilelistOperation) {
   scoped_ptr<base::Value> result;
 
   GetFilelistOperation* operation = new GetFilelistOperation(
-      &operation_registry_,
+      operation_runner_.get(),
       request_context_getter_.get(),
       *url_generator_,
       "\"abcde\" in parents",
@@ -434,8 +441,7 @@ TEST_F(DriveApiOperationsTest, GetFilelistOperation) {
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &result)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -455,14 +461,13 @@ TEST_F(DriveApiOperationsTest, ContinueGetFileListOperation) {
 
   drive::ContinueGetFileListOperation* operation =
       new drive::ContinueGetFileListOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           test_server_.GetURL("/continue/get/file/list"),
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &result)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -482,7 +487,7 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
   // Create "new directory" in the root directory.
   drive::CreateDirectoryOperation* operation =
       new drive::CreateDirectoryOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           "root",
@@ -490,8 +495,7 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &file_resource)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -525,7 +529,7 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
   // Create "new directory" in the root directory.
   drive::RenameResourceOperation* operation =
       new drive::RenameResourceOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           "resource_id",
@@ -533,8 +537,7 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -558,7 +561,7 @@ TEST_F(DriveApiOperationsTest, CopyResourceOperation) {
   // Copy the file to a new file named "new name".
   drive::CopyResourceOperation* operation =
       new drive::CopyResourceOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           "resource_id",
@@ -567,8 +570,7 @@ TEST_F(DriveApiOperationsTest, CopyResourceOperation) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &file_resource)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -595,7 +597,7 @@ TEST_F(DriveApiOperationsTest, CopyResourceOperation_EmptyParentResourceId) {
   // Copy the file to a new file named "new name".
   drive::CopyResourceOperation* operation =
       new drive::CopyResourceOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           "resource_id",
@@ -604,8 +606,7 @@ TEST_F(DriveApiOperationsTest, CopyResourceOperation_EmptyParentResourceId) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &file_resource)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -629,15 +630,14 @@ TEST_F(DriveApiOperationsTest, TrashResourceOperation) {
   // Trash a resource with the given resource id.
   drive::TrashResourceOperation* operation =
       new drive::TrashResourceOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           "resource_id",
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -658,7 +658,7 @@ TEST_F(DriveApiOperationsTest, InsertResourceOperation) {
   // "parent_resource_id".
   drive::InsertResourceOperation* operation =
       new drive::InsertResourceOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           "parent_resource_id",
@@ -666,8 +666,7 @@ TEST_F(DriveApiOperationsTest, InsertResourceOperation) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -687,7 +686,7 @@ TEST_F(DriveApiOperationsTest, DeleteResourceOperation) {
   // "parent_resource_id".
   drive::DeleteResourceOperation* operation =
       new drive::DeleteResourceOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           "parent_resource_id",
@@ -695,8 +694,7 @@ TEST_F(DriveApiOperationsTest, DeleteResourceOperation) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NO_CONTENT, error);
@@ -723,7 +721,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
   // "parent_resource_id".
   drive::InitiateUploadNewFileOperation* operation =
       new drive::InitiateUploadNewFileOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -734,8 +732,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -762,7 +759,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
 
   drive::ResumeUploadOperation* resume_operation =
       new drive::ResumeUploadOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
@@ -775,9 +772,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&response, &new_entry)),
           ProgressCallback());
-  resume_operation->Start(
-      kTestDriveApiAuthToken, kTestUserAgent,
-      base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(resume_operation);
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
@@ -816,7 +811,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
   // Initiate uploading a new file to the directory with "parent_resource_id".
   drive::InitiateUploadNewFileOperation* operation =
       new drive::InitiateUploadNewFileOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -827,8 +822,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -854,7 +848,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
 
   drive::ResumeUploadOperation* resume_operation =
       new drive::ResumeUploadOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
@@ -867,9 +861,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&response, &new_entry)),
           ProgressCallback());
-  resume_operation->Start(
-      kTestDriveApiAuthToken, kTestUserAgent,
-      base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(resume_operation);
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
@@ -909,7 +901,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
   // Initiate uploading a new file to the directory with "parent_resource_id".
   drive::InitiateUploadNewFileOperation* operation =
       new drive::InitiateUploadNewFileOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -920,8 +912,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -952,7 +943,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
     // Check the response by GetUploadStatusOperation.
     drive::GetUploadStatusOperation* get_upload_status_operation =
         new drive::GetUploadStatusOperation(
-            &operation_registry_,
+            operation_runner_.get(),
             request_context_getter_.get(),
             base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
             upload_url,
@@ -960,9 +951,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
             CreateComposedCallback(
                 base::Bind(&test_util::RunAndQuit),
                 test_util::CreateCopyResultCallback(&response, &new_entry)));
-    get_upload_status_operation->Start(
-        kTestDriveApiAuthToken, kTestUserAgent,
-        base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+    operation_runner_->StartOperationWithRetry(get_upload_status_operation);
     MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
@@ -995,7 +984,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
 
     drive::ResumeUploadOperation* resume_operation =
         new drive::ResumeUploadOperation(
-            &operation_registry_,
+            operation_runner_.get(),
             request_context_getter_.get(),
             base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
             upload_url,
@@ -1008,9 +997,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
                 base::Bind(&test_util::RunAndQuit),
                 test_util::CreateCopyResultCallback(&response, &new_entry)),
             ProgressCallback());
-    resume_operation->Start(
-        kTestDriveApiAuthToken, kTestUserAgent,
-        base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+    operation_runner_->StartOperationWithRetry(resume_operation);
     MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
@@ -1046,7 +1033,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
     // Check the response by GetUploadStatusOperation.
     drive::GetUploadStatusOperation* get_upload_status_operation =
         new drive::GetUploadStatusOperation(
-            &operation_registry_,
+            operation_runner_.get(),
             request_context_getter_.get(),
             base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
             upload_url,
@@ -1054,9 +1041,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
             CreateComposedCallback(
                 base::Bind(&test_util::RunAndQuit),
                 test_util::CreateCopyResultCallback(&response, &new_entry)));
-    get_upload_status_operation->Start(
-        kTestDriveApiAuthToken, kTestUserAgent,
-        base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+    operation_runner_->StartOperationWithRetry(get_upload_status_operation);
     MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
@@ -1094,7 +1079,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
   // Initiate uploading a new file to the directory with "parent_resource_id".
   drive::InitiateUploadExistingFileOperation* operation =
       new drive::InitiateUploadExistingFileOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -1105,8 +1090,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -1128,7 +1112,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
 
   drive::ResumeUploadOperation* resume_operation =
       new drive::ResumeUploadOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
@@ -1141,9 +1125,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&response, &new_entry)),
           ProgressCallback());
-  resume_operation->Start(
-      kTestDriveApiAuthToken, kTestUserAgent,
-      base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(resume_operation);
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
@@ -1182,7 +1164,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
   // Initiate uploading a new file to the directory with "parent_resource_id".
   drive::InitiateUploadExistingFileOperation* operation =
       new drive::InitiateUploadExistingFileOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -1193,8 +1175,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -1216,7 +1197,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
 
   drive::ResumeUploadOperation* resume_operation =
       new drive::ResumeUploadOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
@@ -1229,9 +1210,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&response, &new_entry)),
           ProgressCallback());
-  resume_operation->Start(
-      kTestDriveApiAuthToken, kTestUserAgent,
-      base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(resume_operation);
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
@@ -1267,7 +1246,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETagConflicting) {
   // Initiate uploading a new file to the directory with "parent_resource_id".
   drive::InitiateUploadExistingFileOperation* operation =
       new drive::InitiateUploadExistingFileOperation(
-          &operation_registry_,
+          operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -1278,8 +1257,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETagConflicting) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
-  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  operation_runner_->StartOperationWithRetry(operation);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_PRECONDITION, error);

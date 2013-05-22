@@ -21,7 +21,7 @@ namespace google_apis {
 class GetContactGroupsOperation : public GetDataOperation {
  public:
   GetContactGroupsOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GetDataCallback& callback);
   virtual ~GetContactGroupsOperation();
@@ -47,7 +47,7 @@ class GetContactGroupsOperation : public GetDataOperation {
 class GetContactsOperation : public GetDataOperation {
  public:
   GetContactsOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const std::string& group_id,
       const base::Time& min_update_time,
@@ -84,7 +84,7 @@ class GetContactsOperation : public GetDataOperation {
 class GetContactPhotoOperation : public UrlFetchOperationBase {
  public:
   GetContactPhotoOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GURL& photo_url,
       const GetContentCallback& callback);

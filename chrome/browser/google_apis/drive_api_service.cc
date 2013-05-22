@@ -274,7 +274,7 @@ void DriveAPIService::CancelAll() {
 
 bool DriveAPIService::CancelForFilePath(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return operation_registry()->CancelForFilePath(file_path);
+  return runner_->operation_registry()->CancelForFilePath(file_path);
 }
 
 std::string DriveAPIService::GetRootResourceId() const {
@@ -292,7 +292,7 @@ void DriveAPIService::GetAllResourceList(
   // The returned list should contain only resources currently existing.
   runner_->StartOperationWithRetry(
       new GetChangelistOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           false,  // include deleted
@@ -317,7 +317,7 @@ void DriveAPIService::GetResourceListInDirectory(
   // We aren't interested in files in trash in this context, neither.
   runner_->StartOperationWithRetry(
       new GetFilelistOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           base::StringPrintf(
@@ -336,7 +336,7 @@ void DriveAPIService::Search(const std::string& search_query,
 
   runner_->StartOperationWithRetry(
       new GetFilelistOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           drive::util::TranslateQuery(search_query),
@@ -364,7 +364,7 @@ void DriveAPIService::SearchByTitle(
 
   runner_->StartOperationWithRetry(
       new GetFilelistOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           query,
@@ -379,7 +379,7 @@ void DriveAPIService::GetChangeList(int64 start_changestamp,
 
   runner_->StartOperationWithRetry(
       new GetChangelistOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           true,  // include deleted
@@ -396,7 +396,7 @@ void DriveAPIService::ContinueGetResourceList(
 
   runner_->StartOperationWithRetry(
       new drive::ContinueGetFileListOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           override_url,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
@@ -409,7 +409,7 @@ void DriveAPIService::GetResourceEntry(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(new GetFileOperation(
-      operation_registry(),
+      runner_.get(),
       url_request_context_getter_,
       url_generator_,
       resource_id,
@@ -423,7 +423,7 @@ void DriveAPIService::GetAboutResource(
 
   runner_->StartOperationWithRetry(
       new GetAboutOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           callback));
@@ -434,7 +434,7 @@ void DriveAPIService::GetAppList(const GetAppListCallback& callback) {
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(new GetApplistOperation(
-      operation_registry(),
+      runner_.get(),
       url_request_context_getter_,
       url_generator_,
       base::Bind(&ParseAppListAndRun, callback)));
@@ -452,7 +452,7 @@ void DriveAPIService::DownloadFile(
   // get_content_callback may be null.
 
   runner_->StartOperationWithRetry(
-      new DownloadFileOperation(operation_registry(),
+      new DownloadFileOperation(runner_.get(),
                                 url_request_context_getter_,
                                 download_action_callback,
                                 get_content_callback,
@@ -470,7 +470,7 @@ void DriveAPIService::DeleteResource(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(new drive::TrashResourceOperation(
-      operation_registry(),
+      runner_.get(),
       url_request_context_getter_,
       url_generator_,
       resource_id,
@@ -486,7 +486,7 @@ void DriveAPIService::AddNewDirectory(
 
   runner_->StartOperationWithRetry(
       new drive::CreateDirectoryOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           parent_resource_id,
@@ -504,7 +504,7 @@ void DriveAPIService::CopyResource(
 
   runner_->StartOperationWithRetry(
       new drive::CopyResourceOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           resource_id,
@@ -522,7 +522,7 @@ void DriveAPIService::CopyHostedDocument(
 
   runner_->StartOperationWithRetry(
       new drive::CopyResourceOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           resource_id,
@@ -540,7 +540,7 @@ void DriveAPIService::RenameResource(
 
   runner_->StartOperationWithRetry(
       new drive::RenameResourceOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           resource_id,
@@ -557,7 +557,7 @@ void DriveAPIService::AddResourceToDirectory(
 
   runner_->StartOperationWithRetry(
       new drive::InsertResourceOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           parent_resource_id,
@@ -574,7 +574,7 @@ void DriveAPIService::RemoveResourceFromDirectory(
 
   runner_->StartOperationWithRetry(
       new drive::DeleteResourceOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           parent_resource_id,
@@ -594,7 +594,7 @@ void DriveAPIService::InitiateUploadNewFile(
 
   runner_->StartOperationWithRetry(
       new drive::InitiateUploadNewFileOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           drive_file_path,
@@ -617,7 +617,7 @@ void DriveAPIService::InitiateUploadExistingFile(
 
   runner_->StartOperationWithRetry(
       new drive::InitiateUploadExistingFileOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           url_generator_,
           drive_file_path,
@@ -643,7 +643,7 @@ void DriveAPIService::ResumeUpload(
 
   runner_->StartOperationWithRetry(
       new drive::ResumeUploadOperation(
-          operation_registry(),
+          runner_.get(),
           url_request_context_getter_,
           drive_file_path,
           upload_url,
@@ -665,7 +665,7 @@ void DriveAPIService::GetUploadStatus(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(new drive::GetUploadStatusOperation(
-      operation_registry(),
+      runner_.get(),
       url_request_context_getter_,
       drive_file_path,
       upload_url,
@@ -681,7 +681,7 @@ void DriveAPIService::AuthorizeApp(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(new GetFileOperation(
-      operation_registry(),
+      runner_.get(),
       url_request_context_getter_,
       url_generator_,
       resource_id,
@@ -708,10 +708,6 @@ void DriveAPIService::ClearAccessToken() {
 void DriveAPIService::ClearRefreshToken() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return runner_->auth_service()->ClearRefreshToken();
-}
-
-OperationRegistry* DriveAPIService::operation_registry() const {
-  return runner_->operation_registry();
 }
 
 void DriveAPIService::OnOAuth2RefreshTokenChanged() {

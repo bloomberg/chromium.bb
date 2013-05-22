@@ -150,8 +150,6 @@ class DriveAPIService : public DriveServiceInterface,
       const AuthorizeAppCallback& callback) OVERRIDE;
 
  private:
-  OperationRegistry* operation_registry() const;
-
   // AuthServiceObserver override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 

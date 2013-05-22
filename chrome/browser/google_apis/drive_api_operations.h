@@ -32,7 +32,7 @@ typedef base::Callback<void(GDataErrorCode error,
 // This class performs the operation for fetching About data.
 class GetAboutOperation : public GetDataOperation {
  public:
-  GetAboutOperation(OperationRegistry* registry,
+  GetAboutOperation(OperationRunner* runner,
                     net::URLRequestContextGetter* url_request_context_getter,
                     const DriveApiUrlGenerator& url_generator,
                     const GetAboutResourceCallback& callback);
@@ -53,7 +53,7 @@ class GetAboutOperation : public GetDataOperation {
 // This class performs the operation for fetching Applist.
 class GetApplistOperation : public GetDataOperation {
  public:
-  GetApplistOperation(OperationRegistry* registry,
+  GetApplistOperation(OperationRunner* runner,
                       net::URLRequestContextGetter* url_request_context_getter,
                       const DriveApiUrlGenerator& url_generator,
                       const GetDataCallback& callback);
@@ -83,7 +83,7 @@ class GetChangelistOperation : public GetDataOperation {
   // |max_results| specifies the max of the number of files resource in the
   // response.
   GetChangelistOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       bool include_deleted,
@@ -113,7 +113,7 @@ class GetChangelistOperation : public GetDataOperation {
 class GetFilelistOperation : public GetDataOperation {
  public:
   GetFilelistOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& search_string,
@@ -138,7 +138,7 @@ class GetFilelistOperation : public GetDataOperation {
 // This class performs the operation for fetching a file.
 class GetFileOperation : public GetDataOperation {
  public:
-  GetFileOperation(OperationRegistry* registry,
+  GetFileOperation(OperationRunner* runner,
                    net::URLRequestContextGetter* url_request_context_getter,
                    const DriveApiUrlGenerator& url_generator,
                    const std::string& file_id,
@@ -170,7 +170,7 @@ namespace drive {
 class ContinueGetFileListOperation : public GetDataOperation {
  public:
   ContinueGetFileListOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GURL& url,
       const GetDataCallback& callback);
@@ -191,7 +191,7 @@ class ContinueGetFileListOperation : public GetDataOperation {
 class CreateDirectoryOperation : public GetDataOperation {
  public:
   CreateDirectoryOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& parent_resource_id,
@@ -221,7 +221,7 @@ class RenameResourceOperation : public EntryActionOperation {
  public:
   // |callback| must not be null.
   RenameResourceOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& resource_id,
@@ -262,7 +262,7 @@ class CopyResourceOperation : public GetDataOperation {
  public:
   // Upon completion, |callback| will be called. |callback| must not be null.
   CopyResourceOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& resource_id,
@@ -302,7 +302,7 @@ class TrashResourceOperation : public EntryActionOperation {
  public:
   // |callback| must not be null.
   TrashResourceOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& resource_id,
@@ -330,7 +330,7 @@ class InsertResourceOperation : public EntryActionOperation {
  public:
   // |callback| must not be null.
   InsertResourceOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& parent_resource_id,
@@ -365,7 +365,7 @@ class DeleteResourceOperation : public EntryActionOperation {
  public:
   // |callback| must not be null.
   DeleteResourceOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& parent_resource_id,
@@ -396,7 +396,7 @@ class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
   // See also the comments of InitiateUploadOperationBase for more details
   // about the other parameters.
   InitiateUploadNewFileOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const base::FilePath& drive_file_path,
@@ -435,7 +435,7 @@ class InitiateUploadExistingFileOperation
   // See also the comments of InitiateUploadOperationBase for more details
   // about the other parameters.
   InitiateUploadExistingFileOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const base::FilePath& drive_file_path,
@@ -473,7 +473,7 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
   // See also ResumeUploadOperationBase's comment for parameters meaning.
   // |callback| must not be null. |progress_callback| may be null.
   ResumeUploadOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_location,
@@ -510,7 +510,7 @@ class GetUploadStatusOperation : public GetUploadStatusOperationBase {
   // See also GetUploadStatusOperationBase's comment for parameters meaning.
   // |callback| must not be null.
   GetUploadStatusOperation(
-      OperationRegistry* registry,
+      OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
