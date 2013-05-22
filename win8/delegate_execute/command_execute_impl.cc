@@ -520,6 +520,30 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
     parameters_ = CommandLine(CommandLine::NO_PROGRAM);
   }
 
+#if defined(USE_AURA)
+  if (launch_mode_determined)
+    return launch_mode;
+
+  CComPtr<IExecuteCommandHost> host;
+  CComQIPtr<IServiceProvider> service_provider = m_spUnkSite;
+  if (service_provider) {
+    service_provider->QueryService(IID_IExecuteCommandHost, &host);
+    if (host) {
+      host->GetUIMode(&launch_mode);
+    }
+  }
+
+  if (launch_mode >= ECHUIM_SYSTEM_LAUNCHER) {
+    // At the end if launch mode is not proper apply heuristics.
+    launch_mode = base::win::IsTouchEnabledDevice() ?
+                          ECHUIM_IMMERSIVE : ECHUIM_DESKTOP;
+  }
+
+  AtlTrace("Launching mode is %d\n", launch_mode);
+  launch_mode_determined = true;
+  return launch_mode;
+#endif
+
   base::win::RegKey reg_key;
   LONG key_result = reg_key.Create(HKEY_CURRENT_USER,
                                    chrome::kMetroRegistryPath,
