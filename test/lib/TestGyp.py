@@ -494,7 +494,7 @@ class TestGypAndroid(TestGypBase):
     status = None
     if os.path.exists(self.built_file_path(name)):
       status = 1
-    self._complete(None, None, None, None, status, self.match)
+    self._complete(None, None, None, None, status, match)
 
   def match_single_line(self, lines = None, expected_line = None):
     """
