@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_
-#define CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_
+#ifndef CONTENT_COMMON_CHILD_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_
+#define CONTENT_COMMON_CHILD_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_
 
 #include "third_party/WebKit/Source/Platform/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabaseCallbacks.h"
@@ -43,4 +43,4 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_
+#endif  // CONTENT_COMMON_CHILD_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_

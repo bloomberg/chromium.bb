@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/indexed_db/proxy_webidbfactory_impl.h"
+#include "content/common_child/indexed_db/proxy_webidbfactory_impl.h"
 
-#include "content/common/indexed_db/indexed_db_dispatcher.h"
 #include "content/common/child_thread.h"
+#include "content/common_child/indexed_db/indexed_db_dispatcher.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 
 using WebKit::WebIDBCallbacks;

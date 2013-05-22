@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/indexed_db/indexed_db_dispatcher.h"
+#include "content/common_child/indexed_db/indexed_db_dispatcher.h"
 
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
@@ -10,8 +10,8 @@
 #include "base/threading/thread_local.h"
 #include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
-#include "content/common/indexed_db/proxy_webidbcursor_impl.h"
-#include "content/common/indexed_db/proxy_webidbdatabase_impl.h"
+#include "content/common_child/indexed_db/proxy_webidbcursor_impl.h"
+#include "content/common_child/indexed_db/proxy_webidbdatabase_impl.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabaseError.h"

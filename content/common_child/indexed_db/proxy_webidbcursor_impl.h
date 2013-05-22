@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBCURSOR_IMPL_H_
-#define CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBCURSOR_IMPL_H_
+#ifndef CONTENT_COMMON_CHILD_INDEXED_DB_PROXY_WEBIDBCURSOR_IMPL_H_
+#define CONTENT_COMMON_CHILD_INDEXED_DB_PROXY_WEBIDBCURSOR_IMPL_H_
 
 #include <deque>
 #include <vector>
@@ -71,4 +71,4 @@ class CONTENT_EXPORT RendererWebIDBCursorImpl
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBCURSOR_IMPL_H_
+#endif  // CONTENT_COMMON_CHILD_INDEXED_DB_PROXY_WEBIDBCURSOR_IMPL_H_
