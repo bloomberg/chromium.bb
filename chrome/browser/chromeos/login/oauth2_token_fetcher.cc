@@ -21,11 +21,6 @@ const int kMaxRequestAttemptCount = 5;
 // OAuth token request retry delay in milliseconds.
 const int kRequestRestartDelay = 3000;
 
-// The service scope of the OAuth v2 token that ChromeOS login will be
-// requesting.
-const char kServiceScopeChromeOS[] =
-    "https://www.googleapis.com/auth/chromesync";
-
 }  // namespace
 
 namespace chromeos {
@@ -119,7 +114,9 @@ void OAuth2TokenFetcher::RetryOnError(const GoogleServiceAuthError& error,
         base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
     return;
   }
-  LOG(INFO) << "Unrecoverable error or retry count max reached.";
+  LOG(ERROR) << "Unrecoverable error or retry count max reached. State: "
+             << error.state() << ", network error: " << error.network_error()
+             << ", message: " << error.error_message();
   error_handler.Run();
 }
 

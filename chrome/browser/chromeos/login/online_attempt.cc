@@ -27,15 +27,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-// The service scope of the OAuth v2 token that ChromeOS login will be
-// requesting.
-const char kServiceScopeChromeOS[] =
-    "https://www.googleapis.com/auth/chromesync";
-
-}
-
 namespace chromeos {
 
 // static
