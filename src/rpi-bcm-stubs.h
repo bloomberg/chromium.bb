@@ -43,6 +43,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static inline void bcm_host_init(void) {}
 static inline void bcm_host_deinit(void) {}
 
+
+/* from /opt/vc/include/interface/vmcs_host/vc_dispservice_defs.h */
+
+#define TRANSFORM_HFLIP     (1<<0)
+#define TRANSFORM_VFLIP     (1<<1)
+#define TRANSFORM_TRANSPOSE (1<<2)
+
+
 /* from /opt/vc/include/interface/vctypes/vc_display_types.h */
 
 typedef enum
@@ -61,6 +69,14 @@ typedef struct tag_VC_RECT_T {
 
 typedef enum {
 	VC_IMAGE_ROT0,
+	/* these are not the right values: */
+	VC_IMAGE_ROT90,
+	VC_IMAGE_ROT180,
+	VC_IMAGE_ROT270,
+	VC_IMAGE_MIRROR_ROT0,
+	VC_IMAGE_MIRROR_ROT90,
+	VC_IMAGE_MIRROR_ROT180,
+	VC_IMAGE_MIRROR_ROT270,
 } VC_IMAGE_TRANSFORM_T;
 
 typedef enum
@@ -109,6 +125,12 @@ typedef struct {
 
 typedef enum {
 	DISPMANX_NO_ROTATE = 0,
+	DISPMANX_ROTATE_90 = 1,
+	DISPMANX_ROTATE_180 = 2,
+	DISPMANX_ROTATE_270 = 3,
+
+	DISPMANX_FLIP_HRIZ = 1 << 16,
+	DISPMANX_FLIP_VERT = 1 << 17
 } DISPMANX_TRANSFORM_T;
 
 typedef struct {
@@ -156,6 +178,15 @@ vc_dispmanx_resource_write_data_rect(DISPMANX_RESOURCE_HANDLE_T handle,
 				     const VC_RECT_T *src_rect,
 				     uint32_t dst_x,
 				     uint32_t dst_y)
+{
+	return -1;
+}
+
+static inline int
+vc_dispmanx_resource_read_data(DISPMANX_RESOURCE_HANDLE_T handle,
+			       const VC_RECT_T *p_rect,
+			       void *dst_address,
+			       uint32_t dst_pitch)
 {
 	return -1;
 }
@@ -252,6 +283,14 @@ vc_dispmanx_element_change_attributes(DISPMANX_UPDATE_HANDLE_T update,
 				      const VC_RECT_T *src_rect,
 				      DISPMANX_RESOURCE_HANDLE_T mask,
 				      VC_IMAGE_TRANSFORM_T transform)
+{
+	return -1;
+}
+
+static inline int
+vc_dispmanx_snapshot(DISPMANX_DISPLAY_HANDLE_T display,
+		     DISPMANX_RESOURCE_HANDLE_T snapshot_resource,
+		     VC_IMAGE_TRANSFORM_T transform)
 {
 	return -1;
 }

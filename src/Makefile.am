@@ -180,6 +180,8 @@ rpi_backend_la_CFLAGS =				\
 	$(RPI_BCM_HOST_CFLAGS)
 rpi_backend_la_SOURCES =			\
 	compositor-rpi.c			\
+	rpi-renderer.c				\
+	rpi-renderer.h				\
 	rpi-bcm-stubs.h 			\
 	tty.c					\
 	evdev.c					\
