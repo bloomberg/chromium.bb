@@ -262,7 +262,7 @@ body[new-ui] .dialog-sidebar-header {
   -webkit-app-region: drag;
   -webkit-box-flex: 0;
   display: -webkit-box;
-  height: 45px;  /* Keep in sync with #dialog-header. */
+  height: 48px;  /* Keep in sync with #dialog-header. */
   line-height: 45px;
 }
 
@@ -511,20 +511,14 @@ body:not([new-ui]) .dialog-header {
 
 body[new-ui] .dialog-header {
   -webkit-app-region: drag;
-  -webkit-margin-end: 10px;
-  -webkit-margin-start: 0;
-  height: 45px;
+  height: 48px;
+  margin: 0;
 }
 
 body[new-ui] .search-box-wrapper {
   -webkit-box-flex: 1;
   display: -webkit-box;
-}
-
-body[new-ui] .decoration-buttons-wrapper {
-  -webkit-box-flex: 0;
-  -webkit-box-pack: end;
-  display: -webkit-box;
+  height: 100%;
 }
 
 body[new-ui] .dialog-header #search-box,
@@ -738,14 +732,28 @@ body:not([new-ui]) .breadcrumb-last {
   width: 25px;
 }
 
+body[new-ui] .dialog-header .buttonbar {
+  -webkit-box-align: center;
+  height: 100%;
+}
+
 body[new-ui] .dialog-header .buttonbar button {
+  -webkit-margin-end: 10px;
   -webkit-margin-start: 0;
   background-image: none;
   background-position: center;
   background-repeat: no-repeat;
-  min-width: 29px;
+  border-style: none;
+  display: block;
+  height: 32px;
+  min-width: 0;
+  outline: none;
   padding: 0;
-  width: 29px;
+  width: 32px;
+}
+
+body[new-ui] .dialog-header .buttonbar button:not(:active) {
+  -webkit-box-shadow: none;
 }
 
 body[new-ui] .dialog-header button:not(:hover):not(focus) {
@@ -790,7 +798,7 @@ body[new-ui] #search-box {
   -webkit-margin-end: 0;
   -webkit-padding-after: 0;
   -webkit-padding-before: 0;
-  -webkit-padding-end: 26px;
+  -webkit-padding-end: 52px;
   -webkit-padding-start: 46px;
   background: -webkit-image-set(
     url('../images/files/ui/new-ui/search_icon_inactive.png') 1x,
@@ -798,7 +806,8 @@ body[new-ui] #search-box {
   background-position: 13px center;
   background-repeat: no-repeat;
   border-style: none;
-  height: 45px;
+  display: block;
+  height: 48px;
   line-height: 1em;
   max-width: none;
   position: relative;
@@ -852,7 +861,7 @@ body[new-ui] #search-box:focus {
     url('../images/files/ui/new-ui/2x/search_clear.png') 2x);
   height: 12px;
   position: absolute;
-  top: 17px;
+  top: 18px;
   width: 12px;
 }
 
@@ -866,11 +875,11 @@ body:not([new-ui]) #search-box::-webkit-search-cancel-button {
 }
 
 html:not([dir='rtl']) #search-box::-webkit-search-cancel-button {
-  right: 10px;
+  right: 30px;
 }
 
 html[dir='rtl'] #search-box::-webkit-search-cancel-button {
-  left: 10px;
+  left: 30px;
 }
 
 html[dir='rtl'] body:not([new-ui]) #search-box::-webkit-search-cancel-button {
