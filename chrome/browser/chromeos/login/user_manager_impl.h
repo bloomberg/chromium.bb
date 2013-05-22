@@ -11,10 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -28,6 +26,10 @@
 
 class PrefService;
 class ProfileSyncService;
+
+namespace policy {
+struct DeviceLocalAccount;
+}
 
 namespace chromeos {
 
@@ -133,7 +135,7 @@ class UserManagerImpl
   virtual void OnStateChanged() OVERRIDE;
 
   // policy::DeviceLocalAccountPolicyService::Observer implementation.
-  virtual void OnPolicyUpdated(const std::string& account_id) OVERRIDE;
+  virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
 
  private:
@@ -218,6 +220,10 @@ class UserManagerImpl
   // Also removes the user from the persistent user list.
   User* RemoveRegularOrLocallyManagedUserFromList(const std::string& username);
 
+  // If data for a public account is marked as pending removal and the user is
+  // no longer logged into that account, removes the data.
+  void CleanUpPublicAccountNonCryptohomeDataPendingRemoval();
+
   // Removes data belonging to public accounts that are no longer found on the
   // user list. If the user is currently logged into one of these accounts, the
   // data for that account is not removed immediately but marked as pending
@@ -225,12 +231,13 @@ class UserManagerImpl
   void CleanUpPublicAccountNonCryptohomeData(
       const std::vector<std::string>& old_public_accounts);
 
-  // Replaces the list of public accounts with |public_accounts|. Ensures that
-  // data belonging to accounts no longer on the list is removed. Returns |true|
-  // if the list has changed.
+  // Replaces the list of public accounts with those found in
+  // |device_local_accounts|. Ensures that data belonging to accounts no longer
+  // on the list is removed. Returns |true| if the list has changed.
   // Public accounts are defined by policy. This method is called whenever an
   // updated list of public accounts is received from policy.
-  bool UpdateAndCleanUpPublicAccounts(const base::ListValue& public_accounts);
+  bool UpdateAndCleanUpPublicAccounts(
+      const std::vector<policy::DeviceLocalAccount>& device_local_accounts);
 
   // Updates the display name for public account |username| from policy settings
   // associated with that username.
@@ -256,9 +263,6 @@ class UserManagerImpl
 
   // Update the global LoginState.
   void UpdateLoginState();
-
-  // Gets the list of public accounts defined in device settings.
-  void ReadPublicAccounts(base::ListValue* public_accounts);
 
   // Insert |user| at the front of the LRU user list..
   void SetLRUUser(User* user);

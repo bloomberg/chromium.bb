@@ -24,7 +24,7 @@ class DeviceLocalAccountPolicyProvider
     : public ConfigurationPolicyProvider,
       public DeviceLocalAccountPolicyService::Observer {
  public:
-  DeviceLocalAccountPolicyProvider(const std::string& account_id,
+  DeviceLocalAccountPolicyProvider(const std::string& user_id,
                                    DeviceLocalAccountPolicyService* service);
   virtual ~DeviceLocalAccountPolicyProvider();
 
@@ -33,11 +33,11 @@ class DeviceLocalAccountPolicyProvider
   virtual void RefreshPolicies() OVERRIDE;
 
   // DeviceLocalAccountPolicyService::Observer:
-  virtual void OnPolicyUpdated(const std::string& account_id) OVERRIDE;
+  virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
 
  private:
-  // Returns the broker for |account_id_| or NULL if not available.
+  // Returns the broker for |user_id_| or NULL if not available.
   DeviceLocalAccountPolicyBroker* GetBroker();
 
   // Handles completion of policy refreshes and triggers the update callback.
@@ -48,7 +48,7 @@ class DeviceLocalAccountPolicyProvider
   // policy from the broker if available or keeping the current policy.
   void UpdateFromBroker();
 
-  const std::string account_id_;
+  const std::string user_id_;
   DeviceLocalAccountPolicyService* service_;
 
   bool store_initialized_;

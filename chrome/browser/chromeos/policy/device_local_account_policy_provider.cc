@@ -12,9 +12,9 @@
 namespace policy {
 
 DeviceLocalAccountPolicyProvider::DeviceLocalAccountPolicyProvider(
-    const std::string& account_id,
+    const std::string& user_id,
     DeviceLocalAccountPolicyService* service)
-    : account_id_(account_id),
+    : user_id_(user_id),
       service_(service),
       store_initialized_(false),
       waiting_for_policy_refresh_(false),
@@ -47,8 +47,8 @@ void DeviceLocalAccountPolicyProvider::RefreshPolicies() {
 }
 
 void DeviceLocalAccountPolicyProvider::OnPolicyUpdated(
-    const std::string& account_id) {
-  if (account_id == account_id_)
+    const std::string& user_id) {
+  if (user_id == user_id_)
     UpdateFromBroker();
 }
 
@@ -57,7 +57,7 @@ void DeviceLocalAccountPolicyProvider::OnDeviceLocalAccountsChanged() {
 }
 
 DeviceLocalAccountPolicyBroker* DeviceLocalAccountPolicyProvider::GetBroker() {
-  return service_->GetBrokerForAccount(account_id_);
+  return service_->GetBrokerForUser(user_id_);
 }
 
 void DeviceLocalAccountPolicyProvider::ReportPolicyRefresh(bool success) {

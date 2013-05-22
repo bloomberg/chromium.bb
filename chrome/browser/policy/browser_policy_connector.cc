@@ -188,7 +188,8 @@ void BrowserPolicyConnector::Init(
     device_local_account_policy_service_.reset(
         new DeviceLocalAccountPolicyService(
             chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-            chromeos::DeviceSettingsService::Get()));
+            chromeos::DeviceSettingsService::Get(),
+            chromeos::CrosSettings::Get()));
     device_local_account_policy_service_->Connect(
         device_management_service_.get());
   }

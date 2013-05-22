@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
@@ -488,7 +489,7 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
             entry->deprecated_public_session_id());
         entry_dict->SetIntegerWithoutPathExpansion(
             kAccountsPrefDeviceLocalAccountsKeyType,
-            DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION);
+            policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
       }
       account_list->Append(entry_dict.release());
     }

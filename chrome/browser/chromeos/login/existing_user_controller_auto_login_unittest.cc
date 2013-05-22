@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/message_loop.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/mock_login_display.h"
 #include "chrome/browser/chromeos/login/mock_login_display_host.h"
 #include "chrome/browser/chromeos/login/mock_login_utils.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
@@ -27,7 +31,7 @@ namespace chromeos {
 
 namespace {
 
-const char kAutoLoginUsername[] = "public_session_user@localhost";
+const char kAutoLoginAccountId[] = "public_session_user@localhost";
 // These values are only used to test the configuration.  They don't
 // delay the test.
 const int kAutoLoginNoDelay = 0;
@@ -39,7 +43,10 @@ const int kAutoLoginDelay2 = 180000;
 class ExistingUserControllerAutoLoginTest : public ::testing::Test {
  protected:
   ExistingUserControllerAutoLoginTest()
-      : message_loop_(MessageLoop::TYPE_UI),
+      : auto_login_user_id_(policy::GenerateDeviceLocalAccountUserId(
+            kAutoLoginAccountId,
+            policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION)),
+        message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
         local_state_(TestingBrowserProcess::GetGlobal()),
         mock_user_manager_(new MockUserManager()),
@@ -61,12 +68,23 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
     EXPECT_CALL(*mock_user_manager_, Shutdown()).Times(AnyNumber());
     EXPECT_CALL(*mock_user_manager_, FindUser(_))
         .WillRepeatedly(ReturnNull());
-    EXPECT_CALL(*mock_user_manager_, FindUser(kAutoLoginUsername))
+    EXPECT_CALL(*mock_user_manager_, FindUser(auto_login_user_id_))
         .WillRepeatedly(Return(
-            mock_user_manager_->CreatePublicAccountUser(kAutoLoginUsername)));
+            mock_user_manager_->CreatePublicAccountUser(auto_login_user_id_)));
 
     existing_user_controller_.reset(
         new ExistingUserController(mock_login_display_host_.get()));
+
+    scoped_ptr<base::DictionaryValue> account(new base::DictionaryValue);
+    account->SetStringWithoutPathExpansion(
+        kAccountsPrefDeviceLocalAccountsKeyId,
+        kAutoLoginAccountId);
+    account->SetIntegerWithoutPathExpansion(
+        kAccountsPrefDeviceLocalAccountsKeyType,
+        policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
+    base::ListValue accounts;
+    accounts.Append(account.release());
+    CrosSettings::Get()->Set(kAccountsPrefDeviceLocalAccounts, accounts);
 
     // Prevent settings changes from auto-starting the timer.
     CrosSettings::Get()->RemoveSettingsObserver(
@@ -85,10 +103,10 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
     return ExistingUserController::current_controller();
   }
 
-  void SetAutoLoginSettings(const std::string& username, int delay) {
+  void SetAutoLoginSettings(const std::string& account_id, int delay) {
     CrosSettings::Get()->SetString(
         kAccountsPrefDeviceLocalAccountAutoLoginId,
-        username);
+        account_id);
     CrosSettings::Get()->SetInteger(
         kAccountsPrefDeviceLocalAccountAutoLoginDelay,
         delay);
@@ -124,6 +142,8 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
     existing_user_controller()->ConfigurePublicSessionAutoLogin();
   }
 
+  const std::string auto_login_user_id_;
+
  private:
   // Owned by LoginUtilsWrapper.
   MockLoginUtils* mock_login_utils_;
@@ -150,7 +170,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
 
 TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {
   // Timer shouldn't start until signin screen is ready.
-  set_auto_login_username(kAutoLoginUsername);
+  set_auto_login_username(auto_login_user_id_);
   set_auto_login_delay(kAutoLoginDelay2);
   existing_user_controller()->StartPublicSessionAutoLoginTimer();
   EXPECT_FALSE(auto_login_timer());
@@ -162,7 +182,7 @@ TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {
   EXPECT_FALSE(auto_login_timer());
 
   // Timer shouldn't fire in the middle of a login attempt.
-  set_auto_login_username(kAutoLoginUsername);
+  set_auto_login_username(auto_login_user_id_);
   set_is_login_in_progress(true);
   existing_user_controller()->StartPublicSessionAutoLoginTimer();
   EXPECT_FALSE(auto_login_timer());
@@ -178,7 +198,7 @@ TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {
 
 TEST_F(ExistingUserControllerAutoLoginTest, StopAutoLoginTimer) {
   existing_user_controller()->OnSigninScreenReady();
-  set_auto_login_username(kAutoLoginUsername);
+  set_auto_login_username(auto_login_user_id_);
   set_auto_login_delay(kAutoLoginDelay2);
 
   existing_user_controller()->StartPublicSessionAutoLoginTimer();
@@ -192,7 +212,7 @@ TEST_F(ExistingUserControllerAutoLoginTest, StopAutoLoginTimer) {
 
 TEST_F(ExistingUserControllerAutoLoginTest, ResetAutoLoginTimer) {
   existing_user_controller()->OnSigninScreenReady();
-  set_auto_login_username(kAutoLoginUsername);
+  set_auto_login_username(auto_login_user_id_);
 
   // Timer starts off not running.
   EXPECT_FALSE(auto_login_timer());
@@ -235,27 +255,27 @@ TEST_F(ExistingUserControllerAutoLoginTest, ConfigureAutoLogin) {
   EXPECT_EQ(auto_login_delay(), kAutoLoginDelay1);
   EXPECT_EQ(auto_login_username(), "");
 
-  // Timer should start when the username is set.
-  SetAutoLoginSettings(kAutoLoginUsername, kAutoLoginDelay1);
+  // Timer should start when the account ID is set.
+  SetAutoLoginSettings(kAutoLoginAccountId, kAutoLoginDelay1);
   ConfigureAutoLogin();
   ASSERT_TRUE(auto_login_timer());
   EXPECT_TRUE(auto_login_timer()->IsRunning());
   EXPECT_EQ(auto_login_timer()->GetCurrentDelay().InMilliseconds(),
             kAutoLoginDelay1);
   EXPECT_EQ(auto_login_delay(), kAutoLoginDelay1);
-  EXPECT_EQ(auto_login_username(), kAutoLoginUsername);
+  EXPECT_EQ(auto_login_username(), auto_login_user_id_);
 
   // Timer should restart when the delay is changed.
-  SetAutoLoginSettings(kAutoLoginUsername, kAutoLoginDelay2);
+  SetAutoLoginSettings(kAutoLoginAccountId, kAutoLoginDelay2);
   ConfigureAutoLogin();
   ASSERT_TRUE(auto_login_timer());
   EXPECT_TRUE(auto_login_timer()->IsRunning());
   EXPECT_EQ(auto_login_timer()->GetCurrentDelay().InMilliseconds(),
             kAutoLoginDelay2);
   EXPECT_EQ(auto_login_delay(), kAutoLoginDelay2);
-  EXPECT_EQ(auto_login_username(), kAutoLoginUsername);
+  EXPECT_EQ(auto_login_username(), auto_login_user_id_);
 
-  // Timer should stop when the username is unset.
+  // Timer should stop when the account ID is unset.
   SetAutoLoginSettings("", kAutoLoginDelay2);
   ConfigureAutoLogin();
   ASSERT_TRUE(auto_login_timer());

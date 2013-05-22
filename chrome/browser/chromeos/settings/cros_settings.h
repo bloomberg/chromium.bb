@@ -24,6 +24,8 @@ class Value;
 
 namespace chromeos {
 
+class DeviceSettingsService;
+
 // This class manages per-device/global settings.
 class CrosSettings : public base::NonThreadSafe {
  public:
@@ -32,6 +34,11 @@ class CrosSettings : public base::NonThreadSafe {
   static bool IsInitialized();
   static void Shutdown();
   static CrosSettings* Get();
+
+  // Creates a device settings service instance. This is meant for unit tests,
+  // production code uses the singleton returned by Get() above.
+  explicit CrosSettings(DeviceSettingsService* device_settings_service);
+  virtual ~CrosSettings();
 
   // Helper function to test if the given |path| is a valid cros setting.
   static bool IsCrosSettings(const std::string& path);
@@ -98,9 +105,6 @@ class CrosSettings : public base::NonThreadSafe {
 
  private:
   friend class CrosSettingsTest;
-
-  CrosSettings();
-  virtual ~CrosSettings();
 
   // Fires system setting change notification.
   void FireObservers(const std::string& path);

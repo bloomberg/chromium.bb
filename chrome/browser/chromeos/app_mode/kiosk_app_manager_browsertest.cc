@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -130,7 +131,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     for (size_t i = 0; i < apps.size(); ++i) {
       if (i > 0)
         str += ',';
-      str += apps[i].id;
+      str += apps[i].app_id;
     }
 
     return str;
@@ -203,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, LoadCached) {
       "app_1_id");
   entry->SetIntegerWithoutPathExpansion(
       kAccountsPrefDeviceLocalAccountsKeyType,
-      DEVICE_LOCAL_ACCOUNT_TYPE_KIOSK_APP);
+      policy::DeviceLocalAccount::TYPE_KIOSK_APP);
   entry->SetStringWithoutPathExpansion(
       kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
       "app_1");
@@ -218,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, LoadCached) {
   KioskAppManager::Apps apps;
   manager()->GetApps(&apps);
   EXPECT_EQ(1u, apps.size());
-  EXPECT_EQ("app_1", apps[0].id);
+  EXPECT_EQ("app_1", apps[0].app_id);
   EXPECT_EQ("App1 Name", apps[0].name);
   EXPECT_EQ(gfx::Size(16, 16), apps[0].icon.size());
 }
@@ -249,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, GoodApp) {
   KioskAppManager::Apps apps;
   manager()->GetApps(&apps);
   EXPECT_EQ(1u, apps.size());
-  EXPECT_EQ("app_1", apps[0].id);
+  EXPECT_EQ("app_1", apps[0].app_id);
   EXPECT_EQ("Name of App 1", apps[0].name);
   EXPECT_EQ(gfx::Size(16, 16), apps[0].icon.size());
 
@@ -269,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, GoodApp) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &expected_icon_path));
   expected_icon_path = expected_icon_path.
       AppendASCII(KioskAppManager::kIconCacheDir).
-      AppendASCII(apps[0].id).AddExtension(".png");
+      AppendASCII(apps[0].app_id).AddExtension(".png");
   EXPECT_EQ(expected_icon_path.value(), icon_path_string);
 }
 

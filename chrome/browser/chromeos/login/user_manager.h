@@ -70,9 +70,6 @@ class UserManager {
   // Domain that is used for all locally managed users.
   static const char kLocallyManagedUserDomain[];
 
-  // Domain that is used for kiosk app robot.
-  static const char kKioskAppUserDomain[];
-
   // The retail mode user has a magic, domainless e-mail address.
   static const char kRetailModeUserName[];
 

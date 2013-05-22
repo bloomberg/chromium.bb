@@ -42,7 +42,9 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
     STATUS_ERROR,    // Failed to load data.
   };
 
-  KioskAppData(KioskAppDataDelegate* delegate, const std::string& app_id);
+  KioskAppData(KioskAppDataDelegate* delegate,
+               const std::string& app_id,
+               const std::string& user_id);
   virtual ~KioskAppData();
 
   // Loads app data from cache. If there is no cached data, fetches it
@@ -55,7 +57,8 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   // Returns true if web store data fetching is in progress.
   bool IsLoading() const;
 
-  const std::string& id() const { return id_; }
+  const std::string& app_id() const { return app_id_; }
+  const std::string& user_id() const { return user_id_; }
   const std::string& name() const { return name_; }
   const gfx::ImageSkia& icon() const { return icon_; }
   const base::RefCountedString* raw_icon() const {
@@ -100,7 +103,8 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   KioskAppDataDelegate* delegate_;  // not owned.
   Status status_;
 
-  std::string id_;
+  std::string app_id_;
+  std::string user_id_;
   std::string name_;
   gfx::ImageSkia icon_;
   scoped_refptr<base::RefCountedString> raw_icon_;

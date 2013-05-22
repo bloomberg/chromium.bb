@@ -39,12 +39,12 @@ void PopulateAppDict(const KioskAppManager::App& app_data,
   if (!app_data.icon.isNull())
     icon_url = webui::GetBitmapDataUrl(*app_data.icon.bitmap());
 
-  app_dict->SetString("id", app_data.id);
+  app_dict->SetString("id", app_data.app_id);
   app_dict->SetString("name", app_data.name);
   app_dict->SetString("iconURL", icon_url);
   app_dict->SetBoolean(
       "autoLaunch",
-      KioskAppManager::Get()->GetAutoLaunchApp() == app_data.id);
+      KioskAppManager::Get()->GetAutoLaunchApp() == app_data.app_id);
   app_dict->SetBoolean("isLoading", app_data.is_loading);
 }
 

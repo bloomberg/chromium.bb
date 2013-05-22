@@ -270,8 +270,8 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
 
 void RunAutoLaunchKioskApp() {
   // KioskAppLauncher deletes itself when done.
-  (new KioskAppLauncher(
-      KioskAppManager::Get()->GetAutoLaunchApp()))->Start();
+  (new KioskAppLauncher(KioskAppManager::Get(),
+                        KioskAppManager::Get()->GetAutoLaunchApp()))->Start();
 
   // Login screen is skipped but 'login-prompt-visible' signal is still needed.
   LOG(INFO) << "Kiosk app auto launch >> login-prompt-visible";

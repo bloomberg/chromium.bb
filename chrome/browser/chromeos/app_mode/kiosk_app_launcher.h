@@ -17,6 +17,8 @@ class Profile;
 
 namespace chromeos {
 
+class KioskAppManager;
+
 // KioskAppLauncher launches a given app from login screen. It first attempts
 // to mount a cryptohome for the app. If the mount is successful, it prepares
 // app profile then calls StartupAppLauncher to finish the launch. If mount
@@ -25,7 +27,8 @@ namespace chromeos {
 // progress.
 class KioskAppLauncher {
  public:
-  explicit KioskAppLauncher(const std::string& app_id);
+  KioskAppLauncher(KioskAppManager* kiosk_app_manager,
+                   const std::string& app_id);
 
   // Starts a launch attempt. Fails immediately if there is already a launch
   // attempt running.
@@ -52,6 +55,7 @@ class KioskAppLauncher {
   // The instance of the current running launch.
   static KioskAppLauncher* running_instance_;
 
+  KioskAppManager* kiosk_app_manager_;
   const std::string app_id_;
 
   scoped_ptr<CryptohomedChecker> crytohomed_checker;

@@ -590,6 +590,8 @@
         'browser/chromeos/policy/device_cloud_policy_store_chromeos.h',
         'browser/chromeos/policy/device_cloud_policy_validator.cc',
         'browser/chromeos/policy/device_cloud_policy_validator.h',
+        'browser/chromeos/policy/device_local_account.cc',
+        'browser/chromeos/policy/device_local_account.h',
         'browser/chromeos/policy/device_local_account_policy_provider.cc',
         'browser/chromeos/policy/device_local_account_policy_provider.h',
         'browser/chromeos/policy/device_local_account_policy_service.cc',

@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
@@ -914,10 +915,20 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
 }
 
 void ExistingUserController::ConfigurePublicSessionAutoLogin() {
-  if (!cros_settings_->GetString(
-          kAccountsPrefDeviceLocalAccountAutoLoginId,
-          &public_session_auto_login_username_)) {
-    public_session_auto_login_username_.clear();
+  std::string auto_login_account_id;
+  cros_settings_->GetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
+                            &auto_login_account_id);
+  const std::vector<policy::DeviceLocalAccount> device_local_accounts =
+      policy::GetDeviceLocalAccounts(cros_settings_);
+
+  public_session_auto_login_username_.clear();
+  for (std::vector<policy::DeviceLocalAccount>::const_iterator
+           it = device_local_accounts.begin();
+       it != device_local_accounts.end(); ++it) {
+    if (it->account_id == auto_login_account_id) {
+      public_session_auto_login_username_ = it->user_id;
+      break;
+    }
   }
 
   const User* user =

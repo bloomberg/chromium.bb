@@ -555,7 +555,7 @@ void WizardController::OnEnrollmentDone() {
     ExistingUserController::current_controller()->PrepareKioskAppLaunch();
 
     // KioskAppLauncher deletes itself when done.
-    (new KioskAppLauncher(auto_launch_app))->Start();
+    (new KioskAppLauncher(KioskAppManager::Get(), auto_launch_app))->Start();
   } else if (!force_enrollment_ || can_exit_enrollment_) {
     ShowLoginScreen();
   }

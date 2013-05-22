@@ -228,8 +228,8 @@ class DevicePolicyStatusProvider : public CloudPolicyCoreStatusProvider {
 };
 
 // A cloud policy status provider that reads policy status from the policy core
-// associated with the device-local account specified by |account_id| at
-// construction time. The indirection via account ID and
+// associated with the device-local account specified by |user_id| at
+// construction time. The indirection via user ID and
 // DeviceLocalAccountPolicyService is necessary because the device-local account
 // may go away any time behind the scenes, at which point the status message
 // text will indicate CloudPolicyStore::STATUS_BAD_STATE.
@@ -238,7 +238,7 @@ class DeviceLocalAccountPolicyStatusProvider
       public policy::DeviceLocalAccountPolicyService::Observer {
  public:
   DeviceLocalAccountPolicyStatusProvider(
-      const std::string& account_id,
+      const std::string& user_id,
       policy::DeviceLocalAccountPolicyService* service);
   virtual ~DeviceLocalAccountPolicyStatusProvider();
 
@@ -246,11 +246,11 @@ class DeviceLocalAccountPolicyStatusProvider
   virtual void GetStatus(base::DictionaryValue* dict) OVERRIDE;
 
   // policy::DeviceLocalAccountPolicyService::Observer implementation.
-  virtual void OnPolicyUpdated(const std::string& account_id) OVERRIDE;
+  virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
 
  private:
-  const std::string account_id_;
+  const std::string user_id_;
   policy::DeviceLocalAccountPolicyService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountPolicyStatusProvider);
@@ -378,9 +378,9 @@ void DevicePolicyStatusProvider::GetStatus(base::DictionaryValue* dict) {
 }
 
 DeviceLocalAccountPolicyStatusProvider::DeviceLocalAccountPolicyStatusProvider(
-    const std::string& account_id,
+    const std::string& user_id,
     policy::DeviceLocalAccountPolicyService* service)
-      : account_id_(account_id),
+      : user_id_(user_id),
         service_(service) {
   service_->AddObserver(this);
 }
@@ -393,7 +393,7 @@ DeviceLocalAccountPolicyStatusProvider::
 void DeviceLocalAccountPolicyStatusProvider::GetStatus(
     base::DictionaryValue* dict) {
   const policy::DeviceLocalAccountPolicyBroker* broker =
-      service_->GetBrokerForAccount(account_id_);
+      service_->GetBrokerForUser(user_id_);
   if (broker) {
     GetStatusFromCore(broker->core(), dict);
   } else {
@@ -402,15 +402,15 @@ void DeviceLocalAccountPolicyStatusProvider::GetStatus(
                     policy::FormatStoreStatus(
                         policy::CloudPolicyStore::STATUS_BAD_STATE,
                         policy::CloudPolicyValidatorBase::VALIDATION_OK));
-    dict->SetString("username", account_id_);
+    dict->SetString("username", std::string());
   }
   ExtractDomainFromUsername(dict);
   dict->SetBoolean("publicAccount", true);
 }
 
 void DeviceLocalAccountPolicyStatusProvider::OnPolicyUpdated(
-    const std::string& account_id) {
-  if (account_id == account_id_)
+    const std::string& user_id) {
+  if (user_id == user_id_)
     NotifyStatusChange();
 }
 

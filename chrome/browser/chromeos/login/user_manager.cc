@@ -20,12 +20,9 @@ const char UserManager::kGuestUserName[] = "$guest";
 const char UserManager::kLocallyManagedUserDomain[] =
     "locally-managed.localhost";
 
-// static
-const char UserManager::kKioskAppUserDomain[] = "kiosk-apps.localhost";
 
 // static
 const char UserManager::kRetailModeUserName[] = "demouser@";
-
 static UserManager* g_user_manager = NULL;
 
 UserManager::Observer::~Observer() {

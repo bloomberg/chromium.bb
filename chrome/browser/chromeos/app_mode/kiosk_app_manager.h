@@ -37,7 +37,8 @@ class KioskAppManager : public content::NotificationObserver,
     App();
     ~App();
 
-    std::string id;
+    std::string app_id;
+    std::string user_id;
     std::string name;
     gfx::ImageSkia icon;
     bool is_loading;
@@ -118,7 +119,7 @@ class KioskAppManager : public content::NotificationObserver,
   // Gets KioskAppData for the given app id.
   const KioskAppData* GetAppData(const std::string& app_id) const;
 
-  // Update app data |apps_| based on |prefs_|.
+  // Update app data |apps_| based on CrosSettings.
   void UpdateAppData();
 
   // content::NotificationObserver overrides:

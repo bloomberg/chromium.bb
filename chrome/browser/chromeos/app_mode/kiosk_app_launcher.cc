@@ -8,10 +8,12 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/ui/app_launch_view.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -23,14 +25,6 @@
 using content::BrowserThread;
 
 namespace chromeos {
-
-namespace {
-
-std::string GetAppUserNameFromAppId(const std::string& app_id) {
-  return app_id + "@" + UserManager::kKioskAppUserDomain;
-}
-
-}  // namespace
 
 // static
 KioskAppLauncher* KioskAppLauncher::running_instance_ = NULL;
@@ -105,8 +99,13 @@ class KioskAppLauncher::CryptohomedChecker
 
 class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
  public:
-  explicit ProfileLoader(KioskAppLauncher* launcher)
-      : launcher_(launcher) {
+  ProfileLoader(KioskAppManager* kiosk_app_manager,
+                KioskAppLauncher* kiosk_app_launcher)
+      : kiosk_app_launcher_(kiosk_app_launcher) {
+    KioskAppManager::App app;
+    if (!kiosk_app_manager->GetApp(kiosk_app_launcher->app_id_, &app))
+      NOTREACHED() << "Logging into nonexistent kiosk-app account.";
+    user_id_ = app.user_id;
   }
 
   virtual ~ProfileLoader() {
@@ -115,7 +114,7 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
 
   void Start() {
     cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-        GetAppUserNameFromAppId(launcher_->app_id_),
+        user_id_,
         base::Bind(&ProfileLoader::OnUsernameHashRetrieved,
                    base::Unretained(this)));
   }
@@ -124,14 +123,14 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
   void OnUsernameHashRetrieved(bool success,
                                const std::string& username_hash) {
     if (!success) {
-      LOG(ERROR) << "Unable to retrieve username hash for user '" <<
-          GetAppUserNameFromAppId(launcher_->app_id_) << "'";
-      launcher_->ReportLaunchResult(
+      LOG(ERROR) << "Unable to retrieve username hash for user '" << user_id_
+                 << "'.";
+      kiosk_app_launcher_->ReportLaunchResult(
           KioskAppLaunchError::UNABLE_TO_RETRIEVE_HASH);
       return;
     }
     LoginUtils::Get()->PrepareProfile(
-        UserContext(GetAppUserNameFromAppId(launcher_->app_id_),
+        UserContext(user_id_,
                     std::string(),   // password
                     std::string(),   // auth_code
                     username_hash),
@@ -143,18 +142,22 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
 
   // LoginUtils::Delegate overrides:
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
-    launcher_->OnProfilePrepared(profile);
+    kiosk_app_launcher_->OnProfilePrepared(profile);
   }
 
-  KioskAppLauncher* launcher_;
+  KioskAppLauncher* kiosk_app_launcher_;
+  std::string user_id_;
+
   DISALLOW_COPY_AND_ASSIGN(ProfileLoader);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // KioskAppLauncher
 
-KioskAppLauncher::KioskAppLauncher(const std::string& app_id)
-    : app_id_(app_id),
+KioskAppLauncher::KioskAppLauncher(KioskAppManager* kiosk_app_manager,
+                                   const std::string& app_id)
+    : kiosk_app_manager_(kiosk_app_manager),
+      app_id_(app_id),
       remove_attempted_(false) {
 }
 
@@ -210,7 +213,7 @@ void KioskAppLauncher::StartMount() {
 void KioskAppLauncher::MountCallback(bool mount_success,
                                      cryptohome::MountError mount_error) {
   if (mount_success) {
-    profile_loader_.reset(new ProfileLoader(this));
+    profile_loader_.reset(new ProfileLoader(kiosk_app_manager_, this));
     profile_loader_->Start();
     return;
   }

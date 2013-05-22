@@ -13,6 +13,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
@@ -280,7 +281,7 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
   entry_dict->SetString(kAccountsPrefDeviceLocalAccountsKeyId,
                         policy::PolicyBuilder::kFakeUsername);
   entry_dict->SetInteger(kAccountsPrefDeviceLocalAccountsKeyType,
-                         DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION);
+                         policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
   expected_accounts.Append(entry_dict.release());
   const base::Value* actual_accounts =
       provider_->Get(kAccountsPrefDeviceLocalAccounts);

@@ -30,7 +30,9 @@
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
+#include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -266,8 +268,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     GuestUserLoggedIn();
   } else if (email == UserManager::kRetailModeUserName) {
     RetailModeUserLoggedIn();
-  } else if (gaia::ExtractDomainName(email) ==
-                 UserManager::kKioskAppUserDomain) {
+  } else if (policy::IsKioskAppUser(email)) {
     KioskAppLoggedIn(email);
   } else {
     EnsureUsersLoaded();
@@ -663,8 +664,8 @@ void UserManagerImpl::OnStateChanged() {
   }
 }
 
-void UserManagerImpl::OnPolicyUpdated(const std::string& account_id) {
-  UpdatePublicAccountDisplayName(account_id);
+void UserManagerImpl::OnPolicyUpdated(const std::string& user_id) {
+  UpdatePublicAccountDisplayName(user_id);
   NotifyUserListChanged();
 }
 
@@ -917,12 +918,11 @@ void UserManagerImpl::RetrieveTrustedDevicePolicies() {
   cros_settings_->GetBoolean(kAccountsPrefEphemeralUsersEnabled,
                              &ephemeral_users_enabled_);
   cros_settings_->GetString(kDeviceOwner, &owner_email_);
-  base::ListValue public_accounts;
-  ReadPublicAccounts(&public_accounts);
 
   EnsureUsersLoaded();
 
-  bool changed = UpdateAndCleanUpPublicAccounts(public_accounts);
+  bool changed = UpdateAndCleanUpPublicAccounts(
+      policy::GetDeviceLocalAccounts(cros_settings_));
 
   // If ephemeral users are enabled and we are on the login screen, take this
   // opportunity to clean up by removing all regular users except the owner.
@@ -1095,17 +1095,38 @@ void UserManagerImpl::PublicAccountUserLoggedIn(User* user) {
 
 void UserManagerImpl::KioskAppLoggedIn(const std::string& username) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(gaia::ExtractDomainName(username),
-            UserManager::kKioskAppUserDomain);
+  DCHECK(policy::IsKioskAppUser(username));
 
   WallpaperManager::Get()->SetInitialUserWallpaper(username, false);
   active_user_ = User::CreateKioskAppUser(username);
   active_user_->SetStubImage(User::kInvalidImageIndex, false);
 
+  // TODO(bartfab): Add KioskAppUsers to the users_ list and keep metadata like
+  // the kiosk_app_id in these objects, removing the need to re-parse the
+  // device-local account list here to extract the kiosk_app_id.
+  const std::vector<policy::DeviceLocalAccount> device_local_accounts =
+      policy::GetDeviceLocalAccounts(cros_settings_);
+  const policy::DeviceLocalAccount* account = NULL;
+  for (std::vector<policy::DeviceLocalAccount>::const_iterator
+           it = device_local_accounts.begin();
+       it != device_local_accounts.end(); ++it) {
+    if (it->user_id == username) {
+      account = &*it;
+      break;
+    }
+  }
+  std::string kiosk_app_id;
+  if (account) {
+    kiosk_app_id = account->kiosk_app_id;
+  } else {
+    LOG(ERROR) << "Logged into nonexistent kiosk-app account: " << username;
+    NOTREACHED();
+  }
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(::switches::kForceAppMode);
-  command_line->AppendSwitchASCII(::switches::kAppId,
-                                  active_user_->GetAccountName(false));
+  command_line->AppendSwitchASCII(::switches::kAppId, kiosk_app_id);
+
   // Disable window animation since kiosk app runs in a single full screen
   // window and window animation causes start-up janks.
   command_line->AppendSwitch(
@@ -1194,6 +1215,20 @@ User* UserManagerImpl::RemoveRegularOrLocallyManagedUserFromList(
   return user;
 }
 
+void UserManagerImpl::CleanUpPublicAccountNonCryptohomeDataPendingRemoval() {
+  PrefService* local_state = g_browser_process->local_state();
+  const std::string public_account_pending_data_removal =
+      local_state->GetString(kPublicAccountPendingDataRemoval);
+  if (public_account_pending_data_removal.empty() ||
+      (IsUserLoggedIn() &&
+       public_account_pending_data_removal == GetActiveUser()->email())) {
+    return;
+  }
+
+  RemoveNonCryptohomeData(public_account_pending_data_removal);
+  local_state->ClearPref(kPublicAccountPendingDataRemoval);
+}
+
 void UserManagerImpl::CleanUpPublicAccountNonCryptohomeData(
     const std::vector<std::string>& old_public_accounts) {
   std::set<std::string> users;
@@ -1222,45 +1257,27 @@ void UserManagerImpl::CleanUpPublicAccountNonCryptohomeData(
 }
 
 bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
-    const base::ListValue& public_accounts) {
-  PrefService* local_state = g_browser_process->local_state();
+    const std::vector<policy::DeviceLocalAccount>& device_local_accounts) {
+  // Try to remove any public account data marked as pending removal.
+  CleanUpPublicAccountNonCryptohomeDataPendingRemoval();
 
-  // Determine the currently logged-in user's email.
-  std::string active_user_email;
-  if (IsUserLoggedIn())
-    active_user_email = GetLoggedInUser()->email();
-
-  // If there is a public account whose data is pending removal and the user is
-  // not currently logged in with that account, take this opportunity to remove
-  // the data.
-  std::string public_account_pending_data_removal =
-      local_state->GetString(kPublicAccountPendingDataRemoval);
-  if (!public_account_pending_data_removal.empty() &&
-      public_account_pending_data_removal != active_user_email) {
-    RemoveNonCryptohomeData(public_account_pending_data_removal);
-    local_state->ClearPref(kPublicAccountPendingDataRemoval);
-  }
-
-  // Split the current user list public accounts and regular users.
+  // Get the current list of public accounts.
   std::vector<std::string> old_public_accounts;
-  std::set<std::string> regular_users;
   for (UserList::const_iterator it = users_.begin(); it != users_.end(); ++it) {
     if ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT)
       old_public_accounts.push_back((*it)->email());
-    else
-      regular_users.insert((*it)->email());
   }
 
   // Get the new list of public accounts from policy.
   std::vector<std::string> new_public_accounts;
-  std::set<std::string> new_public_accounts_set;
-  ParseUserList(public_accounts, regular_users,
-                &new_public_accounts, &new_public_accounts_set);
-
-  // Persist the new list of public accounts in a pref.
-  ListPrefUpdate prefs_public_accounts_update(local_state, kPublicAccounts);
-  scoped_ptr<base::ListValue> prefs_public_accounts(public_accounts.DeepCopy());
-  prefs_public_accounts_update->Swap(prefs_public_accounts.get());
+  for (std::vector<policy::DeviceLocalAccount>::const_iterator it =
+           device_local_accounts.begin();
+       it != device_local_accounts.end(); ++it) {
+    // TODO(mnissler, nkostylev, bartfab): Process Kiosk Apps within the
+    // standard login framework: http://crbug.com/234694
+    if (it->type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION)
+      new_public_accounts.push_back(it->user_id);
+  }
 
   // If the list of public accounts has not changed, return.
   if (new_public_accounts.size() == old_public_accounts.size()) {
@@ -1273,6 +1290,16 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
     }
     if (!changed)
       return false;
+  }
+
+  // Persist the new list of public accounts in a pref.
+  ListPrefUpdate prefs_public_accounts_update(g_browser_process->local_state(),
+                                              kPublicAccounts);
+  prefs_public_accounts_update->Clear();
+  for (std::vector<std::string>::const_iterator
+           it = new_public_accounts.begin();
+       it != new_public_accounts.end(); ++it) {
+    prefs_public_accounts_update->AppendString(*it);
   }
 
   // Remove the old public accounts from the user list.
@@ -1290,7 +1317,7 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
   for (std::vector<std::string>::const_reverse_iterator
            it = new_public_accounts.rbegin();
        it != new_public_accounts.rend(); ++it) {
-    if (IsLoggedInAsPublicAccount() && *it == active_user_email)
+    if (IsLoggedInAsPublicAccount() && *it == GetActiveUser()->email())
       users_.insert(users_.begin(), GetLoggedInUser());
     else
       users_.insert(users_.begin(), User::CreatePublicAccountUser(*it));
@@ -1313,7 +1340,7 @@ void UserManagerImpl::UpdatePublicAccountDisplayName(
 
   if (device_local_account_policy_service_) {
     policy::DeviceLocalAccountPolicyBroker* broker =
-        device_local_account_policy_service_->GetBrokerForAccount(username);
+        device_local_account_policy_service_->GetBrokerForUser(username);
     if (broker)
       display_name = broker->GetDisplayName();
   }
@@ -1496,38 +1523,6 @@ void UserManagerImpl::UpdateLoginState() {
     login_user_type = LoginState::LOGGED_IN_USER_REGULAR;
 
   LoginState::Get()->SetLoggedInState(logged_in_state, login_user_type);
-}
-
-void UserManagerImpl::ReadPublicAccounts(base::ListValue* public_accounts) {
-  const base::ListValue* accounts = NULL;
-  if (cros_settings_->GetList(kAccountsPrefDeviceLocalAccounts, &accounts)) {
-    for (base::ListValue::const_iterator entry(accounts->begin());
-         entry != accounts->end(); ++entry) {
-      const base::DictionaryValue* entry_dict = NULL;
-      if (!(*entry)->GetAsDictionary(&entry_dict)) {
-        NOTREACHED();
-        continue;
-      }
-
-      int type = DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION;
-      entry_dict->GetIntegerWithoutPathExpansion(
-          kAccountsPrefDeviceLocalAccountsKeyType, &type);
-      switch (type) {
-        case DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION: {
-          std::string id;
-          if (entry_dict->GetStringWithoutPathExpansion(
-                  kAccountsPrefDeviceLocalAccountsKeyId, &id)) {
-            public_accounts->AppendString(id);
-          }
-          break;
-        }
-        case DEVICE_LOCAL_ACCOUNT_TYPE_KIOSK_APP:
-          // TODO(mnissler, nkostylev, bartfab): Process Kiosk Apps within the
-          // standard login framework: http://crbug.com/234694
-          break;
-      }
-    }
-  }
 }
 
 void UserManagerImpl::SetLRUUser(User* user) {

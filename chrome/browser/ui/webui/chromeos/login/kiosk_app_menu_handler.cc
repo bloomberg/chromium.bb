@@ -69,7 +69,7 @@ void KioskAppMenuHandler::SendKioskApps() {
     const KioskAppManager::App& app_data = apps[i];
 
     scoped_ptr<base::DictionaryValue> app_info(new base::DictionaryValue);
-    app_info->SetString("id", app_data.id);
+    app_info->SetString("id", app_data.app_id);
     app_info->SetString("label", app_data.name);
 
     // TODO(xiyuan): Replace data url with a URLDataSource.
@@ -109,7 +109,7 @@ void KioskAppMenuHandler::HandleLaunchKioskApps(const base::ListValue* args) {
   ExistingUserController::current_controller()->PrepareKioskAppLaunch();
 
   // KioskAppLauncher deletes itself when done.
-  (new KioskAppLauncher(app_id))->Start();
+  (new KioskAppLauncher(KioskAppManager::Get(), app_id))->Start();
 }
 
 void KioskAppMenuHandler::HandleCheckKioskAppLaunchError(

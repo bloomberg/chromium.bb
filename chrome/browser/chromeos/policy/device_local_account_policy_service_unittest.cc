@@ -7,7 +7,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
@@ -41,7 +44,13 @@ class DeviceLocalAccountPolicyServiceTest
     : public chromeos::DeviceSettingsTestBase {
  public:
   DeviceLocalAccountPolicyServiceTest()
-      : service_(&device_settings_test_helper_, &device_settings_service_) {}
+      : public_session_user_id_(GenerateDeviceLocalAccountUserId(
+            PolicyBuilder::kFakeUsername,
+            DeviceLocalAccount::TYPE_PUBLIC_SESSION)),
+        cros_settings_(&device_settings_service_),
+        service_(&device_settings_test_helper_,
+                 &device_settings_service_,
+                 &cros_settings_) {}
 
   virtual void SetUp() OVERRIDE {
     DeviceSettingsTestBase::SetUp();
@@ -107,8 +116,11 @@ class DeviceLocalAccountPolicyServiceTest
 
   MOCK_METHOD1(OnRefreshDone, void(bool));
 
+  const std::string public_session_user_id_;
+
   PolicyMap expected_policy_map_;
   UserPolicyBuilder device_local_account_policy_;
+  chromeos::CrosSettings cros_settings_;
   MockDeviceLocalAccountPolicyServiceObserver service_observer_;
   MockDeviceManagementService mock_device_management_service_;
   DeviceLocalAccountPolicyService service_;
@@ -118,16 +130,16 @@ class DeviceLocalAccountPolicyServiceTest
 };
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, NoAccounts) {
-  EXPECT_FALSE(service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername));
+  EXPECT_FALSE(service_.GetBrokerForUser(public_session_user_id_));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, GetBroker) {
   InstallDevicePolicy();
 
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
-  EXPECT_EQ(PolicyBuilder::kFakeUsername, broker->account_id());
+  EXPECT_EQ(public_session_user_id_, broker->user_id());
   ASSERT_TRUE(broker->core()->store());
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, broker->core()->store()->status());
   EXPECT_FALSE(broker->core()->client());
@@ -137,9 +149,9 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, GetBroker) {
 TEST_F(DeviceLocalAccountPolicyServiceTest, LoadNoPolicy) {
   InstallDevicePolicy();
 
-  EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
+  EXPECT_CALL(service_observer_, OnPolicyUpdated(public_session_user_id_));
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
@@ -148,8 +160,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadNoPolicy) {
   EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR,
             broker->core()->store()->status());
   EXPECT_TRUE(broker->core()->store()->policy_map().empty());
-  EXPECT_FALSE(service_.IsPolicyAvailableForAccount(
-      PolicyBuilder::kFakeUsername));
+  EXPECT_FALSE(service_.IsPolicyAvailableForUser(public_session_user_id_));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, LoadValidationFailure) {
@@ -160,9 +171,9 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadValidationFailure) {
       PolicyBuilder::kFakeUsername, device_local_account_policy_.GetBlob());
   InstallDevicePolicy();
 
-  EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
+  EXPECT_CALL(service_observer_, OnPolicyUpdated(public_session_user_id_));
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
@@ -171,8 +182,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadValidationFailure) {
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR,
             broker->core()->store()->status());
   EXPECT_TRUE(broker->core()->store()->policy_map().empty());
-  EXPECT_FALSE(service_.IsPolicyAvailableForAccount(
-      PolicyBuilder::kFakeUsername));
+  EXPECT_FALSE(service_.IsPolicyAvailableForUser(public_session_user_id_));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, LoadPolicy) {
@@ -180,9 +190,9 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadPolicy) {
       PolicyBuilder::kFakeUsername, device_local_account_policy_.GetBlob());
   InstallDevicePolicy();
 
-  EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
+  EXPECT_CALL(service_observer_, OnPolicyUpdated(public_session_user_id_));
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
@@ -195,8 +205,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadPolicy) {
             broker->core()->store()->policy()->SerializeAsString());
   EXPECT_TRUE(expected_policy_map_.Equals(
       broker->core()->store()->policy_map()));
-  EXPECT_TRUE(service_.IsPolicyAvailableForAccount(
-      PolicyBuilder::kFakeUsername));
+  EXPECT_TRUE(service_.IsPolicyAvailableForUser(public_session_user_id_));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, StoreValidationFailure) {
@@ -205,9 +214,9 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, StoreValidationFailure) {
   device_local_account_policy_.Build();
   InstallDevicePolicy();
 
-  EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
+  EXPECT_CALL(service_observer_, OnPolicyUpdated(public_session_user_id_));
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
   ASSERT_TRUE(broker->core()->store());
   broker->core()->store()->Store(device_local_account_policy_.policy());
@@ -219,16 +228,15 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, StoreValidationFailure) {
             broker->core()->store()->status());
   EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_WRONG_POLICY_TYPE,
             broker->core()->store()->validation_status());
-  EXPECT_FALSE(service_.IsPolicyAvailableForAccount(
-      PolicyBuilder::kFakeUsername));
+  EXPECT_FALSE(service_.IsPolicyAvailableForUser(public_session_user_id_));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, StorePolicy) {
   InstallDevicePolicy();
 
-  EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
+  EXPECT_CALL(service_observer_, OnPolicyUpdated(public_session_user_id_));
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
   ASSERT_TRUE(broker->core()->store());
   broker->core()->store()->Store(device_local_account_policy_.policy());
@@ -238,8 +246,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, StorePolicy) {
   EXPECT_EQ(device_local_account_policy_.GetBlob(),
             device_settings_test_helper_.device_local_account_policy_blob(
                 PolicyBuilder::kFakeUsername));
-  EXPECT_TRUE(service_.IsPolicyAvailableForAccount(
-      PolicyBuilder::kFakeUsername));
+  EXPECT_TRUE(service_.IsPolicyAvailableForUser(public_session_user_id_));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, DevicePolicyChange) {
@@ -253,14 +260,14 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, DevicePolicyChange) {
   device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
   device_settings_service_.PropertyChangeComplete(true);
   FlushDeviceSettings();
-  EXPECT_FALSE(service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername));
+  EXPECT_FALSE(service_.GetBrokerForUser(public_session_user_id_));
   Mock::VerifyAndClearExpectations(&service_observer_);
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, DuplicateAccounts) {
   InstallDevicePolicy();
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
 
   // Add a second entry with a duplicate account name to device policy.
@@ -275,15 +282,15 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, DuplicateAccounts) {
   device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
 
   EXPECT_CALL(service_observer_, OnDeviceLocalAccountsChanged());
-  EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
+  EXPECT_CALL(service_observer_, OnPolicyUpdated(public_session_user_id_));
   device_settings_service_.PropertyChangeComplete(true);
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
 
   // Make sure the broker is accessible and policy got loaded.
-  broker = service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+  broker = service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
-  EXPECT_EQ(PolicyBuilder::kFakeUsername, broker->account_id());
+  EXPECT_EQ(public_session_user_id_, broker->user_id());
   EXPECT_TRUE(broker->core()->store()->policy());
 }
 
@@ -293,7 +300,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
   InstallDevicePolicy();
 
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
 
   service_.Connect(&mock_device_management_service_);
@@ -314,7 +321,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
                        device_policy_.policy_data().device_id(),
                        _))
       .WillOnce(SaveArg<6>(&request));
-  EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
+  EXPECT_CALL(service_observer_, OnPolicyUpdated(public_session_user_id_));
   broker->core()->client()->FetchPolicy();
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
@@ -335,16 +342,14 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
             broker->core()->store()->policy()->SerializeAsString());
   EXPECT_TRUE(expected_policy_map_.Equals(
       broker->core()->store()->policy_map()));
-  EXPECT_TRUE(service_.IsPolicyAvailableForAccount(
-      PolicyBuilder::kFakeUsername));
+  EXPECT_TRUE(service_.IsPolicyAvailableForUser(public_session_user_id_));
 
-  EXPECT_CALL(service_observer_,
-              OnPolicyUpdated(PolicyBuilder::kFakeUsername)).Times(0);
+  EXPECT_CALL(service_observer_, OnPolicyUpdated(public_session_user_id_))
+      .Times(0);
   service_.Disconnect();
   EXPECT_FALSE(broker->core()->client());
   Mock::VerifyAndClearExpectations(&service_observer_);
-  EXPECT_TRUE(service_.IsPolicyAvailableForAccount(
-      PolicyBuilder::kFakeUsername));
+  EXPECT_TRUE(service_.IsPolicyAvailableForUser(public_session_user_id_));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
@@ -353,7 +358,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
   InstallDevicePolicy();
 
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
 
   service_.Connect(&mock_device_management_service_);
@@ -366,7 +371,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
       .WillOnce(mock_device_management_service_.SucceedJob(response));
   EXPECT_CALL(mock_device_management_service_, StartJob(_, _, _, _, _, _, _));
   EXPECT_CALL(*this, OnRefreshDone(true)).Times(1);
-  EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
+  EXPECT_CALL(service_observer_, OnPolicyUpdated(public_session_user_id_));
   broker->core()->service()->RefreshPolicy(
       base::Bind(&DeviceLocalAccountPolicyServiceTest::OnRefreshDone,
                  base::Unretained(this)));
@@ -380,15 +385,18 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
             broker->core()->store()->status());
   EXPECT_TRUE(expected_policy_map_.Equals(
       broker->core()->store()->policy_map()));
-  EXPECT_TRUE(service_.IsPolicyAvailableForAccount(
-      PolicyBuilder::kFakeUsername));
+  EXPECT_TRUE(service_.IsPolicyAvailableForUser(public_session_user_id_));
 }
 
 class DeviceLocalAccountPolicyProviderTest
     : public DeviceLocalAccountPolicyServiceTest {
  protected:
   DeviceLocalAccountPolicyProviderTest()
-      : provider_(PolicyBuilder::kFakeUsername, &service_) {}
+      : provider_(
+            GenerateDeviceLocalAccountUserId(
+                PolicyBuilder::kFakeUsername,
+                DeviceLocalAccount::TYPE_PUBLIC_SESSION),
+            &service_) {}
 
   virtual void SetUp() OVERRIDE {
     DeviceLocalAccountPolicyServiceTest::SetUp();
@@ -460,7 +468,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   device_settings_test_helper_.set_device_local_account_policy_blob(
       PolicyBuilder::kFakeUsername, device_local_account_policy_.GetBlob());
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
   broker->core()->store()->Load();
   FlushDeviceSettings();
@@ -505,7 +513,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
 
 TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
   // If there's no device policy, the refresh completes immediately.
-  EXPECT_FALSE(service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername));
+  EXPECT_FALSE(service_.GetBrokerForUser(public_session_user_id_));
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(&provider_)).Times(AtLeast(1));
   provider_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&provider_observer_);
@@ -516,11 +524,11 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
   device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
   ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(&provider_observer_);
-  EXPECT_TRUE(service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername));
+  EXPECT_TRUE(service_.GetBrokerForUser(public_session_user_id_));
 
   // If there's no cloud connection, refreshes are still immediate.
   DeviceLocalAccountPolicyBroker* broker =
-      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+      service_.GetBrokerForUser(public_session_user_id_);
   ASSERT_TRUE(broker);
   EXPECT_FALSE(broker->core()->client());
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(&provider_)).Times(AtLeast(1));

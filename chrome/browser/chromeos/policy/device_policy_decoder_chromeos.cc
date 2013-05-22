@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -148,7 +149,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
             entry->deprecated_public_session_id());
         entry_dict->SetIntegerWithoutPathExpansion(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
-            chromeos::DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION);
+            DeviceLocalAccount::TYPE_PUBLIC_SESSION);
       }
       account_list->Append(entry_dict.release());
     }

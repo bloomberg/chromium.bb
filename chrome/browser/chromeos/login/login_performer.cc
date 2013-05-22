@@ -303,8 +303,7 @@ void LoginPerformer::LoginAsPublicAccount(const std::string& username) {
   policy::DeviceLocalAccountPolicyService* policy_service =
       g_browser_process->browser_policy_connector()->
           GetDeviceLocalAccountPolicyService();
-  if (!policy_service ||
-      !policy_service->IsPolicyAvailableForAccount(username)) {
+  if (!policy_service || !policy_service->IsPolicyAvailableForUser(username)) {
     DCHECK(delegate_);
     if (delegate_)
       delegate_->PolicyLoadFailed();
