@@ -21,7 +21,7 @@ namespace {
 
 // MenuItem:
 const SkColor kMenuBackgroundColor = SK_ColorWHITE;
-const SkColor kMenuHighlightBackgroundColor = SkColorSetA(SK_ColorBLACK, 15);
+const SkColor kMenuHighlightBackgroundColor = SkColorSetARGB(15, 0, 0, 0);
 const SkColor kMenuHighlightBackgroundColor2 = SkColorSetRGB(0x42, 0x81, 0xF4);
 const SkColor kMenuInvertedSchemeHighlightBackgroundColor =
     SkColorSetRGB(48, 48, 48);

@@ -62,6 +62,7 @@
 using WebKit::WebAudioBus;
 using WebKit::WebCookie;
 using WebKit::WebData;
+using WebKit::WebFallbackThemeEngine;
 using WebKit::WebLocalizedString;
 using WebKit::WebPluginListBuilder;
 using WebKit::WebString;
@@ -383,7 +384,11 @@ void WebKitPlatformSupportImpl::SetFlingCurveParameters(
 }
 
 WebThemeEngine* WebKitPlatformSupportImpl::themeEngine() {
-  return &theme_engine_;
+  return &native_theme_engine_;
+}
+
+WebFallbackThemeEngine* WebKitPlatformSupportImpl::fallbackThemeEngine() {
+  return &fallback_theme_engine_;
 }
 
 WebURLLoader* WebKitPlatformSupportImpl::createURLLoader() {
