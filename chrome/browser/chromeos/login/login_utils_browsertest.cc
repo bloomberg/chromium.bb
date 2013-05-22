@@ -409,7 +409,7 @@ class LoginUtilsTest : public testing::Test,
     // Normally this would happen during browser startup, but for tests
     // we need to trigger creation of Profile-related services.
     ChromeBrowserMainExtraPartsProfiles::
-        EnsureProfileKeyedServiceFactoriesBuilt();
+        EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
     DeviceSettingsTestHelper device_settings_test_helper;
     DeviceSettingsService::Get()->SetSessionManager(

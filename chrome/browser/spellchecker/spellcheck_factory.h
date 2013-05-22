@@ -15,7 +15,7 @@ class Profile;
 // Entry into the SpellCheck system.
 //
 // Internally, this owns all SpellcheckService objects.
-class SpellcheckServiceFactory : public ProfileKeyedServiceFactory {
+class SpellcheckServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the spell check host. This will create the SpellcheckService if it
   // does not already exist.
@@ -34,8 +34,8 @@ class SpellcheckServiceFactory : public ProfileKeyedServiceFactory {
   SpellcheckServiceFactory();
   virtual ~SpellcheckServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
   virtual void RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;

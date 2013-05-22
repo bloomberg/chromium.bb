@@ -129,7 +129,7 @@ ActivityLogFactory* ActivityLogFactory::GetInstance() {
   return Singleton<ActivityLogFactory>::get();
 }
 
-ProfileKeyedService* ActivityLogFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* ActivityLogFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ActivityLog(static_cast<Profile*>(profile));
 }

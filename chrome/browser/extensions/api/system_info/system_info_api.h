@@ -21,7 +21,7 @@ class SystemInfoAPI : public ProfileKeyedAPI,
   explicit SystemInfoAPI(Profile* profile);
   virtual ~SystemInfoAPI();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer implementation.

@@ -45,7 +45,7 @@ class PreferenceAPI : public ProfileKeyedAPI,
   explicit PreferenceAPI(Profile* profile);
   virtual ~PreferenceAPI();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPI implementation.

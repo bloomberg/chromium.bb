@@ -26,7 +26,7 @@ namespace extensions {
 // This class caches tokens for the current user.  It will clear tokens out
 // when the user logs out or after the specified timeout interval, or when
 // the instance of chrome shuts down.
-class TokenCacheService : public ProfileKeyedService,
+class TokenCacheService : public BrowserContextKeyedService,
                           public content::NotificationObserver {
  public:
   explicit TokenCacheService(Profile* profile);

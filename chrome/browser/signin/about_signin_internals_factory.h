@@ -13,7 +13,7 @@ class Profile;
 
 // Singleton that owns all AboutSigninInternals and associates them with
 // Profiles.
-class AboutSigninInternalsFactory : public ProfileKeyedServiceFactory {
+class AboutSigninInternalsFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the instance of AboutSigninInternals associated with this profile,
   // creating one if none exists.
@@ -22,7 +22,7 @@ class AboutSigninInternalsFactory : public ProfileKeyedServiceFactory {
   // Returns an instance of the AboutSigninInternalsFactory singleton.
   static AboutSigninInternalsFactory* GetInstance();
 
-  // Implementation of ProfileKeyedServiceFactory.
+  // Implementation of BrowserContextKeyedServiceFactory.
   virtual void RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
 
@@ -32,8 +32,8 @@ class AboutSigninInternalsFactory : public ProfileKeyedServiceFactory {
   AboutSigninInternalsFactory();
   virtual ~AboutSigninInternalsFactory();
 
-  // ProfileKeyedServiceFactory
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

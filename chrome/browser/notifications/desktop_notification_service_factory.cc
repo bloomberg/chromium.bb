@@ -18,7 +18,7 @@ DesktopNotificationService* DesktopNotificationServiceFactory::GetForProfile(
     Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return static_cast<DesktopNotificationService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -28,14 +28,16 @@ DesktopNotificationServiceFactory* DesktopNotificationServiceFactory::
 }
 
 DesktopNotificationServiceFactory::DesktopNotificationServiceFactory()
-    : ProfileKeyedServiceFactory("DesktopNotificationService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "DesktopNotificationService",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 DesktopNotificationServiceFactory::~DesktopNotificationServiceFactory() {
 }
 
-ProfileKeyedService* DesktopNotificationServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+DesktopNotificationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   DesktopNotificationService* service =
       new DesktopNotificationService(static_cast<Profile*>(profile), NULL);

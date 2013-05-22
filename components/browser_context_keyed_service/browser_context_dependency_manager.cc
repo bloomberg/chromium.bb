@@ -18,30 +18,30 @@
 #include "content/public/common/content_switches.h"
 #endif
 
-class Profile;
-
-void ProfileDependencyManager::AddComponent(
-    ProfileKeyedBaseFactory* component) {
+void BrowserContextDependencyManager::AddComponent(
+    BrowserContextKeyedBaseFactory* component) {
   dependency_graph_.AddNode(component);
 }
 
-void ProfileDependencyManager::RemoveComponent(
-    ProfileKeyedBaseFactory* component) {
+void BrowserContextDependencyManager::RemoveComponent(
+    BrowserContextKeyedBaseFactory* component) {
   dependency_graph_.RemoveNode(component);
 }
 
-void ProfileDependencyManager::AddEdge(ProfileKeyedBaseFactory* depended,
-                                       ProfileKeyedBaseFactory* dependee) {
+void BrowserContextDependencyManager::AddEdge(
+    BrowserContextKeyedBaseFactory* depended,
+    BrowserContextKeyedBaseFactory* dependee) {
   dependency_graph_.AddEdge(depended, dependee);
 }
 
-void ProfileDependencyManager::CreateProfileServices(
-    content::BrowserContext* profile, bool is_testing_profile) {
+void BrowserContextDependencyManager::CreateBrowserContextServices(
+    content::BrowserContext* context, bool is_testing_context) {
 #ifndef NDEBUG
-  // Unmark |profile| as dead. This exists because of unit tests, which will
+  // Unmark |context| as dead. This exists because of unit tests, which will
   // often have similar stack structures. 0xWhatever might be created, go out
-  // of scope, and then a new Profile object might be created at 0xWhatever.
-  dead_profile_pointers_.erase(profile);
+  // of scope, and then a new BrowserContext object might be created
+  // at 0xWhatever.
+  dead_context_pointers_.erase(context);
 #endif
 
   std::vector<DependencyNode*> construction_order;
@@ -50,99 +50,102 @@ void ProfileDependencyManager::CreateProfileServices(
   }
 
 #ifndef NDEBUG
-  DumpProfileDependencies(profile);
+  DumpBrowserContextDependencies(context);
 #endif
 
   for (size_t i = 0; i < construction_order.size(); i++) {
-    ProfileKeyedBaseFactory* factory =
-        static_cast<ProfileKeyedBaseFactory*>(construction_order[i]);
+    BrowserContextKeyedBaseFactory* factory =
+        static_cast<BrowserContextKeyedBaseFactory*>(construction_order[i]);
 
-    if (!profile->IsOffTheRecord()) {
-      // We only register preferences on normal profiles because the incognito
-      // profile shares the pref service with the normal one.
-      factory->RegisterUserPrefsOnProfile(profile);
+    if (!context->IsOffTheRecord()) {
+      // We only register preferences on normal contexts because the incognito
+      // context shares the pref service with the normal one.
+      factory->RegisterUserPrefsOnBrowserContext(context);
     }
 
-    if (is_testing_profile && factory->ServiceIsNULLWhileTesting()) {
-      factory->SetEmptyTestingFactory(profile);
-    } else if (factory->ServiceIsCreatedWithProfile()) {
+    if (is_testing_context && factory->ServiceIsNULLWhileTesting()) {
+      factory->SetEmptyTestingFactory(context);
+    } else if (factory->ServiceIsCreatedWithBrowserContext()) {
       // Create the service.
-      factory->CreateServiceNow(profile);
+      factory->CreateServiceNow(context);
     }
   }
 }
 
-void ProfileDependencyManager::DestroyProfileServices(
-    content::BrowserContext* profile) {
+void BrowserContextDependencyManager::DestroyBrowserContextServices(
+    content::BrowserContext* context) {
   std::vector<DependencyNode*> destruction_order;
   if (!dependency_graph_.GetDestructionOrder(&destruction_order)) {
     NOTREACHED();
   }
 
 #ifndef NDEBUG
-  DumpProfileDependencies(profile);
+  DumpBrowserContextDependencies(context);
 #endif
 
   for (size_t i = 0; i < destruction_order.size(); i++) {
-    ProfileKeyedBaseFactory* factory =
-        static_cast<ProfileKeyedBaseFactory*>(destruction_order[i]);
-    factory->ProfileShutdown(profile);
+    BrowserContextKeyedBaseFactory* factory =
+        static_cast<BrowserContextKeyedBaseFactory*>(destruction_order[i]);
+    factory->BrowserContextShutdown(context);
   }
 
 #ifndef NDEBUG
-  // The profile is now dead to the rest of the program.
-  dead_profile_pointers_.insert(profile);
+  // The context is now dead to the rest of the program.
+  dead_context_pointers_.insert(context);
 #endif
 
   for (size_t i = 0; i < destruction_order.size(); i++) {
-    ProfileKeyedBaseFactory* factory =
-        static_cast<ProfileKeyedBaseFactory*>(destruction_order[i]);
-    factory->ProfileDestroyed(profile);
+    BrowserContextKeyedBaseFactory* factory =
+        static_cast<BrowserContextKeyedBaseFactory*>(destruction_order[i]);
+    factory->BrowserContextDestroyed(context);
   }
 }
 
 #ifndef NDEBUG
-void ProfileDependencyManager::AssertProfileWasntDestroyed(
-    content::BrowserContext* profile) {
-  if (dead_profile_pointers_.find(profile) != dead_profile_pointers_.end()) {
-    NOTREACHED() << "Attempted to access a Profile that was ShutDown(). This "
-                 << "is most likely a heap smasher in progress. After "
-                 << "ProfileKeyedService::Shutdown() completes, your service "
-                 << "MUST NOT refer to depended Profile services again.";
+void BrowserContextDependencyManager::AssertBrowserContextWasntDestroyed(
+    content::BrowserContext* context) {
+  if (dead_context_pointers_.find(context) != dead_context_pointers_.end()) {
+    NOTREACHED() << "Attempted to access a BrowserContext that was ShutDown(). "
+                 << "This is most likely a heap smasher in progress. After "
+                 << "BrowserContextKeyedService::Shutdown() completes, your "
+                 << "service MUST NOT refer to depended BrowserContext "
+                 << "services again.";
   }
 }
 #endif
 
 // static
-ProfileDependencyManager* ProfileDependencyManager::GetInstance() {
-  return Singleton<ProfileDependencyManager>::get();
+BrowserContextDependencyManager*
+BrowserContextDependencyManager::GetInstance() {
+  return Singleton<BrowserContextDependencyManager>::get();
 }
 
-ProfileDependencyManager::ProfileDependencyManager() {
+BrowserContextDependencyManager::BrowserContextDependencyManager() {
 }
 
-ProfileDependencyManager::~ProfileDependencyManager() {
+BrowserContextDependencyManager::~BrowserContextDependencyManager() {
 }
 
 #ifndef NDEBUG
 namespace {
 
-std::string ProfileKeyedBaseFactoryGetNodeName(DependencyNode* node) {
-  return static_cast<ProfileKeyedBaseFactory*>(node)->name();
+std::string BrowserContextKeyedBaseFactoryGetNodeName(DependencyNode* node) {
+  return static_cast<BrowserContextKeyedBaseFactory*>(node)->name();
 }
 
 }  // namespace
 
-void ProfileDependencyManager::DumpProfileDependencies(
-    content::BrowserContext* profile) {
+void BrowserContextDependencyManager::DumpBrowserContextDependencies(
+    content::BrowserContext* context) {
   // Whenever we try to build a destruction ordering, we should also dump a
-  // dependency graph to "/path/to/profile/profile-dependencies.dot".
+  // dependency graph to "/path/to/context/context-dependencies.dot".
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDumpBrowserContextDependencyGraph)) {
     base::FilePath dot_file =
-        profile->GetPath().AppendASCII("browser-context-dependencies.dot");
+        context->GetPath().AppendASCII("browser-context-dependencies.dot");
     std::string contents = dependency_graph_.DumpAsGraphviz(
-        "Profile", base::Bind(&ProfileKeyedBaseFactoryGetNodeName));
+        "BrowserContext",
+        base::Bind(&BrowserContextKeyedBaseFactoryGetNodeName));
     file_util::WriteFile(dot_file, contents.c_str(), contents.size());
   }
 }

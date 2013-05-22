@@ -22,7 +22,7 @@ class UserCloudPolicyManagerChromeOS;
 // UserCloudPolicyManagerChromeOS, when it becomes available. This service
 // decouples the UserCloudPolicyManagerChromeOS from depending directly on the
 // TokenService, since it is initialized much earlier.
-class UserCloudPolicyTokenForwarder : public ProfileKeyedService,
+class UserCloudPolicyTokenForwarder : public BrowserContextKeyedService,
                                       public content::NotificationObserver {
  public:
   // The factory of this PKS depends on the factories of these two arguments,
@@ -32,7 +32,7 @@ class UserCloudPolicyTokenForwarder : public ProfileKeyedService,
                                 TokenService* token_service);
   virtual ~UserCloudPolicyTokenForwarder();
 
-  // ProfileKeyedService:
+  // BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // NotificationObserver:

@@ -14,14 +14,14 @@ namespace apps {
 // static
 AppRestoreService* AppRestoreServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<AppRestoreService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
 void AppRestoreServiceFactory::ResetForProfile(Profile* profile) {
   AppRestoreServiceFactory* factory = GetInstance();
-  factory->ProfileShutdown(profile);
-  factory->ProfileDestroyed(profile);
+  factory->BrowserContextShutdown(profile);
+  factory->BrowserContextDestroyed(profile);
 }
 
 AppRestoreServiceFactory* AppRestoreServiceFactory::GetInstance() {
@@ -29,20 +29,21 @@ AppRestoreServiceFactory* AppRestoreServiceFactory::GetInstance() {
 }
 
 AppRestoreServiceFactory::AppRestoreServiceFactory()
-    : ProfileKeyedServiceFactory("AppRestoreService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "AppRestoreService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ShellWindowRegistry::Factory::GetInstance());
 }
 
 AppRestoreServiceFactory::~AppRestoreServiceFactory() {
 }
 
-ProfileKeyedService* AppRestoreServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* AppRestoreServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new AppRestoreService(static_cast<Profile*>(profile));
 }
 
-bool AppRestoreServiceFactory::ServiceIsCreatedWithProfile() const {
+bool AppRestoreServiceFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

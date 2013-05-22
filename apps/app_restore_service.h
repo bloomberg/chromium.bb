@@ -29,7 +29,7 @@ using extensions::app_file_handler_util::SavedFileEntry;
 namespace apps {
 
 // Tracks what apps need to be restarted when the browser restarts.
-class AppRestoreService : public ProfileKeyedService,
+class AppRestoreService : public BrowserContextKeyedService,
                           public content::NotificationObserver,
                           public extensions::ShellWindowRegistry::Observer {
  public:
@@ -54,7 +54,7 @@ class AppRestoreService : public ProfileKeyedService,
   virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE;
   virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
 
-  // ProfileKeyedService.
+  // BrowserContextKeyedService.
   virtual void Shutdown() OVERRIDE;
 
   void RecordAppStart(const std::string& extension_id);

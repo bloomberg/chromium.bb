@@ -19,7 +19,7 @@ class Extension;
 // Singleton that owns all ThemeServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated ThemeService.
-class ThemeServiceFactory : public ProfileKeyedServiceFactory {
+class ThemeServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the ThemeService that provides theming resources for
   // |profile|. Note that even if a Profile doesn't have a theme installed, it
@@ -39,14 +39,14 @@ class ThemeServiceFactory : public ProfileKeyedServiceFactory {
   ThemeServiceFactory();
   virtual ~ThemeServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeServiceFactory);
 };

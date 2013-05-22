@@ -78,7 +78,7 @@ class PrerenderTracker;
 class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                          public base::NonThreadSafe,
                          public content::NotificationObserver,
-                         public ProfileKeyedService {
+                         public BrowserContextKeyedService {
  public:
   // NOTE: New values need to be appended, since they are used in histograms.
   enum PrerenderManagerMode {
@@ -111,7 +111,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   virtual ~PrerenderManager();
 
-  // From ProfileKeyedService:
+  // From BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // Entry points for adding prerenders.

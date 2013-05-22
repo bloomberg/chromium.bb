@@ -13,7 +13,8 @@ class PrefService;
 class Profile;
 
 // Create an observer per Profile that listens for gesture preferences updates.
-class GesturePrefsObserverFactoryAura : public ProfileKeyedServiceFactory {
+class GesturePrefsObserverFactoryAura
+    : public BrowserContextKeyedServiceFactory {
  public:
   static GesturePrefsObserverFactoryAura* GetInstance();
 
@@ -28,12 +29,12 @@ class GesturePrefsObserverFactoryAura : public ProfileKeyedServiceFactory {
   void RegisterImmersiveModePrefs(user_prefs::PrefRegistrySyncable* registry);
   void RegisterWorkspaceCyclerPrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;

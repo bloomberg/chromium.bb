@@ -13,7 +13,7 @@ class GoogleURLTracker;
 class Profile;
 
 // Singleton that owns all GoogleURLTrackers and associates them with Profiles.
-class GoogleURLTrackerFactory : public ProfileKeyedServiceFactory {
+class GoogleURLTrackerFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the GoogleURLTracker for |profile|.  This may return NULL for a
   // testing profile.
@@ -27,14 +27,14 @@ class GoogleURLTrackerFactory : public ProfileKeyedServiceFactory {
   GoogleURLTrackerFactory();
   virtual ~GoogleURLTrackerFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerFactory);

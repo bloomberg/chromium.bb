@@ -17,7 +17,7 @@ namespace prerender {
 PrerenderLinkManager* PrerenderLinkManagerFactory::GetForProfile(
     Profile* profile) {
   return static_cast<PrerenderLinkManager*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -26,12 +26,14 @@ PrerenderLinkManagerFactory* PrerenderLinkManagerFactory::GetInstance() {
 }
 
 PrerenderLinkManagerFactory::PrerenderLinkManagerFactory()
-    : ProfileKeyedServiceFactory("PrerenderLinkmanager",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "PrerenderLinkmanager",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(prerender::PrerenderManagerFactory::GetInstance());
 }
 
-ProfileKeyedService* PrerenderLinkManagerFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+PrerenderLinkManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   PrerenderManager* prerender_manager =
       PrerenderManagerFactory::GetForProfile(static_cast<Profile*>(profile));

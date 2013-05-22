@@ -22,7 +22,7 @@ namespace history {
 // Provides an API for querying Google servers for a signed-in user's
 // synced history visits. It is roughly analogous to HistoryService, and
 // supports a similar API.
-class WebHistoryService : public ProfileKeyedService {
+class WebHistoryService : public BrowserContextKeyedService {
  public:
   // Handles all the work of making an API request. This class encapsulates
   // the entire state of the request. When an instance is destroyed, all

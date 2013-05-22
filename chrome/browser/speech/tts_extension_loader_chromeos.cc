@@ -21,11 +21,12 @@
 #include "grit/browser_resources.h"
 
 // Factory to load one instance of TtsExtensionLoaderChromeOs per profile.
-class TtsExtensionLoaderChromeOsFactory : public ProfileKeyedServiceFactory {
+class TtsExtensionLoaderChromeOsFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   static TtsExtensionLoaderChromeOs* GetForProfile(Profile* profile) {
     return static_cast<TtsExtensionLoaderChromeOs*>(
-        GetInstance()->GetServiceForProfile(profile, true));
+        GetInstance()->GetServiceForBrowserContext(profile, true));
   }
 
   static TtsExtensionLoaderChromeOsFactory* GetInstance() {
@@ -35,9 +36,9 @@ class TtsExtensionLoaderChromeOsFactory : public ProfileKeyedServiceFactory {
  private:
   friend struct DefaultSingletonTraits<TtsExtensionLoaderChromeOsFactory>;
 
-  TtsExtensionLoaderChromeOsFactory() : ProfileKeyedServiceFactory(
+  TtsExtensionLoaderChromeOsFactory() : BrowserContextKeyedServiceFactory(
       "TtsExtensionLoaderChromeOs",
-      ProfileDependencyManager::GetInstance())
+      BrowserContextDependencyManager::GetInstance())
   {}
 
   virtual ~TtsExtensionLoaderChromeOsFactory() {}
@@ -49,7 +50,7 @@ class TtsExtensionLoaderChromeOsFactory : public ProfileKeyedServiceFactory {
     return chrome::GetBrowserContextRedirectedInIncognito(context);
   }
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE {
     return new TtsExtensionLoaderChromeOs(static_cast<Profile*>(profile));
   }

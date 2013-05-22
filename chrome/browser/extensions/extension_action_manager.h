@@ -22,7 +22,7 @@ class Extension;
 
 // Owns the ExtensionActions associated with each extension.  These actions live
 // while an extension is loaded and are destroyed on unload.
-class ExtensionActionManager : public ProfileKeyedService,
+class ExtensionActionManager : public BrowserContextKeyedService,
                                public content::NotificationObserver {
  public:
   explicit ExtensionActionManager(Profile* profile);

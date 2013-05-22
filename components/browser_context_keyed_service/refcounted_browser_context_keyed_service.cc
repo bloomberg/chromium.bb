@@ -7,8 +7,8 @@
 namespace impl {
 
 // static
-void RefcountedProfileKeyedServiceTraits::Destruct(
-    const RefcountedProfileKeyedService* obj) {
+void RefcountedBrowserContextKeyedServiceTraits::Destruct(
+    const RefcountedBrowserContextKeyedService* obj) {
   if (obj->requires_destruction_on_thread_ &&
       !content::BrowserThread::CurrentlyOn(obj->thread_id_)) {
     content::BrowserThread::DeleteSoon(obj->thread_id_, FROM_HERE, obj);
@@ -19,16 +19,16 @@ void RefcountedProfileKeyedServiceTraits::Destruct(
 
 }  // namespace impl
 
-RefcountedProfileKeyedService::RefcountedProfileKeyedService()
+RefcountedBrowserContextKeyedService::RefcountedBrowserContextKeyedService()
     : requires_destruction_on_thread_(false),
       thread_id_(content::BrowserThread::UI) {
 }
 
-RefcountedProfileKeyedService::RefcountedProfileKeyedService(
+RefcountedBrowserContextKeyedService::RefcountedBrowserContextKeyedService(
     const content::BrowserThread::ID thread_id)
     : requires_destruction_on_thread_(true),
       thread_id_(thread_id) {
 }
 
-RefcountedProfileKeyedService::~RefcountedProfileKeyedService() {}
+RefcountedBrowserContextKeyedService::~RefcountedBrowserContextKeyedService() {}
 

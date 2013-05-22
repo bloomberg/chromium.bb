@@ -1029,7 +1029,7 @@ TEST_F(FaviconHandlerTest, FirstFavicon) {
             handler.GetEntry()->GetFavicon().image.ToSkBitmap()->width());
 }
 
-static ProfileKeyedService* BuildFaviconService(
+static BrowserContextKeyedService* BuildFaviconService(
     content::BrowserContext* profile) {
   return new FaviconService(NULL);
 }

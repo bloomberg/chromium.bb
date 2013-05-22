@@ -52,7 +52,7 @@ class URLPatternSet;
 //       maintains as the underlying extensions change.
 class ExtensionPrefs : public ContentSettingsStore::Observer,
                        public ExtensionScopedPrefs,
-                       public ProfileKeyedService {
+                       public BrowserContextKeyedService {
  public:
   // Key name for a preference that keeps track of per-extension settings. This
   // is a dictionary object read from the Preferences file, keyed off of
@@ -152,7 +152,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   virtual ~ExtensionPrefs();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // Convenience function to get the ExtensionPrefs for a Profile.

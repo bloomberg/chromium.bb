@@ -14,7 +14,7 @@ namespace notifier {
 ChromeNotifierService* ChromeNotifierServiceFactory::GetForProfile(
     Profile* profile, Profile::ServiceAccessType sat) {
   return static_cast<ChromeNotifierService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -23,13 +23,14 @@ ChromeNotifierServiceFactory* ChromeNotifierServiceFactory::GetInstance() {
 }
 
 ChromeNotifierServiceFactory::ChromeNotifierServiceFactory()
-    : ProfileKeyedServiceFactory(
-          "ChromeNotifierService", ProfileDependencyManager::GetInstance()) {}
+    : BrowserContextKeyedServiceFactory(
+        "ChromeNotifierService",
+        BrowserContextDependencyManager::GetInstance()) {}
 
 ChromeNotifierServiceFactory::~ChromeNotifierServiceFactory() {
 }
 
-ProfileKeyedService*
+BrowserContextKeyedService*
 ChromeNotifierServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   NotificationUIManager* notification_manager =

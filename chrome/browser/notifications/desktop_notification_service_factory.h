@@ -15,7 +15,8 @@ class Profile;
 // Singleton that owns all DesktopNotificationServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated DesktopNotificationService.
-class DesktopNotificationServiceFactory : public ProfileKeyedServiceFactory {
+class DesktopNotificationServiceFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the DesktopNotificationService that provides desktop notifications
   // for |profile|.
@@ -29,8 +30,8 @@ class DesktopNotificationServiceFactory : public ProfileKeyedServiceFactory {
   DesktopNotificationServiceFactory();
   virtual ~DesktopNotificationServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

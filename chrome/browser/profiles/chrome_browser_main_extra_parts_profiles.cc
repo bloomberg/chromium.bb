@@ -148,8 +148,8 @@ ChromeBrowserMainExtraPartsProfiles::~ChromeBrowserMainExtraPartsProfiles() {
 // FooServiceFactory here will scale or is desirable long term.
 //
 // static
-void
-ChromeBrowserMainExtraPartsProfiles::EnsureProfileKeyedServiceFactoriesBuilt() {
+void ChromeBrowserMainExtraPartsProfiles::
+EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AboutSigninInternalsFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
 #if defined(ENABLE_BACKGROUND)
@@ -290,5 +290,5 @@ ChromeBrowserMainExtraPartsProfiles::EnsureProfileKeyedServiceFactoriesBuilt() {
 }
 
 void ChromeBrowserMainExtraPartsProfiles::PreProfileInit() {
-  EnsureProfileKeyedServiceFactoriesBuilt();
+  EnsureBrowserContextKeyedServiceFactoriesBuilt();
 }

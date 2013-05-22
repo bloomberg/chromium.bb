@@ -12,7 +12,7 @@
 // static
 FindBarState* FindBarStateFactory::GetForProfile(Profile* profile) {
   return static_cast<FindBarState*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -35,13 +35,14 @@ FindBarStateFactory* FindBarStateFactory::GetInstance() {
 }
 
 FindBarStateFactory::FindBarStateFactory()
-    : ProfileKeyedServiceFactory("FindBarState",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "FindBarState",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 FindBarStateFactory::~FindBarStateFactory() {}
 
-ProfileKeyedService* FindBarStateFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* FindBarStateFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new FindBarState;
 }

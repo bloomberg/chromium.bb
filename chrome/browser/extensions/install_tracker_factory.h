@@ -15,7 +15,7 @@ namespace extensions {
 
 class InstallTracker;
 
-class InstallTrackerFactory : public ProfileKeyedServiceFactory {
+class InstallTrackerFactory : public BrowserContextKeyedServiceFactory {
  public:
   static InstallTracker* GetForProfile(Profile* profile);
   static InstallTrackerFactory* GetInstance();
@@ -26,8 +26,8 @@ class InstallTrackerFactory : public ProfileKeyedServiceFactory {
   InstallTrackerFactory();
   virtual ~InstallTrackerFactory();
 
-  // ProfileKeyedServiceFactory overrides:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory overrides:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

@@ -18,7 +18,7 @@ class DeferredSequencedTaskRunner;
 
 // This service manages the startup task runners.
 class StartupTaskRunnerService : public base::NonThreadSafe,
-                                 public ProfileKeyedService {
+                                 public BrowserContextKeyedService {
  public:
   explicit StartupTaskRunnerService(Profile* profile);
   virtual ~StartupTaskRunnerService();

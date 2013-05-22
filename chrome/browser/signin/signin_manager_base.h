@@ -60,7 +60,7 @@ struct GoogleServiceSignoutDetails {
   std::string username;
 };
 
-class SigninManagerBase : public ProfileKeyedService {
+class SigninManagerBase : public BrowserContextKeyedService {
  public:
   SigninManagerBase();
   virtual ~SigninManagerBase();
@@ -99,7 +99,7 @@ class SigninManagerBase : public ProfileKeyedService {
     return signin_global_error_.get();
   }
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
     // Methods to register or remove SigninDiagnosticObservers

@@ -16,7 +16,7 @@ struct AutocompleteMatch;
 class GURL;
 class Profile;
 
-class AutocompleteClassifier : public ProfileKeyedService {
+class AutocompleteClassifier : public BrowserContextKeyedService {
  public:
   // Bitmap of AutocompleteProvider::Type values describing the default set of
   // providers queried for the omnibox.  Intended to be passed to
@@ -51,7 +51,7 @@ class AutocompleteClassifier : public ProfileKeyedService {
                 GURL* alternate_nav_url);
 
  private:
-  // ProfileKeyedService:
+  // BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   scoped_ptr<AutocompleteController> controller_;

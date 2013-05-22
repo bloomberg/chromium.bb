@@ -48,12 +48,12 @@ gfx::Point ExpectedTabStripOrigin(BrowserView* browser_view) {
 }
 
 // Caller owns the returned service.
-ProfileKeyedService* CreateTemplateURLService(
+BrowserContextKeyedService* CreateTemplateURLService(
     content::BrowserContext* profile) {
   return new TemplateURLService(static_cast<Profile*>(profile));
 }
 
-ProfileKeyedService* CreateAutocompleteClassifier(
+BrowserContextKeyedService* CreateAutocompleteClassifier(
     content::BrowserContext* profile) {
   return new AutocompleteClassifier(static_cast<Profile*>(profile));
 }

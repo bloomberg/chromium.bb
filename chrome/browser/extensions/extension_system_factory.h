@@ -9,15 +9,15 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
+class BrowserContextKeyedService;
 class Profile;
-class ProfileKeyedService;
 
 namespace extensions {
 class ExtensionSystem;
 
-// ProfileKeyedServiceFactory for ExtensionSystemImpl::Shared.
+// BrowserContextKeyedServiceFactory for ExtensionSystemImpl::Shared.
 // Should not be used except by ExtensionSystem(Factory).
-class ExtensionSystemSharedFactory : public ProfileKeyedServiceFactory {
+class ExtensionSystemSharedFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ExtensionSystemImpl::Shared* GetForProfile(
       Profile* profile);
@@ -30,16 +30,16 @@ class ExtensionSystemSharedFactory : public ProfileKeyedServiceFactory {
   ExtensionSystemSharedFactory();
   virtual ~ExtensionSystemSharedFactory();
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
 };
 
-// ProfileKeyedServiceFactory for ExtensionSystem.
-class ExtensionSystemFactory : public ProfileKeyedServiceFactory {
+// BrowserContextKeyedServiceFactory for ExtensionSystem.
+class ExtensionSystemFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // ProfileKeyedServiceFactory implementation:
+  // BrowserContextKeyedServiceFactory implementation:
   static ExtensionSystem* GetForProfile(Profile* profile);
 
   static ExtensionSystemFactory* GetInstance();
@@ -50,11 +50,11 @@ class ExtensionSystemFactory : public ProfileKeyedServiceFactory {
   ExtensionSystemFactory();
   virtual ~ExtensionSystemFactory();
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
 };
 
 }  // namespace extensions

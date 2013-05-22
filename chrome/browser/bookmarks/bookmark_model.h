@@ -230,7 +230,7 @@ class BookmarkPermanentNode : public BookmarkNode {
 // BookmarkModelFactory.
 class BookmarkModel : public content::NotificationObserver,
                       public BookmarkService,
-                      public ProfileKeyedService {
+                      public BrowserContextKeyedService {
  public:
   explicit BookmarkModel(Profile* profile);
   virtual ~BookmarkModel();

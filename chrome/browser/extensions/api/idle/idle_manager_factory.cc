@@ -16,7 +16,7 @@ namespace extensions {
 IdleManager* IdleManagerFactory::GetForProfile(
     Profile* profile) {
   return static_cast<IdleManager*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -25,15 +25,16 @@ IdleManagerFactory* IdleManagerFactory::GetInstance() {
 }
 
 IdleManagerFactory::IdleManagerFactory()
-    : ProfileKeyedServiceFactory("IdleManager",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "IdleManager",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionSystemFactory::GetInstance());
 }
 
 IdleManagerFactory::~IdleManagerFactory() {
 }
 
-ProfileKeyedService* IdleManagerFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* IdleManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   IdleManager* idle_manager = new IdleManager(static_cast<Profile*>(profile));
   idle_manager->Init();
@@ -45,7 +46,7 @@ content::BrowserContext* IdleManagerFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-bool IdleManagerFactory::ServiceIsCreatedWithProfile() const {
+bool IdleManagerFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

@@ -924,7 +924,7 @@
   fun:g_object_new
   ...
   fun:ThemeServiceFactory::BuildServiceInstanceFor
-  fun:ProfileKeyedServiceFactory::GetServiceForProfile
+  fun:BrowserContextKeyedServiceFactory::GetServiceForBrowserContext
   fun:ThemeServiceFactory::GetForProfile
   fun:ExtensionService::GarbageCollectExtensions
   fun:ExtensionService::InitAfterImport

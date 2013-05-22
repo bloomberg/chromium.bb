@@ -15,7 +15,7 @@ namespace extensions {
 // static
 BluetoothAPI* BluetoothAPIFactory::GetForProfile(Profile* profile) {
   return static_cast<BluetoothAPI*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -24,15 +24,16 @@ BluetoothAPIFactory* BluetoothAPIFactory::GetInstance() {
 }
 
 BluetoothAPIFactory::BluetoothAPIFactory()
-    : ProfileKeyedServiceFactory("BluetoothAPI",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "BluetoothAPI",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionSystemFactory::GetInstance());
 }
 
 BluetoothAPIFactory::~BluetoothAPIFactory() {
 }
 
-ProfileKeyedService* BluetoothAPIFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* BluetoothAPIFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new BluetoothAPI(static_cast<Profile*>(profile));
 }
@@ -42,7 +43,7 @@ content::BrowserContext* BluetoothAPIFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-bool BluetoothAPIFactory::ServiceIsCreatedWithProfile() const {
+bool BluetoothAPIFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

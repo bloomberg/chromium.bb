@@ -14,7 +14,7 @@
 chrome::MediaGalleriesPreferences*
 MediaGalleriesPreferencesFactory::GetForProfile(Profile* profile) {
   return static_cast<chrome::MediaGalleriesPreferences*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -24,12 +24,14 @@ MediaGalleriesPreferencesFactory::GetInstance() {
 }
 
 MediaGalleriesPreferencesFactory::MediaGalleriesPreferencesFactory()
-    : ProfileKeyedServiceFactory("MediaGalleriesPreferences",
-                                 ProfileDependencyManager::GetInstance()) {}
+    : BrowserContextKeyedServiceFactory(
+        "MediaGalleriesPreferences",
+        BrowserContextDependencyManager::GetInstance()) {}
 
 MediaGalleriesPreferencesFactory::~MediaGalleriesPreferencesFactory() {}
 
-ProfileKeyedService* MediaGalleriesPreferencesFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+MediaGalleriesPreferencesFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new chrome::MediaGalleriesPreferences(static_cast<Profile*>(profile));
 }

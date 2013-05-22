@@ -20,7 +20,7 @@ class AutofillWebDataService;
 }  // namespace autofill
 
 // A wrapper of WebDataService so that we can use it as a profile keyed service.
-class WebDataServiceWrapper : public ProfileKeyedService {
+class WebDataServiceWrapper : public BrowserContextKeyedService {
  public:
   explicit WebDataServiceWrapper(Profile* profile);
 
@@ -29,7 +29,7 @@ class WebDataServiceWrapper : public ProfileKeyedService {
 
   virtual ~WebDataServiceWrapper();
 
-  // ProfileKeyedService:
+  // BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   virtual scoped_refptr<autofill::AutofillWebDataService> GetAutofillWebData();
@@ -47,7 +47,7 @@ class WebDataServiceWrapper : public ProfileKeyedService {
 
 // Singleton that owns all WebDataServiceWrappers and associates them with
 // Profiles.
-class WebDataServiceFactory : public ProfileKeyedServiceFactory {
+class WebDataServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the |WebDataServiceWrapper| associated with the |profile|.
   // |access_type| is either EXPLICIT_ACCESS or IMPLICIT_ACCESS
@@ -66,10 +66,10 @@ class WebDataServiceFactory : public ProfileKeyedServiceFactory {
   WebDataServiceFactory();
   virtual ~WebDataServiceFactory();
 
-  // |ProfileKeyedBaseFactory| methods:
+  // |BrowserContextKeyedBaseFactory| methods:
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 

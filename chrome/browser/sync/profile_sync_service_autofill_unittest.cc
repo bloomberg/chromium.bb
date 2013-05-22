@@ -293,7 +293,7 @@ class WebDataServiceFake : public AutofillWebDataService {
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceFake);
 };
 
-ProfileKeyedService* BuildMockWebDataServiceWrapper(
+BrowserContextKeyedService* BuildMockWebDataServiceWrapper(
     content::BrowserContext* profile) {
   return new MockWebDataServiceWrapper(
       new TokenWebDataServiceFake(),
@@ -406,7 +406,7 @@ class MockPersonalDataManager : public PersonalDataManager {
 class MockPersonalDataManagerService
     : public autofill::PersonalDataManagerService {
  public:
-  static ProfileKeyedService* Build(content::BrowserContext* profile) {
+  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
     return new MockPersonalDataManagerService();
   }
 

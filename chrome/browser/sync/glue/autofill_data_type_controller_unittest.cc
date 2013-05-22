@@ -132,7 +132,7 @@ class FakeWebDataService : public AutofillWebDataService {
 
 class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
  public:
-  static ProfileKeyedService* Build(content::BrowserContext* profile) {
+  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
     return new MockWebDataServiceWrapperSyncable();
   }
 

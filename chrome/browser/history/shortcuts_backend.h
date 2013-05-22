@@ -31,7 +31,7 @@ class ShortcutsDatabase;
 
 // This class manages the shortcut provider backend - access to database on the
 // db thread, etc.
-class ShortcutsBackend : public RefcountedProfileKeyedService,
+class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
                          public content::NotificationObserver {
  public:
   // The following struct encapsulates one previously selected omnibox shortcut.
@@ -142,7 +142,7 @@ class ShortcutsBackend : public RefcountedProfileKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // RefcountedProfileKeyedService
+  // RefcountedBrowserContextKeyedService
   virtual void ShutdownOnUIThread() OVERRIDE;
 
   enum CurrentState {

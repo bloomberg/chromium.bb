@@ -21,7 +21,7 @@ class LoggedInPredictorTable;
 class PredictorDatabaseInternal;
 class ResourcePrefetchPredictorTables;
 
-class PredictorDatabase : public ProfileKeyedService {
+class PredictorDatabase : public BrowserContextKeyedService {
  public:
   explicit PredictorDatabase(Profile* profile);
   virtual ~PredictorDatabase();
@@ -34,7 +34,7 @@ class PredictorDatabase : public ProfileKeyedService {
   sql::Connection* GetDatabase();
 
  private:
-  // ProfileKeyedService
+  // BrowserContextKeyedService
   virtual void Shutdown() OVERRIDE;
 
   scoped_refptr<PredictorDatabaseInternal> db_;

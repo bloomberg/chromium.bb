@@ -87,7 +87,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   // Factory method for keyed service.  PersonalDataManager is NULL for testing.
-  static ProfileKeyedService* Build(content::BrowserContext* profile) {
+  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
     return NULL;
   }
 

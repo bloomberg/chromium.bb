@@ -15,14 +15,16 @@ namespace thumbnails {
 class ThumbnailService;
 }
 
-class ThumbnailServiceFactory : public RefcountedProfileKeyedServiceFactory {
+class ThumbnailServiceFactory
+    : public RefcountedBrowserContextKeyedServiceFactory {
  public:
   // Returns an instance of ThumbnailService associated with this profile
   // (creating one if none exists). Returns NULL if this profile cannot have a
   // ThumbnailService (for example, if |profile| is incognito).
   // Depending on the settings, the implementation of the service interface
   // can be provided either by TopSites (stored in the profile itself) or
-  // be an instance of a real RefcountedProfileKeyedService implementation.
+  // be an instance of a real RefcountedBrowserContextKeyedService
+  // implementation.
   static scoped_refptr<thumbnails::ThumbnailService> GetForProfile(
       Profile* profile);
 
@@ -34,9 +36,9 @@ class ThumbnailServiceFactory : public RefcountedProfileKeyedServiceFactory {
   ThumbnailServiceFactory();
   virtual ~ThumbnailServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+  // BrowserContextKeyedServiceFactory:
+  virtual scoped_refptr<RefcountedBrowserContextKeyedService>
+      BuildServiceInstanceFor(content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailServiceFactory);
 };

@@ -27,7 +27,7 @@ class TestExtensionSystem : public ExtensionSystem {
   explicit TestExtensionSystem(Profile* profile);
   virtual ~TestExtensionSystem();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // Creates an ExtensionPrefs with the testing profile and returns it.
@@ -72,7 +72,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual const OneShotEvent& ready() const OVERRIDE;
 
   // Factory method for tests to use with SetTestingProfile.
-  static ProfileKeyedService* Build(content::BrowserContext* profile);
+  static BrowserContextKeyedService* Build(content::BrowserContext* profile);
 
  protected:
   Profile* profile_;

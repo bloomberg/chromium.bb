@@ -22,7 +22,7 @@ namespace extensions {
 
 class ExtensionPrefs;
 
-class InstallTracker : public ProfileKeyedService,
+class InstallTracker : public BrowserContextKeyedService,
                        public content::NotificationObserver {
  public:
   InstallTracker(Profile* profile,
@@ -42,7 +42,7 @@ class InstallTracker : public ProfileKeyedService,
                           int percent_downloaded);
   void OnInstallFailure(const std::string& extension_id);
 
-  // Overriddes for ProfileKeyedService:
+  // Overriddes for BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // content::NotificationObserver

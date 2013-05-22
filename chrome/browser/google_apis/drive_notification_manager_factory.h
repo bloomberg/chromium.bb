@@ -16,7 +16,8 @@ class DriveNotificationManager;
 
 // Singleton that owns all DriveNotificationManager and associates them with
 // profiles.
-class DriveNotificationManagerFactory : public ProfileKeyedServiceFactory {
+class DriveNotificationManagerFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   static DriveNotificationManager* GetForProfile(Profile* profile);
 
@@ -28,8 +29,8 @@ class DriveNotificationManagerFactory : public ProfileKeyedServiceFactory {
   DriveNotificationManagerFactory();
   virtual ~DriveNotificationManagerFactory();
 
-  // ProfileKeyedServiceFactory implementation.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory implementation.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

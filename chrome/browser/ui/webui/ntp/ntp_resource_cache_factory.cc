@@ -13,7 +13,7 @@
 // static
 NTPResourceCache* NTPResourceCacheFactory::GetForProfile(Profile* profile) {
   return static_cast<NTPResourceCache*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -22,8 +22,9 @@ NTPResourceCacheFactory* NTPResourceCacheFactory::GetInstance() {
 }
 
 NTPResourceCacheFactory::NTPResourceCacheFactory()
-    : ProfileKeyedServiceFactory("NTPResourceCache",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "NTPResourceCache",
+        BrowserContextDependencyManager::GetInstance()) {
 #if defined(ENABLE_THEMES)
   DependsOn(ThemeServiceFactory::GetInstance());
 #endif
@@ -31,7 +32,7 @@ NTPResourceCacheFactory::NTPResourceCacheFactory()
 
 NTPResourceCacheFactory::~NTPResourceCacheFactory() {}
 
-ProfileKeyedService* NTPResourceCacheFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* NTPResourceCacheFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new NTPResourceCache(static_cast<Profile*>(profile));
 }

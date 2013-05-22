@@ -16,7 +16,7 @@ class Profile;
 namespace apps {
 
 // This class manages the installation of shortcuts for platform apps.
-class ShortcutManager : public ProfileKeyedService,
+class ShortcutManager : public BrowserContextKeyedService,
                         public content::NotificationObserver {
  public:
   explicit ShortcutManager(Profile* profile);

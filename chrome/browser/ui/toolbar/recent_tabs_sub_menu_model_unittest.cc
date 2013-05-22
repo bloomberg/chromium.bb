@@ -63,7 +63,7 @@ class RecentTabsSubMenuModelTest : public BrowserWithTestWindowTest {
     associator_.SetCurrentMachineTagForTesting("RecentTabsSubMenuModelTest");
   }
 
-  static ProfileKeyedService* GetTabRestoreService(
+  static BrowserContextKeyedService* GetTabRestoreService(
       content::BrowserContext* browser_context) {
     // Ownership is tranfered to the profile.
     return new PersistentTabRestoreService(

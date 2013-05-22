@@ -27,7 +27,7 @@ struct CloudPrintProxyInfo;
 // running in the service process.
 class CloudPrintProxyService
     : public CloudPrintSetupHandlerDelegate,
-      public ProfileKeyedService {
+      public BrowserContextKeyedService {
  public:
   explicit CloudPrintProxyService(Profile* profile);
   virtual ~CloudPrintProxyService();

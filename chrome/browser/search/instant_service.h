@@ -26,7 +26,7 @@ class URLRequest;
 }
 
 // Tracks render process host IDs that are associated with Instant.
-class InstantService : public ProfileKeyedService,
+class InstantService : public BrowserContextKeyedService,
                        public content::NotificationObserver {
  public:
   explicit InstantService(Profile* profile);
@@ -74,7 +74,7 @@ class InstantService : public ProfileKeyedService,
                                InstantMostVisitedItem* item) const;
 
  private:
-  // Overridden from ProfileKeyedService:
+  // Overridden from BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // Overridden from content::NotificationObserver:

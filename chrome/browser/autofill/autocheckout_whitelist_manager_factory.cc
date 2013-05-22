@@ -51,7 +51,7 @@ WhitelistManager*
 WhitelistManagerFactory::GetForProfile(Profile* profile) {
   WhitelistManagerService* service =
       static_cast<WhitelistManagerService*>(
-          GetInstance()->GetServiceForProfile(profile, true));
+          GetInstance()->GetServiceForBrowserContext(profile, true));
   // service can be NULL for tests.
   return service ? service->GetWhitelistManager() : NULL;
 }
@@ -63,14 +63,15 @@ WhitelistManagerFactory::GetInstance() {
 }
 
 WhitelistManagerFactory::WhitelistManagerFactory()
-    : ProfileKeyedServiceFactory("AutocheckoutWhitelistManager",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "AutocheckoutWhitelistManager",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 WhitelistManagerFactory::~WhitelistManagerFactory() {
 }
 
-ProfileKeyedService*
+BrowserContextKeyedService*
 WhitelistManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   WhitelistManagerService* service =

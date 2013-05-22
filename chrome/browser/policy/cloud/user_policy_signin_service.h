@@ -40,7 +40,7 @@ class UserCloudPolicyManager;
 // Finally, if the user signs out, this class is responsible for shutting down
 // the policy infrastructure to ensure that any cached policy is cleared.
 class UserPolicySigninService
-    : public ProfileKeyedService,
+    : public BrowserContextKeyedService,
       public CloudPolicyClient::Observer,
       public CloudPolicyService::Observer,
       public content::NotificationObserver {
@@ -86,7 +86,7 @@ class UserPolicySigninService
   virtual void OnRegistrationStateChanged(CloudPolicyClient* client) OVERRIDE;
   virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
 
-  // ProfileKeyedService implementation:
+  // BrowserContextKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
  private:

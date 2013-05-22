@@ -377,7 +377,7 @@ DriveIntegrationService*
 DriveIntegrationServiceFactory::GetForProfileRegardlessOfStates(
     Profile* profile) {
   return static_cast<DriveIntegrationService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -395,7 +395,7 @@ DriveIntegrationService*
 DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
     Profile* profile) {
   return static_cast<DriveIntegrationService*>(
-      GetInstance()->GetServiceForProfile(profile, false));
+      GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
@@ -410,8 +410,9 @@ void DriveIntegrationServiceFactory::SetFactoryForTest(
 }
 
 DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
-    : ProfileKeyedServiceFactory("DriveIntegrationService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "DriveIntegrationService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(google_apis::DriveNotificationManagerFactory::GetInstance());
   DependsOn(DownloadServiceFactory::GetInstance());
 }
@@ -419,7 +420,8 @@ DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
 DriveIntegrationServiceFactory::~DriveIntegrationServiceFactory() {
 }
 
-ProfileKeyedService* DriveIntegrationServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+DriveIntegrationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 

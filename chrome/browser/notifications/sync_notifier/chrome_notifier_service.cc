@@ -26,7 +26,7 @@ ChromeNotifierService::ChromeNotifierService(Profile* profile,
     : profile_(profile), notification_manager_(manager) {}
 ChromeNotifierService::~ChromeNotifierService() {}
 
-// Methods from ProfileKeyedService.
+// Methods from BrowserContextKeyedService.
 void ChromeNotifierService::Shutdown() {
 }
 

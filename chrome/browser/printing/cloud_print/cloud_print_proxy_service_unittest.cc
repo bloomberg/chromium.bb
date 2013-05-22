@@ -422,7 +422,7 @@ TEST_F(CloudPrintProxyPolicyTest,
             prefs->GetString(prefs::kCloudPrintEmail));
 }
 
-ProfileKeyedService* TestCloudPrintProxyServiceFactory(
+BrowserContextKeyedService* TestCloudPrintProxyServiceFactory(
     content::BrowserContext* profile) {
   TestCloudPrintProxyService* service =
       new TestCloudPrintProxyService(static_cast<Profile*>(profile));

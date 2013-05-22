@@ -124,8 +124,8 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsCreateDestroy) {
 TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAdded) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  BackgroundContentsServiceFactory::GetInstance()->RegisterUserPrefsOnProfile(
-      &profile);
+  BackgroundContentsServiceFactory::GetInstance()->
+      RegisterUserPrefsOnBrowserContext(&profile);
   GURL orig_url;
   GURL url("http://a/");
   GURL url2("http://a/");
@@ -151,8 +151,8 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAdded) {
 TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAddedAndClosed) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  BackgroundContentsServiceFactory::GetInstance()->RegisterUserPrefsOnProfile(
-      &profile);
+  BackgroundContentsServiceFactory::GetInstance()->
+      RegisterUserPrefsOnBrowserContext(&profile);
 
   GURL url("http://a/");
   MockBackgroundContents* contents = new MockBackgroundContents(&profile);
@@ -172,8 +172,8 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAddedAndClosed) {
 TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  BackgroundContentsServiceFactory::GetInstance()->RegisterUserPrefsOnProfile(
-      &profile);
+  BackgroundContentsServiceFactory::GetInstance()->
+      RegisterUserPrefsOnBrowserContext(&profile);
 
   GURL url("http://a/");
   {
@@ -204,8 +204,8 @@ TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
 TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  BackgroundContentsServiceFactory::GetInstance()->RegisterUserPrefsOnProfile(
-      &profile);
+  BackgroundContentsServiceFactory::GetInstance()->
+      RegisterUserPrefsOnBrowserContext(&profile);
 
   EXPECT_EQ(NULL, service.GetAppBackgroundContents(ASCIIToUTF16("appid")));
   MockBackgroundContents* contents = new MockBackgroundContents(&profile,

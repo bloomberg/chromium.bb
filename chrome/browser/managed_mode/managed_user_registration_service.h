@@ -18,7 +18,7 @@ class GoogleServiceAuthError;
 // Holds the state necessary for registering a new managed user with the
 // management server and associating it with its custodian. It is owned by the
 // custodian's profile.
-class ManagedUserRegistrationService : public ProfileKeyedService {
+class ManagedUserRegistrationService : public BrowserContextKeyedService {
  public:
   // Callback for Register() below. If registration is successful, |token| will
   // contain an authentication token for the newly registered managed user,

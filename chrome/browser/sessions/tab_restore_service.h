@@ -38,7 +38,7 @@ class WebContents;
 //
 // To listen for changes to the set of entries managed by the TabRestoreService
 // add an observer.
-class TabRestoreService : public ProfileKeyedService {
+class TabRestoreService : public BrowserContextKeyedService {
  public:
   // Interface used to allow the test to provide a custom time.
   class TimeFactory {

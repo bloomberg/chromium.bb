@@ -24,7 +24,7 @@ class DownloadManager;
 }
 
 // Owning class for ChromeDownloadManagerDelegate.
-class DownloadService : public ProfileKeyedService {
+class DownloadService : public BrowserContextKeyedService {
  public:
   explicit DownloadService(Profile* profile);
   virtual ~DownloadService();

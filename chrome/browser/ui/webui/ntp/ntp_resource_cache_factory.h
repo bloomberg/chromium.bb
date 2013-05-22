@@ -14,7 +14,7 @@ class Profile;
 // Singleton that owns the NTPResourceCaches used by the NTP and associates them
 // with Profiles. Listens for the Profile's destruction notification and cleans
 // up the associated ThemeService.
-class NTPResourceCacheFactory : public ProfileKeyedServiceFactory {
+class NTPResourceCacheFactory : public BrowserContextKeyedServiceFactory {
  public:
   static NTPResourceCache* GetForProfile(Profile* profile);
 
@@ -26,8 +26,8 @@ class NTPResourceCacheFactory : public ProfileKeyedServiceFactory {
   NTPResourceCacheFactory();
   virtual ~NTPResourceCacheFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

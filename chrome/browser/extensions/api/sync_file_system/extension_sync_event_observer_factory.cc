@@ -16,7 +16,7 @@ namespace extensions {
 ExtensionSyncEventObserver*
 ExtensionSyncEventObserverFactory::GetForProfile(Profile* profile) {
   return static_cast<ExtensionSyncEventObserver*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -26,15 +26,17 @@ ExtensionSyncEventObserverFactory::GetInstance() {
 }
 
 ExtensionSyncEventObserverFactory::ExtensionSyncEventObserverFactory()
-    : ProfileKeyedServiceFactory("ExtensionSyncEventObserver",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ExtensionSyncEventObserver",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(sync_file_system::SyncFileSystemServiceFactory::GetInstance());
   DependsOn(ExtensionSystemFactory::GetInstance());
 }
 
 ExtensionSyncEventObserverFactory::~ExtensionSyncEventObserverFactory() {}
 
-ProfileKeyedService* ExtensionSyncEventObserverFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+ExtensionSyncEventObserverFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ExtensionSyncEventObserver(static_cast<Profile*>(profile));
 }

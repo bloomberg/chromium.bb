@@ -23,7 +23,7 @@ namespace extensions {
 // Observes changes in SyncFileSystem and relays events to JS Extension API.
 class ExtensionSyncEventObserver
     : public sync_file_system::SyncEventObserver,
-      public ProfileKeyedService {
+      public BrowserContextKeyedService {
  public:
   explicit ExtensionSyncEventObserver(Profile* profile);
   virtual ~ExtensionSyncEventObserver();
@@ -32,7 +32,7 @@ class ExtensionSyncEventObserver
       sync_file_system::SyncFileSystemService* sync_service,
       const std::string& service_name);
 
-  // ProfileKeyedService override.
+  // BrowserContextKeyedService override.
   virtual void Shutdown() OVERRIDE;
 
   // sync_file_system::SyncEventObserver interface implementation.

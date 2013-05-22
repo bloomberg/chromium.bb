@@ -13,7 +13,7 @@
 extensions::TokenCacheService*
 TokenCacheServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<extensions::TokenCacheService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
  }
 
 // static
@@ -22,14 +22,15 @@ TokenCacheServiceFactory* TokenCacheServiceFactory::GetInstance() {
 }
 
 TokenCacheServiceFactory::TokenCacheServiceFactory()
-    : ProfileKeyedServiceFactory("TokenCacheService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "TokenCacheService",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 TokenCacheServiceFactory::~TokenCacheServiceFactory() {
 }
 
-ProfileKeyedService* TokenCacheServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* TokenCacheServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new extensions::TokenCacheService(static_cast<Profile*>(profile));
 }

@@ -21,20 +21,22 @@ namespace policy {
 
 class UserCloudPolicyManagerChromeOS;
 
-// ProfileKeyedBaseFactory implementation for UserCloudPolicyManagerChromeOS
-// instances that initialize per-profile cloud policy settings on ChromeOS.
+// BrowserContextKeyedBaseFactory implementation
+// for UserCloudPolicyManagerChromeOS instances that initialize per-profile
+// cloud policy settings on ChromeOS.
 //
 // UserCloudPolicyManagerChromeOS is handled different than other
-// ProfileKeyedServices because it is a dependency of PrefService. Therefore,
-// lifetime of instances is managed by Profile, Profile startup code invokes
-// CreateForProfile() explicitly, takes ownership, and the instance is only
-// deleted after PrefService destruction.
+// BrowserContextKeyedServices because it is a dependency of PrefService.
+// Therefore, lifetime of instances is managed by Profile, Profile startup code
+// invokes CreateForProfile() explicitly, takes ownership, and the instance
+// is only deleted after PrefService destruction.
 //
 // TODO(mnissler): Remove the special lifetime management in favor of
 // PrefService directly depending on UserCloudPolicyManagerChromeOS once the
-// former has been converted to a ProfileKeyedService.
+// former has been converted to a BrowserContextKeyedService.
 // See also http://crbug.com/131843 and http://crbug.com/131844.
-class UserCloudPolicyManagerFactoryChromeOS : public ProfileKeyedBaseFactory {
+class UserCloudPolicyManagerFactoryChromeOS
+    : public BrowserContextKeyedBaseFactory {
  public:
   // Returns an instance of the UserCloudPolicyManagerFactoryChromeOS singleton.
   static UserCloudPolicyManagerFactoryChromeOS* GetInstance();
@@ -65,9 +67,11 @@ class UserCloudPolicyManagerFactoryChromeOS : public ProfileKeyedBaseFactory {
       Profile* profile,
       bool force_immediate_load);
 
-  // ProfileKeyedBaseFactory:
-  virtual void ProfileShutdown(content::BrowserContext* context) OVERRIDE;
-  virtual void ProfileDestroyed(content::BrowserContext* context) OVERRIDE;
+  // BrowserContextKeyedBaseFactory:
+  virtual void BrowserContextShutdown(
+      content::BrowserContext* context) OVERRIDE;
+  virtual void BrowserContextDestroyed(
+      content::BrowserContext* context) OVERRIDE;
   virtual void SetEmptyTestingFactory(
       content::BrowserContext* context) OVERRIDE;
   virtual void CreateServiceNow(content::BrowserContext* context) OVERRIDE;

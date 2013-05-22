@@ -10,57 +10,59 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 
-void RefcountedProfileKeyedServiceFactory::SetTestingFactory(
-    content::BrowserContext* profile,
+void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
+    content::BrowserContext* context,
     FactoryFunction factory) {
-  // Destroying the profile may cause us to lose data about whether |profile|
-  // has our preferences registered on it (since the profile object itself
+  // Destroying the context may cause us to lose data about whether |context|
+  // has our preferences registered on it (since the context object itself
   // isn't dead). See if we need to readd it once we've gone through normal
   // destruction.
-  bool add_profile = ArePreferencesSetOn(profile);
+  bool add_context = ArePreferencesSetOn(context);
 
   // We have to go through the shutdown and destroy mechanisms because there
-  // are unit tests that create a service on a profile and then change the
+  // are unit tests that create a service on a context and then change the
   // testing service mid-test.
-  ProfileShutdown(profile);
-  ProfileDestroyed(profile);
+  BrowserContextShutdown(context);
+  BrowserContextDestroyed(context);
 
-  if (add_profile)
-    MarkPreferencesSetOn(profile);
+  if (add_context)
+    MarkPreferencesSetOn(context);
 
-  factories_[profile] = factory;
+  factories_[context] = factory;
 }
 
-scoped_refptr<RefcountedProfileKeyedService>
-RefcountedProfileKeyedServiceFactory::SetTestingFactoryAndUse(
-    content::BrowserContext* profile,
+scoped_refptr<RefcountedBrowserContextKeyedService>
+RefcountedBrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
+    content::BrowserContext* context,
     FactoryFunction factory) {
   DCHECK(factory);
-  SetTestingFactory(profile, factory);
-  return GetServiceForProfile(profile, true);
+  SetTestingFactory(context, factory);
+  return GetServiceForBrowserContext(context, true);
 }
 
-RefcountedProfileKeyedServiceFactory::RefcountedProfileKeyedServiceFactory(
+RefcountedBrowserContextKeyedServiceFactory::
+RefcountedBrowserContextKeyedServiceFactory(
     const char* name,
-    ProfileDependencyManager* manager)
-    : ProfileKeyedBaseFactory(name, manager) {
+    BrowserContextDependencyManager* manager)
+    : BrowserContextKeyedBaseFactory(name, manager) {
 }
 
-RefcountedProfileKeyedServiceFactory::~RefcountedProfileKeyedServiceFactory() {
+RefcountedBrowserContextKeyedServiceFactory::
+~RefcountedBrowserContextKeyedServiceFactory() {
   DCHECK(mapping_.empty());
 }
 
-scoped_refptr<RefcountedProfileKeyedService>
-RefcountedProfileKeyedServiceFactory::GetServiceForProfile(
-    content::BrowserContext* profile,
+scoped_refptr<RefcountedBrowserContextKeyedService>
+RefcountedBrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
+    content::BrowserContext* context,
     bool create) {
-  profile = GetBrowserContextToUse(profile);
-  if (!profile)
+  context = GetBrowserContextToUse(context);
+  if (!context)
     return NULL;
 
   // NOTE: If you modify any of the logic below, make sure to update the
-  // non-refcounted version in profile_keyed_service_factory.cc!
-  RefCountedStorage::const_iterator it = mapping_.find(profile);
+  // non-refcounted version in context_keyed_service_factory.cc!
+  RefCountedStorage::const_iterator it = mapping_.find(context);
   if (it != mapping_.end())
     return it->second;
 
@@ -69,59 +71,60 @@ RefcountedProfileKeyedServiceFactory::GetServiceForProfile(
     return NULL;  // And we're forbidden from creating one.
 
   // Create new object.
-  // Check to see if we have a per-Profile testing factory that we should use
-  // instead of default behavior.
-  scoped_refptr<RefcountedProfileKeyedService> service;
-  ProfileOverriddenFunctions::const_iterator jt = factories_.find(profile);
+  // Check to see if we have a per-BrowserContext testing factory that we should
+  // use instead of default behavior.
+  scoped_refptr<RefcountedBrowserContextKeyedService> service;
+  BrowserContextOverriddenFunctions::const_iterator jt =
+      factories_.find(context);
   if (jt != factories_.end()) {
     if (jt->second) {
-      if (!profile->IsOffTheRecord())
-        RegisterUserPrefsOnProfile(profile);
-      service = jt->second(profile);
+      if (!context->IsOffTheRecord())
+        RegisterUserPrefsOnBrowserContext(context);
+      service = jt->second(context);
     }
   } else {
-    service = BuildServiceInstanceFor(profile);
+    service = BuildServiceInstanceFor(context);
   }
 
-  Associate(profile, service);
+  Associate(context, service);
   return service;
 }
 
-void RefcountedProfileKeyedServiceFactory::Associate(
-    content::BrowserContext* profile,
-    const scoped_refptr<RefcountedProfileKeyedService>& service) {
-  DCHECK(!ContainsKey(mapping_, profile));
-  mapping_.insert(std::make_pair(profile, service));
+void RefcountedBrowserContextKeyedServiceFactory::Associate(
+    content::BrowserContext* context,
+    const scoped_refptr<RefcountedBrowserContextKeyedService>& service) {
+  DCHECK(!ContainsKey(mapping_, context));
+  mapping_.insert(std::make_pair(context, service));
 }
 
-void RefcountedProfileKeyedServiceFactory::ProfileShutdown(
-    content::BrowserContext* profile) {
-  RefCountedStorage::iterator it = mapping_.find(profile);
+void RefcountedBrowserContextKeyedServiceFactory::BrowserContextShutdown(
+    content::BrowserContext* context) {
+  RefCountedStorage::iterator it = mapping_.find(context);
   if (it != mapping_.end() && it->second)
     it->second->ShutdownOnUIThread();
 }
 
-void RefcountedProfileKeyedServiceFactory::ProfileDestroyed(
-    content::BrowserContext* profile) {
+void RefcountedBrowserContextKeyedServiceFactory::BrowserContextDestroyed(
+    content::BrowserContext* context) {
   // We "merely" drop our reference to the service. Hopefully this will cause
   // the service to be destroyed. If not, oh well.
-  mapping_.erase(profile);
+  mapping_.erase(context);
 
   // For unit tests, we also remove the factory function both so we don't
   // maintain a big map of dead pointers, but also since we may have a second
   // object that lives at the same address (see other comments about unit tests
   // in this file).
-  factories_.erase(profile);
+  factories_.erase(context);
 
-  ProfileKeyedBaseFactory::ProfileDestroyed(profile);
+  BrowserContextKeyedBaseFactory::BrowserContextDestroyed(context);
 }
 
-void RefcountedProfileKeyedServiceFactory::SetEmptyTestingFactory(
-    content::BrowserContext* profile) {
-  SetTestingFactory(profile, NULL);
+void RefcountedBrowserContextKeyedServiceFactory::SetEmptyTestingFactory(
+    content::BrowserContext* context) {
+  SetTestingFactory(context, NULL);
 }
 
-void RefcountedProfileKeyedServiceFactory::CreateServiceNow(
-    content::BrowserContext* profile) {
-  GetServiceForProfile(profile, true);
+void RefcountedBrowserContextKeyedServiceFactory::CreateServiceNow(
+    content::BrowserContext* context) {
+  GetServiceForBrowserContext(context, true);
 }

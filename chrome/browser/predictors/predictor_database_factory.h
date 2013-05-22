@@ -17,7 +17,7 @@ class PredictorDatabase;
 
 // Singleton that owns the PredictorDatabases and associates them with
 // Profiles.
-class PredictorDatabaseFactory : public ProfileKeyedServiceFactory {
+class PredictorDatabaseFactory : public BrowserContextKeyedServiceFactory {
  public:
   static PredictorDatabase* GetForProfile(Profile* profile);
 
@@ -29,8 +29,8 @@ class PredictorDatabaseFactory : public ProfileKeyedServiceFactory {
   PredictorDatabaseFactory();
   virtual ~PredictorDatabaseFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(PredictorDatabaseFactory);

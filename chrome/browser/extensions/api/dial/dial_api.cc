@@ -35,7 +35,7 @@ const size_t kDialMaxDevices = 256;
 namespace extensions {
 
 DialAPI::DialAPI(Profile* profile)
-    : RefcountedProfileKeyedService(content::BrowserThread::IO),
+    : RefcountedBrowserContextKeyedService(content::BrowserThread::IO),
       profile_(profile) {
   ExtensionSystem::Get(profile)->event_router()->RegisterObserver(
       this, extensions::event_names::kOnDialDeviceList);

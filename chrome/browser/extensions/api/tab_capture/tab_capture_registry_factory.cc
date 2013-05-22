@@ -16,7 +16,7 @@ namespace extensions {
 // static
 TabCaptureRegistry* TabCaptureRegistryFactory::GetForProfile(Profile* profile) {
   return static_cast<TabCaptureRegistry*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -24,20 +24,21 @@ TabCaptureRegistryFactory* TabCaptureRegistryFactory::GetInstance() {
   return Singleton<TabCaptureRegistryFactory>::get();
 }
 
-bool TabCaptureRegistryFactory::ServiceIsCreatedWithProfile() const {
+bool TabCaptureRegistryFactory::ServiceIsCreatedWithBrowserContext() const {
   return false;
 }
 
 TabCaptureRegistryFactory::TabCaptureRegistryFactory()
-    : ProfileKeyedServiceFactory("TabCaptureRegistry",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "TabCaptureRegistry",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionSystemFactory::GetInstance());
 }
 
 TabCaptureRegistryFactory::~TabCaptureRegistryFactory() {
 }
 
-ProfileKeyedService* TabCaptureRegistryFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* TabCaptureRegistryFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new TabCaptureRegistry(static_cast<Profile*>(profile));
 }

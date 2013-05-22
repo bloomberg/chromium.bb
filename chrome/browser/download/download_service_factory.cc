@@ -13,7 +13,7 @@
 DownloadService* DownloadServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<DownloadService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -22,15 +22,16 @@ DownloadServiceFactory* DownloadServiceFactory::GetInstance() {
 }
 
 DownloadServiceFactory::DownloadServiceFactory()
-    : ProfileKeyedServiceFactory("DownloadService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "DownloadService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 DownloadServiceFactory::~DownloadServiceFactory() {
 }
 
-ProfileKeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   DownloadService* service =
       new DownloadService(static_cast<Profile*>(profile));

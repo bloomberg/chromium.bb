@@ -43,7 +43,7 @@ class NavigationController;
 // RequestServerCheck().
 class GoogleURLTracker : public net::URLFetcherDelegate,
                          public net::NetworkChangeNotifier::IPAddressObserver,
-                         public ProfileKeyedService {
+                         public BrowserContextKeyedService {
  public:
   // The contents of the Details for a NOTIFICATION_GOOGLE_URL_UPDATED.
   typedef std::pair<GURL, GURL> UpdatedDetails;
@@ -134,7 +134,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;
 
-  // ProfileKeyedService:
+  // BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // Registers consumer interest in getting an updated URL from the server.

@@ -33,10 +33,10 @@ namespace apps {
 // for IO when creating a new window, and to not cause IO on every window
 // geometry change.
 class ShellWindowGeometryCache
-    : public ProfileKeyedService,
+    : public BrowserContextKeyedService,
       public content::NotificationObserver {
  public:
-  class Factory : public ProfileKeyedServiceFactory {
+  class Factory : public BrowserContextKeyedServiceFactory {
    public:
     static ShellWindowGeometryCache* GetForContext(
         content::BrowserContext* context,
@@ -49,8 +49,8 @@ class ShellWindowGeometryCache
     Factory();
     virtual ~Factory();
 
-    // ProfileKeyedServiceFactory
-    virtual ProfileKeyedService* BuildServiceInstanceFor(
+    // BrowserContextKeyedServiceFactory
+    virtual BrowserContextKeyedService* BuildServiceInstanceFor(
         content::BrowserContext* context) const OVERRIDE;
     virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
     virtual content::BrowserContext* GetBrowserContextToUse(
@@ -79,7 +79,7 @@ class ShellWindowGeometryCache
                    gfx::Rect* bounds,
                    ui::WindowShowState* state) const;
 
-  // ProfileKeyedService
+  // BrowserContextKeyedService
   virtual void Shutdown() OVERRIDE;
 
   // Maximum number of windows we'll cache the geometry for per app.

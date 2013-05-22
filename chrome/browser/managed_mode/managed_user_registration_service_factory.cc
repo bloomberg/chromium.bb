@@ -11,7 +11,7 @@
 ManagedUserRegistrationService*
 ManagedUserRegistrationServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<ManagedUserRegistrationService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -21,20 +21,21 @@ ManagedUserRegistrationServiceFactory::GetInstance() {
 }
 
 // static
-ProfileKeyedService* ManagedUserRegistrationServiceFactory::BuildInstanceFor(
-    Profile* profile) {
+BrowserContextKeyedService*
+ManagedUserRegistrationServiceFactory::BuildInstanceFor(Profile* profile) {
   return new ManagedUserRegistrationService();
 }
 
 ManagedUserRegistrationServiceFactory::ManagedUserRegistrationServiceFactory()
-    : ProfileKeyedServiceFactory("ManagedUserRegistrationService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ManagedUserRegistrationService",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 ManagedUserRegistrationServiceFactory::
     ~ManagedUserRegistrationServiceFactory() {}
 
-ProfileKeyedService*
+BrowserContextKeyedService*
 ManagedUserRegistrationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return BuildInstanceFor(static_cast<Profile*>(profile));

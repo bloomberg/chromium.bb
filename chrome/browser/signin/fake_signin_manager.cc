@@ -25,7 +25,7 @@ void FakeSigninManagerBase::InitTokenService() {
 }
 
 // static
-ProfileKeyedService* FakeSigninManagerBase::Build(
+BrowserContextKeyedService* FakeSigninManagerBase::Build(
     content::BrowserContext* profile) {
   return new FakeSigninManagerBase();
 }
@@ -77,7 +77,7 @@ void FakeSigninManager::SignOut() {
 }
 
 // static
-ProfileKeyedService* FakeSigninManager::Build(
+BrowserContextKeyedService* FakeSigninManager::Build(
     content::BrowserContext* profile) {
   return new FakeSigninManager(static_cast<Profile*>(profile));
 }

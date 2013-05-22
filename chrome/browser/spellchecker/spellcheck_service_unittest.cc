@@ -18,7 +18,7 @@
 using content::BrowserThread;
 using chrome::spellcheck_common::WordList;
 
-static ProfileKeyedService* BuildSpellcheckService(
+static BrowserContextKeyedService* BuildSpellcheckService(
     content::BrowserContext* profile) {
   return new SpellcheckService(static_cast<Profile*>(profile));
 }

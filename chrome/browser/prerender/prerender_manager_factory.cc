@@ -26,7 +26,7 @@ PrerenderManager* PrerenderManagerFactory::GetForProfile(
   if (!PrerenderManager::IsPrerenderingPossible())
     return NULL;
   return static_cast<PrerenderManager*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -35,8 +35,9 @@ PrerenderManagerFactory* PrerenderManagerFactory::GetInstance() {
 }
 
 PrerenderManagerFactory::PrerenderManagerFactory()
-    : ProfileKeyedServiceFactory("PrerenderManager",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "PrerenderManager",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionSystemFactory::GetInstance());
   // PrerenderLocalPredictor observers the history visit DB.
   DependsOn(HistoryServiceFactory::GetInstance());
@@ -46,7 +47,7 @@ PrerenderManagerFactory::PrerenderManagerFactory()
 PrerenderManagerFactory::~PrerenderManagerFactory() {
 }
 
-ProfileKeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   CHECK(g_browser_process->prerender_tracker());
   PrerenderManager* prerender_manager = new PrerenderManager(

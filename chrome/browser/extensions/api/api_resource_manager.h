@@ -24,7 +24,7 @@ namespace extensions {
 // An ApiResourceManager manages the lifetime of a set of resources that
 // ApiFunctions use. Examples are sockets or USB connections.
 template <class T>
-class ApiResourceManager : public ProfileKeyedService,
+class ApiResourceManager : public BrowserContextKeyedService,
                            public base::NonThreadSafe,
                            public content::NotificationObserver {
  public:

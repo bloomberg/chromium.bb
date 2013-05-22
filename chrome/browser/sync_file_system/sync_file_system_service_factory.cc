@@ -23,7 +23,7 @@ const char kDisableLastWriteWin[] = "disable-syncfs-last-write-win";
 SyncFileSystemService* SyncFileSystemServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<SyncFileSystemService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -37,14 +37,16 @@ void SyncFileSystemServiceFactory::set_mock_remote_file_service(
 }
 
 SyncFileSystemServiceFactory::SyncFileSystemServiceFactory()
-    : ProfileKeyedServiceFactory("SyncFileSystemService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "SyncFileSystemService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(google_apis::DriveNotificationManagerFactory::GetInstance());
 }
 
 SyncFileSystemServiceFactory::~SyncFileSystemServiceFactory() {}
 
-ProfileKeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 

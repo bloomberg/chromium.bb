@@ -921,7 +921,7 @@ content::BrowserMainParts* FakeContentBrowserClient::CreateBrowserMainParts(
   // Normally this would happen during browser startup, but for tests
   // we need to trigger creation of Profile-related services.
   ChromeBrowserMainExtraPartsProfiles::
-      EnsureProfileKeyedServiceFactoriesBuilt();
+      EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
   // We never delete this, as the content module takes ownership.
   //

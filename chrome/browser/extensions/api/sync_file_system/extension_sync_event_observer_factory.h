@@ -14,7 +14,8 @@ namespace extensions {
 
 class ExtensionSyncEventObserver;
 
-class ExtensionSyncEventObserverFactory : public ProfileKeyedServiceFactory {
+class ExtensionSyncEventObserverFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   static ExtensionSyncEventObserver* GetForProfile(Profile* profile);
 
@@ -26,8 +27,8 @@ class ExtensionSyncEventObserverFactory : public ProfileKeyedServiceFactory {
   ExtensionSyncEventObserverFactory();
   virtual ~ExtensionSyncEventObserverFactory();
 
-  // ProfileKeyedServiceFactory implementation.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory implementation.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

@@ -14,7 +14,7 @@
 TemplateURLFetcher* TemplateURLFetcherFactory::GetForProfile(
     Profile* profile) {
   return static_cast<TemplateURLFetcher*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -25,20 +25,21 @@ TemplateURLFetcherFactory* TemplateURLFetcherFactory::GetInstance() {
 // static
 void TemplateURLFetcherFactory::ShutdownForProfile(Profile* profile) {
   TemplateURLFetcherFactory* factory = GetInstance();
-  factory->ProfileShutdown(profile);
-  factory->ProfileDestroyed(profile);
+  factory->BrowserContextShutdown(profile);
+  factory->BrowserContextDestroyed(profile);
 }
 
 TemplateURLFetcherFactory::TemplateURLFetcherFactory()
-    : ProfileKeyedServiceFactory("TemplateURLFetcher",
-                                 ProfileDependencyManager::GetInstance()) {
-    DependsOn(TemplateURLServiceFactory::GetInstance());
+    : BrowserContextKeyedServiceFactory(
+        "TemplateURLFetcher",
+        BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 
 TemplateURLFetcherFactory::~TemplateURLFetcherFactory() {
 }
 
-ProfileKeyedService* TemplateURLFetcherFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* TemplateURLFetcherFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new TemplateURLFetcher(static_cast<Profile*>(profile));
 }

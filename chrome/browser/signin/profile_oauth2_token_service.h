@@ -22,7 +22,7 @@ class GoogleServiceAuthError;
 class Profile;
 class TokenService;
 
-// ProfileOAuth2TokenService is a ProfileKeyedService that retrieves
+// ProfileOAuth2TokenService is a BrowserContextKeyedService that retrieves
 // OAuth2 access tokens for a given set of scopes using the OAuth2 login
 // refresh token maintained by TokenService.
 //
@@ -39,7 +39,7 @@ class TokenService;
 class ProfileOAuth2TokenService : public OAuth2TokenService,
                                   public content::NotificationObserver,
                                   public SigninGlobalError::AuthStatusProvider,
-                                  public ProfileKeyedService {
+                                  public BrowserContextKeyedService {
  public:
   // content::NotificationObserver listening for TokenService updates.
   virtual void Observe(int type,
@@ -49,7 +49,7 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // Initializes this token service with the profile.
   virtual void Initialize(Profile* profile);
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // SigninGlobalError::AuthStatusProvider implementation.

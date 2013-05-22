@@ -31,7 +31,7 @@ class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
   explicit MediaGalleriesPrivateAPI(Profile* profile);
   virtual ~MediaGalleriesPrivateAPI();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPI implementation.

@@ -15,14 +15,14 @@ namespace extensions {
 class SuggestedLinksRegistry;
 
 // Singleton that associate SuggestedLinksRegistry objects with Profiles.
-class SuggestedLinksRegistryFactory : public ProfileKeyedServiceFactory {
+class SuggestedLinksRegistryFactory : public BrowserContextKeyedServiceFactory {
  public:
   static SuggestedLinksRegistry* GetForProfile(Profile* profile);
 
   static SuggestedLinksRegistryFactory* GetInstance();
 
-  // Overridden from ProfileKeyedBaseFactory:
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  // Overridden from BrowserContextKeyedBaseFactory:
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<SuggestedLinksRegistryFactory>;
@@ -30,8 +30,8 @@ class SuggestedLinksRegistryFactory : public ProfileKeyedServiceFactory {
   SuggestedLinksRegistryFactory();
   virtual ~SuggestedLinksRegistryFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

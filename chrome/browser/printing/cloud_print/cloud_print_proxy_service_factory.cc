@@ -12,7 +12,7 @@
 CloudPrintProxyService* CloudPrintProxyServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<CloudPrintProxyService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 CloudPrintProxyServiceFactory* CloudPrintProxyServiceFactory::GetInstance() {
@@ -20,14 +20,16 @@ CloudPrintProxyServiceFactory* CloudPrintProxyServiceFactory::GetInstance() {
 }
 
 CloudPrintProxyServiceFactory::CloudPrintProxyServiceFactory()
-    : ProfileKeyedServiceFactory("CloudPrintProxyService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "CloudPrintProxyService",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 CloudPrintProxyServiceFactory::~CloudPrintProxyServiceFactory() {
 }
 
-ProfileKeyedService* CloudPrintProxyServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+CloudPrintProxyServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   CloudPrintProxyService* service =
       new CloudPrintProxyService(static_cast<Profile*>(profile));

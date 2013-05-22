@@ -12,14 +12,14 @@ class ManagedUserRegistrationService;
 class Profile;
 
 class ManagedUserRegistrationServiceFactory
-    : public ProfileKeyedServiceFactory {
+    : public BrowserContextKeyedServiceFactory {
  public:
   static ManagedUserRegistrationService* GetForProfile(Profile* profile);
 
   static ManagedUserRegistrationServiceFactory* GetInstance();
 
   // Used to create instances for testing.
-  static ProfileKeyedService* BuildInstanceFor(Profile* profile);
+  static BrowserContextKeyedService* BuildInstanceFor(Profile* profile);
 
  private:
   friend struct DefaultSingletonTraits<ManagedUserRegistrationServiceFactory>;
@@ -27,8 +27,8 @@ class ManagedUserRegistrationServiceFactory
   ManagedUserRegistrationServiceFactory();
   virtual ~ManagedUserRegistrationServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

@@ -70,7 +70,7 @@ class ResourcePrefetcherManager;
 // TODO(shishir): Do speculative prefetching for https resources and/or https
 // main frame urls.
 class ResourcePrefetchPredictor
-    : public ProfileKeyedService,
+    : public BrowserContextKeyedService,
       public content::NotificationObserver,
       public base::SupportsWeakPtr<ResourcePrefetchPredictor> {
  public:
@@ -182,7 +182,7 @@ class ResourcePrefetchPredictor
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ProfileKeyedService methods OVERRIDE.
+  // BrowserContextKeyedService methods OVERRIDE.
   virtual void Shutdown() OVERRIDE;
 
   // Functions called on different network events pertaining to the loading of

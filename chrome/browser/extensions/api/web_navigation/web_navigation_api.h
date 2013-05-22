@@ -224,7 +224,7 @@ class WebNavigationAPI : public ProfileKeyedAPI,
   explicit WebNavigationAPI(Profile* profile);
   virtual ~WebNavigationAPI();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPI implementation.

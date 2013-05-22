@@ -273,9 +273,9 @@
    ...
    fun:GtkThemeService::GtkThemeService
    fun:ThemeServiceFactory::BuildServiceInstanceFor
-   fun:ProfileKeyedServiceFactory::GetServiceForProfile
-   fun:ProfileKeyedServiceFactory::CreateServiceNow
-   fun:ProfileDependencyManager::CreateProfileServices
+   fun:BrowserContextKeyedServiceFactory::GetServiceForBrowserContext
+   fun:BrowserContextKeyedServiceFactory::CreateServiceNow
+   fun:BrowserContextDependencyManager::CreateProfileServices
    fun:TestingProfile::Init
    fun:TestingProfile::TestingProfile
 }
@@ -991,8 +991,8 @@
    fun:Iterator
    fun:DownloadManager::Shutdown
    fun:DownloadService::Shutdown
-   fun:ProfileKeyedServiceFactory::ProfileShutdown
-   fun:ProfileDependencyManager::DestroyProfileServices
+   fun:BrowserContextKeyedServiceFactory::ProfileShutdown
+   fun:BrowserContextDependencyManager::DestroyProfileServices
    fun:~OffTheRecordProfileImpl
    fun:~scoped_ptr
    fun:~ProfileImpl
@@ -1233,7 +1233,7 @@
    ...
    fun:ThemeServiceFactory::BuildServiceInstanceFor
    ...
-   fun:ProfileKeyedServiceFactory::GetServiceForProfile
+   fun:BrowserContextKeyedServiceFactory::GetServiceForBrowserContext
    fun:ThemeServiceFactory::GetForProfile
 }
 {
@@ -1314,8 +1314,8 @@
    Heapcheck:Leak
    ...
    fun:BuildWebDataService
-   fun:RefcountedProfileKeyedServiceFactory::GetServiceForProfile
-   fun:RefcountedProfileKeyedServiceFactory::SetTestingFactoryAndUse
+   fun:RefcountedBrowserContextKeyedServiceFactory::GetServiceForBrowserContext
+   fun:RefcountedBrowserContextKeyedServiceFactory::SetTestingFactoryAndUse
    fun:TestingProfile::CreateWebDataService
 }
 {

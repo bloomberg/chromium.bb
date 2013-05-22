@@ -15,15 +15,15 @@ UsbServiceFactory* UsbServiceFactory::GetInstance() {
 
 UsbService* UsbServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<UsbService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
-UsbServiceFactory::UsbServiceFactory() : ProfileKeyedServiceFactory(
-    "UsbService", ProfileDependencyManager::GetInstance()) {}
+UsbServiceFactory::UsbServiceFactory() : BrowserContextKeyedServiceFactory(
+    "UsbService", BrowserContextDependencyManager::GetInstance()) {}
 
 UsbServiceFactory::~UsbServiceFactory() {}
 
-ProfileKeyedService* UsbServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* UsbServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new UsbService();
 }

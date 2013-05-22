@@ -62,7 +62,8 @@ class FakeLoginUI : public LoginUIService::LoginUI {
   int focus_ui_call_count_;
 };
 
-ProfileKeyedService* BuildMockLoginUIService(content::BrowserContext* profile) {
+BrowserContextKeyedService* BuildMockLoginUIService(
+    content::BrowserContext* profile) {
   return new FakeLoginUIService();
 }
 

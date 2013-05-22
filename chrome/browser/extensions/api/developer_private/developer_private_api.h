@@ -55,7 +55,7 @@ typedef std::vector<linked_ptr<developer::ItemInspectView> >
 namespace extensions {
 
 // The profile-keyed service that manages the DeveloperPrivate API.
-class DeveloperPrivateAPI : public ProfileKeyedService,
+class DeveloperPrivateAPI : public BrowserContextKeyedService,
                             public content::NotificationObserver {
  public:
   // Convenience method to get the DeveloperPrivateAPI for a profile.
@@ -70,7 +70,7 @@ class DeveloperPrivateAPI : public ProfileKeyedService,
     return last_unpacked_directory_;
   }
 
-  // ProfileKeyedService implementation
+  // BrowserContextKeyedService implementation
   virtual void Shutdown() OVERRIDE;
 
   // content::NotificationObserver implementation.

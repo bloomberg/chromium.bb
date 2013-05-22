@@ -15,7 +15,7 @@ class Profile;
 // Singleton that owns all PinnedTabServices and associates them with Profiles.
 // Listens for the Profile's destruction notification and cleans up the
 // associated PinnedTabService.
-class PinnedTabServiceFactory : public ProfileKeyedServiceFactory {
+class PinnedTabServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the PinnedTabService that tracks pinning changes for |profile|.
   static PinnedTabService* GetForProfile(Profile* profile);
@@ -28,10 +28,10 @@ class PinnedTabServiceFactory : public ProfileKeyedServiceFactory {
   PinnedTabServiceFactory();
   virtual ~PinnedTabServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 

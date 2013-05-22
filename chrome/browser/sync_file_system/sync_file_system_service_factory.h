@@ -17,7 +17,7 @@ namespace sync_file_system {
 class RemoteFileSyncService;
 class SyncFileSystemService;
 
-class SyncFileSystemServiceFactory : public ProfileKeyedServiceFactory {
+class SyncFileSystemServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static SyncFileSystemService* GetForProfile(Profile* profile);
   static SyncFileSystemService* FindForProfile(Profile* profile);
@@ -36,8 +36,8 @@ class SyncFileSystemServiceFactory : public ProfileKeyedServiceFactory {
   SyncFileSystemServiceFactory();
   virtual ~SyncFileSystemServiceFactory();
 
-  // ProfileKeyedServiceFactory overrides.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory overrides.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   mutable scoped_ptr<RemoteFileSyncService> mock_remote_file_service_;

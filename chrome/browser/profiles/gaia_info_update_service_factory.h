@@ -18,7 +18,7 @@ class PrefRegistrySyncable;
 // Singleton that owns all GAIAInfoUpdateServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated GAIAInfoUpdateService.
-class GAIAInfoUpdateServiceFactory : public ProfileKeyedServiceFactory {
+class GAIAInfoUpdateServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the instance of GAIAInfoUpdateService associated with this profile
   // (creating one if none exists). Returns NULL if this profile cannot have a
@@ -34,8 +34,8 @@ class GAIAInfoUpdateServiceFactory : public ProfileKeyedServiceFactory {
   GAIAInfoUpdateServiceFactory();
   virtual ~GAIAInfoUpdateServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   virtual void RegisterUserPrefs(

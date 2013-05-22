@@ -11,21 +11,21 @@
 // static
 TabRestoreService* TabRestoreServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<TabRestoreService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
 TabRestoreService* TabRestoreServiceFactory::GetForProfileIfExisting(
     Profile* profile) {
   return static_cast<TabRestoreService*>(
-      GetInstance()->GetServiceForProfile(profile, false));
+      GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
 void TabRestoreServiceFactory::ResetForProfile(Profile* profile) {
   TabRestoreServiceFactory* factory = GetInstance();
-  factory->ProfileShutdown(profile);
-  factory->ProfileDestroyed(profile);
+  factory->BrowserContextShutdown(profile);
+  factory->BrowserContextDestroyed(profile);
 }
 
 TabRestoreServiceFactory* TabRestoreServiceFactory::GetInstance() {
@@ -33,8 +33,9 @@ TabRestoreServiceFactory* TabRestoreServiceFactory::GetInstance() {
 }
 
 TabRestoreServiceFactory::TabRestoreServiceFactory()
-    : ProfileKeyedServiceFactory("TabRestoreService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "TabRestoreService",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 TabRestoreServiceFactory::~TabRestoreServiceFactory() {

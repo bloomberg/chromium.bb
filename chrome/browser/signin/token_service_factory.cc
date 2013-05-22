@@ -9,8 +9,9 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 TokenServiceFactory::TokenServiceFactory()
-    : ProfileKeyedServiceFactory("TokenService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "TokenService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(WebDataServiceFactory::GetInstance());
 }
 
@@ -19,7 +20,7 @@ TokenServiceFactory::~TokenServiceFactory() {}
 // static
 TokenService* TokenServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<TokenService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -27,7 +28,7 @@ TokenServiceFactory* TokenServiceFactory::GetInstance() {
   return Singleton<TokenServiceFactory>::get();
 }
 
-ProfileKeyedService* TokenServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* TokenServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new TokenService();
 }

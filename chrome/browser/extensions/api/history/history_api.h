@@ -60,7 +60,7 @@ class HistoryAPI : public ProfileKeyedAPI,
   explicit HistoryAPI(Profile* profile);
   virtual ~HistoryAPI();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPI implementation.

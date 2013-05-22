@@ -19,7 +19,8 @@ class UserCloudPolicyTokenForwarder;
 
 // Creates instances of UserCloudPolicyTokenForwarder for Profiles that may need
 // to fetch the policy token.
-class UserCloudPolicyTokenForwarderFactory : public ProfileKeyedServiceFactory {
+class UserCloudPolicyTokenForwarderFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   // Returns an instance of the UserCloudPolicyTokenForwarderFactory singleton.
   static UserCloudPolicyTokenForwarderFactory* GetInstance();
@@ -30,10 +31,10 @@ class UserCloudPolicyTokenForwarderFactory : public ProfileKeyedServiceFactory {
   UserCloudPolicyTokenForwarderFactory();
   virtual ~UserCloudPolicyTokenForwarderFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyTokenForwarderFactory);

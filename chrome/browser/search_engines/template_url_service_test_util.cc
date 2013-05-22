@@ -56,7 +56,7 @@ static void WaitForThreadToProcessRequests(BrowserThread::ID identifier) {
 // SetKeywordSearchTermsForURL.
 class TestingTemplateURLService : public TemplateURLService {
  public:
-  static ProfileKeyedService* Build(content::BrowserContext* profile) {
+  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
     return new TestingTemplateURLService(static_cast<Profile*>(profile));
   }
 

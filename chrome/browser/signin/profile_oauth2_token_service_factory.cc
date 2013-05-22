@@ -15,8 +15,9 @@
 #endif
 
 ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
-    : ProfileKeyedServiceFactory("ProfileOAuth2TokenService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ProfileOAuth2TokenService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(TokenServiceFactory::GetInstance());
 }
@@ -28,7 +29,7 @@ ProfileOAuth2TokenServiceFactory::~ProfileOAuth2TokenServiceFactory() {
 ProfileOAuth2TokenService* ProfileOAuth2TokenServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<ProfileOAuth2TokenService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -37,7 +38,8 @@ ProfileOAuth2TokenServiceFactory*
   return Singleton<ProfileOAuth2TokenServiceFactory>::get();
 }
 
-ProfileKeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   ProfileOAuth2TokenService* service;

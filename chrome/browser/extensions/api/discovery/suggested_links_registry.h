@@ -15,7 +15,7 @@ namespace extensions {
 
 // This class keeps track of links suggested by an extension using the discovery
 // API.
-class SuggestedLinksRegistry : public ProfileKeyedService {
+class SuggestedLinksRegistry : public BrowserContextKeyedService {
  public:
   // A list of ExtensionSuggestedLink's.
   typedef std::vector<linked_ptr<extensions::SuggestedLink> > SuggestedLinkList;

@@ -145,7 +145,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, ConflictKeyword) {
   // conflict.
   search_engines_helper::AddSearchEngine(0, 0);
   search_engines_helper::AddSearchEngine(1, 1);
-  TemplateURLService* service = search_engines_helper::GetServiceForProfile(1);
+  TemplateURLService* service =
+      search_engines_helper::GetServiceForBrowserContext(1);
   TemplateURL* turl = service->GetTemplateURLForKeyword(ASCIIToUTF16("test1"));
   EXPECT_TRUE(turl);
   service->ResetTemplateURL(turl, turl->short_name(), ASCIIToUTF16("test0"),

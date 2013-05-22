@@ -98,7 +98,7 @@ class ProcessesAPI : public ProfileKeyedAPI,
   explicit ProcessesAPI(Profile* profile);
   virtual ~ProcessesAPI();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPI implementation.

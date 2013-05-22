@@ -14,7 +14,8 @@ class Profile;
 // Singleton that owns all ProfileOAuth2TokenServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated ProfileOAuth2TokenService.
-class ProfileOAuth2TokenServiceFactory : public ProfileKeyedServiceFactory {
+class ProfileOAuth2TokenServiceFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the instance of ProfileOAuth2TokenService associated with this
   // profile (creating one if none exists). Returns NULL if this profile
@@ -32,8 +33,8 @@ class ProfileOAuth2TokenServiceFactory : public ProfileKeyedServiceFactory {
   ProfileOAuth2TokenServiceFactory();
   virtual ~ProfileOAuth2TokenServiceFactory();
 
-  // ProfileKeyedServiceFactory implementation.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory implementation.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceFactory);

@@ -7,7 +7,7 @@
 #include "content/public/common/password_form.h"
 
 // static
-scoped_refptr<RefcountedProfileKeyedService> TestPasswordStore::Create(
+scoped_refptr<RefcountedBrowserContextKeyedService> TestPasswordStore::Create(
     content::BrowserContext* profile) {
   return make_scoped_refptr(new TestPasswordStore);
 }

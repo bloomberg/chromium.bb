@@ -17,7 +17,7 @@
 BackgroundContentsService* BackgroundContentsServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<BackgroundContentsService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -27,14 +27,16 @@ BackgroundContentsServiceFactory* BackgroundContentsServiceFactory::
 }
 
 BackgroundContentsServiceFactory::BackgroundContentsServiceFactory()
-    : ProfileKeyedServiceFactory("BackgroundContentsService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "BackgroundContentsService",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 BackgroundContentsServiceFactory::~BackgroundContentsServiceFactory() {
 }
 
-ProfileKeyedService* BackgroundContentsServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+BackgroundContentsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new BackgroundContentsService(static_cast<Profile*>(profile),
                                        CommandLine::ForCurrentProcess());
@@ -53,7 +55,8 @@ BackgroundContentsServiceFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
-bool BackgroundContentsServiceFactory::ServiceIsCreatedWithProfile() const {
+bool
+BackgroundContentsServiceFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

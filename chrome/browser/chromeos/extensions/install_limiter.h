@@ -24,7 +24,7 @@ namespace extensions {
 // InstallLimiter defers big app installs after all small app installs and then
 // runs big app installs one by one. This improves first-time login experience.
 // See http://crbug.com/166296
-class InstallLimiter : public ProfileKeyedService,
+class InstallLimiter : public BrowserContextKeyedService,
                        public content::NotificationObserver,
                        public base::SupportsWeakPtr<InstallLimiter> {
  public:

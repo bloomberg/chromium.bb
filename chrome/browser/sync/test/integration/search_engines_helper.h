@@ -19,7 +19,7 @@ typedef std::map<std::string, const TemplateURL*> GUIDToTURLMap;
 namespace search_engines_helper {
 
 // Used to access the search engines within a particular sync profile.
-TemplateURLService* GetServiceForProfile(int profile_index);
+TemplateURLService* GetServiceForBrowserContext(int profile_index);
 
 // Used to access the search engines within the verifier sync profile.
 TemplateURLService* GetVerifierService();

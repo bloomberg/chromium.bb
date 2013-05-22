@@ -50,7 +50,7 @@ class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  static ProfileKeyedService* CreateTemplateURLService(
+  static BrowserContextKeyedService* CreateTemplateURLService(
       content::BrowserContext* profile) {
     return new TemplateURLService(static_cast<Profile*>(profile));
   }

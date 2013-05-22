@@ -16,7 +16,7 @@ class DeveloperPrivateAPI;
 
 // This is a singleton class which holds profileKeyed references to
 // DeveloperPrivateAPI class.
-class DeveloperPrivateAPIFactory : public ProfileKeyedServiceFactory {
+class DeveloperPrivateAPIFactory : public BrowserContextKeyedServiceFactory {
  public:
   static DeveloperPrivateAPI* GetForProfile(Profile* profile);
 
@@ -28,12 +28,12 @@ class DeveloperPrivateAPIFactory : public ProfileKeyedServiceFactory {
   DeveloperPrivateAPIFactory();
   virtual ~DeveloperPrivateAPIFactory();
 
-  // ProfileKeyedServiceFactory implementation.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory implementation.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 

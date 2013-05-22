@@ -15,7 +15,7 @@ class WebHistoryService;
 
 // Used for creating and fetching a per-profile instance of the
 // WebHistoryService.
-class WebHistoryServiceFactory : public ProfileKeyedServiceFactory {
+class WebHistoryServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Get the singleton instance of the factory.
   static WebHistoryServiceFactory* GetInstance();
@@ -24,8 +24,8 @@ class WebHistoryServiceFactory : public ProfileKeyedServiceFactory {
   static history::WebHistoryService* GetForProfile(Profile* profile);
 
  protected:
-  // Overridden from ProfileKeyedServiceFactory.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // Overridden from BrowserContextKeyedServiceFactory.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
  private:

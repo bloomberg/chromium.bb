@@ -22,7 +22,7 @@ struct ThumbnailingContext;
 // An interface abstracting access to thumbnails. Intended as a temporary
 // bridge facilitating switch from TopSites as the thumbnail source to a more
 // robust way of handling these artefacts.
-class ThumbnailService : public RefcountedProfileKeyedService {
+class ThumbnailService : public RefcountedBrowserContextKeyedService {
  public:
   // Sets the given thumbnail for the given URL. Returns true if the thumbnail
   // was updated. False means either the URL wasn't known to us, or we felt

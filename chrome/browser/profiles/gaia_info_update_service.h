@@ -20,7 +20,7 @@ class ProfileDownloader;
 // This service kicks off a download of the user's name and profile picture.
 // The results are saved in the profile info cache.
 class GAIAInfoUpdateService : public ProfileDownloaderDelegate,
-                              public ProfileKeyedService {
+                              public BrowserContextKeyedService {
  public:
   explicit GAIAInfoUpdateService(Profile* profile);
   virtual ~GAIAInfoUpdateService();

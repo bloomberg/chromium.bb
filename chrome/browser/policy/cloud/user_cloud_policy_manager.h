@@ -24,7 +24,7 @@ class UserCloudPolicyStore;
 // UserCloudPolicyManager handles initialization of user policy for Chrome
 // Profiles on the desktop platforms.
 class UserCloudPolicyManager : public CloudPolicyManager,
-                               public ProfileKeyedService {
+                               public BrowserContextKeyedService {
  public:
   UserCloudPolicyManager(Profile* profile,
                          scoped_ptr<UserCloudPolicyStore> store);

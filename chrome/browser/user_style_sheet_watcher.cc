@@ -139,7 +139,7 @@ void UserStyleSheetLoader::SetStyleSheet(const GURL& url) {
 
 UserStyleSheetWatcher::UserStyleSheetWatcher(Profile* profile,
                                              const base::FilePath& profile_path)
-    : RefcountedProfileKeyedService(content::BrowserThread::UI),
+    : RefcountedBrowserContextKeyedService(content::BrowserThread::UI),
       profile_(profile),
       profile_path_(profile_path),
       loader_(new UserStyleSheetLoader) {

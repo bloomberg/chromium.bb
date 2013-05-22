@@ -30,7 +30,7 @@ namespace extensions {
 class ExtensionBluetoothEventRouter;
 
 // The profile-keyed service that manages the bluetooth extension API.
-class BluetoothAPI : public ProfileKeyedService,
+class BluetoothAPI : public BrowserContextKeyedService,
                      public EventRouter::Observer {
  public:
   // Convenience method to get the BluetoothAPI for a profile.
@@ -41,7 +41,7 @@ class BluetoothAPI : public ProfileKeyedService,
 
   ExtensionBluetoothEventRouter* bluetooth_event_router();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer implementation.

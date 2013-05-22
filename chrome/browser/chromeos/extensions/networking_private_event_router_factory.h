@@ -14,10 +14,11 @@ namespace chromeos {
 
 class NetworkingPrivateEventRouter;
 
-// This is a factory class used by the ProfileDependencyManager to instantiate
-// the networking event router per profile (since the extension event router is
-// per profile).
-class NetworkingPrivateEventRouterFactory : public ProfileKeyedServiceFactory {
+// This is a factory class used by the BrowserContextDependencyManager
+// to instantiate the networking event router per profile (since the extension
+// event router is per profile).
+class NetworkingPrivateEventRouterFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the NetworkingPrivateEventRouter for |profile|, creating it if
   // it is not yet created.
@@ -27,10 +28,10 @@ class NetworkingPrivateEventRouterFactory : public ProfileKeyedServiceFactory {
   static NetworkingPrivateEventRouterFactory* GetInstance();
 
  protected:
-  // ProfileKeyedBaseFactory overrides:
+  // BrowserContextKeyedBaseFactory overrides:
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
  private:
@@ -39,8 +40,8 @@ class NetworkingPrivateEventRouterFactory : public ProfileKeyedServiceFactory {
   NetworkingPrivateEventRouterFactory();
   virtual ~NetworkingPrivateEventRouterFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEventRouterFactory);

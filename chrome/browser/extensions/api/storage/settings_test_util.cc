@@ -124,7 +124,7 @@ ExtensionService* MockExtensionSystem::extension_service() {
   return static_cast<ExtensionService*>(as_interface);
 }
 
-ProfileKeyedService* BuildMockExtensionSystem(
+BrowserContextKeyedService* BuildMockExtensionSystem(
     content::BrowserContext* profile) {
   return new MockExtensionSystem(static_cast<Profile*>(profile));
 }

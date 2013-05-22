@@ -175,7 +175,7 @@ const OneShotEvent& TestExtensionSystem::ready() const {
 }
 
 // static
-ProfileKeyedService* TestExtensionSystem::Build(
+BrowserContextKeyedService* TestExtensionSystem::Build(
     content::BrowserContext* profile) {
   return new TestExtensionSystem(static_cast<Profile*>(profile));
 }

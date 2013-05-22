@@ -15,7 +15,7 @@ namespace prerender {
 
 class PrerenderLinkManager;
 
-class PrerenderLinkManagerFactory : public ProfileKeyedServiceFactory {
+class PrerenderLinkManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   static PrerenderLinkManager* GetForProfile(Profile* profile);
   static PrerenderLinkManagerFactory* GetInstance();
@@ -26,7 +26,7 @@ class PrerenderLinkManagerFactory : public ProfileKeyedServiceFactory {
   PrerenderLinkManagerFactory();
   virtual ~PrerenderLinkManagerFactory() { }
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

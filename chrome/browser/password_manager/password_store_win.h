@@ -25,7 +25,7 @@ class PasswordStoreWin : public PasswordStoreDefault {
                    Profile* profile,
                    WebDataService* web_data_service);
 
-  // RefcountedProfileKeyedService:
+  // RefcountedBrowserContextKeyedService:
   virtual void ShutdownOnUIThread() OVERRIDE;
 
  private:

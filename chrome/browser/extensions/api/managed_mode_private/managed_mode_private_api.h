@@ -90,7 +90,7 @@ class ManagedModeAPI : public ProfileKeyedAPI,
   explicit ManagedModeAPI(Profile* profile);
   virtual ~ManagedModeAPI();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPIFactory implementation.

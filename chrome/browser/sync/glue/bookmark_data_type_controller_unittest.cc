@@ -54,19 +54,21 @@ class HistoryMock : public HistoryService {
   virtual ~HistoryMock() {}
 };
 
-ProfileKeyedService* BuildBookmarkModel(content::BrowserContext* context) {
+BrowserContextKeyedService* BuildBookmarkModel(
+    content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   BookmarkModel* bookmark_model = new BookmarkModel(profile);
   bookmark_model->Load(profile->GetIOTaskRunner());
   return bookmark_model;
 }
 
-ProfileKeyedService* BuildBookmarkModelWithoutLoading(
+BrowserContextKeyedService* BuildBookmarkModelWithoutLoading(
     content::BrowserContext* profile) {
   return new BookmarkModel(static_cast<Profile*>(profile));
 }
 
-ProfileKeyedService* BuildHistoryService(content::BrowserContext* profile) {
+BrowserContextKeyedService* BuildHistoryService(
+    content::BrowserContext* profile) {
   return new HistoryMock(static_cast<Profile*>(profile));
 }
 

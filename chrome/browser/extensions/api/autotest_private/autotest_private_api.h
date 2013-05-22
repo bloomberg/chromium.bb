@@ -55,7 +55,7 @@ class AutotestPrivateLoginStatusFunction: public SyncExtensionFunction {
 void SetAutotestPrivateTest();
 
 // The profile-keyed service that manages the autotestPrivate extension API.
-class AutotestPrivateAPI : public ProfileKeyedService {
+class AutotestPrivateAPI : public BrowserContextKeyedService {
  public:
   AutotestPrivateAPI();
 

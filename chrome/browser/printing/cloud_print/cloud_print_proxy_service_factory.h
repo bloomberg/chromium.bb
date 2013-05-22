@@ -15,7 +15,7 @@ class Profile;
 // Singleton that owns all CloudPrintProxyServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated CloudPrintProxyService.
-class CloudPrintProxyServiceFactory : public ProfileKeyedServiceFactory {
+class CloudPrintProxyServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the CloudPrintProxyService for |profile|, creating if not yet
   // created.
@@ -29,8 +29,8 @@ class CloudPrintProxyServiceFactory : public ProfileKeyedServiceFactory {
   CloudPrintProxyServiceFactory();
   virtual ~CloudPrintProxyServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };

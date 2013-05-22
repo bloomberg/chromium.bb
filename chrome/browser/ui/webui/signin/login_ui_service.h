@@ -14,7 +14,7 @@ class Profile;
 
 // The LoginUIService helps track per-profile information for the login UI -
 // for example, whether there is login UI currently on-screen.
-class LoginUIService : public ProfileKeyedService {
+class LoginUIService : public BrowserContextKeyedService {
  public:
   // Various UI components implement this API to allow LoginUIService to
   // manipulate their associated login UI.

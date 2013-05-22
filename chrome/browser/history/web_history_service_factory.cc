@@ -40,12 +40,12 @@ history::WebHistoryService* WebHistoryServiceFactory::GetForProfile(
       Profile* profile) {
   if (IsHistorySyncEnabled(profile)) {
     return static_cast<history::WebHistoryService*>(
-        GetInstance()->GetServiceForProfile(profile, true));
+        GetInstance()->GetServiceForBrowserContext(profile, true));
   }
   return NULL;
 }
 
-ProfileKeyedService* WebHistoryServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* WebHistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
@@ -56,8 +56,9 @@ ProfileKeyedService* WebHistoryServiceFactory::BuildServiceInstanceFor(
 }
 
 WebHistoryServiceFactory::WebHistoryServiceFactory()
-    : ProfileKeyedServiceFactory("WebHistoryServiceFactory",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "WebHistoryServiceFactory",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(TokenServiceFactory::GetInstance());
   DependsOn(CookieSettings::Factory::GetInstance());
 }

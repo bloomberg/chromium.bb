@@ -16,7 +16,8 @@ template <typename T> struct DefaultSingletonTraits;
 // Singleton that owns all ProtocolHandlerRegistrys and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated ProtocolHandlerRegistry.
-class ProtocolHandlerRegistryFactory : public ProfileKeyedServiceFactory {
+class ProtocolHandlerRegistryFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the singleton instance of the ProtocolHandlerRegistryFactory.
   static ProtocolHandlerRegistryFactory* GetInstance();
@@ -26,8 +27,8 @@ class ProtocolHandlerRegistryFactory : public ProfileKeyedServiceFactory {
   static ProtocolHandlerRegistry* GetForProfile(Profile* profile);
 
  protected:
-  // ProfileKeyedServiceFactory implementation.
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  // BrowserContextKeyedServiceFactory implementation.
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
@@ -38,8 +39,8 @@ class ProtocolHandlerRegistryFactory : public ProfileKeyedServiceFactory {
   ProtocolHandlerRegistryFactory();
   virtual ~ProtocolHandlerRegistryFactory();
 
-  // ProfileKeyedServiceFactory implementation.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory implementation.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistryFactory);

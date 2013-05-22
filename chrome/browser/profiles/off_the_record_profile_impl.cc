@@ -94,7 +94,8 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
 }
 
 void OffTheRecordProfileImpl::Init() {
-  ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
+  BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
+      this, false);
 
   extensions::ExtensionSystem::Get(this)->InitForOTRProfile();
 
@@ -140,7 +141,8 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
     io_data_.GetResourceContextNoInit());
 #endif
 
-  ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
+  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+      this);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

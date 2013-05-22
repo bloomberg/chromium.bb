@@ -157,7 +157,7 @@ scoped_ptr<OAuth2TokenService::Request>
   return request.PassAs<OAuth2TokenService::Request>();
 }
 
-static ProfileKeyedService* CreateOAuth2TokenService(
+static BrowserContextKeyedService* CreateOAuth2TokenService(
     content::BrowserContext* profile) {
   return new MockProfileOAuth2TokenService();
 }

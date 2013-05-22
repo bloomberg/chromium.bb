@@ -38,7 +38,7 @@ class UserCloudPolicyManagerChromeOS
       public CloudPolicyClient::Observer,
       public CloudPolicyService::Observer,
       public ComponentCloudPolicyService::Delegate,
-      public ProfileKeyedService {
+      public BrowserContextKeyedService {
  public:
   // If |wait_for_policy_fetch| is true, IsInitializationComplete() will return
   // false as long as there hasn't been a successful policy fetch.

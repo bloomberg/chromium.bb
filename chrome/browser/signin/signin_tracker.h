@@ -32,8 +32,9 @@ class Profile;
 // user, but the core logic lies in the base SyncSetupHandler class).
 //
 // LoginUIService - Our desktop UI flows rely on having only a single login flow
-// visible to the user at once. This is achieved via LoginUIService (a
-// ProfileKeyedService that keeps track of the currently visible login UI).
+// visible to the user at once. This is achieved via LoginUIService
+// (a BrowserContextKeyedService that keeps track of the currently visible
+// login UI).
 //
 // SigninManager - Records the currently-logged-in user and handles all
 // interaction with the GAIA backend during the signin process. Unlike

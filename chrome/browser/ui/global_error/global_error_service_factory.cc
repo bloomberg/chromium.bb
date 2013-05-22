@@ -12,7 +12,7 @@
 // static
 GlobalErrorService* GlobalErrorServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<GlobalErrorService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -21,14 +21,15 @@ GlobalErrorServiceFactory* GlobalErrorServiceFactory::GetInstance() {
 }
 
 GlobalErrorServiceFactory::GlobalErrorServiceFactory()
-    : ProfileKeyedServiceFactory("GlobalErrorService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "GlobalErrorService",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 GlobalErrorServiceFactory::~GlobalErrorServiceFactory() {
 }
 
-ProfileKeyedService* GlobalErrorServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* GlobalErrorServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new GlobalErrorService(static_cast<Profile*>(profile));
 }

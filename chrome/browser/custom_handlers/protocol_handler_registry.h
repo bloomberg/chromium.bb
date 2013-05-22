@@ -33,7 +33,7 @@ class PrefRegistrySyncable;
 // instance of this class, which is initialized on browser start through
 // Profile::InitRegisteredProtocolHandlers(), and they should be the only
 // instances of this class.
-class ProtocolHandlerRegistry : public ProfileKeyedService {
+class ProtocolHandlerRegistry : public BrowserContextKeyedService {
 
  public:
   // Provides notification of when the OS level user agent settings

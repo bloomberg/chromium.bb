@@ -16,7 +16,7 @@ namespace extensions {
 SystemIndicatorManager* SystemIndicatorManagerFactory::GetForProfile(
     Profile* profile) {
   return static_cast<SystemIndicatorManager*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -25,14 +25,16 @@ SystemIndicatorManagerFactory* SystemIndicatorManagerFactory::GetInstance() {
 }
 
 SystemIndicatorManagerFactory::SystemIndicatorManagerFactory()
-    : ProfileKeyedServiceFactory("SystemIndicatorManager",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "SystemIndicatorManager",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionSystemFactory::GetInstance());
 }
 
 SystemIndicatorManagerFactory::~SystemIndicatorManagerFactory() {}
 
-ProfileKeyedService* SystemIndicatorManagerFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+SystemIndicatorManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
 
   StatusTray* status_tray = g_browser_process->status_tray();

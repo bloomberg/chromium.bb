@@ -30,7 +30,7 @@ namespace invalidation {
 // It provides invalidations for desktop platforms (Win, Mac, Linux).
 class TiclInvalidationService
     : public base::NonThreadSafe,
-      public ProfileKeyedService,
+      public BrowserContextKeyedService,
       public InvalidationFrontend,
       public content::NotificationObserver,
       public syncer::InvalidationHandler {
@@ -68,7 +68,7 @@ class TiclInvalidationService
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
-  // Overrides ProfileKeyedService method.
+  // Overrides BrowserContextKeyedService method.
   virtual void Shutdown() OVERRIDE;
 
  protected:

@@ -15,7 +15,7 @@ namespace extensions {
 // static
 AutotestPrivateAPI* AutotestPrivateAPIFactory::GetForProfile(Profile* profile) {
   return static_cast<AutotestPrivateAPI*>(GetInstance()->
-      GetServiceForProfile(profile, true));
+      GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -24,15 +24,16 @@ AutotestPrivateAPIFactory* AutotestPrivateAPIFactory::GetInstance() {
 }
 
 AutotestPrivateAPIFactory::AutotestPrivateAPIFactory()
-    : ProfileKeyedServiceFactory("AutotestPrivateAPI",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "AutotestPrivateAPI",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionSystemFactory::GetInstance());
 }
 
 AutotestPrivateAPIFactory::~AutotestPrivateAPIFactory() {
 }
 
-ProfileKeyedService* AutotestPrivateAPIFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* AutotestPrivateAPIFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new AutotestPrivateAPI();
 }
@@ -42,7 +43,7 @@ content::BrowserContext* AutotestPrivateAPIFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-bool AutotestPrivateAPIFactory::ServiceIsCreatedWithProfile() const {
+bool AutotestPrivateAPIFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

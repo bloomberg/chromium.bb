@@ -161,7 +161,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                            public SigninGlobalError::AuthStatusProvider,
                            public syncer::UnrecoverableErrorHandler,
                            public content::NotificationObserver,
-                           public ProfileKeyedService,
+                           public BrowserContextKeyedService,
                            public invalidation::InvalidationFrontend {
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
@@ -617,7 +617,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
 
-  // ProfileKeyedService implementation.  This must be called exactly
+  // BrowserContextKeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   virtual void Shutdown() OVERRIDE;
 

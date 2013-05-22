@@ -11,7 +11,7 @@
 class ExtensionPrefValueMap;
 class Profile;
 
-class ExtensionPrefValueMapFactory : public ProfileKeyedServiceFactory {
+class ExtensionPrefValueMapFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ExtensionPrefValueMap* GetForProfile(Profile* profile);
 
@@ -23,7 +23,7 @@ class ExtensionPrefValueMapFactory : public ProfileKeyedServiceFactory {
   ExtensionPrefValueMapFactory();
   virtual ~ExtensionPrefValueMapFactory();
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

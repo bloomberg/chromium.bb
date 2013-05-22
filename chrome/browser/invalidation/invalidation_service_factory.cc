@@ -19,12 +19,12 @@ class TokenService;
 namespace invalidation {
 
 // TODO(rlarocque): Re-enable this once InvalidationFrontend can
-// extend ProfileKeyedService.
+// extend BrowserContextKeyedService.
 // // static
 // InvalidationFrontend* InvalidationServiceFactory::GetForProfile(
 //     Profile* profile) {
 //   return static_cast<InvalidationFrontend*>(
-//       GetInstance()->GetServiceForProfile(profile, true));
+//       GetInstance()->GetServiceForBrowserContext(profile, true));
 // }
 
 // static
@@ -33,8 +33,9 @@ InvalidationServiceFactory* InvalidationServiceFactory::GetInstance() {
 }
 
 InvalidationServiceFactory::InvalidationServiceFactory()
-    : ProfileKeyedServiceFactory("InvalidationService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "InvalidationService",
+        BrowserContextDependencyManager::GetInstance()) {
 #if !defined(OS_ANDROID)
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(TokenServiceFactory::GetInstance());
@@ -44,12 +45,12 @@ InvalidationServiceFactory::InvalidationServiceFactory()
 InvalidationServiceFactory::~InvalidationServiceFactory() {}
 
 // static
-ProfileKeyedService*
+BrowserContextKeyedService*
 InvalidationServiceFactory::BuildP2PInvalidationServiceFor(Profile* profile) {
   return new P2PInvalidationService(profile);
 }
 
-ProfileKeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 #if defined(OS_ANDROID)

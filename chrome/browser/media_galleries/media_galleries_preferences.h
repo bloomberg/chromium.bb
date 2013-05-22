@@ -111,7 +111,7 @@ typedef std::set<MediaGalleryPrefId> MediaGalleryPrefIdSet;
 
 // A class to manage the media gallery preferences.  There is one instance per
 // user profile.
-class MediaGalleriesPreferences : public ProfileKeyedService,
+class MediaGalleriesPreferences : public BrowserContextKeyedService,
                                   public RemovableStorageObserver {
  public:
   class GalleryChangeObserver {
@@ -190,7 +190,7 @@ class MediaGalleriesPreferences : public ProfileKeyedService,
     return known_galleries_;
   }
 
-  // ProfileKeyedService implementation:
+  // BrowserContextKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);

@@ -23,7 +23,7 @@ class WebContents;
 // documents, creating a TemplateURL from the OSDD, and adding the TemplateURL
 // to the TemplateURLService. Downloading is done in the background.
 //
-class TemplateURLFetcher : public ProfileKeyedService {
+class TemplateURLFetcher : public BrowserContextKeyedService {
  public:
   enum ProviderType {
     AUTODETECTED_PROVIDER,

@@ -20,12 +20,13 @@ ProtocolHandlerRegistryFactory* ProtocolHandlerRegistryFactory::GetInstance() {
 ProtocolHandlerRegistry* ProtocolHandlerRegistryFactory::GetForProfile(
     Profile* profile) {
   return static_cast<ProtocolHandlerRegistry*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 ProtocolHandlerRegistryFactory::ProtocolHandlerRegistryFactory()
-    : ProfileKeyedServiceFactory("ProtocolHandlerRegistry",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ProtocolHandlerRegistry",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 ProtocolHandlerRegistryFactory::~ProtocolHandlerRegistryFactory() {
@@ -34,7 +35,8 @@ ProtocolHandlerRegistryFactory::~ProtocolHandlerRegistryFactory() {
 // Will be created when initializing profile_io_data, so we might
 // as well have the framework create this along with other
 // PKSs to preserve orderly civic conduct :)
-bool ProtocolHandlerRegistryFactory::ServiceIsCreatedWithProfile() const {
+bool
+ProtocolHandlerRegistryFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
@@ -51,7 +53,8 @@ bool ProtocolHandlerRegistryFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 
-ProfileKeyedService* ProtocolHandlerRegistryFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+ProtocolHandlerRegistryFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   ProtocolHandlerRegistry* registry = new ProtocolHandlerRegistry(
       static_cast<Profile*>(profile), new ProtocolHandlerRegistry::Delegate());

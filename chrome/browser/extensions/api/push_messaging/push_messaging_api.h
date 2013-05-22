@@ -106,7 +106,7 @@ class PushMessagingAPI : public ProfileKeyedAPI,
   // Convenience method to get the PushMessagingAPI for a profile.
   static PushMessagingAPI* Get(Profile* profile);
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPI implementation.

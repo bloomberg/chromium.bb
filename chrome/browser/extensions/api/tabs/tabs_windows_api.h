@@ -24,7 +24,7 @@ class TabsWindowsAPI : public ProfileKeyedAPI,
 
   WindowsEventRouter* windows_event_router();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPI implementation.

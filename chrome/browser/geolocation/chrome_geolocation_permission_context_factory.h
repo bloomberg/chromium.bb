@@ -15,7 +15,7 @@ class PrefRegistrySyncable;
 class Profile;
 
 class ChromeGeolocationPermissionContextFactory
-    : public ProfileKeyedServiceFactory {
+    : public BrowserContextKeyedServiceFactory {
  public:
   static ChromeGeolocationPermissionContext* GetForProfile(Profile* profile);
 
@@ -28,8 +28,8 @@ class ChromeGeolocationPermissionContextFactory
   ChromeGeolocationPermissionContextFactory();
   virtual ~ChromeGeolocationPermissionContextFactory();
 
-  // |ProfileKeyedBaseFactory| methods:
-  virtual ProfileKeyedService*
+  // |BrowserContextKeyedBaseFactory| methods:
+  virtual BrowserContextKeyedService*
       BuildServiceInstanceFor(content::BrowserContext* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;

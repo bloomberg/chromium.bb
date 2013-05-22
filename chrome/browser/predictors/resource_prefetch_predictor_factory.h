@@ -15,7 +15,8 @@ namespace predictors {
 
 class ResourcePrefetchPredictor;
 
-class ResourcePrefetchPredictorFactory : public ProfileKeyedServiceFactory {
+class ResourcePrefetchPredictorFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   static ResourcePrefetchPredictor* GetForProfile(Profile* profile);
   static ResourcePrefetchPredictorFactory* GetInstance();
@@ -26,8 +27,8 @@ class ResourcePrefetchPredictorFactory : public ProfileKeyedServiceFactory {
   ResourcePrefetchPredictorFactory();
   virtual ~ResourcePrefetchPredictorFactory();
 
-  // RefcountedProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // RefcountedBrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictorFactory);

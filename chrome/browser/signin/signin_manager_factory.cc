@@ -15,8 +15,9 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 
 SigninManagerFactory::SigninManagerFactory()
-    : ProfileKeyedServiceFactory("SigninManager",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "SigninManager",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(TokenServiceFactory::GetInstance());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
 }
@@ -28,27 +29,27 @@ SigninManagerFactory::~SigninManagerFactory() {}
 SigninManagerBase* SigninManagerFactory::GetForProfileIfExists(
     Profile* profile) {
   return static_cast<SigninManagerBase*>(
-      GetInstance()->GetServiceForProfile(profile, false));
+      GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
 SigninManagerBase* SigninManagerFactory::GetForProfile(
     Profile* profile) {
   return static_cast<SigninManagerBase*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 #else
 // static
 SigninManager* SigninManagerFactory::GetForProfile(Profile* profile) {
   return static_cast<SigninManager*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
 SigninManager* SigninManagerFactory::GetForProfileIfExists(Profile* profile) {
   return static_cast<SigninManager*>(
-      GetInstance()->GetServiceForProfile(profile, false));
+      GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 #endif
 
@@ -86,7 +87,7 @@ void SigninManagerFactory::RegisterPrefs(PrefRegistrySimple* registry) {
                                std::string());
 }
 
-ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* SigninManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   SigninManagerBase* service = NULL;
   Profile* profile = static_cast<Profile*>(context);

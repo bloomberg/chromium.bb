@@ -13,13 +13,13 @@ class TemplateURLService;
 
 // Singleton that owns all TemplateURLService and associates them with
 // Profiles.
-class TemplateURLServiceFactory : public ProfileKeyedServiceFactory {
+class TemplateURLServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static TemplateURLService* GetForProfile(Profile* profile);
 
   static TemplateURLServiceFactory* GetInstance();
 
-  static ProfileKeyedService* BuildInstanceFor(
+  static BrowserContextKeyedService* BuildInstanceFor(
       content::BrowserContext* profile);
 
  private:
@@ -28,16 +28,18 @@ class TemplateURLServiceFactory : public ProfileKeyedServiceFactory {
   TemplateURLServiceFactory();
   virtual ~TemplateURLServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
-  virtual void ProfileShutdown(content::BrowserContext* profile) OVERRIDE;
-  virtual void ProfileDestroyed(content::BrowserContext* profile) OVERRIDE;
+  virtual void BrowserContextShutdown(
+      content::BrowserContext* profile) OVERRIDE;
+  virtual void BrowserContextDestroyed(
+      content::BrowserContext* profile) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_FACTORY_H_

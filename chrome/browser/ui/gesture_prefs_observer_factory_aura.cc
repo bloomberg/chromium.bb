@@ -119,12 +119,12 @@ const std::vector<WorkspaceCyclerPref>& GetWorkspaceCyclerPrefs() {
 #endif  // USE_ASH
 
 // This class manages gesture configuration preferences.
-class GesturePrefsObserver : public ProfileKeyedService {
+class GesturePrefsObserver : public BrowserContextKeyedService {
  public:
   explicit GesturePrefsObserver(PrefService* prefs);
   virtual ~GesturePrefsObserver();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
  private:
@@ -371,12 +371,14 @@ GesturePrefsObserverFactoryAura::GetInstance() {
 }
 
 GesturePrefsObserverFactoryAura::GesturePrefsObserverFactoryAura()
-    : ProfileKeyedServiceFactory("GesturePrefsObserverAura",
-                                 ProfileDependencyManager::GetInstance()) {}
+    : BrowserContextKeyedServiceFactory(
+        "GesturePrefsObserverAura",
+        BrowserContextDependencyManager::GetInstance()) {}
 
 GesturePrefsObserverFactoryAura::~GesturePrefsObserverFactoryAura() {}
 
-ProfileKeyedService* GesturePrefsObserverFactoryAura::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+GesturePrefsObserverFactoryAura::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new GesturePrefsObserver(static_cast<Profile*>(profile)->GetPrefs());
 }
@@ -571,7 +573,8 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
   RegisterWorkspaceCyclerPrefs(registry);
 }
 
-bool GesturePrefsObserverFactoryAura::ServiceIsCreatedWithProfile() const {
+bool
+GesturePrefsObserverFactoryAura::ServiceIsCreatedWithBrowserContext() const {
   // Create the observer as soon as the profile is created.
   return true;
 }

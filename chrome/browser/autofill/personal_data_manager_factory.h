@@ -19,7 +19,7 @@ class PersonalDataManager;
 // A wrapper of PersonalDataManager so we can use it as a profiled keyed
 // service. This should only be subclassed in tests, e.g. to provide a mock
 // PersonalDataManager.
-class PersonalDataManagerService : public ProfileKeyedService {
+class PersonalDataManagerService : public BrowserContextKeyedService {
  public:
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
 };
@@ -28,7 +28,7 @@ class PersonalDataManagerService : public ProfileKeyedService {
 // Profiles.
 // Listens for the Profile's destruction notification and cleans up the
 // associated PersonalDataManager.
-class PersonalDataManagerFactory : public ProfileKeyedServiceFactory {
+class PersonalDataManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the PersonalDataManager for |profile|, creating it if it is not
   // yet created.
@@ -42,8 +42,8 @@ class PersonalDataManagerFactory : public ProfileKeyedServiceFactory {
   PersonalDataManagerFactory();
   virtual ~PersonalDataManagerFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

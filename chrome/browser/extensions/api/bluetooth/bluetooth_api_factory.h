@@ -14,7 +14,7 @@ namespace extensions {
 
 class BluetoothAPI;
 
-class BluetoothAPIFactory : public ProfileKeyedServiceFactory {
+class BluetoothAPIFactory : public BrowserContextKeyedServiceFactory {
  public:
   static BluetoothAPI* GetForProfile(Profile* profile);
 
@@ -26,12 +26,12 @@ class BluetoothAPIFactory : public ProfileKeyedServiceFactory {
   BluetoothAPIFactory();
   virtual ~BluetoothAPIFactory();
 
-  // ProfileKeyedServiceFactory implementation.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory implementation.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 

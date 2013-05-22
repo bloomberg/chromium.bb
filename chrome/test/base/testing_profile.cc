@@ -146,7 +146,7 @@ class TestExtensionURLRequestContextGetter
   scoped_ptr<net::URLRequestContext> context_;
 };
 
-ProfileKeyedService* CreateTestDesktopNotificationService(
+BrowserContextKeyedService* CreateTestDesktopNotificationService(
     content::BrowserContext* profile) {
 #if defined(ENABLE_NOTIFICATIONS)
   return new DesktopNotificationService(static_cast<Profile*>(profile), NULL);
@@ -172,7 +172,8 @@ TestingProfile::TestingProfile()
       incognito_(false),
       original_profile_(NULL),
       last_session_exited_cleanly_(true),
-      profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
+      profile_dependency_manager_(
+          BrowserContextDependencyManager::GetInstance()),
       delegate_(NULL) {
   CreateTempProfileDir();
   profile_path_ = temp_dir_.path();
@@ -188,7 +189,8 @@ TestingProfile::TestingProfile(const base::FilePath& path)
       original_profile_(NULL),
       last_session_exited_cleanly_(true),
       profile_path_(path),
-      profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
+      profile_dependency_manager_(
+          BrowserContextDependencyManager::GetInstance()),
       delegate_(NULL) {
   Init();
   FinishInit();
@@ -202,7 +204,8 @@ TestingProfile::TestingProfile(const base::FilePath& path,
       original_profile_(NULL),
       last_session_exited_cleanly_(true),
       profile_path_(path),
-      profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
+      profile_dependency_manager_(
+          BrowserContextDependencyManager::GetInstance()),
       delegate_(delegate) {
   Init();
   if (delegate_) {
@@ -227,7 +230,8 @@ TestingProfile::TestingProfile(
       last_session_exited_cleanly_(true),
       extension_special_storage_policy_(extension_policy),
       profile_path_(path),
-      profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
+      profile_dependency_manager_(
+          BrowserContextDependencyManager::GetInstance()),
       delegate_(delegate) {
 
   // If no profile path was supplied, create one.
@@ -281,7 +285,7 @@ void TestingProfile::Init() {
   // Normally this would happen during browser startup, but for tests
   // we need to trigger creation of Profile-related services.
   ChromeBrowserMainExtraPartsProfiles::
-      EnsureProfileKeyedServiceFactoriesBuilt();
+      EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
   if (prefs_.get())
     components::UserPrefs::Set(this, prefs_.get());
@@ -299,7 +303,7 @@ void TestingProfile::Init() {
   extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
       this, extensions::TestExtensionSystem::Build);
 
-  profile_dependency_manager_->CreateProfileServices(this, true);
+  profile_dependency_manager_->CreateBrowserContextServices(this, true);
 
 #if defined(ENABLE_NOTIFICATIONS)
   // Install profile keyed service factory hooks for dummy/test services
@@ -322,7 +326,7 @@ void TestingProfile::FinishInit() {
 TestingProfile::~TestingProfile() {
   MaybeSendDestroyedNotification();
 
-  profile_dependency_manager_->DestroyProfileServices(this);
+  profile_dependency_manager_->DestroyBrowserContextServices(this);
 
   if (host_content_settings_map_)
     host_content_settings_map_->ShutdownOnUIThread();
@@ -333,7 +337,7 @@ TestingProfile::~TestingProfile() {
     pref_proxy_config_tracker_->DetachFromPrefService();
 }
 
-static ProfileKeyedService* BuildFaviconService(
+static BrowserContextKeyedService* BuildFaviconService(
     content::BrowserContext* profile) {
   return new FaviconService(
       HistoryServiceFactory::GetForProfileWithoutCreating(
@@ -346,7 +350,7 @@ void TestingProfile::CreateFaviconService() {
       this, BuildFaviconService);
 }
 
-static ProfileKeyedService* BuildHistoryService(
+static BrowserContextKeyedService* BuildHistoryService(
     content::BrowserContext* profile) {
   return new HistoryService(static_cast<Profile*>(profile));
 }
@@ -413,7 +417,7 @@ void TestingProfile::DestroyTopSites() {
   }
 }
 
-static ProfileKeyedService* BuildBookmarkModel(
+static BrowserContextKeyedService* BuildBookmarkModel(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   BookmarkModel* bookmark_model = new BookmarkModel(profile);
@@ -441,7 +445,7 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
 }
 
-static ProfileKeyedService* BuildWebDataService(
+static BrowserContextKeyedService* BuildWebDataService(
     content::BrowserContext* profile) {
   return new WebDataServiceWrapper(static_cast<Profile*>(profile));
 }

@@ -132,7 +132,8 @@ class FakeThemeService : public ThemeService {
   bool is_dirty_;
 };
 
-ProfileKeyedService* BuildMockThemeService(content::BrowserContext* profile) {
+BrowserContextKeyedService* BuildMockThemeService(
+    content::BrowserContext* profile) {
   return new FakeThemeService;
 }
 

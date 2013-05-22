@@ -46,12 +46,12 @@ struct SelectedFileInfo;
 }
 
 // Manages and registers the fileBrowserPrivate API with the extension system.
-class FileBrowserPrivateAPI : public ProfileKeyedService {
+class FileBrowserPrivateAPI : public BrowserContextKeyedService {
  public:
   explicit FileBrowserPrivateAPI(Profile* profile);
   virtual ~FileBrowserPrivateAPI();
 
-  // ProfileKeyedService overrides.
+  // BrowserContextKeyedService overrides.
   virtual void Shutdown() OVERRIDE;
 
   // Convenience function to return the FileBrowserPrivateAPI for a Profile.

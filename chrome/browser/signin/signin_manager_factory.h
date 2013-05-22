@@ -16,7 +16,7 @@ class Profile;
 // Singleton that owns all SigninManagers and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated SigninManager.
-class SigninManagerFactory : public ProfileKeyedServiceFactory {
+class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
 
 #if defined(OS_CHROMEOS)
@@ -39,7 +39,8 @@ class SigninManagerFactory : public ProfileKeyedServiceFactory {
   // Returns an instance of the SigninManagerFactory singleton.
   static SigninManagerFactory* GetInstance();
 
-  // Implementation of ProfileKeyedServiceFactory (public so tests can call it).
+  // Implementation of BrowserContextKeyedServiceFactory (public so tests
+  // can call it).
   virtual void RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
 
@@ -52,8 +53,8 @@ class SigninManagerFactory : public ProfileKeyedServiceFactory {
   SigninManagerFactory();
   virtual ~SigninManagerFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

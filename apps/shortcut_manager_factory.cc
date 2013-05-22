@@ -13,14 +13,14 @@ namespace apps {
 // static
 ShortcutManager* ShortcutManagerFactory::GetForProfile(Profile* profile) {
   return static_cast<ShortcutManager*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
 void ShortcutManagerFactory::ResetForProfile(Profile* profile) {
   ShortcutManagerFactory* factory = GetInstance();
-  factory->ProfileShutdown(profile);
-  factory->ProfileDestroyed(profile);
+  factory->BrowserContextShutdown(profile);
+  factory->BrowserContextDestroyed(profile);
 }
 
 ShortcutManagerFactory* ShortcutManagerFactory::GetInstance() {
@@ -28,19 +28,20 @@ ShortcutManagerFactory* ShortcutManagerFactory::GetInstance() {
 }
 
 ShortcutManagerFactory::ShortcutManagerFactory()
-    : ProfileKeyedServiceFactory("ShortcutManager",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ShortcutManager",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 ShortcutManagerFactory::~ShortcutManagerFactory() {
 }
 
-ProfileKeyedService* ShortcutManagerFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* ShortcutManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ShortcutManager(static_cast<Profile*>(profile));
 }
 
-bool ShortcutManagerFactory::ServiceIsCreatedWithProfile() const {
+bool ShortcutManagerFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

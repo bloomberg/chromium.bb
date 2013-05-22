@@ -86,7 +86,7 @@ void InMemoryTabRestoreService::DeleteLastSession() {
 void InMemoryTabRestoreService::Shutdown() {
 }
 
-ProfileKeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new InMemoryTabRestoreService(static_cast<Profile*>(profile), NULL);
 }

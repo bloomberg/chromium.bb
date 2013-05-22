@@ -16,14 +16,14 @@ using history::ShortcutsBackend;
 scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::GetForProfile(
     Profile* profile) {
   return static_cast<ShortcutsBackend*>(
-      GetInstance()->GetServiceForProfile(profile, true).get());
+      GetInstance()->GetServiceForBrowserContext(profile, true).get());
 }
 
 // static
 scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::GetForProfileIfExists(
     Profile* profile) {
   return static_cast<ShortcutsBackend*>(
-      GetInstance()->GetServiceForProfile(profile, false).get());
+      GetInstance()->GetServiceForBrowserContext(profile, false).get());
 }
 
 // static
@@ -32,7 +32,7 @@ ShortcutsBackendFactory* ShortcutsBackendFactory::GetInstance() {
 }
 
 // static
-scoped_refptr<RefcountedProfileKeyedService>
+scoped_refptr<RefcountedBrowserContextKeyedService>
 ShortcutsBackendFactory::BuildProfileForTesting(
     content::BrowserContext* profile) {
   scoped_refptr<history::ShortcutsBackend> backend(
@@ -43,7 +43,7 @@ ShortcutsBackendFactory::BuildProfileForTesting(
 }
 
 // static
-scoped_refptr<RefcountedProfileKeyedService>
+scoped_refptr<RefcountedBrowserContextKeyedService>
 ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting(
     content::BrowserContext* profile) {
   scoped_refptr<history::ShortcutsBackend> backend(
@@ -54,14 +54,14 @@ ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting(
 }
 
 ShortcutsBackendFactory::ShortcutsBackendFactory()
-    : RefcountedProfileKeyedServiceFactory(
+    : RefcountedBrowserContextKeyedServiceFactory(
         "ShortcutsBackend",
-        ProfileDependencyManager::GetInstance()) {
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 ShortcutsBackendFactory::~ShortcutsBackendFactory() {}
 
-scoped_refptr<RefcountedProfileKeyedService>
+scoped_refptr<RefcountedBrowserContextKeyedService>
 ShortcutsBackendFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   scoped_refptr<history::ShortcutsBackend> backend(

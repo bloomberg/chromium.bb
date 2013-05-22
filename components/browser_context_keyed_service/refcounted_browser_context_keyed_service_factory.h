@@ -11,78 +11,88 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 
-class Profile;
-class RefcountedProfileKeyedService;
+class RefcountedBrowserContextKeyedService;
 
-// A specialized ProfileKeyedServiceFactory that manages a
+namespace content {
+class BrowserContext;
+}
+
+// A specialized BrowserContextKeyedServiceFactory that manages a
 // RefcountedThreadSafe<>.
 //
 // While the factory returns RefcountedThreadSafe<>s, the factory itself is a
 // base::NotThreadSafe. Only call methods on this object on the UI thread.
 //
-// Implementers of RefcountedProfileKeyedService should note that we guarantee
-// that ShutdownOnUIThread() is called on the UI thread, but actual object
-// destruction can happen anywhere.
-class RefcountedProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
+// Implementers of RefcountedBrowserContextKeyedService should note that
+// we guarantee that ShutdownOnUIThread() is called on the UI thread, but actual
+// object destruction can happen anywhere.
+class RefcountedBrowserContextKeyedServiceFactory
+    : public BrowserContextKeyedBaseFactory {
  public:
-  // A function that supplies the instance of a ProfileKeyedService for a given
-  // Profile. This is used primarily for testing, where we want to feed a
-  // specific mock into the PKSF system.
-  typedef scoped_refptr<RefcountedProfileKeyedService>
-      (*FactoryFunction)(content::BrowserContext* profile);
+  // A function that supplies the instance of a BrowserContextKeyedService for
+  // a given BrowserContext. This is used primarily for testing, where we want
+  // to feed a specific mock into the BCKSF system.
+  typedef scoped_refptr<RefcountedBrowserContextKeyedService>
+      (*FactoryFunction)(content::BrowserContext* context);
 
-  // Associates |factory| with |profile| so that |factory| is used to create
-  // the ProfileKeyedService when requested.  |factory| can be NULL to signal
-  // that ProfileKeyedService should be NULL. Multiple calls to
+  // Associates |factory| with |context| so that |factory| is used to create
+  // the BrowserContextKeyedService when requested.  |factory| can be NULL
+  // to signal that BrowserContextKeyedService should be NULL. Multiple calls to
   // SetTestingFactory() are allowed; previous services will be shut down.
-  void SetTestingFactory(content::BrowserContext* profile,
+  void SetTestingFactory(content::BrowserContext* context,
                          FactoryFunction factory);
 
-  // Associates |factory| with |profile| and immediately returns the created
-  // ProfileKeyedService. Since the factory will be used immediately, it may
-  // not be NULL.
-  scoped_refptr<RefcountedProfileKeyedService> SetTestingFactoryAndUse(
-      content::BrowserContext* profile,
+  // Associates |factory| with |context| and immediately returns the created
+  // BrowserContextKeyedService. Since the factory will be used immediately,
+  // it may not be NULL.
+  scoped_refptr<RefcountedBrowserContextKeyedService> SetTestingFactoryAndUse(
+      content::BrowserContext* context,
       FactoryFunction factory);
 
  protected:
-  RefcountedProfileKeyedServiceFactory(const char* name,
-                                       ProfileDependencyManager* manager);
-  virtual ~RefcountedProfileKeyedServiceFactory();
+  RefcountedBrowserContextKeyedServiceFactory(
+      const char* name,
+      BrowserContextDependencyManager* manager);
+  virtual ~RefcountedBrowserContextKeyedServiceFactory();
 
-  scoped_refptr<RefcountedProfileKeyedService> GetServiceForProfile(
-      content::BrowserContext* profile,
-      bool create);
+  scoped_refptr<RefcountedBrowserContextKeyedService>
+      GetServiceForBrowserContext(
+          content::BrowserContext* context,
+          bool create);
 
-  // Maps |profile| to |service| with debug checks to prevent duplication.
-  void Associate(content::BrowserContext* profile,
-                 const scoped_refptr<RefcountedProfileKeyedService>& service);
+  // Maps |context| to |service| with debug checks to prevent duplication.
+  void Associate(
+      content::BrowserContext* context,
+      const scoped_refptr<RefcountedBrowserContextKeyedService>& service);
 
-  // All subclasses of RefcountedProfileKeyedServiceFactory must return a
-  // RefcountedProfileKeyedService instead of just a ProfileKeyedBase.
-  virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
-      content::BrowserContext* profile) const = 0;
+  // All subclasses of RefcountedBrowserContextKeyedServiceFactory must return
+  // a RefcountedBrowserContextKeyedService instead of just
+  // a BrowserContextKeyedBase.
+  virtual scoped_refptr<RefcountedBrowserContextKeyedService>
+      BuildServiceInstanceFor(content::BrowserContext* context) const = 0;
 
-  virtual void ProfileShutdown(content::BrowserContext* profile) OVERRIDE;
-  virtual void ProfileDestroyed(content::BrowserContext* profile) OVERRIDE;
+  virtual void BrowserContextShutdown(
+      content::BrowserContext* context) OVERRIDE;
+  virtual void BrowserContextDestroyed(
+      content::BrowserContext* context) OVERRIDE;
   virtual void SetEmptyTestingFactory(
-      content::BrowserContext* profile) OVERRIDE;
-  virtual void CreateServiceNow(content::BrowserContext* profile) OVERRIDE;
+      content::BrowserContext* context) OVERRIDE;
+  virtual void CreateServiceNow(content::BrowserContext* context) OVERRIDE;
 
  private:
   typedef std::map<content::BrowserContext*,
-                   scoped_refptr<RefcountedProfileKeyedService> >
+                   scoped_refptr<RefcountedBrowserContextKeyedService> >
       RefCountedStorage;
   typedef std::map<content::BrowserContext*,
-                   FactoryFunction> ProfileOverriddenFunctions;
+                   FactoryFunction> BrowserContextOverriddenFunctions;
 
-  // The mapping between a Profile and its refcounted service.
+  // The mapping between a BrowserContext and its refcounted service.
   RefCountedStorage mapping_;
 
-  // The mapping between a Profile and its overridden FactoryFunction.
-  ProfileOverriddenFunctions factories_;
+  // The mapping between a BrowserContext and its overridden FactoryFunction.
+  BrowserContextOverriddenFunctions factories_;
 
-  DISALLOW_COPY_AND_ASSIGN(RefcountedProfileKeyedServiceFactory);
+  DISALLOW_COPY_AND_ASSIGN(RefcountedBrowserContextKeyedServiceFactory);
 };
 
 #endif  // COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_H_

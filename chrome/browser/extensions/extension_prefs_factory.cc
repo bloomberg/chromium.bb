@@ -21,7 +21,7 @@ namespace extensions {
 // static
 ExtensionPrefs* ExtensionPrefsFactory::GetForProfile(Profile* profile) {
   return static_cast<ExtensionPrefs*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -35,14 +35,15 @@ void ExtensionPrefsFactory::SetInstanceForTesting(
 }
 
 ExtensionPrefsFactory::ExtensionPrefsFactory()
-    : ProfileKeyedServiceFactory("ExtensionPrefs",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ExtensionPrefs",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 ExtensionPrefsFactory::~ExtensionPrefsFactory() {
 }
 
-ProfileKeyedService* ExtensionPrefsFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* ExtensionPrefsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   bool extensions_disabled =

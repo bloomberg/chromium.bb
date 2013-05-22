@@ -196,7 +196,7 @@ class ManagementAPI : public ProfileKeyedAPI,
   explicit ManagementAPI(Profile* profile);
   virtual ~ManagementAPI();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPI implementation.

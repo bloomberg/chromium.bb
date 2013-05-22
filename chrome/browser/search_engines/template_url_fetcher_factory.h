@@ -13,7 +13,7 @@ class TemplateURLFetcher;
 
 // Singleton that owns all TemplateURLFetcher and associates them with
 // Profiles.
-class TemplateURLFetcherFactory : public ProfileKeyedServiceFactory {
+class TemplateURLFetcherFactory : public BrowserContextKeyedServiceFactory {
  public:
   static TemplateURLFetcher* GetForProfile(Profile* profile);
 
@@ -30,8 +30,8 @@ class TemplateURLFetcherFactory : public ProfileKeyedServiceFactory {
   TemplateURLFetcherFactory();
   virtual ~TemplateURLFetcherFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

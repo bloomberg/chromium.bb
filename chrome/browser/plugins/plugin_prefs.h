@@ -33,7 +33,7 @@ class PluginList;
 // This class stores information about whether a plug-in or a plug-in group is
 // enabled or disabled.
 // Except where otherwise noted, it can be used on every thread.
-class PluginPrefs : public RefcountedProfileKeyedService {
+class PluginPrefs : public RefcountedBrowserContextKeyedService {
  public:
   enum PolicyStatus {
     NO_POLICY = 0,  // Neither enabled or disabled by policy.

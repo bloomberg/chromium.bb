@@ -24,7 +24,7 @@ class FullscreenObserver;
 
 namespace tab_capture = extensions::api::tab_capture;
 
-class TabCaptureRegistry : public ProfileKeyedService,
+class TabCaptureRegistry : public BrowserContextKeyedService,
                            public content::NotificationObserver,
                            public MediaCaptureDevicesDispatcher::Observer {
  public:

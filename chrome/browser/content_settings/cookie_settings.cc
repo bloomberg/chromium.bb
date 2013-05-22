@@ -50,7 +50,7 @@ scoped_refptr<CookieSettings> CookieSettings::Factory::GetForProfile(
     Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return static_cast<CookieSettings*>(
-      GetInstance()->GetServiceForProfile(profile, true).get());
+      GetInstance()->GetServiceForBrowserContext(profile, true).get());
 }
 
 // static
@@ -59,9 +59,9 @@ CookieSettings::Factory* CookieSettings::Factory::GetInstance() {
 }
 
 CookieSettings::Factory::Factory()
-    : RefcountedProfileKeyedServiceFactory(
+    : RefcountedBrowserContextKeyedServiceFactory(
         "CookieSettings",
-        ProfileDependencyManager::GetInstance()) {
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 CookieSettings::Factory::~Factory() {}
@@ -79,7 +79,7 @@ content::BrowserContext* CookieSettings::Factory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-scoped_refptr<RefcountedProfileKeyedService>
+scoped_refptr<RefcountedBrowserContextKeyedService>
 CookieSettings::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);

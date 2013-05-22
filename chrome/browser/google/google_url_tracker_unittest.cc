@@ -285,7 +285,8 @@ void GoogleURLTrackerTest::OnInfoBarClosed(InfoBarDelegate* infobar,
 GoogleURLTrackerTest::GoogleURLTrackerTest()
     : message_loop_(MessageLoop::TYPE_IO),
       io_thread_(content::BrowserThread::IO, &message_loop_) {
-  GoogleURLTrackerFactory::GetInstance()->RegisterUserPrefsOnProfile(&profile_);
+  GoogleURLTrackerFactory::GetInstance()->RegisterUserPrefsOnBrowserContext(
+      &profile_);
 }
 
 GoogleURLTrackerTest::~GoogleURLTrackerTest() {

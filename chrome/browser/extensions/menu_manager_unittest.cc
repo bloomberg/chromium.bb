@@ -489,7 +489,7 @@ class MockExtensionSystem : public TestExtensionSystem {
   DISALLOW_COPY_AND_ASSIGN(MockExtensionSystem);
 };
 
-ProfileKeyedService* BuildMockExtensionSystem(
+BrowserContextKeyedService* BuildMockExtensionSystem(
     content::BrowserContext* profile) {
   return new MockExtensionSystem(static_cast<Profile*>(profile));
 }

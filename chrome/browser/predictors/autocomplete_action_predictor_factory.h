@@ -18,7 +18,8 @@ class AutocompleteActionPredictor;
 // Singleton that owns all AutocompleteActionPredictors and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated AutocompleteActionPredictor.
-class AutocompleteActionPredictorFactory : public ProfileKeyedServiceFactory {
+class AutocompleteActionPredictorFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   static AutocompleteActionPredictor* GetForProfile(Profile* profile);
 
@@ -30,10 +31,10 @@ class AutocompleteActionPredictorFactory : public ProfileKeyedServiceFactory {
   AutocompleteActionPredictorFactory();
   virtual ~AutocompleteActionPredictorFactory();
 
-  // ProfileKeyedServiceFactory:
+  // BrowserContextKeyedServiceFactory:
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteActionPredictorFactory);

@@ -19,7 +19,7 @@ class ShortcutManager;
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated ShortcutManager.
 // ShortcutManagers should not exist in incognito profiles.
-class ShortcutManagerFactory : public ProfileKeyedServiceFactory {
+class ShortcutManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ShortcutManager* GetForProfile(Profile* profile);
 
@@ -33,10 +33,10 @@ class ShortcutManagerFactory : public ProfileKeyedServiceFactory {
   ShortcutManagerFactory();
   virtual ~ShortcutManagerFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
 };
 
 }  // namespace apps

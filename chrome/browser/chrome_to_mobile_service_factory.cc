@@ -19,10 +19,11 @@ ChromeToMobileServiceFactory* ChromeToMobileServiceFactory::GetInstance() {
 ChromeToMobileService* ChromeToMobileServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<ChromeToMobileService*>(
-    GetInstance()->GetServiceForProfile(profile, true));
+    GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
-ProfileKeyedService* ChromeToMobileServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+ChromeToMobileServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   // Ensure that the service is not instantiated or used if it is disabled.
   if (!ChromeToMobileService::IsChromeToMobileEnabled())
@@ -32,8 +33,9 @@ ProfileKeyedService* ChromeToMobileServiceFactory::BuildServiceInstanceFor(
 }
 
 ChromeToMobileServiceFactory::ChromeToMobileServiceFactory()
-    : ProfileKeyedServiceFactory("ChromeToMobileService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ChromeToMobileService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(TokenServiceFactory::GetInstance());
   // TODO(msw): Uncomment this once it exists.

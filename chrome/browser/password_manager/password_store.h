@@ -40,7 +40,7 @@ void UpdateLogin(PasswordStore* store, const content::PasswordForm& form);
 // The login request/manipulation API is not threadsafe and must be used
 // from the UI thread.
 class PasswordStore
-    : public RefcountedProfileKeyedService,
+    : public RefcountedBrowserContextKeyedService,
       public CancelableRequestProvider {
  public:
   typedef base::Callback<

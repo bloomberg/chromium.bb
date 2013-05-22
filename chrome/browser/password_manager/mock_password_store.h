@@ -17,7 +17,7 @@ class MockPasswordStore : public PasswordStore {
  public:
   MockPasswordStore();
 
-  static scoped_refptr<RefcountedProfileKeyedService> Build(
+  static scoped_refptr<RefcountedBrowserContextKeyedService> Build(
       content::BrowserContext* profile);
 
   MOCK_METHOD1(RemoveLogin, void(const content::PasswordForm&));

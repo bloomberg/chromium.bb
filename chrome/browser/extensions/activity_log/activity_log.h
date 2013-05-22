@@ -34,7 +34,7 @@ class Extension;
 
 // A utility for tracing interesting activity for each extension.
 // It writes to an ActivityDatabase on a separate thread to record the activity.
-class ActivityLog : public ProfileKeyedService,
+class ActivityLog : public BrowserContextKeyedService,
                     public TabHelper::ScriptExecutionObserver {
  public:
   enum Activity {
@@ -231,11 +231,11 @@ class ActivityLog : public ProfileKeyedService,
 
 // Each profile has different extensions, so we keep a different database for
 // each profile.
-class ActivityLogFactory : public ProfileKeyedServiceFactory {
+class ActivityLogFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ActivityLog* GetForProfile(Profile* profile) {
     return static_cast<ActivityLog*>(
-        GetInstance()->GetServiceForProfile(profile, true));
+        GetInstance()->GetServiceForBrowserContext(profile, true));
   }
 
   static ActivityLogFactory* GetInstance();
@@ -243,11 +243,12 @@ class ActivityLogFactory : public ProfileKeyedServiceFactory {
  private:
   friend struct DefaultSingletonTraits<ActivityLogFactory>;
   ActivityLogFactory()
-      : ProfileKeyedServiceFactory("ActivityLog",
-                                   ProfileDependencyManager::GetInstance()) {}
+      : BrowserContextKeyedServiceFactory(
+          "ActivityLog",
+          BrowserContextDependencyManager::GetInstance()) {}
   virtual ~ActivityLogFactory() {}
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 
   virtual content::BrowserContext* GetBrowserContextToUse(

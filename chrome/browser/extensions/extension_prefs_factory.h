@@ -13,7 +13,7 @@ namespace extensions {
 
 class ExtensionPrefs;
 
-class ExtensionPrefsFactory : public ProfileKeyedServiceFactory {
+class ExtensionPrefsFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ExtensionPrefs* GetForProfile(Profile* profile);
 
@@ -28,7 +28,7 @@ class ExtensionPrefsFactory : public ProfileKeyedServiceFactory {
   ExtensionPrefsFactory();
   virtual ~ExtensionPrefsFactory();
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

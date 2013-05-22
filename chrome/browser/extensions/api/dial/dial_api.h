@@ -17,11 +17,11 @@ namespace extensions {
 
 class DialRegistry;
 
-// Dial API which is a ref-counted ProfileKeyedService that manages the DIAL
-// registry. It takes care of creating the registry on the IO thread and
-// is an observer of the registry. It makes sure devices events are sent out
+// Dial API which is a ref-counted BrowserContextKeyedService that manages
+// the DIAL registry. It takes care of creating the registry on the IO thread
+// and is an observer of the registry. It makes sure devices events are sent out
 // to extension listeners on the right thread.
-class DialAPI : public RefcountedProfileKeyedService,
+class DialAPI : public RefcountedBrowserContextKeyedService,
                 public EventRouter::Observer,
                 public DialRegistry::Observer {
  public:
@@ -39,7 +39,7 @@ class DialAPI : public RefcountedProfileKeyedService,
  private:
   virtual ~DialAPI();
 
-  // RefcountedProfileKeyedService:
+  // RefcountedBrowserContextKeyedService:
   virtual void ShutdownOnUIThread() OVERRIDE;
 
   // EventRouter::Observer:

@@ -22,13 +22,13 @@ namespace google_apis {
 // 1. XMPP invalidation is received from Google Drive.
 // 2. Polling timer counts down.
 class DriveNotificationManager
-    : public ProfileKeyedService,
+    : public BrowserContextKeyedService,
       public syncer::InvalidationHandler {
  public:
   explicit DriveNotificationManager(Profile* profile);
   virtual ~DriveNotificationManager();
 
-  // ProfileKeyedService override.
+  // BrowserContextKeyedService override.
   virtual void Shutdown() OVERRIDE;
 
   // syncer::InvalidationHandler implementation.

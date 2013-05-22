@@ -23,13 +23,13 @@ namespace invalidation {
 // only in tests, where we're unable to connect to a real invalidations server.
 class P2PInvalidationService
     : public base::NonThreadSafe,
-      public ProfileKeyedService,
+      public BrowserContextKeyedService,
       public InvalidationFrontend {
  public:
   explicit P2PInvalidationService(Profile* profile);
   virtual ~P2PInvalidationService();
 
-  // Overrides ProfileKeyedService method.
+  // Overrides BrowserContextKeyedService method.
   virtual void Shutdown() OVERRIDE;
 
   // InvalidationFrontend implementation.

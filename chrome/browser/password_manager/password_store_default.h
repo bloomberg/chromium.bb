@@ -24,7 +24,7 @@ class PasswordStoreDefault : public PasswordStore {
  protected:
   virtual ~PasswordStoreDefault();
 
-  // Implements RefCountedProfileKeyedService.
+  // Implements RefCountedBrowserContextKeyedService.
   virtual void ShutdownOnUIThread() OVERRIDE;
 
   // Implements PasswordStore interface.

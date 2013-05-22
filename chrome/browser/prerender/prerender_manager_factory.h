@@ -18,7 +18,7 @@ class PrerenderManager;
 // Singleton that owns all PrerenderManagers and associates them with Profiles.
 // Listens for the Profile's destruction notification and cleans up the
 // associated PrerenderManager.
-class PrerenderManagerFactory : public ProfileKeyedServiceFactory {
+class PrerenderManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the PrerenderManager for |profile|.
   static PrerenderManager* GetForProfile(Profile* profile);
@@ -31,8 +31,8 @@ class PrerenderManagerFactory : public ProfileKeyedServiceFactory {
   PrerenderManagerFactory();
   virtual ~PrerenderManagerFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

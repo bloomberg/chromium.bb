@@ -259,7 +259,7 @@ void TemplateURLServiceSyncTest::SetUp() {
   // just foul them up).
   test_util_a_.ChangeModelToLoadState();
   profile_b_.reset(new TestingProfile);
-  TemplateURLServiceFactory::GetInstance()->RegisterUserPrefsOnProfile(
+  TemplateURLServiceFactory::GetInstance()->RegisterUserPrefsOnBrowserContext(
       profile_b_.get());
   model_b_.reset(new TemplateURLService(profile_b_.get()));
   model_b_->Load();

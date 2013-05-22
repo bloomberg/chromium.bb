@@ -22,7 +22,7 @@ class ProfileSyncService;
 // accordingly. Its status is for UI display only. It only watches for new
 // normal user profile (i.e. it does not watch for guest profile or exsiting
 // user profile) and lasts for at the most 1 minute.
-class AppSyncUIState : public ProfileKeyedService,
+class AppSyncUIState : public BrowserContextKeyedService,
                        public content::NotificationObserver,
                        public ProfileSyncServiceObserver {
  public:

@@ -39,7 +39,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
     if (manager_) {
       manager_->RemoveObserver(&observer_);
       manager_->CloudPolicyManager::Shutdown();
-      manager_->ProfileKeyedService::Shutdown();
+      manager_->BrowserContextKeyedService::Shutdown();
     }
   }
 

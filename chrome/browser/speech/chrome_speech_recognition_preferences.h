@@ -52,11 +52,12 @@ class ChromeSpeechRecognitionPreferences
  private:
   // The two classes below are needed to handle storage of speech recognition
   // preferences in profile preferences, according to the Chromium Profile
-  // Architecture document entitled "The New Way: ProfileKeyedServiceFactory".
+  // Architecture document entitled "The New Way:
+  // BrowserContextKeyedServiceFactory".
 
   // Singleton that manages instantiation of ChromeSpeechRecognitionPreferences
   // handling its association with Profiles.
-  class Factory : public ProfileKeyedServiceFactory {
+  class Factory : public BrowserContextKeyedServiceFactory {
    public:
     static Factory* GetInstance();
     scoped_refptr<ChromeSpeechRecognitionPreferences> GetForProfile(
@@ -68,29 +69,29 @@ class ChromeSpeechRecognitionPreferences
     Factory();
     virtual ~Factory();
 
-    // ProfileKeyedServiceFactory methods:
-    virtual ProfileKeyedService* BuildServiceInstanceFor(
+    // BrowserContextKeyedServiceFactory methods:
+    virtual BrowserContextKeyedService* BuildServiceInstanceFor(
         content::BrowserContext* profile) const OVERRIDE;
     virtual void RegisterUserPrefs(
         user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
     virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
-    virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+    virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
 
     DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
   // This wrapper handles the binding between ChromeSpeechRecognitionPreferences
   // instances (which can have a longer lifetime, since they are refcounted) and
-  // ProfileKeyedService (which lifetime depends on the Profile service). Upon
-  // profile shutdown, the ChromeSpeechRecognitionPreferences instance is
+  // BrowserContextKeyedService (which lifetime depends on the Profile service).
+  // Upon profile shutdown, the ChromeSpeechRecognitionPreferences instance is
   // detached from profile, meaning that after that point its clients can still
   // use it, but preferences will no longer be kept in sync with the profile.
-  class Service : public ProfileKeyedService {
+  class Service : public BrowserContextKeyedService {
    public:
     explicit Service(Profile* profile);
     virtual ~Service();
 
-    // ProfileKeyedService implementation.
+    // BrowserContextKeyedService implementation.
     virtual void Shutdown() OVERRIDE;
 
     scoped_refptr<ChromeSpeechRecognitionPreferences> GetPreferences() const;

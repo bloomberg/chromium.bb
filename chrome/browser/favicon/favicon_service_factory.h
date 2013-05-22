@@ -16,7 +16,7 @@ class FaviconService;
 
 // Singleton that owns all FaviconService and associates them with
 // Profiles.
-class FaviconServiceFactory : public ProfileKeyedServiceFactory {
+class FaviconServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // |access| defines what the caller plans to do with the service. See
   // the ServiceAccessType definition in profile.h.
@@ -31,8 +31,8 @@ class FaviconServiceFactory : public ProfileKeyedServiceFactory {
   FaviconServiceFactory();
   virtual ~FaviconServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 

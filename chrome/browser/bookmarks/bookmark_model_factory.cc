@@ -19,12 +19,12 @@
 // static
 BookmarkModel* BookmarkModelFactory::GetForProfile(Profile* profile) {
   return static_cast<BookmarkModel*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 BookmarkModel* BookmarkModelFactory::GetForProfileIfExists(Profile* profile) {
   return static_cast<BookmarkModel*>(
-      GetInstance()->GetServiceForProfile(profile, false));
+      GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
@@ -33,13 +33,14 @@ BookmarkModelFactory* BookmarkModelFactory::GetInstance() {
 }
 
 BookmarkModelFactory::BookmarkModelFactory()
-    : ProfileKeyedServiceFactory("BookmarkModel",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "BookmarkModel",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 BookmarkModelFactory::~BookmarkModelFactory() {}
 
-ProfileKeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   BookmarkModel* bookmark_model = new BookmarkModel(profile);

@@ -10,8 +10,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "components/browser_context_keyed_service/dependency_node.h"
 
+class BrowserContextDependencyManager;
 class PrefService;
-class ProfileDependencyManager;
 
 namespace content {
 class BrowserContext;
@@ -20,21 +20,23 @@ class BrowserContext;
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
-// Base class for Factories that take a Profile object and return some service.
+
+// Base class for Factories that take a BrowserContext object and return some
+// service.
 //
 // Unless you're trying to make a new type of Factory, you probably don't want
-// this class, but its subclasses: ProfileKeyedServiceFactory and
-// RefcountedProfileKeyedServiceFactory. This object describes general
+// this class, but its subclasses: BrowserContextKeyedServiceFactory and
+// RefcountedBrowserContextKeyedServiceFactory. This object describes general
 // dependency management between Factories; subclasses react to lifecycle
 // events and implement memory management.
-class ProfileKeyedBaseFactory : public base::NonThreadSafe,
-                                public DependencyNode {
+class BrowserContextKeyedBaseFactory : public base::NonThreadSafe,
+                                       public DependencyNode {
  public:
   // Registers preferences used in this service on the pref service of
-  // |profile|. This is the public interface and is safe to be called multiple
+  // |context|. This is the public interface and is safe to be called multiple
   // times because testing code can have multiple services of the same type
-  // attached to a single |profile|.
-  void RegisterUserPrefsOnProfile(content::BrowserContext* profile);
+  // attached to a single |context|.
+  void RegisterUserPrefsOnBrowserContext(content::BrowserContext* context);
 
 #ifndef NDEBUG
   // Returns our name. We don't keep track of this in release mode.
@@ -42,13 +44,13 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe,
 #endif
 
  protected:
-  ProfileKeyedBaseFactory(const char* name,
-                          ProfileDependencyManager* manager);
-  virtual ~ProfileKeyedBaseFactory();
+  BrowserContextKeyedBaseFactory(const char* name,
+                                 BrowserContextDependencyManager* manager);
+  virtual ~BrowserContextKeyedBaseFactory();
 
   // The main public interface for declaring dependencies between services
   // created by factories.
-  void DependsOn(ProfileKeyedBaseFactory* rhs);
+  void DependsOn(BrowserContextKeyedBaseFactory* rhs);
 
   // Interface for people building a concrete FooServiceFactory: --------------
 
@@ -57,69 +59,70 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe,
       content::BrowserContext* context) const;
 
   // Register any user preferences on this service. This is called during
-  // CreateProfileService() since preferences are registered on a per Profile
-  // basis.
+  // CreateBrowserContextService() since preferences are registered on a per
+  // BrowserContext basis.
   virtual void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {}
 
   // By default, we create instances of a service lazily and wait until
-  // GetForProfile() is called on our subclass. Some services need to be
-  // created as soon as the Profile has been brought up.
-  virtual bool ServiceIsCreatedWithProfile() const;
+  // GetForBrowserContext() is called on our subclass. Some services need to be
+  // created as soon as the BrowserContext has been brought up.
+  virtual bool ServiceIsCreatedWithBrowserContext() const;
 
-  // By default, TestingProfiles will be treated like normal profiles. You can
-  // override this so that by default, the service associated with the
-  // TestingProfile is NULL. (This is just a shortcut around
-  // SetTestingFactory() to make sure our profiles don't directly refer to the
+  // By default, TestingBrowserContexts will be treated like normal contexts.
+  // You can override this so that by default, the service associated with the
+  // TestingBrowserContext is NULL. (This is just a shortcut around
+  // SetTestingFactory() to make sure our contexts don't directly refer to the
   // services they use.)
   virtual bool ServiceIsNULLWhileTesting() const;
 
-  // Interface for people building a type of ProfileKeyedFactory: -------------
+  // Interface for people building a type of BrowserContextKeyedFactory: -------
 
-  // A helper object actually listens for notifications about Profile
+  // A helper object actually listens for notifications about BrowserContext
   // destruction, calculates the order in which things are destroyed and then
   // does a two pass shutdown.
   //
   // It is up to the individual factory types to determine what this two pass
   // shutdown means. The general framework guarantees the following:
   //
-  // - Each ProfileShutdown() is called in dependency order (and you may reach
-  //   out to other services during this phase).
+  // - Each BrowserContextShutdown() is called in dependency order (and you may
+  //   reach out to other services during this phase).
   //
-  // - Each ProfileDestroyed() is called in dependency order. We will
-  //   NOTREACHED() if you attempt to GetForProfile() any other service. You
-  //   should delete/deref/do other final memory management things during this
-  //   phase. You must also call the base class method as the last thing you
-  //   do.
-  virtual void ProfileShutdown(content::BrowserContext* profile) = 0;
-  virtual void ProfileDestroyed(content::BrowserContext* profile);
+  // - Each BrowserContextDestroyed() is called in dependency order. We will
+  //   NOTREACHED() if you attempt to GetForBrowserContext() any other service.
+  //   You should delete/deref/do other final memory management things during
+  //   this phase. You must also call the base class method as the last thing
+  //   you do.
+  virtual void BrowserContextShutdown(content::BrowserContext* context) = 0;
+  virtual void BrowserContextDestroyed(content::BrowserContext* context);
 
-  // Returns whether we've registered the preferences on this profile.
-  bool ArePreferencesSetOn(content::BrowserContext* profile) const;
+  // Returns whether we've registered the preferences on this context.
+  bool ArePreferencesSetOn(content::BrowserContext* context) const;
 
-  // Mark profile as Preferences set.
-  void MarkPreferencesSetOn(content::BrowserContext* profile);
+  // Mark context as Preferences set.
+  void MarkPreferencesSetOn(content::BrowserContext* context);
 
  private:
-  friend class ProfileDependencyManager;
-  friend class ProfileDependencyManagerUnittests;
+  friend class BrowserContextDependencyManager;
+  friend class BrowserContextDependencyManagerUnittests;
 
   // These two methods are for tight integration with the
-  // ProfileDependencyManager.
+  // BrowserContextDependencyManager.
 
   // Because of ServiceIsNULLWhileTesting(), we need a way to tell different
   // subclasses that they should disable testing.
-  virtual void SetEmptyTestingFactory(content::BrowserContext* profile) = 0;
+  virtual void SetEmptyTestingFactory(content::BrowserContext* context) = 0;
 
   // We also need a generalized, non-returning method that generates the object
-  // now for when we're creating the profile.
-  virtual void CreateServiceNow(content::BrowserContext* profile) = 0;
+  // now for when we're creating the context.
+  virtual void CreateServiceNow(content::BrowserContext* context) = 0;
 
-  // Which ProfileDependencyManager we should communicate with. In real code,
-  // this will always be ProfileDependencyManager::GetInstance(), but unit
-  // tests will want to use their own copy.
-  ProfileDependencyManager* dependency_manager_;
+  // Which BrowserContextDependencyManager we should communicate with.
+  // In real code, this will always be
+  // BrowserContextDependencyManager::GetInstance(), but unit tests will want
+  // to use their own copy.
+  BrowserContextDependencyManager* dependency_manager_;
 
-  // Profiles that have this service's preferences registered on them.
+  // BrowserContexts that have this service's preferences registered on them.
   std::set<content::BrowserContext*> registered_preferences_;
 
 #if !defined(NDEBUG)

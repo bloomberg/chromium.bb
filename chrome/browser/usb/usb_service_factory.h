@@ -11,7 +11,7 @@
 class Profile;
 class UsbService;
 
-class UsbServiceFactory : public ProfileKeyedServiceFactory {
+class UsbServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static UsbService* GetForProfile(Profile* profile);
   static bool HasUsbService(Profile* profile);
@@ -24,7 +24,7 @@ class UsbServiceFactory : public ProfileKeyedServiceFactory {
   UsbServiceFactory();
   virtual ~UsbServiceFactory();
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

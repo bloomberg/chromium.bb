@@ -23,12 +23,12 @@ namespace notifier {
 // delivered notifications for chrome. These are obtained from the sync service
 // and kept up to date.
 class ChromeNotifierService : public syncer::SyncableService,
-                              public ProfileKeyedService {
+                              public BrowserContextKeyedService {
  public:
   ChromeNotifierService(Profile* profile, NotificationUIManager* manager);
   virtual ~ChromeNotifierService();
 
-  // Methods from ProfileKeyedService.
+  // Methods from BrowserContextKeyedService.
   virtual void Shutdown() OVERRIDE;
 
   // syncer::SyncableService implementation.

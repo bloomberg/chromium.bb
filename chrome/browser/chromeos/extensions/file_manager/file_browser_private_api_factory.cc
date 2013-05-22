@@ -15,7 +15,7 @@
 FileBrowserPrivateAPI*
 FileBrowserPrivateAPIFactory::GetForProfile(Profile* profile) {
   return static_cast<FileBrowserPrivateAPI*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -25,9 +25,9 @@ FileBrowserPrivateAPIFactory::GetInstance() {
 }
 
 FileBrowserPrivateAPIFactory::FileBrowserPrivateAPIFactory()
-    : ProfileKeyedServiceFactory(
+    : BrowserContextKeyedServiceFactory(
           "FileBrowserPrivateAPI",
-          ProfileDependencyManager::GetInstance()) {
+          BrowserContextDependencyManager::GetInstance()) {
   DependsOn(drive::DriveIntegrationServiceFactory::GetInstance());
   DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
@@ -35,7 +35,8 @@ FileBrowserPrivateAPIFactory::FileBrowserPrivateAPIFactory()
 FileBrowserPrivateAPIFactory::~FileBrowserPrivateAPIFactory() {
 }
 
-ProfileKeyedService* FileBrowserPrivateAPIFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+FileBrowserPrivateAPIFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new FileBrowserPrivateAPI(static_cast<Profile*>(profile));
 }
@@ -46,7 +47,7 @@ content::BrowserContext* FileBrowserPrivateAPIFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
-bool FileBrowserPrivateAPIFactory::ServiceIsCreatedWithProfile() const {
+bool FileBrowserPrivateAPIFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

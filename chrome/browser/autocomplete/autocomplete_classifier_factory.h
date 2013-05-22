@@ -14,14 +14,14 @@ class Profile;
 
 // Singleton that owns all AutocompleteClassifiers and associates them with
 // Profiles.
-class AutocompleteClassifierFactory : public ProfileKeyedServiceFactory {
+class AutocompleteClassifierFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the AutocompleteClassifier for |profile|.
   static AutocompleteClassifier* GetForProfile(Profile* profile);
 
   static AutocompleteClassifierFactory* GetInstance();
 
-  static ProfileKeyedService* BuildInstanceFor(
+  static BrowserContextKeyedService* BuildInstanceFor(
       content::BrowserContext* profile);
 
  private:
@@ -30,11 +30,11 @@ class AutocompleteClassifierFactory : public ProfileKeyedServiceFactory {
   AutocompleteClassifierFactory();
   virtual ~AutocompleteClassifierFactory();
 
-  // ProfileKeyedServiceFactory:
+  // BrowserContextKeyedServiceFactory:
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteClassifierFactory);

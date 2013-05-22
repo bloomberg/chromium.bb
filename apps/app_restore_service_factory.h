@@ -17,7 +17,7 @@ class AppRestoreService;
 // Singleton that owns all AppRestoreServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated AppRestoreService.
-class AppRestoreServiceFactory : public ProfileKeyedServiceFactory {
+class AppRestoreServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static AppRestoreService* GetForProfile(Profile* profile);
 
@@ -31,10 +31,10 @@ class AppRestoreServiceFactory : public ProfileKeyedServiceFactory {
   AppRestoreServiceFactory();
   virtual ~AppRestoreServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
 };
 
 }  // namespace apps

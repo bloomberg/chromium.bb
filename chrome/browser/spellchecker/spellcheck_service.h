@@ -32,7 +32,7 @@ class RenderProcessHost;
 // Encapsulates the browser side spellcheck service. There is one of these per
 // profile and each is created by the SpellCheckServiceFactory.  The
 // SpellcheckService maintains any per-profile information about spellcheck.
-class SpellcheckService : public ProfileKeyedService,
+class SpellcheckService : public BrowserContextKeyedService,
                           public content::NotificationObserver,
                           public SpellcheckCustomDictionary::Observer,
                           public SpellcheckHunspellDictionary::Observer {

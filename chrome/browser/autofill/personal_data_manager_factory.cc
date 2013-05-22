@@ -53,7 +53,7 @@ PersonalDataManager* PersonalDataManagerFactory::GetForProfile(
     Profile* profile) {
   PersonalDataManagerService* service =
       static_cast<PersonalDataManagerService*>(
-          GetInstance()->GetServiceForProfile(profile, true));
+          GetInstance()->GetServiceForBrowserContext(profile, true));
 
   if (service)
     return service->GetPersonalDataManager();
@@ -68,15 +68,16 @@ PersonalDataManagerFactory* PersonalDataManagerFactory::GetInstance() {
 }
 
 PersonalDataManagerFactory::PersonalDataManagerFactory()
-    : ProfileKeyedServiceFactory("PersonalDataManager",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "PersonalDataManager",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(WebDataServiceFactory::GetInstance());
 }
 
 PersonalDataManagerFactory::~PersonalDataManagerFactory() {
 }
 
-ProfileKeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   PersonalDataManagerService* service =
       new PersonalDataManagerServiceImpl(static_cast<Profile*>(profile));

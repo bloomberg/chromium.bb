@@ -63,7 +63,7 @@ MockWebDataService* MockWebDataService::current_mock_web_data_service_ = NULL;
 
 class MockWebDataServiceWrapperCurrent : public MockWebDataServiceWrapperBase {
  public:
-  static ProfileKeyedService* Build(content::BrowserContext* profile) {
+  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
     return new MockWebDataServiceWrapperCurrent();
   }
 

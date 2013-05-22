@@ -22,7 +22,7 @@ class Profile;
 // This class collects authentication, signin and token information
 // to propagate to about:signin-internals via SigninInternalsUI.
 class AboutSigninInternals
-    : public ProfileKeyedService,
+    : public BrowserContextKeyedService,
       public signin_internals_util::SigninDiagnosticsObserver {
  public:
   class Observer {
@@ -63,7 +63,7 @@ class AboutSigninInternals
 
   void Initialize(Profile* profile);
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // Returns a dictionary of values in signin_status_ for use in

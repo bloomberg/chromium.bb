@@ -54,7 +54,7 @@ scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
   }
 
   return static_cast<PasswordStore*>(
-      GetInstance()->GetServiceForProfile(profile, true).get());
+      GetInstance()->GetServiceForBrowserContext(profile, true).get());
 }
 
 // static
@@ -63,9 +63,9 @@ PasswordStoreFactory* PasswordStoreFactory::GetInstance() {
 }
 
 PasswordStoreFactory::PasswordStoreFactory()
-    : RefcountedProfileKeyedServiceFactory(
+    : RefcountedBrowserContextKeyedServiceFactory(
         "PasswordStore",
-        ProfileDependencyManager::GetInstance()) {
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(WebDataServiceFactory::GetInstance());
 }
 
@@ -93,7 +93,7 @@ LocalProfileId PasswordStoreFactory::GetLocalProfileId(
 }
 #endif
 
-scoped_refptr<RefcountedProfileKeyedService>
+scoped_refptr<RefcountedBrowserContextKeyedService>
 PasswordStoreFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);

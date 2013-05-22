@@ -53,7 +53,7 @@ class FaviconCacheObserver {
 };
 
 // Encapsulates the logic for loading and storing synced favicons.
-// TODO(zea): make this a ProfileKeyedService.
+// TODO(zea): make this a BrowserContextKeyedService.
 class FaviconCache : public syncer::SyncableService,
                      public content::NotificationObserver {
  public:

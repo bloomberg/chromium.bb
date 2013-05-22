@@ -39,7 +39,7 @@ struct IdleMonitor {
 
 class IdleManager : public content::NotificationObserver,
                     public EventRouter::Observer,
-                    public ProfileKeyedService {
+                    public BrowserContextKeyedService {
  public:
   class IdleTimeProvider {
    public:
@@ -72,7 +72,7 @@ class IdleManager : public content::NotificationObserver,
 
   void Init();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // content::NotificationDelegate implementation.

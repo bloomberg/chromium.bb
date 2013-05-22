@@ -30,7 +30,7 @@ class ProfilePolicyConnector;
 // policy providers and other policy components.
 // TODO(joaodasilva): convert this class to a proper PKS once the PrefService,
 // which depends on this class, becomes a PKS too.
-class ProfilePolicyConnectorFactory : public ProfileKeyedBaseFactory {
+class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
  public:
   // Returns the ProfilePolicyConnectorFactory singleton.
   static ProfilePolicyConnectorFactory* GetInstance();
@@ -51,7 +51,7 @@ class ProfilePolicyConnectorFactory : public ProfileKeyedBaseFactory {
 
   // Overrides the |connector| for the given |profile|; use only in tests.
   // Once this class becomes a proper PKS then it can reuse the testing
-  // methods of ProfileKeyedServiceFactory.
+  // methods of BrowserContextKeyedServiceFactory.
   void SetServiceForTesting(Profile* profile,
                             ProfilePolicyConnector* connector);
 
@@ -68,9 +68,11 @@ class ProfilePolicyConnectorFactory : public ProfileKeyedBaseFactory {
       bool force_immediate_load,
       base::SequencedTaskRunner* sequenced_task_runner);
 
-  // ProfileKeyedBaseFactory:
-  virtual void ProfileShutdown(content::BrowserContext* context) OVERRIDE;
-  virtual void ProfileDestroyed(content::BrowserContext* context) OVERRIDE;
+  // BrowserContextKeyedBaseFactory:
+  virtual void BrowserContextShutdown(
+      content::BrowserContext* context) OVERRIDE;
+  virtual void BrowserContextDestroyed(
+      content::BrowserContext* context) OVERRIDE;
   virtual void RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
   virtual void SetEmptyTestingFactory(

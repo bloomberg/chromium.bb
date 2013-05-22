@@ -16,7 +16,7 @@ class Profile;
 // pinned tabs to restore at startup. PinnedTabService listens for the
 // appropriate set of notifications to know it should update preferences.
 class PinnedTabService : public content::NotificationObserver,
-                         public ProfileKeyedService {
+                         public BrowserContextKeyedService {
  public:
   explicit PinnedTabService(Profile* profile);
 

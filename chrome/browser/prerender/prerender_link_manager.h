@@ -35,7 +35,7 @@ class PrerenderManager;
 // being rendered in this chrome instance.  It receives messages from the
 // renderer indicating addition, cancelation and abandonment of link elements,
 // and controls the PrerenderManager accordingly.
-class PrerenderLinkManager : public ProfileKeyedService,
+class PrerenderLinkManager : public BrowserContextKeyedService,
                              public PrerenderHandle::Observer {
  public:
   explicit PrerenderLinkManager(PrerenderManager* manager);
@@ -113,7 +113,7 @@ class PrerenderLinkManager : public ProfileKeyedService,
 
   void RemovePrerender(LinkPrerender* prerender);
 
-  // From ProfileKeyedService:
+  // From BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // From PrerenderHandle::Observer:

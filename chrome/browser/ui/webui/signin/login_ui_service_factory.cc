@@ -11,8 +11,9 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 LoginUIServiceFactory::LoginUIServiceFactory()
-    : ProfileKeyedServiceFactory("LoginUIServiceFactory",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "LoginUIServiceFactory",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 LoginUIServiceFactory::~LoginUIServiceFactory() {}
@@ -20,7 +21,7 @@ LoginUIServiceFactory::~LoginUIServiceFactory() {}
 // static
 LoginUIService* LoginUIServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<LoginUIService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -28,7 +29,7 @@ LoginUIServiceFactory* LoginUIServiceFactory::GetInstance() {
   return Singleton<LoginUIServiceFactory>::get();
 }
 
-ProfileKeyedService* LoginUIServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* LoginUIServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new LoginUIService(static_cast<Profile*>(profile));
 }

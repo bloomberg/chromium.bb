@@ -73,7 +73,7 @@ bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
 }
 
 // static
-ProfileKeyedService* AbstractProfileSyncServiceTest::BuildTokenService(
+BrowserContextKeyedService* AbstractProfileSyncServiceTest::BuildTokenService(
     content::BrowserContext* profile) {
   return new TokenService;
 }

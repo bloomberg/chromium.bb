@@ -15,7 +15,7 @@ SessionService* SessionServiceFactory::GetForProfile(Profile* profile) {
   return NULL;
 #else
   return static_cast<SessionService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 #endif
 }
 
@@ -27,7 +27,7 @@ SessionService* SessionServiceFactory::GetForProfileIfExisting(
   return NULL;
 #else
   return static_cast<SessionService*>(
-      GetInstance()->GetServiceForProfile(profile, false));
+      GetInstance()->GetServiceForBrowserContext(profile, false));
 #endif
 }
 
@@ -37,12 +37,12 @@ void SessionServiceFactory::ShutdownForProfile(Profile* profile) {
   // been created yet. We do this to ensure session state matches the point in
   // time the user exited.
   SessionServiceFactory* factory = GetInstance();
-  factory->GetServiceForProfile(profile, true);
+  factory->GetServiceForBrowserContext(profile, true);
 
   // Shut down and remove the reference to the session service, and replace it
   // with an explicit NULL to prevent it being recreated on the next access.
-  factory->ProfileShutdown(profile);
-  factory->ProfileDestroyed(profile);
+  factory->BrowserContextShutdown(profile);
+  factory->BrowserContextDestroyed(profile);
   factory->Associate(profile, NULL);
 }
 
@@ -51,14 +51,15 @@ SessionServiceFactory* SessionServiceFactory::GetInstance() {
 }
 
 SessionServiceFactory::SessionServiceFactory()
-    : ProfileKeyedServiceFactory("SessionService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "SessionService",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 SessionServiceFactory::~SessionServiceFactory() {
 }
 
-ProfileKeyedService* SessionServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* SessionServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   SessionService* service = NULL;
   service = new SessionService(static_cast<Profile*>(profile));
@@ -66,7 +67,7 @@ ProfileKeyedService* SessionServiceFactory::BuildServiceInstanceFor(
   return service;
 }
 
-bool SessionServiceFactory::ServiceIsCreatedWithProfile() const {
+bool SessionServiceFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

@@ -32,7 +32,7 @@ namespace extensions {
 // page, shell windows, tray view, panels etc.) and other app level behaviour
 // (e.g. notifications the app is interested in, lifetime of the background
 // page).
-class ShellWindowRegistry : public ProfileKeyedService {
+class ShellWindowRegistry : public BrowserContextKeyedService {
  public:
   class Observer {
    public:
@@ -100,7 +100,7 @@ class ShellWindowRegistry : public ProfileKeyedService {
   // ShellWindow::WindowType, or 0 for any window type.
   static bool IsShellWindowRegisteredInAnyProfile(int window_type_mask);
 
-  class Factory : public ProfileKeyedServiceFactory {
+  class Factory : public BrowserContextKeyedServiceFactory {
    public:
     static ShellWindowRegistry* GetForProfile(Profile* profile, bool create);
 
@@ -111,10 +111,10 @@ class ShellWindowRegistry : public ProfileKeyedService {
     Factory();
     virtual ~Factory();
 
-    // ProfileKeyedServiceFactory
-    virtual ProfileKeyedService* BuildServiceInstanceFor(
+    // BrowserContextKeyedServiceFactory
+    virtual BrowserContextKeyedService* BuildServiceInstanceFor(
         content::BrowserContext* profile) const OVERRIDE;
-    virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+    virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
     virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
     virtual content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const OVERRIDE;

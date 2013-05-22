@@ -13,7 +13,7 @@
 class Profile;
 class FindBarState;
 
-class FindBarStateFactory : public ProfileKeyedServiceFactory {
+class FindBarStateFactory : public BrowserContextKeyedServiceFactory {
  public:
   static FindBarState* GetForProfile(Profile* profile);
 
@@ -30,8 +30,8 @@ class FindBarStateFactory : public ProfileKeyedServiceFactory {
   FindBarStateFactory();
   virtual ~FindBarStateFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

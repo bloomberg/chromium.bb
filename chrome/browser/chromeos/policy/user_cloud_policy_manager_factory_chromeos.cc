@@ -66,8 +66,9 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
 }
 
 UserCloudPolicyManagerFactoryChromeOS::UserCloudPolicyManagerFactoryChromeOS()
-    : ProfileKeyedBaseFactory("UserCloudPolicyManagerChromeOS",
-                              ProfileDependencyManager::GetInstance()) {}
+    : BrowserContextKeyedBaseFactory(
+        "UserCloudPolicyManagerChromeOS",
+        BrowserContextDependencyManager::GetInstance()) {}
 
 UserCloudPolicyManagerFactoryChromeOS::
     ~UserCloudPolicyManagerFactoryChromeOS() {}
@@ -156,7 +157,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   return manager.Pass();
 }
 
-void UserCloudPolicyManagerFactoryChromeOS::ProfileShutdown(
+void UserCloudPolicyManagerFactoryChromeOS::BrowserContextShutdown(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   if (profile->IsOffTheRecord())
@@ -166,11 +167,11 @@ void UserCloudPolicyManagerFactoryChromeOS::ProfileShutdown(
     manager->Shutdown();
 }
 
-void UserCloudPolicyManagerFactoryChromeOS::ProfileDestroyed(
+void UserCloudPolicyManagerFactoryChromeOS::BrowserContextDestroyed(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   managers_.erase(profile);
-  ProfileKeyedBaseFactory::ProfileDestroyed(context);
+  BrowserContextKeyedBaseFactory::BrowserContextDestroyed(context);
 }
 
 void UserCloudPolicyManagerFactoryChromeOS::SetEmptyTestingFactory(

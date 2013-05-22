@@ -12,7 +12,7 @@
 class ChromeToMobileService;
 class Profile;
 
-class ChromeToMobileServiceFactory : public ProfileKeyedServiceFactory {
+class ChromeToMobileServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Get the singleton ChromeToMobileServiceFactory instance.
   static ChromeToMobileServiceFactory* GetInstance();
@@ -21,8 +21,8 @@ class ChromeToMobileServiceFactory : public ProfileKeyedServiceFactory {
   static ChromeToMobileService* GetForProfile(Profile* profile);
 
  protected:
-  // ProfileKeyedServiceFactory overrides:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory overrides:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 
  private:

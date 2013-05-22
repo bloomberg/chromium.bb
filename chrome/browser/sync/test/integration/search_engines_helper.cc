@@ -61,9 +61,9 @@ bool TURLsMatch(const TemplateURL* turl1, const TemplateURL* turl2) {
 
 bool ServicesMatch(int profile_a, int profile_b) {
   TemplateURLService* service_a =
-      search_engines_helper::GetServiceForProfile(profile_a);
+      search_engines_helper::GetServiceForBrowserContext(profile_a);
   TemplateURLService* service_b =
-      search_engines_helper::GetServiceForProfile(profile_b);
+      search_engines_helper::GetServiceForBrowserContext(profile_b);
   CHECK(service_a);
   CHECK(service_b);
 
@@ -115,7 +115,7 @@ string16 CreateKeyword(int seed) {
 
 namespace search_engines_helper {
 
-TemplateURLService* GetServiceForProfile(int profile_index) {
+TemplateURLService* GetServiceForBrowserContext(int profile_index) {
   return TemplateURLServiceFactory::GetForProfile(
       test()->GetProfile(profile_index));
 }
@@ -126,7 +126,7 @@ TemplateURLService* GetVerifierService() {
 
 bool ServiceMatchesVerifier(int profile_index) {
   TemplateURLService* verifier = GetVerifierService();
-  TemplateURLService* other = GetServiceForProfile(profile_index);
+  TemplateURLService* other = GetServiceForBrowserContext(profile_index);
 
   CHECK(verifier);
   CHECK(other);
@@ -220,7 +220,7 @@ void EditSearchEngine(int profile_index,
                       const string16& new_keyword,
                       const std::string& url) {
   DCHECK(!url.empty());
-  TemplateURLService* service = GetServiceForProfile(profile_index);
+  TemplateURLService* service = GetServiceForBrowserContext(profile_index);
   TemplateURL* turl = service->GetTemplateURLForKeyword(keyword);
   EXPECT_TRUE(turl);
   ASSERT_FALSE(new_keyword.empty());
@@ -236,7 +236,7 @@ void EditSearchEngine(int profile_index,
 }
 
 void DeleteSearchEngineBySeed(int profile_index, int seed) {
-  TemplateURLService* service = GetServiceForProfile(profile_index);
+  TemplateURLService* service = GetServiceForBrowserContext(profile_index);
   string16 keyword(CreateKeyword(seed));
   TemplateURL* turl = service->GetTemplateURLForKeyword(keyword);
   EXPECT_TRUE(turl);
@@ -251,7 +251,7 @@ void DeleteSearchEngineBySeed(int profile_index, int seed) {
 }
 
 void ChangeDefaultSearchProvider(int profile_index, int seed) {
-  TemplateURLService* service = GetServiceForProfile(profile_index);
+  TemplateURLService* service = GetServiceForBrowserContext(profile_index);
   ASSERT_TRUE(service);
   TemplateURL* turl = service->GetTemplateURLForKeyword(CreateKeyword(seed));
   ASSERT_TRUE(turl);

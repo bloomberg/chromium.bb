@@ -156,8 +156,9 @@ scoped_refptr<WebDataService> WebDataService::FromBrowserContext(
 }
 
 WebDataServiceFactory::WebDataServiceFactory()
-    : ProfileKeyedServiceFactory("WebDataService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "WebDataService",
+        BrowserContextDependencyManager::GetInstance()) {
   // WebDataServiceFactory has no dependecies.
 }
 
@@ -171,7 +172,7 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForProfile(
   // AutofillWebDataService::FromBrowserContext (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
   return static_cast<WebDataServiceWrapper*>(
-          GetInstance()->GetServiceForProfile(profile, true));
+          GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -182,7 +183,7 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForProfileIfExists(
   // AutofillWebDataService::FromBrowserContext (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
   return static_cast<WebDataServiceWrapper*>(
-          GetInstance()->GetServiceForProfile(profile, false));
+          GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
@@ -195,7 +196,7 @@ content::BrowserContext* WebDataServiceFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-ProfileKeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new WebDataServiceWrapper(static_cast<Profile*>(profile));
 }

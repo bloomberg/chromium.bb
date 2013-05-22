@@ -53,7 +53,7 @@ extern "C" NSString* const kBrowserThemeDidChangeNotification;
 
 class ThemeService : public base::NonThreadSafe,
                      public content::NotificationObserver,
-                     public ProfileKeyedService,
+                     public BrowserContextKeyedService,
                      public ui::ThemeProvider {
  public:
   // Public constants used in ThemeService and its subclasses:

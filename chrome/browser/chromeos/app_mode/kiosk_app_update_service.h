@@ -20,7 +20,7 @@ class Profile;
 namespace chromeos {
 
 // This class enforces automatic restart on app and Chrome updates in app mode.
-class KioskAppUpdateService : public ProfileKeyedService,
+class KioskAppUpdateService : public BrowserContextKeyedService,
                               public extensions::UpdateObserver {
  public:
   explicit KioskAppUpdateService(Profile* profile);
@@ -37,7 +37,7 @@ class KioskAppUpdateService : public ProfileKeyedService,
   virtual void OnAppUpdateAvailable(const std::string& app_id) OVERRIDE;
   virtual void OnChromeUpdateAvailable() OVERRIDE {}
 
-  // ProfileKeyedService overrides:
+  // BrowserContextKeyedService overrides:
   virtual void Shutdown() OVERRIDE;
 
  private:
@@ -52,7 +52,7 @@ class KioskAppUpdateService : public ProfileKeyedService,
 
 // Singleton that owns all KioskAppUpdateServices and associates them with
 // profiles.
-class KioskAppUpdateServiceFactory: public ProfileKeyedServiceFactory {
+class KioskAppUpdateServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the KioskAppUpdateService for |profile|, creating it if it is not
   // yet created.
@@ -67,8 +67,8 @@ class KioskAppUpdateServiceFactory: public ProfileKeyedServiceFactory {
   KioskAppUpdateServiceFactory();
   virtual ~KioskAppUpdateServiceFactory();
 
-  // ProfileKeyedServiceFactory overrides:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory overrides:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

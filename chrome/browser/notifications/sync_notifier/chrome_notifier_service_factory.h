@@ -13,7 +13,7 @@ namespace notifier {
 
 class ChromeNotifierService;
 
-class ChromeNotifierServiceFactory : public ProfileKeyedServiceFactory {
+class ChromeNotifierServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ChromeNotifierService* GetForProfile(
       Profile* profile, Profile::ServiceAccessType sat);
@@ -26,8 +26,8 @@ class ChromeNotifierServiceFactory : public ProfileKeyedServiceFactory {
   ChromeNotifierServiceFactory();
   virtual ~ChromeNotifierServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

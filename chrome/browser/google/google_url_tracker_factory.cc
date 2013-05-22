@@ -17,7 +17,7 @@
 // static
 GoogleURLTracker* GoogleURLTrackerFactory::GetForProfile(Profile* profile) {
   return static_cast<GoogleURLTracker*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -26,14 +26,15 @@ GoogleURLTrackerFactory* GoogleURLTrackerFactory::GetInstance() {
 }
 
 GoogleURLTrackerFactory::GoogleURLTrackerFactory()
-    : ProfileKeyedServiceFactory("GoogleURLTracker",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "GoogleURLTracker",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 GoogleURLTrackerFactory::~GoogleURLTrackerFactory() {
 }
 
-ProfileKeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper(
       new GoogleURLTrackerNavigationHelperImpl());
@@ -58,7 +59,7 @@ content::BrowserContext* GoogleURLTrackerFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-bool GoogleURLTrackerFactory::ServiceIsCreatedWithProfile() const {
+bool GoogleURLTrackerFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

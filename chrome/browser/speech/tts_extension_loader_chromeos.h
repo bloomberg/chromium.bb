@@ -11,7 +11,7 @@
 // Profile-keyed class that loads a built-in TTS component extension
 // into a given profile on Chrome OS.
 class TtsExtensionLoaderChromeOs
-    : public ProfileKeyedService,
+    : public BrowserContextKeyedService,
       public extensions::EventRouter::Observer {
  public:
   static TtsExtensionLoaderChromeOs* GetInstance(Profile* profile);

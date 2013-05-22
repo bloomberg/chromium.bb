@@ -20,7 +20,7 @@ class CaptivePortalService;
 // Profiles.  Listens for the Profile's destruction notification and cleans up
 // the associated CaptivePortalService.  Incognito profiles have their own
 // CaptivePortalService.
-class CaptivePortalServiceFactory : public ProfileKeyedServiceFactory {
+class CaptivePortalServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the CaptivePortalService for |profile|.
   static CaptivePortalService* GetForProfile(Profile* profile);
@@ -35,8 +35,8 @@ class CaptivePortalServiceFactory : public ProfileKeyedServiceFactory {
   CaptivePortalServiceFactory();
   virtual ~CaptivePortalServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

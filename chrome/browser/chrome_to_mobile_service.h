@@ -43,7 +43,7 @@ class PrefRegistrySyncable;
 
 // ChromeToMobileService connects to the cloud print service to enumerate
 // compatible mobiles owned by its profile and send URLs and MHTML snapshots.
-class ChromeToMobileService : public ProfileKeyedService,
+class ChromeToMobileService : public BrowserContextKeyedService,
                               public net::URLFetcherDelegate,
                               public content::NotificationObserver,
                               public OAuth2AccessTokenConsumer,
@@ -134,7 +134,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Opens the "Learn More" help article link in the supplied |browser|.
   void LearnMore(Browser* browser) const;
 
-  // ProfileKeyedService method.
+  // BrowserContextKeyedService method.
   virtual void Shutdown() OVERRIDE;
 
   // net::URLFetcherDelegate method.

@@ -14,14 +14,14 @@ namespace extensions {
 // static
 ImageLoader* ImageLoaderFactory::GetForProfile(Profile* profile) {
   return static_cast<ImageLoader*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
 void ImageLoaderFactory::ResetForProfile(Profile* profile) {
   ImageLoaderFactory* factory = GetInstance();
-  factory->ProfileShutdown(profile);
-  factory->ProfileDestroyed(profile);
+  factory->BrowserContextShutdown(profile);
+  factory->BrowserContextDestroyed(profile);
 }
 
 ImageLoaderFactory* ImageLoaderFactory::GetInstance() {
@@ -29,19 +29,20 @@ ImageLoaderFactory* ImageLoaderFactory::GetInstance() {
 }
 
 ImageLoaderFactory::ImageLoaderFactory()
-    : ProfileKeyedServiceFactory("ImageLoader",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ImageLoader",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 ImageLoaderFactory::~ImageLoaderFactory() {
 }
 
-ProfileKeyedService* ImageLoaderFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* ImageLoaderFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ImageLoader;
 }
 
-bool ImageLoaderFactory::ServiceIsCreatedWithProfile() const {
+bool ImageLoaderFactory::ServiceIsCreatedWithBrowserContext() const {
   return false;
 }
 

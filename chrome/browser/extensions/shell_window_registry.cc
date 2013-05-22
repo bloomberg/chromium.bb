@@ -256,7 +256,7 @@ void ShellWindowRegistry::BringToFront(ShellWindow* shell_window) {
 ShellWindowRegistry* ShellWindowRegistry::Factory::GetForProfile(
     Profile* profile, bool create) {
   return static_cast<ShellWindowRegistry*>(
-      GetInstance()->GetServiceForProfile(profile, create));
+      GetInstance()->GetServiceForBrowserContext(profile, create));
 }
 
 ShellWindowRegistry::Factory* ShellWindowRegistry::Factory::GetInstance() {
@@ -264,19 +264,21 @@ ShellWindowRegistry::Factory* ShellWindowRegistry::Factory::GetInstance() {
 }
 
 ShellWindowRegistry::Factory::Factory()
-    : ProfileKeyedServiceFactory("ShellWindowRegistry",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ShellWindowRegistry",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 ShellWindowRegistry::Factory::~Factory() {
 }
 
-ProfileKeyedService* ShellWindowRegistry::Factory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+ShellWindowRegistry::Factory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ShellWindowRegistry(static_cast<Profile*>(profile));
 }
 
-bool ShellWindowRegistry::Factory::ServiceIsCreatedWithProfile() const {
+bool ShellWindowRegistry::Factory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

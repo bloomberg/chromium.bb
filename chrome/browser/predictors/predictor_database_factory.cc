@@ -14,7 +14,7 @@ namespace predictors {
 // static
 PredictorDatabase* PredictorDatabaseFactory::GetForProfile(Profile* profile) {
   return static_cast<PredictorDatabase*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -23,14 +23,14 @@ PredictorDatabaseFactory* PredictorDatabaseFactory::GetInstance() {
 }
 
 PredictorDatabaseFactory::PredictorDatabaseFactory()
-    : ProfileKeyedServiceFactory(
-        "PredictorDatabase", ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "PredictorDatabase", BrowserContextDependencyManager::GetInstance()) {
 }
 
 PredictorDatabaseFactory::~PredictorDatabaseFactory() {
 }
 
-ProfileKeyedService* PredictorDatabaseFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* PredictorDatabaseFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new PredictorDatabase(static_cast<Profile*>(profile));
 }

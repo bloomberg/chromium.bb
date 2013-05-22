@@ -18,7 +18,7 @@ class Profile;
 // error should be shown using this service. Examples of global errors are:
 //   - the previous session crashed for a given profile.
 //   - a sync error occurred
-class GlobalErrorService : public ProfileKeyedService {
+class GlobalErrorService : public BrowserContextKeyedService {
  public:
   // Type used to represent the list of currently active errors.
   typedef std::vector<GlobalError*> GlobalErrorList;

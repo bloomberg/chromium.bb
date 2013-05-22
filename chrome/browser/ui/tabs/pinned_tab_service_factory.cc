@@ -12,7 +12,7 @@
 PinnedTabService* PinnedTabServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<PinnedTabService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 PinnedTabServiceFactory* PinnedTabServiceFactory::GetInstance() {
@@ -20,19 +20,20 @@ PinnedTabServiceFactory* PinnedTabServiceFactory::GetInstance() {
 }
 
 PinnedTabServiceFactory::PinnedTabServiceFactory()
-    : ProfileKeyedServiceFactory("PinnedTabService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "PinnedTabService",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 PinnedTabServiceFactory::~PinnedTabServiceFactory() {
 }
 
-ProfileKeyedService* PinnedTabServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* PinnedTabServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new PinnedTabService(static_cast<Profile*>(profile));
 }
 
-bool PinnedTabServiceFactory::ServiceIsCreatedWithProfile() const {
+bool PinnedTabServiceFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

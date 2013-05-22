@@ -19,7 +19,7 @@ DriveNotificationManagerFactory::GetForProfile(Profile* profile) {
     return NULL;
 
   return static_cast<DriveNotificationManager*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -29,14 +29,16 @@ DriveNotificationManagerFactory::GetInstance() {
 }
 
 DriveNotificationManagerFactory::DriveNotificationManagerFactory()
-    : ProfileKeyedServiceFactory("DriveNotificationManager",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "DriveNotificationManager",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 DriveNotificationManagerFactory::~DriveNotificationManagerFactory() {}
 
-ProfileKeyedService* DriveNotificationManagerFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+DriveNotificationManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new DriveNotificationManager(static_cast<Profile*>(profile));
 }

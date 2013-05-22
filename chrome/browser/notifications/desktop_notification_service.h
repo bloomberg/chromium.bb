@@ -44,7 +44,7 @@ class PrefRegistrySyncable;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
-class DesktopNotificationService : public ProfileKeyedService,
+class DesktopNotificationService : public BrowserContextKeyedService,
                                    public content::NotificationObserver {
  public:
   enum DesktopNotificationSource {

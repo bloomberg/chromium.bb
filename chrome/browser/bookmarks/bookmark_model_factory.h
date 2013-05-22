@@ -15,7 +15,7 @@ class Profile;
 class BookmarkModel;
 
 // Singleton that owns all BookmarkModel and associates them with Profiles.
-class BookmarkModelFactory : public ProfileKeyedServiceFactory {
+class BookmarkModelFactory : public BrowserContextKeyedServiceFactory {
  public:
   static BookmarkModel* GetForProfile(Profile* profile);
 
@@ -29,8 +29,8 @@ class BookmarkModelFactory : public ProfileKeyedServiceFactory {
   BookmarkModelFactory();
   virtual ~BookmarkModelFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
   virtual void RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;

@@ -9,8 +9,9 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 StartupTaskRunnerServiceFactory::StartupTaskRunnerServiceFactory()
-    : ProfileKeyedServiceFactory("StartupTaskRunnerServiceFactory",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "StartupTaskRunnerServiceFactory",
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 StartupTaskRunnerServiceFactory::~StartupTaskRunnerServiceFactory() {}
@@ -19,7 +20,7 @@ StartupTaskRunnerServiceFactory::~StartupTaskRunnerServiceFactory() {}
 StartupTaskRunnerService* StartupTaskRunnerServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<StartupTaskRunnerService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -28,7 +29,8 @@ StartupTaskRunnerServiceFactory*
   return Singleton<StartupTaskRunnerServiceFactory>::get();
 }
 
-ProfileKeyedService* StartupTaskRunnerServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+StartupTaskRunnerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new StartupTaskRunnerService(static_cast<Profile*>(profile));
 }

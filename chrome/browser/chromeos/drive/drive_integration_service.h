@@ -69,7 +69,7 @@ class DriveIntegrationServiceObserver {
 // that are used to integrate Drive to Chrome. The object of this class is
 // created per-profile.
 class DriveIntegrationService
-    : public ProfileKeyedService,
+    : public BrowserContextKeyedService,
       public google_apis::DriveNotificationObserver {
  public:
   // test_drive_service, test_cache_root and test_file_system are used by tests
@@ -86,7 +86,7 @@ class DriveIntegrationService
   // other functions.
   void Initialize();
 
-  // ProfileKeyedService override:
+  // BrowserContextKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
   // Adds and removes the observer.
@@ -178,7 +178,8 @@ class DriveIntegrationService
 
 // Singleton that owns all instances of DriveIntegrationService and
 // associates them with Profiles.
-class DriveIntegrationServiceFactory : public ProfileKeyedServiceFactory {
+class DriveIntegrationServiceFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
   // Factory function used by tests.
   typedef base::Callback<DriveIntegrationService*(Profile* profile)>
@@ -222,8 +223,8 @@ class DriveIntegrationServiceFactory : public ProfileKeyedServiceFactory {
   DriveIntegrationServiceFactory();
   virtual ~DriveIntegrationServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   FactoryCallback factory_for_test_;

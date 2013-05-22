@@ -75,7 +75,7 @@ class BookmarksAPI : public ProfileKeyedAPI,
   explicit BookmarksAPI(Profile* profile);
   virtual ~BookmarksAPI();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPI implementation.

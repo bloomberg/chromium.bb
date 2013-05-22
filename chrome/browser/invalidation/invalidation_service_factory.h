@@ -18,21 +18,23 @@ class Profile;
 
 namespace invalidation {
 
-// A ProfileKeyedServiceFactory to construct InvalidationServices.  The
+// A BrowserContextKeyedServiceFactory to construct InvalidationServices.  The
 // implementation of the InvalidationService may be completely different on
 // different platforms; this class should help to hide this complexity.  It also
 // exposes some factory methods that are useful for setting up tests that rely
 // on invalidations.
-class InvalidationServiceFactory : public ProfileKeyedServiceFactory {
+class InvalidationServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // TODO(rlarocque): Re-enable this once InvalidationFrontend can extend
-  // ProfileKeyedService.
+  // BrowserContextKeyedService.
   // static InvalidationFrontend* GetForProfile(Profile* profile);
 
   static InvalidationServiceFactory* GetInstance();
 
-  static ProfileKeyedService* BuildP2PInvalidationServiceFor(Profile* profile);
-  static ProfileKeyedService* BuildTestServiceInstanceFor(Profile* profile);
+  static BrowserContextKeyedService* BuildP2PInvalidationServiceFor(
+      Profile* profile);
+  static BrowserContextKeyedService* BuildTestServiceInstanceFor(
+      Profile* profile);
 
  private:
   friend struct DefaultSingletonTraits<InvalidationServiceFactory>;
@@ -40,8 +42,8 @@ class InvalidationServiceFactory : public ProfileKeyedServiceFactory {
   InvalidationServiceFactory();
   virtual ~InvalidationServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   // TODO(rlarocque): Use this class, not InvalidatorStorage, to register
   // for user prefs.

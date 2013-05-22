@@ -25,13 +25,13 @@ namespace extensions {
 
 namespace {
 
-// ProfileKeyedServiceFactory for ExtensionActionManager.
-class ExtensionActionManagerFactory : public ProfileKeyedServiceFactory {
+// BrowserContextKeyedServiceFactory for ExtensionActionManager.
+class ExtensionActionManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // ProfileKeyedServiceFactory implementation:
+  // BrowserContextKeyedServiceFactory implementation:
   static ExtensionActionManager* GetForProfile(Profile* profile) {
     return static_cast<ExtensionActionManager*>(
-        GetInstance()->GetServiceForProfile(profile, true));
+        GetInstance()->GetServiceForBrowserContext(profile, true));
   }
 
   static ExtensionActionManagerFactory* GetInstance();
@@ -40,11 +40,12 @@ class ExtensionActionManagerFactory : public ProfileKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ExtensionActionManagerFactory>;
 
   ExtensionActionManagerFactory()
-      : ProfileKeyedServiceFactory("ExtensionActionManager",
-                                   ProfileDependencyManager::GetInstance()) {
+      : BrowserContextKeyedServiceFactory(
+          "ExtensionActionManager",
+          BrowserContextDependencyManager::GetInstance()) {
   }
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE {
     return new ExtensionActionManager(static_cast<Profile*>(profile));
   }

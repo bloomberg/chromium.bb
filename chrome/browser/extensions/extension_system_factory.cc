@@ -21,7 +21,7 @@ namespace extensions {
 ExtensionSystemImpl::Shared*
 ExtensionSystemSharedFactory::GetForProfile(Profile* profile) {
   return static_cast<ExtensionSystemImpl::Shared*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -30,9 +30,9 @@ ExtensionSystemSharedFactory* ExtensionSystemSharedFactory::GetInstance() {
 }
 
 ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
-    : ProfileKeyedServiceFactory(
+    : BrowserContextKeyedServiceFactory(
         "ExtensionSystemShared",
-        ProfileDependencyManager::GetInstance()) {
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionPrefsFactory::GetInstance());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
 #if defined(ENABLE_THEMES)
@@ -44,7 +44,8 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
 ExtensionSystemSharedFactory::~ExtensionSystemSharedFactory() {
 }
 
-ProfileKeyedService* ExtensionSystemSharedFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+ExtensionSystemSharedFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ExtensionSystemImpl::Shared(static_cast<Profile*>(profile));
 }
@@ -59,7 +60,7 @@ content::BrowserContext* ExtensionSystemSharedFactory::GetBrowserContextToUse(
 // static
 ExtensionSystem* ExtensionSystemFactory::GetForProfile(Profile* profile) {
   return static_cast<ExtensionSystem*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -68,16 +69,16 @@ ExtensionSystemFactory* ExtensionSystemFactory::GetInstance() {
 }
 
 ExtensionSystemFactory::ExtensionSystemFactory()
-    : ProfileKeyedServiceFactory(
+    : BrowserContextKeyedServiceFactory(
         "ExtensionSystem",
-        ProfileDependencyManager::GetInstance()) {
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionSystemSharedFactory::GetInstance());
 }
 
 ExtensionSystemFactory::~ExtensionSystemFactory() {
 }
 
-ProfileKeyedService* ExtensionSystemFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* ExtensionSystemFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ExtensionSystemImpl(static_cast<Profile*>(profile));
 }
@@ -87,7 +88,7 @@ content::BrowserContext* ExtensionSystemFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
-bool ExtensionSystemFactory::ServiceIsCreatedWithProfile() const {
+bool ExtensionSystemFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

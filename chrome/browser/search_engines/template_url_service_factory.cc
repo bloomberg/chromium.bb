@@ -17,7 +17,7 @@
 // static
 TemplateURLService* TemplateURLServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<TemplateURLService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -26,14 +26,15 @@ TemplateURLServiceFactory* TemplateURLServiceFactory::GetInstance() {
 }
 
 // static
-ProfileKeyedService* TemplateURLServiceFactory::BuildInstanceFor(
+BrowserContextKeyedService* TemplateURLServiceFactory::BuildInstanceFor(
     content::BrowserContext* profile) {
   return new TemplateURLService(static_cast<Profile*>(profile));
 }
 
 TemplateURLServiceFactory::TemplateURLServiceFactory()
-    : ProfileKeyedServiceFactory("TemplateURLServiceFactory",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "TemplateURLServiceFactory",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(GoogleURLTrackerFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
@@ -41,7 +42,7 @@ TemplateURLServiceFactory::TemplateURLServiceFactory()
 
 TemplateURLServiceFactory::~TemplateURLServiceFactory() {}
 
-ProfileKeyedService* TemplateURLServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* TemplateURLServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return BuildInstanceFor(static_cast<Profile*>(profile));
 }
@@ -112,17 +113,17 @@ bool TemplateURLServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 
-void TemplateURLServiceFactory::ProfileShutdown(
+void TemplateURLServiceFactory::BrowserContextShutdown(
     content::BrowserContext* profile) {
   // We shutdown AND destroy the TemplateURLService during this pass.
   // TemplateURLService schedules a task on the WebDataService from its
   // destructor. Delete it first to ensure the task gets scheduled before we
   // shut down the database.
-  ProfileKeyedServiceFactory::ProfileShutdown(profile);
-  ProfileKeyedServiceFactory::ProfileDestroyed(profile);
+  BrowserContextKeyedServiceFactory::BrowserContextShutdown(profile);
+  BrowserContextKeyedServiceFactory::BrowserContextDestroyed(profile);
 }
 
-void TemplateURLServiceFactory::ProfileDestroyed(
+void TemplateURLServiceFactory::BrowserContextDestroyed(
     content::BrowserContext* profile) {
   // Don't double delete.
 }

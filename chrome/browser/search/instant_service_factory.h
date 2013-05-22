@@ -12,10 +12,10 @@
 
 class InstantService;
 class Profile;
-class ProfileKeyedService;
+class BrowserContextKeyedService;
 
 // Singleton that owns all InstantServices and associates them with Profiles.
-class InstantServiceFactory : public ProfileKeyedServiceFactory {
+class InstantServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the InstantService for |profile|.
   static InstantService* GetForProfile(Profile* profile);
@@ -28,10 +28,10 @@ class InstantServiceFactory : public ProfileKeyedServiceFactory {
   InstantServiceFactory();
   virtual ~InstantServiceFactory();
 
-  // Overridden from ProfileKeyedServiceFactory:
+  // Overridden from BrowserContextKeyedServiceFactory:
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(InstantServiceFactory);

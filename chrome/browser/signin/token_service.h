@@ -68,7 +68,7 @@ class URLRequestContextGetter;
 // The TokenService is a Profile member, so all calls are expected
 // from the UI thread.
 class TokenService : public GaiaAuthConsumer,
-                     public ProfileKeyedService,
+                     public BrowserContextKeyedService,
                      public WebDataServiceConsumer {
  public:
    TokenService();
@@ -102,7 +102,7 @@ class TokenService : public GaiaAuthConsumer,
     GoogleServiceAuthError error_;
   };
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // Methods to register or remove SigninDiagnosticObservers

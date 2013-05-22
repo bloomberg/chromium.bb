@@ -37,7 +37,7 @@ namespace sync_file_system {
 class SyncEventObserver;
 
 class SyncFileSystemService
-    : public ProfileKeyedService,
+    : public BrowserContextKeyedService,
       public ProfileSyncServiceObserver,
       public LocalFileSyncService::Observer,
       public RemoteFileSyncService::Observer,
@@ -45,7 +45,7 @@ class SyncFileSystemService
       public content::NotificationObserver,
       public base::SupportsWeakPtr<SyncFileSystemService> {
  public:
-  // ProfileKeyedService overrides.
+  // BrowserContextKeyedService overrides.
   virtual void Shutdown() OVERRIDE;
 
   void InitializeForApp(

@@ -33,7 +33,7 @@ class PrefRegistrySyncable;
 // This class handles all the information related to a given managed profile
 // (e.g. the installed content packs, the default URL filtering behavior, or
 // manual whitelist/blacklist overrides).
-class ManagedUserService : public ProfileKeyedService,
+class ManagedUserService : public BrowserContextKeyedService,
                            public extensions::ManagementPolicy::Provider,
                            public content::NotificationObserver {
  public:
@@ -206,7 +206,7 @@ class ManagedUserService : public ProfileKeyedService,
 
   base::WeakPtrFactory<ManagedUserService> weak_ptr_factory_;
 
-  // Owns us via the ProfileKeyedService mechanism.
+  // Owns us via the BrowserContextKeyedService mechanism.
   Profile* profile_;
 
   content::NotificationRegistrar registrar_;

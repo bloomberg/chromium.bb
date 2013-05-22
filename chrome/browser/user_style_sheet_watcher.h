@@ -22,7 +22,7 @@ class UserStyleSheetLoader;
 // whenever the file changes.
 class UserStyleSheetWatcher
     : public content::NotificationObserver,
-      public RefcountedProfileKeyedService {
+      public RefcountedBrowserContextKeyedService {
  public:
   UserStyleSheetWatcher(Profile* profile, const base::FilePath& profile_path);
 

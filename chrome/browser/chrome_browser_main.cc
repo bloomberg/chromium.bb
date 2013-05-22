@@ -1492,7 +1492,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // the service process if needed. This is needed because the service process
   // might have shutdown because an update was available.
   // TODO(torne): this should maybe be done with
-  // ProfileKeyedServiceFactory::ServiceIsCreatedWithProfile() instead?
+  // BrowserContextKeyedServiceFactory::ServiceIsCreatedWithBrowserContext()
+  // instead?
 #if !defined(OS_ANDROID)
   CloudPrintProxyServiceFactory::GetForProfile(profile_);
 #endif

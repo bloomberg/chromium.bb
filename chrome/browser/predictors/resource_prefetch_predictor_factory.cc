@@ -17,7 +17,7 @@ namespace predictors {
 ResourcePrefetchPredictor* ResourcePrefetchPredictorFactory::GetForProfile(
     Profile* profile) {
   return static_cast<ResourcePrefetchPredictor*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -27,15 +27,16 @@ ResourcePrefetchPredictorFactory::GetInstance() {
 }
 
 ResourcePrefetchPredictorFactory::ResourcePrefetchPredictorFactory()
-    : ProfileKeyedServiceFactory("ResourcePrefetchPredictor",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ResourcePrefetchPredictor",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(PredictorDatabaseFactory::GetInstance());
 }
 
 ResourcePrefetchPredictorFactory::~ResourcePrefetchPredictorFactory() {}
 
-ProfileKeyedService*
+BrowserContextKeyedService*
     ResourcePrefetchPredictorFactory::BuildServiceInstanceFor(
         content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);

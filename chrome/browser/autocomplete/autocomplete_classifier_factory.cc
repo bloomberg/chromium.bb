@@ -17,7 +17,7 @@
 AutocompleteClassifier* AutocompleteClassifierFactory::GetForProfile(
     Profile* profile) {
   return static_cast<AutocompleteClassifier*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -26,14 +26,15 @@ AutocompleteClassifierFactory* AutocompleteClassifierFactory::GetInstance() {
 }
 
 // static
-ProfileKeyedService* AutocompleteClassifierFactory::BuildInstanceFor(
+BrowserContextKeyedService* AutocompleteClassifierFactory::BuildInstanceFor(
     content::BrowserContext* profile) {
   return new AutocompleteClassifier(static_cast<Profile*>(profile));
 }
 
 AutocompleteClassifierFactory::AutocompleteClassifierFactory()
-    : ProfileKeyedServiceFactory("AutocompleteClassifier",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "AutocompleteClassifier",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionSystemFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());
   // TODO(pkasting): Uncomment these once they exist.
@@ -53,7 +54,8 @@ bool AutocompleteClassifierFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 
-ProfileKeyedService* AutocompleteClassifierFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+AutocompleteClassifierFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return BuildInstanceFor(static_cast<Profile*>(profile));
 }

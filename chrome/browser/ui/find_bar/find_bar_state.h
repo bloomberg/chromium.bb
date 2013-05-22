@@ -14,7 +14,7 @@
 
 class Profile;
 
-class FindBarState : public ProfileKeyedService {
+class FindBarState : public BrowserContextKeyedService {
  public:
   FindBarState() {}
   virtual ~FindBarState() {}

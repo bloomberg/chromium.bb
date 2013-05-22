@@ -22,7 +22,7 @@ typedef libusb_context* PlatformUsbContext;
 // used to manage and dispatch USB events. It is also responsbile for device
 // discovery on the system, which allows it to re-use device handles to prevent
 // competition for the same USB device.
-class UsbService : public ProfileKeyedService {
+class UsbService : public BrowserContextKeyedService {
  public:
   UsbService();
   virtual ~UsbService();

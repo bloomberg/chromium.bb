@@ -283,8 +283,8 @@ PrerenderManager::PrerenderManager(Profile* profile,
 }
 
 PrerenderManager::~PrerenderManager() {
-  // The earlier call to ProfileKeyedService::Shutdown() should have emptied
-  // these vectors already.
+  // The earlier call to BrowserContextKeyedService::Shutdown() should have
+  // emptied these vectors already.
   DCHECK(active_prerenders_.empty());
   DCHECK(to_delete_prerenders_.empty());
 }

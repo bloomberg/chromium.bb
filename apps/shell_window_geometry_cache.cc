@@ -236,7 +236,7 @@ void ShellWindowGeometryCache::OnExtensionUnloaded(
 ShellWindowGeometryCache* ShellWindowGeometryCache::Factory::GetForContext(
     content::BrowserContext* context, bool create) {
   return static_cast<ShellWindowGeometryCache*>(
-      GetInstance()->GetServiceForProfile(context, create));
+      GetInstance()->GetServiceForBrowserContext(context, create));
 }
 
 ShellWindowGeometryCache::Factory*
@@ -245,15 +245,16 @@ ShellWindowGeometryCache::Factory::GetInstance() {
 }
 
 ShellWindowGeometryCache::Factory::Factory()
-    : ProfileKeyedServiceFactory("ShellWindowGeometryCache",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "ShellWindowGeometryCache",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
 }
 
 ShellWindowGeometryCache::Factory::~Factory() {
 }
 
-ProfileKeyedService*
+BrowserContextKeyedService*
 ShellWindowGeometryCache::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);

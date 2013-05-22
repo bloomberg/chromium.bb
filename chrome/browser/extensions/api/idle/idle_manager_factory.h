@@ -13,7 +13,7 @@ class Profile;
 namespace extensions {
 class IdleManager;
 
-class IdleManagerFactory : public ProfileKeyedServiceFactory {
+class IdleManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   static IdleManager* GetForProfile(Profile* profile);
 
@@ -25,12 +25,12 @@ class IdleManagerFactory : public ProfileKeyedServiceFactory {
   IdleManagerFactory();
   virtual ~IdleManagerFactory();
 
-  // ProfileKeyedBaseFactory implementation.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedBaseFactory implementation.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 

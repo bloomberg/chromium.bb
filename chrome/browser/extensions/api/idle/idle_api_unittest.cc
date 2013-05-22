@@ -118,7 +118,8 @@ ScopedListen::~ScopedListen() {
   idle_manager_->OnListenerRemoved(details);
 }
 
-ProfileKeyedService* IdleManagerTestFactory(content::BrowserContext* profile) {
+BrowserContextKeyedService* IdleManagerTestFactory(
+    content::BrowserContext* profile) {
   return new IdleManager(static_cast<Profile*>(profile));
 }
 

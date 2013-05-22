@@ -199,7 +199,7 @@ class CookiesAPI : public ProfileKeyedAPI,
   explicit CookiesAPI(Profile* profile);
   virtual ~CookiesAPI();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileKeyedAPI implementation.

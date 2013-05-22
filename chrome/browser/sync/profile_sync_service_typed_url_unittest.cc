@@ -101,7 +101,8 @@ class HistoryServiceMock : public HistoryService {
   virtual ~HistoryServiceMock() {}
 };
 
-ProfileKeyedService* BuildHistoryService(content::BrowserContext* profile) {
+BrowserContextKeyedService* BuildHistoryService(
+    content::BrowserContext* profile) {
   return new HistoryServiceMock(static_cast<Profile*>(profile));
 }
 

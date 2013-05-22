@@ -30,12 +30,12 @@ class ExtensionIndicatorIcon;
 // that are currently visible in the UI.  Use SystemIndicatorManagerFactory to
 // create a SystemIndicatorManager object.
 class SystemIndicatorManager : public content::NotificationObserver,
-                               public ProfileKeyedService {
+                               public BrowserContextKeyedService {
  public:
   SystemIndicatorManager(Profile* profile, StatusTray* status_tray);
   virtual ~SystemIndicatorManager();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // content::NotificationDelegate implementation.

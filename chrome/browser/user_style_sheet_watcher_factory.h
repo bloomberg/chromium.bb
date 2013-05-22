@@ -14,7 +14,7 @@ class UserStyleSheetWatcher;
 // Singleton that owns all UserStyleSheetWatcher and associates them with
 // Profiles.
 class UserStyleSheetWatcherFactory
-    : public RefcountedProfileKeyedServiceFactory {
+    : public RefcountedBrowserContextKeyedServiceFactory {
  public:
   static scoped_refptr<UserStyleSheetWatcher> GetForProfile(Profile* profile);
 
@@ -26,9 +26,9 @@ class UserStyleSheetWatcherFactory
   UserStyleSheetWatcherFactory();
   virtual ~UserStyleSheetWatcherFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+  // BrowserContextKeyedServiceFactory:
+  virtual scoped_refptr<RefcountedBrowserContextKeyedService>
+      BuildServiceInstanceFor(content::BrowserContext* context) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;

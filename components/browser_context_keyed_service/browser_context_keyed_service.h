@@ -5,26 +5,26 @@
 #ifndef COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_BROWSER_CONTEXT_KEYED_SERVICE_H_
 #define COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_BROWSER_CONTEXT_KEYED_SERVICE_H_
 
-class ProfileKeyedServiceFactory;
+class BrowserContextKeyedServiceFactory;
 
-// Base class for all ProfileKeyedServices to allow for correct destruction
-// order.
+// Base class for all BrowserContextKeyedServices to allow for correct
+// destruction order.
 //
-// Many services that hang off Profile have a two-pass shutdown. Many
+// Many services that hang off BrowserContext have a two-pass shutdown. Many
 // subsystems need a first pass shutdown phase where they drop references. Not
 // all services will need this, so there's a default implementation. Only once
 // every system has been given a chance to drop references do we start deleting
 // objects.
-class ProfileKeyedService {
+class BrowserContextKeyedService {
  public:
-  // The first pass is to call Shutdown on a ProfileKeyedService.
+  // The first pass is to call Shutdown on a BrowserContextKeyedService.
   virtual void Shutdown() {}
 
  protected:
-  friend class ProfileKeyedServiceFactory;
+  friend class BrowserContextKeyedServiceFactory;
 
   // The second pass is the actual deletion of each object.
-  virtual ~ProfileKeyedService() {}
+  virtual ~BrowserContextKeyedService() {}
 };
 
 #endif  // COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_BROWSER_CONTEXT_KEYED_SERVICE_H_

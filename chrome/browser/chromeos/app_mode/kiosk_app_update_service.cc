@@ -64,8 +64,9 @@ void KioskAppUpdateService::ForceRestart() {
 }
 
 KioskAppUpdateServiceFactory::KioskAppUpdateServiceFactory()
-    : ProfileKeyedServiceFactory("KioskAppUpdateService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "KioskAppUpdateService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 
@@ -81,7 +82,7 @@ KioskAppUpdateService* KioskAppUpdateServiceFactory::GetForProfile(
     return NULL;
 
   return static_cast<KioskAppUpdateService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -89,7 +90,8 @@ KioskAppUpdateServiceFactory* KioskAppUpdateServiceFactory::GetInstance() {
   return Singleton<KioskAppUpdateServiceFactory>::get();
 }
 
-ProfileKeyedService* KioskAppUpdateServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+KioskAppUpdateServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new KioskAppUpdateService(static_cast<Profile*>(profile));
 }

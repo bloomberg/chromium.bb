@@ -16,8 +16,9 @@
 using namespace signin_internals_util;
 
 AboutSigninInternalsFactory::AboutSigninInternalsFactory()
-    : ProfileKeyedServiceFactory("AboutSigninInternals",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "AboutSigninInternals",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(TokenServiceFactory::GetInstance());
 }
@@ -28,7 +29,7 @@ AboutSigninInternalsFactory::~AboutSigninInternalsFactory() {}
 AboutSigninInternals* AboutSigninInternalsFactory::GetForProfile(
     Profile* profile) {
   return static_cast<AboutSigninInternals*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -87,7 +88,8 @@ void AboutSigninInternalsFactory::RegisterUserPrefs(
   }
 }
 
-ProfileKeyedService* AboutSigninInternalsFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+AboutSigninInternalsFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   AboutSigninInternals* service = new AboutSigninInternals();
   service->Initialize(static_cast<Profile*>(profile));

@@ -43,7 +43,7 @@ struct BackgroundContentsOpenedDetails;
 // parent app is unloaded.
 class BackgroundContentsService : private content::NotificationObserver,
                                   public BackgroundContents::Delegate,
-                                  public ProfileKeyedService {
+                                  public BrowserContextKeyedService {
  public:
   BackgroundContentsService(Profile* profile, const CommandLine* command_line);
   virtual ~BackgroundContentsService();

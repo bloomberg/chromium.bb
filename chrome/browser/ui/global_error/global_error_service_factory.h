@@ -16,7 +16,7 @@ class Profile;
 // Singleton that owns all GlobalErrorService and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated GlobalErrorService.
-class GlobalErrorServiceFactory : public ProfileKeyedServiceFactory {
+class GlobalErrorServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static GlobalErrorService* GetForProfile(Profile* profile);
 
@@ -28,8 +28,8 @@ class GlobalErrorServiceFactory : public ProfileKeyedServiceFactory {
   GlobalErrorServiceFactory();
   virtual ~GlobalErrorServiceFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

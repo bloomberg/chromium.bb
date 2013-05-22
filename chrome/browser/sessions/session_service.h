@@ -55,7 +55,7 @@ class WebContents;
 // SessionService rebuilds the contents of the file from the open state of the
 // browser.
 class SessionService : public BaseSessionService,
-                       public ProfileKeyedService,
+                       public BrowserContextKeyedService,
                        public content::NotificationObserver,
                        public chrome::BrowserListObserver {
   friend class SessionServiceTestHelper;

@@ -13,7 +13,7 @@ class Profile;
 namespace extensions {
 class AutotestPrivateAPI;
 
-class AutotestPrivateAPIFactory : public ProfileKeyedServiceFactory {
+class AutotestPrivateAPIFactory : public BrowserContextKeyedServiceFactory {
  public:
   static AutotestPrivateAPI* GetForProfile(Profile* profile);
 
@@ -25,12 +25,12 @@ class AutotestPrivateAPIFactory : public ProfileKeyedServiceFactory {
   AutotestPrivateAPIFactory();
   virtual ~AutotestPrivateAPIFactory();
 
-  // ProfileKeyedBaseFactory implementation.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedBaseFactory implementation.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 

@@ -131,7 +131,7 @@ namespace {
   !defined(_GLIBCXX_DEBUG)
 // Make sure that the ProfileImpl doesn't grow. We're currently trying to drive
 // the number of services that are included in ProfileImpl (instead of using
-// ProfileKeyedServiceFactory) to zero.
+// BrowserContextKeyedServiceFactory) to zero.
 //
 // If you don't know about this effort, please read:
 //   https://sites.google.com/a/chromium.org/dev/developers/design-documents/profile-architecture
@@ -629,7 +629,8 @@ ProfileImpl::~ProfileImpl() {
         ClearAllIncognitoSessionOnlyPreferences();
   }
 
-  ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
+  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+      this);
 
   if (top_sites_)
     top_sites_->Shutdown();
@@ -733,7 +734,8 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
   // TODO(sky): remove this in a couple of releases (m28ish).
   prefs_->SetBoolean(prefs::kSessionExitedCleanly, true);
 
-  ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
+  BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
+      this, false);
 
   DCHECK(!net_pref_observer_);
   net_pref_observer_.reset(new NetPrefObserver(
@@ -861,9 +863,9 @@ ProfileImpl::CreateRequestContextForStoragePartition(
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
   // If ssl_config_service_manager_ is null, this typically means that some
-  // ProfileKeyedService is trying to create a RequestContext at startup, but
-  // SSLConfigServiceManager is not initialized until DoFinalInit() which is
-  // invoked after all ProfileKeyedServices have been initialized (see
+  // BrowserContextKeyedService is trying to create a RequestContext at startup,
+  // but SSLConfigServiceManager is not initialized until DoFinalInit() which is
+  // invoked after all BrowserContextKeyedServices have been initialized (see
   // http://crbug.com/171406).
   DCHECK(ssl_config_service_manager_) <<
       "SSLConfigServiceManager is not initialized yet";

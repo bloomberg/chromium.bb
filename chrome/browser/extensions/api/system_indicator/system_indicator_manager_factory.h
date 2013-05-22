@@ -13,8 +13,8 @@ class Profile;
 namespace extensions {
 class SystemIndicatorManager;
 
-// ProfileKeyedServiceFactory for each SystemIndicatorManager.
-class SystemIndicatorManagerFactory : public ProfileKeyedServiceFactory {
+// BrowserContextKeyedServiceFactory for each SystemIndicatorManager.
+class SystemIndicatorManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   static SystemIndicatorManager* GetForProfile(Profile* profile);
 
@@ -26,8 +26,8 @@ class SystemIndicatorManagerFactory : public ProfileKeyedServiceFactory {
   SystemIndicatorManagerFactory();
   virtual ~SystemIndicatorManagerFactory();
 
-  // ProfileKeyedBaseFactory implementation.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedBaseFactory implementation.
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

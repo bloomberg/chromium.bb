@@ -32,7 +32,7 @@ struct FaviconImageResult;
 // This service is thread safe. Each request callback is invoked in the
 // thread that made the request.
 class FaviconService : public CancelableRequestProvider,
-                       public ProfileKeyedService {
+                       public BrowserContextKeyedService {
  public:
   explicit FaviconService(HistoryService* history_service);
 

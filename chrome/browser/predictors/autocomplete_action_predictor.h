@@ -59,7 +59,7 @@ namespace predictors {
 // PostTaskAndReply without fear of crashes if it is destroyed before the reply
 // triggers. This is necessary during initialization.
 class AutocompleteActionPredictor
-    : public ProfileKeyedService,
+    : public BrowserContextKeyedService,
       public content::NotificationObserver,
       public base::SupportsWeakPtr<AutocompleteActionPredictor> {
  public:

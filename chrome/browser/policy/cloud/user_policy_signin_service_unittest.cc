@@ -74,7 +74,7 @@ class SigninManagerFake : public FakeSigninManager {
     SignOut();
   }
 
-  static ProfileKeyedService* Build(content::BrowserContext* profile) {
+  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
     return new SigninManagerFake(static_cast<Profile*>(profile));
   }
 };

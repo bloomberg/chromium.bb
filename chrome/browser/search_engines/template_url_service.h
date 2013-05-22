@@ -61,7 +61,7 @@ struct URLVisitedDetails;
 // TemplateURLService handles deletion.
 
 class TemplateURLService : public WebDataServiceConsumer,
-                           public ProfileKeyedService,
+                           public BrowserContextKeyedService,
                            public content::NotificationObserver,
                            public syncer::SyncableService {
  public:
@@ -261,7 +261,7 @@ class TemplateURLService : public WebDataServiceConsumer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // syncer::SyncableService implementation.

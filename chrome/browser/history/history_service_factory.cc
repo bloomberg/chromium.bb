@@ -21,7 +21,7 @@ HistoryService* HistoryServiceFactory::GetForProfile(
     return NULL;
 
   return static_cast<HistoryService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -34,14 +34,14 @@ HistoryServiceFactory::GetForProfileIfExists(
     return NULL;
 
   return static_cast<HistoryService*>(
-      GetInstance()->GetServiceForProfile(profile, false));
+      GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
 HistoryService*
 HistoryServiceFactory::GetForProfileWithoutCreating(Profile* profile) {
   return static_cast<HistoryService*>(
-      GetInstance()->GetServiceForProfile(profile, false));
+      GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
@@ -52,19 +52,19 @@ HistoryServiceFactory* HistoryServiceFactory::GetInstance() {
 // static
 void HistoryServiceFactory::ShutdownForProfile(Profile* profile) {
   HistoryServiceFactory* factory = GetInstance();
-  factory->ProfileDestroyed(profile);
+  factory->BrowserContextDestroyed(profile);
 }
 
 HistoryServiceFactory::HistoryServiceFactory()
-    : ProfileKeyedServiceFactory(
-          "HistoryService", ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+          "HistoryService", BrowserContextDependencyManager::GetInstance()) {
   DependsOn(BookmarkModelFactory::GetInstance());
 }
 
 HistoryServiceFactory::~HistoryServiceFactory() {
 }
 
-ProfileKeyedService*
+BrowserContextKeyedService*
 HistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);

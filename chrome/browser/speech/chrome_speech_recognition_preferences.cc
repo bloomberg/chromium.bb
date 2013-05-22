@@ -35,11 +35,11 @@ void ChromeSpeechRecognitionPreferences::InitializeFactory() {
 scoped_refptr<ChromeSpeechRecognitionPreferences>
 ChromeSpeechRecognitionPreferences::Factory::GetForProfile(Profile* profile) {
   DCHECK(profile);
-  // GetServiceForProfile will let us instantiate a new (if not already cached
-  // for the profile) Service through BuildServiceInstanceFor method.
+  // GetServiceForBrowserContext will let us instantiate a new (if not already
+  // cached for the profile) Service through BuildServiceInstanceFor method.
   ChromeSpeechRecognitionPreferences::Service* service =
       static_cast<ChromeSpeechRecognitionPreferences::Service*>(
-          GetServiceForProfile(profile, true));
+          GetServiceForBrowserContext(profile, true));
 
   if (!service) {
     // Incognito won't have this service.
@@ -50,15 +50,15 @@ ChromeSpeechRecognitionPreferences::Factory::GetForProfile(Profile* profile) {
 }
 
 ChromeSpeechRecognitionPreferences::Factory::Factory()
-    : ProfileKeyedServiceFactory(
+    : BrowserContextKeyedServiceFactory(
         "ChromeSpeechRecognitionPreferences",
-        ProfileDependencyManager::GetInstance()) {
+        BrowserContextDependencyManager::GetInstance()) {
 }
 
 ChromeSpeechRecognitionPreferences::Factory::~Factory() {
 }
 
-ProfileKeyedService*
+BrowserContextKeyedService*
 ChromeSpeechRecognitionPreferences::Factory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   DCHECK(profile);
@@ -84,7 +84,7 @@ ServiceIsNULLWhileTesting() const {
 }
 
 bool ChromeSpeechRecognitionPreferences::Factory::
-ServiceIsCreatedWithProfile() const {
+ServiceIsCreatedWithBrowserContext() const {
   return false;
 }
 

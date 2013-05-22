@@ -14,7 +14,7 @@ namespace extensions {
 // static
 InstallLimiter* InstallLimiterFactory::GetForProfile(Profile* profile) {
   return static_cast<InstallLimiter*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -23,15 +23,16 @@ InstallLimiterFactory* InstallLimiterFactory::GetInstance() {
 }
 
 InstallLimiterFactory::InstallLimiterFactory()
-    : ProfileKeyedServiceFactory("InstallLimiter",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "InstallLimiter",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionSystemFactory::GetInstance());
 }
 
 InstallLimiterFactory::~InstallLimiterFactory() {
 }
 
-ProfileKeyedService* InstallLimiterFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* InstallLimiterFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new InstallLimiter();
 }

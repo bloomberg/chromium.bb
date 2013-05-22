@@ -105,7 +105,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     ui_loop_.RunUntilIdle();
   }
 
-  static ProfileKeyedService* BuildService(content::BrowserContext* profile) {
+  static BrowserContextKeyedService* BuildService(
+      content::BrowserContext* profile) {
     return new TestProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
         static_cast<Profile*>(profile),
@@ -152,7 +153,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     sync_->set_synchronous_sync_configuration();
   }
 
-  static ProfileKeyedService* BuildCrosService(
+  static BrowserContextKeyedService* BuildCrosService(
       content::BrowserContext* context) {
     Profile* profile = static_cast<Profile*>(context);
     SigninManagerBase* signin =
@@ -170,7 +171,8 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
   }
 };
 
-ProfileKeyedService* BuildFakeTokenService(content::BrowserContext* profile) {
+BrowserContextKeyedService* BuildFakeTokenService(
+    content::BrowserContext* profile) {
   return new FakeTokenService();
 }
 

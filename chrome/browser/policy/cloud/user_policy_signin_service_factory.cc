@@ -17,8 +17,9 @@
 namespace policy {
 
 UserPolicySigninServiceFactory::UserPolicySigninServiceFactory()
-    : ProfileKeyedServiceFactory("UserPolicySigninService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "UserPolicySigninService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(TokenServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(UserCloudPolicyManagerFactory::GetInstance());
@@ -30,7 +31,7 @@ UserPolicySigninServiceFactory::~UserPolicySigninServiceFactory() {}
 UserPolicySigninService* UserPolicySigninServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<UserPolicySigninService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -38,12 +39,14 @@ UserPolicySigninServiceFactory* UserPolicySigninServiceFactory::GetInstance() {
   return Singleton<UserPolicySigninServiceFactory>::get();
 }
 
-ProfileKeyedService* UserPolicySigninServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+UserPolicySigninServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new UserPolicySigninService(static_cast<Profile*>(profile));
 }
 
-bool UserPolicySigninServiceFactory::ServiceIsCreatedWithProfile() const {
+bool
+UserPolicySigninServiceFactory::ServiceIsCreatedWithBrowserContext() const {
   // Create this object when the profile is created so it can track any
   // user signin activity.
   return true;

@@ -13,10 +13,10 @@ class Profile;
 
 namespace chromeos {
 
-// This is a factory class used by the ProfileDependencyManager to instantiate
-// the event router that will forward events from the NetworkStateHandler to the
-// JavaScript Networking API.
-class NetworkingPrivateEventRouter : public ProfileKeyedService,
+// This is a factory class used by the BrowserContextDependencyManager
+// to instantiate the event router that will forward events
+// from the NetworkStateHandler to the JavaScript Networking API.
+class NetworkingPrivateEventRouter : public BrowserContextKeyedService,
                                      public extensions::EventRouter::Observer,
                                      public NetworkStateHandlerObserver {
  public:
@@ -24,7 +24,7 @@ class NetworkingPrivateEventRouter : public ProfileKeyedService,
   virtual ~NetworkingPrivateEventRouter();
 
  protected:
-  // ProfileKeyedService overrides:
+  // BrowserContextKeyedService overrides:
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer overrides:

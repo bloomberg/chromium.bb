@@ -33,8 +33,9 @@ scoped_ptr<UserCloudPolicyManager>
 }
 
 UserCloudPolicyManagerFactory::UserCloudPolicyManagerFactory()
-    : ProfileKeyedBaseFactory("UserCloudPolicyManager",
-                              ProfileDependencyManager::GetInstance()) {}
+    : BrowserContextKeyedBaseFactory(
+        "UserCloudPolicyManager",
+        BrowserContextDependencyManager::GetInstance()) {}
 
 UserCloudPolicyManagerFactory::~UserCloudPolicyManagerFactory() {}
 
@@ -63,7 +64,7 @@ scoped_ptr<UserCloudPolicyManager>
   return manager.Pass();
 }
 
-void UserCloudPolicyManagerFactory::ProfileShutdown(
+void UserCloudPolicyManagerFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   if (profile->IsOffTheRecord())
@@ -71,7 +72,7 @@ void UserCloudPolicyManagerFactory::ProfileShutdown(
   UserCloudPolicyManager* manager = GetManagerForProfile(profile);
   if (manager) {
     manager->CloudPolicyManager::Shutdown();
-    manager->ProfileKeyedService::Shutdown();
+    manager->BrowserContextKeyedService::Shutdown();
   }
 }
 

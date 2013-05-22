@@ -15,7 +15,7 @@ AppSyncUIState* AppSyncUIStateFactory::GetForProfile(Profile* profile) {
     return NULL;
 
   return static_cast<AppSyncUIState*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -24,15 +24,16 @@ AppSyncUIStateFactory* AppSyncUIStateFactory::GetInstance() {
 }
 
 AppSyncUIStateFactory::AppSyncUIStateFactory()
-    : ProfileKeyedServiceFactory("AppSyncUIState",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "AppSyncUIState",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 AppSyncUIStateFactory::~AppSyncUIStateFactory() {
 }
 
-ProfileKeyedService* AppSyncUIStateFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* AppSyncUIStateFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   DCHECK(AppSyncUIState::ShouldObserveAppSyncForProfile(profile));

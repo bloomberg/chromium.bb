@@ -84,7 +84,7 @@ struct HistoryDetails;
 class HistoryService : public CancelableRequestProvider,
                        public content::NotificationObserver,
                        public syncer::SyncableService,
-                       public ProfileKeyedService,
+                       public BrowserContextKeyedService,
                        public visitedlink::VisitedLinkDelegate {
  public:
   // Miscellaneous commonly-used types.
@@ -168,7 +168,7 @@ class HistoryService : public CancelableRequestProvider,
     return in_memory_url_index_.get();
   }
 
-  // ProfileKeyedService:
+  // BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // Navigation ----------------------------------------------------------------

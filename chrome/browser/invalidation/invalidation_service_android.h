@@ -24,7 +24,7 @@ namespace invalidation {
 // around Android's invalidations service.
 class InvalidationServiceAndroid
     : public base::NonThreadSafe,
-      public ProfileKeyedService,
+      public BrowserContextKeyedService,
       public InvalidationFrontend,
       public content::NotificationObserver {
  public:

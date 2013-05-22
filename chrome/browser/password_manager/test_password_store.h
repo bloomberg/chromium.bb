@@ -16,7 +16,7 @@ namespace content {
 class BrowserContext;
 }
 
-scoped_refptr<RefcountedProfileKeyedService> CreateTestPasswordStore(
+scoped_refptr<RefcountedBrowserContextKeyedService> CreateTestPasswordStore(
     content::BrowserContext* profile);
 
 // A very simple PasswordStore implementation that keeps all of the passwords
@@ -28,8 +28,8 @@ class TestPasswordStore : public PasswordStore {
   TestPasswordStore();
 
   // Helper function for registration with
-  // RefcountedProfileKeyedService::SetTestingFactory
-  static scoped_refptr<RefcountedProfileKeyedService> Create(
+  // RefcountedBrowserContextKeyedService::SetTestingFactory
+  static scoped_refptr<RefcountedBrowserContextKeyedService> Create(
       content::BrowserContext* profile);
 
   typedef std::map<std::string /* signon_realm */,

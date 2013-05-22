@@ -8,11 +8,13 @@
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h"
 
+class Profile;
+
 namespace extensions {
 
 class DialAPI;
 
-class DialAPIFactory : public RefcountedProfileKeyedServiceFactory {
+class DialAPIFactory : public RefcountedBrowserContextKeyedServiceFactory {
  public:
   static scoped_refptr<DialAPI> GetForProfile(Profile* profile);
 
@@ -24,10 +26,10 @@ class DialAPIFactory : public RefcountedProfileKeyedServiceFactory {
   DialAPIFactory();
   virtual ~DialAPIFactory();
 
-  // ProfileKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  // BrowserContextKeyedServiceFactory:
+  virtual scoped_refptr<RefcountedBrowserContextKeyedService>
+      BuildServiceInstanceFor(content::BrowserContext* profile) const OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(DialAPIFactory);

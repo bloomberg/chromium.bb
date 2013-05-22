@@ -28,9 +28,9 @@ class DeviceLocalAccountPolicyProvider;
 class ManagedModePolicyProvider;
 class PolicyService;
 
-// A ProfileKeyedService that creates and manages the per-Profile policy
+// A BrowserContextKeyedService that creates and manages the per-Profile policy
 // components.
-class ProfilePolicyConnector : public ProfileKeyedService {
+class ProfilePolicyConnector : public BrowserContextKeyedService {
  public:
   explicit ProfilePolicyConnector(Profile* profile);
   virtual ~ProfilePolicyConnector();
@@ -41,7 +41,7 @@ class ProfilePolicyConnector : public ProfileKeyedService {
 
   void InitForTesting(scoped_ptr<PolicyService> service);
 
-  // ProfileKeyedService:
+  // BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // This is never NULL.

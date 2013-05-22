@@ -46,7 +46,7 @@ class UserScriptMaster;
 // and incognito Profiles, except as called out in comments.
 // This interface supports using TestExtensionSystem for TestingProfiles
 // that don't want all of the extensions baggage in their tests.
-class ExtensionSystem : public ProfileKeyedService {
+class ExtensionSystem : public BrowserContextKeyedService {
  public:
   ExtensionSystem();
   virtual ~ExtensionSystem();
@@ -55,7 +55,7 @@ class ExtensionSystem : public ProfileKeyedService {
   // a convenience wrapper around ExtensionSystemFactory::GetForProfile.
   static ExtensionSystem* Get(Profile* profile);
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE {}
 
   // Initializes extensions machinery.
@@ -136,15 +136,15 @@ class ExtensionSystem : public ProfileKeyedService {
 
 // The ExtensionSystem for ProfileImpl and OffTheRecordProfileImpl.
 // Implementation details: non-shared services are owned by
-// ExtensionSystemImpl, a ProfileKeyedService with separate incognito
-// instances. A private Shared class (also a ProfileKeyedService,
+// ExtensionSystemImpl, a BrowserContextKeyedService with separate incognito
+// instances. A private Shared class (also a BrowserContextKeyedService,
 // but with a shared instance for incognito) keeps the common services.
 class ExtensionSystemImpl : public ExtensionSystem {
  public:
   explicit ExtensionSystemImpl(Profile* profile);
   virtual ~ExtensionSystemImpl();
 
-  // ProfileKeyedService implementation.
+  // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE;
@@ -184,7 +184,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
   // Owns the Extension-related systems that have a single instance
   // shared between normal and incognito profiles.
-  class Shared : public ProfileKeyedService {
+  class Shared : public BrowserContextKeyedService {
    public:
     explicit Shared(Profile* profile);
     virtual ~Shared();
@@ -195,7 +195,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     void RegisterManagementPolicyProviders();
     void Init(bool extensions_enabled);
 
-    // ProfileKeyedService implementation.
+    // BrowserContextKeyedService implementation.
     virtual void Shutdown() OVERRIDE;
 
     StateStore* state_store();

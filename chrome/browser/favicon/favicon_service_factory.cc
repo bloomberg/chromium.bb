@@ -17,11 +17,11 @@ FaviconService* FaviconServiceFactory::GetForProfile(
     Profile* profile, Profile::ServiceAccessType sat) {
   if (!profile->IsOffTheRecord()) {
     return static_cast<FaviconService*>(
-        GetInstance()->GetServiceForProfile(profile, true));
+        GetInstance()->GetServiceForBrowserContext(profile, true));
   } else if (sat == Profile::EXPLICIT_ACCESS) {
     // Profile must be OffTheRecord in this case.
     return static_cast<FaviconService*>(
-        GetInstance()->GetServiceForProfile(
+        GetInstance()->GetServiceForBrowserContext(
             profile->GetOriginalProfile(), true));
   }
 
@@ -36,14 +36,15 @@ FaviconServiceFactory* FaviconServiceFactory::GetInstance() {
 }
 
 FaviconServiceFactory::FaviconServiceFactory()
-    : ProfileKeyedServiceFactory("FaviconService",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "FaviconService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 FaviconServiceFactory::~FaviconServiceFactory() {}
 
-ProfileKeyedService* FaviconServiceFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService* FaviconServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       static_cast<Profile*>(profile), Profile::EXPLICIT_ACCESS);

@@ -23,7 +23,7 @@ class RefCountedMemory;
 // This class keeps a cache of NTP resources (HTML and CSS) so we don't have to
 // regenerate them all the time.
 class NTPResourceCache : public content::NotificationObserver,
-                         public ProfileKeyedService {
+                         public BrowserContextKeyedService {
  public:
   explicit NTPResourceCache(Profile* profile);
   virtual ~NTPResourceCache();

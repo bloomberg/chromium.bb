@@ -14,7 +14,7 @@ class AppSyncUIState;
 class Profile;
 
 // Singleton that owns all AppSyncUIStates and associates them with profiles.
-class AppSyncUIStateFactory : public ProfileKeyedServiceFactory {
+class AppSyncUIStateFactory : public BrowserContextKeyedServiceFactory {
  public:
   static AppSyncUIState* GetForProfile(Profile* profile);
 
@@ -26,8 +26,8 @@ class AppSyncUIStateFactory : public ProfileKeyedServiceFactory {
   AppSyncUIStateFactory();
   virtual ~AppSyncUIStateFactory();
 
-  // ProfileKeyedServiceFactory overrides:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // BrowserContextKeyedServiceFactory overrides:
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppSyncUIStateFactory);

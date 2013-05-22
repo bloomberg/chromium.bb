@@ -16,7 +16,7 @@ namespace extensions {
 SuggestedLinksRegistry* SuggestedLinksRegistryFactory::GetForProfile(
     Profile* profile) {
   return static_cast<SuggestedLinksRegistry*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -24,20 +24,22 @@ SuggestedLinksRegistryFactory* SuggestedLinksRegistryFactory::GetInstance() {
   return Singleton<SuggestedLinksRegistryFactory>::get();
 }
 
-bool SuggestedLinksRegistryFactory::ServiceIsCreatedWithProfile() const {
+bool SuggestedLinksRegistryFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
 SuggestedLinksRegistryFactory::SuggestedLinksRegistryFactory()
-    : ProfileKeyedServiceFactory("SuggestedLinksRegistry",
-                                 ProfileDependencyManager::GetInstance()) {
+    : BrowserContextKeyedServiceFactory(
+        "SuggestedLinksRegistry",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionSystemFactory::GetInstance());
 }
 
 SuggestedLinksRegistryFactory::~SuggestedLinksRegistryFactory() {
 }
 
-ProfileKeyedService* SuggestedLinksRegistryFactory::BuildServiceInstanceFor(
+BrowserContextKeyedService*
+SuggestedLinksRegistryFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new SuggestedLinksRegistry();
 }

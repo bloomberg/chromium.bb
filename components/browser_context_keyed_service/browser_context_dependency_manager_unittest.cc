@@ -7,41 +7,42 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
-class ProfileDependencyManagerUnittests : public ::testing::Test {
+class BrowserContextDependencyManagerUnittests : public ::testing::Test {
  protected:
   // To get around class access:
-  void DependOn(ProfileKeyedServiceFactory* child,
-                ProfileKeyedServiceFactory* parent) {
+  void DependOn(BrowserContextKeyedServiceFactory* child,
+                BrowserContextKeyedServiceFactory* parent) {
     child->DependsOn(parent);
   }
 
-  ProfileDependencyManager* manager() { return &dependency_manager_; }
+  BrowserContextDependencyManager* manager() { return &dependency_manager_; }
 
   std::vector<std::string>* shutdown_order() { return &shutdown_order_; }
 
  private:
-  ProfileDependencyManager dependency_manager_;
+  BrowserContextDependencyManager dependency_manager_;
 
   std::vector<std::string> shutdown_order_;
 };
 
-class TestService : public ProfileKeyedServiceFactory {
+class TestService : public BrowserContextKeyedServiceFactory {
  public:
   TestService(const std::string& name,
               std::vector<std::string>* fill_on_shutdown,
-              ProfileDependencyManager* manager)
-      : ProfileKeyedServiceFactory("TestService", manager),
+              BrowserContextDependencyManager* manager)
+      : BrowserContextKeyedServiceFactory("TestService", manager),
         name_(name),
         fill_on_shutdown_(fill_on_shutdown) {
   }
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE {
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* context) const OVERRIDE {
     ADD_FAILURE() << "This isn't part of the tests!";
     return NULL;
   }
 
-  virtual void ProfileShutdown(content::BrowserContext* profile) OVERRIDE {
+  virtual void BrowserContextShutdown(
+      content::BrowserContext* context) OVERRIDE {
     fill_on_shutdown_->push_back(name_);
   }
 
@@ -51,22 +52,22 @@ class TestService : public ProfileKeyedServiceFactory {
 };
 
 // Tests that we can deal with a single component.
-TEST_F(ProfileDependencyManagerUnittests, SingleCase) {
+TEST_F(BrowserContextDependencyManagerUnittests, SingleCase) {
   TestService service("service", shutdown_order(), manager());
 
-  manager()->DestroyProfileServices(NULL);
+  manager()->DestroyBrowserContextServices(NULL);
 
   ASSERT_EQ(1U, shutdown_order()->size());
   EXPECT_STREQ("service", (*shutdown_order())[0].c_str());
 }
 
 // Tests that we get a simple one component depends on the other case.
-TEST_F(ProfileDependencyManagerUnittests, SimpleDependency) {
+TEST_F(BrowserContextDependencyManagerUnittests, SimpleDependency) {
   TestService parent("parent", shutdown_order(), manager());
   TestService child("child", shutdown_order(), manager());
   DependOn(&child, &parent);
 
-  manager()->DestroyProfileServices(NULL);
+  manager()->DestroyBrowserContextServices(NULL);
 
   ASSERT_EQ(2U, shutdown_order()->size());
   EXPECT_STREQ("child", (*shutdown_order())[0].c_str());
@@ -74,14 +75,14 @@ TEST_F(ProfileDependencyManagerUnittests, SimpleDependency) {
 }
 
 // Tests two children, one parent
-TEST_F(ProfileDependencyManagerUnittests, TwoChildrenOneParent) {
+TEST_F(BrowserContextDependencyManagerUnittests, TwoChildrenOneParent) {
   TestService parent("parent", shutdown_order(), manager());
   TestService child1("child1", shutdown_order(), manager());
   TestService child2("child2", shutdown_order(), manager());
   DependOn(&child1, &parent);
   DependOn(&child2, &parent);
 
-  manager()->DestroyProfileServices(NULL);
+  manager()->DestroyBrowserContextServices(NULL);
 
   ASSERT_EQ(3U, shutdown_order()->size());
   EXPECT_STREQ("child2", (*shutdown_order())[0].c_str());
@@ -90,7 +91,7 @@ TEST_F(ProfileDependencyManagerUnittests, TwoChildrenOneParent) {
 }
 
 // Tests an M configuration
-TEST_F(ProfileDependencyManagerUnittests, MConfiguration) {
+TEST_F(BrowserContextDependencyManagerUnittests, MConfiguration) {
   TestService parent1("parent1", shutdown_order(), manager());
   TestService parent2("parent2", shutdown_order(), manager());
 
@@ -104,7 +105,7 @@ TEST_F(ProfileDependencyManagerUnittests, MConfiguration) {
   TestService child_of_2("child_of_2", shutdown_order(), manager());
   DependOn(&child_of_2, &parent2);
 
-  manager()->DestroyProfileServices(NULL);
+  manager()->DestroyBrowserContextServices(NULL);
 
   ASSERT_EQ(5U, shutdown_order()->size());
   EXPECT_STREQ("child_of_2", (*shutdown_order())[0].c_str());
@@ -115,7 +116,7 @@ TEST_F(ProfileDependencyManagerUnittests, MConfiguration) {
 }
 
 // Tests that it can deal with a simple diamond.
-TEST_F(ProfileDependencyManagerUnittests, DiamondConfiguration) {
+TEST_F(BrowserContextDependencyManagerUnittests, DiamondConfiguration) {
   TestService parent("parent", shutdown_order(), manager());
 
   TestService middle_row_1("middle_row_1", shutdown_order(), manager());
@@ -128,7 +129,7 @@ TEST_F(ProfileDependencyManagerUnittests, DiamondConfiguration) {
   DependOn(&bottom, &middle_row_1);
   DependOn(&bottom, &middle_row_2);
 
-  manager()->DestroyProfileServices(NULL);
+  manager()->DestroyBrowserContextServices(NULL);
 
   ASSERT_EQ(4U, shutdown_order()->size());
   EXPECT_STREQ("bottom", (*shutdown_order())[0].c_str());
@@ -138,7 +139,7 @@ TEST_F(ProfileDependencyManagerUnittests, DiamondConfiguration) {
 }
 
 // A final test that works with a more complex graph.
-TEST_F(ProfileDependencyManagerUnittests, ComplexGraph) {
+TEST_F(BrowserContextDependencyManagerUnittests, ComplexGraph) {
   TestService everything_depends_on_me("everything_depends_on_me",
                                        shutdown_order(), manager());
 
@@ -161,7 +162,7 @@ TEST_F(ProfileDependencyManagerUnittests, ComplexGraph) {
   DependOn(&bottom, &specialized_service);
   DependOn(&bottom, &other_intermediary);
 
-  manager()->DestroyProfileServices(NULL);
+  manager()->DestroyBrowserContextServices(NULL);
 
   ASSERT_EQ(6U, shutdown_order()->size());
   EXPECT_STREQ("bottom", (*shutdown_order())[0].c_str());
