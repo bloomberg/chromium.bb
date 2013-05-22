@@ -139,7 +139,6 @@ public:
     virtual void loadIconForFiles(const Vector<WTF::String>&, WebCore::FileIconLoader*);
     virtual void enumerateChosenDirectory(WebCore::FileChooser*);
     virtual void setCursor(const WebCore::Cursor&);
-    virtual void setCursorHiddenUntilMouseMoves(bool);
     virtual void formStateDidChange(const WebCore::Node*);
     virtual void needTouchEvents(bool needTouchEvents) OVERRIDE;
 

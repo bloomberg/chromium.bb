@@ -63,8 +63,6 @@ public:
     // Request that the cursor change.
     virtual void setCursor(const Cursor&) = 0;
 
-    virtual void setCursorHiddenUntilMouseMoves(bool) = 0;
-
     virtual void scheduleAnimation() = 0;
 };
 

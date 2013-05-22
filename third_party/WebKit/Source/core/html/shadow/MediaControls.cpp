@@ -254,10 +254,6 @@ void MediaControls::enteredFullscreen()
 {
     m_isFullscreen = true;
     m_fullScreenButton->setIsFullscreen(true);
-
-    if (Page* page = document()->page())
-        page->chrome()->setCursorHiddenUntilMouseMoves(true);
-
     startHideFullscreenControlsTimer();
 }
 
@@ -314,9 +310,6 @@ void MediaControls::hideFullscreenControlsTimerFired(Timer<MediaControls>*)
 
     if (!shouldHideControls())
         return;
-
-    if (Page* page = document()->page())
-        page->chrome()->setCursorHiddenUntilMouseMoves(true);
 
     makeTransparent();
 }

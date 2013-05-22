@@ -2603,7 +2603,6 @@
             'platform/chromium/ClipboardUtilitiesChromium.cpp',
             'platform/chromium/ClipboardUtilitiesChromium.h',
             'platform/chromium/CursorChromium.cpp',
-            'platform/chromium/DragDataChromium.cpp',
             'platform/chromium/DragDataRef.h',
             'platform/chromium/DragImageChromiumSkia.cpp',
             'platform/chromium/DragImageRef.h',

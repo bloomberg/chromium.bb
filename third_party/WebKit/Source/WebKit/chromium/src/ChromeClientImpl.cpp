@@ -64,7 +64,6 @@
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/FileChooser.h"
 #include "core/platform/FileIconLoader.h"
-#include "core/platform/NotImplemented.h"
 #include "core/platform/PlatformScreen.h"
 #include "core/platform/chromium/PopupContainer.h"
 #include "core/platform/chromium/PopupMenuChromium.h"
@@ -813,11 +812,6 @@ void ChromeClientImpl::popupClosed(WebCore::PopupContainer* popupContainer)
 void ChromeClientImpl::setCursor(const WebCore::Cursor& cursor)
 {
     setCursor(WebCursorInfo(cursor));
-}
-
-void ChromeClientImpl::setCursorHiddenUntilMouseMoves(bool)
-{
-    notImplemented();
 }
 
 void ChromeClientImpl::setCursor(const WebCursorInfo& cursor)

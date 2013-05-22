@@ -432,11 +432,6 @@ void Chrome::setCursor(const Cursor& cursor)
     m_client->setCursor(cursor);
 }
 
-void Chrome::setCursorHiddenUntilMouseMoves(bool hiddenUntilMouseMoves)
-{
-    m_client->setCursorHiddenUntilMouseMoves(hiddenUntilMouseMoves);
-}
-
 void Chrome::scheduleAnimation()
 {
     m_client->scheduleAnimation();

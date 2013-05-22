@@ -157,7 +157,6 @@ public:
     virtual void formStateDidChange(const Node*) OVERRIDE { }
 
     virtual void setCursor(const Cursor&) OVERRIDE { }
-    virtual void setCursorHiddenUntilMouseMoves(bool) OVERRIDE { }
 
     virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*) OVERRIDE { }
     virtual void scheduleCompositingLayerFlush() OVERRIDE { }

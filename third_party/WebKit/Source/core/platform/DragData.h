@@ -28,7 +28,6 @@
 
 #include "core/page/DragActions.h"
 #include "core/platform/chromium/DragDataRef.h"
-#include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/IntPoint.h"
 
 #include <wtf/Forward.h>
@@ -68,11 +67,9 @@ public:
     String asURL(Frame*, FilenameConversionPolicy filenamePolicy = ConvertFilenames, String* title = 0) const;
     String asPlainText(Frame*) const;
     void asFilenames(Vector<String>&) const;
-    Color asColor() const;
     PassRefPtr<DocumentFragment> asFragment(Frame*, PassRefPtr<Range> context,
                                             bool allowPlainText, bool& chosePlainText) const;
     bool canSmartReplace() const;
-    bool containsColor() const;
     bool containsFiles() const;
     unsigned numberOfFiles() const;
     int modifierKeyState() const;

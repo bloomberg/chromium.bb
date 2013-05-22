@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007 Apple Inc.  All rights reserved.
+ * Copyright (C) 2013 Google Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,8 +27,22 @@
 #include "config.h"
 #include "core/platform/DragData.h"
 
+#include "core/dom/Document.h"
+#include "core/dom/DocumentFragment.h"
+#include "core/dom/Range.h"
+#include "core/editing/markup.h"
+#include "core/page/Frame.h"
+#include "core/platform/FileSystem.h"
+#include "core/platform/KURL.h"
 #include "core/platform/PlatformEvent.h"
 #include "core/platform/PlatformKeyboardEvent.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
+#include "core/platform/chromium/ClipboardMimeTypes.h"
+#include "modules/filesystem/DraggedIsolatedFileSystem.h"
+#include "wtf/text/WTFString.h"
+
+#include <public/Platform.h>
+#include <public/WebFileUtilities.h>
 
 namespace WebCore {
 
@@ -51,5 +66,111 @@ DragData::DragData(const String&, const IntPoint& clientPosition, const IntPoint
 {
 }
 
-} // namespace WebCore
+static bool containsHTML(const ChromiumDataObject* dropData)
+{
+    return dropData->types().contains(mimeTypeTextHTML);
+}
 
+bool DragData::containsURL(Frame*, FilenameConversionPolicy filenamePolicy) const
+{
+    return m_platformDragData->types().contains(mimeTypeTextURIList)
+        || (filenamePolicy == ConvertFilenames && m_platformDragData->containsFilenames());
+}
+
+String DragData::asURL(Frame*, FilenameConversionPolicy filenamePolicy, String* title) const
+{
+    String url;
+    if (m_platformDragData->types().contains(mimeTypeTextURIList))
+        m_platformDragData->urlAndTitle(url, title);
+    else if (filenamePolicy == ConvertFilenames && containsFiles())
+        url = KURL(WebKit::Platform::current()->fileUtilities()->filePathToURL(m_platformDragData->filenames()[0]));
+    return url;
+}
+
+bool DragData::containsFiles() const
+{
+    return m_platformDragData->containsFilenames();
+}
+
+unsigned DragData::numberOfFiles() const
+{
+    return m_platformDragData->filenames().size();
+}
+
+int DragData::modifierKeyState() const
+{
+    return m_platformDragData->modifierKeyState();
+}
+
+void DragData::asFilenames(Vector<String>& result) const
+{
+    const Vector<String>& filenames = m_platformDragData->filenames();
+    for (size_t i = 0; i < filenames.size(); ++i)
+        result.append(filenames[i]);
+}
+
+bool DragData::containsPlainText() const
+{
+    return m_platformDragData->types().contains(mimeTypeTextPlain);
+}
+
+String DragData::asPlainText(Frame*) const
+{
+    return m_platformDragData->getData(mimeTypeTextPlain);
+}
+
+bool DragData::canSmartReplace() const
+{
+    // Mimic the situations in which mac allows drag&drop to do a smart replace.
+    // This is allowed whenever the drag data contains a 'range' (ie.,
+    // ClipboardWin::writeRange is called). For example, dragging a link
+    // should not result in a space being added.
+    return m_platformDragData->types().contains(mimeTypeTextPlain)
+        && !m_platformDragData->types().contains(mimeTypeTextURIList);
+}
+
+bool DragData::containsCompatibleContent() const
+{
+    return containsPlainText()
+        || containsURL(0)
+        || containsHTML(m_platformDragData)
+        || containsFiles();
+}
+
+PassRefPtr<DocumentFragment> DragData::asFragment(Frame* frame, PassRefPtr<Range>, bool, bool&) const
+{
+    /*
+     * Order is richest format first. On OSX this is:
+     * * Web Archive
+     * * Filenames
+     * * HTML
+     * * RTF
+     * * TIFF
+     * * PICT
+     */
+
+    if (containsFiles()) {
+        // FIXME: Implement this. Should be pretty simple to make some HTML
+        // and call createFragmentFromMarkup.
+    }
+
+    if (m_platformDragData->types().contains(mimeTypeTextHTML)) {
+        String html;
+        KURL baseURL;
+        m_platformDragData->htmlAndBaseURL(html, baseURL);
+        if (RefPtr<DocumentFragment> fragment = createFragmentFromMarkup(frame->document(), html, baseURL, DisallowScriptingAndPluginContent))
+            return fragment.release();
+    }
+
+    return 0;
+}
+
+String DragData::droppedFileSystemId() const
+{
+    DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(m_platformDragData);
+    if (!filesystem)
+        return String();
+    return filesystem->filesystemId();
+}
+
+} // namespace WebCore

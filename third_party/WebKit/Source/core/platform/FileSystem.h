@@ -80,8 +80,6 @@ bool makeAllDirectories(const String& path);
 String pathGetFileName(const String&);
 String directoryName(const String&);
 
-Vector<String> listDirectory(const String& path, const String& filter = String());
-
 inline bool isHandleValid(const PlatformFileHandle& handle) { return handle != invalidPlatformFileHandle; }
 
 inline double invalidFileTime() { return std::numeric_limits<double>::quiet_NaN(); }

@@ -89,14 +89,8 @@ static String unavailablePluginReplacementText(RenderEmbeddedObject::PluginUnava
     switch (pluginUnavailabilityReason) {
     case RenderEmbeddedObject::PluginMissing:
         return missingPluginText();
-    case RenderEmbeddedObject::PluginCrashed:
-        return crashedPluginText();
     case RenderEmbeddedObject::PluginBlockedByContentSecurityPolicy:
         return blockedPluginByContentSecurityPolicyText();
-    case RenderEmbeddedObject::InsecurePluginVersion:
-        return insecurePluginVersionText();
-    case RenderEmbeddedObject::PluginInactive:
-        return inactivePluginText();
     }
 
     ASSERT_NOT_REACHED();

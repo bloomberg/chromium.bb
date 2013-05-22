@@ -145,30 +145,6 @@ String AXHeadingText()
     return query(WebLocalizedString::AXHeadingText);
 }
 
-String AXDefinitionText()
-{
-    notImplemented();
-    return String("definition");
-}
-
-String AXDescriptionListTermText()
-{
-    notImplemented();
-    return String("term");
-}
-
-String AXDescriptionListDetailText()
-{
-    notImplemented();
-    return String("description");
-}
-
-String AXFooterRoleDescriptionText()
-{
-    notImplemented();
-    return String("footer");
-}
-
 String AXButtonActionVerb()
 {
     return query(WebLocalizedString::AXButtonActionVerb);
@@ -302,25 +278,7 @@ String missingPluginText()
     return query(WebLocalizedString::MissingPluginText);
 }
 
-String crashedPluginText()
-{
-    notImplemented();
-    return String("Plug-in Failure");
-}
-
 String blockedPluginByContentSecurityPolicyText()
-{
-    notImplemented();
-    return String();
-}
-
-String insecurePluginVersionText()
-{
-    notImplemented();
-    return String();
-}
-
-String inactivePluginText()
 {
     notImplemented();
     return String();
@@ -329,12 +287,6 @@ String inactivePluginText()
 String multipleFileUploadText(unsigned numberOfFiles)
 {
     return query(WebLocalizedString::MultipleFileUploadText, String::number(numberOfFiles));
-}
-
-// Used in FTPDirectoryDocument.cpp
-String unknownFileSizeText()
-{
-    return String();
 }
 
 // The following two functions are not declared in core/platform/LocalizedStrings.h.
@@ -361,9 +313,6 @@ String imageTitle(const String& filename, const IntSize& size)
     result.append(')');
     return result.toString();
 }
-
-String mediaElementLiveBroadcastStateText() { return String(); }
-String mediaElementLoadingStateText() { return String(); }
 
 String textTrackClosedCaptionsText() { return String(); }
 String textTrackSubtitlesText() { return String(); }

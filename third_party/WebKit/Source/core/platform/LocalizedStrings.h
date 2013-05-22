@@ -52,10 +52,6 @@ namespace WebCore {
     String AXListMarkerText();
     String AXImageMapText();
     String AXHeadingText();
-    String AXDefinitionText();
-    String AXDescriptionListTermText();
-    String AXDescriptionListDetailText();
-    String AXFooterRoleDescriptionText();
     String AXFileUploadButtonText();
     String AXButtonActionVerb();
     String AXRadioButtonActionVerb();
@@ -98,18 +94,12 @@ namespace WebCore {
     String weekFormatInLDML();
 
     String missingPluginText();
-    String crashedPluginText();
     String blockedPluginByContentSecurityPolicyText();
-    String insecurePluginVersionText();
-    String inactivePluginText();
 
     String multipleFileUploadText(unsigned numberOfFiles);
-    String unknownFileSizeText();
 
     String imageTitle(const String& filename, const IntSize& size);
 
-    String mediaElementLoadingStateText();
-    String mediaElementLiveBroadcastStateText();
     String localizedMediaControlElementString(const String&);
     String localizedMediaControlElementHelpText(const String&);
     String localizedMediaTimeDescription(float);

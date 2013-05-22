@@ -347,11 +347,6 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
     }
 
     if ((actionMask & DragDestinationActionEdit) && canProcessDrag(dragData)) {
-        if (dragData->containsColor()) {
-            dragSession.operation = DragOperationGeneric;
-            return true;
-        }
-
         IntPoint point = frameView->windowToContents(dragData->clientPosition());
         Element* element = elementUnderMouse(m_documentUnderMouse.get(), point);
         if (!element)
@@ -461,19 +456,6 @@ bool DragController::concludeEditDrag(DragData* dragData)
 
     if (m_page->dragCaretController()->hasCaret() && !dispatchTextInputEventFor(innerFrame.get(), dragData))
         return true;
-
-    if (dragData->containsColor()) {
-        Color color = dragData->asColor();
-        if (!color.isValid())
-            return false;
-        RefPtr<Range> innerRange = innerFrame->selection()->toNormalizedRange();
-        RefPtr<StylePropertySet> style = StylePropertySet::create();
-        style->setProperty(CSSPropertyColor, color.serialized(), false);
-        if (!innerFrame->editor()->shouldApplyStyle(style.get(), innerRange.get()))
-            return false;
-        innerFrame->editor()->applyStyle(style.get(), EditActionSetColor);
-        return true;
-    }
 
     if (dragData->containsFiles() && fileInput) {
         // fileInput should be the element we hit tested for, unless it was made

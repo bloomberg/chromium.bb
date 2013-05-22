@@ -71,7 +71,6 @@ public:
     virtual IntRect rootViewToScreen(const IntRect&) const OVERRIDE;
     virtual WebKit::WebScreenInfo screenInfo() const OVERRIDE;
     virtual void setCursor(const Cursor&) OVERRIDE;
-    virtual void setCursorHiddenUntilMouseMoves(bool) OVERRIDE;
 
     virtual void scheduleAnimation() OVERRIDE;
 

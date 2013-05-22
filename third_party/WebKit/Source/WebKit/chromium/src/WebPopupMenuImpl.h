@@ -123,7 +123,6 @@ public:
     virtual WebCore::IntRect rootViewToScreen(const WebCore::IntRect&) const OVERRIDE;
     virtual WebScreenInfo screenInfo() const OVERRIDE;
     virtual void setCursor(const WebCore::Cursor&) OVERRIDE;
-    virtual void setCursorHiddenUntilMouseMoves(bool) OVERRIDE;
 
     // WebCore::FramelessScrollViewClient methods:
     virtual void popupClosed(WebCore::FramelessScrollView*) OVERRIDE;
