@@ -38,6 +38,7 @@
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "wtf/StdLibExtras.h"
@@ -509,14 +510,16 @@ void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8
 
 void ScriptDebugServer::ensureDebuggerScriptCompiled()
 {
-    if (m_debuggerScript.get().IsEmpty()) {
-        v8::HandleScope scope;
-        v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
-        v8::Context::Scope contextScope(debuggerContext);
-        String debuggerScriptSource(reinterpret_cast<const char*>(DebuggerScriptSource_js), sizeof(DebuggerScriptSource_js));
-        V8RecursionScope::MicrotaskSuppression recursionScope;
-        m_debuggerScript.set(v8::Handle<v8::Object>::Cast(v8::Script::Compile(v8String(debuggerScriptSource, debuggerContext->GetIsolate()))->Run()));
-    }
+    if (!m_debuggerScript.get().IsEmpty())
+        return;
+
+    v8::HandleScope scope;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Handle<v8::String> source = v8String(String(reinterpret_cast<const char*>(DebuggerScriptSource_js), sizeof(DebuggerScriptSource_js)), isolate);
+    v8::Local<v8::Value> value = V8ScriptRunner::compileAndRunInternalScript(source, isolate, v8::Debug::GetDebugContext());
+    ASSERT(!value.IsEmpty());
+    ASSERT(value->IsObject());
+    m_debuggerScript.set(v8::Handle<v8::Object>::Cast(value));
 }
 
 v8::Local<v8::Value> ScriptDebugServer::functionScopes(v8::Handle<v8::Function> function)
