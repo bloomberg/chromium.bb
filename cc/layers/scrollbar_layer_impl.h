@@ -47,16 +47,15 @@ class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
     thumb_resource_id_ = id;
   }
 
-  // ScrollbarLayerImplBase implementation.
-  virtual float CurrentPos() const;
-  virtual int TotalSize() const;
-  virtual int Maximum() const;
+  float CurrentPos() const;
+  int TotalSize() const;
+  int Maximum() const;
 
   void SetCurrentPos(float current_pos) { current_pos_ = current_pos; }
   void SetTotalSize(int total_size) { total_size_ = total_size; }
   void SetMaximum(int maximum) { maximum_ = maximum; }
 
-  virtual WebKit::WebScrollbar::Orientation Orientation() const;
+  WebKit::WebScrollbar::Orientation Orientation() const;
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
