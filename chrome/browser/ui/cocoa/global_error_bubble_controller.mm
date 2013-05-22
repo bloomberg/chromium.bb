@@ -5,6 +5,8 @@
 #import "chrome/browser/ui/cocoa/global_error_bubble_controller.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_nsobject.h"
+#include "base/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/util.h"
@@ -28,6 +30,8 @@ namespace {
 
 // The vertical offset of the wrench bubble from the wrench menu button.
 const CGFloat kWrenchBubblePointOffsetY = 6;
+
+const CGFloat kParagraphSpacing = 6;
 
 } // namespace
 
@@ -84,11 +88,21 @@ class Bridge : public GlobalErrorBubbleViewBase {
       error_->GetBubbleViewIconResourceID()).ToNSImage()];
 
   [title_ setStringValue:SysUTF16ToNSString(error_->GetBubbleViewTitle())];
-  // TODO(yoz): Support multi-line messages.
-  string16 message;
-  if (!error_->GetBubbleViewMessages().empty())
-    message = error_->GetBubbleViewMessages()[0];
-  [message_ setStringValue:SysUTF16ToNSString(message)];
+  std::vector<string16> messages = error_->GetBubbleViewMessages();
+  string16 message = JoinString(messages, '\n');
+
+  scoped_nsobject<NSMutableAttributedString> messageValue(
+      [[NSMutableAttributedString alloc]
+        initWithString:SysUTF16ToNSString(message)]);
+  scoped_nsobject<NSMutableParagraphStyle> style(
+      [[NSMutableParagraphStyle alloc] init]);
+  [style setParagraphSpacing:kParagraphSpacing];
+  [messageValue addAttribute:NSParagraphStyleAttributeName
+                       value:style
+                       range:NSMakeRange(0, [messageValue length])];
+
+  [message_ setAttributedStringValue:messageValue];
+
   [acceptButton_ setTitle:
       SysUTF16ToNSString(error_->GetBubbleViewAcceptButtonLabel())];
   string16 cancelLabel = error_->GetBubbleViewCancelButtonLabel();
@@ -97,7 +111,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
   else
     [cancelButton_ setTitle:SysUTF16ToNSString(cancelLabel)];
 
-  // First make sure that the window is wide enough to accomidate the buttons.
+  // First make sure that the window is wide enough to accommodate the buttons.
   NSRect frame = [[self window] frame];
   [layoutTweaker_ tweakUI:buttonContainer_];
   CGFloat delta =  NSWidth([buttonContainer_ frame]) - NSWidth(frame);
