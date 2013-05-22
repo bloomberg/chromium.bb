@@ -1650,11 +1650,13 @@ widget_cairo_update_transform(struct widget *widget, cairo_t *cr)
 	enum wl_output_transform transform;
 	int surface_width, surface_height;
 	int translate_x, translate_y;
+	uint32_t scale;
 
 	surface_width = surface->allocation.width;
 	surface_height = surface->allocation.height;
 
 	transform = surface->buffer_transform;
+	scale = surface->buffer_scale;
 
 	switch (transform) {
 	case WL_OUTPUT_TRANSFORM_FLIPPED:
@@ -1712,6 +1714,7 @@ widget_cairo_update_transform(struct widget *widget, cairo_t *cr)
 		break;
 	}
 
+	cairo_scale(cr, scale, scale);
 	cairo_translate(cr, translate_x, translate_y);
 	cairo_rotate(cr, angle);
 	cairo_transform(cr, &m);
