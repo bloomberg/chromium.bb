@@ -29,6 +29,8 @@ base::Time TimeFromMicrosoftVariantTime(double variant_time) {
 
 }  // namespace
 
+AlbumInfo::AlbumInfo() {}
+
 AlbumInfo::AlbumInfo(const std::string& name, const base::Time& timestamp,
                      const std::string& uid, const base::FilePath& path)
     : name(name),

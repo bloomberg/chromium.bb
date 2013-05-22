@@ -26,6 +26,9 @@ bool WriteToFile(const base::FilePath& path, std::vector<uint8> data) {
 // Flatten a vector of elements into an array of bytes.
 template<class T>
 std::vector<uint8> Flatten(const std::vector<T>& elems) {
+  if (elems.empty())
+    return std::vector<uint8>();
+
   const uint8* elems0 = reinterpret_cast<const uint8*>(&elems[0]);
   std::vector<uint8> data_body(elems0, elems0 + sizeof(T) * elems.size());
 

@@ -73,6 +73,9 @@ enum FileSystemType {
   // such as MTP or PTP.
   kFileSystemTypeDeviceMedia,
 
+  // Indicates a Picasa virtual filesystem provided by Media Galleries API.
+  kFileSystemTypePicasa,
+
   // Indicates a synthetic iTunes filesystem.
   kFileSystemTypeItunes,
 

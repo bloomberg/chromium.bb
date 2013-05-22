@@ -16,6 +16,7 @@
 #include "chrome/browser/media_galleries/fileapi/itunes/itunes_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/picasa_file_util.h"
 #include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/fileapi/async_file_util_adapter.h"
@@ -34,8 +35,6 @@
 
 using fileapi::FileSystemContext;
 using fileapi::FileSystemURL;
-// 'using fileapi::FileSystemType' doesn't work because it conflicts with
-// winnt.h's FileSystemType enum value in global scope.
 
 namespace chrome {
 
@@ -52,6 +51,8 @@ MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
           new fileapi::AsyncFileUtilAdapter(new NativeMediaFileUtil())),
       device_media_async_file_util_(
           DeviceMediaAsyncFileUtil::Create(profile_path_)),
+      picasa_file_util_(
+          new fileapi::AsyncFileUtilAdapter(new picasa::PicasaFileUtil())),
       itunes_file_util_(new fileapi::AsyncFileUtilAdapter(
           new itunes::ItunesFileUtil())) {
 }
@@ -64,6 +65,7 @@ bool MediaFileSystemMountPointProvider::CanHandleType(
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
     case fileapi::kFileSystemTypeDeviceMedia:
+    case fileapi::kFileSystemTypePicasa:
     case fileapi::kFileSystemTypeItunes:
       return true;
     default:
@@ -107,6 +109,8 @@ fileapi::AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
       return native_media_file_util_.get();
+    case fileapi::kFileSystemTypePicasa:
+      return picasa_file_util_.get();
     case fileapi::kFileSystemTypeDeviceMedia:
       return device_media_async_file_util_.get();
     case fileapi::kFileSystemTypeItunes:

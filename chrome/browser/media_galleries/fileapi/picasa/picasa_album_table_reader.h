@@ -25,6 +25,7 @@ const uint32 kAlbumCategoryInvalid   = 0xffff;  // Sentinel value.
 const char kAlbumTokenPrefix[] = "]album:";
 
 struct AlbumInfo {
+  AlbumInfo();
   AlbumInfo(const std::string& name, const base::Time& timestamp,
             const std::string& uid, const base::FilePath& path);
 
