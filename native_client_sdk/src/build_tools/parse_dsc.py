@@ -191,6 +191,12 @@ def PrintProjectTree(tree):
       print '\t' + val['NAME']
 
 
+def GenerateProjects(tree):
+  for key in tree:
+    for val in tree[key]:
+      yield key, val
+
+
 def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('-e', '--experimental',

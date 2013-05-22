@@ -141,6 +141,7 @@ def GenerateManifest(srcroot, dstroot, desc):
   replace = {
       'name': desc['TITLE'],
       'description': '%s Example' % desc['TITLE'],
+      'key': True,
       'permissions': desc.get('PERMISSIONS', []),
       'version': build_version.ChromeVersionNoTrunk()
   }

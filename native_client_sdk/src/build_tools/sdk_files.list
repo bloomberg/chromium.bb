@@ -103,6 +103,15 @@ examples/api/websocket/manifest.json
 examples/api/websocket/websocket.cc
 examples/button_close_hover.png
 examples/button_close.png
+examples/demo/drive/background.js
+examples/demo/drive/common.js
+examples/demo/drive/drive.cc
+examples/demo/drive/example.js
+examples/demo/drive/icon128.png
+examples/demo/drive/index.html
+[win]examples/demo/drive/make.bat
+examples/demo/drive/Makefile
+examples/demo/drive/manifest.json
 [win]examples/demo/make.bat
 examples/demo/Makefile
 examples/demo/nacl_io/background.js

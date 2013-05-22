@@ -185,6 +185,7 @@ var common = (function () {
           if (startsWith(message_event.data, type + ':')) {
             func = defaultMessageTypes[type];
             func(message_event.data.slice(type.length + 1));
+            return;
           }
         }
       }

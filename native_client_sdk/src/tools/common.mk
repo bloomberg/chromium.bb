@@ -209,7 +209,8 @@ LIBDIR ?= $(NACL_SDK_ROOT)/lib
 .PHONY: clean
 clean:
 	$(RM) -f $(TARGET).nmf
-	$(RM) -fr $(OUTDIR)
+	$(RM) -rf $(OUTDIR)
+	$(RM) -rf user-data-dir
 
 
 #
@@ -396,7 +397,8 @@ RUN_PY := python $(NACL_SDK_ROOT)/tools/run.py
 CHROME_ENV ?=
 
 # Additional arguments to pass to Chrome.
-CHROME_ARGS += --enable-nacl --enable-pnacl --incognito --ppapi-out-of-process
+CHROME_ARGS += --enable-nacl --enable-pnacl --no-first-run
+CHROME_ARGS += --user-data-dir=$(CURDIR)/user-data-dir
 
 
 # Paths to Debug and Release versions of the Host Pepper plugins
@@ -418,7 +420,7 @@ endif
 
 .PHONY: run_package
 run_package: check_for_chrome all
-	$(CHROME_PATH) --load-and-launch-app=$(CURDIR) --enable-nacl --enable-pnacl
+	$(CHROME_PATH) --load-and-launch-app=$(CURDIR) $(CHROME_ARGS)
 
 
 SYSARCH = $(shell python $(NACL_SDK_ROOT)/tools/getos.py --nacl-arch)
