@@ -34,6 +34,10 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/platform/mediastream/RTCSessionDescriptionRequest.h"
 
+namespace WebKit {
+class WebRTCSessionDescription;
+}
+
 namespace WebCore {
 
 class RTCErrorCallback;
@@ -45,7 +49,7 @@ public:
     static PassRefPtr<RTCSessionDescriptionRequestImpl> create(ScriptExecutionContext*, PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>);
     virtual ~RTCSessionDescriptionRequestImpl();
 
-    virtual void requestSucceeded(PassRefPtr<RTCSessionDescriptionDescriptor>) OVERRIDE;
+    virtual void requestSucceeded(const WebKit::WebRTCSessionDescription&) OVERRIDE;
     virtual void requestFailed(const String& error) OVERRIDE;
 
     // ActiveDOMObject

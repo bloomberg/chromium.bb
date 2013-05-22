@@ -32,15 +32,42 @@
 
 #include <public/WebRTCSessionDescription.h>
 
-#include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 #include <public/WebString.h>
-
-using namespace WebCore;
 
 namespace WebKit {
 
-WebRTCSessionDescription::WebRTCSessionDescription(const PassRefPtr<RTCSessionDescriptionDescriptor>& sessionDescription)
-    : m_private(sessionDescription)
+class WebRTCSessionDescriptionPrivate : public RefCounted<WebRTCSessionDescriptionPrivate> {
+public:
+    static PassRefPtr<WebRTCSessionDescriptionPrivate> create(const WebString& type, const WebString& sdp);
+    virtual ~WebRTCSessionDescriptionPrivate();
+
+    WebString type() { return m_type; }
+    void setType(const WebString& type) { m_type = type; }
+
+    WebString sdp() { return m_sdp; }
+    void setSdp(const WebString& sdp) { m_sdp = sdp; }
+
+private:
+    WebRTCSessionDescriptionPrivate(const WebString& type, const WebString& sdp);
+
+    WebString m_type;
+    WebString m_sdp;
+};
+
+PassRefPtr<WebRTCSessionDescriptionPrivate> WebRTCSessionDescriptionPrivate::create(const WebString& type, const WebString& sdp)
+{
+    return adoptRef(new WebRTCSessionDescriptionPrivate(type, sdp));
+}
+
+WebRTCSessionDescriptionPrivate::WebRTCSessionDescriptionPrivate(const WebString& type, const WebString& sdp)
+    : m_type(type)
+    , m_sdp(sdp)
+{
+}
+
+WebRTCSessionDescriptionPrivate::~WebRTCSessionDescriptionPrivate()
 {
 }
 
@@ -54,38 +81,33 @@ void WebRTCSessionDescription::reset()
     m_private.reset();
 }
 
-WebRTCSessionDescription::operator WTF::PassRefPtr<WebCore::RTCSessionDescriptionDescriptor>() const
-{
-    return m_private.get();
-}
-
 void WebRTCSessionDescription::initialize(const WebString& type, const WebString& sdp)
 {
-    m_private = RTCSessionDescriptionDescriptor::create(type, sdp);
+    m_private = WebRTCSessionDescriptionPrivate::create(type, sdp);
 }
 
 WebString WebRTCSessionDescription::type() const
 {
     ASSERT(!m_private.isNull());
-    return m_private.get()->type();
+    return m_private->type();
 }
 
 void WebRTCSessionDescription::setType(const WebString& type)
 {
     ASSERT(!m_private.isNull());
-    return m_private.get()->setType(type);
+    return m_private->setType(type);
 }
 
 WebString WebRTCSessionDescription::sdp() const
 {
     ASSERT(!m_private.isNull());
-    return m_private.get()->sdp();
+    return m_private->sdp();
 }
 
 void WebRTCSessionDescription::setSDP(const WebString& sdp)
 {
     ASSERT(!m_private.isNull());
-    return m_private.get()->setSdp(sdp);
+    return m_private->setSdp(sdp);
 }
 
 } // namespace WebKit

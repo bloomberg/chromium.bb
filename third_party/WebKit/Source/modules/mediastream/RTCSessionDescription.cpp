@@ -34,7 +34,7 @@
 
 #include "bindings/v8/Dictionary.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
+#include <public/WebRTCSessionDescription.h>
 
 namespace WebCore {
 
@@ -59,17 +59,16 @@ PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary
         return 0;
     }
 
-    return adoptRef(new RTCSessionDescription(RTCSessionDescriptionDescriptor::create(type, sdp)));
+    return adoptRef(new RTCSessionDescription(WebKit::WebRTCSessionDescription(type, sdp)));
 }
 
-PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(PassRefPtr<RTCSessionDescriptionDescriptor> descriptor)
+PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(WebKit::WebRTCSessionDescription webSessionDescription)
 {
-    ASSERT(descriptor);
-    return adoptRef(new RTCSessionDescription(descriptor));
+    return adoptRef(new RTCSessionDescription(webSessionDescription));
 }
 
-RTCSessionDescription::RTCSessionDescription(PassRefPtr<RTCSessionDescriptionDescriptor> descriptor)
-    : m_descriptor(descriptor)
+RTCSessionDescription::RTCSessionDescription(WebKit::WebRTCSessionDescription webSessionDescription)
+    : m_webSessionDescription(webSessionDescription)
 {
     ScriptWrappable::init(this);
 }
@@ -78,32 +77,32 @@ RTCSessionDescription::~RTCSessionDescription()
 {
 }
 
-const String& RTCSessionDescription::type() const
+String RTCSessionDescription::type()
 {
-    return m_descriptor->type();
+    return m_webSessionDescription.type();
 }
 
 void RTCSessionDescription::setType(const String& type, ExceptionCode& ec)
 {
     if (verifyType(type))
-        m_descriptor->setType(type);
+        m_webSessionDescription.setType(type);
     else
         ec = TYPE_MISMATCH_ERR;
 }
 
-const String& RTCSessionDescription::sdp() const
+String RTCSessionDescription::sdp()
 {
-    return m_descriptor->sdp();
+    return m_webSessionDescription.sdp();
 }
 
 void RTCSessionDescription::setSdp(const String& sdp, ExceptionCode& ec)
 {
-    m_descriptor->setSdp(sdp);
+    m_webSessionDescription.setSDP(sdp);
 }
 
-RTCSessionDescriptionDescriptor* RTCSessionDescription::descriptor()
+WebKit::WebRTCSessionDescription RTCSessionDescription::webSessionDescription()
 {
-    return m_descriptor.get();
+    return m_webSessionDescription;
 }
 
 } // namespace WebCore

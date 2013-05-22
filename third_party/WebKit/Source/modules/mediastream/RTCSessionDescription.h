@@ -36,30 +36,30 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
+#include <public/WebRTCSessionDescription.h>
 
 namespace WebCore {
 
 class Dictionary;
-class RTCSessionDescriptionDescriptor;
 
 class RTCSessionDescription : public RefCounted<RTCSessionDescription>, public ScriptWrappable {
 public:
     static PassRefPtr<RTCSessionDescription> create(const Dictionary&, ExceptionCode&);
-    static PassRefPtr<RTCSessionDescription> create(PassRefPtr<RTCSessionDescriptionDescriptor>);
+    static PassRefPtr<RTCSessionDescription> create(WebKit::WebRTCSessionDescription);
     virtual ~RTCSessionDescription();
 
-    const String& type() const;
+    String type();
     void setType(const String&, ExceptionCode&);
 
-    const String& sdp() const;
+    String sdp();
     void setSdp(const String&, ExceptionCode&);
 
-    RTCSessionDescriptionDescriptor* descriptor();
+    WebKit::WebRTCSessionDescription webSessionDescription();
 
 private:
-    explicit RTCSessionDescription(PassRefPtr<RTCSessionDescriptionDescriptor>);
+    explicit RTCSessionDescription(WebKit::WebRTCSessionDescription);
 
-    RefPtr<RTCSessionDescriptionDescriptor> m_descriptor;
+    WebKit::WebRTCSessionDescription m_webSessionDescription;
 };
 
 } // namespace WebCore

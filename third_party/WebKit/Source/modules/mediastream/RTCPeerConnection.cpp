@@ -43,7 +43,6 @@
 #include "core/page/Frame.h"
 #include "core/platform/mediastream/RTCConfiguration.h"
 #include "core/platform/mediastream/RTCDataChannelHandler.h"
-#include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStreamEvent.h"
 #include "modules/mediastream/RTCDTMFSender.h"
@@ -59,6 +58,7 @@
 #include "modules/mediastream/RTCStatsRequestImpl.h"
 #include "modules/mediastream/RTCVoidRequestImpl.h"
 #include <public/WebRTCICECandidate.h>
+#include <public/WebRTCSessionDescription.h>
 
 namespace WebCore {
 
@@ -219,16 +219,16 @@ void RTCPeerConnection::setLocalDescription(PassRefPtr<RTCSessionDescription> pr
     }
 
     RefPtr<RTCVoidRequestImpl> request = RTCVoidRequestImpl::create(scriptExecutionContext(), successCallback, errorCallback);
-    m_peerHandler->setLocalDescription(request.release(), sessionDescription->descriptor());
+    m_peerHandler->setLocalDescription(request.release(), sessionDescription->webSessionDescription());
 }
 
 PassRefPtr<RTCSessionDescription> RTCPeerConnection::localDescription(ExceptionCode& ec)
 {
-    RefPtr<RTCSessionDescriptionDescriptor> descriptor = m_peerHandler->localDescription();
-    if (!descriptor)
+    WebKit::WebRTCSessionDescription webSessionDescription = m_peerHandler->localDescription();
+    if (webSessionDescription.isNull())
         return 0;
 
-    RefPtr<RTCSessionDescription> sessionDescription = RTCSessionDescription::create(descriptor.release());
+    RefPtr<RTCSessionDescription> sessionDescription = RTCSessionDescription::create(webSessionDescription);
     return sessionDescription.release();
 }
 
@@ -246,16 +246,16 @@ void RTCPeerConnection::setRemoteDescription(PassRefPtr<RTCSessionDescription> p
     }
 
     RefPtr<RTCVoidRequestImpl> request = RTCVoidRequestImpl::create(scriptExecutionContext(), successCallback, errorCallback);
-    m_peerHandler->setRemoteDescription(request.release(), sessionDescription->descriptor());
+    m_peerHandler->setRemoteDescription(request.release(), sessionDescription->webSessionDescription());
 }
 
 PassRefPtr<RTCSessionDescription> RTCPeerConnection::remoteDescription(ExceptionCode& ec)
 {
-    RefPtr<RTCSessionDescriptionDescriptor> descriptor = m_peerHandler->remoteDescription();
-    if (!descriptor)
+    WebKit::WebRTCSessionDescription webSessionDescription = m_peerHandler->remoteDescription();
+    if (webSessionDescription.isNull())
         return 0;
 
-    RefPtr<RTCSessionDescription> desc = RTCSessionDescription::create(descriptor.release());
+    RefPtr<RTCSessionDescription> desc = RTCSessionDescription::create(webSessionDescription);
     return desc.release();
 }
 

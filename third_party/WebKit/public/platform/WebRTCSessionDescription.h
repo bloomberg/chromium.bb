@@ -34,13 +34,11 @@
 #include "WebCommon.h"
 #include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
-
-namespace WebCore {
-class RTCSessionDescriptionDescriptor;
-}
+#include "WebString.h"
 
 namespace WebKit {
-class WebString;
+
+class WebRTCSessionDescriptionPrivate;
 
 //  In order to establish the media plane, PeerConnection needs specific
 //  parameters to indicate what to transmit to the remote side, as well
@@ -78,13 +76,14 @@ public:
     WEBKIT_EXPORT void setSDP(const WebString&);
 
 #if WEBKIT_IMPLEMENTATION
-    WebRTCSessionDescription(const WTF::PassRefPtr<WebCore::RTCSessionDescriptionDescriptor>&);
-
-    operator WTF::PassRefPtr<WebCore::RTCSessionDescriptionDescriptor>() const;
+    WebRTCSessionDescription(WebString type, WebString sdp)
+    {
+        this->initialize(type, sdp);
+    }
 #endif
 
 private:
-    WebPrivatePtr<WebCore::RTCSessionDescriptionDescriptor> m_private;
+    WebPrivatePtr<WebRTCSessionDescriptionPrivate> m_private;
 };
 
 } // namespace WebKit

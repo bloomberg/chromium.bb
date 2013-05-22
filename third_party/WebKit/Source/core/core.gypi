@@ -3016,8 +3016,6 @@
             'platform/mediastream/RTCDataChannelHandlerClient.h',
             'platform/mediastream/RTCPeerConnectionHandler.h',
             'platform/mediastream/RTCPeerConnectionHandlerClient.h',
-            'platform/mediastream/RTCSessionDescriptionDescriptor.cpp',
-            'platform/mediastream/RTCSessionDescriptionDescriptor.h',
             'platform/mediastream/RTCSessionDescriptionRequest.h',
             'platform/mediastream/RTCStatsRequest.h',
             'platform/mediastream/RTCVoidRequest.h',

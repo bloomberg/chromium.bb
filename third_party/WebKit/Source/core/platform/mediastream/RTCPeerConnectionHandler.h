@@ -37,6 +37,7 @@
 
 namespace WebKit {
 class WebRTCICECandidate;
+class WebRTCSessionDescription;
 }
 
 namespace WebCore {
@@ -47,7 +48,6 @@ class RTCConfiguration;
 class RTCDTMFSenderHandler;
 class RTCDataChannelHandler;
 class RTCPeerConnectionHandlerClient;
-class RTCSessionDescriptionDescriptor;
 class RTCSessionDescriptionRequest;
 class RTCStatsRequest;
 class RTCVoidRequest;
@@ -61,10 +61,10 @@ public:
 
     virtual void createOffer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>) = 0;
     virtual void createAnswer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>) = 0;
-    virtual void setLocalDescription(PassRefPtr<RTCVoidRequest>, PassRefPtr<RTCSessionDescriptionDescriptor>) = 0;
-    virtual void setRemoteDescription(PassRefPtr<RTCVoidRequest>, PassRefPtr<RTCSessionDescriptionDescriptor>) = 0;
-    virtual PassRefPtr<RTCSessionDescriptionDescriptor> localDescription() = 0;
-    virtual PassRefPtr<RTCSessionDescriptionDescriptor> remoteDescription() = 0;
+    virtual void setLocalDescription(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCSessionDescription) = 0;
+    virtual void setRemoteDescription(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCSessionDescription) = 0;
+    virtual WebKit::WebRTCSessionDescription localDescription() = 0;
+    virtual WebKit::WebRTCSessionDescription remoteDescription() = 0;
     virtual bool updateIce(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>) = 0;
     virtual bool addIceCandidate(WebKit::WebRTCICECandidate) = 0;
     virtual bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>) = 0;

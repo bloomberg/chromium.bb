@@ -32,11 +32,11 @@
 
 #include "modules/mediastream/RTCSessionDescriptionRequestImpl.h"
 
-#include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
 #include "modules/mediastream/RTCErrorCallback.h"
 #include "modules/mediastream/RTCPeerConnection.h"
 #include "modules/mediastream/RTCSessionDescription.h"
 #include "modules/mediastream/RTCSessionDescriptionCallback.h"
+#include <public/WebRTCSessionDescription.h>
 
 namespace WebCore {
 
@@ -58,10 +58,10 @@ RTCSessionDescriptionRequestImpl::~RTCSessionDescriptionRequestImpl()
 {
 }
 
-void RTCSessionDescriptionRequestImpl::requestSucceeded(PassRefPtr<RTCSessionDescriptionDescriptor> descriptor)
+void RTCSessionDescriptionRequestImpl::requestSucceeded(const WebKit::WebRTCSessionDescription& webSessionDescription)
 {
     if (m_successCallback) {
-        RefPtr<RTCSessionDescription> sessionDescription = RTCSessionDescription::create(descriptor);
+        RefPtr<RTCSessionDescription> sessionDescription = RTCSessionDescription::create(webSessionDescription);
         m_successCallback->handleEvent(sessionDescription.get());
     }
 

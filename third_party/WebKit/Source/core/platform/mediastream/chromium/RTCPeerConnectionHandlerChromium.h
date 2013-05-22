@@ -41,6 +41,7 @@
 namespace WebKit {
 class WebMediaStream;
 class WebRTCICECandidate;
+class WebRTCSessionDescription;
 }
 
 namespace WebCore {
@@ -58,10 +59,10 @@ public:
 
     virtual void createOffer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>) OVERRIDE;
     virtual void createAnswer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>) OVERRIDE;
-    virtual void setLocalDescription(PassRefPtr<RTCVoidRequest>, PassRefPtr<RTCSessionDescriptionDescriptor>) OVERRIDE;
-    virtual void setRemoteDescription(PassRefPtr<RTCVoidRequest>, PassRefPtr<RTCSessionDescriptionDescriptor>) OVERRIDE;
-    virtual PassRefPtr<RTCSessionDescriptionDescriptor> localDescription() OVERRIDE;
-    virtual PassRefPtr<RTCSessionDescriptionDescriptor> remoteDescription() OVERRIDE;
+    virtual void setLocalDescription(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCSessionDescription) OVERRIDE;
+    virtual void setRemoteDescription(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCSessionDescription) OVERRIDE;
+    virtual WebKit::WebRTCSessionDescription localDescription() OVERRIDE;
+    virtual WebKit::WebRTCSessionDescription remoteDescription() OVERRIDE;
     virtual bool updateIce(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>) OVERRIDE;
     virtual bool addIceCandidate(WebKit::WebRTCICECandidate) OVERRIDE;
     virtual bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>) OVERRIDE;
