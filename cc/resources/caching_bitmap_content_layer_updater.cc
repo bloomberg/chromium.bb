@@ -13,16 +13,21 @@ namespace cc {
 scoped_refptr<CachingBitmapContentLayerUpdater>
 CachingBitmapContentLayerUpdater::Create(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation) {
+    RenderingStatsInstrumentation* stats_instrumentation,
+    int layer_id) {
   return make_scoped_refptr(
       new CachingBitmapContentLayerUpdater(painter.Pass(),
-                                           stats_instrumentation));
+                                           stats_instrumentation,
+                                           layer_id));
 }
 
 CachingBitmapContentLayerUpdater::CachingBitmapContentLayerUpdater(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation)
-    : BitmapContentLayerUpdater(painter.Pass(), stats_instrumentation),
+    RenderingStatsInstrumentation* stats_instrumentation,
+    int layer_id)
+    : BitmapContentLayerUpdater(painter.Pass(),
+                                stats_instrumentation,
+                                layer_id),
       pixels_did_change_(false) {}
 
 CachingBitmapContentLayerUpdater::~CachingBitmapContentLayerUpdater() {}

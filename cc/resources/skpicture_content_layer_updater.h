@@ -41,7 +41,8 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
 
   static scoped_refptr<SkPictureContentLayerUpdater> Create(
       scoped_ptr<LayerPainter> painter,
-      RenderingStatsInstrumentation* stats_instrumentation);
+      RenderingStatsInstrumentation* stats_instrumentation,
+      int layer_id);
 
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
       PrioritizedResourceManager* manager) OVERRIDE;
@@ -50,7 +51,8 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
  protected:
   SkPictureContentLayerUpdater(
       scoped_ptr<LayerPainter> painter,
-      RenderingStatsInstrumentation* stats_instrumentation);
+      RenderingStatsInstrumentation* stats_instrumentation,
+      int layer_id);
   virtual ~SkPictureContentLayerUpdater();
 
   virtual void PrepareToUpdate(gfx::Rect content_rect,

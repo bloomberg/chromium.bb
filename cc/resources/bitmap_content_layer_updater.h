@@ -41,7 +41,8 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
 
   static scoped_refptr<BitmapContentLayerUpdater> Create(
       scoped_ptr<LayerPainter> painter,
-      RenderingStatsInstrumentation* stats_instrumenation);
+      RenderingStatsInstrumentation* stats_instrumenation,
+      int layer_id);
 
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
       PrioritizedResourceManager* manager) OVERRIDE;
@@ -62,7 +63,8 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
  protected:
   BitmapContentLayerUpdater(
       scoped_ptr<LayerPainter> painter,
-      RenderingStatsInstrumentation* stats_instrumenation);
+      RenderingStatsInstrumentation* stats_instrumenation,
+      int layer_id);
   virtual ~BitmapContentLayerUpdater();
 
   skia::RefPtr<SkCanvas> canvas_;
