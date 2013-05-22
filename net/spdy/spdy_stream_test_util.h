@@ -134,6 +134,7 @@ class StreamDelegateWithBody : public StreamDelegateBase {
                          base::StringPiece data);
   virtual ~StreamDelegateWithBody();
 
+  virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
   virtual int OnSendBody() OVERRIDE;
   virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
 

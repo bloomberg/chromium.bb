@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_log_unittest.h"
@@ -38,6 +39,11 @@ const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
 
 class SpdyStreamSpdy3Test : public testing::Test {
  protected:
+  // A function that takes a SpdyStream and the number of bytes which
+  // will unstall the next frame completely.
+  typedef base::Callback<void(const base::WeakPtr<SpdyStream>&, int32)>
+      UnstallFunction;
+
   SpdyStreamSpdy3Test()
       : spdy_util_(kProtoSPDY3),
         host_port_pair_("www.google.com", 80),
@@ -69,6 +75,12 @@ class SpdyStreamSpdy3Test : public testing::Test {
   virtual void TearDown() {
     MessageLoop::current()->RunUntilIdle();
   }
+
+  void RunResumeAfterUnstallRequestResponseTest(
+      const UnstallFunction& unstall_function);
+
+  void RunResumeAfterUnstallBidirectionalTest(
+      const UnstallFunction& unstall_function);
 
   SpdyTestUtil spdy_util_;
   HostPortPair host_port_pair_;
@@ -416,9 +428,41 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
   EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, delegate.WaitForClose());
 }
 
-// Cause a send stall by reducing the flow control send window to
-// 0. The stream should resume when that window is then increased.
-TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
+// Functions used with
+// RunResumeAfterUnstall{RequestResponse,Bidirectional}Test().
+
+void StallStream(const base::WeakPtr<SpdyStream>& stream) {
+  // Reduce the send window size to 0 to stall.
+  while (stream->send_window_size() > 0) {
+    stream->DecreaseSendWindowSize(
+        std::min(kMaxSpdyFrameChunkSize, stream->send_window_size()));
+  }
+}
+
+void IncreaseStreamSendWindowSize(const base::WeakPtr<SpdyStream>& stream,
+                                  int32 delta_window_size) {
+  EXPECT_TRUE(stream->send_stalled_by_flow_control());
+  stream->IncreaseSendWindowSize(delta_window_size);
+  EXPECT_FALSE(stream->send_stalled_by_flow_control());
+}
+
+void AdjustStreamSendWindowSize(const base::WeakPtr<SpdyStream>& stream,
+                                int32 delta_window_size) {
+  // Make sure that negative adjustments are handled properly.
+  EXPECT_TRUE(stream->send_stalled_by_flow_control());
+  stream->AdjustSendWindowSize(-delta_window_size);
+  EXPECT_TRUE(stream->send_stalled_by_flow_control());
+  stream->AdjustSendWindowSize(+delta_window_size);
+  EXPECT_TRUE(stream->send_stalled_by_flow_control());
+  stream->AdjustSendWindowSize(+delta_window_size);
+  EXPECT_FALSE(stream->send_stalled_by_flow_control());
+}
+
+// Given an unstall function, runs a test to make sure that a
+// request/response (i.e., an HTTP-like) stream resumes after a stall
+// and unstall.
+void SpdyStreamSpdy3Test::RunResumeAfterUnstallRequestResponseTest(
+    const UnstallFunction& unstall_function) {
   GURL url(kStreamUrl);
 
   session_ =
@@ -426,20 +470,17 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
 
   scoped_ptr<SpdyFrame> req(
       ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
-  scoped_ptr<SpdyFrame> msg(
+  scoped_ptr<SpdyFrame> body(
       ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0),
-    CreateMockWrite(*msg, 2),
+    CreateMockWrite(*body, 1),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> echo(
-      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   MockRead reads[] = {
-    CreateMockRead(*resp, 1),
-    CreateMockRead(*echo, 3),
-    MockRead(ASYNC, 0, 0, 4), // EOF
+    CreateMockRead(*resp, 2),
+    MockRead(ASYNC, 0, 0, 3), // EOF
   };
 
   DeterministicSocketData data(reads, arraysize(reads),
@@ -467,23 +508,17 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
-
-  data.RunFor(2);
-
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
-  // Reduce the send window size to 0 to stall.
-  while (stream->send_window_size() > 0) {
-    stream->DecreaseSendWindowSize(
-        std::min(kMaxSpdyFrameChunkSize, stream->send_window_size()));
-  }
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
-  EXPECT_EQ(ERR_IO_PENDING, delegate.OnSendBody());
+  StallStream(stream);
+
+  data.RunFor(1);
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
-  stream->IncreaseSendWindowSize(kPostBodyLength);
+  unstall_function.Run(stream, kPostBodyLength);
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
@@ -494,15 +529,25 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
-            delegate.TakeReceivedData());
+  EXPECT_EQ(std::string(), delegate.TakeReceivedData());
   EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.body_data_sent());
 }
 
-// Cause a send stall by reducing the flow control send window to
-// 0. The stream should resume when that window is then adjusted
-// positively.
-TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
+TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncreaseRequestResponse) {
+  RunResumeAfterUnstallRequestResponseTest(
+      base::Bind(&IncreaseStreamSendWindowSize));
+}
+
+TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjustRequestResponse) {
+  RunResumeAfterUnstallRequestResponseTest(
+      base::Bind(&AdjustStreamSendWindowSize));
+}
+
+// Given an unstall function, runs a test to make sure that a
+// bidrectional (i.e., non-HTTP-like) stream resumes after a stall and
+// unstall.
+void SpdyStreamSpdy3Test::RunResumeAfterUnstallBidirectionalTest(
+    const UnstallFunction& unstall_function) {
   GURL url(kStreamUrl);
 
   session_ =
@@ -541,7 +586,8 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
       CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
 
-  StreamDelegateWithBody delegate(stream, kPostBodyStringPiece);
+  StreamDelegateSendImmediate delegate(stream, scoped_ptr<SpdyHeaderBlock>(),
+                                       kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -553,29 +599,17 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
 
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
-  data.RunFor(2);
+  data.RunFor(1);
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
-  // Reduce the send window size to 0 to stall.
-  while (stream->send_window_size() > 0) {
-    stream->DecreaseSendWindowSize(
-        std::min(kMaxSpdyFrameChunkSize, stream->send_window_size()));
-  }
+  StallStream(stream);
 
-  EXPECT_EQ(ERR_IO_PENDING, delegate.OnSendBody());
+  data.RunFor(1);
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
-  stream->AdjustSendWindowSize(-static_cast<int>(kPostBodyLength));
-
-  EXPECT_TRUE(stream->send_stalled_by_flow_control());
-
-  stream->AdjustSendWindowSize(kPostBodyLength);
-
-  EXPECT_TRUE(stream->send_stalled_by_flow_control());
-
-  stream->AdjustSendWindowSize(kPostBodyLength);
+  unstall_function.Run(stream, kPostBodyLength);
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
@@ -588,7 +622,21 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
-  EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.body_data_sent());
+  EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.data_sent());
+}
+
+// TODO(akalin): Re-enable these when http://crbug.com/242288 is
+// fixed.
+TEST_F(SpdyStreamSpdy3Test,
+       DISABLED_ResumeAfterSendWindowSizeIncreaseBidirectional) {
+  RunResumeAfterUnstallBidirectionalTest(
+      base::Bind(&IncreaseStreamSendWindowSize));
+}
+
+TEST_F(SpdyStreamSpdy3Test,
+       DISABLED_ResumeAfterSendWindowSizeAdjustBidirectional) {
+  RunResumeAfterUnstallBidirectionalTest(
+      base::Bind(&AdjustStreamSendWindowSize));
 }
 
 }  // namespace

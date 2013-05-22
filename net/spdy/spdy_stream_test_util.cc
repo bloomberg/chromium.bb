@@ -187,6 +187,11 @@ StreamDelegateWithBody::StreamDelegateWithBody(
 StreamDelegateWithBody::~StreamDelegateWithBody() {
 }
 
+SpdySendStatus StreamDelegateWithBody::OnSendHeadersComplete() {
+  StreamDelegateBase::OnSendHeadersComplete();
+  return MORE_DATA_TO_SEND;
+}
+
 int StreamDelegateWithBody::OnSendBody() {
   stream()->QueueStreamData(buf_.get(), buf_->BytesRemaining(),
                             DATA_FLAG_NONE);
