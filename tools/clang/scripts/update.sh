@@ -324,21 +324,14 @@ if [[ -n "${with_android}" ]]; then
   # Make a standalone Android toolchain.
   ${ANDROID_NDK_DIR}/build/tools/make-standalone-toolchain.sh \
       --platform=android-14 \
-      --install-dir="${LLVM_BUILD_DIR}/android-toolchain"
-
-  # Fixup mismatching version numbers in android-ndk-r8b.
-  # TODO: This will be fixed in the next NDK, remove this when that ships.
-  TC="${LLVM_BUILD_DIR}/android-toolchain"
-  if [[ -d "${TC}/lib/gcc/arm-linux-androideabi/4.6.x-google" ]]; then
-    mv "${TC}/lib/gcc/arm-linux-androideabi/4.6.x-google" \
-        "${TC}/lib/gcc/arm-linux-androideabi/4.6"
-    mv "${TC}/libexec/gcc/arm-linux-androideabi/4.6.x-google" \
-        "${TC}/libexec/gcc/arm-linux-androideabi/4.6"
-  fi
+      --install-dir="${LLVM_BUILD_DIR}/android-toolchain" \
+      --system=linux-x86_64 \
+      --stl=stlport
 
   # Build ASan runtime for Android.
   cd "${LLVM_BUILD_DIR}"
-  make -C tools/clang/runtime/ LLVM_ANDROID_TOOLCHAIN_DIR="../../../../${TC}"
+  TC="${PWD}/android-toolchain"
+  make -C tools/clang/runtime/ LLVM_ANDROID_TOOLCHAIN_DIR="${TC}"
   cd -
 fi
 
