@@ -123,6 +123,14 @@
         'proxy/ppapi_perftests.cc',
         'proxy/ppp_messaging_proxy_perftest.cc',
       ],
+      'conditions': [
+        # See http://crbug.com/162998#c4 for why this is needed.
+        ['OS=="linux" and linux_use_tcmalloc==1', {
+          'dependencies': [
+            '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'ppapi_unittests',
