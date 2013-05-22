@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 
@@ -27,7 +28,7 @@ class NetworkPortalDetectorStub : public NetworkPortalDetector {
   virtual void AddAndFireObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual CaptivePortalState GetCaptivePortalState(
-      const chromeos::Network* network) OVERRIDE;
+      const chromeos::NetworkState* network) OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;
   virtual void Enable(bool start_detection) OVERRIDE;
   virtual bool StartDetectionIfIdle() OVERRIDE;
@@ -40,13 +41,13 @@ class NetworkPortalDetectorStub : public NetworkPortalDetector {
   typedef std::string NetworkId;
   typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
 
-  void SetActiveNetworkForTesting(const Network* network);
-  void SetDetectionResultsForTesting(const Network* network,
+  void SetDefaultNetworkPathForTesting(const std::string& service_path);
+  void SetDetectionResultsForTesting(const std::string& service_path,
                                      const CaptivePortalState& state);
   void NotifyObserversForTesting();
 
   ObserverList<Observer> observers_;
-  const Network* active_network_;
+  scoped_ptr<NetworkState> default_network_;
   CaptivePortalStateMap portal_state_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorStub);

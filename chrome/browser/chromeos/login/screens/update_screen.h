@@ -21,6 +21,7 @@
 namespace chromeos {
 
 class ErrorScreen;
+class NetworkState;
 class ScreenObserver;
 
 // Controller for the update screen. It does not depend on the specific
@@ -71,7 +72,7 @@ class UpdateScreen: public UpdateEngineClient::Observer,
 
   // NetworkPortalDetector::Observer implementation:
   virtual void OnPortalDetectionCompleted(
-      const Network* network,
+      const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state) OVERRIDE;
 
  private:
@@ -106,7 +107,7 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   void ShowErrorMessage();
   void HideErrorMessage();
   void UpdateErrorMessage(
-      const Network* network,
+      const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalStatus status);
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.

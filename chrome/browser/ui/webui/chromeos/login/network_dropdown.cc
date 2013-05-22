@@ -126,10 +126,6 @@ NetworkDropdown::~NetworkDropdown() {
   CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
 }
 
-void NetworkDropdown::SetLastNetworkType(ConnectionType last_network_type) {
-  // No longer implemented. TODO(stevenjb): Purge from JS.
-}
-
 void NetworkDropdown::OnItemChosen(int id) {
   network_menu_->OnItemChosen(id);
 }

@@ -4,12 +4,13 @@
 
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 
-#include "chrome/browser/chromeos/cros/network_library.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chromeos/network/network_state.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -18,7 +19,7 @@ namespace chromeos {
 namespace {
 
 void ConfigureErrorScreen(ErrorScreen* screen,
-    const Network* network,
+    const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalStatus status) {
   switch (status) {
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
@@ -86,7 +87,7 @@ void LocallyManagedUserCreationScreen::Show() {
 }
 
 void LocallyManagedUserCreationScreen::OnPortalDetectionCompleted(
-    const Network* network,
+    const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state)  {
   if (state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
     get_screen_observer()->HideErrorScreen(this);

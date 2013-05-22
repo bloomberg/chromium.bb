@@ -136,10 +136,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      */
     onBeforeShow: function(data) {
       cr.ui.Oobe.clearErrors();
-      var lastNetworkType = 0;
-      if (data && data['lastNetworkType'])
-        lastNetworkType = data['lastNetworkType'];
-      cr.ui.DropDown.show('offline-networks-list', false, lastNetworkType);
+      cr.ui.DropDown.show('offline-networks-list', false);
     },
 
     /**

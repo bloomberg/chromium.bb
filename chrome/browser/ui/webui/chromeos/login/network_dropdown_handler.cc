@@ -57,12 +57,9 @@ void NetworkDropdownHandler::HandleNetworkItemChosen(double id) {
 }
 
 void NetworkDropdownHandler::HandleNetworkDropdownShow(
-    const std::string& element_id, bool oobe, double last_network_type) {
+    const std::string& element_id,
+    bool oobe) {
   dropdown_.reset(new NetworkDropdown(web_ui(), oobe));
-  if (last_network_type >= 0) {
-    dropdown_->SetLastNetworkType(
-        static_cast<ConnectionType>(last_network_type));
-  }
 }
 
 void NetworkDropdownHandler::HandleNetworkDropdownHide() {
