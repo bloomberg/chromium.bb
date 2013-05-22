@@ -1902,9 +1902,7 @@ void PrintWebViewHelper::PrintPreviewContext::set_error(
 }
 
 WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::source_frame() {
-  // TODO(thestig) turn this back into a DCHECK when http://crbug.com/118303 is
-  // resolved.
-  CHECK(state_ != UNINITIALIZED);
+  DCHECK(state_ != UNINITIALIZED);
   return source_frame_;
 }
 
@@ -1915,9 +1913,7 @@ const WebKit::WebNode&
 }
 
 WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::prepared_frame() {
-  // TODO(thestig) turn this back into a DCHECK when http://crbug.com/118303 is
-  // resolved.
-  CHECK(state_ != UNINITIALIZED);
+  DCHECK(state_ != UNINITIALIZED);
   return prep_frame_view_->frame();
 }
 
