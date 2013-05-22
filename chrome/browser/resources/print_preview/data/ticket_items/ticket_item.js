@@ -131,7 +131,7 @@ cr.define('print_preview.ticket_items', function() {
      *     ticket item.
      */
     isValueEqual: function(value) {
-      return this.value_ == value;
+      return this.getValue() == value;
     },
 
     /** @param {!Object} Value to set as the value of the ticket item. */
