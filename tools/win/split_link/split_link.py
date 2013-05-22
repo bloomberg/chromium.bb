@@ -11,6 +11,7 @@ import _winreg
 import ctypes
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -54,12 +55,14 @@ def GetFlagsAndInputs(argv):
 
   inputs = []
   flags = []
+  intermediate_manifest = ''
   for arg in args:
     lower_arg = arg.lower()
     # We'll be replacing these ourselves.
     if lower_arg.startswith('/out:'):
       continue
     if lower_arg.startswith('/manifestfile:'):
+      intermediate_manifest = arg[arg.index(':')+1:]
       continue
     if lower_arg.startswith('/pdb:'):
       continue
@@ -69,7 +72,7 @@ def GetFlagsAndInputs(argv):
     else:
       flags.append(arg)
 
-  return flags, inputs
+  return flags, inputs, intermediate_manifest
 
 
 def GetRegistryValue(subkey):
@@ -167,7 +170,7 @@ def PdbNameForIndex(index):
   return OutputNameForIndex(index) + '.pdb'
 
 
-def RunLinker(flags, index, inputs, phase):
+def RunLinker(flags, index, inputs, phase, intermediate_manifest):
   """Invokes the linker and returns the stdout, returncode and target name."""
   rspfile = 'part%d_%s.rsp' % (index, phase)
   with open(rspfile, 'w') as f:
@@ -183,6 +186,12 @@ def RunLinker(flags, index, inputs, phase):
   link_exe = GetOriginalLinkerPath()
   popen = subprocess.Popen([link_exe, '@' + rspfile], stdout=subprocess.PIPE)
   stdout, _ = popen.communicate()
+  if index == 0 and popen.returncode == 0 and intermediate_manifest:
+    # Hack for ninja build. After the linker runs, it does some manifest
+    # things and expects there to be a file in this location. We just put it
+    # there so it's happy. This is a no-op.
+    if os.path.isdir(os.path.dirname(intermediate_manifest)):
+      shutil.copyfile(manifest_name, intermediate_manifest)
   return stdout, popen.returncode, output_name
 
 
@@ -260,13 +269,13 @@ def BuildImportLibs(flags, inputs_by_part, deffiles):
     libfile = 'part%d.lib' % i
     flags_with_implib_and_deffile = flags + ['/IMPLIB:%s' % libfile,
                                              '/DEF:%s' % deffile]
-    RunLinker(flags_with_implib_and_deffile, i, inputs, 'implib')
+    RunLinker(flags_with_implib_and_deffile, i, inputs, 'implib', None)
     import_libs.append(libfile)
   return import_libs
 
 
 def AttemptLink(flags, inputs_by_part, unresolved_by_part, deffiles,
-                import_libs):
+                import_libs, intermediate_manifest):
   """Tries to run the linker for all parts using the current round of
   generated import libs and .def files. If the link fails, updates the
   unresolved externals list per part."""
@@ -281,7 +290,8 @@ def AttemptLink(flags, inputs_by_part, unresolved_by_part, deffiles,
     inputs_with_implib = inputs + filter(lambda x: x, others_implibs)
     if deffile:
       flags = flags + ['/DEF:%s' % deffile, '/LTCG']
-    stdout, rc, output = RunLinker(flags, i, inputs_with_implib, 'final')
+    stdout, rc, output = RunLinker(
+        flags, i, inputs_with_implib, 'final', intermediate_manifest)
     if rc != 0:
       all_succeeded = False
       new_externals.append(ParseOutExternals(stdout))
@@ -328,7 +338,7 @@ def ExtractSubObjsTargetedAtAll(
 
 
 def main():
-  flags, inputs = GetFlagsAndInputs(sys.argv[1:])
+  flags, inputs, intermediate_manifest = GetFlagsAndInputs(sys.argv[1:])
   partition_file = os.path.normpath(
       os.path.join(BASE_DIR, '../../../build/split_link_partition.py'))
   with open(partition_file) as partition:
@@ -372,7 +382,8 @@ def main():
   for i in range(5):
     Log('--- starting pass %d' % i)
     ok, dlls, unresolved_by_part = AttemptLink(
-        flags, inputs_by_part, unresolved_by_part, deffiles, import_libs)
+        flags, inputs_by_part, unresolved_by_part, deffiles, import_libs,
+        intermediate_manifest)
     if ok:
       break
     data_exports = 0
