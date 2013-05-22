@@ -660,6 +660,7 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 
 enum {
 	BACKGROUND_SCALE,
+	BACKGROUND_SCALE_CROP,
 	BACKGROUND_TILE
 };
 
@@ -671,7 +672,9 @@ background_draw(struct widget *widget, void *data)
 	cairo_pattern_t *pattern;
 	cairo_matrix_t matrix;
 	cairo_t *cr;
-	double sx, sy;
+	double im_w, im_h;
+	double sx, sy, s;
+	double tx, ty;
 	struct rectangle allocation;
 	int type = -1;
 	struct display *display;
@@ -691,6 +694,8 @@ background_draw(struct widget *widget, void *data)
 
 	if (strcmp(key_background_type, "scale") == 0)
 		type = BACKGROUND_SCALE;
+	else if (strcmp(key_background_type, "scale-crop") == 0)
+		type = BACKGROUND_SCALE_CROP;
 	else if (strcmp(key_background_type, "tile") == 0)
 		type = BACKGROUND_TILE;
 	else
@@ -698,20 +703,32 @@ background_draw(struct widget *widget, void *data)
 			key_background_type);
 
 	if (image && type != -1) {
+		im_w = cairo_image_surface_get_width(image);
+		im_h = cairo_image_surface_get_height(image);
+		sx = im_w / allocation.width;
+		sy = im_h / allocation.height;
+
 		pattern = cairo_pattern_create_for_surface(image);
+
 		switch (type) {
 		case BACKGROUND_SCALE:
-			sx = (double) cairo_image_surface_get_width(image) /
-				allocation.width;
-			sy = (double) cairo_image_surface_get_height(image) /
-				allocation.height;
 			cairo_matrix_init_scale(&matrix, sx, sy);
+			cairo_pattern_set_matrix(pattern, &matrix);
+			break;
+		case BACKGROUND_SCALE_CROP:
+			s = (sx < sy) ? sx : sy;
+			/* align center */
+			tx = (im_w - s * allocation.width) * 0.5;
+			ty = (im_h - s * allocation.height) * 0.5;
+			cairo_matrix_init_translate(&matrix, tx, ty);
+			cairo_matrix_scale(&matrix, s, s);
 			cairo_pattern_set_matrix(pattern, &matrix);
 			break;
 		case BACKGROUND_TILE:
 			cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REPEAT);
 			break;
 		}
+
 		cairo_set_source(cr, pattern);
 		cairo_pattern_destroy (pattern);
 		cairo_surface_destroy(image);

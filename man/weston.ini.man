@@ -118,8 +118,13 @@ The entries that can appear in this section are:
 sets the path for the background image file (string).
 .TP 7
 .BI "background-type=" tile
-determines how the background image is drawn (string). Can be scale or
-tile (default).
+determines how the background image is drawn (string). Can be
+.BR scale ", " scale-crop " or " tile " (default)."
+Scale means scaled to fit the output precisely, not preserving aspect ratio.
+Scale-crop preserves aspect ratio, scales the background image just big
+enough to cover the output, and centers it. The image ends up cropped from
+left and right, or top and bottom, if the aspect ratio does not match the
+output. Tile repeats the background image to fill the output.
 .TP 7
 .BI "background-color=" 0xAARRGGBB
 sets the color of the background (unsigned integer). The hexadecimal
