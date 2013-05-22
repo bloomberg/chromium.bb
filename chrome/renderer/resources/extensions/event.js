@@ -466,8 +466,4 @@
     }
   };
 
-  chromeHidden.dispatchError = function(msg) {
-    console.error(msg);
-  };
-
   chrome.Event = Event;
