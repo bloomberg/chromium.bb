@@ -75,15 +75,20 @@ public:
         return *handle;
     }
 
-    void dispose(v8::Isolate* isolate)
+    void dispose()
     {
-        persistent()->Dispose(isolate);
+        persistent()->Dispose();
         m_value = 0;
     }
 
     v8::Local<T> newLocal(v8::Isolate* isolate)
     {
         return v8::Local<T>::New(isolate, *persistent());
+    }
+
+    bool isEmpty() const
+    {
+        return !m_value;
     }
 
 private:

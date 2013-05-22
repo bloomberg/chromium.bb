@@ -74,7 +74,7 @@ public:
             map.swap(m_map);
             for (typename MapType::iterator it = map.begin(); it != map.end(); ++it) {
                 toWrapperTypeInfo(it->value.handle())->derefObject(it->key);
-                it->value.dispose(m_isolate);
+                it->value.dispose();
             }
         }
     }

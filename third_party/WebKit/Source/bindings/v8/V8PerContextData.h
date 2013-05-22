@@ -32,6 +32,7 @@
 #define V8PerContextData_h
 
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include <v8.h>
@@ -77,15 +78,15 @@ public:
     // This is faster than going through the full object creation process.
     v8::Local<v8::Object> createWrapperFromCache(WrapperTypeInfo* type)
     {
-        v8::Persistent<v8::Object> boilerplate = m_wrapperBoilerplates.get(type);
-        return !boilerplate.IsEmpty() ? boilerplate->Clone() : createWrapperFromCacheSlowCase(type);
+        UnsafePersistent<v8::Object> boilerplate = m_wrapperBoilerplates.get(type);
+        return !boilerplate.isEmpty() ? boilerplate.newLocal(v8::Isolate::GetCurrent())->Clone() : createWrapperFromCacheSlowCase(type);
     }
 
     v8::Local<v8::Function> constructorForType(WrapperTypeInfo* type)
     {
-        v8::Persistent<v8::Function> function = m_constructorMap.get(type);
-        if (!function.IsEmpty())
-            return v8::Local<v8::Function>::New(function);
+        UnsafePersistent<v8::Function> function = m_constructorMap.get(type);
+        if (!function.isEmpty())
+            return function.newLocal(v8::Isolate::GetCurrent());
         return constructorForTypeSlowCase(type);
     }
 
@@ -106,7 +107,7 @@ public:
 
 private:
     explicit V8PerContextData(v8::Persistent<v8::Context> context)
-        : m_activityLogger(0), m_context(context)
+        : m_activityLogger(0), m_context(v8::Isolate::GetCurrent(), context)
     {
     }
 
@@ -117,10 +118,10 @@ private:
 
     // For each possible type of wrapper, we keep a boilerplate object.
     // The boilerplate is used to create additional wrappers of the same type.
-    typedef WTF::HashMap<WrapperTypeInfo*, v8::Persistent<v8::Object> > WrapperBoilerplateMap;
+    typedef WTF::HashMap<WrapperTypeInfo*, UnsafePersistent<v8::Object> > WrapperBoilerplateMap;
     WrapperBoilerplateMap m_wrapperBoilerplates;
 
-    typedef WTF::HashMap<WrapperTypeInfo*, v8::Persistent<v8::Function> > ConstructorMap;
+    typedef WTF::HashMap<WrapperTypeInfo*, UnsafePersistent<v8::Function> > ConstructorMap;
     ConstructorMap m_constructorMap;
 
     V8NPObjectMap m_v8NPObjectMap;

@@ -66,7 +66,7 @@ ScheduledAction::ScheduledAction(v8::Handle<v8::Context> context, const String& 
 ScheduledAction::~ScheduledAction()
 {
     for (size_t i = 0; i < m_args.size(); ++i)
-        m_args[i].dispose(m_isolate);
+        m_args[i].dispose();
 }
 
 void ScheduledAction::execute(ScriptExecutionContext* context)

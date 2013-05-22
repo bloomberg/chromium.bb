@@ -45,23 +45,18 @@ void V8PerContextData::dispose()
 
     {
         WrapperBoilerplateMap::iterator it = m_wrapperBoilerplates.begin();
-        for (; it != m_wrapperBoilerplates.end(); ++it) {
-            v8::Persistent<v8::Object> wrapper = it->value;
-            wrapper.Dispose(isolate);
-            wrapper.Clear();
-        }
+        for (; it != m_wrapperBoilerplates.end(); ++it)
+            it->value.dispose();
         m_wrapperBoilerplates.clear();
     }
 
     {
         ConstructorMap::iterator it = m_constructorMap.begin();
-        for (; it != m_constructorMap.end(); ++it) {
-            v8::Persistent<v8::Function> wrapper = it->value;
-            wrapper.Dispose(isolate);
-            wrapper.Clear();
-        }
+        for (; it != m_constructorMap.end(); ++it)
+            it->value.dispose();
         m_constructorMap.clear();
     }
+    m_context.Dispose();
 }
 
 #define V8_STORE_PRIMORDIAL(name, Name) \
@@ -102,7 +97,7 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(WrapperTy
     v8::Local<v8::Function> function = constructorForType(type);
     v8::Local<v8::Object> instance = V8ObjectConstructor::newInstance(function);
     if (!instance.IsEmpty()) {
-        m_wrapperBoilerplates.set(type, v8::Persistent<v8::Object>(m_context->GetIsolate(), instance));
+        m_wrapperBoilerplates.set(type, UnsafePersistent<v8::Object>(m_context->GetIsolate(), instance));
         return instance->Clone();
     }
     return v8::Local<v8::Object>();
@@ -131,7 +126,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
             prototypeObject->SetPrototype(m_errorPrototype.get());
     }
 
-    m_constructorMap.set(type, v8::Persistent<v8::Function>::New(m_context->GetIsolate(), function));
+    m_constructorMap.set(type, UnsafePersistent<v8::Function>(m_context->GetIsolate(), function));
 
     return function;
 }
