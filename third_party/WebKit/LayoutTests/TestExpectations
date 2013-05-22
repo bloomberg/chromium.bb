@@ -1799,6 +1799,7 @@ crbug.com/242547 [ Linux ] fast/text/chromium-linux-text-subpixel-positioning.ht
 crbug.com/242547 [ Linux ] svg/filters/filter-hidden-content.svg [ Failure ]
 crbug.com/242547 [ Linux ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Failure ]
 crbug.com/242547 [ Linux ] virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Timeout ]
+crbug.com/242547 [ Linux ] animations/additive-transform-animations.html [ Timeout Pass Crash ]
 
 # New content shell expectatiosn (Mac)
 crbug.com/242465 [ Mac ] editing/pasteboard/file-input-files-access.html [ Failure ]
@@ -1869,6 +1870,7 @@ crbug.com/242465 [ Mac ] animations/combo-transform-rotate+scale.html [ Timeout 
 crbug.com/242465 [ Mac ] compositing/geometry/limit-layer-bounds-opacity-transition.html [ Timeout ]
 crbug.com/242465 [ Mac ] fast/animation/request-animation-frame-cancel2.html [ Timeout ]
 crbug.com/242465 [ Mac ] transitions/transition-end-event-destroy-iframe.html [ Timeout ]
+crbug.com/242465 [ Mac Debug ] animations/additive-transform-animations.html [ Crash ]
 
 # New content shell expectations (Win)
 crbug.com/242855 [ Win ] fast/canvas/webgl/oes-vertex-array-object.html [ Failure ]
@@ -1914,6 +1916,7 @@ crbug.com/242855 [ Win ] inspector-protocol/heap-profiler/heap-objects-tracking.
 crbug.com/242855 [ Win ] http/tests/inspector-enabled/injected-script-discard.html [ Timeout ]
 crbug.com/242855 [ Win ] http/tests/plugins/post-url-file.html [ Timeout ]
 crbug.com/242855 [ Win ] svg/filters/filter-hidden-content.svg [ Failure ]
+crbug.com/242855 [ Win ] animations/additive-transform-animations.html [ Timeout Failure ]
 
 # Crashing on all platforms after content shell
 crbug.com/242851 editing/pasteboard/drop-file-svg.html [ Crash ]
