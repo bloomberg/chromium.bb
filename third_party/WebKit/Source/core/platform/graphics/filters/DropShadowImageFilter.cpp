@@ -62,7 +62,10 @@ void DropShadowImageFilter::flatten(SkFlattenableWriteBuffer& buffer) const
 
 bool DropShadowImageFilter::onFilterImage(Proxy* proxy, const SkBitmap& source, const SkMatrix& matrix, SkBitmap* result, SkIPoint* loc)
 {
-    SkBitmap src = this->getInputResult(0, proxy, source, matrix, loc);
+    SkBitmap src = source;
+    if (getInput(0) && !getInput(0)->filterImage(proxy, source, matrix, &src, loc))
+        return false;
+
     SkAutoTUnref<SkDevice> device(proxy->createDevice(src.width(), src.height()));
     SkCanvas canvas(device.get());
 
