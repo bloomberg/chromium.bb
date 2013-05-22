@@ -104,6 +104,21 @@ GURL DriveApiUrlGenerator::GetFileCopyUrl(
                          net::EscapePath(resource_id).c_str()));
 }
 
+GURL DriveApiUrlGenerator::GetFileTouchUrl(
+    const std::string& resource_id) const {
+  GURL url = base_url_.Resolve(
+      kDriveV2FileUrlPrefix + net::EscapePath(resource_id));
+
+  // This parameter is needed to set the modified date.
+  url = net::AppendOrReplaceQueryParameter(url, "setModifiedDate", "true");
+
+  // This parameter is needed to set the last viewed by me date. Otherwise
+  // the current time is set automatically.
+  url = net::AppendOrReplaceQueryParameter(url, "updateViewedDate", "false");
+
+  return url;
+}
+
 GURL DriveApiUrlGenerator::GetFileTrashUrl(const std::string& file_id) const {
   return base_url_.Resolve(
       base::StringPrintf(kDriveV2FileTrashUrlFormat,
