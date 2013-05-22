@@ -1,4 +1,7 @@
 include_rules = [
+  "+ppapi/c",
+  "+ppapi/shared_impl",
+  "+ppapi/thunk",
   "-webkit/browser",
   "-webkit/renderer",
 ]

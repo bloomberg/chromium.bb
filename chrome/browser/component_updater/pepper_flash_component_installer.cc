@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,8 +33,8 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "webkit/common/plugins/ppapi/ppapi_utils.h"
 #include "webkit/plugins/plugin_constants.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
 
 #include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -123,7 +123,7 @@ bool GetPepperFlashDirectory(base::FilePath* latest_dir,
 // Returns true if the Pepper |interface_name| is implemented  by this browser.
 // It does not check if the interface is proxied.
 bool SupportsPepperInterface(const char* interface_name) {
-  if (webkit::ppapi::PluginModule::SupportsInterface(interface_name))
+  if (webkit::ppapi::IsSupportedPepperInterface(interface_name))
     return true;
   // The PDF interface is invisible to SupportsInterface() on the browser
   // process because it is provided using PpapiInterfaceFactoryManager. We need

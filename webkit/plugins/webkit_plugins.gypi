@@ -39,6 +39,8 @@
         '../plugins/npapi/plugin_list_win.cc',
         '../plugins/npapi/plugin_utils.cc',
         '../plugins/npapi/plugin_utils.h',
+        '../common/plugins/ppapi/ppapi_utils.cc',
+        '../common/plugins/ppapi/ppapi_utils.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
