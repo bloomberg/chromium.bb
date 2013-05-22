@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_LOCAL_FILE_UTIL_H_
-#define WEBKIT_FILEAPI_LOCAL_FILE_UTIL_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_LOCAL_FILE_UTIL_H_
+#define WEBKIT_BROWSER_FILEAPI_LOCAL_FILE_UTIL_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -101,4 +101,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_LOCAL_FILE_UTIL_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_LOCAL_FILE_UTIL_H_

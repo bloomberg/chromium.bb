@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_NATIVE_MEDIA_FILE_UTIL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "webkit/fileapi/isolated_file_util.h"
+#include "webkit/browser/fileapi/isolated_file_util.h"
 
 namespace chrome {
 

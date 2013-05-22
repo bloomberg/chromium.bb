@@ -7,7 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/platform_file.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/native_file_util.h"
+#include "webkit/browser/fileapi/native_file_util.h"
 
 namespace fileapi {
 

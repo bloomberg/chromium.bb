@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_NATIVE_FILE_UTIL_H_
-#define WEBKIT_FILEAPI_NATIVE_FILE_UTIL_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_NATIVE_FILE_UTIL_H_
+#define WEBKIT_BROWSER_FILEAPI_NATIVE_FILE_UTIL_H_
 
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -23,7 +23,8 @@ namespace fileapi {
 // in addition to perform native filesystem operations.
 //
 // For the error checks it performs please see the comment for
-// FileSystemFileUtil interface (webkit/fileapi/file_system_file_util.h).
+// FileSystemFileUtil interface
+// (webkit/browser/fileapi/file_system_file_util.h).
 //
 // Note that all the methods of this class are static and this does NOT
 // inherit from FileSystemFileUtil.
@@ -48,7 +49,8 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeFileUtil {
   static base::PlatformFileError Touch(const base::FilePath& path,
                                        const base::Time& last_access_time,
                                        const base::Time& last_modified_time);
-  static base::PlatformFileError Truncate(const base::FilePath& path, int64 length);
+  static base::PlatformFileError Truncate(const base::FilePath& path,
+                                          int64 length);
   static bool PathExists(const base::FilePath& path);
   static bool DirectoryExists(const base::FilePath& path);
   static base::PlatformFileError CopyOrMoveFile(const base::FilePath& src_path,
@@ -63,4 +65,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeFileUtil {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_NATIVE_FILE_UTIL_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_NATIVE_FILE_UTIL_H_

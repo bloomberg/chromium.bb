@@ -12,7 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
-#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/browser/fileapi/file_system_file_util.h"
 
 namespace chrome {
 

@@ -12,8 +12,8 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/mac/mtp_device_delegate_impl_mac.h"
@@ -22,7 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/browser/fileapi/file_system_file_util.h"
 
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/native_file_util.h"
+#include "webkit/browser/fileapi/native_file_util.h"
 
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -178,7 +178,8 @@ PlatformFileError NativeFileUtil::Touch(
   return base::PLATFORM_FILE_OK;
 }
 
-PlatformFileError NativeFileUtil::Truncate(const base::FilePath& path, int64 length) {
+PlatformFileError NativeFileUtil::Truncate(
+    const base::FilePath& path, int64 length) {
   PlatformFileError error_code(base::PLATFORM_FILE_ERROR_FAILED);
   PlatformFile file =
       base::CreatePlatformFile(

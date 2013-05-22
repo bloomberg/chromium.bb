@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media_galleries/fileapi/itunes/itunes_file_util.h"
 
-#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
