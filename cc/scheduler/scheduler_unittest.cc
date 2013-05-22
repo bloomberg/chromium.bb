@@ -245,8 +245,8 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
   // Verify that pending texture acquisition fires when visibility
   // is lost in order to avoid a deadlock.
   scheduler->SetVisible(false);
-  EXPECT_STREQ("ScheduledActionAcquireLayerTexturesForMainThread",
-               client.Action(0));
+  EXPECT_SINGLE_ACTION("ScheduledActionAcquireLayerTexturesForMainThread",
+                       client);
   client.Reset();
 
   // Regaining visibility with textures acquired by main thread while
