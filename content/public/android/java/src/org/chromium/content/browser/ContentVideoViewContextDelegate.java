@@ -15,6 +15,7 @@ import android.view.View;
 public interface ContentVideoViewContextDelegate {
     public void onShowCustomView(View view);
     public void onDestroyContentVideoView();
+    public void keepScreenOn(boolean screenOn);
     public Context getContext();
     public View getVideoLoadingProgressView();
 }

@@ -49,6 +49,12 @@ void ContentVideoView::DestroyContentVideoView() {
   }
 }
 
+// static
+void ContentVideoView::KeepScreenOn(bool screen_on) {
+  Java_ContentVideoView_keepScreenOnContentVideoView(AttachCurrentThread(),
+                                                     screen_on);
+}
+
 void ContentVideoView::OnMediaPlayerError(int error_type) {
   if (!j_content_video_view_.is_null()) {
     Java_ContentVideoView_onMediaPlayerError(AttachCurrentThread(),

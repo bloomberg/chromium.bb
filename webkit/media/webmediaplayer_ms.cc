@@ -142,18 +142,20 @@ void WebMediaPlayerMS::play() {
   DVLOG(1) << "WebMediaPlayerMS::play";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (video_frame_provider_ && paused_)
-    video_frame_provider_->Play();
+  if (paused_) {
+    if (video_frame_provider_)
+      video_frame_provider_->Play();
 
-  if (audio_renderer_ && paused_)
-    audio_renderer_->Play();
+    if (audio_renderer_)
+      audio_renderer_->Play();
+
+    if (delegate_)
+      delegate_->DidPlay(this);
+  }
 
   paused_ = false;
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
-
-  if (delegate_)
-    delegate_->DidPlay(this);
 }
 
 void WebMediaPlayerMS::pause() {
@@ -163,15 +165,17 @@ void WebMediaPlayerMS::pause() {
   if (video_frame_provider_)
     video_frame_provider_->Pause();
 
-  if (audio_renderer_ && !paused_)
-    audio_renderer_->Pause();
+  if (!paused_) {
+    if (audio_renderer_)
+      audio_renderer_->Pause();
+
+    if (delegate_)
+      delegate_->DidPause(this);
+  }
 
   paused_ = true;
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
-
-  if (delegate_)
-    delegate_->DidPause(this);
 }
 
 bool WebMediaPlayerMS::supportsFullscreen() const {
