@@ -23,14 +23,6 @@ class Time;
 // This class provides asynchronous access to common file routines.
 class BASE_EXPORT FileUtilProxy {
  public:
-  // Holds metadata for file or directory entry.
-  struct Entry {
-    FilePath::StringType name;
-    bool is_directory;
-    int64 size;
-    base::Time last_modified_time;
-  };
-
   // This callback is used by methods that report only an error code.  It is
   // valid to pass a null callback to any function that takes a StatusCallback,
   // in which case the operation will complete silently.
