@@ -311,11 +311,6 @@ body[new-ui] #volume-list > * {
   padding: 0 5px;
 }
 
-body[new-ui] #volume-list > :hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.05);
-}
-
 body[new-ui] #volume-list > .accepts,
 body[new-ui] #volume-list > [lead][selected],
 body[new-ui] #volume-list > [lead],
@@ -382,6 +377,7 @@ body[new-ui] #directory-tree {
 }
 
 body[new-ui] #directory-tree .tree-row {
+  background-color: white;
   cursor: pointer;
   line-height: 29px;
 }
@@ -420,7 +416,7 @@ body[new-ui] #directory-tree .tree-children .tree-row {
   text-overflow: ellipsis;
 }
 
-#directory-tree .tree-row:hover {
+body:not([new-ui]) #directory-tree .tree-row:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
@@ -457,29 +453,12 @@ body[new-ui] #directory-tree:focus .tree-row[anchor] {
   color: white;
 }
 
-#directory-tree:hover .tree-item.accepts > .tree-row:hover,
-#directory-tree:hover .tree-row[lead]:hover,
-#directory-tree:hover .tree-row[lead][selected]:hover,
-#directory-tree:hover .tree-row[selected]:hover,
-#directory-tree:hover .tree-row[anchor]:hover {
+body:not([new-ui]) #directory-tree:hover .tree-item.accepts > .tree-row:hover,
+body:not([new-ui]) #directory-tree:hover .tree-row[lead]:hover,
+body:not([new-ui]) #directory-tree:hover .tree-row[lead][selected]:hover,
+body:not([new-ui]) #directory-tree:hover .tree-row[selected]:hover,
+body:not([new-ui]) #directory-tree:hover .tree-row[anchor]:hover {
   background-color: rgb(177, 193, 216);
-}
-
-body[new-ui] #directory-tree:hover .tree-item.accepts > .tree-row:hover,
-body[new-ui] #directory-tree:hover .tree-row[lead]:hover,
-body[new-ui] #directory-tree:hover .tree-row[lead][selected]:hover,
-body[new-ui] #directory-tree:hover .tree-row[selected]:hover,
-body[new-ui] #directory-tree:hover .tree-row[anchor]:hover {
-  background-color: rgb(225, 225, 225);
-}
-
-body[new-ui] #directory-tree:focus:hover .tree-item.accepts > .tree-row:hover,
-body[new-ui] #directory-tree:focus:hover .tree-row[lead]:hover,
-body[new-ui] #directory-tree:focus:hover .tree-row[lead][selected]:hover,
-body[new-ui] #directory-tree:focus:hover .tree-row[selected]:hover,
-body[new-ui] #directory-tree:focus:hover .tree-row[anchor]:hover {
-  background-color: rgb(77, 144, 254);
-  color: white;
 }
 
 body[new-ui] #volume-list .root-item > div.root-eject,
@@ -1205,7 +1184,7 @@ body[new-ui] .thumbnail-grid .thumbnail-frame {
 
 .thumbnail-grid .thumbnail-item[selected] .thumbnail-frame,
 .thumbnail-grid .thumbnail-item.accepts .thumbnail-frame,
-.thumbnail-grid .thumbnail-item:hover .thumbnail-frame {
+body:not([new-ui]) .thumbnail-grid .thumbnail-item:hover .thumbnail-frame {
   border-color: white;
 }
 
@@ -1274,6 +1253,10 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
   border-radius: 0;
 }
 
+body[new-ui] #list-container grid > *:hover {
+  border-color: transparent;
+}
+
 #list-container list > li[selected],
 #list-container grid > li[selected],
 #default-actions-list > li[selected] {
@@ -1301,38 +1284,32 @@ body[new-ui] #default-actions-list:focus > li[selected] {
 
 #list-container list > li.accepts[selected],
 #list-container grid > li.accepts[selected],
-#list-container list > li[selected]:hover,
-#list-container grid > li[selected]:hover,
-#default-actions-list > li[selected]:hover {
+body:not([new-ui]) #list-container list > li[selected]:hover,
+body:not([new-ui]) #list-container grid > li[selected]:hover,
+body:not([new-ui]) #default-actions-list > li[selected]:hover {
   background-color: rgb(193, 211, 236);
 }
 
 body[new-ui] #list-container list > li.accepts[selected],
-body[new-ui] #list-container grid > li.accepts[selected],
-body[new-ui] #list-container list > li[selected]:hover,
-body[new-ui] #list-container grid > li[selected]:hover,
-body[new-ui] #default-actions-list > li[selected]:hover {
+body[new-ui] #list-container grid > li.accepts[selected] {
   background-color: rgb(215, 215, 215);
 }
 
 body[new-ui] #list-container list:focus > li.accepts[selected],
-body[new-ui] #list-container grid:focus > li.accepts[selected],
-body[new-ui] #list-container list:focus > li[selected]:hover,
-body[new-ui] #list-container grid:focus > li[selected]:hover,
-body[new-ui] #default-actions-list:focus > li[selected]:hover {
+body[new-ui] #list-container grid:focus > li.accepts[selected] {
   background-color: rgb(48, 125, 254);
 }
 
 #list-container list > li.accepts,
 #list-container grid > li.accepts,
-#list-container list > li:hover,
-#list-container grid > li:hover,
-#default-actions-list > li:hover {
+body:not([new-ui]) #list-container list > li:hover,
+body:not([new-ui]) #list-container grid > li:hover,
+body:not([new-ui]) #default-actions-list > li:hover {
   background-color: #f1f1f1;
 }
 
-#list-container.nohover list > :not([selected]):hover,
-#list-container.nohover grid > :not([selected]):hover,
+body:not([new-ui]) #list-container.nohover list > :not([selected]):hover,
+body:not([new-ui]) #list-container.nohover grid > :not([selected]):hover,
 #list-container.nohover grid > .accepts {
   background-color: transparent;
 }
@@ -1655,6 +1632,13 @@ body[new-ui] #select-all-checkbox {
 #list-container li.table-row:hover .pin,
 #list-container li.thumbnail-item:hover .file-checkbox {
   opacity: 0.6;
+}
+
+body[new-ui] #list-container .table-header #select-all-checkbox:not(:checked),
+body[new-ui] #list-container li.table-row:hover .file-checkbox,
+body[new-ui] #list-container li.table-row:hover .pin,
+body[new-ui] #list-container li.thumbnail-item:hover .file-checkbox {
+  opacity: 0.4;
 }
 
 #list-container li.table-row[selected] .file-checkbox,
