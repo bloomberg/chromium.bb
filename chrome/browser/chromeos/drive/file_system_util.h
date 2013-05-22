@@ -219,6 +219,24 @@ struct DestroyHelper {
   }
 };
 
+// Creates a GDoc file with given values.
+//
+// GDoc files are used to represent hosted documents on local filesystems.
+// A GDoc file contains a JSON whose content is a URL to view the document and
+// a resource ID of the entry.
+bool CreateGDocFile(const base::FilePath& file_path,
+                    const GURL& url,
+                    const std::string& resource_id);
+
+// Returns true if |file_path| has a GDoc file extension. (e.g. ".gdoc")
+bool HasGDocFileExtension(const base::FilePath& file_path);
+
+// Reads URL from a GDoc file.
+GURL ReadUrlFromGDocFile(const base::FilePath& file_path);
+
+// Reads resource ID from a GDoc file.
+std::string ReadResourceIdFromGDocFile(const base::FilePath& file_path);
+
 }  // namespace util
 }  // namespace drive
 

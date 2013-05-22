@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
@@ -36,27 +35,6 @@ FileError CopyLocalFileOnBlockingPool(
     const base::FilePath& dest_file_path) {
   return file_util::CopyFile(src_file_path, dest_file_path) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
-}
-
-// Checks if a local file at |local_file_path| is a JSON file referencing a
-// hosted document on blocking pool, and if so, gets the resource ID of the
-// document.
-std::string GetDocumentResourceIdOnBlockingPool(
-    const base::FilePath& local_file_path) {
-  std::string result;
-  const bool has_hosted_document =
-      google_apis::ResourceEntry::ClassifyEntryKindByFileExtension(
-          local_file_path) &
-      google_apis::ResourceEntry::KIND_OF_HOSTED_DOCUMENT;
-  if (has_hosted_document) {
-    std::string error;
-    DictionaryValue* dict_value = NULL;
-    JSONFileValueSerializer serializer(local_file_path);
-    scoped_ptr<Value> value(serializer.Deserialize(NULL, &error));
-    if (value.get() && value->GetAsDictionary(&dict_value))
-      dict_value->GetString("resource_id", &result);
-  }
-  return result;
 }
 
 }  // namespace
@@ -416,15 +394,20 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterGetResourceEntry(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&GetDocumentResourceIdOnBlockingPool, local_src_file_path),
-      base::Bind(&CopyOperation::TransferFileForResourceId,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 local_src_file_path,
-                 remote_dest_file_path,
-                 callback));
+  if (util::HasGDocFileExtension(local_src_file_path)) {
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&util::ReadResourceIdFromGDocFile, local_src_file_path),
+        base::Bind(&CopyOperation::TransferFileForResourceId,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   local_src_file_path,
+                   remote_dest_file_path,
+                   callback));
+  } else {
+    ScheduleTransferRegularFile(local_src_file_path, remote_dest_file_path,
+                                callback);
+  }
 }
 
 void CopyOperation::TransferFileForResourceId(

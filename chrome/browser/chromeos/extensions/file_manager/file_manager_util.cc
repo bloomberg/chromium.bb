@@ -6,8 +6,6 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -110,11 +108,6 @@ const char* kBrowserSupportedExtensions[] = {
     ".mhtml", ".mht", ".svg"
 };
 
-// Keep in sync with 'open-hosted' task handler in the File Browser manifest.
-const char* kGDocsExtensions[] = {
-    ".gdoc", ".gsheet", ".gslides", ".gdraw", ".gtable", ".glink"
-};
-
 // List of all extensions we want to be shown in histogram that keep track of
 // files that were unsuccessfully tried to be opened.
 // The list has to be synced with histogram values.
@@ -127,15 +120,6 @@ const char* kUMATrackingExtensions[] = {
 bool IsSupportedBrowserExtension(const char* file_extension) {
   for (size_t i = 0; i < arraysize(kBrowserSupportedExtensions); i++) {
     if (base::strcasecmp(file_extension, kBrowserSupportedExtensions[i]) == 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool IsSupportedGDocsExtension(const char* file_extension) {
-  for (size_t i = 0; i < arraysize(kGDocsExtensions); i++) {
-    if (base::strcasecmp(file_extension, kGDocsExtensions[i]) == 0) {
       return true;
     }
   }
@@ -484,36 +468,14 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
   return true;
 }
 
-// Reads JSON from a Google Docs file and extracts an alternate URL. When the
-// file is not in GDoc format, returns a file URL for |file_path| as fallback.
+// Reads the alternate URL from a GDoc file. When it fails, returns a file URL
+// for |file_path| as fallback.
 // Note that an alternate url is a URL to open a hosted document.
 GURL ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
-  const int64 kMaxGDocSize = 4096;
-  int64 file_size = 0;
-  if (!file_util::GetFileSize(file_path, &file_size) ||
-      file_size > kMaxGDocSize) {
-    DLOG(INFO) << "File too large to be a GDoc file " << file_path.value();
-    return net::FilePathToFileURL(file_path);
-  }
-
-  JSONFileValueSerializer reader(file_path);
-  std::string error_message;
-  scoped_ptr<base::Value> root_value(reader.Deserialize(NULL, &error_message));
-  if (!root_value.get()) {
-    DLOG(INFO) << "Failed to parse " << file_path.value() << "as JSON."
-               << " error = " << error_message;
-    return net::FilePathToFileURL(file_path);
-  }
-
-  base::DictionaryValue* dictionary_value = NULL;
-  std::string alternate_url_string;
-  if (!root_value->GetAsDictionary(&dictionary_value) ||
-      !dictionary_value->GetString("url", &alternate_url_string)) {
-    DLOG(INFO) << "Non GDoc JSON in " << file_path.value();
-    return net::FilePathToFileURL(file_path);
-  }
-
-  return GURL(alternate_url_string);
+  GURL url = drive::util::ReadUrlFromGDocFile(file_path);
+  if (url.is_empty())
+    url = net::FilePathToFileURL(file_path);
+  return url;
 }
 
 // Used to implement ViewItem().
@@ -845,7 +807,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
     return true;
   }
 
-  if (IsSupportedGDocsExtension(file_extension.data())) {
+  if (drive::util::HasGDocFileExtension(path)) {
     if (drive::util::IsUnderDriveMountPoint(path)) {
       // The file is on Google Docs. Open with drive URL.
       GURL url = drive::util::FilePathToDriveURL(

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
@@ -263,6 +264,74 @@ TEST(FileSystemUtilTest, IsSpecialResourceId) {
 
   EXPECT_TRUE(util::IsSpecialResourceId("<drive>"));
   EXPECT_TRUE(util::IsSpecialResourceId("<other>"));
+}
+
+TEST(FileSystemUtilTest, GDocFile) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  // Read and write gdoc.
+  base::FilePath file = temp_dir.path().AppendASCII("test.gdoc");
+  GURL url("https://document");
+  std::string resource_id("document:this_is_a_document");
+  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
+  EXPECT_TRUE(HasGDocFileExtension(file));
+  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
+  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
+
+  // Read and write gsheet.
+  file = temp_dir.path().AppendASCII("test.gsheet");
+  url = GURL("https://spreadsheet");
+  resource_id = "spreadsheet:this_is_a_spreadsheet";
+  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
+  EXPECT_TRUE(HasGDocFileExtension(file));
+  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
+  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
+
+  // Read and write gslides.
+  file = temp_dir.path().AppendASCII("test.gslides");
+  url = GURL("https://presentation");
+  resource_id = "presentation:this_is_a_presentation";
+  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
+  EXPECT_TRUE(HasGDocFileExtension(file));
+  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
+  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
+
+  // Read and write gdraw.
+  file = temp_dir.path().AppendASCII("test.gdraw");
+  url = GURL("https://drawing");
+  resource_id = "drawing:this_is_a_drawing";
+  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
+  EXPECT_TRUE(HasGDocFileExtension(file));
+  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
+  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
+
+  // Read and write gtable.
+  file = temp_dir.path().AppendASCII("test.gtable");
+  url = GURL("https://table");
+  resource_id = "table:this_is_a_table";
+  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
+  EXPECT_TRUE(HasGDocFileExtension(file));
+  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
+  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
+
+  // Read and write glink.
+  file = temp_dir.path().AppendASCII("test.glink");
+  url = GURL("https://link");
+  resource_id = "externalapp:this_is_a_link";
+  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
+  EXPECT_TRUE(HasGDocFileExtension(file));
+  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
+  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
+
+  // Non GDoc file.
+  file = temp_dir.path().AppendASCII("test.txt");
+  std::string data = "Hello world!";
+  EXPECT_EQ(static_cast<int>(data.size()),
+            file_util::WriteFile(file, data.data(), data.size()));
+  EXPECT_FALSE(HasGDocFileExtension(file));
+  EXPECT_TRUE(ReadUrlFromGDocFile(file).is_empty());
+  EXPECT_TRUE(ReadResourceIdFromGDocFile(file).empty());
 }
 
 }  // namespace util

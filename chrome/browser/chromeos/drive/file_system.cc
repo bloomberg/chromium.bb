@@ -36,8 +36,6 @@ using content::BrowserThread;
 namespace drive {
 namespace {
 
-const char kMimeTypeJson[] = "application/json";
-
 //================================ Helper functions ============================
 
 // Creates a temporary JSON file representing a document with |alternate_url|
@@ -49,22 +47,10 @@ FileError CreateDocumentJsonFileOnBlockingPool(
     base::FilePath* temp_file_path) {
   DCHECK(temp_file_path);
 
-  FileError error = FILE_ERROR_FAILED;
-
-  if (file_util::CreateTemporaryFileInDir(document_dir, temp_file_path)) {
-    std::string document_content = base::StringPrintf(
-        "{\"url\": \"%s\", \"resource_id\": \"%s\"}",
-        alternate_url.spec().c_str(), resource_id.c_str());
-    int document_size = static_cast<int>(document_content.size());
-    if (file_util::WriteFile(*temp_file_path, document_content.data(),
-                             document_size) == document_size) {
-      error = FILE_ERROR_OK;
-    }
-  }
-
-  if (error != FILE_ERROR_OK)
-    temp_file_path->clear();
-  return error;
+  if (!file_util::CreateTemporaryFileInDir(document_dir, temp_file_path) ||
+      !util::CreateGDocFile(*temp_file_path, alternate_url, resource_id))
+    return FILE_ERROR_FAILED;
+  return FILE_ERROR_OK;
 }
 
 // Helper function for binding |path| to GetResourceEntryWithFilePathCallback
