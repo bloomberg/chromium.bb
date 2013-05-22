@@ -22,7 +22,8 @@ class RenderingStatsInstrumentation;
 class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
  protected:
   ContentLayerUpdater(scoped_ptr<LayerPainter> painter,
-                      RenderingStatsInstrumentation* stats_instrumentation);
+                      RenderingStatsInstrumentation* stats_instrumentation,
+                      int layer_id);
   virtual ~ContentLayerUpdater();
 
   void PaintContents(SkCanvas* canvas,
@@ -34,6 +35,7 @@ class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
   gfx::Rect content_rect() const { return content_rect_; }
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
+  int layer_id_;
 
  private:
   gfx::Rect content_rect_;

@@ -98,15 +98,18 @@ void ContentLayer::CreateUpdaterIfNeeded() {
   if (layer_tree_host()->settings().accelerate_painting)
     updater_ = SkPictureContentLayerUpdater::Create(
         painter.Pass(),
-        rendering_stats_instrumentation());
+        rendering_stats_instrumentation(),
+        id());
   else if (layer_tree_host()->settings().per_tile_painting_enabled)
     updater_ = BitmapSkPictureContentLayerUpdater::Create(
         painter.Pass(),
-        rendering_stats_instrumentation());
+        rendering_stats_instrumentation(),
+        id());
   else
     updater_ = BitmapContentLayerUpdater::Create(
         painter.Pass(),
-        rendering_stats_instrumentation());
+        rendering_stats_instrumentation(),
+        id());
   updater_->SetOpaque(contents_opaque());
 
   unsigned texture_format =
