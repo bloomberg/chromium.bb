@@ -1092,6 +1092,14 @@
         'test/chromedriver/synchronized_map_unittest.cc',
         'test/chromedriver/util_unittest.cc',
       ],
+      'conditions': [
+        # See http://crbug.com/162998#c4 for why this is needed.
+        ['OS=="linux" and linux_use_tcmalloc==1', {
+          'dependencies': [
+            '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+      ],
     },
     # ChromeDriver2 tests that aren't run on the main buildbot. Available
     # as an optional test type on trybots.
