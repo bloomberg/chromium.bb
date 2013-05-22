@@ -27,6 +27,8 @@ class QuicDispatcher;
 class QuicServer : public EpollCallbackInterface {
  public:
   QuicServer();
+  explicit QuicServer(const QuicConfig& config);
+
   virtual ~QuicServer();
 
   // Start listening on the specified address.
@@ -64,6 +66,9 @@ class QuicServer : public EpollCallbackInterface {
   int port() { return port_; }
 
  private:
+  // Initialize the internal state of the server.
+  void Initialize();
+
   // Accepts data from the framer and demuxes clients to sessions.
   scoped_ptr<QuicDispatcher> dispatcher_;
   // Frames incoming packets and hands them to the dispatcher.

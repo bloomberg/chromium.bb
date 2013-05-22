@@ -4,11 +4,13 @@
 
 #include "net/quic/crypto/crypto_server_config.h"
 
+#include <stdlib.h>
+
 #include "base/stl_util.h"
 #include "crypto/hkdf.h"
 #include "crypto/secure_hash.h"
-#include "net/quic/crypto/aes_128_gcm_decrypter.h"
-#include "net/quic/crypto/aes_128_gcm_encrypter.h"
+#include "net/quic/crypto/aes_128_gcm_12_decrypter.h"
+#include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/cert_compressor.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_server_config_protobuf.h"
@@ -51,8 +53,8 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
     // TODO(agl): switch to an encrypter with a larger nonce space (i.e.
     // Salsa20+Poly1305).
     : strike_register_lock_(),
-      source_address_token_encrypter_(new Aes128GcmEncrypter),
-      source_address_token_decrypter_(new Aes128GcmDecrypter),
+      source_address_token_encrypter_(new Aes128Gcm12Encrypter),
+      source_address_token_decrypter_(new Aes128Gcm12Decrypter),
       strike_register_max_entries_(1 << 10),
       strike_register_window_secs_(600),
       source_address_token_future_secs_(3600),
@@ -295,7 +297,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     string* error_details) const {
   DCHECK(error_details);
 
-  CHECK(!configs_.empty());
+  if (configs_.empty()) {
+    *error_details = "No configurations loaded";
+    return QUIC_CRYPTO_INTERNAL_ERROR;
+  }
 
   // FIXME(agl): we should use the client's SCID, not just the active config.
   map<ServerConfigID, Config*>::const_iterator it =
@@ -305,6 +310,11 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     return QUIC_CRYPTO_INTERNAL_ERROR;
   }
   const Config* const config(it->second);
+
+  if (client_hello.size() < kClientHelloMinimumSize) {
+    *error_details = "Client hello too small";
+    return QUIC_CRYPTO_INVALID_VALUE_LENGTH;
+  }
 
   const QuicWallTime now = clock->WallNow();
   bool valid_source_address_token = false;
@@ -351,7 +361,11 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   out->Clear();
 
   StringPiece sni;
-  client_hello.GetStringPiece(kSNI, &sni);
+  if (client_hello.GetStringPiece(kSNI, &sni) &&
+      !CryptoUtils::IsValidSNI(sni)) {
+    *error_details = "Invalid SNI name";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
 
   StringPiece scid;
   if (!client_hello.GetStringPiece(kSCID, &scid) ||
@@ -458,6 +472,12 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   }
 
   params->server_config_id = scid.as_string();
+  if (!sni.empty()) {
+    scoped_ptr<char[]> sni_tmp(new char[sni.length() + 1]);
+    memcpy(sni_tmp.get(), sni.data(), sni.length());
+    sni_tmp[sni.length()] = 0;
+    params->sni = CryptoUtils::NormalizeHostname(sni_tmp.get());
+  }
 
   string hkdf_suffix;
   const QuicData& client_hello_serialized = client_hello.GetSerialized();

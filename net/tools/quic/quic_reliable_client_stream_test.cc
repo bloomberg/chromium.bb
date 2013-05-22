@@ -25,7 +25,7 @@ namespace {
 class QuicClientStreamTest : public ::testing::Test {
  public:
   QuicClientStreamTest()
-      : session_("localhost", QuicConfig(),
+      : session_("example.com", QuicConfig(),
                  new MockConnection(1, IPEndPoint(), 0, &eps_, false),
                  &crypto_config_),
         body_("hello world") {

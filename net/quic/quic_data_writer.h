@@ -46,6 +46,7 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   bool WriteUInt128(uint128 value);
   bool WriteStringPiece16(base::StringPiece val);
   bool WriteBytes(const void* data, size_t data_len);
+  bool WriteRepeatedByte(uint8 byte, size_t count);
   // Fills the remaining buffer with null characters.
   void WritePadding();
 
