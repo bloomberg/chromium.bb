@@ -1406,8 +1406,8 @@ crbug.com/230554 [ Linux Mac Debug ] plugins/drag-events.html [ Crash Pass ]
 # The Linux results are different between 32 and 64 bit (as per the bots).
 crbug.com/230771 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Failure ]
 crbug.com/230771 [ Linux ] editing/pasteboard/file-drag-to-editable.html [ Pass Failure ]
-crbug.com/230771 [ Lion Debug ] editing/pasteboard/drop-file-svg.html [ Failure ]
-crbug.com/230771 [ Lion Debug ] editing/pasteboard/file-drag-to-editable.html [ Failure ]
+crbug.com/230771 [ Mac ] editing/pasteboard/drop-file-svg.html [ Failure ]
+crbug.com/230771 [ Mac ] editing/pasteboard/file-drag-to-editable.html [ Failure ]
 crbug.com/230771 [ Linux Mac ] fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
 
 # From WebKit's generic expectations.
@@ -1618,3 +1618,12 @@ crbug.com/242876 [ Linux ] fast/forms/file/input-file-value.html [ Failure ]
 crbug.com/242876 [ Linux ] fast/forms/file/input-file-write-files.html [ Failure ]
 crbug.com/242876 [ Linux ] fast/forms/file/selected-files-from-history-state.html [ Failure ]
 crbug.com/242876 [ Linux ] http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
+
+crbug.com/242876 [ Mac ] editing/pasteboard/file-input-files-access.html [ Failure ]
+crbug.com/242876 [ Mac ] fast/events/drag-dataTransferItemList-file-handling.html [ Failure ]
+crbug.com/242876 [ Mac ] fast/forms/file/file-input-change-event.html [ Failure ]
+crbug.com/242876 [ Mac ] fast/forms/file/input-file-value.html [ Failure ]
+crbug.com/242876 [ Mac ] fast/forms/file/input-file-write-files.html [ Failure ]
+crbug.com/242876 [ Mac ] fast/forms/file/selected-files-from-history-state.html [ Failure ]
+crbug.com/242876 [ Mac ] http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
+crbug.com/242876 [ Mac ] webaudio/javascriptaudionode.html [ Crash ]
