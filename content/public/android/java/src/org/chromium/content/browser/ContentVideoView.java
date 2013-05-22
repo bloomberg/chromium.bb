@@ -592,12 +592,19 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         sContentVideoView = null;
     }
 
+    @CalledByNative
+    public static void keepScreenOnContentVideoView(boolean screenOn) {
+        if (sDelegate != null) {
+            sDelegate.keepScreenOn(screenOn);
+        }
+    }
+
     public static ContentVideoView getContentVideoView() {
         return sContentVideoView;
     }
 
     public static void registerContentVideoViewContextDelegate(
-       ContentVideoViewContextDelegate delegate) {
+        ContentVideoViewContextDelegate delegate) {
         sDelegate = delegate;
     }
 
