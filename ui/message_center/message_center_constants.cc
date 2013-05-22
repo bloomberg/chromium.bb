@@ -40,8 +40,22 @@ const SkColor kRegularTextColor = SkColorSetRGB(34, 34, 34);
 const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 
 // Limits.
-// kNotificationWidth * 1.5
-const int kNotificationMaximumImageHeight = 540;
+
+gfx::Size GetImageSizeForWidth(int width, const gfx::Size& image_size) {
+  const int kNotificationMaximumImageHeight = kNotificationWidth * 1.5;
+
+  gfx::Size size = image_size;
+  if (width > 0 && !size.IsEmpty()) {
+    double proportion = size.height() / static_cast<double>(size.width());
+    size.SetSize(width, std::max(0.5 + kNotificationWidth * proportion, 1.0));
+    if (size.height() > kNotificationMaximumImageHeight) {
+      int height = kNotificationMaximumImageHeight;
+      size.SetSize(std::max(0.5 + height / proportion, 1.0), height);
+    }
+  }
+  return size;
+}
+
 const size_t kNotificationMaximumItems = 8;
 
 // Timing.

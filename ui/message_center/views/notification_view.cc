@@ -226,15 +226,7 @@ void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
 
 gfx::Size ProportionalImageView::GetImageSizeForWidth(int width) {
   gfx::Size size = visible() ? image_.size() : gfx::Size();
-  if (width > 0 && !size.IsEmpty()) {
-    double proportion = size.height() / (double) size.width();
-    size.SetSize(width, std::max(0.5 + width * proportion, 1.0));
-    if (size.height() > message_center::kNotificationMaximumImageHeight) {
-      int height = message_center::kNotificationMaximumImageHeight;
-      size.SetSize(std::max(0.5 + height / proportion, 1.0), height);
-    }
-  }
-  return size;
+  return message_center::GetImageSizeForWidth(width, size);
 }
 
 // NotificationButton //////////////////////////////////////////////////////////

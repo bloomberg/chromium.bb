@@ -205,10 +205,10 @@
   frame.size.height = 0;
   [bottomView_ removeFromSuperview];
   bottomView_.reset([[NSView alloc] initWithFrame:frame]);
+  CGFloat y = 0;
 
   // Create action buttons if appropriate, bottom-up.
   std::vector<message_center::ButtonInfo> buttons = notification->buttons();
-  CGFloat y = 0;
   for (int i = buttons.size() - 1; i >= 0; --i) {
     message_center::ButtonInfo buttonInfo = buttons[i];
     NSRect buttonFrame = frame;
@@ -243,6 +243,23 @@
     frame.size.height += NSHeight(separatorFrame);
     [bottomView_ addSubview:separator];
   }
+
+  // Create the image view if appropriate.
+  if (!notification->image().IsEmpty()) {
+    NSImage* image = notification->image().AsNSImage();
+    NSRect imageFrame = frame;
+    imageFrame.origin = NSMakePoint(0, y);
+    imageFrame.size = NSSizeFromCGSize(message_center::GetImageSizeForWidth(
+        NSWidth(frame), notification->image().Size()).ToCGSize());
+    scoped_nsobject<NSImageView> imageView(
+        [[NSImageView alloc] initWithFrame:imageFrame]);
+    [imageView setImage:image];
+    [imageView setImageScaling:NSImageScaleProportionallyUpOrDown];
+    y += NSHeight(imageFrame);
+    frame.size.height += NSHeight(imageFrame);
+    [bottomView_ addSubview:imageView];
+  }
+
   [bottomView_ setFrame:frame];
   [[self view] addSubview:bottomView_];
 

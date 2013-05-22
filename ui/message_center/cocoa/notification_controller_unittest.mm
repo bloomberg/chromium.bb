@@ -68,6 +68,10 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   return base::mac::ObjCCastStrict<NSButton>(view);
 }
 
+- (NSArray*)bottomSubviews {
+  return [bottomView_ subviews];
+}
+
 - (NSImageView*)iconView {
   return icon_.get();
 }
@@ -213,4 +217,30 @@ TEST_F(NotificationControllerTest, Buttons) {
 
   EXPECT_EQ("an_id", message_center.last_clicked_id());
   EXPECT_EQ(1, message_center.last_clicked_index());
+}
+
+TEST_F(NotificationControllerTest, Image) {
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_BASE_FORMAT,
+          "an_id",
+          string16(),
+          string16(),
+          string16(),
+          std::string(),
+          NULL));
+  NSImage* image = [NSImage imageNamed:NSImageNameFolder];
+  notification->set_image(gfx::Image([image retain]));
+
+  MockMessageCenter message_center;
+
+  scoped_nsobject<MCNotificationController> controller(
+      [[MCNotificationController alloc] initWithNotification:notification.get()
+                                               messageCenter:&message_center]);
+  [controller view];
+
+  ASSERT_EQ(1u, [[controller bottomSubviews] count]);
+  ASSERT_TRUE([[[controller bottomSubviews] lastObject]
+      isKindOfClass:[NSImageView class]]);
+  EXPECT_EQ(image, [[[controller bottomSubviews] lastObject] image]);
 }

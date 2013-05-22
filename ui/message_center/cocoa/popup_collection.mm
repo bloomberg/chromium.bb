@@ -177,6 +177,7 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
   // window and any popups that come below it.
   if (oldHeight != newHeight) {
     NSRect popupFrame = [[popup window] frame];
+    popupFrame.origin.y -= newHeight - oldHeight;
     popupFrame.size.height += newHeight - oldHeight;
     [[popup window] setFrame:popupFrame display:YES];
 
