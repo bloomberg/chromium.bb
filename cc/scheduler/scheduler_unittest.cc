@@ -4,6 +4,7 @@
 
 #include "cc/scheduler/scheduler.h"
 
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -17,7 +18,8 @@
   do {                                                                    \
     EXPECT_STREQ(action, client.Action(action_index));                    \
     for (int i = expected_num_actions; i < client.num_actions_(); ++i)    \
-      ADD_FAILURE() << "Unexpected action: " << client.Action(i);         \
+      ADD_FAILURE() << "Unexpected action: " << client.Action(i) <<       \
+          " with state:\n" << client.StateForAction(action_index);        \
   } while (false)
 
 #define EXPECT_SINGLE_ACTION(action, client) \
@@ -31,14 +33,25 @@ class FakeSchedulerClient : public SchedulerClient {
   FakeSchedulerClient() { Reset(); }
   void Reset() {
     actions_.clear();
+    states_.clear();
     draw_will_happen_ = true;
     swap_will_happen_if_draw_happens_ = true;
     num_draws_ = 0;
   }
 
+  Scheduler* CreateScheduler(
+      scoped_ptr<FrameRateController> frame_rate_controller,
+      const SchedulerSettings& settings) {
+    scheduler_ =
+        Scheduler::Create(this, frame_rate_controller.Pass(), settings);
+    return scheduler_.get();
+  }
+
+
   int num_draws() const { return num_draws_; }
   int num_actions_() const { return static_cast<int>(actions_.size()); }
   const char* Action(int i) const { return actions_[i]; }
+  std::string StateForAction(int i) const { return states_[i]; }
 
   bool HasAction(const char* action) const {
     for (size_t i = 0; i < actions_.size(); i++)
@@ -57,10 +70,12 @@ class FakeSchedulerClient : public SchedulerClient {
   // Scheduler Implementation.
   virtual void ScheduledActionBeginFrame() OVERRIDE {
     actions_.push_back("ScheduledActionBeginFrame");
+    states_.push_back(scheduler_->StateAsStringForTesting());
   }
   virtual ScheduledActionDrawAndSwapResult
   ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapIfPossible");
+    states_.push_back(scheduler_->StateAsStringForTesting());
     num_draws_++;
     return ScheduledActionDrawAndSwapResult(draw_will_happen_,
                                             draw_will_happen_ &&
@@ -69,23 +84,29 @@ class FakeSchedulerClient : public SchedulerClient {
   virtual ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapForced()
       OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapForced");
+    states_.push_back(scheduler_->StateAsStringForTesting());
     return ScheduledActionDrawAndSwapResult(true,
                                             swap_will_happen_if_draw_happens_);
   }
   virtual void ScheduledActionCommit() OVERRIDE {
     actions_.push_back("ScheduledActionCommit");
+    states_.push_back(scheduler_->StateAsStringForTesting());
   }
   virtual void ScheduledActionCheckForCompletedTileUploads() OVERRIDE {
     actions_.push_back("ScheduledActionCheckForCompletedTileUploads");
+    states_.push_back(scheduler_->StateAsStringForTesting());
   }
   virtual void ScheduledActionActivatePendingTreeIfNeeded() OVERRIDE {
     actions_.push_back("ScheduledActionActivatePendingTreeIfNeeded");
+    states_.push_back(scheduler_->StateAsStringForTesting());
   }
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {
     actions_.push_back("ScheduledActionBeginOutputSurfaceCreation");
+    states_.push_back(scheduler_->StateAsStringForTesting());
   }
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() OVERRIDE {
     actions_.push_back("ScheduledActionAcquireLayerTexturesForMainThread");
+    states_.push_back(scheduler_->StateAsStringForTesting());
   }
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
 
@@ -94,16 +115,34 @@ class FakeSchedulerClient : public SchedulerClient {
   bool swap_will_happen_if_draw_happens_;
   int num_draws_;
   std::vector<const char*> actions_;
+  std::vector<std::string> states_;
+  scoped_ptr<Scheduler> scheduler_;
 };
+
+TEST(SchedulerTest, InitializeOutputSurfaceDoesNotBeginFrame) {
+  FakeSchedulerClient client;
+  scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
+  SchedulerSettings default_scheduler_settings;
+  Scheduler* scheduler = client.CreateScheduler(
+      make_scoped_ptr(new FrameRateController(time_source)),
+      default_scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client);
+  client.Reset();
+  scheduler->DidCreateAndInitializeOutputSurface();
+  EXPECT_EQ(0, client.num_actions_());
+}
 
 TEST(SchedulerTest, RequestCommit) {
   FakeSchedulerClient client;
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        make_scoped_ptr(new FrameRateController(time_source)),
-                        default_scheduler_settings);
+  Scheduler* scheduler = client.CreateScheduler(
+      make_scoped_ptr(new FrameRateController(time_source)),
+      default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -138,10 +177,9 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrame) {
   FakeSchedulerClient client;
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        make_scoped_ptr(new FrameRateController(time_source)),
-                        default_scheduler_settings);
+  Scheduler* scheduler = client.CreateScheduler(
+      make_scoped_ptr(new FrameRateController(time_source)),
+      default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -176,10 +214,9 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
   FakeSchedulerClient client;
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        make_scoped_ptr(new FrameRateController(time_source)),
-                        default_scheduler_settings);
+  Scheduler* scheduler = client.CreateScheduler(
+      make_scoped_ptr(new FrameRateController(time_source)),
+      default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -226,10 +263,9 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
   FakeSchedulerClient client;
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        make_scoped_ptr(new FrameRateController(time_source)),
-                        default_scheduler_settings);
+  Scheduler* scheduler = client.CreateScheduler(
+      make_scoped_ptr(new FrameRateController(time_source)),
+      default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -259,10 +295,6 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
 
 class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
  public:
-  SchedulerClientThatsetNeedsDrawInsideDraw() : scheduler_(NULL) {}
-
-  void SetScheduler(Scheduler* scheduler) { scheduler_ = scheduler; }
-
   virtual void ScheduledActionBeginFrame() OVERRIDE {}
   virtual ScheduledActionDrawAndSwapResult
   ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
@@ -281,9 +313,6 @@ class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
   virtual void ScheduledActionCommit() OVERRIDE {}
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {}
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
-
- protected:
-  Scheduler* scheduler_;
 };
 
 // Tests for two different situations:
@@ -294,11 +323,9 @@ TEST(SchedulerTest, RequestRedrawInsideDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw client;
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        make_scoped_ptr(new FrameRateController(time_source)),
-                        default_scheduler_settings);
-  client.SetScheduler(scheduler.get());
+  Scheduler* scheduler = client.CreateScheduler(
+      make_scoped_ptr(new FrameRateController(time_source)),
+      default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -325,11 +352,9 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw client;
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        make_scoped_ptr(new FrameRateController(time_source)),
-                        default_scheduler_settings);
-  client.SetScheduler(scheduler.get());
+  Scheduler* scheduler = client.CreateScheduler(
+      make_scoped_ptr(new FrameRateController(time_source)),
+      default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -370,10 +395,6 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
 
 class SchedulerClientThatsetNeedsCommitInsideDraw : public FakeSchedulerClient {
  public:
-  SchedulerClientThatsetNeedsCommitInsideDraw() : scheduler_(NULL) {}
-
-  void SetScheduler(Scheduler* scheduler) { scheduler_ = scheduler; }
-
   virtual void ScheduledActionBeginFrame() OVERRIDE {}
   virtual ScheduledActionDrawAndSwapResult
   ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
@@ -392,9 +413,6 @@ class SchedulerClientThatsetNeedsCommitInsideDraw : public FakeSchedulerClient {
   virtual void ScheduledActionCommit() OVERRIDE {}
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {}
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
-
- protected:
-  Scheduler* scheduler_;
 };
 
 // Tests for the scheduler infinite-looping on SetNeedsCommit requests that
@@ -403,11 +421,9 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
   SchedulerClientThatsetNeedsCommitInsideDraw client;
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        make_scoped_ptr(new FrameRateController(time_source)),
-                        default_scheduler_settings);
-  client.SetScheduler(scheduler.get());
+  Scheduler* scheduler = client.CreateScheduler(
+      make_scoped_ptr(new FrameRateController(time_source)),
+      default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -435,11 +451,9 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw client;
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        make_scoped_ptr(new FrameRateController(time_source)),
-                        default_scheduler_settings);
-  client.SetScheduler(scheduler.get());
+  Scheduler* scheduler = client.CreateScheduler(
+      make_scoped_ptr(new FrameRateController(time_source)),
+      default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -485,11 +499,9 @@ TEST(SchedulerTest, NoBeginFrameWhenDrawFails) {
       new FakeFrameRateController(time_source));
   FakeFrameRateController* controller_ptr = controller.get();
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        controller.PassAs<FrameRateController>(),
-                        default_scheduler_settings);
-  client.SetScheduler(scheduler.get());
+  Scheduler* scheduler = client.CreateScheduler(
+      controller.PassAs<FrameRateController>(),
+      default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -527,10 +539,9 @@ TEST(SchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit) {
       new FakeFrameRateController(time_source));
   FakeFrameRateController* controller_ptr = controller.get();
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        controller.PassAs<FrameRateController>(),
-                        default_scheduler_settings);
+  Scheduler* scheduler = client.CreateScheduler(
+      controller.PassAs<FrameRateController>(),
+      default_scheduler_settings);
 
   EXPECT_EQ(0, controller_ptr->NumFramesPending());
 
@@ -554,10 +565,9 @@ TEST(SchedulerTest, RecreateOutputSurfaceClearsPendingDrawCount) {
       new FakeFrameRateController(time_source));
   FakeFrameRateController* controller_ptr = controller.get();
   SchedulerSettings default_scheduler_settings;
-  scoped_ptr<Scheduler> scheduler =
-      Scheduler::Create(&client,
-                        controller.PassAs<FrameRateController>(),
-                        default_scheduler_settings);
+  Scheduler* scheduler = client.CreateScheduler(
+      controller.PassAs<FrameRateController>(),
+      default_scheduler_settings);
 
   scheduler->SetCanStart();
   scheduler->SetVisible(true);

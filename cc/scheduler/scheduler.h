@@ -5,6 +5,8 @@
 #ifndef CC_SCHEDULER_SCHEDULER_H_
 #define CC_SCHEDULER_SCHEDULER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -111,6 +113,8 @@ class CC_EXPORT Scheduler : FrameRateControllerClient {
 
   // FrameRateControllerClient implementation
   virtual void VSyncTick(bool throttled) OVERRIDE;
+
+  std::string StateAsStringForTesting() { return state_machine_.ToString(); }
 
  private:
   Scheduler(SchedulerClient* client,
