@@ -32,8 +32,9 @@
 
 [
     Constructor,
+    MeasureAs=XSLTProcessor,
 ] interface XSLTProcessor {
-    
+
     void importStylesheet([Default=Undefined] optional Node stylesheet);
     DocumentFragment transformToFragment([Default=Undefined] optional Node source, [Default=Undefined] optional Document docVal);
     Document transformToDocument([Default=Undefined] optional Node source);

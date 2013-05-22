@@ -3949,6 +3949,7 @@ KURL Document::openSearchDescriptionURL()
 
 void Document::applyXSLTransform(ProcessingInstruction* pi)
 {
+    UseCounter::count(this, UseCounter::XSLProcessingInstruction);
     RefPtr<XSLTProcessor> processor = XSLTProcessor::create();
     processor->setXSLStyleSheet(static_cast<XSLStyleSheet*>(pi->sheet()));
     String resultMIMEType;
