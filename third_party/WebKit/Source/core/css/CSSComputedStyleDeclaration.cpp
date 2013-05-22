@@ -2662,17 +2662,14 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 
         /* Unimplemented CSS 3 properties (including CSS3 shorthand properties) */
         case CSSPropertyWebkitTextEmphasis:
-        case CSSPropertyTextLineThrough:
         case CSSPropertyTextLineThroughColor:
         case CSSPropertyTextLineThroughMode:
         case CSSPropertyTextLineThroughStyle:
         case CSSPropertyTextLineThroughWidth:
-        case CSSPropertyTextOverline:
         case CSSPropertyTextOverlineColor:
         case CSSPropertyTextOverlineMode:
         case CSSPropertyTextOverlineStyle:
         case CSSPropertyTextOverlineWidth:
-        case CSSPropertyTextUnderline:
         case CSSPropertyTextUnderlineColor:
         case CSSPropertyTextUnderlineMode:
         case CSSPropertyTextUnderlineStyle:

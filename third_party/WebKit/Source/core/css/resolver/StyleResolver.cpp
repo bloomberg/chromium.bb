@@ -2879,17 +2879,14 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     }
     case CSSPropertyFontStretch:
     case CSSPropertyPage:
-    case CSSPropertyTextLineThrough:
     case CSSPropertyTextLineThroughColor:
     case CSSPropertyTextLineThroughMode:
     case CSSPropertyTextLineThroughStyle:
     case CSSPropertyTextLineThroughWidth:
-    case CSSPropertyTextOverline:
     case CSSPropertyTextOverlineColor:
     case CSSPropertyTextOverlineMode:
     case CSSPropertyTextOverlineStyle:
     case CSSPropertyTextOverlineWidth:
-    case CSSPropertyTextUnderline:
     case CSSPropertyTextUnderlineColor:
     case CSSPropertyTextUnderlineMode:
     case CSSPropertyTextUnderlineStyle:

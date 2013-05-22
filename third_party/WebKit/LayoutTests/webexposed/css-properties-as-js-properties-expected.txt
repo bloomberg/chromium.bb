@@ -163,13 +163,11 @@ textAlign
 textAnchor
 textDecoration
 textIndent
-textLineThrough
 textLineThroughColor
 textLineThroughMode
 textLineThroughStyle
 textLineThroughWidth
 textOverflow
-textOverline
 textOverlineColor
 textOverlineMode
 textOverlineStyle
@@ -177,7 +175,6 @@ textOverlineWidth
 textRendering
 textShadow
 textTransform
-textUnderline
 textUnderlineColor
 textUnderlineMode
 textUnderlineStyle

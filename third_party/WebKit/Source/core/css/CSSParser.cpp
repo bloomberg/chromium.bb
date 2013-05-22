@@ -2671,9 +2671,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyPage:
         return parsePage(propId, important);
     case CSSPropertyFontStretch:
-    case CSSPropertyTextLineThrough:
-    case CSSPropertyTextOverline:
-    case CSSPropertyTextUnderline:
         return false;
     // CSS Text Layout Module Level 3: Vertical writing support
     case CSSPropertyWebkitTextEmphasis:

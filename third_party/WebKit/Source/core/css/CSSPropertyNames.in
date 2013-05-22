@@ -157,13 +157,11 @@ tab-size
 text-align
 text-decoration
 text-indent
-text-line-through
 text-line-through-color
 text-line-through-mode
 text-line-through-style
 text-line-through-width
 text-overflow
-text-overline
 text-overline-color
 text-overline-mode
 text-overline-style
@@ -171,7 +169,6 @@ text-overline-width
 text-shadow
 text-transform
 -epub-text-transform alias_for=text-transform
-text-underline
 text-underline-color
 text-underline-mode
 text-underline-style

@@ -180,20 +180,20 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyTextAlign: return 128;
     case CSSPropertyTextDecoration: return 129;
     case CSSPropertyTextIndent: return 130;
-    case CSSPropertyTextLineThrough: return 131;
+    /* Removed CSSPropertyTextLineThrough - 131 */
     case CSSPropertyTextLineThroughColor: return 132;
     case CSSPropertyTextLineThroughMode: return 133;
     case CSSPropertyTextLineThroughStyle: return 134;
     case CSSPropertyTextLineThroughWidth: return 135;
     case CSSPropertyTextOverflow: return 136;
-    case CSSPropertyTextOverline: return 137;
+    /* Removed CSSPropertyTextOverline - 137 */
     case CSSPropertyTextOverlineColor: return 138;
     case CSSPropertyTextOverlineMode: return 139;
     case CSSPropertyTextOverlineStyle: return 140;
     case CSSPropertyTextOverlineWidth: return 141;
     case CSSPropertyTextShadow: return 142;
     case CSSPropertyTextTransform: return 143;
-    case CSSPropertyTextUnderline: return 144;
+    /* Removed CSSPropertyTextUnderline - 144 */
     case CSSPropertyTextUnderlineColor: return 145;
     case CSSPropertyTextUnderlineMode: return 146;
     case CSSPropertyTextUnderlineStyle: return 147;

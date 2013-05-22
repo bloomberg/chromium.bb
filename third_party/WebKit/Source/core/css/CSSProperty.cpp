@@ -471,18 +471,15 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyStopColor:
     case CSSPropertyStopOpacity:
     case CSSPropertyTableLayout:
-    case CSSPropertyTextLineThrough:
     case CSSPropertyTextLineThroughColor:
     case CSSPropertyTextLineThroughMode:
     case CSSPropertyTextLineThroughStyle:
     case CSSPropertyTextLineThroughWidth:
     case CSSPropertyTextOverflow:
-    case CSSPropertyTextOverline:
     case CSSPropertyTextOverlineColor:
     case CSSPropertyTextOverlineMode:
     case CSSPropertyTextOverlineStyle:
     case CSSPropertyTextOverlineWidth:
-    case CSSPropertyTextUnderline:
     case CSSPropertyTextUnderlineColor:
     case CSSPropertyTextUnderlineMode:
     case CSSPropertyTextUnderlineStyle:
