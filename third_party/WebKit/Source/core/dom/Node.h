@@ -392,12 +392,8 @@ public:
     bool isV8CollectableDuringMinorGC() const { return getFlag(V8CollectableDuringMinorGCFlag); }
     void setV8CollectableDuringMinorGC(bool flag) { setFlag(flag, V8CollectableDuringMinorGCFlag); }
 
-    enum ShouldSetAttached {
-        SetAttached,
-        DoNotSetAttached
-    };
-    void lazyAttach(ShouldSetAttached = SetAttached);
-    void lazyReattach(ShouldSetAttached = SetAttached);
+    void lazyAttach();
+    void lazyReattach();
 
     virtual void setFocus(bool flag);
     virtual void setActive(bool flag = true, bool pause = false);
@@ -875,11 +871,11 @@ inline void Node::lazyReattachIfAttached()
         lazyReattach();
 }
 
-inline void Node::lazyReattach(ShouldSetAttached shouldSetAttached)
+inline void Node::lazyReattach()
 {
     if (attached())
         detach();
-    lazyAttach(shouldSetAttached);
+    lazyAttach();
 }
 
 // Need a template since ElementShadow is not a Node, but has the style recalc methods.

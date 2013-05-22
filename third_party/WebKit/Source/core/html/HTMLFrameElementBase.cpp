@@ -159,7 +159,7 @@ void HTMLFrameElementBase::didNotifySubtreeInsertions(ContainerNode*)
     // as part of a DocumentFragment, insertedInto from an earlier element
     // could have forced a style resolve and already attached us).
     if (!renderer())
-        lazyAttach(DoNotSetAttached);
+        lazyAttach();
     setNameAndOpenURL();
 }
 

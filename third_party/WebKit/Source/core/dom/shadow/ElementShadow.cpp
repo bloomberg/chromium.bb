@@ -44,9 +44,6 @@ ShadowRoot* ElementShadow::addShadowRoot(Element* shadowHost, ShadowRoot::Shadow
     // Existence of shadow roots requires the host and its children to do traversal using ComposedShadowTreeWalker.
     shadowHost->setNeedsShadowTreeWalker();
 
-    // FIXME(94905): ShadowHost should be reattached during recalcStyle.
-    // Set some flag here and recreate shadow hosts' renderer in
-    // Element::recalcStyle.
     if (shadowHost->attached())
         shadowHost->lazyReattach();
 

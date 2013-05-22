@@ -307,6 +307,9 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         m_size = size;
         setNeedsValidityCheck();
         if (m_size != oldSize && attached()) {
+            // FIXME: setRecalcListItems uses the renderer to decide if we should update
+            // the accessibility tree so we can't lazyAttach. That code should be moved
+            // out of setRecalcListItems.
             reattach();
             setRecalcListItems();
         }

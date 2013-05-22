@@ -21,6 +21,7 @@ var container = document.getElementById("container");
 
     shouldBe('internals.attached(light)', 'false');
     document.getElementById('container').appendChild(root);
+    document.body.offsetLeft; // cause a style recalc to trigger attachment.
     shouldBe('internals.attached(light)', 'true');
 })();
 
@@ -34,6 +35,7 @@ var container = document.getElementById("container");
 
     shouldBe('internals.attached(light)', 'false');
     document.getElementById('container').appendChild(root);
+    document.body.offsetLeft; // cause a style recalc to trigger attachment.
     shouldBe('internals.attached(light)', 'true');
 })();
 
