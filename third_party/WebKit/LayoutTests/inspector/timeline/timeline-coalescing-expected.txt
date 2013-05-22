@@ -15,6 +15,10 @@ Root
 ------------> Layout
 ----------------> Layout
 ----------------> Layout
+----> TimeStamp : foo
+--------> TimeStamp : foo
+--------> TimeStamp : foo
+----> TimeStamp : bar
 coalesced record's hasWarning: undefined
 coalesced record's childHasWarning: true
 

@@ -34,6 +34,17 @@ function test()
                 {"startTime":2200.002, "endTime":2299.9,"type":"Layout","frameId":"2","data":{}},
                 {"startTime":2300.000, "endTime":2399.9,"type":"Layout","frameId":"2","data":{}}
             ]},
+        ]},
+
+        // Assure we only coalesce timestamp records with similar message.
+        {"startTime":3100.000,"data":{},"endTime":3199.999,"type":"Program","children":[
+            {"startTime":3100.001, "endTime":3199.9,"type":"TimeStamp","frameId":"2","data":{  message: "foo" }}
+        ]},
+        {"startTime":3200.000,"data":{},"endTime":3299.999,"type":"Program","children":[
+            {"startTime":3200.001, "endTime":3299.9,"type":"TimeStamp","frameId":"2","data":{ message: "foo" }}
+        ]},
+        {"startTime":3300.000,"data":{},"endTime":3399.999,"type":"Program","children":[
+            {"startTime":3300.001, "endTime":3399.9,"type":"TimeStamp","frameId":"2","data":{  message: "bar" }}
         ]}
     ];
 
