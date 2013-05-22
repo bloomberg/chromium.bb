@@ -1543,6 +1543,11 @@ const char kUseMockKeychain[]               = "use-mock-keychain";
 #endif
 
 #if defined(OS_WIN)
+// If set, the app list will be disabled at startup. Note this doesn't prevent
+// the app list from running, it just makes Chrome think the app list hasn't
+// been enabled (as in kEnableAppList) yet.
+const char kDisableAppList[]                = "disable-app-list";
+
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[]                 = "enable-app-list";
 

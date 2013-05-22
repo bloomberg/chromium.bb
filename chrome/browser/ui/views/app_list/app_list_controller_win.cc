@@ -301,6 +301,7 @@ class AppListController : public AppListServiceImpl {
   void AppListClosing();
   void AppListActivationChanged(bool active);
   void ShowAppListDuringModeSwitch(Profile* requested_profile);
+  void DisableAppList();
 
   app_list::AppListView* GetView() { return current_view_; }
 
@@ -863,10 +864,11 @@ void AppListController::Init(Profile* initial_profile) {
 
   MigrateAppLauncherEnabledPref();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAppList)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppList))
     EnableAppList();
-  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAppList))
+    DisableAppList();
 }
 
 bool AppListController::IsAppListVisible() const {
@@ -882,8 +884,7 @@ void AppListController::EnableAppList() {
   bool has_been_enabled = local_state->GetBoolean(
       apps::prefs::kAppLauncherHasBeenEnabled);
   if (!has_been_enabled) {
-    local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled,
-                            true);
+    local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled, true);
     ShellIntegration::ShortcutLocations shortcut_locations;
     shortcut_locations.on_desktop = true;
     shortcut_locations.in_quick_launch_bar = true;
@@ -899,6 +900,11 @@ void AppListController::EnableAppList() {
         base::Bind(&CreateAppListShortcuts,
                    user_data_dir, GetAppModelId(), shortcut_locations));
   }
+}
+
+void AppListController::DisableAppList() {
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled, false);
 }
 
 void AppListController::ScheduleWarmup() {
