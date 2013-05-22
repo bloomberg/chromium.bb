@@ -501,7 +501,7 @@
         }],
 
         # Enable autofill dialog for Android and Views-enabled platforms for now.
-        ['toolkit_views==1', {
+        ['toolkit_views==1 or (OS=="android" and android_webview_build==0)', {
           'enable_autofill_dialog%': 1
         }],
 
