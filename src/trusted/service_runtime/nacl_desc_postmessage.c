@@ -127,8 +127,6 @@ static struct NaClDescVtbl const kNaClDescPostMessageVtbl = {
   NaClDescReadNotImplemented,
   NaClDescPostMessageWrite,
   NaClDescSeekNotImplemented,
-  NaClDescPReadNotImplemented,
-  NaClDescPWriteNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescPostMessageFstat,
   NaClDescGetdentsNotImplemented,

@@ -333,36 +333,6 @@ nacl_off64_t NaClDescSeekNotImplemented(struct NaClDesc          *vself,
   return -NACL_ABI_EINVAL;
 }
 
-ssize_t NaClDescPReadNotImplemented(struct NaClDesc *vself,
-                                    void *buf,
-                                    size_t len,
-                                    nacl_off64_t offset) {
-  UNREFERENCED_PARAMETER(buf);
-  UNREFERENCED_PARAMETER(len);
-  UNREFERENCED_PARAMETER(offset);
-
-  NaClLog(LOG_ERROR,
-          "PRead method is not implemented for object of type %s\n",
-          NaClDescTypeString(((struct NaClDescVtbl const *)
-                              vself->base.vtbl)->typeTag));
-  return -NACL_ABI_EINVAL;
-}
-
-ssize_t NaClDescPWriteNotImplemented(struct NaClDesc *vself,
-                                     void const *buf,
-                                     size_t len,
-                                     nacl_off64_t offset) {
-  UNREFERENCED_PARAMETER(buf);
-  UNREFERENCED_PARAMETER(len);
-  UNREFERENCED_PARAMETER(offset);
-
-  NaClLog(LOG_ERROR,
-          "PWrite method is not implemented for object of type %s\n",
-          NaClDescTypeString(((struct NaClDescVtbl const *)
-                              vself->base.vtbl)->typeTag));
-  return -NACL_ABI_EINVAL;
-}
-
 int NaClDescIoctlNotImplemented(struct NaClDesc         *vself,
                                 int                     request,
                                 void                    *arg) {
@@ -710,8 +680,6 @@ struct NaClDescVtbl const kNaClDescVtbl = {
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
-  NaClDescPReadNotImplemented,
-  NaClDescPWriteNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescFstatNotImplemented,
   NaClDescGetdentsNotImplemented,

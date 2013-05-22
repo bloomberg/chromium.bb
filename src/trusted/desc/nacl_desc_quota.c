@@ -157,8 +157,8 @@ ssize_t NaClDescQuotaWrite(struct NaClDesc  *vself,
      */
     if ((uint64_t) allowed > len) {
       NaClLog(LOG_WARNING,
-              ("NaClDescQuotaWrite: WriteRequest returned an allowed quota"
-               " that is larger than that requested; reducing to original"
+              ("NaClSrpcPepperWriteRequest returned an allowed quota that"
+               " is larger than that requested; reducing to original"
                " request amount.\n"));
       allowed = len;
     }
@@ -173,75 +173,6 @@ ssize_t NaClDescQuotaWrite(struct NaClDesc  *vself,
                                                  buf, (size_t) allowed);
 abort:
   NaClXMutexUnlock(&self->mu);
-  return rv;
-}
-
-ssize_t NaClDescQuotaPRead(struct NaClDesc *vself,
-                           void *buf,
-                           size_t len,
-                           nacl_off64_t offset) {
-  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
-
-  return (*NACL_VTBL(NaClDesc, self->desc)->PRead)(self->desc, buf, len,
-                                                   offset);
-}
-
-ssize_t NaClDescQuotaPWrite(struct NaClDesc *vself,
-                            void const *buf,
-                            size_t len,
-                            nacl_off64_t offset) {
-  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
-  uint64_t              len_u64;
-  int64_t               allowed;
-  ssize_t               rv;
-
-  if (0 == len) {
-    allowed = 0;
-  } else {
-    NACL_COMPILE_TIME_ASSERT(SIZE_T_MAX <= NACL_UMAX_VAL(uint64_t));
-    /*
-     * Write can always return a short, non-zero transfer count.
-     */
-    len_u64 = (uint64_t) len;
-    /* get rid of the always-true/always-false comparison warning */
-    if (len_u64 > NACL_MAX_VAL(int64_t)) {
-      len = (size_t) NACL_MAX_VAL(int64_t);
-    }
-
-    if (NULL == self->quota_interface) {
-      /* If there is no quota_interface, do not allow writes. */
-      allowed = 0;
-    } else {
-      allowed = (*NACL_VTBL(NaClDescQuotaInterface, self->quota_interface)->
-                 WriteRequest)(self->quota_interface,
-                               self->file_id, offset, len);
-    }
-    if (allowed <= 0) {
-      rv = -NACL_ABI_EDQUOT;
-      goto abort;
-    }
-    /*
-     * allowed <= len should be a post-condition, but we check for
-     * it anyway.
-     */
-    if ((uint64_t) allowed > len) {
-      NaClLog(LOG_WARNING,
-              ("NaClDescQuotaPWrite: WriteRequest returned an allowed quota"
-               " that is larger than that requested; reducing to original"
-               " request amount.\n"));
-      allowed = len;
-    }
-  }
-
-  /*
-   * It is possible for Write to write fewer than bytes than the quota
-   * that was granted, in which case quota will leak.
-   * TODO(sehr,bsy): eliminate quota leakage.
-   */
-  rv = (*NACL_VTBL(NaClDesc, self->desc)->PWrite)(self->desc,
-                                                  buf, (size_t) allowed,
-                                                  offset);
-abort:
   return rv;
 }
 
@@ -523,8 +454,6 @@ static struct NaClDescVtbl const kNaClDescQuotaVtbl = {
   NaClDescQuotaRead,
   NaClDescQuotaWrite,
   NaClDescQuotaSeek,
-  NaClDescQuotaPRead,
-  NaClDescQuotaPWrite,
   NaClDescQuotaIoctl,
   NaClDescQuotaFstat,
   NaClDescQuotaGetdents,

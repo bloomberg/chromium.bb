@@ -264,24 +264,6 @@ static nacl_off64_t NaClDescIoDescSeek(struct NaClDesc          *vself,
   return NaClHostDescSeek(self->hd, offset, whence);
 }
 
-static ssize_t NaClDescIoDescPRead(struct NaClDesc *vself,
-                                   void *buf,
-                                   size_t len,
-                                   nacl_off64_t offset) {
-  struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
-
-  return NaClHostDescPRead(self->hd, buf, len, offset);
-}
-
-static ssize_t NaClDescIoDescPWrite(struct NaClDesc *vself,
-                                    void const *buf,
-                                    size_t len,
-                                    nacl_off64_t offset) {
-  struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
-
-  return NaClHostDescPWrite(self->hd, buf, len, offset);
-}
-
 static int NaClDescIoDescIoctl(struct NaClDesc         *vself,
                                int                     request,
                                void                    *arg) {
@@ -356,8 +338,6 @@ static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
   NaClDescIoDescRead,
   NaClDescIoDescWrite,
   NaClDescIoDescSeek,
-  NaClDescIoDescPRead,
-  NaClDescIoDescPWrite,
   NaClDescIoDescIoctl,
   NaClDescIoDescFstat,
   NaClDescGetdentsNotImplemented,

@@ -114,8 +114,6 @@ static struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
-  NaClDescPReadNotImplemented,
-  NaClDescPWriteNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescSemaphoreFstat,
   NaClDescGetdentsNotImplemented,

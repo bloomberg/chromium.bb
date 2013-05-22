@@ -22,8 +22,6 @@
 #include "native_client/src/shared/platform/nacl_find_addrsp.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/shared/platform/nacl_sync.h"
-#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector.h"
 
@@ -34,119 +32,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
-
-#define OFFSET_FOR_FILEPOS_LOCK (GG_LONGLONG(0x7000000000000000))
-
-/*
- * By convention, we use locking the byte at OFFSET_FOR_FILEPOS_LOCK
- * as locking for the implicit file position associated with a file
- * handle.  According to MSDN, LockFileEx of a byte range that does
- * not (yet) exist in a file is not an error, which makes sense in
- * that one might want to have exclusive access to a file region that
- * is beyond the end of the file before populating it.  We assume that
- * OFFSET_FOR_FILEPOS_LOCK is large enough that no real file will
- * actually be that big (even if sparse) and cause problems.
- *
- * One drawback of this is that two independent file handles on the
- * same file will share the same lock.  If this leads to actual
- * contention issues, we can use the following randomized approach,
- * ASSUMING that each file handle / posix-level host descriptor is
- * introduced to NaCl at most once (e.g., no dup'ing and invoking
- * NaClHostDescPosixTake multiple times): we pick a random offset from
- * OFFSET_FOR_FILEPOS_LOCK, and make sure we transfer that with the
- * file handle in the nrd_xfer protocol.  This way, we use a range of
- * byte offsets for locking files and avoid false contention.  We
- * would be subject to the birthday paradox, of course, so if we
- * picked a 16-bit random offset to use, then if a file is opened ~256
- * times we would start seeing performance issues caused by
- * contention, which is probably acceptable; a 32-bit nonce would be
- * plenty.
- *
- * On Windows, fcntl is not available.  A very similar function to
- * lockf, _locking, exists in the Windows CRT.  It does not permit
- * specification of the start of a region, only size (just like lockf)
- * -- implicitly from the current position -- which is less than
- * useful for our purposes.
- */
-static void NaClTakeFilePosLock(HANDLE hFile) {
-  OVERLAPPED overlap;
-  DWORD err;
-
-  memset(&overlap, 0, sizeof overlap);
-  overlap.Offset = (DWORD) OFFSET_FOR_FILEPOS_LOCK;
-  overlap.OffsetHigh = (DWORD) (OFFSET_FOR_FILEPOS_LOCK >> 32);
-  /*
-   * LockFileEx should never fail -- untrusted code cannot cause hFile
-   * to become invalid, since all NaClHostDesc objects are wrapped in
-   * NaClDesc objects and all uses of NaClDesc objects take a
-   * reference before use, so a threading race that closes a
-   * descriptor at the untrusted code level will only dereference the
-   * NaClDesc (and make it unavailable to the untrusted code), but the
-   * object will not be destroyed until after the NaClDesc-level
-   * operation (which in turn invokes the NaClHostDesc level
-   * operation) completes.  Only after the operation completes will
-   * the reference to the NaClDesc be drop by the syscall handler.
-   */
-  if (!LockFileEx(hFile, LOCKFILE_EXCLUSIVE_LOCK,
-                  /* dwReserved= */ 0,
-                  /* nNumberOfBytesToLockLow= */ 1,
-                  /* nNumberOfBytesToLockHigh= */ 0,
-                  &overlap)) {
-    err = GetLastError();
-    NaClLog(LOG_FATAL, "NaClTakeFilePosLock: LockFileEx failed, error %u\n",
-            err);
-  }
-}
-
-static void NaClDropFilePosLock(HANDLE hFile) {
-  OVERLAPPED overlap;
-  DWORD err;
-
-  memset(&overlap, 0, sizeof overlap);
-  overlap.Offset = (DWORD) OFFSET_FOR_FILEPOS_LOCK;
-  overlap.OffsetHigh = (DWORD) (OFFSET_FOR_FILEPOS_LOCK >> 32);
-  if (!UnlockFileEx(hFile,
-                    /* dwReserved= */ 0,
-                    /* nNumberOfBytesToLockLow= */ 1,
-                    /* nNumberOfBytesToLockHigh= */ 0,
-                    &overlap)) {
-    err = GetLastError();
-    NaClLog(LOG_FATAL, "NaClTakeFilePosLock: UnlockFileEx failed, error %u\n",
-            err);
-  }
-}
-
-static nacl_off64_t NaClLockAndGetCurrentFilePos(HANDLE hFile) {
-  LARGE_INTEGER to_move;
-  LARGE_INTEGER cur_pos;
-  DWORD err;
-
-  NaClTakeFilePosLock(hFile);
-  to_move.QuadPart = 0;
-  if (!SetFilePointerEx(hFile, to_move, &cur_pos, FILE_CURRENT)) {
-    err = GetLastError();
-    NaClLog(LOG_FATAL,
-            "NaClLockAndGetCurrentFilePos: SetFilePointerEx failed, error %u\n",
-            err);
-  }
-  return cur_pos.QuadPart;
-}
-
-static void NaClSetCurrentFilePosAndUnlock(HANDLE hFile,
-                                           nacl_off64_t pos) {
-  LARGE_INTEGER to_move;
-  DWORD err;
-
-  to_move.QuadPart = pos;
-  if (!SetFilePointerEx(hFile, to_move, (LARGE_INTEGER *) NULL, FILE_BEGIN)) {
-    err = GetLastError();
-    NaClLog(LOG_FATAL,
-            "NaClSetCurrentFilePosAndUnlock: SetFilePointerEx failed:"
-            " error %d\n",
-            err);
-  }
-  NaClDropFilePosLock(hFile);
-}
 
 /*
  * WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
@@ -563,17 +448,12 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   dwMaximumSizeLow = 0;
   dwMaximumSizeHigh = 0;
 
-  /*
-   * Ensure consistency of the d->flProtect access.
-   */
-  NaClFastMutexLock(&d->mu);
   if (0 != d->flProtect) {
     flProtect = d->flProtect;
     retry_fallback = 0;
   } else {
     retry_fallback = 1;
   }
-  NaClFastMutexUnlock(&d->mu);
 
   do {
     /*
@@ -602,18 +482,8 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
         break;
       }
     } else {
-      /*
-       * Remember successful flProtect used.  Note that this just
-       * ensures reads of d->flProtect gets a consistent value; we
-       * have a potential race where two threads perform mmap and in
-       * parallel determine the replacement flProtect value.  This is
-       * okay, since those two threads should arrive at the same
-       * replacement value.  This could be replaced with an atomic
-       * word.
-       */
-      NaClFastMutexLock(&d->mu);
+      /* remember successful flProtect used */
       d->flProtect = flProtect;
-      NaClFastMutexUnlock(&d->mu);
     }
   } while (--retry_fallback >= 0);
 
@@ -691,26 +561,6 @@ int NaClHostDescUnmapUnsafe(void    *start_addr,
   return 0;
 }
 
-static void NaClHostDescCtorIntern(struct NaClHostDesc *hd,
-                                   int posix_d,
-                                   int flags) {
-  nacl_host_stat_t stbuf;
-  int file_type;
-  if (_fstat64(posix_d, &stbuf) == -1) {
-    NaClLog(LOG_FATAL, "NaClHostDescCtorIntern: could not _fstat64\n");
-  }
-  hd->d = posix_d;
-  hd->flags = flags;
-  hd->flProtect = 0;
-  file_type = stbuf.st_mode & S_IFMT;
-  /* inherited stdio are console handles */
-  hd->protect_filepos = ((S_IFREG == file_type) ||
-                         (S_IFDIR == file_type));
-  if (!NaClFastMutexCtor(&hd->mu)) {
-    NaClLog(LOG_FATAL, "NaClHostDescCtorIntern: NaClFastMutexCtor failed\n");
-  }
-}
-
 int NaClHostDescOpen(struct NaClHostDesc  *d,
                      char const           *path,
                      int                  flags,
@@ -722,7 +572,6 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
   int truncate_after_open = 0;
   HANDLE hFile;
   DWORD err;
-  int fd;
 
   /*
    * TODO(bsy): do something reasonable with perms.  In particular,
@@ -831,16 +680,17 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
       }
     }
   }
-  fd = _open_osfhandle((intptr_t) hFile, oflags);
+  d->d = _open_osfhandle((intptr_t) hFile, oflags);
   /*
    * oflags _O_APPEND, _O_RDONLY, and _O_TEXT are meaningful; unclear
    * whether _O_RDWR, _O_WRONLY, etc has any effect.
    */
-  if (-1 == fd) {
+  if (-1 == d->d) {
     NaClLog(LOG_FATAL, "NaClHostDescOpen failed: err %d\n",
             GetLastError());
   }
-  NaClHostDescCtorIntern(d, fd, flags);
+  d->flags = flags;
+  d->flProtect = 0;
   return 0;
 }
 
@@ -876,7 +726,9 @@ int NaClHostDescPosixDup(struct NaClHostDesc  *d,
   if (-1 == host_desc) {
     return -GetErrno();
   }
-  NaClHostDescCtorIntern(d, host_desc, flags);
+  d->d = host_desc;
+  d->flags = flags;
+  d->flProtect = 0;
   return 0;
 }
 
@@ -903,19 +755,21 @@ int NaClHostDescPosixTake(struct NaClHostDesc *d,
               flags);
       return -NACL_ABI_EINVAL;
   }
-  NaClHostDescCtorIntern(d, posix_d, flags);
+
+  d->d = posix_d;
+  d->flags = flags;
+  d->flProtect = 0;
   return 0;
 }
 
 ssize_t NaClHostDescRead(struct NaClHostDesc  *d,
                          void                 *buf,
                          size_t               len) {
-  /* Windows ReadFile only supports DWORD, so we need
+  ssize_t actual;
+
+  /* Windows _read only supports uint, so we need
    * to clamp the length. */
   unsigned int actual_len;
-  HANDLE fh;
-  DWORD bytes_received;
-  DWORD err;
 
   if (len < UINT_MAX) {
     actual_len = (unsigned int) len;
@@ -928,60 +782,21 @@ ssize_t NaClHostDescRead(struct NaClHostDesc  *d,
     NaClLog(3, "NaClHostDescRead: WRONLY file\n");
     return -NACL_ABI_EBADF;
   }
-  /*
-   * We drop into using Windows ReadFile rather than using _read from
-   * the POSIX compatibility layer here.  The reason for this is
-   * because the pread/pwrite implementation uses ReadFile/WriteFile,
-   * it would be more consistent with the pread/pwrite implementation
-   * to just also use ReadFile/WriteFile directly here as well.
-   *
-   * NB: contrary to the documentation available on MSDN, operations
-   * on synchronous files with non-NULL LPOVERLAPPED arguments result
-   * in the *implicit* file position getting updated before the
-   * ReadFile/WriteFile returning, rather than the Offset/OffsetHigh
-   * members of the explicit OVERLAPPED structure (!).  In order to
-   * support mixed read/pread syscall sequences (and similarly mixed
-   * write/pwrite sequences) we must effectively lock the file
-   * position from access by other threads and then read/write, so
-   * that when pread/pwrite mess up the implicit file position
-   * temporarily, it would not be visible.
-   */
-  fh = (HANDLE) _get_osfhandle(d->d);
-  CHECK(INVALID_HANDLE_VALUE != fh);
-
-  /*
-   * Ensure that we do not corrupt shared implicit file position.
-   */
-  if (d->protect_filepos) {
-    NaClTakeFilePosLock(fh);
+  if (-1 == (actual =_read(d->d, buf, actual_len))) {
+    return -GetErrno();
   }
-  if (!ReadFile(fh, buf, actual_len, &bytes_received, NULL)) {
-    err = GetLastError();
-    if (ERROR_HANDLE_EOF == err) {
-      bytes_received = 0;
-    } else {
-      NaClLog(4, "NaClHostDescRead: ReadFile error %d\n", err);
-      bytes_received = -NaClXlateSystemError(err);
-    }
-  }
-  if (d->protect_filepos) {
-    NaClDropFilePosLock(fh);
-  }
-
-  return bytes_received;
+  return actual;
 }
 
 ssize_t NaClHostDescWrite(struct NaClHostDesc *d,
                           void const          *buf,
                           size_t              len) {
-  /*
-   * Windows WriteFile only supports DWORD uint, so we need to clamp
-   * the length.
+  ssize_t actual;
+
+  /* Windows _write only supports uint, so we need
+   * to clamp the length.
    */
   unsigned int actual_len;
-  HANDLE fh;
-  DWORD bytes_written;
-  DWORD err;
 
   if (NACL_ABI_O_RDONLY == (d->flags & NACL_ABI_O_ACCMODE)) {
     NaClLog(3, "NaClHostDescWrite: RDONLY file\n");
@@ -994,157 +809,23 @@ ssize_t NaClHostDescWrite(struct NaClHostDesc *d,
   }
 
   NaClHostDescCheckValidity("NaClHostDescWrite", d);
-  /*
-   * See discussion in NaClHostDescRead above wrt why we use WriteFile
-   * instead of _write below.
-   */
-  fh = (HANDLE) _get_osfhandle(d->d);
-  CHECK(INVALID_HANDLE_VALUE != fh);
-  /*
-   * Ensure that we do not corrupt shared implicit file position.
-   */
-  if (d->protect_filepos) {
-    NaClTakeFilePosLock(fh);
+  if (-1 == (actual = _write(d->d, buf, actual_len))) {
+    return -GetErrno();
   }
-  if (!WriteFile(fh, buf, actual_len, &bytes_written, (OVERLAPPED *) NULL)) {
-    err = GetLastError();
-    NaClLog(4, "NaClHostDescWrite: WriteFile error %d\n", err);
-
-    bytes_written = -NaClXlateSystemError(err);
-  }
-  if (d->protect_filepos) {
-    NaClDropFilePosLock(fh);
-  }
-
-  return bytes_written;
+  return actual;
 }
 
 nacl_off64_t NaClHostDescSeek(struct NaClHostDesc  *d,
                               nacl_off64_t         offset,
                               int                  whence) {
-  HANDLE hFile;
   nacl_off64_t retval;
 
   NaClHostDescCheckValidity("NaClHostDescSeek", d);
-  hFile = (HANDLE) _get_osfhandle(d->d);
-  CHECK(INVALID_HANDLE_VALUE != hFile);
-  if (d->protect_filepos) {
-    NaClTakeFilePosLock(hFile);
+  if (NACL_ABI_O_APPEND == (d->flags & NACL_ABI_O_APPEND)) {
+    NaClLog(4, "NaClHostDescSeek: APPEND file emulation, seeks are no-ops\n");
+    return 0;
   }
-  retval = _lseeki64(d->d, offset, whence);
-  if (d->protect_filepos) {
-    NaClDropFilePosLock(hFile);
-  }
-  return (-1 == retval) ? -errno : retval;
-}
-
-ssize_t NaClHostDescPRead(struct NaClHostDesc *d,
-                          void *buf,
-                          size_t len,
-                          nacl_off64_t offset) {
-  HANDLE fh;
-  OVERLAPPED overlap;
-  DWORD bytes_received;
-  DWORD err;
-  nacl_off64_t orig_pos = 0;
-
-  NaClHostDescCheckValidity("NaClHostDescPRead", d);
-  if (NACL_ABI_O_WRONLY == (d->flags & NACL_ABI_O_ACCMODE)) {
-    NaClLog(3, "NaClHostDescPRead: WRONLY file\n");
-    return -NACL_ABI_EBADF;
-  }
-  if (offset < 0) {
-    return -NACL_ABI_EINVAL;
-  }
-  /*
-   * There are reports of driver issues that may require clamping len
-   * to a megabyte or so, lest ReadFile returns an error with
-   * GetLastError() returning ERROR_INVALID_PARAMETER, but since we
-   * do not expect to ever read from / write to anything other than
-   * filesystem files, we do not clamp.
-   */
-  fh = (HANDLE) _get_osfhandle(d->d);
-  CHECK(INVALID_HANDLE_VALUE != fh);
-  memset(&overlap, 0, sizeof overlap);
-  overlap.Offset = (DWORD) offset;
-  overlap.OffsetHigh = (DWORD) (offset >> 32);
-  if (len > UINT_MAX) {
-    len = UINT_MAX;
-  }
-  if (d->protect_filepos) {
-    orig_pos = NaClLockAndGetCurrentFilePos(fh);
-  }
-  if (!ReadFile(fh, buf, (DWORD) len, &bytes_received, &overlap)) {
-    err = GetLastError();
-    if (ERROR_HANDLE_EOF == err) {
-      bytes_received = 0;
-      /* handle as if returned true. */
-    } else {
-      NaClLog(4, "NaClHostDescPRead: ReadFile failed, error %d\n", err);
-      NaClSetCurrentFilePosAndUnlock(fh, orig_pos);
-      bytes_received = -NaClXlateSystemError(err);
-    }
-  }
-  if (d->protect_filepos) {
-    NaClSetCurrentFilePosAndUnlock(fh, orig_pos);
-  }
-  return bytes_received;
-}
-
-ssize_t NaClHostDescPWrite(struct NaClHostDesc *d,
-                           void const *buf,
-                           size_t len,
-                           nacl_off64_t offset) {
-  HANDLE fh;
-  OVERLAPPED overlap;
-  DWORD bytes_sent;
-  DWORD err;
-  nacl_off64_t orig_pos = 0;
-
-  NaClHostDescCheckValidity("NaClHostDescPWrite", d);
-  if (NACL_ABI_O_RDONLY == (d->flags & NACL_ABI_O_ACCMODE)) {
-    NaClLog(3, "NaClHostDescPWrite: RDONLY file\n");
-    return -NACL_ABI_EBADF;
-  }
-  if (offset < 0) {
-    /*
-     * This also avoids the case where having 0xffffffff in both
-     * overlap.Offset and overlap.OffsetHigh means append to the file.
-     * In Posix, offset does not permit special meanings being encoded
-     * like this.
-     */
-    return -NACL_ABI_EINVAL;
-  }
-  if (0 != (NACL_ABI_O_APPEND & d->flags)) {
-    NaClLog(3, "NaClHostDescPWrite: APPEND-only file\n");
-    offset = GG_LONGLONG(0xffffffffffffffff);
-  }
-  fh = (HANDLE) _get_osfhandle(d->d);
-  CHECK(INVALID_HANDLE_VALUE != fh);
-  memset(&overlap, 0, sizeof overlap);
-  overlap.Offset = (DWORD) offset;
-  overlap.OffsetHigh = (DWORD) (offset >> 32);
-  if (len > UINT_MAX) {
-    len = UINT_MAX;
-  }
-  if (d->protect_filepos) {
-    orig_pos = NaClLockAndGetCurrentFilePos(fh);
-  }
-  if (!WriteFile(fh, buf, (DWORD) len, &bytes_sent, &overlap)) {
-    err = GetLastError();
-    if (ERROR_HANDLE_EOF == err) {
-      bytes_sent = 0;
-      /* handle as if returned true. */
-    } else {
-      NaClLog(4,
-              "NaClHostDescPWrite: WriteFile failed, error %d\n", err);
-      bytes_sent = -NaClXlateSystemError(err);
-    }
-  }
-  if (d->protect_filepos) {
-    NaClSetCurrentFilePosAndUnlock(fh, orig_pos);
-  }
-  return bytes_sent;
+  return (-1 == (retval = _lseeki64(d->d, offset, whence))) ? -errno : retval;
 }
 
 int NaClHostDescIoctl(struct NaClHostDesc *d,
@@ -1178,7 +859,6 @@ int NaClHostDescClose(struct NaClHostDesc *d) {
     }
     d->d = -1;
   }
-  NaClFastMutexDtor(&d->mu);
   return 0;
 }
 
