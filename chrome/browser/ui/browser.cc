@@ -479,6 +479,10 @@ Browser::~Browser() {
 
   encoding_auto_detect_.Destroy();
 
+  // Destroy BrowserExtensionWindowController before the incognito profile
+  // is destroyed to make sure the chrome.windows.onRemoved event is sent.
+  extension_window_controller_.reset();
+
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsOffTheRecordSessionActiveForProfile(profile_)) {
     // An incognito profile is no longer needed, this indirectly frees
