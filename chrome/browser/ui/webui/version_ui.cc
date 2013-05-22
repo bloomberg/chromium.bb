@@ -61,8 +61,10 @@ content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
       base::android::BuildInfo::GetInstance();
   html_source->AddString("application_name",
                          android_build_info->package_label());
-  html_source->AddString("application_version",
+  html_source->AddString("application_version_name",
                          android_build_info->package_version_name());
+  html_source->AddString("application_version_code",
+                         android_build_info->package_version_code());
   html_source->AddLocalizedString("build_id_name",
                                   IDS_ABOUT_VERSION_BUILD_ID);
   html_source->AddString("build_id", CHROME_BUILD_ID);
