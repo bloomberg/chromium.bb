@@ -50,6 +50,7 @@ std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
 bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
                    bool has_dcim,
                    chrome::StorageInfo* info) {
+  DCHECK(info);
   std::string source_path = mount_info.source_path;
 
   const disks::DiskMountManager::Disk* disk =
@@ -66,19 +67,15 @@ bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
   if (unique_id.empty())
     return false;
 
-  if (info) {
-    chrome::StorageInfo::Type type = has_dcim ?
-        chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM :
-        chrome::StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
-
-    info->device_id = chrome::StorageInfo::MakeDeviceId(type, unique_id);
-    info->location = mount_info.mount_path,
-    info->vendor_name = UTF8ToUTF16(disk->vendor_name());
-    info->model_name = UTF8ToUTF16(disk->product_name());
-    info->storage_label = device_label;
-    info->total_size_in_bytes = disk->total_size_in_bytes();
-  }
-
+  chrome::StorageInfo::Type type = has_dcim ?
+      chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM :
+      chrome::StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
+  info->device_id = chrome::StorageInfo::MakeDeviceId(type, unique_id);
+  info->location = mount_info.mount_path;
+  info->vendor_name = UTF8ToUTF16(disk->vendor_name());
+  info->model_name = UTF8ToUTF16(disk->product_name());
+  info->storage_label = device_label;
+  info->total_size_in_bytes = disk->total_size_in_bytes();
   return true;
 }
 

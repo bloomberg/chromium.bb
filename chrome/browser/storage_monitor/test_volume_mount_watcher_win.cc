@@ -40,6 +40,8 @@ std::vector<base::FilePath> FakeGetAttachedDevices() {
 // 'C:\' is not removable (so that auto-added paths are correctly handled).
 bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
                                  StorageInfo* info) {
+  DCHECK(info);
+
   // Truncate to root path.
   base::FilePath path(device_path);
   if (device_path.value().length() > 3) {
@@ -49,26 +51,23 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
     return false;
   }
 
-  if (info) {
-    info->location = path.value();
-    info->total_size_in_bytes = 1000000;
+  info->location = path.value();
+  info->total_size_in_bytes = 1000000;
 
-    std::string unique_id =
-        "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
-    unique_id[11] = device_path.value()[0];
-    chrome::StorageInfo::Type type = chrome::StorageInfo::FIXED_MASS_STORAGE;
-    if (path.value() != ASCIIToUTF16("N:\\") &&
-        path.value() != ASCIIToUTF16("C:\\")) {
-      type = chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
-    }
-    info->device_id = chrome::StorageInfo::MakeDeviceId(type, unique_id);
-    info->storage_label = path.Append(L" Drive").LossyDisplayName();
+  std::string unique_id =
+      "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
+  unique_id[11] = device_path.value()[0];
+  chrome::StorageInfo::Type type = chrome::StorageInfo::FIXED_MASS_STORAGE;
+  if (path.value() != ASCIIToUTF16("N:\\") &&
+      path.value() != ASCIIToUTF16("C:\\")) {
+    type = chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
   }
-
+  info->device_id = chrome::StorageInfo::MakeDeviceId(type, unique_id);
+  info->storage_label = path.Append(L" Drive").LossyDisplayName();
   return true;
 }
 
-} // namespace
+}  // namespace
 
 // TestVolumeMountWatcherWin ---------------------------------------------------
 

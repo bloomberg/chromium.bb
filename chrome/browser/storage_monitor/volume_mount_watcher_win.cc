@@ -118,6 +118,8 @@ uint64 GetVolumeSize(const string16& mount_point) {
 // http://blogs.msdn.com/b/adioltean/archive/2005/04/16/408947.aspx.
 bool GetDeviceDetails(const base::FilePath& device_path,
                       chrome::StorageInfo* info) {
+  DCHECK(info);
+
   string16 mount_point;
   if (!GetVolumePathName(device_path.value().c_str(),
                          WriteInto(&mount_point, kMaxPathBufLen),
@@ -129,18 +131,16 @@ bool GetDeviceDetails(const base::FilePath& device_path,
   // Note: experimentally this code does not spin a floppy drive. It
   // returns a GUID associated with the device, not the volume.
   string16 guid;
-  if (info) {
-    if (!GetVolumeNameForVolumeMountPoint(mount_point.c_str(),
-                                          WriteInto(&guid, kMaxPathBufLen),
-                                          kMaxPathBufLen)) {
-      return false;
-    }
-    // In case it has two GUID's (see above mentioned blog), do it again.
-    if (!GetVolumeNameForVolumeMountPoint(guid.c_str(),
-                                          WriteInto(&guid, kMaxPathBufLen),
-                                          kMaxPathBufLen)) {
-      return false;
-    }
+  if (!GetVolumeNameForVolumeMountPoint(mount_point.c_str(),
+                                        WriteInto(&guid, kMaxPathBufLen),
+                                        kMaxPathBufLen)) {
+    return false;
+  }
+  // In case it has two GUID's (see above mentioned blog), do it again.
+  if (!GetVolumeNameForVolumeMountPoint(guid.c_str(),
+                                        WriteInto(&guid, kMaxPathBufLen),
+                                        kMaxPathBufLen)) {
+    return false;
   }
 
   // If we're adding a floppy drive, return without querying any more
@@ -148,15 +148,10 @@ bool GetDeviceDetails(const base::FilePath& device_path,
   // Note: treats FLOPPY as FIXED_MASS_STORAGE. This is intentional.
   DeviceType device_type = GetDeviceType(mount_point);
   if (device_type == FLOPPY) {
-    if (info) {
-      info->device_id = chrome::StorageInfo::MakeDeviceId(
-          chrome::StorageInfo::FIXED_MASS_STORAGE, UTF16ToUTF8(guid));
-    }
+    info->device_id = chrome::StorageInfo::MakeDeviceId(
+        chrome::StorageInfo::FIXED_MASS_STORAGE, UTF16ToUTF8(guid));
     return true;
   }
-
-  if (!info)
-    return true;
 
   chrome::StorageInfo::Type type =
       chrome::StorageInfo::FIXED_MASS_STORAGE;
