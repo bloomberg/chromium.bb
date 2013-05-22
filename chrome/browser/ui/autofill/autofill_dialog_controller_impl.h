@@ -268,6 +268,11 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Opens the given URL in a new foreground tab.
   virtual void OpenTabWithUrl(const GURL& url);
 
+  // Exposed for testing.
+  const std::map<DialogSection, bool>& section_editing_state() const {
+    return section_editing_state_;
+  }
+
  private:
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;

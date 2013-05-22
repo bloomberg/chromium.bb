@@ -222,6 +222,11 @@ class TestAutofillDialogController
 
   void set_dialog_type(DialogType dialog_type) { dialog_type_ = dialog_type; }
 
+  bool IsSectionInEditState(DialogSection section) {
+    std::map<DialogSection, bool> state = section_editing_state();
+    return state[section];
+  }
+
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
     return &test_manager_;
@@ -636,11 +641,13 @@ TEST_F(AutofillDialogControllerTest, WalletDefaultItems) {
       controller()->MenuModelForSection(SECTION_CC_BILLING)->GetItemCount());
   EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC_BILLING)->
       IsItemCheckedAt(2));
+  ASSERT_FALSE(controller()->IsSectionInEditState(SECTION_CC_BILLING));
   // "use billing", "add", "manage", and 5 suggestions.
   EXPECT_EQ(8,
       controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
   EXPECT_TRUE(controller()->MenuModelForSection(SECTION_SHIPPING)->
       IsItemCheckedAt(4));
+  ASSERT_FALSE(controller()->IsSectionInEditState(SECTION_SHIPPING));
 }
 
 TEST_F(AutofillDialogControllerTest, SaveAddress) {
@@ -1310,6 +1317,23 @@ TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
 
   profile()->set_incognito(true);
   EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
+}
+
+// Tests that user is prompted when using instrument with minimal address.
+TEST_F(AutofillDialogControllerTest, UpgradeMinimalAddress) {
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentWithIdAndAddress(
+      "id", wallet::GetTestMinimalAddress()));
+  scoped_ptr<wallet::Address> address(wallet::GetTestShippingAddress());
+  address->set_is_complete_address(false);
+  wallet_items->AddAddress(address.Pass());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  // Assert that dialog's SECTION_CC_BILLING section is in edit mode.
+  ASSERT_TRUE(controller()->IsSectionInEditState(SECTION_CC_BILLING));
+  // Shipping section should be in edit mode because of
+  // is_minimal_shipping_address.
+  ASSERT_TRUE(controller()->IsSectionInEditState(SECTION_SHIPPING));
 }
 
 }  // namespace autofill

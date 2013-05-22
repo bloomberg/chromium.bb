@@ -108,8 +108,8 @@ class WalletItems {
 
    private:
     friend class WalletItemsTest;
-    friend scoped_ptr<MaskedInstrument> GetTestMaskedInstrumentWithId(
-        const std::string&);
+    friend scoped_ptr<MaskedInstrument> GetTestMaskedInstrumentWithIdAndAddress(
+        const std::string&, scoped_ptr<Address> address);
     FRIEND_TEST_ALL_PREFIXES(::autofill::WalletInstrumentWrapperTest,
                              GetInfoCreditCardExpMonth);
     FRIEND_TEST_ALL_PREFIXES(::autofill::WalletInstrumentWrapperTest,

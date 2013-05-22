@@ -14,6 +14,9 @@
 namespace autofill {
 namespace wallet {
 
+const string16 kFullAddress = ASCIIToUTF16("FULL");
+const string16 kTrue = ASCIIToUTF16("true");
+
 namespace {
 
 Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
@@ -28,7 +31,7 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
   string16 recipient_name;
   if (!dictionary.GetString("postal_address.recipient_name",
                             &recipient_name)) {
-    DLOG(ERROR) << "Response from Google Wallet recipient name";
+    DLOG(ERROR) << "Response from Google Wallet missing recipient name";
     return NULL;
   }
 
@@ -67,15 +70,22 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
     DVLOG(1) << "Response from Google Wallet missing administrative area name";
   }
 
-  return new Address(country_name_code,
-                     recipient_name ,
-                     address_line_1,
-                     address_line_2,
-                     locality_name,
-                     administrative_area_name,
-                     postal_code_number,
-                     phone_number,
-                     object_id);
+  string16 is_minimal_address;
+  if (!dictionary.GetString("is_minimal_address", &is_minimal_address))
+    DVLOG(1) << "Response from Google Wallet missing is_minimal_address bit";
+
+  Address* address = new Address(country_name_code,
+                                 recipient_name,
+                                 address_line_1,
+                                 address_line_2,
+                                 locality_name,
+                                 administrative_area_name,
+                                 postal_code_number,
+                                 phone_number,
+                                 object_id);
+  address->set_is_complete_address(is_minimal_address != kTrue);
+
+  return address;
 }
 
 }  // namespace
@@ -91,7 +101,8 @@ Address::Address(const AutofillProfile& profile)
       locality_name_(profile.GetRawInfo(ADDRESS_HOME_CITY)),
       administrative_area_name_(profile.GetRawInfo(ADDRESS_HOME_STATE)),
       postal_code_number_(profile.GetRawInfo(ADDRESS_HOME_ZIP)),
-      phone_number_(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)) {}
+      phone_number_(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)),
+      is_complete_address_(true) {}
 
 Address::Address(const std::string& country_name_code,
                  const string16& recipient_name,
@@ -110,7 +121,8 @@ Address::Address(const std::string& country_name_code,
       administrative_area_name_(administrative_area_name),
       postal_code_number_(postal_code_number),
       phone_number_(phone_number),
-      object_id_(object_id) {}
+      object_id_(object_id),
+      is_complete_address_(true) {}
 
 Address::~Address() {}
 
@@ -174,15 +186,23 @@ scoped_ptr<Address> Address::CreateDisplayAddress(
   if (!dictionary.GetString("phone_number", &phone_number))
     DVLOG(1) << "Reponse from Google Wallet missing phone number";
 
-  return scoped_ptr<Address>(new Address(country_code,
-                                         name,
-                                         address1,
-                                         address2,
-                                         city,
-                                         state,
-                                         postal_code,
-                                         phone_number,
-                                         std::string()));
+  string16 address_state;
+  if (!dictionary.GetString("type", &address_state))
+    DVLOG(1) << "Response from Google Wallet missing type/state of address";
+
+  scoped_ptr<Address> address(
+      new Address(country_code,
+                  name,
+                  address1,
+                  address2,
+                  city,
+                  state,
+                  postal_code,
+                  phone_number,
+                  std::string()));
+  address->set_is_complete_address(address_state == kFullAddress);
+
+  return address.Pass();
 }
 
 scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithID() const {
@@ -279,7 +299,8 @@ bool Address::operator==(const Address& other) const {
          administrative_area_name_ == other.administrative_area_name_ &&
          postal_code_number_ == other.postal_code_number_ &&
          phone_number_ == other.phone_number_ &&
-         object_id_ == other.object_id_;
+         object_id_ == other.object_id_ &&
+         is_complete_address_ == other.is_complete_address_;
 }
 
 bool Address::operator!=(const Address& other) const {

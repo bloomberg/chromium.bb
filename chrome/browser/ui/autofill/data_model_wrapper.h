@@ -126,6 +126,7 @@ class WalletAddressWrapper : public DataModelWrapper {
   virtual ~WalletAddressWrapper();
 
   virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
+  virtual string16 GetDisplayText() OVERRIDE;
 
  private:
   const wallet::Address* address_;

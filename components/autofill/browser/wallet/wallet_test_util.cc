@@ -28,8 +28,9 @@ int FutureYear() {
 
 }  // namespace
 
-scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithId(
-    const std::string& id) {
+scoped_ptr<WalletItems::MaskedInstrument>
+GetTestMaskedInstrumentWithIdAndAddress(
+    const std::string& id, scoped_ptr<Address> address) {
   return scoped_ptr<WalletItems::MaskedInstrument>(
       new WalletItems::MaskedInstrument(ASCIIToUTF16("descriptive_name"),
                                         WalletItems::MaskedInstrument::VISA,
@@ -37,9 +38,14 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithId(
                                         ASCIIToUTF16("1111"),
                                         12,
                                         FutureYear(),
-                                        GetTestAddress(),
+                                        address.Pass(),
                                         WalletItems::MaskedInstrument::VALID,
                                         id));
+}
+
+scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithId(
+    const std::string& id) {
+  return GetTestMaskedInstrumentWithIdAndAddress(id, GetTestAddress());
 }
 
 scoped_ptr<Address> GetTestAddress() {
@@ -52,6 +58,12 @@ scoped_ptr<Address> GetTestAddress() {
                                          ASCIIToUTF16("postal_code_number"),
                                          ASCIIToUTF16("phone_number"),
                                          std::string()));
+}
+
+scoped_ptr<Address> GetTestMinimalAddress() {
+  scoped_ptr<Address> address = GetTestAddress();
+  address->set_is_complete_address(false);
+  return address.Pass();
 }
 
 scoped_ptr<FullWallet> GetTestFullWallet() {

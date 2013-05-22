@@ -60,6 +60,8 @@ class Address {
   static scoped_ptr<Address> CreateAddress(
       const base::DictionaryValue& dictionary);
 
+  // TODO(ahutter): Make obvious in the function name that this public method
+  // only works for shipping address and assumes existance of "postal_address".
   // Builds an Address from |dictionary|, which must have an "id" field. This
   // function is designed for use with shipping addresses. The function may fail
   // and return an empty pointer if its input is invalid.
@@ -105,6 +107,9 @@ class Address {
   }
   const base::string16& phone_number() const { return phone_number_; }
   const std::string& object_id() const { return object_id_; }
+  bool is_complete_address() const {
+    return is_complete_address_;
+  }
 
   void set_country_name_code(const std::string& country_name_code) {
     country_name_code_ = country_name_code;
@@ -133,6 +138,9 @@ class Address {
   }
   void set_object_id(const std::string& object_id) {
     object_id_ = object_id;
+  }
+  void set_is_complete_address(bool is_complete_address) {
+    is_complete_address_ = is_complete_address;
   }
 
   bool operator==(const Address& other) const;
@@ -174,6 +182,9 @@ class Address {
 
   // Externalized Online Wallet id for this address.
   std::string object_id_;
+
+  // Server's understanding of this address as complete address or not.
+  bool is_complete_address_;
 
   // This class is intentionally copyable.
   DISALLOW_ASSIGN(Address);
