@@ -5,7 +5,6 @@
 'use strict';
 
 /**
- * Global fileManager reference useful for poking at from the console.
  * @type {FileManager}
  */
 var fileManager;

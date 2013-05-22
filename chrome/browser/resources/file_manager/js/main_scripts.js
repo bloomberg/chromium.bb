@@ -101,6 +101,9 @@
 // // the last include to include.
 //<include src="main.js"/>
 
+// Global fileManager reference useful for poking at from the console.
+window.fileManager = fileManager;
+
 // Exports
 window.util = util;
 window.FileCopyManagerWrapper = FileCopyManagerWrapper;
