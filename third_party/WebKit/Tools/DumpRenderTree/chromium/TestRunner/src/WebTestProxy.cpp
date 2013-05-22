@@ -33,6 +33,7 @@
 
 #include "AccessibilityControllerChromium.h"
 #include "EventSender.h"
+#include "MockColorChooser.h"
 #include "MockWebSpeechInputController.h"
 #include "MockWebSpeechRecognizer.h"
 #include "SpellCheckClient.h"
@@ -439,6 +440,7 @@ WebTestProxyBase::WebTestProxyBase()
     : m_testInterfaces(0)
     , m_delegate(0)
     , m_spellcheck(new SpellCheckClient)
+    , m_chooserCount(0)
 {
     reset();
 }
@@ -484,6 +486,12 @@ void WebTestProxyBase::reset()
 WebSpellCheckClient* WebTestProxyBase::spellCheckClient() const
 {
     return m_spellcheck.get();
+}
+
+WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* client, const WebKit::WebColor& color)
+{
+    // This instance is deleted by WebCore::ColorInputType
+    return new MockColorChooser(client, m_delegate, this);
 }
 
 string WebTestProxyBase::captureTree(bool debugRenderTree)
@@ -1071,6 +1079,21 @@ void WebTestProxyBase::didBlur()
 void WebTestProxyBase::setToolTipText(const WebString& text, WebTextDirection)
 {
     m_testInterfaces->testRunner()->setToolTipText(text);
+}
+
+void WebTestProxyBase::didOpenChooser()
+{
+    m_chooserCount++;
+}
+
+void WebTestProxyBase::didCloseChooser()
+{
+    m_chooserCount--;
+}
+
+bool WebTestProxyBase::isChooserShown()
+{
+    return 0 < m_chooserCount;
 }
 
 void WebTestProxyBase::willPerformClientRedirect(WebFrame* frame, const WebURL&, const WebURL& to, double, double)

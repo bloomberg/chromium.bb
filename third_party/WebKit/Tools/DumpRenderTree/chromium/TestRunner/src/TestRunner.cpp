@@ -289,6 +289,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("wasMockSpeechRecognitionAborted", &TestRunner::wasMockSpeechRecognitionAborted);
     bindMethod("display", &TestRunner::display);
     bindMethod("displayInvalidatedRegion", &TestRunner::displayInvalidatedRegion);
+    bindMethod("isChooserShown", &TestRunner::isChooserShown);
 
     // Properties.
     bindProperty("globalFlag", &m_globalFlag);
@@ -1658,6 +1659,11 @@ void TestRunner::closeWebInspector(const CppArgumentList& args, CppVariant* resu
 {
     m_delegate->closeDevTools();
     result->setNull();
+}
+
+void TestRunner::isChooserShown(const CppArgumentList&, CppVariant* result)
+{
+    result->set(m_proxy->isChooserShown());
 }
 
 void TestRunner::evaluateInWebInspector(const CppArgumentList& arguments, CppVariant* result)

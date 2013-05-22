@@ -427,6 +427,9 @@ private:
     void showWebInspector(const CppArgumentList&, CppVariant*);
     void closeWebInspector(const CppArgumentList&, CppVariant*);
 
+    // Inspect chooser state
+    void isChooserShown(const CppArgumentList&, CppVariant*);
+
     // Allows layout tests to exec scripts at WebInspector side.
     void evaluateInWebInspector(const CppArgumentList&, CppVariant*);
 

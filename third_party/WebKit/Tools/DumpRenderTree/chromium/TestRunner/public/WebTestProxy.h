@@ -52,6 +52,8 @@
 namespace WebKit {
 class WebAccessibilityObject;
 class WebCachedURLRequest;
+class WebColorChooser;
+class WebColorChooserClient;
 class WebDataSource;
 class WebDeviceOrientationClient;
 class WebDeviceOrientationClientMock;
@@ -82,6 +84,7 @@ struct WebPluginParams;
 struct WebPoint;
 struct WebSize;
 struct WebWindowFeatures;
+typedef unsigned WebColor;
 }
 
 class SkCanvas;
@@ -105,6 +108,7 @@ public:
     void reset();
 
     WebKit::WebSpellCheckClient *spellCheckClient() const;
+    WebKit::WebColorChooser* createColorChooser(WebKit::WebColorChooserClient*, const WebKit::WebColor&);
 
     std::string captureTree(bool debugRenderTree);
     SkCanvas* capturePixels();
@@ -113,6 +117,10 @@ public:
 
     // FIXME: Make this private again.
     void scheduleComposite();
+
+    void didOpenChooser();
+    void didCloseChooser();
+    bool isChooserShown();
 
 #if WEBTESTRUNNER_IMPLEMENTATION
     void display();
@@ -223,6 +231,7 @@ private:
     std::map<unsigned, WebKit::WebURLRequest> m_requestMap;
 
     bool m_logConsoleOutput;
+    int m_chooserCount;
 
     std::auto_ptr<WebKit::WebGeolocationClientMock> m_geolocationClient;
     std::auto_ptr<WebKit::WebDeviceOrientationClientMock> m_deviceOrientationClient;
@@ -596,6 +605,10 @@ public:
         if (WebTestProxyBase::willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event))
             return true;
         return Base::willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event);
+    }
+    virtual WebKit::WebColorChooser* createColorChooser(WebKit::WebColorChooserClient* client, const WebKit::WebColor& color)
+    {
+        return WebTestProxyBase::createColorChooser(client, color);
     }
 };
 

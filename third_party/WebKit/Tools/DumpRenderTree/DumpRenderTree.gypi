@@ -51,6 +51,8 @@
             'chromium/TestRunner/src/GamepadController.h',
             'chromium/TestRunner/src/KeyCodeMapping.cpp',
             'chromium/TestRunner/src/KeyCodeMapping.h',
+            'chromium/TestRunner/src/MockColorChooser.cpp',
+            'chromium/TestRunner/src/MockColorChooser.h',
             'chromium/TestRunner/src/MockConstraints.cpp',
             'chromium/TestRunner/src/MockConstraints.h',
             'chromium/TestRunner/src/MockGrammarCheck.cpp',
