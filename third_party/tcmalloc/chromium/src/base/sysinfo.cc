@@ -503,7 +503,9 @@ int NumCPUs(void) {
 //      true.
 // ----------------------------------------------------------------------
 bool HasPosixThreads() {
-#if defined(__linux__)
+// Android doesn't have confstr(), assume posix thread and fallback to
+// "other os".
+#if defined(__linux__) && !defined(__ANDROID__)
 #ifndef _CS_GNU_LIBPTHREAD_VERSION
 #define _CS_GNU_LIBPTHREAD_VERSION 3
 #endif

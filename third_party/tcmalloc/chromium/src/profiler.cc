@@ -50,6 +50,8 @@
 #elif defined(HAVE_CYGWIN_SIGNAL_H)
 #include <cygwin/signal.h>
 typedef ucontext ucontext_t;
+#elif defined(__ANDROID__)
+// Do not define ucontext_t here.
 #else
 typedef int ucontext_t;   // just to quiet the compiler, mostly
 #endif

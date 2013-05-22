@@ -86,3 +86,4 @@ HOWTOs:
 
 Modifications:
 - Converted to utf-8 with: vim +"argdo write ++enc=utf-8" *.h *.c
+- Added support for android.

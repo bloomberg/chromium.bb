@@ -68,6 +68,10 @@
 #   define STACKTRACE_INL_HEADER "stacktrace_generic-inl.h"
 # endif
 
+// The Android case
+#elif defined(__ANDROID__)
+#define STACKTRACE_INL_HEADER "stacktrace_android-inl.h"
+
 // The ARM case
 #elif defined(__arm__)  && __GNUC__ >= 2
 # if !defined(NO_FRAME_POINTER)

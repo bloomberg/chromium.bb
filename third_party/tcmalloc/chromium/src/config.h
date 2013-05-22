@@ -8,6 +8,8 @@
 
 #if defined(OS_WIN)
 #include "third_party/tcmalloc/chromium/src/config_win.h"
+#elif defined(OS_ANDROID)
+#include "third_party/tcmalloc/chromium/src/config_android.h"
 #elif defined(OS_LINUX)
 #include "third_party/tcmalloc/chromium/src/config_linux.h"
 #elif defined(OS_FREEBSD)

@@ -53,11 +53,18 @@
 
 #define ALIAS(tc_fn)   __attribute__ ((alias (#tc_fn)))
 
-void* operator new(size_t size) throw (std::bad_alloc)
+#if defined(__ANDROID__)
+// Android's bionic doesn't have std::bad_alloc.
+#define STD_BAD_ALLOC
+#else
+#define STD_BAD_ALLOC std::bad_alloc
+#endif
+
+void* operator new(size_t size) throw (STD_BAD_ALLOC)
     ALIAS(tc_new);
 void operator delete(void* p) __THROW
     ALIAS(tc_delete);
-void* operator new[](size_t size) throw (std::bad_alloc)
+void* operator new[](size_t size) throw (STD_BAD_ALLOC)
     ALIAS(tc_newarray);
 void operator delete[](void* p) __THROW
     ALIAS(tc_deletearray);

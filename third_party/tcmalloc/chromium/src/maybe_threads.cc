@@ -120,7 +120,10 @@ int perftools_pthread_once(pthread_once_t *ctl,
     pthread_once_ran_before_threads = true;
     return 0;
   }
-#endif
+#elif defined(__ANDROID__)
+  // Android >= 2.3 (GB) always implement pthread_once.
+  return pthread_once(ctl, init_routine);
+#else
   if (pthread_once) {
     return pthread_once(ctl, init_routine);
   } else {
@@ -130,4 +133,5 @@ int perftools_pthread_once(pthread_once_t *ctl,
     }
     return 0;
   }
+#endif
 }

@@ -62,6 +62,8 @@
 #elif defined(HAVE_CYGWIN_SIGNAL_H)
 #include <cygwin/signal.h>
 typedef ucontext ucontext_t;
+#elif defined(__ANDROID__)
+#include <unwind.h>
 #endif
 
 
@@ -109,7 +111,8 @@ struct CallUnrollInfo {
 // then, is to do the magic call-unrolling for systems that support it.
 
 // -- Special case 1: linux x86, for which we have CallUnrollInfo
-#if defined(__linux) && defined(__i386) && defined(__GNUC__)
+#if defined(__linux) && defined(__i386) && defined(__GNUC__) && \
+    !defined(__ANDROID__)
 static const CallUnrollInfo callunrollinfo[] = {
   // Entry to a function:  push %ebp;  mov  %esp,%ebp
   // Top-of-stack contains the caller IP.
@@ -171,7 +174,16 @@ inline void* GetPC(const struct ucontext_t& signal_ucontext) {
   RAW_LOG(ERROR, "GetPC is not yet implemented on Windows\n");
   return NULL;
 }
+#elif defined(__ANDROID__)
+typedef struct _Unwind_Context ucontext_t;
 
+inline void* GetPC(const ucontext_t& signal_ucontext) {
+  // Bionic doesn't export ucontext, see
+  // https://code.google.com/p/android/issues/detail?id=34784.
+  return reinterpret_cast<void*>(_Unwind_GetIP(
+      const_cast<ucontext_t*>(&signal_ucontext)));
+}
+//
 // Normal cases.  If this doesn't compile, it's probably because
 // PC_FROM_UCONTEXT is the empty string.  You need to figure out
 // the right value for your system, and add it to the list in

@@ -955,6 +955,7 @@
 
     # Enable TCMalloc.
     'linux_use_tcmalloc%': 1,
+    'android_use_tcmalloc%': 0,
 
     # Disable TCMalloc's heapchecker.
     'linux_use_heapchecker%': 0,
@@ -3223,7 +3224,7 @@
               }],
             ],
           }],
-          ['linux_use_tcmalloc==0', {
+          ['linux_use_tcmalloc==0 and android_use_tcmalloc==0', {
             'defines': ['NO_TCMALLOC'],
           }],
           ['linux_keep_shadow_stacks==1', {
