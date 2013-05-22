@@ -909,6 +909,8 @@ bool ResourceMetadata::PutEntryUnderDirectory(
         base::FilePath::FromUTF8Unsafe(updated_entry.base_name());
     new_path =
         new_path.InsertBeforeExtension(base::StringPrintf(" (%d)", ++modifier));
+    // The new filename must be different from the previous one.
+    DCHECK(new_base_name != new_path.AsUTF8Unsafe());
     new_base_name = new_path.AsUTF8Unsafe();
   }
   updated_entry.set_base_name(new_base_name);
