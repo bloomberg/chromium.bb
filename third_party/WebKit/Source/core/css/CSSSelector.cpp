@@ -693,7 +693,7 @@ String CSSSelector::selectorText(const String& rightSide) const
             return tagHistory->selectorText(" ~ " + str.toString() + rightSide);
         case CSSSelector::SubSelector:
             ASSERT_NOT_REACHED();
-        case CSSSelector::ShadowDescendant:
+        case CSSSelector::ShadowPseudo:
             return tagHistory->selectorText(str.toString() + rightSide);
         case CSSSelector::ShadowDistributed:
             return tagHistory->selectorText("::-webkit-distributed(" + str.toString() + rightSide + ")");

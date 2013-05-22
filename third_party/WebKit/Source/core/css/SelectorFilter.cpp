@@ -147,7 +147,7 @@ void SelectorFilter::collectIdentifierHashes(const CSSSelector* selector, unsign
             break;
         case CSSSelector::DirectAdjacent:
         case CSSSelector::IndirectAdjacent:
-        case CSSSelector::ShadowDescendant:
+        case CSSSelector::ShadowPseudo:
         case CSSSelector::ShadowDistributed:
             skipOverSubselectors = true;
             break;
@@ -165,4 +165,3 @@ void SelectorFilter::collectIdentifierHashes(const CSSSelector* selector, unsign
 }
 
 }
-

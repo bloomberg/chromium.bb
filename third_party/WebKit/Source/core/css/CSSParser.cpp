@@ -11091,25 +11091,25 @@ CSSParserSelector* CSSParser::rewriteSpecifiersWithElementName(const AtomicStrin
         return specifiers;
     }
 
-    CSSParserSelector* lastShadowDescendant = specifiers;
+    CSSParserSelector* lastShadowPseudo = specifiers;
     CSSParserSelector* history = specifiers;
     while (history->tagHistory()) {
         history = history->tagHistory();
-        if (history->isCustomPseudoElement() || history->hasShadowDescendant())
-            lastShadowDescendant = history;
+        if (history->isCustomPseudoElement() || history->hasShadowPseudo())
+            lastShadowPseudo = history;
     }
 
-    if (lastShadowDescendant->tagHistory()) {
+    if (lastShadowPseudo->tagHistory()) {
         if (tag != anyQName())
-            lastShadowDescendant->tagHistory()->prependTagSelector(tag, tagIsForNamespaceRule);
+            lastShadowPseudo->tagHistory()->prependTagSelector(tag, tagIsForNamespaceRule);
         return specifiers;
     }
 
-    // For shadow-ID pseudo-elements to be correctly matched, the ShadowDescendant combinator has to be used.
+    // For shadow-ID pseudo-elements to be correctly matched, the ShadowPseudo combinator has to be used.
     // We therefore create a new Selector with that combinator here in any case, even if matching any (host) element in any namespace (i.e. '*').
     OwnPtr<CSSParserSelector> elementNameSelector = adoptPtr(new CSSParserSelector(tag));
-    lastShadowDescendant->setTagHistory(elementNameSelector.release());
-    lastShadowDescendant->setRelation(CSSSelector::ShadowDescendant);
+    lastShadowPseudo->setTagHistory(elementNameSelector.release());
+    lastShadowPseudo->setRelation(CSSSelector::ShadowPseudo);
     return specifiers;
 }
 
@@ -11136,12 +11136,12 @@ CSSParserSelector* CSSParser::rewriteSpecifiers(CSSParserSelector* specifiers, C
 {
     if (newSpecifier->isCustomPseudoElement() || newSpecifier->pseudoType() == CSSSelector::PseudoCue) {
         // Unknown pseudo element always goes at the top of selector chain.
-        newSpecifier->appendTagHistory(CSSSelector::ShadowDescendant, sinkFloatingSelector(specifiers));
+        newSpecifier->appendTagHistory(CSSSelector::ShadowPseudo, sinkFloatingSelector(specifiers));
         return newSpecifier;
     }
     if (specifiers->isCustomPseudoElement()) {
         // Specifiers for unknown pseudo element go right behind it in the chain.
-        specifiers->insertTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier), CSSSelector::ShadowDescendant);
+        specifiers->insertTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier), CSSSelector::ShadowPseudo);
         return specifiers;
     }
     specifiers->appendTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier));

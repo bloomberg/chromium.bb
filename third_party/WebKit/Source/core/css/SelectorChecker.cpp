@@ -199,7 +199,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
         nextContext.isSubSelector = true;
         return match(nextContext, dynamicPseudo, siblingTraversalStrategy);
 
-    case CSSSelector::ShadowDescendant:
+    case CSSSelector::ShadowPseudo:
         {
             // If we're in the same tree-scope as the scoping element, then following a shadow descendant combinator would escape that and thus the scope.
             if (context.scope && context.scope->treeScope() == context.element->treeScope() && (context.behaviorAtBoundary & BoundaryBehaviorMask) != StaysWithinTreeScope)

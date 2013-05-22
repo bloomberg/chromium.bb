@@ -211,7 +211,7 @@ public:
     bool isCustomPseudoElement() const { return m_selector->isCustomPseudoElement(); }
 
     bool isSimple() const;
-    bool hasShadowDescendant() const;
+    bool hasShadowPseudo() const;
 
     CSSParserSelector* tagHistory() const { return m_tagHistory.get(); }
     void setTagHistory(PassOwnPtr<CSSParserSelector> selector) { m_tagHistory = selector; }
@@ -226,9 +226,9 @@ private:
     CSSParserSelector* m_functionArgumentSelector;
 };
 
-inline bool CSSParserSelector::hasShadowDescendant() const
+inline bool CSSParserSelector::hasShadowPseudo() const
 {
-    return m_selector->relation() == CSSSelector::ShadowDescendant;
+    return m_selector->relation() == CSSSelector::ShadowPseudo;
 }
 
 }

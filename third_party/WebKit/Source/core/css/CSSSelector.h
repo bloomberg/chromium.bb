@@ -79,7 +79,7 @@ namespace WebCore {
             DirectAdjacent,
             IndirectAdjacent,
             SubSelector,
-            ShadowDescendant,
+            ShadowPseudo,
             ShadowDistributed
         };
 
