@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/view_messages.h"
@@ -171,6 +172,56 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyFullscreenOnBlur) {
 
   widget_host_ = NULL;
   view_ = NULL;
+}
+
+// Checks that IME-composition-event state is maintained correctly.
+TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
+  view_->InitAsChild(NULL);
+  view_->Show();
+
+  ui::CompositionText composition_text;
+  composition_text.text = ASCIIToUTF16("|a|b");
+
+  // Focused segment
+  composition_text.underlines.push_back(
+      ui::CompositionUnderline(0, 3, 0xff000000, true));
+
+  // Non-focused segment
+  composition_text.underlines.push_back(
+      ui::CompositionUnderline(3, 4, 0xff000000, false));
+
+  const ui::CompositionUnderlines& underlines = composition_text.underlines;
+
+  // Caret is at the end. (This emulates Japanese MSIME 2007 and later)
+  composition_text.selection = ui::Range(4);
+
+  sink_->ClearMessages();
+  view_->SetCompositionText(composition_text);
+  EXPECT_TRUE(view_->has_composition_text_);
+  {
+    const IPC::Message* msg =
+      sink_->GetFirstMessageMatching(ViewMsg_ImeSetComposition::ID);
+    ASSERT_TRUE(msg != NULL);
+
+    ViewMsg_ImeSetComposition::Param params;
+    ViewMsg_ImeSetComposition::Read(msg, &params);
+    // composition text
+    EXPECT_EQ(composition_text.text, params.a);
+    // underlines
+    ASSERT_EQ(underlines.size(), params.b.size());
+    for (size_t i = 0; i < underlines.size(); ++i) {
+      EXPECT_EQ(underlines[i].start_offset, params.b[i].startOffset);
+      EXPECT_EQ(underlines[i].end_offset, params.b[i].endOffset);
+      EXPECT_EQ(underlines[i].color, params.b[i].color);
+      EXPECT_EQ(underlines[i].thick, params.b[i].thick);
+    }
+    // highlighted range
+    EXPECT_EQ(4, params.c) << "Should be the same to the caret pos";
+    EXPECT_EQ(4, params.d) << "Should be the same to the caret pos";
+  }
+
+  view_->ImeCancelComposition();
+  EXPECT_FALSE(view_->has_composition_text_);
 }
 
 // Checks that touch-event state is maintained correctly.
