@@ -160,6 +160,7 @@ bool OutputConfigurator::TestApi::SendOutputChangeEvents(bool connected) {
 
 OutputConfigurator::OutputConfigurator()
     : state_controller_(NULL),
+      mirroring_controller_(NULL),
       configure_display_(base::chromeos::IsRunningOnChromeOS()),
       xrandr_event_base_(0),
       output_state_(STATE_INVALID),
@@ -204,7 +205,8 @@ void OutputConfigurator::Start() {
   delegate_->InitXRandRExtension(&xrandr_event_base_);
 
   std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
-  EnterState(GetOutputState(outputs, power_state_), power_state_, outputs);
+  EnterStateOrFallBackToSoftwareMirroring(
+      GetOutputState(outputs, power_state_), power_state_, outputs);
 
   // Force the DPMS on chrome startup as the driver doesn't always detect
   // that all displays are on when signing out.
@@ -234,7 +236,8 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
       flags & kSetDisplayPowerOnlyIfSingleInternalDisplay;
   bool single_internal_display = outputs.size() == 1 && outputs[0].is_internal;
   if ((single_internal_display || !only_if_single_internal_display) &&
-      EnterState(GetOutputState(outputs, power_state), power_state, outputs)) {
+      EnterStateOrFallBackToSoftwareMirroring(
+          GetOutputState(outputs, power_state), power_state, outputs)) {
     if (power_state != DISPLAY_POWER_ALL_OFF)  {
       // Force the DPMS on since the driver doesn't always detect that it
       // should turn on. This is needed when coming back from idle suspend.
@@ -256,7 +259,8 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
 
   delegate_->GrabServer();
   std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
-  bool success = EnterState(new_state, power_state_, outputs);
+  bool success = EnterStateOrFallBackToSoftwareMirroring(
+      new_state, power_state_, outputs);
   delegate_->UngrabServer();
 
   if (success) {
@@ -344,7 +348,8 @@ void OutputConfigurator::ConfigureOutputs() {
   delegate_->GrabServer();
   std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
   OutputState new_state = GetOutputState(outputs, power_state_);
-  bool success = EnterState(new_state, power_state_, outputs);
+  bool success = EnterStateOrFallBackToSoftwareMirroring(
+      new_state, power_state_, outputs);
   delegate_->UngrabServer();
 
   if (success) {
@@ -358,6 +363,24 @@ void OutputConfigurator::ConfigureOutputs() {
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChanged());
+}
+
+bool OutputConfigurator::EnterStateOrFallBackToSoftwareMirroring(
+    OutputState output_state,
+    DisplayPowerState power_state,
+    const std::vector<OutputSnapshot>& outputs) {
+  bool success = EnterState(output_state, power_state, outputs);
+  if (mirroring_controller_) {
+    bool enable_software_mirroring = false;
+    if (!success && output_state == STATE_DUAL_MIRROR) {
+      if (output_state_ != STATE_DUAL_EXTENDED || power_state_ != power_state)
+        EnterState(STATE_DUAL_EXTENDED, power_state, outputs);
+      enable_software_mirroring = success =
+          output_state_ == STATE_DUAL_EXTENDED;
+    }
+    mirroring_controller_->SetSoftwareMirroring(enable_software_mirroring);
+  }
+  return success;
 }
 
 bool OutputConfigurator::EnterState(

@@ -114,6 +114,15 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
         const std::vector<int64>& display_ids) const = 0;
   };
 
+  // Interface for classes that implement software based mirroring.
+  class SoftwareMirroringController {
+   public:
+    virtual ~SoftwareMirroringController() {}
+
+    // Called when the hardware mirroring failed.
+    virtual void SetSoftwareMirroring(bool enabled) = 0;
+  };
+
   // Interface for classes that perform actions on behalf of OutputController.
   class Delegate {
    public:
@@ -227,6 +236,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   void set_state_controller(StateController* controller) {
     state_controller_ = controller;
   }
+  void set_mirroring_controller(SoftwareMirroringController* controller) {
+    mirroring_controller_ = controller;
+  }
 
   // Replaces |delegate_| with |delegate| and sets |configure_display_| to
   // true.  Should be called before Init().
@@ -290,6 +302,16 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   void NotifyOnDisplayChanged();
 
   // Switches to the state specified in |output_state| and |power_state|.
+  // If the hardware mirroring failed and |mirroring_controller_| is set,
+  // it switches to |STATE_DUAL_EXTENDED| and calls |SetSoftwareMirroring()|
+  // to enable software based mirroing.
+  // On success, updates |output_state_| and |power_state_| and returns true.
+  bool EnterStateOrFallBackToSoftwareMirroring(
+      OutputState output_state,
+      DisplayPowerState power_state,
+      const std::vector<OutputSnapshot>& outputs);
+
+  // Switches to the state specified in |output_state| and |power_state|.
   // On success, updates |output_state_| and |power_state_| and returns true.
   bool EnterState(OutputState output_state,
                   DisplayPowerState power_state,
@@ -312,6 +334,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
       const OutputConfigurator::OutputSnapshot* output);
 
   StateController* state_controller_;
+  SoftwareMirroringController* mirroring_controller_;
   scoped_ptr<Delegate> delegate_;
 
   // Key of the map is the touch display's id, and the value of the map is the
