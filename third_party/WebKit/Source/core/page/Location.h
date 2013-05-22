@@ -55,20 +55,20 @@ public:
     void replace(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow);
     void reload(DOMWindow* activeWindow);
 
-    void setProtocol(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow, ExceptionCode&);
-    String protocol() const;
-    void setHost(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow); 
-    String host() const;
-    void setHostname(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow); 
-    String hostname() const;
-    void setPort(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow); 
-    String port() const;
-    void setPathname(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow); 
-    String pathname() const;
-    void setSearch(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow); 
-    String search() const;
-    void setHash(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow); 
-    String hash() const;
+    void setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&, ExceptionCode&);
+    String protocol(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    void setHost(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
+    String host(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    void setHostname(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
+    String hostname(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    void setPort(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
+    String port(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    void setPathname(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
+    String pathname(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    void setSearch(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
+    String search(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    void setHash(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
+    String hash(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
     String origin() const;
 
     String toString() const { return href(); }

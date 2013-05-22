@@ -2227,6 +2227,12 @@ sub GenerateCallWith
         AddToImplIncludes("bindings/v8/ScriptCallStackFactory.h");
         AddToImplIncludes("core/inspector/ScriptArguments.h");
     }
+    if (ExtendedAttributeContains($callWith, "ActiveWindow")) {
+        push(@callWithArgs, "activeDOMWindow()");
+    }
+    if (ExtendedAttributeContains($callWith, "FirstWindow")) {
+        push(@callWithArgs, "firstDOMWindow()");
+    }
     return ([@callWithArgs], $code);
 }
 

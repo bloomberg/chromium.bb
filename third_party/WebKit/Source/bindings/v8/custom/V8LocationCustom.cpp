@@ -45,36 +45,6 @@
 
 namespace WebCore {
 
-void V8Location::hashAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    Location* impl = V8Location::toNative(info.Holder());
-
-    // FIXME: Handle exceptions correctly.
-    String hash = toWebCoreString(value);
-
-    impl->setHash(hash, activeDOMWindow(), firstDOMWindow());
-}
-
-void V8Location::hostAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    Location* impl = V8Location::toNative(info.Holder());
-
-    // FIXME: Handle exceptions correctly.
-    String host = toWebCoreString(value);
-
-    impl->setHost(host, activeDOMWindow(), firstDOMWindow());
-}
-
-void V8Location::hostnameAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    Location* impl = V8Location::toNative(info.Holder());
-
-    // FIXME: Handle exceptions correctly.
-    String hostname = toWebCoreString(value);
-
-    impl->setHostname(hostname, activeDOMWindow(), firstDOMWindow());
-}
-
 void V8Location::hrefAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     Location* impl = V8Location::toNative(info.Holder());
@@ -83,49 +53,6 @@ void V8Location::hrefAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::
     String href = toWebCoreString(value);
 
     impl->setHref(href, activeDOMWindow(), firstDOMWindow());
-}
-
-void V8Location::pathnameAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    Location* impl = V8Location::toNative(info.Holder());
-
-    // FIXME: Handle exceptions correctly.
-    String pathname = toWebCoreString(value);
-
-    impl->setPathname(pathname, activeDOMWindow(), firstDOMWindow());
-}
-
-void V8Location::portAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    Location* impl = V8Location::toNative(info.Holder());
-
-    // FIXME: Handle exceptions correctly.
-    String port = toWebCoreString(value);
-
-    impl->setPort(port, activeDOMWindow(), firstDOMWindow());
-}
-
-void V8Location::protocolAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    Location* impl = V8Location::toNative(info.Holder());
-
-    // FIXME: Handle exceptions correctly.
-    String protocol = toWebCoreString(value);
-
-    ExceptionCode ec = 0;
-    impl->setProtocol(protocol, activeDOMWindow(), firstDOMWindow(), ec);
-    if (UNLIKELY(ec))
-        setDOMException(ec, info.GetIsolate());
-}
-
-void V8Location::searchAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    Location* impl = V8Location::toNative(info.Holder());
-
-    // FIXME: Handle exceptions correctly.
-    String search = toWebCoreString(value);
-
-    impl->setSearch(search, activeDOMWindow(), firstDOMWindow());
 }
 
 v8::Handle<v8::Value> V8Location::reloadAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)

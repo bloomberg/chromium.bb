@@ -835,6 +835,30 @@ static void withScriptExecutionContextAttributeAttrSetterCallback(v8::Local<v8::
     TestObjV8Internal::withScriptExecutionContextAttributeAttrSetter(name, value, info);
 }
 
+static v8::Handle<v8::Value> withActiveWindowAndFirstWindowAttributeAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    return toV8Fast(imp->withActiveWindowAndFirstWindowAttribute(activeDOMWindow(), firstDOMWindow()), info, imp);
+}
+
+static v8::Handle<v8::Value> withActiveWindowAndFirstWindowAttributeAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    return TestObjV8Internal::withActiveWindowAndFirstWindowAttributeAttrGetter(name, info);
+}
+
+static void withActiveWindowAndFirstWindowAttributeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(TestObj*, v, V8TestObject::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
+    imp->setWithActiveWindowAndFirstWindowAttribute(activeDOMWindow(), firstDOMWindow(), WTF::getPtr(v));
+    return;
+}
+
+static void withActiveWindowAndFirstWindowAttributeAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    TestObjV8Internal::withActiveWindowAndFirstWindowAttributeAttrSetter(name, value, info);
+}
+
 static v8::Handle<v8::Value> withScriptStateAttributeRaisesAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -2729,6 +2753,18 @@ static v8::Handle<v8::Value> withScriptExecutionContextAndScriptStateWithSpacesM
     return TestObjV8Internal::withScriptExecutionContextAndScriptStateWithSpacesMethod(args);
 }
 
+static v8::Handle<v8::Value> withActiveWindowAndFirstWindowMethod(const v8::Arguments& args)
+{
+    TestObj* imp = V8TestObject::toNative(args.Holder());
+    imp->withActiveWindowAndFirstWindow(activeDOMWindow(), firstDOMWindow());
+    return v8Undefined();
+}
+
+static v8::Handle<v8::Value> withActiveWindowAndFirstWindowMethodCallback(const v8::Arguments& args)
+{
+    return TestObjV8Internal::withActiveWindowAndFirstWindowMethod(args);
+}
+
 static v8::Handle<v8::Value> methodWithOptionalArgMethod(const v8::Arguments& args)
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3976,6 +4012,8 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjectAttrs[] = {
     {"withScriptStateAttribute", TestObjV8Internal::withScriptStateAttributeAttrGetterCallback, TestObjV8Internal::withScriptStateAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'withScriptExecutionContextAttribute' (Type: 'attribute' ExtAttr: 'CallWith')
     {"withScriptExecutionContextAttribute", TestObjV8Internal::withScriptExecutionContextAttributeAttrGetterCallback, TestObjV8Internal::withScriptExecutionContextAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    // Attribute 'withActiveWindowAndFirstWindowAttribute' (Type: 'attribute' ExtAttr: 'CallWith')
+    {"withActiveWindowAndFirstWindowAttribute", TestObjV8Internal::withActiveWindowAndFirstWindowAttributeAttrGetterCallback, TestObjV8Internal::withActiveWindowAndFirstWindowAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'withScriptStateAttributeRaises' (Type: 'attribute' ExtAttr: 'GetterRaisesException CallWith')
     {"withScriptStateAttributeRaises", TestObjV8Internal::withScriptStateAttributeRaisesAttrGetterCallback, TestObjV8Internal::withScriptStateAttributeRaisesAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'withScriptExecutionContextAttributeRaises' (Type: 'attribute' ExtAttr: 'GetterRaisesException CallWith')
@@ -4112,6 +4150,7 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjectMethods[] = {
     {"withScriptExecutionContextAndScriptState", TestObjV8Internal::withScriptExecutionContextAndScriptStateMethodCallback, 0, 0},
     {"withScriptExecutionContextAndScriptStateObjException", TestObjV8Internal::withScriptExecutionContextAndScriptStateObjExceptionMethodCallback, 0, 0},
     {"withScriptExecutionContextAndScriptStateWithSpaces", TestObjV8Internal::withScriptExecutionContextAndScriptStateWithSpacesMethodCallback, 0, 0},
+    {"withActiveWindowAndFirstWindow", TestObjV8Internal::withActiveWindowAndFirstWindowMethodCallback, 0, 0},
     {"methodWithOptionalArg", TestObjV8Internal::methodWithOptionalArgMethodCallback, 0, 0},
     {"methodWithNonOptionalArgAndOptionalArg", TestObjV8Internal::methodWithNonOptionalArgAndOptionalArgMethodCallback, 0, 1},
     {"methodWithNonOptionalArgAndTwoOptionalArgs", TestObjV8Internal::methodWithNonOptionalArgAndTwoOptionalArgsMethodCallback, 0, 1},

@@ -39,13 +39,13 @@
     [CustomGetter, DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute void reload;
 
     // URI decomposition attributes
-    [CustomSetter] attribute DOMString protocol;
-    [CustomSetter] attribute DOMString host;
-    [CustomSetter] attribute DOMString hostname;
-    [CustomSetter] attribute DOMString port;
-    [CustomSetter] attribute DOMString pathname;
-    [CustomSetter] attribute DOMString search;
-    [CustomSetter] attribute DOMString hash;
+    [CallWith=ActiveWindow|FirstWindow, SetterRaisesException] attribute DOMString protocol;
+    [CallWith=ActiveWindow|FirstWindow] attribute DOMString host;
+    [CallWith=ActiveWindow|FirstWindow] attribute DOMString hostname;
+    [CallWith=ActiveWindow|FirstWindow] attribute DOMString port;
+    [CallWith=ActiveWindow|FirstWindow] attribute DOMString pathname;
+    [CallWith=ActiveWindow|FirstWindow] attribute DOMString search;
+    [CallWith=ActiveWindow|FirstWindow] attribute DOMString hash;
 
     readonly attribute DOMString origin;
 

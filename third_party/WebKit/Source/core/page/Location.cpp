@@ -64,7 +64,7 @@ String Location::href() const
     return url().string();
 }
 
-String Location::protocol() const
+String Location::protocol(DOMWindow*, DOMWindow*) const
 {
     if (!m_frame)
         return String();
@@ -72,7 +72,7 @@ String Location::protocol() const
     return url().protocol() + ":";
 }
 
-String Location::host() const
+String Location::host(DOMWindow*, DOMWindow*) const
 {
     if (!m_frame)
         return String();
@@ -83,7 +83,7 @@ String Location::host() const
     return url.hasPort() ? url.host() + ":" + String::number(url.port()) : url.host();
 }
 
-String Location::hostname() const
+String Location::hostname(DOMWindow*, DOMWindow*) const
 {
     if (!m_frame)
         return String();
@@ -91,7 +91,7 @@ String Location::hostname() const
     return url().host();
 }
 
-String Location::port() const
+String Location::port(DOMWindow*, DOMWindow*) const
 {
     if (!m_frame)
         return String();
@@ -100,7 +100,7 @@ String Location::port() const
     return url.hasPort() ? String::number(url.port()) : "";
 }
 
-String Location::pathname() const
+String Location::pathname(DOMWindow*, DOMWindow*) const
 {
     if (!m_frame)
         return String();
@@ -109,7 +109,7 @@ String Location::pathname() const
     return url.path().isEmpty() ? "/" : url.path();
 }
 
-String Location::search() const
+String Location::search(DOMWindow*, DOMWindow*) const
 {
     if (!m_frame)
         return String();
@@ -135,7 +135,7 @@ PassRefPtr<DOMStringList> Location::ancestorOrigins() const
     return origins.release();
 }
 
-String Location::hash() const
+String Location::hash(DOMWindow*, DOMWindow*) const
 {
     if (!m_frame)
         return String();
@@ -151,7 +151,7 @@ void Location::setHref(const String& url, DOMWindow* activeWindow, DOMWindow* fi
     setLocation(url, activeWindow, firstWindow);
 }
 
-void Location::setProtocol(const String& protocol, DOMWindow* activeWindow, DOMWindow* firstWindow, ExceptionCode& ec)
+void Location::setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& protocol, ExceptionCode& ec)
 {
     if (!m_frame)
         return;
@@ -163,7 +163,7 @@ void Location::setProtocol(const String& protocol, DOMWindow* activeWindow, DOMW
     setLocation(url.string(), activeWindow, firstWindow);
 }
 
-void Location::setHost(const String& host, DOMWindow* activeWindow, DOMWindow* firstWindow)
+void Location::setHost(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& host)
 {
     if (!m_frame)
         return;
@@ -172,7 +172,7 @@ void Location::setHost(const String& host, DOMWindow* activeWindow, DOMWindow* f
     setLocation(url.string(), activeWindow, firstWindow);
 }
 
-void Location::setHostname(const String& hostname, DOMWindow* activeWindow, DOMWindow* firstWindow)
+void Location::setHostname(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& hostname)
 {
     if (!m_frame)
         return;
@@ -181,7 +181,7 @@ void Location::setHostname(const String& hostname, DOMWindow* activeWindow, DOMW
     setLocation(url.string(), activeWindow, firstWindow);
 }
 
-void Location::setPort(const String& portString, DOMWindow* activeWindow, DOMWindow* firstWindow)
+void Location::setPort(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& portString)
 {
     if (!m_frame)
         return;
@@ -194,7 +194,7 @@ void Location::setPort(const String& portString, DOMWindow* activeWindow, DOMWin
     setLocation(url.string(), activeWindow, firstWindow);
 }
 
-void Location::setPathname(const String& pathname, DOMWindow* activeWindow, DOMWindow* firstWindow)
+void Location::setPathname(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& pathname)
 {
     if (!m_frame)
         return;
@@ -203,7 +203,7 @@ void Location::setPathname(const String& pathname, DOMWindow* activeWindow, DOMW
     setLocation(url.string(), activeWindow, firstWindow);
 }
 
-void Location::setSearch(const String& search, DOMWindow* activeWindow, DOMWindow* firstWindow)
+void Location::setSearch(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& search)
 {
     if (!m_frame)
         return;
@@ -212,7 +212,7 @@ void Location::setSearch(const String& search, DOMWindow* activeWindow, DOMWindo
     setLocation(url.string(), activeWindow, firstWindow);
 }
 
-void Location::setHash(const String& hash, DOMWindow* activeWindow, DOMWindow* firstWindow)
+void Location::setHash(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& hash)
 {
     if (!m_frame)
         return;

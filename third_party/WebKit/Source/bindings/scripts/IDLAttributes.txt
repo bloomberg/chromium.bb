@@ -22,7 +22,7 @@ ActiveDOMObject
 ActivityLog=Access|Setter|Getter|AccessForIsolatedWorlds|SetterForIsolatedWorlds|GetterForIsolatedWorlds
 CachedAttribute
 KeepAttributeAliveForGC
-CallWith=ScriptExecutionContext|ScriptState|ScriptArguments
+CallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 CheckSecurity
 CheckSecurityForNode
 Clamp
