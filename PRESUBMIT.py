@@ -774,7 +774,9 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
 
   owner_email = owner_email or input_api.change.author_email
 
-  reviewers_plus_owner = set([owner_email]).union(reviewers)
+  reviewers_plus_owner = reviewers
+  if owner_email:
+    reviewers_plus_owner = set([owner_email]).union(reviewers)
   missing_files = owners_db.files_not_covered_by(virtual_depended_on_files,
                                                  reviewers_plus_owner)
   unapproved_dependencies = ["'+%s'," % path[:-len('/DEPS')]
