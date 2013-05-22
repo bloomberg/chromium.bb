@@ -15,7 +15,7 @@ int FakeWebScrollbar::value() const {
 }
 
 WebKit::WebPoint FakeWebScrollbar::location() const {
-  return WebKit::WebPoint();
+  return location_;
 }
 
 WebKit::WebSize FakeWebScrollbar::size() const {
@@ -68,6 +68,11 @@ WebKit::WebScrollbar::Orientation FakeWebScrollbar::orientation() const {
   return WebScrollbar::Horizontal;
 }
 
-FakeWebScrollbar::FakeWebScrollbar() : is_overlay_(false) {}
+void FakeWebScrollbar::SetLocation(const WebKit::WebPoint& location) {
+  location_ = location;
+}
+
+FakeWebScrollbar::FakeWebScrollbar()
+    : is_overlay_(false), location_(WebKit::WebPoint()) {}
 
 }  // namespace cc

@@ -426,5 +426,99 @@ TEST_F(ScrollbarLayerTestResourceCreation, SolidColorNoResourceUpload) {
   TestResourceUpload(0);
 }
 
+class ScaledScrollbarLayerTestResourceCreation : public testing::Test {
+ public:
+  ScaledScrollbarLayerTestResourceCreation()
+      : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
+
+  void TestResourceUpload(size_t expected_resources, const float test_scale) {
+    layer_tree_host_.reset(
+        new MockLayerTreeHost(&fake_client_, layer_tree_settings_));
+
+    WebKit::WebPoint scrollbar_location = WebKit::WebPoint(0, 185);
+    scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
+    static_cast<FakeWebScrollbar*>(scrollbar.get())
+        ->SetLocation(scrollbar_location);
+
+    scoped_refptr<Layer> layer_tree_root = Layer::Create();
+    scoped_refptr<Layer> content_layer = Layer::Create();
+    scoped_refptr<Layer> scrollbar_layer =
+        ScrollbarLayer::Create(scrollbar.Pass(),
+                               FakeScrollbarThemePainter::Create(false)
+                                   .PassAs<ScrollbarThemePainter>(),
+                               FakeWebScrollbarThemeGeometry::Create(true),
+                               layer_tree_root->id());
+    layer_tree_root->AddChild(content_layer);
+    layer_tree_root->AddChild(scrollbar_layer);
+
+    layer_tree_host_->InitializeOutputSurfaceIfNeeded();
+    layer_tree_host_->contents_texture_manager()->
+        SetMaxMemoryLimitBytes(1024 * 1024);
+    layer_tree_host_->SetRootLayer(layer_tree_root);
+
+    scrollbar_layer->SetIsDrawable(true);
+    scrollbar_layer->SetBounds(gfx::Size(100, 15));
+    scrollbar_layer->SetPosition(gfx::Point(scrollbar_location));
+    layer_tree_root->SetBounds(gfx::Size(100, 200));
+    content_layer->SetBounds(gfx::Size(100, 200));
+    gfx::SizeF scaled_size =
+        gfx::ScaleSize(scrollbar_layer->bounds(), test_scale, test_scale);
+    gfx::PointF scaled_location =
+        gfx::ScalePoint(scrollbar_layer->position(), test_scale, test_scale);
+    scrollbar_layer->draw_properties().content_bounds =
+        gfx::Size(scaled_size.width(), scaled_size.height());
+    scrollbar_layer->draw_properties().contents_scale_x = test_scale;
+    scrollbar_layer->draw_properties().contents_scale_y = test_scale;
+    scrollbar_layer->draw_properties().visible_content_rect =
+        gfx::Rect(scaled_location.x(),
+                  scaled_location.y(),
+                  scaled_size.width(),
+                  scaled_size.height());
+    scrollbar_layer->CreateRenderSurface();
+    scrollbar_layer->draw_properties().render_target = scrollbar_layer;
+
+    testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+    EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
+
+    PriorityCalculator calculator;
+    ResourceUpdateQueue queue;
+    OcclusionTracker occlusion_tracker(gfx::Rect(), false);
+
+    scrollbar_layer->SetTexturePriorities(calculator);
+    layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
+    scrollbar_layer->Update(&queue, &occlusion_tracker, NULL);
+    EXPECT_EQ(expected_resources, queue.PartialUploadSize());
+
+    // Verify that we have not generated any content uploads that are larger
+    // than their destination textures.
+    while (queue.HasMoreUpdates()) {
+      ResourceUpdate update = queue.TakeFirstPartialUpload();
+      EXPECT_LE(update.texture->size().width(),
+                scrollbar_layer->content_bounds().width());
+      EXPECT_LE(update.texture->size().height(),
+                scrollbar_layer->content_bounds().height());
+
+      EXPECT_LE(update.dest_offset.x() + update.content_rect.width(),
+                update.texture->size().width());
+      EXPECT_LE(update.dest_offset.y() + update.content_rect.height(),
+                update.texture->size().height());
+    }
+
+    testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+  }
+
+ protected:
+  FakeLayerTreeHostClient fake_client_;
+  LayerTreeSettings layer_tree_settings_;
+  scoped_ptr<MockLayerTreeHost> layer_tree_host_;
+};
+
+TEST_F(ScaledScrollbarLayerTestResourceCreation, ScaledResourceUpload) {
+  layer_tree_settings_.solid_color_scrollbars = false;
+  // Pick a test scale that moves the scrollbar's (non-zero) position to
+  // a non-pixel-aligned location.
+  TestResourceUpload(2, 1.41f);
+}
+
 }  // namespace
 }  // namespace cc

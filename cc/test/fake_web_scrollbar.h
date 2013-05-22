@@ -38,10 +38,13 @@ class FakeWebScrollbar : public WebKit::WebScrollbar {
   virtual bool isCustomScrollbar() const OVERRIDE;
   virtual Orientation orientation() const OVERRIDE;
 
+  void SetLocation(const WebKit::WebPoint& location);
+
  private:
   FakeWebScrollbar();
 
   bool is_overlay_;
+  WebKit::WebPoint location_;
 };
 
 }  // namespace cc
