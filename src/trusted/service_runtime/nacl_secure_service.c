@@ -106,7 +106,12 @@ static void NaClSecureServiceConnectionCountDecr(
      * Set that we are killed by SIGKILL so that debug stub could report
      * this to debugger.
      */
-    NaClReportExitStatus(self->nap, NACL_ABI_W_EXITCODE(0, NACL_ABI_SIGKILL));
+    NaClXMutexLock(&self->nap->mu);
+    self->nap->exit_status = NACL_ABI_W_EXITCODE(0, NACL_ABI_SIGKILL);
+    NaClXMutexUnlock(&self->nap->mu);
+    if (NULL != self->nap->debug_stub_callbacks) {
+      self->nap->debug_stub_callbacks->process_exit_hook();
+    }
     NaClExit(0);
   }
   NaClXMutexUnlock(&self->mu);
