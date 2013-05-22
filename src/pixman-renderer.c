@@ -105,92 +105,98 @@ pixman_renderer_read_pixels(struct weston_output *output,
 }
 
 static void
-box_translate(pixman_box32_t *dst, const pixman_box32_t *src, int x, int y)
+transform_region (pixman_region32_t *region, int width, int height, enum wl_output_transform transform)
 {
-	dst->x1 = src->x1 + x;
-	dst->x2 = src->x2 + x;
-	dst->y1 = src->y1 + y;
-	dst->y2 = src->y2 + y;
+	pixman_box32_t *rects, *transformed_rects;
+	int nrects, i;
+
+	if (transform == WL_OUTPUT_TRANSFORM_NORMAL)
+		return;
+
+	rects = pixman_region32_rectangles(region, &nrects);
+	transformed_rects = calloc(nrects, sizeof(pixman_box32_t));
+
+	for (i = 0; i < nrects; i++) {
+		switch (transform) {
+		default:
+		case WL_OUTPUT_TRANSFORM_NORMAL:
+			transformed_rects[i].x1 = rects[i].x1;
+			transformed_rects[i].y1 = rects[i].y1;
+			transformed_rects[i].x2 = rects[i].x2;
+			transformed_rects[i].y2 = rects[i].y2;
+			break;
+		case WL_OUTPUT_TRANSFORM_90:
+			transformed_rects[i].x1 = height - rects[i].y2;
+			transformed_rects[i].y1 = rects[i].x1;
+			transformed_rects[i].x2 = height - rects[i].y1;
+			transformed_rects[i].y2 = rects[i].x2;
+			break;
+		case WL_OUTPUT_TRANSFORM_180:
+			transformed_rects[i].x1 = width - rects[i].x2;
+			transformed_rects[i].y1 = height - rects[i].y2;
+			transformed_rects[i].x2 = width - rects[i].x1;
+			transformed_rects[i].y2 = height - rects[i].y1;
+			break;
+		case WL_OUTPUT_TRANSFORM_270:
+			transformed_rects[i].x1 = rects[i].y1;
+			transformed_rects[i].y1 = width - rects[i].x2;
+			transformed_rects[i].x2 = rects[i].y2;
+			transformed_rects[i].y2 = width - rects[i].x1;
+			break;
+		case WL_OUTPUT_TRANSFORM_FLIPPED:
+			transformed_rects[i].x1 = width - rects[i].x2;
+			transformed_rects[i].y1 = rects[i].y1;
+			transformed_rects[i].x2 = width - rects[i].x1;
+			transformed_rects[i].y2 = rects[i].y2;
+			break;
+		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+			transformed_rects[i].x1 = height - rects[i].y2;
+			transformed_rects[i].y1 = width - rects[i].x2;
+			transformed_rects[i].x2 = height - rects[i].y1;
+			transformed_rects[i].y2 = width - rects[i].x1;
+			break;
+		case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+			transformed_rects[i].x1 = rects[i].x1;
+			transformed_rects[i].y1 = height - rects[i].y2;
+			transformed_rects[i].x2 = rects[i].x2;
+			transformed_rects[i].y2 = height - rects[i].y1;
+			break;
+		case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+			transformed_rects[i].x1 = rects[i].y1;
+			transformed_rects[i].y1 = rects[i].x1;
+			transformed_rects[i].x2 = rects[i].y2;
+			transformed_rects[i].y2 = rects[i].x2;
+			break;
+		}
+	}
+	pixman_region32_clear(region);
+
+	pixman_region32_init_rects (region, transformed_rects, nrects);
+	free (transformed_rects);
+}
+
+static void
+region_global_to_output(struct weston_output *output, pixman_region32_t *region)
+{
+	pixman_region32_translate(region, -output->x, -output->y);
+	transform_region (region, output->width, output->height, output->transform);
 }
 
 #define D2F(v) pixman_double_to_fixed((double)v)
 
 static void
-repaint_region_complex(struct weston_surface *es, struct weston_output *output,
-		pixman_region32_t *region)
-{
-	struct pixman_renderer *pr =
-		(struct pixman_renderer *) output->compositor->renderer;
-	struct pixman_surface_state *ps = get_surface_state(es);
-	struct pixman_output_state *po = get_output_state(output);
-	int nrects, i;
-	pixman_box32_t *rects, rect;
-
-	/* Pixman supports only 2D transform matrix, but Weston uses 3D,
-	 * so we're omitting Z coordinate here
-	 */
-	pixman_transform_t transform = {{
-		{ D2F(es->transform.matrix.d[0]),
-		  D2F(es->transform.matrix.d[4]),
-		  D2F(es->transform.matrix.d[12]),
-		},
-		{ D2F(es->transform.matrix.d[1]),
-		  D2F(es->transform.matrix.d[5]),
-		  D2F(es->transform.matrix.d[13]),
-		},
-		{ D2F(es->transform.matrix.d[3]),
-		  D2F(es->transform.matrix.d[7]),
-		  D2F(es->transform.matrix.d[15]),
-		}
-	}};
-
-	pixman_transform_invert(&transform, &transform);
-
-	pixman_image_set_transform(ps->image, &transform);
-	pixman_image_set_filter(ps->image, PIXMAN_FILTER_BILINEAR, NULL, 0);
-
-	rects = pixman_region32_rectangles(region, &nrects);
-	for (i = 0; i < nrects; i++) {
-		box_translate(&rect, &rects[i], -output->x, -output->y);
-		pixman_image_composite32(PIXMAN_OP_OVER,
-			ps->image, /* src */
-			NULL /* mask */,
-			po->shadow_image, /* dest */
-			rects[i].x1, rects[i].y1, /* src_x, src_y */
-			0, 0, /* mask_x, mask_y */
-			rect.x1, rect.y1, /* dst_x, dst_y */
-			rect.x2 - rect.x1, /* width */
-			rect.y2 - rect.y1 /* height */
-			);
-
-		if (!pr->repaint_debug)
-			continue;
-
-		pixman_image_composite32(PIXMAN_OP_OVER,
-			pr->debug_color, /* src */
-			NULL /* mask */,
-			po->shadow_image, /* dest */
-			0, 0, /* src_x, src_y */
-			0, 0, /* mask_x, mask_y */
-			rect.x1, rect.y1, /* dest_x, dest_y */
-			rect.x2 - rect.x1, /* width */
-			rect.y2 - rect.y1 /* height */);
-	}
-}
-
-static void
-repaint_region_simple(struct weston_surface *es, struct weston_output *output,
-		pixman_region32_t *region, pixman_region32_t *surf_region,
-		pixman_op_t pixman_op)
+repaint_region(struct weston_surface *es, struct weston_output *output,
+	       pixman_region32_t *region, pixman_region32_t *surf_region,
+	       pixman_op_t pixman_op)
 {
 	struct pixman_renderer *pr =
 		(struct pixman_renderer *) output->compositor->renderer;
 	struct pixman_surface_state *ps = get_surface_state(es);
 	struct pixman_output_state *po = get_output_state(output);
 	pixman_region32_t final_region;
-	pixman_box32_t *rects, rect;
-	int nrects, i, src_x, src_y;
 	float surface_x, surface_y;
+	pixman_transform_t transform;
+	pixman_fixed_t fw, fh;
 
 	/* The final region to be painted is the intersection of
 	 * 'region' and 'surf_region'. However, 'region' is in the global
@@ -198,48 +204,170 @@ repaint_region_simple(struct weston_surface *es, struct weston_output *output,
 	 * coordinates
 	 */
 	pixman_region32_init(&final_region);
-	pixman_region32_copy(&final_region, surf_region);
+	if (surf_region) {
+		pixman_region32_copy(&final_region, surf_region);
 
-	pixman_image_set_filter(ps->image, PIXMAN_FILTER_NEAREST, NULL, 0);
-	pixman_image_set_transform(ps->image, NULL);
+		/* Convert from surface to global coordinates */
+		if (!es->transform.enabled) {
+			pixman_region32_translate(&final_region, es->geometry.x, es->geometry.y);
+		} else {
+			weston_surface_to_global_float(es, 0, 0, &surface_x, &surface_y);
+			pixman_region32_translate(&final_region, (int)surface_x, (int)surface_y);
+		}
 
-	if (!es->transform.enabled) {
-		pixman_region32_translate(&final_region, es->geometry.x, es->geometry.y);
+		/* We need to paint the intersection */
+		pixman_region32_intersect(&final_region, &final_region, region);
 	} else {
-		weston_surface_to_global_float(es, 0, 0, &surface_x, &surface_y);
-		pixman_region32_translate(&final_region, (int)surface_x, (int)surface_y);
+		/* If there is no surface region, just use the global region */
+		pixman_region32_copy(&final_region, region);
 	}
 
-	/* That's what we need to paint */
-	pixman_region32_intersect(&final_region, &final_region, region);
-	rects = pixman_region32_rectangles(&final_region, &nrects);
+	/* Convert from global to output coord */
+	region_global_to_output(output, &final_region);
 
-	for (i = 0; i < nrects; i++) {
-		weston_surface_from_global(es, rects[i].x1, rects[i].y1, &src_x, &src_y);
-		box_translate(&rect, &rects[i], -output->x, -output->y);
-		pixman_image_composite32(pixman_op,
-			ps->image, /* src */
-			NULL /* mask */,
-			po->shadow_image, /* dest */
-			src_x, src_y, /* src_x, src_y */
-			0, 0, /* mask_x, mask_y */
-			rect.x1, rect.y1, /* dest_x, dest_y */
-			rect.x2 - rect.x1, /* width */
-			rect.y2 - rect.y1 /* height */);
+	/* And clip to it */
+	pixman_image_set_clip_region32 (po->shadow_image, &final_region);
 
-		if (!pr->repaint_debug)
-			continue;
+	/* Set up the source transformation based on the surface
+	   position, the output position/transform and the client
+	   specified buffer transform */
+	pixman_transform_init_identity(&transform);
 
+	fw = pixman_int_to_fixed(output->width);
+	fh = pixman_int_to_fixed(output->height);
+	switch (output->transform) {
+	default:
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		pixman_transform_rotate(&transform, NULL, 0, -pixman_fixed_1);
+		pixman_transform_translate(&transform, NULL, 0, fh);
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		pixman_transform_rotate(&transform, NULL, -pixman_fixed_1, 0);
+		pixman_transform_translate(&transform, NULL, fw, fh);
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		pixman_transform_rotate(&transform, NULL, 0, pixman_fixed_1);
+		pixman_transform_translate(&transform, NULL, fw, 0);
+		break;
+	}
+
+	switch (output->transform) {
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		pixman_transform_scale(&transform, NULL,
+				       pixman_int_to_fixed (-1),
+				       pixman_int_to_fixed (1));
+		pixman_transform_translate(&transform, NULL, fw, 0);
+		break;
+	}
+
+        pixman_transform_translate(&transform, NULL,
+				   pixman_double_to_fixed (output->x),
+				   pixman_double_to_fixed (output->y));
+
+	if (es->transform.enabled) {
+		/* Pixman supports only 2D transform matrix, but Weston uses 3D,
+		 * so we're omitting Z coordinate here
+		 */
+		pixman_transform_t surface_transform = {{
+				{ D2F(es->transform.matrix.d[0]),
+				  D2F(es->transform.matrix.d[4]),
+				  D2F(es->transform.matrix.d[12]),
+				},
+				{ D2F(es->transform.matrix.d[1]),
+				  D2F(es->transform.matrix.d[5]),
+				  D2F(es->transform.matrix.d[13]),
+				},
+				{ D2F(es->transform.matrix.d[3]),
+				  D2F(es->transform.matrix.d[7]),
+				  D2F(es->transform.matrix.d[15]),
+				}
+			}};
+
+		pixman_transform_invert(&surface_transform, &surface_transform);
+		pixman_transform_multiply (&transform, &surface_transform, &transform);
+	} else {
+		pixman_transform_translate(&transform, NULL,
+					   pixman_double_to_fixed ((double)-es->geometry.x),
+					   pixman_double_to_fixed ((double)-es->geometry.y));
+	}
+
+
+	fw = pixman_int_to_fixed(es->geometry.width);
+	fh = pixman_int_to_fixed(es->geometry.height);
+
+	switch (es->buffer_transform) {
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		pixman_transform_scale(&transform, NULL,
+				       pixman_int_to_fixed (-1),
+				       pixman_int_to_fixed (1));
+		pixman_transform_translate(&transform, NULL, fw, 0);
+		break;
+	}
+
+	switch (es->buffer_transform) {
+	default:
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		pixman_transform_rotate(&transform, NULL, 0, pixman_fixed_1);
+		pixman_transform_translate(&transform, NULL, fh, 0);
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		pixman_transform_rotate(&transform, NULL, -pixman_fixed_1, 0);
+		pixman_transform_translate(&transform, NULL, fw, fh);
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		pixman_transform_rotate(&transform, NULL, 0, -pixman_fixed_1);
+		pixman_transform_translate(&transform, NULL, 0, fw);
+		break;
+	}
+
+	pixman_image_set_transform(ps->image, &transform);
+
+	if (es->transform.enabled)
+		pixman_image_set_filter(ps->image, PIXMAN_FILTER_BILINEAR, NULL, 0);
+	else
+		pixman_image_set_filter(ps->image, PIXMAN_FILTER_NEAREST, NULL, 0);
+
+	pixman_image_composite32(pixman_op,
+				 ps->image, /* src */
+				 NULL /* mask */,
+				 po->shadow_image, /* dest */
+				 0, 0, /* src_x, src_y */
+				 0, 0, /* mask_x, mask_y */
+				 0, 0, /* dest_x, dest_y */
+				 pixman_image_get_width (po->shadow_image), /* width */
+				 pixman_image_get_height (po->shadow_image) /* height */);
+
+	if (pr->repaint_debug)
 		pixman_image_composite32(PIXMAN_OP_OVER,
-			pr->debug_color, /* src */
-			NULL /* mask */,
-			po->shadow_image, /* dest */
-			src_x, src_y, /* src_x, src_y */
-			0, 0, /* mask_x, mask_y */
-			rect.x1, rect.y1, /* dest_x, dest_y */
-			rect.x2 - rect.x1, /* width */
-			rect.y2 - rect.y1 /* height */);
-	}
+					 pr->debug_color, /* src */
+					 NULL /* mask */,
+					 po->shadow_image, /* dest */
+					 0, 0, /* src_x, src_y */
+					 0, 0, /* mask_x, mask_y */
+					 0, 0, /* dest_x, dest_y */
+					 pixman_image_get_width (po->shadow_image), /* width */
+					 pixman_image_get_height (po->shadow_image) /* height */);
+
+	pixman_image_set_clip_region32 (po->shadow_image, NULL);
+
 	pixman_region32_fini(&final_region);
 }
 
@@ -273,7 +401,7 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	/* TODO: Implement repaint_region_complex() using pixman_composite_trapezoids() */
 	if (es->transform.enabled &&
 	    es->transform.matrix.type != WESTON_MATRIX_TRANSFORM_TRANSLATE) {
-		repaint_region_complex(es, output, &repaint);
+		repaint_region(es, output, &repaint, NULL, PIXMAN_OP_OVER);
 	} else {
 		/* blended region is whole surface minus opaque region: */
 		pixman_region32_init_rect(&surface_blend, 0, 0,
@@ -281,11 +409,11 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 		pixman_region32_subtract(&surface_blend, &surface_blend, &es->opaque);
 
 		if (pixman_region32_not_empty(&es->opaque)) {
-			repaint_region_simple(es, output, &repaint, &es->opaque, PIXMAN_OP_SRC);
+			repaint_region(es, output, &repaint, &es->opaque, PIXMAN_OP_SRC);
 		}
 
 		if (pixman_region32_not_empty(&surface_blend)) {
-			repaint_region_simple(es, output, &repaint, &surface_blend, PIXMAN_OP_OVER);
+			repaint_region(es, output, &repaint, &surface_blend, PIXMAN_OP_OVER);
 		}
 		pixman_region32_fini(&surface_blend);
 	}
@@ -309,30 +437,26 @@ static void
 copy_to_hw_buffer(struct weston_output *output, pixman_region32_t *region)
 {
 	struct pixman_output_state *po = get_output_state(output);
-	int nrects, i, width, height;
-	pixman_box32_t *rects;
-	pixman_box32_t b, rect;
+	pixman_region32_t output_region;
 
-	width = pixman_image_get_width(po->shadow_image);
-	height = pixman_image_get_height(po->shadow_image);
+	pixman_region32_init(&output_region);
+	pixman_region32_copy(&output_region, region);
 
-	rects = pixman_region32_rectangles(region, &nrects);
-	for (i = 0; i < nrects; i++) {
-		box_translate(&rect, &rects[i], -output->x, -output->y);
-		b = weston_transformed_rect(width, height,
-					    output->transform, rect);
+	region_global_to_output(output, &output_region);
 
-		pixman_image_composite32(PIXMAN_OP_SRC,
-			po->shadow_image, /* src */
-			NULL /* mask */,
-			po->hw_buffer, /* dest */
-			b.x1, b.y1, /* src_x, src_y */
-			0, 0, /* mask_x, mask_y */
-			b.x1, b.y1, /* dest_x, dest_y */
-			b.x2 - b.x1, /* width */
-			b.y2 - b.y1 /* height */);
-	}
+	pixman_image_set_clip_region32 (po->hw_buffer, &output_region);
 
+	pixman_image_composite32(PIXMAN_OP_SRC,
+				 po->shadow_image, /* src */
+				 NULL /* mask */,
+				 po->hw_buffer, /* dest */
+				 0, 0, /* src_x, src_y */
+				 0, 0, /* mask_x, mask_y */
+				 0, 0, /* dest_x, dest_y */
+				 pixman_image_get_width (po->hw_buffer), /* width */
+				 pixman_image_get_height (po->hw_buffer) /* height */);
+
+	pixman_image_set_clip_region32 (po->hw_buffer, NULL);
 }
 
 static void
@@ -521,10 +645,7 @@ WL_EXPORT int
 pixman_renderer_output_create(struct weston_output *output)
 {
 	struct pixman_output_state *po = calloc(1, sizeof *po);
-	pixman_transform_t transform;
-	pixman_fixed_t fw, fh;
 	int w, h;
-	int rotated = 0;
 
 	if (!po)
 		return -1;
@@ -532,37 +653,6 @@ pixman_renderer_output_create(struct weston_output *output)
 	/* set shadow image transformation */
 	w = output->current->width;
 	h = output->current->height;
-
-	fw = pixman_int_to_fixed(w);
-	fh = pixman_int_to_fixed(h);
-
-	pixman_transform_init_identity(&transform);
-
-	switch (output->transform) {
-	default:
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-		break;
-	case WL_OUTPUT_TRANSFORM_180:
-		pixman_transform_rotate(&transform, NULL, -pixman_fixed_1, 0);
-		pixman_transform_translate(NULL, &transform, fw, fh);
-		break;
-	case WL_OUTPUT_TRANSFORM_270:
-		rotated = 1;
-		pixman_transform_rotate(&transform, NULL, 0, pixman_fixed_1);
-		pixman_transform_translate(&transform, NULL, fh, 0);
-		break;
-	case WL_OUTPUT_TRANSFORM_90:
-		rotated = 1;
-		pixman_transform_rotate(&transform, NULL, 0, -pixman_fixed_1);
-		pixman_transform_translate(&transform, NULL, 0, fw);
-		break;
-	}
-
-	if (rotated) {
-		int tmp = w;
-		w = h;
-		h = tmp;
-	}
 
 	po->shadow_buffer = malloc(w * h * 4);
 
@@ -580,8 +670,6 @@ pixman_renderer_output_create(struct weston_output *output)
 		free(po);
 		return -1;
 	}
-
-	pixman_image_set_transform(po->shadow_image, &transform);
 
 	output->renderer_state = po;
 
