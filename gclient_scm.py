@@ -322,8 +322,14 @@ class GitWrapper(SCMWrapper):
     current_url = self._Capture(['config', 'remote.origin.url'])
     # TODO(maruel): Delete url != 'git://foo' since it's just to make the
     # unit test pass. (and update the comment above)
-    if (current_url != url and url != 'git://foo' and
-        self._Capture(['config', 'remote.origin.gclient']) != 'getoffmylawn'):
+    # Skip url auto-correction if remote.origin.gclient-auto-fix-url is set.
+    # This allows devs to use experimental repos which have a different url
+    # but whose branch(s) are the same as official repos.
+    if (current_url != url and
+        url != 'git://foo' and
+        subprocess2.capture(
+            ['git', 'config', 'remote.origin.gclient-auto-fix-url'],
+            cwd=self.checkout_path).strip() != 'False'):
       print('_____ switching %s to a new upstream' % self.relpath)
       # Make sure it's clean
       self._CheckClean(rev_str)
@@ -862,7 +868,7 @@ class GitWrapper(SCMWrapper):
   def _Capture(self, args):
     return subprocess2.check_output(
         ['git'] + args,
-        stderr=subprocess2.PIPE,
+        stderr=subprocess2.VOID,
         nag_timer=self.nag_timer,
         nag_max=self.nag_max,
         cwd=self.checkout_path).strip()
