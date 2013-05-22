@@ -716,15 +716,19 @@ void BrowserOptionsHandler::InitializeHandler() {
       prefs::kDownloadExtensionsToOpen, prefs,
       base::Bind(&BrowserOptionsHandler::SetupAutoOpenFileTypes,
                  base::Unretained(this)));
-  default_font_size_.Init(
-      prefs::kWebKitDefaultFontSize, prefs,
-      base::Bind(&BrowserOptionsHandler::SetupFontSizeSelector,
-                 base::Unretained(this)));
   default_zoom_level_.Init(
       prefs::kDefaultZoomLevel, prefs,
       base::Bind(&BrowserOptionsHandler::SetupPageZoomSelector,
                  base::Unretained(this)));
   profile_pref_registrar_.Init(prefs);
+  profile_pref_registrar_.Add(
+      prefs::kWebKitDefaultFontSize,
+      base::Bind(&BrowserOptionsHandler::SetupFontSizeSelector,
+                 base::Unretained(this)));
+  profile_pref_registrar_.Add(
+      prefs::kWebKitDefaultFixedFontSize,
+      base::Bind(&BrowserOptionsHandler::SetupFontSizeSelector,
+                 base::Unretained(this)));
   profile_pref_registrar_.Add(
       prefs::kSigninAllowed,
       base::Bind(&BrowserOptionsHandler::OnSigninAllowedPrefChange,
@@ -1276,7 +1280,8 @@ void BrowserOptionsHandler::HandleDefaultFontSize(const ListValue* args) {
   int font_size;
   if (ExtractIntegerValue(args, &font_size)) {
     if (font_size > 0) {
-      default_font_size_.SetValue(font_size);
+      PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+      pref_service->SetInteger(prefs::kWebKitDefaultFontSize, font_size);
       SetupFontSizeSelector();
     }
   }
@@ -1478,9 +1483,35 @@ void BrowserOptionsHandler::SetupPasswordGenerationSettingVisibility() {
 }
 
 void BrowserOptionsHandler::SetupFontSizeSelector() {
-  // We're only interested in integer values, so convert to int.
-  base::FundamentalValue font_size(default_font_size_.GetValue());
-  web_ui()->CallJavascriptFunction("BrowserOptions.setFontSize", font_size);
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  const PrefService::Preference* default_font_size =
+      pref_service->FindPreference(prefs::kWebKitDefaultFontSize);
+  const PrefService::Preference* default_fixed_font_size =
+      pref_service->FindPreference(prefs::kWebKitDefaultFixedFontSize);
+
+  DictionaryValue dict;
+  dict.SetInteger("value",
+                  pref_service->GetInteger(prefs::kWebKitDefaultFontSize));
+
+  // The font size control displays the value of the default font size, but
+  // setting it alters both the default font size and the default fixed font
+  // size. So it must be disabled when either of those prefs is not user
+  // modifiable.
+  dict.SetBoolean("disabled",
+      !default_font_size->IsUserModifiable() ||
+      !default_fixed_font_size->IsUserModifiable());
+
+  // This is a poor man's version of CoreOptionsHandler::CreateValueForPref,
+  // adapted to consider two prefs. It may be better to refactor
+  // CreateValueForPref so it can be called from here.
+  if (default_font_size->IsManaged() || default_fixed_font_size->IsManaged()) {
+      dict.SetString("controlledBy", "policy");
+  } else if (default_font_size->IsExtensionControlled() ||
+             default_fixed_font_size->IsExtensionControlled()) {
+      dict.SetString("controlledBy", "extension");
+  }
+
+  web_ui()->CallJavascriptFunction("BrowserOptions.setFontSize", dict);
 }
 
 void BrowserOptionsHandler::SetupPageZoomSelector() {

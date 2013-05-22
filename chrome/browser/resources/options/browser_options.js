@@ -1134,13 +1134,31 @@ cr.define('options', function() {
     },
 
     /**
-     * Set the font size selected item.
+     * Set the font size selected item. This item actually reflects two
+     * preferences: the default font size and the default fixed font size.
+     *
+     * @param {Object} pref Information about the font size preferences.
+     * @param {number} pref.value The value of the default font size pref.
+     * @param {boolean} pref.disabled True if either pref not user modifiable.
+     * @param {string} pref.controlledBy The source of the pref value(s) if
+     *     either pref is currently not controlled by the user.
      * @private
      */
-    setFontSize_: function(font_size_value) {
+    setFontSize_: function(pref) {
       var selectCtl = $('defaultFontSize');
+      selectCtl.disabled = pref.disabled;
+      // Create a synthetic pref change event decorated as
+      // CoreOptionsHandler::CreateValueForPref() does.
+      var event = new cr.Event('synthetic-font-size');
+      event.value = {
+        value: pref.value,
+        controlledBy: pref.controlledBy,
+        disabled: pref.disabled
+      };
+      $('font-size-indicator').handlePrefChange(event);
+
       for (var i = 0; i < selectCtl.options.length; i++) {
-        if (selectCtl.options[i].value == font_size_value) {
+        if (selectCtl.options[i].value == pref.value) {
           selectCtl.selectedIndex = i;
           if ($('Custom'))
             selectCtl.remove($('Custom').index);

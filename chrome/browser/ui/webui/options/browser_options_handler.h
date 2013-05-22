@@ -294,7 +294,6 @@ class BrowserOptionsHandler
 #endif
 
   StringPrefMember auto_open_files_;
-  IntegerPrefMember default_font_size_;
   DoublePrefMember default_zoom_level_;
 
   PrefChangeRegistrar profile_pref_registrar_;
