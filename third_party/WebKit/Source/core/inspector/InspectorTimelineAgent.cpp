@@ -122,6 +122,7 @@ static const char WebSocketDestroy[] = "WebSocketDestroy";
 // Event names visible to other modules.
 const char DecodeImage[] = "DecodeImage";
 const char Rasterize[] = "Rasterize";
+const char PaintSetup[] = "PaintSetup";
 }
 
 namespace {

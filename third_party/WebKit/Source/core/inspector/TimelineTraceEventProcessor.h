@@ -231,6 +231,8 @@ private:
     void registerHandler(const char* name, TraceEventPhase, TraceEventHandler);
 
     void onBeginFrame(const TraceEvent&);
+    void onPaintSetupBegin(const TraceEvent&);
+    void onPaintSetupEnd(const TraceEvent&);
     void onPaintLayerBegin(const TraceEvent&);
     void onPaintLayerEnd(const TraceEvent&);
     void onRasterTaskBegin(const TraceEvent&);
@@ -257,6 +259,8 @@ private:
 
     HashMap<unsigned long long, long long> m_layerToNodeMap;
     unsigned long long m_layerId;
+    double m_paintSetupStart;
+    double m_paintSetupEnd;
 };
 
 } // namespace WebCore

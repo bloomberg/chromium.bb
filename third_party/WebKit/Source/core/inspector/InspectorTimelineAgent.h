@@ -79,6 +79,7 @@ typedef String ErrorString;
 namespace TimelineRecordType {
 extern const char DecodeImage[];
 extern const char Rasterize[];
+extern const char PaintSetup[];
 };
 
 class TimelineTimeConverter {

@@ -147,6 +147,7 @@ InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ScriptExecutionCon
 }  // namespace InspectorInstrumentation
 
 namespace InstrumentationEvents {
+extern const char PaintSetup[];
 extern const char PaintLayer[];
 extern const char RasterTask[];
 extern const char ImageDecodeTask[];
