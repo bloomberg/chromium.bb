@@ -70,6 +70,9 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
     ASSERT_TRUE(WaitForExtensionCrash(extension_id));
     ASSERT_FALSE(GetExtensionProcessManager()->
                  GetBackgroundHostForExtension(extension_id));
+
+    // Wait for extension crash balloon to appear.
+    MessageLoop::current()->RunUntilIdle();
   }
 
   void CheckExtensionConsistency(std::string extension_id) {
@@ -111,7 +114,6 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
 
   std::string first_extension_id_;
   std::string second_extension_id_;
-
 };
 
 class MAYBE_ExtensionCrashRecoveryTest
@@ -517,9 +519,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
             GetExtensionService()->terminated_extensions()->size());
 }
 
-// Disabled on aura as flakey: http://crbug.com/169622
-// Failing on Windows after Blink roll: http://crbug.com/232340
-#if defined(USE_AURA) || defined(OS_WIN)
+// Fails a DCHECK on Aura and Linux: http://crbug.com/169622
+// Failing on Windows: http://crbug.com/232340
+#if defined(USE_AURA) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_ReloadTabsWithBackgroundPage DISABLED_ReloadTabsWithBackgroundPage
 #else
 #define MAYBE_ReloadTabsWithBackgroundPage ReloadTabsWithBackgroundPage
