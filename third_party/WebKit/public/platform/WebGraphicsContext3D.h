@@ -166,6 +166,7 @@ public:
 
     // Resizes the region into which this WebGraphicsContext3D is drawing.
     virtual void reshape(int width, int height) = 0;
+    virtual void reshapeWithScaleFactor(int width, int height, float scaleFactor) { }
 
     // GL_CHROMIUM_setVisibility - Changes the visibility of the backbuffer
     virtual void setVisibilityCHROMIUM(bool visible) = 0;
