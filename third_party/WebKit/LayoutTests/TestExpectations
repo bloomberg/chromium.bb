@@ -1402,14 +1402,6 @@ crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedConten
 
 crbug.com/230554 [ Linux Mac Debug ] plugins/drag-events.html [ Crash Pass ]
 
-# Failing tests after r148246
-# The Linux results are different between 32 and 64 bit (as per the bots).
-crbug.com/230771 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Failure ]
-crbug.com/230771 [ Linux ] editing/pasteboard/file-drag-to-editable.html [ Pass Failure ]
-crbug.com/230771 [ Mac ] editing/pasteboard/drop-file-svg.html [ Failure ]
-crbug.com/230771 [ Mac ] editing/pasteboard/file-drag-to-editable.html [ Failure ]
-crbug.com/230771 [ Linux Mac ] fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
-
 # From WebKit's generic expectations.
 # pending functional patch and per-port verification
 webkit.org/b/109954 css3/line-break/line-break-auto-hyphens.html [ ImageOnlyFailure ]
@@ -1618,19 +1610,4 @@ crbug.com/242511 [ Mac Debug ] svg/custom/uri-reference-handling.svg [ Crash Pas
 crbug.com/242516 [ Linux ] inspector/elements/resolve-node-blocked.html [ Crash Pass ]
 
 # Started failing after content shell's reversion. :/
-crbug.com/242876 [ Linux ] editing/pasteboard/file-input-files-access.html [ Failure ]
-crbug.com/242876 [ Linux ] fast/events/drag-dataTransferItemList-file-handling.html [ Failure ]
-crbug.com/242876 [ Linux ] fast/forms/file/file-input-change-event.html [ Failure ]
-crbug.com/242876 [ Linux ] fast/forms/file/input-file-value.html [ Failure ]
-crbug.com/242876 [ Linux ] fast/forms/file/input-file-write-files.html [ Failure ]
-crbug.com/242876 [ Linux ] fast/forms/file/selected-files-from-history-state.html [ Failure ]
-crbug.com/242876 [ Linux ] http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
-
-crbug.com/242876 [ Mac ] editing/pasteboard/file-input-files-access.html [ Failure ]
-crbug.com/242876 [ Mac ] fast/events/drag-dataTransferItemList-file-handling.html [ Failure ]
-crbug.com/242876 [ Mac ] fast/forms/file/file-input-change-event.html [ Failure ]
-crbug.com/242876 [ Mac ] fast/forms/file/input-file-value.html [ Failure ]
-crbug.com/242876 [ Mac ] fast/forms/file/input-file-write-files.html [ Failure ]
-crbug.com/242876 [ Mac ] fast/forms/file/selected-files-from-history-state.html [ Failure ]
-crbug.com/242876 [ Mac ] http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
 crbug.com/242876 [ Mac ] webaudio/javascriptaudionode.html [ Crash ]
