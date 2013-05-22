@@ -1983,12 +1983,8 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
-    /**
     @SmallTest
-    @Feature({"AndroidWebView", "Preferences"}
-    http://crbug.com/242526
-    */
-    @DisabledTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testLayoutAlgorithmWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
