@@ -936,8 +936,7 @@ void TileManager::RunRasterTask(
   TRACE_EVENT1(
       "cc", "TileManager::RunRasterTask",
       "metadata", TracedValue::FromValue(metadata.AsValue().release()));
-  devtools_instrumentation::ScopedLayerTask raster_task(
-      devtools_instrumentation::kRasterTask, metadata.layer_id);
+  devtools_instrumentation::ScopedRasterTask raster_task(metadata.layer_id);
 
   DCHECK(picture_pile);
   DCHECK(analysis);
@@ -981,8 +980,7 @@ void TileManager::RunImageDecodeTask(
     int layer_id,
     RenderingStatsInstrumentation* stats_instrumentation) {
   TRACE_EVENT0("cc", "TileManager::RunImageDecodeTask");
-  devtools_instrumentation::ScopedLayerTask image_decode_task(
-      devtools_instrumentation::kImageDecodeTask, layer_id);
+  devtools_instrumentation::ScopedImageDecodeTask image_decode_task(layer_id);
   base::TimeTicks start_time = stats_instrumentation->StartRecording();
   pixel_ref->Decode();
   base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);

@@ -31,9 +31,8 @@ void SkPictureContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
 
 SkPictureContentLayerUpdater::SkPictureContentLayerUpdater(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation,
-    int layer_id)
-    : ContentLayerUpdater(painter.Pass(), stats_instrumentation, layer_id),
+    RenderingStatsInstrumentation* stats_instrumentation)
+    : ContentLayerUpdater(painter.Pass(), stats_instrumentation),
       layer_is_opaque_(false) {}
 
 SkPictureContentLayerUpdater::~SkPictureContentLayerUpdater() {}
@@ -41,12 +40,9 @@ SkPictureContentLayerUpdater::~SkPictureContentLayerUpdater() {}
 scoped_refptr<SkPictureContentLayerUpdater>
 SkPictureContentLayerUpdater::Create(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation,
-    int layer_id) {
+    RenderingStatsInstrumentation* stats_instrumentation) {
   return make_scoped_refptr(
-      new SkPictureContentLayerUpdater(painter.Pass(),
-                                       stats_instrumentation,
-                                       layer_id));
+      new SkPictureContentLayerUpdater(painter.Pass(), stats_instrumentation));
 }
 
 scoped_ptr<LayerUpdater::Resource> SkPictureContentLayerUpdater::CreateResource(

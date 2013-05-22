@@ -44,21 +44,16 @@ void BitmapSkPictureContentLayerUpdater::Resource::Update(
 scoped_refptr<BitmapSkPictureContentLayerUpdater>
 BitmapSkPictureContentLayerUpdater::Create(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation,
-    int layer_id) {
+    RenderingStatsInstrumentation* stats_instrumentation) {
   return make_scoped_refptr(
       new BitmapSkPictureContentLayerUpdater(painter.Pass(),
-                                             stats_instrumentation,
-                                             layer_id));
+                                             stats_instrumentation));
 }
 
 BitmapSkPictureContentLayerUpdater::BitmapSkPictureContentLayerUpdater(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation,
-    int layer_id)
-    : SkPictureContentLayerUpdater(painter.Pass(),
-                                   stats_instrumentation,
-                                   layer_id) {}
+    RenderingStatsInstrumentation* stats_instrumentation)
+    : SkPictureContentLayerUpdater(painter.Pass(), stats_instrumentation) {}
 
 BitmapSkPictureContentLayerUpdater::~BitmapSkPictureContentLayerUpdater() {}
 

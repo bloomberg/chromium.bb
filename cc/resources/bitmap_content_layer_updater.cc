@@ -4,7 +4,6 @@
 
 #include "cc/resources/bitmap_content_layer_updater.h"
 
-#include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/resources/prioritized_resource.h"
@@ -32,19 +31,15 @@ void BitmapContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
 
 scoped_refptr<BitmapContentLayerUpdater> BitmapContentLayerUpdater::Create(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation,
-    int layer_id) {
+    RenderingStatsInstrumentation* stats_instrumentation) {
   return make_scoped_refptr(
-      new BitmapContentLayerUpdater(painter.Pass(),
-                                    stats_instrumentation,
-                                    layer_id));
+      new BitmapContentLayerUpdater(painter.Pass(), stats_instrumentation));
 }
 
 BitmapContentLayerUpdater::BitmapContentLayerUpdater(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation,
-    int layer_id)
-    : ContentLayerUpdater(painter.Pass(), stats_instrumentation, layer_id),
+    RenderingStatsInstrumentation* stats_instrumentation)
+    : ContentLayerUpdater(painter.Pass(), stats_instrumentation),
       opaque_(false) {}
 
 BitmapContentLayerUpdater::~BitmapContentLayerUpdater() {}
@@ -62,11 +57,7 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
     float contents_height_scale,
     gfx::Rect* resulting_opaque_rect,
     RenderingStats* stats) {
-  devtools_instrumentation::ScopedLayerTask paint_layer(
-      devtools_instrumentation::kPaintLayer, layer_id_);
   if (canvas_size_ != content_rect.size()) {
-    devtools_instrumentation::ScopedLayerTask paint_setup(
-        devtools_instrumentation::kPaintSetup, layer_id_);
     canvas_size_ = content_rect.size();
     canvas_ = skia::AdoptRef(skia::CreateBitmapCanvas(
         canvas_size_.width(), canvas_size_.height(), opaque_));

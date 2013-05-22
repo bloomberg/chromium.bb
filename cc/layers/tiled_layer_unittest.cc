@@ -1765,8 +1765,7 @@ class UpdateTrackingTiledLayer : public FakeTiledLayer {
     tracking_layer_painter_ = painter.get();
     layer_updater_ =
         BitmapContentLayerUpdater::Create(painter.PassAs<LayerPainter>(),
-                                          &stats_instrumentation_,
-                                          0);
+                                          &stats_instrumentation_);
   }
 
   TrackingLayerPainter* tracking_layer_painter() const {

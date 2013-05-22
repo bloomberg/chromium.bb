@@ -1,4 +1,3 @@
-
 // Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -272,8 +271,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
             painter_.get(),
             geometry_.get(),
             WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>(),
-        rendering_stats_instrumentation(),
-        id());
+        rendering_stats_instrumentation());
   }
   if (!back_track_) {
     back_track_ = back_track_updater_->CreateResource(
@@ -290,8 +288,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
               painter_.get(),
               geometry_.get(),
               WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>(),
-          rendering_stats_instrumentation(),
-          id());
+          rendering_stats_instrumentation());
     }
     if (!fore_track_) {
       fore_track_ = fore_track_updater_->CreateResource(
@@ -304,8 +301,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
         ScrollbarThumbPainter::Create(scrollbar_.get(),
                                       painter_.get(),
                                       geometry_.get()).PassAs<LayerPainter>(),
-        rendering_stats_instrumentation(),
-        id());
+        rendering_stats_instrumentation());
   }
   if (!thumb_) {
     thumb_ = thumb_updater_->CreateResource(

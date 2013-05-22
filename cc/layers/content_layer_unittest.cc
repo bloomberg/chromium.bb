@@ -42,8 +42,7 @@ TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale) {
   scoped_refptr<BitmapContentLayerUpdater> updater =
       BitmapContentLayerUpdater::Create(
           ContentLayerPainter::Create(&client).PassAs<LayerPainter>(),
-          &stats_instrumentation,
-          0);
+          &stats_instrumentation);
 
   gfx::Rect resulting_opaque_rect;
   updater->PrepareToUpdate(content_rect,

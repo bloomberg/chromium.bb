@@ -89,8 +89,7 @@ void PictureLayer::Update(ResourceUpdateQueue*,
 
   gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
       visible_content_rect(), 1.f / contents_scale_x());
-  devtools_instrumentation::ScopedLayerTask paint_layer(
-      devtools_instrumentation::kPaintLayer, id());
+  devtools_instrumentation::ScopedPaintLayer paint_layer(id());
   pile_->Update(client_,
                 background_color(),
                 pile_invalidation_,

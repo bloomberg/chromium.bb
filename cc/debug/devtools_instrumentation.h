@@ -13,25 +13,45 @@ namespace devtools_instrumentation {
 namespace internal {
 const char kCategory[] = "cc,devtools";
 const char kLayerId[] = "layerId";
-}
-
 const char kPaintLayer[] = "PaintLayer";
 const char kRasterTask[] = "RasterTask";
 const char kImageDecodeTask[] = "ImageDecodeTask";
-const char kPaintSetup[] = "PaintSetup";
+}
 
-class ScopedLayerTask {
- public:
-  explicit ScopedLayerTask(const char* event_name, int layer_id)
-    : event_name_(event_name) {
-    TRACE_EVENT_BEGIN1(internal::kCategory, event_name_,
+struct ScopedPaintLayer {
+  explicit ScopedPaintLayer(int layer_id) {
+    TRACE_EVENT_BEGIN1(internal::kCategory, internal::kPaintLayer,
         internal::kLayerId, layer_id);
   }
-  ~ScopedLayerTask() {
-    TRACE_EVENT_END0(internal::kCategory, event_name_);
+  ~ScopedPaintLayer() {
+    TRACE_EVENT_END0(internal::kCategory, internal::kPaintLayer);
   }
- private:
-  const char* event_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPaintLayer);
+};
+
+struct ScopedRasterTask {
+  explicit ScopedRasterTask(int layer_id) {
+    TRACE_EVENT_BEGIN1(internal::kCategory, internal::kRasterTask,
+        internal::kLayerId, layer_id);
+  }
+  ~ScopedRasterTask() {
+    TRACE_EVENT_END0(internal::kCategory, internal::kRasterTask);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedRasterTask);
+};
+
+struct ScopedImageDecodeTask {
+  explicit ScopedImageDecodeTask(int layer_id) {
+    TRACE_EVENT_BEGIN1(internal::kCategory, internal::kImageDecodeTask,
+        internal::kLayerId, layer_id);
+  }
+  ~ScopedImageDecodeTask() {
+    TRACE_EVENT_END0(internal::kCategory, internal::kImageDecodeTask);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedImageDecodeTask);
 };
 
 struct ScopedLayerObjectTracker
@@ -50,3 +70,4 @@ struct ScopedLayerObjectTracker
 }  // namespace cc
 
 #endif  // CC_DEBUG_DEVTOOLS_INSTRUMENTATION_H_
+
