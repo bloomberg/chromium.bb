@@ -140,6 +140,7 @@ output_handler(struct window *window, struct output *output, int enter,
 		return;
 
 	window_set_buffer_transform(window, output_get_transform(output));
+	window_set_buffer_scale(window, output_get_scale(output));
 	window_schedule_redraw(window);
 }
 
