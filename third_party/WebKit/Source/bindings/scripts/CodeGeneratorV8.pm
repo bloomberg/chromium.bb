@@ -3236,10 +3236,12 @@ sub GenerateImplementationNamedPropertyGetter
 
     my $code = "v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)\n";
     $code .= "{\n";
-    $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
-    $code .= "        return v8Undefined();\n";
-    $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";
-    $code .= "        return v8Undefined();\n";
+    if (!$namedGetterFunction->signature->extendedAttributes->{"DoNotCheckJSProperty"}) {
+        $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
+        $code .= "        return v8Undefined();\n";
+        $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";
+        $code .= "        return v8Undefined();\n";
+    }
     $code .= "\n";
     $code .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
     $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
@@ -3434,12 +3436,12 @@ v8::Handle<v8::Object> wrap($implClassName* impl, v8::Handle<v8::Object> creatio
 END
     }
 
-    my $indexer;
     my @enabledPerContextFunctions;
     my @normalFunctions;
     my $needsDomainSafeFunctionSetter = 0;
     # Generate methods for functions.
     foreach my $function (@{$interface->functions}) {
+        next if $function->signature->name eq "";
         GenerateFunction($function, $interface, "");
         if ($function->signature->extendedAttributes->{"PerWorldBindings"}) {
             GenerateFunction($function, $interface, "ForMainWorld");
@@ -3455,10 +3457,6 @@ END
             if ($function->signature->extendedAttributes->{"PerWorldBindings"}) {
                 GenerateFunctionCallback($function, $interface, "ForMainWorld");
             }
-        }
-
-        if ($function->signature->name eq "item") {
-            $indexer = $function->signature;
         }
 
         # If the function does not need domain security check, we need to

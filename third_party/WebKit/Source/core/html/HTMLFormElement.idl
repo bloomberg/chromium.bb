@@ -18,9 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    CustomNamedGetter
-] interface HTMLFormElement : HTMLElement {
+interface HTMLFormElement : HTMLElement {
     [Reflect=accept_charset] attribute DOMString acceptCharset;
     [Reflect, URL] attribute DOMString action;
     [Reflect] attribute DOMString autocomplete;
@@ -34,6 +32,7 @@
     readonly attribute HTMLCollection elements;
     readonly attribute long length;
     [ImplementedAs=item] getter Node(unsigned long index);
+    [ImplementedAs=anonymousNamedGetter, DoNotCheckJSProperty] getter (NodeList or Node)(DOMString name);
 
     [ImplementedAs=submitFromJavaScript] void submit();
     void reset();

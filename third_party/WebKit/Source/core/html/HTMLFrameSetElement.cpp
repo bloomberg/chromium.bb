@@ -34,6 +34,8 @@
 #include "core/dom/MouseEvent.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/Text.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLFrameElement.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
@@ -206,6 +208,17 @@ void HTMLFrameSetElement::willRecalcStyle(StyleChange)
         renderer()->setNeedsLayout(true);
         clearNeedsStyleRecalc();
     }
+}
+
+DOMWindow* HTMLFrameSetElement::anonymousNamedGetter(const AtomicString& name)
+{
+    Node* frameNode = children()->namedItem(name);
+    if (!frameNode || !frameNode->hasTagName(HTMLNames::frameTag))
+        return 0;
+    Document* document = static_cast<HTMLFrameElement*>(frameNode)->contentDocument();
+    if (!document || !document->frame())
+        return 0;
+    return document->domWindow();
 }
 
 } // namespace WebCore

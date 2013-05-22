@@ -18,9 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    CustomNamedGetter
-] interface HTMLFrameSetElement : HTMLElement {
+interface HTMLFrameSetElement : HTMLElement {
+    [ImplementedAs=anonymousNamedGetter, DoNotCheckJSProperty] getter DOMWindow (DOMString name);
     [Reflect] attribute DOMString cols;
     [Reflect] attribute DOMString rows;
 

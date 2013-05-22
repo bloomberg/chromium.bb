@@ -47,6 +47,7 @@ DeliverCustomElementCallbacks
 DependentLifetime
 DeprecateAs=*
 DoNotCheckConstants
+DoNotCheckJSProperty
 DoNotCheckSecurity
 DoNotCheckSecurityOnGetter
 DoNotCheckSecurityOnSetter
