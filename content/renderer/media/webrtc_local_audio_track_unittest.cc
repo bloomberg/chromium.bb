@@ -30,13 +30,13 @@ class FakeAudioThread : public base::PlatformThread::Delegate {
  public:
   explicit FakeAudioThread(const scoped_refptr<WebRtcAudioCapturer>& capturer)
     : capturer_(capturer),
-      thread_(base::kNullThreadHandle),
+      thread_(),
       closure_(false, false) {
     DCHECK(capturer);
     audio_bus_ = media::AudioBus::Create(capturer_->audio_parameters());
   }
 
-  virtual ~FakeAudioThread() { DCHECK(!thread_); }
+  virtual ~FakeAudioThread() { DCHECK(thread_.is_null()); }
 
   // base::PlatformThread::Delegate:
   virtual void ThreadMain() OVERRIDE {
@@ -57,13 +57,13 @@ class FakeAudioThread : public base::PlatformThread::Delegate {
   void Start() {
     base::PlatformThread::CreateWithPriority(
         0, this, &thread_, base::kThreadPriority_RealtimeAudio);
-    CHECK(thread_ != base::kNullThreadHandle);
+    CHECK(!thread_.is_null());
   }
 
   void Stop() {
     closure_.Signal();
     base::PlatformThread::Join(thread_);
-    thread_ = base::kNullThreadHandle;
+    thread_ = base::PlatformThreadHandle();
   }
 
  private:

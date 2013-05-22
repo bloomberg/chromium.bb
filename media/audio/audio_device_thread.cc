@@ -94,31 +94,31 @@ bool AudioDeviceThread::IsStopped() {
 AudioDeviceThread::Thread::Thread(AudioDeviceThread::Callback* callback,
                                   base::SyncSocket::Handle socket,
                                   const char* thread_name)
-    : thread_(base::kNullThreadHandle),
+    : thread_(),
       callback_(callback),
       socket_(socket),
       thread_name_(thread_name) {
 }
 
 AudioDeviceThread::Thread::~Thread() {
-  DCHECK_EQ(thread_, base::kNullThreadHandle) << "Stop wasn't called";
+  DCHECK(thread_.is_null());
 }
 
 void AudioDeviceThread::Thread::Start() {
   base::AutoLock auto_lock(callback_lock_);
-  DCHECK_EQ(thread_, base::kNullThreadHandle);
+  DCHECK(thread_.is_null());
   // This reference will be released when the thread exists.
   AddRef();
 
   PlatformThread::CreateWithPriority(0, this, &thread_,
                                      base::kThreadPriority_RealtimeAudio);
-  CHECK(thread_ != base::kNullThreadHandle);
+  CHECK(!thread_.is_null());
 }
 
 void AudioDeviceThread::Thread::Stop(base::MessageLoop* loop_for_join) {
   socket_.Shutdown();
 
-  base::PlatformThreadHandle thread = base::kNullThreadHandle;
+  base::PlatformThreadHandle thread = base::PlatformThreadHandle();
 
   {  // NOLINT
     base::AutoLock auto_lock(callback_lock_);
@@ -126,7 +126,7 @@ void AudioDeviceThread::Thread::Stop(base::MessageLoop* loop_for_join) {
     std::swap(thread, thread_);
   }
 
-  if (thread != base::kNullThreadHandle) {
+  if (!thread.is_null()) {
     if (loop_for_join) {
       loop_for_join->PostTask(FROM_HERE,
           base::Bind(&base::PlatformThread::Join, thread));

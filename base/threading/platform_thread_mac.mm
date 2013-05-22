@@ -5,10 +5,12 @@
 #include "base/threading/platform_thread.h"
 
 #import <Foundation/Foundation.h>
+#include <algorithm>
 #include <dlfcn.h>
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <mach/thread_policy.h>
+#include <sys/resource.h>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -163,7 +165,7 @@ void SetPriorityRealtimeAudio(mach_port_t mach_thread_id) {
 void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
                                        ThreadPriority priority) {
   // Convert from pthread_t to mach thread identifier.
-  mach_port_t mach_thread_id = pthread_mach_thread_np(handle);
+  mach_port_t mach_thread_id = pthread_mach_thread_np(handle.handle_);
 
   switch (priority) {
     case kThreadPriority_Normal:
@@ -172,7 +174,51 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
     case kThreadPriority_RealtimeAudio:
       SetPriorityRealtimeAudio(mach_thread_id);
       break;
+    default:
+      NOTREACHED() << "Unknown priority.";
+      break;
   }
+}
+
+size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
+#if defined(OS_IOS)
+  return 0;
+#else
+  // The Mac OS X default for a pthread stack size is 512kB.
+  // Libc-594.1.4/pthreads/pthread.c's pthread_attr_init uses
+  // DEFAULT_STACK_SIZE for this purpose.
+  //
+  // 512kB isn't quite generous enough for some deeply recursive threads that
+  // otherwise request the default stack size by specifying 0. Here, adopt
+  // glibc's behavior as on Linux, which is to use the current stack size
+  // limit (ulimit -s) as the default stack size. See
+  // glibc-2.11.1/nptl/nptl-init.c's __pthread_initialize_minimal_internal. To
+  // avoid setting the limit below the Mac OS X default or the minimum usable
+  // stack size, these values are also considered. If any of these values
+  // can't be determined, or if stack size is unlimited (ulimit -s unlimited),
+  // stack_size is left at 0 to get the system default.
+  //
+  // Mac OS X normally only applies ulimit -s to the main thread stack. On
+  // contemporary OS X and Linux systems alike, this value is generally 8MB
+  // or in that neighborhood.
+  size_t default_stack_size = 0;
+  struct rlimit stack_rlimit;
+  if (pthread_attr_getstacksize(&attributes, &default_stack_size) == 0 &&
+      getrlimit(RLIMIT_STACK, &stack_rlimit) == 0 &&
+      stack_rlimit.rlim_cur != RLIM_INFINITY) {
+    default_stack_size =
+        std::max(std::max(default_stack_size,
+                          static_cast<size_t>(PTHREAD_STACK_MIN)),
+                 static_cast<size_t>(stack_rlimit.rlim_cur));
+  }
+  return default_stack_size;
+#endif
+}
+
+void InitOnThread() {
+}
+
+void TerminateOnThread() {
 }
 
 }  // namespace base

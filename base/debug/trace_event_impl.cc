@@ -977,7 +977,7 @@ void TraceLog::SetDisabled() {
     lock_.Release();
     PlatformThread::Join(sampling_thread_handle_);
     lock_.Acquire();
-    sampling_thread_handle_ = 0;
+    sampling_thread_handle_ = PlatformThreadHandle();
     sampling_thread_.reset();
   }
 

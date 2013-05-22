@@ -182,6 +182,7 @@ class BASE_EXPORT ThreadRestrictions {
   friend class SimpleThread;
   friend class Thread;
   friend class ThreadTestHelper;
+  friend class PlatformThread;
 
   // END ALLOWED USAGE.
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

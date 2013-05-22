@@ -29,7 +29,7 @@ class TrivialThread : public PlatformThread::Delegate {
 
 TEST(PlatformThreadTest, Trivial) {
   TrivialThread thread;
-  PlatformThreadHandle handle = kNullThreadHandle;
+  PlatformThreadHandle handle;
 
   ASSERT_FALSE(thread.did_run());
   ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
@@ -80,7 +80,7 @@ TEST(PlatformThreadTest, Function) {
   PlatformThreadId main_thread_id = PlatformThread::CurrentId();
 
   FunctionTestThread thread;
-  PlatformThreadHandle handle = kNullThreadHandle;
+  PlatformThreadHandle handle;
 
   ASSERT_FALSE(thread.did_run());
   ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));

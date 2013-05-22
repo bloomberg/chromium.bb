@@ -51,7 +51,7 @@ class BasicLockTestThread : public PlatformThread::Delegate {
 TEST(LockTest, Basic) {
   Lock lock;
   BasicLockTestThread thread(&lock);
-  PlatformThreadHandle handle = kNullThreadHandle;
+  PlatformThreadHandle handle;
 
   ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
 
@@ -117,7 +117,7 @@ TEST(LockTest, TryLock) {
   // This thread will not be able to get the lock.
   {
     TryLockTestThread thread(&lock);
-    PlatformThreadHandle handle = kNullThreadHandle;
+    PlatformThreadHandle handle;
 
     ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
 
@@ -131,7 +131,7 @@ TEST(LockTest, TryLock) {
   // This thread will....
   {
     TryLockTestThread thread(&lock);
-    PlatformThreadHandle handle = kNullThreadHandle;
+    PlatformThreadHandle handle;
 
     ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
 
@@ -178,7 +178,7 @@ TEST(LockTest, MutexTwoThreads) {
   int value = 0;
 
   MutexLockTestThread thread(&lock, &value);
-  PlatformThreadHandle handle = kNullThreadHandle;
+  PlatformThreadHandle handle;
 
   ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
 
@@ -196,9 +196,9 @@ TEST(LockTest, MutexFourThreads) {
   MutexLockTestThread thread1(&lock, &value);
   MutexLockTestThread thread2(&lock, &value);
   MutexLockTestThread thread3(&lock, &value);
-  PlatformThreadHandle handle1 = kNullThreadHandle;
-  PlatformThreadHandle handle2 = kNullThreadHandle;
-  PlatformThreadHandle handle3 = kNullThreadHandle;
+  PlatformThreadHandle handle1;
+  PlatformThreadHandle handle2;
+  PlatformThreadHandle handle3;
 
   ASSERT_TRUE(PlatformThread::Create(0, &thread1, &handle1));
   ASSERT_TRUE(PlatformThread::Create(0, &thread2, &handle2));

@@ -79,7 +79,7 @@ class DeadlockCheckerObserver {
     // Check whether |provider_| holds its lock. For this, we need a
     // separate thread.
     DeadlockCheckerThread thread(provider_);
-    base::PlatformThreadHandle handle = base::kNullThreadHandle;
+    base::PlatformThreadHandle handle;
     ASSERT_TRUE(base::PlatformThread::Create(0, &thread, &handle));
     base::PlatformThread::Join(handle);
     notification_received_ = true;
