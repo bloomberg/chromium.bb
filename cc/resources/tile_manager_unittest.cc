@@ -28,7 +28,7 @@ class TilePriorityForEventualBin : public TilePriority {
     TilePriorityForEventualBin() : TilePriority(
             NON_IDEAL_RESOLUTION,
             1.0,
-            315.0) { }
+            315.0) {}
 };
 
 class TilePriorityForNowBin : public TilePriority {
@@ -36,7 +36,7 @@ class TilePriorityForNowBin : public TilePriority {
     TilePriorityForNowBin() : TilePriority(
             HIGH_RESOLUTION,
             0,
-            0) { }
+            0) {}
 };
 
 TEST(TileManagerTest, OOM) {

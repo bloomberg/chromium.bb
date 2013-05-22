@@ -151,8 +151,6 @@ class CC_EXPORT LayerTreeImpl {
 
   void ClearRenderSurfaces();
 
-  bool AreVisibleResourcesReady() const;
-
   const LayerImplList& RenderSurfaceLayerList() const;
 
   // These return the size of the root scrollable area and the size of
@@ -191,6 +189,8 @@ class CC_EXPORT LayerTreeImpl {
   void SetLatencyInfo(const LatencyInfo& latency_info);
   const LatencyInfo& GetLatencyInfo();
   void ClearLatencyInfo();
+
+  void WillModifyTilePriorities();
 
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);

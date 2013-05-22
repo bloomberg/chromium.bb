@@ -73,8 +73,6 @@ class CC_EXPORT PictureLayerImpl
   void SetIsMask(bool is_mask);
   virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
 
-  virtual bool AreVisibleResourcesReady() const OVERRIDE;
-
   virtual size_t GPUMemoryUsageInBytes() const OVERRIDE;
 
  protected:
@@ -94,6 +92,7 @@ class CC_EXPORT PictureLayerImpl
   float MinimumContentsScale() const;
   void UpdateLCDTextStatus();
   void ResetRasterScale();
+  void MarkVisibleResourcesAsRequired() const;
 
   bool CanHaveTilings() const;
   bool CanHaveTilingWithScale(float contents_scale) const;

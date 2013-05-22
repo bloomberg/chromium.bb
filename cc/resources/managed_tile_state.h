@@ -137,6 +137,7 @@ class CC_EXPORT ManagedTileState {
   // to determine policy.
   TileManagerBin gpu_memmgr_stats_bin;
   TileResolution resolution;
+  bool required_for_activation;
   float time_to_needed_in_seconds;
   float distance_to_visible_in_pixels;
 };

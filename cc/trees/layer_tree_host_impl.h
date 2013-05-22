@@ -199,6 +199,8 @@ class CC_EXPORT LayerTreeHostImpl
   // TileManagerClient implementation.
   virtual void ScheduleManageTiles() OVERRIDE;
   virtual void DidInitializeVisibleTile() OVERRIDE;
+  virtual bool ShouldForceTileUploadsRequiredForActivationToComplete() const
+      OVERRIDE;
 
   // OutputSurfaceClient implementation.
   virtual void SetNeedsRedrawRect(gfx::Rect rect) OVERRIDE;

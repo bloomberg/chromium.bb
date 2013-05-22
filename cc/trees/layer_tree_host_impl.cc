@@ -984,6 +984,18 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
     client_->DidInitializeVisibleTileOnImplThread();
 }
 
+bool LayerTreeHostImpl::
+    ShouldForceTileUploadsRequiredForActivationToComplete() const {
+  // During shutdown of TileManager, it will attempt to flush its job queue,
+  // which can call this function while this is NULL.
+  if (!tile_manager_)
+    return false;
+
+  TreePriority tree_priority = tile_manager_->GlobalState().tree_priority;
+  return tree_priority != SMOOTHNESS_TAKES_PRIORITY &&
+         animation_registrar_->active_animation_controllers().empty();
+}
+
 bool LayerTreeHostImpl::ShouldClearRootRenderPass() const {
   return settings_.should_clear_root_render_pass;
 }
@@ -1293,16 +1305,17 @@ bool LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
 
   CHECK(settings_.impl_side_painting);
 
+  // TODO(enne): This needs to be moved somewhere else (post-animate?)
   pending_tree_->UpdateDrawProperties();
 
   TRACE_EVENT_ASYNC_STEP1(
-      "cc",
-      "PendingTree", pending_tree_.get(), "activate",
-      "state", TracedValue::FromValue(ActivationStateAsValue().release()));
+    "cc",
+    "PendingTree", pending_tree_.get(), "activate",
+    "state", TracedValue::FromValue(ActivationStateAsValue().release()));
 
-  if (resource_provider_) {
-    // Activate once all visible resources in pending tree are ready.
-    if (!pending_tree_->AreVisibleResourcesReady())
+  if (tile_manager_) {
+    tile_manager_->CheckForCompletedTileUploads();
+    if (!tile_manager_->AreTilesRequiredForActivationReady())
       return false;
   }
 

@@ -313,23 +313,6 @@ void LayerTreeImpl::ClearRenderSurfaces() {
   set_needs_update_draw_properties();
 }
 
-bool LayerTreeImpl::AreVisibleResourcesReady() const {
-  TRACE_EVENT0("cc", "LayerTreeImpl::AreVisibleResourcesReady");
-
-  typedef LayerIterator<LayerImpl,
-                        LayerImplList,
-                        RenderSurfaceImpl,
-                        LayerIteratorActions::BackToFront> LayerIteratorType;
-  LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
-  for (LayerIteratorType it = LayerIteratorType::Begin(
-           &render_surface_layer_list_); it != end; ++it) {
-    if (it.represents_itself() && !(*it)->AreVisibleResourcesReady())
-      return false;
-  }
-
-  return true;
-}
-
 const LayerImplList& LayerTreeImpl::RenderSurfaceLayerList() const {
   // If this assert triggers, then the list is dirty.
   DCHECK(!needs_update_draw_properties_);
@@ -581,6 +564,10 @@ const LatencyInfo& LayerTreeImpl::GetLatencyInfo() {
 
 void LayerTreeImpl::ClearLatencyInfo() {
   latency_info_.Clear();
+}
+
+void LayerTreeImpl::WillModifyTilePriorities() {
+  layer_tree_host_impl_->tile_manager()->WillModifyTilePriorities();
 }
 
 }  // namespace cc

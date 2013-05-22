@@ -42,17 +42,18 @@ scoped_ptr<base::Value> TileResolutionAsValue(
 
 struct CC_EXPORT TilePriority {
   TilePriority()
-     : resolution(NON_IDEAL_RESOLUTION),
-       time_to_visible_in_seconds(std::numeric_limits<float>::infinity()),
-       distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()) {}
+      : resolution(NON_IDEAL_RESOLUTION),
+        required_for_activation(false),
+        time_to_visible_in_seconds(std::numeric_limits<float>::infinity()),
+        distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()) {}
 
-  TilePriority(
-    TileResolution resolution,
-    float time_to_visible_in_seconds,
-    float distance_to_visible_in_pixels)
-     : resolution(resolution),
-       time_to_visible_in_seconds(time_to_visible_in_seconds),
-       distance_to_visible_in_pixels(distance_to_visible_in_pixels) {}
+  TilePriority(TileResolution resolution,
+               float time_to_visible_in_seconds,
+               float distance_to_visible_in_pixels)
+      : resolution(resolution),
+        required_for_activation(false),
+        time_to_visible_in_seconds(time_to_visible_in_seconds),
+        distance_to_visible_in_pixels(distance_to_visible_in_pixels) {}
 
   TilePriority(const TilePriority& active, const TilePriority& pending) {
     if (active.resolution == HIGH_RESOLUTION ||
@@ -63,6 +64,9 @@ struct CC_EXPORT TilePriority {
       resolution = LOW_RESOLUTION;
     else
       resolution = NON_IDEAL_RESOLUTION;
+
+    required_for_activation =
+        active.required_for_activation || pending.required_for_activation;
 
     time_to_visible_in_seconds =
       std::min(active.time_to_visible_in_seconds,
@@ -112,6 +116,7 @@ struct CC_EXPORT TilePriority {
   }
 
   TileResolution resolution;
+  bool required_for_activation;
   float time_to_visible_in_seconds;
   float distance_to_visible_in_pixels;
 

@@ -329,6 +329,9 @@ void PictureLayerImpl::UpdateTilePriorities() {
   if (!tiling_needs_update)
     return;
 
+  // At this point, tile priorities are going to be modified.
+  layer_tree_impl()->WillModifyTilePriorities();
+
   UpdateLCDTextStatus();
 
   gfx::Transform current_screen_space_transform = screen_space_transform();
@@ -358,6 +361,9 @@ void PictureLayerImpl::UpdateTilePriorities() {
       current_screen_space_transform,
       current_frame_time_in_seconds,
       max_tiles_for_interest_area);
+
+  if (layer_tree_impl()->IsPendingTree())
+    MarkVisibleResourcesAsRequired();
 
   last_screen_space_transform_ = current_screen_space_transform;
   last_bounds_ = bounds();
@@ -631,25 +637,16 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
   return 0;
 }
 
-bool PictureLayerImpl::AreVisibleResourcesReady() const {
+void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   DCHECK(layer_tree_impl()->IsPendingTree());
   DCHECK(!layer_tree_impl()->needs_update_draw_properties());
   DCHECK(ideal_contents_scale_);
-
-  if (!tilings_->num_tilings())
-    return true;
+  DCHECK_GT(tilings_->num_tilings(), 0u);
 
   gfx::Rect rect(visible_content_rect());
 
   float min_acceptable_scale =
       std::min(raster_contents_scale_, ideal_contents_scale_);
-
-  TreePriority tree_priority =
-      layer_tree_impl()->tile_manager()->GlobalState().tree_priority;
-  bool should_force_uploads =
-      tree_priority != SMOOTHNESS_TAKES_PRIORITY &&
-      layer_tree_impl()->animationRegistrar()->
-          active_animation_controllers().empty();
 
   if (PictureLayerImpl* twin = twin_layer_) {
     float twin_min_acceptable_scale =
@@ -662,6 +659,12 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
     }
   }
 
+  // Mark tiles for activation in two passes.  Ready to draw tiles in acceptable
+  // but non-ideal tilings are marked as required for activation, but any
+  // non-ready tiles are not marked as required.  From there, any missing holes
+  // will need to be filled in from the high res tiling.
+
+  PictureLayerTiling* high_res = NULL;
   Region missing_region = rect;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
@@ -669,22 +672,43 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
 
     if (tiling->contents_scale() < min_acceptable_scale)
       continue;
-
+    if (tiling->resolution() == HIGH_RESOLUTION) {
+      DCHECK(!high_res) << "There can only be one high res tiling";
+      high_res = tiling;
+      continue;
+    }
     for (PictureLayerTiling::CoverageIterator iter(tiling,
                                                    contents_scale_x(),
                                                    rect);
          iter;
          ++iter) {
-      if (should_force_uploads && *iter)
-        layer_tree_impl()->tile_manager()->ForceTileUploadToComplete(*iter);
+      if (!iter->tile_version().IsReadyToDraw())
+        continue;
+      missing_region.Subtract(iter.geometry_rect());
+      iter->mark_required_for_activation();
 
-      // A null tile (i.e. no recording) is considered "ready".
-      if (!*iter || iter->tile_version().IsReadyToDraw())
-        missing_region.Subtract(iter.geometry_rect());
+      DCHECK_EQ(iter->priority(PENDING_TREE).distance_to_visible_in_pixels, 0);
+      DCHECK_EQ(iter->priority(PENDING_TREE).time_to_visible_in_seconds, 0);
     }
   }
 
-  return missing_region.IsEmpty();
+  DCHECK(high_res) << "There must be one high res tiling";
+  for (PictureLayerTiling::CoverageIterator iter(high_res,
+                                                 contents_scale_x(),
+                                                 rect);
+       iter;
+       ++iter) {
+    // A null tile (i.e. missing recording) can just be skipped.
+    // If the missing region doesn't cover it, this tile is fully
+    // covered by acceptable tiles at other scales.
+    if (!*iter || !missing_region.Intersects(iter.geometry_rect()))
+      continue;
+    iter->mark_required_for_activation();
+
+    // These must be true for this tile to end up in the NOW_BIN in TileManager.
+    DCHECK_EQ(iter->priority(PENDING_TREE).distance_to_visible_in_pixels, 0);
+    DCHECK_EQ(iter->priority(PENDING_TREE).time_to_visible_in_seconds, 0);
+  }
 }
 
 PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {

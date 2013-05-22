@@ -5,7 +5,6 @@
 #ifndef CC_RESOURCES_TILE_MANAGER_H_
 #define CC_RESOURCES_TILE_MANAGER_H_
 
-#include <list>
 #include <queue>
 #include <set>
 #include <vector>
@@ -29,6 +28,8 @@ class CC_EXPORT TileManagerClient {
  public:
   virtual void ScheduleManageTiles() = 0;
   virtual void DidInitializeVisibleTile() = 0;
+  virtual bool
+      ShouldForceTileUploadsRequiredForActivationToComplete() const = 0;
 
  protected:
   virtual ~TileManagerClient() {}
@@ -78,7 +79,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void ManageTiles();
   void CheckForCompletedTileUploads();
   void AbortPendingTileUploads();
-  void ForceTileUploadToComplete(Tile* tile);
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
@@ -93,6 +93,14 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   // Overridden from WorkerPoolClient:
   virtual void DidFinishDispatchingWorkerPoolCompletionCallbacks() OVERRIDE;
 
+  void WillModifyTilePriorities() {
+    ScheduleManageTiles();
+  }
+
+  bool AreTilesRequiredForActivationReady() const {
+    return tiles_that_need_to_be_initialized_for_activation_.empty();
+  }
+
  protected:
   TileManager(TileManagerClient* client,
               ResourceProvider* resource_provider,
@@ -105,12 +113,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   friend class Tile;
   void RegisterTile(Tile* tile);
   void UnregisterTile(Tile* tile);
-  void WillModifyTilePriority(
-      Tile* tile, WhichTree tree, const TilePriority& new_priority) {
-    // TODO(nduca): Do something smarter if reprioritization turns out to be
-    // costly.
-    ScheduleManageTiles();
-  }
 
   // Virtual for test
   virtual void DispatchMoreTasks();
@@ -132,6 +134,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void SortTiles();
   void AssignGpuMemoryToTiles();
   void FreeResourcesForTile(Tile* tile);
+  void ForceTileUploadToComplete(Tile* tile);
   void ScheduleManageTiles() {
     if (manage_tiles_pending_)
       return;
@@ -157,6 +160,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
                             TileManagerBin new_tree_bin,
                             WhichTree tree);
   scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
+  void AddRequiredTileForActivation(Tile* tile);
 
   static void RunAnalyzeAndRasterTask(
       const RasterWorkerPool::RasterCallback& analyze_task,
@@ -194,6 +198,8 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   typedef std::vector<Tile*> TileVector;
   TileVector tiles_;
   TileVector tiles_that_need_to_be_rasterized_;
+  typedef std::set<Tile*> TileSet;
+  TileSet tiles_that_need_to_be_initialized_for_activation_;
 
   typedef base::hash_set<uint32_t> PixelRefSet;
   PixelRefSet pending_decode_tasks_;

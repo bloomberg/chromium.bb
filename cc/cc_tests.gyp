@@ -128,6 +128,7 @@
       'test/fake_tile_manager.h',
       'test/fake_tile_manager.cc',
       'test/fake_tile_manager_client.h',
+      'test/fake_tile_manager_client.cc',
       'test/fake_output_surface.cc',
       'test/fake_output_surface.h',
       'test/fake_video_frame_provider.cc',
