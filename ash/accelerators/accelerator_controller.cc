@@ -369,8 +369,7 @@ void AcceleratorControllerContext::UpdateContext(
 // AcceleratorController, public:
 
 AcceleratorController::AcceleratorController()
-    : accelerator_manager_(new ui::AcceleratorManager),
-      exit_warning_handler_(&context_) {
+    : accelerator_manager_(new ui::AcceleratorManager) {
   Init();
 }
 

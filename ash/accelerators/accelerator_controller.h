@@ -41,9 +41,6 @@ class ASH_EXPORT AcceleratorControllerContext {
   // event type of the previous accelerator.
   void UpdateContext(const ui::Accelerator& accelerator);
 
-  const ui::Accelerator& current_accelerator() const {
-    return current_accelerator_;
-  }
   const ui::Accelerator& previous_accelerator() const {
     return previous_accelerator_;
   }
@@ -152,7 +149,7 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Contextual information, eg. if the current accelerator is repeated.
   AcceleratorControllerContext context_;
 
-  // Handles the exit accelerator which requires a long hold to exit and
+  // Handles the exit accelerator which requires a double press to exit and
   // shows a popup with an explanation.
   ExitWarningHandler exit_warning_handler_;
 

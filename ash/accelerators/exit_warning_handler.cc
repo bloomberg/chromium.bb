@@ -4,7 +4,6 @@
 
 #include "ash/accelerators/exit_warning_handler.h"
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -26,12 +25,32 @@
 namespace ash {
 namespace {
 
-const int64 kDoublePressTimeOutMilliseconds = 300;
-const int64 kHoldTimeOutMilliseconds = 1000;
+const int64 kTimeOutMilliseconds = 1000;
 const SkColor kForegroundColor = 0xFFFFFFFF;
 const SkColor kBackgroundColor = 0xE0808080;
 const int kHorizontalMarginAroundText = 100;
 const int kVerticalMarginAroundText = 100;
+
+class ExitWarningLabel : public views::Label {
+ public:
+  ExitWarningLabel() {}
+
+  virtual ~ExitWarningLabel() {}
+
+ private:
+  virtual void PaintText(gfx::Canvas* canvas,
+                         const string16& text,
+                         const gfx::Rect& text_bounds,
+                         int flags) OVERRIDE {
+    // Turn off subpixel rendering.
+    views::Label::PaintText(canvas,
+                            text,
+                            text_bounds,
+                            flags | gfx::Canvas::NO_SUBPIXEL_RENDERING);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ExitWarningLabel);
+};
 
 class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
  public:
@@ -42,7 +61,7 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     text_width_ = font_.GetStringWidth(text_);
     width_ = text_width_ + kHorizontalMarginAroundText;
     height_ = font_.GetHeight() + kVerticalMarginAroundText;
-    views::Label* label = new views::Label;
+    views::Label* label = new ExitWarningLabel;
     label->SetText(text_);
     label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     label->SetFont(font_);
@@ -74,11 +93,10 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
 
 } // namespace
 
-ExitWarningHandler::ExitWarningHandler(AcceleratorControllerContext* context)
-    : context_(context),
-      state_(IDLE),
+ExitWarningHandler::ExitWarningHandler()
+    : state_(IDLE),
       widget_(NULL),
-      stub_timers_for_test_(false) {
+      stub_timer_for_test_(false) {
 }
 
 ExitWarningHandler::~ExitWarningHandler() {
@@ -87,25 +105,18 @@ ExitWarningHandler::~ExitWarningHandler() {
 }
 
 void ExitWarningHandler::HandleAccelerator() {
-  if (!context_)
-    return;
   switch (state_) {
     case IDLE:
       state_ = WAIT_FOR_DOUBLE_PRESS;
-      accelerator_ = context_->current_accelerator();
       Show();
-      StartTimers();
+      StartTimer();
       break;
     case WAIT_FOR_DOUBLE_PRESS:
       state_ = EXITING;
-      CancelTimers();
+      CancelTimer();
       Hide();
       Shell::GetInstance()->delegate()->Exit();
       break;
-    case WAIT_FOR_LONG_HOLD:
-      state_ = CANCELED;
-      break;
-    case CANCELED:
     case EXITING:
       break;
     default:
@@ -114,46 +125,23 @@ void ExitWarningHandler::HandleAccelerator() {
   }
 }
 
-void ExitWarningHandler::Timer1Action() {
-  if (state_ == WAIT_FOR_DOUBLE_PRESS)
-    state_ = WAIT_FOR_LONG_HOLD;
-}
-
-void ExitWarningHandler::Timer2Action() {
+void ExitWarningHandler::TimerAction() {
   Hide();
-  if (state_ == CANCELED) {
+  if (state_ == WAIT_FOR_DOUBLE_PRESS)
     state_ = IDLE;
-  } else if (state_ == WAIT_FOR_LONG_HOLD) {
-    if (accelerator_ == context_->current_accelerator()) {
-      // We detect if the user has released any one of the keys that
-      // make up the shortcut by comparing "our" accelerator to the one
-      // from the current context and do not exit in that case.
-      state_ = EXITING;
-      Shell::GetInstance()->delegate()->Exit();
-    }
-    else {
-      state_ = IDLE;
-    }
-  }
 }
 
-void ExitWarningHandler::StartTimers() {
-  if (stub_timers_for_test_)
+void ExitWarningHandler::StartTimer() {
+  if (stub_timer_for_test_)
     return;
-  timer1_.Start(FROM_HERE,
-                base::TimeDelta::FromMilliseconds(
-                    kDoublePressTimeOutMilliseconds),
-                this,
-                &ExitWarningHandler::Timer1Action);
-  timer2_.Start(FROM_HERE,
-                base::TimeDelta::FromMilliseconds(kHoldTimeOutMilliseconds),
-                this,
-                &ExitWarningHandler::Timer2Action);
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromMilliseconds(kTimeOutMilliseconds),
+               this,
+               &ExitWarningHandler::TimerAction);
 }
 
-void ExitWarningHandler::CancelTimers() {
-  timer1_.Stop();
-  timer2_.Stop();
+void ExitWarningHandler::CancelTimer() {
+  timer_.Stop();
 }
 
 void ExitWarningHandler::Show() {
