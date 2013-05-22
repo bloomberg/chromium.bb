@@ -185,12 +185,6 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
-  "intents": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
-    ]
-  },
   "key": {
     "channel": "stable",
     "extension_types": "all"

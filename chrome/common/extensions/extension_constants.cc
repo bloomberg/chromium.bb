@@ -33,18 +33,6 @@ std::string GetWebstoreItemDetailURLPrefix() {
   return GetWebstoreLaunchURL() + "/detail/";
 }
 
-GURL GetWebstoreIntentQueryURL(const std::string& action,
-                               const std::string& type) {
-  const char kIntentsCategoryPath[] = "category/collection/webintent_apps";
-
-  GURL url(std::string(kGalleryBrowsePrefix) + "/");
-  url = url.Resolve(kIntentsCategoryPath);
-  url = net::AppendQueryParameter(url, "_wi", action);
-  url = net::AppendQueryParameter(url, "_mt", type);
-
-  return url;
-}
-
 GURL GetWebstoreItemJsonDataURL(const std::string& extension_id) {
   return GURL(GetWebstoreLaunchURL() + "/inlineinstall/detail/" + extension_id);
 }

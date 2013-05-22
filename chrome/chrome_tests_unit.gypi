@@ -1576,7 +1576,6 @@
         'common/extensions/api/page_launcher/page_launcher_manifest_unittest.cc',
         'common/extensions/command_unittest.cc',
         'common/extensions/csp_validator_unittest.cc',
-        'common/extensions/extension_constants_unittest.cc',
         'common/extensions/extension_file_util_unittest.cc',
         'common/extensions/extension_icon_set_unittest.cc',
         'common/extensions/extension_l10n_util_unittest.cc',
