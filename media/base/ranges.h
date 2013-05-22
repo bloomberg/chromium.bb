@@ -104,8 +104,9 @@ size_t Ranges<T>::Add(T start, T end) {
 }
 
 template<>
-void Ranges<base::TimeDelta>::DCheckLT(const base::TimeDelta& lhs,
-                                       const base::TimeDelta& rhs) const;
+MEDIA_EXPORT void
+    Ranges<base::TimeDelta>::DCheckLT(const base::TimeDelta& lhs,
+                                      const base::TimeDelta& rhs) const;
 
 template<class T>
 void Ranges<T>::DCheckLT(const T& lhs, const T& rhs) const {

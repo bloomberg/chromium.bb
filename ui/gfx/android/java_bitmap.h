@@ -47,7 +47,7 @@ UI_EXPORT base::android::ScopedJavaLocalRef<jobject> CreateJavaBitmap(
 UI_EXPORT base::android::ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(
     const SkBitmap* skbitmap);
 
-SkBitmap CreateSkBitmapFromResource(const char* name);
+UI_EXPORT SkBitmap CreateSkBitmapFromResource(const char* name);
 
 }  // namespace gfx
 
