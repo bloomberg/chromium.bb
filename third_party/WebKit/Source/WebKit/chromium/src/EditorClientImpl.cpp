@@ -459,6 +459,7 @@ static const KeyDownEntry keyDownEntries[] = {
     { 'Z',         CtrlKey | ShiftKey, "Redo"                                 },
     { 'Y',         CtrlKey,            "Redo"                                 },
 #endif
+    { VKEY_INSERT, 0,                  "OverWrite"                            },
 };
 
 static const KeyPressEntry keyPressEntries[] = {
