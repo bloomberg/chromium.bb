@@ -146,9 +146,9 @@ AC_ARG_ENABLE(rpi-compositor,
 	      AS_HELP_STRING([--disable-rpi-compositor],
 	                     [do not build the Raspberry Pi backend]),,
 	      enable_rpi_compositor=yes)
-AM_CONDITIONAL(ENABLE_RPI_COMPOSITOR, test "x$enable_rpi_compositor" = "xyes" -a "x$enable_egl" = "xyes")
+AM_CONDITIONAL(ENABLE_RPI_COMPOSITOR, test "x$enable_rpi_compositor" = "xyes")
 have_bcm_host="no"
-if test x$enable_rpi_compositor = xyes -a x$enable_egl = xyes; then
+if test "x$enable_rpi_compositor" = "xyes"; then
   AC_DEFINE([BUILD_RPI_COMPOSITOR], [1], [Build the compositor for Raspberry Pi])
   PKG_CHECK_MODULES(RPI_COMPOSITOR, [libudev >= 136 mtdev >= 1.1.0])
   PKG_CHECK_MODULES(RPI_BCM_HOST, [bcm_host],

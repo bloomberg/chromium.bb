@@ -1,7 +1,7 @@
 /*
  * Copyright © 2008-2011 Kristian Høgsberg
  * Copyright © 2011 Intel Corporation
- * Copyright © 2012 Raspberry Pi Foundation
+ * Copyright © 2012-2013 Raspberry Pi Foundation
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -44,7 +44,7 @@
 #endif
 
 #include "compositor.h"
-#include "gl-renderer.h"
+#include "rpi-renderer.h"
 #include "evdev.h"
 
 /*
@@ -148,8 +148,6 @@ struct rpi_output {
 	struct rpi_flippipe flippipe;
 
 	DISPMANX_DISPLAY_HANDLE_T display;
-	EGL_DISPMANX_WINDOW_T egl_window;
-	DISPMANX_ELEMENT_HANDLE_T egl_element;
 
 	struct wl_list element_list; /* struct rpi_element */
 	struct wl_list old_element_list; /* struct rpi_element */
@@ -910,9 +908,12 @@ rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 	DISPMANX_UPDATE_HANDLE_T update;
 	int layer = 10000;
 
-	DBG("%s\n", __func__);
+	DBG("frame update start\n");
 
-	update = vc_dispmanx_update_start(0);
+	/* Update priority higher than in rpi-renderer's
+	 * output destroy function, see rpi_output_destroy().
+	 */
+	update = vc_dispmanx_update_start(1);
 
 	/* update all live elements */
 	wl_list_for_each(element, &output->element_list, link) {
@@ -923,19 +924,15 @@ rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 	/* remove all unused elements */
 	rpi_remove_elements(&output->old_element_list, update);
 
-	/* schedule callback to rpi_output_update_complete() */
-	rpi_dispmanx_update_submit(update, output);
-
-	/* XXX: if there is anything to composite in GL,
-	 * framerate seems to suffer */
-	/* XXX: optimise the renderer for the case of nothing to render */
-	/* XXX: if nothing to render, remove the element...
-	 * but how, is destroying the EGLSurface a bad performance hit?
-	 */
+	rpi_renderer_set_update_handle(&output->base, update);
 	compositor->base.renderer->repaint_output(&output->base, damage);
 
 	pixman_region32_subtract(&primary_plane->damage,
 				 &primary_plane->damage, damage);
+
+	/* schedule callback to rpi_output_update_complete() */
+	rpi_dispmanx_update_submit(update, output);
+	DBG("frame update submitted\n");
 
 	/* Move the list of elements into the old_element_list. */
 	wl_list_insert_list(&output->old_element_list, &output->element_list);
@@ -945,7 +942,9 @@ rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 static void
 rpi_output_update_complete(struct rpi_output *output, uint64_t time)
 {
+	DBG("frame update complete(%" PRIu64 ")\n", time);
 	rpi_output_destroy_old_elements(output);
+	rpi_renderer_finish_frame(&output->base);
 	weston_output_finish_frame(&output->base, time);
 }
 
@@ -958,21 +957,27 @@ rpi_output_destroy(struct weston_output *base)
 
 	DBG("%s\n", __func__);
 
-	rpi_flippipe_release(&output->flippipe);
-
 	update = vc_dispmanx_update_start(0);
 	rpi_remove_elements(&output->element_list, update);
 	rpi_remove_elements(&output->old_element_list, update);
-	vc_dispmanx_element_remove(update, output->egl_element);
 	vc_dispmanx_update_submit_sync(update);
 
-	gl_renderer_output_destroy(base);
+	rpi_renderer_output_destroy(base);
 
 	wl_list_for_each_safe(element, tmp, &output->element_list, link)
 		rpi_element_destroy(element);
 
 	wl_list_for_each_safe(element, tmp, &output->old_element_list, link)
 		rpi_element_destroy(element);
+
+	/* rpi_renderer_output_destroy() will schedule a removal of
+	 * all Dispmanx Elements, and wait for the update to complete.
+	 * Assuming updates are sequential, the wait should guarantee,
+	 * that any pending rpi_flippipe_update_complete() callbacks
+	 * have happened already. Therefore we can destroy the flippipe
+	 * now.
+	 */
+	rpi_flippipe_release(&output->flippipe);
 
 	wl_list_remove(&output->base.link);
 	weston_output_destroy(&output->base);
@@ -982,21 +987,45 @@ rpi_output_destroy(struct weston_output *base)
 	free(output);
 }
 
+static const char *transform_names[] = {
+	[WL_OUTPUT_TRANSFORM_NORMAL] = "normal",
+	[WL_OUTPUT_TRANSFORM_90] = "90",
+	[WL_OUTPUT_TRANSFORM_180] = "180",
+	[WL_OUTPUT_TRANSFORM_270] = "270",
+	[WL_OUTPUT_TRANSFORM_FLIPPED] = "flipped",
+	[WL_OUTPUT_TRANSFORM_FLIPPED_90] = "flipped-90",
+	[WL_OUTPUT_TRANSFORM_FLIPPED_180] = "flipped-180",
+	[WL_OUTPUT_TRANSFORM_FLIPPED_270] = "flipped-270",
+};
+
 static int
-rpi_output_create(struct rpi_compositor *compositor)
+str2transform(const char *name)
+{
+	unsigned i;
+
+	for (i = 0; i < ARRAY_LENGTH(transform_names); i++)
+		if (strcmp(name, transform_names[i]) == 0)
+			return i;
+
+	return -1;
+}
+
+static const char *
+transform2str(uint32_t output_transform)
+{
+	if (output_transform >= ARRAY_LENGTH(transform_names))
+		return "<illegal value>";
+
+	return transform_names[output_transform];
+}
+
+static int
+rpi_output_create(struct rpi_compositor *compositor, uint32_t transform)
 {
 	struct rpi_output *output;
 	DISPMANX_MODEINFO_T modeinfo;
-	DISPMANX_UPDATE_HANDLE_T update;
-	VC_RECT_T dst_rect;
-	VC_RECT_T src_rect;
 	int ret;
 	float mm_width, mm_height;
-	VC_DISPMANX_ALPHA_T alphasetup = {
-		DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS,
-		255, /* opacity 0-255 */
-		0 /* mask resource handle */
-	};
 
 	output = calloc(1, sizeof *output);
 	if (!output)
@@ -1024,32 +1053,10 @@ rpi_output_create(struct rpi_compositor *compositor)
 		goto out_dmx_close;
 	}
 
-	vc_dispmanx_rect_set(&dst_rect, 0, 0, modeinfo.width, modeinfo.height);
-	vc_dispmanx_rect_set(&src_rect, 0, 0,
-			     modeinfo.width << 16, modeinfo.height << 16);
-
-	update = vc_dispmanx_update_start(0);
-	output->egl_element = vc_dispmanx_element_add(update,
-						      output->display,
-						      0 /* layer */,
-						      &dst_rect,
-						      0 /* src resource */,
-						      &src_rect,
-						      DISPMANX_PROTECTION_NONE,
-						      &alphasetup,
-						      NULL /* clamp */,
-						      DISPMANX_NO_ROTATE);
-	vc_dispmanx_update_submit_sync(update);
-
-	output->egl_window.element = output->egl_element;
-	output->egl_window.width = modeinfo.width;
-	output->egl_window.height = modeinfo.height;
-
 	output->base.start_repaint_loop = rpi_output_start_repaint_loop;
 	output->base.repaint = rpi_output_repaint;
 	output->base.destroy = rpi_output_destroy;
-	if (compositor->max_planes > 0)
-		output->base.assign_planes = rpi_output_assign_planes;
+	output->base.assign_planes = NULL;
 	output->base.set_backlight = NULL;
 	output->base.set_dpms = NULL;
 	output->base.switch_mode = NULL;
@@ -1080,20 +1087,10 @@ rpi_output_create(struct rpi_compositor *compositor)
 
 	weston_output_init(&output->base, &compositor->base,
 			   0, 0, round(mm_width), round(mm_height),
-			   WL_OUTPUT_TRANSFORM_NORMAL,
-			   1);
+			   transform, 1);
 
-	if (gl_renderer_output_create(&output->base,
-			(EGLNativeWindowType)&output->egl_window) < 0)
+	if (rpi_renderer_output_create(&output->base, output->display) < 0)
 		goto out_output;
-
-	if (!eglSurfaceAttrib(gl_renderer_display(&compositor->base),
-			      gl_renderer_output_surface(&output->base),
-			      EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED)) {
-		weston_log("Failed to set swap behaviour to preserved.\n");
-		gl_renderer_print_egl_error_state();
-		goto out_gl;
-	}
 
 	wl_list_insert(compositor->base.output_list.prev, &output->base.link);
 
@@ -1101,16 +1098,16 @@ rpi_output_create(struct rpi_compositor *compositor)
 		   output->mode.width, output->mode.height);
 	weston_log_continue(STAMP_SPACE "guessing %d Hz and 96 dpi\n",
 			    output->mode.refresh / 1000);
+	weston_log_continue(STAMP_SPACE "orientation: %s\n",
+			    transform2str(output->base.transform));
+
+	if (!strncmp(transform2str(output->base.transform), "flipped", 7))
+		weston_log("warning: flipped output transforms may not work\n");
 
 	return 0;
 
-out_gl:
-	gl_renderer_output_destroy(&output->base);
 out_output:
 	weston_output_destroy(&output->base);
-	update = vc_dispmanx_update_start(0);
-	vc_dispmanx_element_remove(update, output->egl_element);
-	vc_dispmanx_update_submit_sync(update);
 
 out_dmx_close:
 	vc_dispmanx_display_close(output->display);
@@ -1437,7 +1434,8 @@ switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *d
 struct rpi_parameters {
 	int tty;
 	int max_planes;
-	int single_buffer;
+	struct rpi_renderer_parameters renderer;
+	uint32_t output_transform;
 };
 
 static struct weston_compositor *
@@ -1447,16 +1445,6 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	struct rpi_compositor *compositor;
 	const char *seat = default_seat;
 	uint32_t key;
-	static const EGLint config_attrs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT |
-				  EGL_SWAP_BEHAVIOR_PRESERVED_BIT,
-		EGL_RED_SIZE, 1,
-		EGL_GREEN_SIZE, 1,
-		EGL_BLUE_SIZE, 1,
-		EGL_ALPHA_SIZE, 0,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-		EGL_NONE
-	};
 
 	weston_log("initializing Raspberry Pi backend\n");
 
@@ -1486,7 +1474,7 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	compositor->base.focus = 1;
 	compositor->prev_state = WESTON_COMPOSITOR_ACTIVE;
 	compositor->max_planes = int_max(param->max_planes, 0);
-	compositor->single_buffer = param->single_buffer;
+	compositor->single_buffer = param->renderer.single_buffer;
 
 	weston_log("Maximum number of additional Dispmanx planes: %d\n",
 		   compositor->max_planes);
@@ -1507,18 +1495,17 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	 */
 	bcm_host_init();
 
-	if (gl_renderer_create(&compositor->base, EGL_DEFAULT_DISPLAY,
-		config_attrs, NULL) < 0)
+	if (rpi_renderer_create(&compositor->base, &param->renderer) < 0)
 		goto out_tty;
 
-	if (rpi_output_create(compositor) < 0)
-		goto out_gl;
+	if (rpi_output_create(compositor, param->output_transform) < 0)
+		goto out_renderer;
 
 	evdev_input_create(&compositor->base, compositor->udev, seat);
 
 	return &compositor->base;
 
-out_gl:
+out_renderer:
 	compositor->base.renderer->destroy(&compositor->base);
 
 out_tty:
@@ -1557,20 +1544,31 @@ WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
 	     int config_fd)
 {
+	const char *transform = "normal";
+	int ret;
+
 	struct rpi_parameters param = {
 		.tty = 0, /* default to current tty */
 		.max_planes = DEFAULT_MAX_PLANES,
-		.single_buffer = 0,
+		.renderer.single_buffer = 0,
+		.output_transform = WL_OUTPUT_TRANSFORM_NORMAL,
 	};
 
 	const struct weston_option rpi_options[] = {
 		{ WESTON_OPTION_INTEGER, "tty", 0, &param.tty },
 		{ WESTON_OPTION_INTEGER, "max-planes", 0, &param.max_planes },
 		{ WESTON_OPTION_BOOLEAN, "single-buffer", 0,
-		  &param.single_buffer },
+		  &param.renderer.single_buffer },
+		{ WESTON_OPTION_STRING, "transform", 0, &transform },
 	};
 
 	parse_options(rpi_options, ARRAY_LENGTH(rpi_options), argc, argv);
+
+	ret = str2transform(transform);
+	if (ret < 0)
+		weston_log("invalid transform \"%s\"\n", transform);
+	else
+		param.output_transform = ret;
 
 	return rpi_compositor_create(display, argc, argv, config_fd, &param);
 }

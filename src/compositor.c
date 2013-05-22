@@ -3175,6 +3175,16 @@ usage(int error_code)
 		"  --height=HEIGHT\tHeight of Wayland surface\n"
 		"  --display=DISPLAY\tWayland display to connect to\n\n");
 
+#if defined(BUILD_RPI_COMPOSITOR) && defined(HAVE_BCM_HOST)
+	fprintf(stderr,
+		"Options for rpi-backend.so:\n\n"
+		"  --tty=TTY\t\tThe tty to use\n"
+		"  --single-buffer\tUse single-buffered Dispmanx elements.\n"
+		"  --transform=TR\tThe output transformation, TR is one of:\n"
+		"\tnormal 90 180 270 flipped flipped-90 flipped-180 flipped-270\n"
+		"\n");
+#endif
+
 	exit(error_code);
 }
 
