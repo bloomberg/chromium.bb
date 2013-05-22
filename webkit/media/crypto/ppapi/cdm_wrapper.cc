@@ -28,10 +28,10 @@
 #include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 #include "webkit/media/crypto/ppapi/linked_ptr.h"
 
-#if defined(CHECK_ORIGIN_URL)
-#include "ppapi/cpp/private/instance_private.h"
-#include "ppapi/cpp/private/var_private.h"
-#endif  // defined(CHECK_ORIGIN_URL)
+#if defined(CHECK_DOCUMENT_URL)
+#include "ppapi/cpp/dev/url_util_dev.h"
+#include "ppapi/cpp/instance_handle.h"
+#endif  // defined(CHECK_DOCUMENT_URL)
 
 namespace {
 
@@ -642,13 +642,15 @@ void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
   PP_DCHECK(!key_system.empty());
   PP_DCHECK(key_system_.empty() || key_system_ == key_system);
 
-#if defined(CHECK_ORIGIN_URL)
-  pp::InstancePrivate instance_private(pp_instance());
-  pp::VarPrivate window = instance_private.GetWindowObject();
-  std::string origin = window.GetProperty("top").GetProperty("location")
-      .GetProperty("origin").AsString();
-  PP_DCHECK(origin != "null");
-#endif  // defined(CHECK_ORIGIN_URL)
+#if defined(CHECK_DOCUMENT_URL)
+  PP_URLComponents_Dev url_components = {};
+  pp::Var href = pp::URLUtil_Dev::Get()->GetDocumentURL(
+      pp::InstanceHandle(pp_instance()), &url_components);
+  PP_DCHECK(href.is_string());
+  PP_DCHECK(!href.AsString().empty());
+  PP_DCHECK(url_components.host.begin);
+  PP_DCHECK(0 < url_components.host.len);
+#endif  // defined(CHECK_DOCUMENT_URL)
 
   if (!cdm_) {
     if (!CreateCdmInstance(key_system)) {
