@@ -167,14 +167,14 @@
       "chrome/src/tools/perf/page_sets/intl_hi_ru.json"
     ]
   },
-  "intl_ar_fa_he": {
+  "intl_ja_zh": {
     "description": "Page load time benchmark for a variety of pages in Japanese and Chinese. Runs against pages recorded in April, 2013.",
     "code": [
       "chrome/src/tools/perf/perf_tools/page_cycler.py",
       "chrome/src/tools/perf/page_sets/intl_ja_zh.json"
     ]
   },
-  "intl_ar_fa_he": {
+  "intl_ko_th_vi": {
     "description": "Page load time benchmark for a variety of pages in Korean, Thai and Vietnamese. Runs against pages recorded in April, 2013.",
     "code": [
       "chrome/src/tools/perf/perf_tools/page_cycler.py",
