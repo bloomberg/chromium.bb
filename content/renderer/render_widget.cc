@@ -411,8 +411,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     // Resize should have caused an invalidation of the entire view.
     DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
            paint_aggregator_.HasPendingUpdate());
-  } else if (!RenderThreadImpl::current() ||  // Will be NULL during unit tests.
-             !RenderThreadImpl::current()->short_circuit_size_updates()) {
+  } else if (size_browser_expects_ == new_size) {
     resize_ack = NO_RESIZE_ACK;
   }
 
@@ -470,6 +469,7 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
                             bool is_fullscreen) {
   Resize(new_size, physical_backing_size, overdraw_bottom_height, resizer_rect,
          is_fullscreen, SEND_RESIZE_ACK);
+  size_browser_expects_ = new_size;
 }
 
 void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
@@ -539,6 +539,7 @@ void RenderWidget::OnUpdateRectAck() {
   TRACE_EVENT0("renderer", "RenderWidget::OnUpdateRectAck");
   DCHECK(update_reply_pending_);
   update_reply_pending_ = false;
+  size_browser_expects_ = size_;
 
   // If we sent an UpdateRect message with a zero-sized bitmap, then we should
   // have no current paint buffer.
