@@ -145,6 +145,59 @@ output_handler(struct window *window, struct output *output, int enter,
 }
 
 static void
+key_handler(struct window *window, struct input *input, uint32_t time,
+	    uint32_t key, uint32_t sym, enum wl_keyboard_key_state state,
+	    void *data)
+{
+	int transform, scale;
+
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
+		return;
+
+	transform = window_get_buffer_transform (window);
+	scale = window_get_buffer_scale (window);
+	switch (sym) {
+	case XKB_KEY_Left:
+		if (transform == 0)
+			transform = 3;
+		else if (transform == 4)
+			transform = 7;
+		else
+			transform--;
+		break;
+
+	case XKB_KEY_Right:
+		if (transform == 3)
+			transform = 0;
+		else if (transform == 7)
+			transform = 4;
+		else
+			transform++;
+		break;
+
+	case XKB_KEY_space:
+		if (transform >= 4)
+			transform -= 4;
+		else
+			transform += 4;
+		break;
+
+	case XKB_KEY_z:
+		if (scale == 1)
+			scale = 2;
+		else
+			scale = 1;
+		break;
+	}
+
+	printf ("setting buffer transform to %d\n", transform);
+	printf ("setting buffer scale to %d\n", scale);
+	window_set_buffer_transform(window, transform);
+	window_set_buffer_scale(window, scale);
+	window_schedule_redraw(window);
+}
+
+static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       uint32_t button, enum wl_pointer_button_state state, void *data)
@@ -234,6 +287,7 @@ int main(int argc, char *argv[])
 	widget_set_redraw_handler(transformed.widget, redraw_handler);
 	widget_set_button_handler(transformed.widget, button_handler);
 
+	window_set_key_handler(transformed.window, key_handler);
 	window_set_fullscreen_handler(transformed.window, fullscreen_handler);
 	window_set_output_handler(transformed.window, output_handler);
 
