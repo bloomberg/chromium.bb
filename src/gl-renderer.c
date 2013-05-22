@@ -1831,6 +1831,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 
 	ec->renderer = &gr->base;
 	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
+	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
 
 	return 0;
 

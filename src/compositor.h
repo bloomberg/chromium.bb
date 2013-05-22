@@ -488,6 +488,9 @@ struct weston_renderer {
 enum weston_capability {
 	/* backend/renderer supports arbitrary rotation */
 	WESTON_CAP_ROTATION_ANY			= 0x0001,
+
+	/* screencaptures need to be y-flipped */
+	WESTON_CAP_CAPTURE_YFLIP		= 0x0002,
 };
 
 struct weston_compositor {

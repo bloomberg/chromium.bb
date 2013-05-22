@@ -2889,10 +2889,11 @@ weston_version(int *major, int *minor, int *micro)
 }
 
 static const struct {
-	uint32_t bit;
+	uint32_t bit; /* enum weston_capability */
 	const char *desc;
 } capability_strings[] = {
 	{ WESTON_CAP_ROTATION_ANY, "arbitrary surface rotation:" },
+	{ WESTON_CAP_CAPTURE_YFLIP, "screen capture uses y-flip:" },
 };
 
 static void
