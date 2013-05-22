@@ -485,6 +485,11 @@ struct weston_renderer {
 	void (*destroy)(struct weston_compositor *ec);
 };
 
+enum weston_capability {
+	/* backend/renderer supports arbitrary rotation */
+	WESTON_CAP_ROTATION_ANY			= 0x0001,
+};
+
 struct weston_compositor {
 	struct wl_signal destroy_signal;
 
@@ -526,6 +531,7 @@ struct weston_compositor {
 
 	/* Repaint state. */
 	struct weston_plane primary_plane;
+	uint32_t capabilities; /* combination of enum weston_capability */
 
 	uint32_t focus;
 

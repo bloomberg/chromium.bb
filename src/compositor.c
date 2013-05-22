@@ -2888,6 +2888,28 @@ weston_version(int *major, int *minor, int *micro)
 	*micro = WESTON_VERSION_MICRO;
 }
 
+static const struct {
+	uint32_t bit;
+	const char *desc;
+} capability_strings[] = {
+	{ WESTON_CAP_ROTATION_ANY, "arbitrary surface rotation:" },
+};
+
+static void
+weston_compositor_log_capabilities(struct weston_compositor *compositor)
+{
+	unsigned i;
+	int yes;
+
+	weston_log("Compositor capabilities:\n");
+	for (i = 0; i < ARRAY_LENGTH(capability_strings); i++) {
+		yes = compositor->capabilities & capability_strings[i].bit;
+		weston_log_continue(STAMP_SPACE "%s %s\n",
+				    capability_strings[i].desc,
+				    yes ? "yes" : "no");
+	}
+}
+
 static int on_term_signal(int signal_number, void *data)
 {
 	struct wl_display *display = data;
@@ -3281,6 +3303,8 @@ int main(int argc, char *argv[])
 		ret = EXIT_FAILURE;
 		goto out;
 	}
+
+	weston_compositor_log_capabilities(ec);
 
 	if (wl_display_add_socket(display, socket_name)) {
 		weston_log("fatal: failed to add socket: %m\n");

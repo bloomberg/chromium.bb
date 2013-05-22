@@ -658,6 +658,7 @@ pixman_renderer_init(struct weston_compositor *ec)
 	renderer->base.destroy_surface = pixman_renderer_destroy_surface;
 	renderer->base.destroy = pixman_renderer_destroy;
 	ec->renderer = &renderer->base;
+	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
 
 	weston_compositor_add_debug_binding(ec, KEY_R,
 					    debug_binding, ec);

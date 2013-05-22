@@ -4247,8 +4247,11 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 					     shell);
 	weston_compositor_add_button_binding(ec, BTN_MIDDLE, mod,
 					     resize_binding, shell);
-	weston_compositor_add_button_binding(ec, BTN_RIGHT, mod,
-					     rotate_binding, NULL);
+
+	if (ec->capabilities & WESTON_CAP_ROTATION_ANY)
+		weston_compositor_add_button_binding(ec, BTN_RIGHT, mod,
+						     rotate_binding, NULL);
+
 	weston_compositor_add_key_binding(ec, KEY_TAB, mod, switcher_binding,
 					  shell);
 	weston_compositor_add_key_binding(ec, KEY_F9, mod, backlight_binding,
