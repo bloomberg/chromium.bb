@@ -343,6 +343,12 @@ void BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree()
         m_pickerIndicatorElement->removePickerIndicatorOwner();
         m_pickerIndicatorElement = 0;
     }
+
+    // If a field element has focus, set focus back to the <input> itself before
+    // deleting the field. This prevents unnecessary focusout/blur events.
+    if (element()->focused())
+        element()->focus();
+
     BaseDateAndTimeInputType::destroyShadowSubtree();
 }
 
