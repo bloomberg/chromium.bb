@@ -23,9 +23,6 @@ SVG/MtSaintHelens.html
 SunSpider
 XSSAuditor
 
-# https://bugs.webkit.org/show_bug.cgi?id=95376
-Dromaeo/jslib-modify-jquery.html
-
 # https://bugs.webkit.org/show_bug.cgi?id=98708
 Layout/subtree-detaching.html
 
@@ -33,42 +30,13 @@ Layout/subtree-detaching.html
 Layout/ArabicLineLayout.html
 
 # We have pure JS tests separately outside Dromaeo.
-Dromaeo/sunspider-3d-morph.html
-Dromaeo/sunspider-3d-raytrace.html
-Dromaeo/sunspider-access-binary-trees.html
-Dromaeo/sunspider-access-fannkuch.html
-Dromaeo/sunspider-access-nbody.html
-Dromaeo/sunspider-access-nsieve.html
-Dromaeo/sunspider-bitops-3bit-bits-in-byte.html
-Dromaeo/sunspider-bitops-bits-in-byte.html
-Dromaeo/sunspider-bitops-bitwise-and.html
-Dromaeo/sunspider-bitops-nsieve-bits.html
-Dromaeo/sunspider-controlflow-recursive.html
-Dromaeo/sunspider-crypto-aes.html
-Dromaeo/sunspider-date-format-tofte.html
-Dromaeo/sunspider-date-format-xparb.html
-Dromaeo/sunspider-math-cordic.html
-Dromaeo/sunspider-math-partial-sums.html
-Dromaeo/sunspider-math-spectral-norm.html
-Dromaeo/sunspider-regexp-dna.html
-Dromaeo/sunspider-string-fasta.html
-Dromaeo/sunspider-string-tagcloud.html
-Dromaeo/sunspider-string-unpack-code.html
-Dromaeo/sunspider-string-validate-input.html
-Dromaeo/v8-crypto.html
-Dromaeo/v8-deltablue.html
-Dromaeo/v8-earley-boyer.html
-Dromaeo/v8-raytrace.html
-Dromaeo/v8-richards.html
+Dromaeo
 
 # Bug 77024 - Web Inspector: tests in PerformanceTests/inspector/ are timing out
 inspector
 
 # Bug 100262 - REGRESSION(r131982): this test is crashing
 SVG/SvgNestedUse.html
-
-# Bug 102646 - ShadowDOM is not enabled in some ports.
-ShadowDOM
 
 Canvas/drawimage.html
 
@@ -82,3 +50,21 @@ Layout/RegionsAuto.html
 Layout/RegionsAutoMaxHeight.html
 Layout/RegionsFixed.html
 Layout/RegionsFixedShort.html
+
+# Redundant with chromium's page cyclers.
+Replay
+
+# Requires manual intervention.
+Bindings/event-target-wrapper.html
+
+# Redundant with chromium's dom_perf benchmark.
+DOM/Accessors.html
+DOM/CloneNodes.html
+DOM/CreateNodes.html
+DOM/DOMDivWalk.html
+DOM/DOMTable.html
+DOM/DOMWalk.html
+DOM/Events.html
+DOM/GetElement.html
+DOM/GridSort.html
+DOM/Template.html
