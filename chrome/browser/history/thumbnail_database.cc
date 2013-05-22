@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/thumbnail_score.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "ui/gfx/image/image_util.h"
 
 #if defined(OS_MACOSX)
@@ -92,9 +94,79 @@ void FillIconMapping(const sql::Statement& statement,
   icon_mapping->page_url = page_url;
 }
 
+// Attempt to pass 1000 bytes of |debug_info| into a crash dump.
+void DumpWithoutCrashing1000(const std::string& debug_info) {
+  char debug_buf[1000];
+  base::strlcpy(debug_buf, debug_info.c_str(), arraysize(debug_buf));
+  base::debug::Alias(&debug_buf);
+
+  logging::DumpWithoutCrashing();
+}
+
+void ReportCorrupt(sql::Connection* db, size_t startup_kb) {
+  // Buffer for accumulating debugging info about the error.  Place
+  // more-relevant information earlier, in case things overflow the
+  // fixed-size buffer.
+  std::string debug_info;
+
+  base::StringAppendF(&debug_info, "SQLITE_CORRUPT, integrity_check:\n");
+
+  // Check files up to 4M to keep things from blocking too long.
+  const size_t kMaxIntegrityCheckSize = 4096;
+  if (startup_kb > kMaxIntegrityCheckSize) {
+    base::StringAppendF(&debug_info, "too big %" PRIuS "\n", startup_kb);
+  } else {
+    std::vector<std::string> messages;
+
+    const base::TimeTicks before = base::TimeTicks::Now();
+    db->IntegrityCheck(&messages);
+    base::StringAppendF(&debug_info, "# %" PRIx64 " ms, %" PRIuS " records\n",
+                        (base::TimeTicks::Now() - before).InMilliseconds(),
+                        messages.size());
+
+    // SQLite returns up to 100 messages by default, trim deeper to
+    // keep close to the 1000-character size limit for dumping.
+    //
+    // TODO(shess): If the first 20 tend to be actionable, test if
+    // passing the count to integrity_check makes it exit earlier.  In
+    // that case it may be possible to greatly ease the size
+    // restriction.
+    const size_t kMaxMessages = 20;
+    for (size_t i = 0; i < kMaxMessages && i < messages.size(); ++i) {
+      base::StringAppendF(&debug_info, "%s\n", messages[i].c_str());
+    }
+  }
+
+  DumpWithoutCrashing1000(debug_info);
+}
+
+void ReportError(sql::Connection* db, int error) {
+  // Buffer for accumulating debugging info about the error.  Place
+  // more-relevant information earlier, in case things overflow the
+  // fixed-size buffer.
+  std::string debug_info;
+
+  // The error message from the failed statement (GetErrorCode()
+  // should be identical to error).
+  base::StringAppendF(&debug_info, "db error: %d/%d/%s\n",
+                      error, db->GetErrorCode(), db->GetErrorMessage());
+
+  // System errno information.
+  base::StringAppendF(&debug_info, "errno: %d\n", db->GetLastErrno());
+
+  // TODO(shess): Think of other things to log.  Not logging the
+  // statement text because the backtrace should suffice in most
+  // cases.  The database schema is a possibility, but the
+  // likelihood of recursive error callbacks makes that risky (same
+  // reasoning applies to other data fetched from the database).
+
+  DumpWithoutCrashing1000(debug_info);
+}
+
 // TODO(shess): If this proves out, perhaps lift the code out to
 // chrome/browser/diagnostics/sqlite_diagnostics.{h,cc}.
 void DatabaseErrorCallback(sql::Connection* db,
+                           size_t startup_kb,
                            int error,
                            sql::Statement* stmt) {
   // TODO(shess): Assert that this is running on a safe thread.
@@ -103,7 +175,7 @@ void DatabaseErrorCallback(sql::Connection* db,
 
   // Infrequently report information about the error up to the crash
   // server.
-  static const uint64 kReportPercent = 5;
+  static const uint64 kReportsPerMillion = 50000;
 
   // TODO(shess): For now, don't report on beta or stable so as not to
   // overwhelm the crash server.  Once the big fish are fried,
@@ -116,35 +188,39 @@ void DatabaseErrorCallback(sql::Connection* db,
 
   if (channel != chrome::VersionInfo::CHANNEL_STABLE &&
       channel != chrome::VersionInfo::CHANNEL_BETA &&
-      !reported &&
-      base::RandGenerator(100) < kReportPercent) {
-    reported = true;
+      !reported) {
+    uint64 rand = base::RandGenerator(1000000);
+    if (error == SQLITE_CORRUPT) {
+      // Once the database is known to be corrupt, it will generate a
+      // stream of errors until someone fixes it, so give one chance.
+      // Set first in case of errors in generating the report.
+      reported = true;
 
-    // Buffer for accumulating debugging info about the error.  Place
-    // more-relevant information earlier, in case things overflow the
-    // fixed-size buffer.
-    std::string debug_info;
+      // Corrupt cases currently dominate, report them very infrequently.
+      static const uint64 kCorruptReportsPerMillion = 1000;
+      if (rand < kCorruptReportsPerMillion)
+        ReportCorrupt(db, startup_kb);
+    } else if (error == SQLITE_READONLY) {
+      if (rand < kReportsPerMillion)
+        ReportError(db, error);
 
-    // The error message from the failed statement (GetErrorCode()
-    // should be identical to error).
-    base::StringAppendF(&debug_info, "db error: %d/%d/%s\n",
-                        error, db->GetErrorCode(), db->GetErrorMessage());
-
-    // System errno information.
-    base::StringAppendF(&debug_info, "errno: %d\n", db->GetLastErrno());
-
-    // TODO(shess): Think of other things to log.  Not logging the
-    // statement text because the backtrace should suffice in most
-    // cases.  The database schema is a possibility, but the
-    // likelihood of recursive error callbacks makes that risky (same
-    // reasoning applies to other data fetched from the database).
-
-    // Attempt to pass 1000 bytes of |debug_info| into a crash dump.
-    char debug_buf[1000];
-    base::strlcpy(debug_buf, debug_info.c_str(), arraysize(debug_buf));
-    base::debug::Alias(&debug_buf);
-
-    logging::DumpWithoutCrashing();
+      // SQLITE_READONLY appears similar to SQLITE_CORRUPT - once it
+      // is seen, it is almost guaranteed to be seen again.
+      reported = true;
+    } else {
+      // Only setting the flag after a report, so that later
+      // (potentially different) errors in a stream of errors can be
+      // reported.
+      //
+      // TODO(shess): Would it be worthwile to audit for which cases
+      // want once-only handling?  Sqlite.Error.Thumbnail shows
+      // CORRUPT and READONLY as almost 95% of all reports on these
+      // channels, so probably easier to just harvest from the field.
+      if (rand < kReportsPerMillion) {
+        ReportError(db, error);
+        reported = true;
+      }
+    }
   }
 
   // The default handling is to assert on debug and to ignore on release.
@@ -286,8 +362,13 @@ sql::InitStatus ThumbnailDatabase::Init(
 
 sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
                                                 const base::FilePath& db_name) {
+  size_t startup_kb = 0;
+  int64 size_64;
+  if (file_util::GetFileSize(db_name, &size_64))
+    startup_kb = static_cast<size_t>(size_64 / 1024);
+
   db->set_histogram_tag("Thumbnail");
-  db->set_error_callback(base::Bind(&DatabaseErrorCallback, db));
+  db->set_error_callback(base::Bind(&DatabaseErrorCallback, db, startup_kb));
 
   // Thumbnails db now only stores favicons, so we don't need that big a page
   // size or cache.

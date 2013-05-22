@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -179,6 +180,12 @@ class SQL_EXPORT Connection {
   // |name|+"."+|histogram_tag_|.  If |histogram_tag_| is empty, no
   // histogram is recorded.
   void AddTaggedHistogram(const std::string& name, size_t sample) const;
+
+  // Run "PRAGMA integrity_check" and post each line of results into
+  // |messages|.  Returns the success of running the statement - per
+  // the SQLite documentation, if no errors are found the call should
+  // succeed, and a single value "ok" should be in messages.
+  bool IntegrityCheck(std::vector<std::string>* messages);
 
   // Initialization ------------------------------------------------------------
 

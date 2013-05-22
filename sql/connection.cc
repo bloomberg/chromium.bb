@@ -13,6 +13,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -764,6 +765,24 @@ int Connection::OnSqliteError(int err, sql::Statement *stmt) {
   // The default handling is to assert on debug and to ignore on release.
   DLOG(FATAL) << GetErrorMessage();
   return err;
+}
+
+// TODO(shess): Allow specifying integrity_check versus quick_check.
+// TODO(shess): Allow specifying maximum results (default 100 lines).
+bool Connection::IntegrityCheck(std::vector<std::string>* messages) {
+  const char kSql[] = "PRAGMA integrity_check";
+  sql::Statement stmt(GetUniqueStatement(kSql));
+
+  messages->clear();
+
+  // The pragma appears to return all results (up to 100 by default)
+  // as a single string.  This doesn't appear to be an API contract,
+  // it could return separate lines, so loop _and_ split.
+  while (stmt.Step()) {
+    std::string result(stmt.ColumnString(0));
+    base::SplitString(result, '\n', messages);
+  }
+  return stmt.Succeeded();
 }
 
 }  // namespace sql
