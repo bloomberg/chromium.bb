@@ -85,7 +85,7 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                  const GURL& url,
                  int tab_id) {
     return PermissionsData::CanExecuteScriptOnPage(
-               extension, url, url, tab_id, NULL, NULL) &&
+               extension, url, url, tab_id, NULL, -1, NULL) &&
            PermissionsData::CanCaptureVisiblePage(
                extension, url, tab_id, NULL) &&
            HasTabsPermission(extension, tab_id);
@@ -101,7 +101,7 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                  int tab_id) {
     // Note: can't check HasTabsPermission because it isn't URL specific.
     return !PermissionsData::CanExecuteScriptOnPage(
-               extension, url, url, tab_id, NULL, NULL) &&
+               extension, url, url, tab_id, NULL, -1, NULL) &&
            !PermissionsData::CanCaptureVisiblePage(
                extension, url, tab_id, NULL);
   }

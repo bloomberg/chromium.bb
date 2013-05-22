@@ -36,6 +36,7 @@
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
+#include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "chrome/renderer/extensions/resource_request_policy.h"
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
@@ -214,6 +215,8 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 void ChromeContentRendererClient::RenderThreadStarted() {
   chrome_observer_.reset(new ChromeRenderProcessObserver(this));
   extension_dispatcher_.reset(new extensions::Dispatcher());
+  permissions_policy_delegate_.reset(
+      new extensions::RendererPermissionsPolicyDelegate());
   net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave());

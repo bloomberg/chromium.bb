@@ -163,38 +163,41 @@ TEST(ExtensionTest, WantsFileAccess) {
   scoped_refptr<Extension> extension;
   GURL file_url("file:///etc/passwd");
 
+  // Ignore the policy delegate for this test.
+  PermissionsData::SetPolicyDelegate(NULL);
+
   // <all_urls> permission
   extension = LoadManifest("permissions", "permissions_all_urls.json");
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, NULL));
+      extension, file_url, file_url, -1, NULL, -1, NULL));
   extension = LoadManifest(
       "permissions", "permissions_all_urls.json", Extension::ALLOW_FILE_ACCESS);
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_TRUE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, NULL));
+      extension, file_url, file_url, -1, NULL, -1, NULL));
 
   // file:///* permission
   extension = LoadManifest("permissions", "permissions_file_scheme.json");
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, NULL));
+      extension, file_url, file_url, -1, NULL, -1, NULL));
   extension = LoadManifest("permissions", "permissions_file_scheme.json",
       Extension::ALLOW_FILE_ACCESS);
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_TRUE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, NULL));
+      extension, file_url, file_url, -1, NULL, -1, NULL));
 
   // http://* permission
   extension = LoadManifest("permissions", "permissions_http_scheme.json");
   EXPECT_FALSE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, NULL));
+      extension, file_url, file_url, -1, NULL, -1, NULL));
   extension = LoadManifest("permissions", "permissions_http_scheme.json",
       Extension::ALLOW_FILE_ACCESS);
   EXPECT_FALSE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, NULL));
+      extension, file_url, file_url, -1, NULL, -1, NULL));
 
   // <all_urls> content script match
   extension = LoadManifest("permissions", "content_script_all_urls.json");
@@ -205,6 +208,7 @@ TEST(ExtensionTest, WantsFileAccess) {
       file_url,
       -1,
       &ContentScriptsInfo::GetContentScripts(extension)[0],
+      -1,
       NULL));
   extension = LoadManifest("permissions", "content_script_all_urls.json",
       Extension::ALLOW_FILE_ACCESS);
@@ -215,6 +219,7 @@ TEST(ExtensionTest, WantsFileAccess) {
       file_url,
       -1,
       &ContentScriptsInfo::GetContentScripts(extension)[0],
+      -1,
       NULL));
 
   // file:///* content script match
@@ -226,6 +231,7 @@ TEST(ExtensionTest, WantsFileAccess) {
       file_url,
       -1,
       &ContentScriptsInfo::GetContentScripts(extension)[0],
+      -1,
       NULL));
   extension = LoadManifest("permissions", "content_script_file_scheme.json",
       Extension::ALLOW_FILE_ACCESS);
@@ -236,6 +242,7 @@ TEST(ExtensionTest, WantsFileAccess) {
       file_url,
       -1,
       &ContentScriptsInfo::GetContentScripts(extension)[0],
+      -1,
       NULL));
 
   // http://* content script match
@@ -247,6 +254,7 @@ TEST(ExtensionTest, WantsFileAccess) {
       file_url,
       -1,
       &ContentScriptsInfo::GetContentScripts(extension)[0],
+      -1,
       NULL));
   extension = LoadManifest("permissions", "content_script_http_scheme.json",
       Extension::ALLOW_FILE_ACCESS);
@@ -257,6 +265,7 @@ TEST(ExtensionTest, WantsFileAccess) {
       file_url,
       -1,
       &ContentScriptsInfo::GetContentScripts(extension)[0],
+      -1,
       NULL));
 }
 

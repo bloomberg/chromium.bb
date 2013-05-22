@@ -34,6 +34,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
+#include "chrome/browser/extensions/browser_permissions_policy_delegate.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -479,6 +480,9 @@ namespace chrome {
 ChromeContentBrowserClient::ChromeContentBrowserClient() {
   for (size_t i = 0; i < arraysize(kPredefinedAllowedSocketOrigins); ++i)
     allowed_socket_origins_.insert(kPredefinedAllowedSocketOrigins[i]);
+
+  permissions_policy_delegate_.reset(
+      new extensions::BrowserPermissionsPolicyDelegate());
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
@@ -1045,6 +1049,11 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
         SigninManagerFactory::GetForProfile(profile);
     if (signin_manager)
       signin_manager->SetSigninProcess(site_instance->GetProcess()->GetID());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ExtensionInfoMap::SetSigninProcess,
+                   extensions::ExtensionSystem::Get(profile)->info_map(),
+                   site_instance->GetProcess()->GetID()));
   }
 #endif
 

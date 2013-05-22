@@ -110,6 +110,8 @@
         'renderer/extensions/page_actions_custom_bindings.h',
         'renderer/extensions/page_capture_custom_bindings.cc',
         'renderer/extensions/page_capture_custom_bindings.h',
+        'renderer/extensions/renderer_permissions_policy_delegate.cc',
+        'renderer/extensions/renderer_permissions_policy_delegate.h',
         'renderer/extensions/request_sender.cc',
         'renderer/extensions/request_sender.h',
         'renderer/extensions/resource_request_policy.cc',

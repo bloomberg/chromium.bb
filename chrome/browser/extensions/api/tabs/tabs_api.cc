@@ -70,6 +70,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -1401,12 +1402,14 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
   // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
   // we need to check host permissions before allowing them.
   if (url.SchemeIs(chrome::kJavaScriptScheme)) {
+    content::RenderProcessHost* process = web_contents_->GetRenderProcessHost();
     if (!PermissionsData::CanExecuteScriptOnPage(
             GetExtension(),
             web_contents_->GetURL(),
             web_contents_->GetURL(),
             tab_id,
             NULL,
+            process ? process->GetID() : -1,
             &error_)) {
       return false;
     }
@@ -1978,8 +1981,7 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
   // If |tab_id| is specified, look for the tab. Otherwise default to selected
   // tab in the current window.
   CHECK_GE(execute_tab_id_, 0);
-  if (!GetTabById(execute_tab_id_, profile(),
-                  include_incognito(),
+  if (!GetTabById(execute_tab_id_, profile(), include_incognito(),
                   NULL, NULL, &contents, NULL, &error_)) {
     return false;
   }
@@ -1988,12 +1990,15 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
 
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  if (!PermissionsData::CanExecuteScriptOnPage(GetExtension(),
-                                               contents->GetURL(),
-                                               contents->GetURL(),
-                                               execute_tab_id_,
-                                               NULL,
-                                               &error_)) {
+  content::RenderProcessHost* process = contents->GetRenderProcessHost();
+  if (!PermissionsData::CanExecuteScriptOnPage(
+          GetExtension(),
+          contents->GetURL(),
+          contents->GetURL(),
+          execute_tab_id_,
+          NULL,
+          process ? process->GetID() : -1,
+          &error_)) {
     return false;
   }
 

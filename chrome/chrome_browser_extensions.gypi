@@ -505,6 +505,8 @@
         'browser/extensions/browser_event_router.h',
         'browser/extensions/browser_extension_window_controller.cc',
         'browser/extensions/browser_extension_window_controller.h',
+        'browser/extensions/browser_permissions_policy_delegate.cc',
+        'browser/extensions/browser_permissions_policy_delegate.h',
         'browser/extensions/bundle_installer.cc',
         'browser/extensions/bundle_installer.h',
         'browser/extensions/component_loader.cc',

@@ -303,18 +303,20 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
     urls_.insert(extension_url);
     urls_.insert(settings_url);
     urls_.insert(about_url);
+    // Ignore the policy delegate for this test.
+    PermissionsData::SetPolicyDelegate(NULL);
   }
 
   bool AllowedScript(const Extension* extension, const GURL& url,
                      const GURL& top_url) {
     return PermissionsData::CanExecuteScriptOnPage(
-        extension, url, top_url, -1, NULL, NULL);
+        extension, url, top_url, -1, NULL, -1, NULL);
   }
 
   bool BlockedScript(const Extension* extension, const GURL& url,
                      const GURL& top_url) {
     return !PermissionsData::CanExecuteScriptOnPage(
-        extension, url, top_url, -1, NULL, NULL);
+        extension, url, top_url, -1, NULL, -1, NULL);
   }
 
   bool Allowed(const Extension* extension, const GURL& url) {
@@ -323,7 +325,7 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
 
   bool Allowed(const Extension* extension, const GURL& url, int tab_id) {
     return (PermissionsData::CanExecuteScriptOnPage(
-                extension, url, url, tab_id, NULL, NULL) &&
+                extension, url, url, tab_id, NULL, -1, NULL) &&
             PermissionsData::CanCaptureVisiblePage(
                 extension, url, tab_id, NULL));
   }
@@ -334,7 +336,7 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
 
   bool CaptureOnly(const Extension* extension, const GURL& url, int tab_id) {
     return !PermissionsData::CanExecuteScriptOnPage(
-                extension, url, url, tab_id, NULL, NULL) &&
+                extension, url, url, tab_id, NULL, -1, NULL) &&
            PermissionsData::CanCaptureVisiblePage(extension, url, tab_id, NULL);
   }
 
@@ -344,7 +346,7 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
 
   bool Blocked(const Extension* extension, const GURL& url, int tab_id) {
     return !(PermissionsData::CanExecuteScriptOnPage(
-                 extension, url, url, tab_id, NULL, NULL) ||
+                 extension, url, url, tab_id, NULL, -1, NULL) ||
              PermissionsData::CanCaptureVisiblePage(
                  extension, url, tab_id, NULL));
   }

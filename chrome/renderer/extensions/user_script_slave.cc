@@ -288,12 +288,15 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
       continue;
 
     // Content scripts are not tab-specific.
-    int kNoTabId = -1;
+    const int kNoTabId = -1;
+    // We don't have a process id in this context.
+    const int kNoProcessId = -1;
     if (!PermissionsData::CanExecuteScriptOnPage(extension,
                                                  data_source_url,
                                                  frame->top()->document().url(),
                                                  kNoTabId,
                                                  script,
+                                                 kNoProcessId,
                                                  NULL)) {
       continue;
     }

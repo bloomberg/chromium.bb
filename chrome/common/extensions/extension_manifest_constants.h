@@ -215,6 +215,7 @@ namespace extension_manifest_errors {
   extern const char kCannotClaimAllHostsInExtent[];
   extern const char kCannotClaimAllURLsInExtent[];
   extern const char kCannotScriptGallery[];
+  extern const char kCannotScriptSigninPage[];
   extern const char kCannotUninstallManagedExtension[];
   extern const char kChromeVersionTooLow[];
   extern const char kDevToolsExperimental[];

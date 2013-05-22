@@ -33,6 +33,25 @@ class PermissionsData {
   PermissionsData();
   ~PermissionsData();
 
+  // Delegate class to allow different contexts (e.g. browser vs renderer) to
+  // have control over policy decisions.
+  class PolicyDelegate {
+   public:
+    virtual ~PolicyDelegate() {}
+
+    // Returns false if script access should be blocked on this page.
+    // Otherwise, default policy should decide.
+    virtual bool CanExecuteScriptOnPage(const Extension* extension,
+                                        const GURL& document_url,
+                                        const GURL& top_document_url,
+                                        int tab_id,
+                                        const UserScript* script,
+                                        int process_id,
+                                        std::string* error) = 0;
+  };
+
+  static void SetPolicyDelegate(PolicyDelegate* delegate);
+
   // Return the optional or required permission set for the given |extension|.
   static const PermissionSet* GetOptionalPermissions(
       const Extension* extension);
@@ -129,6 +148,7 @@ class PermissionsData {
                                      const GURL& top_document_url,
                                      int tab_id,
                                      const UserScript* script,
+                                     int process_id,
                                      std::string* error);
 
   // Returns true if the given |extension| is a COMPONENT extension, or if it is

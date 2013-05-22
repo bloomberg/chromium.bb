@@ -37,6 +37,8 @@ namespace {
 
 const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
 
+PermissionsData::PolicyDelegate* g_policy_delegate = NULL;
+
 bool ContainsManifestForbiddenPermission(const APIPermissionSet& apis,
                                          string16* error) {
   CHECK(error);
@@ -280,6 +282,11 @@ PermissionsData::~PermissionsData() {
 }
 
 // static
+void PermissionsData::SetPolicyDelegate(PolicyDelegate* delegate) {
+  g_policy_delegate = delegate;
+}
+
+// static
 const PermissionSet* PermissionsData::GetOptionalPermissions(
     const Extension* extension) {
   return extension->permissions_data()->optional_permission_set_.get();
@@ -458,6 +465,7 @@ bool PermissionsData::CanExecuteScriptOnPage(const Extension* extension,
                                              const GURL& top_frame_url,
                                              int tab_id,
                                              const UserScript* script,
+                                             int process_id,
                                              std::string* error) {
   base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
   // The gallery is special-cased as a restricted URL for scripting to prevent
@@ -468,6 +476,12 @@ bool PermissionsData::CanExecuteScriptOnPage(const Extension* extension,
   GURL store_url(extension_urls::GetWebstoreLaunchURL());
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   bool can_execute_everywhere = CanExecuteScriptEverywhere(extension);
+
+  if (g_policy_delegate &&
+      !g_policy_delegate->CanExecuteScriptOnPage(
+           extension, document_url, top_frame_url, tab_id,
+           script, process_id, error))
+    return false;
 
   if ((document_url.host() == store_url.host()) &&
       !can_execute_everywhere &&

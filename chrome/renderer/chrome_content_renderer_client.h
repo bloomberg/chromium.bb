@@ -24,6 +24,7 @@ struct ChromeViewHostMsg_GetPluginInfo_Output;
 namespace extensions {
 class Dispatcher;
 class Extension;
+class RendererPermissionsPolicyDelegate;
 }
 
 namespace prerender {
@@ -172,6 +173,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
   scoped_ptr<extensions::Dispatcher> extension_dispatcher_;
+  scoped_ptr<extensions::RendererPermissionsPolicyDelegate>
+      permissions_policy_delegate_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
   scoped_ptr<SpellCheck> spellcheck_;
   scoped_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;

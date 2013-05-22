@@ -223,6 +223,8 @@ const char kCannotClaimAllURLsInExtent[] =
     "Cannot claim all URLs in an extent.";
 const char kCannotScriptGallery[] =
     "The extensions gallery cannot be scripted.";
+const char kCannotScriptSigninPage[] =
+    "The sign-in page cannot be scripted.";
 const char kChromeVersionTooLow[] =
     "This extension requires * version * or greater.";
 const char kDisabledByPolicy[] =

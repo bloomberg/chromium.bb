@@ -78,13 +78,13 @@ bool HasWebRequestScheme(const GURL& url) {
 bool WebRequestPermissions::HideRequest(
     const ExtensionInfoMap* extension_info_map,
     const net::URLRequest* request) {
-  // Hide requests from the Chrome WebStore App.
+  // Hide requests from the Chrome WebStore App or signin process.
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info && extension_info_map) {
     int process_id = info->GetChildID();
-    const extensions::ProcessMap& process_map =
-        extension_info_map->process_map();
-    if (process_map.Contains(extension_misc::kWebStoreAppId, process_id))
+    if (extension_info_map->IsSigninProcess(process_id) ||
+        extension_info_map->process_map().Contains(
+            extension_misc::kWebStoreAppId, process_id))
       return true;
   }
 

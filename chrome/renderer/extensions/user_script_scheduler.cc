@@ -186,6 +186,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
               frame_->document().url(),
               extension_helper->tab_id(),
               NULL,
+              -1,
               NULL)) {
         if (child_frame->parent()) {
           continue;

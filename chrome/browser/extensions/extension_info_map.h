@@ -81,6 +81,11 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
 
   ExtensionsQuotaService* GetQuotaService();
 
+  // Keep track of the signin process, so we can restrict extension access to
+  // it.
+  void SetSigninProcess(int process_id);
+  bool IsSigninProcess(int process_id) const;
+
  private:
   friend class base::RefCountedThreadSafe<ExtensionInfoMap>;
 
@@ -104,6 +109,8 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
 
   // Assignment of extensions to processes.
   extensions::ProcessMap process_map_;
+
+  int signin_process_id_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_

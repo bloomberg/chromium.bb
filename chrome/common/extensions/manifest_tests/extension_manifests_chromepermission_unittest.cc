@@ -21,6 +21,8 @@ TEST_F(ExtensionManifestTest, ChromeURLPermissionInvalid) {
 }
 
 TEST_F(ExtensionManifestTest, ChromeURLPermissionAllowedWithFlag) {
+  // Ignore the policy delegate for this test.
+  PermissionsData::SetPolicyDelegate(NULL);
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kExtensionsOnChromeURLs);
   std::string error;
@@ -29,7 +31,7 @@ TEST_F(ExtensionManifestTest, ChromeURLPermissionAllowedWithFlag) {
   EXPECT_EQ("", error);
   const GURL newtab_url("chrome://newtab/");
   EXPECT_TRUE(PermissionsData::CanExecuteScriptOnPage(
-      extension, newtab_url, newtab_url, 0, NULL, &error)) << error;
+      extension, newtab_url, newtab_url, 0, NULL, -1, &error)) << error;
 }
 
 TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
