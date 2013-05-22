@@ -92,7 +92,7 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
         bool oldValue = m_isOpen;
         m_isOpen = !value.isNull();
         if (oldValue != m_isOpen)
-            reattachIfAttached();
+            lazyReattachIfAttached();
     } else
         HTMLElement::parseAttribute(name, value);
 }

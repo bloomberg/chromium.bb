@@ -1012,7 +1012,7 @@ void HTMLSelectElement::parseMultipleAttribute(const AtomicString& value)
     m_multiple = !value.isNull();
     setNeedsValidityCheck();
     if (oldUsesMenuList != usesMenuList())
-        reattachIfAttached();
+        lazyReattachIfAttached();
 }
 
 bool HTMLSelectElement::appendFormData(FormDataList& list, bool)

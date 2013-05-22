@@ -540,7 +540,7 @@ public:
 #endif
 
     void reattach();
-    void reattachIfAttached();
+    void lazyReattachIfAttached();
     ContainerNode* parentNodeForRenderingAndStyle();
     
     // Wrapper for nodes that don't have a renderer, but still cache the style (like HTMLOptionElement).
@@ -869,10 +869,10 @@ inline void Node::reattach()
     attach();
 }
 
-inline void Node::reattachIfAttached()
+inline void Node::lazyReattachIfAttached()
 {
     if (attached())
-        reattach();
+        lazyReattach();
 }
 
 inline void Node::lazyReattach(ShouldSetAttached shouldSetAttached)

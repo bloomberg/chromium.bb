@@ -2463,7 +2463,7 @@ void Element::setIsInTopLayer(bool inTopLayer)
 
     // We must ensure a reattach occurs so the renderer is inserted in the correct sibling order under RenderView according to its
     // top layer position, or in its usual place if not in the top layer.
-    reattachIfAttached();
+    lazyReattachIfAttached();
 }
 
 void Element::webkitRequestPointerLock()
