@@ -734,8 +734,6 @@ crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-horizontal-bt.html
 # https://bugs.webkit.org/show_bug.cgi?id=49182
 crbug.com/62138 animations/stop-animation-on-suspend.html [ Failure Pass Timeout ]
 
-crbug.com/61739 [ Debug ] animations/suspend-resume-animation-events.html [ Failure Pass ]
-
 # FIXME: Need to add tooling support for V8 bugs.
 code.google.com/p/v8/issues/detail?id=953 fast/regex/pcre-test-1.html [ Timeout ]
 
@@ -939,8 +937,8 @@ webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_ev
 # Animations tests use an inherently-flaky timer-based design.
 webkit.org/b/66953 [ Mac Win Debug ] animations/change-one-anim.html [ Failure Pass ]
 webkit.org/b/66953 [ Debug ] animations/play-state-paused.html [ Failure Pass ]
-webkit.org/b/66953 [ Debug ] animations/play-state-suspend.html [ Failure Pass ]
-webkit.org/b/66953 [ Debug ] animations/suspend-resume-animation.html [ Failure Pass ]
+webkit.org/b/66953 animations/play-state-suspend.html [ Failure Pass ]
+webkit.org/b/66953 animations/suspend-resume-animation.html [ Failure Pass ]
 webkit.org/b/66953 [ Mac Win Debug ] animations/animation-direction-reverse.html [ Failure Pass ]
 
 webkit.org/b/111612 animations/animation-delay-changed.html [ Failure Pass ]
@@ -1003,7 +1001,7 @@ webkit.org/b/81537 fast/events/touch/gesture/pad-gesture-fling.html [ Failure Pa
 webkit.org/b/81638 [ Mac Debug ] editing/selection/iframe.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/81931 [ Debug ] fast/images/destroyed-image-load-event.html [ Pass Timeout ]
-webkit.org/b/81931 [ Debug ] virtual/deferred/fast/images/destroyed-image-load-event.html [ Pass Timeout ]
+webkit.org/b/81931 virtual/deferred/fast/images/destroyed-image-load-event.html [ Pass Timeout ]
 
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Failure Pass ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ Failure Pass ]
@@ -1807,3 +1805,5 @@ crbug.com/242547 [ Linux ] fast/loader/recursive-before-unload-crash.html [ Cras
 crbug.com/242547 [ Linux ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash ]
 crbug.com/242547 [ Linux ] fast/text/chromium-linux-text-subpixel-positioning.html [ Failure ]
 crbug.com/242547 [ Linux ] svg/filters/filter-hidden-content.svg [ Failure ]
+crbug.com/242547 [ Linux ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Failure ]
+crbug.com/242547 [ Linux ] virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Timeout ]
