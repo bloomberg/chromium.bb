@@ -277,7 +277,7 @@ class GerritHelper(object):
     """
 
     cmd = self.ssh_prefix + ['gerrit', 'query', '--format=JSON',
-                             '--dependencies']
+                             '--dependencies', '--commit-message']
     cmd.extend(options)
     if current_patch:
       cmd.append('--current-patch-set')

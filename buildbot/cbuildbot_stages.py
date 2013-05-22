@@ -1207,6 +1207,7 @@ class PreCQLauncherStage(SyncStage):
       #
       # Similarly, if all of the CLs in the plan have already been validated,
       # there's no need to launch a trybot run.
+      plan = set(plan)
       if plan.issubset(passed):
         logging.info('CLs already verified: %r', ' '.join(map(str, plan)))
       elif plan.intersection(busy):

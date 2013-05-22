@@ -800,7 +800,9 @@ class GitRepoPatch(object):
     dependencies = []
     logging.debug('Checking for CQ-DEPEND dependencies for change %s', self)
 
-    self.Fetch(git_repo)
+    # Only fetch the commit message if needed.
+    if self.commit_message is None:
+      self.Fetch(git_repo)
 
     try:
       dependencies = GetPaladinDeps(self.commit_message)
@@ -1049,6 +1051,7 @@ class GerritPatch(GitRepoPatch):
     self._approvals = self.patch_dict['currentPatchSet'].get('approvals', [])
     self.approval_timestamp = \
         max(x['grantedOn'] for x in self._approvals) if self._approvals else 0
+    self.commit_message = patch_dict.get('commitMessage')
 
   def __reduce__(self):
     """Used for pickling to re-create patch object."""

@@ -23,6 +23,7 @@ from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
 from chromite.lib import patch as cros_patch
@@ -72,34 +73,27 @@ class MockManifest(object):
   def GetProjectsLocalRevision(self, _project):
     return 'refs/remotes/cros/master'
 
+  def ProjectExists(self, _project):
+    return True
+
   def ProjectIsContentMerging(self, _project):
     return False
 
 
 # pylint: disable=W0212,R0904
-class base(cros_test_lib.MoxTestCase):
+class Base(cros_test_lib.TestCase):
 
   def setUp(self):
-    self.mox.StubOutWithMock(validation_pool, '_RunCommand')
-    self.mox.StubOutWithMock(time, 'sleep')
-    self.mox.StubOutWithMock(cros_build_lib, 'TreeOpen')
-    # Supress all gerrit access; having this occur is generally a sign
-    # the code is either misbehaving, or the tests are bad.
-    self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
-    self.mox.StubOutWithMock(gerrit.GerritHelper, '_SqlQuery')
     self._patch_counter = (itertools.count(1)).next
     self.build_root = 'fakebuildroot'
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite', remote=constants.EXTERNAL_REMOTE,
-                tracking_branch='refs/heads/master', approval_timestamp=0):
+                tracking_branch='refs/heads/master', approval_timestamp=0,
+                patch=None):
     # pylint: disable=W0201
-    # We have to use a custom mock class to fix some brain behaviour of
-    # pymox where multiple separate mocks can easily equal each other
-    # (or not; the behaviour varies depending on stubs used).
-    patch = MockPatch(cros_patch.GerritPatch)
-    self.mox._mock_objects.append(patch)
-
+    if patch is None:
+      patch = MockPatch(cros_patch.GerritPatch)
     patch.remote = remote
     patch.internal = (remote == constants.INTERNAL_REMOTE)
     if change_id is None:
@@ -132,6 +126,18 @@ class base(cros_test_lib.MoxTestCase):
       return l[0]
     return l
 
+
+class MoxBase(Base, cros_test_lib.MoxTestCase):
+
+  def setUp(self):
+    self.mox.StubOutWithMock(validation_pool, '_RunCommand')
+    self.mox.StubOutWithMock(time, 'sleep')
+    self.mox.StubOutWithMock(cros_build_lib, 'TreeOpen')
+    # Suppress all gerrit access; having this occur is generally a sign
+    # the code is either misbehaving, or that the tests are bad.
+    self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
+    self.mox.StubOutWithMock(gerrit.GerritHelper, '_SqlQuery')
+
   def MakeHelper(self, cros_internal=None, cros=None):
     # pylint: disable=W0201
     if cros_internal:
@@ -145,9 +151,18 @@ class base(cros_test_lib.MoxTestCase):
     return validation_pool.HelperPool(cros_internal=cros_internal,
                                       cros=cros)
 
+  def MockPatch(self, *args, **kwargs):
+    # We use a custom mock class to fix a pymox bug where multiple mocks
+    # sometimes equal each other (depending on stubs used).
+    patch = MockPatch(cros_patch.GerritPatch)
+    mox_ = getattr(self, 'mox', None)
+    if mox_:
+      mox_._mock_objects.append(patch)
+    kwargs['patch'] = patch
+    return Base.MockPatch(self, *args, **kwargs)
 
-# pylint: disable=W0212,R0904
-class TestPatchSeries(base):
+
+class TestPatchSeries(MoxBase):
   """Tests the core resolution and applying logic of
   validation_pool.ValidationPool."""
 
@@ -512,8 +527,7 @@ def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
   return pool
 
 
-# pylint: disable=W0212,R0904
-class TestCoreLogic(base):
+class TestCoreLogic(MoxBase):
   """Tests the core resolution and applying logic of
   validation_pool.ValidationPool."""
 
@@ -638,18 +652,20 @@ class TestCoreLogic(base):
 
     self.mox.StubOutWithMock(pool, '_SubmitChange')
     self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
+    pool._patch_series.CreateDisjointTransactions(patches
+        ).AndReturn(([[patch2, patch1, patch3]], []))
 
     self.mox.StubOutWithMock(gerrit.GerritHelper, 'IsChangeCommitted')
-
-    pool._SubmitChange(patch1).AndReturn(None)
-    gerrit.GerritHelper.IsChangeCommitted(
-        str(patch1.gerrit_number), False).AndReturn(True)
 
     pool._SubmitChange(patch2).AndReturn(None)
     gerrit.GerritHelper.IsChangeCommitted(
         str(patch2.gerrit_number), False).InAnyOrder().AndReturn(False)
 
     pool._HandleCouldNotSubmit(patch2).InAnyOrder()
+
+    pool._SubmitChange(patch1).AndReturn(None)
+    gerrit.GerritHelper.IsChangeCommitted(
+        str(patch1.gerrit_number), False).AndReturn(True)
 
     pool._SubmitChange(patch3).AndRaise(
         cros_build_lib.RunCommandError('blah', None))
@@ -674,6 +690,8 @@ class TestCoreLogic(base):
     self.mox.StubOutWithMock(pool, '_SubmitChange')
     self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
     self.mox.StubOutWithMock(pool, '_HandleApplyFailure')
+    pool._patch_series.CreateDisjointTransactions(passed
+        ).AndReturn(([passed], []))
 
     self.mox.StubOutWithMock(gerrit.GerritHelper, 'IsChangeCommitted')
 
@@ -700,6 +718,8 @@ class TestCoreLogic(base):
 
     self.mox.StubOutWithMock(pool, '_SubmitChange')
     self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
+    pool._patch_series.CreateDisjointTransactions(passed
+        ).AndReturn(([passed], []))
 
     self.mox.StubOutWithMock(gerrit.GerritHelper, 'IsChangeCommitted')
 
@@ -901,7 +921,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     return ''
 
 
-class TestFindSuspects(base):
+class TestFindSuspects(MoxBase):
   """Tests validation_pool.ValidationPool._FindSuspects"""
 
   def setUp(self):
@@ -1061,8 +1081,8 @@ class TestCreateValidationFailureMessage(cros_test_lib.TestCase):
     self._AssertMessage(patch1, [patch1], [])
 
 
-class TestCreateDisjointTransactions(cros_test_lib.MockTestCase, base):
-  """Test the CreateDisjointTransactions function."""
+class MockCreateDisjointTransactions(cros_test_lib.MockTestCase, Base):
+  """Mock the CreateDisjointTransactions function."""
 
   def setUp(self):
     self.deps = {}
@@ -1084,6 +1104,10 @@ class TestCreateDisjointTransactions(cros_test_lib.MockTestCase, base):
     for i, patch in enumerate(patches):
       self.deps[patch] = [p for p in patches[:i]]
     return patches
+
+
+class TestCreateDisjointTransactions(MockCreateDisjointTransactions):
+  """Test the CreateDisjointTransactions function."""
 
   def testPlans(self):
     """Verify that independent sets are distinguished."""
@@ -1117,6 +1141,27 @@ class TestCreateDisjointTransactions(cros_test_lib.MockTestCase, base):
     with cros_test_lib.LoggingCapturer():
       call_count = self.runUnresolvedPlan(approval_timestamp=time.time())
     self.assertEqual(0, call_count)
+
+
+class SubmitPoolTest(MockCreateDisjointTransactions,
+                     cros_build_lib_unittest.RunCommandTestCase):
+  """Test full ability to submit and reject CL pools."""
+
+  def testSubmitPool(self):
+    """Test that we can submit a pool successfully."""
+    patches = self.GetPatches(2)
+    pool = MakePool(changes=patches)
+    pool.SubmitPool()
+
+  def testRejectCLs(self):
+    """Test that we can reject a CL successfully."""
+    patches = self.GetPatches(2)
+    pool = MakePool(changes=patches)
+    errors = []
+    for patch in self.GetPatches(2):
+      errors.append(validation_pool.InternalCQError(patch, str('foo')))
+    pool.changes_that_failed_to_apply_earlier = errors[:]
+    pool.SubmitPool()
 
 
 if __name__ == '__main__':

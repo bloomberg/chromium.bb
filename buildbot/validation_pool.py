@@ -226,9 +226,52 @@ class PatchSeries(object):
     self._lookup_cache = cros_patch.PatchCache()
     self._change_deps_cache = {}
 
-  def GetGitRepoForChange(self, change):
-    return self.manifest.GetProjectPath(change.project, True)
+  def _ManifestDecorator(functor):
+    """Method decorator that sets self.manifest automatically.
 
+    This function automatically initializes the manifest, and allows callers to
+    override the manifest if needed.
+    """
+    # pylint: disable=E0213,W0212,E1101,E1102
+    def f(self, *args, **kwargs):
+      manifest = kwargs.pop('manifest', None)
+      # Wipe is used to track if we need to reset manifest to None, and
+      # to identify if we already had a forced_manifest via __init__.
+      wipe = self.manifest is None
+      if manifest:
+        if not wipe:
+          raise ValueError("manifest can't be specified when one is forced "
+                           "via __init__")
+      elif wipe:
+        manifest = git.ManifestCheckout.Cached(self._path)
+      else:
+        manifest = self.manifest
+
+      try:
+        self.manifest = manifest
+        return functor(self, *args, **kwargs)
+      finally:
+        if wipe:
+          self.manifest = None
+
+    f.__name__ = functor.__name__
+    f.__doc__ = functor.__doc__
+    return f
+
+  @_ManifestDecorator
+  def GetGitRepoForChange(self, change):
+    """Get the project path associated with the specified change.
+
+    Args:
+      change: The change to operate on.
+
+    Returns:
+      The project path if found in the manifest. Otherwise returns None.
+    """
+    if self.manifest and self.manifest.ProjectExists(change.project):
+      return self.manifest.GetProjectPath(change.project, True)
+
+  @_ManifestDecorator
   def _IsContentMerging(self, change):
     """Discern if the given change has Content Merging enabled in gerrit.
 
@@ -246,6 +289,7 @@ class PatchSeries(object):
       return True
     return self.manifest.ProjectIsContentMerging(change.project)
 
+  @_ManifestDecorator
   def ApplyChange(self, change, dryrun=False):
     # If we're in dryrun mode, then 3way is always allowed.
     # Otherwise, allow 3way only if the gerrit project allows it.
@@ -304,7 +348,7 @@ class PatchSeries(object):
       deps: A sequence of dependencies for the parent that we need to identify
         as either merged, or needing resolving.
       parent_lookup: If True, this means we're trying to trace out the git
-        parentage of a change, thus limit the lookup to the parents project
+        parentage of a change, thus limit the lookup to the parent's project
         and branch.
       limit_to: If non-None, then this must be a mapping (preferably a
         cros_patch.PatchCache for translation reasons) of which non-committed
@@ -388,6 +432,50 @@ class PatchSeries(object):
         yield (change, (), exc)
       else:
         yield (change, plan, None)
+
+  def CreateDisjointTransactions(self, changes):
+    """Create a list of disjoint transactions from a list of changes.
+
+    Args:
+      changes: A list of cros_patch.GitRepoPatch instances to generate
+        transactions for.
+
+    Returns:
+      A list of disjoint transactions and a list of exceptions. Each transaction
+      can be tried independently, without involving patches from other
+      transactions. Each change in the pool will included in exactly one of the
+      transactions, unless the patch does not apply for some reason.
+    """
+    # Gather the dependency graph for the specified changes.
+    deps, edges, failed = {}, {}, []
+    for change, plan, ex in self.CreateTransactions(changes, limit_to=changes):
+      if ex is not None:
+        logging.info('Failed creating transaction for %s: %s', change, ex)
+        failed.append(ex)
+      else:
+        # Save off the ordered dependencies of this change.
+        deps[change] = plan
+
+        # Mark every change in the transaction as bidirectionally connected.
+        for change_dep in plan:
+          edges.setdefault(change_dep, set()).update(plan)
+
+    # Calculate an unordered group of strongly connected components.
+    unordered_plans = digraph.StronglyConnectedComponents(list(edges), edges)
+
+    # Sort the groups according to our ordered dependency graph.
+    ordered_plans = []
+    for unordered_plan in unordered_plans:
+      ordered_plan, seen = [], set()
+      for change in unordered_plan:
+        # Iterate over the required CLs, adding them to our plan in order.
+        for change_dep in deps[change]:
+          if change_dep not in seen:
+            ordered_plan.append(change_dep)
+            seen.add(change_dep)
+      ordered_plans.append(ordered_plan)
+
+    return ordered_plans, failed
 
   def _ResolveChange(self, change, plan, stack, limit_to=None):
     """Helper for resolving a node and its dependencies into the plan.
@@ -479,7 +567,8 @@ class PatchSeries(object):
 
     If we're an external builder, internal changes are filtered out.
 
-    Returns an iterator over a list of the filtered changes.
+    Returns:
+      An iterator over a list of the filtered changes.
     """
     for change in changes:
       try:
@@ -491,39 +580,7 @@ class PatchSeries(object):
       change.Fetch(self.GetGitRepoForChange(change))
       yield change
 
-  def _ApplyDecorator(functor):
-    """Decorator for Apply that does appropriate self.manifest manipulation.
-
-    Note this is implemented in this fashion so that we can be sure the
-    instances manifest attribute is properly maintained, and so that we
-    don't have to tell people "go look at docstring blah".
-    """
-    # pylint: disable=E0213,W0212,E1101,E1102
-    def f(self, changes, **kwargs):
-      manifest = kwargs.pop('manifest', None)
-      # Wipe is used to track if we need to reset manifest to None, and
-      # to identify if we already had a forced_manifest via __init__.
-      wipe = self.manifest is None
-      if manifest:
-        if not wipe:
-          raise ValueError("manifest can't be specified when one is forced "
-                           "via __init__")
-      elif wipe:
-        manifest = git.ManifestCheckout.Cached(self._path)
-      else:
-        manifest = self.manifest
-
-      try:
-        self.manifest = manifest
-        return functor(self, changes, **kwargs)
-      finally:
-        if wipe:
-          self.manifest = None
-    f.__name__ = functor.__name__
-    f.__doc__ = functor.__doc__
-    return f
-
-  @_ApplyDecorator
+  @_ManifestDecorator
   def Apply(self, changes, dryrun=False, frozen=True,
             honor_ordering=False, changes_filter=None):
     """Applies changes from pool into the build root specified by the manifest.
@@ -1299,20 +1356,25 @@ class ValidationPool(object):
         self.STATUS_URL, self.SLEEP_TIMEOUT):
       raise TreeIsClosedException()
 
-    for change in changes:
-      was_change_submitted = False
-      logging.info('Change %s will be submitted', change)
-      try:
-        self._SubmitChange(change)
-        was_change_submitted = self._helper_pool.ForChange(
-            change).IsChangeCommitted(str(change.gerrit_number), self.dryrun)
-      except cros_build_lib.RunCommandError:
-        logging.error('gerrit review --submit failed for change.')
-      finally:
-        if not was_change_submitted:
-          logging.error('Could not submit %s', str(change))
-          self._HandleCouldNotSubmit(change)
-          changes_that_failed_to_submit.append(change)
+    plans, _ = self._patch_series.CreateDisjointTransactions(changes)
+
+    for plan in plans:
+      for change in plan:
+        was_change_submitted = False
+        logging.info('Change %s will be submitted', change)
+        try:
+          self._SubmitChange(change)
+          was_change_submitted = self._helper_pool.ForChange(
+              change).IsChangeCommitted(str(change.gerrit_number), self.dryrun)
+        except cros_build_lib.RunCommandError:
+          logging.error('gerrit review --submit failed for change.')
+        finally:
+          if not was_change_submitted:
+            changes_that_failed_to_submit.append(change)
+
+    for change in changes_that_failed_to_submit:
+      logging.error('Could not submit %s', str(change))
+      self._HandleCouldNotSubmit(change)
 
     if changes_that_failed_to_submit:
       raise FailedToSubmitAllChangesException(changes_that_failed_to_submit)
@@ -1677,26 +1739,12 @@ class ValidationPool(object):
       Each change in the pool will included in exactly one of transactions,
       unless the patch does not apply for some reason.
     """
-    helper_pool = HelperPool.SimpleCreate()
-    patches = PatchSeries(self.build_root, forced_manifest=manifest,
-                          helper_pool=helper_pool)
-    edges, failed = {}, []
-    for change, plan, ex in patches.CreateTransactions(self.changes,
-                                                       limit_to=self.changes):
-      if ex is not None:
-        logging.info("Failed creating transaction for %s: %s", change, ex)
-        failed.append(ex)
-      else:
-        # Mark everybody in the transaction as bidirectionally connected to the
-        # others.
-        for x in plan:
-          edges.setdefault(x, set()).update(plan)
-
+    patches = PatchSeries(self.build_root, forced_manifest=manifest)
+    plans, failed = patches.CreateDisjointTransactions(self.changes)
     failed = self._FilterDependencyErrors(failed)
     if failed:
       self._HandleApplyFailure(failed)
-
-    return list(digraph.StronglyConnectedComponents(list(edges), edges))
+    return plans
 
 
 class PaladinMessage():
