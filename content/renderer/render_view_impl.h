@@ -378,6 +378,11 @@ class CONTENT_EXPORT RenderViewImpl
   // Change the device scale factor and force the compositor to resize.
   void SetDeviceScaleFactorForTesting(float factor);
 
+  // Control autoresize mode.
+  void EnableAutoResizeForTesting(const gfx::Size& min_size,
+                                  const gfx::Size& max_size);
+  void DisableAutoResizeForTesting(const gfx::Size& new_size);
+
   // IPC::Listener implementation ----------------------------------------------
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;

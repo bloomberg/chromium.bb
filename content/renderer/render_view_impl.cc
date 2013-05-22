@@ -5295,8 +5295,14 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
   auto_resize_mode_ = false;
   webview()->disableAutoResizeMode();
 
-  Resize(new_size, physical_backing_size_, overdraw_bottom_height_,
-         resizer_rect_, is_fullscreen_, NO_RESIZE_ACK);
+  if (!new_size.IsEmpty()) {
+    Resize(new_size,
+           physical_backing_size_,
+           overdraw_bottom_height_,
+           resizer_rect_,
+           is_fullscreen_,
+           NO_RESIZE_ACK);
+  }
 }
 
 void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
@@ -6509,6 +6515,15 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   SetDeviceScaleFactor(factor);
   if (!auto_resize_mode_)
     AutoResizeCompositor();
+}
+
+void RenderViewImpl::EnableAutoResizeForTesting(const gfx::Size& min_size,
+                                                const gfx::Size& max_size) {
+  OnEnableAutoResize(min_size, max_size);
+}
+
+void RenderViewImpl::DisableAutoResizeForTesting(const gfx::Size& new_size) {
+  OnDisableAutoResize(new_size);
 }
 
 void RenderViewImpl::OnReleaseDisambiguationPopupDIB(

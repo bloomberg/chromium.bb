@@ -72,6 +72,13 @@ void DisableSystemDragDrop();
 // Don't show modal popup menus.
 void DisableModalPopupMenus();
 
+// Control auto resize mode.
+void EnableAutoResizeMode(RenderView* render_view,
+                          const WebKit::WebSize& min_size,
+                          const WebKit::WebSize& max_size);
+void DisableAutoResizeMode(RenderView* render_view,
+                           const WebKit::WebSize& new_size);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_

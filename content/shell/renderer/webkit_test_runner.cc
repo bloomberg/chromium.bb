@@ -344,6 +344,17 @@ void WebKitTestRunner::setClientWindowRect(const WebRect& rect) {
   ForceResizeRenderView(render_view(), WebSize(rect.width, rect.height));
 }
 
+void WebKitTestRunner::enableAutoResizeMode(const WebSize& min_size,
+                                            const WebSize& max_size) {
+  EnableAutoResizeMode(render_view(), min_size, max_size);
+}
+
+void WebKitTestRunner::disableAutoResizeMode(const WebSize& new_size) {
+  DisableAutoResizeMode(render_view(), new_size);
+  if (!new_size.isEmpty())
+    ForceResizeRenderView(render_view(), new_size);
+}
+
 void WebKitTestRunner::showDevTools() {
   Send(new ShellViewHostMsg_ShowDevTools(routing_id()));
 }

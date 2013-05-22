@@ -1404,23 +1404,24 @@ void RenderWidget::didScrollRect(int dx, int dy,
 
 void RenderWidget::didAutoResize(const WebSize& new_size) {
   if (size_.width() != new_size.width || size_.height() != new_size.height) {
-    if (RenderThreadImpl::current()->short_circuit_size_updates()) {
-      setWindowRect(WebRect(rootWindowRect().x,
-                            rootWindowRect().y,
-                            new_size.width,
-                            new_size.height));
-    } else {
-      size_ = new_size;
+    size_ = new_size;
 
-      // If we don't clear PaintAggregator after changing autoResize state, then
-      // we might end up in a situation where bitmap_rect is larger than the
-      // view_size. By clearing PaintAggregator, we ensure that we don't end up
-      // with invalid damage rects.
-      paint_aggregator_.ClearPendingUpdate();
+    // If we don't clear PaintAggregator after changing autoResize state, then
+    // we might end up in a situation where bitmap_rect is larger than the
+    // view_size. By clearing PaintAggregator, we ensure that we don't end up
+    // with invalid damage rects.
+    paint_aggregator_.ClearPendingUpdate();
+
+    if (RenderThreadImpl::current()->short_circuit_size_updates()) {
+      WebRect new_pos(rootWindowRect().x,
+                      rootWindowRect().y,
+                      new_size.width,
+                      new_size.height);
+      view_screen_rect_ = new_pos;
+      window_screen_rect_ = new_pos;
     }
 
-    if (auto_resize_mode_)
-      AutoResizeCompositor();
+    AutoResizeCompositor();
 
     if (!RenderThreadImpl::current()->short_circuit_size_updates())
       need_update_rect_for_auto_resize_ = true;

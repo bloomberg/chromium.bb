@@ -24,6 +24,8 @@
 #endif
 
 using WebKit::WebGamepads;
+using WebKit::WebRect;
+using WebKit::WebSize;
 using WebTestRunner::WebTestProxy;
 using WebTestRunner::WebTestProxyBase;
 
@@ -95,8 +97,12 @@ void EnableShortCircuitSizeUpdates() {
 }
 
 void ForceResizeRenderView(RenderView* render_view,
-                           const WebKit::WebSize& new_size) {
-  static_cast<RenderViewImpl*>(render_view)->didAutoResize(new_size);
+                           const WebSize& new_size) {
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  render_view_impl->setWindowRect(WebRect(render_view_impl->rootWindowRect().x,
+                                          render_view_impl->rootWindowRect().y,
+                                          new_size.width,
+                                          new_size.height));
 }
 
 void DisableNavigationErrorPages() {
@@ -118,6 +124,18 @@ void DisableModalPopupMenus() {
 #if defined(OS_MACOSX)
   PopupMenuHelper::DontShowPopupMenuForTesting();
 #endif
+}
+
+void EnableAutoResizeMode(RenderView* render_view,
+                          const WebSize& min_size,
+                          const WebSize& max_size) {
+  static_cast<RenderViewImpl*>(render_view)
+      ->EnableAutoResizeForTesting(min_size, max_size);
+}
+
+void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
+  static_cast<RenderViewImpl*>(render_view)
+      ->DisableAutoResizeForTesting(new_size);
 }
 
 }  // namespace content
