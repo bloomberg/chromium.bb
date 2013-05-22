@@ -13,6 +13,7 @@ extern const char kAny[];
 extern const char kArray[];
 extern const char kBoolean[];
 extern const char kChoices[];
+extern const char kDescription[];
 extern const char kEnum[];
 extern const char kId[];
 extern const char kInteger[];
@@ -28,9 +29,12 @@ extern const char kNumber[];
 extern const char kObject[];
 extern const char kOptional[];
 extern const char kPattern[];
+extern const char kPatternProperties[];
 extern const char kProperties[];
 extern const char kRef[];
+extern const char kSchema[];
 extern const char kString[];
+extern const char kTitle[];
 extern const char kType[];
 
 }  // namespace json_schema_constants

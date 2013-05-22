@@ -11,6 +11,7 @@ const char kAny[] = "any";
 const char kArray[] = "array";
 const char kBoolean[] = "boolean";
 const char kChoices[] = "choices";
+const char kDescription[] = "description";
 const char kEnum[] = "enum";
 const char kId[] = "id";
 const char kInteger[] = "integer";
@@ -26,9 +27,12 @@ const char kNumber[] = "number";
 const char kObject[] = "object";
 const char kOptional[] = "optional";
 const char kPattern[] = "pattern";
+const char kPatternProperties[] = "patternProperties";
 const char kProperties[] = "properties";
 const char kRef[] = "$ref";
+const char kSchema[] = "$schema";
 const char kString[] = "string";
+const char kTitle[] = "title";
 const char kType[] = "type";
 
 }  // namespace json_schema_constants

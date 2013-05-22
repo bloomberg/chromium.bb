@@ -4,10 +4,13 @@
 
 #include "chrome/common/json_schema/json_schema_validator.h"
 
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
 
+#include "base/json/json_reader.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/common/json_schema/json_schema_constants.h"
@@ -22,6 +25,212 @@ double GetNumberValue(const Value* value) {
   CHECK(value->GetAsDouble(&result))
       << "Unexpected value type: " << value->GetType();
   return result;
+}
+
+bool IsValidType(const std::string& type) {
+  static const char* kValidTypes[] = {
+    schema::kAny,
+    schema::kArray,
+    schema::kBoolean,
+    schema::kInteger,
+    schema::kNull,
+    schema::kNumber,
+    schema::kObject,
+    schema::kString,
+  };
+  const char** end = kValidTypes + arraysize(kValidTypes);
+  return std::find(kValidTypes, end, type) != end;
+}
+
+// Maps a schema attribute name to its expected type.
+struct ExpectedType {
+  const char* key;
+  base::Value::Type type;
+};
+
+// Helper for std::lower_bound.
+bool CompareToString(const ExpectedType& entry, const std::string& key) {
+  return entry.key < key;
+}
+
+bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
+  // This array must be sorted, so that std::lower_bound can perform a
+  // binary search.
+  static const ExpectedType kExpectedTypes[] = {
+    // Note: kRef == "$ref", kSchema == "$schema"
+    { schema::kRef,                     base::Value::TYPE_STRING      },
+    { schema::kSchema,                  base::Value::TYPE_STRING      },
+
+    { schema::kAdditionalProperties,    base::Value::TYPE_DICTIONARY  },
+    { schema::kChoices,                 base::Value::TYPE_LIST        },
+    { schema::kDescription,             base::Value::TYPE_STRING      },
+    { schema::kEnum,                    base::Value::TYPE_LIST        },
+    { schema::kId,                      base::Value::TYPE_STRING      },
+    { schema::kMaxItems,                base::Value::TYPE_INTEGER     },
+    { schema::kMaxLength,               base::Value::TYPE_INTEGER     },
+    { schema::kMaximum,                 base::Value::TYPE_DOUBLE      },
+    { schema::kMinItems,                base::Value::TYPE_INTEGER     },
+    { schema::kMinLength,               base::Value::TYPE_INTEGER     },
+    { schema::kMinimum,                 base::Value::TYPE_DOUBLE      },
+    { schema::kOptional,                base::Value::TYPE_BOOLEAN     },
+    { schema::kProperties,              base::Value::TYPE_DICTIONARY  },
+    { schema::kTitle,                   base::Value::TYPE_STRING      },
+  };
+
+  bool has_type = false;
+  const base::ListValue* list_value = NULL;
+  const base::DictionaryValue* dictionary_value = NULL;
+  std::string string_value;
+
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    // Validate the "type" attribute, which may be a string or a list.
+    if (it.key() == schema::kType) {
+      switch (it.value().GetType()) {
+        case base::Value::TYPE_STRING:
+          it.value().GetAsString(&string_value);
+          if (!IsValidType(string_value)) {
+            *error = "Invalid value for type attribute";
+            return false;
+          }
+          break;
+        case base::Value::TYPE_LIST:
+          it.value().GetAsList(&list_value);
+          for (size_t i = 0; i < list_value->GetSize(); ++i) {
+            if (!list_value->GetString(i, &string_value) ||
+                !IsValidType(string_value)) {
+              *error = "Invalid value for type attribute";
+              return false;
+            }
+          }
+          break;
+        default:
+          *error = "Invalid value for type attribute";
+          return false;
+      }
+      has_type = true;
+      continue;
+    }
+
+    // Validate the "items" attribute, which is a schema or a list of schemas.
+    if (it.key() == schema::kItems) {
+      if (it.value().GetAsDictionary(&dictionary_value)) {
+        if (!IsValidSchema(dictionary_value, error)) {
+          DCHECK(!error->empty());
+          return false;
+        }
+      } else if (it.value().GetAsList(&list_value)) {
+        for (size_t i = 0; i < list_value->GetSize(); ++i) {
+          if (!list_value->GetDictionary(i, &dictionary_value)) {
+            *error = base::StringPrintf(
+                "Invalid entry in items attribute at index %d",
+                static_cast<int>(i));
+            return false;
+          }
+          if (!IsValidSchema(dictionary_value, error)) {
+            DCHECK(!error->empty());
+            return false;
+          }
+        }
+      } else {
+        *error = "Invalid value for items attribute";
+        return false;
+      }
+      continue;
+    }
+
+    // All the other attributes have a single valid type.
+    const ExpectedType* end = kExpectedTypes + arraysize(kExpectedTypes);
+    const ExpectedType* entry = std::lower_bound(
+        kExpectedTypes, end, it.key(), CompareToString);
+    if (entry == end || entry->key != it.key()) {
+      *error = base::StringPrintf("Invalid attribute %s", it.key().c_str());
+      return false;
+    }
+    if (!it.value().IsType(entry->type)) {
+      *error = base::StringPrintf("Invalid value for %s attribute",
+                                  it.key().c_str());
+      return false;
+    }
+
+    // base::Value::TYPE_INTEGER attributes must be >= 0.
+    // This applies to "minItems", "maxItems", "minLength" and "maxLength".
+    if (it.value().IsType(base::Value::TYPE_INTEGER)) {
+      int integer_value;
+      it.value().GetAsInteger(&integer_value);
+      if (integer_value < 0) {
+        *error = base::StringPrintf("Value of %s must be >= 0, got %d",
+                                    it.key().c_str(), integer_value);
+        return false;
+      }
+    }
+
+    // Validate the "properties" attribute. Each entry maps a key to a schema.
+    if (it.key() == schema::kProperties) {
+      it.value().GetAsDictionary(&dictionary_value);
+      for (base::DictionaryValue::Iterator it(*dictionary_value);
+           !it.IsAtEnd(); it.Advance()) {
+        if (!it.value().GetAsDictionary(&dictionary_value)) {
+          *error = "Invalid value for properties attribute";
+          return false;
+        }
+        if (!IsValidSchema(dictionary_value, error)) {
+          DCHECK(!error->empty());
+          return false;
+        }
+      }
+    }
+
+    // Validate "additionalProperties" attribute, which is a schema.
+    if (it.key() == schema::kAdditionalProperties) {
+      it.value().GetAsDictionary(&dictionary_value);
+      if (!IsValidSchema(dictionary_value, error)) {
+        DCHECK(!error->empty());
+        return false;
+      }
+    }
+
+    // Validate the values contained in an "enum" attribute.
+    if (it.key() == schema::kEnum) {
+      it.value().GetAsList(&list_value);
+      for (size_t i = 0; i < list_value->GetSize(); ++i) {
+        const base::Value* value = NULL;
+        list_value->Get(i, &value);
+        switch (value->GetType()) {
+          case base::Value::TYPE_NULL:
+          case base::Value::TYPE_BOOLEAN:
+          case base::Value::TYPE_INTEGER:
+          case base::Value::TYPE_DOUBLE:
+          case base::Value::TYPE_STRING:
+            break;
+          default:
+            *error = "Invalid value in enum attribute";
+            return false;
+        }
+      }
+    }
+
+    // Validate the schemas contained in a "choices" attribute.
+    if (it.key() == schema::kChoices) {
+      it.value().GetAsList(&list_value);
+      for (size_t i = 0; i < list_value->GetSize(); ++i) {
+        if (!list_value->GetDictionary(i, &dictionary_value)) {
+          *error = "Invalid choices attribute";
+          return false;
+        }
+        if (!IsValidSchema(dictionary_value, error)) {
+          DCHECK(!error->empty());
+          return false;
+        }
+      }
+    }
+  }
+
+  if (!has_type) {
+    *error = "Schema must have a type attribute";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -119,6 +328,26 @@ std::string JSONSchemaValidator::FormatErrorMessage(const std::string& format,
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s2);
   return ret_val;
+}
+
+// static
+scoped_ptr<base::DictionaryValue> JSONSchemaValidator::IsValidSchema(
+    const std::string& schema,
+    std::string* error) {
+  base::JSONParserOptions options = base::JSON_PARSE_RFC;
+  scoped_ptr<base::Value> json(
+      base::JSONReader::ReadAndReturnError(schema, options, NULL, error));
+  if (!json)
+    return scoped_ptr<base::DictionaryValue>();
+  base::DictionaryValue* dict = NULL;
+  if (!json->GetAsDictionary(&dict)) {
+    *error = "Schema must be a JSON object";
+    return scoped_ptr<base::DictionaryValue>();
+  }
+  if (!::IsValidSchema(dict, error))
+    return scoped_ptr<base::DictionaryValue>();
+  ignore_result(json.release());
+  return make_scoped_ptr(dict);
 }
 
 JSONSchemaValidator::JSONSchemaValidator(DictionaryValue* schema)

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -97,6 +98,15 @@ class JSONSchemaValidator {
   static std::string FormatErrorMessage(const std::string& format,
                                         const std::string& s1,
                                         const std::string& s2);
+
+  // Verifies if |schema| is a valid JSON v3 schema. When this validation passes
+  // then |schema| is valid JSON that can be parsed into a DictionaryValue,
+  // and that DictionaryValue can be used to build a JSONSchemaValidator.
+  // Returns the parsed DictionaryValue when |schema| validated, otherwise
+  // returns NULL. In that case, |error| contains an error description.
+  static scoped_ptr<base::DictionaryValue> IsValidSchema(
+      const std::string& schema,
+      std::string* error);
 
   // Creates a validator for the specified schema.
   //
