@@ -225,7 +225,7 @@ void WTFInstallReportBacktraceOnCrashHook();
 
 #endif
 
-/* ASSERT_WITH_SECURITY_IMPLICATION
+/* ASSERT_WITH_SECURITY_IMPLICATION / RELEASE_ASSERT_WITH_SECURITY_IMPLICATION
 
    Use in places where failure of the assertion indicates a possible security
    vulnerability. Classes of these vulnerabilities include bad casts, out of
@@ -241,9 +241,12 @@ void WTFInstallReportBacktraceOnCrashHook();
          CRASH()) : \
         (void)0)
 
+#define RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(assertion) ASSERT_WITH_SECURITY_IMPLICATION(assertion)
+
 #else
 
 #define ASSERT_WITH_SECURITY_IMPLICATION(assertion) ASSERT(assertion)
+#define RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(assertion) RELEASE_ASSERT(assertion)
 
 #endif
 
