@@ -121,6 +121,7 @@
         'common/child_process_logging_win.cc',
         'common/chrome_content_client.cc',
         'common/chrome_content_client.h',
+        'common/chrome_content_client_constants.cc',
         'common/chrome_content_client_ios.mm',
         'common/chrome_notification_types.h',
         'common/chrome_result_codes.h',

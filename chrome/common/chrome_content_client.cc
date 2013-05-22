@@ -55,7 +55,6 @@
 
 namespace {
 
-const char kPDFPluginName[] = "Chrome PDF Viewer";
 const char kPDFPluginMimeType[] = "application/pdf";
 const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
@@ -64,14 +63,11 @@ const char kPDFPluginPrintPreviewMimeType
 const uint32 kPDFPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                      ppapi::PERMISSION_DEV;
 
-const char kNaClPluginName[] = "Native Client";
 const char kNaClPluginMimeType[] = "application/x-nacl";
 const char kNaClPluginExtension[] = "nexe";
 const char kNaClPluginDescription[] = "Native Client Executable";
 const uint32 kNaClPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                       ppapi::PERMISSION_DEV;
-
-const char kNaClOldPluginName[] = "Chrome NaCl";
 
 const char kO3DPluginName[] = "Google Talk Plugin Video Accelerator";
 const char kO3DPluginMimeType[] ="application/vnd.o3d.auto";
@@ -137,7 +133,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     if (skip_pdf_file_check || file_util::PathExists(path)) {
       content::PepperPluginInfo pdf;
       pdf.path = path;
-      pdf.name = kPDFPluginName;
+      pdf.name = chrome::ChromeContentClient::kPDFPluginName;
       webkit::WebPluginMimeType pdf_mime_type(kPDFPluginMimeType,
                                               kPDFPluginExtension,
                                               kPDFPluginDescription);
@@ -163,7 +159,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     if (skip_nacl_file_check || file_util::PathExists(path)) {
       content::PepperPluginInfo nacl;
       nacl.path = path;
-      nacl.name = kNaClPluginName;
+      nacl.name = chrome::ChromeContentClient::kNaClPluginName;
       webkit::WebPluginMimeType nacl_mime_type(kNaClPluginMimeType,
                                                kNaClPluginExtension,
                                                kNaClPluginDescription);
@@ -374,11 +370,6 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
 }  // namespace
 
 namespace chrome {
-
-const char* const ChromeContentClient::kPDFPluginName = ::kPDFPluginName;
-const char* const ChromeContentClient::kNaClPluginName = ::kNaClPluginName;
-const char* const ChromeContentClient::kNaClOldPluginName =
-    ::kNaClOldPluginName;
 
 std::string ChromeContentClient::GetProductImpl() {
   chrome::VersionInfo version_info;
