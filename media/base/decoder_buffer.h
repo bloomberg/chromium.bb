@@ -89,7 +89,6 @@ class MEDIA_EXPORT DecoderBuffer
   // Allocates a buffer of size |size| >= 0 and copies |data| into it.  Buffer
   // will be padded and aligned as necessary.  If |data| is NULL then |data_| is
   // set to NULL and |buffer_size_| to 0.
-  DecoderBuffer(const uint8* data, int size);
   DecoderBuffer(const uint8* data, int size,
                 const uint8* side_data, int side_data_size);
   virtual ~DecoderBuffer();

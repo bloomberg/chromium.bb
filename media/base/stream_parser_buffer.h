@@ -18,6 +18,9 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   static scoped_refptr<StreamParserBuffer> CreateEOSBuffer();
   static scoped_refptr<StreamParserBuffer> CopyFrom(
       const uint8* data, int data_size, bool is_keyframe);
+  static scoped_refptr<StreamParserBuffer> CopyFrom(
+      const uint8* data, int data_size,
+      const uint8* side_data, int side_data_size, bool is_keyframe);
   bool IsKeyframe() const { return is_keyframe_; }
 
   // Decode timestamp. If not explicitly set, or set to kNoTimestamp(), the
@@ -31,7 +34,9 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   void SetConfigId(int config_id);
 
  private:
-  StreamParserBuffer(const uint8* data, int data_size, bool is_keyframe);
+  StreamParserBuffer(const uint8* data, int data_size,
+                     const uint8* side_data, int side_data_size,
+                     bool is_keyframe);
   virtual ~StreamParserBuffer();
 
   bool is_keyframe_;

@@ -179,6 +179,7 @@ static const ElementIdInfo kTrackTranslateIds[] = {
 static const ElementIdInfo kVideoIds[] = {
   {UINT, kWebMIdFlagInterlaced},
   {UINT, kWebMIdStereoMode},
+  {UINT, kWebMIdAlphaMode},
   {UINT, kWebMIdPixelWidth},
   {UINT, kWebMIdPixelHeight},
   {UINT, kWebMIdPixelCropBottom},

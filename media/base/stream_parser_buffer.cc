@@ -10,13 +10,21 @@
 namespace media {
 
 scoped_refptr<StreamParserBuffer> StreamParserBuffer::CreateEOSBuffer() {
-  return make_scoped_refptr(new StreamParserBuffer(NULL, 0, false));
+  return make_scoped_refptr(new StreamParserBuffer(NULL, 0, NULL, 0, false));
 }
 
 scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
     const uint8* data, int data_size, bool is_keyframe) {
   return make_scoped_refptr(
-      new StreamParserBuffer(data, data_size, is_keyframe));
+      new StreamParserBuffer(data, data_size, NULL, 0, is_keyframe));
+}
+
+scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
+    const uint8* data, int data_size,
+    const uint8* side_data, int side_data_size, bool is_keyframe) {
+  return make_scoped_refptr(
+      new StreamParserBuffer(data, data_size, side_data, side_data_size,
+                             is_keyframe));
 }
 
 base::TimeDelta StreamParserBuffer::GetDecodeTimestamp() const {
@@ -30,8 +38,9 @@ void StreamParserBuffer::SetDecodeTimestamp(const base::TimeDelta& timestamp) {
 }
 
 StreamParserBuffer::StreamParserBuffer(const uint8* data, int data_size,
-                                       bool is_keyframe)
-    : DecoderBuffer(data, data_size),
+                                       const uint8* side_data,
+                                       int side_data_size, bool is_keyframe)
+    : DecoderBuffer(data, data_size, side_data, side_data_size),
       is_keyframe_(is_keyframe),
       decode_timestamp_(kNoTimestamp()),
       config_id_(kInvalidConfigId) {

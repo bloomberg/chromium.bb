@@ -51,6 +51,7 @@ class WebMVideoClient : public WebMParserClient {
   int64 display_width_;
   int64 display_height_;
   int64 display_unit_;
+  int64 alpha_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMVideoClient);
 };

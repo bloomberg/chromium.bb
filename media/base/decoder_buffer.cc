@@ -15,30 +15,20 @@ DecoderBuffer::DecoderBuffer(int size)
   Initialize();
 }
 
-DecoderBuffer::DecoderBuffer(const uint8* data, int size)
-    : size_(size),
-      side_data_size_(0) {
-  if (!data) {
-    CHECK_EQ(size_, 0);
-    return;
-  }
-
-  Initialize();
-  memcpy(data_.get(), data, size_);
-}
-
 DecoderBuffer::DecoderBuffer(const uint8* data, int size,
                              const uint8* side_data, int side_data_size)
     : size_(size),
       side_data_size_(side_data_size) {
   if (!data) {
     CHECK_EQ(size_, 0);
+    CHECK(!side_data);
     return;
   }
 
   Initialize();
   memcpy(data_.get(), data, size_);
-  memcpy(side_data_.get(), side_data, side_data_size_);
+  if (side_data)
+    memcpy(side_data_.get(), side_data, side_data_size_);
 }
 
 DecoderBuffer::~DecoderBuffer() {}
@@ -60,7 +50,7 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8* data,
                                                      int data_size) {
   // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK(data);
-  return make_scoped_refptr(new DecoderBuffer(data, data_size));
+  return make_scoped_refptr(new DecoderBuffer(data, data_size, NULL, 0));
 }
 
 // static
@@ -77,7 +67,7 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8* data,
 
 // static
 scoped_refptr<DecoderBuffer> DecoderBuffer::CreateEOSBuffer() {
-  return make_scoped_refptr(new DecoderBuffer(NULL, 0));
+  return make_scoped_refptr(new DecoderBuffer(NULL, 0, NULL, 0));
 }
 
 base::TimeDelta DecoderBuffer::GetTimestamp() const {

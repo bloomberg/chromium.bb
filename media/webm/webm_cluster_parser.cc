@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/sys_byteorder.h"
 #include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
 #include "media/webm/webm_constants.h"
@@ -61,6 +62,8 @@ WebMClusterParser::WebMClusterParser(
       last_block_timecode_(-1),
       block_data_size_(-1),
       block_duration_(-1),
+      block_add_id_(-1),
+      block_additional_data_size_(-1),
       cluster_timecode_(-1),
       cluster_start_time_(kNoTimestamp()),
       cluster_ended_(false),
@@ -134,6 +137,10 @@ WebMParserClient* WebMClusterParser::OnListStart(int id) {
     block_data_.reset();
     block_data_size_ = -1;
     block_duration_ = -1;
+  } else if (id == kWebMIdBlockAdditions) {
+    block_add_id_ = -1;
+    block_additional_data_.reset();
+    block_additional_data_size_ = -1;
   }
 
   return this;
@@ -150,30 +157,41 @@ bool WebMClusterParser::OnListEnd(int id) {
   }
 
   bool result = ParseBlock(false, block_data_.get(), block_data_size_,
-                           block_duration_);
+                           block_additional_data_.get(),
+                           block_additional_data_size_, block_duration_);
   block_data_.reset();
   block_data_size_ = -1;
   block_duration_ = -1;
+  block_add_id_ = -1;
+  block_additional_data_.reset();
+  block_additional_data_size_ = -1;
   return result;
 }
 
 bool WebMClusterParser::OnUInt(int id, int64 val) {
-  if (id == kWebMIdTimecode) {
-    if (cluster_timecode_ != -1)
-      return false;
-
-    cluster_timecode_ = val;
-  } else if (id == kWebMIdBlockDuration) {
-    if (block_duration_ != -1)
-      return false;
-    block_duration_ = val;
+  int64* dst;
+  switch (id) {
+    case kWebMIdTimecode:
+      dst = &cluster_timecode_;
+      break;
+    case kWebMIdBlockDuration:
+      dst = &block_duration_;
+      break;
+    case kWebMIdBlockAddID:
+      dst = &block_add_id_;
+      break;
+    default:
+      return true;
   }
-
+  if (*dst != -1)
+    return false;
+  *dst = val;
   return true;
 }
 
 bool WebMClusterParser::ParseBlock(bool is_simple_block, const uint8* buf,
-                                   int size, int duration) {
+                                   int size, const uint8* additional,
+                                   int additional_size, int duration) {
   if (size < 4)
     return false;
 
@@ -201,32 +219,58 @@ bool WebMClusterParser::ParseBlock(bool is_simple_block, const uint8* buf,
   const uint8* frame_data = buf + 4;
   int frame_size = size - (frame_data - buf);
   return OnBlock(is_simple_block, track_num, timecode, duration, flags,
-                 frame_data, frame_size);
+                 frame_data, frame_size, additional, additional_size);
 }
 
 bool WebMClusterParser::OnBinary(int id, const uint8* data, int size) {
-  if (id == kWebMIdSimpleBlock)
-    return ParseBlock(true, data, size, -1);
+  switch (id) {
+    case kWebMIdSimpleBlock:
+      return ParseBlock(true, data, size, NULL, -1, -1);
 
-  if (id != kWebMIdBlock)
-    return true;
+    case kWebMIdBlock:
+      if (block_data_) {
+        MEDIA_LOG(log_cb_) << "More than 1 Block in a BlockGroup is not "
+                              "supported.";
+        return false;
+      }
+      block_data_.reset(new uint8[size]);
+      memcpy(block_data_.get(), data, size);
+      block_data_size_ = size;
+      return true;
 
-  if (block_data_) {
-    MEDIA_LOG(log_cb_) << "More than 1 Block in a BlockGroup is not supported.";
-    return false;
+    case kWebMIdBlockAdditional: {
+      uint64 block_add_id = base::HostToNet64(block_add_id_);
+      if (block_additional_data_) {
+        // TODO(vigneshv): Technically, more than 1 BlockAdditional is allowed
+        // as per matroska spec. But for now we don't have a use case to
+        // support parsing of such files. Take a look at this again when such a
+        // case arises.
+        MEDIA_LOG(log_cb_) << "More than 1 BlockAdditional in a BlockGroup is "
+                              "not supported.";
+        return false;
+      }
+      // First 8 bytes of side_data in DecoderBuffer is the BlockAddID
+      // element's value in Big Endian format. This is done to mimic ffmpeg
+      // demuxer's behavior.
+      block_additional_data_size_ = size + sizeof(block_add_id);
+      block_additional_data_.reset(new uint8[block_additional_data_size_]);
+      memcpy(block_additional_data_.get(), &block_add_id,
+             sizeof(block_add_id));
+      memcpy(block_additional_data_.get() + 8, data, size);
+      return true;
+    }
+
+    default:
+      return true;
   }
-
-  block_data_.reset(new uint8[size]);
-  memcpy(block_data_.get(), data, size);
-  block_data_size_ = size;
-  return true;
 }
 
 bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
                                 int timecode,
                                 int  block_duration,
                                 int flags,
-                                const uint8* data, int size) {
+                                const uint8* data, int size,
+                                const uint8* additional, int additional_size) {
   DCHECK_GE(size, 0);
   if (cluster_timecode_ == -1) {
     MEDIA_LOG(log_cb_) << "Got a block before cluster timecode.";
@@ -279,7 +323,8 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
       is_simple_block ? (flags & 0x80) != 0 : track->IsKeyframe(data, size);
 
   scoped_refptr<StreamParserBuffer> buffer =
-      StreamParserBuffer::CopyFrom(data, size, is_keyframe);
+      StreamParserBuffer::CopyFrom(data, size, additional, additional_size,
+                                   is_keyframe);
 
   // Every encrypted Block has a signal byte and IV prepended to it. Current
   // encrypted WebM request for comments specification is here
