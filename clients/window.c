@@ -1621,6 +1621,81 @@ widget_get_cairo_surface(struct widget *widget)
 	return surface->cairo_surface;
 }
 
+static void
+widget_cairo_update_transform(struct widget *widget, cairo_t *cr)
+{
+	struct surface *surface = widget->surface;
+	double angle;
+	cairo_matrix_t m;
+	enum wl_output_transform transform;
+	int surface_width, surface_height;
+	int translate_x, translate_y;
+
+	surface_width = surface->allocation.width;
+	surface_height = surface->allocation.height;
+
+	transform = window_get_buffer_transform(widget->window);
+	switch (transform) {
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		cairo_matrix_init(&m, -1, 0, 0, 1, 0, 0);
+		break;
+	default:
+		cairo_matrix_init_identity(&m);
+		break;
+	}
+
+	switch (transform) {
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	default:
+		angle = 0;
+		translate_x = 0;
+		translate_y = 0;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		angle = 0;
+		translate_x = surface_width;
+		translate_y = 0;
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+		angle = M_PI_2;
+		translate_x = surface_height;
+		translate_y = 0;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		angle = M_PI_2;
+		translate_x = surface_height;
+		translate_y = surface_width;
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+		angle = M_PI;
+		translate_x = surface_width;
+		translate_y = surface_height;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		angle = M_PI;
+		translate_x = 0;
+		translate_y = surface_height;
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+		angle = M_PI + M_PI_2;
+		translate_x = 0;
+		translate_y = surface_width;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		angle = M_PI + M_PI_2;
+		translate_x = 0;
+		translate_y = 0;
+		break;
+	}
+
+	cairo_translate(cr, translate_x, translate_y);
+	cairo_rotate(cr, angle);
+	cairo_transform(cr, &m);
+}
+
 cairo_t *
 widget_cairo_create(struct widget *widget)
 {
@@ -1630,6 +1705,8 @@ widget_cairo_create(struct widget *widget)
 
 	cairo_surface = widget_get_cairo_surface(widget);
 	cr = cairo_create(cairo_surface);
+
+	widget_cairo_update_transform(widget, cr);
 
 	cairo_translate(cr, -surface->allocation.x, -surface->allocation.y);
 
