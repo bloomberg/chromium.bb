@@ -46,6 +46,7 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -259,7 +260,8 @@ void AutofillManager::RegisterUserPrefs(
 void AutofillManager::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  Reset();
+  if (details.is_navigation_to_different_page())
+    Reset();
 }
 
 void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {

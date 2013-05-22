@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_manager.h"
@@ -13,6 +14,7 @@
 #include "components/autofill/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
+#include "components/autofill/common/password_form_fill_data.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -276,13 +278,20 @@ TEST_F(AutofillExternalDelegateUnitTest,
 // Test that the popup is marked as visible after recieving password
 // suggestions.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
+  static const base::string16 kUsername = ASCIIToUTF16("username");
   std::vector<base::string16> suggestions;
-  suggestions.push_back(base::string16());
+  suggestions.push_back(kUsername);
 
   FormFieldData field;
   field.is_focusable = true;
   field.should_autocomplete = true;
   const gfx::RectF element_bounds;
+
+  FormFieldData username_field_data;
+  username_field_data.value = kUsername;
+  PasswordFormFillData password_form_fill_data;
+  password_form_fill_data.basic_data.fields.push_back(username_field_data);
+  external_delegate_->AddPasswordFormMapping(field, password_form_fill_data);
 
   // The enums must be cast to ints to prevent compile errors on linux_rel.
   EXPECT_CALL(manager_delegate_,
@@ -296,9 +305,6 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
   external_delegate_->OnShowPasswordSuggestions(suggestions,
                                                 field,
                                                 element_bounds);
-
-  // Called by DidAutofillSuggestions, add expectation to remove warning.
-  EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _));
 
   EXPECT_CALL(manager_delegate_, HideAutofillPopup());
 

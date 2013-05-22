@@ -206,11 +206,10 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == WebAutofillClient::MenuItemIDClearForm) {
     // User selected 'Clear form'.
     host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
-  } else if (identifier == WebAutofillClient::MenuItemIDPasswordEntry &&
-             password_autofill_manager_.DidAcceptAutofillSuggestion(
-                 autofill_query_field_, value)) {
-    // DidAcceptAutofillSuggestion has already handled the work to fill in
-    // the page as required.
+  } else if (identifier == WebAutofillClient::MenuItemIDPasswordEntry) {
+    bool success = password_autofill_manager_.DidAcceptAutofillSuggestion(
+        autofill_query_field_, value);
+    DCHECK(success);
   } else if (identifier == WebAutofillClient::MenuItemIDDataListEntry) {
     host->Send(new AutofillMsg_AcceptDataListSuggestion(host->GetRoutingID(),
                                                         value));
