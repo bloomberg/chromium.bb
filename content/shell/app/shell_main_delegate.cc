@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "cc/base/switches.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -116,6 +117,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kEnableCssShaders);
     command_line.AppendSwitchASCII(switches::kTouchEvents,
                                    switches::kTouchEventsEnabled);
+    command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
     if (command_line.HasSwitch(switches::kEnableSoftwareCompositing))
       command_line.AppendSwitch(switches::kEnableSoftwareCompositingGLAdapter);
 
