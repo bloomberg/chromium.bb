@@ -593,8 +593,11 @@ class ChromiumEnv : public Env, public UMALogger, public RetrierProvider {
       if (::file_util::ReplaceFileAndGetError(
               src_file_path, destination, &error)) {
         sync_parent(dst);
-        if (src != dst)
+        if (src_file_path.DirName() != destination.DirName()) {
+          // As leveldb is implemented now this branch will never be taken, but
+          // this is future-proof.
           sync_parent(src);
+        }
         return result;
       }
     } while (retrier.ShouldKeepTrying(error));
