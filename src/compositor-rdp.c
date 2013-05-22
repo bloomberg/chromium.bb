@@ -133,8 +133,8 @@ rdp_peer_refresh_rfx(pixman_region32_t *damage, pixman_image_t *image, freerdp_p
 	SURFACE_BITS_COMMAND *cmd = &update->surface_bits_command;
 	RdpPeerContext *context = (RdpPeerContext *)peer->context;
 
-	stream_clear(context->encode_stream);
-	stream_set_pos(context->encode_stream, 0);
+	Stream_Clear(context->encode_stream);
+	Stream_SetPosition(context->encode_stream, 0);
 
 	width = (damage->extents.x2 - damage->extents.x1);
 	height = (damage->extents.y2 - damage->extents.y1);
@@ -169,8 +169,8 @@ rdp_peer_refresh_rfx(pixman_region32_t *damage, pixman_image_t *image, freerdp_p
 			pixman_image_get_stride(image)
 	);
 
-	cmd->bitmapDataLength = stream_get_length(context->encode_stream);
-	cmd->bitmapData = stream_get_head(context->encode_stream);
+	cmd->bitmapDataLength = Stream_GetPosition(context->encode_stream);
+	cmd->bitmapData = Stream_Buffer(context->encode_stream);
 
 	update->SurfaceBits(update->context, cmd);
 }
@@ -185,8 +185,8 @@ rdp_peer_refresh_nsc(pixman_region32_t *damage, pixman_image_t *image, freerdp_p
 	SURFACE_BITS_COMMAND *cmd = &update->surface_bits_command;
 	RdpPeerContext *context = (RdpPeerContext *)peer->context;
 
-	stream_clear(context->encode_stream);
-	stream_set_pos(context->encode_stream, 0);
+	Stream_Clear(context->encode_stream);
+	Stream_SetPosition(context->encode_stream, 0);
 
 	width = (damage->extents.x2 - damage->extents.x1);
 	height = (damage->extents.y2 - damage->extents.y1);
@@ -206,8 +206,8 @@ rdp_peer_refresh_nsc(pixman_region32_t *damage, pixman_image_t *image, freerdp_p
 	nsc_compose_message(context->nsc_context, context->encode_stream, (BYTE *)ptr,
 			cmd->width,	cmd->height,
 			pixman_image_get_stride(image));
-	cmd->bitmapDataLength = stream_get_length(context->encode_stream);
-	cmd->bitmapData = stream_get_head(context->encode_stream);
+	cmd->bitmapDataLength = Stream_GetPosition(context->encode_stream);
+	cmd->bitmapData = Stream_Buffer(context->encode_stream);
 	update->SurfaceBits(update->context, cmd);
 }
 
@@ -562,7 +562,7 @@ rdp_peer_context_new(freerdp_peer* client, RdpPeerContext* context)
 	context->nsc_context = nsc_context_new();
 	rfx_context_set_pixel_format(context->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
 
-	context->encode_stream = stream_new(65536);
+	context->encode_stream = Stream_New(NULL, 65536);
 }
 
 static void
@@ -580,7 +580,7 @@ rdp_peer_context_free(freerdp_peer* client, RdpPeerContext* context)
 
 	if(context->item.flags & RDP_PEER_ACTIVATED)
 		weston_seat_release(&context->item.seat);
-	stream_free(context->encode_stream);
+	Stream_Free(context->encode_stream, TRUE);
 	nsc_context_free(context->nsc_context);
 	rfx_context_free(context->rfx_context);
 	free(context->rfx_rects);
@@ -1012,7 +1012,7 @@ err_free:
 
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
-	     const char *config_file)
+	     int config_fd)
 {
 	struct rdp_compositor_config config;
 	rdp_compositor_config_init(&config);
@@ -1035,5 +1035,5 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	};
 
 	parse_options(rdp_options, ARRAY_LENGTH(rdp_options), argc, argv);
-	return rdp_compositor_create(display, &config, argc, argv, config_file);
+	return rdp_compositor_create(display, &config, argc, argv, config_fd);
 }
