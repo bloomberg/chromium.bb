@@ -37,7 +37,7 @@ namespace WebCore {
 
 class Frame;
 
-class Touch : public RefCounted<Touch> {
+class Touch : public RefCounted<Touch>, public ScriptWrappable {
 public:
     static PassRefPtr<Touch> create(Frame* frame, EventTarget* target,
             unsigned identifier, int screenX, int screenY, int pageX, int pageY,
