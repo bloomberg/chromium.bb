@@ -23,7 +23,7 @@ ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
   if (state_restorer_) {
     DCHECK(!!GLContext::GetCurrent());
     DCHECK_EQ(state_restorer_, GLContext::GetCurrent()->GetGLStateRestorer());
-    state_restorer_->RestoreAllTextureUnitBindings();
+    state_restorer_->RestoreFramebufferBindings();
   } else {
     glBindFramebufferEXT(GL_FRAMEBUFFER, old_fbo_);
   }
