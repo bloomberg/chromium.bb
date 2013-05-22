@@ -20,23 +20,24 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef CachedSVGDocument_h
-#define CachedSVGDocument_h
+#ifndef CachedDocument_h
+#define CachedDocument_h
 
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
-#include "core/svg/SVGDocument.h"
 
 namespace WebCore {
 
-class CachedSVGDocument : public CachedResource {
-public:
-    explicit CachedSVGDocument(const ResourceRequest&);
-    virtual ~CachedSVGDocument();
+class Document;
 
-    SVGDocument* document() const { return m_document.get(); }
+class CachedDocument : public CachedResource {
+public:
+    CachedDocument(const ResourceRequest&, Type);
+    virtual ~CachedDocument();
+
+    Document* document() const { return m_document.get(); }
 
     virtual void setEncoding(const String&);
     virtual String encoding() const;
@@ -44,18 +45,20 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
-protected:
-    RefPtr<SVGDocument> m_document;
+private:
+    PassRefPtr<Document> createDocument(const KURL&);
+
+    RefPtr<Document> m_document;
     RefPtr<TextResourceDecoder> m_decoder;
 };
 
-class CachedSVGDocumentClient : public CachedResourceClient {
+class CachedDocumentClient : public CachedResourceClient {
 public:
-    virtual ~CachedSVGDocumentClient() { }
-    static CachedResourceClientType expectedType() { return SVGDocumentType; }
+    virtual ~CachedDocumentClient() { }
+    static CachedResourceClientType expectedType() { return DocumentType; }
     virtual CachedResourceClientType resourceClientType() const { return expectedType(); }
 };
 
 }
 
-#endif // CachedSVGDocument_h
+#endif // CachedDocument_h

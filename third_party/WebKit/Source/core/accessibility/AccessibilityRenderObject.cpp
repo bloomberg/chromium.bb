@@ -60,6 +60,7 @@
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderWidget.h"
+#include "core/svg/SVGDocument.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"

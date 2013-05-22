@@ -30,7 +30,7 @@
 
 #include "SVGNames.h"
 #include "core/dom/Document.h"
-#include "core/loader/cache/CachedSVGDocument.h"
+#include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedSVGDocumentReference.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/ColorSpace.h"
@@ -120,7 +120,7 @@ PassRefPtr<FilterEffect> FilterEffectRenderer::buildReferenceFilter(RenderObject
     ASSERT(document);
 
     CachedSVGDocumentReference* cachedSVGDocumentReference = filterOperation->cachedSVGDocumentReference();
-    CachedSVGDocument* cachedSVGDocument = cachedSVGDocumentReference ? cachedSVGDocumentReference->document() : 0;
+    CachedDocument* cachedSVGDocument = cachedSVGDocumentReference ? cachedSVGDocumentReference->document() : 0;
 
     // If we have an SVG document, this is an external reference. Otherwise
     // we look up the referenced node in the current document.

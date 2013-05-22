@@ -107,8 +107,8 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/track/WebVTTElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedSVGDocument.h"
 #include "core/loader/cache/CachedSVGDocumentReference.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
@@ -3632,11 +3632,11 @@ void StyleResolver::loadPendingSVGDocuments()
             WebKitCSSSVGDocumentValue* value = state.pendingSVGDocuments().get(referenceFilter);
             if (!value)
                 continue;
-            CachedSVGDocument* cachedDocument = value->load(cachedResourceLoader);
+            CachedDocument* cachedDocument = value->load(cachedResourceLoader);
             if (!cachedDocument)
                 continue;
 
-            // Stash the CachedSVGDocument on the reference filter.
+            // Stash the CachedDocument on the reference filter.
             referenceFilter->setCachedSVGDocumentReference(adoptPtr(new CachedSVGDocumentReference(cachedDocument)));
         }
     }

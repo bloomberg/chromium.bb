@@ -26,18 +26,18 @@
 #ifndef CachedSVGDocumentReference_h
 #define CachedSVGDocumentReference_h
 
+#include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedResourceHandle.h"
-#include "core/loader/cache/CachedSVGDocument.h"
 
 namespace WebCore {
 
-class CachedSVGDocumentReference : public CachedSVGDocumentClient {
+class CachedSVGDocumentReference : public CachedDocumentClient {
 public:
-    CachedSVGDocumentReference(CachedSVGDocument* document) : m_document(document) { m_document->addClient(this); }
+    CachedSVGDocumentReference(CachedDocument* document) : m_document(document) { m_document->addClient(this); }
     virtual ~CachedSVGDocumentReference() { m_document->removeClient(this); }
-    CachedSVGDocument* document() { return m_document.get(); }
+    CachedDocument* document() { return m_document.get(); }
 private:
-    CachedResourceHandle<CachedSVGDocument> m_document;
+    CachedResourceHandle<CachedDocument> m_document;
 };
 
 };

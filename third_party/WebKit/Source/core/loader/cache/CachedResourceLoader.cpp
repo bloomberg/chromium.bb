@@ -42,11 +42,11 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
+#include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResourceRequest.h"
-#include "core/loader/cache/CachedSVGDocument.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/loader/cache/CachedShader.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"
@@ -77,7 +77,7 @@ static CachedResource* createResource(CachedResource::Type type, ResourceRequest
     case CachedResource::Script:
         return new CachedScript(request, charset);
     case CachedResource::SVGDocumentResource:
-        return new CachedSVGDocument(request);
+        return new CachedDocument(request, CachedResource::SVGDocumentResource);
     case CachedResource::FontResource:
         return new CachedFont(request);
     case CachedResource::RawResource:
@@ -195,9 +195,9 @@ CachedResourceHandle<CachedXSLStyleSheet> CachedResourceLoader::requestXSLStyleS
     return static_cast<CachedXSLStyleSheet*>(requestResource(CachedResource::XSLStyleSheet, request).get());
 }
 
-CachedResourceHandle<CachedSVGDocument> CachedResourceLoader::requestSVGDocument(CachedResourceRequest& request)
+CachedResourceHandle<CachedDocument> CachedResourceLoader::requestSVGDocument(CachedResourceRequest& request)
 {
-    return static_cast<CachedSVGDocument*>(requestResource(CachedResource::SVGDocumentResource, request).get());
+    return static_cast<CachedDocument*>(requestResource(CachedResource::SVGDocumentResource, request).get());
 }
 
 CachedResourceHandle<CachedResource> CachedResourceLoader::requestLinkResource(CachedResource::Type type, CachedResourceRequest& request)

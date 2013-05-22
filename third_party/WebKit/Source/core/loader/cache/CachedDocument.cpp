@@ -22,50 +22,64 @@
 
 #include "config.h"
 
-#include "core/loader/cache/CachedSVGDocument.h"
+#include "core/loader/cache/CachedDocument.h"
 
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/SharedBuffer.h"
-#include <wtf/text/StringBuilder.h>
+#include "core/svg/SVGDocument.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
-CachedSVGDocument::CachedSVGDocument(const ResourceRequest& request)
-    : CachedResource(request, SVGDocumentResource)
+CachedDocument::CachedDocument(const ResourceRequest& request, Type type)
+    : CachedResource(request, type)
     , m_decoder(TextResourceDecoder::create("application/xml"))
 {
-    setAccept("image/svg+xml");
+    // FIXME: We'll support more types to support HTMLImports.
+    ASSERT(type == SVGDocumentResource);
 }
 
-CachedSVGDocument::~CachedSVGDocument()
+CachedDocument::~CachedDocument()
 {
 }
 
-void CachedSVGDocument::setEncoding(const String& chs)
+void CachedDocument::setEncoding(const String& chs)
 {
     m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);
 }
 
-String CachedSVGDocument::encoding() const
+String CachedDocument::encoding() const
 {
     return m_decoder->encoding().name();
 }
 
-void CachedSVGDocument::checkNotify()
+void CachedDocument::checkNotify()
 {
     if (m_data) {
         StringBuilder decodedText;
         decodedText.append(m_decoder->decode(m_data->data(), m_data->size()));
         decodedText.append(m_decoder->flush());
         // We don't need to create a new frame because the new document belongs to the parent UseElement.
-        m_document = SVGDocument::create(0, response().url());
+        m_document = createDocument(response().url());
         m_document->setContent(decodedText.toString());
     }
     CachedResource::checkNotify();
 }
 
-void CachedSVGDocument::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+PassRefPtr<Document> CachedDocument::createDocument(const KURL& url)
+{
+    switch (type()) {
+    case SVGDocumentResource:
+        return SVGDocument::create(0, url);
+    default:
+        // FIXME: We'll add more types to support HTMLImports.
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+}
+
+void CachedDocument::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceSVG);
     CachedResource::reportMemoryUsage(memoryObjectInfo);

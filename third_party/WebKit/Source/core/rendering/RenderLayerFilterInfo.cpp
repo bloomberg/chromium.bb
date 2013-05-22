@@ -31,7 +31,7 @@
 
 #include "core/rendering/RenderLayerFilterInfo.h"
 
-#include "core/loader/cache/CachedSVGDocument.h"
+#include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedSVGDocumentReference.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
@@ -119,7 +119,7 @@ void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations&
             continue;
         ReferenceFilterOperation* referenceFilterOperation = static_cast<ReferenceFilterOperation*>(filterOperation.get());
         CachedSVGDocumentReference* documentReference = referenceFilterOperation->cachedSVGDocumentReference();
-        CachedSVGDocument* cachedSVGDocument = documentReference ? documentReference->document() : 0;
+        CachedDocument* cachedSVGDocument = documentReference ? documentReference->document() : 0;
 
         if (cachedSVGDocument) {
             // Reference is external; wait for notifyFinished().

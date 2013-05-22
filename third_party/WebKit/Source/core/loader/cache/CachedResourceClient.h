@@ -39,7 +39,7 @@ public:
         ImageType,
         FontType,
         StyleSheetType,
-        SVGDocumentType,
+        DocumentType,
         RawResourceType
     };
 

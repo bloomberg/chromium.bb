@@ -42,7 +42,7 @@
 namespace WebCore {
 
 class CachedCSSStyleSheet;
-class CachedSVGDocument;
+class CachedDocument;
 class CachedFont;
 class CachedImage;
 class CachedRawResource;
@@ -80,7 +80,7 @@ public:
     CachedResourceHandle<CachedFont> requestFont(CachedResourceRequest&);
     CachedResourceHandle<CachedRawResource> requestRawResource(CachedResourceRequest&);
     CachedResourceHandle<CachedRawResource> requestMainResource(CachedResourceRequest&);
-    CachedResourceHandle<CachedSVGDocument> requestSVGDocument(CachedResourceRequest&);
+    CachedResourceHandle<CachedDocument> requestSVGDocument(CachedResourceRequest&);
     CachedResourceHandle<CachedXSLStyleSheet> requestXSLStyleSheet(CachedResourceRequest&);
     CachedResourceHandle<CachedResource> requestLinkResource(CachedResource::Type, CachedResourceRequest&);
     CachedResourceHandle<CachedTextTrack> requestTextTrack(CachedResourceRequest&);
