@@ -283,6 +283,10 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // Our observers.
   mutable ObserverList<RenderViewContextMenuObserver> observers_;
 
+  // Whether a command has been executed. Used to track whether menu observers
+  // should be notified of menu closing without execution.
+  bool command_executed_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };
 

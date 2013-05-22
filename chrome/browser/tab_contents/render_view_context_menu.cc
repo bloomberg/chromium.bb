@@ -388,7 +388,8 @@ RenderViewContextMenu::RenderViewContextMenu(
       speech_input_submenu_model_(this),
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
-          ProtocolHandlerRegistryFactory::GetForProfile(profile_)) {
+          ProtocolHandlerRegistryFactory::GetForProfile(profile_)),
+      command_executed_(false) {
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() {
@@ -1450,6 +1451,7 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 }
 
 void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
+  command_executed_ = true;
   // If this command is is added by one of our observers, we dispatch it to the
   // observer.
   ObserverListBase<RenderViewContextMenuObserver>::Iterator it(observers_);
@@ -1950,6 +1952,12 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
       chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_CLOSED,
       content::Source<RenderViewContextMenu>(this),
       content::NotificationService::NoDetails());
+
+  if (!command_executed_) {
+    FOR_EACH_OBSERVER(RenderViewContextMenuObserver,
+                      observers_,
+                      OnMenuCancel());
+  }
 }
 
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {

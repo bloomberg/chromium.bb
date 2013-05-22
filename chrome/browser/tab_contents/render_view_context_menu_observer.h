@@ -99,6 +99,9 @@ class RenderViewContextMenuObserver {
 
   // Called when a user selects the specified context-menu item.
   virtual void ExecuteCommand(int command_id);
+
+  // Called when a user closes the context menu without selecting any items.
+  virtual void OnMenuCancel();
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_

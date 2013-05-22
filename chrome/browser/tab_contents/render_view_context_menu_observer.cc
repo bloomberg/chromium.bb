@@ -22,3 +22,6 @@ bool RenderViewContextMenuObserver::IsCommandIdEnabled(int command_id) {
 
 void RenderViewContextMenuObserver::ExecuteCommand(int command_id) {
 }
+
+void RenderViewContextMenuObserver::OnMenuCancel() {
+}
