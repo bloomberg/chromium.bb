@@ -643,8 +643,8 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, FileIO) {
       LIST_TEST(FileIO_ReadToArrayWriteSetLength)
       LIST_TEST(FileIO_TouchQuery)
       LIST_TEST(FileIO_WillWriteWillSetLength)
-      LIST_TEST(FileIO_RequestOSFileHandle)
-      LIST_TEST(FileIO_Mmap)
+      LIST_TEST(DISABLED_FileIO_RequestOSFileHandle)
+      LIST_TEST(DISABLED_FileIO_Mmap)
   );
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileIO) {
@@ -658,8 +658,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileIO) {
       LIST_TEST(FileIO_ReadToArrayWriteSetLength)
       LIST_TEST(FileIO_TouchQuery)
       LIST_TEST(FileIO_WillWriteWillSetLength)
-      LIST_TEST(FileIO_RequestOSFileHandle)
-      LIST_TEST(FileIO_Mmap)
+      LIST_TEST(DISABLED_FileIO_RequestOSFileHandle)
+      LIST_TEST(DISABLED_FileIO_Mmap)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileIO) {
@@ -674,8 +674,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileIO) {
       LIST_TEST(FileIO_TouchQuery)
       // The following test requires PPB_FileIO_Trusted, not available in NaCl.
       LIST_TEST(DISABLED_FileIO_WillWriteWillSetLength)
-      LIST_TEST(FileIO_RequestOSFileHandle)
-      LIST_TEST(FileIO_Mmap)
+      LIST_TEST(DISABLED_FileIO_RequestOSFileHandle)
+      LIST_TEST(DISABLED_FileIO_Mmap)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(FileIO)) {
@@ -690,8 +690,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(FileIO)) {
       LIST_TEST(FileIO_TouchQuery)
       // The following test requires PPB_FileIO_Trusted, not available in NaCl.
       LIST_TEST(DISABLED_FileIO_WillWriteWillSetLength)
-      LIST_TEST(FileIO_RequestOSFileHandle)
-      LIST_TEST(FileIO_Mmap)
+      LIST_TEST(DISABLED_FileIO_RequestOSFileHandle)
+      LIST_TEST(DISABLED_FileIO_Mmap)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, FileIO) {
@@ -706,8 +706,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, FileIO) {
       LIST_TEST(FileIO_TouchQuery)
       // The following test requires PPB_FileIO_Trusted, not available in NaCl.
       LIST_TEST(DISABLED_FileIO_WillWriteWillSetLength)
-      LIST_TEST(FileIO_RequestOSFileHandle)
-      LIST_TEST(FileIO_Mmap)
+      LIST_TEST(DISABLED_FileIO_RequestOSFileHandle)
+      LIST_TEST(DISABLED_FileIO_Mmap)
   );
 }
 

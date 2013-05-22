@@ -49,7 +49,5 @@ PROXIED_IFACE(PPB_NetworkMonitor_Private,
 
 PROXIED_IFACE(NoAPIName, PPB_EXT_CRXFILESYSTEM_PRIVATE_INTERFACE_0_1,
               PPB_Ext_CrxFileSystem_Private_0_1)
-PROXIED_IFACE(NoAPIName, PPB_FILEIO_PRIVATE_INTERFACE_0_1,
-              PPB_FileIO_Private_0_1)
 
 #include "ppapi/thunk/interfaces_postamble.h"
