@@ -1468,6 +1468,22 @@ window_get_buffer_scale(struct window *window)
 	return window->main_surface->buffer_scale;
 }
 
+uint32_t
+window_get_output_scale(struct window *window)
+{
+	struct window_output *window_output;
+	struct window_output *window_output_tmp;
+	int scale = 1;
+
+	wl_list_for_each_safe(window_output, window_output_tmp,
+			      &window->window_output_list, link) {
+		if (window_output->output->scale > scale)
+			scale = window_output->output->scale;
+	}
+
+	return scale;
+}
+
 static void frame_destroy(struct frame *frame);
 
 static void
@@ -4384,6 +4400,8 @@ window_show_menu(struct display *display,
 
 	menu->window = window;
 	menu->widget = window_add_widget(menu->window, menu);
+	window_set_buffer_scale (menu->window, window_get_buffer_scale (parent));
+	window_set_buffer_transform (menu->window, window_get_buffer_transform (parent));
 	menu->entries = entries;
 	menu->count = count;
 	menu->release_count = 0;
