@@ -23,14 +23,27 @@ namespace chromeos {
 
 namespace {
 
-// Delay between certificate requests while waiting for TPM/PKCS#11 init.
-const int kRequestDelayMs = 500;
+const int64 kInitialRequestDelayMs = 100;
+const int64 kMaxRequestDelayMs = 300000; // 5 minutes
 
-net::CertificateList* LoadNSSCertificates() {
-  net::CertificateList* cert_list(new net::CertificateList());
+// Calculates the delay before running next attempt to initiatialize the TPM
+// token, if |last_delay| was the last or initial delay.
+base::TimeDelta GetNextRequestDelayMs(base::TimeDelta last_delay) {
+  // This implements an exponential backoff, as we don't know in which order of
+  // magnitude the TPM token changes it's state.
+  base::TimeDelta next_delay = last_delay * 2;
+
+  // Cap the delay to prevent an overflow. This threshold is arbitrarily chosen.
+  const base::TimeDelta max_delay =
+      base::TimeDelta::FromMilliseconds(kMaxRequestDelayMs);
+  if (next_delay > max_delay)
+    next_delay = max_delay;
+  return next_delay;
+}
+
+void LoadNSSCertificates(net::CertificateList* cert_list) {
   if (base::chromeos::IsRunningOnChromeOS())
     net::NSSCertDatabase::GetInstance()->ListCerts(cert_list);
-  return cert_list;
 }
 
 }  // namespace
@@ -62,19 +75,21 @@ bool CertLoader::IsInitialized() {
 }
 
 CertLoader::CertLoader()
-    : tpm_token_ready_(false),
-      certificates_requested_(false),
+    : certificates_requested_(false),
       certificates_loaded_(false),
-      key_store_loaded_(false),
-      weak_ptr_factory_(this) {
+      certificates_update_required_(false),
+      certificates_update_running_(false),
+      tpm_token_state_(TPM_STATE_UNKNOWN),
+      tpm_request_delay_(
+          base::TimeDelta::FromMilliseconds(kInitialRequestDelayMs)),
+      initialize_token_factory_(this),
+      update_certificates_factory_(this) {
   net::CertDatabase::GetInstance()->AddObserver(this);
   LoginState::Get()->AddObserver(this);
-  if (LoginState::Get()->IsUserLoggedIn())
-    RequestCertificates();
+  RequestCertificates();
 }
 
 CertLoader::~CertLoader() {
-  request_task_.Reset();
   net::CertDatabase::GetInstance()->RemoveObserver(this);
   LoginState::Get()->RemoveObserver(this);
 }
@@ -98,27 +113,71 @@ bool CertLoader::IsHardwareBacked() const {
 void CertLoader::RequestCertificates() {
   CHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "RequestCertificates: " << LoginState::Get()->IsUserLoggedIn();
-  if (!LoginState::Get()->IsUserLoggedIn())
-    return;  // Certificates will be requested on login.
-
-  if (!key_store_loaded_) {
-    // Ensure we've opened the real user's key/certificate database.
-    crypto::OpenPersistentNSSDB();
-
-    if (base::chromeos::IsRunningOnChromeOS())
-      crypto::EnableTPMTokenForNSS();
-
-    key_store_loaded_ = true;
-  }
+  if (certificates_requested_ || !LoginState::Get()->IsUserLoggedIn())
+    return;
 
   certificates_requested_ = true;
 
-  VLOG(1) << "Requesting Certificates.";
-  DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(
-      base::Bind(&CertLoader::OnTpmIsEnabled,
-                 weak_ptr_factory_.GetWeakPtr()));
+  // Ensure we've opened the user's key/certificate database.
+  crypto::OpenPersistentNSSDB();
+  if (base::chromeos::IsRunningOnChromeOS())
+    crypto::EnableTPMTokenForNSS();
 
-  return;
+  // This is the entry point to the TPM token initialization process, which we
+  // should do at most once.
+  DCHECK(!initialize_token_factory_.HasWeakPtrs());
+  InitializeTokenAndLoadCertificates();
+}
+
+void CertLoader::InitializeTokenAndLoadCertificates() {
+  CHECK(thread_checker_.CalledOnValidThread());
+  VLOG(1) << "InitializeTokenAndLoadCertificates";
+
+  switch(tpm_token_state_) {
+    case TPM_STATE_UNKNOWN: {
+      DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(
+      base::Bind(&CertLoader::OnTpmIsEnabled,
+                 initialize_token_factory_.GetWeakPtr()));
+      return;
+    }
+    case TPM_DISABLED: {
+      // TPM is disabled, so proceed with empty tpm token name.
+      StartLoadCertificates();
+      return;
+    }
+    case TPM_ENABLED: {
+      DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11IsTpmTokenReady(
+          base::Bind(&CertLoader::OnPkcs11IsTpmTokenReady,
+                     initialize_token_factory_.GetWeakPtr()));
+      return;
+    }
+    case TPM_TOKEN_READY: {
+      // Retrieve token_name_ and user_pin_ here since they will never change
+      // and CryptohomeClient calls are not thread safe.
+      DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11GetTpmTokenInfo(
+          base::Bind(&CertLoader::OnPkcs11GetTpmTokenInfo,
+                     initialize_token_factory_.GetWeakPtr()));
+      return;
+    }
+    case TPM_TOKEN_INFO_RECEIVED: {
+      InitializeNSSForTPMToken();
+      return;
+    }
+    case TPM_TOKEN_NSS_INITIALIZED: {
+      StartLoadCertificates();
+      return;
+    }
+  }
+}
+
+void CertLoader::RetryTokenInitializationLater() {
+  LOG(WARNING) << "Re-Requesting Certificates later.";
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CertLoader::InitializeTokenAndLoadCertificates,
+                 initialize_token_factory_.GetWeakPtr()),
+      tpm_request_delay_);
+  tpm_request_delay_ = GetNextRequestDelayMs(tpm_request_delay_);
 }
 
 // For background see this discussion on dev-tech-crypto.lists.mozilla.org:
@@ -154,114 +213,95 @@ std::string CertLoader::GetPkcs11IdForCert(
 void CertLoader::OnTpmIsEnabled(DBusMethodCallStatus call_status,
                                 bool tpm_is_enabled) {
   VLOG(1) << "OnTpmIsEnabled: " << tpm_is_enabled;
-  if (call_status != DBUS_METHOD_CALL_SUCCESS || !tpm_is_enabled) {
-    // TPM is not enabled, so proceed with empty tpm token name.
-    VLOG(1) << "TPM not available.";
-    StartLoadCertificates();
-  } else if (tpm_token_ready_) {
-    // Once the TPM token is ready, initialize it.
-    InitializeTPMToken();
-  } else {
-    DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11IsTpmTokenReady(
-        base::Bind(&CertLoader::OnPkcs11IsTpmTokenReady,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+
+  if (call_status == DBUS_METHOD_CALL_SUCCESS && tpm_is_enabled)
+    tpm_token_state_ = TPM_ENABLED;
+  else
+    tpm_token_state_ = TPM_DISABLED;
+
+  InitializeTokenAndLoadCertificates();
 }
 
 void CertLoader::OnPkcs11IsTpmTokenReady(DBusMethodCallStatus call_status,
                                          bool is_tpm_token_ready) {
   VLOG(1) << "OnPkcs11IsTpmTokenReady: " << is_tpm_token_ready;
-  if (call_status != DBUS_METHOD_CALL_SUCCESS || !is_tpm_token_ready) {
-    MaybeRetryRequestCertificates();
+
+  if (call_status == DBUS_METHOD_CALL_FAILURE || !is_tpm_token_ready) {
+    RetryTokenInitializationLater();
     return;
   }
 
-  // Retrieve token_name_ and user_pin_ here since they will never change
-  // and CryptohomeClient calls are not thread safe.
-  DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11GetTpmTokenInfo(
-      base::Bind(&CertLoader::OnPkcs11GetTpmTokenInfo,
-                 weak_ptr_factory_.GetWeakPtr()));
+  tpm_token_state_ = TPM_TOKEN_READY;
+  InitializeTokenAndLoadCertificates();
 }
 
 void CertLoader::OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
                                          const std::string& token_name,
                                          const std::string& user_pin) {
   VLOG(1) << "OnPkcs11GetTpmTokenInfo: " << token_name;
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    MaybeRetryRequestCertificates();
+
+  if (call_status == DBUS_METHOD_CALL_FAILURE) {
+    RetryTokenInitializationLater();
     return;
   }
+
   tpm_token_name_ = token_name;
   // TODO(stevenjb): The network code expects a slot ID, not a label. See
   // crbug.com/201101. For now, use a hard coded, well known slot instead.
   const char kHardcodedTpmSlot[] = "0";
   tpm_token_slot_ = kHardcodedTpmSlot;
   tpm_user_pin_ = user_pin;
-  tpm_token_ready_ = true;
+  tpm_token_state_ = TPM_TOKEN_INFO_RECEIVED;
 
-  InitializeTPMToken();
+  InitializeTokenAndLoadCertificates();
 }
 
-void CertLoader::InitializeTPMToken() {
-  VLOG(1) << "InitializeTPMToken";
+void CertLoader::InitializeNSSForTPMToken() {
+  VLOG(1) << "InitializeNSSForTPMToken";
+
   if (base::chromeos::IsRunningOnChromeOS() &&
       !crypto::InitializeTPMToken(tpm_token_name_, tpm_user_pin_)) {
-    MaybeRetryRequestCertificates();
+    RetryTokenInitializationLater();
     return;
   }
-  StartLoadCertificates();
+
+  tpm_token_state_ = TPM_TOKEN_NSS_INITIALIZED;
+  InitializeTokenAndLoadCertificates();
 }
 
 void CertLoader::StartLoadCertificates() {
-  VLOG(1) << "Start Load Certificates";
-  base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true /* task_is_slow */),
-      FROM_HERE,
-      base::Bind(LoadNSSCertificates),
-      base::Bind(&CertLoader::UpdateCertificates,
-                 weak_ptr_factory_.GetWeakPtr()));
+  VLOG(1) << "StartLoadCertificates";
+
+  if (certificates_update_running_) {
+    certificates_update_required_ = true;
+    return;
+  }
+
+  net::CertificateList* cert_list = new net::CertificateList;
+  certificates_update_running_ = true;
+  base::WorkerPool::GetTaskRunner(true /* task_is_slow */)->
+      PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(LoadNSSCertificates, cert_list),
+          base::Bind(&CertLoader::UpdateCertificates,
+                     update_certificates_factory_.GetWeakPtr(),
+                     base::Owned(cert_list)));
 }
 
 void CertLoader::UpdateCertificates(net::CertificateList* cert_list) {
   CHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(cert_list);
-  VLOG(1) << "Update Certificates: " << cert_list->size();
+  DCHECK(certificates_update_running_);
+  VLOG(1) << "UpdateCertificates: " << cert_list->size();
 
-  // Clear any existing certificates.
+  // Ignore any existing certificates.
   cert_list_.swap(*cert_list);
 
-  // cert_list is constructed in LoadCertificates.
-  delete cert_list;
+  NotifyCertificatesLoaded(!certificates_loaded_);
+  certificates_loaded_ = true;
 
-  // Set loaded state and notify observers.
-  if (!certificates_loaded_) {
-    certificates_loaded_ = true;
-    NotifyCertificatesLoaded(true);
-  } else {
-    NotifyCertificatesLoaded(false);
-  }
-}
-
-void CertLoader::MaybeRetryRequestCertificates() {
-  if (!request_task_.is_null())
-    return;
-
-  LOG(WARNING) << "Re-Requesting Certificates.";
-
-  // Cryptohome does not notify us when the token is ready, so call
-  // this again after a delay.
-  request_task_ = base::Bind(&CertLoader::RequestCertificatesTask,
-                             weak_ptr_factory_.GetWeakPtr());
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      request_task_,
-      base::TimeDelta::FromMilliseconds(kRequestDelayMs));
-}
-
-void CertLoader::RequestCertificatesTask() {
-  // Reset the task to the initial state so is_null() returns true.
-  request_task_.Reset();
-  RequestCertificates();
+  certificates_update_running_ = false;
+  if (certificates_update_required_)
+    StartLoadCertificates();
 }
 
 void CertLoader::NotifyCertificatesLoaded(bool initial_load) {
@@ -273,23 +313,18 @@ void CertLoader::OnCertTrustChanged(const net::X509Certificate* cert) {
 }
 
 void CertLoader::OnCertAdded(const net::X509Certificate* cert) {
-  // Only load certificates if we have completed an initial request.
-  if (!certificates_loaded_)
-    return;
+  VLOG(1) << "OnCertAdded";
   StartLoadCertificates();
 }
 
 void CertLoader::OnCertRemoved(const net::X509Certificate* cert) {
-  // Only load certificates if we have completed an initial request.
-  if (!certificates_loaded_)
-    return;
+  VLOG(1) << "OnCertRemoved";
   StartLoadCertificates();
 }
 
 void CertLoader::LoggedInStateChanged(LoginState::LoggedInState state) {
   VLOG(1) << "LoggedInStateChanged: " << state;
-  if (LoginState::Get()->IsUserLoggedIn() && !certificates_requested_)
-    RequestCertificates();
+  RequestCertificates();
 }
 
 }  // namespace chromeos
