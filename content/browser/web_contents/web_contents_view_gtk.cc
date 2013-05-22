@@ -223,12 +223,17 @@ RenderWidgetHostView* WebContentsViewGtk::CreateViewForWidget(
                         GDK_POINTER_MOTION_MASK);
   InsertIntoContentArea(content_view);
 
-  // We don't want to change any state in this class for swapped out RVHs
-  // because they will not be visible at this time.
   if (render_widget_host->IsRenderView()) {
     RenderViewHost* rvh = RenderViewHost::From(render_widget_host);
-    if (!static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out())
+    // If |rvh| is already the current render view host for the web contents, we
+    // need to initialize |drag_dest_| for drags to be properly handled.
+    // Otherwise, |drag_dest_| will be updated in RenderViewSwappedIn. The
+    // reason we can't simply check that this isn't a swapped-out view is
+    // because there are navigations that create non-swapped-out views that may
+    // never be displayed, e.g. a navigation that becomes a download.
+    if (rvh == web_contents_->GetRenderViewHost()) {
       UpdateDragDest(rvh);
+    }
   }
 
   return view;
