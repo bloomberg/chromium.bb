@@ -142,10 +142,16 @@ void TraceLog::SendToATrace(
 
 // Must be called with lock_ locked.
 void TraceLog::ApplyATraceEnabledFlag(unsigned char* category_group_enabled) {
-  if (g_atrace_fd != -1)
-    *category_group_enabled |= ATRACE_ENABLED;
-  else
-    *category_group_enabled &= ~ATRACE_ENABLED;
+  if (g_atrace_fd == -1)
+    return;
+
+  // Don't enable disabled-by-default categories for atrace.
+  const char* category_group = GetCategoryGroupName(category_group_enabled);
+  if (strncmp(category_group, TRACE_DISABLED_BY_DEFAULT(""),
+              strlen(TRACE_DISABLED_BY_DEFAULT(""))) == 0)
+    return;
+
+  *category_group_enabled |= ATRACE_ENABLED;
 }
 
 }  // namespace debug
