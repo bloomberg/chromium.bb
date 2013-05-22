@@ -89,10 +89,10 @@ class ExperimentalWebAuthFlowTest : public ChromeRenderViewHostTestHarness {
   }
 
   virtual void TearDown() {
-    // |flow_| must be reset before ChromeRenderViewHostTestHarness::TearDown(),
-    // because |flow_| deletes the WebContents it owns via
-    // MessageLoop::DeleteSoon().
-    flow_.reset();
+    // DetachDelegateAndDelete posts a task to clean up |flow_|, so it
+    // has to be called before
+    // ChromeRenderViewHostTestHarness::TearDown().
+    flow_.release()->DetachDelegateAndDelete();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 

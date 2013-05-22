@@ -255,7 +255,10 @@ ExperimentalIdentityLaunchWebAuthFlowFunction::
     ExperimentalIdentityLaunchWebAuthFlowFunction() {}
 
 ExperimentalIdentityLaunchWebAuthFlowFunction::
-    ~ExperimentalIdentityLaunchWebAuthFlowFunction() {}
+    ~ExperimentalIdentityLaunchWebAuthFlowFunction() {
+  if (auth_flow_)
+    auth_flow_.release()->DetachDelegateAndDelete();
+}
 
 bool ExperimentalIdentityLaunchWebAuthFlowFunction::RunImpl() {
   if (profile()->IsOffTheRecord()) {

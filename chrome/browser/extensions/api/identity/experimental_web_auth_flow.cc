@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/identity/experimental_web_auth_flow.h"
 
 #include "base/location.h"
+#include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -46,6 +47,8 @@ ExperimentalWebAuthFlow::ExperimentalWebAuthFlow(
 }
 
 ExperimentalWebAuthFlow::~ExperimentalWebAuthFlow() {
+  DCHECK(delegate_ == NULL);
+
   // Stop listening to notifications first since some of the code
   // below may generate notifications.
   registrar_.RemoveAll();
@@ -80,6 +83,11 @@ void ExperimentalWebAuthFlow::Start() {
       std::string());
 }
 
+void ExperimentalWebAuthFlow::DetachDelegateAndDelete() {
+  delegate_ = NULL;
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
 WebContents* ExperimentalWebAuthFlow::CreateWebContents() {
   return WebContents::Create(WebContents::CreateParams(profile_));
 }
@@ -100,7 +108,8 @@ void ExperimentalWebAuthFlow::ShowAuthFlowPopup() {
 }
 
 void ExperimentalWebAuthFlow::BeforeUrlLoaded(const GURL& url) {
-  delegate_->OnAuthFlowURLChange(url);
+  if (delegate_)
+    delegate_->OnAuthFlowURLChange(url);
 }
 
 void ExperimentalWebAuthFlow::AfterUrlLoaded() {
@@ -110,7 +119,10 @@ void ExperimentalWebAuthFlow::AfterUrlLoaded() {
 
   // Report results directly if not in interactive mode.
   if (mode_ != ExperimentalWebAuthFlow::INTERACTIVE) {
-    delegate_->OnAuthFlowFailure(ExperimentalWebAuthFlow::INTERACTION_REQUIRED);
+    if (delegate_) {
+      delegate_->OnAuthFlowFailure(
+          ExperimentalWebAuthFlow::INTERACTION_REQUIRED);
+    }
     return;
   }
 
@@ -148,7 +160,8 @@ void ExperimentalWebAuthFlow::DidStopLoading(RenderViewHost* render_view_host) {
 
 void ExperimentalWebAuthFlow::WebContentsDestroyed(WebContents* web_contents) {
   contents_ = NULL;
-  delegate_->OnAuthFlowFailure(ExperimentalWebAuthFlow::WINDOW_CLOSED);
+  if (delegate_)
+    delegate_->OnAuthFlowFailure(ExperimentalWebAuthFlow::WINDOW_CLOSED);
 }
 
 }  // namespace extensions

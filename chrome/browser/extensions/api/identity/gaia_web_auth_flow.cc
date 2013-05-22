@@ -48,7 +48,10 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
       extension_id.c_str()));
 }
 
-GaiaWebAuthFlow::~GaiaWebAuthFlow() {}
+GaiaWebAuthFlow::~GaiaWebAuthFlow() {
+  if (web_flow_)
+    web_flow_.release()->DetachDelegateAndDelete();
+}
 
 void GaiaWebAuthFlow::Start() {
   ubertoken_fetcher_.reset(new UbertokenFetcher(profile_, this));
@@ -96,7 +99,7 @@ void GaiaWebAuthFlow::OnAuthFlowURLChange(const GURL& url) {
 
   if (url.scheme() == redirect_scheme_ && !url.has_host() && !url.has_port() &&
       StartsWithASCII(url.path(), redirect_path_prefix_, true)) {
-    web_flow_.reset();
+    web_flow_.release()->DetachDelegateAndDelete();
 
     std::string fragment =
         url.path().substr(redirect_path_prefix_.length(), std::string::npos);

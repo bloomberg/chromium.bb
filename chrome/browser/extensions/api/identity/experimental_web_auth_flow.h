@@ -77,6 +77,9 @@ class ExperimentalWebAuthFlow : public content::NotificationObserver,
   // Starts the flow.
   virtual void Start();
 
+  // Prevents further calls to the delegate and deletes the flow.
+  void DetachDelegateAndDelete();
+
  protected:
   // Overridable for testing.
   virtual content::WebContents* CreateWebContents();

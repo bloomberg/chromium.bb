@@ -73,10 +73,14 @@ class WebAuthFlow : public content::NotificationObserver,
               Mode mode,
               const gfx::Rect& initial_bounds,
               chrome::HostDesktopType host_desktop_type);
+
   virtual ~WebAuthFlow();
 
   // Starts the flow.
   virtual void Start();
+
+  // Prevents further calls to the delegate and deletes the flow.
+  void DetachDelegateAndDelete();
 
  protected:
   // Overridable for testing.

@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/message_loop.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,7 +68,8 @@ class MockGaiaWebAuthFlowDelegate : public GaiaWebAuthFlow::Delegate {
 class IdentityGaiaWebAuthFlowTest : public testing::Test {
  public:
   IdentityGaiaWebAuthFlowTest()
-      : ubertoken_error_state_(GoogleServiceAuthError::NONE) {}
+      : ubertoken_error_state_(GoogleServiceAuthError::NONE),
+        fake_ui_thread_(content::BrowserThread::UI, &message_loop_) {}
 
   scoped_ptr<TestGaiaWebAuthFlow> CreateTestFlow() {
     OAuth2Info oauth2_info;
@@ -92,6 +95,8 @@ class IdentityGaiaWebAuthFlowTest : public testing::Test {
  protected:
   testing::StrictMock<MockGaiaWebAuthFlowDelegate> delegate_;
   GoogleServiceAuthError::State ubertoken_error_state_;
+  MessageLoop message_loop_;
+  content::TestBrowserThread fake_ui_thread_;
 };
 
 TEST_F(IdentityGaiaWebAuthFlowTest, OAuthError) {
