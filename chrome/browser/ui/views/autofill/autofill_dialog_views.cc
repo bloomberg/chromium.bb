@@ -851,6 +851,16 @@ void AutofillDialogViews::Show() {
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // On non-Aura Windows a standard accelerator gets registered that will
+  // navigate on a backspace. Override that here.
+  // TODO(abodenha): Remove this when no longer needed. See
+  // http://crbug.com/242584.
+  ui::Accelerator backspace(ui::VKEY_BACK, ui::EF_NONE);
+  focus_manager_->RegisterAccelerator(
+      backspace, ui::AcceleratorManager::kNormalPriority, this);
+#endif
+
   // Listen for size changes on the browser.
   views::Widget* browser_widget =
       views::Widget::GetTopLevelWidgetForNativeView(
@@ -1053,6 +1063,18 @@ void AutofillDialogViews::ActivateInput(const DetailInput& input) {
 void AutofillDialogViews::OnSignInResize(const gfx::Size& pref_size) {
   sign_in_webview_->SetPreferredSize(pref_size);
   ContentsPreferredSizeChanged();
+}
+
+bool AutofillDialogViews::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  ui::KeyboardCode key = accelerator.key_code();
+  if (key == ui::VKEY_BACK)
+    return true;
+  return false;
+}
+
+bool AutofillDialogViews::CanHandleAccelerators() const {
+  return true;
 }
 
 string16 AutofillDialogViews::GetWindowTitle() const {

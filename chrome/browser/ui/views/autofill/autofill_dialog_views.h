@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
@@ -68,7 +69,8 @@ class AutofillDialogViews : public AutofillDialogView,
                             public views::FocusChangeListener,
                             public views::LinkListener,
                             public views::ComboboxListener,
-                            public views::StyledLabelListener {
+                            public views::StyledLabelListener,
+                            public ui::AcceleratorTarget {
  public:
   explicit AutofillDialogViews(AutofillDialogController* controller);
   virtual ~AutofillDialogViews();
@@ -101,6 +103,10 @@ class AutofillDialogViews : public AutofillDialogView,
                                       const string16& contents) OVERRIDE;
   virtual void ActivateInput(const DetailInput& input) OVERRIDE;
   virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
+
+  // ui::AcceleratorTarget implementation:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool CanHandleAccelerators() const OVERRIDE;
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;
