@@ -1224,6 +1224,7 @@ void FileSystem::SearchMetadata(const std::string& query,
 
   drive::internal::SearchMetadata(blocking_task_runner_,
                                   resource_metadata_,
+                                  cache_,
                                   query,
                                   options,
                                   at_most_num_matches,

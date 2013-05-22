@@ -6,7 +6,10 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "content/public/test/test_browser_thread.h"
@@ -18,6 +21,43 @@ namespace internal {
 namespace {
 
 const int kDefaultAtMostNumMatches = 10;
+const int64 kCacheEntriesLastAccessedTimeBase = 100;
+
+// Generator of sequential fake data for ResourceEntry.
+class MetadataInfoGenerator {
+ public:
+  // Constructor of EntryInfoGenerator. |prefix| is prefix of resource IDs and
+  // |last_accessed_base| is the first value to be generated as a last accessed
+  // time.
+  MetadataInfoGenerator(const std::string& prefix,
+                        int last_accessed_base) :
+      prefix_(prefix),
+      id_counter_(0),
+      last_accessed_counter_(last_accessed_base) {}
+
+  // Obtains resource ID that is consists of the prefix and a sequential
+  // number.
+  std::string GetId() const {
+    return base::StringPrintf("%s%d", prefix_.c_str(), id_counter_);
+  }
+
+  // Obtains the fake last accessed time that is sequential number following
+  // |last_accessed_base| specified at the construcor.
+  int64 GetLastAccessed() const {
+    return last_accessed_counter_;
+  }
+
+  // Advances counters to generate the next ID and last accessed time.
+  void Advance() {
+    ++id_counter_;
+    ++last_accessed_counter_;
+  }
+
+ private:
+  std::string prefix_;
+  int id_counter_;
+  int64 last_accessed_counter_;
+};
 
 }  // namespace
 
@@ -29,11 +69,21 @@ class SearchMetadataTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+    cache_.reset(new internal::FileCache(temp_dir_.path(),
+                                         blocking_task_runner_,
+                                         fake_free_disk_space_getter_.get()));
+
+    bool success = false;
+    cache_->RequestInitialize(
+        google_apis::test_util::CreateCopyResultCallback(&success));
+    google_apis::test_util::RunBlockingPoolTask();
+    ASSERT_TRUE(success);
 
     resource_metadata_.reset(
         new ResourceMetadata(temp_dir_.path(), blocking_task_runner_));
@@ -79,6 +129,56 @@ class SearchMetadataTest : public testing::Test {
     AddEntryToMetadata(entry);
   }
 
+  // Adds a directory at |path|. Parent directories are added if needed just
+  // like "mkdir -p" does.
+  std::string AddDirectoryToMetadataWithParents(
+      const base::FilePath& path,
+      MetadataInfoGenerator* generator) {
+    if (path == base::FilePath(base::FilePath::kCurrentDirectory))
+      return "root";
+
+    {
+      FileError error;
+      scoped_ptr<ResourceEntry> entry;
+      resource_metadata_->GetResourceEntryByPathOnUIThread(
+          base::FilePath("drive/root").Append(path),
+          google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+      google_apis::test_util::RunBlockingPoolTask();
+      if (error == FILE_ERROR_OK)
+        return entry->resource_id();
+    }
+
+    const std::string parent_id =
+        AddDirectoryToMetadataWithParents(path.DirName(), generator);
+    const std::string id = generator->GetId();
+    AddEntryToMetadata(GetDirectoryEntry(
+        path.BaseName().AsUTF8Unsafe(),
+        id,
+        generator->GetLastAccessed(),
+        parent_id));
+    generator->Advance();
+    return id;
+  }
+
+  // Adds entries for |cache_resources| to |resource_metadata_|.  The parent
+  // directories of |resources| is also added.
+  void AddEntriesToMetadataFromCache(
+      const std::vector<test_util::TestCacheResource>& cache_resources,
+      MetadataInfoGenerator* generator) {
+    for (size_t i = 0; i < cache_resources.size(); ++i) {
+      const test_util::TestCacheResource& resource = cache_resources[i];
+      const base::FilePath path(resource.source_file);
+      const std::string parent_id =
+          AddDirectoryToMetadataWithParents(path.DirName(), generator);
+      AddEntryToMetadata(
+          GetFileEntry(path.BaseName().AsUTF8Unsafe(),
+                       resource.resource_id,
+                       generator->GetLastAccessed(),
+                       parent_id));
+      generator->Advance();
+    }
+  }
+
   ResourceEntry GetFileEntry(const std::string& name,
                                const std::string& resource_id,
                                int64 last_accessed,
@@ -118,9 +218,11 @@ class SearchMetadataTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
+  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
+  scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
 };
 
 TEST_F(SearchMetadataTest, SearchMetadata_ZeroMatches) {
@@ -129,6 +231,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ZeroMatches) {
 
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "NonExistent",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -146,6 +249,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
 
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "SubDirectory File 1.txt",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -168,6 +272,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
   // The query is all in lower case.
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "subdirectory file 1.txt",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -187,6 +292,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
 
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "SubDir",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -216,6 +322,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
   // returned.
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "SubDir",
                  SEARCH_METADATA_ALL,
                  1,  // at_most_num_matches
@@ -235,6 +342,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
 
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "Directory 1",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -253,6 +361,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
 
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "Document",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -273,6 +382,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeHostedDocument) {
 
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "Document",
                  SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS,
                  kDefaultAtMostNumMatches,
@@ -290,6 +400,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_SharedWithMe) {
 
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "",
                  SEARCH_METADATA_SHARED_WITH_ME,
                  kDefaultAtMostNumMatches,
@@ -309,6 +420,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_FileAndDirectory) {
 
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "excludeDir-test",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -332,6 +444,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
 
   SearchMetadata(blocking_task_runner_,
                  resource_metadata_.get(),
+                 cache_.get(),
                  "excludeDir-test",
                  SEARCH_METADATA_EXCLUDE_DIRECTORIES,
                  kDefaultAtMostNumMatches,
@@ -357,6 +470,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeSpecialDirectories) {
     const std::string query = kQueries[i];
     SearchMetadata(blocking_task_runner_,
                    resource_metadata_.get(),
+                   cache_.get(),
                    query,
                    SEARCH_METADATA_ALL,
                    kDefaultAtMostNumMatches,
@@ -368,6 +482,47 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeSpecialDirectories) {
     ASSERT_TRUE(result);
     ASSERT_TRUE(result->empty()) << ": " << query << " should not match";
   }
+}
+
+TEST_F(SearchMetadataTest, SearchMetadata_Offline) {
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      test_util::kLotsOfSpace);
+  const std::vector<test_util::TestCacheResource> cache_resources =
+      test_util::GetDefaultTestCacheResources();
+  ASSERT_TRUE(test_util::PrepareTestCacheResources(cache_.get(),
+                                                   cache_resources));
+  {
+    MetadataInfoGenerator generator("cache", kCacheEntriesLastAccessedTimeBase);
+    AddEntriesToMetadataFromCache(cache_resources, &generator);
+  }
+  FileError error = FILE_ERROR_FAILED;
+  scoped_ptr<MetadataSearchResultVector> result;
+
+  SearchMetadata(blocking_task_runner_,
+                 resource_metadata_.get(),
+                 cache_.get(),
+                 "",
+                 SEARCH_METADATA_OFFLINE,
+                 kDefaultAtMostNumMatches,
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_EQ(6U, result->size());
+
+  EXPECT_EQ("drive/root/gdata/basic_feed.json",
+            result->at(0).path.AsUTF8Unsafe());
+  EXPECT_EQ("drive/root/gdata/account_metadata.json",
+            result->at(1).path.AsUTF8Unsafe());
+  EXPECT_EQ("drive/root/gdata/directory_entry.json",
+            result->at(2).path.AsUTF8Unsafe());
+  EXPECT_EQ("drive/root/gdata/empty_feed.json",
+            result->at(3).path.AsUTF8Unsafe());
+  EXPECT_EQ("drive/root/gdata/root_feed.json",
+            result->at(4).path.AsUTF8Unsafe());
+  // This is not included in the cache but is a hosted document.
+  EXPECT_EQ("drive/root/Document 1 excludeDir-test.gdoc",
+            result->at(5).path.AsUTF8Unsafe());
 }
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_ZeroMatches) {

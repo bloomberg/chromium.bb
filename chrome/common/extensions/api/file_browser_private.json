@@ -1002,7 +1002,7 @@
               },
               "types": {
                 "type": "string",
-                "enum": ["EXCLUDE_DIRECTORIES", "SHARED_WITH_ME", "ALL"],
+                "enum": ["EXCLUDE_DIRECTORIES", "SHARED_WITH_ME", "OFFLINE", "ALL"],
                 "optional": true,
                 "description": "The type of entry that is needed. Default to ALL."
               },

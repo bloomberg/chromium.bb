@@ -2927,10 +2927,13 @@ void SearchDriveMetadataFunction::OnFileSystemOpened(
   }
 
   int options = drive::SEARCH_METADATA_ALL;
+  // TODO(hirono): Switch to the JSON scheme compiler. http://crbug.com/241693
   if (types_ == "EXCLUDE_DIRECTORIES")
     options = drive::SEARCH_METADATA_EXCLUDE_DIRECTORIES;
   else if (types_ == "SHARED_WITH_ME")
     options = drive::SEARCH_METADATA_SHARED_WITH_ME;
+  else if (types_ == "OFFLINE")
+    options = drive::SEARCH_METADATA_OFFLINE;
   else
     DCHECK_EQ("ALL", types_);
 

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
@@ -73,12 +74,16 @@ class ScopedPriorityQueue {
 };
 
 // Returns true if |entry| is eligible for the search |options| and should be
-// tested for the match with the query.
-// If SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS is requested, the hosted
-// documents are skipped. If SEARCH_METADATA_EXCLUDE_DIRECTORIES is requested,
-// the directories are skipped. If SEARCH_METADATA_SHARED_WITH_ME is requested,
-// only the entries with shared-with-me label will be tested.
-bool IsEligibleEntry(const ResourceEntry& entry, int options) {
+// tested for the match with the query.  If
+// SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS is requested, the hosted documents
+// are skipped. If SEARCH_METADATA_EXCLUDE_DIRECTORIES is requested, the
+// directories are skipped. If SEARCH_METADATA_SHARED_WITH_ME is requested, only
+// the entries with shared-with-me label will be tested. If
+// SEARCH_METADATA_OFFLINE is requested, only hosted documents and cached files
+// match with the query. This option can not be used with other options.
+bool IsEligibleEntry(const ResourceEntry& entry,
+                     internal::FileCache* cache,
+                     int options) {
   if ((options & SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS) &&
       entry.file_specific_info().is_hosted_document())
     return false;
@@ -89,6 +94,16 @@ bool IsEligibleEntry(const ResourceEntry& entry, int options) {
 
   if (options & SEARCH_METADATA_SHARED_WITH_ME)
     return entry.shared_with_me();
+
+  if (options & SEARCH_METADATA_OFFLINE) {
+    if (entry.file_specific_info().is_hosted_document())
+      return true;
+    FileCacheEntry cache_entry;
+    cache->GetCacheEntry(entry.resource_id(),
+                         std::string(),
+                         &cache_entry);
+    return cache_entry.is_present();
+  }
 
   // Exclude "drive", "drive/root", and "drive/other".
   if (entry.resource_id() == util::kDriveGrandRootSpecialResourceId ||
@@ -103,6 +118,7 @@ bool IsEligibleEntry(const ResourceEntry& entry, int options) {
 // Adds entry to the result when appropriate.
 void MaybeAddEntryToResult(
     ResourceMetadata* resource_metadata,
+    FileCache* cache,
     const std::string& query,
     int options,
     size_t at_most_num_matches,
@@ -115,7 +131,7 @@ void MaybeAddEntryToResult(
   // |options| and matches the query. The base name of the entry must
   // contains |query| to match the query.
   std::string highlighted;
-  if (!IsEligibleEntry(entry, options) ||
+  if (!IsEligibleEntry(entry, cache, options) ||
       !FindAndHighlight(entry.base_name(), query, &highlighted))
     return;
 
@@ -136,6 +152,7 @@ void MaybeAddEntryToResult(
 // Implements SearchMetadata().
 scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
     ResourceMetadata* resource_metadata,
+    FileCache* cache,
     const std::string& query,
     int options,
     int at_most_num_matches) {
@@ -145,7 +162,7 @@ scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
   // Iterate over entries.
   scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
-    MaybeAddEntryToResult(resource_metadata, query, options,
+    MaybeAddEntryToResult(resource_metadata, cache, query, options,
                           at_most_num_matches, &result_candidates, it->Get());
   }
 
@@ -161,12 +178,12 @@ scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
 
   return results.Pass();
 }
-
 }  // namespace
 
 void SearchMetadata(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     ResourceMetadata* resource_metadata,
+    FileCache* cache,
     const std::string& query,
     int options,
     int at_most_num_matches,
@@ -182,6 +199,7 @@ void SearchMetadata(
       FROM_HERE,
       base::Bind(&SearchMetadataOnBlockingPool,
                  resource_metadata,
+                 cache,
                  query,
                  options,
                  at_most_num_matches),

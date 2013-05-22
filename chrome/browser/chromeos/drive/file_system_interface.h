@@ -140,12 +140,14 @@ struct DriveClientContext {
 // SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS excludes the hosted documents.
 // SEARCH_METADATA_EXCLUDE_DIRECTORIES excludes the directories from the result.
 // SEARCH_METADATA_SHARED_WITH_ME targets only "shared-with-me" entries.
-// TODO(haruki): Add option for offline.
+// SEARCH_METADATA_OFFLINE targets only "offline" entries. This option can not
+// be used with other options.
 enum SearchMetadataOptions {
   SEARCH_METADATA_ALL = 0,
   SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS = 1,
   SEARCH_METADATA_EXCLUDE_DIRECTORIES = 1 << 1,
   SEARCH_METADATA_SHARED_WITH_ME = 1 << 2,
+  SEARCH_METADATA_OFFLINE = 1 << 3,
 };
 
 // Drive file system abstraction layer.
@@ -404,7 +406,7 @@ class FileSystemInterface {
   // on the preference. |callback| must not be null. Must be called on UI
   // thread. Empty |query| matches any base name. i.e. returns everything.
   virtual void SearchMetadata(const std::string& query,
-                              int  options,
+                              int options,
                               int at_most_num_matches,
                               const SearchMetadataCallback& callback) = 0;
 
