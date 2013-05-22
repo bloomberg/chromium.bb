@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_messaging.idl modified Thu Apr 26 13:16:11 2012. */
+/* From ppb_messaging.idl modified Mon May 20 15:31:07 2013. */
 
 #ifndef PPAPI_C_PPB_MESSAGING_H_
 #define PPAPI_C_PPB_MESSAGING_H_
@@ -44,9 +44,14 @@ struct PPB_Messaging_1_0 {
    * of a module.
    * @param[in] message A <code>PP_Var</code> containing the data to be sent to
    * JavaScript.
-   * Message can have a numeric, boolean, or string value; arrays and
-   * dictionaries are not yet supported. Ref-counted var types are copied, and
-   * are therefore not shared between the module instance and the browser.
+   * <code>message</code> can be any <code>PP_Var</code> type except
+   * <code>PP_VARTYPE_OBJECT</code>. Array/Dictionary types are supported from
+   * Chrome M29 onward. All var types are copied when passing them to
+   * JavaScript.
+   *
+   * When passing array or dictionary <code>PP_Var</code>s, the entire reference
+   * graph will be converted and transferred, including reference cycles if they
+   * exist.
    *
    * Listeners for message events in JavaScript code will receive an object
    * conforming to the HTML 5 <code>MessageEvent</code> interface.

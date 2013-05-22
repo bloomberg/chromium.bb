@@ -30,9 +30,14 @@ interface PPB_Messaging {
    * of a module.
    * @param[in] message A <code>PP_Var</code> containing the data to be sent to
    * JavaScript.
-   * Message can have a numeric, boolean, or string value; arrays and
-   * dictionaries are not yet supported. Ref-counted var types are copied, and
-   * are therefore not shared between the module instance and the browser.
+   * <code>message</code> can be any <code>PP_Var</code> type except
+   * <code>PP_VARTYPE_OBJECT</code>. Array/Dictionary types are supported from
+   * Chrome M29 onward. All var types are copied when passing them to
+   * JavaScript.
+   *
+   * When passing array or dictionary <code>PP_Var</code>s, the entire reference
+   * graph will be converted and transferred, including reference cycles if they
+   * exist.
    *
    * Listeners for message events in JavaScript code will receive an object
    * conforming to the HTML 5 <code>MessageEvent</code> interface.
