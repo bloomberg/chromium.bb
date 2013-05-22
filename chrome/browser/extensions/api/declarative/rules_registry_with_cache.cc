@@ -275,7 +275,7 @@ RulesRegistryWithCache::RuleStorageOnUI::RuleStorageOnUI(
       log_storage_init_delay_(log_storage_init_delay),
       registry_(registry),
       rules_registry_thread_(rules_registry_thread),
-      ready_state_(NOT_READY),
+      notified_registry_(false),
       weak_ptr_factory_(this) {}
 
 RulesRegistryWithCache::RuleStorageOnUI::~RuleStorageOnUI() {}
@@ -288,19 +288,17 @@ RulesRegistryWithCache::RuleStorageOnUI::~RuleStorageOnUI() {}
 void RulesRegistryWithCache::RuleStorageOnUI::Init() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  extensions::StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
+  ExtensionSystem& system = *ExtensionSystem::Get(profile_);
+  extensions::StateStore* store = system.rules_store();
   if (store)
     store->RegisterKey(storage_key_);
 
-  if (!profile_->IsOffTheRecord()) {
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                    content::Source<Profile>(profile_));
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                    content::Source<Profile>(profile_));
-  } else {
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
+
+  if (profile_->IsOffTheRecord()) {
     log_storage_init_delay_ = false;
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                   content::Source<Profile>(profile_->GetOriginalProfile()));
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile_)->extension_service();
     DCHECK(extension_service->is_ready());
@@ -313,15 +311,10 @@ void RulesRegistryWithCache::RuleStorageOnUI::Init() {
           extension_service->IsIncognitoEnabled((*i)->id()))
         ReadFromStorage((*i)->id());
     }
-    // The extensions are already ready for the original profile.
-    ready_state_ = EXTENSIONS_READY;
-    // Init is called from the registry's constructor, and because CheckIfReady
-    // can post tasks for the not-yet-initialized registry to run, we need to
-    // postpone checking for being ready (=all rules loaded), on the registry's
-    // thread.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&RuleStorageOnUI::CheckIfReady, GetWeakPtr()));
   }
+
+  system.ready().Post(FROM_HERE,
+                      base::Bind(&RuleStorageOnUI::CheckIfReady, GetWeakPtr()));
 }
 
 void RulesRegistryWithCache::RuleStorageOnUI::WriteToStorage(
@@ -341,32 +334,28 @@ void RulesRegistryWithCache::RuleStorageOnUI::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
-    const extensions::Extension* extension =
-        content::Details<const extensions::Extension>(details).ptr();
-    // TODO(mpcomplete): This API check should generalize to any use of
-    // declarative rules, not just webRequest.
-    if (extension->HasAPIPermission(APIPermission::kDeclarativeContent) ||
-        extension->HasAPIPermission(APIPermission::kDeclarativeWebRequest)) {
-      ExtensionInfoMap* extension_info_map =
-          ExtensionSystem::Get(profile_)->info_map();
-      if (profile_->IsOffTheRecord() &&
-          !extension_info_map->IsIncognitoEnabled(extension->id())) {
-        // Ignore this extension.
-      } else {
-        ReadFromStorage(extension->id());
-      }
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED);
+
+  const extensions::Extension* extension =
+      content::Details<const extensions::Extension>(details).ptr();
+  // TODO(mpcomplete): This API check should generalize to any use of
+  // declarative rules, not just webRequest.
+  if (extension->HasAPIPermission(APIPermission::kDeclarativeContent) ||
+      extension->HasAPIPermission(APIPermission::kDeclarativeWebRequest)) {
+    ExtensionInfoMap* extension_info_map =
+        ExtensionSystem::Get(profile_)->info_map();
+    if (profile_->IsOffTheRecord() &&
+        !extension_info_map->IsIncognitoEnabled(extension->id())) {
+      // Ignore this extension.
+    } else {
+      ReadFromStorage(extension->id());
     }
-  } else if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
-    CHECK_EQ(NOT_READY, ready_state_);
-    ready_state_ = EXTENSIONS_READY;
-    CheckIfReady();
   }
 }
 
 void RulesRegistryWithCache::RuleStorageOnUI::CheckIfReady() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (ready_state_ != EXTENSIONS_READY || !waiting_for_extensions_.empty())
+  if (notified_registry_ || !waiting_for_extensions_.empty())
     return;
 
   content::BrowserThread::PostTask(
@@ -374,7 +363,7 @@ void RulesRegistryWithCache::RuleStorageOnUI::CheckIfReady() {
       FROM_HERE,
       base::Bind(
           &RulesRegistryWithCache::OnReady, registry_, storage_init_time_));
-  ready_state_ = NOTIFIED_READY;
+  notified_registry_ = true;
 }
 
 void RulesRegistryWithCache::RuleStorageOnUI::ReadFromStorage(
@@ -410,7 +399,9 @@ void RulesRegistryWithCache::RuleStorageOnUI::ReadFromStorageCallback(
 
   waiting_for_extensions_.erase(extension_id);
 
-  CheckIfReady();
+  if (waiting_for_extensions_.empty())
+    ExtensionSystem::Get(profile_)->ready().Post(
+        FROM_HERE, base::Bind(&RuleStorageOnUI::CheckIfReady, GetWeakPtr()));
 }
 
 }  // namespace extensions

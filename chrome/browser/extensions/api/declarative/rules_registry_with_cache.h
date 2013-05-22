@@ -57,12 +57,6 @@ class RulesRegistryWithCache : public RulesRegistry {
     }
 
    private:
-    enum ReadyState {    // Our increasing states of readiness.
-      NOT_READY,         // Waiting for NOTIFICATION_EXTENSIONS_READY.
-      EXTENSIONS_READY,  // Observed NOTIFICATION_EXTENSIONS_READY.
-      NOTIFIED_READY     // We notified that the rules are loaded.
-    };
-
     // NotificationObserver
     virtual void Observe(int type,
                          const content::NotificationSource& source,
@@ -99,7 +93,8 @@ class RulesRegistryWithCache : public RulesRegistry {
     // The thread |registry_| lives on.
     const content::BrowserThread::ID rules_registry_thread_;
 
-    ReadyState ready_state_;
+    // We notified the RulesRegistry that the rules are loaded.
+    bool notified_registry_;
 
     // Use this factory to generate weak pointers bound to the UI thread.
     base::WeakPtrFactory<RuleStorageOnUI> weak_ptr_factory_;
