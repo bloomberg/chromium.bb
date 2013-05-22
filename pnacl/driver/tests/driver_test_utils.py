@@ -80,19 +80,3 @@ def ApplyTestEnvOverrides(env):
   """
   driver_env.override_env('reset', TestEnvReset)
   env.reset()
-
-# Utils to prevent driver exit.
-
-class DriverExitException(Exception):
-  pass
-
-def FakeExit(i):
-  raise DriverExitException('Stubbed out DriverExit!')
-
-# Basic argument parsing.
-
-def GetPlatformToTest():
-  for arg in sys.argv:
-    if arg.startswith('--platform='):
-      return arg.split('=')[1]
-  raise Exception('Unknown platform')

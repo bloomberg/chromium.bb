@@ -21,11 +21,45 @@ import sys
 import tempfile
 import unittest
 
+class DriverExitException(Exception):
+  pass
+
+def FakeExit(i):
+  raise DriverExitException('Stubbed out DriverExit!')
+
+def MakeFakeStdStream():
+  fake_out = cStringIO.StringIO()
+  fake_err = cStringIO.StringIO()
+  backup_stdout = sys.stdout
+  backup_stderr = sys.stderr
+  sys.stdout = fake_out
+  sys.stderr = fake_err
+  return (fake_out, fake_err, backup_stdout, backup_stderr)
+
+def RestoreStdStream(fake_out, fake_err,
+                     backup_stdout, backup_stderr):
+  sys.stdout = backup_stdout
+  sys.stderr = backup_stderr
+  # For some reason, cStringIO.StringIO() returns the same object
+  # for fake_out, on each iteration.  So, if we close() it we could
+  # end up getting a closed object and write to closed object
+  # in the next iteration.
+  fake_out.reset()
+  fake_out.truncate()
+  fake_err.reset()
+  fake_err.truncate()
+
+def GetPlatformToTest():
+  for arg in sys.argv:
+    if arg.startswith('--platform='):
+      return arg.split('=')[1]
+  raise Exception('Unknown platform')
+
 class TestLLCOptions(unittest.TestCase):
 
   def setUp(self):
     driver_test_utils.ApplyTestEnvOverrides(env)
-    self.platform = driver_test_utils.GetPlatformToTest()
+    self.platform = GetPlatformToTest()
     self.tempfiles = []
 
   def getTemp(self, **kwargs):
@@ -69,30 +103,35 @@ define i32 @main() {
     does not drop certain flags accidentally. '''
     temp_output = self.getTemp()
     temp_output.close()
-    # Major hack to prevent DriverExit() from aborting the test.
+    # Major hack to capture the output.
+    # RunDriver() prints a bunch of things to stdout, which we need to capture.
+    # Another major hack is to prevent DriverExit() from aborting the test.'
     # The test will surely DriverLog.Fatal() because dry-run currently
     # does not handle anything that involves invoking a subprocess and
     # grepping the stdout/stderr since it never actually invokes
     # the subprocess. Unfortunately, pnacl-translate does grep the output of
     # the sandboxed LLC run, so we can only go that far with --dry-run.
-    capture_out = cStringIO.StringIO()
-    driver_log.Log.CaptureToStream(capture_out)
+    (fake_out, fake_err, backup_stdout, backup_stderr) = MakeFakeStdStream()
     backup_exit = sys.exit
-    sys.exit = driver_test_utils.FakeExit
-    self.assertRaises(driver_test_utils.DriverExitException,
-                      driver_tools.RunDriver,
-                      'translate',
-                      ['--pnacl-driver-verbose',
-                       '--dry-run',
-                       '-arch', arch,
-                       pexe.name,
-                       '-o', temp_output.name] + flags)
-    driver_log.Log.ResetStreams()
-    out = capture_out.getvalue()
-    sys.exit = backup_exit
+    sys.exit = FakeExit
+    try:
+      self.assertRaises(DriverExitException,
+                        driver_tools.RunDriver,
+                        'translate',
+                        ['--pnacl-driver-verbose',
+                         '--dry-run',
+                         '-arch', arch,
+                         pexe.name,
+                         '-o', temp_output.name] + flags)
+    finally:
+      out = sys.stdout.getvalue()
+      err = sys.stderr.getvalue()
+      RestoreStdStream(fake_out, fake_err,
+                       backup_stdout, backup_stderr)
+      sys.exit = backup_exit
     for f in expected_flags:
-      self.assertTrue(re.search(f, out),
-                      msg='Searching for regex %s in %s' % (f, out))
+      self.assertTrue(re.search(f, err),
+                      msg='Searching for regex %s in %s' % (f, err))
     return
 
 
@@ -140,7 +179,7 @@ define i32 @main() {
           pexe,
           self.platform,
           ['-O0'],
-          ['-O0', '-disable-fp-elim '])
+          ['-O0 ', '-disable-fp-elim '])
       self.checkLLCTranslateFlags(
           pexe,
           self.platform,

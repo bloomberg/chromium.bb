@@ -83,30 +83,9 @@ class LogManager(object):
     self._error_out = [sys.stderr]
     self._debug_out = []
     self._script_name = ''
-    self._capture_output = False
-    self._orig_err = self._error_out
-    self._orig_debug = self._debug_out
-
-  def CaptureToStream(self, s):
-    # Provide a way to capture output for testing.
-    self._capture_output = True
-    self._orig_err = self._error_out
-    self._orig_debug = self._debug_out
-    self._error_out = [s]
-    self._debug_out = [s]
-
-  def ResetStreams(self):
-    # Reset the streams back to normal.
-    self._error_out = self._orig_err
-    self._debug_out = self._orig_debug
-    self._capture_output = False
 
   def IncreaseVerbosity(self):
-    # Ignore if capturing output for test.
-    if self._capture_output:
-      return
-    if not sys.stderr in self._debug_out:
-      self._debug_out.append(sys.stderr)
+    self._debug_out = [sys.stderr]
 
   def SetScriptName(self, script_name):
     self._script_name = script_name
