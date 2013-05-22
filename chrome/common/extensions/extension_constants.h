@@ -34,6 +34,18 @@ namespace extension_urls {
   // etc.) about an extension from the webstore as JSON.
   GURL GetWebstoreItemJsonDataURL(const std::string& extension_id);
 
+  // Returns the URL used to get webstore search results in JSON format. The URL
+  // returns a JSON dictionary that has the search results (under "results").
+  // Each entry in the array is a dictionary as the data returned for
+  // GetWebstoreItemJsonDataURL above. |query| is the user typed query string.
+  // |hl| is the host language code, e.g. en_US. Both arguments will be escaped
+  // and added as a query parameter to the returned web store json search URL.
+  GURL GetWebstoreJsonSearchUrl(const std::string& query,
+                                const std::string& hl);
+
+  // Returns the URL of the web store search results page for |query|.
+  GURL GetWebstoreSearchPageUrl(const std::string& query);
+
   // Return the update URL used by gallery/webstore extensions/apps.
   GURL GetWebstoreUpdateUrl();
 

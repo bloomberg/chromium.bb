@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "net/base/escape.h"
 #include "net/base/url_util.h"
 
 namespace extension_urls {
@@ -46,6 +47,18 @@ GURL GetWebstoreIntentQueryURL(const std::string& action,
 
 GURL GetWebstoreItemJsonDataURL(const std::string& extension_id) {
   return GURL(GetWebstoreLaunchURL() + "/inlineinstall/detail/" + extension_id);
+}
+
+GURL GetWebstoreJsonSearchUrl(const std::string& query, const std::string& hl) {
+  GURL url(GetWebstoreLaunchURL() + "/jsonsearch");
+  url = net::AppendQueryParameter(url, "q", query);
+  url = net::AppendQueryParameter(url, "hl", hl);
+  return url;
+}
+
+GURL GetWebstoreSearchPageUrl(const std::string& query) {
+  return GURL(GetWebstoreLaunchURL() + "/search/" +
+              net::EscapeQueryParamValue(query, false));
 }
 
 const char kGalleryUpdateHttpsUrl[] =

@@ -7,12 +7,13 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace net {
@@ -38,11 +39,8 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
   void Start();
 
  private:
-  class SafeWebstoreResponseParser;
-
-  // Client callbacks for SafeWebstoreResponseParser when parsing is complete.
-  void OnWebstoreResponseParseSuccess(base::DictionaryValue* webstore_data);
-  void OnWebstoreResponseParseFailure(const std::string& error);
+  void OnJsonParseSuccess(scoped_ptr<base::Value> parsed_json);
+  void OnJsonParseFailure(const std::string& error);
 
   // net::URLFetcherDelegate overrides:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;

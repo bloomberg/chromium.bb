@@ -1711,6 +1711,8 @@
         'browser/safe_browsing/two_phase_uploader.h',
         'browser/safe_browsing/ui_manager.cc',
         'browser/safe_browsing/ui_manager.h',
+        'browser/safe_json_parser.cc',
+        'browser/safe_json_parser.h',
         'browser/screensaver_window_finder_gtk.cc',
         'browser/screensaver_window_finder_gtk.h',
         'browser/search/iframe_source.cc',

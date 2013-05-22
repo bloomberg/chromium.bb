@@ -4,20 +4,14 @@
 
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
-#include "chrome/common/chrome_utility_messages.h"
+#include "chrome/browser/safe_json_parser.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/utility_process_host_client.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
-
-using content::BrowserThread;
-using content::UtilityProcessHost;
-using content::UtilityProcessHostClient;
 
 namespace {
 
@@ -26,97 +20,6 @@ const char kInvalidWebstoreResponseError[] = "Invalid Chrome Web Store reponse";
 }  // namespace
 
 namespace extensions {
-
-class WebstoreDataFetcher::SafeWebstoreResponseParser
-    : public UtilityProcessHostClient {
- public:
-  SafeWebstoreResponseParser(const base::WeakPtr<WebstoreDataFetcher>& client,
-                             const std::string& webstore_data)
-      : client_(client),
-        webstore_data_(webstore_data) {}
-
-  void Start() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&SafeWebstoreResponseParser::StartWorkOnIOThread, this));
-  }
-
-  void StartWorkOnIOThread() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    UtilityProcessHost* host =
-        UtilityProcessHost::Create(
-            this, base::MessageLoopProxy::current());
-    host->EnableZygote();
-    host->Send(new ChromeUtilityMsg_ParseJSON(webstore_data_));
-  }
-
-  // Implementing pieces of the UtilityProcessHostClient interface.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(SafeWebstoreResponseParser, message)
-      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Succeeded,
-                          OnJSONParseSucceeded)
-      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Failed,
-                          OnJSONParseFailed)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnJSONParseSucceeded(const base::ListValue& wrapper) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const Value* value = NULL;
-    CHECK(wrapper.Get(0, &value));
-    if (value->IsType(Value::TYPE_DICTIONARY)) {
-      parsed_webstore_data_.reset(
-          static_cast<const DictionaryValue*>(value)->DeepCopy());
-    } else {
-      error_ = kInvalidWebstoreResponseError;
-    }
-
-    ReportResults();
-  }
-
-  virtual void OnJSONParseFailed(const std::string& error_message) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    error_ = error_message;
-    ReportResults();
-  }
-
-  void ReportResults() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&SafeWebstoreResponseParser::ReportResultOnUIThread, this));
-  }
-
-  void ReportResultOnUIThread() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!client_)
-      return;
-
-    if (error_.empty() && parsed_webstore_data_) {
-      client_->OnWebstoreResponseParseSuccess(parsed_webstore_data_.release());
-    } else {
-      client_->OnWebstoreResponseParseFailure(error_);
-    }
-  }
-
- private:
-  virtual ~SafeWebstoreResponseParser() {}
-
-  base::WeakPtr<WebstoreDataFetcher> client_;
-
-  std::string webstore_data_;
-  std::string error_;
-  scoped_ptr<DictionaryValue> parsed_webstore_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeWebstoreResponseParser);
-};
 
 WebstoreDataFetcher::WebstoreDataFetcher(
     WebstoreDataFetcherDelegate* delegate,
@@ -143,12 +46,18 @@ void WebstoreDataFetcher::Start() {
   webstore_data_url_fetcher_->Start();
 }
 
-void WebstoreDataFetcher::OnWebstoreResponseParseSuccess(
-    base::DictionaryValue* webstore_data) {
-  delegate_->OnWebstoreResponseParseSuccess(webstore_data);
+void WebstoreDataFetcher::OnJsonParseSuccess(
+    scoped_ptr<base::Value> parsed_json) {
+  if (!parsed_json->IsType(base::Value::TYPE_DICTIONARY)) {
+    OnJsonParseFailure(kInvalidWebstoreResponseError);
+    return;
+  }
+
+  delegate_->OnWebstoreResponseParseSuccess(
+      static_cast<base::DictionaryValue*>(parsed_json.release()));
 }
 
-void WebstoreDataFetcher::OnWebstoreResponseParseFailure(
+void WebstoreDataFetcher::OnJsonParseFailure(
     const std::string& error) {
   delegate_->OnWebstoreResponseParseFailure(error);
 }
@@ -167,10 +76,13 @@ void WebstoreDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string webstore_json_data;
   fetcher->GetResponseAsString(&webstore_json_data);
 
-  scoped_refptr<SafeWebstoreResponseParser> parser =
-      new SafeWebstoreResponseParser(AsWeakPtr(), webstore_json_data);
-  // The parser will call us back via OnWebstoreResponseParseSucces or
-  // OnWebstoreResponseParseFailure.
+  scoped_refptr<SafeJsonParser> parser =
+      new SafeJsonParser(webstore_json_data,
+                         base::Bind(&WebstoreDataFetcher::OnJsonParseSuccess,
+                                    AsWeakPtr()),
+                         base::Bind(&WebstoreDataFetcher::OnJsonParseFailure,
+                                    AsWeakPtr()));
+  // The parser will call us back via one of the callbacks.
   parser->Start();
 }
 

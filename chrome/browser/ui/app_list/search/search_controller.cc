@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/webstore_provider.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/app_list/search_box_model.h"
 
@@ -37,13 +38,12 @@ SearchController::~SearchController() {}
 void SearchController::Init() {
   mixer_->Init();
 
-  AddProvider(Mixer::MAIN_GROUP,
-              scoped_ptr<SearchProvider>(
-                  new AppSearchProvider(profile_, list_controller_)).Pass());
-  AddProvider(Mixer::OMNIBOX_GROUP,
-              scoped_ptr<SearchProvider>(new OmniboxProvider(profile_)).Pass());
-
-  // TODO(xiyuan): Add providers.
+  AddProvider(Mixer::MAIN_GROUP, scoped_ptr<SearchProvider>(
+      new AppSearchProvider(profile_, list_controller_)).Pass());
+  AddProvider(Mixer::OMNIBOX_GROUP, scoped_ptr<SearchProvider>(
+      new OmniboxProvider(profile_)).Pass());
+  AddProvider(Mixer::WEBSTORE_GROUP, scoped_ptr<SearchProvider>(
+      new WebstoreProvider(profile_)).Pass());
 }
 
 void SearchController::Start() {
