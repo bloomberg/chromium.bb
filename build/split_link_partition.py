@@ -131,7 +131,7 @@
     (r'base_static\.lib$', r'base_switches\.obj$'),
     (r'\bbase\.lib$', r'file_path_constants\.obj$'),
     (r'\bcc\.lib$', r'switches\.obj$'),
-    (r'\bcommon\.lib$', r'extension_constants\.obj$'),
+    (r'\bcommon\.lib$', r'constants\.obj$'),
     (r'\bcommon\.lib$', r'extension_manifest_constants\.obj$'),
     (r'\bcommon\.lib$', r'url_constants\.obj$'),
     (r'\bcommon\.lib$', r'view_type\.obj$'),
