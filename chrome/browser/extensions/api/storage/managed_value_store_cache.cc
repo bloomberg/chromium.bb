@@ -52,18 +52,13 @@ class ManagedValueStoreCache::ExtensionTracker
 
  private:
   Profile* profile_;
-  bool is_ready_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTracker);
 };
 
 ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(Profile* profile)
-    : profile_(profile),
-      is_ready_(false) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSIONS_READY,
-                 content::Source<Profile>(profile_));
+    : profile_(profile) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
@@ -76,10 +71,7 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSIONS_READY)
-    is_ready_ = true;
-
-  if (!is_ready_)
+  if (!ExtensionSystem::Get(profile_)->ready().is_signaled())
     return;
 
   // TODO(joaodasilva): this currently only registers extensions that use
