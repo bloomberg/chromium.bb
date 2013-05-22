@@ -17,6 +17,7 @@ Applications outside of WebKit depend on the stability of the mapping of these t
     MarkDOMContent : "MarkDOMContent"
     MarkLoad : "MarkLoad"
     Paint : "Paint"
+    PaintSetup : "PaintSetup"
     ParseHTML : "ParseHTML"
     Program : "Program"
     Rasterize : "Rasterize"
