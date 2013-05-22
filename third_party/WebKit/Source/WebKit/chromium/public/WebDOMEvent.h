@@ -32,6 +32,7 @@
 #define WebDOMEvent_h
 
 #include "../../../../public/platform/WebCommon.h"
+#include "../../../../public/platform/WebPrivatePtr.h"
 #include "../../../../public/platform/WebString.h"
 #include "WebNode.h"
 
@@ -52,8 +53,8 @@ public:
 
     ~WebDOMEvent() { reset(); }
 
-    WebDOMEvent() : m_private(0) { }
-    WebDOMEvent(const WebDOMEvent& e) : m_private(0) { assign(e); }
+    WebDOMEvent() { }
+    WebDOMEvent(const WebDOMEvent& other) { assign(other); }
     WebDOMEvent& operator=(const WebDOMEvent& e)
     {
         assign(e);
@@ -63,7 +64,7 @@ public:
     WEBKIT_EXPORT void reset();
     WEBKIT_EXPORT void assign(const WebDOMEvent&);
 
-    bool isNull() const { return !m_private; }
+    bool isNull() const { return m_private.isNull(); }
 
     WEBKIT_EXPORT WebString type() const;
     WEBKIT_EXPORT WebNode target() const;
@@ -112,18 +113,21 @@ public:
 
 protected:
     typedef WebCore::Event WebDOMEventPrivate;
-    void assign(WebDOMEventPrivate*);
-    WebDOMEventPrivate* m_private;
+#if WEBKIT_IMPLEMENTATION
+    void assign(const WTF::PassRefPtr<WebDOMEventPrivate>&);
 
     template<typename T> T* unwrap()
     {
-        return static_cast<T*>(m_private);
+        return static_cast<T*>(m_private.get());
     }
 
     template<typename T> const T* constUnwrap() const
     {
-        return static_cast<const T*>(m_private);
+        return static_cast<const T*>(m_private.get());
     }
+#endif
+
+    WebPrivatePtr<WebDOMEventPrivate> m_private;
 };
 
 } // namespace WebKit

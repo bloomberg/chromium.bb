@@ -45,6 +45,12 @@ public:
     WebSpeechInputResult(const WebSpeechInputResult& other) { assign(other); }
     ~WebSpeechInputResult() { reset(); }
 
+    WebSpeechInputResult& operator=(const WebSpeechInputResult& other)
+    {
+        assign(other);
+        return *this;
+    }
+
     WEBKIT_EXPORT void assign(const WebString& utterance, double confidence);
     WEBKIT_EXPORT void assign(const WebSpeechInputResult& other);
     WEBKIT_EXPORT void reset();

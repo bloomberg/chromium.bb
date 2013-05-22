@@ -42,6 +42,36 @@ namespace WebKit {
 // This class is an implementation detail of the WebKit API.  It exists
 // to help simplify the implementation of WebKit interfaces that merely
 // wrap a reference counted WebCore class.
+//
+// A typical implementation of a class which uses WebPrivatePtr might look like
+// this:
+//    class WebFoo {
+//    public:
+//        virtual ~WebFoo() { }  // Only necessary if WebFoo will be used as a
+//                               // base class.
+//        WebFoo() { }
+//        WebFoo(const WebFoo& other) { assign(other); }
+//        WebFoo& operator=(const WebFoo& other)
+//        {
+//            assign(other);
+//            return *this;
+//        }
+//        WEBKIT_EXPORT void assign(const WebFoo&);  // Implemented in the body.
+//
+//        // Methods that are exposed to Chromium and which are specific to
+//        // WebFoo go here.
+//        WEBKIT_EXPORT doWebFooThing();
+//
+//        // Methods that are used only by other WebKit/chromium API classes
+//        // should only be declared when WEBKIT_IMPLEMENTATION is set.
+//    #if WEBKIT_IMPLEMENTATION
+//        WebFoo(const WTF::PassRefPtr<WebCore::Foo>&);
+//    #endif
+//
+//    private:
+//        WebPrivatePtr<WebCore::Foo> m_private;
+//    };
+//
 template <typename T>
 class WebPrivatePtr {
 public:
@@ -97,7 +127,16 @@ private:
             m_ptr->deref();
         m_ptr = p;
     }
+#else
+    // Disable the assignment operator; we define it above for when
+    // WEBKIT_IMPLEMENTATION is set, but we need to make sure that it is not
+    // used outside there; the compiler-provided version won't handle reference
+    // counting properly.
+    WebPrivatePtr<T>& operator=(const WebPrivatePtr<T>& other);
 #endif
+    // Disable the copy constructor; classes that contain a WebPrivatePtr
+    // should implement their copy constructor using assign().
+    WebPrivatePtr(const WebPrivatePtr<T>&);
 
     T* m_ptr;
 };

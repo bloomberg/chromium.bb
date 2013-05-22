@@ -50,165 +50,159 @@ void WebDOMEvent::reset()
 
 void WebDOMEvent::assign(const WebDOMEvent& other)
 {
-    WebDOMEventPrivate* p = const_cast<WebDOMEventPrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
+    m_private = other.m_private;
 }
 
-void WebDOMEvent::assign(WebDOMEventPrivate* p)
+void WebDOMEvent::assign(const WTF::PassRefPtr<WebDOMEventPrivate>& event)
 {
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
+    m_private = event;
 }
 
 WebDOMEvent::WebDOMEvent(const WTF::PassRefPtr<WebCore::Event>& event)
-    : m_private(static_cast<WebDOMEventPrivate*>(event.leakRef()))
+    : m_private(event)
 {
 }
 
 WebDOMEvent::operator WTF::PassRefPtr<WebCore::Event>() const
 {
-    return static_cast<WebCore::Event*>(m_private);
+    return m_private.get();
 }
 
 WebString WebDOMEvent::type() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->type();
 }
 
 WebNode WebDOMEvent::target() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return WebNode(m_private->target()->toNode());
 }
 
 WebNode WebDOMEvent::currentTarget() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return WebNode(m_private->currentTarget()->toNode());
 }
 
 WebDOMEvent::PhaseType WebDOMEvent::eventPhase() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return static_cast<WebDOMEvent::PhaseType>(m_private->eventPhase());
 }
 
 bool WebDOMEvent::bubbles() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->bubbles();
 }
 
 bool WebDOMEvent::cancelable() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->cancelable();
 }
 
 bool WebDOMEvent::isUIEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->isUIEvent();
 }
 
 bool WebDOMEvent::isMouseEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->isMouseEvent();
 }
 
 bool WebDOMEvent::isKeyboardEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->isKeyboardEvent();
 }
 
 bool WebDOMEvent::isMutationEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(WebCore::eventNames().interfaceForMutationEvent);
 }
 
 bool WebDOMEvent::isTextEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(eventNames().interfaceForTextEvent);
 }
 
 bool WebDOMEvent::isCompositionEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(eventNames().interfaceForCompositionEvent);
 }
 
 bool WebDOMEvent::isDragEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->isDragEvent();
 }
 
 bool WebDOMEvent::isClipboardEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->isClipboardEvent();
 }
 
 bool WebDOMEvent::isMessageEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(eventNames().interfaceForMessageEvent);
 }
 
 bool WebDOMEvent::isWheelEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(eventNames().interfaceForWheelEvent);
 }
 
 bool WebDOMEvent::isBeforeTextInsertedEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->isBeforeTextInsertedEvent();
 }
 
 bool WebDOMEvent::isOverflowEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(eventNames().interfaceForOverflowEvent);
 }
 
 bool WebDOMEvent::isPageTransitionEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(eventNames().interfaceForPageTransitionEvent);
 }
 
 bool WebDOMEvent::isPopStateEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(eventNames().interfaceForPopStateEvent);
 }
 
 bool WebDOMEvent::isProgressEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(eventNames().interfaceForProgressEvent);
 }
 
 bool WebDOMEvent::isXMLHttpRequestProgressEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(eventNames().interfaceForXMLHttpRequestProgressEvent);
 }
 
 bool WebDOMEvent::isBeforeLoadEvent() const
 {
-    ASSERT(m_private);
+    ASSERT(m_private.get());
     return m_private->hasInterface(eventNames().interfaceForBeforeLoadEvent);
 }
 
