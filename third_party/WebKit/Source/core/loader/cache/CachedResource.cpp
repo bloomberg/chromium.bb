@@ -250,12 +250,8 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
     }
 
     m_loader = ResourceLoader::create(cachedResourceLoader->documentLoader(), this, request, options);
-
-    if (!m_loader) {
-        failBeforeStarting();
-        return;
-    }
-    m_status = Pending;
+    if (m_loader)
+        m_status = Pending;
 }
 
 void CachedResource::checkNotify()
@@ -392,21 +388,9 @@ CachedMetadata* CachedResource::cachedMetadata(unsigned dataTypeID) const
     return m_cachedMetadata.get();
 }
 
-void CachedResource::stopLoading()
+void CachedResource::clearLoader()
 {
-    ASSERT(m_loader);            
     m_loader = 0;
-
-    CachedResourceHandle<CachedResource> protect(this);
-
-    // All loads finish with finish() or error(), except for
-    // canceled loads, which silently set our request to 0. Be sure to notify our
-    // client in that case, so we don't seem to continue loading forever.
-    if (isLoading()) {
-        setLoading(false);
-        setStatus(LoadError);
-        checkNotify();
-    }
 }
 
 void CachedResource::addClient(CachedResourceClient* client)

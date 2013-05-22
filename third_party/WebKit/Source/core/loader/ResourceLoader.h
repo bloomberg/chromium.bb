@@ -90,7 +90,7 @@ public:
     bool shouldSendResourceLoadCallbacks() const { return m_options.sendLoadCallbacks == SendCallbacks; }
     bool shouldSniffContent() const { return m_options.sniffContent == SniffContent; }
 
-    bool reachedTerminalState() const { return m_reachedTerminalState; }
+    bool reachedTerminalState() const { return m_state == Terminated; }
 
     const ResourceRequest& request() const { return m_request; }
 
@@ -104,8 +104,6 @@ private:
 
     void didFinishLoadingOnePart(double finishTime);
 
-    bool cancelled() const { return m_cancelled; }
-
     RefPtr<ResourceHandle> m_handle;
     RefPtr<Frame> m_frame;
     RefPtr<DocumentLoader> m_documentLoader;
@@ -116,8 +114,6 @@ private:
     unsigned long m_identifier;
 
     bool m_loadingMultipartContent;
-    bool m_reachedTerminalState;
-    bool m_cancelled;
     bool m_notifiedLoadComplete;
 
     bool m_defersLoading;
@@ -127,7 +123,8 @@ private:
     enum ResourceLoaderState {
         Uninitialized,
         Initialized,
-        Finishing
+        Finishing,
+        Terminated
     };
 
     class RequestCountTracker {

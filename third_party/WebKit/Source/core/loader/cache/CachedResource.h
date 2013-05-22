@@ -171,7 +171,7 @@ public:
     
     bool inLiveDecodedResourcesList() { return m_inLiveDecodedResourcesList; }
     
-    void stopLoading();
+    void clearLoader();
 
     SharedBuffer* resourceBuffer() const { ASSERT(!m_purgeableData); return m_data.get(); }
 

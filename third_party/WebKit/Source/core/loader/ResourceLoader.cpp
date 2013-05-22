@@ -72,8 +72,6 @@ ResourceLoader::ResourceLoader(DocumentLoader* documentLoader, CachedResource* r
     , m_documentLoader(documentLoader)
     , m_identifier(0)
     , m_loadingMultipartContent(false)
-    , m_reachedTerminalState(false)
-    , m_cancelled(false)
     , m_notifiedLoadComplete(false)
     , m_defersLoading(m_frame->page()->defersLoading())
     , m_options(options)
@@ -85,23 +83,22 @@ ResourceLoader::ResourceLoader(DocumentLoader* documentLoader, CachedResource* r
 
 ResourceLoader::~ResourceLoader()
 {
-    ASSERT(m_state != Initialized);
-    ASSERT(m_reachedTerminalState);
+    ASSERT(m_state == Terminated);
 }
 
 void ResourceLoader::releaseResources()
 {
-    ASSERT(!reachedTerminalState());
+    ASSERT(m_state != Terminated);
     if (m_state != Uninitialized) {
         m_requestCountTracker.clear();
         m_documentLoader->cachedResourceLoader()->loadDone(m_resource);
-        if (reachedTerminalState())
+        if (m_state == Terminated)
             return;
-        m_resource->stopLoading();
+        m_resource->clearLoader();
         m_documentLoader->removeResourceLoader(this);
     }
 
-    ASSERT(!m_reachedTerminalState);
+    ASSERT(m_state != Terminated);
     
     // It's possible that when we release the handle, it will be
     // deallocated and release the last reference to this object.
@@ -111,10 +108,8 @@ void ResourceLoader::releaseResources()
 
     m_frame = 0;
     m_documentLoader = 0;
-    
-    // We need to set reachedTerminalState to true before we release
-    // the resources to prevent a double dealloc of WebView <rdar://problem/4372628>
-    m_reachedTerminalState = true;
+
+    m_state = Terminated;
 
     m_identifier = 0;
 
@@ -137,13 +132,6 @@ bool ResourceLoader::init(const ResourceRequest& r)
     ASSERT(!m_documentLoader->isSubstituteLoadPending(this));
     
     ResourceRequest clientRequest(r);
-    
-    m_defersLoading = m_frame->page()->defersLoading();
-    if (m_options.securityCheck == DoSecurityCheck && !m_frame->document()->securityOrigin()->canDisplay(clientRequest.url())) {
-        FrameLoader::reportLocalLoadFailed(m_frame.get(), clientRequest.url().string());
-        releaseResources();
-        return false;
-    }
 
     m_identifier = createUniqueIdentifier();
     willSendRequest(0, clientRequest, ResourceResponse());
@@ -151,7 +139,7 @@ bool ResourceLoader::init(const ResourceRequest& r)
         cancel();
         return false;
     }
-    ASSERT(!reachedTerminalState());
+    ASSERT(m_state != Terminated);
 
     m_originalRequest = m_request = clientRequest;
     m_state = Initialized;
@@ -175,7 +163,7 @@ void ResourceLoader::start()
         return;
     }
 
-    if (!m_reachedTerminalState)
+    if (m_state != Terminated)
         m_handle = ResourceHandle::create(m_frame->loader()->networkingContext(), m_request, this, m_defersLoading, m_options.sniffContent == SniffContent, m_options.allowCredentials);
 }
 
@@ -200,10 +188,6 @@ FrameLoader* ResourceLoader::frameLoader() const
 
 void ResourceLoader::didDownloadData(ResourceHandle*, int length)
 {
-    if (!m_cancelled && !fastMallocSize(documentLoader()->applicationCacheHost()))
-        CRASH();
-    if (!m_cancelled && !fastMallocSize(documentLoader()->frame()))
-        CRASH();
     RefPtr<ResourceLoader> protect(this);
     m_resource->didDownloadData(length);
 }
@@ -212,9 +196,8 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime)
 {
     // If load has been cancelled after finishing (which could happen with a
     // JavaScript that changes the window location), do nothing.
-    if (m_cancelled)
+    if (m_state == Terminated)
         return;
-    ASSERT(!m_reachedTerminalState);
 
     if (m_notifiedLoadComplete)
         return;
@@ -246,45 +229,37 @@ void ResourceLoader::cancel()
 void ResourceLoader::cancel(const ResourceError& error)
 {
     // If the load has already completed - succeeded, failed, or previously cancelled - do nothing.
-    if (m_reachedTerminalState)
+    if (m_state == Terminated)
         return;
-       
+    if (m_state == Finishing) {
+        releaseResources();
+        return;
+    }
+
     ResourceError nonNullError = error.isNull() ? cancelledError() : error;
 
     // This function calls out to clients at several points that might do
     // something that causes the last reference to this object to go away.
     RefPtr<ResourceLoader> protector(this);
-    
-    // If we re-enter cancel() from inside this if() block, we want to pick up from where we left
-    // off without re-running it
-    if (m_state == Initialized) {
-        LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().string().latin1().data());
-        m_state = Finishing;
-        m_resource->setResourceError(nonNullError);
-        if (m_resource->resourceToRevalidate())
-            m_resource->revalidationFailed();
+
+    LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().string().latin1().data());
+    m_state = Finishing;
+    m_resource->setResourceError(nonNullError);
+    if (m_resource->resourceToRevalidate())
+        m_resource->revalidationFailed();
+
+    m_documentLoader->cancelPendingSubstituteLoad(this);
+    if (m_handle) {
+        m_handle->cancel();
+        m_handle = 0;
     }
 
-    // If we re-enter cancel() from inside didFailToLoad(), we want to pick up from where we 
-    // left off without redoing any of this work.
-    if (!m_cancelled) {
-        m_cancelled = true;
+    if (m_options.sendLoadCallbacks == SendCallbacks && m_identifier && !m_notifiedLoadComplete)
+        frameLoader()->notifier()->didFailToLoad(this, nonNullError);
 
-        m_documentLoader->cancelPendingSubstituteLoad(this);
-        if (m_handle) {
-            m_handle->cancel();
-            m_handle = 0;
-        }
-
-        if (m_options.sendLoadCallbacks == SendCallbacks && m_identifier && !m_notifiedLoadComplete)
-            frameLoader()->notifier()->didFailToLoad(this, nonNullError);
-    }
-
-    // If cancel() completed from within the call to willCancel() or didFailToLoad(),
-    // we don't want to redo didCancel() or releasesResources().
-    if (m_reachedTerminalState)
-        return;
-    releaseResources();
+    m_resource->error(CachedResource::LoadError);
+    if (m_state != Terminated)
+        releaseResources();
 }
 
 ResourceError ResourceLoader::cancelledError()
@@ -316,7 +291,7 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
         m_resource->willSendRequest(request, redirectResponse);
     }
 
-    if (request.isNull() || reachedTerminalState())
+    if (request.isNull() || m_state == Terminated)
         return;
 
     if (m_options.sendLoadCallbacks == SendCallbacks)
@@ -359,7 +334,7 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
             // Existing resource is ok, just use it updating the expiration time.
             m_resource->setResponse(response);
             m_resource->revalidationSucceeded(response);
-            if (reachedTerminalState())
+            if (m_state == Terminated)
                 return;
 
             if (m_options.sendLoadCallbacks == SendCallbacks)
@@ -371,7 +346,7 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
     }
 
     m_resource->responseReceived(response);
-    if (reachedTerminalState())
+    if (m_state == Terminated)
         return;
 
     if (m_options.sendLoadCallbacks == SendCallbacks)
@@ -431,7 +406,7 @@ void ResourceLoader::didFinishLoading(ResourceHandle*, double finishTime)
 {
     if (m_state != Initialized)
         return;
-    ASSERT(!reachedTerminalState());
+    ASSERT(m_state != Terminated);
     ASSERT(!m_resource->resourceToRevalidate());
     ASSERT(!m_resource->errorOccurred());
     LOG(ResourceLoading, "Received '%s'.", m_resource->url().string().latin1().data());
@@ -445,14 +420,14 @@ void ResourceLoader::didFinishLoading(ResourceHandle*, double finishTime)
 
     // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
     // the resources a second time, they have been released by cancel.
-    if (m_cancelled)
+    if (m_state == Terminated)
         return;
     releaseResources();
 }
 
 void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
 {
-    ASSERT(!reachedTerminalState());
+    ASSERT(m_state != Terminated);
     LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().string().latin1().data());
 
     RefPtr<ResourceLoader> protect(this);
@@ -463,9 +438,8 @@ void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
         m_resource->revalidationFailed();
     m_resource->error(CachedResource::LoadError);
 
-    if (m_cancelled)
+    if (m_state == Terminated)
         return;
-    ASSERT(!m_reachedTerminalState);
 
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;
