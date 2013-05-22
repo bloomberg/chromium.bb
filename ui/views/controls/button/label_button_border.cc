@@ -21,6 +21,7 @@ namespace {
 const int kNormalImages[] = IMAGE_GRID(IDR_BUTTON_NORMAL);
 const int kHoveredImages[] = IMAGE_GRID(IDR_BUTTON_HOVER);
 const int kPressedImages[] = IMAGE_GRID(IDR_BUTTON_PRESSED);
+const int kDisabledImages[] = IMAGE_GRID(IDR_BUTTON_DISABLED);
 const int kFocusedNormalImages[] = IMAGE_GRID(IDR_BUTTON_FOCUSED_NORMAL);
 const int kFocusedHoveredImages[] = IMAGE_GRID(IDR_BUTTON_FOCUSED_HOVER);
 const int kFocusedPressedImages[] = IMAGE_GRID(IDR_BUTTON_FOCUSED_PRESSED);
@@ -73,7 +74,7 @@ LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style)
     SetPainter(false, Button::STATE_PRESSED,
                Painter::CreateImageGridPainter(kPressedImages));
     SetPainter(false, Button::STATE_DISABLED,
-               Painter::CreateImageGridPainter(kNormalImages));
+               Painter::CreateImageGridPainter(kDisabledImages));
     SetPainter(true, Button::STATE_NORMAL,
                Painter::CreateImageGridPainter(kFocusedNormalImages));
     SetPainter(true, Button::STATE_HOVERED,
@@ -81,7 +82,7 @@ LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style)
     SetPainter(true, Button::STATE_PRESSED,
                Painter::CreateImageGridPainter(kFocusedPressedImages));
     SetPainter(true, Button::STATE_DISABLED,
-               Painter::CreateImageGridPainter(kNormalImages));
+               Painter::CreateImageGridPainter(kDisabledImages));
   } else if (style == Button::STYLE_TEXTBUTTON) {
     SetPainter(false, Button::STATE_HOVERED,
                Painter::CreateImageGridPainter(kTextHoveredImages));
@@ -113,11 +114,6 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
 
     state = native_theme_delegate->GetForegroundThemeState(&extra);
     canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
-    PaintHelper(this, canvas, theme, part, state, rect, extra);
-    canvas->Restore();
-  } else if (state == ui::NativeTheme::kDisabled &&
-             style() == Button::STYLE_BUTTON) {
-    canvas->SaveLayerAlpha(static_cast<uint8>(0xff / 2));
     PaintHelper(this, canvas, theme, part, state, rect, extra);
     canvas->Restore();
   } else {
