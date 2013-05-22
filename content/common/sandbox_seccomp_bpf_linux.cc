@@ -126,7 +126,7 @@ intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
 }
 
 // TODO(jln): rewrite reporting functions.
-intptr_t ReportCloneFailure(const struct arch_seccomp_data& args, void* aux) {
+intptr_t SIGSYSCloneFailure(const struct arch_seccomp_data& args, void* aux) {
   // "flags" in the first argument in the kernel's clone().
   // Mark as volatile to be able to find the value on the stack in a minidump.
 #if !defined(NDEBUG)
@@ -146,7 +146,7 @@ intptr_t ReportCloneFailure(const struct arch_seccomp_data& args, void* aux) {
 }
 
 // TODO(jln): rewrite reporting functions.
-intptr_t ReportPrctlFailure(const struct arch_seccomp_data& args,
+intptr_t SIGSYSPrctlFailure(const struct arch_seccomp_data& args,
                             void* /* aux */) {
   // Mark as volatile to be able to find the value on the stack in a minidump.
 #if !defined(NDEBUG)
@@ -160,7 +160,7 @@ intptr_t ReportPrctlFailure(const struct arch_seccomp_data& args,
     _exit(1);
 }
 
-intptr_t ReportIoctlFailure(const struct arch_seccomp_data& args,
+intptr_t SIGSYSIoctlFailure(const struct arch_seccomp_data& args,
                             void* /* aux */) {
   // Make "request" volatile so that we can see it on the stack in a minidump.
 #if !defined(NDEBUG)
@@ -1514,7 +1514,7 @@ ErrorCode RestrictCloneToThreadsAndEPERMFork(Sandbox* sandbox) {
            sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
                          CLONE_PARENT_SETTID | SIGCHLD,
                          ErrorCode(EPERM),
-           sandbox->Trap(ReportCloneFailure, NULL)));
+           sandbox->Trap(SIGSYSCloneFailure, NULL)));
   } else {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
@@ -1530,16 +1530,16 @@ ErrorCode RestrictPrctl(Sandbox *sandbox) {
                        PR_SET_DUMPABLE, ErrorCode(ErrorCode::ERR_ALLOWED),
          sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
                        PR_GET_DUMPABLE, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Trap(ReportPrctlFailure, NULL))));
+         sandbox->Trap(SIGSYSPrctlFailure, NULL))));
 }
 
 ErrorCode RestrictIoctl(Sandbox *sandbox) {
-  // Allow TCGETS and FIONREAD, trap to ReportIoctlFailure otherwise.
+  // Allow TCGETS and FIONREAD, trap to SIGSYSIoctlFailure otherwise.
   return sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, TCGETS,
                        ErrorCode(ErrorCode::ERR_ALLOWED),
          sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, FIONREAD,
                        ErrorCode(ErrorCode::ERR_ALLOWED),
-                       sandbox->Trap(ReportIoctlFailure, NULL)));
+                       sandbox->Trap(SIGSYSIoctlFailure, NULL)));
 }
 
 ErrorCode RendererOrWorkerProcessPolicy(Sandbox *sandbox, int sysno, void *) {
