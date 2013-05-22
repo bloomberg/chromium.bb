@@ -68,7 +68,6 @@ std::string JobStateToString(JobState state) {
   return "(unknown job state)";
 }
 
-
 JobInfo::JobInfo(JobType in_job_type)
     : job_type(in_job_type),
       job_id(-1),
@@ -92,6 +91,44 @@ std::string JobInfo::ToString() const {
                         base::Int64ToString(num_total_bytes).c_str());
   }
   return output;
+}
+
+bool IsActiveFileTransferJobInfo(const JobInfo& job_info) {
+  // Using switch statement so that compiler can warn when new states or types
+  // are added.
+  switch (job_info.state) {
+    case STATE_NONE:
+      return false;
+    case STATE_RUNNING:
+    case STATE_RETRY:
+      break;
+  }
+
+  switch (job_info.job_type) {
+    case TYPE_GET_ABOUT_RESOURCE:
+    case TYPE_GET_APP_LIST:
+    case TYPE_GET_ALL_RESOURCE_LIST:
+    case TYPE_GET_RESOURCE_LIST_IN_DIRECTORY:
+    case TYPE_SEARCH:
+    case TYPE_GET_CHANGE_LIST:
+    case TYPE_CONTINUE_GET_RESOURCE_LIST:
+    case TYPE_GET_RESOURCE_ENTRY:
+    case TYPE_DELETE_RESOURCE:
+    case TYPE_COPY_RESOURCE:
+    case TYPE_COPY_HOSTED_DOCUMENT:
+    case TYPE_RENAME_RESOURCE:
+    case TYPE_ADD_RESOURCE_TO_DIRECTORY:
+    case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY:
+    case TYPE_ADD_NEW_DIRECTORY:
+    case TYPE_CREATE_FILE:
+      return false;
+    case TYPE_DOWNLOAD_FILE:
+    case TYPE_UPLOAD_NEW_FILE:
+    case TYPE_UPLOAD_EXISTING_FILE:
+      break;
+  }
+
+  return true;
 }
 
 }  // namespace drive

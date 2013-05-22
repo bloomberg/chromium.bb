@@ -252,12 +252,6 @@ bool IsDownloadJob(drive::JobType type) {
   return type == drive::TYPE_DOWNLOAD_FILE;
 }
 
-// Checks if |job_info| represents a job for currently active file transfer.
-bool IsActiveFileTransferJobInfo(const drive::JobInfo& job_info) {
-  return job_info.state != drive::STATE_NONE &&
-      (IsUploadJob(job_info.job_type) || IsDownloadJob(job_info.job_type));
-}
-
 // Converts the job info to its JSON (Value) form.
 scoped_ptr<base::DictionaryValue> JobInfoToDictionaryValue(
     Profile* profile,
@@ -623,7 +617,7 @@ void FileManagerEventRouter::OnJobAdded(const drive::JobInfo& job_info) {
 
 void FileManagerEventRouter::OnJobUpdated(const drive::JobInfo& job_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!IsActiveFileTransferJobInfo(job_info))
+  if (!drive::IsActiveFileTransferJobInfo(job_info))
     return;
 
   bool is_new_job = (drive_jobs_.find(job_info.job_id) == drive_jobs_.end());
@@ -641,7 +635,7 @@ void FileManagerEventRouter::OnJobUpdated(const drive::JobInfo& job_info) {
 void FileManagerEventRouter::OnJobDone(const drive::JobInfo& job_info,
                                        drive::FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!IsActiveFileTransferJobInfo(job_info))
+  if (!drive::IsActiveFileTransferJobInfo(job_info))
     return;
 
   // Replace with the latest job info.

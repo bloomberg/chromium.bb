@@ -8,7 +8,8 @@
 #include <sys/statvfs.h>
 #include <sys/types.h>
 #include <utime.h>
-#include <utility>
+
+#include <map>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -2580,6 +2581,19 @@ bool CancelFileTransfersFunction::RunImpl() {
   if (!integration_service)
     return false;
 
+  // Create the mapping from file path to job ID.
+  drive::JobListInterface* job_list = integration_service->job_list();
+  DCHECK(job_list);
+  std::vector<drive::JobInfo> jobs = job_list->GetJobInfoList();
+
+  typedef std::map<base::FilePath, std::vector<drive::JobID> > PathToIdMap;
+  PathToIdMap path_to_id_map;
+  for (size_t i = 0; i < jobs.size(); ++i) {
+    if (drive::IsActiveFileTransferJobInfo(jobs[i]))
+      path_to_id_map[jobs[i].file_path].push_back(jobs[i].job_id);
+  }
+
+  // Cancel by Job ID.
   scoped_ptr<ListValue> responses(new ListValue());
   for (size_t i = 0; i < url_list->GetSize(); ++i) {
     std::string url_as_string;
@@ -2592,9 +2606,14 @@ bool CancelFileTransfersFunction::RunImpl() {
     DCHECK(drive::util::IsUnderDriveMountPoint(file_path));
     file_path = drive::util::ExtractDrivePath(file_path);
     scoped_ptr<DictionaryValue> result(new DictionaryValue());
-    result->SetBoolean(
-        "canceled",
-        integration_service->drive_service()->CancelForFilePath(file_path));
+
+    // Cancel all the jobs for the file.
+    PathToIdMap::iterator it = path_to_id_map.find(file_path);
+    if (it != path_to_id_map.end()) {
+      for (size_t i = 0; i < it->second.size(); ++i)
+        job_list->CancelJob(it->second[i]);
+    }
+    result->SetBoolean("canceled", it != path_to_id_map.end());
     GURL file_url;
     if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
             drive::util::GetSpecialRemoteRootPath().Append(file_path),

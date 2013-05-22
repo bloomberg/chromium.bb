@@ -89,6 +89,9 @@ struct JobInfo {
   std::string ToString() const;
 };
 
+// Checks if |job_info| represents a job for currently active file transfer.
+bool IsActiveFileTransferJobInfo(const JobInfo& job_info);
+
 // The interface for observing JobListInterface.
 // All events are notified in the UI thread.
 class JobListObserver {
