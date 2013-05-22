@@ -1304,10 +1304,12 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
 
     // Number of textures used for drawing should one per layer except for
     // frame 3 where the viewport only contains one layer.
-    if (impl->active_tree()->source_frame_number() == 3)
+    if (impl->active_tree()->source_frame_number() == 3) {
       EXPECT_EQ(1u, context->NumUsedTextures());
-    else
-      EXPECT_EQ(4u, context->NumUsedTextures());
+    } else {
+      EXPECT_EQ(4u, context->NumUsedTextures()) <<
+          "For frame " << impl->active_tree()->source_frame_number();
+    }
 
     context->ResetUsedTextures();
   }
