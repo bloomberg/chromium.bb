@@ -1250,6 +1250,8 @@
         'browser/ui/host_desktop.h',
         'browser/ui/hung_plugin_tab_helper.cc',
         'browser/ui/hung_plugin_tab_helper.h',
+        'browser/ui/immersive_fullscreen_configuration.cc',
+        'browser/ui/immersive_fullscreen_configuration.h',
         'browser/ui/login/login_model.h',
         'browser/ui/login/login_prompt.cc',
         'browser/ui/login/login_prompt.h',

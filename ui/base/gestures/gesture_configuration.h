@@ -38,19 +38,6 @@ class UI_EXPORT GestureConfiguration {
   static void set_fling_max_tap_gap_time_in_ms(int val) {
     fling_max_tap_gap_time_in_ms_ = val;
   }
-  // TODO(jamescook): Move into chrome/browser/ui.
-  static int immersive_mode_reveal_delay_ms() {
-    return immersive_mode_reveal_delay_ms_;
-  }
-  static void set_immersive_mode_reveal_delay_ms(int val) {
-    immersive_mode_reveal_delay_ms_ = val;
-  }
-  static int immersive_mode_reveal_x_threshold_pixels() {
-    return immersive_mode_reveal_x_threshold_pixels_;
-  }
-  static void set_immersive_mode_reveal_x_threshold_pixels(int val) {
-    immersive_mode_reveal_x_threshold_pixels_ = val;
-  }
   static double long_press_time_in_seconds() {
     return long_press_time_in_seconds_;
   }
@@ -225,18 +212,6 @@ class UI_EXPORT GestureConfiguration {
   // Maxium time between a mousedown/mouseup pair that is considered to be a
   // suppressable tap.
   static int fling_max_tap_gap_time_in_ms_;
-
-  // The time after which the edge trigger fires and top-chrome is revealed in
-  // immersive fullscreen. This is after the mouse stops moving.
-  // TODO(jamescook): Move into chrome/browser/ui.
-  static int immersive_mode_reveal_delay_ms_;
-
-  // Threshold for horizontal mouse movement at the top of the screen for the
-  // mouse to be considered "moving" in immersive fullscreen. This allows the
-  // user to trigger a reveal even if their fingers are not completely still on
-  // the trackpad or mouse.
-  // TODO(jamescook): Move into chrome/browser/ui.
-  static int immersive_mode_reveal_x_threshold_pixels_;
 
   static double long_press_time_in_seconds_;
   static double semi_long_press_time_in_seconds_;

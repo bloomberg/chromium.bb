@@ -9,6 +9,7 @@
 #include "ash/wm/window_properties.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -19,7 +20,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/gestures/gesture_configuration.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
@@ -28,7 +28,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-using ui::GestureConfiguration;
 using views::View;
 
 namespace {
@@ -705,7 +704,8 @@ void ImmersiveModeControllerAsh::UpdateTopEdgeHoverTimer(
   int mouse_x = event->root_location().x();
   if (top_edge_hover_timer_.IsRunning() &&
       abs(mouse_x - mouse_x_when_hit_top_) <=
-          GestureConfiguration::immersive_mode_reveal_x_threshold_pixels())
+          ImmersiveFullscreenConfiguration::
+              immersive_mode_reveal_x_threshold_pixels())
     return;
 
   // Start the reveal if the cursor doesn't move for some amount of time.
@@ -715,7 +715,7 @@ void ImmersiveModeControllerAsh::UpdateTopEdgeHoverTimer(
   top_edge_hover_timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(
-          GestureConfiguration::immersive_mode_reveal_delay_ms()),
+          ImmersiveFullscreenConfiguration::immersive_mode_reveal_delay_ms()),
       base::Bind(&ImmersiveModeControllerAsh::AcquireMouseRevealedLock,
                  base::Unretained(this)));
 }

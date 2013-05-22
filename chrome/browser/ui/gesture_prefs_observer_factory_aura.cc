@@ -25,6 +25,7 @@
 
 #if defined(USE_ASH)
 #include "ash/wm/workspace/workspace_cycler_configuration.h"
+#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #endif  // USE_ASH
 
 #if defined(USE_ASH)
@@ -326,10 +327,11 @@ void GesturePrefsObserver::UpdateOverscrollPrefs() {
 
 void GesturePrefsObserver::UpdateImmersiveModePrefs() {
 #if defined(USE_ASH)
-  GestureConfiguration::set_immersive_mode_reveal_delay_ms(
+  ImmersiveFullscreenConfiguration::set_immersive_mode_reveal_delay_ms(
       prefs_->GetInteger(prefs::kImmersiveModeRevealDelayMs));
-  GestureConfiguration::set_immersive_mode_reveal_x_threshold_pixels(
-      prefs_->GetInteger(prefs::kImmersiveModeRevealXThresholdPixels));
+  ImmersiveFullscreenConfiguration::
+      set_immersive_mode_reveal_x_threshold_pixels(
+          prefs_->GetInteger(prefs::kImmersiveModeRevealXThresholdPixels));
 #endif  // USE_ASH
 }
 
@@ -413,11 +415,12 @@ void GesturePrefsObserverFactoryAura::RegisterImmersiveModePrefs(
 #if defined(USE_ASH)
   registry->RegisterIntegerPref(
       prefs::kImmersiveModeRevealDelayMs,
-      GestureConfiguration::immersive_mode_reveal_delay_ms(),
+      ImmersiveFullscreenConfiguration::immersive_mode_reveal_delay_ms(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kImmersiveModeRevealXThresholdPixels,
-      GestureConfiguration::immersive_mode_reveal_x_threshold_pixels(),
+      ImmersiveFullscreenConfiguration::
+          immersive_mode_reveal_x_threshold_pixels(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif  // USE_ASH
 }
