@@ -35,6 +35,7 @@
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8NPUtils.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"
@@ -531,11 +532,12 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
             "  return props;"
             "});";
         v8::Handle<v8::String> source = v8::String::New(enumeratorCode);
-        v8::Handle<v8::Script> script = v8::Script::Compile(source, 0);
-        v8::Handle<v8::Value> enumeratorObj = script->Run();
-        v8::Handle<v8::Function> enumerator = v8::Handle<v8::Function>::Cast(enumeratorObj);
+        v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(source, context->GetIsolate());
+        ASSERT(!result.IsEmpty());
+        ASSERT(result->IsFunction());
+        v8::Handle<v8::Function> enumerator = v8::Handle<v8::Function>::Cast(result);
         v8::Handle<v8::Value> argv[] = { obj };
-        v8::Local<v8::Value> propsObj = enumerator->Call(v8::Handle<v8::Object>::Cast(enumeratorObj), ARRAYSIZE_UNSAFE(argv), argv);
+        v8::Local<v8::Value> propsObj = enumerator->Call(v8::Handle<v8::Object>::Cast(result), ARRAYSIZE_UNSAFE(argv), argv);
         if (propsObj.IsEmpty())
             return false;
 
