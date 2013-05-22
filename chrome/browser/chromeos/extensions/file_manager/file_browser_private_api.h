@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
@@ -64,6 +65,60 @@ class FileBrowserPrivateAPI : public ProfileKeyedService {
   scoped_ptr<FileManagerEventRouter> event_router_;
 };
 
+// Parent class for the chromium extension APIs for the file manager.
+class FileBrowserFunction : public AsyncExtensionFunction {
+ public:
+  FileBrowserFunction();
+
+ protected:
+  typedef std::vector<GURL> UrlList;
+  typedef std::vector<ui::SelectedFileInfo> SelectedFileInfoList;
+  typedef base::Callback<void(const SelectedFileInfoList&)>
+      GetSelectedFileInfoCallback;
+
+  virtual ~FileBrowserFunction();
+
+  // Figures out the tab_id of the hosting tab.
+  int32 GetTabId() const;
+
+  // Returns the local FilePath associated with |url|. If the file isn't of the
+  // type CrosMountPointProvider handles, returns an empty FilePath.
+  //
+  // Local paths will look like "/home/chronos/user/Downloads/foo/bar.txt" or
+  // "/special/drive/foo/bar.txt".
+  base::FilePath GetLocalPathFromURL(const GURL& url);
+
+  // Runs |callback| with SelectedFileInfoList created from |file_urls|.
+  void GetSelectedFileInfo(const UrlList& file_urls,
+                           bool for_opening,
+                           GetSelectedFileInfoCallback callback);
+
+  virtual void SendResponse(bool success) OVERRIDE;
+
+ protected:
+  base::TimeDelta GetElapsedTime();
+  void set_log_on_completion(bool log_on_completion) {
+    log_on_completion_ = log_on_completion;
+  }
+
+ private:
+  struct GetSelectedFileInfoParams;
+
+  // Used to implement GetSelectedFileInfo().
+  void GetSelectedFileInfoInternal(
+      scoped_ptr<GetSelectedFileInfoParams> params);
+
+  // Used to implement GetSelectedFileInfo().
+  void ContinueGetSelectedFileInfo(scoped_ptr<GetSelectedFileInfoParams> params,
+                                   drive::FileError error,
+                                   const base::FilePath& local_file_path,
+                                   scoped_ptr<drive::ResourceEntry> entry);
+
+  base::Time start_time_;
+  bool log_on_completion_;
+};
+
+// Select a single file.  Closes the dialog window.
 // Implements the chrome.fileBrowserPrivate.logoutUser method.
 class LogoutUserFunction : public SyncExtensionFunction {
  public:
@@ -78,7 +133,7 @@ class LogoutUserFunction : public SyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.requestLocalFileSystem method.
-class RequestLocalFileSystemFunction : public AsyncExtensionFunction {
+class RequestLocalFileSystemFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestLocalFileSystem",
                              FILEBROWSERPRIVATE_REQUESTLOCALFILESYSTEM)
@@ -242,49 +297,6 @@ class SetDefaultTaskFileBrowserFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Parent class for the chromium extension APIs for the file dialog.
-class FileBrowserFunction : public AsyncExtensionFunction {
- public:
-  FileBrowserFunction();
-
- protected:
-  typedef std::vector<GURL> UrlList;
-  typedef std::vector<ui::SelectedFileInfo> SelectedFileInfoList;
-  typedef base::Callback<void(const SelectedFileInfoList&)>
-      GetSelectedFileInfoCallback;
-
-  virtual ~FileBrowserFunction();
-
-  // Figures out the tab_id of the hosting tab.
-  int32 GetTabId() const;
-
-  // Returns the local FilePath associated with |url|. If the file isn't of the
-  // type CrosMountPointProvider handles, returns an empty FilePath.
-  //
-  // Local paths will look like "/home/chronos/user/Downloads/foo/bar.txt" or
-  // "/special/drive/foo/bar.txt".
-  base::FilePath GetLocalPathFromURL(const GURL& url);
-
-  // Runs |callback| with SelectedFileInfoList created from |file_urls|.
-  void GetSelectedFileInfo(const UrlList& file_urls,
-                           bool for_opening,
-                           GetSelectedFileInfoCallback callback);
-
- private:
-  struct GetSelectedFileInfoParams;
-
-  // Used to implement GetSelectedFileInfo().
-  void GetSelectedFileInfoInternal(
-      scoped_ptr<GetSelectedFileInfoParams> params);
-
-  // Used to implement GetSelectedFileInfo().
-  void ContinueGetSelectedFileInfo(scoped_ptr<GetSelectedFileInfoParams> params,
-                                   drive::FileError error,
-                                   const base::FilePath& local_file_path,
-                                   scoped_ptr<drive::ResourceEntry> entry);
-};
-
-// Select a single file.  Closes the dialog window.
 class SelectFileFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFile",
@@ -393,7 +405,7 @@ class RemoveMountFunction : public FileBrowserFunction {
   void GetSelectedFileInfoResponse(const SelectedFileInfoList& files);
 };
 
-class GetMountPointsFunction : public AsyncExtensionFunction {
+class GetMountPointsFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getMountPoints",
                              FILEBROWSERPRIVATE_GETMOUNTPOINTS)

@@ -14,6 +14,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/format_macros.h"
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -22,6 +23,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
@@ -627,6 +630,8 @@ bool LogoutUserFunction::RunImpl() {
 bool RequestLocalFileSystemFunction::RunImpl() {
   if (!dispatcher() || !render_view_host() || !render_view_host()->GetProcess())
     return false;
+
+  set_log_on_completion(true);
 
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
@@ -1226,7 +1231,8 @@ struct FileBrowserFunction::GetSelectedFileInfoParams {
   SelectedFileInfoList selected_files;
 };
 
-FileBrowserFunction::FileBrowserFunction() {
+FileBrowserFunction::FileBrowserFunction() : log_on_completion_(false) {
+  start_time_  = base::Time::Now();
 }
 
 FileBrowserFunction::~FileBrowserFunction() {
@@ -1358,6 +1364,23 @@ bool SelectFileFunction::RunImpl() {
   return true;
 }
 
+void FileBrowserFunction::SendResponse(bool success) {
+  int64 elapsed = GetElapsedTime().InMilliseconds();
+  if (log_on_completion_) {
+    drive::util::Log("%s[%d] %s. (elapsed time: %sms)",
+                     name().c_str(),
+                     request_id(),
+                     success ? "succeeded" : "failed",
+                     base::Int64ToString(elapsed).c_str());
+  }
+
+  AsyncExtensionFunction::SendResponse(success);
+}
+
+base::TimeDelta FileBrowserFunction::GetElapsedTime() {
+  return base::Time::Now() - start_time_;
+}
+
 void SelectFileFunction::GetSelectedFileInfoResponse(
     const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1487,6 +1510,13 @@ bool AddMountFunction::RunImpl() {
     return false;
   }
 
+  drive::util::Log("%s[%d] called. (source: '%s', type:'%s')",
+                   name().c_str(),
+                   request_id(),
+                   file_url.empty() ? "(none)" : file_url.c_str(),
+                   mount_type_str.c_str());
+  set_log_on_completion(true);
+
   // Set default return source path to the empty string.
   SetResult(new base::StringValue(""));
 
@@ -1583,6 +1613,12 @@ bool RemoveMountFunction::RunImpl() {
     return false;
   }
 
+  drive::util::Log("%s[%d] called. (mount_path: '%s')",
+                   name().c_str(),
+                   request_id(),
+                   mount_path.c_str());
+  set_log_on_completion(true);
+
   UrlList file_paths;
   file_paths.push_back(GURL(mount_path));
   GetSelectedFileInfo(
@@ -1628,13 +1664,25 @@ bool GetMountPointsFunction::RunImpl() {
   DiskMountManager::MountPointMap mount_points =
       disk_mount_manager->mount_points();
 
+  std::string log_string = "[";
+  const char *separator = "";
   for (DiskMountManager::MountPointMap::const_iterator it =
            mount_points.begin();
        it != mount_points.end();
        ++it) {
     mounts->Append(CreateValueFromMountPoint(profile_, it->second,
         extension_->id(), source_url_));
+    log_string += separator + it->first;
+    separator = ", ";
   }
+
+  log_string += "]";
+
+  drive::util::Log("%s[%d] succeeded. (results: '%s', %"PRIuS" mount points)",
+                   name().c_str(),
+                   request_id(),
+                   log_string.c_str(),
+                   mount_points.size());
 
   SendResponse(true);
   return true;
@@ -2725,6 +2773,8 @@ bool GetPreferencesFunction::RunImpl() {
   }
 
   SetResult(value.release());
+
+  drive::util::Log("%s succeeded.", name().c_str());
   return true;
 }
 
@@ -2745,6 +2795,7 @@ bool SetPreferencesFunction::RunImpl() {
   if (value->GetBoolean("hostedFilesDisabled", &tmp))
     service->SetBoolean(prefs::kDisableDriveHostedFiles, tmp);
 
+  drive::util::Log("%s succeeded.", name().c_str());
   return true;
 }
 
@@ -2990,6 +3041,7 @@ bool GetDriveConnectionStateFunction::RunImpl() {
   value->Set("reasons", reasons.release());
   SetResult(value.release());
 
+  drive::util::Log("%s succeeded.", name().c_str());
   return true;
 }
 
