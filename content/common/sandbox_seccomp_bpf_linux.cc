@@ -102,7 +102,7 @@ inline bool IsUsingToolKitGtk() {
 }
 
 intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
-  int syscall = args.nr;
+  uint32_t syscall = args.nr;
   if (syscall >= 1024)
     syscall = 0;
   // Encode 8-bits of the 1st two arguments too, so we can discern which socket
