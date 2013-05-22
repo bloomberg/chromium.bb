@@ -1420,15 +1420,18 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
 
   # Support wrappers from environment variables too.
   for key, value in os.environ.iteritems():
-    if key.endswith('_wrapper'):
-      wrappers[key[:-len('_wrapper')]] = os.path.join(build_to_root, value)
+    if key.lower().endswith('_wrapper'):
+      key_prefix = key[:-len('_wrapper')]
+      key_prefix = re.sub(r'\.HOST$', '.host', key_prefix)
+      wrappers[key_prefix] = os.path.join(build_to_root, value)
 
   if flavor == 'win':
     cl_paths = gyp.msvs_emulation.GenerateEnvironmentFiles(
         toplevel_build, generator_flags, OpenOutput)
     for arch, path in cl_paths.iteritems():
-      master_ninja.variable('cl_' + arch,
-                            CommandWithWrapper('CC', wrappers, path))
+      master_ninja.variable(
+          'cl_' + arch, CommandWithWrapper('CC', wrappers,
+                                           QuoteShellArgument(path, flavor)))
 
   cc = GetEnvironFallback(['CC_target', 'CC'], cc)
   master_ninja.variable('cc', CommandWithWrapper('CC', wrappers, cc))
