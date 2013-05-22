@@ -565,28 +565,14 @@ class Port(object):
         return reftest_list.get(self._filesystem.join(self.layout_tests_dir(), test_name), [])  # pylint: disable=E1103
 
     def tests(self, paths):
-        """Return the list of tests found. Both generic and platform-specific tests matching paths should be returned."""
-        expanded_paths = self._expanded_paths(paths)
-        tests = self._real_tests(expanded_paths)
-        tests.extend(self._virtual_tests(expanded_paths, self.populated_virtual_test_suites()))
+        """Return the list of tests found matching paths."""
+        tests = self._real_tests(paths)
+        tests.extend(self._virtual_tests(paths, self.populated_virtual_test_suites()))
         return tests
-
-    def _expanded_paths(self, paths):
-        expanded_paths = []
-        fs = self._filesystem
-        all_platform_dirs = [path for path in fs.glob(fs.join(self.layout_tests_dir(), 'platform', '*')) if fs.isdir(path)]
-        for path in paths:
-            expanded_paths.append(path)
-            if self.test_isdir(path) and not path.startswith('platform'):
-                for platform_dir in all_platform_dirs:
-                    if fs.isdir(fs.join(platform_dir, path)) and platform_dir in self.baseline_search_path():
-                        expanded_paths.append(self.relative_test_filename(fs.join(platform_dir, path)))
-
-        return expanded_paths
 
     def _real_tests(self, paths):
         # When collecting test cases, skip these directories
-        skipped_directories = set(['.svn', '_svn', 'resources', 'script-tests', 'reference', 'reftest'])
+        skipped_directories = set(['.svn', '_svn', 'platform', 'resources', 'script-tests', 'reference', 'reftest'])
         files = find_files.find(self._filesystem, self.layout_tests_dir(), paths, skipped_directories, Port.is_test_file, self.test_key)
         return [self.relative_test_filename(f) for f in files]
 
@@ -720,7 +706,7 @@ class Port(object):
 
     def skipped_layout_tests(self, test_list):
         """Returns tests skipped outside of the TestExpectations files."""
-        return set(self._tests_for_other_platforms()).union(self._skipped_tests_for_unsupported_features(test_list))
+        return set(self._skipped_tests_for_unsupported_features(test_list))
 
     def _tests_from_skipped_file_contents(self, skipped_file_contents):
         tests_to_skip = []
@@ -1357,19 +1343,6 @@ class Port(object):
         if self._options.pixel_test_directories:
             return any(test_input.test_name.startswith(directory) for directory in self._options.pixel_test_directories)
         return True
-
-    def _tests_for_other_platforms(self):
-        # By default we will skip any directory under LayoutTests/platform
-        # that isn't in our baseline search path (this mirrors what
-        # old-run-webkit-tests does in findTestsToRun()).
-        # Note this returns LayoutTests/platform/*, not platform/*/*.
-        entries = self._filesystem.glob(self._webkit_baseline_path('*'))
-        dirs_to_skip = []
-        for entry in entries:
-            if self._filesystem.isdir(entry) and entry not in self.baseline_search_path():
-                basename = self._filesystem.basename(entry)
-                dirs_to_skip.append('platform/%s' % basename)
-        return dirs_to_skip
 
     def _modules_to_search_for_symbols(self):
         path = self._path_to_webcore_library()

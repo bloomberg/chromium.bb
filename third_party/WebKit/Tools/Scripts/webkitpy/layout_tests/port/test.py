@@ -101,8 +101,8 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests.
 #
-TOTAL_TESTS = 104
-TOTAL_SKIPS = 28
+TOTAL_TESTS = 100
+TOTAL_SKIPS = 25
 TOTAL_RETRIES = 14
 
 UNEXPECTED_PASSES = 6
@@ -232,13 +232,9 @@ layer at (0,0) size 800x34
 
     tests.add('websocket/tests/passes/text.html')
 
-    # For testing test are properly included from platform directories.
+    # For testing that we don't run tests under platform/. Note that these don't contribute to TOTAL_TESTS.
     tests.add('platform/test-mac-leopard/http/test.html')
     tests.add('platform/test-win-win7/http/test.html')
-
-    # For --no-http tests, test that platform specific HTTP tests are properly skipped.
-    tests.add('platform/test-snow-leopard/http/test.html')
-    tests.add('platform/test-snow-leopard/websocket/test.html')
 
     # For testing if perf tests are running in a locked shard.
     tests.add('perf/foo/test.html')

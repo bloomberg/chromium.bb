@@ -817,9 +817,14 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue(RunTest.has_test_of_type(batch_tests_run_http, 'http'))
         self.assertTrue(RunTest.has_test_of_type(batch_tests_run_http, 'websocket'))
 
-    def test_platform_tests_are_found(self):
+    def test_platform_directories_ignored_when_searching_for_tests(self):
+        tests_run = get_tests_run(['--platform', 'test-mac-leopard'])
+        self.assertFalse('platform/test-mac-leopard/http/test.html' in tests_run)
+        self.assertFalse('platform/test-win-win7/http/test.html' in tests_run)
+
+    def test_platform_directories_not_searched_for_additional_tests(self):
         tests_run = get_tests_run(['--platform', 'test-mac-leopard', 'http'])
-        self.assertTrue('platform/test-mac-leopard/http/test.html' in tests_run)
+        self.assertFalse('platform/test-mac-leopard/http/test.html' in tests_run)
         self.assertFalse('platform/test-win-win7/http/test.html' in tests_run)
 
     def test_output_diffs(self):

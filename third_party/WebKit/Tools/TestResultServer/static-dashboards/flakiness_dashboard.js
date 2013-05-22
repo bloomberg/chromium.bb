@@ -44,8 +44,8 @@ var CHUNK_SIZE = 25;
 
 // FIXME: Figure out how to make this not be hard-coded.
 var VIRTUAL_SUITES = {
-    'platform/chromium/virtual/gpu/fast/canvas': 'fast/canvas',
-    'platform/chromium/virtual/gpu/canvas/philip': 'canvas/philip'
+    'virtual/gpu/fast/canvas': 'fast/canvas',
+    'virtual/gpu/canvas/philip': 'canvas/philip'
 };
 
 var resourceLoader;

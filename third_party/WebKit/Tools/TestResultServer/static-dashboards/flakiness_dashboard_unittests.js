@@ -234,12 +234,12 @@ test('htmlForSingleTestRow', 1, function() {
 
 test('lookupVirtualTestSuite', 2, function() {
     equal(lookupVirtualTestSuite('fast/canvas/foo.html'), '');
-    equal(lookupVirtualTestSuite('platform/chromium/virtual/gpu/fast/canvas/foo.html'), 'platform/chromium/virtual/gpu/fast/canvas');
+    equal(lookupVirtualTestSuite('virtual/gpu/fast/canvas/foo.html'), 'virtual/gpu/fast/canvas');
 });
 
 test('baseTest', 2, function() {
     equal(baseTest('fast/canvas/foo.html', ''), 'fast/canvas/foo.html');
-    equal(baseTest('platform/chromium/virtual/gpu/fast/canvas/foo.html', 'platform/chromium/virtual/gpu/fast/canvas'), 'fast/canvas/foo.html');
+    equal(baseTest('virtual/gpu/fast/canvas/foo.html', 'virtual/gpu/fast/canvas'), 'fast/canvas/foo.html');
 });
 
 // FIXME: Create builders_tests.js and move this there.

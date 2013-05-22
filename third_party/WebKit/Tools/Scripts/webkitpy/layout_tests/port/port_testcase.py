@@ -64,9 +64,6 @@ class TestWebKitPort(Port):
     def _symbols_string(self):
         return self.symbols_string
 
-    def _tests_for_other_platforms(self):
-        return ["media", ]
-
     def _tests_for_disabled_features(self):
         return ["accessibility", ]
 
@@ -459,9 +456,6 @@ class PortTestCase(unittest.TestCase):
         ])
         result_directories = set(TestWebKitPort(symbols_string=symbols_string)._skipped_tests_for_unsupported_features(test_list=['webaudio/codec-tests/mp3/foo.html']))
         self.assertEqual(result_directories, expected_directories)
-
-    def test_skipped_layout_tests(self):
-        self.assertEqual(TestWebKitPort().skipped_layout_tests(test_list=[]), set(['media']))
 
     def test_expectations_files(self):
         port = TestWebKitPort()
