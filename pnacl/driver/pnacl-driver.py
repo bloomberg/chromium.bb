@@ -233,6 +233,7 @@ CustomPatterns = [
   ( '--pnacl-allow-translate',      "env.set('ALLOW_TRANSLATE', '1')"),
   ( '--pnacl-frontend-triple=(.+)', "env.set('FRONTEND_TRIPLE', $0)"),
   ( '(--pnacl-allow-exceptions)',   AddAllowCXXExceptions),
+  ( '(--pnacl-allow-nexe-build-id)', AddLDFlag),
   ( '(--pnacl-disable-abi-check)',  AddLDFlag),
   ( '(--pnacl-disable-pass=.+)',    AddLDFlag),
 ]

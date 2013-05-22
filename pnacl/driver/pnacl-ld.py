@@ -127,6 +127,7 @@ EXTRA_ENV = {
   'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} -o ${output}'),
 
   'ALLOW_CXX_EXCEPTIONS': '0',
+  'ALLOW_NEXE_BUILD_ID': '0',
   'DISABLE_ABI_CHECK': '0',
   'LLVM_PASSES_TO_DISABLE': '',
 }
@@ -149,6 +150,7 @@ LDPatterns = [
   ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
   ( '--noirt',              "env.set('USE_IRT', '0')"),
   ( '(--pnacl-allow-exceptions)', AddAllowCXXExceptions),
+  ( '(--pnacl-allow-nexe-build-id)', "env.set('ALLOW_NEXE_BUILD_ID', '1')"),
   ( '--pnacl-disable-abi-check', "env.set('DISABLE_ABI_CHECK', '1')"),
   # "--pnacl-disable-pass" allows an ABI simplification pass to be
   # disabled if it is causing problems.  These passes are generally
@@ -378,12 +380,15 @@ def main(argv):
                    '-nacl-expand-ctors',
                    '-resolve-aliases',
                    '-nacl-expand-tls',
-                   # Global cleanup needs to run after expand-tls because
-                   # __tls_template_start etc are extern_weak before expansion
-                   '-nacl-global-cleanup',
                    # Strip dead prototytes to appease the intrinsic ABI checks
                    # (expand-varargs leaves around var-arg intrinsics).
                    '-strip-dead-prototypes']
+        # Global cleanup needs to run after -expand-tls because
+        # __tls_template_start etc. are extern_weak before expansion.
+        # Disable this pass if build IDs are enabled so that
+        # __ehdr_start can remain as a weak external symbol.
+        if not env.getbool('ALLOW_NEXE_BUILD_ID'):
+          passes += ['-nacl-global-cleanup']
       chain.add(DoLLVMPasses(passes), 'expand_features.' + bitcode_type)
 
     if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':
@@ -409,6 +414,7 @@ def main(argv):
                  '-expand-getelementptr']
       if (not env.getbool('DISABLE_ABI_CHECK') and
           not env.getbool('ALLOW_CXX_EXCEPTIONS') and
+          not env.getbool('ALLOW_NEXE_BUILD_ID') and
           len(native_objects) == 0):
         passes += ['-verify-pnaclabi-module',
                    '-verify-pnaclabi-functions',

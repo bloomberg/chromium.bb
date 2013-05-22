@@ -226,6 +226,7 @@ TranslatorPatterns = [
   ( '-fPIC',           "env.set('PIC', '1')"),
 
   ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0).split(','))"),
+  ( '(--build-id)',    "env.append('LD_FLAGS', $0)"),
   ( '-bitcode-stream-rate=([0-9]+)', "env.set('BITCODE_STREAM_RATE', $0)"),
 
   ( '(-.*)',            driver_tools.UnrecognizedOption),
