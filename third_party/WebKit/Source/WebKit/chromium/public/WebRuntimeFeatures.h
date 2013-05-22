@@ -193,6 +193,9 @@ public:
     WEBKIT_EXPORT static void enableWebPInAcceptHeader(bool);
     WEBKIT_EXPORT static bool isWebPInAcceptHeaderEnabled();
 
+    WEBKIT_EXPORT static void enableDataListElement(bool);
+    WEBKIT_EXPORT static bool isDataListElementEnabled();
+
 private:
     WebRuntimeFeatures();
 };

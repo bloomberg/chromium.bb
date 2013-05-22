@@ -62,7 +62,6 @@
       ['OS=="android"', {
         'feature_defines': [
           'ENABLE_CALENDAR_PICKER=0',
-          'ENABLE_DATALIST_ELEMENT=0',
           'ENABLE_FAST_MOBILE_SCROLLING=1',
           'ENABLE_INPUT_SPEECH=0',
           'ENABLE_INPUT_TYPE_COLOR=0',
@@ -78,7 +77,6 @@
       }, { # OS!="android"
         'feature_defines': [
           'ENABLE_CALENDAR_PICKER=1',
-          'ENABLE_DATALIST_ELEMENT=1',
           'ENABLE_INPUT_SPEECH=1',
           'ENABLE_INPUT_TYPE_COLOR=1',
           'ENABLE_INPUT_MULTIPLE_FIELDS_UI=1',

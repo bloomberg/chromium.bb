@@ -32,6 +32,7 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -62,7 +63,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/Language.h"
@@ -78,17 +78,12 @@
 #include "core/html/ColorInputType.h"
 #endif
 
-#if ENABLE(INPUT_SPEECH)
-#include "RuntimeEnabledFeatures.h"
-#endif
-
 using namespace std;
 
 namespace WebCore {
 
 using namespace HTMLNames;
 
-#if ENABLE(DATALIST_ELEMENT)
 class ListAttributeTargetObserver : IdTargetObserver {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -100,7 +95,6 @@ private:
 
     HTMLInputElement* m_element;
 };
-#endif
 
 // FIXME: According to HTML4, the length attribute's value can be arbitrarily
 // large. However, due to https://bugs.webkit.org/show_bug.cgi?id=14536 things
@@ -122,9 +116,7 @@ HTMLInputElement::HTMLInputElement(const QualifiedName& tagName, Document* docum
     , m_isActivatedSubmit(false)
     , m_autocomplete(Uninitialized)
     , m_isAutofilled(false)
-#if ENABLE(DATALIST_ELEMENT)
     , m_hasNonEmptyList(false)
-#endif
     , m_stateRestored(false)
     , m_parsingInProgress(createdByParser)
     , m_valueAttributeWasUpdatedAfterParsing(false)
@@ -345,12 +337,10 @@ StepRange HTMLInputElement::createStepRange(AnyStepHandling anyStepHandling) con
     return m_inputType->createStepRange(anyStepHandling);
 }
 
-#if ENABLE(DATALIST_ELEMENT)
 Decimal HTMLInputElement::findClosestTickMarkValue(const Decimal& value)
 {
     return m_inputType->findClosestTickMarkValue(value);
 }
-#endif
 
 void HTMLInputElement::stepUp(int n, ExceptionCode& ec)
 {
@@ -700,9 +690,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == readonlyAttr) {
         HTMLTextFormControlElement::parseAttribute(name, value);
         m_inputType->readonlyAttributeChanged();
-    }
-#if ENABLE(DATALIST_ELEMENT)
-    else if (name == listAttr) {
+    } else if (name == listAttr) {
         m_hasNonEmptyList = !value.isEmpty();
         if (m_hasNonEmptyList) {
             resetListAttributeTargetObserver();
@@ -710,7 +698,6 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         }
         UseCounter::count(document(), UseCounter::ListAttribute);
     }
-#endif
 #if ENABLE(INPUT_SPEECH)
     else if (name == webkitspeechAttr) {
         if (renderer()) {
@@ -1425,9 +1412,7 @@ Node::InsertionNotificationRequest HTMLInputElement::insertedInto(ContainerNode*
     HTMLTextFormControlElement::insertedInto(insertionPoint);
     if (insertionPoint->inDocument() && !form())
         addToRadioButtonGroup();
-#if ENABLE(DATALIST_ELEMENT)
     resetListAttributeTargetObserver();
-#endif
     return InsertionDone;
 }
 
@@ -1437,9 +1422,7 @@ void HTMLInputElement::removedFrom(ContainerNode* insertionPoint)
         removeFromRadioButtonGroup();
     HTMLTextFormControlElement::removedFrom(insertionPoint);
     ASSERT(!inDocument());
-#if ENABLE(DATALIST_ELEMENT)
     resetListAttributeTargetObserver();
-#endif
 }
 
 void HTMLInputElement::didMoveToNewDocument(Document* oldDocument)
@@ -1489,7 +1472,6 @@ void HTMLInputElement::selectColorInColorChooser(const Color& color)
 }
 #endif
 
-#if ENABLE(DATALIST_ELEMENT)
 HTMLElement* HTMLInputElement::list() const
 {
     return dataList();
@@ -1524,7 +1506,6 @@ void HTMLInputElement::listAttributeTargetChanged()
 {
     m_inputType->listAttributeTargetChanged();
 }
-#endif // ENABLE(DATALIST_ELEMENT)
 
 bool HTMLInputElement::isSteppable() const
 {
@@ -1787,7 +1768,6 @@ void HTMLInputElement::setWidth(unsigned width)
     setAttribute(widthAttr, String::number(width));
 }
 
-#if ENABLE(DATALIST_ELEMENT)
 PassOwnPtr<ListAttributeTargetObserver> ListAttributeTargetObserver::create(const AtomicString& id, HTMLInputElement* element)
 {
     return adoptPtr(new ListAttributeTargetObserver(id, element));
@@ -1803,7 +1783,6 @@ void ListAttributeTargetObserver::idTargetChanged()
 {
     m_element->listAttributeTargetChanged();
 }
-#endif
 
 void HTMLInputElement::setRangeText(const String& replacement, ExceptionCode& ec)
 {
@@ -1853,18 +1832,18 @@ bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters&
     parameters.anchorRectInRootView = document()->view()->contentsToRootView(pixelSnappedBoundingBox());
     parameters.currentValue = value();
     parameters.isAnchorElementRTL = computedStyle()->direction() == RTL;
-#if ENABLE(DATALIST_ELEMENT)
-    if (HTMLDataListElement* dataList = this->dataList()) {
-        RefPtr<HTMLCollection> options = dataList->options();
-        for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); ++i) {
-            if (!isValidValue(option->value()))
-                continue;
-            parameters.suggestionValues.append(sanitizeValue(option->value()));
-            parameters.localizedSuggestionValues.append(localizeValue(option->value()));
-            parameters.suggestionLabels.append(option->value() == option->label() ? String() : option->label());
+    if (RuntimeEnabledFeatures::dataListElementEnabled()) {
+        if (HTMLDataListElement* dataList = this->dataList()) {
+            RefPtr<HTMLCollection> options = dataList->options();
+            for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); ++i) {
+                if (!isValidValue(option->value()))
+                    continue;
+                parameters.suggestionValues.append(sanitizeValue(option->value()));
+                parameters.localizedSuggestionValues.append(localizeValue(option->value()));
+                parameters.suggestionLabels.append(option->value() == option->label() ? String() : option->label());
+            }
         }
     }
-#endif
     return true;
 }
 
@@ -1876,9 +1855,7 @@ void HTMLInputElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
     info.addMember(m_valueIfDirty, "valueIfDirty");
     info.addMember(m_suggestedValue, "suggestedValue");
     info.addMember(m_inputType, "inputType");
-#if ENABLE(DATALIST_ELEMENT)
     info.addMember(m_listAttributeTargetObserver, "listAttributeTargetObserver");
-#endif
 }
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)

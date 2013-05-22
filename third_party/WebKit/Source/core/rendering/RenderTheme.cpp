@@ -24,12 +24,18 @@
 
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fileapi/FileList.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMeterElement.h"
+#include "core/html/HTMLOptionElement.h"
 #include "core/html/InputTypeNames.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/html/shadow/SpinButtonElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
@@ -50,14 +56,6 @@
 
 #if ENABLE(INPUT_SPEECH)
 #include "core/rendering/RenderInputSpeech.h"
-#endif
-
-#if ENABLE(DATALIST_ELEMENT)
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/html/HTMLCollection.h"
-#include "core/html/HTMLDataListElement.h"
-#include "core/html/HTMLOptionElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
 #endif
 
 // The methods in this file are shared by all themes on every platform.
@@ -454,6 +452,24 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
     }
 
     return false;
+}
+
+String RenderTheme::extraDefaultStyleSheet()
+{
+    if (!RuntimeEnabledFeatures::dataListElementEnabled())
+        return String();
+    DEFINE_STATIC_LOCAL(String, dataListElementCSS, (ASCIILiteral("datalist {display: none ;}")));
+
+#if ENABLE(INPUT_TYPE_COLOR)
+    StringBuilder inputTypeCSS;
+    inputTypeCSS.appendLiteral("input[type=\"color\"][list] { -webkit-appearance: menulist; width: 88px; height: 23px;}");
+    inputTypeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch-wrapper { padding-left: 8px; padding-right: 24px;}");
+    inputTypeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch { border-color: #000000;}");
+    inputTypeCSS.append(dataListElementCSS);
+    return inputTypeCSS.toString();
+#endif
+
+    return dataListElementCSS;
 }
 
 String RenderTheme::formatMediaControlsTime(float time) const
@@ -891,7 +907,6 @@ bool RenderTheme::paintMeter(RenderObject*, const PaintInfo&, const IntRect&)
     return true;
 }
 
-#if ENABLE(DATALIST_ELEMENT)
 LayoutUnit RenderTheme::sliderTickSnappingThreshold() const
 {
     return 5;
@@ -978,7 +993,6 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
         paintInfo.context->fillRect(tickRect);
     }
 }
-#endif
 
 double RenderTheme::animationRepeatIntervalForProgressBar(RenderProgress*) const
 {

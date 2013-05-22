@@ -82,7 +82,7 @@ public:
 
     // These methods return the theme's extra style sheets rules, to let each platform
     // adjust the default CSS rules in html.css, quirks.css or mediaControls.css.
-    virtual String extraDefaultStyleSheet() { return String(); }
+    virtual String extraDefaultStyleSheet();
     virtual String extraQuirksStyleSheet() { return String(); }
     virtual String extraMediaControlsStyleSheet() { return String(); }
     virtual String extraFullScreenStyleSheet() { return String(); }
@@ -196,7 +196,6 @@ public:
     virtual IntSize meterSizeForBounds(const RenderMeter*, const IntRect&) const;
     virtual bool supportsMeter(ControlPart) const;
 
-#if ENABLE(DATALIST_ELEMENT)
     // Returns the threshold distance for snapping to a slider tick mark.
     virtual LayoutUnit sliderTickSnappingThreshold() const;
     // Returns size of one slider tick mark for a horizontal track.
@@ -205,7 +204,6 @@ public:
     // Returns the distance of slider tick origin from the slider track center.
     virtual int sliderTickOffsetFromTrackCenter() const = 0;
     void paintSliderTicks(RenderObject*, const PaintInfo&, const IntRect&);
-#endif
 
     virtual bool shouldShowPlaceholderWhenFocused() const { return false; }
     virtual bool shouldHaveSpinButton(HTMLInputElement*) const;

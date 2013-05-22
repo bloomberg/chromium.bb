@@ -68,14 +68,12 @@ private:
     virtual bool shouldRespectListAttribute() OVERRIDE;
     virtual HTMLElement* sliderThumbElement() const OVERRIDE;
     virtual HTMLElement* sliderTrackElement() const OVERRIDE;
-#if ENABLE(DATALIST_ELEMENT)
     virtual void listAttributeTargetChanged() OVERRIDE;
     void updateTickMarkValues();
     virtual Decimal findClosestTickMarkValue(const Decimal&) OVERRIDE;
 
     bool m_tickMarkValuesDirty;
     Vector<Decimal> m_tickMarkValues;
-#endif
 };
 
 } // namespace WebCore

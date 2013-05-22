@@ -32,7 +32,6 @@
 #ifndef HTMLDataListElement_h
 #define HTMLDataListElement_h
 
-#if ENABLE(DATALIST_ELEMENT)
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLElement.h"
 
@@ -51,6 +50,5 @@ private:
 };
 
 } // namespace WebCore
-#endif // ENABLE(DATALIST_ELEMENT)
 
 #endif // HTMLDataListElement_h

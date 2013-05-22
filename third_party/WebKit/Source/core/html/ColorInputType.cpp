@@ -33,6 +33,7 @@
 #include "core/html/ColorInputType.h"
 
 #include "CSSPropertyNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/shadow/ElementShadow.h"
@@ -219,30 +220,29 @@ Color ColorInputType::currentColor()
 
 bool ColorInputType::shouldShowSuggestions() const
 {
-#if ENABLE(DATALIST_ELEMENT)
-    return element()->fastHasAttribute(listAttr);
-#else
+    if (RuntimeEnabledFeatures::dataListElementEnabled())
+        return element()->fastHasAttribute(listAttr);
+
     return false;
-#endif
 }
 
 Vector<Color> ColorInputType::suggestions() const
 {
     Vector<Color> suggestions;
-#if ENABLE(DATALIST_ELEMENT)
-    HTMLDataListElement* dataList = element()->dataList();
-    if (dataList) {
-        RefPtr<HTMLCollection> options = dataList->options();
-        for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); i++) {
-            if (!element()->isValidValue(option->value()))
-                continue;
-            Color color(option->value());
-            if (!color.isValid())
-                continue;
-            suggestions.append(color);
+    if (RuntimeEnabledFeatures::dataListElementEnabled()) {
+        HTMLDataListElement* dataList = element()->dataList();
+        if (dataList) {
+            RefPtr<HTMLCollection> options = dataList->options();
+            for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); i++) {
+                if (!element()->isValidValue(option->value()))
+                    continue;
+                Color color(option->value());
+                if (!color.isValid())
+                    continue;
+                suggestions.append(color);
+            }
         }
     }
-#endif
     return suggestions;
 }
 

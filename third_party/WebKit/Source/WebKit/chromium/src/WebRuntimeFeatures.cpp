@@ -560,4 +560,14 @@ bool WebRuntimeFeatures::isWebPInAcceptHeaderEnabled()
     return RuntimeEnabledFeatures::webPInAcceptHeaderEnabled();
 }
 
+void WebRuntimeFeatures::enableDataListElement(bool enable)
+{
+    RuntimeEnabledFeatures::setDataListElementEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isDataListElementEnabled()
+{
+    return RuntimeEnabledFeatures::dataListElementEnabled();
+}
+
 } // namespace WebKit

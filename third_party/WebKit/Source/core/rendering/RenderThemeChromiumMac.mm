@@ -1422,9 +1422,7 @@ bool RenderThemeChromiumMac::paintSliderTrack(RenderObject* o, const PaintInfo& 
     CGContextRef context = localContext.cgContext();
     CGColorSpaceRef cspace = deviceRGBColorSpaceRef();
 
-#if ENABLE(DATALIST_ELEMENT)
     paintSliderTicks(o, paintInfo, r);
-#endif
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
     CGContextClipToRect(context, bounds);
@@ -1719,7 +1717,6 @@ bool RenderThemeChromiumMac::paintSearchFieldResultsDecoration(RenderObject* o, 
     return false;
 }
 
-#if ENABLE(DATALIST_ELEMENT)
 IntSize RenderThemeChromiumMac::sliderTickSize() const
 {
     return IntSize(1, 3);
@@ -1729,7 +1726,6 @@ int RenderThemeChromiumMac::sliderTickOffsetFromTrackCenter() const
 {
     return -9;
 }
-#endif
 
 const int sliderThumbWidth = 15;
 const int sliderThumbHeight = 15;

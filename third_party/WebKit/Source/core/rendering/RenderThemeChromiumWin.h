@@ -59,10 +59,8 @@ public:
 
     virtual Color systemColor(int cssValueId) const OVERRIDE;
 
-#if ENABLE(DATALIST_ELEMENT)
     virtual IntSize sliderTickSize() const OVERRIDE;
     virtual int sliderTickOffsetFromTrackCenter() const OVERRIDE;
-#endif
     virtual void adjustSliderThumbSize(RenderStyle*, Element*) const OVERRIDE;
 
     // Various paint functions.

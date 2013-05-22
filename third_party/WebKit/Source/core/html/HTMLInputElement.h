@@ -75,9 +75,7 @@ public:
     bool getAllowedValueStep(Decimal*) const;
     StepRange createStepRange(AnyStepHandling) const;
 
-#if ENABLE(DATALIST_ELEMENT)
     Decimal findClosestTickMarkValue(const Decimal&);
-#endif
 
     // Implementations of HTMLInputElement::stepUp() and stepDown().
     void stepUp(int, ExceptionCode&);
@@ -240,11 +238,9 @@ public:
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
-#if ENABLE(DATALIST_ELEMENT)
     HTMLElement* list() const;
     HTMLDataListElement* dataList() const;
     void listAttributeTargetChanged();
-#endif
 
     HTMLInputElement* checkedRadioButtonForGroup() const;
     bool isInRequiredRadioButtonGroup();
@@ -382,9 +378,7 @@ private:
     
     virtual void subtreeHasChanged();
 
-#if ENABLE(DATALIST_ELEMENT)
     void resetListAttributeTargetObserver();
-#endif
     void parseMaxLengthAttribute(const AtomicString&);
     void updateValueIfNeeded();
 
@@ -409,9 +403,7 @@ private:
     bool m_isActivatedSubmit : 1;
     unsigned m_autocomplete : 2; // AutoCompleteSetting
     bool m_isAutofilled : 1;
-#if ENABLE(DATALIST_ELEMENT)
     bool m_hasNonEmptyList : 1;
-#endif
     bool m_stateRestored : 1;
     bool m_parsingInProgress : 1;
     bool m_valueAttributeWasUpdatedAfterParsing : 1;
@@ -423,9 +415,7 @@ private:
     // that it lives as long as its owning element lives. If we move the loader into
     // the ImageInput object we may delete the loader while this element lives on.
     OwnPtr<HTMLImageLoader> m_imageLoader;
-#if ENABLE(DATALIST_ELEMENT)
     OwnPtr<ListAttributeTargetObserver> m_listAttributeTargetObserver;
-#endif
 };
 
 } //namespace

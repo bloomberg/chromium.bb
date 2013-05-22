@@ -21,6 +21,7 @@ CSSExclusions status=experimental
 CSSRegions status=experimental
 CustomDOMElements status=experimental
 Database status=stable
+DataListElement status=stable
 DeviceMotion
 DeviceOrientation status=stable
 DialogElement status=experimental

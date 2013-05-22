@@ -264,7 +264,6 @@ Color RenderThemeChromiumWin::systemColor(int cssValueId) const
     return Color(GetRValue(color), GetGValue(color), GetBValue(color));
 }
 
-#if ENABLE(DATALIST_ELEMENT)
 IntSize RenderThemeChromiumWin::sliderTickSize() const
 {
     return IntSize(1, 3);
@@ -274,7 +273,6 @@ int RenderThemeChromiumWin::sliderTickOffsetFromTrackCenter() const
 {
     return 11;
 }
-#endif
 
 void RenderThemeChromiumWin::adjustSliderThumbSize(RenderStyle* style, Element* element) const
 {
@@ -323,9 +321,7 @@ bool RenderThemeChromiumWin::paintSliderTrack(RenderObject* o, const PaintInfo& 
     WebKit::WebCanvas* canvas = painter.context()->canvas();
     WebKit::Platform::current()->themeEngine()->paintTrackbar(canvas, themeData.m_part, themeData.m_state, themeData.m_classicState, WebKit::WebRect(painter.drawRect()));
 
-#if ENABLE(DATALIST_ELEMENT)
     paintSliderTicks(o, i, r);
-#endif
 
     return false;
 }

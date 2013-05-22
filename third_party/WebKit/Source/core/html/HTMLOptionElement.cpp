@@ -194,13 +194,10 @@ int HTMLOptionElement::index() const
 
 void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-#if ENABLE(DATALIST_ELEMENT)
     if (name == valueAttr) {
         if (HTMLDataListElement* dataList = ownerDataListElement())
             dataList->optionElementChildrenChanged();
-    } else
-#endif
-    if (name == disabledAttr) {
+    } else if (name == disabledAttr) {
         bool oldDisabled = m_disabled;
         m_disabled = !value.isNull();
         if (oldDisabled != m_disabled) {
@@ -275,17 +272,13 @@ void HTMLOptionElement::setSelectedState(bool selected)
 
 void HTMLOptionElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
-#if ENABLE(DATALIST_ELEMENT)
     if (HTMLDataListElement* dataList = ownerDataListElement())
         dataList->optionElementChildrenChanged();
-    else
-#endif
-    if (HTMLSelectElement* select = ownerSelectElement())
+    else if (HTMLSelectElement* select = ownerSelectElement())
         select->optionElementChildrenChanged();
     HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
 }
 
-#if ENABLE(DATALIST_ELEMENT)
 HTMLDataListElement* HTMLOptionElement::ownerDataListElement() const
 {
     for (ContainerNode* parent = parentNode(); parent ; parent = parent->parentNode()) {
@@ -294,7 +287,6 @@ HTMLDataListElement* HTMLOptionElement::ownerDataListElement() const
     }
     return 0;
 }
-#endif
 
 HTMLSelectElement* HTMLOptionElement::ownerSelectElement() const
 {

@@ -102,10 +102,12 @@ Color RenderThemeChromiumDefault::systemColor(int cssValueId) const
 String RenderThemeChromiumDefault::extraDefaultStyleSheet()
 {
 #if !OS(WINDOWS)
-    return RenderThemeChromiumSkia::extraDefaultStyleSheet() +
-           String(themeChromiumLinuxUserAgentStyleSheet, sizeof(themeChromiumLinuxUserAgentStyleSheet));
+    return RenderTheme::extraDefaultStyleSheet() +
+        RenderThemeChromiumSkia::extraDefaultStyleSheet() +
+        String(themeChromiumLinuxUserAgentStyleSheet, sizeof(themeChromiumLinuxUserAgentStyleSheet));
 #else
-    return RenderThemeChromiumSkia::extraDefaultStyleSheet();
+    return RenderTheme::extraDefaultStyleSheet() +
+        RenderThemeChromiumSkia::extraDefaultStyleSheet();
 #endif
 }
 
@@ -154,7 +156,6 @@ Color RenderThemeChromiumDefault::platformInactiveSelectionForegroundColor() con
     return m_inactiveSelectionForegroundColor;
 }
 
-#if ENABLE(DATALIST_ELEMENT)
 IntSize RenderThemeChromiumDefault::sliderTickSize() const
 {
     return IntSize(1, 6);
@@ -164,7 +165,6 @@ int RenderThemeChromiumDefault::sliderTickOffsetFromTrackCenter() const
 {
     return -16;
 }
-#endif
 
 void RenderThemeChromiumDefault::adjustSliderThumbSize(RenderStyle* style, Element* element) const
 {
@@ -335,9 +335,7 @@ bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintIn
     WebKit::WebCanvas* canvas = i.context->canvas();
     extraParams.slider.vertical = o->style()->appearance() == SliderVerticalPart;
 
-#if ENABLE(DATALIST_ELEMENT)
     paintSliderTicks(o, i, rect);
-#endif
 
     float zoomLevel = o->style()->effectiveZoom();
     GraphicsContextStateSaver stateSaver(*i.context);

@@ -38,7 +38,7 @@
     [Reflect] attribute DOMString formTarget;
     attribute unsigned long height;
     attribute boolean indeterminate;
-    [Conditional=DATALIST_ELEMENT] readonly attribute HTMLElement list;
+    [EnabledAtRuntime=DataListElement] readonly attribute HTMLElement list;
     [Reflect] attribute DOMString max;
     [SetterRaisesException] attribute long maxLength;
     [Reflect] attribute DOMString min;

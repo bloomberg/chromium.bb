@@ -32,6 +32,7 @@
 #include "WebInputElement.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "TextFieldDecoratorImpl.h"
 #include "WebNodeCollection.h"
 #include "WebTextFieldDecoratorClient.h"
@@ -190,11 +191,11 @@ bool WebInputElement::isMultiple() const
 
 WebNodeCollection WebInputElement::dataListOptions() const
 {
-#if ENABLE(DATALIST_ELEMENT)
-    HTMLDataListElement* dataList = static_cast<HTMLDataListElement*>(constUnwrap<HTMLInputElement>()->list());
-    if (dataList)
-        return WebNodeCollection(dataList->options());
-#endif
+    if (RuntimeEnabledFeatures::dataListElementEnabled()) {
+        HTMLDataListElement* dataList = static_cast<HTMLDataListElement*>(constUnwrap<HTMLInputElement>()->list());
+        if (dataList)
+            return WebNodeCollection(dataList->options());
+    }
     return WebNodeCollection();
 }
 

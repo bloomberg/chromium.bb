@@ -270,10 +270,8 @@ public:
     virtual void requiredAttributeChanged();
     virtual void valueAttributeChanged();
     virtual String defaultToolTip() const;
-#if ENABLE(DATALIST_ELEMENT)
     virtual void listAttributeTargetChanged();
     virtual Decimal findClosestTickMarkValue(const Decimal&);
-#endif
     virtual void updateClearButtonVisibility();
 
     // Parses the specified string for the type, and return
