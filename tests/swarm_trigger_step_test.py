@@ -10,6 +10,7 @@ import StringIO
 import sys
 import unittest
 
+import auto_stub
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
@@ -19,6 +20,7 @@ FILE_NAME = u'test.isolated'
 FILE_HASH = unicode(hashlib.sha1(FILE_NAME).hexdigest())
 TEST_NAME = u'unit_tests'
 CLEANUP_SCRIPT_NAME = u'swarm_cleanup.py'
+STDOUT_FOR_TRIGGER_LEN = 188
 
 
 class Options(object):
@@ -117,22 +119,26 @@ def MockUrlOpenNoZip(url, data=None, content_type=None):
   return MockUrlOpen(url, data, has_return_value=chr(0))
 
 
-class ManifestTest(unittest.TestCase):
+class ManifestTest(auto_stub.TestCase):
   def setUp(self):
-    self.old_gethostname = swarm_trigger_step.socket.gethostname
-    self.old_sleep = swarm_trigger_step.time.sleep
-    self.old_url_open = swarm_trigger_step.run_isolated.url_open
-    self.old_ZipFile = swarm_trigger_step.zipfile.ZipFile
-
-    swarm_trigger_step.socket.gethostname = lambda: 'vm1-m4'
-    swarm_trigger_step.time.sleep = lambda x: None
-    swarm_trigger_step.zipfile.ZipFile = MockZipFile
+    self.mock(swarm_trigger_step.socket, 'gethostname', lambda: 'vm1-m4')
+    self.mock(swarm_trigger_step.time, 'sleep', lambda x: None)
+    self.mock(swarm_trigger_step.zipfile, 'ZipFile', MockZipFile)
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    self.mock(sys, 'stderr', StringIO.StringIO())
 
   def tearDown(self):
-    swarm_trigger_step.socket.gethostname = self.old_gethostname
-    swarm_trigger_step.time.sleep = self.old_sleep
-    swarm_trigger_step.run_isolated.url_open = self.old_url_open
-    swarm_trigger_step.zipfile.ZipFile = self.old_ZipFile
+    if not self.has_failed():
+      self._check_output('', '')
+    super(ManifestTest, self).tearDown()
+
+  def _check_output(self, out, err):
+    self.assertEqual(out, sys.stdout.getvalue())
+    self.assertEqual(err, sys.stderr.getvalue())
+
+    # Flush their content by mocking them again.
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    self.mock(sys, 'stderr', StringIO.StringIO())
 
   def test_basic_manifest(self):
     options = Options(shards=2)
@@ -175,6 +181,8 @@ class ManifestTest(unittest.TestCase):
         0,
         swarm_trigger_step.ProcessManifest(
             FILE_HASH, TEST_NAME, options.shards, '*', options))
+    self.assertTrue(len(sys.stdout.getvalue()) > STDOUT_FOR_TRIGGER_LEN)
+    self.mock(sys, 'stdout', StringIO.StringIO())
 
   def test_process_manifest_success_zip_already_uploaded(self):
     swarm_trigger_step.run_isolated.url_open = MockUrlOpenHasZip
@@ -183,6 +191,32 @@ class ManifestTest(unittest.TestCase):
         0,
         swarm_trigger_step.ProcessManifest(
             FILE_HASH, TEST_NAME, options.shards, '*', options))
+    self.assertTrue(len(sys.stdout.getvalue()) > STDOUT_FOR_TRIGGER_LEN)
+    self.mock(sys, 'stdout', StringIO.StringIO())
+
+  def test_no_dir(self):
+    try:
+      swarm_trigger_step.main([])
+      self.fail()
+    except SystemExit as e:
+      self.assertEqual(2, e.code)
+      self._check_output(
+          '',
+          'Usage: swarm_trigger_step_test.py [options]\n\n'
+          'swarm_trigger_step_test.py: error: Must specify the data '
+          'directory\n')
+
+  def test_no_request(self):
+    try:
+      swarm_trigger_step.main(['-d', '.'])
+      self.fail()
+    except SystemExit as e:
+      self.assertEqual(2, e.code)
+      self._check_output(
+          '',
+          'Usage: swarm_trigger_step_test.py [options]\n\n'
+          'swarm_trigger_step_test.py: error: At least one --run_from_hash is '
+          'required.\n')
 
 
 if __name__ == '__main__':

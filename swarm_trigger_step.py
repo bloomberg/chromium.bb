@@ -235,7 +235,7 @@ def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
   return 0
 
 
-def main():
+def main(argv):
   run_isolated.disable_buffering()
   parser = optparse.OptionParser(
       usage='%prog [options]', description=sys.modules[__name__].__doc__)
@@ -261,7 +261,7 @@ def main():
   parser.add_option('--profile', action='store_true',
                     default=bool(os.environ.get('ISOLATE_DEBUG')),
                     help='Have run_isolated.py print profiling info')
-  (options, args) = parser.parse_args()
+  (options, args) = parser.parse_args(argv)
 
   if args:
     parser.error('Unknown args: %s' % args)
@@ -271,6 +271,9 @@ def main():
     options.os_image = sys.platform
   if not options.data_server:
     parser.error('Must specify the data directory')
+
+  if not options.run_from_hash:
+    parser.error('At least one --run_from_hash is required.')
 
   highest_exit_code = 0
   try:
@@ -290,4 +293,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(None))
