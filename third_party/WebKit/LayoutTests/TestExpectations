@@ -1574,6 +1574,9 @@ crbug.com/240632 fast/loader/javascript-url-iframe-remove-on-navigate.html [ Ski
 # An exception is being thrown, causing tests to generate PNG output when they should not.
 crbug.com/239470 [ Mac ] fast/canvas/webgl [ Pass Missing ]
 crbug.com/239470 [ Mac ] fast/dom [ Pass Missing ]
+crbug.com/239470 [ Mac ] fast/css/style-scoped/basic-attribute.html [ Missing Pass ]
+crbug.com/239470 [ Mac ] fast/css/style-scoped/registering-shadowroot.html [ Missing Pass ]
+crbug.com/239470 [ Mac ] fast/css/style-scoped/registering.html [ Missing Pass ]
 crbug.com/240700 [ Mac ] fast/css/getComputedStyle/computed-style-select-overflow.html [ Pass Missing ]
 crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-outline-offset.html [ Pass Missing ]
 crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-padding-shorthand.html [ Pass Missing ]
@@ -1604,3 +1607,5 @@ crbug.com/242485 [ Mac Linux Debug ] http/tests/inspector/appcache/appcache-ifra
 crbug.com/242511 [ Mac Debug ] svg/custom/uri-reference-handling.svg [ Crash Pass ]
 
 crbug.com/242516 [ Linux ] inspector/elements/resolve-node-blocked.html [ Crash Pass ]
+
+
