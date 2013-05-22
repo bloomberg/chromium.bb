@@ -168,7 +168,7 @@ cr.define('print_preview', function() {
           this.printTicketStore_.isHeaderFooterEnabled();
       this.colorValue_ = this.printTicketStore_.color.getValue();
       this.isFitToPageEnabled_ = this.printTicketStore_.fitToPage.getValue();
-      this.pageRanges_ = this.printTicketStore_.getPageRanges();
+      this.pageRanges_ = this.printTicketStore_.pageRange.getPageRanges();
       this.marginsType_ = this.printTicketStore_.getMarginsType();
       this.isCssBackgroundEnabled_ =
           this.printTicketStore_.cssBackground.getValue();
@@ -271,7 +271,8 @@ cr.define('print_preview', function() {
           !ticketStore.color.isValueEqual(this.colorValue_) ||
           !ticketStore.fitToPage.isValueEqual(this.isFitToPageEnabled_) ||
           this.pageRanges_ == null ||
-          !areRangesEqual(ticketStore.getPageRanges(), this.pageRanges_) ||
+          !areRangesEqual(ticketStore.pageRange.getPageRanges(),
+                          this.pageRanges_) ||
           (ticketStore.getMarginsType() != this.marginsType_ &&
               ticketStore.getMarginsType() !=
                   print_preview.ticket_items.MarginsType.Value.CUSTOM) ||
@@ -335,7 +336,7 @@ cr.define('print_preview', function() {
         return; // Ignore old response.
       }
       this.documentInfo_.updatePageCount(event.pageCount);
-      this.pageRanges_ = this.printTicketStore_.getPageRanges();
+      this.pageRanges_ = this.printTicketStore_.pageRange.getPageRanges();
     },
 
     /**
@@ -347,7 +348,7 @@ cr.define('print_preview', function() {
       if (this.inFlightRequestId_ != event.previewResponseId) {
         return; // Ignore old response.
       }
-      var pageNumberSet = this.printTicketStore_.getPageNumberSet();
+      var pageNumberSet = this.printTicketStore_.pageRange.getPageNumberSet();
       this.dispatchPreviewStartEvent_(
           event.previewUid, pageNumberSet.getPageNumberAt(0) - 1);
       for (var i = 0; i < pageNumberSet.size; i++) {
@@ -368,9 +369,9 @@ cr.define('print_preview', function() {
         return; // Ignore old response.
       }
       var pageNumber = event.pageIndex + 1;
-      if (this.printTicketStore_.getPageNumberSet().hasPageNumber(pageNumber)) {
-        var previewIndex = this.printTicketStore_.getPageNumberSet()
-            .getPageNumberIndex(pageNumber);
+      var pageNumberSet = this.printTicketStore_.pageRange.getPageNumberSet();
+      if (pageNumberSet.hasPageNumber(pageNumber)) {
+        var previewIndex = pageNumberSet.getPageNumberIndex(pageNumber);
         if (previewIndex == 0) {
           this.dispatchPreviewStartEvent_(event.previewUid, event.pageIndex);
         }

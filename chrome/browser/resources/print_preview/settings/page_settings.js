@@ -8,20 +8,20 @@ cr.define('print_preview', function() {
   /**
    * Creates a PageSettings object. This object encapsulates all settings and
    * logic related to page selection.
-   * @param {!print_preview.PrintTicketStore} printTicketStore Used to read and
-   *     write page range settings.
+   * @param {!print_preview.ticket_items.PageRange} pageRangeTicketItem Used to
+   *     read and write page range settings.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function PageSettings(printTicketStore) {
+  function PageSettings(pageRangeTicketItem) {
     print_preview.Component.call(this);
 
     /**
      * Used to read and write page range settings.
-     * @type {!print_preview.PrintTicketStore}
+     * @type {!print_preview.ticket_items.PageRange}
      * @private
      */
-    this.printTicketStore_ = printTicketStore;
+    this.pageRangeTicketItem_ = pageRangeTicketItem;
 
     /**
      * Timeout used to delay processing of the custom page range input.
@@ -99,17 +99,9 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.customInput_, 'keyup', this.onCustomInputKeyUp_.bind(this));
       this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.DOCUMENT_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.TICKET_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.CAPABILITIES_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
+          this.pageRangeTicketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onPageRangeTicketItemChange_.bind(this));
     },
 
     /** @override */
@@ -157,7 +149,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onAllRadioClick_: function() {
-      this.printTicketStore_.updatePageRange('');
+      this.pageRangeTicketItem_.updateValue(null);
     },
 
     /**
@@ -166,7 +158,7 @@ cr.define('print_preview', function() {
      */
     onCustomRadioClick_: function() {
       this.customInput_.focus();
-      this.printTicketStore_.updatePageRange(this.customInput_.value);
+      this.pageRangeTicketItem_.updateValue(this.customInput_.value);
     },
 
     /**
@@ -191,7 +183,7 @@ cr.define('print_preview', function() {
         clearTimeout(this.customInputTimeout_);
       }
       if (event.keyIdentifier == 'Enter') {
-        this.printTicketStore_.updatePageRange(this.customInput_.value);
+        this.pageRangeTicketItem_.updateValue(this.customInput_.value);
       } else {
         this.allRadio_.checked = false;
         this.customRadio_.checked = true;
@@ -208,7 +200,7 @@ cr.define('print_preview', function() {
     onCustomInputTimeout_: function() {
       this.customInputTimeout_ = null;
       if (this.customRadio_.checked) {
-        this.printTicketStore_.updatePageRange(this.customInput_.value);
+        this.pageRangeTicketItem_.updateValue(this.customInput_.value);
       }
     },
 
@@ -216,9 +208,9 @@ cr.define('print_preview', function() {
      * Called when the print ticket changes. Updates the state of the component.
      * @private
      */
-    onPrintTicketStoreChange_: function() {
-      if (this.printTicketStore_.hasPageRangeCapability()) {
-        var pageRangeStr = this.printTicketStore_.getPageRangeStr();
+    onPageRangeTicketItemChange_: function() {
+      if (this.pageRangeTicketItem_.isCapabilityAvailable()) {
+        var pageRangeStr = this.pageRangeTicketItem_.getValue();
         if (pageRangeStr || this.customRadio_.checked) {
           if (!document.hasFocus() ||
               document.activeElement != this.customInput_) {
@@ -226,8 +218,7 @@ cr.define('print_preview', function() {
           }
           this.customRadio_.checked = true;
           this.allRadio_.checked = false;
-          this.setInvalidStateVisible_(
-              !this.printTicketStore_.isPageRangeValid());
+          this.setInvalidStateVisible_(!this.pageRangeTicketItem_.isValid());
         } else {
           this.allRadio_.checked = true;
           this.customRadio_.checked = false;

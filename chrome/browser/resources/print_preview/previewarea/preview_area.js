@@ -294,6 +294,10 @@ cr.define('print_preview', function() {
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
       this.tracker.add(
+          this.printTicketStore_.pageRange,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onTicketChange_.bind(this));
+      this.tracker.add(
           this.printTicketStore_.selectionOnly,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
@@ -573,10 +577,10 @@ cr.define('print_preview', function() {
       // loaded and the document must be modifiable.
       if (this.documentInfo_.isModifiable) {
         this.plugin_.printPreviewPageCount(
-            this.printTicketStore_.getPageNumberSet().size);
+            this.printTicketStore_.pageRange.getPageNumberSet().size);
       }
       this.plugin_.setPageNumbers(JSON.stringify(
-          this.printTicketStore_.getPageNumberSet().asArray()));
+          this.printTicketStore_.pageRange.getPageNumberSet().asArray()));
       if (this.zoomLevel_ != null && this.pageOffset_ != null) {
         this.plugin_.setZoomLevel(this.zoomLevel_);
         this.plugin_.setPageXOffset(this.pageOffset_.x);

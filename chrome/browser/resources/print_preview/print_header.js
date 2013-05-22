@@ -116,6 +116,10 @@ cr.define('print_preview', function() {
           this.printTicketStore_.duplex,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
+      this.tracker.add(
+          this.printTicketStore_.pageRange,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onTicketChange_.bind(this));
     },
 
     /**
@@ -150,7 +154,7 @@ cr.define('print_preview', function() {
         summaryLabel = localStrings.getString('printPreviewPageLabelSingular');
       }
 
-      var numPages = this.printTicketStore_.getPageNumberSet().size;
+      var numPages = this.printTicketStore_.pageRange.getPageNumberSet().size;
       var numSheets = numPages;
       if (!saveToPdf && this.printTicketStore_.duplex.getValue()) {
         numSheets = Math.ceil(numPages / 2);

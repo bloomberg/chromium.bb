@@ -102,7 +102,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.PageSettings}
      * @private
      */
-    this.pageSettings_ = new print_preview.PageSettings(this.printTicketStore_);
+    this.pageSettings_ = new print_preview.PageSettings(
+        this.printTicketStore_.pageRange);
     this.addChild(this.pageSettings_);
 
     /**

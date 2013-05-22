@@ -14,14 +14,12 @@ cr.define('print_preview.ticket_items', function() {
    * @extends {print_preview.ticket_items.TicketItem}
    */
   function PageRange(documentInfo) {
-    print_preview.ticket_items.TicketItem.call(this);
-
-    /**
-     * Information about the document to print.
-     * @type {!print_preview.DocumentInfo}
-     * @private
-     */
-    this.documentInfo_ = documentInfo;
+    print_preview.ticket_items.TicketItem.call(
+        this,
+        null /*appState*/,
+        null /*field*/,
+        null /*destinationStore*/,
+        documentInfo);
   };
 
   /**
@@ -37,8 +35,8 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     wouldValueBeValid: function(value) {
-      return null != pageRangeTextToPageRanges(value,
-                                               this.documentInfo_.pageCount);
+      return null != pageRangeTextToPageRanges(
+          value, this.getDocumentInfoInternal().pageCount);
     },
 
     /**
@@ -47,7 +45,7 @@ cr.define('print_preview.ticket_items', function() {
      */
     getPageNumberSet: function() {
       var pageNumberList = pageRangeTextToPageList(
-          this.getValue(), this.documentInfo_.pageCount);
+          this.getValue(), this.getDocumentInfoInternal().pageCount);
       return new print_preview.PageNumberSet(pageNumberList);
     },
 
@@ -67,7 +65,7 @@ cr.define('print_preview.ticket_items', function() {
     },
 
     /**
-     * @return {!Array.<object.<{from: number, to: number}>>} A list of page
+     * @return {!Array.<Object.<{from: number, to: number}>>} A list of page
      *     ranges.
      */
     getPageRanges: function() {
@@ -81,8 +79,8 @@ cr.define('print_preview.ticket_items', function() {
      *     page ranges.
      */
     getDocumentPageRanges: function() {
-      var pageRanges = pageRangeTextToPageRanges(this.getValue(),
-                                                 this.documentInfo_.pageCount);
+      var pageRanges = pageRangeTextToPageRanges(
+          this.getValue(), this.getDocumentInfoInternal().pageCount);
       return pageRanges || [];
     },
   };

@@ -220,6 +220,10 @@ cr.define('print_preview', function() {
       return this.fitToPage_;
     },
 
+    get pageRange() {
+      return this.pageRange_;
+    },
+
     get selectionOnly() {
       return this.selectionOnly_;
     },
@@ -420,68 +424,14 @@ cr.define('print_preview', function() {
       }
     },
 
-    /** @return {boolean} Whether the page range capability is available. */
-    hasPageRangeCapability: function() {
-      return this.pageRange_.isCapabilityAvailable();
-    },
-
-    /**
-     * @return {boolean} Whether the current page range string is defines a
-     *     valid page number set.
-     */
-    isPageRangeValid: function() {
-      return this.pageRange_.isValid();
-    },
-
-    /** @return {string} String representation of the page range. */
-    getPageRangeStr: function() {
-      return this.pageRange_.getValue();
-    },
-
-    /**
-     * @return {!Array.<object.<{from: number, to: number}>>} Page ranges
-     *     represented by of the page range string.
-     */
-    getPageRanges: function() {
-      return this.pageRange_.getPageRanges();
-    },
-
-    /**
-     * @return {!Array.<object.<{from: number, to: number}>>} Page ranges
-     *     represented by of the page range string and constraied by ducument
-     *     page count.
-     */
-    getDocumentPageRanges: function() {
-      return this.pageRange_.getDocumentPageRanges();
-    },
-
-    /**
-     * @return {!print_preview.PageNumberSet} Page number set specified by the
-     *     string representation of the page range string.
-     */
-    getPageNumberSet: function() {
-      return this.pageRange_.getPageNumberSet();
-    },
-
-    /**
-     * Updates the page range string. Dispatches a TICKET_CHANGE if the string
-     * changed.
-     * @param {string} pageRangeStr New page range string.
-     */
-    updatePageRange: function(pageRangeStr) {
-      if (this.pageRange_.getValue() != pageRangeStr) {
-        this.pageRange_.updateValue(pageRangeStr);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
-      }
-    },
-
     /**
      * @return {boolean} {@code true} if the stored print ticket is valid,
      *     {@code false} otherwise.
      */
     isTicketValid: function() {
       return this.isTicketValidForPreview() &&
-          (!this.hasPageRangeCapability() || this.isPageRangeValid());
+          (!this.pageRange_.isCapabilityAvailable() ||
+              this.pageRange_.isValid());
     },
 
     /** @return {boolean} Whether the ticket is valid for preview generation. */
