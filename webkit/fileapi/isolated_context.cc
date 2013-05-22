@@ -106,11 +106,17 @@ bool IsolatedContext::FileInfoSet::AddPathWithName(
 
 class IsolatedContext::Instance {
  public:
+  enum PathType {
+    PLATFORM_PATH,
+    VIRTUAL_PATH
+  };
+
   // For a single-path isolated file system, which could be registered by
   // IsolatedContext::RegisterFileSystemForPath() or
   // IsolatedContext::RegisterFileSystemForVirtualPath().
   // Most of isolated file system contexts should be of this type.
-  Instance(FileSystemType type, const MountPointInfo& file_info);
+  Instance(FileSystemType type, const MountPointInfo& file_info,
+           PathType path_type);
 
   // For a multi-paths isolated file system.  As of writing only file system
   // type which could have multi-paths is Dragged file system, and
@@ -137,6 +143,7 @@ class IsolatedContext::Instance {
 
   // For single-path instance.
   const MountPointInfo file_info_;
+  const PathType path_type_;
 
   // For multiple-path instance (e.g. dragged file system).
   const std::set<MountPointInfo> files_;
@@ -149,9 +156,11 @@ class IsolatedContext::Instance {
 };
 
 IsolatedContext::Instance::Instance(FileSystemType type,
-                                    const MountPointInfo& file_info)
+                                    const MountPointInfo& file_info,
+                                    Instance::PathType path_type)
     : type_(type),
       file_info_(file_info),
+      path_type_(path_type),
       ref_counts_(0) {
   DCHECK(IsSinglePathIsolatedFileSystem(type_));
 }
@@ -159,6 +168,7 @@ IsolatedContext::Instance::Instance(FileSystemType type,
 IsolatedContext::Instance::Instance(FileSystemType type,
                                     const std::set<MountPointInfo>& files)
     : type_(type),
+      path_type_(PLATFORM_PATH),
       files_(files),
       ref_counts_(0) {
   DCHECK(!IsSinglePathIsolatedFileSystem(type_));
@@ -169,7 +179,17 @@ IsolatedContext::Instance::~Instance() {}
 bool IsolatedContext::Instance::ResolvePathForName(const std::string& name,
                                                    base::FilePath* path) const {
   if (IsSinglePathIsolatedFileSystem(type_)) {
-    *path = file_info_.path;
+    switch (path_type_) {
+      case PLATFORM_PATH:
+        *path = file_info_.path;
+        break;
+      case VIRTUAL_PATH:
+        *path = base::FilePath();
+        break;
+      default:
+        NOTREACHED();
+    }
+
     return file_info_.name == name;
   }
   std::set<MountPointInfo>::const_iterator found = files_.find(
@@ -223,7 +243,8 @@ std::string IsolatedContext::RegisterFileSystemForPath(
 
   base::AutoLock locker(lock_);
   std::string filesystem_id = GetNewFileSystemId();
-  instance_map_[filesystem_id] = new Instance(type, MountPointInfo(name, path));
+  instance_map_[filesystem_id] = new Instance(type, MountPointInfo(name, path),
+                                              Instance::PLATFORM_PATH);
   path_to_id_map_[path].insert(filesystem_id);
   return filesystem_id;
 }
@@ -239,7 +260,8 @@ std::string IsolatedContext::RegisterFileSystemForVirtualPath(
   std::string filesystem_id = GetNewFileSystemId();
   instance_map_[filesystem_id] = new Instance(
       type,
-      MountPointInfo(register_name, cracked_path_prefix));
+      MountPointInfo(register_name, cracked_path_prefix),
+      Instance::VIRTUAL_PATH);
   path_to_id_map_[path].insert(filesystem_id);
   return filesystem_id;
 }

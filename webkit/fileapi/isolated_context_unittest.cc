@@ -311,6 +311,26 @@ TEST_F(IsolatedContextTest, VirtualFileSystemTests) {
           base::FilePath(FPL("relpath")));
   ASSERT_FALSE(empty_fsid.empty());
   ASSERT_FALSE(relative_fsid.empty());
+
+  // Make sure that filesystem root is not prepended to cracked virtual paths.
+  base::FilePath database_root = base::FilePath(DRIVE FPL("/database_path"));
+  std::string database_fsid =
+      isolated_context()->RegisterFileSystemForVirtualPath(
+          fileapi::kFileSystemTypeIsolated, "_", database_root);
+
+  base::FilePath test_virtual_path =
+      base::FilePath().AppendASCII("virtualdir").AppendASCII("virtualfile.txt");
+
+  base::FilePath whole_virtual_path =
+      isolated_context()->CreateVirtualRootPath(database_fsid)
+          .AppendASCII("_").Append(test_virtual_path);
+
+  std::string cracked_id;
+  base::FilePath cracked_path;
+  ASSERT_TRUE(isolated_context()->CrackVirtualPath(
+      whole_virtual_path, &cracked_id, NULL, &cracked_path));
+  ASSERT_EQ(database_fsid, cracked_id);
+  ASSERT_EQ(test_virtual_path, cracked_path);
 }
 
 }  // namespace fileapi
