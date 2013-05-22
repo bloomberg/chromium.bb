@@ -65,6 +65,6 @@ private:
     OwnPtr<AnimationEffect::CompositableValueMap> m_compositableValues;
 };
 
-} // namespace
+} // namespace WebCore
 
 #endif

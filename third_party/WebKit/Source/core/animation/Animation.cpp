@@ -60,7 +60,7 @@ void Animation::applyEffects(bool previouslyActiveOrInEffect)
         m_target->addActiveAnimation(this);
         m_isInTargetActiveAnimationsList = true;
     }
-    m_compositableValues = m_effect->sample(currentIteration(), 0.0);
+    m_compositableValues = m_effect->sample(currentIteration(), timeFraction());
     m_target->setNeedsStyleRecalc(SyntheticStyleChange);
 }
 
@@ -81,4 +81,4 @@ void Animation::updateChildrenAndEffects(bool wasActiveOrInEffect) const
         const_cast<Animation*>(this)->applyEffects(wasActiveOrInEffect);
 }
 
-} // namespace
+} // namespace WebCore
