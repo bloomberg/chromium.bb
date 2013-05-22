@@ -433,13 +433,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // launcher by drag and dropping it.
   void SetAppDraggedByUser(const std::string& extension_id);
 
-  // The extension's update URL data.  If not empty, the ExtensionUpdater
-  // will append a ap= parameter to the URL when checking if a new version
-  // of the extension is available.
-  void SetUpdateUrlData(const std::string& extension_id,
-                        const std::string& data);
-  std::string GetUpdateUrlData(const std::string& extension_id);
-
   // Sets a preference value that is controlled by the extension. In other
   // words, this is not a pref value *about* the extension but something
   // global the extension wants to override.

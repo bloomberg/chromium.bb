@@ -815,6 +815,7 @@
             ['include', '^browser/extensions/api/location/location_manager.cc'],
             ['include', '^browser/extensions/api/messaging/extension_message_port.cc'],
             ['include', '^browser/extensions/api/messaging/message_service.cc'],
+            ['include', '^browser/extensions/api/module/module.cc'],
             ['include', '^browser/extensions/api/omnibox/omnibox_api.cc'],
             ['include', '^browser/extensions/api/processes/processes_api.cc'],
             ['include', '^browser/extensions/api/processes/processes_api_constants.cc'],

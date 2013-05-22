@@ -139,9 +139,6 @@ const char kPrefLaunchType[] = "launchType";
 // A preference specifying if the user dragged the app on the NTP.
 const char kPrefUserDraggedApp[] = "user_dragged_app_ntp";
 
-// A preference for storing extra data sent in update checks for an extension.
-const char kUpdateUrlData[] = "update_url_data";
-
 // Preferences that hold which permissions the user has granted the extension.
 // We explicitly keep track of these so that extensions can contain unknown
 // permissions, for backwards compatibility reasons, and we can still prompt
@@ -1510,22 +1507,6 @@ bool ExtensionPrefs::WasAppDraggedByUser(const std::string& extension_id) {
 void ExtensionPrefs::SetAppDraggedByUser(const std::string& extension_id) {
   UpdateExtensionPref(extension_id, kPrefUserDraggedApp,
                       Value::CreateBooleanValue(true));
-}
-
-void ExtensionPrefs::SetUpdateUrlData(const std::string& extension_id,
-                                      const std::string& data) {
-  UpdateExtensionPref(extension_id, kUpdateUrlData,
-                      Value::CreateStringValue(data));
-}
-
-std::string ExtensionPrefs::GetUpdateUrlData(const std::string& extension_id) {
-  const DictionaryValue* dictionary = GetExtensionPref(extension_id);
-  if (!dictionary)
-    return std::string();
-
-  std::string data;
-  dictionary->GetString(kUpdateUrlData, &data);
-  return data;
 }
 
 void ExtensionPrefs::OnContentSettingChanged(
