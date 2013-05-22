@@ -154,6 +154,7 @@
     (r'\bmedia\.lib$', r'media_switches\.obj$'),
     # TODO(scottmg): This one is not solely constants, but looks safe.
     (r'\bnet\.lib$', r'http_request_headers\.obj$'),
+    (r'\bnet\.lib$', r'net_errors\.obj$'),
     (r'ppapi_shared\.lib$', r'ppapi_switches\.obj$'),
     (r'printing\.lib$', r'print_job_constants\.obj$'),
     (r'skia\.lib$', r'skunpremultiply\.obj$'),
