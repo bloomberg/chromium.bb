@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/database/database_util.h"
+#include "webkit/browser/database/database_util.h"
 
 #include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "webkit/database/database_tracker.h"
-#include "webkit/database/vfs_backend.h"
+#include "webkit/browser/database/database_tracker.h"
+#include "webkit/browser/database/vfs_backend.h"
 
 namespace webkit_database {
 

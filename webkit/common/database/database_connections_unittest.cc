@@ -7,7 +7,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/database/database_connections.h"
+#include "webkit/common/database/database_connections.h"
 
 namespace webkit_database {
 

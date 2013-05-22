@@ -52,7 +52,6 @@ include_rules = [
   "+webkit/appcache",
   "+webkit/base/origin_url_conversions.h",
   "+webkit/blob",
-  "+webkit/database",
   "+webkit/dom_storage/dom_storage_types.h",
   "+webkit/fileapi",
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.

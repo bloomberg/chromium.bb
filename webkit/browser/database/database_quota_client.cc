@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/database/database_quota_client.h"
+#include "webkit/browser/database/database_quota_client.h"
 
 #include <vector>
 
@@ -15,8 +15,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "webkit/base/origin_url_conversions.h"
-#include "webkit/database/database_tracker.h"
-#include "webkit/database/database_util.h"
+#include "webkit/browser/database/database_tracker.h"
+#include "webkit/browser/database/database_util.h"
 
 using quota::QuotaClient;
 

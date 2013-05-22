@@ -7,7 +7,7 @@
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/database/databases_table.h"
+#include "webkit/browser/database/databases_table.h"
 
 namespace {
 

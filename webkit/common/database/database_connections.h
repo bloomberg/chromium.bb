@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_DATABASE_DATABASE_CONNECTIONS_H_
-#define WEBKIT_DATABASE_DATABASE_CONNECTIONS_H_
+#ifndef WEBKIT_COMMON_DATABASE_DATABASE_CONNECTIONS_H_
+#define WEBKIT_COMMON_DATABASE_DATABASE_CONNECTIONS_H_
 
 #include <map>
 #include <vector>
@@ -95,4 +95,4 @@ class WEBKIT_STORAGE_EXPORT DatabaseConnectionsWrapper
 
 }  // namespace webkit_database
 
-#endif  // WEBKIT_DATABASE_DATABASE_CONNECTIONS_H_
+#endif  // WEBKIT_COMMON_DATABASE_DATABASE_CONNECTIONS_H_

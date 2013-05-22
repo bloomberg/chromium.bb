@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/database/database_tracker.h"
+#include "webkit/browser/database/database_tracker.h"
 
 #include <algorithm>
 #include <vector>
@@ -20,9 +20,9 @@
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/base/origin_url_conversions.h"
-#include "webkit/database/database_quota_client.h"
-#include "webkit/database/database_util.h"
-#include "webkit/database/databases_table.h"
+#include "webkit/browser/database/database_quota_client.h"
+#include "webkit/browser/database/database_util.h"
+#include "webkit/browser/database/databases_table.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 

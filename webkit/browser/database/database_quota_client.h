@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_DATABASE_DATABASE_QUOTA_CLIENT_H_
-#define WEBKIT_DATABASE_DATABASE_QUOTA_CLIENT_H_
+#ifndef WEBKIT_BROWSER_DATABASE_DATABASE_QUOTA_CLIENT_H_
+#define WEBKIT_BROWSER_DATABASE_DATABASE_QUOTA_CLIENT_H_
 
 #include <set>
 #include <string>
@@ -52,4 +52,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DatabaseQuotaClient
 
 }  // namespace webkit_database
 
-#endif  // WEBKIT_DATABASE_DATABASE_QUOTA_CLIENT_H_
+#endif  // WEBKIT_BROWSER_DATABASE_DATABASE_QUOTA_CLIENT_H_

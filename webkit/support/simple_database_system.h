@@ -14,8 +14,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabaseObserver.h"
-#include "webkit/database/database_connections.h"
-#include "webkit/database/database_tracker.h"
+#include "webkit/browser/database/database_tracker.h"
+#include "webkit/common/database/database_connections.h"
 
 namespace base {
 class MessageLoopProxy;

@@ -110,8 +110,8 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
-#include "webkit/database/database_tracker.h"
-#include "webkit/database/database_util.h"
+#include "webkit/browser/database/database_tracker.h"
+#include "webkit/browser/database/database_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"

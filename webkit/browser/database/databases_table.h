@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_DATABASE_DATABASES_TABLE_H_
-#define WEBKIT_DATABASE_DATABASES_TABLE_H_
+#ifndef WEBKIT_BROWSER_DATABASE_DATABASES_TABLE_H_
+#define WEBKIT_BROWSER_DATABASE_DATABASES_TABLE_H_
 
 #include <vector>
 
@@ -50,4 +50,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DatabasesTable {
 
 }  // namespace webkit_database
 
-#endif  // WEBKIT_DATABASE_DATABASES_TABLE_H_
+#endif  // WEBKIT_BROWSER_DATABASE_DATABASES_TABLE_H_

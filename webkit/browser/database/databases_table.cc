@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/database/databases_table.h"
+#include "webkit/browser/database/databases_table.h"
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"

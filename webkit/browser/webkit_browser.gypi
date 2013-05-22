@@ -4,12 +4,14 @@
 
 {
   'includes': [
+    '../browser/database/webkit_browser_database.gypi',
     '../browser/fileapi/webkit_browser_fileapi.gypi',
   ],
   # TODO(kinuko): Have webkit_browser target and deprecate old gypis like
   # webkit_storage.gypi.
   'variables': {
     'webkit_browser_storage_sources': [
+      '<@(webkit_browser_database_sources)',
       '<@(webkit_browser_fileapi_sources)',
     ],
   },

@@ -51,7 +51,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
-#include "webkit/database/database_tracker.h"
+#include "webkit/browser/database/database_tracker.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "chrome/browser/prefs/scoped_user_pref_update.h"

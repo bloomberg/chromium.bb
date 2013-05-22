@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_DATABASE_DATABASE_TRACKER_H_
-#define WEBKIT_DATABASE_DATABASE_TRACKER_H_
+#ifndef WEBKIT_BROWSER_DATABASE_DATABASE_TRACKER_H_
+#define WEBKIT_BROWSER_DATABASE_DATABASE_TRACKER_H_
 
 #include <map>
 #include <set>
@@ -19,7 +19,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "net/base/completion_callback.h"
-#include "webkit/database/database_connections.h"
+#include "webkit/common/database/database_connections.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -309,4 +309,4 @@ class WEBKIT_STORAGE_EXPORT DatabaseTracker
 
 }  // namespace webkit_database
 
-#endif  // WEBKIT_DATABASE_DATABASE_TRACKER_H_
+#endif  // WEBKIT_BROWSER_DATABASE_DATABASE_TRACKER_H_

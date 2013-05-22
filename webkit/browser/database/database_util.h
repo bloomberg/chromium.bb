@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_DATABASE_DATABASE_UTIL_H_
-#define WEBKIT_DATABASE_DATABASE_UTIL_H_
+#ifndef WEBKIT_BROWSER_DATABASE_DATABASE_UTIL_H_
+#define WEBKIT_BROWSER_DATABASE_DATABASE_UTIL_H_
 
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
@@ -35,4 +35,4 @@ class WEBKIT_STORAGE_EXPORT DatabaseUtil {
 
 }  // namespace webkit_database
 
-#endif  // WEBKIT_DATABASE_DATABASE_UTIL_H_
+#endif  // WEBKIT_BROWSER_DATABASE_DATABASE_UTIL_H_

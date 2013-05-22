@@ -19,7 +19,7 @@
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/appcache/appcache_interfaces.h"
-#include "webkit/database/database_tracker.h"
+#include "webkit/browser/database/database_tracker.h"
 
 namespace {
 

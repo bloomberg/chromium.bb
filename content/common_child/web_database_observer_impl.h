@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
-#define CONTENT_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
+#ifndef CONTENT_COMMON_CHILD_WEB_DATABASE_OBSERVER_IMPL_H_
+#define CONTENT_COMMON_CHILD_WEB_DATABASE_OBSERVER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabaseObserver.h"
-#include "webkit/database/database_connections.h"
+#include "webkit/common/database/database_connections.h"
 
 namespace content {
 

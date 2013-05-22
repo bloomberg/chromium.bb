@@ -355,8 +355,6 @@
     'common/utility_messages.h',
     'common/view_messages.h',
     'common/view_message_enums.h',
-    'common/web_database_observer_impl.cc',
-    'common/web_database_observer_impl.h',
     'common/webkitplatformsupport_impl.cc',
     'common/webkitplatformsupport_impl.h',
     'common/webmessageportchannel_impl.cc',

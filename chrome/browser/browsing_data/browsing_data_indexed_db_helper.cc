@@ -16,7 +16,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/indexed_db_context.h"
-#include "webkit/database/database_util.h"
+#include "webkit/browser/database/database_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserThread;

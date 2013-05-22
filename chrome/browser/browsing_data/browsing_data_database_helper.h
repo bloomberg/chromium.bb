@@ -15,7 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/database/database_tracker.h"
+#include "webkit/browser/database/database_tracker.h"
 
 class Profile;
 

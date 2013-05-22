@@ -16,8 +16,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "webkit/database/database_util.h"
-#include "webkit/database/vfs_backend.h"
+#include "webkit/browser/database/database_util.h"
+#include "webkit/browser/database/vfs_backend.h"
 
 using webkit_database::DatabaseTracker;
 using webkit_database::DatabaseUtil;

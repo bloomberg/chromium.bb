@@ -15,7 +15,6 @@
         '../../build/win_precompile.gypi',
         '../appcache/webkit_appcache.gypi',
         '../base/webkit_base.gypi',
-        '../database/webkit_database.gypi',
         '../glue/webkit_glue.gypi',
         '../media/webkit_media.gypi',
         '../plugins/webkit_plugins.gypi',

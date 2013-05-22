@@ -9,7 +9,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "webkit/database/database_tracker.h"
+#include "webkit/browser/database/database_tracker.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/quota/quota_manager.h"
 

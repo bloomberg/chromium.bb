@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/web_database_observer_impl.h"
+#include "content/common_child/web_database_observer_impl.h"
 
 #include "base/metrics/histogram.h"
 #include "base/string16.h"

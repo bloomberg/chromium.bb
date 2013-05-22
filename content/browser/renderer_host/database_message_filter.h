@@ -8,8 +8,8 @@
 #include "base/hash_tables.h"
 #include "base/string16.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "webkit/database/database_connections.h"
-#include "webkit/database/database_tracker.h"
+#include "webkit/browser/database/database_tracker.h"
+#include "webkit/common/database/database_connections.h"
 #include "webkit/quota/quota_types.h"
 
 namespace content {

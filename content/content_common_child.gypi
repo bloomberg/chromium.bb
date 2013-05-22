@@ -40,6 +40,8 @@
     'common_child/plugin_messages.h',
     'common_child/plugin_param_traits.cc',
     'common_child/plugin_param_traits.h',
+    'common_child/web_database_observer_impl.cc',
+    'common_child/web_database_observer_impl.h',
   ],
   'conditions': [
     ['OS=="ios"', {
