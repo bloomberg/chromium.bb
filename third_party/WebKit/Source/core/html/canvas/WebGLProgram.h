@@ -26,17 +26,16 @@
 #ifndef WebGLProgram_h
 #define WebGLProgram_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLSharedObject.h"
-
 #include "core/html/canvas/WebGLShader.h"
-
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class WebGLProgram : public WebGLSharedObject {
+class WebGLProgram : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLProgram();
 

@@ -34,6 +34,7 @@ namespace WebCore {
 EXTDrawBuffers::EXTDrawBuffers(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
     context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_EXT_draw_buffers");
 }
 

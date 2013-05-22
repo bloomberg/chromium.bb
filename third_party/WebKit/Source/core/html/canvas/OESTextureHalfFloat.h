@@ -26,12 +26,13 @@
 #ifndef OESTextureHalfFloat_h
 #define OESTextureHalfFloat_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-class OESTextureHalfFloat : public WebGLExtension {
+class OESTextureHalfFloat : public WebGLExtension, public ScriptWrappable {
 public:
     static PassOwnPtr<OESTextureHalfFloat> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);

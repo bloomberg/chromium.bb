@@ -33,6 +33,7 @@ namespace WebCore {
 OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
     context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_texture_half_float");
 }
 

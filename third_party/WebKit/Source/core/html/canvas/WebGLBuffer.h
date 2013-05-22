@@ -26,16 +26,16 @@
 #ifndef WebGLBuffer_h
 #define WebGLBuffer_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLSharedObject.h"
-
-#include <wtf/ArrayBuffer.h>
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/ArrayBuffer.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class WebGLBuffer : public WebGLSharedObject {
+class WebGLBuffer : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLBuffer();
 

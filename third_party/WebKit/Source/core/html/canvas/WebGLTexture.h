@@ -26,15 +26,15 @@
 #ifndef WebGLTexture_h
 #define WebGLTexture_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLSharedObject.h"
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {
 
-class WebGLTexture : public WebGLSharedObject {
+class WebGLTexture : public WebGLSharedObject, public ScriptWrappable {
 public:
     enum TextureExtensionFlag {
         NoTextureExtensionEnabled = 0,

@@ -26,14 +26,15 @@
 #ifndef WebGLLoseContext_h
 #define WebGLLoseContext_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
 class WebGLRenderingContext;
 
-class WebGLLoseContext : public WebGLExtension {
+class WebGLLoseContext : public WebGLExtension, public ScriptWrappable {
 public:
     static PassOwnPtr<WebGLLoseContext> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);

@@ -26,18 +26,18 @@
 #ifndef WebGLFramebuffer_h
 #define WebGLFramebuffer_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLContextObject.h"
 #include "core/html/canvas/WebGLSharedObject.h"
-
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class WebGLRenderbuffer;
 class WebGLTexture;
 
-class WebGLFramebuffer : public WebGLContextObject {
+class WebGLFramebuffer : public WebGLContextObject, public ScriptWrappable {
 public:
     class WebGLAttachment : public RefCounted<WebGLAttachment> {
     public:

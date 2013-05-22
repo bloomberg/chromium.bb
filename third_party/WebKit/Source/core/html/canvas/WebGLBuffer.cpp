@@ -43,6 +43,7 @@ WebGLBuffer::WebGLBuffer(WebGLRenderingContext* ctx)
     : WebGLSharedObject(ctx)
     , m_target(0)
 {
+    ScriptWrappable::init(this);
     setObject(ctx->graphicsContext3D()->createBuffer());
 }
 

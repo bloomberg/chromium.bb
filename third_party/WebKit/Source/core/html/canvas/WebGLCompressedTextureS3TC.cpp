@@ -38,6 +38,7 @@ namespace WebCore {
 WebGLCompressedTextureS3TC::WebGLCompressedTextureS3TC(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
     context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGB_S3TC_DXT1_EXT);
     context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGBA_S3TC_DXT1_EXT);
     context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGBA_S3TC_DXT3_EXT);

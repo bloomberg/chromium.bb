@@ -27,14 +27,15 @@
 #ifndef WebGLContextAttributes_h
 #define WebGLContextAttributes_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/CanvasContextAttributes.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-class WebGLContextAttributes : public CanvasContextAttributes {
-  public:
+class WebGLContextAttributes : public CanvasContextAttributes, public ScriptWrappable {
+public:
     virtual ~WebGLContextAttributes();
 
     // Create a new attributes object
@@ -74,11 +75,11 @@ class WebGLContextAttributes : public CanvasContextAttributes {
     // form that can be used to initialize a GraphicsContext3D.
     GraphicsContext3D::Attributes attributes() const;
 
-  protected:
+protected:
     WebGLContextAttributes();
     WebGLContextAttributes(GraphicsContext3D::Attributes attributes);
 
-  private:
+private:
     GraphicsContext3D::Attributes m_attrs;
 };
 

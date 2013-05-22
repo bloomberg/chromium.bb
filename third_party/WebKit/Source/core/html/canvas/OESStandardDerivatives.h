@@ -26,12 +26,13 @@
 #ifndef OESStandardDerivatives_h
 #define OESStandardDerivatives_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-class OESStandardDerivatives : public WebGLExtension {
+class OESStandardDerivatives : public WebGLExtension, public ScriptWrappable {
 public:
     static PassOwnPtr<OESStandardDerivatives> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);

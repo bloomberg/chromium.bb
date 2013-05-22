@@ -34,6 +34,7 @@ namespace WebCore {
 WebGLCompressedTextureATC::WebGLCompressedTextureATC(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
     context->addCompressedTextureFormat(Extensions3D::COMPRESSED_ATC_RGB_AMD);
     context->addCompressedTextureFormat(Extensions3D::COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD);
     context->addCompressedTextureFormat(Extensions3D::COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD);

@@ -34,6 +34,7 @@ namespace WebCore {
 WebGLDebugRendererInfo::WebGLDebugRendererInfo(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
 }
 
 WebGLDebugRendererInfo::~WebGLDebugRendererInfo()

@@ -34,6 +34,7 @@ namespace WebCore {
 WebGLLoseContext::WebGLLoseContext(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
 }
 
 WebGLLoseContext::~WebGLLoseContext()

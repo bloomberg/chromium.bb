@@ -26,12 +26,13 @@
 #ifndef OESTextureFloatLinear_h
 #define OESTextureFloatLinear_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-class OESTextureFloatLinear : public WebGLExtension {
+class OESTextureFloatLinear : public WebGLExtension, public ScriptWrappable {
 public:
     static PassOwnPtr<OESTextureFloatLinear> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);

@@ -33,6 +33,7 @@ namespace WebCore {
 OESElementIndexUint::OESElementIndexUint(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
     context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_element_index_uint");
 }
 

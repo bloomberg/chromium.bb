@@ -51,6 +51,7 @@ WebGLTexture::WebGLTexture(WebGLRenderingContext* ctx)
     , m_isFloatType(false)
     , m_isHalfFloatType(false)
 {
+    ScriptWrappable::init(this);
     setObject(ctx->graphicsContext3D()->createTexture());
 }
 

@@ -43,6 +43,7 @@ WebGLProgram::WebGLProgram(WebGLRenderingContext* ctx)
     , m_linkCount(0)
     , m_infoValid(true)
 {
+    ScriptWrappable::init(this);
     setObject(ctx->graphicsContext3D()->createProgram());
 }
 

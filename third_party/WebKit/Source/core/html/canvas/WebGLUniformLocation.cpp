@@ -40,6 +40,7 @@ WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program, GC3Dint locati
     , m_location(location)
 {
     ASSERT(m_program);
+    ScriptWrappable::init(this);
     m_linkCount = m_program->getLinkCount();
 }
 

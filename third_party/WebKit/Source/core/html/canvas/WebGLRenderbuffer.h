@@ -26,14 +26,14 @@
 #ifndef WebGLRenderbuffer_h
 #define WebGLRenderbuffer_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLSharedObject.h"
-
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class WebGLRenderbuffer : public WebGLSharedObject {
+class WebGLRenderbuffer : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLRenderbuffer();
 

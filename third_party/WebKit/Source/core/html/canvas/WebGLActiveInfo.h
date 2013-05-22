@@ -26,14 +26,15 @@
 #ifndef WebGLActiveInfo_h
 #define WebGLActiveInfo_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class WebGLActiveInfo : public RefCounted<WebGLActiveInfo> {
+class WebGLActiveInfo : public RefCounted<WebGLActiveInfo>, public ScriptWrappable {
 public:
     static PassRefPtr<WebGLActiveInfo> create(const String& name, GC3Denum type, GC3Dint size)
     {
@@ -52,6 +53,7 @@ private:
         ASSERT(name.length());
         ASSERT(type);
         ASSERT(size);
+        ScriptWrappable::init(this);
     }
     String m_name;
     GC3Denum m_type;

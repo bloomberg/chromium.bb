@@ -36,6 +36,7 @@ namespace WebCore {
 OESVertexArrayObject::OESVertexArrayObject(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
     context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_vertex_array_object");
 }
 

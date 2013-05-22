@@ -26,25 +26,25 @@
 #ifndef WebGLVertexArrayObjectOES_h
 #define WebGLVertexArrayObjectOES_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLBuffer.h"
 #include "core/html/canvas/WebGLContextObject.h"
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
 
-class WebGLVertexArrayObjectOES : public WebGLContextObject {
+class WebGLVertexArrayObjectOES : public WebGLContextObject, public ScriptWrappable {
 public:
     enum VaoType {
         VaoTypeDefault,
         VaoTypeUser,
     };
-    
+
     virtual ~WebGLVertexArrayObjectOES();
 
     static PassRefPtr<WebGLVertexArrayObjectOES> create(WebGLRenderingContext*, VaoType);
-    
+
     // Cached values for vertex attrib range checks
     struct VertexAttribState {
         VertexAttribState()
@@ -58,7 +58,7 @@ public:
             , offset(0)
         {
         }
-        
+
         bool enabled;
         RefPtr<WebGLBuffer> bufferBinding;
         GC3Dsizei bytesPerElement;
@@ -69,15 +69,15 @@ public:
         GC3Dsizei originalStride;
         GC3Dintptr offset;
     };
-    
+
     bool isDefaultObject() const { return m_type == VaoTypeDefault; }
-    
+
     bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }
     void setHasEverBeenBound() { m_hasEverBeenBound = true; }
-    
+
     PassRefPtr<WebGLBuffer> getElementArrayBuffer() const { return m_boundElementArrayBuffer; }
     void setElementArrayBuffer(PassRefPtr<WebGLBuffer>);
-    
+
     VertexAttribState& getVertexAttribState(int index) { return m_vertexAttribState[index]; }
     void setVertexAttribState(GC3Duint, GC3Dsizei, GC3Dint, GC3Denum, GC3Dboolean, GC3Dsizei, GC3Dintptr, PassRefPtr<WebGLBuffer>);
     void unbindBuffer(PassRefPtr<WebGLBuffer>);
@@ -88,7 +88,7 @@ private:
     virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject);
 
     virtual bool isVertexArray() const { return true; }
-    
+
     VaoType m_type;
     bool m_hasEverBeenBound;
     RefPtr<WebGLBuffer> m_boundElementArrayBuffer;

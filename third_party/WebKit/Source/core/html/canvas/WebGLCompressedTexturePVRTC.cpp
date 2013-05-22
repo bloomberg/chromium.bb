@@ -35,6 +35,7 @@ namespace WebCore {
 WebGLCompressedTexturePVRTC::WebGLCompressedTexturePVRTC(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
     context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGB_PVRTC_4BPPV1_IMG);
     context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGB_PVRTC_2BPPV1_IMG);
     context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGBA_PVRTC_4BPPV1_IMG);

@@ -33,6 +33,7 @@ namespace WebCore {
 EXTTextureFilterAnisotropic::EXTTextureFilterAnisotropic(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
     context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_EXT_texture_filter_anisotropic");
 }
 

@@ -51,6 +51,7 @@ WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContext* ctx)
     , m_isValid(true)
     , m_hasEverBeenBound(false)
 {
+    ScriptWrappable::init(this);
     setObject(ctx->graphicsContext3D()->createRenderbuffer());
 }
 

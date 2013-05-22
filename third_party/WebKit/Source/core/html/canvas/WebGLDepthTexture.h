@@ -26,12 +26,13 @@
 #ifndef WebGLDepthTexture_h
 #define WebGLDepthTexture_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-class WebGLDepthTexture : public WebGLExtension {
+class WebGLDepthTexture : public WebGLExtension, public ScriptWrappable {
 public:
     static PassOwnPtr<WebGLDepthTexture> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);

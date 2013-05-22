@@ -26,12 +26,13 @@
 #ifndef OESElementIndexUint_h
 #define OESElementIndexUint_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-class OESElementIndexUint : public WebGLExtension {
+class OESElementIndexUint : public WebGLExtension, public ScriptWrappable {
 public:
     static PassOwnPtr<OESElementIndexUint> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);

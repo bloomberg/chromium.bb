@@ -38,6 +38,7 @@ namespace WebCore {
 WebGLDebugShaders::WebGLDebugShaders(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
 }
 
 WebGLDebugShaders::~WebGLDebugShaders()

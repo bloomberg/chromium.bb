@@ -43,12 +43,14 @@ PassRefPtr<WebGLContextAttributes> WebGLContextAttributes::create(GraphicsContex
 WebGLContextAttributes::WebGLContextAttributes()
     : CanvasContextAttributes()
 {
+    ScriptWrappable::init(this);
 }
 
 WebGLContextAttributes::WebGLContextAttributes(GraphicsContext3D::Attributes attributes)
     : CanvasContextAttributes()
     , m_attrs(attributes)
 {
+    ScriptWrappable::init(this);
 }
 
 WebGLContextAttributes::~WebGLContextAttributes()

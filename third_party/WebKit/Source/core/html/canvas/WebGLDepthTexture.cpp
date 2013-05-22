@@ -34,6 +34,7 @@ namespace WebCore {
 WebGLDepthTexture::WebGLDepthTexture(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    ScriptWrappable::init(this);
     context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_CHROMIUM_depth_texture");
 }
 

@@ -27,15 +27,15 @@
 #ifndef WebGLUniformLocation_h
 #define WebGLUniformLocation_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLObject.h"
 #include "core/html/canvas/WebGLProgram.h"
-
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class WebGLUniformLocation : public RefCounted<WebGLUniformLocation> {
+class WebGLUniformLocation : public RefCounted<WebGLUniformLocation>, public ScriptWrappable {
 public:
     virtual ~WebGLUniformLocation() { }
 

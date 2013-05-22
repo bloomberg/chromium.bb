@@ -43,8 +43,9 @@ WebGLVertexArrayObjectOES::WebGLVertexArrayObjectOES(WebGLRenderingContext* ctx,
     , m_hasEverBeenBound(false)
     , m_boundElementArrayBuffer(0)
 {
+    ScriptWrappable::init(this);
     m_vertexAttribState.resize(ctx->getMaxVertexAttribs());
-    
+
     Extensions3D* extensions = context()->graphicsContext3D()->getExtensions();
     switch (m_type) {
     case VaoTypeDefault:
