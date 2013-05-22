@@ -61,6 +61,7 @@ static int option_current_mode = 0;
 static char *output_name;
 static char *output_mode;
 static char *output_transform;
+static char *output_scale;
 static struct wl_list configured_output_list;
 
 enum output_config {
@@ -76,6 +77,7 @@ struct drm_configured_output {
 	char *name;
 	char *mode;
 	uint32_t transform;
+	int32_t scale;
 	int32_t width, height;
 	drmModeModeInfo crtc_mode;
 	enum output_config config;
@@ -463,6 +465,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	    buffer->width != output->base.current->width ||
 	    buffer->height != output->base.current->height ||
 	    output->base.transform != es->buffer_transform ||
+	    output->base.scale != es->buffer_scale ||
 	    es->transform.enabled)
 		return NULL;
 
@@ -791,6 +794,9 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (es->buffer_transform != output_base->transform)
 		return NULL;
 
+	if (es->buffer_scale != output_base->scale)
+		return NULL;
+
 	if (c->sprites_are_broken)
 		return NULL;
 
@@ -859,7 +865,8 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	tbox = weston_transformed_rect(output_base->width,
 				       output_base->height,
 				       output_base->transform,
-				       1, *box);
+				       output_base->scale,
+				       *box);
 	s->dest_x = tbox.x1;
 	s->dest_y = tbox.y1;
 	s->dest_w = tbox.x2 - tbox.x1;
@@ -896,7 +903,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 
 	tbox = weston_transformed_rect(wl_fixed_from_int(es->geometry.width),
 				       wl_fixed_from_int(es->geometry.height),
-				       es->buffer_transform, 1, tbox);
+				       es->buffer_transform, es->buffer_scale, tbox);
 
 	s->src_x = tbox.x1 << 8;
 	s->src_y = tbox.y1 << 8;
@@ -977,8 +984,8 @@ drm_output_set_cursor(struct drm_output *output)
 		}
 	}
 
-	x = es->geometry.x - output->base.x;
-	y = es->geometry.y - output->base.y;
+	x = (es->geometry.x - output->base.x) * output->base.scale;
+	y = (es->geometry.y - output->base.y) * output->base.scale;
 	if (output->cursor_plane.x != x || output->cursor_plane.y != y) {
 		if (drmModeMoveCursor(c->drm.fd, output->crtc_id, x, y)) {
 			weston_log("failed to move cursor: %m\n");
@@ -1258,18 +1265,29 @@ init_pixman(struct drm_compositor *ec)
 }
 
 static struct drm_mode *
-drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
+drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info, struct drm_configured_output *config)
 {
 	struct drm_mode *mode;
 	uint64_t refresh;
+        int scale;
 
 	mode = malloc(sizeof *mode);
 	if (mode == NULL)
 		return NULL;
 
+        scale = 1;
+        if (config)
+          scale = config->scale;
+
+	if (info->hdisplay % scale != 0 ||
+	    info->vdisplay % scale) {
+		weston_log("Mode %dx%d not multiple of scale %d\n", info->hdisplay, info->vdisplay, scale);
+		return NULL;
+	}
+
 	mode->base.flags = 0;
-	mode->base.width = info->hdisplay;
-	mode->base.height = info->vdisplay;
+	mode->base.width = info->hdisplay / scale;
+	mode->base.height = info->vdisplay / scale;
 
 	/* Calculate higher precision (mHz) refresh rate */
 	refresh = (info->clock * 1000000LL / info->htotal +
@@ -1284,6 +1302,9 @@ drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
 
 	mode->base.refresh = refresh;
 	mode->mode_info = *info;
+
+	if (scale != 1)
+		mode->base.flags |= WL_OUTPUT_MODE_SCALED;
 
 	if (info->type & DRM_MODE_TYPE_PREFERRED)
 		mode->base.flags |= WL_OUTPUT_MODE_PREFERRED;
@@ -1446,8 +1467,8 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 	int i, flags;
 
 	output->surface = gbm_surface_create(ec->gbm,
-					     output->base.current->width,
-					     output->base.current->height,
+					     output->base.current->width * output->base.scale,
+					     output->base.current->height * output->base.scale,
 					     GBM_FORMAT_XRGB8888,
 					     GBM_BO_USE_SCANOUT |
 					     GBM_BO_USE_RENDERING);
@@ -1491,12 +1512,12 @@ drm_output_init_pixman(struct drm_output *output, struct drm_compositor *c)
 	/* FIXME error checking */
 
 	for (i = 0; i < ARRAY_LENGTH(output->dumb); i++) {
-		output->dumb[i] = drm_fb_create_dumb(c, w, h);
+		output->dumb[i] = drm_fb_create_dumb(c, w * output->base.scale, h * output->base.scale);
 		if (!output->dumb[i])
 			goto err;
 
 		output->image[i] =
-			pixman_image_create_bits(PIXMAN_x8r8g8b8, w, h,
+			pixman_image_create_bits(PIXMAN_x8r8g8b8, w * output->base.scale, h * output->base.scale,
 						 output->dumb[i]->map,
 						 output->dumb[i]->stride);
 		if (!output->image[i])
@@ -1719,6 +1740,16 @@ create_output_for_connector(struct drm_compositor *ec,
 	snprintf(name, 32, "%s%d", type_name, connector->connector_type_id);
 	output->base.name = strdup(name);
 
+	wl_list_for_each(temp, &configured_output_list, link) {
+		if (strcmp(temp->name, output->base.name) == 0) {
+			if (temp->mode)
+				weston_log("%s mode \"%s\" in config\n",
+							temp->name, temp->mode);
+			o = temp;
+			break;
+		}
+	}
+
 	output->crtc_id = resources->crtcs[i];
 	output->pipe = i;
 	ec->crtc_allocator |= (1 << output->crtc_id);
@@ -1742,7 +1773,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	for (i = 0; i < connector->count_modes; i++) {
-		drm_mode = drm_output_add_mode(output, &connector->modes[i]);
+		drm_mode = drm_output_add_mode(output, &connector->modes[i], o);
 		if (!drm_mode)
 			goto err_free;
 	}
@@ -1750,16 +1781,6 @@ create_output_for_connector(struct drm_compositor *ec,
 	preferred = NULL;
 	current = NULL;
 	configured = NULL;
-
-	wl_list_for_each(temp, &configured_output_list, link) {
-		if (strcmp(temp->name, output->base.name) == 0) {
-			if (temp->mode)
-				weston_log("%s mode \"%s\" in config\n",
-							temp->name, temp->mode);
-			o = temp;
-			break;
-		}
-	}
 
 	if (o && o->config == OUTPUT_CONFIG_OFF) {
 		weston_log("Disabling output %s\n", o->name);
@@ -1771,8 +1792,8 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	wl_list_for_each(drm_mode, &output->base.mode_list, base.link) {
 		if (o && o->config == OUTPUT_CONFIG_MODE &&
-			o->width == drm_mode->base.width &&
-			o->height == drm_mode->base.height)
+			o->width == drm_mode->base.width * o->scale &&
+			o->height == drm_mode->base.height * o->scale)
 			configured = drm_mode;
 		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode))
 			current = drm_mode;
@@ -1781,14 +1802,14 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	if (o && o->config == OUTPUT_CONFIG_MODELINE) {
-		configured = drm_output_add_mode(output, &o->crtc_mode);
+		configured = drm_output_add_mode(output, &o->crtc_mode, 0);
 		if (!configured)
 			goto err_free;
 		current = configured;
 	}
 
 	if (current == NULL && crtc_mode.clock != 0) {
-		current = drm_output_add_mode(output, &crtc_mode);
+		current = drm_output_add_mode(output, &crtc_mode, 0);
 		if (!current)
 			goto err_free;
 	}
@@ -1814,7 +1835,8 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	weston_output_init(&output->base, &ec->base, x, y,
 			   connector->mmWidth, connector->mmHeight,
-			   o ? o->transform : WL_OUTPUT_TRANSFORM_NORMAL, 1);
+			   o ? o->transform : WL_OUTPUT_TRANSFORM_NORMAL,
+                           o ? o->scale : 1);
 
 	if (ec->use_pixman) {
 		if (drm_output_init_pixman(output, ec) < 0) {
@@ -2622,14 +2644,16 @@ output_section_done(void *data)
 	output = malloc(sizeof *output);
 
 	if (!output || !output_name || (output_name[0] == 'X') ||
-					(!output_mode && !output_transform)) {
+					(!output_mode && !output_transform && !output_scale)) {
 		free(output_name);
 		free(output_mode);
 		free(output_transform);
+		free(output_scale);
 		free(output);
 		output_name = NULL;
 		output_mode = NULL;
 		output_transform = NULL;
+		output_scale = NULL;
 		return;
 	}
 
@@ -2658,11 +2682,17 @@ output_section_done(void *data)
 
 	drm_output_set_transform(output);
 
+	if (!output_scale || sscanf(output_scale, "%d", &output->scale) != 1)
+		output->scale = 1;
+
 	wl_list_insert(&configured_output_list, &output->link);
 
 	if (output_transform)
 		free(output_transform);
 	output_transform = NULL;
+	if (output_scale)
+		free(output_scale);
+	output_scale = NULL;
 }
 
 WL_EXPORT struct weston_compositor *
@@ -2688,6 +2718,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		{ "name", CONFIG_KEY_STRING, &output_name },
 		{ "mode", CONFIG_KEY_STRING, &output_mode },
 		{ "transform", CONFIG_KEY_STRING, &output_transform },
+		{ "scale", CONFIG_KEY_STRING, &output_scale },
 	};
 
 	const struct config_section config_section[] = {
