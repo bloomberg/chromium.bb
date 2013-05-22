@@ -420,7 +420,9 @@ enum window_location {
 
 static const cairo_user_data_key_t shm_surface_data_key;
 
-#if 0
+/* #define DEBUG */
+
+#ifdef DEBUG
 
 static void
 debug_print(void *proxy, int line, const char *func, const char *fmt, ...)
@@ -893,20 +895,43 @@ to_shm_surface(struct toysurface *base)
 }
 
 static void
+shm_surface_buffer_state_debug(struct shm_surface *surface, const char *msg)
+{
+#ifdef DEBUG
+	struct shm_surface_leaf *leaf;
+	char bufs[MAX_LEAVES + 1];
+	int i;
+
+	for (i = 0; i < MAX_LEAVES; i++) {
+		leaf = &surface->leaf[i];
+
+		if (leaf->busy)
+			bufs[i] = 'b';
+		else if (leaf->cairo_surface)
+			bufs[i] = 'a';
+		else
+			bufs[i] = ' ';
+	}
+
+	bufs[MAX_LEAVES] = '\0';
+	DBG_OBJ(surface->surface, "%s, leaves [%s]\n", msg, bufs);
+#endif
+}
+
+static void
 shm_surface_buffer_release(void *data, struct wl_buffer *buffer)
 {
 	struct shm_surface *surface = data;
 	struct shm_surface_leaf *leaf;
 	int i;
 	int free_found;
-	int available = MAX_LEAVES;
-	char bufs[MAX_LEAVES + 1];
+
+	shm_surface_buffer_state_debug(surface, "buffer_release before");
 
 	for (i = 0; i < MAX_LEAVES; i++) {
 		leaf = &surface->leaf[i];
 		if (leaf->data && leaf->data->buffer == buffer) {
 			leaf->busy = 0;
-			available = i;
 			break;
 		}
 	}
@@ -917,27 +942,16 @@ shm_surface_buffer_release(void *data, struct wl_buffer *buffer)
 	for (i = 0; i < MAX_LEAVES; i++) {
 		leaf = &surface->leaf[i];
 
-		if (leaf->busy)
-			bufs[i] = 'b';
-		else if (leaf->cairo_surface)
-			bufs[i] = 'a';
-		else
-			bufs[i] = ' ';
-
 		if (!leaf->cairo_surface || leaf->busy)
 			continue;
 
 		if (!free_found)
 			free_found = 1;
-		else {
+		else
 			shm_surface_leaf_release(leaf);
-			bufs[i] = '*';
-		}
 	}
 
-	bufs[MAX_LEAVES] = '\0';
-	DBG_OBJ(surface->surface, "leaf %d released, leaves [%s]\n",
-		available, bufs);
+	shm_surface_buffer_state_debug(surface, "buffer_release  after");
 }
 
 static const struct wl_buffer_listener shm_surface_buffer_listener = {
