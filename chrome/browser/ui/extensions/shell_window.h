@@ -175,6 +175,9 @@ class ShellWindow : public content::NotificationObserver,
   // or minimized/maximized state has changed.
   void OnNativeWindowChanged();
 
+  // Should be called by native implementations when the window is activated.
+  void OnNativeWindowActivated();
+
   // Specifies a url for the launcher icon.
   void SetAppIconUrl(const GURL& icon_url);
 

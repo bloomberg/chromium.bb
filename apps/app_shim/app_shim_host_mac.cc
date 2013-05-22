@@ -81,10 +81,11 @@ void AppShimHost::OnFocus() {
     return;
   extensions::ShellWindowRegistry* registry =
       extensions::ShellWindowRegistry::Get(profile_);
-  const std::set<ShellWindow*> windows =
+  const extensions::ShellWindowRegistry::ShellWindowList windows =
       registry->GetShellWindowsForApp(app_id_);
   std::set<gfx::NativeWindow> native_windows;
-  for (std::set<ShellWindow*>::const_iterator i = windows.begin();
+  for (extensions::ShellWindowRegistry::ShellWindowList::const_iterator i =
+           windows.begin();
        i != windows.end();
        ++i) {
     native_windows.insert((*i)->GetNativeWindow());

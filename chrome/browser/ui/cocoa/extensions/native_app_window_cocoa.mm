@@ -734,6 +734,7 @@ void NativeAppWindowCocoa::WindowDidBecomeKey() {
       web_contents()->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetActive(true);
+  shell_window_->OnNativeWindowActivated();
 }
 
 void NativeAppWindowCocoa::WindowDidResignKey() {

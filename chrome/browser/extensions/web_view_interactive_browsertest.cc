@@ -48,7 +48,7 @@ class WebViewInteractiveTest
   }
 
   gfx::NativeWindow GetPlatformAppWindow() {
-    const extensions::ShellWindowRegistry::ShellWindowSet& shell_windows =
+    const extensions::ShellWindowRegistry::ShellWindowList& shell_windows =
         extensions::ShellWindowRegistry::Get(
             browser()->profile())->shell_windows();
     return (*shell_windows.begin())->GetNativeWindow();

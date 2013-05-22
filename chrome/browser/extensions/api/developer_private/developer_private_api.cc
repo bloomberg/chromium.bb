@@ -291,7 +291,7 @@ void DeveloperPrivateGetItemsInfoFunction::
   ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
   if (!registry) return;
 
-  const ShellWindowRegistry::ShellWindowSet windows =
+  const ShellWindowRegistry::ShellWindowList windows =
       registry->GetShellWindowsForApp(extension->id());
 
   for (ShellWindowRegistry::const_iterator it = windows.begin();

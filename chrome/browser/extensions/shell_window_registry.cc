@@ -65,18 +65,26 @@ ShellWindowRegistry* ShellWindowRegistry::Get(Profile* profile) {
 }
 
 void ShellWindowRegistry::AddShellWindow(ShellWindow* shell_window) {
-  shell_windows_.insert(shell_window);
+  BringToFront(shell_window);
   FOR_EACH_OBSERVER(Observer, observers_, OnShellWindowAdded(shell_window));
 }
 
 void ShellWindowRegistry::ShellWindowIconChanged(ShellWindow* shell_window) {
-  shell_windows_.insert(shell_window);
+  AddShellWindowToList(shell_window);
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnShellWindowIconChanged(shell_window));
 }
 
+void ShellWindowRegistry::ShellWindowActivated(ShellWindow* shell_window) {
+  BringToFront(shell_window);
+}
+
 void ShellWindowRegistry::RemoveShellWindow(ShellWindow* shell_window) {
-  shell_windows_.erase(shell_window);
+  const ShellWindowList::iterator it = std::find(shell_windows_.begin(),
+                                                 shell_windows_.end(),
+                                                 shell_window);
+  if (it != shell_windows_.end())
+    shell_windows_.erase(it);
   FOR_EACH_OBSERVER(Observer, observers_, OnShellWindowRemoved(shell_window));
 }
 
@@ -88,20 +96,20 @@ void ShellWindowRegistry::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-ShellWindowRegistry::ShellWindowSet ShellWindowRegistry::GetShellWindowsForApp(
+ShellWindowRegistry::ShellWindowList ShellWindowRegistry::GetShellWindowsForApp(
     const std::string& app_id) const {
-  ShellWindowSet app_windows;
-  for (ShellWindowSet::const_iterator i = shell_windows_.begin();
+  ShellWindowList app_windows;
+  for (ShellWindowList::const_iterator i = shell_windows_.begin();
        i != shell_windows_.end(); ++i) {
     if ((*i)->extension()->id() == app_id)
-      app_windows.insert(*i);
+      app_windows.push_back(*i);
   }
   return app_windows;
 }
 
 ShellWindow* ShellWindowRegistry::GetShellWindowForRenderViewHost(
     content::RenderViewHost* render_view_host) const {
-  for (ShellWindowSet::const_iterator i = shell_windows_.begin();
+  for (ShellWindowList::const_iterator i = shell_windows_.begin();
        i != shell_windows_.end(); ++i) {
     if ((*i)->web_contents()->GetRenderViewHost() == render_view_host)
       return *i;
@@ -112,7 +120,7 @@ ShellWindow* ShellWindowRegistry::GetShellWindowForRenderViewHost(
 
 ShellWindow* ShellWindowRegistry::GetShellWindowForNativeWindow(
     gfx::NativeWindow window) const {
-  for (ShellWindowSet::const_iterator i = shell_windows_.begin();
+  for (ShellWindowList::const_iterator i = shell_windows_.begin();
        i != shell_windows_.end(); ++i) {
     if ((*i)->GetNativeWindow() == window)
       return *i;
@@ -124,7 +132,7 @@ ShellWindow* ShellWindowRegistry::GetShellWindowForNativeWindow(
 ShellWindow* ShellWindowRegistry::GetCurrentShellWindowForApp(
     const std::string& app_id) const {
   ShellWindow* result = NULL;
-  for (ShellWindowSet::const_iterator i = shell_windows_.begin();
+  for (ShellWindowList::const_iterator i = shell_windows_.begin();
        i != shell_windows_.end(); ++i) {
     if ((*i)->extension()->id() == app_id) {
       result = *i;
@@ -140,7 +148,7 @@ ShellWindow* ShellWindowRegistry::GetShellWindowForAppAndKey(
     const std::string& app_id,
     const std::string& window_key) const {
   ShellWindow* result = NULL;
-  for (ShellWindowSet::const_iterator i = shell_windows_.begin();
+  for (ShellWindowList::const_iterator i = shell_windows_.begin();
        i != shell_windows_.end(); ++i) {
     if ((*i)->extension()->id() == app_id && (*i)->window_key() == window_key) {
       result = *i;
@@ -189,7 +197,7 @@ bool ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(
     if (!registry)
       continue;
 
-    const ShellWindowSet& shell_windows = registry->shell_windows();
+    const ShellWindowList& shell_windows = registry->shell_windows();
     if (shell_windows.empty())
       continue;
 
@@ -221,6 +229,24 @@ void ShellWindowRegistry::OnDevToolsStateChanged(
     inspected_windows_.insert(key);
   else
     inspected_windows_.erase(key);
+}
+
+void ShellWindowRegistry::AddShellWindowToList(ShellWindow* shell_window) {
+  const ShellWindowList::iterator it = std::find(shell_windows_.begin(),
+                                                 shell_windows_.end(),
+                                                 shell_window);
+  if (it != shell_windows_.end())
+    return;
+  shell_windows_.push_back(shell_window);
+}
+
+void ShellWindowRegistry::BringToFront(ShellWindow* shell_window) {
+  const ShellWindowList::iterator it = std::find(shell_windows_.begin(),
+                                                 shell_windows_.end(),
+                                                 shell_window);
+  if (it != shell_windows_.end())
+    shell_windows_.erase(it);
+  shell_windows_.push_front(shell_window);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

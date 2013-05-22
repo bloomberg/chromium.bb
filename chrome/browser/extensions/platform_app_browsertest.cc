@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
   LoadAndLaunchPlatformApp("minimal");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ASSERT_EQ(1U, GetShellWindowCount());
-  ShellWindowRegistry::ShellWindowSet shell_windows =
+  ShellWindowRegistry::ShellWindowList shell_windows =
       ShellWindowRegistry::Get(browser()->profile())->shell_windows();
   int shell_window_id = (*shell_windows.begin())->session_id().id();
 
@@ -919,7 +919,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   EXPECT_EQ(1LU, GetShellWindowCount());
-  ShellWindowRegistry::ShellWindowSet shell_windows = ShellWindowRegistry::Get(
+  ShellWindowRegistry::ShellWindowList shell_windows = ShellWindowRegistry::Get(
       browser()->profile())->shell_windows();
   EXPECT_TRUE((*shell_windows.begin())->web_contents()->
       GetRenderWidgetHostView()->HasFocus());

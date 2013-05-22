@@ -609,6 +609,8 @@ void NativeAppWindowViews::OnWidgetVisibilityChanged(views::Widget* widget,
 void NativeAppWindowViews::OnWidgetActivationChanged(views::Widget* widget,
                                                      bool active) {
   shell_window_->OnNativeWindowChanged();
+  if (active)
+    shell_window_->OnNativeWindowActivated();
 }
 
 // WebContentsObserver implementation.

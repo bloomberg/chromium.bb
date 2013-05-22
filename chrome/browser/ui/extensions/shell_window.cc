@@ -323,6 +323,10 @@ void ShellWindow::OnNativeWindowChanged() {
     shell_window_contents_->NativeWindowChanged(native_app_window_.get());
 }
 
+void ShellWindow::OnNativeWindowActivated() {
+  extensions::ShellWindowRegistry::Get(profile_)->ShellWindowActivated(this);
+}
+
 scoped_ptr<gfx::Image> ShellWindow::GetAppListIcon() {
   // TODO(skuhne): We might want to use LoadImages in UpdateExtensionAppIcon
   // instead to let the extension give us pre-defined icons in the launcher

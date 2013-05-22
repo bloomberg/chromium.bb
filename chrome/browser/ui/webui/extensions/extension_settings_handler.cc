@@ -1003,7 +1003,7 @@ void ExtensionSettingsHandler::GetShellWindowPagesForExtensionProfile(
       extensions::ShellWindowRegistry::Get(profile);
   if (!registry) return;
 
-  const extensions::ShellWindowRegistry::ShellWindowSet windows =
+  const extensions::ShellWindowRegistry::ShellWindowList windows =
       registry->GetShellWindowsForApp(extension->id());
 
   for (extensions::ShellWindowRegistry::const_iterator it = windows.begin();

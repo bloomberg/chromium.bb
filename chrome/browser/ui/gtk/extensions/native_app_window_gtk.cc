@@ -322,6 +322,8 @@ void NativeAppWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
     return;
 
   is_active_ = gtk_widget_get_window(GTK_WIDGET(window_)) == active_window;
+  if (is_active_)
+    shell_window_->OnNativeWindowActivated();
 }
 
 // Callback for the delete event.  This event is fired when the user tries to
