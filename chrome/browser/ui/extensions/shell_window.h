@@ -210,6 +210,8 @@ class ShellWindow : public content::NotificationObserver,
   // content::WebContentsDelegate implementation.
   virtual void CloseContents(content::WebContents* contents) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
+  virtual content::ColorChooser* OpenColorChooser(
+      content::WebContents* web_contents, SkColor color) OVERRIDE;
   virtual void RunFileChooser(
       content::WebContents* tab,
       const content::FileChooserParams& params) OVERRIDE;

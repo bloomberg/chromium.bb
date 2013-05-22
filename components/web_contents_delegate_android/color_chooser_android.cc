@@ -9,22 +9,11 @@
 #include "content/public/browser/web_contents_view.h"
 #include "jni/ColorChooserAndroid_jni.h"
 
-namespace content {
-
-ColorChooser* ColorChooser::Create(
-    int identifier, WebContents* tab, SkColor initial_color) {
-  return new components::ColorChooserAndroid(identifier, tab, initial_color);
-}
-
-}  // namespace content
-
 namespace components {
 
-ColorChooserAndroid::ColorChooserAndroid(int identifier,
-                                         content::WebContents* web_contents,
+ColorChooserAndroid::ColorChooserAndroid(content::WebContents* web_contents,
                                          SkColor initial_color)
-    : ColorChooser::ColorChooser(identifier),
-      content::WebContentsObserver(web_contents) {
+    : web_contents_(web_contents) {
   JNIEnv* env = AttachCurrentThread();
   content::ContentViewCore* content_view_core =
       content::ContentViewCore::FromWebContents(web_contents);
@@ -54,8 +43,8 @@ void ColorChooserAndroid::SetSelectedColor(SkColor color) {
 }
 
 void ColorChooserAndroid::OnColorChosen(JNIEnv* env, jobject obj, jint color) {
-  web_contents()->DidChooseColorInColorChooser(identifier(), color);
-  web_contents()->DidEndColorChooser(identifier());
+  web_contents_->DidChooseColorInColorChooser(color);
+  web_contents_->DidEndColorChooser();
 }
 
 // ----------------------------------------------------------------------------

@@ -145,6 +145,8 @@ class ExternalTabContainerWin : public ExternalTabContainer,
       GetJavaScriptDialogManager() OVERRIDE;
   virtual void ShowRepostFormWarningDialog(
       content::WebContents* source) OVERRIDE;
+  virtual content::ColorChooser* OpenColorChooser(
+      content::WebContents* web_contents, SkColor color) OVERRIDE;
   virtual void RunFileChooser(
       content::WebContents* tab,
       const content::FileChooserParams& params) OVERRIDE;

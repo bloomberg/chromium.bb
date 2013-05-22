@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -15,11 +16,14 @@ namespace {
 class ColorChooserAura : public content::ColorChooser,
                          public views::ColorChooserListener {
  public:
-  ColorChooserAura(int identifier,
-                   content::WebContents* tab,
-                   SkColor initial_color);
+  static ColorChooserAura* Open(content::WebContents* web_contents,
+                                SkColor initial_color);
+
+  ColorChooserAura(content::WebContents* web_contents, SkColor initial_color);
 
  private:
+  static ColorChooserAura* current_color_chooser_;
+
   // content::ColorChooser overrides:
   virtual void End() OVERRIDE;
   virtual void SetSelectedColor(SkColor color) OVERRIDE;
@@ -28,9 +32,7 @@ class ColorChooserAura : public content::ColorChooser,
   virtual void OnColorChosen(SkColor color) OVERRIDE;
   virtual void OnColorChooserDialogClosed() OVERRIDE;
 
-  // The web contents invoking the color chooser.  No ownership because it will
-  // outlive this class.
-  content::WebContents* tab_;
+  void DidEndColorChooser();
 
   // The actual view of the color chooser.  No ownership because its parent
   // view will take care of its lifetime.
@@ -40,30 +42,34 @@ class ColorChooserAura : public content::ColorChooser,
   // automatically when closed.
   views::Widget* widget_;
 
+  // The web contents invoking the color chooser.  No ownership because it will
+  // outlive this class.
+  content::WebContents* web_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(ColorChooserAura);
 };
 
-ColorChooserAura::ColorChooserAura(int identifier,
-                                   content::WebContents* tab,
+ColorChooserAura* ColorChooserAura::current_color_chooser_ = NULL;
+
+ColorChooserAura::ColorChooserAura(content::WebContents* web_contents,
                                    SkColor initial_color)
-    : ColorChooser(identifier),
-      tab_(tab) {
-  DCHECK(tab_);
+    : web_contents_(web_contents) {
   view_ = new views::ColorChooserView(this, initial_color);
   widget_ = views::Widget::CreateWindowWithContext(
-      view_, tab->GetView()->GetNativeView());
+      view_, web_contents->GetView()->GetNativeView());
   widget_->SetAlwaysOnTop(true);
   widget_->Show();
 }
 
 void ColorChooserAura::OnColorChosen(SkColor color) {
-  tab_->DidChooseColorInColorChooser(identifier(), color);
+  if (web_contents_)
+    web_contents_->DidChooseColorInColorChooser(color);
 }
 
 void ColorChooserAura::OnColorChooserDialogClosed() {
   view_ = NULL;
   widget_ = NULL;
-  tab_->DidEndColorChooser(identifier());
+  DidEndColorChooser();
 }
 
 void ColorChooserAura::End() {
@@ -74,8 +80,15 @@ void ColorChooserAura::End() {
     widget_ = NULL;
     // DidEndColorChooser will invoke Browser::DidEndColorChooser, which deletes
     // this. Take care of the call order.
-    tab_->DidEndColorChooser(identifier());
+    DidEndColorChooser();
   }
+}
+
+void ColorChooserAura::DidEndColorChooser() {
+  DCHECK(current_color_chooser_ == this);
+  current_color_chooser_ = NULL;
+  if (web_contents_)
+    web_contents_->DidEndColorChooser();
 }
 
 void ColorChooserAura::SetSelectedColor(SkColor color) {
@@ -83,10 +96,23 @@ void ColorChooserAura::SetSelectedColor(SkColor color) {
     view_->OnColorChanged(color);
 }
 
+// static
+ColorChooserAura* ColorChooserAura::Open(
+    content::WebContents* web_contents, SkColor initial_color) {
+  if (current_color_chooser_)
+    current_color_chooser_->End();
+  DCHECK(current_color_chooser_);
+  current_color_chooser_ = new ColorChooserAura(web_contents, initial_color);
+  return current_color_chooser_;
+}
+
 }  // namespace
 
-// static
-content::ColorChooser* content::ColorChooser::Create(
-    int identifier, content::WebContents* tab, SkColor initial_color) {
-  return new ColorChooserAura(identifier, tab, initial_color);
+namespace chrome {
+
+content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
+                                        SkColor initial_color) {
+  return ColorChooserAura::Open(web_contents, initial_color);
 }
+
+}  // namespace chrome

@@ -580,10 +580,7 @@ class Browser : public TabStripModelObserver,
   virtual content::JavaScriptDialogManager*
       GetJavaScriptDialogManager() OVERRIDE;
   virtual content::ColorChooser* OpenColorChooser(
-      content::WebContents* web_contents,
-      int color_chooser_id,
-      SkColor color) OVERRIDE;
-  virtual void DidEndColorChooser() OVERRIDE;
+      content::WebContents* web_contents, SkColor color) OVERRIDE;
   virtual void RunFileChooser(
       content::WebContents* web_contents,
       const content::FileChooserParams& params) OVERRIDE;
@@ -913,10 +910,6 @@ class Browser : public TabStripModelObserver,
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
-
-  // Currently open color chooser. Non-NULL after OpenColorChooser is called and
-  // before DidEndColorChooser is called.
-  scoped_ptr<content::ColorChooser> color_chooser_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

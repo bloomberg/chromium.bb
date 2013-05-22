@@ -180,6 +180,9 @@ class DevToolsWindow : private content::NotificationObserver,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual content::JavaScriptDialogManager*
       GetJavaScriptDialogManager() OVERRIDE;
+  virtual content::ColorChooser* OpenColorChooser(
+      content::WebContents* web_contents,
+      SkColor color) OVERRIDE;
   virtual void RunFileChooser(
       content::WebContents* web_contents,
       const content::FileChooserParams& params) OVERRIDE;

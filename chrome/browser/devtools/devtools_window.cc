@@ -27,6 +27,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -1098,6 +1099,11 @@ content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager() {
         GetJavaScriptDialogManager();
   }
   return content::WebContentsDelegate::GetJavaScriptDialogManager();
+}
+
+content::ColorChooser* DevToolsWindow::OpenColorChooser(
+    WebContents* web_contents, SkColor initial_color) {
+  return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
 void DevToolsWindow::RunFileChooser(WebContents* web_contents,

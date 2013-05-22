@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -571,6 +572,11 @@ content::JavaScriptDialogManager* ExtensionHost::GetJavaScriptDialogManager() {
     dialog_manager_.reset(CreateJavaScriptDialogManagerInstance(this));
   }
   return dialog_manager_.get();
+}
+
+content::ColorChooser* ExtensionHost::OpenColorChooser(
+    WebContents* web_contents, SkColor initial_color) {
+  return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
 void ExtensionHost::RunFileChooser(WebContents* tab,

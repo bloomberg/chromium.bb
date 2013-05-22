@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/color_chooser.h"
-
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "skia/ext/skia_utils_mac.h"
 
 class ColorChooserMac;
@@ -34,33 +33,46 @@ class ColorChooserMac;
 
 @end
 
-class ColorChooserMac : public content::ColorChooser,
-                        public content::WebContentsObserver {
+class ColorChooserMac : public content::ColorChooser {
  public:
-  ColorChooserMac(
-      int identifier, content::WebContents* tab, SkColor initial_color);
+  static ColorChooserMac* Open(content::WebContents* web_contents,
+                               SkColor initial_color);
+
+  ColorChooserMac(content::WebContents* tab, SkColor initial_color);
   virtual ~ColorChooserMac();
 
   // Called from ColorPanelCocoa.
-  void DidChooseColor(SkColor color);
-  void DidClose();
+  void DidChooseColorInColorPanel(SkColor color);
+  void DidCloseColorPabel();
 
   virtual void End() OVERRIDE;
   virtual void SetSelectedColor(SkColor color) OVERRIDE;
 
  private:
+  static ColorChooserMac* current_color_chooser_;
+
+  // The web contents invoking the color chooser.  No ownership because it will
+  // outlive this class.
+  content::WebContents* web_contents_;
   scoped_nsobject<ColorPanelCocoa> panel_;
 };
 
-content::ColorChooser* content::ColorChooser::Create(
-    int identifier, content::WebContents* tab, SkColor initial_color) {
-  return new ColorChooserMac(identifier, tab, initial_color);
+ColorChooserMac* ColorChooserMac::current_color_chooser_ = NULL;
+
+// static
+ColorChooserMac* ColorChooserMac::Open(content::WebContents* web_contents,
+                                       SkColor initial_color) {
+  if (current_color_chooser_)
+    current_color_chooser_->End();
+  DCHECK(!current_color_chooser_);
+  current_color_chooser_ =
+      new ColorChooserMac(web_contents, initial_color);
+  return current_color_chooser_;
 }
 
-ColorChooserMac::ColorChooserMac(
-    int identifier, content::WebContents* tab, SkColor initial_color)
-    : content::ColorChooser(identifier),
-      content::WebContentsObserver(tab) {
+ColorChooserMac::ColorChooserMac(content::WebContents* web_contents,
+                                 SkColor initial_color)
+    : web_contents_(web_contents) {
   panel_.reset([[ColorPanelCocoa alloc] initWithChooser:this]);
   [panel_ setColor:gfx::SkColorToDeviceNSColor(initial_color)];
   [[NSColorPanel sharedColorPanel] makeKeyAndOrderFront:nil];
@@ -71,19 +83,21 @@ ColorChooserMac::~ColorChooserMac() {
   DCHECK(!panel_);
 }
 
-void ColorChooserMac::DidChooseColor(SkColor color) {
-  if (web_contents())
-    web_contents()->DidChooseColorInColorChooser(identifier(), color);
+void ColorChooserMac::DidChooseColorInColorPanel(SkColor color) {
+  if (web_contents_)
+    web_contents_->DidChooseColorInColorChooser(color);
 }
 
-void ColorChooserMac::DidClose() {
+void ColorChooserMac::DidCloseColorPabel() {
   End();
 }
 
 void ColorChooserMac::End() {
   panel_.reset();
-  if (web_contents())
-    web_contents()->DidEndColorChooser(identifier());
+  DCHECK(current_color_chooser_ == this);
+  current_color_chooser_ = NULL;
+  if (web_contents_)
+      web_contents_->DidEndColorChooser();
 }
 
 void ColorChooserMac::SetSelectedColor(SkColor color) {
@@ -116,7 +130,7 @@ void ColorChooserMac::SetSelectedColor(SkColor color) {
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  chooser_->DidClose();
+  chooser_->DidCloseColorPabel();
   nonUserChange_ = NO;
 }
 
@@ -125,7 +139,7 @@ void ColorChooserMac::SetSelectedColor(SkColor color) {
     nonUserChange_ = NO;
     return;
   }
-  chooser_->DidChooseColor(gfx::NSDeviceColorToSkColor(
+  chooser_->DidChooseColorInColorPanel(gfx::NSDeviceColorToSkColor(
       [[panel color] colorUsingColorSpaceName:NSDeviceRGBColorSpace]));
   nonUserChange_ = NO;
 }
@@ -134,5 +148,14 @@ void ColorChooserMac::SetSelectedColor(SkColor color) {
   nonUserChange_ = YES;
   [[NSColorPanel sharedColorPanel] setColor:color];
 }
+
+namespace chrome {
+
+content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
+                                        SkColor initial_color) {
+  return ColorChooserMac::Open(web_contents, initial_color);
+}
+
+}  // namepace chrome
 
 @end

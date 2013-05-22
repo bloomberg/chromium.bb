@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
@@ -919,6 +920,11 @@ void ExternalTabContainerWin::BeforeUnloadFired(WebContents* tab,
 void ExternalTabContainerWin::ShowRepostFormWarningDialog(WebContents* source) {
   TabModalConfirmDialog::Create(new RepostFormWarningController(source),
                                 source);
+}
+
+content::ColorChooser* ExternalTabContainerWin::OpenColorChooser(
+    WebContents* web_contents, SkColor initial_color) {
+  return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
 void ExternalTabContainerWin::RunFileChooser(

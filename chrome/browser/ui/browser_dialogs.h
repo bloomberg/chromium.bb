@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
@@ -14,6 +15,7 @@ class TabModalConfirmDialogDelegate;
 
 namespace content {
 class BrowserContext;
+class ColorChooser;
 class WebContents;
 }
 
@@ -72,6 +74,10 @@ void ShowTaskManager(Browser* browser, bool highlight_background_resources);
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
                                      content::WebContents* web_contents);
 #endif
+
+// Shows a color chooser that reports to the given WebContents.
+content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
+                                        SkColor initial_color);
 
 }  // namespace chrome
 

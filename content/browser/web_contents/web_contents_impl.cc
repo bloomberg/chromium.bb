@@ -336,7 +336,7 @@ WebContentsImpl::WebContentsImpl(
       maximum_zoom_percent_(static_cast<int>(kMaximumZoomFactor * 100)),
       temporary_zoom_settings_(false),
       content_restrictions_(0),
-      color_chooser_(NULL),
+      color_chooser_identifier_(0),
       message_source_(NULL),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE) {
 }
@@ -2016,17 +2016,16 @@ bool WebContentsImpl::HasOpener() const {
   return opener_ != NULL;
 }
 
-void WebContentsImpl::DidChooseColorInColorChooser(int color_chooser_id,
-                                                   SkColor color) {
+void WebContentsImpl::DidChooseColorInColorChooser(SkColor color) {
   Send(new ViewMsg_DidChooseColorResponse(
-      GetRoutingID(), color_chooser_id, color));
+      GetRoutingID(), color_chooser_identifier_, color));
 }
 
-void WebContentsImpl::DidEndColorChooser(int color_chooser_id) {
-  Send(new ViewMsg_DidEndColorChooser(GetRoutingID(), color_chooser_id));
-  if (delegate_)
-    delegate_->DidEndColorChooser();
-  color_chooser_ = NULL;
+void WebContentsImpl::DidEndColorChooser() {
+  Send(new ViewMsg_DidEndColorChooser(GetRoutingID(),
+                                      color_chooser_identifier_));
+  color_chooser_.reset();
+  color_chooser_identifier_ = 0;
 }
 
 int WebContentsImpl::DownloadImage(const GURL& url,
@@ -2378,20 +2377,23 @@ void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
 
 void WebContentsImpl::OnOpenColorChooser(int color_chooser_id,
                                          SkColor color) {
-  color_chooser_ = delegate_ ?
-      delegate_->OpenColorChooser(this, color_chooser_id, color) : NULL;
+  ColorChooser* new_color_chooser = delegate_->OpenColorChooser(this, color);
+  if (color_chooser_ == new_color_chooser)
+    return;
+  color_chooser_.reset(new_color_chooser);
+  color_chooser_identifier_ = color_chooser_id;
 }
 
 void WebContentsImpl::OnEndColorChooser(int color_chooser_id) {
   if (color_chooser_ &&
-      color_chooser_id == color_chooser_->identifier())
+      color_chooser_id == color_chooser_identifier_)
     color_chooser_->End();
 }
 
 void WebContentsImpl::OnSetSelectedColorInColorChooser(int color_chooser_id,
                                                        SkColor color) {
   if (color_chooser_ &&
-      color_chooser_id == color_chooser_->identifier())
+      color_chooser_id == color_chooser_identifier_)
     color_chooser_->SetSelectedColor(color);
 }
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -470,6 +471,11 @@ void ShellWindow::CloseContents(WebContents* contents) {
 
 bool ShellWindow::ShouldSuppressDialogs() {
   return true;
+}
+
+content::ColorChooser* ShellWindow::OpenColorChooser(WebContents* web_contents,
+                                                     SkColor initial_color) {
+  return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
 void ShellWindow::RunFileChooser(WebContents* tab,

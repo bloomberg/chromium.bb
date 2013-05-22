@@ -80,6 +80,7 @@
         'browser/ui/android/certificate_viewer_android.cc',
         'browser/ui/android/chrome_http_auth_handler.cc',
         'browser/ui/android/chrome_http_auth_handler.h',
+        'browser/ui/android/color_chooser_dialog_android.cc',
         'browser/ui/android/extensions/extension_install_dialog_android.cc',
         'browser/ui/android/extensions/extension_install_ui_android.cc',
         'browser/ui/android/extensions/extension_install_ui_android.h',

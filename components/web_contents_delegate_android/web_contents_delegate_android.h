@@ -53,10 +53,8 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
-
-  virtual content::ColorChooser* OpenColorChooser(
-      content::WebContents* source, int color_chooser_id,
-      SkColor color) OVERRIDE;
+  virtual content::ColorChooser* OpenColorChooser(content::WebContents* source,
+                                                  SkColor color) OVERRIDE;
   virtual void NavigationStateChanged(const content::WebContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(content::WebContents* source,

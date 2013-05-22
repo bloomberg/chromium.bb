@@ -150,7 +150,6 @@
 #include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -600,8 +599,10 @@ void Browser::OnWindowClosing() {
   bool should_quit_if_last_browser =
       browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive();
 
-  if (should_quit_if_last_browser && chrome::ShouldStartShutdown(this))
+  if (should_quit_if_last_browser &&
+      BrowserList::GetInstance(host_desktop_type_)->size() == 1) {
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
+  }
 
   // Don't use GetForProfileIfExisting here, we want to force creation of the
   // session service so that user can restore what was open.
@@ -1499,27 +1500,8 @@ content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager() {
 }
 
 content::ColorChooser* Browser::OpenColorChooser(WebContents* web_contents,
-                                                 int color_chooser_id,
-                                                 SkColor color) {
-#if defined(OS_WIN)
-  // On Windows, only create a color chooser if one doesn't exist, because we
-  // can't close the old color chooser dialog.
-  if (!color_chooser_.get())
-    color_chooser_.reset(content::ColorChooser::Create(color_chooser_id,
-                                                       web_contents,
-                                                       color));
-#else
-  if (color_chooser_.get())
-    color_chooser_->End();
-  color_chooser_.reset(content::ColorChooser::Create(color_chooser_id,
-                                                     web_contents,
-                                                     color));
-#endif
-  return color_chooser_.get();
-}
-
-void Browser::DidEndColorChooser() {
-  color_chooser_.reset();
+                                                 SkColor initial_color) {
+  return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
 void Browser::RunFileChooser(WebContents* web_contents,

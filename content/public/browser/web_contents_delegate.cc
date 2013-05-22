@@ -135,9 +135,7 @@ bool WebContentsDelegate::IsFullscreenForTabOrPending(
 }
 
 content::ColorChooser* WebContentsDelegate::OpenColorChooser(
-    WebContents* web_contents,
-    int color_chooser_id,
-    SkColor color) {
+    WebContents* web_contents, SkColor color) {
   return NULL;
 }
 

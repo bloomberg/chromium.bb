@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "components/web_contents_delegate_android/color_chooser_android.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/invalidate_type.h"
@@ -49,11 +50,9 @@ WebContentsDelegateAndroid::GetJavaDelegate(JNIEnv* env) const {
 // WebContentsDelegate methods
 // ----------------------------------------------------------------------------
 
-ColorChooser* WebContentsDelegateAndroid::OpenColorChooser(
-    WebContents* source,
-    int color_chooser_id,
-    SkColor color)  {
-  return ColorChooser::Create(color_chooser_id, source, color);
+ColorChooser* WebContentsDelegateAndroid::OpenColorChooser(WebContents* source,
+                                                           SkColor color)  {
+  return new ColorChooserAndroid(source, color);
 }
 
 // OpenURLFromTab() will be called when we're performing a browser-intiated

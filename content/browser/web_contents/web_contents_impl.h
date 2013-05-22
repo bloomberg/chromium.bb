@@ -283,9 +283,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual int GetContentRestrictions() const OVERRIDE;
   virtual bool GotResponseToLockMouseRequest(bool allowed) OVERRIDE;
   virtual bool HasOpener() const OVERRIDE;
-  virtual void DidChooseColorInColorChooser(int color_chooser_id,
-                                            SkColor color) OVERRIDE;
-  virtual void DidEndColorChooser(int color_chooser_id) OVERRIDE;
+  virtual void DidChooseColorInColorChooser(SkColor color) OVERRIDE;
+  virtual void DidEndColorChooser() OVERRIDE;
   virtual int DownloadImage(const GURL& url,
                             bool is_favicon,
                             int image_size,
@@ -901,7 +900,16 @@ class CONTENT_EXPORT WebContentsImpl
 #endif
 
   // Color chooser that was opened by this tab.
-  ColorChooser* color_chooser_;
+  scoped_ptr<ColorChooser> color_chooser_;
+
+  // A unique identifier for the current color chooser.  Identifiers are unique
+  // across a renderer process.  This avoids race conditions in synchronizing
+  // the browser and renderer processes.  For example, if a renderer closes one
+  // chooser and opens another, and simultaneously the user picks a color in the
+  // first chooser, the IDs can be used to drop the "chose a color" message
+  // rather than erroneously tell the renderer that the user picked a color in
+  // the second chooser.
+  int color_chooser_identifier_;
 
   // Manages the embedder state for browser plugins, if this WebContents is an
   // embedder; NULL otherwise.

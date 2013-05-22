@@ -407,11 +407,10 @@ class WebContents : public PageNavigator,
   virtual bool GotResponseToLockMouseRequest(bool allowed) = 0;
 
   // Called when the user has selected a color in the color chooser.
-  virtual void DidChooseColorInColorChooser(int color_chooser_id,
-                                            SkColor color) = 0;
+  virtual void DidChooseColorInColorChooser(SkColor color) = 0;
 
   // Called when the color chooser has ended.
-  virtual void DidEndColorChooser(int color_chooser_id) = 0;
+  virtual void DidEndColorChooser() = 0;
 
   // Returns true if the location bar should be focused by default rather than
   // the page contents. The view calls this function when the tab is focused
