@@ -344,8 +344,8 @@ cr.define('print_preview', function() {
           unitType,
           initialSettings['previewModifiable'] || false,
           initialSettings['initiatorTabTitle'] || '',
-          initialSettings['documentHasSelection'] || null,
-          initialSettings['shouldPrintSelectionOnly'] || null,
+          initialSettings['documentHasSelection'] || false,
+          initialSettings['shouldPrintSelectionOnly'] || false,
           initialSettings['printerName'] || null,
           initialSettings['appState'] || null);
 
