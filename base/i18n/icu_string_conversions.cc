@@ -144,11 +144,6 @@ inline UConverterType utf32_platform_endian() {
 
 }  // namespace
 
-const char kCodepageLatin1[] = "ISO-8859-1";
-const char kCodepageUTF8[] = "UTF-8";
-const char kCodepageUTF16BE[] = "UTF-16BE";
-const char kCodepageUTF16LE[] = "UTF-16LE";
-
 // Codepage <-> Wide/UTF-16  ---------------------------------------------------
 
 bool UTF16ToCodepage(const string16& utf16,

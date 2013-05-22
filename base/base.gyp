@@ -316,6 +316,8 @@
         'i18n/case_conversion.h',
         'i18n/file_util_icu.cc',
         'i18n/file_util_icu.h',
+        'i18n/i18n_constants.cc',
+        'i18n/i18n_constants.h',
         'i18n/icu_encoding_detection.cc',
         'i18n/icu_encoding_detection.h',
         'i18n/icu_string_conversions.cc',

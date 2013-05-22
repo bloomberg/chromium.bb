@@ -126,6 +126,7 @@
   'all_from_libs': [
     (r'autofill_common\.lib$', r'switches\.obj$'),
     (r'\bbase\.lib$', r'string_util_constants\.obj$'),
+    (r'\bbase_i18n\.lib$', r'i18n_constants\.obj$'),
     (r'base_static\.lib$', r'base_switches\.obj$'),
     (r'\bbase\.lib$', r'file_path_constants\.obj$'),
     (r'\bcc\.lib$', r'switches\.obj$'),
