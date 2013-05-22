@@ -477,7 +477,7 @@ ImageUtil.ImageLoader.prototype.load = function(
     // errorCallback has an optional error argument, which in case of general
     // error should not be specified
     this.image_.onerror = onError.bind(this, 'IMAGE_ERROR');
-    this.taskId_ = util.loadImage(this.image_, url);
+    this.taskId_ = util.loadImage(this.image_, url, {priority: 1});
   }.bind(this);
 
   // The clients of this class sometimes request the same url repeatedly.
