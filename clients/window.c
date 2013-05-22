@@ -158,7 +158,8 @@ struct toysurface {
 	 * Returns the Cairo surface to draw to.
 	 */
 	cairo_surface_t *(*prepare)(struct toysurface *base, int dx, int dy,
-				    int width, int height, uint32_t flags);
+				    int32_t width, int32_t height, uint32_t flags,
+				    enum wl_output_transform buffer_transform, uint32_t buffer_scale);
 
 	/*
 	 * Post the surface to the server, returning the server allocation
@@ -166,6 +167,7 @@ struct toysurface {
 	 * after calling this.
 	 */
 	void (*swap)(struct toysurface *base,
+		     enum wl_output_transform buffer_transform, uint32_t buffer_scale,
 		     struct rectangle *server_allocation);
 
 	/*
@@ -465,6 +467,50 @@ debug_print(void *proxy, int line, const char *func, const char *fmt, ...)
 
 #endif
 
+static void
+surface_to_buffer_size (enum wl_output_transform buffer_transform, uint32_t buffer_scale, int32_t *width, int32_t *height)
+{
+	int32_t tmp;
+
+	switch (buffer_transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		tmp = *width;
+		*width = *height;
+		*height = tmp;
+		break;
+	default:
+		break;
+	}
+
+	*width *= buffer_scale;
+	*height *= buffer_scale;
+}
+
+static void
+buffer_to_surface_size (enum wl_output_transform buffer_transform, uint32_t buffer_scale, int32_t *width, int32_t *height)
+{
+	int32_t tmp;
+
+	switch (buffer_transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		tmp = *width;
+		*width = *height;
+		*height = tmp;
+		break;
+	default:
+		break;
+	}
+
+	*width /= buffer_scale;
+	*height /= buffer_scale;
+}
+
 #ifdef HAVE_CAIRO_EGL
 
 struct egl_window_surface {
@@ -484,9 +530,12 @@ to_egl_window_surface(struct toysurface *base)
 
 static cairo_surface_t *
 egl_window_surface_prepare(struct toysurface *base, int dx, int dy,
-			   int width, int height, uint32_t flags)
+			   int32_t width, int32_t height, uint32_t flags,
+			   enum wl_output_transform buffer_transform, uint32_t buffer_scale)
 {
 	struct egl_window_surface *surface = to_egl_window_surface(base);
+
+	surface_to_buffer_size (buffer_transform, buffer_scale, &width, &height);
 
 	wl_egl_window_resize(surface->egl_window, width, height, dx, dy);
 	cairo_gl_surface_set_size(surface->cairo_surface, width, height);
@@ -496,6 +545,7 @@ egl_window_surface_prepare(struct toysurface *base, int dx, int dy,
 
 static void
 egl_window_surface_swap(struct toysurface *base,
+			enum wl_output_transform buffer_transform, uint32_t buffer_scale,
 			struct rectangle *server_allocation)
 {
 	struct egl_window_surface *surface = to_egl_window_surface(base);
@@ -504,6 +554,10 @@ egl_window_surface_swap(struct toysurface *base,
 	wl_egl_window_get_attached_size(surface->egl_window,
 					&server_allocation->width,
 					&server_allocation->height);
+
+	buffer_to_surface_size (buffer_transform, buffer_scale,
+				&server_allocation->width,
+				&server_allocation->height);
 }
 
 static int
@@ -962,11 +1016,12 @@ static const struct wl_buffer_listener shm_surface_buffer_listener = {
 
 static cairo_surface_t *
 shm_surface_prepare(struct toysurface *base, int dx, int dy,
-		    int width, int height, uint32_t flags)
+		    int32_t width, int32_t height, uint32_t flags,
+		    enum wl_output_transform buffer_transform, uint32_t buffer_scale)
 {
 	int resize_hint = !!(flags & SURFACE_HINT_RESIZE);
 	struct shm_surface *surface = to_shm_surface(base);
-	struct rectangle rect = { 0, 0, width, height };
+	struct rectangle rect = { 0};
 	struct shm_surface_leaf *leaf = NULL;
 	int i;
 
@@ -998,6 +1053,8 @@ shm_surface_prepare(struct toysurface *base, int dx, int dy,
 		leaf->resize_pool = NULL;
 	}
 
+	surface_to_buffer_size (buffer_transform, buffer_scale, &width, &height);
+
 	if (leaf->cairo_surface &&
 	    cairo_image_surface_get_width(leaf->cairo_surface) == width &&
 	    cairo_image_surface_get_height(leaf->cairo_surface) == height)
@@ -1017,6 +1074,9 @@ shm_surface_prepare(struct toysurface *base, int dx, int dy,
 						    6 * 1024 * 1024);
 	}
 
+	rect.width = width;
+	rect.height = height;
+
 	leaf->cairo_surface =
 		display_create_shm_surface(surface->display, &rect,
 					   surface->flags,
@@ -1033,6 +1093,7 @@ out:
 
 static void
 shm_surface_swap(struct toysurface *base,
+		 enum wl_output_transform buffer_transform, uint32_t buffer_scale,
 		 struct rectangle *server_allocation)
 {
 	struct shm_surface *surface = to_shm_surface(base);
@@ -1042,6 +1103,10 @@ shm_surface_swap(struct toysurface *base,
 		cairo_image_surface_get_width(leaf->cairo_surface);
 	server_allocation->height =
 		cairo_image_surface_get_height(leaf->cairo_surface);
+
+	buffer_to_surface_size (buffer_transform, buffer_scale,
+				&server_allocation->width,
+				&server_allocation->height);
 
 	wl_surface_attach(surface->surface, leaf->data->buffer,
 			  surface->dx, surface->dy);
@@ -1283,6 +1348,7 @@ surface_flush(struct surface *surface)
 	}
 
 	surface->toysurface->swap(surface->toysurface,
+				  surface->buffer_transform, surface->buffer_scale,
 				  &surface->server_allocation);
 
 	cairo_surface_destroy(surface->cairo_surface);
@@ -1328,21 +1394,6 @@ surface_create_surface(struct surface *surface, int dx, int dy, uint32_t flags)
 	struct display *display = surface->window->display;
 	struct rectangle allocation = surface->allocation;
 
-	switch (surface->buffer_transform) {
-	case WL_OUTPUT_TRANSFORM_90:
-	case WL_OUTPUT_TRANSFORM_270:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		allocation.width = surface->allocation.height;
-		allocation.height = surface->allocation.width;
-		break;
-	default:
-		break;
-	}
-
-	allocation.width *= surface->buffer_scale;
-	allocation.height *= surface->buffer_scale;
-
 	if (!surface->toysurface && display->dpy &&
 	    surface->buffer_type == WINDOW_BUFFER_TYPE_EGL_WINDOW) {
 		surface->toysurface =
@@ -1359,7 +1410,8 @@ surface_create_surface(struct surface *surface, int dx, int dy, uint32_t flags)
 
 	surface->cairo_surface = surface->toysurface->prepare(
 		surface->toysurface, dx, dy,
-		allocation.width, allocation.height, flags);
+		allocation.width, allocation.height, flags,
+		surface->buffer_transform, surface->buffer_scale);
 }
 
 static void
