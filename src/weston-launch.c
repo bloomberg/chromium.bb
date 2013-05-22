@@ -570,7 +570,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if ((argc - optind) > (MAX_ARGV_SIZE - 5))
+	if ((argc - optind) > (MAX_ARGV_SIZE - 6))
 		error(1, E2BIG, "Too many arguments to pass to weston");
 
 	if (new_user)
@@ -586,7 +586,8 @@ main(int argc, char *argv[])
 	child_argv[3] = BINDIR "/weston \"$@\"";
 	child_argv[4] = "weston";
 	for (i = 0; i < (argc - optind); ++i)
-		child_argv[5+i] = argv[optind+i];
+		child_argv[5 + i] = argv[optind + i];
+	child_argv[5 + i] = NULL;
 
 	term = getenv("TERM");
 	clearenv();
