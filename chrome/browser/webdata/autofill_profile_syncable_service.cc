@@ -290,21 +290,21 @@ bool AutofillProfileSyncableService::SaveChangesToWebData(
     const DataBundle& bundle) {
   DCHECK(CalledOnValidThread());
 
+  autofill::AutofillTable* autofill_table = GetAutofillTable();
+
   bool success = true;
   for (size_t i = 0; i< bundle.profiles_to_delete.size(); ++i) {
-    if (!GetAutofillTable()->RemoveAutofillProfile(
-        bundle.profiles_to_delete[i]))
+    if (!autofill_table->RemoveAutofillProfile(bundle.profiles_to_delete[i]))
       success = false;
   }
 
   for (size_t i = 0; i < bundle.profiles_to_add.size(); i++) {
-    if (!GetAutofillTable()->AddAutofillProfile(
-        *bundle.profiles_to_add[i]))
+    if (!autofill_table->AddAutofillProfile(*bundle.profiles_to_add[i]))
       success = false;
   }
 
   for (size_t i = 0; i < bundle.profiles_to_update.size(); i++) {
-    if (!GetAutofillTable()->UpdateAutofillProfileMulti(
+    if (!autofill_table->UpdateAutofillProfileMulti(
         *bundle.profiles_to_update[i]))
       success = false;
   }
