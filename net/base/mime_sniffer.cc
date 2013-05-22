@@ -503,6 +503,56 @@ static bool SniffForOfficeDocs(const char* content,
   return false;
 }
 
+static bool IsOfficeType(const std::string& type_hint) {
+  return (type_hint == "application/msword" ||
+          type_hint == "application/vnd.ms-excel" ||
+          type_hint == "application/vnd.ms-powerpoint" ||
+          type_hint == "application/vnd.openxmlformats-officedocument."
+                       "wordprocessingml.document" ||
+          type_hint == "application/vnd.openxmlformats-officedocument."
+                       "spreadsheetml.sheet" ||
+          type_hint == "application/vnd.openxmlformats-officedocument."
+                       "presentationml.presentation" ||
+          type_hint == "application/vnd.ms-excel.sheet.macroenabled.12" ||
+          type_hint == "application/vnd.ms-word.document.macroenabled.12" ||
+          type_hint == "application/vnd.ms-powerpoint.presentation."
+                       "macroenabled.12" ||
+          type_hint == "application/mspowerpoint" ||
+          type_hint == "application/msexcel" ||
+          type_hint == "application/vnd.ms-word" ||
+          type_hint == "application/vnd.ms-word.document.12" ||
+          type_hint == "application/vnd.msword");
+}
+
+// This function checks for files that have a Microsoft Office MIME type
+// set, but are not actually Office files.
+//
+// If this is not actually an Office file, |*result| is set to
+// "unknown/unknown", otherwise it is not modified.
+//
+// Returns false if additional data is required to determine the file type, or
+// true if there is enough data to make a decision.
+static bool SniffForInvalidOfficeDocs(const char* content,
+                                      size_t size,
+                                      const GURL& url,
+                                      std::string* result) {
+  if (!TruncateSize(kBytesRequiredForOfficeMagic, &size))
+    return false;
+
+  // Check our table of magic numbers for Office file types.  If it does not
+  // match one, the MIME type was invalid.  Set it instead to a safe value.
+  std::string office_version;
+  if (!CheckForMagicNumbers(content, size,
+                            kOfficeMagicNumbers, arraysize(kOfficeMagicNumbers),
+                            NULL, &office_version)) {
+    *result = "unknown/unknown";
+  }
+
+  // We have enough information to determine if this was a Microsoft Office
+  // document or not, so sniffing is completed.
+  return true;
+}
+
 // Byte order marks
 static const MagicNumber kMagicXML[] = {
   // We want to be very conservative in interpreting text/xml content as
@@ -756,6 +806,21 @@ bool ShouldSniffMimeType(const GURL& url, const std::string& mime_type) {
     // their more specific mime types.
     "text/xml",
     "application/xml",
+    // Check for false Microsoft Office MIME types.
+    "application/msword",
+    "application/vnd.ms-excel",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.ms-excel.sheet.macroenabled.12",
+    "application/vnd.ms-word.document.macroenabled.12",
+    "application/vnd.ms-powerpoint.presentation.macroenabled.12",
+    "application/mspowerpoint",
+    "application/msexcel",
+    "application/vnd.ms-word",
+    "application/vnd.ms-word.document.12",
+    "application/vnd.msword",
   };
   static base::HistogramBase* counter(NULL);
   if (!counter)
@@ -795,6 +860,12 @@ bool SniffMimeType(const char* content,
   // By default, we'll return the type hint.
   // Each sniff routine may modify this if it has a better guess..
   result->assign(type_hint);
+
+  // If the file has a Microsoft Office MIME type, we should only check that it
+  // is a valid Office file.  Because this is the only reason we sniff files
+  // with a Microsoft Office MIME type, we can return early.
+  if (IsOfficeType(type_hint))
+    return SniffForInvalidOfficeDocs(content, content_size, url, result);
 
   // Cache information about the type_hint
   const bool hint_is_unknown_mime_type = IsUnknownMimeType(type_hint);
