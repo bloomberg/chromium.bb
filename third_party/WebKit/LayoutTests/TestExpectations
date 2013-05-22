@@ -1400,10 +1400,6 @@ crbug.com/230554 [ Linux Mac Debug ] plugins/drag-events.html [ Crash Pass ]
 
 # Failing tests after r148246
 # The Linux results are different between 32 and 64 bit (as per the bots).
-crbug.com/230771 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Failure ]
-crbug.com/230771 [ Linux ] editing/pasteboard/file-drag-to-editable.html [ Pass Failure ]
-crbug.com/230771 [ Lion Debug ] editing/pasteboard/drop-file-svg.html [ Failure ]
-crbug.com/230771 [ Lion Debug ] editing/pasteboard/file-drag-to-editable.html [ Failure ]
 crbug.com/230771 [ Linux Mac ] fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
 
 # From WebKit's generic expectations.
@@ -1797,8 +1793,6 @@ crbug.com/242547 [ Linux ] fast/writing-mode/broken-ideograph-small-caps.html [ 
 crbug.com/242547 [ Linux ] virtual/deferred/fast/images/gif-large-checkerboard.html [ ImageOnlyFailure ]
 crbug.com/242547 [ Linux ] virtual/deferred/fast/images/gif-loop-count.html [ ImageOnlyFailure ]
 crbug.com/242547 [ Linux ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure ]
-crbug.com/242547 [ Linux ] editing/pasteboard/drop-file-svg.html [ Crash ]
-crbug.com/242547 [ Linux ] editing/pasteboard/file-drag-to-editable.html [ Crash ]
 crbug.com/242547 [ Linux ] fast/loader/recursive-before-unload-crash.html [ Crash ]
 crbug.com/242547 [ Linux ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash ]
 crbug.com/242547 [ Linux ] fast/text/chromium-linux-text-subpixel-positioning.html [ Failure ]
@@ -1843,8 +1837,6 @@ crbug.com/242465 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailu
 crbug.com/242465 [ Mac ] fast/css/line-height-determined-by-primary-font.html [ ImageOnlyFailure ]
 crbug.com/242465 [ Mac ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure ]
 crbug.com/242465 [ Mac ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure ]
-crbug.com/242465 [ Mac ] editing/pasteboard/drop-file-svg.html [ Crash ]
-crbug.com/242465 [ Mac ] editing/pasteboard/file-drag-to-editable.html [ Crash ]
 crbug.com/242465 [ Mac ] fast/loader/recursive-before-unload-crash.html [ Crash ]
 crbug.com/242465 [ Mac ] fast/writing-mode/vertical-font-vmtx-units-per-em.html [ Crash ]
 crbug.com/242465 [ Mac ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash ]
@@ -1871,3 +1863,8 @@ crbug.com/242465 [ Mac ] fast/css/font-family-pictograph.html [ Failure ]
 crbug.com/242465 [ Mac ] fast/repaint/fixed-move-after-keyboard-scroll.html [ Failure ]
 crbug.com/242465 [ Mac ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Failure ]
 crbug.com/242465 [ Mac ] svg/filters/filter-hidden-content.svg [ Failure ]
+
+# Crashing on all platforms after content shell
+crbug.com/242851 editing/pasteboard/drop-file-svg.html [ Crash ]
+crbug.com/242851 editing/pasteboard/file-drag-to-editable.html [ Crash ]
+
