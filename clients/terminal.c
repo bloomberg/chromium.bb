@@ -933,7 +933,7 @@ redraw_handler(struct widget *widget, void *data)
 
 	surface = window_get_surface(terminal->window);
 	widget_get_allocation(terminal->widget, &allocation);
-	cr = cairo_create(surface);
+	cr = widget_cairo_create(terminal->widget);
 	cairo_rectangle(cr, allocation.x, allocation.y,
 			allocation.width, allocation.height);
 	cairo_clip(cr);
@@ -2517,6 +2517,16 @@ motion_handler(struct widget *widget,
 	return CURSOR_IBEAM;
 }
 
+static void
+output_handler(struct window *window, struct output *output, int enter,
+	       void *data)
+{
+	if (enter)
+		window_set_buffer_transform(window, output_get_transform(output));
+	window_set_buffer_scale(window, window_get_output_scale(window));
+	window_schedule_redraw(window);
+}
+
 static struct terminal *
 terminal_create(struct display *display)
 {
@@ -2549,6 +2559,7 @@ terminal_create(struct display *display)
 	window_set_keyboard_focus_handler(terminal->window,
 					  keyboard_focus_handler);
 	window_set_fullscreen_handler(terminal->window, fullscreen_handler);
+	window_set_output_handler(terminal->window, output_handler);
 	window_set_close_handler(terminal->window, close_handler);
 
 	widget_set_redraw_handler(terminal->widget, redraw_handler);
