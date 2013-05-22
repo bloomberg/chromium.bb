@@ -640,10 +640,14 @@ xf_peer_post_connect(freerdp_peer* client)
 	struct rdp_compositor *c;
 	struct rdp_output *output;
 	rdpSettings *settings;
+	rdpPointerUpdate *pointer;
 	struct xkb_context *xkbContext;
 	struct xkb_rule_names xkbRuleNames;
 	struct xkb_keymap *keymap;
 	int i;
+	pixman_box32_t box;
+	pixman_region32_t damage;
+
 
 	peerCtx = (RdpPeerContext *)client->context;
 	c = peerCtx->rdpCompositor;
@@ -697,6 +701,23 @@ xf_peer_post_connect(freerdp_peer* client)
 	weston_seat_init_pointer(&peerCtx->item.seat);
 
 	peerCtx->item.flags |= RDP_PEER_ACTIVATED;
+
+	/* disable pointer on the client side */
+	pointer = client->update->pointer;
+	pointer->pointer_system.type = SYSPTR_NULL;
+	pointer->PointerSystem(client->context, &pointer->pointer_system);
+
+	/* sends a full refresh */
+	box.x1 = 0;
+	box.y1 = 0;
+	box.x2 = output->base.width;
+	box.y2 = output->base.height;
+	pixman_region32_init_with_extents(&damage, &box);
+
+	rdp_peer_refresh_region(&damage, client);
+
+	pixman_region32_fini(&damage);
+
 	return TRUE;
 }
 
@@ -759,15 +780,10 @@ static void
 xf_input_synchronize_event(rdpInput *input, UINT32 flags)
 {
 	freerdp_peer *client = input->context->peer;
-	rdpPointerUpdate *pointer = client->update->pointer;
 	RdpPeerContext *peerCtx = (RdpPeerContext *)input->context;
 	struct rdp_output *output = peerCtx->rdpCompositor->output;
 	pixman_box32_t box;
 	pixman_region32_t damage;
-
-	/* disable pointer on the client side */
-	pointer->pointer_system.type = SYSPTR_NULL;
-	pointer->PointerSystem(client->context, &pointer->pointer_system);
 
 	/* sends a full refresh */
 	box.x1 = 0;
