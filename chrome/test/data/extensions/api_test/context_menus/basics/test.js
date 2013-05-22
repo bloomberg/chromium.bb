@@ -31,6 +31,16 @@ var tests = [
       chrome.contextMenus.update(id, {"title": "test2"},
                                 chrome.test.callbackPass());
     });
+
+    chrome.contextMenus.create({"id": "test3", "type": "checkbox",
+                                "title": "test3"}, function() {
+      assertNoLastError();
+      // Calling update without specifying "type" should not change the menu
+      // item's type to "normal" and therefore setting "checked" should not
+      // fail.
+      chrome.contextMenus.update("test3", {"checked": true},
+                                chrome.test.callbackPass());
+    });
   },
 
   function removeAll() {

@@ -91,9 +91,11 @@ extensions::MenuItem::ContextList GetContexts(
 }
 
 template<typename PropertyWithEnumT>
-extensions::MenuItem::Type GetType(const PropertyWithEnumT& property) {
+extensions::MenuItem::Type GetType(const PropertyWithEnumT& property,
+                                   extensions::MenuItem::Type default_type) {
   switch (property.type) {
     case PropertyWithEnumT::TYPE_NONE:
+      return default_type;
     case PropertyWithEnumT::TYPE_NORMAL:
       return extensions::MenuItem::NORMAL;
     case PropertyWithEnumT::TYPE_CHECKBOX:
@@ -200,7 +202,7 @@ bool ContextMenusCreateFunction::RunImpl() {
     return false;
   }
 
-  MenuItem::Type type = GetType(params->create_properties);
+  MenuItem::Type type = GetType(params->create_properties, MenuItem::NORMAL);
 
   if (title.empty() && type != MenuItem::SEPARATOR) {
     error_ = kTitleNeededError;
@@ -268,7 +270,7 @@ bool ContextMenusUpdateFunction::RunImpl() {
   }
 
   // Type.
-  MenuItem::Type type = GetType(params->update_properties);
+  MenuItem::Type type = GetType(params->update_properties, item->type());
 
   if (type != item->type()) {
     if (type == MenuItem::RADIO || item->type() == MenuItem::RADIO)
