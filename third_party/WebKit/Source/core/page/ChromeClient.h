@@ -238,7 +238,7 @@ public:
 
     // Checks if there is an opened popup, called by RenderMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
-    virtual PassRefPtr<PopupMenu> createPopupMenu(PopupMenuClient*) const = 0;
+    virtual PassRefPtr<PopupMenu> createPopupMenu(Frame&, PopupMenuClient*) const = 0;
     // Creates a PagePopup object, and shows it beside originBoundsInRootView.
     // The return value can be 0.
     virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView) = 0;

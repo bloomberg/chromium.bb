@@ -187,7 +187,7 @@ protected:
     {
         m_webView = static_cast<WebViewImpl*>(WebView::create(&m_webviewClient));
         m_webView->initializeMainFrame(&m_webFrameClient);
-        m_popupMenu = adoptRef(new PopupMenuChromium(&m_popupMenuClient));
+        m_popupMenu = adoptRef(new PopupMenuChromium(*static_cast<WebFrameImpl*>(m_webView->mainFrame())->frame(), &m_popupMenuClient));
     }
 
     virtual void TearDown()
@@ -204,8 +204,7 @@ protected:
 
     void showPopup()
     {
-        m_popupMenu->show(FloatQuad(FloatRect(0, 0, 100, 100)), IntSize(100, 100),
-            static_cast<WebFrameImpl*>(m_webView->mainFrame())->frameView(), 0);
+        m_popupMenu->show(FloatQuad(FloatRect(0, 0, 100, 100)), IntSize(100, 100), 0);
         ASSERT_TRUE(popupOpen());
         EXPECT_TRUE(m_webView->selectPopup()->popupType() == PopupContainer::Select);
     }

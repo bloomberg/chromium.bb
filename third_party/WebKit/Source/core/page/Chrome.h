@@ -142,7 +142,7 @@ public:
     void dispatchViewportPropertiesDidChange(const ViewportArguments&) const;
 
     bool hasOpenedPopup() const;
-    PassRefPtr<PopupMenu> createPopupMenu(PopupMenuClient*) const;
+    PassRefPtr<PopupMenu> createPopupMenu(Frame&, PopupMenuClient*) const;
 
     void registerPopupOpeningObserver(PopupOpeningObserver*);
     void unregisterPopupOpeningObserver(PopupOpeningObserver*);

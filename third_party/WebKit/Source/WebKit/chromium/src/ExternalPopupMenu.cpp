@@ -46,9 +46,9 @@ using namespace WebCore;
 
 namespace WebKit {
 
-ExternalPopupMenu::ExternalPopupMenu(PopupMenuClient* popupMenuClient,
-                                     WebViewClient* webViewClient)
+ExternalPopupMenu::ExternalPopupMenu(Frame& frame, PopupMenuClient* popupMenuClient, WebViewClient* webViewClient)
     : m_popupMenuClient(popupMenuClient)
+    , m_frameView(frame.view())
     , m_webViewClient(webViewClient)
     , m_webExternalPopupMenu(0)
 {
@@ -58,7 +58,7 @@ ExternalPopupMenu::~ExternalPopupMenu()
 {
 }
 
-void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, FrameView* v, int index)
+void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, int index)
 {
     IntRect rect(controlPosition.enclosingBoundingBox());
     // WebCore reuses the PopupMenu of a page.
@@ -72,7 +72,7 @@ void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, F
     m_webExternalPopupMenu =
         m_webViewClient->createExternalPopupMenu(info, this);
     if (m_webExternalPopupMenu)
-        m_webExternalPopupMenu->show(v->contentsToWindow(rect));
+        m_webExternalPopupMenu->show(m_frameView->contentsToWindow(rect));
     else {
         // The client might refuse to create a popup (when there is already one pending to be shown for example).
         didCancel();

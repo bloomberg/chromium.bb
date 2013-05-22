@@ -169,7 +169,7 @@ public:
     void setNewWindowNavigationPolicy(WebNavigationPolicy);
 
     virtual bool hasOpenedPopup() const OVERRIDE;
-    virtual PassRefPtr<WebCore::PopupMenu> createPopupMenu(WebCore::PopupMenuClient*) const;
+    virtual PassRefPtr<WebCore::PopupMenu> createPopupMenu(WebCore::Frame&, WebCore::PopupMenuClient*) const;
     virtual WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect&) OVERRIDE;
     virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
     virtual void setPagePopupDriver(WebCore::PagePopupDriver*) OVERRIDE;

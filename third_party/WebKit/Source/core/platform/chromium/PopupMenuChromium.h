@@ -31,13 +31,12 @@
 #ifndef PopupMenuChromium_h
 #define PopupMenuChromium_h
 
-#include "config.h"
-
 #include "core/platform/PopupMenu.h"
 #include "core/platform/chromium/PopupMenuPrivate.h"
 
 namespace WebCore {
 
+class Frame;
 class FrameView;
 class IntRect;
 struct PopupItem;
@@ -45,13 +44,13 @@ class PopupMenuClient;
 
 class PopupMenuChromium : public PopupMenu {
 public:
-    PopupMenuChromium(PopupMenuClient*);
+    PopupMenuChromium(Frame&, PopupMenuClient*);
     ~PopupMenuChromium();
 
-    virtual void show(const FloatQuad& controlPosition, const IntSize& controlSize, FrameView*, int index);
-    virtual void hide();
-    virtual void updateFromElement();
-    virtual void disconnectClient();
+    virtual void show(const FloatQuad& controlPosition, const IntSize& controlSize, int index) OVERRIDE;
+    virtual void hide() OVERRIDE;
+    virtual void updateFromElement() OVERRIDE;
+    virtual void disconnectClient() OVERRIDE;
 
     static int minimumRowHeight() { return s_minimumRowHeight; }
     static void setMinimumRowHeight(int minimumRowHeight) { s_minimumRowHeight = minimumRowHeight; }
@@ -62,6 +61,7 @@ private:
     PopupMenuClient* client() const { return m_popupClient; }
 
     PopupMenuClient* m_popupClient;
+    RefPtr<FrameView> m_frameView;
     PopupMenuPrivate p;
 
     static int s_minimumRowHeight;

@@ -52,8 +52,9 @@ static const PopupContainerSettings dropDownSettings = {
     false // restrictWidthOfListBox
 };
 
-PopupMenuChromium::PopupMenuChromium(PopupMenuClient* client)
+PopupMenuChromium::PopupMenuChromium(Frame& frame, PopupMenuClient* client)
     : m_popupClient(client)
+    , m_frameView(frame.view())
 {
 }
 
@@ -66,15 +67,15 @@ PopupMenuChromium::~PopupMenuChromium()
     hide();
 }
 
-void PopupMenuChromium::show(const FloatQuad& controlPosition, const IntSize& controlSize, FrameView* frameView, int index)
+void PopupMenuChromium::show(const FloatQuad& controlPosition, const IntSize& controlSize, int index)
 {
     if (!p.popup) {
-        Settings* settings = frameView->frame()->page()->settings();
+        Settings* settings = m_frameView->frame()->page()->settings();
         PopupContainerSettings popupSettings = dropDownSettings;
         popupSettings.deviceSupportsTouch = settings->deviceSupportsTouch();
         p.popup = PopupContainer::create(client(), PopupContainer::Select, popupSettings);
     }
-    p.popup->showInRect(controlPosition, controlSize, frameView, index);
+    p.popup->showInRect(controlPosition, controlSize, m_frameView.get(), index);
 }
 
 void PopupMenuChromium::hide()
