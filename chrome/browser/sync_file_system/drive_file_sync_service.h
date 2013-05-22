@@ -173,6 +173,9 @@ class DriveFileSyncService : public RemoteFileSyncService,
   void DidInitializeMetadataStore(const SyncStatusCallback& callback,
                                   SyncStatusCode status,
                                   bool created);
+  void DidGetDriveRootResourceId(const SyncStatusCallback& callback,
+                                 google_apis::GDataErrorCode error,
+                                 const std::string& root_resource_id);
 
   void UpdateServiceStateFromLastOperationStatus(
       SyncStatusCode sync_status,

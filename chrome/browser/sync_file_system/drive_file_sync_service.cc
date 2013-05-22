@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_notification_manager.h"
 #include "chrome/browser/google_apis/drive_notification_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1610,7 +1611,14 @@ bool DriveFileSyncService::GetOriginForEntry(
        itr != entry.links().end(); ++itr) {
     if ((*itr)->type() != google_apis::Link::LINK_PARENT)
       continue;
-    GURL origin(drive::APIUtil::DirectoryTitleToOrigin((*itr)->title()));
+    GURL origin;
+    if (IsDriveAPIEnabled()) {
+      metadata_store_->GetOriginByOriginRootDirectoryId(
+          google_apis::drive::util::ExtractResourceIdFromUrl((*itr)->href()),
+          &origin);
+    } else {
+      origin = drive::APIUtil::DirectoryTitleToOrigin((*itr)->title());
+    }
     DCHECK(origin.is_valid());
 
     if (!metadata_store_->IsBatchSyncOrigin(origin) &&

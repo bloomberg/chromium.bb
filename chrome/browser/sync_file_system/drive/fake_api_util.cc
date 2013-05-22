@@ -214,7 +214,7 @@ GURL FakeAPIUtil::ResourceIdToResourceLink(
 }
 
 void FakeAPIUtil::EnsureSyncRootIsNotInMyDrive(
-    const std::string& sync_root_resource_id) const {
+    const std::string& sync_root_resource_id) {
   // Nothing to do.
 }
 

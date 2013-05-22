@@ -99,7 +99,7 @@ class FakeAPIUtil : public APIUtilInterface {
   virtual GURL ResourceIdToResourceLink(
       const std::string& resource_id) const OVERRIDE;
   virtual void EnsureSyncRootIsNotInMyDrive(
-      const std::string& sync_root_resource_id) const OVERRIDE;
+      const std::string& sync_root_resource_id) OVERRIDE;
 
   void PushRemoteChange(const std::string& parent_resource_id,
                         const std::string& parent_title,

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/sync_file_system/drive/api_util_interface.h"
@@ -93,7 +94,7 @@ class APIUtil : public drive::APIUtilInterface,
   virtual GURL ResourceIdToResourceLink(const std::string& resource_id) const
       OVERRIDE;
   virtual void EnsureSyncRootIsNotInMyDrive(
-      const std::string& sync_root_resource_id) const OVERRIDE;
+      const std::string& sync_root_resource_id) OVERRIDE;
 
   static std::string GetSyncRootDirectoryName();
   static std::string OriginToDirectoryTitle(const GURL& origin);
@@ -119,6 +120,16 @@ class APIUtil : public drive::APIUtilInterface,
           scoped_ptr<google_apis::DriveServiceInterface> drive_service,
           scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader);
 
+  void GetDriveRootResourceId(const GDataErrorCallback& callback);
+  void DidGetDriveRootResourceId(
+      const GDataErrorCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::AboutResource> about_resource);
+
+  void DidGetDriveRootResourceIdForGetSyncRoot(
+      const ResourceIdCallback& callback,
+      google_apis::GDataErrorCode error);
+
   void DidGetDirectory(const std::string& parent_resource_id,
                        const std::string& directory_name,
                        const ResourceIdCallback& callback,
@@ -141,10 +152,14 @@ class APIUtil : public drive::APIUtilInterface,
                      const std::string& directory_resource_id,
                      const ResourceListCallback& callback);
 
-  void DidGetAboutResource(
+  void DidGetLargestChangeStamp(
       const ChangeStampCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::AboutResource> about_resource);
+
+  void DidGetDriveRootResourceIdForEnsureSyncRoot(
+      const std::string& sync_root_resource_id,
+      google_apis::GDataErrorCode error);
 
   void DidGetResourceList(const ResourceListCallback& callback,
                           google_apis::GDataErrorCode error,
@@ -217,12 +232,18 @@ class APIUtil : public drive::APIUtilInterface,
   UploadFileCallback GetAndUnregisterUploadCallback(UploadKey key);
   void CancelAllUploads(google_apis::GDataErrorCode error);
 
+  std::string GetRootResourceId() const;
+
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader_;
-  google_apis::GDataWapiUrlGenerator url_generator_;
+
+  google_apis::GDataWapiUrlGenerator wapi_url_generator_;
+  google_apis::DriveApiUrlGenerator drive_api_url_generator_;
 
   UploadCallbackMap upload_callback_map_;
   UploadKey upload_next_key_;
+
+  std::string root_resource_id_;
 
   ObserverList<APIUtilObserver> observers_;
 

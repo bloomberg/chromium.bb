@@ -185,7 +185,7 @@ class APIUtilInterface {
   // Ensures the sync root directory is not in 'My Drive'. Even if the directory
   // is in directories other than 'My Drive', it will not be removed from there.
   virtual void EnsureSyncRootIsNotInMyDrive(
-      const std::string& sync_root_resource_id) const = 0;
+      const std::string& sync_root_resource_id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(APIUtilInterface);
