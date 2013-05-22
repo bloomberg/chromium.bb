@@ -48,10 +48,10 @@ class CookieCallback {
 
 // Callback implementations for the asynchronous CookieStore methods.
 
-class SetCookieCallback : public CookieCallback {
+class BoolResultCookieCallback : public CookieCallback {
  public:
-  SetCookieCallback();
-  explicit SetCookieCallback(base::Thread* run_in_thread);
+  BoolResultCookieCallback();
+  explicit BoolResultCookieCallback(base::Thread* run_in_thread);
 
   void Run(bool result) {
     result_ = result;
@@ -64,42 +64,42 @@ class SetCookieCallback : public CookieCallback {
   bool result_;
 };
 
-class GetCookieStringCallback : public CookieCallback {
+class StringResultCookieCallback : public CookieCallback {
  public:
-  GetCookieStringCallback();
-  explicit GetCookieStringCallback(base::Thread* run_in_thread);
+  StringResultCookieCallback();
+  explicit StringResultCookieCallback(base::Thread* run_in_thread);
 
-  void Run(const std::string& cookie) {
-    cookie_ = cookie;
+  void Run(const std::string& result) {
+    result_ = result;
     CallbackEpilogue();
   }
 
-  const std::string& cookie() { return cookie_; }
+  const std::string& result() { return result_; }
 
  private:
-  std::string cookie_;
+  std::string result_;
 };
 
-class DeleteCallback : public CookieCallback {
+class IntResultCookieCallback : public CookieCallback {
  public:
-  DeleteCallback();
-  explicit DeleteCallback(base::Thread* run_in_thread);
+  IntResultCookieCallback();
+  explicit IntResultCookieCallback(base::Thread* run_in_thread);
 
-  void Run(int num_deleted) {
-    num_deleted_ = num_deleted;
+  void Run(int result) {
+    result_ = result;
     CallbackEpilogue();
   }
 
-  int num_deleted() { return num_deleted_; }
+  int result() { return result_; }
 
  private:
-  int num_deleted_;
+  int result_;
 };
 
-class DeleteCookieCallback : public CookieCallback {
+class NoResultCookieCallback : public CookieCallback {
  public:
-  DeleteCookieCallback();
-  explicit DeleteCookieCallback(base::Thread* run_in_thread);
+  NoResultCookieCallback();
+  explicit NoResultCookieCallback(base::Thread* run_in_thread);
 
   void Run() {
     CallbackEpilogue();

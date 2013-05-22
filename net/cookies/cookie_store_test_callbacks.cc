@@ -39,22 +39,23 @@ void CookieCallback::CallbackEpilogue() {
   loop_to_quit_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-SetCookieCallback::SetCookieCallback() : result_(false) {}
-SetCookieCallback::SetCookieCallback(base::Thread* run_in_thread)
+BoolResultCookieCallback::BoolResultCookieCallback() : result_(false) {}
+BoolResultCookieCallback::BoolResultCookieCallback(base::Thread* run_in_thread)
     : CookieCallback(run_in_thread),
       result_(false) {}
 
-GetCookieStringCallback::GetCookieStringCallback() {}
-GetCookieStringCallback::GetCookieStringCallback(base::Thread* run_in_thread)
+StringResultCookieCallback::StringResultCookieCallback() {}
+StringResultCookieCallback::StringResultCookieCallback(
+    base::Thread* run_in_thread)
     : CookieCallback(run_in_thread) {}
 
-DeleteCallback::DeleteCallback() : num_deleted_(0) {}
-DeleteCallback::DeleteCallback(base::Thread* run_in_thread)
+IntResultCookieCallback::IntResultCookieCallback() : result_(0) {}
+IntResultCookieCallback::IntResultCookieCallback(base::Thread* run_in_thread)
     : CookieCallback(run_in_thread),
-      num_deleted_(0) {}
+      result_(0) {}
 
-DeleteCookieCallback::DeleteCookieCallback() {}
-DeleteCookieCallback::DeleteCookieCallback(base::Thread* run_in_thread)
+NoResultCookieCallback::NoResultCookieCallback() {}
+NoResultCookieCallback::NoResultCookieCallback(base::Thread* run_in_thread)
     : CookieCallback(run_in_thread) {}
 
 }  // namespace net
