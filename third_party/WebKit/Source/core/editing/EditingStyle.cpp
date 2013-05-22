@@ -108,7 +108,7 @@ static const Vector<CSSPropertyID>& inheritableEditingProperties()
 }
 
 template <class StyleDeclarationType>
-static PassRefPtr<StylePropertySet> copyEditingProperties(StyleDeclarationType* style, EditingPropertiesType type = OnlyInheritableEditingProperties)
+static PassRefPtr<MutableStylePropertySet> copyEditingProperties(StyleDeclarationType* style, EditingPropertiesType type = OnlyInheritableEditingProperties)
 {
     if (type == AllEditingProperties)
         return style->copyPropertiesInSet(allEditingProperties());
@@ -120,10 +120,10 @@ static inline bool isEditingProperty(int id)
     return allEditingProperties().contains(static_cast<CSSPropertyID>(id));
 }
 
-static PassRefPtr<StylePropertySet> editingStyleFromComputedStyle(PassRefPtr<CSSComputedStyleDeclaration> style, EditingPropertiesType type = OnlyInheritableEditingProperties)
+static PassRefPtr<MutableStylePropertySet> editingStyleFromComputedStyle(PassRefPtr<CSSComputedStyleDeclaration> style, EditingPropertiesType type = OnlyInheritableEditingProperties)
 {
     if (!style)
-        return StylePropertySet::create();
+        return static_pointer_cast<MutableStylePropertySet>(StylePropertySet::create());
     return copyEditingProperties(style.get(), type);
 }
 
@@ -335,7 +335,7 @@ EditingStyle::EditingStyle(const Position& position, PropertiesToInclude propert
 }
 
 EditingStyle::EditingStyle(const StylePropertySet* style)
-    : m_mutableStyle(style ? style->copy() : 0)
+    : m_mutableStyle(style ? style->mutableCopy() : 0)
     , m_shouldUseFixedDefaultFontSize(false)
     , m_fontSizeDelta(NoFontDelta)
 {
@@ -343,7 +343,7 @@ EditingStyle::EditingStyle(const StylePropertySet* style)
 }
 
 EditingStyle::EditingStyle(const CSSStyleDeclaration* style)
-    : m_mutableStyle(style ? style->copy() : 0)
+    : m_mutableStyle(style ? style->copyProperties() : 0)
     , m_shouldUseFixedDefaultFontSize(false)
     , m_fontSizeDelta(NoFontDelta)
 {
@@ -437,7 +437,7 @@ void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude)
         node = node->parentNode();
 
     RefPtr<CSSComputedStyleDeclaration> computedStyleAtPosition = CSSComputedStyleDeclaration::create(node);
-    m_mutableStyle = propertiesToInclude == AllProperties && computedStyleAtPosition ? computedStyleAtPosition->copy() : editingStyleFromComputedStyle(computedStyleAtPosition);
+    m_mutableStyle = propertiesToInclude == AllProperties && computedStyleAtPosition ? computedStyleAtPosition->copyProperties() : editingStyleFromComputedStyle(computedStyleAtPosition);
 
     if (propertiesToInclude == EditingPropertiesInEffect) {
         if (RefPtr<CSSValue> value = backgroundColorInEffect(node))
@@ -572,7 +572,7 @@ PassRefPtr<EditingStyle> EditingStyle::copy() const
 {
     RefPtr<EditingStyle> copy = EditingStyle::create();
     if (m_mutableStyle)
-        copy->m_mutableStyle = m_mutableStyle->copy();
+        copy->m_mutableStyle = m_mutableStyle->mutableCopy();
     copy->m_shouldUseFixedDefaultFontSize = m_shouldUseFixedDefaultFontSize;
     copy->m_fontSizeDelta = m_fontSizeDelta;
     return copy;
@@ -1069,7 +1069,7 @@ void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverride
         return;
 
     if (!m_mutableStyle) {
-        m_mutableStyle = style->copy();
+        m_mutableStyle = style->mutableCopy();
         return;
     }
 
@@ -1519,7 +1519,7 @@ PassRefPtr<StylePropertySet> getPropertiesNotIn(StylePropertySet* styleWithRedun
 {
     ASSERT(styleWithRedundantProperties);
     ASSERT(baseStyle);
-    RefPtr<StylePropertySet> result = styleWithRedundantProperties->copy();
+    RefPtr<MutableStylePropertySet> result = styleWithRedundantProperties->mutableCopy();
 
     result->removeEquivalentProperties(baseStyle);
 

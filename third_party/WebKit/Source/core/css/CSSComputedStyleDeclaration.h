@@ -31,6 +31,7 @@ namespace WebCore {
 class CSSPrimitiveValue;
 class CSSValueList;
 class Color;
+class MutableStylePropertySet;
 class Node;
 class RenderObject;
 class RenderStyle;
@@ -59,14 +60,14 @@ public:
     String getPropertyValue(CSSPropertyID) const;
     bool getPropertyPriority(CSSPropertyID) const;
 
-    virtual PassRefPtr<StylePropertySet> copy() const;
+    virtual PassRefPtr<MutableStylePropertySet> copyProperties() const OVERRIDE;
 
     PassRefPtr<CSSValue> getPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
     PassRefPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
     bool useFixedFontDefaultSize() const;
     PassRefPtr<CSSValue> getSVGPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
 
-    PassRefPtr<StylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
+    PassRefPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 

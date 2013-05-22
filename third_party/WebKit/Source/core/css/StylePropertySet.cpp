@@ -496,12 +496,12 @@ void StylePropertySet::removeEquivalentProperties(const CSSStyleDeclaration* sty
         removeProperty(propertiesToRemove[i]);
 }
 
-PassRefPtr<StylePropertySet> StylePropertySet::copy() const
+PassRefPtr<MutableStylePropertySet> StylePropertySet::mutableCopy() const
 {
     return adoptRef(new MutableStylePropertySet(*this));
 }
 
-PassRefPtr<StylePropertySet> StylePropertySet::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
+PassRefPtr<MutableStylePropertySet> StylePropertySet::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
 {
     Vector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
@@ -510,7 +510,7 @@ PassRefPtr<StylePropertySet> StylePropertySet::copyPropertiesInSet(const Vector<
         if (value)
             list.append(CSSProperty(properties[i], value.release(), false));
     }
-    return StylePropertySet::create(list.data(), list.size());
+    return static_pointer_cast<MutableStylePropertySet>(StylePropertySet::create(list.data(), list.size()));
 }
 
 PropertySetCSSStyleDeclaration* StylePropertySet::cssStyleDeclaration()
