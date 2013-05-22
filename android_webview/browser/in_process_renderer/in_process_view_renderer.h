@@ -79,7 +79,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // True while an asynchronous invalidation task is pending.
   bool continuous_invalidate_task_pending_;
 
-  int width_, height_;  // TODO(boliu): Use these?
+  int width_;
+  int height_;
 
   bool attached_to_window_;
   bool hardware_initialized_;

@@ -384,7 +384,7 @@ bool InProcessViewRenderer::IsViewVisible() {
 }
 
 gfx::Rect InProcessViewRenderer::GetScreenRect() {
-  return gfx::Rect();
+  return gfx::Rect(client_->GetLocationOnScreen(), gfx::Size(width_, height_));
 }
 
 void InProcessViewRenderer::DidDestroyCompositor(
