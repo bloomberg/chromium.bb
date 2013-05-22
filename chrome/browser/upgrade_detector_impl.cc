@@ -401,7 +401,7 @@ void UpgradeDetectorImpl::NotifyOnUpgrade() {
       return;  // Not ready to recommend upgrade.
     }
   } else {
-    const int kMultiplier = is_testing ? 1 : 24;
+    const int kMultiplier = is_testing ? 10 : 24;
     // 14 days when not testing, otherwise 14 seconds.
     const int kSevereThreshold = 14 * kMultiplier;
     const int kHighThreshold = 7 * kMultiplier;
