@@ -29,7 +29,7 @@
  *    Tiago Vignatti <vignatti@freedesktop.org>
  */
 
-#define _GNU_SOURCE
+#include "config.h"
 
 #include "libbacklight.h"
 #include <stdio.h>

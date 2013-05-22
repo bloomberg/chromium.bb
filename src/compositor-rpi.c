@@ -22,7 +22,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#define _GNU_SOURCE
+#include "config.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -34,8 +34,6 @@
 #include <unistd.h>
 
 #include <libudev.h>
-
-#include "config.h"
 
 #ifdef HAVE_BCM_HOST
 #  include <bcm_host.h>

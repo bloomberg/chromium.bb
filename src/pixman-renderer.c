@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#define _GNU_SOURCE
+#include "config.h"
 
 #include <errno.h>
 #include <stdlib.h>

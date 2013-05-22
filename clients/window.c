@@ -21,9 +21,7 @@
  * OF THIS SOFTWARE.
  */
 
-#define _GNU_SOURCE
-
-#include "../config.h"
+#include "config.h"
 
 #include <stdint.h>
 #include <stdio.h>

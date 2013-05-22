@@ -22,8 +22,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#define _GNU_SOURCE
-
 #include "config.h"
 
 #include <fcntl.h>

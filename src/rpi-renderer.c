@@ -20,11 +20,11 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-
-#include "config.h"
 
 #ifdef HAVE_BCM_HOST
 #  include <bcm_host.h>

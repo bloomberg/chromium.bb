@@ -20,7 +20,8 @@
  * OF THIS SOFTWARE.
  */
 
-#define _GNU_SOURCE   /* for stchrnul() */
+#include "config.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -20,7 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#define _GNU_SOURCE
+#include "config.h"
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>

@@ -20,10 +20,9 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-#include  "compositor.h"
+#include "config.h"
+
+#include "compositor.h"
 
 #ifdef ENABLE_EGL
 
