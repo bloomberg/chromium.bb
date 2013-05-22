@@ -4,6 +4,9 @@
 
 #include "chrome/test/chromedriver/chrome_launcher.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -25,6 +28,7 @@
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_finder.h"
+#include "chrome/test/chromedriver/chrome/device_manager.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/embedded_automation_extension.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -263,30 +267,33 @@ Status LaunchAndroidChrome(
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
-  // TODO(frankf): Figure out how this should be installed to
-  // make this work for all platforms.
-  base::FilePath adb_commands(FILE_PATH_LITERAL("adb_commands.py"));
-  CommandLine command(adb_commands);
-  command.AppendSwitch("launch");
-  command.AppendSwitchASCII("port", base::IntToString(port));
-  command.AppendSwitchASCII("package", capabilities.android_package);
-  if (!capabilities.device_serial.empty())
-    command.AppendSwitchASCII("device", capabilities.device_serial);
-
-  std::string output;
-  if (!base::GetAppOutput(command, &output)) {
-    if (output.empty())
-      return Status(
-          kUnknownError,
-          "failed to run adb_commands.py. Make sure it is set in PATH.");
-    else
-      return Status(kUnknownError, "android app failed to start.\n" + output);
+  DeviceManager device_mgr;
+  std::vector<std::string> devices;
+  Status status = device_mgr.GetDevices(&devices);
+  if (devices.empty())
+    return Status(kUnknownError, "No devices attached");
+  std::string device_serial;
+  if (!capabilities.device_serial.empty()) {
+    if (std::find(devices.begin(), devices.end(), capabilities.device_serial) ==
+        devices.end())
+      return Status(kUnknownError,
+          "Invalid device serial: " + capabilities.device_serial);
+    device_serial = capabilities.device_serial;
+  } else if (devices.size() == 1) {
+    device_serial = devices[0];
+  } else {
+    return Status(kUnknownError,
+        "No device serial supplied with multiple devices connected");
   }
+  status = device_mgr.StartChrome(
+      device_serial, capabilities.android_package, port);
+  if (!status.IsOk())
+    return status;
 
   scoped_ptr<DevToolsHttpClient> devtools_client;
   std::string version;
   int build_no;
-  Status status = WaitForDevToolsAndCheckVersion(
+  status = WaitForDevToolsAndCheckVersion(
       port, context_getter, socket_factory, &devtools_client, &version,
       &build_no);
   if (status.IsError())
