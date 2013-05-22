@@ -136,7 +136,7 @@ void WTFInstallReportBacktraceOnCrashHook();
 
 /* IMMEDIATE_CRASH() - Like CRASH() below but crashes in the fastest, simplest possible way with no attempt at logging. */
 #ifndef IMMEDIATE_CRASH
-#if COMPILER(CLANG)
+#if COMPILER(GCC)
 #define IMMEDIATE_CRASH() __builtin_trap()
 #else
 #define IMMEDIATE_CRASH() ((void(*)())0)()
